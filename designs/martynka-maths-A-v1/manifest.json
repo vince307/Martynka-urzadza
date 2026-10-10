@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "title": "Martynka urządza",
+  "direction": "A — Przytulny notes",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "font": "fonts/AtkinsonHyperlegibleNext.ttf",
+  "styleGuide": "style-guide.md",
+  "room": "assets/room.png",
+  "icons": [
+    {
+      "id": "cup",
+      "label": "Filiżanka",
+      "file": "assets/icons/cup.png",
+      "preview64": "assets/icons/64/cup.png",
+      "preview96": "assets/icons/96/cup.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "croissant",
+      "label": "Rogalik",
+      "file": "assets/icons/croissant.png",
+      "preview64": "assets/icons/64/croissant.png",
+      "preview96": "assets/icons/96/croissant.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "flower",
+      "label": "Kwiatek",
+      "file": "assets/icons/flower.png",
+      "preview64": "assets/icons/64/flower.png",
+      "preview96": "assets/icons/96/flower.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "cushion",
+      "label": "Poduszka",
+      "file": "assets/icons/cushion.png",
+      "preview64": "assets/icons/64/cushion.png",
+      "preview96": "assets/icons/96/cushion.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "book",
+      "label": "Książka",
+      "file": "assets/icons/book.png",
+      "preview64": "assets/icons/64/book.png",
+      "preview96": "assets/icons/96/book.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "lamp",
+      "label": "Lampa",
+      "file": "assets/icons/lamp.png",
+      "preview64": "assets/icons/64/lamp.png",
+      "preview96": "assets/icons/96/lamp.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "apple",
+      "label": "Jabłko",
+      "file": "assets/icons/apple.png",
+      "preview64": "assets/icons/64/apple.png",
+      "preview96": "assets/icons/96/apple.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "pear",
+      "label": "Gruszka",
+      "file": "assets/icons/pear.png",
+      "preview64": "assets/icons/64/pear.png",
+      "preview96": "assets/icons/96/pear.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "teapot",
+      "label": "Czajniczek",
+      "file": "assets/icons/teapot.png",
+      "preview64": "assets/icons/64/teapot.png",
+      "preview96": "assets/icons/96/teapot.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "pencil",
+      "label": "Ołówek",
+      "file": "assets/icons/pencil.png",
+      "preview64": "assets/icons/64/pencil.png",
+      "preview96": "assets/icons/96/pencil.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "key",
+      "label": "Klucz",
+      "file": "assets/icons/key.png",
+      "preview64": "assets/icons/64/key.png",
+      "preview96": "assets/icons/96/key.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "yarn",
+      "label": "Kłębek",
+      "file": "assets/icons/yarn.png",
+      "preview64": "assets/icons/64/yarn.png",
+      "preview96": "assets/icons/96/yarn.png",
+      "width": 512,
+      "height": 512
+    }
+  ],
+  "money": {
+    "coins": [
+      {
+        "id": "coin-01gr",
+        "label": "1 gr",
+        "file": "assets/money/coin-01gr.png",
+        "valueGrosze": 1,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-02gr",
+        "label": "2 gr",
+        "file": "assets/money/coin-02gr.png",
+        "valueGrosze": 2,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-05gr",
+        "label": "5 gr",
+        "file": "assets/money/coin-05gr.png",
+        "valueGrosze": 5,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-10gr",
+        "label": "10 gr",
+        "file": "assets/money/coin-10gr.png",
+        "valueGrosze": 10,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-20gr",
+        "label": "20 gr",
+        "file": "assets/money/coin-20gr.png",
+        "valueGrosze": 20,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-50gr",
+        "label": "50 gr",
+        "file": "assets/money/coin-50gr.png",
+        "valueGrosze": 50,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-1zl",
+        "label": "1 zł",
+        "file": "assets/money/coin-1zl.png",
+        "valueGrosze": 100,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-2zl",
+        "label": "2 zł",
+        "file": "assets/money/coin-2zl.png",
+        "valueGrosze": 200,
+        "width": 512,
+        "height": 512
+      },
+      {
+        "id": "coin-5zl",
+        "label": "5 zł",
+        "file": "assets/money/coin-5zl.png",
+        "valueGrosze": 500,
+        "width": 512,
+        "height": 512
+      }
+    ],
+    "banknotes": [
+      {
+        "id": "note-10zl",
+        "label": "10 zł",
+        "file": "assets/money/note-10zl.png",
+        "valueGrosze": 1000,
+        "width": 768,
+        "height": 512
+      },
+      {
+        "id": "note-20zl",
+        "label": "20 zł",
+        "file": "assets/money/note-20zl.png",
+        "valueGrosze": 2000,
+        "width": 768,
+        "height": 512
+      },
+      {
+        "id": "note-50zl",
+        "label": "50 zł",
+        "file": "assets/money/note-50zl.png",
+        "valueGrosze": 5000,
+        "width": 768,
+        "height": 512
+      },
+      {
+        "id": "note-100zl",
+        "label": "100 zł",
+        "file": "assets/money/note-100zl.png",
+        "valueGrosze": 10000,
+        "width": 768,
+        "height": 512
+      },
+      {
+        "id": "note-200zl",
+        "label": "200 zł",
+        "file": "assets/money/note-200zl.png",
+        "valueGrosze": 20000,
+        "width": 768,
+        "height": 512
+      },
+      {
+        "id": "note-500zl",
+        "label": "500 zł",
+        "file": "assets/money/note-500zl.png",
+        "valueGrosze": 50000,
+        "width": 768,
+        "height": 512
+      }
+    ]
+  },
+  "measuring": [
+    {
+      "id": "balance-scale",
+      "label": "Waga szalkowa",
+      "file": "assets/measuring/balance-scale.png",
+      "width": 1024,
+      "height": 768,
+      "emptyPans": true
+    },
+    {
+      "id": "weight-1kg",
+      "label": "1 kg",
+      "file": "assets/measuring/weight-1kg.png",
+      "grams": 1000,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "weight-2kg",
+      "label": "2 kg",
+      "file": "assets/measuring/weight-2kg.png",
+      "grams": 2000,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "weight-5kg",
+      "label": "5 kg",
+      "file": "assets/measuring/weight-5kg.png",
+      "grams": 5000,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "weight-10dag",
+      "label": "10 dag",
+      "file": "assets/measuring/weight-10dag.png",
+      "grams": 100,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "weight-20dag",
+      "label": "20 dag",
+      "file": "assets/measuring/weight-20dag.png",
+      "grams": 200,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "weight-50dag",
+      "label": "50 dag",
+      "file": "assets/measuring/weight-50dag.png",
+      "grams": 500,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "container-1l",
+      "label": "1 l",
+      "file": "assets/measuring/container-1l.png",
+      "millilitres": 1000,
+      "capacityMillilitres": 1000,
+      "sharedVisibleRect": [
+        32,
+        78,
+        448,
+        356
+      ],
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "container-half-l",
+      "label": "½ l",
+      "file": "assets/measuring/container-half-l.png",
+      "millilitres": 500,
+      "capacityMillilitres": 1000,
+      "sharedVisibleRect": [
+        32,
+        78,
+        448,
+        356
+      ],
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "container-quarter-l",
+      "label": "¼ l",
+      "file": "assets/measuring/container-quarter-l.png",
+      "millilitres": 250,
+      "capacityMillilitres": 1000,
+      "sharedVisibleRect": [
+        32,
+        78,
+        448,
+        356
+      ],
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "thermometer",
+      "label": "Termometr −30…+30 °C",
+      "file": "assets/measuring/thermometer.png",
+      "width": 512,
+      "height": 1536,
+      "minCelsius": -30,
+      "maxCelsius": 30,
+      "minorStepCelsius": 1,
+      "majorStepCelsius": 10,
+      "shownCelsius": 10,
+      "scaleMapping": {
+        "yForMinus30": 1260,
+        "pixelsPerDegree": 16
+      }
+    }
+  ],
+  "helpers": [
+    {
+      "id": "clock",
+      "file": "reference/clock.svg"
+    },
+    {
+      "id": "ruler",
+      "file": "reference/ruler.svg"
+    },
+    {
+      "id": "number-line",
+      "file": "reference/number-line.svg"
+    },
+    {
+      "id": "base-ten",
+      "file": "reference/base-ten.svg"
+    },
+    {
+      "id": "written-addition",
+      "file": "reference/written-addition.svg"
+    },
+    {
+      "id": "square-grid",
+      "file": "reference/square-grid.svg"
+    },
+    {
+      "id": "dice",
+      "file": "reference/dice.svg"
+    }
+  ],
+  "moneyUnits": {
+    "base": "gr",
+    "groszePerZloty": 100
+  },
+  "scope": {
+    "visualProduction": true,
+    "demonstrationRound": true,
+    "curriculumEngine": false,
+    "miniGames": "later"
+  }
+}

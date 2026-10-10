@@ -1,0 +1,52 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# agent (skille, hooki, ustawienia Claude Code) — lokalnie, nie commitujemy (konwencja jak w CoiledSpring)
+.claude/
+
+# dzienniki autonomicznych runów (/10x-autonomous-run) — lokalne
+context/runs/
+
+# środowisko i sekrety
+.env
+.env.*
+!.env.example
+
+# Playwright (gdy dojdzie /10x-e2e-setup)
+playwright/.auth/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.playwright-cli/
+
+# logi lokalnego CI (scripts/ci-local.sh, jeśli zostanie przeniesione)
+.ci-local/
+
+# archiwum paczki graficznej (77 MB) — dubluje rozpakowany katalog designs/martynka-maths-A-v1/
+designs/*.zip
+
+# notatki z analizy podręczników — tylko lokalnie, nie w publicznym repo (decyzja 2026-10-10)
+docs/zrodla/

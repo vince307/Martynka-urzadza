@@ -1,0 +1,7 @@
+Mode: built-in image_gen; provisional cup art only. UI is rendered with HTML/CSS and native vector controls.
+
+Use case: stylized-concept
+Asset type: provisional countable object for two children's maths-screen layout concepts, not final asset set.
+Input image: reference image only — approved original Martynka living-room artwork; match its soft painted materials, warm upper-left light and rounded chunky shapes.
+Primary request: draw ONE original simple ceramic teacup with a broad curved right-side handle, empty pale interior clearly visible, small ivory saucer beneath. Turquoise glaze (#54BEB4), a single butter-yellow band around lower cup, warm ivory saucer. No beverage, steam, spoon, text, face, pattern, extra objects or decorative symbols that could be counted.
+Composition: square icon, three-quarter slightly elevated view, completely visible centered silhouette with 12% breathing room, handle large and obvious. Readable at 64–96px. Soft painterly casual mobile game shading, crisp rounded silhouette, broad highlights, no black outline. Genuine transparent background. Do not include cast shadow outside the object. Entire cup plus saucer is ONE countable object; make cup visually dominant.

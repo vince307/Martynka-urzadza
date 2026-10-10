@@ -1,0 +1,76 @@
+{
+  "nominalStroke": 4,
+  "gridStroke": 2,
+  "clock": {
+    "hour": 3,
+    "minute": 30,
+    "hourAngleFrom12": 105,
+    "minuteAngleFrom12": 180
+  },
+  "ruler": {
+    "start": 0,
+    "end": 10,
+    "unit": "cm",
+    "minorStep": 0.5
+  },
+  "numberLine": {
+    "start": 0,
+    "end": 10,
+    "jumps": [
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "baseTen": {
+    "unitCells": 1,
+    "rodCells": 10,
+    "flatCells": 100
+  },
+  "writtenAddition": {
+    "a": 38,
+    "b": 27,
+    "result": 65,
+    "carryTens": 1
+  },
+  "grid": {
+    "columns": 8,
+    "rows": 5,
+    "cell": 48,
+    "verticesL": [
+      [
+        1,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        1,
+        4
+      ]
+    ],
+    "squareCells": [
+      2,
+      2
+    ]
+  },
+  "dice": [
+    4,
+    6
+  ]
+}

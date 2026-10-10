@@ -1,0 +1,159 @@
+{
+  "screens": [
+    "welcome",
+    "task-tiles",
+    "task-keypad",
+    "hint-tiles",
+    "hint-keypad",
+    "second-try",
+    "solution-step-1",
+    "solution-step-2",
+    "correct",
+    "summary",
+    "unlock"
+  ],
+  "touchChecks": [
+    {
+      "name": "welcome",
+      "minWidth": 218,
+      "minHeight": 190
+    },
+    {
+      "name": "task-tiles",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "task-keypad",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "hint-tiles",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "hint-keypad",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "second-try",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "solution-step-1",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "solution-step-2",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "correct",
+      "minWidth": 104,
+      "minHeight": 96
+    },
+    {
+      "name": "summary",
+      "minWidth": 450,
+      "minHeight": 128
+    },
+    {
+      "name": "unlock",
+      "minWidth": 450,
+      "minHeight": 108
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "name": "welcome",
+      "minCSS": 101.3
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "name": "task",
+      "minCSS": 51.2
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "name": "summary",
+      "minCSS": 68.3
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "name": "unlock",
+      "minCSS": 57.6
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "name": "welcome",
+      "minCSS": 126.7
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "name": "task",
+      "minCSS": 64
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "name": "summary",
+      "minCSS": 85.3
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "name": "unlock",
+      "minCSS": 72
+    }
+  ],
+  "interactions": {
+    "counting": {
+      "gentleHint": true,
+      "noStarLoss": true,
+      "uniqueCounts": true,
+      "secondTry": true,
+      "fiveTaskRound": true,
+      "summaryEarned": 5,
+      "unlockCard": true,
+      "nextRound": true
+    },
+    "keypad": {
+      "entry": true,
+      "erase": true,
+      "submit": true,
+      "roomResume": true,
+      "starAwardOnce": true
+    },
+    "sequentialSolution": true
+  },
+  "errors": [],
+  "galleryAssets": 38,
+  "fontLoaded": true
+}

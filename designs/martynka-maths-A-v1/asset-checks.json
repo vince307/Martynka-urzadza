@@ -1,0 +1,517 @@
+{
+  "transparentExportCount": 62,
+  "assets": [
+    {
+      "file": "assets/icons/cup.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/cup.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/cup.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/croissant.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/croissant.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/croissant.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/flower.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/flower.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/flower.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/cushion.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/cushion.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/cushion.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/book.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/book.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/book.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/lamp.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/lamp.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/lamp.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/apple.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/apple.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/apple.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/pear.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/pear.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/pear.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/teapot.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/teapot.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/teapot.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/pencil.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/pencil.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/pencil.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/key.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/key.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/key.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/yarn.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/64/yarn.png",
+      "size": [
+        64,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/icons/96/yarn.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-01gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-02gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-05gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-10gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-20gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-50gr.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-1zl.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-2zl.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/coin-5zl.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-10zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-20zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-50zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-100zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-200zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/money/note-500zl.png",
+      "size": [
+        768,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/balance-scale.png",
+      "size": [
+        1024,
+        768
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-1kg.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-2kg.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-5kg.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-10dag.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-20dag.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/weight-50dag.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/container-1l.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/container-half-l.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/container-quarter-l.png",
+      "size": [
+        512,
+        512
+      ],
+      "transparent": true
+    },
+    {
+      "file": "assets/measuring/thermometer.png",
+      "size": [
+        512,
+        1536
+      ],
+      "transparent": true
+    }
+  ],
+  "countingObjects": 12,
+  "currencyDenominations": 15,
+  "measuringObjects": 11,
+  "codeDrawnHelpers": 7,
+  "weightsAndVolumesMatchMetadata": true,
+  "sharedJugFootprint": true,
+  "clockHandsMatchTime": true,
+  "writtenAdditionCorrect": true,
+  "thermometerStepSpacingExact": true,
+  "visualReview": {
+    "icons": "clear distinct silhouettes; inspected at master and actual 64px display",
+    "currency": "all values and units inspected; original floral play designs",
+    "jugs": "illustrated fractions on common silhouette; volumes are manifest quantities",
+    "ui": "requested Polish text and large labels inspected"
+  },
+  "scope": "visual pack and fixed demonstration tasks; not a curriculum engine"
+}

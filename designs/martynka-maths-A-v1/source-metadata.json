@@ -1,0 +1,650 @@
+{
+  "balance-scale": {
+    "file": "source-art/balance-scale.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      6,
+      95,
+      1530,
+      913
+    ]
+  },
+  "coin-01gr": {
+    "file": "source-art/coin-01gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      29,
+      32,
+      1223,
+      1234
+    ]
+  },
+  "coin-02gr": {
+    "file": "source-art/coin-02gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      51,
+      48,
+      1203,
+      1205
+    ]
+  },
+  "coin-05gr": {
+    "file": "source-art/coin-05gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      28,
+      32,
+      1227,
+      1232
+    ]
+  },
+  "coin-10gr": {
+    "file": "source-art/coin-10gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      26,
+      28,
+      1227,
+      1223
+    ]
+  },
+  "coin-1zl": {
+    "file": "source-art/coin-1zl.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      23,
+      32,
+      1231,
+      1233
+    ]
+  },
+  "coin-20gr": {
+    "file": "source-art/coin-20gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      37,
+      33,
+      1217,
+      1224
+    ]
+  },
+  "coin-2zl": {
+    "file": "source-art/coin-2zl.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      48,
+      49,
+      1206,
+      1217
+    ]
+  },
+  "coin-50gr": {
+    "file": "source-art/coin-50gr.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      44,
+      43,
+      1211,
+      1221
+    ]
+  },
+  "coin-5zl": {
+    "file": "source-art/coin-5zl.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      27,
+      30,
+      1222,
+      1234
+    ]
+  },
+  "container-1l": {
+    "file": "source-art/container-1l.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      88,
+      185,
+      1227,
+      1091
+    ]
+  },
+  "container-half-l": {
+    "file": "source-art/container-half-l-v2.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      87,
+      182,
+      1230,
+      1093
+    ],
+    "selectedRevision": "container-half-l-v2"
+  },
+  "container-quarter-l": {
+    "file": "source-art/container-quarter-l-v4.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      84,
+      179,
+      1235,
+      1096
+    ],
+    "selectedRevision": "container-quarter-l-v4"
+  },
+  "icon-apple": {
+    "file": "source-art/icon-apple.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      137,
+      107,
+      1155,
+      1145
+    ]
+  },
+  "icon-book": {
+    "file": "source-art/icon-book.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      83,
+      143,
+      1192,
+      1124
+    ]
+  },
+  "icon-croissant": {
+    "file": "source-art/icon-croissant.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      53,
+      181,
+      1200,
+      1130
+    ]
+  },
+  "icon-cup": {
+    "file": "source-art/icon-cup.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      78,
+      183,
+      1229,
+      1095
+    ]
+  },
+  "icon-cushion": {
+    "file": "source-art/icon-cushion.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      56,
+      149,
+      1206,
+      1147
+    ]
+  },
+  "icon-flower": {
+    "file": "source-art/icon-flower.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      159,
+      55,
+      1152,
+      1203
+    ]
+  },
+  "icon-key": {
+    "file": "source-art/icon-key.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      57,
+      90,
+      1202,
+      1171
+    ]
+  },
+  "icon-lamp": {
+    "file": "source-art/icon-lamp.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      164,
+      51,
+      1086,
+      1215
+    ]
+  },
+  "icon-pear": {
+    "file": "source-art/icon-pear.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      190,
+      68,
+      1063,
+      1197
+    ]
+  },
+  "icon-pencil": {
+    "file": "source-art/icon-pencil.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      108,
+      80,
+      1200,
+      1158
+    ]
+  },
+  "icon-teapot": {
+    "file": "source-art/icon-teapot.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      26,
+      175,
+      1240,
+      1085
+    ]
+  },
+  "icon-yarn": {
+    "file": "source-art/icon-yarn.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      131,
+      139,
+      1166,
+      1112
+    ]
+  },
+  "note-100zl": {
+    "file": "source-art/note-100zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      34,
+      144,
+      1501,
+      842
+    ]
+  },
+  "note-10zl": {
+    "file": "source-art/note-10zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      44,
+      113,
+      1489,
+      884
+    ]
+  },
+  "note-200zl": {
+    "file": "source-art/note-200zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      41,
+      121,
+      1495,
+      894
+    ]
+  },
+  "note-20zl": {
+    "file": "source-art/note-20zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      28,
+      116,
+      1508,
+      898
+    ]
+  },
+  "note-500zl": {
+    "file": "source-art/note-500zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      37,
+      139,
+      1502,
+      853
+    ]
+  },
+  "note-50zl": {
+    "file": "source-art/note-50zl.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "bounds": [
+      28,
+      138,
+      1510,
+      881
+    ]
+  },
+  "thermometer-frame": {
+    "file": "source-art/thermometer-frame.png",
+    "size": [
+      887,
+      1774
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      220,
+      70,
+      668,
+      1727
+    ]
+  },
+  "weight-10dag": {
+    "file": "source-art/weight-10dag.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      209,
+      121,
+      1044,
+      1108
+    ]
+  },
+  "weight-1kg": {
+    "file": "source-art/weight-1kg.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      174,
+      84,
+      1080,
+      1173
+    ]
+  },
+  "weight-20dag": {
+    "file": "source-art/weight-20dag.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      161,
+      104,
+      1093,
+      1150
+    ]
+  },
+  "weight-2kg": {
+    "file": "source-art/weight-2kg.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      148,
+      136,
+      1103,
+      1143
+    ]
+  },
+  "weight-50dag": {
+    "file": "source-art/weight-50dag.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      107,
+      103,
+      1147,
+      1146
+    ]
+  },
+  "weight-5kg": {
+    "file": "source-art/weight-5kg.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "bounds": [
+      139,
+      100,
+      1115,
+      1167
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "container-half-l-v2",
+    "target": "container-half-l",
+    "prompt": "Use case: precise-object-edit. Edit target: container-half-l. Keep the glass jug, handle, camera, every contour, shading, text value, dimensions and true transparency unchanged. Change ONLY liquid height. The current liquid is too high for the one half measure. On this 1254×1254 image the useful bottom of liquid body is at y=1000 and original 1-litre water surface is at y=384. Therefore place the HORIZONTAL water surface center precisely at y=692. Liquid below that surface to y=1000; absolutely clear empty glass above it. Do not enlarge the jug, do not compensate with camera tilt, do not move liquid to fit typography. The existing fraction label may cross the liquid surface; preserve its current location and correct text. No other edits. Exact coherent fraction illustration is essential for maths.",
+    "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-ef83ea26-1e93-43af-8552-b7cf34abdcf4.png"
+  },
+  {
+    "id": "container-quarter-l-v2",
+    "target": "container-quarter-l",
+    "prompt": "Use case: precise-object-edit. Edit target: container-quarter-l. Keep the glass jug, handle, camera, every contour, shading, text value, dimensions and true transparency unchanged. Change ONLY liquid height. The current liquid is too high for the one quarter measure. On this 1254×1254 image the useful bottom of liquid body is at y=1000 and original 1-litre water surface is at y=384. Therefore place the HORIZONTAL water surface center precisely at y=846. Liquid below that surface to y=1000; absolutely clear empty glass above it. Do not enlarge the jug, do not compensate with camera tilt, do not move liquid to fit typography. The existing fraction label may cross the liquid surface; preserve its current location and correct text. No other edits. Exact coherent fraction illustration is essential for maths.",
+    "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-a76825a2-81a7-4ea2-9235-f9b4686942ee.png"
+  }
+]

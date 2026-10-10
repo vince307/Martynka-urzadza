@@ -1,0 +1,6 @@
+{
+  "id": "container-quarter-l-v3",
+  "target": "container-quarter-l",
+  "prompt": "Use case: precise-object-edit. Target: existing quarter-litre jug. Make ONE correction: substantially LOWER the liquid. The current surface is still too high. Move the entire water surface DOWN by about 60 pixels on this 1254-pixel square image. The desired liquid is a VERY SHALLOW layer occupying only the bottom approximately 20% of the visible glass chamber, with surface at y=860 and chamber bottom at y=1010. Keep everything else absolutely identical: jug outline, handle, camera, upper-left light, all glass highlights, current dark label \"¼ l\" and its position, full-object position and transparent background. Leave the large clear region above the shallow water. The fraction label is printed ON THE GLASS, so it can sit ABOVE the water; never raise water to fit the label. No other change. This is a 250 ml level in a 1 litre-capacity jug; reference full-litre surface is y=385 and liquid bottom y=1010.",
+  "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-ec80538c-d4f1-4a54-a15c-51e08b8d3b13.png"
+}

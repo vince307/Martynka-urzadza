@@ -1,0 +1,12 @@
+[
+  {
+    "id": "container-half-l",
+    "prompt": "Use case: precise-object-edit. Edit target: the original one-litre jug. Create an interchangeable fill-level variant. Keep the entire glass jug, contour, handle, camera, lighting, size, position, label material and transparent background unchanged. Change ONLY the liquid level and the value label. Set water surface exactly halfway between the original 1-litre surface and the bottom of its water body: approximately y=665 on the 1280×1280 reference. The water body below that is HALF the original water depth. Keep water horizontal, lower turquoise liquid and clear transparent glass above it. Replace the old label with exactly \"½ l\" in large dark teal type, stacked if necessary for legibility. Fraction character must be exact. No other letters, numbers, marks or objects. Full same jug on genuinely transparent background.",
+    "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-87dc7ad2-16a7-403b-9dba-68ed1383a712.png"
+  },
+  {
+    "id": "container-quarter-l",
+    "prompt": "Use case: precise-object-edit. Edit target: the original one-litre jug. Create an interchangeable fill-level variant. Keep the entire glass jug, contour, handle, camera, lighting, size, position, label material and transparent background unchanged. Change ONLY the liquid level and the value label. Set water surface exactly three-quarters of the distance down between the original 1-litre surface and bottom of water body: approximately y=825 on the 1280×1280 reference. The water body below that is ONE QUARTER the original water depth. Keep water horizontal, lower turquoise liquid and clear transparent glass above it. Replace the old label with exactly \"¼ l\" in large dark teal type, stacked if necessary for legibility. Fraction character must be exact. No other letters, numbers, marks or objects. Full same jug on genuinely transparent background.",
+    "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-8c9ee7f2-174b-4a75-aa6d-257511caece9.png"
+  }
+]

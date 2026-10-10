@@ -1,0 +1,6 @@
+{
+  "id": "container-quarter-l-v4",
+  "target": "container-quarter-l",
+  "prompt": "Use case: precise-object-edit. The glass jug is the edit target. Keep exactly the same jug, size, viewpoint, handle, highlights, text label \"¼ l\", label position and transparent background. Change ONLY the horizontal water surface: RAISE it by about 50 pixels from its current very low level. Desired surface centre is y=825 on this 1254×1254 reference; the front edge of the oval surface is around y=850. Keep water bottom at y=1000. This yields approximately 150px front-face water depth, one quarter of the original 600px one-litre depth. It should be a shallow quarter-full layer, slightly deeper than the current image and distinctly shallower than half-full. Do not raise it all the way to the text top. Exact single adjustment, no other changes.",
+  "source": "/Users/kamilp/.codex/generated_images/01a117d9-a27d-7690-9da4-e61dacaa7241/exec-f775bf32-059b-4f5e-a806-c0959eee0b4a.png"
+}
