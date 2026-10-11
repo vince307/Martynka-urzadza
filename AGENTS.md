@@ -23,7 +23,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 - `npm run dev` — Vite on http://localhost:8080 (`-- --host` for a tablet).
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
-- `npx vitest run tests/<name>.test.ts` — once vitest lands in M1. No lint or test script exists yet.
+- `npx vitest run tests/<name>.test.ts` — once vitest lands in F-03 (M1). No lint or test script exists yet.
 
 ## Coding style
 

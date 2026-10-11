@@ -127,6 +127,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** F-02, S-01 (harness nie dotyka PWA ani deployu; etap M1 i tak startuje dopiero po S-01, zob. S-02)
 - **Blockers:** —
 - **Unknowns:**
+  - Z przeglądu F-01: włączyć `strictPropertyInitialization` i dodać `tests/` do `include` w tsconfig przy wprowadzaniu vitest. — Owner: autor. Block: no.
   - Dokładne kryterium „gotowe” dla M1 przy zawężeniu pełnej jakości treści do E3–E4 (PRD Open Question 3). — Owner: autor. Block: no (harness jest taki sam niezależnie od odpowiedzi; rozstrzygnąć przy planowaniu S-02).
 - **Risk:** bez harnessu generatory będą sprawdzane ręcznie i błędy odpowiedzi wzorcowych dotrą do córki; minimalny zakres (vitest + rng + sample), nie „warstwa testowa”.
 - **Status:** proposed

@@ -1,7 +1,7 @@
 ---
 change_id: game-shell-scaling
 title: Szkielet gry na Phaser 4.2 w scenie 1920×1080 i docelowy układ katalogów
-status: implemented
+status: impl_reviewed
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null

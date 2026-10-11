@@ -18,3 +18,15 @@ export const PLACEHOLDER_COLORS = {
 
 /** Same ivory as a CSS colour, for the page background and game config. */
 export const PAGE_BACKGROUND = '#FFF5DF';
+
+/** Font sizes in scene pixels (style guide: prompts 64, calculations 112). */
+export const FONT_SIZES = {
+    title: 112,
+    subtitle: 48,
+} as const;
+
+/** Placeholder frame thickness and inset, in scene pixels. */
+export const PLACEHOLDER_FRAME = {
+    width: 8,
+    margin: 24,
+} as const;

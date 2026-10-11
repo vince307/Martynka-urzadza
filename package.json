@@ -4,6 +4,10 @@
   "private": true,
   "description": "Martynka urządza: gra matematyczna z urządzaniem pokoi dla klas 1–3 (Phaser 4 + TypeScript + Vite, PWA offline).",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vince307/Martynka-urzadza.git"
+  },
   "engines": {
     "node": ">=22"
   },

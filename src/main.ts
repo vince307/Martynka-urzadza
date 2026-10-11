@@ -18,6 +18,5 @@ const createGame = (parent: string): Game =>
         scene: [BootScene],
     });
 
-document.addEventListener('DOMContentLoaded', () => {
-    createGame('game-container');
-});
+// Module scripts run after the document is parsed, so the container exists.
+createGame('game-container');

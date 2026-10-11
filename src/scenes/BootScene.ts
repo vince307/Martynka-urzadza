@@ -1,11 +1,16 @@
 import { Scene } from 'phaser';
 import {
+    FONT_SIZES,
     GAME_HEIGHT,
     GAME_WIDTH,
     MIN_TOUCH_TARGET,
     PLACEHOLDER_COLORS,
+    PLACEHOLDER_FRAME,
 } from '../data/layout';
 import { pl } from '../data/pl';
+
+/** Converts a 0xRRGGBB number from the palette to the CSS string Text expects. */
+const toCssColor = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
 
 /**
  * Empty boot scene for milestone M0. It only proves that scaling works:
@@ -19,8 +24,7 @@ export class BootScene extends Scene {
     }
 
     create(): void {
-        const frameWidth = 8;
-        const margin = frameWidth * 3;
+        const { width: frameWidth, margin } = PLACEHOLDER_FRAME;
         const graphics = this.add.graphics();
 
         graphics.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
@@ -43,18 +47,18 @@ export class BootScene extends Scene {
             MIN_TOUCH_TARGET,
         );
 
-        const textColor = `#${PLACEHOLDER_COLORS.deepTeal.toString(16).padStart(6, '0')}`;
+        const textColor = toCssColor(PLACEHOLDER_COLORS.deepTeal);
         this.add
             .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, pl.title, {
                 fontFamily: 'sans-serif',
-                fontSize: '112px',
+                fontSize: `${FONT_SIZES.title}px`,
                 color: textColor,
             })
             .setOrigin(0.5);
         this.add
-            .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 112, pl.bootPlaceholder, {
+            .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + FONT_SIZES.title, pl.bootPlaceholder, {
                 fontFamily: 'sans-serif',
-                fontSize: '48px',
+                fontSize: `${FONT_SIZES.subtitle}px`,
                 color: textColor,
             })
             .setOrigin(0.5);

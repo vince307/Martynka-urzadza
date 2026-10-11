@@ -11,8 +11,21 @@ body {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
     -webkit-text-size-adjust: 100%;
+}
+
+/* Fallback for older iOS Safari without overscroll-behavior: pin the body. */
+body {
+    position: fixed;
+    inset: 0;
+}
+
+/* touch-action is not inherited: the container and the canvas need it too. */
+#game-container,
+canvas {
+    touch-action: none;
 }
 
 #game-container {
