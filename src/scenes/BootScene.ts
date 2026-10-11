@@ -62,5 +62,15 @@ export class BootScene extends Scene {
                 color: textColor,
             })
             .setOrigin(0.5);
+
+        // Build id in the corner: the only way to see on a tablet that a silent
+        // PWA update has landed. Technical identifier, not player-facing text.
+        this.add
+            .text(margin, GAME_HEIGHT - margin, __BUILD_ID__, {
+                fontFamily: 'sans-serif',
+                fontSize: `${FONT_SIZES.caption}px`,
+                color: textColor,
+            })
+            .setOrigin(0, 1);
     }
 }

@@ -104,6 +104,8 @@ jobs:
       - name: Health check
         run: |
           curl -fsS --retry 12 --retry-delay 10 --retry-all-errors "$SITE_URL/" | grep -q "Martynka urządza"
+          curl -fsS "$SITE_URL/manifest.webmanifest" | grep -q '"Martynka urządza"'
+          curl -fsS -o /dev/null "$SITE_URL/sw.js"
           echo "ok: $SITE_URL serves the game"
 
       - name: Status

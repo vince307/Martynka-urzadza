@@ -9,8 +9,10 @@ __SITE__ {
     __TLS__
     encode zstd gzip
 
-    # Vite hashes asset file names: cache them forever.
-    @immutable path /assets/*
+    # Vite puts hashed bundles under _app/ (build.assetsDir): cache them forever.
+    # Unhashed art in public/assets/ keeps the default policy; the service
+    # worker precache handles its updates.
+    @immutable path /_app/*
     header @immutable Cache-Control "public, max-age=31536000, immutable"
 
     # Entry points and PWA files must always be revalidated.
