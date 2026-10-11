@@ -45,6 +45,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$SITE" && -n "$CI_PUBKEY" ]] || usage
+if [[ "$(uname -s)" != "Linux" ]] || ! command -v apt-get >/dev/null; then
+    echo "this script must run ON THE VPS (Ubuntu/Debian), not on your workstation." >&2
+    echo "copy deploy/ to the server and run it there; see deploy/README.md section 4." >&2
+    exit 1
+fi
 [[ "$(id -u)" -eq 0 ]] || { echo "run as root" >&2; exit 1; }
 [[ -f "$DISPATCH_SRC" && -f "$CADDYFILE_SRC" ]] || { echo "deploy/martynka-deploy or deploy/Caddyfile missing next to this script" >&2; exit 1; }
 [[ "$CI_PUBKEY" =~ ^ssh-(ed25519|rsa)\ [A-Za-z0-9+/=]+ ]] || { echo "--ci-pubkey does not look like an SSH public key" >&2; exit 1; }
