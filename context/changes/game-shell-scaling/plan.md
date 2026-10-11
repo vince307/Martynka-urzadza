@@ -269,30 +269,30 @@ Nie dotyczy (brak danych użytkownika; szablon nie był wdrożony).
 
 #### Automated
 
-- [x] 1.1 `npm install` bez błędów; phaser 4.2.1 i vite 6.4.x zainstalowane
-- [x] 1.2 `npm run build` kończy się kodem 0 i tworzy `dist/index.html` z chunkiem phaser > 100 kB
-- [x] 1.3 Brak `gryzor`/`phasermsg`/`log.js` w package.json, vite/, src/, index.html; log.js, src/game, screenshot.png, logo.png usunięte
-- [x] 1.4 `npx tsc --noEmit` przechodzi
+- [x] 1.1 `npm install` bez błędów; phaser 4.2.1 i vite 6.4.x zainstalowane — cceac34
+- [x] 1.2 `npm run build` kończy się kodem 0 i tworzy `dist/index.html` z chunkiem phaser > 100 kB — cceac34
+- [x] 1.3 Brak `gryzor`/`phasermsg`/`log.js` w package.json, vite/, src/, index.html; log.js, src/game, screenshot.png, logo.png usunięte — cceac34
+- [x] 1.4 `npx tsc --noEmit` przechodzi — cceac34
 
 #### Manual
 
-- [x] 1.5 LICENSE z właściwym copyright i akapitem o szablonie
+- [x] 1.5 LICENSE z właściwym copyright i akapitem o szablonie — cceac34
 
 ### Phase 2: Szkielet gry, skalowanie i układ katalogów
 
 #### Automated
 
-- [ ] 2.1 `npx tsc --noEmit` przechodzi
-- [ ] 2.2 `npm run build` kończy się kodem 0 z osobnym chunkiem phaser
-- [ ] 2.3 Brak importów phaser w src/core i src/data
-- [ ] 2.4 Brak liczb 1920/1080 i tekstu „Martynka” w src/scenes i src/main.ts
-- [ ] 2.5 Katalogi src/ui/widgets, src/storage, tests istnieją
+- [x] 2.1 `npx tsc --noEmit` przechodzi
+- [x] 2.2 `npm run build` kończy się kodem 0 z osobnym chunkiem phaser
+- [x] 2.3 Brak importów phaser w src/core i src/data
+- [x] 2.4 Brak liczb 1920/1080 i tekstu „Martynka” w src/scenes i src/main.ts
+- [x] 2.5 Katalogi src/ui/widgets, src/storage, tests istnieją
 
 #### Manual
 
-- [ ] 2.6 Canvas wyśrodkowany, letterbox, bez przewijania przy zmianie rozmiaru okna
-- [ ] 2.7 Brak zoomu, zaznaczania, menu kontekstowego i przewijania dotykiem
-- [ ] 2.8 Placeholder: tło ivory, ramka, kwadrat 96×96, tytuł na środku
+- [x] 2.6 Canvas wyśrodkowany, letterbox, bez przewijania przy zmianie rozmiaru okna
+- [x] 2.7 Brak zoomu, zaznaczania, menu kontekstowego i przewijania dotykiem
+- [x] 2.8 Placeholder: tło ivory, ramka, kwadrat 96×96, tytuł na środku
 
 ### Phase 3: Dokumentacja i narzędzia
 

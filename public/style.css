@@ -1,15 +1,25 @@
+/* Touch-only game page: no zoom, no scroll, no text selection, no callouts. */
+html,
 body {
     margin: 0;
     padding: 0;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #0f0f0f;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #FFF5DF;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
 }
 
-#app {
+#game-container {
     width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 100%;
+}
+
+canvas {
+    display: block;
 }

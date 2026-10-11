@@ -1,6 +1,23 @@
-// Temporary entry point for milestone M0 phase 1: keeps Phaser in the bundle
-// and verifies the ESM import of the upgraded version. Phase 2 replaces it
-// with the real game bootstrap.
-import { VERSION } from 'phaser';
+import { AUTO, Game, Scale } from 'phaser';
+import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND } from './data/layout';
+import { BootScene } from './scenes/BootScene';
 
-console.log('Phaser', VERSION);
+// Single place for the Phaser game config. Scene size and colours come from
+// src/data; scenes are listed in boot order.
+const createGame = (parent: string): Game =>
+    new Game({
+        type: AUTO,
+        parent,
+        backgroundColor: PAGE_BACKGROUND,
+        scale: {
+            mode: Scale.FIT,
+            autoCenter: Scale.CENTER_BOTH,
+            width: GAME_WIDTH,
+            height: GAME_HEIGHT,
+        },
+        scene: [BootScene],
+    });
+
+document.addEventListener('DOMContentLoaded', () => {
+    createGame('game-container');
+});
