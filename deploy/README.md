@@ -26,7 +26,7 @@ Pliki w `deploy/`:
 | `bootstrap.sh` | idempotentne przygotowanie serwera (root) |
 | `martynka-deploy` | jedyna komenda dostępna dla klucza CI (`rsync`, `switch`, `rollback`, `status`) |
 | `test-martynka-deploy.sh` | lokalny test dyspozytora (`bash deploy/test-martynka-deploy.sh`) |
-| `Caddyfile` | szablon konfiguracji Caddy (`__SITE__`, `__TLS__` podstawia bootstrap) |
+| `Caddyfile` | szablon konfiguracji Caddy (`__SITE__`, `__BIND__`, `__TLS__` podstawia bootstrap) |
 
 ## 2. Wymagania
 
@@ -47,15 +47,19 @@ Klucz prywatny trafi do sekretu `DEPLOY_SSH_KEY`, publiczny do bootstrapu. Nigdy
 
 ## 4. Bootstrap serwera
 
-Skopiuj katalog `deploy/` na VPS (np. `scp -r deploy/ root@<vps>:/root/martynka-deploy/` albo `git clone` repo) i uruchom jako root:
+Skopiuj katalog `deploy/` na VPS i uruchom skrypt jako root, z Twojej maszyny (klucz admina jak w CoiledSpring):
 
 ```bash
-sudo bash deploy/bootstrap.sh --site <publiczny IPv4> --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"
+rsync -a -e "ssh -i ~/.ssh/<klucz_admina>" deploy/ root@<vps w tailnecie>:/root/martynka-deploy/
+ssh -i ~/.ssh/<klucz_admina> root@<vps w tailnecie> \
+  "bash /root/martynka-deploy/bootstrap.sh --site <publiczny IPv4> --ci-pubkey '$(cat ~/.ssh/martynka_deploy.pub)'"
 ```
+
+Skrypt odmawia uruchomienia poza Linuksem z `apt-get`, więc uruchomiony przez pomyłkę na Macu tylko wypisze komunikat.
 
 Caddy słucha tylko na publicznym IPv4 (`--bind`, domyślnie adres z `--site`; przy domenie podaj `--bind <IPv4>` albo skrypt weźmie adres z trasy domyślnej), bo port 443 na adresach tailnetu zajmuje `tailscaled` dla CoiledSpring.
 
-Skrypt jest idempotentny; każdy krok wypisuje `[ok]` albo `[skip]`. Co robi: instaluje `rsync` (z `rrsync`) i Caddy z oficjalnego repozytorium apt (wymaga ≥ 2.10 dla certyfikatu na IP), tworzy użytkownika `martynka` i `/srv/martynka/releases`, wpisuje klucz CI do `authorized_keys` z `restrict,from="<tailnet>",command="/usr/local/bin/martynka-deploy"`, instaluje dyspozytor, dodaje `/etc/ssh/sshd_config.d/61-martynka-deploy.conf` (`Match User martynka`, `ForceCommand`, bez forwardingu i TTY) i przeładowuje sshd dopiero po `sshd -t`, zapisuje `/etc/caddy/Caddyfile` (kopia poprzedniego w `.bak`), otwiera w UFW `80/tcp` i `443/tcp`, włącza Caddy i wypisuje diagnostykę (`caddy version`, listenery 80/443, `tailscale serve status`).
+Skrypt jest idempotentny; każdy krok wypisuje `[ok]` albo `[skip]`. Po zapisaniu Caddyfile formatuje go (`caddy fmt`), a po przeładowaniu sprawdza `systemctl is-active caddy` i w razie awarii wypisuje ostatnie linie logu. Co robi: instaluje `rsync` (z `rrsync`) i Caddy z oficjalnego repozytorium apt (wymaga ≥ 2.10 dla certyfikatu na IP), tworzy użytkownika `martynka` i `/srv/martynka/releases`, wpisuje klucz CI do `authorized_keys` z `restrict,from="<tailnet>",command="/usr/local/bin/martynka-deploy"`, instaluje dyspozytor, dodaje `/etc/ssh/sshd_config.d/61-martynka-deploy.conf` (`Match User martynka`, `ForceCommand`, bez forwardingu i TTY) i przeładowuje sshd dopiero po `sshd -t`, zapisuje `/etc/caddy/Caddyfile` (kopia poprzedniego w `.bak`), otwiera w UFW `80/tcp` i `443/tcp`, włącza Caddy i wypisuje diagnostykę (`caddy version`, listenery 80/443, `tailscale serve status`).
 
 Po bootstrapie sprawdź:
 
@@ -92,7 +96,7 @@ Pierwszy deploy: certyfikat Let's Encrypt jest wystawiany przy pierwszym żądan
 ## 7. Przejście na własną domenę
 
 1. DNS: rekord A `<domena>` → publiczny IPv4 VPS.
-2. Na VPS: `sudo bash deploy/bootstrap.sh --site <domena> --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"` (Caddyfile bez `profile shortlived`, reszta bez zmian).
+2. Na VPS (jak w sekcji 4): `bash /root/martynka-deploy/bootstrap.sh --site <domena> --bind <publiczny IPv4> --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"` (Caddyfile bez `profile shortlived`, reszta bez zmian).
 3. GitHub: zmienna `DEPLOY_SITE_URL` → `https://<domena>`.
 4. Zainstalowaną na tablecie PWA (etap S-01) trzeba zainstalować ponownie pod nowym adresem.
 

@@ -82,7 +82,7 @@ fi
 
 if ! command -v caddy >/dev/null; then
     apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https curl
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes --batch -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
     curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list >/dev/null
     chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
     apt-get update -qq
@@ -179,8 +179,8 @@ if [[ -z "$BIND" ]]; then
 fi
 is_ipv4 "$BIND" || { echo "cannot determine the public IPv4 to bind Caddy to; pass --bind <IPv4>" >&2; exit 1; }
 CADDYFILE_TMP="$(mktemp)"
-# __TLS__ becomes a `tls { profile shortlived }` block for an IP address (Let's
-# Encrypt short-lived IP certificate) and disappears for a domain.
+# __TLS__ becomes a `tls { issuer acme { profile shortlived } }` block for an IP
+# address (Let's Encrypt short-lived IP certificate) and disappears for a domain.
 sed -e "s|__SITE__|$SITE_BLOCK|" -e "s|__BIND__|$BIND|" "$CADDYFILE_SRC" | awk -v mode="$TLS_MODE" '
     /__TLS__/ {
         if (mode == "ip") {
@@ -193,6 +193,8 @@ sed -e "s|__SITE__|$SITE_BLOCK|" -e "s|__BIND__|$BIND|" "$CADDYFILE_SRC" | awk -
         next
     }
     { print }' > "$CADDYFILE_TMP"
+# Format before comparing, so an unchanged config is detected as unchanged.
+caddy fmt --overwrite "$CADDYFILE_TMP" >/dev/null 2>&1 || true
 if [[ -f /etc/caddy/Caddyfile ]] && cmp -s "$CADDYFILE_TMP" /etc/caddy/Caddyfile; then
     rm -f "$CADDYFILE_TMP"
     skip "Caddyfile unchanged"
@@ -200,7 +202,6 @@ else
     [[ -f /etc/caddy/Caddyfile ]] && cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak
     install -m 644 "$CADDYFILE_TMP" /etc/caddy/Caddyfile
     rm -f "$CADDYFILE_TMP"
-    caddy fmt --overwrite /etc/caddy/Caddyfile >/dev/null 2>&1 || true
     ok "Caddyfile written for $SITE_BLOCK (bind $BIND)"
 fi
 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null

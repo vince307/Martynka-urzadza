@@ -143,6 +143,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:**
+  - Z przeglądu F-02: hashowane bundle Vite przenieść do `build.assetsDir: '_app'` i matcher Caddy na `/_app/*`, żeby `immutable` nie objęło nienazwanej hashem grafiki z `public/assets/` (M7); wymaga ponownego bootstrapu. — Owner: autor. Block: no.
   - Czy iPad (Safari) faktycznie utrzymuje dane PWA bez dodania do ekranu początkowego? — Owner: autor. Block: no (sprawdzić na urządzeniu; FR-001 i tak pokazuje instrukcję).
 - **Risk:** zamyka etap M0 („gra otwiera się na tablecie z URL, da się dodać do ekranu i uruchomić offline”); PWA na iPadzie bywa kapryśna, dlatego sprawdzana na obu tabletach zanim wejdzie treść.
 - **Status:** proposed

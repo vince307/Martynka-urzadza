@@ -1,7 +1,7 @@
 ---
 change_id: static-deploy-pipeline
 title: Statyczny deploy dist/ z GitHub Actions na VPS za Caddy
-status: implemented
+status: impl_reviewed
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null

@@ -115,6 +115,7 @@ case "$cmd" in
         exec "$RRSYNC" -wo "$RELEASES"
         ;;
     switch\ *)
+        set -f
         set -- $cmd
         [[ $# -eq 2 ]] || fail "usage: switch <id>"
         do_switch "$2"
