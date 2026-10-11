@@ -269,7 +269,7 @@ Przejście z adresu IP na domenę: `bootstrap.sh --site <domena>` (Caddyfile bez
 
 #### Manual
 
-- [ ] 3.4 Bootstrap [ok] na VPS, caddy ≥ 2.10, Caddy na 80/443
+- [x] 3.4 Bootstrap [ok] na VPS, caddy ≥ 2.10, Caddy na 80/443
 - [ ] 3.5 CoiledSpring działa po bootstrapie
 - [ ] 3.6 Workflow Deploy zielony; rollback przez workflow_dispatch działa
 - [ ] 3.7 Tablet otwiera https://<IP> bez ostrzeżenia o certyfikacie
