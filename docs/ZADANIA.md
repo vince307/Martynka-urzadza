@@ -10,8 +10,8 @@ Zadania matematyczne zastępują planszę merge: to za nie dziecko dostaje gwiaz
 
 ### Wybór poziomu na starcie
 1. Pierwsze uruchomienie: „Ile masz lat?” (duże przyciski 6, 7, 8, 9, 10).
-2. Gra proponuje etap na podstawie wieku i bieżącego miesiąca (tabela niżej). Rodzic może go zmienić w ukrytych ustawieniach.
-3. Krótka runda rozgrzewkowa (6 zadań z bieżącego i poprzedniego etapu) koryguje start: dużo błędów → etap niżej, komplet → zostajemy.
+2. Gra proponuje etap na podstawie wieku i bieżącego miesiąca (tabela niżej). Rodzic (po bramce dla dorosłego) potwierdza go lub zmienia przed startem; wiek jest tylko podpowiedzią. Później etap można zmienić w ukrytych ustawieniach.
+3. Krótka runda rozgrzewkowa (6 zadań z bieżącego i poprzedniego etapu) koryguje start tylko w dół: dużo błędów → etap niżej, komplet → zostajemy. (Otwarte: czy rozgrzewka jest pomijana, gdy rodzic ustawił etap świadomie.)
 
 | Wiek | Wrzesień–styczeń | Luty–czerwiec | Lipiec–sierpień |
 |---|---|---|---|
@@ -34,22 +34,24 @@ Wiek to tylko przybliżenie (dzieci idą do szkoły w roku, w którym kończą 7
 | E5 | klasa 3, I półrocze | podręcznik + ćwiczenia kl. 3 cz. 1 |
 | E6 | klasa 3, II półrocze | podręcznik + ćwiczenia kl. 3 cz. 2 |
 
-Każdy etap dzieli się na **kroki** (kolejność z podręcznika, sekcja 3). Gra losuje zadania z odblokowanych kroków, z wagą: ~60% bieżący krok, ~30% wcześniejsze kroki tego etapu, ~10% powtórka z poprzedniego etapu.
+Każdy etap dzieli się na **kroki** (kolejność z podręcznika, sekcja 3). Gra losuje zadania z odblokowanych kroków, z wagą (wartości startowe w `balance.ts`): ~60% bieżący krok, ~30% wcześniejsze kroki tego etapu, ~10% powtórka z poprzedniego etapu.
+
+W v1 pełna jakość treści (polecenia, podpowiedzi) jest gwarantowana dla E3–E4; pozostałe etapy działają na tych samych generatorach z danymi etapu, a dopracowanie ich treści przychodzi później.
 
 ### Runda zadań (zamiast zamówień z planszy merge)
-- Runda = 5 zadań. Po każdej poprawnej odpowiedzi animacja gwiazdki.
+- Runda = 5 zadań (długość rundy to liczba w `balance.ts`). Po każdej poprawnej odpowiedzi animacja gwiazdki.
 - Nagroda: 1 gwiazdka za każde poprawne zadanie, +2 za rundę bez błędu.
-- Zła odpowiedź: delikatna podpowiedź (obrazek, oś liczbowa, rozbicie działania) i druga próba. Za drugą próbę 1 gwiazdka i tak, żeby dziecko nie zniechęcało się. Po drugiej pomyłce gra pokazuje rozwiązanie krok po kroku i przechodzi dalej.
+- Zła odpowiedź: delikatna podpowiedź (obrazek, oś liczbowa, rozbicie działania) i druga próba. Za drugą próbę 1 gwiazdka i tak, żeby dziecko nie zniechęcało się, ale druga próba nie liczy się do opanowania umiejętności. Po drugiej pomyłce gra pokazuje rozwiązanie krok po kroku, dziecko przepisuje wynik (bez gwiazdki) i przechodzi dalej.
 - Nigdy nie odbieramy gwiazdek i nie ma limitu czasu (poza opcjonalną minigrą „na czas”).
 
 ### Adaptacja trudności
-- Każda umiejętność (typ zadania × krok) ma licznik opanowania 0–5.
-- 3 poprawne z rzędu → +1; błąd → −1.
-- Opanowanie ≥ 4 we wszystkich umiejętnościach kroku → odblokowanie następnego kroku i krótka scenka „Nowa umiejętność!”.
+- Każda umiejętność (typ zadania × krok) ma licznik opanowania 0–5. Liczy się tylko pierwsza próba.
+- 3 poprawne z rzędu → +1; błąd → −1 (długość serii i wartości zmian w `balance.ts`).
+- Opanowanie ≥ 4 w większości umiejętności kroku (udział w `balance.ts`) → odblokowanie następnego kroku i krótka scenka „Nowa umiejętność!”. Jedna trudna umiejętność nie blokuje całego kroku.
 - 2 rundy z rzędu poniżej 3/5 → gra na chwilę wraca do łatwiejszych wariantów (mniejszy zakres, tryb z obrazkami).
 
 ### Zasady prezentacji
-- E1–E2: polecenia krótkie, z obrazkami. Przycisk głośnika czyta polecenie (Web Speech API, głos polski). Liczby jako kropki/obiekty obok cyfr.
+- E1–E2: polecenia krótkie, z obrazkami. Przycisk głośnika czyta polecenie (Web Speech API, głos polski); automatyczne czytanie to ustawienie rodzica, domyślnie włączone dla E1–E2. Liczby jako kropki/obiekty obok cyfr.
 - E3–E6: więcej tekstu, zadania tekstowe 1–3 zdania.
 - Konteksty zadań tekstowych ze świata gry: pokoje, meble, ciastka w kawiarni, kwiaty, pieniądze na remont. Imiona z puli neutralnych imion.
 - Odpowiedź zawsze dotykiem: wybór z 3–4 kafelków, klawiaturka liczbowa (0–9, kasuj, OK), przeciąganie, zaznaczanie.
@@ -286,13 +288,13 @@ Liczby w zakresie etapu. E1–E2 z obrazkiem i lektorem. Od E1.
 
 **PUZZLE_GRID — kwadraty magiczne, piramidy, trójkąty liczb.** Uzupełnij pole tak, żeby sumy się zgadzały. Od E3 (piramidy już w E1–E2 w wersji do 10/20).
 
-**LOGIC — zagadki z gwiazdką.** Ręcznie przygotowana pula ~30–50 zagadek na etap (kto na którym piętrze, wagony liczone z dwóch stron, „jaką jestem liczbą”, ważenie na szalkach, przelewanie wody). Nie generator — dane w pliku. Jako „zagadka dnia” za podwójne gwiazdki. Od E1.
+**LOGIC — zagadki z gwiazdką.** Ręcznie przygotowana pula ~30–50 zagadek na etap (w v1 tylko 10–15 dla E3–E4) (kto na którym piętrze, wagony liczone z dwóch stron, „jaką jestem liczbą”, ważenie na szalkach, przelewanie wody). Nie generator — dane w pliku. Jako „zagadka dnia” za podwójne gwiazdki. Od E1.
 
 ---
 
 ## 5. Minigry z zeszytów ćwiczeń (warianty rundy)
 
-Zeszyty ćwiczeń mają formaty, które dobrze nadają się na zabawowe warianty rundy (zamiast 5 zwykłych zadań):
+Zeszyty ćwiczeń mają formaty, które dobrze nadają się na zabawowe warianty rundy (zamiast 5 zwykłych zadań). W v1 wchodzą 1–2 z nich (wybór otwarty), reszta później:
 
 - **Hasło z wyników** — każdy wynik ma literę; po rozwiązaniu wszystkich i ułożeniu wyników rosnąco odsłania się słowo (np. nazwa nowego mebla). Od E1.
 - **Ścieżka po wynikach** — plansza z kafelkami; idź tylko po polach, gdzie wynik spełnia warunek (np. = 12, parzysty). Od E2.
