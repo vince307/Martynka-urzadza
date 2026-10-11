@@ -10,8 +10,8 @@
 - Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored, local only).
 - No energy, timers, ads, purchases, accounts, or fail states. Wrong answers never remove stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code identifiers and comments are English.
-- Phaser 4 differs from v3 in renderer and filters; check the v4 docs before non-obvious APIs.
-- `designs/` is read-only art. `.claude/` is gitignored.
+- Phaser 4 differs from v3 in renderer and filters; check the v4 docs first.
+- `designs/` is read-only art; `.claude/` is gitignored.
 
 ## Project structure
 
@@ -35,4 +35,4 @@ Vitest in `tests/`, planned from M1. Each skill gets a 1000-draw property test: 
 
 ## Commits and PRs
 
-Commit messages are Polish with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, then PR to `main` at github.com/vince307/Martynka-urzadza. Every push to `main` deploys to the VPS via `.github/workflows/deploy.yml`, so `main` must build; never touch the `deploy`/`ops` users or CoiledSpring on the box. Runbook: @deploy/README.md.
+Commit messages are Polish with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, push, open a PR; `main` changes only by merging on GitHub, never locally. The merge deploys to https://martynka-urzadza.pl via `.github/workflows/deploy.yml`, so `main` must build. Never touch the `deploy`/`ops` users or CoiledSpring on the box. Runbook: @deploy/README.md.
