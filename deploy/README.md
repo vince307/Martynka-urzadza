@@ -116,3 +116,59 @@ Adres IP przestaje być obsługiwany po kroku 2 (Caddyfile ma już tylko bloki d
 ## 9. Czego ten deploy nie dotyka
 
 Użytkowników `deploy` i `ops`, `/opt/coiled-spring`, Dockera, `tailscale serve`, istniejących reguł UFW (dodaje tylko 80/443), pliku `60-coiled-spring-ops.conf`. Klucz `martynka` ma dostęp wyłącznie do `/srv/martynka/releases` (zapis przez rrsync) i do przełączania symlinku `current`.
+
+## 10. Profil agenta: konto `martynka-ops`
+
+Agent (Claude Code) ma na VPS własne konto `martynka-ops` z wymuszoną komendą i allowlistą, na wzór konta `ops` CoiledSpring. Jedyna rzecz, którą może wykonać jako root, to helper `/usr/local/sbin/martynka-ops-root`, a ten uruchamia tylko operacje Caddy/systemd, operacje na wydaniach (jako `martynka`) oraz `deploy/bootstrap.sh` z klonu repo `/opt/martynka-src` (gałąź `main`) z argumentami zapisanymi w `/etc/martynka/ops.conf`. Granica zaufania: agent może zmienić serwer tylko tym, co zostało zmergowane do `main` przez PR.
+
+### Instalacja (raz, właściciel)
+
+1. Klucz: `ssh-keygen -t ed25519 -f ~/.ssh/martynka_ops -N '' -C martynka-ops`.
+2. Ostatni ręczny bootstrap (jak w sekcji 4), z dodatkowym `--ops-pubkey`:
+
+   ```bash
+   rsync -a -e "ssh -i ~/.ssh/<klucz_admina>" deploy/ root@srv2033611.tail33005d.ts.net:/root/martynka-deploy/
+   ssh -i ~/.ssh/<klucz_admina> root@srv2033611.tail33005d.ts.net \
+     "bash /root/martynka-deploy/bootstrap.sh --site martynka-urzadza.pl --bind 179.198.222.94 --ci-pubkey '$(cat ~/.ssh/martynka_deploy.pub)' --ops-pubkey '$(cat ~/.ssh/martynka_ops.pub)'"
+   ```
+
+   Krok 9 tworzy użytkownika, `authorized_keys` (`restrict,from=<tailnet>,command=/usr/local/sbin/martynka-ops`), sudoers (`/etc/sudoers.d/martynka-ops`, sprawdzony `visudo`), `Match User martynka-ops` (`/etc/ssh/sshd_config.d/62-martynka-ops.conf`, po `sshd -t`), klon repo i `ops.conf` (600, root). Późniejsze bootstrapy agent robi sam (`sync` + `bootstrap`).
+3. `~/.ssh/config` na Twojej maszynie:
+
+   ```
+   Host martynka-ops
+     HostName srv2033611.tail33005d.ts.net
+     User martynka-ops
+     IdentityFile ~/.ssh/martynka_ops
+     IdentitiesOnly yes
+     UserKnownHostsFile ~/.ssh/known_hosts_coiled_spring
+     StrictHostKeyChecking yes
+   ```
+4. `~/.claude/settings.json` (sandbox Claude Code nie ma wyjścia do tailnetu; komenda musi działać poza nim i bez promptu):
+
+   ```json
+   "sandbox": { "excludedCommands": [ "ssh martynka-ops *" ] },
+   "permissions": { "allow": [ "Bash(ssh martynka-ops *)" ] }
+   ```
+
+   Dopisz do istniejących list (obok `ssh cs-ops *`, `gh *`). Po zmianie zrestartuj sesję Claude Code.
+5. Test z Twojej maszyny: `ssh martynka-ops help` wypisuje listę komend; `ssh martynka-ops bash` kończy się `unknown command` (exit 2).
+
+### Komendy
+
+| Komenda | Co robi |
+|---|---|
+| `help` | lista komend |
+| `status` | bieżące i poprzednie wydanie, lista wydań, stan Caddy, listenery 80/443 |
+| `diag` | wersja Caddy, `ufw status`, `tailscale serve status`, dysk, HEAD klonu |
+| `caddy-logs [since]` | dziennik Caddy od `<N>s|m|h` (domyślnie 1h), ostatnie 300 linii |
+| `caddy-validate` / `caddy-reload` | walidacja i przeładowanie Caddyfile |
+| `rollback` / `switch <id>` | przełączenie wydania (jako `martynka`, przez `martynka-deploy`) |
+| `sync` | `git merge --ff-only origin/main` w `/opt/martynka-src` |
+| `bootstrap` | `deploy/bootstrap.sh` z klonu z argumentami z `ops.conf` (powtarza ostatni ręczny bootstrap) |
+
+Zasady dla agenta: każde wywołanie to pojedyncza prosta komenda `ssh martynka-ops <cmd>` (bez `cd &&`, potoków i `$(…)`, bo takie wywołania zostają w sandboxie); po merge zmian w `deploy/` najpierw `sync`, potem `bootstrap`. Audyt na serwerze: `journalctl -t martynka-ops`. Konto nie ma shella, sudo poza helperem, dostępu do Dockera, CoiledSpring ani do klucza CI.
+
+### Usunięcie profilu
+
+`userdel -r martynka-ops`, `rm /etc/sudoers.d/martynka-ops /etc/ssh/sshd_config.d/62-martynka-ops.conf /usr/local/sbin/martynka-ops /usr/local/sbin/martynka-ops-root`, `rm -rf /opt/martynka-src /etc/martynka`, `sshd -t && systemctl reload ssh`.

@@ -4,7 +4,7 @@
 
 ## Hard rules
 
-- Implement milestones M0–M8 from @Martynka-urzadza.md section 11 in order, one milestone per commit or PR. Never reorder them.
+- Implement milestones M0–M8 from @Martynka-urzadza.md section 11 in order; never reorder them.
 - `src/core/` must not import Phaser. Write its logic with vitest tests first, then the scene.
 - Scenes contain no balance numbers and no player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `rooms.ts`, `curriculum/`).
 - Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored, local only).
@@ -27,7 +27,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals` and `noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator file per task type in `src/core/tasks/generators/` (`addSub.ts`), each a pure function `(params, rng) => Task` using the seeded rng.
+TypeScript strict with `noUnusedLocals` and `noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/` (`addSub.ts`), a pure function `(params, rng) => Task` on the seeded rng.
 
 ## Testing
 
@@ -35,4 +35,4 @@ Vitest in `tests/` from M1. Each skill gets a 1000-draw property test: results i
 
 ## Commits and PRs
 
-Commit messages are Polish with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, push, open a PR; `main` changes only by merging on GitHub, never locally. The merge deploys to https://martynka-urzadza.pl via `.github/workflows/deploy.yml`, so `main` must build. Never touch the `deploy`/`ops` users or CoiledSpring on the box. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, push, open a PR; `main` changes only by merging on GitHub. The merge deploys to https://martynka-urzadza.pl, so `main` must build. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch the `deploy`/`ops` users or CoiledSpring. Runbook: @deploy/README.md.

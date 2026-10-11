@@ -221,9 +221,9 @@ Profil jest addytywny; usunięcie = `userdel -r martynka-ops`, usunięcie `/etc/
 
 #### Automated
 
-- [x] 1.1 `bash -n` dla bootstrap.sh i trzech plików w deploy/ops
-- [x] 1.2 `bash deploy/ops/test-martynka-ops.sh` kończy się OK
-- [x] 1.3 Frazy kroku 9 w bootstrap.sh (≥ 5) i test dyspozytora nadal OK
+- [x] 1.1 `bash -n` dla bootstrap.sh i trzech plików w deploy/ops — 2e4690d
+- [x] 1.2 `bash deploy/ops/test-martynka-ops.sh` kończy się OK — 2e4690d
+- [x] 1.3 Frazy kroku 9 w bootstrap.sh (≥ 5) i test dyspozytora nadal OK — 2e4690d
 
 #### Manual
 
@@ -233,8 +233,8 @@ Profil jest addytywny; usunięcie = `userdel -r martynka-ops`, usunięcie `/etc/
 
 #### Automated
 
-- [ ] 2.1 martynka-ops w README, CLAUDE.md, AGENTS.md, roadmap.md
-- [ ] 2.2 AGENTS.md ≤ 400 słów
+- [x] 2.1 martynka-ops w README, CLAUDE.md, AGENTS.md, roadmap.md
+- [x] 2.2 AGENTS.md ≤ 400 słów
 - [ ] 2.3 PR otwarty, build zielony po merge
 
 #### Manual
