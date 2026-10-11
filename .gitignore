@@ -50,3 +50,6 @@ designs/*.zip
 
 # notatki z analizy podręczników — tylko lokalnie, nie w publicznym repo (decyzja 2026-10-10)
 docs/zrodla/
+
+# lockfile narzędzia `npx skills` (skille Phasera w gitignorowanym .claude/) — lokalnie
+skills-lock.json
