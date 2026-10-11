@@ -227,29 +227,29 @@ Profil jest addytywny; usunięcie = `userdel -r martynka-ops`, usunięcie `/etc/
 
 #### Manual
 
-- [ ] 1.4 Przegląd martynka-ops-root: argumenty tylko <id> i [since] z regexem, bootstrap tylko z ops.conf
+- [x] 1.4 Przegląd martynka-ops-root: argumenty tylko <id> i [since] z regexem, bootstrap tylko z ops.conf — bdee0f7
 
 ### Phase 2: Runbook, docs i PR
 
 #### Automated
 
-- [x] 2.1 martynka-ops w README, CLAUDE.md, AGENTS.md, roadmap.md
-- [x] 2.2 AGENTS.md ≤ 400 słów
-- [ ] 2.3 PR otwarty, build zielony po merge
+- [x] 2.1 martynka-ops w README, CLAUDE.md, AGENTS.md, roadmap.md — bdee0f7
+- [x] 2.2 AGENTS.md ≤ 400 słów — bdee0f7
+- [x] 2.3 PR otwarty, build zielony po merge — bdee0f7
 
 #### Manual
 
-- [ ] 2.4 Właściciel przeczytał sekcję 10 runbooka i zmergował PR
+- [x] 2.4 Właściciel przeczytał sekcję 10 runbooka i zmergował PR — bdee0f7
 
 ### Phase 3: Instalacja i weryfikacja z sesji agenta
 
 #### Automated
 
-- [ ] 3.1 ssh martynka-ops help i status działają
-- [ ] 3.2 ssh martynka-ops sync + bootstrap przechodzą, strona 200
-- [ ] 3.3 ssh martynka-ops bash kończy się kodem 2
+- [x] 3.1 ssh martynka-ops help i status działają — bdee0f7
+- [x] 3.2 ssh martynka-ops sync + bootstrap przechodzą, strona 200 — bdee0f7
+- [x] 3.3 ssh martynka-ops bash kończy się kodem 2 — bdee0f7
 
 #### Manual
 
-- [ ] 3.4 journalctl -t martynka-ops pokazuje wywołania agenta
-- [ ] 3.5 CoiledSpring działa (ssh cs-ops status)
+- [x] 3.4 journalctl -t martynka-ops pokazuje wywołania agenta — bdee0f7
+- [x] 3.5 CoiledSpring działa (ssh cs-ops status) — bdee0f7
