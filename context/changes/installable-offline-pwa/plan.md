@@ -295,8 +295,8 @@ Zmiana `assets/` → `_app/`: stare wydania na VPS nadal mają `assets/`, ale Ca
 
 #### Automated
 
-- [ ] 3.1 Caddyfile `/_app/*` bez `/assets/`; workflow sprawdza manifest
-- [ ] 3.2 deploy.yml parsuje się jako YAML; AGENTS.md ≤ 400 słów
+- [x] 3.1 Caddyfile `/_app/*` bez `/assets/`; workflow sprawdza manifest — e2bd7cc
+- [x] 3.2 deploy.yml parsuje się jako YAML; AGENTS.md ≤ 400 słów — e2bd7cc
 - [ ] 3.3 Nagłówki na martynka-urzadza.pl: manifest i sw.js `no-cache`, `_app` `immutable`, `rel="manifest"` w HTML
 
 #### Manual
