@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# Root helper behind the `martynka-ops` account: the only thing the agent can
+# run as root, through `sudo -n /usr/local/sbin/martynka-ops-root <words>`.
+# Every command and argument is validated here; every call is audited in the
+# journal (`journalctl -t martynka-ops`). Root work is limited to Caddy/systemd
+# and to running deploy/bootstrap.sh from the repository clone on `main` with
+# the arguments recorded in /etc/martynka/ops.conf by the last manual bootstrap.
+set -euf -o pipefail
+export LC_ALL=C
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+SRC="/opt/martynka-src"
+CONF="/etc/martynka/ops.conf"
+DISPATCH="/usr/local/bin/martynka-deploy"
+DEPLOY_USER="martynka"
+RELEASE_ID='^[0-9]{8}T[0-9]{6}Z-[0-9a-f]{7,40}$'
+SINCE='^[0-9]+[smh]$'
+
+audit() { logger -t martynka-ops -- "$*" || true; }
+
+fail_usage() {
+    echo "martynka-ops: $1" >&2
+    exit 2
+}
+
+usage() {
+    cat <<'EOF'
+martynka-ops commands:
+  help                  this list
+  status                current/previous release, releases on disk, caddy state, listeners 80/443
+  diag                  caddy version, ufw status, tailscale serve status, disk, source clone HEAD
+  caddy-logs [since]    caddy journal since <N>s|m|h (default 1h), last 300 lines
+  caddy-validate        validate /etc/caddy/Caddyfile
+  caddy-reload          systemctl reload caddy
+  rollback              switch back to the previous release (as user martynka)
+  switch <id>           make releases/<id> current (as user martynka)
+  sync                  fast-forward /opt/martynka-src to origin/main
+  bootstrap             run deploy/bootstrap.sh from /opt/martynka-src with /etc/martynka/ops.conf
+EOF
+}
+
+as_deploy_user() {
+    # Clean environment: nothing from the SSH client reaches the dispatcher.
+    runuser -u "$DEPLOY_USER" -- env -i PATH=/usr/bin:/bin HOME="/home/$DEPLOY_USER" SSH_ORIGINAL_COMMAND="$1" "$DISPATCH"
+}
+
+cmd_status() {
+    as_deploy_user status
+    echo "caddy:     $(systemctl is-active caddy 2>/dev/null || true)"
+    echo "listeners: $(ss -ltnp 2>/dev/null | grep -E ':80 |:443 ' | awk '{print $4, $6}' | tr '\n' ';')"
+}
+
+cmd_diag() {
+    echo "caddy:     $(caddy version 2>/dev/null | awk '{print $1}')"
+    echo "--- ufw"; ufw status 2>/dev/null | sed 's/^/  /' || true
+    echo "--- tailscale serve"; tailscale serve status 2>/dev/null | sed 's/^/  /' || true
+    echo "--- disk"; df -h / | tail -1 | sed 's/^/  /'
+    echo "--- source"; git -C "$SRC" log -1 --oneline 2>/dev/null | sed 's/^/  /' || echo "  (no clone at $SRC)"
+}
+
+cmd_caddy_logs() {
+    local since="${1:-1h}"
+    [[ "$since" =~ $SINCE ]] || fail_usage "caddy-logs [since] with since like 30m, 2h, 90s"
+    journalctl -u caddy --since "-$since" --no-pager 2>/dev/null | tail -n 300
+}
+
+cmd_sync() {
+    [[ -d "$SRC/.git" ]] || fail_usage "no repository clone at $SRC; run the manual bootstrap with --ops-pubkey first"
+    local before after
+    before="$(git -C "$SRC" rev-parse --short HEAD)"
+    git -C "$SRC" fetch -q origin main
+    git -C "$SRC" merge -q --ff-only origin/main
+    after="$(git -C "$SRC" rev-parse --short HEAD)"
+    if [[ "$before" == "$after" ]]; then
+        echo "source unchanged at $after"
+    else
+        echo "source updated $before -> $after"
+    fi
+}
+
+cmd_bootstrap() {
+    [[ -r "$CONF" ]] || fail_usage "missing $CONF; run the manual bootstrap with --ops-pubkey first"
+    local SITE="" BIND="" CI_PUBKEY="" OPS_PUBKEY=""
+    # shellcheck disable=SC1090
+    source "$CONF"
+    [[ -n "$SITE" && -n "$BIND" && -n "$CI_PUBKEY" && -n "$OPS_PUBKEY" ]] || fail_usage "$CONF must set SITE, BIND, CI_PUBKEY and OPS_PUBKEY"
+    [[ -f "$SRC/deploy/bootstrap.sh" ]] || fail_usage "no deploy/bootstrap.sh in $SRC; run sync"
+    echo "bootstrap from $SRC @ $(git -C "$SRC" rev-parse --short HEAD) for $SITE (bind $BIND)"
+    bash "$SRC/deploy/bootstrap.sh" --site "$SITE" --bind "$BIND" --ci-pubkey "$CI_PUBKEY" --ops-pubkey "$OPS_PUBKEY"
+}
+
+[[ $# -ge 1 ]] || fail_usage "no command"
+command="$1"
+shift
+args="$*"
+audit "user=${SUDO_USER:-?} $command${args:+ $args}"
+trap 'rc=$?; audit "result exit=$rc $command${args:+ $args}"' EXIT
+
+case "$command" in
+    help | status | diag | caddy-validate | caddy-reload | rollback | sync | bootstrap)
+        [[ $# -eq 0 ]] || fail_usage "$command takes no arguments"
+        ;;
+esac
+
+case "$command" in
+    help) usage ;;
+    status) cmd_status ;;
+    diag) cmd_diag ;;
+    caddy-logs)
+        [[ $# -le 1 ]] || fail_usage "caddy-logs [since]"
+        cmd_caddy_logs "$@"
+        ;;
+    caddy-validate) caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile ;;
+    caddy-reload) systemctl reload caddy && echo "caddy reloaded" ;;
+    rollback) as_deploy_user rollback ;;
+    switch)
+        [[ $# -eq 1 ]] || fail_usage "switch <id>"
+        [[ "$1" =~ $RELEASE_ID ]] || fail_usage "invalid release id"
+        as_deploy_user "switch $1"
+        ;;
+    sync) cmd_sync ;;
+    bootstrap) cmd_bootstrap ;;
+    *) fail_usage "unknown command: $command" ;;
+esac

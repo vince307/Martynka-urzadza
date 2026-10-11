@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Forced command of the `martynka-ops` account (sshd `Match User martynka-ops`
+# ForceCommand and `command=` in authorized_keys). Splits SSH_ORIGINAL_COMMAND
+# into words, rejects anything outside a small character set, and hands the
+# words to the root helper through the single sudo rule. No command logic here:
+# martynka-ops-root validates every command and argument.
+# Installed to /usr/local/sbin by deploy/bootstrap.sh --ops-pubkey.
+set -euf -o pipefail
+# sshd passes the client's LANG/LC_* (AcceptEnv): validate in the C locale.
+export LC_ALL=C
+
+# MARTYNKA_OPS_ROOT is only honoured by the local test (sshd does not pass it;
+# `restrict` in authorized_keys blocks environment= options).
+ROOT_CMD="${MARTYNKA_OPS_ROOT:-/usr/local/sbin/martynka-ops-root}"
+MAX_WORDS=3
+
+reject() {
+    logger -t martynka-ops -- "rejected user=$(id -un) reason=$1 command=$(printf '%q' "${SSH_ORIGINAL_COMMAND:-}" | cut -c1-200)" || true
+    echo "martynka-ops: $1; run \`ssh martynka-ops help\` for the command list" >&2
+    exit 2
+}
+
+cmd="${SSH_ORIGINAL_COMMAND:-}"
+if [[ -z "${cmd//[[:space:]]/}" ]]; then
+    reject "no command"
+fi
+# Letters, digits, . _ : / - and plain spaces only: no shell metacharacters,
+# quotes, globs, tabs or newlines.
+allowed='^[A-Za-z0-9._:/ -]+$'
+if [[ ! "$cmd" =~ $allowed ]]; then
+    reject "invalid characters"
+fi
+
+read -r -a words <<<"$cmd"
+if ((${#words[@]} > MAX_WORDS)); then
+    reject "too many arguments"
+fi
+
+exec sudo -n "$ROOT_CMD" "${words[@]}"
