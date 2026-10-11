@@ -267,16 +267,16 @@ Zmiana `assets/` → `_app/`: stare wydania na VPS nadal mają `assets/`, ale Ca
 
 #### Automated
 
-- [ ] 1.1 `npm run typecheck` przechodzi
-- [ ] 1.2 Build ma `sw.js`, manifest, `_app/*.js`, bez `assets/` i bez osobnego `workbox-*.js`
-- [ ] 1.3 Manifest: name, short_name, fullscreen, landscape, start_url/scope `/`, ikony 192/512 i maskable
-- [ ] 1.4 `sw.js` precache'uje `_app/phaser` i `icons/icon-512.png`, ma `skipWaiting`
-- [ ] 1.5 Ikony deterministyczne (`git status` puste po regeneracji), rozmiary 192/512/512/180
-- [ ] 1.6 Kolor `#FFF5DF` w obu plikach; `__BUILD_ID__` podmienione w bundlu
+- [x] 1.1 `npm run typecheck` przechodzi — 2892476
+- [x] 1.2 Build ma `sw.js`, manifest, `_app/*.js`, bez `assets/` i bez osobnego `workbox-*.js` — 2892476
+- [x] 1.3 Manifest: name, short_name, fullscreen, landscape, start_url/scope `/`, ikony 192/512 i maskable — 2892476
+- [x] 1.4 `sw.js` precache'uje `_app/phaser` i `icons/icon-512.png`, ma `skipWaiting` — 2892476
+- [x] 1.5 Ikony deterministyczne (`git status` puste po regeneracji), rozmiary 192/512/512/180 — 2892476
+- [x] 1.6 Kolor `#FFF5DF` w obu plikach; `__BUILD_ID__` podmienione w bundlu — 2892476
 
 #### Manual
 
-- [ ] 1.7 Chrome na preview: SW kontroluje stronę, cache workbox z `_app/`, manifest i sw.js 200, SHA builda widoczny
+- [x] 1.7 Chrome na preview: SW kontroluje stronę, cache workbox z `_app/`, manifest i sw.js 200, SHA builda widoczny — 2892476
 
 ### Phase 2: Nakładki „Obróć tablet” i instrukcja instalacji
 
