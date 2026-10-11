@@ -251,5 +251,5 @@ Profil jest addytywny; usunięcie = `userdel -r martynka-ops`, usunięcie `/etc/
 
 #### Manual
 
-- [ ] 3.4 journalctl -t martynka-ops pokazuje wywołania agenta
+- [x] 3.4 journalctl -t martynka-ops pokazuje wywołania agenta — bdee0f7
 - [x] 3.5 CoiledSpring działa (ssh cs-ops status) — bdee0f7
