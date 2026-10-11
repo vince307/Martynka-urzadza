@@ -298,11 +298,11 @@ Nie dotyczy (brak danych użytkownika; szablon nie był wdrożony).
 
 #### Automated
 
-- [x] 3.1 Brak `nolog`/`log.js`/`4.0.0` w CLAUDE.md, AGENTS.md, README.md
-- [x] 3.2 AGENTS.md ≤ 400 słów
-- [x] 3.3 `npx tsc --noEmit` i `npm run build` przechodzą
+- [x] 3.1 Brak `nolog`/`log.js`/`4.0.0` w CLAUDE.md, AGENTS.md, README.md — 9a2cc05
+- [x] 3.2 AGENTS.md ≤ 400 słów — 9a2cc05
+- [x] 3.3 `npx tsc --noEmit` i `npm run build` przechodzą — 9a2cc05
 
 #### Manual
 
 - [ ] 3.4 Skills Phasera zainstalowane w .claude/skills (5 katalogów)
-- [x] 3.5 README opisuje projekt, nie szablon
+- [x] 3.5 README opisuje projekt, nie szablon — 9a2cc05
