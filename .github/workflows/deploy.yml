@@ -90,7 +90,8 @@ jobs:
         run: |
           RELEASE="$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA::7}"
           echo "RELEASE=$RELEASE" >> "$GITHUB_ENV"
-          rsync -rlt --delete --mkpath -e "ssh -F ~/.ssh/config" dist/ "vps:/$RELEASE/"
+          # $HOME, not ~: the tilde inside quotes is not expanded by the shell.
+          rsync -rlt --delete --mkpath -e "ssh -F $HOME/.ssh/config" dist/ "vps:/$RELEASE/"
 
       - name: Switch release
         if: ${{ inputs.action != 'rollback' }}
