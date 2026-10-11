@@ -282,14 +282,14 @@ Zmiana `assets/` → `_app/`: stare wydania na VPS nadal mają `assets/`, ale Ca
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` i `npm run build` przechodzą
-- [ ] 2.2 `platform.ts`: iPad/Android/other i `shouldShowInstallHint` sprawdzone przez `node --experimental-strip-types`
-- [ ] 2.3 Brak `stopPropagation` w nakładkach; brak nowych tekstów dla gracza w scenach
-- [ ] 2.4 `style.css` ma `orientation: portrait` i `prefers-reduced-motion`
+- [x] 2.1 `npm run typecheck` i `npm run build` przechodzą — fbd850e
+- [x] 2.2 `platform.ts`: iPad/Android/other i `shouldShowInstallHint` sprawdzone przez `node --experimental-strip-types` — fbd850e
+- [x] 2.3 Brak `stopPropagation` w nakładkach; brak nowych tekstów dla gracza w scenach — fbd850e
+- [x] 2.4 `style.css` ma `orientation: portrait` i `prefers-reduced-motion` — fbd850e
 
 #### Manual
 
-- [ ] 2.5 Chrome na preview: pion pokazuje „Obróć tablet”, poziom chowa; brak instrukcji na komputerze; gra reaguje po zamknięciu nakładki
+- [x] 2.5 Chrome na preview: pion pokazuje „Obróć tablet”, poziom chowa; brak instrukcji na komputerze; gra reaguje po zamknięciu nakładki — fbd850e
 
 ### Phase 3: Caddy, health check, dokumentacja i test na tabletach
 

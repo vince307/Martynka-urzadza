@@ -12,12 +12,14 @@ push na main
             └─ ssh martynka@<VPS w tailnecie>   (klucz z sekretu, ForceCommand martynka-deploy)
                  ├─ rsync dist/ → /srv/martynka/releases/<YYYYMMDDTHHMMSSZ-sha7>/   (rrsync, tylko zapis)
                  ├─ switch <id> → /srv/martynka/current → releases/<id>   (atomowo, 5 ostatnich wydań)
-                 └─ health check: curl https://<adres>/ zawiera „Martynka urządza”
+                 └─ health check: curl https://<adres>/ zawiera „Martynka urządza”, manifest i sw.js odpowiadają 200
 Caddy (/etc/caddy/Caddyfile): root /srv/martynka/current, HTTPS z Let's Encrypt
   ├─ do czasu domeny: certyfikat na publiczny adres IPv4 (profile shortlived, 6 dni, auto-odnawiany)
   └─ po zakupie domeny: zwykły certyfikat na domenę
 Tablet → https://<adres>
 ```
+
+PWA i cache: build zawiera `manifest.webmanifest` i `sw.js` (vite-plugin-pwa, precache całego wydania). Caddy wysyła `Cache-Control: no-cache` dla `/`, `index.html`, `sw.js` i `manifest.webmanifest`, a `immutable` tylko dla hashowanych bundli w `/_app/*` (grafika z `public/assets/` ma domyślną politykę; jej podmiany wykrywa precache). Zainstalowana gra pobiera nowy `sw.js` przy każdym starcie i uruchamia nowy build przy następnym starcie, bez pytania; SHA builda widać w lewym dolnym rogu ekranu startowego. Health check workflow sprawdza `/`, `manifest.webmanifest` i `sw.js`.
 
 Pliki w `deploy/`:
 

@@ -1,21 +1,21 @@
 # Repository Guidelines
 
-"Martynka urządza" is a Polish maths-practice and room-decorating game for grades 1–3: Phaser 4.2 + TypeScript + Vite, an offline-installable PWA for a landscape tablet, no backend. Plan: @Martynka-urzadza.md (authoritative, Polish). Task catalogue: @docs/ZADANIA.md. PRD: @context/foundation/prd.md. Working rules: @CLAUDE.md.
+"Martynka urządza" is a Polish maths-practice and room-decorating game for grades 1–3: Phaser 4.2 + TypeScript + Vite, an offline-installable PWA for a landscape tablet, no backend. Plan: @Martynka-urzadza.md (authoritative, Polish). Tasks: @docs/ZADANIA.md. PRD: @context/foundation/prd.md. Rules: @CLAUDE.md.
 
 ## Hard rules
 
-- Implement milestones M0–M8 from @Martynka-urzadza.md section 11 in order; never reorder them.
+- Implement milestones M0–M8 (@Martynka-urzadza.md section 11) in order; never reorder them.
 - `src/core/` must not import Phaser. Write its logic with vitest tests first, then the scene.
-- Scenes contain no balance numbers and no player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `rooms.ts`, `curriculum/`).
-- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored, local only).
-- No energy, timers, ads, purchases, accounts, or fail states; wrong answers never remove stars.
+- Scenes contain no balance numbers and no player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `rooms.ts`).
+- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored).
+- No energy, timers, ads, purchases, accounts or fail states; wrong answers never remove stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code identifiers and comments are English.
-- Phaser 4 differs from v3 in renderer and filters; check the v4 docs first.
+- Phaser 4 differs from v3 (renderer, filters); check the v4 docs first.
 - `designs/` is read-only art; `.claude/` is gitignored.
 
 ## Project structure
 
-M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootScene.ts` (placeholder), `src/data/{layout,pl}.ts`, `src/core/types.ts`; `src/ui/widgets/`, `src/storage/`, `tests/` are empty. Files in `public/` are served at the root (loader paths `assets/...`). `context/` holds 10x workflow documents and the roadmap; never hand-write files there.
+M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootScene.ts` (placeholder), `src/data/{layout,pl}.ts`, `src/core/types.ts`, `src/pwa/` (service worker, install hint), `src/ui/dom/` (overlays); `src/ui/widgets/`, `src/storage/`, `tests/` are empty. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x workflow documents; never hand-write files there.
 
 ## Commands
 
@@ -23,16 +23,17 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 - `npm run dev` — Vite on http://localhost:8080 (`-- --host` for a tablet).
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
-- `npx vitest run tests/<name>.test.ts` — once vitest lands in F-03 (M1). No lint or test script exists yet.
+- `npm run preview` — the only local way to test `sw.js`.
+- `npx vitest run tests/<name>.test.ts` — once vitest lands in F-03 (M1); no lint or test script yet.
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals` and `noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/` (`addSub.ts`), a pure function `(params, rng) => Task` on the seeded rng.
+TypeScript strict with `noUnusedLocals` and `noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(params, rng) => Task` on the seeded rng.
 
 ## Testing
 
-Vitest in `tests/` from M1. Each skill gets a 1000-draw property test: results in range, no negatives, bridging matches params, distractors differ from the answer, correct Polish inflection. After every milestone verify the production build and offline behaviour.
+Vitest in `tests/` from M1. Each skill gets a 1000-draw test: results in range, no negatives, bridging matches params, distractors differ from the answer, correct inflection. After every milestone verify the build and offline behaviour.
 
 ## Commits and PRs
 
-Polish commit messages with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, push, open a PR; `main` changes only by merging on GitHub. The merge deploys to https://martynka-urzadza.pl, so `main` must build. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch the `deploy`/`ops` users or CoiledSpring. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`feat:`, `chore:`, `docs:`). Branch, push, open a PR; `main` changes only by merging on GitHub, which deploys to https://martynka-urzadza.pl, so `main` must build. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring or its users. Runbook: @deploy/README.md.
