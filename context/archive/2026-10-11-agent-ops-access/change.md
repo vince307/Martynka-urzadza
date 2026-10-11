@@ -1,10 +1,10 @@
 ---
 change_id: agent-ops-access
 title: Profil dostępu agenta do VPS (konto martynka-ops, allowlista, konfiguracja Claude Code)
-status: impl_reviewed
+status: archived
 created: 2026-10-11
 updated: 2026-10-11
-archived_at: null
+archived_at: 2026-10-11T20:15:32Z
 ---
 
 ## Notes
