@@ -1,5 +1,6 @@
 import { AUTO, Game, Scale } from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND } from './data/layout';
+import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
 
 // Single place for the Phaser game config. Scene size and colours come from
@@ -20,3 +21,4 @@ const createGame = (parent: string): Game =>
 
 // Module scripts run after the document is parsed, so the container exists.
 createGame('game-container');
+registerServiceWorker();

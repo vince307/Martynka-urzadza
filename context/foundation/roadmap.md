@@ -45,7 +45,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | ----- | --------------------------- | ---- | --------------------------------------------------------------------------------- | -------------------- | ------------------------------- | -------- |
 | F-01  | game-shell-scaling          | M0   | (foundation) szkielet gry na Phaser 4.2 w scenie 1920×1080, docelowy układ katalogów, bez telemetrii szablonu | —    | NFR (czytelność, prywatność)    | done        |
 | F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | done        |
-| S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | proposed |
+| S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | in-progress |
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | proposed |
 | S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | proposed |
 | S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | proposed |
@@ -145,7 +145,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Z przeglądu F-02: hashowane bundle Vite przenieść do `build.assetsDir: '_app'` i matcher Caddy na `/_app/*`, żeby `immutable` nie objęło nienazwanej hashem grafiki z `public/assets/` (M7); ponowny bootstrap wykonuje agent (`ssh martynka-ops sync`, potem `bootstrap`; zmiana `agent-ops-access`). — Owner: autor. Block: no.
   - Czy iPad (Safari) faktycznie utrzymuje dane PWA bez dodania do ekranu początkowego? — Owner: autor. Block: no (sprawdzić na urządzeniu; FR-001 i tak pokazuje instrukcję).
 - **Risk:** zamyka etap M0 („gra otwiera się na tablecie z URL, da się dodać do ekranu i uruchomić offline”); PWA na iPadzie bywa kapryśna, dlatego sprawdzana na obu tabletach zanim wejdzie treść.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-02: Generatory zadań dla E3–E4
 

@@ -23,6 +23,7 @@ export const PAGE_BACKGROUND = '#FFF5DF';
 export const FONT_SIZES = {
     title: 112,
     subtitle: 48,
+    caption: 32,
 } as const;
 
 /** Placeholder frame thickness and inset, in scene pixels. */
