@@ -1,0 +1,19 @@
+# Caddyfile template for Martynka urządza. deploy/bootstrap.sh substitutes the
+# SITE placeholder (`https://<IPv4>` until a domain is bought, or `<domain>`)
+# and the TLS placeholder (`tls { profile shortlived }` for an IP certificate,
+# nothing for a domain).
+__SITE__ {
+    root * /srv/martynka/current
+    __TLS__
+    encode zstd gzip
+
+    # Vite hashes asset file names: cache them forever.
+    @immutable path /assets/*
+    header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+    # Entry points and PWA files must always be revalidated.
+    @nocache path / /index.html /sw.js /manifest.webmanifest
+    header @nocache Cache-Control "no-cache"
+
+    file_server
+}

@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+# Forced command for the `martynka` deploy user. The only entry point CI has
+# on the server: upload a release with rsync (delegated to rrsync), switch the
+# `current` symlink atomically, roll back to the previous release, show status.
+#
+# Installed by deploy/bootstrap.sh to /usr/local/bin/martynka-deploy and wired
+# through sshd `Match User martynka` + `ForceCommand`. Reads SSH_ORIGINAL_COMMAND.
+#
+# Layout under $MARTYNKA_ROOT (default /srv/martynka):
+#   releases/<id>/   one directory per release, <id> = YYYYMMDDTHHMMSSZ-<sha7>
+#   current          symlink -> releases/<id>
+#   .previous        name of the release that was current before the last switch
+set -euo pipefail
+
+ROOT="${MARTYNKA_ROOT:-/srv/martynka}"
+RRSYNC="${MARTYNKA_RRSYNC:-/usr/bin/rrsync}"
+KEEP_RELEASES="${MARTYNKA_KEEP:-5}"
+RELEASES="$ROOT/releases"
+CURRENT="$ROOT/current"
+PREVIOUS_FILE="$ROOT/.previous"
+ID_PATTERN='^[0-9]{8}T[0-9]{6}Z-[0-9a-f]{7,40}$'
+
+cmd="${SSH_ORIGINAL_COMMAND:-${*:-help}}"
+
+fail() {
+    echo "martynka-deploy: $*" >&2
+    exit 2
+}
+
+usage() {
+    cat <<'EOF'
+martynka-deploy commands:
+  rsync ...      upload a release (used by rsync itself; delegated to rrsync)
+  switch <id>    make releases/<id> the current release
+  rollback       switch back to the previous release
+  status         show current, previous and available releases
+  help           this text
+EOF
+}
+
+atomic_symlink() {
+    # atomic_symlink <target> <link>: replace <link> with a symlink to <target>
+    # via rename(2), so readers never see a missing link. GNU mv -T on the
+    # server; python3 os.rename elsewhere (BSD mv would descend into the dir).
+    local target="$1" link="$2"
+    ln -sfn "$target" "$link.tmp"
+    if mv --version 2>/dev/null | grep -q GNU; then
+        mv -T "$link.tmp" "$link"
+    else
+        python3 -c 'import os, sys; os.rename(sys.argv[1], sys.argv[2])' "$link.tmp" "$link"
+    fi
+}
+
+current_id() {
+    if [[ -L "$CURRENT" ]]; then
+        basename "$(readlink "$CURRENT")"
+    else
+        echo ""
+    fi
+}
+
+do_switch() {
+    local id="$1"
+    [[ "$id" =~ $ID_PATTERN ]] || fail "invalid release id: $id"
+    local dir="$RELEASES/$id"
+    [[ -f "$dir/index.html" ]] || fail "release $id has no index.html"
+
+    local old
+    old="$(current_id)"
+    chmod -R u=rwX,go=rX "$dir"
+    atomic_symlink "releases/$id" "$CURRENT"
+    if [[ -n "$old" && "$old" != "$id" ]]; then
+        printf '%s\n' "$old" > "$PREVIOUS_FILE"
+    fi
+    prune_releases
+    echo "switched to $id"
+}
+
+prune_releases() {
+    local cur prev
+    cur="$(current_id)"
+    prev="$(cat "$PREVIOUS_FILE" 2>/dev/null || true)"
+    # Newest first; keep the newest KEEP_RELEASES, never delete current or previous.
+    local seen=0
+    while IFS= read -r name; do
+        [[ -n "$name" ]] || continue
+        seen=$((seen + 1))
+        if (( seen > KEEP_RELEASES )) && [[ "$name" != "$cur" && "$name" != "$prev" ]]; then
+            rm -rf -- "${RELEASES:?}/$name"
+        fi
+    done < <(ls -1 "$RELEASES" 2>/dev/null | grep -E "$ID_PATTERN" | sort -r)
+}
+
+do_rollback() {
+    [[ -s "$PREVIOUS_FILE" ]] || fail "no previous release recorded"
+    local prev
+    prev="$(cat "$PREVIOUS_FILE")"
+    [[ -d "$RELEASES/$prev" ]] || fail "previous release $prev no longer exists"
+    do_switch "$prev"
+}
+
+do_status() {
+    echo "root:     $ROOT"
+    echo "current:  $(current_id)"
+    echo "previous: $(cat "$PREVIOUS_FILE" 2>/dev/null || echo '-')"
+    echo "releases:"
+    ls -1 "$RELEASES" 2>/dev/null | grep -E "$ID_PATTERN" | sort -r | sed 's/^/  /' || true
+}
+
+[[ "$cmd" =~ ^[A-Za-z0-9._:/\ -]+$ ]] || fail "command contains disallowed characters"
+
+case "$cmd" in
+    rsync\ --server*)
+        [[ -x "$RRSYNC" ]] || fail "rrsync not found at $RRSYNC"
+        exec "$RRSYNC" -wo "$RELEASES"
+        ;;
+    switch\ *)
+        set -- $cmd
+        [[ $# -eq 2 ]] || fail "usage: switch <id>"
+        do_switch "$2"
+        ;;
+    rollback)
+        do_rollback
+        ;;
+    status)
+        do_status
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        usage >&2
+        fail "unknown command: $cmd"
+        ;;
+esac
