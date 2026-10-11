@@ -44,7 +44,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | ID    | Change ID                   | Etap | Outcome (user can …)                                                              | Prerequisites        | PRD refs                        | Status   |
 | ----- | --------------------------- | ---- | --------------------------------------------------------------------------------- | -------------------- | ------------------------------- | -------- |
 | F-01  | game-shell-scaling          | M0   | (foundation) szkielet gry na Phaser 4.2 w scenie 1920×1080, docelowy układ katalogów, bez telemetrii szablonu | —    | NFR (czytelność, prywatność)    | done        |
-| F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | in-progress |
+| F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | done        |
 | S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | proposed |
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | proposed |
 | S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | proposed |
@@ -115,7 +115,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Pod jakim adresem córka otworzy grę do czasu zakupu domeny? — Owner: autor. Block: no.
 - **Risk:** jedyna warstwa z infrastrukturą; minimalna (rsync przez restricted user) i wzorowana na CoiledSpring; zrobiona w M0, żeby każdy kolejny etap był sprawdzany na tablecie, nie tylko w przeglądarce.
-- **Status:** in-progress
+- **Status:** done
 
 ### F-03: Harness testów generatorów
 
@@ -404,3 +404,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived.)
 
 - **F-01: (foundation) gra startuje na Phaser 4.2.x w scenie 1920×1080 dopasowanej do ekranu, z pustą sceną, docelowym układem katalogów (`core/` bez importów silnika, `data/`, `scenes/`, `storage/`, `tests/`), bez telemetrii szablonu; `npx tsc --noEmit` przechodzi** — Archived 2026-10-11 → `context/archive/2026-10-11-game-shell-scaling/`. Lesson: —.
+- **F-02: (foundation) build `dist/` jest publikowany z GitHub Actions na istniejący VPS za Caddy (HTTPS), z zachowaniem poprzedniego wydania do rollbacku; runbook w `deploy/README.md`** — Archived 2026-10-11 → `context/archive/2026-10-11-static-deploy-pipeline/`. Lesson: —.
