@@ -193,6 +193,17 @@ sed -e "s|__SITE__|$SITE_BLOCK|" -e "s|__BIND__|$BIND|" "$CADDYFILE_SRC" | awk -
         next
     }
     { print }' > "$CADDYFILE_TMP"
+if [[ "$TLS_MODE" == "domain" ]]; then
+    # www.<domain> redirects to the apex; the certificate for it is issued only
+    # if its DNS A record exists (Caddy retries otherwise, without blocking the apex).
+    cat >> "$CADDYFILE_TMP" <<EOF
+
+www.$SITE {
+    bind $BIND
+    redir https://$SITE{uri} permanent
+}
+EOF
+fi
 # Format before comparing, so an unchanged config is detected as unchanged.
 caddy fmt --overwrite "$CADDYFILE_TMP" >/dev/null 2>&1 || true
 if [[ -f /etc/caddy/Caddyfile ]] && cmp -s "$CADDYFILE_TMP" /etc/caddy/Caddyfile; then

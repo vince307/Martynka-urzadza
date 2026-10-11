@@ -87,18 +87,22 @@ Repo → Settings → Secrets and variables → Actions.
 
 ## 6. Deploy, rollback, status
 
-- **Deploy**: każdy push na `main` (merge PR) uruchamia workflow „Deploy”. Ręcznie: Actions → Deploy → Run workflow → `deploy`.
+- **Deploy**: zmiany trafiają na `main` wyłącznie przez pull request zmergowany na GitHubie (bez lokalnego merge i push na `main`); merge jest pushem na `main`, więc uruchamia workflow „Deploy”. Ręcznie: Actions → Deploy → Run workflow → `deploy`.
 - **Rollback**: Actions → Deploy → Run workflow → `rollback` (przełącza na poprzednie wydanie i powtarza health check). Z własnej maszyny: `ssh -i ~/.ssh/martynka_deploy martynka@<host> rollback`.
 - **Status**: `ssh -i ~/.ssh/martynka_deploy martynka@<host> status` (bieżące, poprzednie, lista wydań). Serwer trzyma 5 ostatnich wydań.
 
 Pierwszy deploy: certyfikat Let's Encrypt jest wystawiany przy pierwszym żądaniu, więc health check ma długie powtórzenia (do ok. 2 minut).
 
-## 7. Przejście na własną domenę
+## 7. Domena `martynka-urzadza.pl`
 
-1. DNS: rekord A `<domena>` → publiczny IPv4 VPS.
-2. Na VPS (jak w sekcji 4): `bash /root/martynka-deploy/bootstrap.sh --site <domena> --bind <publiczny IPv4> --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"` (Caddyfile bez `profile shortlived`, reszta bez zmian).
-3. GitHub: zmienna `DEPLOY_SITE_URL` → `https://<domena>`.
+Docelowy adres gry to `https://martynka-urzadza.pl` (`www.` przekierowuje na apex). Przejście z adresu IP:
+
+1. DNS u rejestratora: rekord A `martynka-urzadza.pl` → `179.198.222.94` oraz A `www.martynka-urzadza.pl` → `179.198.222.94` (bez proxy/CDN; Caddy musi dostać ruch na 80/443 bezpośrednio). Sprawdzenie: `dig +short A martynka-urzadza.pl`.
+2. Na VPS (jak w sekcji 4): `bash /root/martynka-deploy/bootstrap.sh --site martynka-urzadza.pl --bind 179.198.222.94 --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"` (Caddyfile na domenę bez `profile shortlived`, plus blok `www.` z przekierowaniem; certyfikaty Let's Encrypt przez HTTP-01/TLS-ALPN wystawiane przy pierwszym żądaniu).
+3. GitHub: zmienna `DEPLOY_SITE_URL` → `https://martynka-urzadza.pl` (health check w workflow).
 4. Zainstalowaną na tablecie PWA (etap S-01) trzeba zainstalować ponownie pod nowym adresem.
+
+Adres IP przestaje być obsługiwany po kroku 2 (Caddyfile ma już tylko bloki domeny).
 
 ## 8. Rozwiązywanie problemów
 
