@@ -2,7 +2,7 @@
 # Idempotent server bootstrap for Martynka urządza (static site behind Caddy).
 # Run as root on the VPS shared with CoiledSpring:
 #
-#   sudo bash deploy/bootstrap.sh --site <IPv4|domain> --ci-pubkey "ssh-ed25519 AAAA... martynka-ci" [--bind <public IPv4>]
+#   sudo bash deploy/bootstrap.sh --site <IPv4|domain> --ci-pubkey "ssh-ed25519 AAAA... martynka-ci" [--bind <public IPv4>] [--ops-pubkey "ssh-ed25519 ... martynka-ops"]
 #
 # Caddy binds only the public IPv4 (--bind; defaults to --site when that is an
 # IPv4, otherwise to the address of the default route), because tailscaled
@@ -19,6 +19,10 @@
 #   6. UFW: allow 80/tcp and 443/tcp (nothing else is touched)
 #   7. caddy enabled and (re)loaded
 #   8. diagnostics
+#   9. (with --ops-pubkey) the agent's `martynka-ops` account: forced command with an
+#      allowlist, one sudo rule to /usr/local/sbin/martynka-ops-root, repository clone
+#      in /opt/martynka-src and /etc/martynka/ops.conf, so the agent can rerun this
+#      bootstrap itself from whatever is merged on `main`
 #
 # It never touches CoiledSpring: not the `deploy`/`ops` users, /opt/coiled-spring,
 # tailscale serve, Docker or existing UFW rules.
@@ -27,6 +31,15 @@ set -euo pipefail
 SITE=""
 CI_PUBKEY=""
 BIND=""
+OPS_PUBKEY=""
+OPS_USER="martynka-ops"
+OPS_SRC="/opt/martynka-src"
+OPS_CONF_DIR="/etc/martynka"
+OPS_CONF="$OPS_CONF_DIR/ops.conf"
+OPS_SSHD_FILE="/etc/ssh/sshd_config.d/62-martynka-ops.conf"
+OPS_SUDOERS="/etc/sudoers.d/martynka-ops"
+OPS_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ops"
+REPO_URL="https://github.com/vince307/Martynka-urzadza.git"
 MARTYNKA_USER="martynka"
 MARTYNKA_ROOT="/srv/martynka"
 DISPATCH_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/martynka-deploy"
@@ -36,7 +49,7 @@ TAILNET_FROM='100.64.0.0/10,fd7a:115c:a1e0::/48'
 MIN_CADDY_FOR_IP="2.10.0"
 
 usage() {
-    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\" [--bind <public IPv4>]" >&2
+    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\" [--bind <public IPv4>] [--ops-pubkey \"<ssh public key>\"]" >&2
     exit 2
 }
 
@@ -45,6 +58,7 @@ while [[ $# -gt 0 ]]; do
         --site) SITE="${2:-}"; shift 2 ;;
         --ci-pubkey) CI_PUBKEY="${2:-}"; shift 2 ;;
         --bind) BIND="${2:-}"; shift 2 ;;
+        --ops-pubkey) OPS_PUBKEY="${2:-}"; shift 2 ;;
         -h|--help) usage ;;
         *) echo "unknown argument: $1" >&2; usage ;;
     esac
@@ -59,6 +73,10 @@ fi
 [[ "$(id -u)" -eq 0 ]] || { echo "run as root" >&2; exit 1; }
 [[ -f "$DISPATCH_SRC" && -f "$CADDYFILE_SRC" ]] || { echo "deploy/martynka-deploy or deploy/Caddyfile missing next to this script" >&2; exit 1; }
 [[ "$CI_PUBKEY" =~ ^ssh-(ed25519|rsa)\ [A-Za-z0-9+/=]+ ]] || { echo "--ci-pubkey does not look like an SSH public key" >&2; exit 1; }
+if [[ -n "$OPS_PUBKEY" ]]; then
+    [[ "$OPS_PUBKEY" =~ ^ssh-(ed25519|rsa)\ [A-Za-z0-9+/=]+ ]] || { echo "--ops-pubkey does not look like an SSH public key" >&2; exit 1; }
+    [[ -f "$OPS_SRC_DIR/martynka-ops" && -f "$OPS_SRC_DIR/martynka-ops-root" ]] || { echo "deploy/ops/martynka-ops{,-root} missing next to this script" >&2; exit 1; }
+fi
 
 ok()   { echo "[ok]   $*"; }
 skip() { echo "[skip] $*"; }
@@ -238,6 +256,90 @@ else
     exit 1
 fi
 
+# 9. agent ops account (optional) ---------------------------------------------
+if [[ -z "$OPS_PUBKEY" ]]; then
+    skip "ops profile not requested (--ops-pubkey)"
+else
+    command -v git >/dev/null || { apt-get install -y -qq git; ok "git installed"; }
+
+    if ! id "$OPS_USER" >/dev/null 2>&1; then
+        useradd --create-home --shell /bin/bash "$OPS_USER"
+        ok "user $OPS_USER created"
+    else
+        skip "user $OPS_USER exists"
+    fi
+    OPS_HOME="$(getent passwd "$OPS_USER" | cut -d: -f6)"
+    install -d -m 700 -o "$OPS_USER" -g "$OPS_USER" "$OPS_HOME/.ssh"
+    OPS_AUTH="$OPS_HOME/.ssh/authorized_keys"
+    OPS_LINE="restrict,from=\"$TAILNET_FROM\",command=\"/usr/local/sbin/martynka-ops\" $OPS_PUBKEY"
+    touch "$OPS_AUTH"
+    if grep -qF "$OPS_PUBKEY" "$OPS_AUTH"; then
+        grep -vF "$OPS_PUBKEY" "$OPS_AUTH" > "$OPS_AUTH.tmp" || true
+        printf '%s\n' "$OPS_LINE" >> "$OPS_AUTH.tmp"
+        mv "$OPS_AUTH.tmp" "$OPS_AUTH"
+        ok "$OPS_USER authorized_keys line refreshed"
+    else
+        printf '%s\n' "$OPS_LINE" >> "$OPS_AUTH"
+        ok "$OPS_USER authorized_keys line added"
+    fi
+    chown "$OPS_USER:$OPS_USER" "$OPS_AUTH"
+    chmod 600 "$OPS_AUTH"
+
+    install -m 755 -o root -g root "$OPS_SRC_DIR/martynka-ops" /usr/local/sbin/martynka-ops
+    install -m 755 -o root -g root "$OPS_SRC_DIR/martynka-ops-root" /usr/local/sbin/martynka-ops-root
+    ok "/usr/local/sbin/martynka-ops and martynka-ops-root installed"
+
+    SUDOERS_TMP="$(mktemp)"
+    printf '%s\n' "# Installed by deploy/bootstrap.sh --ops-pubkey: $OPS_USER runs only the martynka-ops root helper." \
+        "$OPS_USER ALL=(root) NOPASSWD: /usr/local/sbin/martynka-ops-root" > "$SUDOERS_TMP"
+    visudo -cqf "$SUDOERS_TMP" || { rm -f "$SUDOERS_TMP"; echo "generated sudoers rule does not parse" >&2; exit 1; }
+    install -m 440 -o root -g root "$SUDOERS_TMP" "$OPS_SUDOERS"
+    rm -f "$SUDOERS_TMP"
+    visudo -cq || { echo "sudoers does not parse after installing $OPS_SUDOERS" >&2; exit 1; }
+    ok "sudoers rule for $OPS_USER installed"
+
+    cat > "$OPS_SSHD_FILE.tmp" <<SSHD
+# Martynka urządza: agent account is limited to the martynka-ops forced command.
+Match User $OPS_USER
+    ForceCommand /usr/local/sbin/martynka-ops
+    DisableForwarding yes
+    PermitTTY no
+    PasswordAuthentication no
+    KbdInteractiveAuthentication no
+    AuthenticationMethods publickey
+SSHD
+    if [[ -f "$OPS_SSHD_FILE" ]] && cmp -s "$OPS_SSHD_FILE.tmp" "$OPS_SSHD_FILE"; then
+        rm -f "$OPS_SSHD_FILE.tmp"
+        skip "sshd Match block for $OPS_USER unchanged"
+    else
+        mv "$OPS_SSHD_FILE.tmp" "$OPS_SSHD_FILE"
+        chmod 644 "$OPS_SSHD_FILE"
+        if sshd -t; then
+            systemctl reload ssh 2>/dev/null || systemctl reload sshd
+            ok "sshd Match block for $OPS_USER installed and sshd reloaded"
+        else
+            echo "sshd -t failed; removing $OPS_SSHD_FILE and NOT reloading sshd" >&2
+            rm -f "$OPS_SSHD_FILE"
+            exit 1
+        fi
+    fi
+
+    if [[ -d "$OPS_SRC/.git" ]]; then
+        git -C "$OPS_SRC" fetch -q origin main && git -C "$OPS_SRC" merge -q --ff-only origin/main
+        ok "$OPS_SRC at $(git -C "$OPS_SRC" rev-parse --short HEAD)"
+    else
+        git clone -q --branch main "$REPO_URL" "$OPS_SRC"
+        ok "$OPS_SRC cloned at $(git -C "$OPS_SRC" rev-parse --short HEAD)"
+    fi
+
+    install -d -m 700 -o root -g root "$OPS_CONF_DIR"
+    CONF_TMP="$(mktemp)"
+    printf 'SITE=%q\nBIND=%q\nCI_PUBKEY=%q\nOPS_PUBKEY=%q\n' "$SITE" "$BIND" "$CI_PUBKEY" "$OPS_PUBKEY" > "$CONF_TMP"
+    install -m 600 -o root -g root "$CONF_TMP" "$OPS_CONF"
+    rm -f "$CONF_TMP"
+    ok "$OPS_CONF written"
+fi
+
 # 8. diagnostics ---------------------------------------------------------------
 echo
 echo "--- diagnostics"
@@ -246,6 +348,7 @@ echo "listeners:  $(ss -ltnp 2>/dev/null | grep -E ':80 |:443 ' | awk '{print $4
 echo "tailscale:  $(tailscale serve status 2>/dev/null | head -3 | tr '\n' ' ' || echo 'n/a')"
 echo "releases:   $(ls -1 "$MARTYNKA_ROOT/releases" 2>/dev/null | wc -l) in $MARTYNKA_ROOT/releases; current -> $(readlink "$MARTYNKA_ROOT/current" 2>/dev/null || echo '(none yet)')"
 echo "site:       $SITE_BLOCK (first release will be served after the CI deploy)"
+if [[ -n "$OPS_PUBKEY" ]]; then echo "ops:        $OPS_USER ready, source $(git -C "$OPS_SRC" rev-parse --short HEAD 2>/dev/null)"; fi
 sleep 5
 echo "caddy log (last minute, certificates/errors):"
 journalctl -u caddy --since -1min --no-pager 2>/dev/null | grep -iE 'certificate|error|obtain' | tail -8 | sed 's/^/  /' || true
