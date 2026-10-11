@@ -263,13 +263,13 @@ Przejście z adresu IP na domenę: `bootstrap.sh --site <domena>` (Caddyfile bez
 
 #### Automated
 
-- [x] 3.1 `curl -fsS https://<IP>/` zawiera „Martynka urządza”
-- [x] 3.2 Nagłówki Cache-Control: no-cache dla /, immutable dla /assets/*.js
-- [x] 3.3 CLAUDE.md i AGENTS.md opisują deploy; AGENTS.md ≤ 400 słów
+- [x] 3.1 `curl -fsS https://<IP>/` zawiera „Martynka urządza” — 5dfd551
+- [x] 3.2 Nagłówki Cache-Control: no-cache dla /, immutable dla /assets/*.js — 5dfd551
+- [x] 3.3 CLAUDE.md i AGENTS.md opisują deploy; AGENTS.md ≤ 400 słów — 5dfd551
 
 #### Manual
 
-- [x] 3.4 Bootstrap [ok] na VPS, caddy ≥ 2.10, Caddy na 80/443
-- [x] 3.5 CoiledSpring działa po bootstrapie
-- [x] 3.6 Workflow Deploy zielony; rollback przez workflow_dispatch działa
-- [x] 3.7 Tablet otwiera https://<IP> bez ostrzeżenia o certyfikacie
+- [x] 3.4 Bootstrap [ok] na VPS, caddy ≥ 2.10, Caddy na 80/443 — 5dfd551
+- [x] 3.5 CoiledSpring działa po bootstrapie — 5dfd551
+- [x] 3.6 Workflow Deploy zielony; rollback przez workflow_dispatch działa — 5dfd551
+- [x] 3.7 Tablet otwiera https://<IP> bez ostrzeżenia o certyfikacie — 5dfd551
