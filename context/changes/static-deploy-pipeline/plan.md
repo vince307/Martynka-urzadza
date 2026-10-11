@@ -239,25 +239,25 @@ Przejście z adresu IP na domenę: `bootstrap.sh --site <domena>` (Caddyfile bez
 
 #### Automated
 
-- [x] 1.1 `bash -n` dla bootstrap.sh, martynka-deploy, test-martynka-deploy.sh
-- [x] 1.2 `bash deploy/test-martynka-deploy.sh` kończy się kodem 0 i `OK`
-- [x] 1.3 Placeholdery w Caddyfile (2) i cztery frazy w bootstrap.sh obecne
+- [x] 1.1 `bash -n` dla bootstrap.sh, martynka-deploy, test-martynka-deploy.sh — 3e07b97
+- [x] 1.2 `bash deploy/test-martynka-deploy.sh` kończy się kodem 0 i `OK` — 3e07b97
+- [x] 1.3 Placeholdery w Caddyfile (2) i cztery frazy w bootstrap.sh obecne — 3e07b97
 
 #### Manual
 
-- [x] 1.4 Przegląd bootstrap.sh: nie dotyka deploy/ops, plików CoiledSpring ani UFW poza 80/443
+- [x] 1.4 Przegląd bootstrap.sh: nie dotyka deploy/ops, plików CoiledSpring ani UFW poza 80/443 — 3e07b97
 
 ### Phase 2: Workflow GitHub Actions
 
 #### Automated
 
-- [ ] 2.1 deploy.yml parsuje się jako YAML
-- [ ] 2.2 Pin akcji Tailscale i dokładny zestaw 5 sekretów
-- [ ] 2.3 `npm ci && npm run typecheck && npm run build` lokalnie przechodzą
+- [x] 2.1 deploy.yml parsuje się jako YAML
+- [x] 2.2 Pin akcji Tailscale i dokładny zestaw 5 sekretów
+- [x] 2.3 `npm ci && npm run typecheck && npm run build` lokalnie przechodzą
 
 #### Manual
 
-- [ ] 2.4 Workflow przeczytany: bez --no-verify, bez echo sekretów, StrictHostKeyChecking yes, health na DEPLOY_SITE_URL
+- [x] 2.4 Workflow przeczytany: bez --no-verify, bez echo sekretów, StrictHostKeyChecking yes, health na DEPLOY_SITE_URL
 
 ### Phase 3: Uruchomienie na VPS i runbook
 

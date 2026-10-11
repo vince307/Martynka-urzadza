@@ -1,0 +1,109 @@
+name: Deploy
+
+# Every push to main builds dist/ and publishes it as a new release on the VPS
+# (see deploy/README.md). Manual dispatch can redeploy or roll back.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "deploy (build and publish HEAD) or rollback (switch to the previous release)"
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: ${{ github.event_name == 'push' || inputs.action == 'deploy' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    needs: build
+    # build is skipped on rollback, so a plain `needs` would skip this job too.
+    if: ${{ !cancelled() && (needs.build.result == 'success' || inputs.action == 'rollback') }}
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      SITE_URL: ${{ vars.DEPLOY_SITE_URL }}
+    steps:
+      - name: Download build
+        if: ${{ inputs.action != 'rollback' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Join the tailnet
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4.2.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName $DEPLOY_HOST
+            User martynka
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 20
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Upload release
+        if: ${{ inputs.action != 'rollback' }}
+        run: |
+          RELEASE="$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA::7}"
+          echo "RELEASE=$RELEASE" >> "$GITHUB_ENV"
+          rsync -rlt --delete --mkpath -e "ssh -F ~/.ssh/config" dist/ "vps:/$RELEASE/"
+
+      - name: Switch release
+        if: ${{ inputs.action != 'rollback' }}
+        run: ssh -F ~/.ssh/config vps "switch $RELEASE"
+
+      - name: Roll back to previous release
+        if: ${{ inputs.action == 'rollback' }}
+        run: ssh -F ~/.ssh/config vps rollback
+
+      - name: Health check
+        run: |
+          curl -fsS --retry 12 --retry-delay 10 --retry-all-errors "$SITE_URL/" | grep -q "Martynka urządza"
+          echo "ok: $SITE_URL serves the game"
+
+      - name: Status
+        run: ssh -F ~/.ssh/config vps status
