@@ -43,7 +43,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 
 | ID    | Change ID                   | Etap | Outcome (user can …)                                                              | Prerequisites        | PRD refs                        | Status   |
 | ----- | --------------------------- | ---- | --------------------------------------------------------------------------------- | -------------------- | ------------------------------- | -------- |
-| F-01  | game-shell-scaling          | M0   | (foundation) szkielet gry na Phaser 4.2 w scenie 1920×1080, docelowy układ katalogów, bez telemetrii szablonu | —    | NFR (czytelność, prywatność)    | ready    |
+| F-01  | game-shell-scaling          | M0   | (foundation) szkielet gry na Phaser 4.2 w scenie 1920×1080, docelowy układ katalogów, bez telemetrii szablonu | —    | NFR (czytelność, prywatność)    | in-progress |
 | F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | ready    |
 | S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | proposed |
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | proposed |
@@ -101,7 +101,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** pierwszy kontakt z Phaser 4.2 (renderer i filtry nowe względem v3); zrobiony najpierw, bo każdy wycinek widoczny dla dziecka zależy od poprawnego skalowania i układu.
-- **Status:** ready
+- **Status:** in-progress
 
 ### F-02: Statyczny deploy na VPS
 
