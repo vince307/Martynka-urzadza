@@ -12,20 +12,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-The repo is still the unmodified Phaser Vite TypeScript template (`src/game/scenes/{Boot,Preloader,MainMenu,Game,GameOver}.ts`, 1024×768 config). None of the planned architecture exists yet. The plan's stack additions (`vite-plugin-pwa`, `idb-keyval`, `vitest`) are not installed. `package.json` pins `phaser` to `4.0.0`, while the plan targets 4.2.x. The directory is not a git repository yet.
+Milestone M0 shell (roadmap F-01): Phaser 4.2.1, Vite 6.4, TypeScript 5.7. `src/main.ts` builds the game config (1920×1080, `Scale.FIT` + `CENTER_BOTH`, scene list); `src/scenes/BootScene.ts` is an empty scene drawing a code placeholder; `src/data/layout.ts` and `src/data/pl.ts` hold scene constants and Polish strings; `src/core/types.ts` holds the domain types from plan section 5. `src/ui/widgets/`, `src/storage/` and `tests/` exist but are empty. The template's demo scenes, assets and telemetry script are gone. Not yet present: PWA (manifest, service worker), vitest, eslint, persistence, deploy pipeline. Progress is tracked in `context/foundation/roadmap.md`.
 
 ## Commands
 
 ```bash
 npm install
-npm run dev          # Vite dev server on http://localhost:8080 (also pings gryzor.co via log.js)
-npm run dev-nolog    # same, without the log.js telemetry call
+npm run dev          # Vite dev server on http://localhost:8080 (add `-- --host` to open it on a tablet)
 npm run build        # production build to dist/ (vite/config.prod.mjs, terser)
-npm run build-nolog
-npx tsc --noEmit     # type-check; Vite does not type-check during dev or build
+npm run preview      # serve the production build
+npm run typecheck    # tsc --noEmit; Vite does not type-check during dev or build
 ```
 
-There is no test or lint script yet. Once vitest is added (per the plan), run a single test with `npx vitest run tests/addSub.test.ts` or `npx vitest run -t "<test name>"`.
+There is no test or lint script yet. Once vitest is added (roadmap F-03), run a single test with `npx vitest run tests/addSub.test.ts` or `npx vitest run -t "<test name>"`.
 
 Vite configs live in `vite/config.dev.mjs` and `vite/config.prod.mjs`. Both use `base: './'` and split Phaser into its own chunk. Files in `public/` are served at the root, so Phaser loader paths look like `assets/...`.
 

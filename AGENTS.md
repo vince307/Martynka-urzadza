@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-"Martynka urządza" is a Polish maths-practice and room-decorating game for grades 1–3: Phaser 4 + TypeScript + Vite, an offline-installable PWA for a landscape tablet, no backend. Plan: @Martynka-urzadza.md (authoritative, Polish). Task catalogue: @docs/ZADANIA.md. PRD: @context/foundation/prd.md. Working rules: @CLAUDE.md.
+"Martynka urządza" is a Polish maths-practice and room-decorating game for grades 1–3: Phaser 4.2 + TypeScript + Vite, an offline-installable PWA for a landscape tablet, no backend. Plan: @Martynka-urzadza.md (authoritative, Polish). Task catalogue: @docs/ZADANIA.md. PRD: @context/foundation/prd.md. Working rules: @CLAUDE.md.
 
 ## Hard rules
 
@@ -15,14 +15,14 @@
 
 ## Project structure
 
-Current state is the untouched Phaser Vite template (`src/game/scenes/*.ts`, 1024×768). Target layout (plan section 4): `src/core/` (pure logic), `src/data/`, `src/scenes/`, `src/ui/widgets/`, `src/storage/idb.ts`, `tests/`. Base resolution 1920×1080 with `Phaser.Scale.FIT`. Files in `public/` are served at the root, so loader paths look like `assets/...`. `context/` holds 10x workflow documents; never hand-write files there.
+M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootScene.ts` (placeholder), `src/data/{layout,pl}.ts`, `src/core/types.ts`; `src/ui/widgets/`, `src/storage/`, `tests/` are empty. Files in `public/` are served at the root, so loader paths look like `assets/...`. `context/` holds 10x workflow documents and the roadmap; never hand-write files there.
 
 ## Commands
 
 - `npm install`
-- `npm run dev-nolog` — Vite on http://localhost:8080 (`npm run dev` also pings gryzor.co via `log.js`; M0 removes it).
-- `npm run build-nolog` — production build to `dist/`.
-- `npx tsc --noEmit` — type-check; Vite does not.
+- `npm run dev` — Vite on http://localhost:8080 (`-- --host` for a tablet).
+- `npm run build` — production build to `dist/`.
+- `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
 - `npx vitest run tests/<name>.test.ts` — once vitest lands in M1. No lint or test script exists yet.
 
 ## Coding style

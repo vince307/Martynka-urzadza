@@ -282,27 +282,27 @@ Nie dotyczy (brak danych użytkownika; szablon nie był wdrożony).
 
 #### Automated
 
-- [x] 2.1 `npx tsc --noEmit` przechodzi
-- [x] 2.2 `npm run build` kończy się kodem 0 z osobnym chunkiem phaser
-- [x] 2.3 Brak importów phaser w src/core i src/data
-- [x] 2.4 Brak liczb 1920/1080 i tekstu „Martynka” w src/scenes i src/main.ts
-- [x] 2.5 Katalogi src/ui/widgets, src/storage, tests istnieją
+- [x] 2.1 `npx tsc --noEmit` przechodzi — b734829
+- [x] 2.2 `npm run build` kończy się kodem 0 z osobnym chunkiem phaser — b734829
+- [x] 2.3 Brak importów phaser w src/core i src/data — b734829
+- [x] 2.4 Brak liczb 1920/1080 i tekstu „Martynka” w src/scenes i src/main.ts — b734829
+- [x] 2.5 Katalogi src/ui/widgets, src/storage, tests istnieją — b734829
 
 #### Manual
 
-- [x] 2.6 Canvas wyśrodkowany, letterbox, bez przewijania przy zmianie rozmiaru okna
-- [x] 2.7 Brak zoomu, zaznaczania, menu kontekstowego i przewijania dotykiem
-- [x] 2.8 Placeholder: tło ivory, ramka, kwadrat 96×96, tytuł na środku
+- [x] 2.6 Canvas wyśrodkowany, letterbox, bez przewijania przy zmianie rozmiaru okna — b734829
+- [x] 2.7 Brak zoomu, zaznaczania, menu kontekstowego i przewijania dotykiem — b734829
+- [x] 2.8 Placeholder: tło ivory, ramka, kwadrat 96×96, tytuł na środku — b734829
 
 ### Phase 3: Dokumentacja i narzędzia
 
 #### Automated
 
-- [ ] 3.1 Brak `nolog`/`log.js`/`4.0.0` w CLAUDE.md, AGENTS.md, README.md
-- [ ] 3.2 AGENTS.md ≤ 400 słów
-- [ ] 3.3 `npx tsc --noEmit` i `npm run build` przechodzą
+- [x] 3.1 Brak `nolog`/`log.js`/`4.0.0` w CLAUDE.md, AGENTS.md, README.md
+- [x] 3.2 AGENTS.md ≤ 400 słów
+- [x] 3.3 `npx tsc --noEmit` i `npm run build` przechodzą
 
 #### Manual
 
 - [ ] 3.4 Skills Phasera zainstalowane w .claude/skills (5 katalogów)
-- [ ] 3.5 README opisuje projekt, nie szablon
+- [x] 3.5 README opisuje projekt, nie szablon
