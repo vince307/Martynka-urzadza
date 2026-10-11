@@ -304,5 +304,5 @@ Nie dotyczy (brak danych użytkownika; szablon nie był wdrożony).
 
 #### Manual
 
-- [ ] 3.4 Skills Phasera zainstalowane w .claude/skills (5 katalogów)
+- [x] 3.4 Skills Phasera zainstalowane w .claude/skills (5 katalogów) — 9a2cc05
 - [x] 3.5 README opisuje projekt, nie szablon — 9a2cc05
