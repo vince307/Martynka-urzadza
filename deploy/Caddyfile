@@ -1,6 +1,6 @@
 # Caddyfile template for Martynka urządza. deploy/bootstrap.sh substitutes the
 # SITE placeholder (`https://<IPv4>` until a domain is bought, or `<domain>`)
-# and the TLS placeholder (`tls { profile shortlived }` for an IP certificate,
+# and the TLS placeholder (`tls { issuer acme { profile shortlived } }` for an IP certificate,
 # nothing for a domain).
 __SITE__ {
     root * /srv/martynka/current

@@ -169,7 +169,13 @@ CADDYFILE_TMP="$(mktemp)"
 # Encrypt short-lived IP certificate) and disappears for a domain.
 sed -e "s|__SITE__|$SITE_BLOCK|" "$CADDYFILE_SRC" | awk -v mode="$TLS_MODE" '
     /__TLS__/ {
-        if (mode == "ip") { print "    tls {"; print "        profile shortlived"; print "    }" }
+        if (mode == "ip") {
+            print "    tls {"
+            print "        issuer acme {"
+            print "            profile shortlived"
+            print "        }"
+            print "    }"
+        }
         next
     }
     { print }' > "$CADDYFILE_TMP"
@@ -206,4 +212,7 @@ echo "listeners:  $(ss -ltnp 2>/dev/null | grep -E ':80 |:443 ' | awk '{print $4
 echo "tailscale:  $(tailscale serve status 2>/dev/null | head -3 | tr '\n' ' ' || echo 'n/a')"
 echo "releases:   $(ls -1 "$MARTYNKA_ROOT/releases" 2>/dev/null | wc -l) in $MARTYNKA_ROOT/releases; current -> $(readlink "$MARTYNKA_ROOT/current" 2>/dev/null || echo '(none yet)')"
 echo "site:       $SITE_BLOCK (first release will be served after the CI deploy)"
+sleep 5
+echo "caddy log (last minute, certificates/errors):"
+journalctl -u caddy --since -1min --no-pager 2>/dev/null | grep -iE 'certificate|error|obtain' | tail -8 | sed 's/^/  /' || true
 echo "done."
