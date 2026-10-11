@@ -111,9 +111,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unlocks:** S-01 (gra otwiera się z adresu URL na tablecie), weryfikacja offline po każdym etapie (plan, sekcja 14)
 - **Prerequisites:** —
 - **Parallel with:** F-01
-- **Blockers:** własna domena nie jest jeszcze kupiona (CLAUDE.md); do czasu zakupu deploy pod adresem tymczasowym lub tylko przygotowany
-- **Unknowns:**
-  - Pod jakim adresem córka otworzy grę do czasu zakupu domeny? — Owner: autor. Block: no.
+- **Blockers:** — (domena martynka-urzadza.pl kupiona i podpięta 2026-10-11)
+- **Unknowns:** — (adres rozstrzygnięty: https://martynka-urzadza.pl)
 - **Risk:** jedyna warstwa z infrastrukturą; minimalna (rsync przez restricted user) i wzorowana na CoiledSpring; zrobiona w M0, żeby każdy kolejny etap był sprawdzany na tablecie, nie tylko w przeglądarce.
 - **Status:** done
 
@@ -381,7 +380,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 5. **Ryzyko: motywacja po salonie**: jeden pokój to ok. 10 zadań remontowych; salon może skończyć się szybciej niż zainteresowanie. — Owner: autor. Block: S-17 (mierzy M8); drugi pokój to pierwsza rzecz po v1.
 6. **Ryzyko: grafika mebli**: paczka A v1 nie zawiera 10 slotów × 3 wariantów mebli salonu ani ikon do wszystkich typów; M7 zależy od pracy graficznej autora poza kodem. — Owner: autor. Block: S-16 (jedyny wycinek `blocked`).
 7. **Ryzyko: lektor**: polski głos systemowy na tablecie może być słaby lub go brak. — Owner: autor. Block: S-05 (nie blokuje; sprawdzić na urządzeniach w M2).
-8. **Adres gry do czasu zakupu domeny**: pod jakim adresem córka otworzy grę, zanim domena zostanie kupiona? — Owner: autor. Block: F-02 (nie blokuje; deploy pod adresem tymczasowym).
+8. **Adres gry do czasu zakupu domeny**: ROZSTRZYGNIĘTE 2026-10-11: gra działa pod https://martynka-urzadza.pl (DNS A → 179.198.222.94, `www` przekierowuje na apex, certyfikaty Let's Encrypt przez Caddy); etap z certyfikatem na adres IP trwał jeden dzień. — Owner: autor. Block: —.
 
 ## Parked
 
