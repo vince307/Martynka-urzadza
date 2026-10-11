@@ -35,4 +35,4 @@ Vitest in `tests/`, planned from M1. Each skill gets a 1000-draw property test: 
 
 ## Commits and PRs
 
-Commit messages are Polish with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, then PR to `main` at github.com/vince307/Martynka-urzadza. Deploy is a static `dist/` build pushed by GitHub Actions to a VPS behind Caddy (@CLAUDE.md).
+Commit messages are Polish with a conventional prefix (`chore:`, `docs:`, `feat:`). Branch, then PR to `main` at github.com/vince307/Martynka-urzadza. Every push to `main` deploys to the VPS via `.github/workflows/deploy.yml`, so `main` must build; never touch the `deploy`/`ops` users or CoiledSpring on the box. Runbook: @deploy/README.md.

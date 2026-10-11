@@ -251,13 +251,13 @@ Przejście z adresu IP na domenę: `bootstrap.sh --site <domena>` (Caddyfile bez
 
 #### Automated
 
-- [x] 2.1 deploy.yml parsuje się jako YAML
-- [x] 2.2 Pin akcji Tailscale i dokładny zestaw 5 sekretów
-- [x] 2.3 `npm ci && npm run typecheck && npm run build` lokalnie przechodzą
+- [x] 2.1 deploy.yml parsuje się jako YAML — b2a5f20
+- [x] 2.2 Pin akcji Tailscale i dokładny zestaw 5 sekretów — b2a5f20
+- [x] 2.3 `npm ci && npm run typecheck && npm run build` lokalnie przechodzą — b2a5f20
 
 #### Manual
 
-- [x] 2.4 Workflow przeczytany: bez --no-verify, bez echo sekretów, StrictHostKeyChecking yes, health na DEPLOY_SITE_URL
+- [x] 2.4 Workflow przeczytany: bez --no-verify, bez echo sekretów, StrictHostKeyChecking yes, health na DEPLOY_SITE_URL — b2a5f20
 
 ### Phase 3: Uruchomienie na VPS i runbook
 
@@ -265,7 +265,7 @@ Przejście z adresu IP na domenę: `bootstrap.sh --site <domena>` (Caddyfile bez
 
 - [ ] 3.1 `curl -fsS https://<IP>/` zawiera „Martynka urządza”
 - [ ] 3.2 Nagłówki Cache-Control: no-cache dla /, immutable dla /assets/*.js
-- [ ] 3.3 CLAUDE.md i AGENTS.md opisują deploy; AGENTS.md ≤ 400 słów
+- [x] 3.3 CLAUDE.md i AGENTS.md opisują deploy; AGENTS.md ≤ 400 słów
 
 #### Manual
 
