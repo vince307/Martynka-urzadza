@@ -2,7 +2,11 @@
 # Idempotent server bootstrap for Martynka urządza (static site behind Caddy).
 # Run as root on the VPS shared with CoiledSpring:
 #
-#   sudo bash deploy/bootstrap.sh --site <IPv4|domain> --ci-pubkey "ssh-ed25519 AAAA... martynka-ci"
+#   sudo bash deploy/bootstrap.sh --site <IPv4|domain> --ci-pubkey "ssh-ed25519 AAAA... martynka-ci" [--bind <public IPv4>]
+#
+# Caddy binds only the public IPv4 (--bind; defaults to --site when that is an
+# IPv4, otherwise to the address of the default route), because tailscaled
+# already listens on port 443 of the tailnet addresses.
 #
 # What it does (each step prints [ok]/[skip]):
 #   1. packages: rsync (ships rrsync) and Caddy from the official apt repository
@@ -22,6 +26,7 @@ set -euo pipefail
 
 SITE=""
 CI_PUBKEY=""
+BIND=""
 MARTYNKA_USER="martynka"
 MARTYNKA_ROOT="/srv/martynka"
 DISPATCH_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/martynka-deploy"
@@ -31,7 +36,7 @@ TAILNET_FROM='100.64.0.0/10,fd7a:115c:a1e0::/48'
 MIN_CADDY_FOR_IP="2.10.0"
 
 usage() {
-    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\"" >&2
+    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\" [--bind <public IPv4>]" >&2
     exit 2
 }
 
@@ -39,6 +44,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --site) SITE="${2:-}"; shift 2 ;;
         --ci-pubkey) CI_PUBKEY="${2:-}"; shift 2 ;;
+        --bind) BIND="${2:-}"; shift 2 ;;
         -h|--help) usage ;;
         *) echo "unknown argument: $1" >&2; usage ;;
     esac
@@ -164,10 +170,18 @@ else
     SITE_BLOCK="$SITE"
     TLS_MODE="domain"
 fi
+if [[ -z "$BIND" ]]; then
+    if is_ipv4 "$SITE"; then
+        BIND="$SITE"
+    else
+        BIND="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="src") print $(i+1)}' | head -n1)"
+    fi
+fi
+is_ipv4 "$BIND" || { echo "cannot determine the public IPv4 to bind Caddy to; pass --bind <IPv4>" >&2; exit 1; }
 CADDYFILE_TMP="$(mktemp)"
 # __TLS__ becomes a `tls { profile shortlived }` block for an IP address (Let's
 # Encrypt short-lived IP certificate) and disappears for a domain.
-sed -e "s|__SITE__|$SITE_BLOCK|" "$CADDYFILE_SRC" | awk -v mode="$TLS_MODE" '
+sed -e "s|__SITE__|$SITE_BLOCK|" -e "s|__BIND__|$BIND|" "$CADDYFILE_SRC" | awk -v mode="$TLS_MODE" '
     /__TLS__/ {
         if (mode == "ip") {
             print "    tls {"
@@ -186,7 +200,8 @@ else
     [[ -f /etc/caddy/Caddyfile ]] && cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak
     install -m 644 "$CADDYFILE_TMP" /etc/caddy/Caddyfile
     rm -f "$CADDYFILE_TMP"
-    ok "Caddyfile written for $SITE_BLOCK"
+    caddy fmt --overwrite /etc/caddy/Caddyfile >/dev/null 2>&1 || true
+    ok "Caddyfile written for $SITE_BLOCK (bind $BIND)"
 fi
 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
 ok "Caddyfile validates"
@@ -201,8 +216,15 @@ fi
 
 # 7. caddy service -------------------------------------------------------------
 systemctl enable --now caddy >/dev/null 2>&1 || true
-systemctl reload caddy 2>/dev/null || systemctl restart caddy
-ok "caddy enabled and reloaded"
+systemctl reload caddy 2>/dev/null || systemctl restart caddy || true
+sleep 3
+if systemctl is-active --quiet caddy; then
+    ok "caddy active"
+else
+    echo "caddy is not running; last log lines:" >&2
+    journalctl -u caddy --since -2min --no-pager 2>/dev/null | tail -15 >&2
+    exit 1
+fi
 
 # 8. diagnostics ---------------------------------------------------------------
 echo

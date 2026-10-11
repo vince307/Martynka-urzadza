@@ -53,6 +53,8 @@ Skopiuj katalog `deploy/` na VPS (np. `scp -r deploy/ root@<vps>:/root/martynka-
 sudo bash deploy/bootstrap.sh --site <publiczny IPv4> --ci-pubkey "$(cat ~/.ssh/martynka_deploy.pub)"
 ```
 
+Caddy słucha tylko na publicznym IPv4 (`--bind`, domyślnie adres z `--site`; przy domenie podaj `--bind <IPv4>` albo skrypt weźmie adres z trasy domyślnej), bo port 443 na adresach tailnetu zajmuje `tailscaled` dla CoiledSpring.
+
 Skrypt jest idempotentny; każdy krok wypisuje `[ok]` albo `[skip]`. Co robi: instaluje `rsync` (z `rrsync`) i Caddy z oficjalnego repozytorium apt (wymaga ≥ 2.10 dla certyfikatu na IP), tworzy użytkownika `martynka` i `/srv/martynka/releases`, wpisuje klucz CI do `authorized_keys` z `restrict,from="<tailnet>",command="/usr/local/bin/martynka-deploy"`, instaluje dyspozytor, dodaje `/etc/ssh/sshd_config.d/61-martynka-deploy.conf` (`Match User martynka`, `ForceCommand`, bez forwardingu i TTY) i przeładowuje sshd dopiero po `sshd -t`, zapisuje `/etc/caddy/Caddyfile` (kopia poprzedniego w `.bak`), otwiera w UFW `80/tcp` i `443/tcp`, włącza Caddy i wypisuje diagnostykę (`caddy version`, listenery 80/443, `tailscale serve status`).
 
 Po bootstrapie sprawdź:
@@ -101,6 +103,7 @@ Pierwszy deploy: certyfikat Let's Encrypt jest wystawiany przy pierwszym żądan
 - SSH odmawia CI: sprawdź `DEPLOY_KNOWN_HOSTS` (klucz hosta), czy węzeł CI dostał `tag:ci`, czy `from=` w `authorized_keys` obejmuje adres węzła (CGNAT `100.64.0.0/10`).
 - `sshd -t` nie przechodzi w bootstrapie: skrypt usuwa swój plik `Match` i nie przeładowuje sshd; istniejące sesje pozostają.
 - Rsync odrzucony przez rrsync (`--mkpath`): wymaga rsync ≥ 3.2.3 po obu stronach (Ubuntu 24.04: 3.2.7).
+- `listen tcp :443: bind: address already in use` w logu Caddy: `tailscaled` trzyma port 443 na adresach tailnetu (`tailscale serve` CoiledSpring); Caddy słucha tylko na publicznym IPv4 (`bind` w Caddyfile, parametr `--bind` bootstrapu, domyślnie adres z `--site`).
 
 ## 9. Czego ten deploy nie dotyka
 

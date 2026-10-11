@@ -1,8 +1,10 @@
 # Caddyfile template for Martynka urządza. deploy/bootstrap.sh substitutes the
 # SITE placeholder (`https://<IPv4>` until a domain is bought, or `<domain>`)
 # and the TLS placeholder (`tls { issuer acme { profile shortlived } }` for an IP certificate,
-# nothing for a domain).
+# nothing for a domain). The BIND placeholder is the public IPv4: tailscaled
+# already owns port 443 on the tailnet addresses, so Caddy must not bind all interfaces.
 __SITE__ {
+    bind __BIND__
     root * /srv/martynka/current
     __TLS__
     encode zstd gzip
