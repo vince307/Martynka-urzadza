@@ -46,6 +46,17 @@ export const drawToken = (token: ShapeToken, rng: Rng, max: number): number => {
     return min + step * rng.int(0, (top - min) / step);
 };
 
+/** Every value of the token's shape up to `max` (possibly none). */
+export const tokenValues = (token: ShapeToken, max: number): number[] => {
+    const { min, step } = RANGES[token];
+    const top = Math.min(RANGES[token].max, max);
+    const out: number[] = [];
+    for (let n = min; n <= top; n += step) {
+        out.push(n);
+    }
+    return out;
+};
+
 /** Does n have the token's shape? Used by tests and params validation. */
 export const matchesToken = (n: number, token: ShapeToken): boolean => {
     const { min, max, step } = RANGES[token];

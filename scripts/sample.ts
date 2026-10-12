@@ -2,6 +2,7 @@
 // violations (PRD FR-005). Usage: npm run sample -- E3 [--seed N] [--count N]
 // Exit codes: 0 ok, 1 violations or generator errors, 2 usage.
 import { createRng, seedFromString } from '../src/core/rng';
+import { boundOf } from '../src/core/tasks/bounds';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask, type Violation } from '../src/core/tasks/validate';
 import { availableStages, getStage } from '../src/data/curriculum';
@@ -60,8 +61,7 @@ for (const step of stage!.steps) {
             try {
                 // Seed per skill and draw: adding a skill elsewhere never reshuffles this one.
                 const task = generate(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)));
-                const bound = skill.params.max ?? skill.params.maxProduct ?? skill.params.maxDividend;
-                const max = typeof bound === 'number' ? bound : undefined;
+                const max = boundOf(skill);
                 const found = validateTask(task, { max, nouns });
                 violations.push(...found);
                 const flag = found.length > 0 ? '  ⚠' : '';

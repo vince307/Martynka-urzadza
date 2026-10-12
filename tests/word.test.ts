@@ -25,5 +25,7 @@ describe('generateWord', () => {
     it('rejects malformed params', () => {
         expect(() => parseWordParams({ max: 20, kinds: ['story'] })).toThrow(TypeError);
         expect(() => parseWordParams({ max: 2, kinds: ['sum'] })).toThrow(TypeError);
+        expect(() => parseWordParams({ max: 5, kinds: ['age'] })).toThrow(/age needs max/);
+        expect(parseWordParams({ max: 6, kinds: ['age'] }).max).toBe(6);
     });
 });

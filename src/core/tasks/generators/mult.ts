@@ -28,7 +28,23 @@ export const parseMultParams = (params: Record<string, unknown>): MultParams => 
     if (typeof allowZeroOne !== 'boolean') {
         throw new TypeError(`MULT params.allowZeroOne must be a boolean, got ${String(allowZeroOne)}`);
     }
-    return { maxProduct: maxProduct as number, maxFactor: maxFactor as number, factors, allowZeroOne };
+    const p: MultParams = { maxProduct: maxProduct as number, maxFactor: maxFactor as number, factors, allowZeroOne };
+    if (!multFeasible(p)) {
+        throw new TypeError(`MULT params have no products within maxProduct ${String(maxProduct)}: ${JSON.stringify(params)}`);
+    }
+    return p;
+};
+
+/** Some allowed factor pair (not both zero) has a product within maxProduct. */
+export const multFeasible = (p: MultParams): boolean => {
+    const low = p.allowZeroOne ? 0 : 2;
+    const seconds = p.factors ?? Array.from({ length: p.maxFactor - low + 1 }, (_, i) => low + i);
+    for (let a = low; a <= p.maxFactor; a += 1) {
+        if (seconds.some((b) => !(a === 0 && b === 0) && a * b <= p.maxProduct)) {
+            return true;
+        }
+    }
+    return false;
 };
 
 const drawFactors = (p: MultParams, rng: Rng): [number, number] | undefined => {

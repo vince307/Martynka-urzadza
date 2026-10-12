@@ -8,7 +8,11 @@ describe('generateDiv', () => {
     for (const skill of [...skillsOfType(E3, 'DIV'), ...skillsOfType(E4, 'DIV')]) {
         const p = parseDivParams(skill.params);
         it(`${skill.id}: 1000 draws`, () => {
+            let ones = 0;
             forEachDraw(generateDiv, skill, { max: p.maxDividend }, (task, where) => {
+                if (task.answer === 1) {
+                    ones += 1;
+                }
                 const m = /^(\d+) : (\d+)$/.exec(task.prompt);
                 expect(m, where).not.toBeNull();
                 const n = Number(m![1]);
@@ -22,10 +26,14 @@ describe('generateDiv', () => {
                 }
                 expect(task.hint[0], where).toBe(`${d} · ${n / d} = ${n}`);
             });
+            // n : n stays rare but present (about one draw in ten).
+            expect(ones).toBeGreaterThan(30);
+            expect(ones).toBeLessThan(200);
         });
     }
 
     it('rejects malformed params', () => {
         expect(() => parseDivParams({ maxDividend: 30, divisors: [0] })).toThrow(TypeError);
+        expect(() => parseDivParams({ maxDividend: 9, divisors: [10] })).toThrow(/no divisions/);
     });
 });

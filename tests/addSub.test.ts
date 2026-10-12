@@ -140,5 +140,8 @@ describe('generateAddSub', () => {
         expect(() => parseAddSubParams({ max: 20, ops: ['+'], bridge: 'x' })).toThrow(TypeError);
         expect(() => parseAddSubParams({ max: 20, ops: ['*'], bridge: 'any' })).toThrow(TypeError);
         expect(() => parseAddSubParams({ max: 9, ops: ['+'], bridge: 'ten' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 30, shapes: ['DU+DU'], bridge: 'ten' })).toThrow(/DU\+DU has no solutions/);
+        expect(() => parseAddSubParams({ max: 100, shapes: ['DT-U'], bridge: 'ten' })).toThrow(TypeError);
+        expect(parseAddSubParams({ max: 100, shapes: ['DU+U'], bridge: 'ten' }).shapes).toHaveLength(1);
     });
 });
