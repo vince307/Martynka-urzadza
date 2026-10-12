@@ -1,60 +1,50 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-The `/10x-plan-review` step of autonomous run 2026-10-12-s04-s08 wrote this file. The plan is reviewed and its verdict is PROCEED. Seven warnings were fixed in `plan.md`, two observations went to `## Known risks`, `change.md` is `plan_reviewed`, and there is no product code yet. Phase 1 is `tdd`.
-
-Things the next agents must not get wrong:
-- Phase 1: the `speak` texts keep the operation symbols, and phase 2 turns them into words.
-- Phase 2 must add the "mowa nie zdradza wyniku" (spoken text never gives away the answer) invariant over all of E1–E6. It must extract numbers with `NUMBER_SOURCE`/`parseNumber`, never by splitting on `\s`.
+The `/10x-tdd` phase 1 step of autonomous run 2026-10-12-s04-s08 wrote this file. Phase 1 (spoken text in generators) is committed in `d361c99`. The next agent must not get this wrong: the `speak` texts still contain raw operation symbols and `□`; phase 2 turns them into words ("okienko", "plus", ...) and adds the no-leak invariant over E1–E6.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary`, cut from `main` at `8467431` |
-| Commits on branch | 5 after this commit (`ad5535b` change identity, `35ed687` research, `f4f09e1` plan, `42db9db` handoff row count, plus this plan-review commit) |
+| Commits on branch | 5 docs commits + `d361c99` (phase 1) + this handoff commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 55 (`grep -c '^- \[ \]' plan.md`), none done |
+| `change.md` status | `plan_reviewed` (unchanged; implementation continues) |
+| `## Progress` rows remaining | 51 (`grep -c '^- \[ \]' plan.md`); rows 1.1–1.4 ticked, 1.5 `[reviewer]` open |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/narrator-round-summary/reviews/plan-review.md` | plan review: F1–F9, the orchestrator's focus points (a)–(e), and the S-05 follow-ups. It ends `VERDICT: PROCEED` |
-| `context/changes/narrator-round-summary/plan.md` | fixes from the review (list below) and two new `## Known risks` entries |
-| `context/changes/narrator-round-summary/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/narrator-round-summary/handoff.md` | this file |
-
-Fixes applied to `plan.md`:
-
-| Finding | Phase | Change |
-|---|---|---|
-| F1 | 2 | no-leak invariant over all of E1–E6 |
-| F2 | 2 | NBSP tokenization with `NUMBER_SOURCE`, 1000/1001 cases |
-| F3 | 2 | sentence split only on a colon attached to a word, so `12 : 3` stays whole |
-| F4 | 9 | clear `roomSwitch` before the switch to the room, restore it on `wake`, `isSleeping` guard; phase 11 asserts it in the room |
-| F5 | 3 | `speechSynthesis` and `SpeechSynthesisUtterance` banned in `src/core/**` through ESLint and `lint-boundaries.test.ts` |
-| F6 | 8 | the deliberate break calls `installE2EHook` unconditionally; a bare import is tree-shaken |
-| F7 | 1 | teacher read covers E1–E6 |
-| F7 | 2/5 | `narrationOf` returns the final spoken text |
+| `src/data/pl.ts` | `pl.tasks.romanLetters`, `romanSpeakContexts`, `romanMonthSpeak`, `compareSpeak`, `compareExprSpeak`, `missingOpSpeak` |
+| `src/core/text/roman.ts` | `spellRoman(text, letters)` |
+| `src/core/tasks/generators/{compareNum,compareExpr,missingOp,roman,calendar}.ts` | set `Task.speak` (ROMAN only for the reading direction; `toRoman` direction has none) |
+| `scripts/sample.ts` | prints a `mowa:` line under a task that has `speak` |
+| `tests/taskSpeech.test.ts`, `tests/taskSpeechHelpers.ts` | one new file over the real skills of all stages (instead of five edited files): question + whole expression, question text without sign glyphs, ROMAN/CALENDAR without numeral token, digits, number words or month name, `spellRoman` |
+| `context/changes/narrator-round-summary/plan.md` | rows 1.1–1.4 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/narrator-round-summary` |
-| Progress ↔ phases | 12 phase bodies ↔ 12 Progress blocks, 55 rows (unchanged), 12 `Driver:` lines, e2e phases 11–12 after the seam sweep in phase 10 |
-| Code claims | 13/13 paths and 12/12 symbols checked against the code (list in the review, `## Grounding`) |
-| Phaser claims | checked in `node_modules/phaser` 4.2.1 by a subagent: input propagation, `switch`/sleep/wake, draw order, `pointerdown`/`pointerup` vs touch events |
-| ESLint and Rollup claims | the subagent also checked the ESLint core globals list and Rollup tree-shaking of the hook |
-| Gates (lint, typecheck, unit, build, e2e) | not run: docs-only step. Baseline per the contract: `main` @ `8467431`, unit 596 passed, e2e 4 passed |
+| RED (stub state: src changes stashed) | `tests/taskSpeech.test.ts` 12 of 15 failed; first: `E1.2.compare_num_5 seed=1 draw=0 prompt="2 □ 1": expected undefined to be defined` |
+| GREEN | 15/15 after a test fix (substring `trzy` matched inside "zatrzymała"; now whole-word match) |
+| Deliberate break | ROMAN `speak` = `prompt` text and COMPARE_NUM large-branch `speak` removed: 4 red (`E6.10.compare_num_1000000`, `E3.11.roman_12`, `E5.2.roman_12`, `E6.10.roman_2000`); restored, green. Meta-check: the cases come from generators on real stage data, so the break is what turns them red |
+| `npm run lint`, `npm run typecheck` | OK |
+| `npm test` | 611 passed (baseline 596, +15) |
+| deploy and ops scripts | OK, OK |
+| `npm run sample -- E1` … `E6` | each exit 0, `Naruszenia: 0`, `mowa:` lines present |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test` | 4 passed (baseline 4, +0) |
 
 ## 4. Next command
 
-/10x-tdd narrator-round-summary phase 1
+/10x-tdd narrator-round-summary phase 2
 
 ## 5. Open
+
+Teacher read (author's pass, row 1.5 stays for the `[reviewer]`): questions read naturally ("Jaki znak pasuje w okienku? 3 □ 5", "Porównaj wyniki. ...", "Jakiego znaku działania brakuje w okienku? 8 □ 2 = 10"); Roman letters are spelled "fau, i, i", "iks, el, i, iks"; the answer is never in the question. Observations: a single letter reads "zapis rzymski i" (the conjunction "i"), acceptable; E6 long numerals (8 letters) are a long list. `reviews/teacher-read.md` is not written (reviewer's file).
 
 Manual-only Progress rows (checklist for the maintainer):
 - [ ] 10.5 `[human]` auto-read only as a session default by stage (FR-009)
@@ -63,34 +53,15 @@ Manual-only Progress rows (checklist for the maintainer):
 - [ ] 10.8 `[human]` the first task after a cold start is never read aloud automatically
 - [ ] 10.9 `[human]` iPad and Android listening check (PRD OQ 7)
 
-Review rows:
-- `[reviewer]` teacher reads: 1.5 (now E1–E6), 2.5, 6.5, 7.4; seam sweep 10.4
-- `[visual]` 5.4, 6.6, 7.5, 9.4
-
-Known risks added by the review (`plan.md` `## Known risks`):
-- **F8:** no full-screen interactive zone in `UIScene`, or it blocks `TaskScene`.
-- **F9:** in NUMBER_WORDS digits → words, the synthesizer reads the digits as the answer words; teacher read 2.5 decides whether that stays.
-
-DESIGN-GAPs and follow-ups are unchanged from the plan step; phase 10 writes them. Deferred S-05 follow-ups:
-
-| Follow-up | Deferred to |
-|---|---|
-| `pl.title` | S-06 |
-| solution-step dots | next `SolutionSteps` change |
+Review rows: `[reviewer]` 1.5, 2.5, 6.5, 7.4, 10.4; `[visual]` 5.4, 6.6, 7.5, 9.4.
+Known risks F8, F9 in `plan.md` `## Known risks` unchanged. Deferred follow-ups: `pl.title` (S-06), solution-step dots (next `SolutionSteps` change).
 
 ## 6. Autonomous decisions
 
-1. **Triaged without asking.**
-   - Every WARNING with an obvious fix was applied to `plan.md` (F1–F7), and the observations were recorded (F8, F9). The skill's triage `AskUserQuestion` was skipped under contract rule 1.
-   - Would change: nothing.
-2. **The room-return decision was not overturned.**
-   - Why: the kit `preview.js` (`roomReturn=screen`, `resume`) confirms it, FR-010/FR-011 do not contradict it, and `[human]` row 10.7 names it.
-   - Would change: the maintainer wants the room to reset the round.
-3. **F5 changes ESLint config in phase 3 (lint rule data plus a boundary test case), not a gate command.**
-   - Rejected: leaving the boundary open and relying on review.
-   - Would change: nothing.
-4. **The F6 break moved to `main.ts`, rather than a scene importing the hook.**
-   - Why: an unused import is tree-shaken, so it never goes red, and a scene import would create a `e2eHook` → `TaskScene` cycle.
-5. **Verdict PROCEED.**
-   - Why: none of the findings put the approach in question, and every one has a narrow fix.
-   - Would change: phase 2 shows that the token check for "never gives away the answer" is impossible without per-type exemptions. Then narrow it to the Roman-numeral rule plus type-specific checks and note that in the plan.
+1. **Mixed-phase / test layout.** One new test file `tests/taskSpeech.test.ts` over the real curriculum skills instead of edits to five files.
+   - Why: one place for the shared no-leak definition; the plan said "testy w pięciu plikach" only as a location.
+   - Would change: the reviewer wants per-generator files.
+2. **ROMAN context pick.** The generator now draws the context index with `rng.int` (same draw count as `rng.pick`) so the spoken context matches the written one.
+3. **Phrasing.** Roman reading uses "zapis rzymski ${letters}" for the number question so one letter does not need a plural.
+   - Would change: the teacher read prefers "cyfry rzymskie".
+4. **Gate prompts.** Commit message and between-phase prompts decided in place; stopped after phase 1.

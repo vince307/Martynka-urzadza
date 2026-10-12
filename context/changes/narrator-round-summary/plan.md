@@ -822,10 +822,10 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 1.1 Nowe przypadki w pięciu plikach testów czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: ROMAN `speak` = `prompt` / COMPARE_NUM bez `speak` → czerwony; przywrócone; meta-check na zadaniach z generatorów
-- [ ] 1.3 `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `mowa:`
-- [ ] 1.4 Pełna bramka lokalna zielona
+- [x] 1.1 Nowe przypadki w pięciu plikach testów czerwone przed, zielone po; unit `<baseline gałęzi> + N` — d361c99
+- [x] 1.2 Deliberate break: ROMAN `speak` = `prompt` / COMPARE_NUM bez `speak` → czerwony; przywrócone; meta-check na zadaniach z generatorów — d361c99
+- [x] 1.3 `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `mowa:` — d361c99
+- [x] 1.4 Pełna bramka lokalna zielona — d361c99
 
 #### Manual
 
