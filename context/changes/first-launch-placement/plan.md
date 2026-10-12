@@ -692,7 +692,7 @@ bez przekształceń.
 
 - [x] 1.1 `tests/placement.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — d79ba20 (671 → 742, +71)
 - [x] 1.2 Deliberate break: styczeń w złym paśmie / `overridden` przy potwierdzeniu → czerwony; przywrócone; meta-check (wyrocznia z dokumentu) — d79ba20
-- [ ] 1.3 Pełna bramka lokalna zielona
+- [x] 1.3 Pełna bramka lokalna zielona — d79ba20 (e2e: orchestrator run, 8 passed, run-log S-06 p1)
 
 #### Manual
 
@@ -702,10 +702,10 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 2.1 `tests/warmup.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: skład z pełnego etapu / próg `<=` → czerwony; przywrócone; meta-check (prawdziwe `stages`)
-- [ ] 2.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0`; `--warmup` drukuje 6 zadań
-- [ ] 2.4 Pełna bramka lokalna zielona
+- [x] 2.1 `tests/warmup.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 403644c (742 → 753, +11)
+- [x] 2.2 Deliberate break: skład z pełnego etapu / próg `<=` → czerwony; przywrócone; meta-check (prawdziwe `stages`) — 403644c
+- [x] 2.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0`; `--warmup` drukuje 6 zadań — 403644c
+- [x] 2.4 Pełna bramka lokalna zielona — 403644c (e2e: orchestrator gate)
 
 #### Manual
 
