@@ -51,8 +51,11 @@ export const pl = {
             `Każda następna liczba jest o ${step} ${up ? 'większa' : 'mniejsza'}.`,
         missingOpHint: (a: number, plus: boolean) =>
             plus ? `Wynik jest większy niż ${a}, więc dodajemy.` : `Wynik jest mniejszy niż ${a}, więc odejmujemy.`,
-        rounding: (n: number) => `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
-        roundingHint: (n: number, low: number, high: number, nearest: number) => [
+        rounding: (n: string, to: 10 | 100 | 1000) =>
+            to === 1000 ? `Który pełny tysiąc jest najbliżej liczby ${n}?`
+            : to === 100 ? `Która pełna setka jest najbliżej liczby ${n}?`
+            : `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
+        roundingHint: (n: string, low: string, high: string, nearest: string) => [
             `${n} jest między ${low} a ${high}`,
             `${n} jest bliżej ${nearest}`,
         ],

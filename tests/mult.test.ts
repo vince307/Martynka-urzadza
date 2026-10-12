@@ -42,6 +42,15 @@ describe('generateMult', () => {
         expect(multHint(8, 10)).toEqual(['8 · 10 = 80']);
     });
 
+    it('splits full tens and hundreds by the table, then appends the zeros', () => {
+        expect(multHint(4, 70)).toEqual(['4 · 7 = 28', '28 · 10 = 280']);
+        expect(multHint(3, 200)).toEqual(['3 · 2 = 6', '6 · 100 = 600']);
+        // Single line kept for the bare ·10 and ·100, and for a first factor of 10.
+        expect(multHint(7, 10)).toEqual(['7 · 10 = 70']);
+        expect(multHint(3, 100)).toEqual(['3 · 100 = 300']);
+        expect(multHint(10, 3)).toEqual(['10 · 2 = 20', '20 + 10 = 30']);
+    });
+
     it('rejects malformed params', () => {
         expect(() => parseMultParams({ maxProduct: 2 })).toThrow(TypeError);
         expect(() => parseMultParams({ maxProduct: 30, factors: [] })).toThrow(TypeError);
