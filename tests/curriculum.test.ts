@@ -5,10 +5,10 @@ import { validateTask } from '../src/core/tasks/validate';
 import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 
-/** Group 1 of ZADANIA.md section 7 as implemented in S-02; the rest arrive in S-03 (E1–E2, E5–E6). */
-const GROUP_1 = ['ADD_SUB', 'MISSING', 'COMPLEMENT', 'ROUNDING', 'MULT', 'DIV', 'HALF', 'COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN', 'CALENDAR', 'WORD', 'COMPARE_DIFF'];
-/** Types that need drawings or art (groups 2–3): allowed to have no skill yet. */
-const LATER = ['CLOCK', 'MASS', 'DATA', 'PUZZLE_GRID', 'LENGTH', 'PLACE_VALUE', 'GRID', 'MULT_GROUPS', 'TEMPERATURE', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY', 'PERIMETER'];
+/** Group 1 of ZADANIA.md section 7, complete after S-03 phases 1–5 (S-02 types plus BONDS … CHOOSE_OP). */
+const GROUP_1 = ['ADD_SUB', 'MISSING', 'COMPLEMENT', 'ROUNDING', 'MULT', 'DIV', 'HALF', 'COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN', 'CALENDAR', 'WORD', 'COMPARE_DIFF', 'BONDS', 'CHAIN', 'MISSING_OP', 'COMPARE_EXPR', 'SEQUENCE', 'FACT_FAMILY', 'CHOOSE_OP'];
+/** Types that need drawings or art (groups 2–3), or are textbook types outside ZADANIA.md section 7: allowed to have no skill yet. */
+const LATER = ['CLOCK', 'MASS', 'DATA', 'PUZZLE_GRID', 'LENGTH', 'PLACE_VALUE', 'GRID', 'MULT_GROUPS', 'TEMPERATURE', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY', 'PERIMETER', 'SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY', 'COUNT', 'ORDINAL', 'INEQUALITY', 'MONEY_PAY', 'ARROW_TABLE'];
 
 describe('curriculum E3–E4', () => {
     for (const stage of Object.values(stages)) {

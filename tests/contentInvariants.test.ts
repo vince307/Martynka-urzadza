@@ -12,6 +12,13 @@ import { nouns } from '../src/data/nouns';
 // with a comment, when a new stage legitimately has a smaller task space.
 const DRAWS = 1000;
 const MIN_DISTINCT = 12;           // distinct (prompt + choices) pairs per 1000 draws
+// Skills whose task space is smaller than MIN_DISTINCT by definition of their step
+// (measured over DRAWS draws, same seeds as below: distinct pairs = distinct prompts).
+// The exception covers MIN_DISTINCT of these ids only; every other rule still applies.
+const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = {
+    'E1.7.complement_10': { minDistinct: 9, measured: '9 distinct tasks / 9 prompts: the complement to 10 of 1..9 has exactly 9 forms' },
+    'E1.6.even_odd_single_10': { minDistinct: 11, measured: '11 distinct tasks / 11 prompts: the numbers 0..10' },
+};
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n
 const MAX_ZERO_ONE_SHARE = 0.35;   // ·0 and ·1 when allowed
@@ -96,7 +103,7 @@ for (const stage of Object.values(stages)) {
                     }
 
                     const top = Math.max(...seen.values());
-                    expect(seen.size, `${skill.id}: only ${seen.size} distinct tasks in ${DRAWS} draws`).toBeGreaterThanOrEqual(MIN_DISTINCT);
+                    expect(seen.size, `${skill.id}: only ${seen.size} distinct tasks in ${DRAWS} draws`).toBeGreaterThanOrEqual(SMALL_SPACES[skill.id]?.minDistinct ?? MIN_DISTINCT);
                     expect(top / DRAWS, `${skill.id}: most frequent task ${top}/${DRAWS}`).toBeLessThanOrEqual(MAX_TOP_SHARE);
                     if (binary > 0) {
                         expect(degenerate / binary, `${skill.id}: ${degenerate} degenerate of ${binary}`).toBeLessThanOrEqual(MAX_DEGENERATE_SHARE);
