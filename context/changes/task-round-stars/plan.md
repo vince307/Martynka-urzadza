@@ -826,10 +826,10 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 2.1 `tests/hints.test.ts` i nowe przypadki `tests/missing.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `firstHint` bezwarunkowo / MISSING jednolinijkowy → czerwony; przywrócone; meta-check na zadaniach z generatorów
-- [ ] 2.3 `npm run sample -- E3` i `-- E4` kończą się `Naruszenia: 0`
-- [ ] 2.4 Pełna bramka lokalna zielona
+- [x] 2.1 `tests/hints.test.ts` i nowe przypadki `tests/missing.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N` — d77b9c8
+- [x] 2.2 Deliberate break: `firstHint` bezwarunkowo / MISSING jednolinijkowy → czerwony; przywrócone; meta-check na zadaniach z generatorów — d77b9c8
+- [x] 2.3 `npm run sample -- E3` i `-- E4` kończą się `Naruszenia: 0` — d77b9c8
+- [x] 2.4 Pełna bramka lokalna zielona — d77b9c8
 
 #### Manual
 
