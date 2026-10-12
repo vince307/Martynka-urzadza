@@ -10,7 +10,7 @@ describe('generateEvenOdd', () => {
         it(`${skill.id}: 1000 draws (${p.variant})`, () => {
             forEachDraw(generateEvenOdd, skill, {}, (task, where) => {
                 if (p.variant === 'single') {
-                    const n = Number(/Czy (\d+) /.exec(task.prompt)?.[1]);
+                    const n = Number(/Liczba (\d+) /.exec(task.prompt)?.[1]);
                     expect(n, where).toBeLessThanOrEqual(p.max);
                     expect(task.answer, where).toBe(n % 2 === 0 ? pl.tasks.even : pl.tasks.odd);
                     expect(task.choices, where).toEqual([pl.tasks.even, pl.tasks.odd]);
@@ -22,6 +22,8 @@ describe('generateEvenOdd', () => {
                     expect(task.answer, where).toEqual([...evens].sort((x, y) => x - y));
                     expect(task.check?.([...evens].reverse()), where).toBe(true);
                     expect(task.check?.(evens.slice(1)), where).toBe(false);
+                    const odd = (task.choices as number[]).find((n) => n % 2 === 1)!;
+                    expect(task.check?.([...evens, odd]), where).toBe(false);
                     expect(task.check?.('x'), where).toBe(false);
                     for (const n of task.choices as number[]) {
                         expect(n, where).toBeLessThanOrEqual(p.max);

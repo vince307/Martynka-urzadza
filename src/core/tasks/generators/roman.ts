@@ -1,7 +1,7 @@
 // ROMAN: Roman ↔ Arabic numerals with three tiles, in a clock / floor / plain
 // context (ZADANIA.md, section 4; I–XII in E3 and E5).
 import { pl } from '../../../data/pl';
-import { romanGlyphValues, toRoman } from '../../text/roman';
+import { romanBreakdown, toRoman } from '../../text/roman';
 import { numberChoices } from '../distractors';
 import type { Generator, Task } from '../types';
 
@@ -22,7 +22,8 @@ export const generateRoman: Generator = (skill, rng): Task => {
     const n = rng.int(1, p.max);
     const roman = toRoman(n);
     const numbers = numberChoices(n, rng, { count: 3, min: 1, max: p.max });
-    const hint = [pl.tasks.romanHint(romanGlyphValues(roman))];
+    const { steps, sum } = romanBreakdown(roman);
+    const hint = [pl.tasks.romanHint(steps.join(', '), sum)];
     if (rng.chance(0.5)) {
         // Clock and floor contexts only make sense up to 12.
         const contexts = n <= 12 ? pl.tasks.romanContexts : pl.tasks.romanContexts.slice(2);

@@ -23,4 +23,5 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     pudełko: ['pudełko', 'pudełka', 'pudełek'],
     półka: ['półka', 'półki', 'półek'],
     naklejka: ['naklejka', 'naklejki', 'naklejek'],
+    rok: ['rok', 'lata', 'lat'],
 };

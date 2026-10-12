@@ -20,7 +20,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 ## Commands
 
 - `npm install`
-- `npm run dev` — Vite on http://localhost:8080 (`-- --host` for a tablet).
+- `npm run dev` — Vite on http://localhost:8080 (`-- --host` for tablets).
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
 - `npm run preview` — the only local way to test `sw.js`.
@@ -28,7 +28,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(skill, rng) => Task` on the seeded rng.
+TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(skill, rng) => Task`.
 
 ## Testing
 
@@ -36,4 +36,4 @@ Vitest in `tests/` (standalone `vitest.config.mts`). Each skill gets a 1000-draw
 
 ## Commits and PRs
 
-Polish commit messages with a conventional prefix (`feat:`, `chore:`, `docs:`). Branch, push, open a PR; `main` changes only by merging on GitHub, which deploys to https://martynka-urzadza.pl, so `main` must build. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring or its users. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, open a PR; `main` changes only by merging on GitHub, which deploys to https://martynka-urzadza.pl, so `main` must build. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring or its users. Runbook: @deploy/README.md.

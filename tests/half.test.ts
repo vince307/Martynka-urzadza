@@ -8,7 +8,7 @@ describe('generateHalf', () => {
         const p = parseHalfParams(skill.params);
         it(`${skill.id}: 1000 draws`, () => {
             forEachDraw(generateHalf, skill, { max: p.max }, (task, where) => {
-                const n = Number(/z (\d+)\?$/.exec(task.prompt)?.[1]);
+                const n = Number(/liczby (\d+)\?$/.exec(task.prompt)?.[1]);
                 expect(n % 2, where).toBe(0);
                 expect(n, where).toBeLessThanOrEqual(p.max);
                 expect(task.answer, where).toBe(n / 2);

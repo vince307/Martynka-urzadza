@@ -35,9 +35,11 @@ describe('generateMult', () => {
     }
 
     it('splits the second factor in the hint', () => {
-        expect(multHint(7, 4)).toEqual(['7 · 2 = 14', '7 · 2 = 14', '14 + 14 = 28']);
+        expect(multHint(7, 4)).toEqual(['7 · 2 = 14', '14 + 14 = 28']);
         expect(multHint(6, 1)).toEqual(['6 · 1 = 6']);
-        expect(multHint(5, 7)).toEqual(['5 · 3 = 15', '5 · 4 = 20', '15 + 20 = 35']);
+        expect(multHint(5, 7)).toEqual(['5 · 6 = 30', '30 + 5 = 35']);
+        expect(multHint(7, 5)).toEqual(['7 · 5 = 35']);
+        expect(multHint(8, 10)).toEqual(['8 · 10 = 80']);
     });
 
     it('rejects malformed params', () => {

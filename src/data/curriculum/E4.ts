@@ -43,10 +43,7 @@ export const E4: StageDef = {
             step: 5,
             title: 'Pełne dziesiątki (52 + 20, 72 − 50), dwie dwucyfrowe bez przekroczenia (35 + 34, 37 − 12), km',
             types: ['ADD_SUB'],
-            skills: [
-                skill('E4.5.add_sub_100_tens', 5, 'ADD_SUB', { max: 100, shapes: ['DU+DT', 'DU-DT', 'DU+DU', 'DU-DU'], bridge: 'none' }),
-                skill('E4.5.word_100', 5, 'WORD', { max: 100, kinds: ['sum', 'left', 'twoSteps', 'age'] }),
-            ],
+            skills: [skill('E4.5.add_sub_100_tens', 5, 'ADD_SUB', { max: 100, shapes: ['DU+DT', 'DU-DT', 'DU+DU', 'DU-DU'], bridge: 'none' })],
         },
         {
             step: 6,

@@ -1,7 +1,7 @@
 // HALF: half of an even number (ZADANIA.md, section 4, E3).
 import { pl } from '../../../data/pl';
+import { DIVIDE } from '../symbols';
 import type { Generator, Task } from '../types';
-import { DIVIDE } from './missing';
 
 export interface HalfParams {
     max: number;   // largest even number asked about

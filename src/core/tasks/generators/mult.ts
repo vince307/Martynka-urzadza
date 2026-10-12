@@ -2,8 +2,8 @@
 // the second factor in half (7 · 4 → 7 · 2 + 7 · 2) or states the trivial
 // cases with 0 and 1.
 import type { Rng } from '../../rng';
+import { TIMES } from '../symbols';
 import type { Generator, Task } from '../types';
-import { TIMES } from './missing';
 
 export interface MultParams {
     maxProduct: number;
@@ -38,21 +38,29 @@ const drawFactors = (p: MultParams, rng: Rng): [number, number] | undefined => {
     if (a * b > p.maxProduct || (a === 0 && b === 0)) {
         return undefined;
     }
-    // Keep 0 and 1 rare (about one in six) so the step is not dominated by them.
+    // Keep 0 and 1 rare (about one draw in four) so the step is not dominated by them.
     if (p.allowZeroOne && (a <= 1 || b <= 1) && !rng.chance(1 / 3)) {
         return undefined;
     }
     return [a, b];
 };
 
+/**
+ * Hint: ·0, ·1, ·2, ·5 and ·10 are stated directly; an even factor is doubled
+ * (7 · 4 → 7 · 2 = 14, 14 + 14 = 28); an odd one adds one more group
+ * (7 · 3 → 7 · 2 = 14, 14 + 7 = 21).
+ */
 export const multHint = (a: number, b: number): string[] => {
     const product = a * b;
-    if (a <= 2 || b <= 2) {
+    if (a <= 2 || b <= 2 || b === 5 || b === 10) {
         return [`${a} ${TIMES} ${b} = ${product}`];
     }
-    const b1 = Math.floor(b / 2);
-    const b2 = b - b1;
-    return [`${a} ${TIMES} ${b1} = ${a * b1}`, `${a} ${TIMES} ${b2} = ${a * b2}`, `${a * b1} + ${a * b2} = ${product}`];
+    if (b % 2 === 0) {
+        const half = a * (b / 2);
+        return [`${a} ${TIMES} ${b / 2} = ${half}`, `${half} + ${half} = ${product}`];
+    }
+    const most = a * (b - 1);
+    return [`${a} ${TIMES} ${b - 1} = ${most}`, `${most} + ${a} = ${product}`];
 };
 
 export const generateMult: Generator = (skill, rng): Task => {

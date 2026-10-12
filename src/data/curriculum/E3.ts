@@ -1,6 +1,6 @@
 // Stage E3 (grade 2, first semester): steps from docs/ZADANIA.md, section 3.
-// Only ADD_SUB skills carry parameters so far (roadmap F-03); the other steps
-// list their task types and get skills with the generators in S-02.
+// Skills carry the parameters of group-1 generators (roadmap S-02); drawing
+// and art types (clock, mass, grid, temperature) arrive in M6.
 import type { SkillDef, StageDef } from '../../core/types';
 
 const skill = (id: string, step: number, type: string, params: SkillDef['params'], answer: SkillDef['answer'] = 'keypad'): SkillDef => ({
@@ -32,7 +32,7 @@ export const E3: StageDef = {
             types: ['ADD_SUB', 'MISSING'],
             skills: [
                 addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten' }),
-                skill('E3.2.missing_20', 2, 'MISSING', { max: 20, ops: ['+', '-'], bridge: 'any' }),
+                skill('E3.2.missing_20', 2, 'MISSING', { max: 20, ops: ['+', '-'], bridge: 'ten' }),
             ],
         },
         { step: 3, title: 'Zegar: pełne godziny, obliczenia zegarowe', types: ['CLOCK'], skills: [] },
@@ -42,7 +42,7 @@ export const E3: StageDef = {
             step: 6,
             title: 'Liczby 21–30, + i − do 30 bez przekroczenia',
             types: ['PLACE_VALUE', 'ADD_SUB'],
-            skills: [addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, ops: ['+', '-'], bridge: 'none' })],
+            skills: [addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' })],
         },
         {
             step: 7,

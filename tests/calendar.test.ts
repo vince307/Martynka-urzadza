@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateCalendar, parseCalendarParams } from '../src/core/tasks/generators/calendar';
+import { fromRoman } from '../src/core/text/roman';
 import { months, quarters } from '../src/data/calendar';
 import { E3 } from '../src/data/curriculum/E3';
 import { forEachDraw, skillsOfType } from './helpers';
@@ -24,7 +25,7 @@ describe('generateCalendar', () => {
                 } else {
                     const m = /^Data (\d+) ([IVX]+)\./.exec(task.prompt)!;
                     expect(Number(m[1]), where).toBeLessThanOrEqual(28);
-                    expect(byName(answer).index, where).toBe(months.findIndex((x) => x.name === answer) + 1);
+                    expect(byName(answer).index, where).toBe(fromRoman(m[2]));
                 }
             });
         });

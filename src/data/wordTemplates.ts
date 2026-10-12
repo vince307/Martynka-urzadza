@@ -8,37 +8,43 @@ import { pl } from './pl';
 
 export interface Person {
     name: string;
-    genitive: string;       // "dla Oli"
+    dative: string;         // "oddała Oli", "dał Kubie"
     gender: 'm' | 'f';
 }
 
 export const people: readonly Person[] = [
-    { name: 'Ola', genitive: 'Oli', gender: 'f' },
-    { name: 'Kuba', genitive: 'Kuby', gender: 'm' },
-    { name: 'Zosia', genitive: 'Zosi', gender: 'f' },
-    { name: 'Franek', genitive: 'Franka', gender: 'm' },
-    { name: 'Hania', genitive: 'Hani', gender: 'f' },
-    { name: 'Staś', genitive: 'Stasia', gender: 'm' },
-    { name: 'Ania', genitive: 'Ani', gender: 'f' },
-    { name: 'Tomek', genitive: 'Tomka', gender: 'm' },
+    { name: 'Ola', dative: 'Oli', gender: 'f' },
+    { name: 'Kuba', dative: 'Kubie', gender: 'm' },
+    { name: 'Zosia', dative: 'Zosi', gender: 'f' },
+    { name: 'Franek', dative: 'Frankowi', gender: 'm' },
+    { name: 'Hania', dative: 'Hani', gender: 'f' },
+    { name: 'Staś', dative: 'Stasiowi', gender: 'm' },
+    { name: 'Ania', dative: 'Ani', gender: 'f' },
+    { name: 'Tomek', dative: 'Tomkowi', gender: 'm' },
 ];
 
 export interface Context {
     noun: PluralForms;
+    accusative: string;     // singular accusative for "ma 1 naklejkę" (equals nominative for masculine/neuter)
     place: string;          // "w kawiarni", "na półce"
+    portable: boolean;      // fits boxes and plates (groups / share / each templates)
 }
 
 export const contexts: readonly Context[] = [
-    { noun: nouns.rogalik, place: 'w kawiarni' },
-    { noun: nouns.ciastko, place: 'na talerzu' },
-    { noun: nouns.filiżanka, place: 'na półce' },
-    { noun: nouns.kwiatek, place: 'w ogrodzie' },
-    { noun: nouns.poduszka, place: 'na kanapie' },
-    { noun: nouns.książka, place: 'na półce' },
-    { noun: nouns.klocek, place: 'w pudełku' },
-    { noun: nouns.kredka, place: 'w piórniku' },
-    { noun: nouns.naklejka, place: 'w albumie' },
+    { noun: nouns.rogalik, accusative: 'rogalik', place: 'w kawiarni', portable: true },
+    { noun: nouns.ciastko, accusative: 'ciastko', place: 'na talerzu', portable: true },
+    { noun: nouns.filiżanka, accusative: 'filiżankę', place: 'na półce', portable: false },
+    { noun: nouns.kwiatek, accusative: 'kwiatek', place: 'w ogrodzie', portable: false },
+    { noun: nouns.poduszka, accusative: 'poduszkę', place: 'na kanapie', portable: false },
+    { noun: nouns.książka, accusative: 'książkę', place: 'na półce', portable: false },
+    { noun: nouns.klocek, accusative: 'klocek', place: 'w pudełku', portable: true },
+    { noun: nouns.kredka, accusative: 'kredkę', place: 'w piórniku', portable: true },
+    { noun: nouns.naklejka, accusative: 'naklejkę', place: 'w albumie', portable: true },
+    { noun: nouns.złoty, accusative: 'złoty', place: 'w skarbonce', portable: false },
 ];
+
+/** A counted object: "1 naklejkę", "2 naklejki", "5 naklejek" (accusative for 1). */
+export const obj = (n: number, ctx: Context): string => (n === 1 ? `1 ${ctx.accusative}` : countNoun(n, ctx.noun));
 
 export type WordKind = 'sum' | 'left' | 'start' | 'twoSteps' | 'moreBy' | 'age' | 'groups' | 'share' | 'each';
 
@@ -76,7 +82,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'sum.bought',
         kind: 'sum',
         build: ({ a, b, person, ctx }) => ({
-            prompt: `${person.name} ${verb(person, pl.words.had)} ${countNoun(a, ctx.noun)} i ${verb(person, pl.words.bought)} jeszcze ${countNoun(b, ctx.noun)}. Ile ${ctx.noun[2]} ${person.name} ${pl.words.has} teraz?`,
+            prompt: `${person.name} ${verb(person, pl.words.had)} ${obj(a, ctx)} i ${verb(person, pl.words.bought)} jeszcze ${obj(b, ctx)}. Ile ${ctx.noun[2]} ${person.name} ${pl.words.has} teraz?`,
             answer: a + b,
             hint: [`${a} + ${b} = ${a + b}`],
         }),
@@ -85,7 +91,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'sum.place',
         kind: 'sum',
         build: ({ a, b, ctx }) => ({
-            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Dołożono jeszcze ${countNoun(b, ctx.noun)}. Ile ${ctx.noun[2]} jest teraz ${ctx.place}?`,
+            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Dołożono jeszcze ${obj(b, ctx)}. Ile ${ctx.noun[2]} jest teraz ${ctx.place}?`,
             answer: a + b,
             hint: [`${a} + ${b} = ${a + b}`],
         }),
@@ -94,7 +100,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'left.gave',
         kind: 'left',
         build: ({ a, b, person, other, ctx }) => ({
-            prompt: `${person.name} ${verb(person, pl.words.had)} ${countNoun(a, ctx.noun)} i ${verb(person, pl.words.gave)} ${countNoun(b, ctx.noun)} dla ${other.genitive}. Ile ${ctx.noun[2]} ${person.name} ${pl.words.has} teraz?`,
+            prompt: `${person.name} ${verb(person, pl.words.had)} ${obj(a, ctx)} i ${verb(person, pl.words.gave)} ${other.dative} ${obj(b, ctx)}. Ile ${ctx.noun[2]} ${person.name} ${pl.words.has} teraz?`,
             answer: a - b,
             hint: [`${a} ${MINUS} ${b} = ${a - b}`],
         }),
@@ -103,7 +109,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'left.taken',
         kind: 'left',
         build: ({ a, b, ctx }) => ({
-            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Zabrano ${countNoun(b, ctx.noun)}. Ile ${ctx.noun[2]} zostało?`,
+            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Zabrano ${obj(b, ctx)}. Ile ${ctx.noun[2]} zostało?`,
             answer: a - b,
             hint: [`${a} ${MINUS} ${b} = ${a - b}`],
         }),
@@ -111,9 +117,9 @@ export const templates: readonly WordTemplate[] = [
     {
         id: 'start.gave',
         kind: 'start',
-        build: ({ a, b, person, ctx }) => ({
+        build: ({ a, b, person, other, ctx }) => ({
             // a = given away, b = left; the answer is the starting amount.
-            prompt: `${person.name} ${verb(person, pl.words.gave)} ${countNoun(a, ctx.noun)} i ${pl.words.has} jeszcze ${countNoun(b, ctx.noun)}. Ile ${ctx.noun[2]} ${person.name} ${verb(person, pl.words.had)} na początku?`,
+            prompt: `${person.name} ${verb(person, pl.words.gave)} ${other.dative} ${obj(a, ctx)} i ${pl.words.has} jeszcze ${obj(b, ctx)}. Ile ${ctx.noun[2]} ${person.name} ${verb(person, pl.words.had)} na początku?`,
             answer: a + b,
             hint: [`${a} + ${b} = ${a + b}`],
         }),
@@ -122,7 +128,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'twoSteps.taken',
         kind: 'twoSteps',
         build: ({ a, b, c, ctx }) => ({
-            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Rano zabrano ${countNoun(b, ctx.noun)}, a po południu ${countNoun(c, ctx.noun)}. Ile ${ctx.noun[2]} zostało?`,
+            prompt: `${cap(ctx.place)} ${isAre(a)} ${countNoun(a, ctx.noun)}. Rano zabrano ${obj(b, ctx)}, a po południu ${obj(c, ctx)}. Ile ${ctx.noun[2]} zostało?`,
             answer: a - b - c,
             hint: [`${a} ${MINUS} ${b} = ${a - b}`, `${a - b} ${MINUS} ${c} = ${a - b - c}`],
         }),
@@ -131,7 +137,7 @@ export const templates: readonly WordTemplate[] = [
         id: 'moreBy.has',
         kind: 'moreBy',
         build: ({ a, b, person, other, ctx }) => ({
-            prompt: `${person.name} ${pl.words.has} ${countNoun(a, ctx.noun)}, a ${other.name} ${pl.words.has} o ${countNoun(b, ctx.noun)} więcej. Ile ${ctx.noun[2]} ${pl.words.has} ${other.name}?`,
+            prompt: `${person.name} ${pl.words.has} ${obj(a, ctx)}, a ${other.name} ${pl.words.has} o ${obj(b, ctx)} więcej. Ile ${ctx.noun[2]} ${pl.words.has} ${other.name}?`,
             answer: a + b,
             hint: [`${a} + ${b} = ${a + b}`],
         }),
@@ -141,7 +147,7 @@ export const templates: readonly WordTemplate[] = [
         kind: 'age',
         build: ({ a, b, person }) => ({
             // a = age now, b = target age; the answer is the years to wait.
-            prompt: `${person.name} ${pl.words.has} ${pl.words.years(a)}. Za ile lat ${verb(person, pl.words.willHave)} ${pl.words.years(b)}?`,
+            prompt: `${person.name} ${pl.words.has} ${countNoun(a, nouns.rok)}. Za ile lat ${verb(person, pl.words.willHave)} ${countNoun(b, nouns.rok)}?`,
             answer: b - a,
             hint: [`${b} ${MINUS} ${a} = ${b - a}`],
         }),
@@ -151,7 +157,7 @@ export const templates: readonly WordTemplate[] = [
         kind: 'groups',
         build: ({ a, b, ctx }) => ({
             // a boxes with b items each.
-            prompt: `Na stole ${isAre(a)} ${countNoun(a, nouns.pudełko)}, w każdym po ${countNoun(b, ctx.noun)}. Ile to razem ${ctx.noun[2]}?`,
+            prompt: `Na stole ${isAre(a)} ${countNoun(a, nouns.pudełko)}, w każdym po ${obj(b, ctx)}. Ile to razem ${ctx.noun[2]}?`,
             answer: a * b,
             hint: [`${a} ${TIMES} ${b} = ${a * b}`],
         }),
@@ -171,7 +177,7 @@ export const templates: readonly WordTemplate[] = [
         kind: 'each',
         build: ({ a, b, ctx }) => ({
             // a items packed b per box: how many boxes?
-            prompt: `${cap(countNoun(a, ctx.noun))} zapakowano do pudełek, po ${countNoun(b, ctx.noun)} w każdym. Ile pudełek zapełniono?`,
+            prompt: `${cap(countNoun(a, ctx.noun))} zapakowano do pudełek, po ${obj(b, ctx)} w każdym. Ile pudełek zapełniono?`,
             answer: a / b,
             hint: [`${a} ${DIVIDE} ${b} = ${a / b}`],
         }),
@@ -180,12 +186,12 @@ export const templates: readonly WordTemplate[] = [
 
 export const compareTemplates = {
     more: (p: Person, o: Person, a: number, b: number, ctx: Context): WordResult => ({
-        prompt: `${p.name} ${pl.words.has} ${countNoun(a, ctx.noun)}, a ${o.name} ${pl.words.has} ${countNoun(b, ctx.noun)}. O ile więcej ${ctx.noun[2]} ${pl.words.has} ${a > b ? p.name : o.name}?`,
+        prompt: `${p.name} ${pl.words.has} ${obj(a, ctx)}, a ${o.name} ${pl.words.has} ${obj(b, ctx)}. O ile więcej ${ctx.noun[2]} ${pl.words.has} ${a > b ? p.name : o.name}?`,
         answer: Math.abs(a - b),
         hint: [`${Math.max(a, b)} ${MINUS} ${Math.min(a, b)} = ${Math.abs(a - b)}`],
     }),
     less: (p: Person, o: Person, a: number, b: number, ctx: Context): WordResult => ({
-        prompt: `${p.name} ${pl.words.has} ${countNoun(a, ctx.noun)}, a ${o.name} ${pl.words.has} ${countNoun(b, ctx.noun)}. O ile mniej ${ctx.noun[2]} ${pl.words.has} ${a < b ? p.name : o.name}?`,
+        prompt: `${p.name} ${pl.words.has} ${obj(a, ctx)}, a ${o.name} ${pl.words.has} ${obj(b, ctx)}. O ile mniej ${ctx.noun[2]} ${pl.words.has} ${a < b ? p.name : o.name}?`,
         answer: Math.abs(a - b),
         hint: [`${Math.max(a, b)} ${MINUS} ${Math.min(a, b)} = ${Math.abs(a - b)}`],
     }),

@@ -1,7 +1,7 @@
 // DIV: exact division n : d (ZADANIA.md, section 4); the hint is the
 // multiplication that checks it (4 · 7 = 28).
+import { DIVIDE, TIMES } from '../symbols';
 import type { Generator, Task } from '../types';
-import { DIVIDE, TIMES } from './missing';
 
 export interface DivParams {
     maxDividend: number;

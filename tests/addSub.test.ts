@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { crossesTen, generateAddSub, hasCarry, MINUS, parseAddSubParams } from '../src/core/tasks/generators/addSub';
+import { addSubHint, crossesTen, generateAddSub, hasCarry, MINUS, parseAddSubParams } from '../src/core/tasks/generators/addSub';
 import { validateTask } from '../src/core/tasks/validate';
 import type { SkillDef } from '../src/core/types';
 import { matchesToken } from '../src/core/tasks/shapes';
@@ -120,19 +120,12 @@ describe('generateAddSub', () => {
     });
 
     it('breaks two-digit operands into tens first', () => {
-        const skill: SkillDef = { id: 'x', stage: 'E3', step: 8, type: 'ADD_SUB', params: { max: 30, ops: ['+', '-'], bridge: 'any' }, answer: 'keypad' };
-        const seen = new Set<string>();
-        for (let seed = 0; seed < 200; seed += 1) {
-            const task = generateAddSub(skill, createRng(seed));
-            if (task.prompt === '14 + 13') {
-                expect(task.hint).toEqual(['14 + 10 = 24', '24 + 3 = 27']);
-            }
-            if (task.prompt === `22 ${MINUS} 15`) {
-                expect(task.hint).toEqual([`22 ${MINUS} 10 = 12`, `12 ${MINUS} 2 = 10`, `10 ${MINUS} 3 = 7`]);
-            }
-            seen.add(task.prompt);
-        }
-        expect(seen.size).toBeGreaterThan(50);
+        expect(addSubHint(14, 13, '+')).toEqual(['14 + 10 = 24', '24 + 3 = 27']);
+        expect(addSubHint(22, 15, '-')).toEqual([`22 ${MINUS} 10 = 12`, `12 ${MINUS} 2 = 10`, `10 ${MINUS} 3 = 7`]);
+        expect(addSubHint(7, 6, '+')).toEqual(['7 + 3 = 10', '10 + 3 = 13']);
+        expect(addSubHint(8, 2, '+')).toEqual(['8 + 2 = 10']);
+        expect(addSubHint(20, 7, '-')).toEqual([`20 ${MINUS} 7 = 13`]);
+        expect(addSubHint(530, 400, '+')).toEqual(['530 + 400 = 930']);
     });
 
     it('derives ops from shapes and rejects contradicting ops', () => {

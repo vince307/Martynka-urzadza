@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { generateWord, parseWordParams } from '../src/core/tasks/generators/word';
 import { E3 } from '../src/data/curriculum/E3';
 import { E4 } from '../src/data/curriculum/E4';
-import { people } from '../src/data/wordTemplates';
 import { forEachDraw, skillsOfType } from './helpers';
 
 describe('generateWord', () => {
@@ -15,9 +14,9 @@ describe('generateWord', () => {
                     expect(Number(n), where).toBeLessThanOrEqual(p.max);
                 }
                 expect(task.hint[task.hint.length - 1], where).toMatch(new RegExp(`= ${String(task.answer)}$`));
-                const named = people.filter((person) => task.prompt.includes(person.name));
-                if (named.length > 0) {
-                    expect(task.prompt.startsWith(named[0].name) || /^[A-ZŁŚŻŹĆ]/.test(task.prompt), where).toBe(true);
+                expect(task.prompt, where).toMatch(/^[A-ZŁŚŻŹĆ0-9]/);
+                if (p.kinds.every((k) => k === 'groups' || k === 'share' || k === 'each')) {
+                    expect(task.prompt, where).not.toMatch(/poduszk|książ|filiżan|kwiat|złot/);
                 }
             });
         });

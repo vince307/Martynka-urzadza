@@ -37,6 +37,27 @@ export const fromRoman = (text: string): number => {
     return total;
 };
 
-/** Value of each glyph, for hints ("V = 5, I = 1"). */
-export const romanGlyphValues = (text: string): string =>
-    [...text].map((g) => `${g} = ${fromRoman(g)}`).join(', ');
+/**
+ * Pieces of a numeral for hints: additive glyphs as "V = 5", subtractive
+ * pairs as "IX = 10 − 1 = 9"; `sum` is the addition of the pieces
+ * ("5 + 1 + 1 = 7"), or the single piece's value for IX / IV.
+ */
+export const romanBreakdown = (text: string): { steps: string[]; sum: string } => {
+    const glyphs: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+    const steps: string[] = [];
+    const values: number[] = [];
+    for (let i = 0; i < text.length; i += 1) {
+        const value = glyphs[text[i]];
+        const next = i + 1 < text.length ? glyphs[text[i + 1]] : 0;
+        if (value < next) {
+            steps.push(`${text[i]}${text[i + 1]} = ${next} − ${value} = ${next - value}`);
+            values.push(next - value);
+            i += 1;
+        } else {
+            steps.push(`${text[i]} = ${value}`);
+            values.push(value);
+        }
+    }
+    const total = values.reduce((x, y) => x + y, 0);
+    return { steps, sum: values.length > 1 ? `${values.join(' + ')} = ${total}` : `${total}` };
+};

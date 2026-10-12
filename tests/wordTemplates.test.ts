@@ -38,6 +38,8 @@ describe('word templates', () => {
                         const task = { skillId: template.id, prompt: r.prompt, answer: r.answer, hint: r.hint };
                         expect(validateTask(task, { nouns }), r.prompt).toEqual([]);
                         expect(clean(r.prompt), r.prompt).toBe(true);
+                        // Objects of verbs take the accusative: "ma 1 naklejkę", never "ma 1 naklejka".
+                        expect(r.prompt, r.prompt).not.toMatch(/(ma|miał|miała|kupił|kupiła|oddał|oddała|zabrano|dołożono|o|po|jeszcze|\p{L}+(owi|iowi|ie|i)) 1 \p{L}+a\b/u);
                     }
                 }
             }

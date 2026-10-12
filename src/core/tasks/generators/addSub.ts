@@ -1,8 +1,9 @@
 // ADD_SUB: one addition or subtraction with a numeric answer (ZADANIA.md,
-// section 4). Prompts are bare expressions ("7 + 6"); worded prompts and the
-// `shape` parameter arrive with the curriculum content (roadmap S-02).
+// section 4). Prompts are bare expressions ("7 + 6"); operands come either
+// from free draws in [1, max] or from number shapes ("DU+U", params.shapes).
 import type { Rng } from '../../rng';
 import { drawToken, formatShape, parseShape, type Shape } from '../shapes';
+import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
 export type AddSubOp = '+' | '-';
@@ -16,8 +17,7 @@ export interface AddSubParams {
 }
 
 const MAX_ATTEMPTS = 1000;
-/** Minus sign used in player-facing text (U+2212), distinct from a hyphen. */
-export const MINUS = '−';
+export { MINUS };
 
 const isOp = (value: unknown): value is AddSubOp => value === '+' || value === '-';
 const isBridge = (value: unknown): value is Bridge => value === 'none' || value === 'ten' || value === 'any';
@@ -111,7 +111,7 @@ const line = (a: number, b: number, op: AddSubOp): string => `${a} ${sign(op)} $
  * units; when the units cross a ten, go to the ten first (7 + 6 → 7 + 3 = 10,
  * 10 + 3 = 13; 13 − 6 → 13 − 3 = 10, 10 − 3 = 7). Never produces a "+ 0" step.
  */
-const hintFor = (a: number, b: number, op: AddSubOp): string[] => {
+export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
     const steps: string[] = [];
     const tens = b - (b % 10);
     const units = b % 10;
@@ -172,6 +172,6 @@ export const generateAddSub: Generator = (skill, rng): Task => {
         skillId: skill.id,
         prompt: `${a} ${sign(op)} ${b}`,
         answer: apply(a, b, op),
-        hint: hintFor(a, b, op),
+        hint: addSubHint(a, b, op),
     };
 };

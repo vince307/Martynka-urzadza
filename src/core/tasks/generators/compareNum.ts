@@ -3,6 +3,7 @@
 import { nouns } from '../../../data/nouns';
 import { pl } from '../../../data/pl';
 import { countNoun } from '../../text/plural';
+import { BOX } from '../symbols';
 import type { Generator, Task } from '../types';
 
 export interface CompareNumParams {
@@ -10,7 +11,6 @@ export interface CompareNumParams {
 }
 
 export const SIGNS = ['<', '>', '='] as const;
-const BOX = '□';
 
 export const parseCompareNumParams = (params: Record<string, unknown>): CompareNumParams => {
     const { max } = params;
@@ -20,16 +20,23 @@ export const parseCompareNumParams = (params: Record<string, unknown>): CompareN
     return { max: max as number };
 };
 
-const describe = (n: number): string =>
-    n < 10
-        ? pl.tasks.compareUnitsHint(n, countNoun(n, nouns.jedność))
-        : pl.tasks.compareHint(n, countNoun(Math.floor(n / 10), nouns.dziesiątka), countNoun(n % 10, nouns.jedność));
+/** "47 to 4 dziesiątki i 7 jedności", "40 to 4 dziesiątki", "7 to 7 jedności", "100 to 10 dziesiątek". */
+const describe = (n: number): string => {
+    const parts: string[] = [];
+    if (Math.floor(n / 10) > 0) {
+        parts.push(countNoun(Math.floor(n / 10), nouns.dziesiątka));
+    }
+    if (n % 10 > 0) {
+        parts.push(countNoun(n % 10, nouns.jedność));
+    }
+    return pl.tasks.compareHint(n, parts.join(` ${pl.words.and} `));
+};
 
 export const generateCompareNum: Generator = (skill, rng): Task => {
     const p = parseCompareNumParams(skill.params);
-    const a = rng.int(0, p.max);
+    const a = rng.int(1, p.max);
     // Equal pairs about one time in six; otherwise an independent second number.
-    const b = rng.chance(1 / 6) ? a : rng.int(0, p.max);
+    const b = rng.chance(1 / 6) ? a : rng.int(1, p.max);
     const sign = a < b ? '<' : a > b ? '>' : '=';
     return {
         skillId: skill.id,

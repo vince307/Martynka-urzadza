@@ -86,7 +86,9 @@ export const generateWord: Generator = (skill, rng): Task => {
         }
         const [a, b, c] = drawn;
         const [person, other] = pickTwoPeople(rng);
-        const result = template.build({ a, b, c, person, other, ctx: rng.pick(contexts) });
+        // Boxes and plates only hold small things.
+        const pool = kind === 'groups' || kind === 'share' || kind === 'each' ? contexts.filter((x) => x.portable) : contexts;
+        const result = template.build({ a, b, c, person, other, ctx: rng.pick(pool) });
         if (result.answer >= 0 && result.answer <= p.max) {
             return { skillId: skill.id, prompt: result.prompt, answer: result.answer, hint: result.hint };
         }

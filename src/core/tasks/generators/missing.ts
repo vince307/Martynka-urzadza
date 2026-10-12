@@ -3,8 +3,9 @@
 // inverse operation that reveals the hidden number.
 import { pl } from '../../../data/pl';
 import type { Rng } from '../../rng';
+import { BOX, DIVIDE, MINUS, TIMES } from '../symbols';
 import type { Generator, Task } from '../types';
-import { crossesTen, MINUS, type Bridge } from './addSub';
+import { crossesTen, hasCarry, type Bridge } from './addSub';
 
 export type MissingOp = '+' | '-' | '*' | '/';
 export type Slot = 'left' | 'right' | 'result';
@@ -17,9 +18,6 @@ export interface MissingParams {
 }
 
 const MAX_ATTEMPTS = 1000;
-const BOX = '□';
-export const TIMES = '·';
-export const DIVIDE = ':';
 
 const isOp = (x: unknown): x is MissingOp => x === '+' || x === '-' || x === '*' || x === '/';
 const isSlot = (x: unknown): x is Slot => x === 'left' || x === 'right' || x === 'result';
@@ -42,6 +40,10 @@ export const parseMissingParams = (params: Record<string, unknown>): MissingPara
     return { max: max as number, ops, bridge, slots };
 };
 
+/** Same meaning as in ADD_SUB: 'none' forbids any carry, 'ten' asks for a units crossing. */
+const bridgeOk = (a: number, b: number, op: '+' | '-', bridge: Bridge): boolean =>
+    bridge === 'any' ? true : bridge === 'ten' ? crossesTen(a, b, op) : !hasCarry(a, b, op);
+
 const symbol = (op: MissingOp): string => ({ '+': '+', '-': MINUS, '*': TIMES, '/': DIVIDE })[op];
 
 /** Draws a true equation a op b = c with every number in [0, max]. */
@@ -49,12 +51,12 @@ const drawEquation = (p: MissingParams, op: MissingOp, rng: Rng): [number, numbe
     if (op === '+') {
         const a = rng.int(1, p.max - 1);
         const b = rng.int(1, p.max - a);
-        return p.bridge === 'any' || crossesTen(a, b, '+') === (p.bridge === 'ten') ? [a, b, a + b] : undefined;
+        return bridgeOk(a, b, '+', p.bridge) ? [a, b, a + b] : undefined;
     }
     if (op === '-') {
         const a = rng.int(2, p.max);
         const b = rng.int(1, a - 1);
-        return p.bridge === 'any' || crossesTen(a, b, '-') === (p.bridge === 'ten') ? [a, b, a - b] : undefined;
+        return bridgeOk(a, b, '-', p.bridge) ? [a, b, a - b] : undefined;
     }
     // Multiplication table only: both factors at most 10.
     const maxFactor = Math.min(10, Math.floor(p.max / 2));

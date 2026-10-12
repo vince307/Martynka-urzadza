@@ -1,7 +1,7 @@
 ---
 change_id: generators-e3-e4
 title: Generatory zadań grupy 1 dla etapów E3–E4 z poleceniami, podpowiedziami i odmianą
-status: implementing
+status: impl_reviewed
 created: 2026-10-12
 updated: 2026-10-12
 archived_at: null

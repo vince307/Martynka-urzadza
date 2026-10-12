@@ -302,9 +302,9 @@ Jeden test przechodzi przez wszystkie umiejętności obu etapów; dokumentacja o
 
 #### Automated
 
-- [ ] 4.1 `npm test` z curriculum.test.ts, `typecheck`, `build`
-- [ ] 4.2 `sample` E3/E4 kod 0; `brak generatora` tylko dla grup 2–3
-- [ ] 4.3 AGENTS.md ≤ 400 słów; `wordTemplates` w CLAUDE.md
+- [x] 4.1 `npm test` z curriculum.test.ts, `typecheck`, `build` — 59b6576
+- [x] 4.2 `sample` E3/E4 kod 0; `brak generatora` tylko dla grup 2–3 — 59b6576
+- [x] 4.3 AGENTS.md ≤ 400 słów; `wordTemplates` w CLAUDE.md — 59b6576
 
 #### Manual
 
