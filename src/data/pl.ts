@@ -33,6 +33,8 @@ export const pl = {
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
         complement: (n: number, target: number) => `Ile brakuje od ${n} do ${target}?`,
         complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
+        bonds: (total: number) => `Uzupełnij domek liczby ${total}.`,
+        bondsHint: (shown: number, total: number) => `Ile trzeba dodać do ${shown}, żeby było ${total}?`,
         rounding: (n: number) => `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
         roundingHint: (n: number, low: number, high: number, nearest: number) => [
             `${n} jest między ${low} a ${high}`,

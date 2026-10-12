@@ -7,5 +7,9 @@ export const UNBOUNDED_TYPES: readonly string[] = ['CALENDAR', 'ROMAN', 'NUMBER_
 
 export const boundOf = (skill: Pick<SkillDef, 'params'>): number | undefined => {
     const raw = skill.params.max ?? skill.params.maxProduct ?? skill.params.maxDividend;
-    return typeof raw === 'number' ? raw : undefined;
+    if (typeof raw === 'number') {
+        return raw;
+    }
+    const totals = skill.params.totals;
+    return Array.isArray(totals) && totals.length > 0 ? Math.max(...(totals as number[])) : undefined;
 };

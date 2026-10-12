@@ -2,6 +2,7 @@
 // without an entry are reported by scripts/sample.ts as "brak generatora"
 // instead of failing. Parsers reject parameters that would have no solutions.
 import { generateAddSub, parseAddSubParams } from './generators/addSub';
+import { generateBonds, parseBondsParams } from './generators/bonds';
 import { generateCalendar, parseCalendarParams } from './generators/calendar';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
@@ -34,6 +35,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     CALENDAR: generateCalendar,
     WORD: generateWord,
     COMPARE_DIFF: generateCompareDiff,
+    BONDS: generateBonds,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -51,6 +53,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     CALENDAR: parseCalendarParams,
     WORD: parseWordParams,
     COMPARE_DIFF: parseCompareDiffParams,
+    BONDS: parseBondsParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);
