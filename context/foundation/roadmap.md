@@ -47,7 +47,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | done        |
 | S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | done |
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | done |
-| S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | in-progress |
+| S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | done |
 | S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | proposed |
 | S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | proposed |
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | proposed |
@@ -158,7 +158,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Jak liczyć i testować poprawność odmiany liczebników w szablonach tekstowych (reguła dla 1 / 2–4 / 5+ i wyjątków 12–14)? — Owner: autor. Block: no.
 - **Risk:** największy odcinek bez efektu na ekranie (ryzyko zaakceptowane w shape-notes); E3–E4 najpierw, bo to etap córki (market-feedback), reszta etapów w S-03.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Generatory dla pozostałych etapów
 
@@ -406,3 +406,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-02: (foundation) build `dist/` jest publikowany z GitHub Actions na istniejący VPS za Caddy (HTTPS), z zachowaniem poprzedniego wydania do rollbacku; runbook w `deploy/README.md`** — Archived 2026-10-11 → `context/archive/2026-10-11-static-deploy-pipeline/`. Lesson: —.
 - **S-01: dziecko otwiera grę z adresu URL na tablecie, dodaje ją do ekranu początkowego (z instrukcją przy pierwszym uruchomieniu w przeglądarce) i uruchamia offline; w pionie widzi „Obróć tablet”; nowa wersja instaluje się sama przy następnym starcie** — Archived 2026-10-12 → `context/archive/2026-10-11-installable-offline-pwa/`. Lesson: —.
 - **F-03: (foundation) vitest działa na `core/`, generatory dostają seedowany rng, a skrypt próbkujący wypisuje po 3 zadania z każdego kroku etapu i raportuje naruszenia (zakres, ujemne, odmiana)** — Archived 2026-10-12 → `context/archive/2026-10-12-generator-test-harness/`. Lesson: —.
+- **S-02: autor wypisuje z każdego kroku etapów E3 i E4 oryginalne zadania wszystkich typów grupy 1 (ZADANIA.md, sekcja 7) z poprawną odpowiedzią, rozpraszaczami, podpowiedzią krok po kroku i poprawną odmianą liczebników; testy 1000 losowań przechodzą** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-e3-e4/`. Lesson: przegląd treści przez „nauczyciela” wyłapał biernik i podpowiedź IX, których walidator nie widzi; każdy nowy rzeczownik i przypadek musi trafić do danych z testem.
