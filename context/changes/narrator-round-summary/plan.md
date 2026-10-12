@@ -950,6 +950,6 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 12.1 `npx playwright test tests/e2e/narrator.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 2`
-- [ ] 12.2 Deliberate break: `UIScene` bez wejścia → spec czerwony; przywrócone; meta-check (unit lektora zielone)
-- [ ] 12.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 12.1 `npx playwright test tests/e2e/narrator.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 2` — orchestrator run (e2e-request-p12.md): spec 3/3, suite 8/8 (baseline 5, +3: auto-read and pointerup checks are separate tests) — 03dfa1c
+- [x] 12.2 Deliberate break: `UIScene` bez wejścia → spec czerwony; przywrócone; meta-check (unit lektora zielone) — break was SpeakerButton request on pointerdown (a rule, not UIScene input); red at `expect(spokenSoFar).toEqual([])` (orchestrator run), unit 670 green — 03dfa1c
+- [x] 12.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, typecheck, unit 670, build `e2e hook: absent`; no servers started here — 03dfa1c

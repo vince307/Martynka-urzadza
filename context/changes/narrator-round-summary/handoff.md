@@ -1,25 +1,26 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-Phase 11 (e2e risk #11: summary, HUD switch, room by touch) is committed in `0c14611`. Next is phase 12 (e2e).
+Phase 12 (the last, e2e: narrator by touch on a fake synthesizer) is committed in `03dfa1c`; all implementation phases are done and `change.md` is `implemented`. Next is the implementation review; do not re-run Playwright from a sandboxed session.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary` |
-| Commits | docs, p1..p10, p11 (`0c14611`), this handoff commit |
+| Commits | docs, p1..p12 (p12 = `03dfa1c`), handoff commits |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 17 |
+| `change.md` status | `implemented` (updated 2026-10-13) |
+| `## Progress` rows remaining | 17 (reviewer, visual and human rows only) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/task-round.spec.ts` | 3 rewritten #11 round tests (end on summary, `counterText`, "Kolejna runda") + new room/HUD-switch test |
-| `src/scenes/TaskScene.ts` | `TaskSnapshot.counter` removed |
-| `context/runs/2026-10-12-s04-s08/e2e-request-p11.md` | orchestrator's run outputs |
+| `tests/e2e/narrator.spec.ts` | 3 tests on a fake `speechSynthesis` (init script): silent at cold start and after "Dalej" (E3 auto-read off); speaker reads on pointerup only, Polish voice, no answer leak, retry prompt after a wrong answer; no Polish voice: speaker hidden, round to summary |
+| `playwright.config.ts` | `ROUND_SPEC` = `/(task-round|narrator)\.spec\.ts/`; the app `webServer` entry is untouched |
+| `context/runs/2026-10-12-s04-s08/e2e-request-p12.md` | orchestrator's run outputs |
+| `context/changes/narrator-round-summary/{plan.md,change.md}` | rows 12.1-12.3 ticked, status implemented |
 
 ## 3. Verification
 
@@ -28,18 +29,18 @@ Phase 11 (e2e risk #11: summary, HUD switch, room by touch) is committed in `0c1
 | lint, typecheck | OK |
 | unit (`npm test`) | 670 passed (baseline 670, +0) |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test tests/e2e/task-round.spec.ts` | orchestrator run 2026-10-13: 4 passed (35.9s) |
-| `npx playwright test` | orchestrator run: 5 passed (39.6s) = baseline 4 + 1 |
-| Deliberate break | orchestrator applied `e2e-break-p11.patch` (RoomScene resume `scene.switch` -> `scene.start`): `-g "room is reached"` -> 1 failed, `Expected: "done"` / `Received: "first"` at `tests/e2e/task-round.spec.ts:253` `expect(back.phase).toBe('done')`; reverted with `git apply -R`. Meta-check: unit stays green (670), so the spec proves the scene transition |
+| `npx playwright test tests/e2e/narrator.spec.ts` | orchestrator run 2026-10-13: 3 passed (27.1s) |
+| `npx playwright test` | orchestrator run: 8 passed (42.7s) = baseline 5 + 3 |
+| Deliberate break | orchestrator applied `e2e-break-p12.patch` (SpeakerButton narration request on `pointerdown` instead of `pointerup`): `-g "pointerup only"` -> 1 failed at `tests/e2e/narrator.spec.ts` `expect(await spokenSoFar(page)).toEqual([])`, Received `[{ lang: "pl_PL", rate: 0.85, text: "Oblicz. dziesięć plus osiemnaście" }]`; reverted with `git apply -R`. Meta-check: unit stays green (670), so the spec proves the touch gesture rule. Optional auto-read break not run |
 | Playwright in this session | not run (finishing agent; evidence is the orchestrator's) |
 
 ## 4. Next command
 
-/10x-e2e narrator-round-summary phase 12
+/10x-impl-review narrator-round-summary
 
 ## 5. Open
 
-Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9; phase 12 e2e (rows 12.1-12.3).
+Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9 (iPad/Android listening, gesture, auto-read after "Kolejna runda"). Follow-up: `/10x-test-plan refresh` to give the narrator risk a number. The plan said +2 e2e tests, the spec has +3 (cold-start check and pointerup/retry check are separate).
 
 ## 6. Autonomous decisions
 
@@ -58,3 +59,4 @@ Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 1
 13. Phase 8: hook extended read-only with frozen copies; scenes never import it; guard proved with an unconditional `installE2EHook` (build fails).
 14. Phase 10: kept `TaskSnapshot.counter` and `pl.round.next` (still used); no duplicate roman spelling found (`spellRoman` is the single place); validator break changed from profile to a rule file (the validator does not read the profile). Rows 13-14 numbered after 12.
 15. Phase 11: the spec was written by an earlier session (Chromium could not launch), reviewed here against the plan and the e2e quality rules (getByRole not applicable: canvas game driven through the hook and `touchscreen.tap`; no `waitForTimeout`; polls via `expect.poll`; titles carry `#11`) with no defect found, so it was committed unchanged. `TaskSnapshot.counter` removed as the plan says (spec reads `counterText`). Silent `speechSynthesis` stub in `beforeEach`. Phase 11 commit message decided in place.
+16. Phase 12: the spec was written by an earlier session (Chromium could not launch); reviewed here against the plan and the e2e quality rules, no defect found (canvas driven through the hook and touch events, no `waitForTimeout`, `frames()` via rAF, titles carry `#narrator`), committed unchanged. Config diff touches only `ROUND_SPEC`. Three tests instead of two; break moved from `UIScene` input to the `pointerdown` rule (orchestrator). Would change: reviewer wants the plan's +2 count kept.

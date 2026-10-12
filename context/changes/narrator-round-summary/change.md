@@ -1,9 +1,9 @@
 ---
 change_id: narrator-round-summary
 title: Lektor poleceń i podsumowanie rundy z „Kolejna runda” i „Do pokoju”
-status: plan_reviewed
+status: implemented
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 archived_at: null
 ---
 
