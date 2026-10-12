@@ -93,7 +93,10 @@ Repo → Settings → Secrets and variables → Actions.
 - **Rollback**: Actions → Deploy → Run workflow → `rollback` (przełącza na poprzednie wydanie i powtarza health check). Z własnej maszyny: `ssh -i ~/.ssh/martynka_deploy martynka@<host> rollback`.
 - **Status**: `ssh -i ~/.ssh/martynka_deploy martynka@<host> status` (bieżące, poprzednie, lista wydań). Serwer trzyma 5 ostatnich wydań.
 
-Pierwszy deploy: certyfikat Let's Encrypt jest wystawiany przy pierwszym żądaniu, więc health check ma długie powtórzenia (do ok. 2 minut).
+- **Smoke po deployu** (plan testów, etap 2): po `switch` workflow uruchamia `npm run check:deploy -- https://martynka-urzadza.pl <sha7>` (`scripts/check-deploy.ts`): strona i `index.html` z `no-cache`, manifest z nazwą gry, `Content-Type: application/manifest+json` i `no-cache`, `sw.js` z `no-cache` i niepustym precache, każdy bundle z `index.html` obecny w precache i serwowany z `immutable`, SHA builda w bundlu wejściowym, `www` → apex. Przy rollbacku to samo bez SHA. Z własnej maszyny: `npm run check:deploy -- https://martynka-urzadza.pl $(git rev-parse --short origin/main)`; z sesji agenta dodatkowo `NODE_USE_ENV_PROXY=1` (sandbox).
+- **Ćwiczenie rollbacku** (co kwartał albo po każdej zmianie w `deploy/`): Actions → Deploy → `rollback` → zielony „Smoke check (rollback)” → Actions → Deploy → `deploy` → zielony „Smoke check (deploy)”; `status` pokazuje, że `current` wrócił na najnowsze wydanie.
+
+Pierwszy deploy: certyfikat Let's Encrypt jest wystawiany przy pierwszym żądaniu, więc smoke ponawia pierwsze żądanie (6 × 5 s).
 
 ## 7. Domena `martynka-urzadza.pl`
 
@@ -169,7 +172,7 @@ Agent (Claude Code) ma na VPS własne konto `martynka-ops` z wymuszoną komendą
 | `sync` | `git merge --ff-only origin/main` w `/opt/martynka-src` |
 | `bootstrap` | `deploy/bootstrap.sh` z klonu z argumentami z `ops.conf` (powtarza ostatni ręczny bootstrap) |
 
-Zasady dla agenta: każde wywołanie to pojedyncza prosta komenda `ssh martynka-ops <cmd>` (bez `cd &&`, potoków i `$(…)`, bo takie wywołania zostają w sandboxie); po merge zmian w `deploy/` najpierw `sync`, potem `bootstrap`. Audyt na serwerze: `journalctl -t martynka-ops`. Konto nie ma shella, sudo poza helperem, dostępu do Dockera, CoiledSpring ani do klucza CI.
+Zasady dla agenta: każde wywołanie to pojedyncza prosta komenda `ssh martynka-ops <cmd>` (bez `cd &&`, potoków i `$(…)`, bo takie wywołania zostają w sandboxie); po merge zmian w `deploy/` najpierw `sync`, potem `bootstrap`. Lista kontrolna przy `bootstrap` (ryzyko wspólnego VPS): przed — `ssh cs-ops status` i `ssh martynka-ops status`; po — `ssh martynka-ops caddy-validate`, `ssh martynka-ops status`, `ssh cs-ops status` (te same kontenery `healthy`), `npm run check:deploy -- https://martynka-urzadza.pl`. Audyt na serwerze: `journalctl -t martynka-ops`. Konto nie ma shella, sudo poza helperem, dostępu do Dockera, CoiledSpring ani do klucza CI.
 
 ### Usunięcie profilu
 

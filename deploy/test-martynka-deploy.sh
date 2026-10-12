@@ -65,6 +65,11 @@ fi
 assert "status shows current" bash -c "SSH_ORIGINAL_COMMAND=status bash '$DISPATCH' | grep -q 'current:  ${ids[5]}'"
 
 # permissions: files readable by others after switch
-assert "index readable" test "$(stat -f '%Lp' "$TMP/releases/${ids[5]}/index.html" 2>/dev/null || stat -c '%a' "$TMP/releases/${ids[5]}/index.html")" = "644"
+# GNU stat (-c) on Linux, BSD stat (-f) on macOS; on Linux `stat -f` is the
+# filesystem variant and would not fail, so probe GNU first.
+mode_of() {
+    stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1"
+}
+assert "index readable" test "$(mode_of "$TMP/releases/${ids[5]}/index.html")" = "644"
 
 echo "OK"

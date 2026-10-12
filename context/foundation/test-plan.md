@@ -72,7 +72,7 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Quality gates and module boundaries | Lint (ESLint, boundary rules), typecheck and tests gate every edit, every turn and every PR; `sample` E3/E4 runs in CI as a content smoke | #6, #5 | lint, gates, content smoke | complete | `context/archive/2026-10-12-testing-quality-gates/` |
-| 2 | Deploy and PWA smoke | The deploy job proves the new build is live with the right headers and precache, and that CoiledSpring still answers; rollback is exercised on a schedule | #3, #4 | integration (post-deploy smoke), manual tablet | not started | — |
+| 2 | Deploy and PWA smoke | The deploy job proves the new build is live with the right headers and precache, and that CoiledSpring still answers; rollback is exercised on a schedule | #3, #4 | integration (post-deploy smoke), manual tablet | implementing | `context/changes/testing-deploy-smoke/` |
 | 3 | Content invariants | Property tests over all curriculum data (feasibility, no degenerate tasks, distribution sanity) and a teacher-read checklist for every new template | #1, #5 | unit/property, checklist | not started | — |
 | 4 | Save, migrations, import | Round-trip and migration tests with fixture saves per version; import validation never loses the current save (starts with roadmap S-11) | #2, #7 | unit + integration | not started | — |
 
@@ -102,7 +102,7 @@ orchestrator updates Status as artifacts appear on disk.
 | unit + property | local (agent loop) + CI | required | generator and logic regressions |
 | content smoke (`sample` E3/E4) | CI on PR | required | data changes that break generation or violate the validator |
 | post-edit hook | local (agent loop) | required | lint and related-test failures at edit time |
-| deploy smoke | GitHub Actions after `switch` | required after §3 Phase 2 | stale build, wrong headers, broken precache, CoiledSpring regression |
+| deploy smoke | GitHub Actions after `switch` | required | stale build, wrong headers, broken precache, CoiledSpring regression |
 | manual tablet check | after PWA or scene changes | required (manual) | install, offline start, orientation, touch |
 | pre-commit lint | local git hook | optional (not configured) | edits made outside the agent |
 
@@ -127,7 +127,10 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.4 Adding a deploy smoke check
 
-- TBD — see §3 Phase 2.
+- **Location**: `scripts/deploy-check/parse.ts` (pure parsers and comparisons, unit-tested) and `scripts/check-deploy.ts` (fetch + report, exit 0/1/2).
+- **Reference test**: `tests/deployCheck.test.ts` — sample `index.html` and `sw.js` fragments as constants, positive and negative cases per parser.
+- **Run locally**: `npm run check:deploy -- https://martynka-urzadza.pl <sha7>` (`NODE_USE_ENV_PROXY=1` inside the agent sandbox); the deploy workflow runs it after `switch`.
+- **Pattern**: assert observable server facts (status, headers, body literals), never log lines; keep the network layer thin so a new check is a parser plus a `record(...)` line.
 
 ### 6.5 Adding a save migration test
 
@@ -135,6 +138,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.6 Per-rollout-phase notes
 
+- Phase 2 (2026-10-12): Node's `fetch` ignores proxy environment variables; inside the agent sandbox the smoke needs `NODE_USE_ENV_PROXY=1` (CI has direct egress). `index.html` also preloads the Phaser chunk, so three bundles are checked. CoiledSpring cannot be observed from CI (tailnet ACL and the restricted key); the bootstrap checklist in `deploy/README.md` section 10 covers it.
 - Phase 1 (2026-10-12): ESLint 10 needs `eslint.config.mjs` because `package.json` has no `"type": "module"`; the core `no-restricted-imports` rule already understands type-only imports (`allowTypeImports`), so the typescript-eslint variant is not needed. Programmatic linting in tests must spread `tseslint.configs.disableTypeChecked` into `overrideConfig` (flat objects, no `extends`). The baseline needed type predicates instead of `as` casts after `Array.isArray` checks.
 
 ## 7. What We Deliberately Don't Test
