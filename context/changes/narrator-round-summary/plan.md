@@ -925,9 +925,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 10.1 `validate-rule-files.sh` PASS
-- [ ] 10.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [ ] 10.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 10.1 `validate-rule-files.sh` PASS — 8a16196
+- [x] 10.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check — 8a16196
+- [x] 10.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 8a16196
 
 #### Manual
 

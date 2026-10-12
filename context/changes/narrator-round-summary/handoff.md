@@ -1,48 +1,45 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-Phase 9 (HUD "Do pokoju" switch) is committed in `a9504c9`. Next is phase 10 (seam sweep, docs, follow-ups). The e2e gate was NOT run green in this session: the orchestrator must run `npx playwright test` on this commit.
+Phase 10 (seam sweep, docs, follow-ups) is committed in `8a16196`. Next is phase 11 (e2e). The e2e gate was NOT run green in this session: the orchestrator must run `npx playwright test` on this commit.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary` |
-| Commits | docs, p1..p8, p9 (`a9504c9`), this handoff commit |
+| Commits | docs, p1..p9, p10 (`8a16196`), this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 23 |
+| `## Progress` rows remaining | 20 |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/RoomSwitchButton.ts` | new HUD widget (316x104, house icon drawn in code + `pl.summary.toRoom`); pointerup with a press guard; `setVisible`, `target` |
-| `src/data/layout.ts` | `HUD_LAYOUT.roomSwitch`, `HUD_TOUCH_TARGETS.roomSwitch`, `REGISTRY_KEYS.roomSwitch` |
-| `src/scenes/UIScene.ts` | creates the switch, follows the registry key, emits `GAME_EVENTS.toRoom`; `roomSwitchTarget()` |
-| `src/scenes/TaskScene.ts` | `render()` sets `roomSwitch` from `view.switchVisible`; the `toRoom` handler ignores taps while sleeping, clears `roomSwitch` and narration before `scene.switch`; wake re-renders |
-| `src/testing/e2eHook.ts` | `targets.roomSwitch` (getter, from `UIScene`) |
-| `tests/layout.test.ts` | new test: switch is a touch target, left of the speaker and the progress dots |
-| `docs/design-gaps.md` | row 4 rewritten (kit draws it always, FR-011 hides it while solving) |
+| `docs/design-gaps.md` | rows 13 (no voice -> speaker hidden) and 14 (HUD counter above summary/room) added; row 4 untouched; row 5 was already gone |
+| `src/scenes/UIScene.ts` | DESIGN-GAP comments point at rows 13 and 14 |
+| `CLAUDE.md`, `AGENTS.md` | Current state / structure: narrator, summary, `RoomScene`, HUD, hook |
+| `context/changes/narrator-round-summary/follow-ups/review-fixes.md` | new; each item has `Trigger:` (S-09 cost, numberToWords >1000, "Oblicz" for comparisons, test-plan refresh, parent autoRead S-08/S-11, S-04 carry-overs); the HUD-switch follow-up is dropped (built) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| lint, typecheck | OK |
-| unit (`npm test`) | 670 passed (baseline 669, +1) |
-| deploy + ops shell tests, `sample` E1-E6 | OK |
+| `validate-rule-files.sh` | PASS (122 paths, 0 missing) |
+| lint, typecheck, deploy + ops shell tests, `sample` E1-E6 | OK |
+| unit (`npm test`) | 670 passed (baseline 670, +0) |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| Deliberate break | `switchVisible` = `state.phase !== 'solution'` in `src/core/round/view.ts`: 3 tests red in `tests/roundView.test.ts`; restored with git checkout. Meta-check: proves the rule only; drawing and the tap path are proved by e2e in phase 11 |
-| `npx playwright test` | not runnable in this session (Chromium MachPort Permission denied; 2 failed, 2 did not run) — orchestrator gate |
+| Deliberate break | the plan's break (profile points at a missing file) stayed PASS: the validator reads the rule files (CLAUDE.md etc.), not the profile, so that was the wrong break (meta-check). Real break: `CLAUDE.md` pointing at `src/ui/narratorz.ts` -> `FAIL ... missing: 1`; restored, PASS |
+| `npx playwright test` | not runnable in this session (Chromium MachPort Permission denied; 2 failed, 2 did not run) - orchestrator gate |
 
 ## 4. Next command
 
-/10x-implement narrator-round-summary phase 10
+/10x-e2e narrator-round-summary phase 11
 
 ## 5. Open
 
-Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9; phase 11 e2e (spec uses the registry `counter` field until then; should also cover the HUD switch: visible after a correct answer, hidden on the first try and in the room, tap leads to the room and back to phase `done`); phase 12 e2e. Phase 10 must not revert the `docs/design-gaps.md` row 4 rewrite and should drop the S-09 follow-up for the switch (it is built).
+Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4 (seam sweep: no stale comments or dead keys found; `pl.round.next` and `TaskSnapshot.counter` are still used, the latter by the phase 11 spec until it moves to the hook counter); [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9; phase 11 e2e (spec uses the registry `counter` field until then; should also cover the HUD switch: visible after a correct answer, hidden on the first try and in the room, tap leads to the room and back to phase `done`); phase 12 e2e.
 
 ## 6. Autonomous decisions
 
@@ -59,3 +56,4 @@ Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 1
 11. Phase 6: `PageButton` fires only when pressed on itself (the fifth "Dalej" pointerup lands on the new zone); `starsTotal` = session total incl. this round, `nextRoomTaskCost: null` until S-09; star row butter vs pale (DESIGN-GAP 11).
 12. Phase 7: room panel height 840 (resume box ends below the notebook edge); `PageButton.show` takes an optional size; wake handling re-renders the task and re-shows the room button; DESIGN-GAP row 12 for the caption.
 13. Phase 8: hook extended read-only with frozen copies; scenes never import it; guard proved with an unconditional `installE2EHook` (build fails).
+14. Phase 10: kept `TaskSnapshot.counter` and `pl.round.next` (still used); no duplicate roman spelling found (`spellRoman` is the single place); validator break changed from profile to a rule file (the validator does not read the profile). Rows 13-14 numbered after 12.
