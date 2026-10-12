@@ -590,7 +590,7 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Manual
 
-- [ ] 6.4 [reviewer] Odczyt nauczyciela `sample -- E1 --count 6` i `-- E2 --count 6`
+- [x] 6.4 [reviewer] Odczyt nauczyciela `sample -- E1 --count 6` i `-- E2 --count 6` — 499e449 (reviews/teacher-read.md)
 
 ### Phase 7: Duże liczby — `formatNumber` i COMPARE_NUM do 1 000 000
 
@@ -616,7 +616,7 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Manual
 
-- [ ] 9.4 [reviewer] Odczyt nauczyciela `sample -- E5 --count 6` i `-- E6 --count 6`
+- [x] 9.4 [reviewer] Odczyt nauczyciela `sample -- E5 --count 6` i `-- E6 --count 6` — 499e449 (reviews/teacher-read.md)
 
 ### Phase 10: Bramka, CI, dokumentacja, follow-upy i seam sweep
 
@@ -628,7 +628,7 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Manual
 
-- [ ] 10.4 [reviewer] Odczyt nauczyciela `sample -- <etap> --count 6` dla E1, E2, E5, E6
+- [x] 10.4 [reviewer] Odczyt nauczyciela `sample -- <etap> --count 6` dla E1, E2, E5, E6 — 499e449 (reviews/teacher-read.md)
 - [ ] 10.5 [reviewer] (CI at ship) Job `check`: kroki `##\[group\]Run npm run sample -- E[1256]$` z `Naruszenia: 0`
 - [ ] 10.6 [human] Maintainer czyta wydruk `sample -- <etap> --count 6` dla E1, E2, E5, E6 przed merge'em
 - [ ] 10.7 [human] Decyzja: E1 `keypad` zamiast 3–4 kafelków (ZADANIA §4)

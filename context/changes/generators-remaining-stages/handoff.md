@@ -1,60 +1,89 @@
 # Handoff — `generators-remaining-stages` (slice S-03)
 
-Written by the `/10x-implement phase 10` step of run `2026-10-12-s03-remaining-stages`. All phases 1–10 are committed (phase 10: `9145691`). Rows 6.4, 9.4, 10.4–10.7 are the reviewer's or the human's.
+The `/10x-impl-review generators-remaining-stages` step of run `2026-10-12-s03-remaining-stages` wrote this handoff. It covered the full plan (phases 1–10), the teacher read and one fix commit (`499e449`). The verdict is `MERGE: CLEAR`. Do not lose this before the merge: row 10.5 (CI log check) belongs to the ship step, and rows 10.6 and 10.7 are the maintainer's.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/generators-remaining-stages`, cut from `main` at `a24b502` |
-| Commits | … + `9145691` `feat(generators-remaining-stages): Bramka, CI, dokumentacja, follow-upy i seam sweep (p10)` + this handoff commit |
+| Commits | … `69cf447` (handoff p10) + `499e449` `fix(generators-remaining-stages): poprawki z impl-review …` + this `docs(generators-remaining-stages): impl-review` commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | 6 (6.4, 9.4, 10.4, 10.5 reviewer; 10.6, 10.7 human); 10.1–10.3 ticked with `9145691` |
-| Working tree | clean for this step's files; untracked `designs/martynka-expansion-v1/` is the maintainer's |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 3: 10.5 [reviewer] (CI at ship), 10.6 [human], 10.7 [human] |
+| Working tree | clean except the maintainer's untracked `designs/martynka-expansion-v1/` (never staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `.github/workflows/ci.yml` | six `sample -- E1..E6` steps |
-| `context/foundation/autonomous-run.{md,env}` | `GATE_UNIT` and § 2 with sample E1–E6 |
-| `CLAUDE.md`, `AGENTS.md` (399 words), `context/foundation/test-plan.md` | docs for six stages, `SMALL_SPACES`, `formatNumber.ts` |
-| `tests/curriculum.test.ts` | bound via `boundOf` |
-| `context/changes/generators-remaining-stages/follow-ups/review-fixes.md` | 4 planned follow-ups plus the open content items of §5 |
+| `context/changes/generators-remaining-stages/reviews/impl-review.md` | impl-review report: 1 CRITICAL, 7 WARNING, 2 OBSERVATION, with decisions; ends with `MERGE: CLEAR` |
+| `context/changes/generators-remaining-stages/reviews/teacher-read.md` | teacher read of `sample --count 6` for E1–E6, with items a)–f) judged |
+| `context/changes/generators-remaining-stages/follow-ups/review-fixes.md` | open content items resolved; 6 new follow-ups with `Trigger:` (10 `Trigger:` lines in total) |
+| `context/changes/generators-remaining-stages/plan.md` | rows 6.4, 9.4 and 10.4 ticked with `499e449` |
+| `context/changes/generators-remaining-stages/change.md` | `status: impl_reviewed` |
+| `src/core/tasks/validate.ts` (`ACCUSATIVE_ONE`) | new validator rule: accusative after „ma/kupił/oddał/…/o” for feminine nouns in -a (in 499e449) |
+| `src/core/tasks/generators/compareNum.ts` (`digitsPhrase`, `largePartner`), `mult.ts` (`multHint`), `addSub.ts` (`addSubHint`), `factFamily.ts` (`TABLE`), `compareExpr.ts`, `chooseOp.ts` (`MIN_TILES_MAX`), `arith.ts` (`SAME_SHARE`), `missingOp.ts` | content and parser fixes (499e449) |
+| `src/data/pl.ts` (`complement`, `oneDigit`), `src/data/calendar.ts` (`timeFacts`), `src/data/curriculum/index.ts`, `CLAUDE.md` „Current state” | Polish text and doc fixes (499e449) |
+| `tests/{validate,compareNum,mult,addSub,factFamily,complement,compareExpr,chooseOp,contentInvariants}.test.ts` | tests written first (red), then green (499e449) |
 
 ## 3. Verification
 
-| Command | Result |
+| Command | Result (observed in this step) |
 |---|---|
-| Driver | `impl` |
-| Full gate | lint, typecheck, build 0; `GATE_UNIT` from env exit 0 (`npm test` 438 passed, same as phase 9, +0; six `Naruszenia: 0`); `grep -c "npm run sample -- E" ci.yml` = 6; AGENTS.md 399 words |
-| Seam sweep | no `params.max`/`E3–E4` in curriculum.test.ts; no `const apply`; `S-03` in src only real references (E1/E2 headers); `Trigger:` count 10 |
-| Deliberate break | `E5` removed from `stages`: `npm test` stays green (398 passed), `GATE_UNIT` exit 2 (`Użycie: npm run sample`); restored |
-| Meta-check | only the new sample step catches it (plan body used E5-removal, not `E5.4.div_50`; `maxDividend: 1` would fail npm test first) |
+| `npm run lint` | exit 0 (before and after the fixes) |
+| `npm run typecheck` | exit 0 (before and after) |
+| `GATE_UNIT` from `autonomous-run.env` | exit 0. Before: `Tests 438 passed`. After: `Tests 441 passed` (baseline 236 + 205; review +3). Six `Naruszenia: 0` both times |
+| `npm run build` | exit 0 (before and after) |
+| `npm run sample -- E1..E6 --count 6` | exit 0, read in full before and after the fixes (`reviews/teacher-read.md`) |
+| RED first | 8 new or changed assertions were red before the production edits, plus the 2 parser tests |
+| Deliberate break | `compareNum.ts` `digitsPhrase` reverted to `countNoun`: the test "a one-digit number „ma 1 cyfrę”" went red with `"ma 1 cyfra" needs the accusative after "ma"`; restored (`cmp`) |
+| Meta-check | at `max: 1 000 000` the same break stayed green, because one-digit numbers are unreachable there after F4. So the guard uses `max: 1000`. That proves both the validator wiring through `forEachDraw` and the fix |
+| Hook bypass | none: `.claude/settings.json` was last modified 2026-10-10 and `.claude/hooks/*` before the run; no `--no-verify` |
 
 ## 4. Next command
 
-`/10x-impl-review generators-remaining-stages`
+`/10x-archive generators-remaining-stages` then ship
 
 ## 5. Open
 
-- Row 6.4 [reviewer] teacher read of `sample -- E1 --count 6` / `-- E2 --count 6` is open. My own read found: `E1.7.complement_10` prompt "Ile brakuje od 2 do 10?" is awkward Polish (better "Ile brakuje do 10?" with 2 given, e.g. "Do 10 brakuje …" style) — generator `src/core/tasks/generators/complement.ts` / `pl.ts` complement prompt; `E2.1.add_sub_20_units` can show `20 − 7` (crosses ten although `bridge: 'none'`, DU-U shape with a ten as minuend), hint "20 − 10 = 10 | 10 + 3 = 13" is arithmetically right; `E2.4.fact_swap_20` is `1 + 10 = □ + 1` style (clear); E1 tasks shown with keypad (follow-up S-04 later).
-- Same items are listed in `follow-ups/review-fixes.md`.
-- Earlier open points still apply (MISSING_OP bare prompt, CHAIN tiny `max`, CHOOSE_OP tiles, FACT_FAMILY keypad, `monthDays` two tiles).
-- Phase 7 teacher read (own): COMPARE_NUM large hints read correctly, e.g. "796 866 □ 796 867" → "Porównujemy cyfry od lewej. Pierwsza różna cyfra jest na miejscu jedności: 6 i 7 / 796 866 < 796 867" and "612 449 □ 2" → "612 449 ma 6 cyfr / 2 ma 1 cyfra / Liczba z większą liczbą cyfr jest większa / 612 449 > 2". Reviewer to confirm in phase 9/10 read (E6.10 data now present). `placeNames` has 7 entries (to millions).
-- Phase 8 teacher read (own): "Która pełna setka jest najbliżej liczby 3763?" hint "3763 jest między 3700 a 3800 | 3763 jest bliżej 3800"; "Który pełny tysiąc jest najbliżej liczby 7216?" hint "7216 jest między 7000 a 8000 | 7216 jest bliżej 7000"; "4 · 200" hint "4 · 2 = 8 | 8 · 100 = 800"; "120 : 6" hint "6 · 20 = 120". Numbers ≥ 10 000 use NBSP grouping. Reviewer to confirm.
-
-- Phase 9 teacher read (own; row 9.4 stays the reviewer's): `E6.4.mult_teens` hints are uneven: `5 · 13` gives "5 · 12 = 60 | 60 + 5" and `3 · 18` gives "3 · 9 = 27 | 27 + 27" (halving) rather than the tens-and-units split (5 · 10 + 5 · 3); arithmetically right but not the school method. `E6.5` prompt "Ile brakuje od 35 do 100?" shares the E1 awkward "od … do" wording. `E5.9.fact_check_div_100` can show `98 : 49 = 2` (valid but unusual). Candidate fixes: multHint for a two-digit second factor and the complement prompt.
+- [ ] 10.5 [reviewer] (CI at ship): in the log of the `check` job of workflow `CI`, the steps matching `##\[group\]Run npm run sample -- E[1256]$`, each followed by `Naruszenia: 0`.
+- [ ] 10.6 [human]: the maintainer reads `npm run sample -- <stage> --count 6` for E1, E2, E5 and E6 before merging. Pay special attention to E2.1 `20 − 7` under `bridge: 'none'` (see follow-up; `addSub.ts` `crossesTen`).
+- [ ] 10.7 [human]: decide whether E1 uses `keypad` instead of 3–4 tiles (follow-up `Trigger: S-04`).
+- Follow-ups with `Trigger:` lines are in `follow-ups/review-fixes.md`:
+  - `wordTemplates.ts` `sum.bought` × `złoty` („kupił jeszcze 2 złote”), S-17;
+  - step method for the COMPLEMENT and DIV teens hints, S-17;
+  - stricter `bridge` option, at the maintainer read or S-17;
+  - the AGENTS.md CI sentence;
+  - the `parseComplementParams` / `parseRoundingParams` edge cases;
+  - bare `\d+` in generator tests.
 
 ## 6. Autonomous decisions
 
-1. Phase keeps `Driver: tdd`: stub-first RED, then green, no redirect. Manual gate, commit message and next-phase prompts decided in place (subject proposed by the phase title, stopped after phase 7). Would change: orchestrator requiring another message.
-2. The plan's "hint without the word dziesiątek/jedności" is read as "no tens-and-units decomposition" (`\d (dziesiąt|jedno)`), because the first-differing-digit hint names the place ("na miejscu dziesiątek"), which the plan itself requires ("jej rząd"). Would change: the teacher read finding the place names confusing for grade 6.
-3. Added noun `cyfra` to `src/data/nouns.ts` (validator checks "6 cyfr"). Partner generation for `max > 100` is a new rng sequence, allowed because the contract preserves rng use only for `max <= 100`.
-4. The `ARITHMETIC_LINE` blindness is not directly testable yet (see §3 meta-check); left to phases 8–9 which add grouped arithmetic hints. Rows 6.4 stays the reviewer's.
-5. Phase 8 keeps `Driver: tdd` (no redirect). The plan's ROUNDING contract was self-contradictory (`{ max: 150, to: 100 }` must throw, yet 101–149 contains non-ties): parser rule chosen = `max >= 2 * to` for `to` 100/1000 plus `max <= 10000`. Would change: E6 data needing e.g. `max: 150, to: 100`.
-6. The plan's "multHint(3, 100) equals the pre-change result" contradicts "one line for ·100" (before: halving `3 · 50`); implemented the one-line form (`b === 100` added to the direct cases). E3/E4 do not use ·100, sample seed 2 unchanged.
-7. Manual gate, commit message and next-phase prompts decided in place; stopped after phase 8.
-8. Phase 9 `Driver: impl`, no redirect; confirmation, commit-message and next-phase prompts decided in place (subject `Dane E5 i E6 (p9)`, stop after the phase). Step `types` lists copy the ZADANIA.md §3 type names; answer modes follow E3/E4 (tiles for ROMAN, NUMBER_WORDS, CALENDAR, COMPARE_NUM). Would change: reviewer asking for other answer modes.
-9. Phase 10 `Driver: impl`; prompts decided in place. Break = removing E5 from `stages` (plan body), not the Progress-row wording `E5.4.div_50`. Epilogue: `change.md` set to `implemented` with rows 6.4, 9.4, 10.4–10.7 open. Would change: reviewer wanting the Progress-row break.
+1. **Item (a), `20 − 7` under `bridge: 'none'`, is not treated as a step violation. Only the hint is fixed.**
+   - Rejected: a stricter `bridge` that excludes a full-ten minuend.
+   - Why: ZADANIA E4.2 puts „50 − 3” in a step without crossing, the S-02 `crossesTen` rule says the same, and grade 1 teaches „20 − 7” by analogy with „10 − 7” (E2.1 „budowa 10 + n”).
+   - Would change: the maintainer's read (10.6) asking for E2.1 without full-ten minuends. Then add `bridge: 'strict'` and use it in the E2.1 / E3.6 data.
+2. **F12 is rewritten for every subtrahend, not restricted to ≥ 6.**
+   - Chosen: „10 − b | (a − 10) + (10 − b)”.
+   - Rejected: keeping „a − 10 | + rest” for 6–9 only.
+   - Why: breaking one ten is the school method for „80 − 7”, reads naturally for 1–9, and its first line never holds the result.
+   - Would change: a teacher preferring compensation for 8–9.
+3. **The complement prompt is „Ile trzeba dodać do n, żeby było T?”.**
+   - Rejected: „Ile brakuje liczbie n do T?” and „Uzupełnij: n + □ = T”.
+   - Why: it is the same sentence as the BONDS hint, natural for grade 1, and the prompt stays outside the arithmetic-prompt pattern of the invariants.
+   - Would change: an S-04 screen that shows the equation.
+4. **„1 cyfrę” comes from a `pl.tasks.oneDigit` string, not from an accusative form in `nouns.ts`.**
+   - Why: one use, minimal change. The validator rule `ACCUSATIVE_ONE` catches the whole class anyway.
+   - Would change: a second generator needing the singular accusative of a dictionary noun. Then add an accusative form to `nouns.ts`.
+5. **COMPARE_NUM partners of a different length differ by one digit, and lengths holding only `max` are skipped.**
+   - Rejected: ±2 digits.
+   - Why: E6.10 is about reading large numbers, and a 6-digit number against a 4-digit one is still trivial.
+   - Would change: a teacher wanting the „more digits” rule shown with bigger gaps.
+6. **`checkDiv` is capped at the times table (`TABLE` = 10).**
+   - Why: E5.9 is „dzielenie do 100” in the times table.
+   - Would change: an E6 step that checks division of a two-digit number by a two-digit one.
+7. **Cheap warnings were fixed in the same commit; F8 (word-template context) was deferred.**
+   - Why: F8 changes the S-02 word data and the rng sequence of WORD and CHOOSE_OP.
+   - Would change: the maintainer flagging it in 10.6.
+8. **The skill's continuation question was decided as "Triage findings now"** (contract: never ask). A "how to proceed" question means this step stops after the review.
