@@ -11,7 +11,7 @@
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never remove stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Identifiers and comments are English.
 - Phaser 4 differs from v3 (renderer, filters); check the v4 docs first.
-- `designs/` is read-only art; `.claude/` is gitignored.
+- `designs/` is read-only art; `.claude/` gitignored.
 
 ## Project structure
 
@@ -28,7 +28,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(params, rng) => Task` on the seeded rng.
+TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(skill, rng) => Task` on the seeded rng.
 
 ## Testing
 

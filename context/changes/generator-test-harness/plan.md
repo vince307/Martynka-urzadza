@@ -278,11 +278,11 @@ Brak zmian w zapisie i scenach. Włączenie `strictPropertyInitialization` nie w
 
 #### Automated
 
-- [ ] 3.1 `npm test` i `typecheck` z ≥ 4 plikami testów
-- [ ] 3.2 `sample -- E3` kod 0, kroki 2/6/8 po 3 zadania, `brak generatora`, `Naruszenia: 0`; `E9` kod 2
-- [ ] 3.3 `sample -- E3 --seed 7` deterministyczne
-- [ ] 3.4 AGENTS.md ≤ 400 słów; `npm run sample` w CLAUDE.md i AGENTS.md
+- [x] 3.1 `npm test` i `typecheck` z ≥ 4 plikami testów — ba17fed
+- [x] 3.2 `sample -- E3` kod 0, kroki 2/6/8 po 3 zadania, `brak generatora`, `Naruszenia: 0`; `E9` kod 2 — ba17fed
+- [x] 3.3 `sample -- E3 --seed 7` deterministyczne — ba17fed
+- [x] 3.4 AGENTS.md ≤ 400 słów; `npm run sample` w CLAUDE.md i AGENTS.md — ba17fed
 
 #### Manual
 
-- [ ] 3.5 Wyjście `sample -- E3` przeczytane: działania i podpowiedzi poprawne
+- [x] 3.5 Wyjście `sample -- E3` przeczytane: działania i podpowiedzi poprawne — ba17fed

@@ -1,7 +1,7 @@
 // Prints sample tasks for every curriculum step of a stage and reports
 // violations (PRD FR-005). Usage: npm run sample -- E3 [--seed N] [--count N]
 // Exit codes: 0 ok, 1 violations or generator errors, 2 usage.
-import { createRng } from '../src/core/rng';
+import { createRng, seedFromString } from '../src/core/rng';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask, type Violation } from '../src/core/tasks/validate';
 import { availableStages, getStage } from '../src/data/curriculum';
@@ -17,17 +17,24 @@ const usage = (): never => {
 };
 
 const args = process.argv.slice(2);
-const stageId = args.find((a) => !a.startsWith('--'));
-const option = (name: string, fallback: number): number => {
-    const i = args.indexOf(`--${name}`);
-    if (i === -1) {
-        return fallback;
+const options: Record<string, number> = { seed: DEFAULT_SEED, count: DEFAULT_COUNT };
+let stageId: string | undefined;
+for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === '--seed' || arg === '--count') {
+        const value = Number(args[i + 1]);
+        if (!Number.isInteger(value)) {
+            usage();
+        }
+        options[arg.slice(2)] = value;
+        i += 1;
+    } else if (arg.startsWith('--') || stageId !== undefined) {
+        usage();
+    } else {
+        stageId = arg;
     }
-    const value = Number(args[i + 1]);
-    return Number.isInteger(value) ? value : usage();
-};
-const seed = option('seed', DEFAULT_SEED);
-const count = option('count', DEFAULT_COUNT);
+}
+const { seed, count } = options;
 const stage = stageId ? getStage(stageId) : undefined;
 if (!stage) {
     usage();
@@ -35,7 +42,6 @@ if (!stage) {
 
 const violations: Violation[] = [];
 let errors = 0;
-let draw = 0;
 
 for (const step of stage!.steps) {
     console.log(`\n${stage!.id}.${step.step} ${step.title}`);
@@ -51,9 +57,9 @@ for (const step of stage!.steps) {
         }
         console.log(`  ${skill.id}`);
         for (let i = 0; i < count; i += 1) {
-            draw += 1;
             try {
-                const task = generate(skill, createRng(seed * 1000 + draw));
+                // Seed per skill and draw: adding a skill elsewhere never reshuffles this one.
+                const task = generate(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)));
                 const max = typeof skill.params.max === 'number' ? skill.params.max : undefined;
                 const found = validateTask(task, { max, nouns });
                 violations.push(...found);

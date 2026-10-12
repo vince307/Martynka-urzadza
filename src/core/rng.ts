@@ -42,7 +42,21 @@ const sfc32 = (a: number, b: number, c: number, d: number): (() => number) => ()
 
 const WARMUP_DRAWS = 8;
 
+/** FNV-1a 32-bit hash of a string, for deriving seeds from ids ("E3.2.add_sub:7"). */
+export const seedFromString = (text: string): number => {
+    let hash = 0x811c9dc5;
+    for (const char of text) {
+        hash ^= char.codePointAt(0) ?? 0;
+        hash = Math.imul(hash, 0x01000193);
+    }
+    return hash >>> 0;
+};
+
+/** Seeds are 32-bit integers: non-integers are rejected, larger values wrap. */
 export const createRng = (seed: number): Rng => {
+    if (!Number.isInteger(seed)) {
+        throw new RangeError(`createRng() needs an integer seed, got ${seed}`);
+    }
     const mix = mulberry32(seed);
     const word = (): number => Math.floor(mix() * 4294967296);
     const next = sfc32(word(), word(), word(), word());

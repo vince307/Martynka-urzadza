@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRng } from '../src/core/rng';
+import { createRng, seedFromString } from '../src/core/rng';
 
 describe('createRng', () => {
     it('is deterministic for the same seed and differs between seeds', () => {
@@ -28,6 +28,18 @@ describe('createRng', () => {
         }
         expect([...seen].sort()).toEqual([1, 2, 3, 4, 5, 6]);
         expect(rng.int(3, 3)).toBe(3);
+    });
+
+    it('rejects non-integer seeds and hashes strings to seeds', () => {
+        expect(() => createRng(1.5)).toThrow(RangeError);
+        expect(seedFromString('E3.2.add_sub:0')).toBe(seedFromString('E3.2.add_sub:0'));
+        expect(seedFromString('a')).not.toBe(seedFromString('b'));
+        expect(Number.isInteger(seedFromString('x'))).toBe(true);
+    });
+
+    it('keeps the golden sequence for seed 42 (saved rngSeed values depend on it)', () => {
+        const rng = createRng(42);
+        expect([rng.next(), rng.next(), rng.next()]).toEqual([0.7364004673436284,0.20048261154443026,0.14578645839355886]);
     });
 
     it('int() rejects bad bounds', () => {

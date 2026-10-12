@@ -22,8 +22,8 @@ const isBridge = (value: unknown): value is Bridge => value === 'none' || value 
 
 export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams => {
     const { max, ops, bridge } = params;
-    if (!Number.isInteger(max) || (max as number) < 1) {
-        throw new TypeError(`ADD_SUB params.max must be a positive integer, got ${String(max)}`);
+    if (!Number.isInteger(max) || (max as number) < 2) {
+        throw new TypeError(`ADD_SUB params.max must be an integer >= 2, got ${String(max)}`);
     }
     if (!Array.isArray(ops) || ops.length === 0 || !ops.every(isOp)) {
         throw new TypeError(`ADD_SUB params.ops must be a non-empty list of '+' / '-', got ${JSON.stringify(ops)}`);
@@ -31,49 +31,63 @@ export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams
     if (!isBridge(bridge)) {
         throw new TypeError(`ADD_SUB params.bridge must be 'none' | 'ten' | 'any', got ${String(bridge)}`);
     }
+    if (bridge === 'ten' && (max as number) < 11) {
+        throw new TypeError(`ADD_SUB bridge 'ten' needs max >= 11, got ${String(max)}`);
+    }
     return { max: max as number, ops, bridge };
 };
 
-/** True when a + b (or a − b) crosses a multiple of ten. */
+/**
+ * True when a + b (or a − b) crosses a multiple of ten in the units: 7 + 6
+ * and 13 − 6 do, 8 + 2 (reaches 10) and 20 − 7 (starts on a ten) do not.
+ * Only the units matter, so adding or removing whole tens first keeps the
+ * answer the same.
+ */
 export const crossesTen = (a: number, b: number, op: AddSubOp): boolean =>
-    op === '+' ? (a % 10) + (b % 10) >= 10 : a % 10 < b % 10;
+    op === '+' ? (a % 10) + (b % 10) > 10 : a % 10 > 0 && a % 10 < b % 10;
 
 const bridgeMatches = (a: number, b: number, op: AddSubOp, bridge: Bridge): boolean =>
     bridge === 'any' || crossesTen(a, b, op) === (bridge === 'ten');
 
+const apply = (a: number, b: number, op: AddSubOp): number => (op === '+' ? a + b : a - b);
+const sign = (op: AddSubOp): string => (op === '+' ? '+' : MINUS);
+const line = (a: number, b: number, op: AddSubOp): string => `${a} ${sign(op)} ${b} = ${apply(a, b, op)}`;
+
+/**
+ * Hint steps in the order taught at school: whole tens of b first, then the
+ * units; when the units cross a ten, go to the ten first (7 + 6 → 7 + 3 = 10,
+ * 10 + 3 = 13; 13 − 6 → 13 − 3 = 10, 10 − 3 = 7). Never produces a "+ 0" step.
+ */
 const hintFor = (a: number, b: number, op: AddSubOp): string[] => {
-    if (op === '+') {
-        if (!crossesTen(a, b, op)) {
-            return [`${a} + ${b} = ${a + b}`];
+    const steps: string[] = [];
+    const tens = b - (b % 10);
+    const units = b % 10;
+    let current = a;
+    if (tens > 0) {
+        steps.push(line(current, tens, op));
+        current = apply(current, tens, op);
+    }
+    if (units > 0) {
+        if (crossesTen(current, units, op)) {
+            const toTen = op === '+' ? 10 - (current % 10) : current % 10;
+            const rest = units - toTen;
+            steps.push(line(current, toTen, op));
+            current = apply(current, toTen, op);
+            steps.push(line(current, rest, op));
+        } else {
+            steps.push(line(current, units, op));
         }
-        // 7 + 6 → 7 + 3 = 10, 10 + 3 = 13 (fill up to the next ten first).
-        const toTen = 10 - (a % 10);
-        const rest = b - toTen;
-        return [`${a} + ${toTen} = ${a + toTen}`, `${a + toTen} + ${rest} = ${a + b}`];
     }
-    if (!crossesTen(a, b, op)) {
-        return [`${a} ${MINUS} ${b} = ${a - b}`];
-    }
-    // 13 − 6 → 13 − 3 = 10, 10 − 3 = 7 (go down to the ten first).
-    const toTen = a % 10;
-    const rest = b - toTen;
-    return [`${a} ${MINUS} ${toTen} = ${a - toTen}`, `${a - toTen} ${MINUS} ${rest} = ${a - b}`];
+    return steps.length > 0 ? steps : [line(a, b, op)];
 };
 
+/** Operands are at least 1; a − a = 0 stays possible, 30 + 0 does not. */
 const drawOperands = (p: AddSubParams, op: AddSubOp, rng: Rng): [number, number] => {
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-        if (op === '+') {
-            const a = rng.int(0, p.max);
-            const b = rng.int(0, p.max - a);
-            if (bridgeMatches(a, b, op, p.bridge)) {
-                return [a, b];
-            }
-        } else {
-            const a = rng.int(0, p.max);
-            const b = rng.int(0, a);
-            if (bridgeMatches(a, b, op, p.bridge)) {
-                return [a, b];
-            }
+        const a = op === '+' ? rng.int(1, p.max - 1) : rng.int(1, p.max);
+        const b = op === '+' ? rng.int(1, p.max - a) : rng.int(1, a);
+        if (bridgeMatches(a, b, op, p.bridge)) {
+            return [a, b];
         }
     }
     throw new Error(`ADD_SUB: no operands for ${JSON.stringify({ ...p, op })} after ${MAX_ATTEMPTS} draws`);
@@ -83,11 +97,10 @@ export const generateAddSub: Generator = (skill, rng): Task => {
     const params = parseAddSubParams(skill.params);
     const op = rng.pick(params.ops);
     const [a, b] = drawOperands(params, op, rng);
-    const answer = op === '+' ? a + b : a - b;
     return {
         skillId: skill.id,
-        prompt: `${a} ${op === '+' ? '+' : MINUS} ${b}`,
-        answer,
+        prompt: `${a} ${sign(op)} ${b}`,
+        answer: apply(a, b, op),
         hint: hintFor(a, b, op),
     };
 };

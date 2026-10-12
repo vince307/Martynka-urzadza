@@ -16,8 +16,10 @@ describe('validateTask', () => {
     });
 
     it('flags negative numbers in prompt, hint, answer and choices', () => {
-        // "5 − 7" is a well-formed subtraction; its negative result is caught through the answer.
+        // "5 − 7" is a well-formed subtraction; a negative result is caught through the answer.
         expect(validateTask({ ...base, prompt: '5 − 7' })).toEqual([]);
+        expect(validateTask({ ...base, prompt: '5 − 7', answer: -2 }, { max: 20 }).map((x) => x.rule)).toEqual(['negative', 'range']);
+        expect(validateTask({ ...base, prompt: '□ − 7 = 5' })).toEqual([]);
         expect(validateTask({ ...base, prompt: '−3 + 5' }).map((x) => x.rule)).toContain('negative');
         expect(validateTask({ ...base, hint: ['5 − 7 = -2'] }).map((x) => x.rule)).toContain('negative');
         expect(validateTask({ ...base, hint: ['5 − 7 = −2'] }).map((x) => x.rule)).toContain('negative');

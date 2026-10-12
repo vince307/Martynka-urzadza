@@ -20,11 +20,12 @@ export interface ValidationContext {
 }
 
 /**
- * A minus (hyphen or U+2212) that is not a binary operator: nothing but
- * whitespace, or a non-digit, before it, and a digit after it. "5 − 7" is
- * fine; "-3", "= -2" and "(−3" are flagged.
+ * A negative number where a result or a list item would be: a minus (hyphen
+ * or U+2212) followed by a digit at the start of a text or after "=", "(",
+ * "," or ":". Binary operators ("10 − 4"), placeholders ("□ − 7") and prose
+ * mentions of temperatures are left to the answer check.
  */
-const NEGATIVE_NUMBER = /(?:^|[^\d\s])\s*[-−]\s?\d/;
+const NEGATIVE_NUMBER = /(?:^|[=(,:;])\s*[-−]\s?\d/;
 const NUMBER_WORD = /(\d+)\s+(\p{L}+)/gu;
 
 const texts = (task: Task): string[] => [task.prompt, ...(task.speak ? [task.speak] : []), ...task.hint];
