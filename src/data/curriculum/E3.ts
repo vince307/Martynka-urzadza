@@ -3,14 +3,16 @@
 // list their task types and get skills with the generators in S-02.
 import type { SkillDef, StageDef } from '../../core/types';
 
-const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef => ({
+const skill = (id: string, step: number, type: string, params: SkillDef['params'], answer: SkillDef['answer'] = 'keypad'): SkillDef => ({
     id,
     stage: 'E3',
     step,
-    type: 'ADD_SUB',
+    type,
     params,
-    answer: 'keypad',
+    answer,
 });
+
+const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef => skill(id, step, 'ADD_SUB', params);
 
 export const E3: StageDef = {
     id: 'E3',
@@ -20,7 +22,10 @@ export const E3: StageDef = {
             step: 2,
             title: '+ i − do 20 z przekroczeniem, działania z okienkiem',
             types: ['ADD_SUB', 'MISSING'],
-            skills: [addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten' })],
+            skills: [
+                addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten' }),
+                skill('E3.2.missing_20', 2, 'MISSING', { max: 20, ops: ['+', '-'], bridge: 'any' }),
+            ],
         },
         { step: 3, title: 'Zegar: pełne godziny, obliczenia zegarowe', types: ['CLOCK'], skills: [] },
         { step: 4, title: 'Waga: kg, dag; diagramy', types: ['MASS', 'DATA'], skills: [] },
@@ -36,7 +41,7 @@ export const E3: StageDef = {
             step: 8,
             title: '+ i − do 30 z przekroczeniem, dwie dwucyfrowe',
             types: ['ADD_SUB'],
-            skills: [addSub('E3.8.add_sub_30_bridge', 8, { max: 30, ops: ['+', '-'], bridge: 'any' })],
+            skills: [addSub('E3.8.add_sub_30_bridge', 8, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'any' })],
         },
         { step: 9, title: 'Mnożenie jako „n razy po m”, mnożenie do 30, ·0 i ·1', types: ['MULT_GROUPS', 'MULT'], skills: [] },
         { step: 10, title: 'Dzielenie: po równo i „po ile”, dzielenie do 30, połowa', types: ['DIV', 'HALF'], skills: [] },

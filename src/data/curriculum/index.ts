@@ -2,9 +2,11 @@
 // absent, so tools can list what exists.
 import type { StageDef, StageId } from '../../core/types';
 import { E3 } from './E3';
+import { E4 } from './E4';
 
 export const stages: Readonly<Partial<Record<StageId, StageDef>>> = {
     E3,
+    E4,
 };
 
 export const getStage = (id: string): StageDef | undefined =>

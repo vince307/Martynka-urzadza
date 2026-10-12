@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { crossesTen, generateAddSub, MINUS, parseAddSubParams } from '../src/core/tasks/generators/addSub';
+import { crossesTen, generateAddSub, hasCarry, MINUS, parseAddSubParams } from '../src/core/tasks/generators/addSub';
 import { validateTask } from '../src/core/tasks/validate';
 import type { SkillDef } from '../src/core/types';
+import { matchesToken } from '../src/core/tasks/shapes';
 import { E3 } from '../src/data/curriculum/E3';
+import { E4 } from '../src/data/curriculum/E4';
 import { nouns } from '../src/data/nouns';
 
-const skills: SkillDef[] = E3.steps.flatMap((step) => step.skills).filter((s) => s.type === 'ADD_SUB');
+const skills: SkillDef[] = [...E3.steps, ...E4.steps].flatMap((step) => step.skills).filter((s) => s.type === 'ADD_SUB');
 
 const evaluate = (prompt: string): { a: number; b: number; op: '+' | '-'; value: number } => {
     const m = /^(\d+) ([+−]) (\d+)$/.exec(prompt);
@@ -46,11 +48,18 @@ describe('generateAddSub', () => {
                     expect(value, where).toBeGreaterThanOrEqual(0);
                     expect(value, where).toBeLessThanOrEqual(params.max);
                     expect(task.answer, where).toBe(value);
-                    if (params.bridge !== 'any') {
-                        expect(crossesTen(a, b, op), where).toBe(params.bridge === 'ten');
+                    if (params.bridge === 'ten') {
+                        expect(crossesTen(a, b, op), where).toBe(true);
+                    }
+                    if (params.bridge === 'none') {
+                        expect(hasCarry(a, b, op), where).toBe(false);
                     }
                     expect(a, where).toBeGreaterThanOrEqual(1);
                     expect(b, where).toBeGreaterThanOrEqual(1);
+                    if (params.shapes) {
+                        const fits = params.shapes.some((s) => s.op === op && matchesToken(a, s.left) && matchesToken(b, s.right));
+                        expect(fits, `${where} shapes=${JSON.stringify(params.shapes)}`).toBe(true);
+                    }
                     expect(task.hint.length, where).toBeGreaterThan(0);
                     for (const step of task.hint) {
                         expect(step, where).not.toMatch(/[+−] 0 =/);
@@ -83,6 +92,23 @@ describe('generateAddSub', () => {
         expect(task.hint[0]).toMatch(/= \d*0$/);
     });
 
+    it('detects carries and borrows at any digit', () => {
+        expect(hasCarry(193, 70, '+')).toBe(true);
+        expect(hasCarry(224, 60, '+')).toBe(false);
+        expect(hasCarry(553, 50, '-')).toBe(false);
+        expect(hasCarry(553, 60, '-')).toBe(true);
+        expect(hasCarry(35, 34, '+')).toBe(false);
+        expect(hasCarry(38, 7, '+')).toBe(true);
+        expect(hasCarry(47, 3, '+')).toBe(false);
+        expect(hasCarry(50, 3, '-')).toBe(false);
+        expect(hasCarry(52, 20, '+')).toBe(false);
+        expect(hasCarry(72, 50, '-')).toBe(false);
+        expect(hasCarry(530, 400, '+')).toBe(false);
+        expect(hasCarry(40, 60, '+')).toBe(false);
+        expect(hasCarry(45, 7, '-')).toBe(true);
+        expect(hasCarry(370, 50, '+')).toBe(true);
+    });
+
     it('defines crossing a ten by the units only', () => {
         expect(crossesTen(7, 6, '+')).toBe(true);
         expect(crossesTen(8, 2, '+')).toBe(false);
@@ -107,6 +133,12 @@ describe('generateAddSub', () => {
             seen.add(task.prompt);
         }
         expect(seen.size).toBeGreaterThan(50);
+    });
+
+    it('derives ops from shapes and rejects contradicting ops', () => {
+        expect(parseAddSubParams({ max: 100, shapes: ['DU+U', 'DT-U'], bridge: 'none' }).ops).toEqual(['+', '-']);
+        expect(() => parseAddSubParams({ max: 100, shapes: ['DU+U'], ops: ['-'], bridge: 'none' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 100, shapes: [], bridge: 'none' })).toThrow(TypeError);
     });
 
     it('rejects malformed params', () => {
