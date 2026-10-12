@@ -1,6 +1,7 @@
 // COMPARE_EXPR: compare the results of two expressions, "3 + 4 □ 9 − 1"
 // (ZADANIA.md, section 4). Answer is a sign tile; "=" appears about one time
 // in six and never as two identical expressions.
+import { pl } from '../../../data/pl';
 import { applyOp, arithLine, opSign, type Op } from '../arith';
 import { BOX } from '../symbols';
 import type { Generator, Task } from '../types';
@@ -58,9 +59,11 @@ export const generateCompareExpr: Generator = (skill, rng): Task => {
             continue;
         }
         const sign = left.value < right.value ? '<' : left.value > right.value ? '>' : '=';
+        const prompt = `${text(left)} ${BOX} ${text(right)}`;
         return {
             skillId: skill.id,
-            prompt: `${text(left)} ${BOX} ${text(right)}`,
+            prompt,
+            speak: pl.tasks.compareExprSpeak(prompt),
             answer: sign,
             choices: [...SIGNS],
             hint: [arithLine(left.a, left.b, left.op), arithLine(right.a, right.b, right.op), `${left.value} ${sign} ${right.value}`],

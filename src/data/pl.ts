@@ -98,6 +98,17 @@ export const pl = {
             (r: string) => `Winda zatrzymała się na ${r} piętrze. Które to piętro?`,
             (r: string) => `Jaką liczbę oznacza ${r}?`,
         ],
+        // Spoken forms (Task.speak): the synthesizer would read Roman numerals as their value, so letters are spelled out.
+        romanLetters: { I: 'i', V: 'fau', X: 'iks', L: 'el', C: 'ce', D: 'de', M: 'em' } as Record<string, string>,
+        romanSpeakContexts: [
+            (spelled: string) => `Zegar z cyframi rzymskimi pokazuje ${spelled}. Która to godzina?`,
+            (spelled: string) => `Winda zatrzymała się na piętrze oznaczonym cyframi rzymskimi ${spelled}. Które to piętro?`,
+            (spelled: string) => `Jaką liczbę oznacza zapis rzymski ${spelled}?`,
+        ],
+        romanMonthSpeak: (day: number, spelled: string) => `Data ${day}, miesiąc zapisany cyframi rzymskimi ${spelled}. Który to miesiąc?`,
+        compareSpeak: (expr: string) => `Jaki znak pasuje w okienku? ${expr}`,
+        compareExprSpeak: (expr: string) => `Porównaj wyniki. Jaki znak pasuje w okienku? ${expr}`,
+        missingOpSpeak: (expr: string) => `Jakiego znaku działania brakuje w okienku? ${expr}`,
         toRoman: (n: number) => `Jak zapisać liczbę ${n} cyframi rzymskimi?`,
         romanHint: (pieces: string, sum: string) => `${pieces}; razem ${sum}`,
         nextMonth: (locative: string) => `Który miesiąc jest po ${locative}?`,

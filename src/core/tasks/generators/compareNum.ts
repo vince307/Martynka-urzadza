@@ -95,9 +95,11 @@ export const generateCompareNum: Generator = (skill, rng): Task => {
     if (p.max > 100) {
         const b = largePartner(a, p.max, rng);
         const sign = a < b ? '<' : a > b ? '>' : '=';
+        const prompt = `${formatNumber(a)} ${BOX} ${formatNumber(b)}`;
         return {
             skillId: skill.id,
-            prompt: `${formatNumber(a)} ${BOX} ${formatNumber(b)}`,
+            prompt,
+            speak: pl.tasks.compareSpeak(prompt),
             answer: sign,
             choices: [...SIGNS],
             hint: largeHint(a, b, sign),
@@ -106,9 +108,11 @@ export const generateCompareNum: Generator = (skill, rng): Task => {
     // Equal pairs about one time in six; otherwise an independent second number.
     const b = rng.chance(1 / 6) ? a : rng.int(1, p.max);
     const sign = a < b ? '<' : a > b ? '>' : '=';
+    const prompt = `${a} ${BOX} ${b}`;
     return {
         skillId: skill.id,
-        prompt: `${a} ${BOX} ${b}`,
+        prompt,
+        speak: pl.tasks.compareSpeak(prompt),
         answer: sign,
         choices: [...SIGNS],
         hint: a === b ? [pl.tasks.compareEqualHint] : [describe(a), describe(b), `${a} ${sign} ${b}`],

@@ -61,3 +61,7 @@ export const romanBreakdown = (text: string): { steps: string[]; sum: string } =
     const total = values.reduce((x, y) => x + y, 0);
     return { steps, sum: values.length > 1 ? `${values.join(' + ')} = ${total}` : `${total}` };
 };
+
+/** Letters of a numeral spelled by name for the narrator: "VII" -> "fau, i, i". */
+export const spellRoman = (text: string, letters: Readonly<Record<string, string>>): string =>
+    [...text].map((glyph) => letters[glyph] ?? glyph).join(', ');

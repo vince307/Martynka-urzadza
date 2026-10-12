@@ -70,6 +70,9 @@ for (const step of stage!.steps) {
                 const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
                 const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
                 console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
+                if (task.speak) {
+                    console.log(`      mowa: ${task.speak}`);
+                }
             } catch (error) {
                 errors += 1;
                 console.log(`    BŁĄD ${skill.id}: ${error instanceof Error ? error.message : String(error)}`);
