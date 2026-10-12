@@ -54,6 +54,6 @@ export const generateEvenOdd: Generator = (skill, rng): Task => {
         answer,
         choices,
         hint: [pl.tasks.selectEvenHint],
-        check: (input) => Array.isArray(input) && input.every((x) => typeof x === 'number') && sameSet(input as number[], answer),
+        check: (input) => Array.isArray(input) && input.every((x): x is number => typeof x === 'number') && sameSet(input, answer),
     };
 };

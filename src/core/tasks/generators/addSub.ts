@@ -34,10 +34,10 @@ export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams
         throw new TypeError(`ADD_SUB bridge 'ten' needs max >= 11, got ${String(max)}`);
     }
     if (shapes !== undefined) {
-        if (!Array.isArray(shapes) || shapes.length === 0 || !shapes.every((x) => typeof x === 'string')) {
+        if (!Array.isArray(shapes) || shapes.length === 0 || !shapes.every((x): x is string => typeof x === 'string')) {
             throw new TypeError(`ADD_SUB params.shapes must be a non-empty list of strings, got ${JSON.stringify(shapes)}`);
         }
-        const parsed = (shapes as string[]).map(parseShape);
+        const parsed = shapes.map(parseShape);
         const shapeOps = [...new Set(parsed.map((x) => x.op))];
         if (ops !== undefined && (!Array.isArray(ops) || !ops.every(isOp) || ops.some((o) => !shapeOps.includes(o)))) {
             throw new TypeError(`ADD_SUB params.ops ${JSON.stringify(ops)} must match the ops of shapes ${JSON.stringify(shapes)}`);
