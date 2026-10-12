@@ -15,6 +15,18 @@ export interface SkillDef {
     answer: 'tiles' | 'keypad' | 'drag' | 'select';
 }
 
+export interface StepDef {
+    step: number;             // 1-based order within the stage (ZADANIA.md, section 3)
+    title: string;            // author-facing step name (Polish), not shown to the child
+    types: string[];          // task types the catalogue lists for this step
+    skills: SkillDef[];       // skills with parameters; empty until a generator exists
+}
+
+export interface StageDef {
+    id: StageId;
+    steps: StepDef[];
+}
+
 export interface SlotDef {
     id: string;               // e.g. "sofa"
     x: number;

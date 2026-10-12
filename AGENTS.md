@@ -4,14 +4,14 @@
 
 ## Hard rules
 
-- Implement milestones M0–M8 (@Martynka-urzadza.md section 11) in order; never reorder them.
+- Implement milestones M0–M8 (@Martynka-urzadza.md section 11) in order; never reorder.
 - `src/core/` must not import Phaser. Write its logic with vitest tests first, then the scene.
 - Scenes contain no balance numbers and no player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `rooms.ts`).
 - Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored).
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never remove stars.
-- Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code identifiers and comments are English.
+- Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Identifiers and comments are English.
 - Phaser 4 differs from v3 (renderer, filters); check the v4 docs first.
-- `designs/` is read-only art; `.claude/` is gitignored.
+- `designs/` is read-only art; `.claude/` gitignored.
 
 ## Project structure
 
@@ -24,15 +24,15 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
 - `npm run preview` — the only local way to test `sw.js`.
-- `npx vitest run tests/<name>.test.ts` — once vitest lands in F-03 (M1); no lint or test script yet.
+- `npm test` — vitest (`npx vitest run tests/<name>.test.ts` for one file); `npm run sample -- E3` prints tasks per step with violations. No lint yet.
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals` and `noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(params, rng) => Task` on the seeded rng.
+TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`, a pure `(skill, rng) => Task` on the seeded rng.
 
 ## Testing
 
-Vitest in `tests/` from M1. Each skill gets a 1000-draw test: results in range, no negatives, bridging matches params, distractors differ from the answer, correct inflection. After every milestone verify the build and offline behaviour.
+Vitest in `tests/` (standalone `vitest.config.mts`). Each skill gets a 1000-draw test on seeded `createRng`: range, no negatives, bridging per params, distinct distractors, inflection (`validateTask`). After every milestone verify build and offline behaviour.
 
 ## Commits and PRs
 

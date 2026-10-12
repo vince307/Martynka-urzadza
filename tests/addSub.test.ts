@@ -1,0 +1,119 @@
+import { describe, expect, it } from 'vitest';
+import { createRng } from '../src/core/rng';
+import { crossesTen, generateAddSub, MINUS, parseAddSubParams } from '../src/core/tasks/generators/addSub';
+import { validateTask } from '../src/core/tasks/validate';
+import type { SkillDef } from '../src/core/types';
+import { E3 } from '../src/data/curriculum/E3';
+import { nouns } from '../src/data/nouns';
+
+const skills: SkillDef[] = E3.steps.flatMap((step) => step.skills).filter((s) => s.type === 'ADD_SUB');
+
+const evaluate = (prompt: string): { a: number; b: number; op: '+' | '-'; value: number } => {
+    const m = /^(\d+) ([+−]) (\d+)$/.exec(prompt);
+    if (!m) {
+        throw new Error(`unexpected prompt ${prompt}`);
+    }
+    const a = Number(m[1]);
+    const b = Number(m[3]);
+    const op = m[2] === '+' ? '+' : '-';
+    return { a, b, op, value: op === '+' ? a + b : a - b };
+};
+
+const SEEDS = 20;
+const DRAWS_PER_SEED = 50;
+
+describe('generateAddSub', () => {
+    it('finds ADD_SUB skills in E3', () => {
+        expect(skills.length).toBeGreaterThan(0);
+    });
+
+    for (const skill of skills) {
+        const params = parseAddSubParams(skill.params);
+
+        it(`${skill.id}: ${SEEDS * DRAWS_PER_SEED} draws stay within the contract`, () => {
+            for (let seed = 1; seed <= SEEDS; seed += 1) {
+                const rng = createRng(20261012 + seed);
+                for (let i = 0; i < DRAWS_PER_SEED; i += 1) {
+                    const task = generateAddSub(skill, rng);
+                    const where = `${skill.id} seed=${seed} draw=${i} prompt="${task.prompt}"`;
+                    const { a, b, op, value } = evaluate(task.prompt);
+                    expect(task.skillId, where).toBe(skill.id);
+                    expect(params.ops, where).toContain(op);
+                    expect(a, where).toBeGreaterThanOrEqual(0);
+                    expect(b, where).toBeGreaterThanOrEqual(0);
+                    expect(a, where).toBeLessThanOrEqual(params.max);
+                    expect(b, where).toBeLessThanOrEqual(params.max);
+                    expect(value, where).toBeGreaterThanOrEqual(0);
+                    expect(value, where).toBeLessThanOrEqual(params.max);
+                    expect(task.answer, where).toBe(value);
+                    if (params.bridge !== 'any') {
+                        expect(crossesTen(a, b, op), where).toBe(params.bridge === 'ten');
+                    }
+                    expect(a, where).toBeGreaterThanOrEqual(1);
+                    expect(b, where).toBeGreaterThanOrEqual(1);
+                    expect(task.hint.length, where).toBeGreaterThan(0);
+                    for (const step of task.hint) {
+                        expect(step, where).not.toMatch(/[+−] 0 =/);
+                        const m = /^(\d+) ([+−]) (\d+) = (\d+)$/.exec(step);
+                        expect(m, `${where} hint "${step}"`).not.toBeNull();
+                        const [, x, o, y, r] = m!;
+                        expect(Number(r), where).toBe(o === '+' ? Number(x) + Number(y) : Number(x) - Number(y));
+                    }
+                    expect(task.hint[task.hint.length - 1], where).toMatch(new RegExp(`= ${value}$`));
+                    expect(validateTask(task, { max: params.max, nouns }), where).toEqual([]);
+                }
+            }
+        });
+    }
+
+    it('is deterministic for the same seed', () => {
+        const skill = skills[0];
+        const first = generateAddSub(skill, createRng(99));
+        const second = generateAddSub(skill, createRng(99));
+        expect(first).toEqual(second);
+    });
+
+    it('writes hints with the typographic minus and ten-crossing steps', () => {
+        const task = generateAddSub(
+            { id: 'x', stage: 'E3', step: 2, type: 'ADD_SUB', params: { max: 20, ops: ['-'], bridge: 'ten' }, answer: 'keypad' },
+            createRng(5),
+        );
+        expect(task.prompt).toContain(MINUS);
+        expect(task.hint).toHaveLength(2);
+        expect(task.hint[0]).toMatch(/= \d*0$/);
+    });
+
+    it('defines crossing a ten by the units only', () => {
+        expect(crossesTen(7, 6, '+')).toBe(true);
+        expect(crossesTen(8, 2, '+')).toBe(false);
+        expect(crossesTen(14, 13, '+')).toBe(false);
+        expect(crossesTen(13, 6, '-')).toBe(true);
+        expect(crossesTen(20, 7, '-')).toBe(false);
+        expect(crossesTen(27, 15, '-')).toBe(false);
+        expect(crossesTen(22, 6, '-')).toBe(true);
+    });
+
+    it('breaks two-digit operands into tens first', () => {
+        const skill: SkillDef = { id: 'x', stage: 'E3', step: 8, type: 'ADD_SUB', params: { max: 30, ops: ['+', '-'], bridge: 'any' }, answer: 'keypad' };
+        const seen = new Set<string>();
+        for (let seed = 0; seed < 200; seed += 1) {
+            const task = generateAddSub(skill, createRng(seed));
+            if (task.prompt === '14 + 13') {
+                expect(task.hint).toEqual(['14 + 10 = 24', '24 + 3 = 27']);
+            }
+            if (task.prompt === `22 ${MINUS} 15`) {
+                expect(task.hint).toEqual([`22 ${MINUS} 10 = 12`, `12 ${MINUS} 2 = 10`, `10 ${MINUS} 3 = 7`]);
+            }
+            seen.add(task.prompt);
+        }
+        expect(seen.size).toBeGreaterThan(50);
+    });
+
+    it('rejects malformed params', () => {
+        expect(() => parseAddSubParams({ max: '20', ops: ['+'], bridge: 'any' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 20, ops: [], bridge: 'any' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 20, ops: ['+'], bridge: 'x' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 20, ops: ['*'], bridge: 'any' })).toThrow(TypeError);
+        expect(() => parseAddSubParams({ max: 9, ops: ['+'], bridge: 'ten' })).toThrow(TypeError);
+    });
+});
