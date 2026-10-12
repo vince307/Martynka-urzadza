@@ -16,7 +16,7 @@ export interface RoundView {
         | { kind: 'correct'; star: boolean }
         | { kind: 'roundEnd'; bonus: number };
     inputActive: boolean;
-    switchVisible: boolean;                           // never during a task (FR-011)
+    switchVisible: boolean;                           // between tasks only: solved, before "Dalej" (FR-011)
 }
 
 const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => string): RoundView['bar'] => {
@@ -56,6 +56,6 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
         choices: task.choices ? [...task.choices] : [],
         bar: barOf(state, task, answerLine),
         inputActive: !state.finished && ['first', 'second', 'retype'].includes(state.phase),
-        switchVisible: false,
+        switchVisible: !state.finished && state.phase === 'done',
     };
 };

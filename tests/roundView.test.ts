@@ -104,4 +104,23 @@ describe('roundView', () => {
         s = nextSolutionStep(nextSolutionStep(s));
         expect(view(s).switchVisible).toBe(false);
     });
+
+    it('the switch shows between tasks: after a correct answer, before "Dalej" (FR-011)', () => {
+        expect(view(answer(start(tile), 5)).switchVisible).toBe(true);
+        expect(view(answer(wrong(start(tile)), 5)).switchVisible).toBe(true);
+        let s = wrong(wrong(start(tile)));
+        s = answer(nextSolutionStep(nextSolutionStep(s)), 5);
+        expect(s.phase).toBe('done');
+        expect(view(s).switchVisible).toBe(true);
+    });
+
+    it('the switch hides again once the next task starts and on the summary', () => {
+        let s = next(answer(start(tile), 5));
+        expect(view(s).switchVisible).toBe(false);
+        for (let i = 0; i < 4; i += 1) {
+            s = next(answer(s, s.tasks[s.index].answer));
+        }
+        expect(s.finished).toBe(true);
+        expect(view(s).switchVisible).toBe(false);
+    });
 });
