@@ -24,7 +24,7 @@
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not.
 - `npm run preview` — the only local way to test `sw.js`.
-- `npm run lint` — ESLint (boundary rules); `npm test` — vitest (`npx vitest run tests/<name>.test.ts` for one file); `npm run sample -- E3` — tasks per step with violations. CI runs all three on every PR.
+- `npm run lint` — ESLint (boundary rules); `npm test` — vitest (`npx vitest run tests/<name>.test.ts` for one file); `npm run sample -- E3` — tasks per step with violations. CI runs sample for every stage.
 
 ## Coding style
 
