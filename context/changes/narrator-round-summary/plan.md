@@ -848,10 +848,10 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 3.1 `tests/narratorVoice.test.ts` i `tests/narrator.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: bez `utterance.voice` / bez normalizacji `_` → czerwony; przywrócone; meta-check atrapy (Android `pl_PL`, Chromium pusta lista)
-- [ ] 3.3 `npm run lint` zielony; `speechSynthesis`/`SpeechSynthesisUtterance` zakazane w `src/core/**` (ESLint + `tests/lint-boundaries.test.ts`)
-- [ ] 3.4 Pełna bramka lokalna zielona
+- [x] 3.1 `tests/narratorVoice.test.ts` i `tests/narrator.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N` — 7955b4e
+- [x] 3.2 Deliberate break: bez `utterance.voice` / bez normalizacji `_` → czerwony; przywrócone; meta-check atrapy (Android `pl_PL`, Chromium pusta lista) — 7955b4e
+- [x] 3.3 `npm run lint` zielony; `speechSynthesis`/`SpeechSynthesisUtterance` zakazane w `src/core/**` (ESLint + `tests/lint-boundaries.test.ts`) — 7955b4e
+- [x] 3.4 Pełna bramka lokalna zielona — 7955b4e
 
 ### Phase 4: Model podsumowania i widoczność przełącznika
 
