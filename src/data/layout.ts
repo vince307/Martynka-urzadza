@@ -31,6 +31,7 @@ export const FONT_SIZES = {
     prompt: 64,
     answer: 90,
     key: 58,
+    keyLabel: 36,
     expression: 112,
     hint: 32,
 } as const;
@@ -51,9 +52,11 @@ export const TASK_LAYOUT = {
     notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
     prompt: { x: 960, y: 290, maxWidth: 1300 },
-    expression: { x: 560, y: 560 },
+    promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
+    expression: { x: 560, y: 560 },          // beside the keypad
+    expressionWide: { x: 960, y: 500 },      // above the tiles
     tiles: { left: 416, top: 724, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 112, gap: 24, radius: 24 },
+    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24 },
     bar: { height: 96, minWidth: 220, bottom: 960 },
     dotCount: 5,
 } as const;
