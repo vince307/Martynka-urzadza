@@ -877,10 +877,10 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 6.1 Test układu obejmuje przyciski strony; `tests/roundView.test.ts` bez `roundEnd`; unit `<baseline gałęzi> + N`
-- [ ] 6.2 Deliberate break: `PageButton` 90 px → test układu czerwony; przywrócone; meta-check
-- [ ] 6.3 `npx playwright test` zielony (testy #11 kończą się na `finished`)
-- [ ] 6.4 Pełna bramka lokalna zielona
+- [x] 6.1 Test układu obejmuje przyciski strony; `tests/roundView.test.ts` bez `roundEnd`; unit `<baseline gałęzi> + N` — 074daca
+- [x] 6.2 Deliberate break: `PageButton` 90 px → test układu czerwony; przywrócone; meta-check — 074daca
+- [x] 6.3 `npx playwright test` zielony (testy #11 kończą się na `finished`) — 074daca
+- [x] 6.4 Pełna bramka lokalna zielona — 074daca
 
 #### Manual
 
