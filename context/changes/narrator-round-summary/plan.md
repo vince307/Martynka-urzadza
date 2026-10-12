@@ -913,9 +913,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 9.1 Test układu obejmuje przełącznik; unit `<baseline gałęzi> + N`
-- [ ] 9.2 Deliberate break: `switchVisible` = `phase !== 'solution'` → czerwony; przywrócone; meta-check
-- [ ] 9.3 Pełna bramka lokalna zielona
+- [x] 9.1 Test układu obejmuje przełącznik; unit `<baseline gałęzi> + N` — a9504c9 (unit 670 = baza 669 + 1)
+- [x] 9.2 Deliberate break: `switchVisible` = `phase !== 'solution'` → czerwony; przywrócone; meta-check — a9504c9
+- [x] 9.3 Pełna bramka lokalna zielona — a9504c9 (e2e: orkiestrator, MachPort w tej sesji)
 
 #### Manual
 
