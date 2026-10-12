@@ -548,9 +548,9 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 1.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy ADD_SUB i BONDS
-- [ ] 1.2 `tests/addSub.test.ts` i `tests/bonds.test.ts` zielone; `parseBondsParams({ totals: [1] })` rzuca `TypeError`
-- [ ] 1.3 Celowe zepsucie `SAME_SHARE` i gałęzi `DT − U` przewraca testy; cofnięte; meta-check
+- [x] 1.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy ADD_SUB i BONDS — 3361723
+- [x] 1.2 `tests/addSub.test.ts` i `tests/bonds.test.ts` zielone; `parseBondsParams({ totals: [1] })` rzuca `TypeError` — 3361723
+- [x] 1.3 Celowe zepsucie `SAME_SHARE` i gałęzi `DT − U` przewraca testy; cofnięte; meta-check — 3361723
 
 ### Phase 2: CHAIN i MISSING_OP
 
