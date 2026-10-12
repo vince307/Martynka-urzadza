@@ -31,10 +31,29 @@ interface Targets {
 const ROUND_LENGTH = 5;
 
 interface Hook { snapshot: Snapshot; targets: Targets }
-const snapshot = (page: Page): Promise<Snapshot> =>
-    page.evaluate(() => (window as unknown as { __martynkaE2E: Hook }).__martynkaE2E.snapshot);
-const targets = (page: Page): Promise<Targets> =>
-    page.evaluate(() => (window as unknown as { __martynkaE2E: Hook }).__martynkaE2E.targets);
+/** Reads the hook once; null while the scene is not ready (the hook throws or has no round yet). */
+const readHook = <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K] | null> =>
+    page.evaluate((k) => {
+        try {
+            const value = (window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k];
+            return (value as Hook[typeof k] | undefined) ?? null;
+        } catch {
+            return null;
+        }
+    }, key);
+/** Waits until the round is ready (tasks exist), then returns the value: never reads a half-built scene. */
+const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K]> => {
+    let value: Hook[K] | null = null;
+    await expect
+        .poll(async () => {
+            value = await readHook(page, key);
+            return value !== null;
+        })
+        .toBe(true);
+    return value as unknown as Hook[K];
+};
+const snapshot = (page: Page): Promise<Snapshot> => fromHook(page, 'snapshot');
+const targets = (page: Page): Promise<Targets> => fromHook(page, 'targets');
 
 /** Taps a point of the 1920x1080 scene space: maps it onto the canvas as the browser draws it. */
 const tapScene = async (page: Page, point: Point): Promise<void> => {
