@@ -629,6 +629,6 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 #### Manual
 
 - [x] 10.4 [reviewer] Odczyt nauczyciela `sample -- <etap> --count 6` dla E1, E2, E5, E6 — 499e449 (reviews/teacher-read.md)
-- [ ] 10.5 [reviewer] (CI at ship) Job `check`: kroki `##\[group\]Run npm run sample -- E[1256]$` z `Naruszenia: 0`
+- [x] 10.5 [reviewer] (CI at ship) Job `check`: kroki `##\[group\]Run npm run sample -- E[1256]$` z `Naruszenia: 0` — CI run 38289088432 (job 114944505220: E1, E2, E5, E6 — każdy krok kończy się `Naruszenia: 0`; E3, E4 też)
 - [ ] 10.6 [human] Maintainer czyta wydruk `sample -- <etap> --count 6` dla E1, E2, E5, E6 przed merge'em
 - [ ] 10.7 [human] Decyzja: E1 `keypad` zamiast 3–4 kafelków (ZADANIA §4)
