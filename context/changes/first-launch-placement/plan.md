@@ -715,9 +715,9 @@ bez przekształceń.
 
 #### Automated
 
-- [x] 3.1 `tests/parentGate.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — SHA
-- [x] 3.2 Deliberate break: czynnik jednocyfrowy / `gateInput` bez limitu → czerwony; przywrócone; meta-check (własność, nie liczby) — SHA
-- [x] 3.3 Pełna bramka lokalna zielona — SHA (e2e: orchestrator gate)
+- [x] 3.1 `tests/parentGate.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — e4920f3
+- [x] 3.2 Deliberate break: czynnik jednocyfrowy / `gateInput` bez limitu → czerwony; przywrócone; meta-check (własność, nie liczby) — e4920f3
+- [x] 3.3 Pełna bramka lokalna zielona — e4920f3 (e2e: orchestrator gate)
 
 ### Phase 4: Powitanie, szew Boot → Welcome → Task i helper e2e
 
