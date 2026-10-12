@@ -1,6 +1,7 @@
 import { Scene, type GameObjects } from 'phaser';
+import type { SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
-import type { StageDef } from '../core/types';
+import type { StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
@@ -24,6 +25,7 @@ import {
 } from '../data/layout';
 import { pl } from '../data/pl';
 import type { Narrator } from '../ui/narrator';
+import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
@@ -37,6 +39,7 @@ type Point = { x: number; y: number };
 
 /** What the e2e hook may read of a round (frozen copy). */
 export interface TaskSnapshot {
+    readonly stage: StageId;
     readonly index: number;
     readonly phase: RoundState['phase'];
     readonly solutionStep: number;
@@ -93,9 +96,13 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.shownIndex = -1;
         this.sessionStars = 0;
-        const stage = getStage(balance.defaultStage);
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
+        if (!learner) {
+            throw new Error('The task scene needs a learner in the registry (the welcome scene places one)');
+        }
+        const stage = getStage(learner.stage);
         if (!stage) {
-            throw new Error(`Unknown default stage ${balance.defaultStage}`);
+            throw new Error(`Unknown stage ${learner.stage}`);
         }
         this.stage = stage;
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
@@ -106,7 +113,7 @@ export class TaskScene extends Scene {
         this.state = this.freshRound();
         this.registry.set(REGISTRY_KEYS.stars, 0);
         this.scene.launch(SCENE_KEYS.ui);
-        this.drawNotebook();
+        drawNotebook(this);
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
@@ -139,15 +146,6 @@ export class TaskScene extends Scene {
         this.add
             .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, textStyle('caption'))
             .setOrigin(0, 1);
-    }
-
-    private drawNotebook(): void {
-        const { left, top, width, height, border, radius } = TASK_LAYOUT.notebook;
-        const graphics = this.add.graphics();
-        graphics.fillStyle(PLACEHOLDER_COLORS.turquoise, 1);
-        graphics.fillRoundedRect(left, top, width, height, radius);
-        graphics.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
-        graphics.fillRoundedRect(left + border, top + border, width - 2 * border, height - 2 * border, radius - border / 2);
     }
 
     /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
@@ -360,6 +358,7 @@ export class TaskScene extends Scene {
         const current = this.currentSummary();
         const frozenSummary = current ? Object.freeze({ ...current, stars: Object.freeze([...current.stars]) as unknown as boolean[] }) : null;
         return Object.freeze({
+            stage: this.stage.id,
             index: this.state.index,
             phase: this.state.phase,
             solutionStep: this.state.solutionStep,

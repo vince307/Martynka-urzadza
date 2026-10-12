@@ -2,6 +2,9 @@
 // keys, never literals. Task prompts that need a number are functions.
 export const pl = {
     title: 'Martynka urządza',
+    welcome: {
+        question: 'Ile masz lat?',   // kit welcome.png
+    },
     overlay: {
         rotate: 'Obróć tablet',
         rotateHint: 'Gra działa w poziomie.',

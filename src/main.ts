@@ -8,14 +8,15 @@ import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
 import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
+import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { installE2EHook } from './testing/e2eHook';
+import { e2eMonth, installE2EHook } from './testing/e2eHook';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -26,8 +27,13 @@ const createGame = (parent: string, narrator: Narrator): Game =>
             width: GAME_WIDTH,
             height: GAME_HEIGHT,
         },
-        scene: [BootScene, TaskScene, RoomScene, UIScene],
-        callbacks: { preBoot: (booting) => booting.registry.set(REGISTRY_KEYS.narrator, narrator) },
+        scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
+        callbacks: {
+            preBoot: (booting) => {
+                booting.registry.set(REGISTRY_KEYS.narrator, narrator);
+                booting.registry.set(REGISTRY_KEYS.month, month);
+            },
+        },
     });
 
 // Module scripts run after the document is parsed, so the container exists.
@@ -46,7 +52,10 @@ const narrator = createNarrator(
     },
     balance.narrator,
 );
-const game = createGame('game-container', narrator);
+// The month of the session decides the placement (age x month); scenes never call Date.
+// The e2e build may pin it with ?e2eMonth=N so a spec does not depend on the day it runs.
+const month = (__E2E_HOOK__ ? e2eMonth(window.location.search) : null) ?? new Date().getMonth();
+const game = createGame('game-container', narrator, month);
 // Speech needs a user gesture: the first tap or touch after a Polish voice is known unlocks it
 // for the session (voices may load after the first tap, so the listeners stay until then).
 const container = document.getElementById('game-container');

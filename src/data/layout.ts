@@ -33,6 +33,9 @@ export const PLACEHOLDER_COLORS = {
     pageButtonHighlight: 0xf1ce6b, // DESIGN-GAP (docs/design-gaps.md row 10): "Do pokoju" highlighted when a renovation task is affordable
     starEmpty: 0xeadfbe,        // a task of the summary row that paid no star
     starOutline: 0xae802c,      // kit .star-icon stroke
+    ageButton: 0xeaf6df,        // kit .age-button gradient (#f8fff0 to #dceecf), flattened to its middle
+    ageButtonBorder: 0xabc49b,  // kit .age-button border
+    ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
 
 /** Deep teal as a CSS colour: every text of the task screen. */
@@ -57,6 +60,8 @@ export const FONT_SIZES = {
     earned: 124,            // kit .earned
     pageButton: 46,         // kit .page-button
     bonusLine: 44,          // DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line
+    brand: 62,              // kit .welcome-brand
+    ageDigit: 112,          // kit .age-button
 } as const;
 
 /**
@@ -78,6 +83,8 @@ export const FONT_WEIGHTS = {
     earned: 750,            // kit .earned
     pageButton: 750,        // kit .page-button
     bonusLine: 650,
+    brand: 800,             // kit .welcome-brand
+    ageDigit: 750,          // kit .age-button
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -89,7 +96,7 @@ export const FONT_KEY = 'AtkinsonHyperlegibleNext';
 export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 
 /** Scene keys. */
-export const SCENE_KEYS = { boot: 'Boot', task: 'Task', room: 'Room', ui: 'UI' } as const;
+export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', ui: 'UI' } as const;
 
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
@@ -102,6 +109,8 @@ export const REGISTRY_KEYS = {
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
+    learner: 'learner',       // the session's SessionLearner (core/placement), absent until the child has said the age
+    month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
 } as const;
 
 /**
@@ -149,6 +158,17 @@ export const SUMMARY_LAYOUT = {
     buttons: { left: 454, top: 816, gap: 36, width: 450, height: 128, radius: 32, border: 5, highlightBorder: 9 },
 } as const;
 
+/**
+ * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
+ * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
+ * DESIGN-GAP (docs/design-gaps.md): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
+ */
+export const WELCOME_LAYOUT = {
+    brand: { x: 960, y: 64 },
+    question: { x: 960, y: 290 },
+    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
+} as const;
+
 /** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
 export const ROOM_LAYOUT = {
     panel: { left: 180, top: 204, width: 1560, height: 840, radius: 40 },
@@ -160,6 +180,11 @@ export const ROOM_LAYOUT = {
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
     roomSwitch: { width: HUD_LAYOUT.roomSwitch.width, height: HUD_LAYOUT.roomSwitch.height },
+} as const;
+
+/** Interactive rectangle of the welcome screen, checked against MIN_TOUCH_TARGET. */
+export const WELCOME_TOUCH_TARGETS = {
+    age: { width: WELCOME_LAYOUT.ages.width, height: WELCOME_LAYOUT.ages.height },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */
