@@ -942,9 +942,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/task-round.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 1`
-- [ ] 11.2 Deliberate break: powrót przez `scene.start` zamiast `switch` → spec czerwony; przywrócone; meta-check (unit zielone)
-- [ ] 11.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/task-round.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 1` — orchestrator run (e2e-request-p11.md): spec 4/4, suite 5/5 — 0c14611
+- [x] 11.2 Deliberate break: powrót przez `scene.start` zamiast `switch` → spec czerwony; przywrócone; meta-check (unit zielone) — red `Expected: "done" / Received: "first"` (orchestrator run), unit 670 green — 0c14611
+- [x] 11.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, typecheck, unit 670, build `e2e hook: absent`; no servers started here — 0c14611
 
 ### Phase 12: Lektor przez dotyk na atrapie syntezatora
 

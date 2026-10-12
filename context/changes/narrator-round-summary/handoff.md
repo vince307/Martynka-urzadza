@@ -1,45 +1,45 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-Phase 10 (seam sweep, docs, follow-ups) is committed in `8a16196`. Next is phase 11 (e2e). The e2e gate was NOT run green in this session: the orchestrator must run `npx playwright test` on this commit.
+Phase 11 (e2e risk #11: summary, HUD switch, room by touch) is committed in `0c14611`. Next is phase 12 (e2e).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary` |
-| Commits | docs, p1..p9, p10 (`8a16196`), this handoff commit |
+| Commits | docs, p1..p10, p11 (`0c14611`), this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 20 |
+| `## Progress` rows remaining | 17 |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `docs/design-gaps.md` | rows 13 (no voice -> speaker hidden) and 14 (HUD counter above summary/room) added; row 4 untouched; row 5 was already gone |
-| `src/scenes/UIScene.ts` | DESIGN-GAP comments point at rows 13 and 14 |
-| `CLAUDE.md`, `AGENTS.md` | Current state / structure: narrator, summary, `RoomScene`, HUD, hook |
-| `context/changes/narrator-round-summary/follow-ups/review-fixes.md` | new; each item has `Trigger:` (S-09 cost, numberToWords >1000, "Oblicz" for comparisons, test-plan refresh, parent autoRead S-08/S-11, S-04 carry-overs); the HUD-switch follow-up is dropped (built) |
+| `tests/e2e/task-round.spec.ts` | 3 rewritten #11 round tests (end on summary, `counterText`, "Kolejna runda") + new room/HUD-switch test |
+| `src/scenes/TaskScene.ts` | `TaskSnapshot.counter` removed |
+| `context/runs/2026-10-12-s04-s08/e2e-request-p11.md` | orchestrator's run outputs |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `validate-rule-files.sh` | PASS (122 paths, 0 missing) |
-| lint, typecheck, deploy + ops shell tests, `sample` E1-E6 | OK |
+| lint, typecheck | OK |
 | unit (`npm test`) | 670 passed (baseline 670, +0) |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| Deliberate break | the plan's break (profile points at a missing file) stayed PASS: the validator reads the rule files (CLAUDE.md etc.), not the profile, so that was the wrong break (meta-check). Real break: `CLAUDE.md` pointing at `src/ui/narratorz.ts` -> `FAIL ... missing: 1`; restored, PASS |
-| `npx playwright test` | not runnable in this session (Chromium MachPort Permission denied; 2 failed, 2 did not run) - orchestrator gate |
+| `npx playwright test tests/e2e/task-round.spec.ts` | orchestrator run 2026-10-13: 4 passed (35.9s) |
+| `npx playwright test` | orchestrator run: 5 passed (39.6s) = baseline 4 + 1 |
+| Deliberate break | orchestrator applied `e2e-break-p11.patch` (RoomScene resume `scene.switch` -> `scene.start`): `-g "room is reached"` -> 1 failed, `Expected: "done"` / `Received: "first"` at `tests/e2e/task-round.spec.ts:253` `expect(back.phase).toBe('done')`; reverted with `git apply -R`. Meta-check: unit stays green (670), so the spec proves the scene transition |
+| Playwright in this session | not run (finishing agent; evidence is the orchestrator's) |
 
 ## 4. Next command
 
-/10x-e2e narrator-round-summary phase 11
+/10x-e2e narrator-round-summary phase 12
 
 ## 5. Open
 
-Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4 (seam sweep: no stale comments or dead keys found; `pl.round.next` and `TaskSnapshot.counter` are still used, the latter by the phase 11 spec until it moves to the hook counter); [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9; phase 11 e2e (spec uses the registry `counter` field until then; should also cover the HUD switch: visible after a correct answer, hidden on the first try and in the room, tap leads to the room and back to phase `done`); phase 12 e2e.
+Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9; phase 12 e2e (rows 12.1-12.3).
 
 ## 6. Autonomous decisions
 
@@ -57,3 +57,4 @@ Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4 (seam sweep: no stale comments or dead 
 12. Phase 7: room panel height 840 (resume box ends below the notebook edge); `PageButton.show` takes an optional size; wake handling re-renders the task and re-shows the room button; DESIGN-GAP row 12 for the caption.
 13. Phase 8: hook extended read-only with frozen copies; scenes never import it; guard proved with an unconditional `installE2EHook` (build fails).
 14. Phase 10: kept `TaskSnapshot.counter` and `pl.round.next` (still used); no duplicate roman spelling found (`spellRoman` is the single place); validator break changed from profile to a rule file (the validator does not read the profile). Rows 13-14 numbered after 12.
+15. Phase 11: the spec was written by an earlier session (Chromium could not launch), reviewed here against the plan and the e2e quality rules (getByRole not applicable: canvas game driven through the hook and `touchscreen.tap`; no `waitForTimeout`; polls via `expect.poll`; titles carry `#11`) with no defect found, so it was committed unchanged. `TaskSnapshot.counter` removed as the plan says (spec reads `counterText`). Silent `speechSynthesis` stub in `beforeEach`. Phase 11 commit message decided in place.
