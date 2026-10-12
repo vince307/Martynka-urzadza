@@ -3,6 +3,7 @@
 // from free draws in [1, max] or from number shapes ("DU+U", params.shapes).
 import type { Rng } from '../../rng';
 import { drawToken, formatShape, parseShape, tokenValues, type Shape } from '../shapes';
+import { applyOp as apply, arithLine as line, opSign as sign } from '../arith';
 import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
@@ -117,10 +118,6 @@ export const shapeFeasible = (shape: Shape, max: number, bridge: Bridge): boolea
         }),
     );
 };
-
-const apply = (a: number, b: number, op: AddSubOp): number => (op === '+' ? a + b : a - b);
-const sign = (op: AddSubOp): string => (op === '+' ? '+' : MINUS);
-const line = (a: number, b: number, op: AddSubOp): string => `${a} ${sign(op)} ${b} = ${apply(a, b, op)}`;
 
 /**
  * Hint steps in the order taught at school: whole tens of b first, then the

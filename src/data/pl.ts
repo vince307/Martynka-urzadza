@@ -35,6 +35,8 @@ export const pl = {
         complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
         bonds: (total: number) => `Uzupełnij domek liczby ${total}.`,
         bondsHint: (shown: number, total: number) => `Ile trzeba dodać do ${shown}, żeby było ${total}?`,
+        missingOpHint: (a: number, plus: boolean) =>
+            plus ? `Wynik jest większy niż ${a}, więc dodajemy.` : `Wynik jest mniejszy niż ${a}, więc odejmujemy.`,
         rounding: (n: number) => `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
         roundingHint: (n: number, low: number, high: number, nearest: number) => [
             `${n} jest między ${low} a ${high}`,
