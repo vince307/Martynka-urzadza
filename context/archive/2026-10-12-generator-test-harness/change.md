@@ -1,10 +1,10 @@
 ---
 change_id: generator-test-harness
 title: Harness testów generatorów (vitest, seedowany rng, skrypt sample z raportem naruszeń)
-status: impl_reviewed
+status: archived
 created: 2026-10-12
 updated: 2026-10-12
-archived_at: null
+archived_at: 2026-10-12T11:43:51Z
 ---
 
 ## Notes
