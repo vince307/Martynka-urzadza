@@ -56,9 +56,10 @@ const drawEquation = (p: MissingParams, op: MissingOp, rng: Rng): [number, numbe
         const b = rng.int(1, a - 1);
         return p.bridge === 'any' || crossesTen(a, b, '-') === (p.bridge === 'ten') ? [a, b, a - b] : undefined;
     }
+    // Multiplication table only: both factors at most 10.
     const maxFactor = Math.min(10, Math.floor(p.max / 2));
     const a = rng.int(2, maxFactor);
-    const b = rng.int(2, Math.floor(p.max / a));
+    const b = rng.int(2, Math.min(10, Math.floor(p.max / a)));
     return op === '*' ? [a, b, a * b] : [a * b, a, b];
 };
 

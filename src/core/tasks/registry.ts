@@ -2,6 +2,7 @@
 // reported by scripts/sample.ts as "brak generatora" instead of failing.
 import { generateAddSub } from './generators/addSub';
 import { generateCalendar } from './generators/calendar';
+import { generateCompareDiff } from './generators/compareDiff';
 import { generateCompareNum } from './generators/compareNum';
 import { generateComplement } from './generators/complement';
 import { generateDiv } from './generators/div';
@@ -12,6 +13,7 @@ import { generateMult } from './generators/mult';
 import { generateNumberWords } from './generators/numberWords';
 import { generateRoman } from './generators/roman';
 import { generateRounding } from './generators/rounding';
+import { generateWord } from './generators/word';
 import type { Generator } from './types';
 
 export const generators: Readonly<Record<string, Generator>> = {
@@ -27,6 +29,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     NUMBER_WORDS: generateNumberWords,
     ROMAN: generateRoman,
     CALENDAR: generateCalendar,
+    WORD: generateWord,
+    COMPARE_DIFF: generateCompareDiff,
 };
 
 export const getGenerator = (type: string): Generator | undefined =>

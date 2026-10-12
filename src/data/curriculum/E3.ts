@@ -17,7 +17,15 @@ const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef 
 export const E3: StageDef = {
     id: 'E3',
     steps: [
-        { step: 1, title: 'Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”', types: ['WORD', 'COMPARE_DIFF'], skills: [] },
+        {
+            step: 1,
+            title: 'Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”',
+            types: ['WORD', 'COMPARE_DIFF'],
+            skills: [
+                skill('E3.1.word_20', 1, 'WORD', { max: 20, kinds: ['sum', 'left', 'start', 'twoSteps', 'moreBy'] }),
+                skill('E3.1.compare_diff_20', 1, 'COMPARE_DIFF', { max: 20 }),
+            ],
+        },
         {
             step: 2,
             title: '+ i − do 20 z przekroczeniem, działania z okienkiem',
@@ -56,7 +64,10 @@ export const E3: StageDef = {
             step: 9,
             title: 'Mnożenie jako „n razy po m”, mnożenie do 30, ·0 i ·1',
             types: ['MULT_GROUPS', 'MULT'],
-            skills: [skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true })],
+            skills: [
+                skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true }),
+                skill('E3.9.word_groups_30', 9, 'WORD', { max: 30, kinds: ['groups'], maxFactor: 6 }),
+            ],
         },
         {
             step: 10,
@@ -65,6 +76,7 @@ export const E3: StageDef = {
             skills: [
                 skill('E3.10.div_30', 10, 'DIV', { maxDividend: 30, maxQuotient: 10 }),
                 skill('E3.10.half_30', 10, 'HALF', { max: 30 }),
+                skill('E3.10.word_share_30', 10, 'WORD', { max: 30, kinds: ['share', 'each'], maxFactor: 6 }),
             ],
         },
         {

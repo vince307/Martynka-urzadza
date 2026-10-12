@@ -15,6 +15,19 @@ export const pl = {
         installButton: 'Zainstaluj',
         continueButton: 'Zagraj w przeglądarce',
     },
+    words: {
+        // Verb forms by the subject's gender: [masculine, feminine].
+        had: ['miał', 'miała'],
+        bought: ['kupił', 'kupiła'],
+        gave: ['oddał', 'oddała'],
+        ate: ['zjadł', 'zjadła'],
+        got: ['dostał', 'dostała'],
+        has: 'ma',
+        is: 'jest',
+        are: 'są',
+        willHave: ['będzie miał', 'będzie miała'],
+        years: (n: number) => `${n} ${n === 1 ? 'rok' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'lata' : 'lat'}`,
+    },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
@@ -27,6 +40,7 @@ export const pl = {
         ],
         half: (n: number) => `Ile to połowa z ${n}?`,
         compareHint: (n: number, tens: string, units: string) => `${n} to ${tens} i ${units}`,
+        compareUnitsHint: (n: number, units: string) => `${n} to tylko ${units}`,
         compareEqualHint: 'To takie same liczby',
         evenOdd: (n: number) => `Czy ${n} to liczba parzysta?`,
         even: 'parzysta',

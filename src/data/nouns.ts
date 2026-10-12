@@ -16,4 +16,11 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     grosz: ['grosz', 'grosze', 'groszy'],
     dziesiątka: ['dziesiątka', 'dziesiątki', 'dziesiątek'],
     jedność: ['jedność', 'jedności', 'jedności'],
+    ciastko: ['ciastko', 'ciastka', 'ciastek'],
+    kwiatek: ['kwiatek', 'kwiatki', 'kwiatków'],
+    poduszka: ['poduszka', 'poduszki', 'poduszek'],
+    talerz: ['talerz', 'talerze', 'talerzy'],
+    pudełko: ['pudełko', 'pudełka', 'pudełek'],
+    półka: ['półka', 'półki', 'półek'],
+    naklejka: ['naklejka', 'naklejki', 'naklejek'],
 };

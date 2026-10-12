@@ -21,7 +21,9 @@ export const parseCompareNumParams = (params: Record<string, unknown>): CompareN
 };
 
 const describe = (n: number): string =>
-    pl.tasks.compareHint(n, countNoun(Math.floor(n / 10), nouns.dziesiątka), countNoun(n % 10, nouns.jedność));
+    n < 10
+        ? pl.tasks.compareUnitsHint(n, countNoun(n, nouns.jedność))
+        : pl.tasks.compareHint(n, countNoun(Math.floor(n / 10), nouns.dziesiątka), countNoun(n % 10, nouns.jedność));
 
 export const generateCompareNum: Generator = (skill, rng): Task => {
     const p = parseCompareNumParams(skill.params);

@@ -279,13 +279,13 @@ Jeden test przechodzi przez wszystkie umiejętności obu etapów; dokumentacja o
 
 #### Automated
 
-- [ ] 2.1 `npm test` z 8 generatorami i 3 pomocnikami, `typecheck`
-- [ ] 2.2 `sample -- E3`/`E4` kod 0; kroki E3.7/9/10/11, E4.1/6 mają zadania
-- [ ] 2.3 numberToWords(23), toRoman(12), fromRoman('IX') przez tsx
+- [x] 2.1 `npm test` z 8 generatorami i 3 pomocnikami, `typecheck` — cad0e3b
+- [x] 2.2 `sample -- E3`/`E4` kod 0; kroki E3.7/9/10/11, E4.1/6 mają zadania — cad0e3b
+- [x] 2.3 numberToWords(23), toRoman(12), fromRoman('IX') przez tsx — cad0e3b
 
 #### Manual
 
-- [ ] 2.4 Odczyt `sample` E3.7–E3.11, E4.1/E4.6: polecenia, rozpraszacze, podpowiedzi
+- [x] 2.4 Odczyt `sample` E3.7–E3.11, E4.1/E4.6: polecenia, rozpraszacze, podpowiedzi — cad0e3b
 
 ### Phase 3: Zadania tekstowe (WORD, COMPARE_DIFF)
 
