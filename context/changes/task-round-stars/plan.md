@@ -907,13 +907,13 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 9.1 `tests/e2eHookGuard.test.ts` zielony; unit `<baseline gałęzi> + N`
-- [ ] 9.2 `npm run build` drukuje `e2e hook: absent (N chunks checked)`; grep `__martynkaE2E` w `dist/` pusty
-- [ ] 9.3 `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present`; znacznik w `dist-e2e/`
-- [ ] 9.4 Deliberate break 1: `__E2E_HOOK__` na sztywno `true` → build pada; przywrócone
-- [ ] 9.5 Deliberate break 2: efekt uboczny importu haka → build pada; przywrócone; meta-check
-- [ ] 9.6 `npx playwright test` zielony: seed #8 na 4398 (produkcja), oba serwery zabite po przebiegu
-- [ ] 9.7 Pełna bramka lokalna zielona
+- [x] 9.1 `tests/e2eHookGuard.test.ts` zielony; unit `<baseline gałęzi> + N` — cbf1722
+- [x] 9.2 `npm run build` drukuje `e2e hook: absent (N chunks checked)`; grep `__martynkaE2E` w `dist/` pusty — cbf1722
+- [x] 9.3 `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present`; znacznik w `dist-e2e/` — cbf1722
+- [x] 9.4 Deliberate break 1: `__E2E_HOOK__` na sztywno `true` → build pada; przywrócone — cbf1722
+- [x] 9.5 Deliberate break 2: efekt uboczny importu haka → build pada; przywrócone; meta-check — cbf1722
+- [x] 9.6 `npx playwright test` zielony: seed #8 na 4398 (produkcja), oba serwery zabite po przebiegu — cbf1722
+- [x] 9.7 Pełna bramka lokalna zielona — cbf1722
 
 #### Manual
 
