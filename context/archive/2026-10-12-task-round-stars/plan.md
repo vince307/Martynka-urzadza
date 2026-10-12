@@ -917,7 +917,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 9.8 [reviewer] (CI at ship) Job `check`: w `Run npm run build` linia `e2e hook: absent \([0-9]+ chunks checked\)` po `> vite build --config vite/config.prod.mjs` (run 38294537061, job 114962348864)
+- [x] 9.8 [reviewer] (CI at ship) Job `check`: w `Run npm run build` linia `e2e hook: absent \([0-9]+ chunks checked\)` po `> vite build --config vite/config.prod.mjs` (run 38294537061, job 114962348864) — CI run 38309093939 (job 115010178235: `e2e hook: absent (2 chunks checked)` po `> vite build --config vite/config.prod.mjs`)
 
 ### Phase 10: Seam sweep, profil, luki projektu, follow-upy i dokumentacja
 
