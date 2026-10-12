@@ -1,48 +1,90 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-Phase 12 (the last, e2e: narrator by touch on a fake synthesizer) is committed in `03dfa1c`; all implementation phases are done and `change.md` is `implemented`. Next is the implementation review; do not re-run Playwright from a sandboxed session.
+The impl-review step reviewed phases 1–12. Verdict: APPROVED, `MERGE: CLEAR`. Two warnings were fixed in `3f372ca`: the speech unlock is kept until a voice is known, and the comments and DESIGN-GAP rows were aligned. That commit changes code after `03dfa1c`, but this session re-ran e2e on it with Chromium: 8/8. The visual gate is next. Do not tick the [visual] or [human] rows without screenshots or a maintainer.
 
 ## 1. State
 
 | | |
 |---|---|
-| Branch | `feat/narrator-round-summary` |
-| Commits | docs, p1..p12 (p12 = `03dfa1c`), handoff commits |
+| Branch | `feat/narrator-round-summary` (cut from `main` at `8467431`) |
+| Commits | docs, p1..p12, `3f372ca` fix (impl-review), then the review docs commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implemented` (updated 2026-10-13) |
-| `## Progress` rows remaining | 14 (reviewer, visual and human rows only) |
+| `change.md` status | `impl_reviewed` (updated 2026-10-13) |
+| `## Progress` rows remaining | 9 (all [visual] or [human]) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/narrator.spec.ts` | 3 tests on a fake `speechSynthesis` (init script): silent at cold start and after "Dalej" (E3 auto-read off); speaker reads on pointerup only, Polish voice, no answer leak, retry prompt after a wrong answer; no Polish voice: speaker hidden, round to summary |
-| `playwright.config.ts` | `ROUND_SPEC` = `/(task-round|narrator)\.spec\.ts/`; the app `webServer` entry is untouched |
-| `context/runs/2026-10-12-s04-s08/e2e-request-p12.md` | orchestrator's run outputs |
-| `context/changes/narrator-round-summary/{plan.md,change.md}` | rows 12.1-12.3 ticked, status implemented |
+| `context/changes/narrator-round-summary/reviews/impl-review.md` | Full-plan review. F1–F10; ends with `MERGE: CLEAR` |
+| `context/changes/narrator-round-summary/reviews/teacher-read.md` | Teacher read for rows 1.5, 2.5, 6.5 and 7.4 |
+| `context/changes/narrator-round-summary/follow-ups/review-fixes.md` | Five new follow-ups with `Trigger:` lines. The "Oblicz" item now also covers the commutativity equation |
+| `context/changes/narrator-round-summary/plan.md` | Rows 1.5, 2.5, 6.5, 7.4 and 10.4 ticked |
+| `src/ui/narrator.ts` | `Narrator.unlock(): boolean` |
+| `src/main.ts` | `unlockSpeech` keeps the DOM listeners until `unlock()` returns true. Scene-list comment updated |
+| `tests/narrator.test.ts` | New test: a tap before the voices load does not unlock |
+| `src/scenes/TaskScene.ts`, `src/scenes/RoomScene.ts` | `wake` listeners removed on `shutdown`. TaskScene class doc updated |
+| `src/scenes/UIScene.ts`, `src/data/layout.ts` (`GAME_EVENTS.toRoom`, `SUMMARY_LAYOUT.bonus`, `ROOM_LAYOUT.resume`), `src/ui/widgets/SummaryPanel.ts`, `src/core/round/summary.ts` (`SummaryView.roomHighlighted`), `docs/design-gaps.md` | Comments and DESIGN-GAP rows 9–13 aligned |
+| `AGENTS.md` | Body trimmed to 400 words |
 
 ## 3. Verification
 
+Everything below was observed in this step.
+
 | Command | Result |
 |---|---|
-| lint, typecheck | OK |
-| unit (`npm test`) | 670 passed (baseline 670, +0) |
-| build | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test tests/e2e/narrator.spec.ts` | orchestrator run 2026-10-13: 3 passed (27.1s) |
-| `npx playwright test` | orchestrator run: 8 passed (42.7s) = baseline 5 + 3 |
-| Deliberate break | orchestrator applied `e2e-break-p12.patch` (SpeakerButton narration request on `pointerdown` instead of `pointerup`): `-g "pointerup only"` -> 1 failed at `tests/e2e/narrator.spec.ts` `expect(await spokenSoFar(page)).toEqual([])`, Received `[{ lang: "pl_PL", rate: 0.85, text: "Oblicz. dziesięć plus osiemnaście" }]`; reverted with `git apply -R`. Meta-check: unit stays green (670), so the spec proves the touch gesture rule. Optional auto-read break not run |
-| Playwright in this session | not run (finishing agent; evidence is the orchestrator's) |
+| lint, typecheck | OK on `690847b` and on `3f372ca` |
+| unit (contract command: `npm test`, deploy scripts, `sample` E1–E6) | `690847b`: 670 passed (main baseline 596, +74). `3f372ca`: 671 (596 + 75, the extra one is the unlock test). `Naruszenia: 0` for all six stages |
+| build | `e2e hook: absent (2 chunks checked)`. `grep -rl __martynkaE2E dist/` is empty |
+| `npx playwright test` (one plain command; Chromium launched in this session) | `690847b`: 8 passed (main baseline 4, +4). `3f372ca`: 8 passed. Ports 4397 and 4398 were free afterwards |
+| `validate-rule-files.sh` | PASS |
+| Deliberate break, no browser | Restored `roman.ts` and `compareNum.ts` to their main versions (no `speak`). 8 tests went red in `tests/taskSpeech.test.ts` and `tests/spoken.test.ts` (`expected undefined to be defined`; a Roman numeral token matched). Restored; the tree was clean. Meta-check: the phase 1 tests fail against the generators as they were before the slice. So the RED was real, even though the phase 1 agent wrote the production code first and stashed it |
+| F1 test-first | The new unlock test was red before the change (`unlock()` returned undefined) and green after |
+| Hook bypass check | `.claude/settings.json` and `.claude/hooks/*` were last modified before `ad5535b`. No bypass found |
 
 ## 4. Next command
 
-/10x-impl-review narrator-round-summary
+visual gate (orchestrator), then /10x-archive narrator-round-summary and ship
 
 ## 5. Open
 
-Rows [reviewer] 1.5, 2.5, 6.5, 7.4, 10.4; [visual] 5.4, 6.6, 7.5, 9.4; [human] 10.5-10.9 (iPad/Android listening, gesture, auto-read after "Kolejna runda"). Follow-up: `/10x-test-plan refresh` to give the narrator risk a number. The plan said +2 e2e tests, the spec has +3 (cold-start check and pointerup/retry check are separate).
+- [visual] rows:
+  - 5.4: speaker shown and hidden
+  - 6.6: summary for a clean round and for a retyped round
+  - 7.5: the room, and the summary after coming back
+  - 9.4: HUD switch shown and hidden; room and task after coming back
+- [human] rows, for the maintainer:
+  - 10.5: decision — auto-read is a session default until S-08
+  - 10.6: decision — "Do pokoju" not highlighted until S-09
+  - 10.7: decision — the room returns to the screen the child left
+  - 10.8: decision — no auto-read at a cold start
+  - 10.9: iPad and Android listening test (voice quality, numbers in sentences, Roman letters, one unlock per session)
+- Follow-ups are in `follow-ups/review-fixes.md`:
+  - `Narrator.unlock` with an empty utterance on WebKit (Trigger: row 10.9)
+  - Shared HUD button for `SpeakerButton`/`RoomSwitchButton`/`PageButton` (Trigger: S-09)
+  - `romanContexts`/`romanSpeakContexts` pairs (Trigger: the next change to them)
+  - `romanHint` first step gives the result (Trigger: S-17)
+  - Hook `targets` in the room (Trigger: the next change to `e2eHook.ts`)
+  - From earlier phases: S-08, S-09, S-11, S-06, `/10x-test-plan refresh`
+- Recorded only (F5): a `toRoom` emitted twice in the same frame could restart `RoomScene`. Not reachable today.
 
 ## 6. Autonomous decisions
+
+Impl-review step:
+
+1. **Fixed F1 (unlock) and F2 (comments and DESIGN-GAP rows, `wake` cleanup, AGENTS.md) now; deferred F3 (shared HUD button) to S-09.** Both fixes were cheap. F3 would change three widgets that already have e2e evidence, for maintainability only. Would change: S-09 adds HUD buttons, or the art (S-16) replaces these placeholders.
+2. **Ticked 10.4 (seam sweep) after the fixes, with the remaining duplication recorded as a follow-up.** Would change: a reviewer counts the duplication as a seam defect that blocks the row.
+3. **Kept the teacher-read notes as follow-ups, not content changes:**
+   - „pasuje w okienku” stays, consistent with the existing `pl.tasks.missing`.
+   - „zapis rzymski” is correct Polish.
+   - Digits stay in sentences.
+   - The ROMAN hint gives the result away, but that content predates this slice.
+
+   Would change: the iPad listening test (row 10.9) shows bad reading.
+4. **Ran Playwright myself** because Chromium launched in this session. The orchestrator does not need to re-run it for `3f372ca`, but may. Would change: nothing.
+
+Earlier steps:
 
 1. **Switch fires in pointerup only when the press began on it** (as `PageButton`), not in pointerdown like `ActionButton`. Would change: S-04's <100 ms reaction target is extended to HUD buttons.
 2. **Guard in `TaskScene`'s `toRoom` handler via `this.sys.isSleeping()`** plus zeroing `REGISTRY_KEYS.roomSwitch` before `scene.switch`; wake re-renders it from `roundView`. Per the plan review (game.events listeners survive sleep). Would change: Phaser stops running scene listeners while sleeping.

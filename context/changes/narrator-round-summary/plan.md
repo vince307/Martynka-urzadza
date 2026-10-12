@@ -829,7 +829,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1` … `-- E6 --count 6` dla COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR (`reviews/teacher-read.md`)
+- [x] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1` … `-- E6 --count 6` dla COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR (`reviews/teacher-read.md`) — impl-review: PASS (`reviews/teacher-read.md`)
 
 ### Phase 2: Tekst mówiony dla rundy
 
@@ -842,7 +842,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela linii `czyta:` (`sample -- E1/E3/E6 --count 6`) i słów `pl.speech` (`reviews/teacher-read.md`)
+- [x] 2.5 [reviewer] Odczyt nauczyciela linii `czyta:` (`sample -- E1/E3/E6 --count 6`) i słów `pl.speech` (`reviews/teacher-read.md`) — impl-review: PASS (`reviews/teacher-read.md`)
 
 ### Phase 3: Wybór głosu, domyślne auto-czytanie i moduł lektora
 
@@ -884,7 +884,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Teksty `pl.summary` czytane jak przez nauczyciela
+- [x] 6.5 [reviewer] Teksty `pl.summary` czytane jak przez nauczyciela — impl-review: PASS (`reviews/teacher-read.md`)
 - [ ] 6.6 [visual] Zrzuty summary (czysta runda z bonusem; runda z przepisaniem) z licznikiem w HUD przy 1440×900 i 1024×768
 
 ### Phase 7: Pusta scena pokoju i powrót
@@ -897,7 +897,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 7.4 [reviewer] Podpis placeholdera pokoju i „Wróć do notesu” czytane jak przez nauczyciela
+- [x] 7.4 [reviewer] Podpis placeholdera pokoju i „Wróć do notesu” czytane jak przez nauczyciela — impl-review: PASS (`reviews/teacher-read.md`)
 - [ ] 7.5 [visual] Zrzuty room (licznik nad pokojem) i summary po powrocie przy 1440×900 i 1024×768
 
 ### Phase 8: Hak e2e — ekran, rysowany licznik, podsumowanie, głośnik, pokój
@@ -931,7 +931,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 10.4 [reviewer] Seam sweep: duplikaty, nieaktualne komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`
+- [x] 10.4 [reviewer] Seam sweep: duplikaty, nieaktualne komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md` — impl-review: stale comments, wake listeners and DESIGN-GAP rows 9–13 fixed in 3f372ca; HUD button duplication → follow-up
 - [ ] 10.5 [human] Decyzja: auto-czytanie jako domyślna wartość od etapu w sesji, bez przełącznika rodzica do S-08 (FR-009)
 - [ ] 10.6 [human] Decyzja: „Do pokoju” bez wyróżnienia do S-09 (FR-010)
 - [ ] 10.7 [human] Decyzja: z pokoju powrót na ekran, z którego dziecko wyszło (kit), nie nowa runda (`change.md` decyzja 3)
