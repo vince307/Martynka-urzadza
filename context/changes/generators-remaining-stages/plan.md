@@ -87,7 +87,7 @@ Napraw losowanie ADD_SUB, które łamie `MAX_DEGENERATE_SHARE` na każdym zakres
 
 **Intent**: Odejmowanie `a − a` ma pozostać możliwe (E1 uczy zera), ale rzadkie, jak iloraz 1 w DIV; w trybie bez kształtów pary losowane możliwie równomiernie, żeby najczęstsze zadanie małych zakresów nie przekraczało progu.
 
-**Contract**: stała `SAME_SHARE` (≈ 0,05, nazwana i skomentowana jak `ONE_SHARE`) dla `a − a` w `drawFree` i w `drawShaped` dla kształtów o równych tokenach (`DT-DT`); poza tym `b < a` dla `−`. Test: dla `{ max: 5, ops: ['+','-'], bridge: 'any' }`, `{ max: 10, … }` i `{ max: 100, shapes: ['DT+DT','DT-DT'], bridge: 'none' }` udział `a − a` wśród odejmowań w 1000 losowań jest w (0; 0,1]; najczęstsze zadanie ≤ 15 %. Istniejące testy ADD_SUB i niezmienniki E3/E4 zostają zielone (wydruk `sample -- E3` może się zmienić).
+**Contract**: stała `SAME_SHARE` (≈ 0,05, nazwana i skomentowana jak `ONE_SHARE`) dla `a − a` w `drawFree` i w `drawShaped` dla kształtów o równych tokenach (`DT-DT`); poza tym `b < a` dla `−`. Test: dla `{ max: 5, ops: ['+','-'], bridge: 'any' }`, `{ max: 10, … }` i `{ max: 100, shapes: ['DT+DT','DT-DT'], bridge: 'none' }` udział `a − a` wśród odejmowań w 1000 losowań jest w (0; 0,1]; najczęstsze zadanie ≤ 15 %. Istniejące testy ADD_SUB i niezmienniki E3/E4 zostają zielone (wydruk `sample -- E3` może się zmienić; `sample -- E4` też — F12 zmienia podpowiedź E4.4 `sub_from_full_ten`, np. `90 − 4`).
 
 #### 2. F12: podpowiedź `DT − U`
 
@@ -132,7 +132,7 @@ Trzy składniki od lewej (E1.5) i brakujący znak `+`/`−` (E1.9), na wspólnej
 
 **Intent**: Jedno miejsce na „policz”, „znak”, „linię działania”, żeby nowe generatory nie kopiowały prywatnych pomocników ADD_SUB.
 
-**Contract**: `applyOp(a, b, op)`, `opSign(op)` (`-` → `MINUS`), `arithLine(a, b, op)` → `"a op b = c"`; `addSub.ts` importuje je zamiast własnych `apply`/`sign`/`line`; zachowanie ADD_SUB bez zmian (istniejące testy).
+**Contract**: `applyOp(a, b, op)`, `opSign(op)` (`-` → `MINUS`), `arithLine(a, b, op)` → `"a op b = c"` dla `op: '+' | '-'` (linia mnożenia `checkDiv` w fazie 4 składa się z `TIMES` z `symbols.ts`, jak w `div.ts`); `addSub.ts` importuje je zamiast własnych `apply`/`sign`/`line`; zachowanie ADD_SUB bez zmian (istniejące testy).
 
 #### 2. CHAIN
 
@@ -220,7 +220,7 @@ Przemienność i sprawdzanie działań (E2.4, E2.6, E5.9, E6.7) oraz wybór dzia
 
 **Intent**: Treść z `templates` (`src/data/wordTemplates.ts`) + „Które działanie pasuje?” → kafelek z działaniem.
 
-**Contract**: `ChooseOpParams { max: number; kinds: ('sum'|'left'|'moreBy')[] }`; parser odrzuca inne rodzaje (`start`, `twoSteps`, … nie mają jednego bezpośredniego działania) i `max` poniżej minimum z `word.ts`. Liczby jak w WORD (`drawNumbers`-podobnie, wynik w [0; max], `left`: a ≥ b). `answer` = działanie z pierwszej linii podpowiedzi szablonu bez wyniku (`"5 + 3"`), `choices` = 3 różne napisy: odpowiedź, to samo z drugim znakiem (bez ujemnych: `"3 − 5"` niedozwolone), to samo działanie z inną liczbą; zamiana składników sumy NIE jest rozpraszaczem. Podpowiedź: zdanie o kierunku z `pl.tasks` per rodzaj („Przybyło, więc dodajemy.”), bez działania-odpowiedzi w pierwszej linii. Test: dokładnie jeden kafelek ma wartość równą odpowiedzi szablonu (policzone z kafelków); brak kafelka z wynikiem ujemnym; pierwsza linia podpowiedzi ≠ odpowiedź; odmiana czysta (`validateTask` ze słownikiem).
+**Contract**: `ChooseOpParams { max: number; kinds: ('sum'|'left'|'moreBy')[] }`; parser odrzuca inne rodzaje (`start`, `twoSteps`, … nie mają jednego bezpośredniego działania) i `max` poniżej minimum z `word.ts`. Liczby z tej samej funkcji co WORD: `drawNumbers` w `word.ts` staje się eksportowana i CHOOSE_OP ją importuje (bez kopii — seam sweep fazy 10), wynik w [0; max], `left`: a ≥ b. `answer` = działanie z pierwszej linii podpowiedzi szablonu bez wyniku (`"5 + 3"`), `choices` = 3 różne napisy: odpowiedź, to samo z drugim znakiem (bez ujemnych: `"3 − 5"` niedozwolone), to samo działanie z inną liczbą; zamiana składników sumy NIE jest rozpraszaczem. Podpowiedź: zdanie o kierunku z `pl.tasks` per rodzaj („Przybyło, więc dodajemy.”), bez działania-odpowiedzi w pierwszej linii. Test: dokładnie jeden kafelek ma wartość równą odpowiedzi szablonu (policzone z kafelków); brak kafelka z wynikiem ujemnym; pierwsza linia podpowiedzi ≠ odpowiedź; odmiana czysta (`validateTask` ze słownikiem).
 
 ### Success Criteria:
 
@@ -307,7 +307,7 @@ Driver why: same dane i listy typów w teście; czerwone/zielone mówią istniej
 #### Automated Verification:
 
 - Bramka z NOWĄ komendą unit (z `npm run sample -- E1 && npm run sample -- E2`) zielona: lint, typecheck, unit, build; `npm test` = baseline gałęzi + testy umiejętności E1/E2, 0 failed
-- `npm run sample -- E1` i `npm run sample -- E2` kod 0, `Naruszenia: 0`; `brak generatora` tylko w krokach E1.1, E1.2 (COUNT, ORDINAL), E1.4 (COUNT), E1.8, E1.9 (INEQUALITY), E1.10, E1.11 (CLOCK, MASS, MONEY_*), E2.1, E2.2, E2.6, E2.8, E2.9, E2.10 (typy z `LATER`)
+- `npm run sample -- E1` i `npm run sample -- E2` kod 0, `Naruszenia: 0`; `brak generatora` (skrypt drukuje go tylko dla kroków bez umiejętności) dokładnie w krokach E1.1, E1.8, E1.10, E2.2, E2.8 — same typy z `LATER`; typy `LATER` w krokach częściowych (E1.2 COUNT/ORDINAL, E1.9 INEQUALITY, E1.11, E2.1, E2.6, E2.9, E2.10) pilnuje `tests/curriculum.test.ts`
 - Celowe zepsucie: usunięcie wpisu `E1.7.complement_10` z `SMALL_SPACES` przewraca niezmiennik z komunikatem „only 9 distinct tasks”; usunięcie umiejętności `E1.3.bonds_5` przewraca „covers its group-1 types”; cofnięte. Meta-check: wyjątek jest per id (inne umiejętności nadal mają próg 12), co pokazuje to, że zepsucie jednego wpisu przewraca tylko tę umiejętność
 
 #### Manual Verification:
@@ -333,7 +333,7 @@ Wspólny zapis liczb ≥ 10 000 i jeden wzorzec liczby dla niezmienników i wali
 
 **Intent**: „10 000”, „1 000 000” po polsku, a niezmienniki nadal widzą arytmetykę i granice takich liczb.
 
-**Contract**: `formatNumber(n)` — `n < 10 000` bez zmian (`'9999'`), od 10 000 grupy po trzy z U+00A0; `NUMBER_SOURCE` (źródło regexu: `\d{1,3}(?: \d{3})+|\d+`) i `parseNumber(text)`. `ARITHMETIC_LINE`, `BINARY_PROMPT` i skan granicy w `contentInvariants.test.ts` oraz `NUMBER_WORD` w `validate.ts` budowane z `NUMBER_SOURCE` i liczone przez `parseNumber`. Test: `formatNumber(10000) === '10 000'`, `formatNumber(1000000)`, `formatNumber(9999) === '9999'`; `parseNumber` odwrotne; regex z `NUMBER_SOURCE` dopasowuje „10 000 + 1 = 10 001” w całości.
+**Contract**: `formatNumber(n)` — `n < 10 000` bez zmian (`'9999'`), od 10 000 grupy po trzy z U+00A0; `NUMBER_SOURCE` (źródło regexu: `\d{1,3}(?:\u00A0\d{3})+|\d+` — separator zapisany w kodzie jawnie jako `\u00A0`, nie jako niewidoczny znak) i `parseNumber(text)`. `ARITHMETIC_LINE`, `BINARY_PROMPT` i skan granicy w `contentInvariants.test.ts` oraz `NUMBER_WORD` w `validate.ts` budowane z `NUMBER_SOURCE` i liczone przez `parseNumber`. Test: `formatNumber(10000) === '10 000'`, `formatNumber(1000000)`, `formatNumber(9999) === '9999'`; `parseNumber` odwrotne; regex z `NUMBER_SOURCE` dopasowuje „10 000 + 1 = 10 001” w całości.
 
 #### 2. COMPARE_NUM ≥ 1000
 
@@ -341,7 +341,7 @@ Wspólny zapis liczb ≥ 10 000 i jeden wzorzec liczby dla niezmienników i wali
 
 **Intent**: Porównanie do 1 000 000 z podpowiedzią „więcej cyfr = większa” albo „pierwsza różna cyfra od lewej”.
 
-**Contract**: dla `max ≤ 100` zachowanie i podpowiedź bez zmian (E2.7, E4.1); dla liczb ≥ 100 podpowiedź z `pl.tasks`: różna liczba cyfr → zdanie o liczbie cyfr; równa → pierwsza różna cyfra od lewej i jej rząd; ostatnia linia `a < b` w zapisie `formatNumber`. Dla `max > 1000` z prawdopodobieństwem ~1/3 liczby mają różną liczbę cyfr. Test: `{ max: 1000000 }` — podpowiedź bez słowa „dziesiątek”/„jedności”, liczby ≥ 10 000 ze spacją U+00A0, znak zgodny z wartościami; `sample -- E4` krok E4.1 identyczny przy tym samym seedzie.
+**Contract**: o rodzaju podpowiedzi decyduje parametr, nie wylosowana liczba: dla `params.max ≤ 100` zachowanie, zużycie rng i podpowiedź bez zmian (E1.2, E2.7, E4.1 — E4.1 losuje też 100 i ma dalej „100 to 10 dziesiątek”); dla `params.max > 100` podpowiedź z `pl.tasks`: różna liczba cyfr → zdanie o liczbie cyfr; równa → pierwsza różna cyfra od lewej i jej rząd; ostatnia linia `a < b` w zapisie `formatNumber`. Dla `max > 1000` z prawdopodobieństwem ~1/3 liczby mają różną liczbę cyfr. Test: `{ max: 1000000 }` — podpowiedź bez słowa „dziesiątek”/„jedności”, liczby ≥ 10 000 ze spacją U+00A0, znak zgodny z wartościami; `sample -- E4` krok E4.1 identyczny przy tym samym seedzie.
 
 ### Success Criteria:
 
@@ -385,7 +385,7 @@ Trzy małe rozszerzenia potrzebne E6.4, E6.8, E6.9.
 
 **Intent**: `4 · 70` → `4 · 7 = 28`, `28 · 10 = 280` zamiast połowienia (poprawne, ale nieszkolne).
 
-**Contract**: `multHint` dla czynnika `k · 10` lub `k · 100` (k 1–9, drugi czynnik 2–9) zwraca dwie linie: tabliczka, potem `· 10` / `· 100`; inne przypadki bez zmian (E3/E4 identyczne). Test: `multHint(4, 70)`, `multHint(3, 200)`; ostatnia linia zawiera iloczyn.
+**Contract**: nowa gałąź tylko dla DRUGIEGO czynnika `b` (tego z `factors`): `b = k · 10` z k 2–9 albo `b = k · 100` z k 2–9, przy `a` 2–9 — dwie linie: tabliczka (`4 · 7 = 28`), potem `28 · 10 = 280` / `6 · 100 = 600`; `b = 10` i `b = 100` zostają jedną linią (jak dziś `b === 10`), a pierwszy czynnik `a = 10` (E3.9 `mult_30`, `maxFactor: 10`, np. `10 · 3`) nie wchodzi do gałęzi; inne przypadki bez zmian (E3/E4 identyczne). Test: `multHint(4, 70)`, `multHint(3, 200)` — ostatnia linia zawiera iloczyn; `multHint(10, 3)`, `multHint(7, 10)` i `multHint(3, 100)` równe wynikom sprzed zmiany (jedna linia dla ·10/·100).
 
 ### Success Criteria:
 
@@ -424,12 +424,12 @@ Driver why: same dane i lista `LATER`; czerwone/zielone mówią niezmienniki i `
 #### Automated Verification:
 
 - Bramka z NOWĄ komendą unit (sample E1–E6) zielona: lint, typecheck, unit, build; `npm test` = baseline gałęzi + testy umiejętności E5/E6, 0 failed
-- `npm run sample -- E5` i `-- E6` kod 0, `Naruszenia: 0`; `brak generatora` tylko dla typów z `LATER`; E5.4 udział ·0/·1 ≤ 35 % (komunikat niezmiennika nie występuje)
+- `npm run sample -- E5` i `-- E6` kod 0, `Naruszenia: 0`; `brak generatora` (tylko kroki bez umiejętności) dokładnie w E5.5, E5.12, E6.2, E6.3, E6.11 — same typy z `LATER`; E5.4 udział ·0/·1 ≤ 35 % (komunikat niezmiennika nie występuje)
 - Celowe zepsucie: `E6.9.rounding_100` z `max: 150` przewraca niezmiennik na parsowaniu (`TypeError`), a `npm run sample -- E6` kończy się kodem ≠ 0; cofnięte. Meta-check: dowodzi wykrycia niewykonalnych danych przy parsowaniu (risk #5), a nie tylko przy losowaniu
 
 #### Manual Verification:
 
-- [reviewer] Odczyt nauczyciela `npm run sample -- E5 --count 6` i `npm run sample -- E6 --count 6`: odpowiedzi, podpowiedzi (8 : 4 → 800 : 4, 4 · 70), zapis liczb ≥ 10 000, sens porównań do 1 000 000
+- [reviewer] Odczyt nauczyciela `npm run sample -- E5 --count 6` i `npm run sample -- E6 --count 6`: odpowiedzi, podpowiedzi (`4 · 70` → `4 · 7 = 28`, `28 · 10 = 280`; DIV zostaje przy sprawdzeniu mnożeniem `4 · 200 = 800` dla `800 : 4` — żadna faza nie buduje rozbicia „8 : 4 → 800 : 4”), zapis liczb ≥ 10 000, sens porównań do 1 000 000, odczyt `E6.4.mult_teens` i `E6.5.complement_100_1000` (Known risks)
 
 ---
 
@@ -476,12 +476,12 @@ Nowa komenda bramki trafia do profilu, env i CI; dokumentacja i test-plan opisuj
 
 - Bramka z komendą z fazy 9 zielona; `grep -c "npm run sample -- E" .github/workflows/ci.yml` = 6; `bash -c "$(grep '^GATE_UNIT=' context/foundation/autonomous-run.env | cut -d= -f2- | tr -d '\"')"` kod 0; `tail -n +2 AGENTS.md | wc -w` ≤ 400
 - Seam sweep: `grep -n "params.max" tests/curriculum.test.ts` puste; `grep -n "E3–E4" tests/curriculum.test.ts` puste; `grep -rn "const apply\b\|const sign\b" src/core/tasks/generators` puste; `test -f context/changes/generators-remaining-stages/follow-ups/review-fixes.md` i `grep -c "Trigger:" context/changes/generators-remaining-stages/follow-ups/review-fixes.md` ≥ 4
-- Celowe zepsucie: parametr `E5.4.div_50` → `maxDividend: 1`, uruchomienie `GATE_UNIT` z env kończy się kodem ≠ 0 (stara komenda E3/E4 zostałaby zielona przy samym `sample`); cofnięte. Meta-check: dowodzi, że nowa komenda faktycznie uruchamia sample E5, a nie tylko że plik się zmienił
+- Celowe zepsucie: usunięcie E5 z `stages` w `src/data/curriculum/index.ts` — `npm test` zostaje zielony (testy iterują po `stages`), a `GATE_UNIT` z env kończy się kodem ≠ 0 na `npm run sample -- E5` (`usage()`, kod 2); stara komenda E3/E4 przeszłaby; cofnięte. Meta-check: zepsucie, które łapie też `npm test` (np. `maxDividend: 1`), przewróciłoby bramkę przed krokiem sample i nie dowodziłoby niczego o sample E5 — to łapie wyłącznie nowy krok
 
 #### Manual Verification:
 
 - [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, `npm run sample -- E2 --count 6`, `npm run sample -- E5 --count 6`, `npm run sample -- E6 --count 6` — każde zadanie każdego kroku z danymi (kontrakt, reguły S-03; impl-review)
-- [reviewer] (CI at ship) Job `check` workflow `CI` na PR: w logu (`gh run view <id> --log --job <job id>`) kroki pasujące do regexu `##\[group\]Run npm run sample -- E[1256]$` (wzór linii widzianej w runie 38278623270: `##[group]Run npm run sample -- E4`), każdy zakończony linią `Naruszenia: 0`
+- [reviewer] (CI at ship) Job `check` workflow `CI` na PR: w logu (`gh run view <id> --log --job <job id>`) kroki pasujące do regexu `##\[group\]Run npm run sample -- E[1256]$` (wzór linii widzianej w runie 38278623270: `##[group]Run npm run sample -- E4`; regex sprawdzony w plan-review na logu joba `check` 114910141466 — `grep -E` dopasowuje oba kroki E3/E4 w wariancie `E[34]`, linie bez `\r`), każdy zakończony linią `Naruszenia: 0` (kolumna kroku w logu nazywa krok); `gh` poza sandboxem bez potoków — log zapisać do pliku w scratchpadzie, potem `grep -E`
 - [human] Maintainer czyta ten sam wydruk `npm run sample -- <etap> --count 6` dla E1, E2, E5, E6 przed merge'em (run zatrzymuje się na PR)
 - [human] Decyzja: odpowiedzi liczbowe E1 przez klawiaturkę zamiast 3–4 kafelków z ZADANIA §4 (ADD_SUB) — akceptacja albo przeniesienie do S-04 (follow-up już zapisany)
 
@@ -517,6 +517,14 @@ Brak (profil § 4: bez bazy; zapis od S-11). Identyfikatory umiejętności E3/E4
 - `docs/ZADANIA.md` §2–§4, §7; `context/foundation/prd.md` FR-004, FR-005; `context/foundation/test-plan.md` §2 (#1, #5), §6.2
 - Wzorce: `context/archive/2026-10-12-generators-e3-e4/plan.md`, `context/archive/2026-10-12-testing-content-invariants/plan.md`
 - Follow-up F12: `context/archive/2026-10-12-generators-e3-e4/follow-ups/review-fixes.md`
+
+## Known risks
+
+Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczyciela (9.4, 10.4) albo M8:
+
+- **`E6.4.mult_teens`**: podpowiedź MULT dla `4 · 13` to połowienie/dokładanie (`4 · 12 = 48`, `48 + 4 = 52`) — arytmetycznie poprawna, ale szkolna metoda to `4 · 10 + 4 · 3`. Faza 8 jej nie zmienia; jeśli odczyt uzna ją za błąd metody, follow-up `Trigger: S-17` (nie nowa faza).
+- **`E6.5.complement_100_1000`**: `targets: [100, 1000]` czyta „dopełnianie do setki” jako „do 100”; możliwe też „do następnej pełnej setki” (340 → 400), czego COMPLEMENT dziś nie umie (tylko następna dziesiątka). Odczyt nauczyciela decyduje; inna interpretacja = follow-up.
+- **E5.4 ·0/·1** blisko progu (32,8 % vs 35 %) — jak w § 5 handoffu: poprawka danych, nie progu.
 
 ## Autonomous decisions
 
