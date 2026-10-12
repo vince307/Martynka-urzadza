@@ -11,7 +11,8 @@ import { StarCounter } from '../ui/widgets/StarCounter';
  * Input is on only for the speaker: no full-screen or background zone here, otherwise Phaser
  * would stop a tap from reaching the task scene below.
  * "Do pokoju" shows between tasks only (registry roomSwitch, set by the task scene from roundView.switchVisible).
- * DESIGN-GAP: the kit asks an adult to read the task when there is no Polish voice; the speaker is hidden instead.
+ * DESIGN-GAP (docs/design-gaps.md row 14): the kit draws the summary and the room without the HUD; the counter stays above them.
+ * DESIGN-GAP (docs/design-gaps.md row 13): the kit asks an adult to read the task when there is no Polish voice; the speaker is hidden instead.
  */
 export class UIScene extends Scene {
     private counter!: StarCounter;

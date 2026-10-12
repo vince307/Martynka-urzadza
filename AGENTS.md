@@ -15,7 +15,7 @@
 
 ## Project structure
 
-`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Task, UI), `src/ui/widgets/` (round widgets), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round), `src/testing/` (e2e hook, e2e build only), `src/pwa/`, `src/ui/dom/`. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
+`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Task, Room, UI), `src/ui/widgets/` (round widgets), `src/ui/narrator.ts` (speech), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration), `src/testing/` (e2e hook, e2e build only), `src/pwa/`, `src/ui/dom/`. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
 
 ## Commands
 
