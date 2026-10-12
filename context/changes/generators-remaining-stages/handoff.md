@@ -43,6 +43,7 @@ Written by the `/10x-implement phase 9` step of run `2026-10-12-s03-remaining-st
 - Phase 7 teacher read (own): COMPARE_NUM large hints read correctly, e.g. "796 866 □ 796 867" → "Porównujemy cyfry od lewej. Pierwsza różna cyfra jest na miejscu jedności: 6 i 7 / 796 866 < 796 867" and "612 449 □ 2" → "612 449 ma 6 cyfr / 2 ma 1 cyfra / Liczba z większą liczbą cyfr jest większa / 612 449 > 2". Reviewer to confirm in phase 9/10 read (E6.10 data now present). `placeNames` has 7 entries (to millions).
 - Phase 8 teacher read (own): "Która pełna setka jest najbliżej liczby 3763?" hint "3763 jest między 3700 a 3800 | 3763 jest bliżej 3800"; "Który pełny tysiąc jest najbliżej liczby 7216?" hint "7216 jest między 7000 a 8000 | 7216 jest bliżej 7000"; "4 · 200" hint "4 · 2 = 8 | 8 · 100 = 800"; "120 : 6" hint "6 · 20 = 120". Numbers ≥ 10 000 use NBSP grouping. Reviewer to confirm.
 
+- Phase 9 teacher read (own; row 9.4 stays the reviewer's): `E6.4.mult_teens` hints are uneven: `5 · 13` gives "5 · 12 = 60 | 60 + 5" and `3 · 18` gives "3 · 9 = 27 | 27 + 27" (halving) rather than the tens-and-units split (5 · 10 + 5 · 3); arithmetically right but not the school method. `E6.5` prompt "Ile brakuje od 35 do 100?" shares the E1 awkward "od … do" wording. `E5.9.fact_check_div_100` can show `98 : 49 = 2` (valid but unusual). Candidate fixes: multHint for a two-digit second factor and the complement prompt.
 
 ## 6. Autonomous decisions
 
