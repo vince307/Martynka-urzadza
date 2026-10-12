@@ -1,59 +1,53 @@
 # Handoff — `first-launch-placement` (slice S-06)
 
-Written by the `/10x-plan-review` step: verdict PROCEED, plan fixed in place (1 critical, 2 warnings), `change.md` is
-`plan_reviewed`. The next agent must not miss: the e2e month comes from `?e2eMonth=N` (e2e build only, via
-`REGISTRY_KEYS.month` set in `main.ts` `preBoot`) — never `page.clock`, which freezes Phaser 4 tweens; and the child alone
-reaches a round, the gate guards only changing the stage (`[human]` 7.5).
+Written by `/10x-tdd` phase 1: `src/core/placement.ts` and `src/data/placement.ts` exist and are green; phase 1 is committed. The next agent must not miss: e2e could not run in this session (MachPort), so the orchestrator must run `npx playwright test` on the phase-1 commit; the change adds no scene wiring, so no e2e change is expected.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
-| Commits | 4 on top of `37a9a62` after this step's commit (change identity, research, plan, plan review) |
+| Commits | plan-review commits + `d79ba20` (test p1) + this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 46 (`grep -c '^- \[ \]' plan.md`) |
+| `change.md` status | `plan_reviewed` (unchanged; first phase of nine) |
+| `## Progress` rows remaining | 44 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/first-launch-placement/reviews/plan-review.md` | Review report (F1–F6, VERDICT: PROCEED) |
-| `context/changes/first-launch-placement/plan.md` | Fixes: Key Discoveries (no `page.clock`), Phase 4 §1–§3 (`REGISTRY_KEYS.month`, `e2eMonth`, hook skips `ui()`/`task()` at welcome, `tests/round.test.ts`), row 4.3 (`grep -rl e2eMonth dist/`), Phase 5 §3, Phase 8/9 month, decision 9, Known risks |
-| `context/changes/first-launch-placement/plan-brief.md` | Helper/e2e rows: `?e2eMonth` instead of a fixed clock |
-| `context/changes/first-launch-placement/change.md` | Status `planned` → `plan_reviewed` |
+| `tests/placement.test.ts` | 71 tests; oracle = ZADANIA §1 table typed in the test (5 ages x 12 months), band boundaries, RangeErrors, child/parent flags, `needsPlacement` |
+| `src/data/placement.ts` | `placementData` (ages 6–10, month bands, table), type `Band` |
+| `src/core/placement.ts` | `SessionLearner`, `previousStage`, `proposeStage`, `placeByChild`, `placeByParent`, `needsPlacement` |
+| `context/changes/first-launch-placement/plan.md` | Progress rows 1.1, 1.2 ticked |
 | `context/changes/first-launch-placement/handoff.md` | This file |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/first-launch-placement` |
-| context7 `/microsoft/playwright` clock docs | `setFixedTime` fixes `Date.now()`/`new Date()`, keeps timers; `install` fakes rAF too |
-| `grep Date.now node_modules/phaser/src/tweens/TweenManager.js` | `start` and `getDelta` use `Date.now()`; `step` returns on `delta <= 0` ⇒ tweens frozen under a fixed time (F1) |
-| `grep defaultStage src tests scripts` | `TaskScene.create`, `balance.ts`, **`tests/round.test.ts`** (F2) |
-| `src/testing/e2eHook.ts` `installE2EHook` | `snapshot` calls `ui().counterText()`/`speakerTarget()` unconditionally (F3) |
-| `src/ui/narrator.ts` `speak`/`unlock` | `speak` never requires `unlock`, wrapped in `safely` (F4, harmless) |
-| Progress ↔ phases | 9/9, 46 rows, one `## Progress` |
-| Gates | not run — docs-only step (baseline main @ 37a9a62: unit 671, e2e 8) |
+| RED (stubs with wrong values) | `npx vitest run tests/placement.test.ts`: 53 failed, first `AssertionError: expected 'E1' to be 'E2'` (age 7, month 1) |
+| GREEN | `tests/placement.test.ts` 71 passed |
+| Break 1: January moved from autumn to spring band in `placementData` | 4 failed; restored (meta-check: oracle is in the test, not read from `placementData`) |
+| Break 2: `placeByParent` `overridden = ... \|\| true` | 2 failed; restored |
+| `npm run lint` / `npm run typecheck` | clean |
+| `npm test` | 742 passed in 50 files (baseline 671 / 49, +71) |
+| `npm run build` | ok, `e2e hook: absent` |
+| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate (3 failed / 5 did not run, all `MachPortRendezvous Permission denied`) |
 
 ## 4. Next command
 
-`/10x-tdd first-launch-placement phase 1`
+`/10x-tdd first-launch-placement phase 2`
 
 ## 5. Open
 
-- `[human]` rows unchanged: 5.7, 6.5, 7.5–7.9 (FR-012 deviation, OQ 1, warm-up gap, persona E1 until S-11, gate difficulty, iPad).
-- Phase 4 implementer: `e2eMonth` lives in `src/testing/e2eHook.ts` (stripped with the hook); row 4.3 proves its absence in `dist/`.
-- Follow-ups and DESIGN-GAP rows still to be written in phase 7 as planned.
+- Row 1.3 left unticked: local gate green except e2e (orchestrator gate).
+- `[reviewer]` row 1.4: teacher read of `placementData` vs ZADANIA §1 (`reviews/teacher-read.md`) not done here. Self-check: table rows match ZADANIA §1 (6: E1; 7: E1/E2/E2; 8: E3/E4/E4; 9: E5/E6/E6; 10: E6).
+- `[human]` rows unchanged: 5.7, 6.5, 7.5–7.9.
 
 ## 6. Autonomous decisions
 
-1. F1: e2e month via an e2e-build-only URL parameter read into `REGISTRY_KEYS.month` in `main.ts` `preBoot`. Rejected:
-   `page.clock.setFixedTime` (freezes `TweenManager`), `page.clock.install` (freezes rAF), `addInitScript` patching
-   `Date.prototype.getMonth` (global monkeypatch). Would change if Phaser's tween clock stopped using `Date.now()`.
-2. Phase 4 kept whole (2 new UI components; splitting leaves the round specs red). Would change if the phase-4 agent runs out of context.
-3. Orchestrator's binding decision not revisited; checked for holes (gate-only entry to the panel, warm-up never blocks) — none found.
-4. Triage done in place (skill's AskUserQuestion replaced by fixing CRITICAL/WARNING in plan.md, observations recorded).
+1. Stubs exporting wrong values first so RED is an assertion failure (prompt rule), then real implementation; phase kept `Driver: tdd` (no pre-existing implementation).
+2. `proposeStage` also rejects non-integer age/month with RangeError (plan said outside `ages` / 0–11); a stricter reading of the same rule. Would change if a caller needs to pass fractions (none).
+3. Row 1.3 not ticked because e2e was not observed green; no e2e change in this phase.

@@ -690,8 +690,8 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 1.1 `tests/placement.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: styczeń w złym paśmie / `overridden` przy potwierdzeniu → czerwony; przywrócone; meta-check (wyrocznia z dokumentu)
+- [x] 1.1 `tests/placement.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — d79ba20 (671 → 742, +71)
+- [x] 1.2 Deliberate break: styczeń w złym paśmie / `overridden` przy potwierdzeniu → czerwony; przywrócone; meta-check (wyrocznia z dokumentu) — d79ba20
 - [ ] 1.3 Pełna bramka lokalna zielona
 
 #### Manual
