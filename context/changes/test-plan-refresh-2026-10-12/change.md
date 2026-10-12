@@ -1,7 +1,7 @@
 ---
 change_id: test-plan-refresh-2026-10-12
 title: Odświeżenie planu testów — lokalne e2e w przeglądarce
-status: implementing
+status: implemented
 created: 2026-10-12
 updated: 2026-10-12
 archived_at: null

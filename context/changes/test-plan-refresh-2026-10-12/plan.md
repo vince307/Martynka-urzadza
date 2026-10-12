@@ -153,5 +153,5 @@ Docs-only; verification is the grep checks plus lint/typecheck. No tests are add
 
 #### Automated
 
-- [x] 2.1 `grep -c "public/style.css" src/ui/dom/rotateOverlay.ts` prints 0
-- [x] 2.2 `npm run lint` and `npm run typecheck` pass
+- [x] 2.1 `grep -c "public/style.css" src/ui/dom/rotateOverlay.ts` prints 0 — 9fbca65
+- [x] 2.2 `npm run lint` and `npm run typecheck` pass — 9fbca65
