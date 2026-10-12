@@ -1,27 +1,30 @@
 # Handoff — `generators-remaining-stages` (slice S-03)
 
-Written by the `/10x-research` step of run `2026-10-12-s03-remaining-stages`. `research.md` is done; nothing is implemented. The one
-thing not to get wrong: stage data files (`src/data/curriculum/E1.ts` …) can only land after every group-1 type of their steps has a
-generator (`tests/curriculum.test.ts` rejects a step type that is in neither `GROUP_1` nor `LATER`), and the free-mode ADD_SUB draw
-(`drawFree` in `src/core/tasks/generators/addSub.ts`) breaks `MAX_DEGENERATE_SHARE` on every E1 range — fix the generator, not the threshold.
+Written by the `/10x-plan` step of run `2026-10-12-s03-remaining-stages`. `plan.md` (10 phases, 30 Progress rows) and
+`plan-brief.md` exist; nothing is implemented. The one thing not to get wrong: phases 6 and 9 CHANGE the local gate's
+unit command (sample E1–E4, then E1–E6, exact text in `plan.md` § Implementation Approach); the profile, env and
+`ci.yml` are only updated in phase 10, so until then the orchestrator must take the gate command from the plan, not the profile.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/generators-remaining-stages`, cut from `main` at `a24b502` |
-| Commits | 3 on the branch after this step: change identity, handoff state, `docs(generators-remaining-stages): research` |
+| Commits | 4 on the branch after this step: change identity, handoff state, research, `docs(generators-remaining-stages): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a — no `plan.md` yet |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 30 (`grep -c '^- \[ \]' plan.md`): 24 automated, 6 manual (4 `[reviewer]` incl. 1 `(CI at ship)`, 2 `[human]`) |
+| Roadmap | S-03 `proposed → planning` (At a glance + item body), committed with the plan |
 | Working tree | clean for this step's files; untracked `designs/martynka-expansion-v1/` is the maintainer's (contract: counts as clean, never staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/generators-remaining-stages/research.md` | Step-by-step table E1/E2/E5/E6 (44 steps → type → G / G+ / N / L), design of 7 new generators, 6 required + 3 optional extensions, E1 task-space measurement, recommended 7-phase split with drivers |
-| `context/changes/generators-remaining-stages/change.md` | Frontmatter only: `status: new → preparing` |
+| `context/changes/generators-remaining-stages/plan.md` | Full plan: 10 phases with `Driver:` lines, gate-command changes, `## Autonomous decisions`, `## Progress` |
+| `context/changes/generators-remaining-stages/plan-brief.md` | Two-page brief: decisions table, phases at a glance, risks |
+| `context/changes/generators-remaining-stages/change.md` | Frontmatter `status: preparing → planned` |
+| `context/foundation/roadmap.md` | S-03 status `planning` |
 | `context/changes/generators-remaining-stages/handoff.md` | This file |
 
 ## 3. Verification
@@ -29,31 +32,39 @@ generator (`tests/curriculum.test.ts` rejects a step type that is in neither `GR
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/generators-remaining-stages` |
-| Throwaway measurement `node --import tsx $TMPDIR/s03m/measure.mts` (not committed) | 1000 draws per candidate skill, seeds `910_000 + i`: E1.7 COMPLEMENT `[10]` 9 distinct (top 12.8 %); E1.6 EVEN_ODD single max 10 → 10 distinct (11.0 %); ADD_SUB free mode `n − n` 21.2 % (max 5), 14.6 % (max 9), 13.4 % (max 10); `DT-DT` 10.1 %; E5.4 MULT ·0/·1 32.8 %; ROUNDING `to: 100` → parse `TypeError` |
-| `$TMPDIR/s03m/inv.mts` (hint arithmetic, last-hint, bound — same rules as `tests/contentInvariants.test.ts`) | 0 failures on 9 E5/E6 candidate skills (MULT 6·12, 4·70; DIV 96:6; COMPLEMENT 100/1000; ADD_SUB HTU shapes; COMPARE_NUM 1e6 — passes mechanically, hint nonsensical) |
-| `$TMPDIR/s03m/newtypes.mjs` (enumeration of prototype spaces) | BONDS 20/22/18 prompts; CHAIN ≤9 729; MISSING_OP ≤10 110; COMPARE_EXPR 10 000 pairs, natural '=' 9.1 %; 12 ambiguous MISSING_OP pairs with · and : |
-| Local gate (lint, typecheck, test, build) | not run — docs-only step, no code changed; baseline on main per contract `lint OK; typecheck OK; unit OK Tests 236 passed; build OK` (inherited, unverified) |
+| `gh run view 38278623270 --log` (CI job `check`, branch `docs/autonomous-run-profile`) | seen lines `##[group]Run npm run sample -- E4` and `Naruszenia: 0` — basis of the `[reviewer] (CI at ship)` regex in Progress 10.5 |
+| `grep -c '^- \[ \]' plan.md` | 30; every Success Criteria bullet maps 1:1 to a Progress row (checked per phase) |
+| `metadata-guard.mjs inspect` / `mark-planned` | change.md hash matched, status advanced |
+| Local gate (lint, typecheck, test, build) | not run — docs-only step, no code changed; baseline per contract `Tests 236 passed` (inherited, unverified) |
 
 No deliberate breaks (nothing testable changed).
 
 ## 4. Next command
 
-`/10x-plan generators-remaining-stages`
+`/10x-plan-review generators-remaining-stages`
 
 ## 5. Open
 
-- Phase split to adopt or adjust (research.md § 6): P1 ADD_SUB `n − n` + F12 + BONDS + CHAIN (tdd); P2 MISSING_OP + COMPARE_EXPR (tdd); P3 SEQUENCE + CHOOSE_OP (tdd); P4 FACT_FAMILY + CALENDAR variants (tdd); P5 E1+E2 data, `GROUP_1` +7, `LATER` +19, small-space exceptions, `sample -- E1/E2` in `.github/workflows/ci.yml` + profile § 2 + `autonomous-run.env` `GATE_UNIT` (impl); P6 large numbers: `formatNumber`, ROUNDING `to`, DIV `quotients`, COMPARE_NUM ≥ 1000 (tdd); P7 E5+E6 data + `sample -- E5/E6` (impl).
-- Small spaces: E1.7 COMPLEMENT to 10 (9) and E1.6 EVEN_ODD single (10, or 11 with zero) need a named per-skill `MIN_DISTINCT` exception with the measured value in `tests/contentInvariants.test.ts`.
-- Product choices left to the plan: February in CALENDAR month-days (recommend: skip); EVEN_ODD with zero (recommend: yes); E1 tiles vs keypad (recommend: keypad now, follow-up `Trigger: S-04`).
-- Number formatting ≥ 10 000 makes `ARITHMETIC_LINE` / `BINARY_PROMPT` and the `\d+` bound scan in `tests/contentInvariants.test.ts`, and `NUMBER_WORD` in `src/core/tasks/validate.ts`, blind to grouped numbers — P6 must update them together.
-- Follow-ups: F12 in scope (P1); F14 stays S-04; F10 S-07; F6 `deploy/` — unchanged from `change.md`.
-- No `context/foundation/lessons.md` (contract rule 8: nothing to apply). DESIGN-GAPs: none. Manual-only rows: none yet.
+- Phase drivers: 1–5 `tdd`, 6 `impl`, 7–8 `tdd`, 9 `impl`, 10 `impl` (seam sweep in 10). E2E=off: no `e2e` phase.
+- Gate command changes: phase 6 → unit gate with `npm run sample -- E1 && npm run sample -- E2` added; phase 9 → plus E5, E6; phase 10 writes it to `context/foundation/autonomous-run.md` § 2, `autonomous-run.env` `GATE_UNIT`, `.github/workflows/ci.yml`.
+- Manual rows (human checklist): 6.4 / 9.4 / 10.4 `[reviewer]` teacher read `npm run sample -- <stage> --count 6` (E1, E2, E5, E6); 10.5 `[reviewer] (CI at ship)` job `check` lines matching `##\[group\]Run npm run sample -- E[1256]$` each ending with `Naruszenia: 0`; 10.6 `[human]` maintainer reads the same printout before merge; 10.7 `[human]` accept E1 `keypad` vs ZADANIA §4 tiles.
+- Small-space exceptions (`SMALL_SPACES` in `tests/contentInvariants.test.ts`) take the values measured in phase 6 (research: 9 for `E1.7.complement_10`, ~11 for `E1.6.even_odd_single_10`).
+- Risk: E5.4 MULT ·0/·1 measured 32.8 % vs 35 % threshold — fix data, not threshold, if it trips.
+- Weekday case forms (`Weekday.after` / `before` in `src/data/calendar.ts`) are visible only to the teacher read.
+- Follow-ups to write in phase 10 (`follow-ups/review-fixes.md`): E1 tiles (`Trigger: S-04`), February (`Trigger: S-17`), BONDS pairs-to-10 and CHOOSE_OP with a picture (`Trigger: S-13`), E1–E2/E5–E6 content polish (`Trigger: S-17`). F14 stays S-04, F10 S-07, F6 `deploy/`.
+- No `context/foundation/lessons.md` (nothing to apply). DESIGN-GAPs: none.
 
 ## 6. Autonomous decisions
 
-1. **Per-skill `MIN_DISTINCT` exception instead of a global lower threshold or wider data.** Rejected: lowering `MIN_DISTINCT` for all skills (weakens 50+ skills), widening COMPLEMENT targets / EVEN_ODD to 12 (unfaithful to E1.7 / E1.6). Why: the two spaces are genuinely 9 and 10 tasks; contract S-03 allows lowering with the measured value. Would change: a plan that finds a faithful step variant with ≥ 12 tasks.
-2. **ADD_SUB `n − n` fixed in the generator (pattern `ONE_SHARE` from `div.ts`), not by threshold.** Rejected: raising `MAX_DEGENERATE_SHARE`. Why: same defect class already fixed for DIV; measured 13–21 % in E1. Would change: none foreseen.
-3. **NUMBER_WORDS above 1000 not needed.** Why: no E6 step in `docs/ZADANIA.md` § 3 lists NUMBER_WORDS (only E3.7, E5.3). Would change: a catalogue edit adding it to an E6 step.
-4. **7 phases, slice not split** (change.md decision 2 named "> ~6 phases → split"). Why: each phase ≤ 2 new generators and green alone; S-03 closes M1 and splitting would not reduce work. Would change: plan-review finding a phase too large, or the plan merging to ≤ 6.
-5. **E1 numeric answers as `keypad` in M1.** Rejected: generic tile choices now. Why: no task screen yet (S-04); tiles would also inflate the prompt+choices diversity metric. Would change: S-04 requiring tiles for E1 before M2.
-6. Commit message took the prescribed `docs(generators-remaining-stages): research`.
+1. **10 phases instead of research's 7; slice not split.** Rejected: 7 phases (one with 2 generators + 2 ADD_SUB fixes, one with 4 large-number extensions); splitting S-03. Why: each phase is a fresh agent, ≤ 2 new generators or ≤ 3 small extensions per phase keeps every phase green alone. Would change: plan-review judging a phase too large or too small (merge 7+8).
+2. **Profile/env/CI in a separate final phase 10** (step prompt). Phases 6 and 9 name the exact new command. Would change: an orchestrator rule requiring `ci.yml` parity per phase.
+3. **February skipped in `monthDays`.** Rejected: "28 or 29" answer. Why: catalogue E5 says 30/31 days; multiple answers need a `check` the screen does not have. Would change: S-04 supporting several correct tiles.
+4. **EVEN_ODD `min: 0` in E1.6, exception with measured value.** Rejected: `max: 12` (11–12 belong to E1.10). Would change: a measurement in phase 6 different from ~11 — the measured value is written.
+5. **E1 numeric answers `keypad`, against ZADANIA §4 ADD_SUB literal "3–4 kafelki (E1)"** — `[human]` row 10.7 and follow-up `Trigger: S-04`. PRD FR-006 allows tiles or keypad. Would change: S-04 requiring tiles for E1 before M2.
+6. **Per-id `MIN_DISTINCT` exceptions**, no global threshold change. Would change: a faithful step variant with ≥ 12 tasks.
+7. **`formatNumber` from 10 000 with U+00A0, one shared number pattern.** Rejected: grouping from 1000, plain space. Would change: an S-04 typography decision (one function + one pattern).
+8. **MULT hint for multiples of 10/100 in scope; COMPARE_NUM `step: 10` out.** Why: current halving hint is correct but not the school method; E2.7 is covered by COMPARE_NUM `{ max: 100 }`. Would change: impl-review judging the hint unnecessary.
+9. **CHOOSE_OP kinds limited to `sum`, `left`, `moreBy`.** Why: one direct operation per text in E1. Would change: a step needing "choose the question" — a later variant.
+10. **F12 only for `a ≥ 20`.** Why: `10 − 10 = 0, 0 + 3 = 3` is not a method for E1. Would change: teacher read preferring another method for E4.4.
+11. **Roadmap `planning` committed with the plan** (contract clean tree beats the skill's "leave uncommitted").
+12. No questions asked (contract rule 1); complexity HIGH, all open product questions from research answered with its recommendations (decisions 3–5).
