@@ -1,54 +1,54 @@
 # Handoff — `generators-remaining-stages` (slice S-03)
 
-Written by the `/10x-tdd phase 2` step of run `2026-10-12-s03-remaining-stages`. Phases 1–2 are committed (`3361723`, `c0e8bc9`): ADD_SUB tweaks + BONDS, then CHAIN + MISSING_OP on the shared `arith.ts`. Phases 3–10 remain.
+Written by the `/10x-tdd phase 3` step of run `2026-10-12-s03-remaining-stages`. Phases 1–3 are committed (`3361723`, `c0e8bc9`, `308c458`): ADD_SUB tweaks + BONDS, CHAIN + MISSING_OP on `arith.ts`, then COMPARE_EXPR + SEQUENCE. Phases 4–10 remain.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/generators-remaining-stages`, cut from `main` at `a24b502` |
-| Commits | … + `3361723` (p1) + `c0e8bc9` `feat(generators-remaining-stages): CHAIN i MISSING_OP … (p2)` + this handoff commit |
+| Commits | … + `c0e8bc9` (p2) + `308c458` `feat(generators-remaining-stages): COMPARE_EXPR i SEQUENCE (p3)` + this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | 25 (5 ticked: 1.1–1.3, 2.1–2.2) |
+| `## Progress` rows remaining | 23 (7 ticked: 1.1–1.3, 2.1–2.2, 3.1–3.2) |
 | Working tree | clean for this step's files; untracked `designs/martynka-expansion-v1/` is the maintainer's |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/tasks/arith.ts` | `applyOp`, `opSign`, `arithLine`, type `Op`; `addSub.ts` imports them (no private `apply`/`sign`/`line`) |
-| `src/core/tasks/generators/chain.ts` | CHAIN: `parseChainParams`, `generateChain` (3 terms, every intermediate and final result in [1; max]) |
-| `src/core/tasks/generators/missingOp.ts` | MISSING_OP: `parseMissingOpParams` (only + and − both required), `generateMissingOp` (b >= 1, a − a at 5 %) |
-| `src/core/tasks/registry.ts`, `src/data/pl.ts` | CHAIN, MISSING_OP registered; `pl.tasks.missingOpHint(a, plus)` |
-| `tests/chain.test.ts`, `tests/missingOp.test.ts` | new tests (`generateChain`, `generateMissingOp`) |
+| `src/core/tasks/generators/compareExpr.ts` | COMPARE_EXPR: `parseCompareExprParams`, `generateCompareExpr` (reuses `SIGNS`; "=" forced at 1/6, coincidental equality and identical/swapped expressions rejected) |
+| `src/core/tasks/generators/sequence.ts` | SEQUENCE: `parseSequenceParams` (defaults length 4, start multiple, both directions; infeasible params throw), `generateSequence` |
+| `src/core/tasks/registry.ts`, `src/data/pl.ts` | both registered; `pl.tasks.sequence`, `pl.tasks.sequenceHint(step, up)` |
+| `tests/compareExpr.test.ts`, `tests/sequence.test.ts` | new tests (`generateCompareExpr`, `generateSequence`) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (first run) | stubs throwing; quoted: `AssertionError: expected function to throw an error, but it didn't` (`parseChainParams({ max: 2, ops: ['+'], terms: 3 })`) plus `Error: not implemented` in the draw tests (stub added after the missing-module state, so no import error) |
-| GREEN | `npx vitest run tests/chain.test.ts tests/missingOp.test.ts`: 7 passed |
+| RED (first run) | stubs throwing; quoted: `AssertionError: expected error to be instance of TypeError` (parser tests, both files) plus `Error: not implemented` in the draw tests |
+| GREEN | `npx vitest run tests/compareExpr.test.ts tests/sequence.test.ts`: 5 passed |
 | `npm run lint` / `typecheck` / `build` | OK |
-| `npm test` | branch baseline 246 + 7 = 253 passed (29 files) |
+| `npm test` | branch baseline 253 + 5 = 258 passed (31 files) |
 | deploy test scripts, `sample -- E3`, `sample -- E4` | OK, `Naruszenia: 0` each |
-| `grep "const apply\b\|const sign\b" addSub.ts` | empty |
-| Deliberate break | CHAIN range check `n >= 1` dropped: `x.chain … prompt="7 − 8 + 4": expected [ {…} ] to deeply equal []` (validator negative) and `6 − 7 − 1`; MISSING_OP `b` from 0: `prompt="8 □ 0 = 8": expected 0 to be greater than or equal to 1`. 3 red; restored, 7 green. Meta-check: the uniqueness test counts both signs via its own `fits()`, not the generator's `answer`; b = 0 would also fail it (both signs fit) |
-| Teacher read | not possible via sample yet (no E1 data until phase 6). Hint reads "Wynik jest mniejszy niż 8, więc odejmujemy." then `8 − 2 = 6`; chain hint `2 + 3 = 5`, `5 + 4 = 9`; correct Polish |
+| Deliberate break | COMPARE_EXPR without forcing "=": `AssertionError: expected 0.073 to be greater than 0.1` (equal share). SEQUENCE `down` start shifted by 25 (no lower-bound control): `expected 5 to be +0` and `"-16, □, -22, -25"` flagged by validator negative (2 red). Restored, 5 green. Meta-check: the sign test recomputes results with `applyOp` from the prompt, not from the hint; the sequence test rebuilds terms from the prompt and the answer, so the break was caught by its own checks, not by generator output alone |
+| Teacher read | via a script (no E1/E2 data until phase 6): "Uzupełnij ciąg: 80, □, 60, 50" hint "Każda następna liczba jest o 10 mniejsza." / "80 − 10 = 70"; gap first: "□, 40, 30, 20" / "40 + 10 = 50"; COMPARE_EXPR "1 + 1 □ 10 − 2" hint "1 + 1 = 2 / 10 − 2 = 8 / 2 < 8". Correct Polish; "o 2 większa" agrees with "liczba" |
 
 ## 4. Next command
 
-`/10x-tdd generators-remaining-stages phase 3`
+`/10x-tdd generators-remaining-stages phase 4`
 
 ## 5. Open
 
+- COMPARE_EXPR answers are sign tiles; SEQUENCE answers are numbers (data should use `keypad`). SEQUENCE has no E2.7 data yet (phase 6).
 - MISSING_OP prompt is the bare expression `8 □ 2 = 6` (no instruction sentence), answer is the sign string, choices the two signs; the scene/phase 6 sample shows it as is.
 - CHAIN does not bound the number of distinct tasks for tiny `max`; phase 6 data must pick `max` large enough for the contentInvariants thresholds.
 - Plan notes still apply (drivers, gate command change in phases 6/9, manual rows, known risks).
 
 ## 6. Autonomous decisions
 
-1. Manual gate / commit message / next-phase / unrelated-dirty-paths prompts: committed the planned set only, took the proposed subject, stopped after phase 2. Phase keeps `Driver: tdd`; `arith.ts` extraction, registry and `pl.ts` wiring were done inline as scaffolding.
-2. Stubs for chain/missingOp added before the quoted RED so it is an assertion failure, not a missing module.
+1. Manual gate / commit message / next-phase / unrelated-dirty-paths prompts: committed the planned set only, took the proposed subject, stopped after phase 3. Phase keeps `Driver: tdd`; registry and `pl.ts` wiring were done inline as scaffolding.
+2. Stubs for compareExpr/sequence added before the quoted RED so it is an assertion failure, not a missing module.
 3. MISSING_OP parser requires both `+` and `-` (a single sign leaves no choice) and rejects `*`, `/`. Operand `a` drawn from [1; max] (no zero operand). Would change: a stage needing only-plus tiles.
 4. `change.md` status not touched.
+5. SEQUENCE prompt is `Uzupełnij ciąg: a, b, □, d` (instruction in `pl.tasks.sequence`); `start: 'multiple'` means the lowest term is a multiple of the step. Would change: S-04 wanting a number line.

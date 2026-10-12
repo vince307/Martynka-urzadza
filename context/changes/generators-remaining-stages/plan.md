@@ -563,8 +563,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 3.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy COMPARE_EXPR i SEQUENCE
-- [ ] 3.2 Celowe zepsucie udziału „=” i dolnej granicy ciągu przewraca testy; cofnięte; meta-check
+- [x] 3.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy COMPARE_EXPR i SEQUENCE — 308c458
+- [x] 3.2 Celowe zepsucie udziału „=” i dolnej granicy ciągu przewraca testy; cofnięte; meta-check — 308c458
 
 ### Phase 4: FACT_FAMILY i CHOOSE_OP
 
