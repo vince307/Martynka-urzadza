@@ -1,57 +1,58 @@
 # Handoff — `task-round-stars` (slice S-04)
 
-Written by `/10x-implement task-round-stars phase 7` of autonomous run 2026-10-12-s04-s08. Phases 1 (9f57306), 2 (d77b9c8), 3 (7d99976), 4 (6593472), 5 (4471d8c), 6 (6396fcb) and 7 (6ab3f66) are committed; phases 8–11 are untouched. Phase 7 added the feedback bar, the solution steps, "Dalej" and the shake; the round now plays through all 5 tasks.
+Written by `/10x-implement task-round-stars phase 8` of autonomous run 2026-10-12-s04-s08. Phases 1 (9f57306), 2 (d77b9c8), 3 (7d99976), 4 (6593472), 5 (4471d8c), 6 (6396fcb), 7 (6ab3f66) and 8 (bc357da) are committed; phases 9–11 are untouched. Phase 8 added the UI overlay with the star counter, the star flight and the round restart.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
-| Commits on branch | 5 docs + p1..p7 (p7 `6ab3f66`) + handoff commits |
+| Commits on branch | 5 docs + p1..p8 (p8 `bc357da`) + handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; becomes `implemented` after phase 11) |
-| `## Progress` rows remaining | 31 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 28 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/ActionButton.ts` | Shared bar button (>=96 high, >=220 wide), fires in `pointerdown`; `show`/`showCentered`/`hide`/`target`/`bounds` |
-| `src/ui/widgets/FeedbackBar.ts` | Bottom strip from `view.bar`: yellow hint ("Spróbuj jeszcze raz" + line) and retype (result line), pale green "Brawo! +1 ★"/"Brawo!" + "Dalej" (turquoise), round end text (bonus) without a button; `update(bar, input)`, `nextTarget()` |
-| `src/ui/widgets/SolutionSteps.ts` | Lines revealed so far (scaled to fit, min 0.6) under the prompt + "Następny krok" / "Już wiem" in the bar zone; `show`, `hide`, `stepTarget()` |
-| `src/ui/widgets/AnswerTiles.ts` | + `markHint(value)`: thicker butter outline on the answer tile during retype |
-| `src/scenes/TaskScene.ts` | `advance()` (next), `step()` (nextSolutionStep), `shake()` (camera scrollX tween, killed before the next; never blocks input), bar/steps redrawn in `render()` |
-| `src/data/layout.ts` | `bar` (+ bottom 972, radius, padding, border), `barSpan` (tiles / keypad), `solution`, `FONT_SIZES.bar/barButton/solutionLine` |
-| `plan.md` | Progress rows 7.1-7.3 ticked with 6ab3f66 |
+| `src/scenes/UIScene.ts` | Overlay launched by `TaskScene` (`scene.launch`), listed last in `main.ts`; creates `StarCounter`, listens to `changedata-stars` on the registry, no input |
+| `src/ui/widgets/StarCounter.ts` | Pill top right (kit position, 196x100) with a code-drawn star and the number; exports `drawStar` and `starCounterTarget()`; `setValue`, `value()` |
+| `src/scenes/TaskScene.ts` | `stage`/`rng`/`sessionStars`; `freshRound()`; `advance()` on a finished round starts the next one; `syncStars` sets registry `stars` = session total at once and calls `flyStar` (`tweens.chain` pop + travel, 850 ms, never blocks) from `answerSpot` (tapped tile, or the keypad OK key) or the "Dalej" button for the bonus |
+| `src/ui/widgets/FeedbackBar.ts` | roundEnd bar now has the "Dalej" button too |
+| `src/data/layout.ts` | `SCENE_KEYS.ui`, `REGISTRY_KEYS.stars`, `TASK_LAYOUT.starCounter`, `ANIMATION.starPopMs/starPopScale`, `FONT_SIZES.counter` |
+| `plan.md` | Progress rows 8.1-8.3 ticked with bc357da |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| Unit | Tests 584 passed (branch baseline 584, +0; no new logic, as planned) |
-| Deliberate break | `roundView` `retype` bar -> `{ kind: 'none' }`: `tests/roundView.test.ts` "retype shows the last solution step and keeps input active" red (1 failed, 9 passed). Restored. Meta-check: it proves the view model, not the drawing |
+| Unit | Tests 584 passed (branch baseline 584, +0; as planned, no new logic) |
+| Deliberate break | `next` pays the bonus twice (`2 * bonus`): `tests/round.test.ts` red, 4 failed, e.g. "a clean round pays 5 + 2": expected 9 to be 7. Restored. Meta-check: proves the reducer, not the counter on screen (spec of phase 11) |
 | `npm run lint` / `typecheck` | OK / OK |
 | deploy + ops tests, `sample` E1-E6 | OK; `Naruszenia: 0` each |
-| `npm run build` | exit 0 |
-| `npx playwright test` | 1 passed (baseline 1, +0); needed `dangerouslyDisableSandbox` (the in-sandbox run fails on Chromium mach ports) |
-| Browser look | NOT done: Chromium cannot start in the sandbox and an unsandboxed ad-hoc capture script was denied; the dev server on 4399 was killed. Layout of bar, steps and button is unverified by eye (visual gate, row 7.4) |
+| `npm run build` | OK |
+| `npx playwright test` | 1 passed (baseline 1, +0); run with `dangerouslyDisableSandbox` |
+| Browser look | NOT done (Chromium cannot start in the sandbox; visual gate is the orchestrator's). The flight and counter were never run in a browser: first runtime proof is the visual gate or phase 11 |
 
 ## 4. Next command
 
-`/10x-implement task-round-stars phase 8`
+`/10x-implement task-round-stars phase 9`
 
 ## 5. Open
 
-- Manual rows 7.4 `[visual]` and 7.5 `[reviewer]` NOT ticked. The visual gate must check first: solution lines vs the prompt/expression (they start under `promptBottom()`), button in the bar zone (y 876-972) vs the keypad column, bar text fit for long hints.
-- Round end: bar shows "Brawo!" or `pl.round.bonus(n)` with no button; phase 8 adds the restart ("Dalej" -> new round) and the star counter. After `next` on the last task the state is `finished` and nothing else is tappable until then.
-- Not drawn (not in plan, no copy in kit): "Pokaż kroki" button of the kit hint screens; a "przepisz wynik" instruction in retype (the bar shows only "Wynik: N"). Candidates for DESIGN-GAP rows in phase 10 (docs/design-gaps.md).
-- Carried items: manual rows 1.5, 2.5, 5.5 `[reviewer]`, `[visual]` 5.6, 6.4, 7.4, 8.4, human rows 8.5, 10.5-10.8, DESIGN-GAPs and follow-ups in Phase 10; single-line-hint gap (human 10.6).
+- Manual rows 8.4 `[visual]`, 8.5 `[human]` NOT ticked; also carried 1.5, 2.5, 5.5 `[reviewer]`, 5.6, 6.4, 7.4 `[visual]`, 7.5 `[reviewer]`, human rows 10.5-10.8.
+- Visual gate to check: counter position vs the kit (top right, 1622-1818 x 46-146), the round-end bar with "Runda bez błędu! +2 ★" and "Dalej", counter 7 after a clean round, 420x760 with the rotate overlay.
+- Counter shows only the number beside a drawn star (the font may lack the "★" glyph); `pl.round.stars` is now unused by scenes (left in `pl.ts`; remove or use in phase 10 seam sweep).
+- Reduced-motion switch for the flight is S-08; no setting exists yet.
+- Phase 9 needs the hook to read `TaskScene` state: `snapshot()`/`targets()` are not written yet (the widgets already expose `targets()`/`nextTarget()`; `StarCounter.value()` exists for the counter assertion).
 
 ## 6. Autonomous decisions
 
-1. **"Dalej" button inside the bar, solution button in the bar zone** (kit puts "Już wiem" above the bar); needed because the notebook has no room above it under the tiles. Would change: visual gate preferring the kit position.
-2. **Retype tile outline uses `butter` (thicker), not the pale `hint` fill**, which is invisible on ivory. Would change: a palette entry for it in the kit.
-3. **Shake = short camera `scrollX` wobble** (`ANIMATION.shakeMs/Distance`), so it covers tiles, field and bar together; the UI overlay of phase 8 will use its own camera and stay still. Would change: the visual gate wanting only the input to move.
-4. **No new Polish strings** (all in `pl.round` from phase 5), so no teacher read needed beyond confirming the mapping: hint = "Spróbuj jeszcze raz" + line; bonus text `pl.round.bonus`.
-5. Skill prompts (exec mode, commit message, next phase) decided in place; stopped after phase 7.
+1. **Flight is drawn in `TaskScene`, not the overlay**: the target is a layout constant (`starCounterTarget`), so the two scenes share no object. Would change: the visual gate wanting the star above the notebook of another scene (then move it to `UIScene`).
+2. **Counter updates the registry at once; total = `sessionStars` + `state.starsEarned`**, where `sessionStars` sums finished rounds in the scene. Rejected: storing the total in core (save is S-11).
+3. **Bonus star flies from the "Dalej" button** at the end of the round (no tile any more). Would change: a kit view for round end.
+4. **New round reuses the scene's rng and stage**; no new Polish strings (all existed), so no teacher read needed.
+5. **Counter shows a drawn star + number, not the "★" character**, because glyph coverage of the bundled font is unverified.
+6. Skill prompts (exec mode, commit message, next phase) decided in place; stopped after phase 8.

@@ -894,9 +894,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 8.1 Unit `<baseline gałęzi> + 0`
-- [ ] 8.2 Deliberate break: bonus doliczony dwa razy → czerwony; przywrócone; meta-check
-- [ ] 8.3 Pełna bramka lokalna zielona
+- [x] 8.1 Unit `<baseline gałęzi> + 0` — bc357da
+- [x] 8.2 Deliberate break: bonus doliczony dwa razy → czerwony; przywrócone; meta-check — bc357da
+- [x] 8.3 Pełna bramka lokalna zielona — bc357da
 
 #### Manual
 
