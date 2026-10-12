@@ -4,6 +4,8 @@ import type { StageDef } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
+import { narrationOf } from '../core/narration/spoken';
+import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
@@ -19,6 +21,7 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import type { Narrator } from '../ui/narrator';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
@@ -69,6 +72,8 @@ export class TaskScene extends Scene {
     private shownIndex = -1;
     private stage!: StageDef;
     private rng!: Rng;
+    private narrator: Narrator | undefined;
+    private autoRead = false;   // session default by stage (FR-009); a parent switch comes with S-08
     private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
 
     constructor() {
@@ -85,6 +90,9 @@ export class TaskScene extends Scene {
             throw new Error(`Unknown default stage ${balance.defaultStage}`);
         }
         this.stage = stage;
+        this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
+        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
+        this.registry.set(REGISTRY_KEYS.narration, null);
         this.rng = createRng(Date.now() >>> 0);
         this.state = this.freshRound();
         this.registry.set(REGISTRY_KEYS.stars, 0);
@@ -113,8 +121,19 @@ export class TaskScene extends Scene {
         graphics.fillRoundedRect(left + border, top + border, width - 2 * border, height - 2 * border, radius - border / 2);
     }
 
+    /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
+    private currentNarration(): string | null {
+        return narrationOf(this.state, {
+            words: pl.speech,
+            calculate: pl.round.calculate,
+            tryAgain: pl.round.tryAgain,
+            answerLine: pl.round.resultLine,
+        });
+    }
+
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
         if (this.shownIndex !== this.state.index) {
             this.shownIndex = this.state.index;
@@ -232,6 +251,10 @@ export class TaskScene extends Scene {
             this.syncStars(before, this.bar.nextTarget());
         }
         this.render();
+        // Auto-reading starts only from a tap on "Dalej" (never at a cold start: there is no gesture yet).
+        if (this.autoRead && this.state.phase === 'first') {
+            this.narrator?.speak(this.currentNarration() ?? '');
+        }
     }
 
     private freshRound(): RoundState {

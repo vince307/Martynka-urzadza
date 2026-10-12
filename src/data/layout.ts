@@ -78,7 +78,11 @@ export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 export const SCENE_KEYS = { boot: 'Boot', task: 'Task', ui: 'UI' } as const;
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
-export const REGISTRY_KEYS = { stars: 'stars' } as const;
+export const REGISTRY_KEYS = {
+    stars: 'stars',
+    narration: 'narration',   // text the speaker reads in the current phase, or null
+    narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
+} as const;
 
 /**
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
@@ -100,6 +104,20 @@ export const TASK_LAYOUT = {
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
+} as const;
+
+/**
+ * HUD speaker button (kit screen.css .speaker / .hud button): 104 px square left of the star counter,
+ * same ivory-to-butter fill, 5 px border and 32 px radius as the kit HUD buttons.
+ * left = starCounter.left - 24 (kit HUD gap) - width.
+ */
+export const HUD_LAYOUT = {
+    speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
+} as const;
+
+/** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
+export const HUD_TOUCH_TARGETS = {
+    speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */
