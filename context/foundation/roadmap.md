@@ -51,7 +51,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | done |
 | S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | done |
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | done |
-| S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | proposed |
+| S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | planning |
 | S-07  | adaptive-curriculum         | M3   | gra dobiera zadania wg wag i opanowania, odblokowuje kroki, łagodzi trudność      | S-05                 | FR-013, FR-014                  | proposed |
 | S-08  | parent-settings-progress    | M3   | rodzic zmienia etap i widzi zwięzły podgląd postępów za bramką                   | S-06, S-07           | FR-015, US-03                   | proposed |
 | S-09  | first-furniture-purchase    | M4   | dziecko wydaje gwiazdki na zadanie remontowe i wybiera jeden z 3 wariantów        | S-08                 | FR-016, FR-017, US-02           | proposed |
@@ -209,7 +209,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Czy rozgrzewka nadal koryguje etap w dół, gdy rodzic ustawił go świadomie, czy jest wtedy pomijana? (PRD Open Question 1) — Owner: autor. Block: no (rozstrzygnąć przy `/10x-plan` tego wycinka; obie wersje są małe).
 - **Risk:** wprowadza bramkę dla dorosłego używaną potem w S-08 i S-12; zrobiona tu, bo bez etapu adaptacja z S-07 nie ma punktu startu.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-07: Adaptacja trudności
 
