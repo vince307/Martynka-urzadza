@@ -140,10 +140,10 @@ Docs-only; verification is the grep checks plus lint/typecheck. No tests are add
 
 #### Automated
 
-- [x] 1.1 §2 Source cells have no `.ts` or `file:line` anchors
-- [x] 1.2 §3 table parses; row 5 is `not started`
-- [x] 1.3 `npm run lint` passes
-- [x] 1.4 `npm run typecheck` passes
+- [x] 1.1 §2 Source cells have no `.ts` or `file:line` anchors — e63be6f
+- [x] 1.2 §3 table parses; row 5 is `not started` — e63be6f
+- [x] 1.3 `npm run lint` passes — e63be6f
+- [x] 1.4 `npm run typecheck` passes — e63be6f
 
 #### Manual
 
@@ -153,5 +153,5 @@ Docs-only; verification is the grep checks plus lint/typecheck. No tests are add
 
 #### Automated
 
-- [ ] 2.1 `grep -c "public/style.css" src/ui/dom/rotateOverlay.ts` prints 0
-- [ ] 2.2 `npm run lint` and `npm run typecheck` pass
+- [x] 2.1 `grep -c "public/style.css" src/ui/dom/rotateOverlay.ts` prints 0
+- [x] 2.2 `npm run lint` and `npm run typecheck` pass

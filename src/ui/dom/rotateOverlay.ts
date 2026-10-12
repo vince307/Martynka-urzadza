@@ -3,7 +3,7 @@ import { createOverlay, createText } from './overlay';
 
 /**
  * "Rotate your tablet" overlay (FR-002). Visibility is pure CSS:
- * `@media (orientation: portrait)` in public/style.css shows it; the game keeps
+ * `@media (orientation: portrait)` in src/style.css shows it; the game keeps
  * running underneath. Phaser's lockOrientation() does not work in current
  * browsers, so no JS orientation handling here.
  */
