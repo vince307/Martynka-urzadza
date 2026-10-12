@@ -32,7 +32,7 @@ TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). F
 
 ## Testing
 
-Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test on seeded `createRng` (`tests/helpers.ts`): range, negatives, bridging, distractors, inflection via `validateTask`. Quality plan: @context/foundation/test-plan.md. After each milestone verify build and offline behaviour.
+Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tests/helpers.ts`) plus `tests/contentInvariants.test.ts`; content PRs need the teacher read from CLAUDE.md. Quality plan: @context/foundation/test-plan.md. After each milestone verify build and offline behaviour.
 
 ## Commits and PRs
 

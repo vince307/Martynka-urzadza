@@ -154,12 +154,12 @@ Brak.
 
 #### Automated
 
-- [ ] 2.1 contentInvariants dla 29 umiejętności < 5 s; `npm test` zielone
-- [ ] 2.2 Celowe zepsucie danych przewraca test; cofnięte
+- [x] 2.1 contentInvariants dla 29 umiejętności < 5 s; `npm test` zielone — 66b8c86
+- [x] 2.2 Celowe zepsucie danych przewraca test; cofnięte — 66b8c86
 
 #### Manual
 
-- [ ] 2.3 Przegląd wyłączeń i progów
+- [x] 2.3 Przegląd wyłączeń i progów — 66b8c86
 
 ### Phase 3: Lista odczytu nauczyciela i domknięcie
 

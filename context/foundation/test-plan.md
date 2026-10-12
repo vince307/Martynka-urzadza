@@ -114,9 +114,12 @@ orchestrator updates Status as artifacts appear on disk.
 - **Reference test**: `tests/addSub.test.ts` with `tests/helpers.ts` (`forEachDraw`: 20 seeds × 50 draws, `validateTask` on every task, failures replay by seed).
 - **Run locally**: `npx vitest run tests/<generator>.test.ts`.
 
-### 6.2 Adding a content template
+### 6.2 Adding a content template or curriculum data
 
-- TBD — see §3 Phase 3 for the feasibility / degenerate-task / teacher-read pattern. Until then: add every noun to `src/data/nouns.ts`, use `countNoun`/`obj` for numbers, and read `npm run sample -- <stage> --count 6` before the PR.
+- **Invariants run automatically**: `tests/contentInvariants.test.ts` draws 1000 tasks per skill of every stage and checks the parser, the validator, the arithmetic of every hint line, that the answer appears in the last hint, number bounds (except CALENDAR, ROMAN, NUMBER_WORDS), no zero operands, degenerate shares (n − n, n : n ≤ 10 %), ·0/·1 only when allowed, variety (≥ 12 distinct tasks, most frequent ≤ 15 %). Thresholds are constants at the top of the file; lower them with a comment when a stage's task space is genuinely small (E1).
+- **Parsers reject infeasible data**: `parseAddSubParams` enumerates the shape values (`DU+DU` with `bridge: 'ten'` and `max: 30` throws), MULT/DIV/WORD check their minima; add the same to every new generator and register it in `parsers` next to `generators`.
+- **Teacher read (manual, every PR touching `src/data/` or generators)**: `npm run sample -- <stage> --count 6`, read every task of the changed steps; numeral agreement and the accusative after verbs ("ma 1 naklejkę"), verb gender matching the name, sensible context, hints that teach the school method without giving the result away first, close but unambiguous distractors, every new noun in `src/data/nouns.ts` with its accusative in the context, prompts of 1–3 sentences. The checklist lives in `.github/pull_request_template.md` and in CLAUDE.md for the agent.
+- **Reference**: `src/data/wordTemplates.ts` (`obj`, `verb`, `isAre`), `tests/wordTemplates.test.ts` (0–100 agreement sweep).
 
 ### 6.3 Adding a lint boundary rule
 
@@ -138,6 +141,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.6 Per-rollout-phase notes
 
+- Phase 3 (2026-10-12): "last hint ends with the answer" was wrong for inverse-check hints (6 · 7 = 42 for 42 : 6), so the invariant is "the answer appears among the numbers of the last hint". Rejection sampling skews distributions: DIV drew quotient 1 uniformly and then rejected large products, inflating n : n to 17 %; drawing inside the feasible range fixed it. Measured baselines are in the archived research of this phase.
 - Phase 2 (2026-10-12): Node's `fetch` ignores proxy environment variables; inside the agent sandbox the smoke needs `NODE_USE_ENV_PROXY=1` (CI has direct egress). `index.html` also preloads the Phaser chunk, so three bundles are checked. CoiledSpring cannot be observed from CI (tailnet ACL and the restricted key); the bootstrap checklist in `deploy/README.md` section 10 covers it.
 - Phase 1 (2026-10-12): ESLint 10 needs `eslint.config.mjs` because `package.json` has no `"type": "module"`; the core `no-restricted-imports` rule already understands type-only imports (`allowTypeImports`), so the typescript-eslint variant is not needed. Programmatic linting in tests must spread `tseslint.configs.disableTypeChecked` into `overrideConfig` (flat objects, no `extends`). The baseline needed type predicates instead of `as` casts after `Array.isArray` checks.
 
