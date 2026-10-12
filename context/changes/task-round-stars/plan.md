@@ -939,6 +939,6 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/task-round.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3`
-- [ ] 11.2 Deliberate break: `pointerdown` kafelka zgłasza indeks + 1 → spec czerwony; przywrócone; meta-check (unit zielone przy tej przerwie)
-- [ ] 11.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/task-round.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3` — 2132aef (1 -> 4 passed)
+- [x] 11.2 Deliberate break: `pointerdown` kafelka zgłasza indeks + 1 → spec czerwony; przywrócone; meta-check (unit zielone przy tej przerwie) — 2132aef
+- [x] 11.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — 2132aef
