@@ -89,7 +89,7 @@ export const TASK_LAYOUT = {
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
     prompt: { x: 960, y: 290, maxWidth: 1300 },
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
-    expression: { x: 620, y: 560 },          // beside the keypad, kit .equation centre 623, aligned with promptBeside
+    expression: { x: 620, y: 456 },          // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside
     expressionWide: { x: 960, y: 500 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
