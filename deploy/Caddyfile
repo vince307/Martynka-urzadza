@@ -19,5 +19,8 @@ __SITE__ {
     @nocache path / /index.html /sw.js /manifest.webmanifest
     header @nocache Cache-Control "no-cache"
 
+    # Go's MIME table has no .webmanifest entry: set the type by hand.
+    header /manifest.webmanifest Content-Type "application/manifest+json"
+
     file_server
 }
