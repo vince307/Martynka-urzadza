@@ -865,9 +865,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 5.1 `tests/layout.test.ts` obejmuje głośnik; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: głośnik 90 px → test układu czerwony; przywrócone; meta-check
-- [ ] 5.3 Pełna bramka lokalna zielona (e2e 4 passed)
+- [x] 5.1 `tests/layout.test.ts` obejmuje głośnik; unit `<baseline gałęzi> + N` — b83cd7b
+- [x] 5.2 Deliberate break: głośnik 90 px → test układu czerwony; przywrócone; meta-check — b83cd7b
+- [x] 5.3 Pełna bramka lokalna zielona (e2e 4 passed) — b83cd7b
 
 #### Manual
 
