@@ -847,9 +847,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 4.1 `tests/roundView.test.ts`, `tests/pick.test.ts`, `tests/keypad.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `pickSkills` bez filtra / `roundView` `retype` bez kroku → czerwony; przywrócone; meta-check na `stages`
-- [ ] 4.3 Pełna bramka lokalna zielona
+- [x] 4.1 `tests/roundView.test.ts`, `tests/pick.test.ts`, `tests/keypad.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N` — 6593472
+- [x] 4.2 Deliberate break: `pickSkills` bez filtra / `roundView` `retype` bez kroku → czerwony; przywrócone; meta-check na `stages` — 6593472
+- [x] 4.3 Pełna bramka lokalna zielona — 6593472
 
 ### Phase 5: Czcionka, tokeny, teksty i scena zadania z kropkami
 
