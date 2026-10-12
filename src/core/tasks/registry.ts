@@ -5,6 +5,7 @@ import { generateAddSub, parseAddSubParams } from './generators/addSub';
 import { generateBonds, parseBondsParams } from './generators/bonds';
 import { generateCalendar, parseCalendarParams } from './generators/calendar';
 import { generateChain, parseChainParams } from './generators/chain';
+import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
 import { generateComplement, parseComplementParams } from './generators/complement';
@@ -17,6 +18,7 @@ import { generateMult, parseMultParams } from './generators/mult';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
+import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateWord, parseWordParams } from './generators/word';
 import type { Generator } from './types';
 
@@ -40,6 +42,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     BONDS: generateBonds,
     CHAIN: generateChain,
     MISSING_OP: generateMissingOp,
+    COMPARE_EXPR: generateCompareExpr,
+    SEQUENCE: generateSequence,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -60,6 +64,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     BONDS: parseBondsParams,
     CHAIN: parseChainParams,
     MISSING_OP: parseMissingOpParams,
+    COMPARE_EXPR: parseCompareExprParams,
+    SEQUENCE: parseSequenceParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);
