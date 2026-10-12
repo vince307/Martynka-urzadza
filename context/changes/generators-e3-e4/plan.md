@@ -267,13 +267,13 @@ Jeden test przechodzi przez wszystkie umiejętności obu etapów; dokumentacja o
 
 #### Automated
 
-- [ ] 1.1 `npm test` z shapes/missing/complement/rounding, `typecheck`
-- [ ] 1.2 `sample -- E4` i `-- E3` kod 0; kroki E4.2/4/5/6/8 mają zadania
-- [ ] 1.3 Brak Phasera w core/data; brak polskich literałów w generatorach
+- [x] 1.1 `npm test` z shapes/missing/complement/rounding, `typecheck` — b0ffbf2
+- [x] 1.2 `sample -- E4` i `-- E3` kod 0; kroki E4.2/4/5/6/8 mają zadania — b0ffbf2
+- [x] 1.3 Brak Phasera w core/data; brak polskich literałów w generatorach — b0ffbf2
 
 #### Manual
 
-- [ ] 1.4 Odczyt `sample -- E4 --seed 2`: kształty jak w katalogu, podpowiedzi poprawne
+- [x] 1.4 Odczyt `sample -- E4 --seed 2`: kształty jak w katalogu, podpowiedzi poprawne — b0ffbf2
 
 ### Phase 2: Mnożenie, dzielenie i liczby (MULT, DIV, HALF, COMPARE_NUM, EVEN_ODD, NUMBER_WORDS, ROMAN, CALENDAR)
 

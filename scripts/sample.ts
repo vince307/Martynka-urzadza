@@ -64,7 +64,7 @@ for (const step of stage!.steps) {
                 const found = validateTask(task, { max, nouns });
                 violations.push(...found);
                 const flag = found.length > 0 ? '  ⚠' : '';
-                console.log(`    ${task.prompt}  → ${String(task.answer)}   podpowiedź: ${task.hint.join(' · ')}${flag}`);
+                console.log(`    ${task.prompt}  → ${String(task.answer)}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
             } catch (error) {
                 errors += 1;
                 console.log(`    BŁĄD ${skill.id}: ${error instanceof Error ? error.message : String(error)}`);

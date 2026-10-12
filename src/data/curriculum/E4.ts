@@ -19,7 +19,7 @@ export const E4: StageDef = {
             step: 1,
             title: 'Dziesiątki do 100, D i J, porównywanie do 100; złote i grosze; pół kilograma',
             types: ['PLACE_VALUE', 'COMPARE_NUM', 'MONEY_COUNT', 'MONEY_CHANGE', 'MASS'],
-            skills: [],
+            skills: [skill('E4.1.compare_num_100', 1, 'COMPARE_NUM', { max: 100 }, 'tiles')],
         },
         {
             step: 2,
@@ -49,7 +49,13 @@ export const E4: StageDef = {
             step: 6,
             title: 'Mnożenie i dzielenie do 50, nazwy (czynnik, iloczyn, dzielna…), ·5, ·10 do 100',
             types: ['MULT', 'DIV', 'MISSING'],
-            skills: [skill('E4.6.missing_mult_div_50', 6, 'MISSING', { max: 50, ops: ['*', '/'] })],
+            skills: [
+                skill('E4.6.mult_50', 6, 'MULT', { maxProduct: 50, maxFactor: 10 }),
+                skill('E4.6.mult_5_10', 6, 'MULT', { maxProduct: 100, maxFactor: 10, factors: [5, 10] }),
+                skill('E4.6.div_50', 6, 'DIV', { maxDividend: 50, maxQuotient: 10 }),
+                skill('E4.6.div_5_10', 6, 'DIV', { maxDividend: 100, maxQuotient: 10, divisors: [5, 10] }),
+                skill('E4.6.missing_mult_div_50', 6, 'MISSING', { max: 50, ops: ['*', '/'] }),
+            ],
         },
         {
             step: 7,
