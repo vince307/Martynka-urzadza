@@ -584,9 +584,9 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 6.1 Bramka z NOWĄ komendą unit (sample E1–E4) zielona; `npm test` = baseline gałęzi + testy umiejętności E1/E2
-- [ ] 6.2 `sample -- E1` i `-- E2` kod 0, `Naruszenia: 0`; `brak generatora` tylko dla typów z `LATER`
-- [ ] 6.3 Celowe zepsucie wpisu `SMALL_SPACES` i umiejętności `E1.3.bonds_5` przewraca testy; cofnięte; meta-check
+- [x] 6.1 Bramka z NOWĄ komendą unit (sample E1–E4) zielona; `npm test` = baseline gałęzi + testy umiejętności E1/E2 — ea0f698
+- [x] 6.2 `sample -- E1` i `-- E2` kod 0, `Naruszenia: 0`; `brak generatora` tylko dla typów z `LATER` — ea0f698
+- [x] 6.3 Celowe zepsucie wpisu `SMALL_SPACES` i umiejętności `E1.3.bonds_5` przewraca testy; cofnięte; meta-check — ea0f698
 
 #### Manual
 
