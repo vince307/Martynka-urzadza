@@ -1,9 +1,9 @@
 ---
 change_id: installable-offline-pwa
 title: Instalowalna gra offline na tablecie (PWA, cicha aktualizacja, nakładka „Obróć tablet”)
-status: implementing
+status: implemented
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 archived_at: null
 ---
 

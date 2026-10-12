@@ -302,6 +302,6 @@ Zmiana `assets/` → `_app/`: stare wydania na VPS nadal mają `assets/`, ale Ca
 #### Manual
 
 - [x] 3.4 Workflow zielony; bootstrap `[ok]` z nowym Caddyfile; CoiledSpring działa — ab029e4
-- [ ] 3.5 iPad: instrukcja, instalacja, start z ikony, offline, „Obróć tablet”
-- [ ] 3.6 Android: instrukcja lub „Zainstaluj”, instalacja, start z ikony, offline, poziom
+- [x] 3.5 iPad: instrukcja, instalacja, start z ikony, offline, „Obróć tablet” — ab029e4
+- [x] 3.6 Android: instrukcja lub „Zainstaluj”, instalacja, start z ikony, offline, poziom — ab029e4
 - [x] 3.7 Komputer: brak instrukcji; SHA builda zgodny z origin/main — ab029e4
