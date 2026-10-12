@@ -64,8 +64,8 @@ export interface TaskTargets {
 
 /**
  * One round of tasks. The scene keeps a RoundState from core, draws
- * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps)
- * back to core; it decides nothing itself.
+ * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps,
+ * the summary's "Kolejna runda" and "Do pokoju") back to core; it decides nothing itself.
  */
 export class TaskScene extends Scene {
     private state!: RoundState;
@@ -127,8 +127,12 @@ export class TaskScene extends Scene {
         };
         this.game.events.on(GAME_EVENTS.toRoom, toRoom);
         // Back from the room: redraw the same state (summary), re-arm its buttons, no auto-reading.
-        this.events.on('wake', () => this.render());
-        this.events.once('shutdown', () => this.game.events.off(GAME_EVENTS.toRoom, toRoom));
+        const onWake = (): void => this.render();
+        this.events.on('wake', onWake);
+        this.events.once('shutdown', () => {
+            this.game.events.off(GAME_EVENTS.toRoom, toRoom);
+            this.events.off('wake', onWake);
+        });
 
         // Build id in the corner: the only way to see on a tablet that a silent
         // PWA update has landed. Technical identifier, not player-facing text.

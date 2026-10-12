@@ -14,7 +14,7 @@ import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
 
 // Single place for the Phaser game config. Scene size and colours come from
-// src/data; scenes are listed in boot order.
+// src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
 const createGame = (parent: string, narrator: Narrator): Game =>
     new Game({
         type: AUTO,
@@ -47,10 +47,13 @@ const narrator = createNarrator(
     balance.narrator,
 );
 const game = createGame('game-container', narrator);
-// Speech needs a user gesture: the first tap or touch on the game unlocks it for the session.
+// Speech needs a user gesture: the first tap or touch after a Polish voice is known unlocks it
+// for the session (voices may load after the first tap, so the listeners stay until then).
 const container = document.getElementById('game-container');
 const unlockSpeech = (): void => {
-    narrator.unlock();
+    if (!narrator.unlock()) {
+        return;
+    }
     container?.removeEventListener('pointerup', unlockSpeech);
     container?.removeEventListener('touchend', unlockSpeech);
 };

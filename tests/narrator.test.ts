@@ -197,8 +197,19 @@ describe('unlock', () => {
     it('speaks one empty utterance directly and only once', () => {
         const fake = makeSynth(android);
         const narrator = createNarrator(fake.synth, makeUtterance, timers, options);
-        narrator.unlock();
-        narrator.unlock();
+        expect(narrator.unlock()).toBe(true);
+        expect(narrator.unlock()).toBe(true);
+        expect(fake.calls).toEqual(['speak:']);
+    });
+
+    it('reports a tap before the voices load as not unlocked, so the next tap can try again', () => {
+        const fake = makeSynth([]);
+        const narrator = createNarrator(fake.synth, makeUtterance, timers, options);
+        expect(narrator.unlock()).toBe(false);
+        expect(fake.calls).toEqual([]);
+        fake.setVoices(android);
+        fake.fireVoicesChanged();
+        expect(narrator.unlock()).toBe(true);
         expect(fake.calls).toEqual(['speak:']);
     });
 });

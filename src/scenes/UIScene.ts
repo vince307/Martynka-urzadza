@@ -6,9 +6,9 @@ import { SpeakerButton } from '../ui/widgets/SpeakerButton';
 import { StarCounter } from '../ui/widgets/StarCounter';
 
 /**
- * Overlay above the task scene: the star counter and the speaker. It reads the registry keys
- * the task scene keeps up to date (stars, narration) and decides no text itself.
- * Input is on only for the speaker: no full-screen or background zone here, otherwise Phaser
+ * Overlay above the task and room scenes: the star counter, the speaker and the "Do pokoju" switch.
+ * It reads the registry keys the task scene keeps up to date (stars, narration, roomSwitch) and decides no text itself.
+ * Input is on only for the speaker and the switch: no full-screen or background zone here, otherwise Phaser
  * would stop a tap from reaching the task scene below.
  * "Do pokoju" shows between tasks only (registry roomSwitch, set by the task scene from roundView.switchVisible).
  * DESIGN-GAP (docs/design-gaps.md row 14): the kit draws the summary and the room without the HUD; the counter stays above them.

@@ -6,7 +6,7 @@ export interface SummaryView {
     earned: number;      // stars of the round including the clean-round bonus
     bonus: number;
     stars: boolean[];    // per task: a star was paid (first or second try)
-    roomHighlighted: boolean;
+    roomHighlighted: boolean;   // DESIGN-GAP (docs/design-gaps.md row 10): the kit has no highlighted "Do pokoju"
 }
 
 export interface SummaryContext {

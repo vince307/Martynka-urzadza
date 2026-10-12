@@ -45,7 +45,8 @@ export interface Narrator {
     /** Calls back now and whenever availability changes; returns an unsubscribe. */
     onAvailability(callback: (available: boolean) => void): () => void;
     speak(text: string): void;
-    unlock(): void;
+    /** Speaks inside the user's gesture once; false while no Polish voice is known yet (try again on the next tap). */
+    unlock(): boolean;
     cancel(): void;
 }
 
@@ -131,9 +132,11 @@ export const createNarrator = (
             }, options.cancelGapMs);
         },
         unlock() {
-            if (unlocked || !synth || !voice) return;
+            if (unlocked) return true;
+            if (!synth || !voice) return false;
             unlocked = true;
             speakNow('');
+            return true;
         },
         cancel() {
             drop();

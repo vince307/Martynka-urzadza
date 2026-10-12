@@ -10,6 +10,8 @@ import { textStyle } from './textStyle';
  * The end-of-round page on the notebook (kit summary.png): "Brawo!", one star per task that paid
  * one, "star +N", the clean-round bonus line when there is one, and the two page buttons.
  * It draws a SummaryView from core and decides nothing.
+ * DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line; ours sits under "+N", only with the bonus.
+ * DESIGN-GAP (docs/design-gaps.md row 11): the kit draws 5 full stars; ours are pale for a task that paid none.
  */
 export class SummaryPanel {
     private readonly title: GameObjects.Text;

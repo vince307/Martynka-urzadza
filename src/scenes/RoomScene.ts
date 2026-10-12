@@ -26,7 +26,9 @@ export class RoomScene extends Scene {
         this.resume = button;
         button.show(pl.room.resume, resume.left, resume.top, 'primary', false, resume);
         // A wake re-arms the button: a press that began before the switch must not count.
-        this.events.on('wake', () => button.show(pl.room.resume, resume.left, resume.top, 'primary', false, resume));
+        const rearm = (): void => button.show(pl.room.resume, resume.left, resume.top, 'primary', false, resume);
+        this.events.on('wake', rearm);
+        this.events.once('shutdown', () => this.events.off('wake', rearm));
     }
 
     /** Centre of "Wróć do notesu" in scene space, for the e2e hook. */
