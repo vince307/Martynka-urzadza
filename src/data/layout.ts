@@ -34,6 +34,9 @@ export const FONT_SIZES = {
     keyLabel: 36,
     expression: 112,
     hint: 32,
+    bar: 36,
+    barButton: 40,
+    solutionLine: 40,
 } as const;
 
 /** Task screen font: Atkinson Hyperlegible Next, loaded from public/fonts and precached. */
@@ -57,7 +60,9 @@ export const TASK_LAYOUT = {
     expressionWide: { x: 960, y: 500 },      // above the tiles
     tiles: { left: 416, top: 724, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
     keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24 },
-    bar: { height: 96, minWidth: 220, bottom: 960 },
+    bar: { height: 96, minWidth: 220, bottom: 972, radius: 24, padding: 24, border: 4 },
+    barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
+    solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     dotCount: 5,
 } as const;
 

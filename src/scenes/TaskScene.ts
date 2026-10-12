@@ -1,6 +1,6 @@
 import { Scene, type GameObjects } from 'phaser';
 import { createRng } from '../core/rng';
-import { answer, startRound, type RoundState } from '../core/round';
+import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { buildRound } from '../core/round/pick';
 import { roundView } from '../core/round/view';
@@ -8,6 +8,7 @@ import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
     FONT_FAMILY,
+    ANIMATION,
     FONT_SIZES,
     GAME_HEIGHT,
     PLACEHOLDER_COLORS,
@@ -17,8 +18,10 @@ import {
 } from '../data/layout';
 import { pl } from '../data/pl';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
+import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
+import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 
 const toCssColor = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
 
@@ -31,6 +34,8 @@ export class TaskScene extends Scene {
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
     private keypad!: Keypad;
+    private bar!: FeedbackBar;
+    private steps!: SolutionSteps;
     private promptTexts: GameObjects.Text[] = [];
     private shownIndex = -1;
 
@@ -49,6 +54,8 @@ export class TaskScene extends Scene {
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
+        this.bar = new FeedbackBar(this, () => this.advance());
+        this.steps = new SolutionSteps(this, () => this.step());
         this.render();
 
         // Build id in the corner: the only way to see on a tablet that a silent
@@ -92,6 +99,20 @@ export class TaskScene extends Scene {
             this.tiles.markCorrect(view.input === 'tiles' ? (task.answer as number | string) : null);
             this.keypad.markCorrect();
         }
+        this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
+        this.bar.update(view.bar, view.input);
+        if (view.bar.kind === 'solution') {
+            const span = TASK_LAYOUT.barSpan[view.input];
+            const centerX = span.x + span.width / 2;
+            this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap);
+        } else {
+            this.steps.hide();
+        }
+    }
+
+    /** Lowest y of the prompt texts, so the solution lines start under them. */
+    private promptBottom(): number {
+        return Math.max(...this.promptTexts.map((t) => t.getBounds().bottom));
     }
 
     private drawPrompt(input: 'tiles' | 'keypad'): void {
@@ -131,7 +152,37 @@ export class TaskScene extends Scene {
         this.state = answer(this.state, value);
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
+            this.shake();
         }
         this.render();
+    }
+
+    /** "Dalej" after a correct answer. */
+    private advance(): void {
+        this.state = next(this.state);
+        this.render();
+    }
+
+    /** "Następny krok" / "Już wiem". */
+    private step(): void {
+        this.state = nextSolutionStep(this.state);
+        this.render();
+    }
+
+    /** A short sideways wobble after a mistake; it never blocks input. */
+    private shake(): void {
+        const camera = this.cameras.main;
+        this.tweens.killTweensOf(camera);
+        camera.scrollX = 0;
+        this.tweens.add({
+            targets: camera,
+            scrollX: { from: -ANIMATION.shakeDistance, to: ANIMATION.shakeDistance },
+            duration: ANIMATION.shakeMs / 6,
+            yoyo: true,
+            repeat: 2,
+            onComplete: () => {
+                camera.scrollX = 0;
+            },
+        });
     }
 }

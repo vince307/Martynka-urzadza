@@ -21,6 +21,7 @@ export class AnswerTiles {
     private tiles: Tile[] = [];
     private active = false;
     private correctValue: Choice | null = null;
+    private hintValue: Choice | null = null;
 
     constructor(
         private readonly scene: Scene,
@@ -30,6 +31,7 @@ export class AnswerTiles {
     setChoices(choices: readonly Choice[]): void {
         this.destroyTiles();
         this.correctValue = null;
+        this.hintValue = null;
         const { notebook, tiles } = TASK_LAYOUT;
         const area: Rect = { x: notebook.left, y: tiles.top, width: notebook.width, height: tiles.height };
         this.tiles = tileRow(choices.length, area, tiles).map((rect, i) => {
@@ -79,6 +81,12 @@ export class AnswerTiles {
         this.tiles.forEach((t) => this.paint(t));
     }
 
+    /** Outlines the tile of the answer in the hint colour while the child retypes the result. */
+    markHint(value: Choice | null): void {
+        this.hintValue = value;
+        this.tiles.forEach((t) => this.paint(t));
+    }
+
     /** Centres of the tiles in scene space, for the e2e hook. */
     targets(): { value: Choice; x: number; y: number }[] {
         return this.tiles.map((t) => ({ value: t.value, x: t.rect.x + t.rect.width / 2, y: t.rect.y + t.rect.height / 2 }));
@@ -109,7 +117,8 @@ export class AnswerTiles {
         graphics.fillRoundedRect(rect.x, rect.y + 8, rect.width, rect.height, radius);
         graphics.fillStyle(tile.pressed ? PRESSED : isCorrect ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.tile, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
-        graphics.lineStyle(border, isCorrect ? PLACEHOLDER_COLORS.dotDone : 0xb9d9c9, 1);
+        const isHint = this.hintValue !== null && tile.value === this.hintValue;
+        graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.dotDone : isHint ? PLACEHOLDER_COLORS.butter : 0xb9d9c9, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
     }
 
