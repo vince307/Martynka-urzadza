@@ -72,7 +72,7 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Quality gates and module boundaries | Lint (ESLint, boundary rules), typecheck and tests gate every edit, every turn and every PR; `sample` E3/E4 runs in CI as a content smoke | #6, #5 | lint, gates, content smoke | complete | `context/archive/2026-10-12-testing-quality-gates/` |
-| 2 | Deploy and PWA smoke | The deploy job proves the new build is live with the right headers and precache, and that CoiledSpring still answers; rollback is exercised on a schedule | #3, #4 | integration (post-deploy smoke), manual tablet | not started | — |
+| 2 | Deploy and PWA smoke | The deploy job proves the new build is live with the right headers and precache, and that CoiledSpring still answers; rollback is exercised on a schedule | #3, #4 | integration (post-deploy smoke), manual tablet | implementing | `context/changes/testing-deploy-smoke/` |
 | 3 | Content invariants | Property tests over all curriculum data (feasibility, no degenerate tasks, distribution sanity) and a teacher-read checklist for every new template | #1, #5 | unit/property, checklist | not started | — |
 | 4 | Save, migrations, import | Round-trip and migration tests with fixture saves per version; import validation never loses the current save (starts with roadmap S-11) | #2, #7 | unit + integration | not started | — |
 
