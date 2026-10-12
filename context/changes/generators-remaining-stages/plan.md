@@ -622,9 +622,9 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [x] 10.1 Bramka z komendą z fazy 9 zielona; 6 kroków sample w `ci.yml`; `GATE_UNIT` z env kod 0; AGENTS.md ≤ 400 słów
-- [x] 10.2 Seam sweep: `boundOf` w `curriculum.test.ts`, brak „E3–E4”, brak zduplikowanych pomocników, follow-upy z `Trigger:`
-- [x] 10.3 Celowe zepsucie `E5.4.div_50` przewraca `GATE_UNIT` z env; cofnięte; meta-check
+- [x] 10.1 Bramka z komendą z fazy 9 zielona; 6 kroków sample w `ci.yml`; `GATE_UNIT` z env kod 0; AGENTS.md ≤ 400 słów — 9145691
+- [x] 10.2 Seam sweep: `boundOf` w `curriculum.test.ts`, brak „E3–E4”, brak zduplikowanych pomocników, follow-upy z `Trigger:` — 9145691
+- [x] 10.3 Celowe zepsucie `E5.4.div_50` przewraca `GATE_UNIT` z env; cofnięte; meta-check — 9145691
 
 #### Manual
 
