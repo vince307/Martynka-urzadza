@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, TASK_LAYOUT, TASK_TOUCH_TARGETS } from '../src/data/layout';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -23,6 +23,17 @@ describe('task screen layout constants', () => {
         expect(speaker.top + speaker.height).toBeLessThanOrEqual(GAME_HEIGHT);
         expect(speaker.left + speaker.width).toBeLessThanOrEqual(counter.left);   // no overlap with the counter
         expect(speaker.top).toBeLessThanOrEqual(counter.top + counter.height);
+    });
+
+    it('keeps the summary page buttons touch targets, side by side without overlap, inside the notebook', () => {
+        const { width, height, left, gap, top } = SUMMARY_LAYOUT.buttons;
+        expect(TASK_TOUCH_TARGETS.pageButton).toEqual({ width, height });
+        const notebook = TASK_LAYOUT.notebook;
+        expect(gap).toBeGreaterThan(0);                                   // the two buttons do not overlap
+        expect(left + 2 * width + gap).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        const { stars } = SUMMARY_LAYOUT;
+        expect(stars.top + stars.size).toBeLessThan(SUMMARY_LAYOUT.earned.top);   // star row sits above "+N"
     });
 
     it('uses the kit tile height of 136 px, not smaller', () => {

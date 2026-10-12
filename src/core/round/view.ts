@@ -13,15 +13,14 @@ export interface RoundView {
         | { kind: 'hint'; line: string | null }       // null: just "try again"
         | { kind: 'solution'; lines: string[]; button: 'next' | 'gotIt' }
         | { kind: 'retype'; line: string }
-        | { kind: 'correct'; star: boolean }
-        | { kind: 'roundEnd'; bonus: number };
+        | { kind: 'correct'; star: boolean };
     inputActive: boolean;
     switchVisible: boolean;                           // between tasks only: solved, before "Dalej" (FR-011)
 }
 
 const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => string): RoundView['bar'] => {
     if (state.finished) {
-        return { kind: 'roundEnd', bonus: state.bonusEarned };
+        return { kind: 'none' };   // the summary layer takes over (summaryView)
     }
     switch (state.phase) {
         case 'first':

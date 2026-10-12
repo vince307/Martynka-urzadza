@@ -48,9 +48,14 @@ export const pl = {
         gotIt: 'Już wiem',
         deleteKey: 'kasuj',
         okKey: 'OK',
-        // DESIGN-GAP: the kit has no end-of-round bar and no solution result line (docs/design-gaps.md rows 5-6).
+        // DESIGN-GAP: the kit has no solution result line (docs/design-gaps.md row 6); the bonus line sits under "+N" on the summary (row 9).
         bonus: (n: number) => `Runda bez błędu! +${n} ★`,
         resultLine: (answer: string) => `Wynik: ${answer}`,
+    },
+    summary: {
+        nextRound: 'Kolejna runda',   // kit summary.png
+        toRoom: 'Do pokoju',          // kit summary.png
+        earned: (n: number) => `+${n}`,
     },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',

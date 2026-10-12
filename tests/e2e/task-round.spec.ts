@@ -36,11 +36,11 @@ const readHook = <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K] | n
     page.evaluate((k) => {
         try {
             const value = (window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k];
-            return (value as Hook[typeof k] | undefined) ?? null;
+            return (value as Hook[keyof Hook] | undefined) ?? null;
         } catch {
             return null;
         }
-    }, key);
+    }, key) as Promise<Hook[K] | null>;
 /** Waits until the round is ready (tasks exist), then returns the value: never reads a half-built scene. */
 const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K]> => {
     let value: Hook[K] | null = null;

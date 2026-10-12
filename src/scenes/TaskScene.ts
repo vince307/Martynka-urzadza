@@ -7,11 +7,13 @@ import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
+import { summaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
     ANIMATION,
+    GAME_EVENTS,
     GAME_HEIGHT,
     PLACEHOLDER_COLORS,
     PLACEHOLDER_FRAME,
@@ -25,6 +27,7 @@ import type { Narrator } from '../ui/narrator';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
+import { SummaryPanel } from '../ui/widgets/SummaryPanel';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 import { textStyle } from '../ui/widgets/textStyle';
@@ -67,6 +70,7 @@ export class TaskScene extends Scene {
     private keypad!: Keypad;
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
+    private summary!: SummaryPanel;
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
@@ -103,6 +107,7 @@ export class TaskScene extends Scene {
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
+        this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
 
         // Build id in the corner: the only way to see on a tablet that a silent
@@ -133,6 +138,24 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        const summary = summaryView(this.state, { starsTotal: this.sessionStars + this.state.starsEarned, nextRoomTaskCost: null });
+        if (summary) {
+            // The round is over: the notebook stays, the task layer gives way to the summary page.
+            this.registry.set(REGISTRY_KEYS.narration, null);
+            this.narrator?.cancel();
+            this.dots.update([]);
+            this.tiles.setVisible(false);
+            this.keypad.setVisible(false);
+            this.tiles.setActive(false);
+            this.keypad.setActive(false);
+            this.bar.update({ kind: 'none' }, view.input);
+            this.steps.hide();
+            this.promptTexts.forEach((t) => t.setVisible(false));
+            this.promptBoxes.forEach((g) => g.setVisible(false));
+            this.summary.show(summary);
+            return;
+        }
+        this.summary.hide();
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
         if (this.shownIndex !== this.state.index) {
@@ -239,19 +262,26 @@ export class TaskScene extends Scene {
         this.render();
     }
 
-    /** "Dalej" after a correct answer. */
+    /** "Dalej" after a correct answer; after the fifth task it opens the summary. */
     private advance(): void {
-        if (this.state.finished) {
-            this.sessionStars += this.state.starsEarned;
-            this.state = this.freshRound();
-            this.shownIndex = -1;
-        } else {
-            const before = this.state.starsEarned;
-            this.state = next(this.state);
-            this.syncStars(before, this.bar.nextTarget());
-        }
+        const before = this.state.starsEarned;
+        this.state = next(this.state);
+        this.syncStars(before, this.bar.nextTarget());
         this.render();
-        // Auto-reading starts only from a tap on "Dalej" (never at a cold start: there is no gesture yet).
+        this.autoReadFirst();
+    }
+
+    /** "Kolejna runda" on the summary: the finished round's stars join the session, a fresh round starts. */
+    private startNextRound(): void {
+        this.sessionStars += this.state.starsEarned;
+        this.state = this.freshRound();
+        this.shownIndex = -1;
+        this.render();
+        this.autoReadFirst();
+    }
+
+    /** Auto-reading starts only from a tap on "Dalej" or "Kolejna runda" (never at a cold start: no gesture yet). */
+    private autoReadFirst(): void {
         if (this.autoRead && this.state.phase === 'first') {
             this.narrator?.speak(this.currentNarration() ?? '');
         }

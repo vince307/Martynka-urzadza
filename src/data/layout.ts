@@ -27,6 +27,12 @@ export const PLACEHOLDER_COLORS = {
     hintBorder: 0xd9bd73,  // outline of the yellow hint bar (kit .feedback.hint)
     next: 0xa6ddd2,        // "Dalej" and the keypad OK (kit .next-button, .key.ok)
     nextBorder: 0x397f73,
+    pageButton: 0x8dd3c5,       // kit .page-button gradient (#a6ddd2 to #70c7b7), flattened to its middle
+    pageButtonSecondary: 0xfff6dc, // kit .page-button.secondary gradient (#fffbee to #fff0ca), flattened
+    pageButtonSecondaryBorder: 0xc0a363,
+    pageButtonHighlight: 0xf1ce6b, // DESIGN-GAP (docs/design-gaps.md row 10): "Do pokoju" highlighted when a renovation task is affordable
+    starEmpty: 0xeadfbe,        // a task of the summary row that paid no star
+    starOutline: 0xae802c,      // kit .star-icon stroke
 } as const;
 
 /** Deep teal as a CSS colour: every text of the task screen. */
@@ -47,6 +53,10 @@ export const FONT_SIZES = {
     barButton: 40,
     solutionLine: 44,       // kit .solution-line 42-44
     counter: 56,
+    summaryTitle: 86,       // kit .page-title
+    earned: 124,            // kit .earned
+    pageButton: 46,         // kit .page-button
+    bonusLine: 44,          // DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line
 } as const;
 
 /**
@@ -64,6 +74,10 @@ export const FONT_WEIGHTS = {
     barButton: 750,         // kit .next-button, .step-next, .hint-button
     solutionLine: 650,      // kit .equation small
     counter: 750,           // kit .stars
+    summaryTitle: 750,      // kit .page-title
+    earned: 750,            // kit .earned
+    pageButton: 750,        // kit .page-button
+    bonusLine: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -76,6 +90,11 @@ export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 
 /** Scene keys. */
 export const SCENE_KEYS = { boot: 'Boot', task: 'Task', ui: 'UI' } as const;
+
+/** Game-level events the scenes send each other (this.game.events). */
+export const GAME_EVENTS = {
+    toRoom: 'to-room',   // the summary's "Do pokoju" was tapped; the room scene comes with phase 7
+} as const;
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
 export const REGISTRY_KEYS = {
@@ -115,6 +134,18 @@ export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
 } as const;
 
+/**
+ * Round summary (kit summary.png, screen.css .page-title, .summary-star-row, .earned, .page-buttons, .page-button):
+ * title, a row of one star per task, "star +N" and two page buttons, on the notebook.
+ */
+export const SUMMARY_LAYOUT = {
+    title: { x: 960, y: 290 },                                  // kit .page-title: top 290, centred between left 310 and right 280 (about 975)
+    stars: { left: 656, top: 420, gap: 26, size: 98, outline: 3 },
+    earned: { centerX: 960, top: 578, starSize: 114, gap: 28 }, // kit .earned: 600 wide box at left 660, 124 px line
+    bonus: { x: 960, y: 722 },                                  // DESIGN-GAP: below "+N", only with the clean-round bonus
+    buttons: { left: 454, top: 816, gap: 36, width: 450, height: 128, radius: 32, border: 5, highlightBorder: 9 },
+} as const;
+
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
@@ -125,6 +156,7 @@ export const TASK_TOUCH_TARGETS = {
     tile: { width: TASK_LAYOUT.tiles.width, height: TASK_LAYOUT.tiles.height },
     key: { width: TASK_LAYOUT.keypad.keyWidth, height: TASK_LAYOUT.keypad.keyHeight },
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
+    pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
 } as const;
 
 /** Animation durations in milliseconds. */

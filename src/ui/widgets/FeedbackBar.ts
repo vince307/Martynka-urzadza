@@ -36,7 +36,7 @@ export class FeedbackBar {
         if (bar.kind === 'none' || bar.kind === 'solution') {
             return;
         }
-        const good = bar.kind === 'correct' || bar.kind === 'roundEnd';
+        const good = bar.kind === 'correct';
         this.graphics.fillStyle(good ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.hint, 1);
         this.graphics.fillRoundedRect(span.x, top, span.width, height, radius);
         if (!good) {
@@ -44,7 +44,7 @@ export class FeedbackBar {
             this.graphics.strokeRoundedRect(span.x, top, span.width, height, radius);
         }
 
-        const withButton = bar.kind === 'correct' || bar.kind === 'roundEnd';   // "Dalej" also starts the next round
+        const withButton = bar.kind === 'correct';
         const right = span.x + span.width - padding;
         if (withButton) {
             this.button.show(pl.round.next, right, centerY, PLACEHOLDER_COLORS.next, PLACEHOLDER_COLORS.nextBorder);
@@ -74,8 +74,6 @@ export class FeedbackBar {
                 return bar.line;
             case 'correct':
                 return bar.star ? pl.round.correctStar : pl.round.correct;
-            case 'roundEnd':
-                return bar.bonus > 0 ? pl.round.bonus(bar.bonus) : pl.round.correct;
             default:
                 return '';
         }
