@@ -65,8 +65,10 @@ Z `context/changes/first-launch-placement/research.md` (commit `fb871b2`) i odcz
   bramka lub panel są otwarte; alternatywy (`input.windowEvents: false`, `preventDefault`) psują całą grę lub `click`.
 - Dla persony PRD (7 lat, klasa 2) tabela w październiku daje E1 — ścieżka dziecka zagra za łatwo, ścieżka rodzica to
   naprawia (wiersz `[human]`).
-- `page.clock.setFixedTime` (Playwright 1.64) ustala tylko `Date` — zegary i `requestAnimationFrame` działają; wynik
-  tabeli w e2e jest przez to niezależny od dnia uruchomienia.
+- **Nie `page.clock.setFixedTime`** (plan-review F1): Playwright 1.64 zamraża nim `Date.now()`, a Phaser 4.2.1
+  `TweenManager.getDelta` liczy krok tweenów z `Date.now()` — przy stałym czasie delta = 0, tweeny stoją (kamera po
+  `TaskScene.shake` zostaje przesunięta o `-ANIMATION.shakeDistance`, gwiazdka `flyStar` wisi). Miesiąc w e2e ustala
+  parametr adresu `?e2eMonth=N` czytany tylko w buildzie e2e (`__E2E_HOOK__`), wynik tabeli niezależny od dnia uruchomienia.
 - Rozgrzewka losuje z pierwszych grywalnych kroków bieżącego etapu, bo pierwszy krok bywa pusty (E1.1, E2.2, E6.2–3).
 
 ## What We're NOT Doing
@@ -88,7 +90,7 @@ Logika najpierw, test-first, w `src/core/` (fazy 1–3: placement, rozgrzewka, b
 i `src/data/balance.ts`. Potem UI po ≤ 2 nowe komponenty na fazę: powitanie (4: `WelcomeScene` + `AgeButton`), bramka
 i panel w DOM (5: `parentGate` + `stagePanel`), rozgrzewka w `TaskScene` bez nowych komponentów (6), seam sweep (7),
 e2e (8–9). Każda faza zostawia grę grywalną i całą bramkę zieloną — dlatego faza 4 od razu daje istniejącym specom
-wspólny helper „przejdź powitanie” (ścieżka dziecka przy ustalonym zegarze: wiek 8 w październiku → E3, rozgrzewki
+wspólny helper „przejdź powitanie” (ścieżka dziecka przy miesiącu z `?e2eMonth=9`: wiek 8 w październiku → E3, rozgrzewki
 jeszcze nie ma), a faza 6, która włącza rozgrzewkę, przełącza helper na ścieżkę rodzica (wiek 10, wybór E3 ≠ propozycja
 E6 ⇒ bez rozgrzewki, niezależnie od daty).
 
@@ -290,7 +292,7 @@ nie gra (pole `warmupPending` ignorowane do fazy 6). `balance.defaultStage` znik
 
 **File**: `src/data/layout.ts`, `src/data/pl.ts`
 
-**Intent**: `SCENE_KEYS.welcome`, `REGISTRY_KEYS.learner`; `WELCOME_LAYOUT` z kitu (marka top 64, 62 px, 800; pytanie
+**Intent**: `SCENE_KEYS.welcome`, `REGISTRY_KEYS.learner`, `REGISTRY_KEYS.month` (miesiąc sesji 0–11); `WELCOME_LAYOUT` z kitu (marka top 64, 62 px, 800; pytanie
 top 290, 86 px, 750; wiek left 363, top 526, 218×190, odstęp 28, promień 38, ramka 5, cyfry 112 px); kolory
 `#f8fff0`/`#dceecf`/`#abc49b` w `PLACEHOLDER_COLORS`; `WELCOME_TOUCH_TARGETS`. `pl.welcome.question` „Ile masz lat?”;
 marka = `pl.title` (zamyka follow-up S-05).
@@ -299,14 +301,16 @@ marka = `pl.title` (zamyka follow-up S-05).
 
 #### 2. Sceny i widżet
 
-**File**: `src/scenes/WelcomeScene.ts`, `src/ui/widgets/AgeButton.ts` (nowe), `src/scenes/BootScene.ts`, `src/scenes/TaskScene.ts`, `src/main.ts`, `src/data/balance.ts`
+**File**: `src/scenes/WelcomeScene.ts`, `src/ui/widgets/AgeButton.ts` (nowe), `src/scenes/BootScene.ts`, `src/scenes/TaskScene.ts`, `src/main.ts`, `src/data/balance.ts`, `tests/round.test.ts`
 
 **Intent**: `AgeButton` reaguje w `pointerup` po wciśnięciu na sobie (wzorzec `PageButton`), ma `target()`.
 `WelcomeScene`: rysuje kit (kwiat i poduszkę pomija — DESIGN-GAP), stuknięcie wieku → `placeByChild(age,
-new Date().getMonth(), placementData)` → `registry.set(learner)` → `scene.start(task)`; `targets()` → środki przycisków
+registry.get(REGISTRY_KEYS.month), placementData)` → `registry.set(learner)` → `scene.start(task)`; `targets()` → środki przycisków
 z wiekiem. `BootScene.create` → `needsPlacement(registry.get(learner) ?? null) ? welcome : task`. `TaskScene.create` bierze
 etap z ucznia (`getStage(learner.stage)`, błąd, gdy ucznia brak); `TaskSnapshot.stage`. `main.ts`: `WelcomeScene` w liście
-scen (po `BootScene`). Usunąć `balance.defaultStage`.
+scen (po `BootScene`); w `callbacks.preBoot` obok lektora `registry.set(REGISTRY_KEYS.month, month)`, gdzie
+`month = (__E2E_HOOK__ ? e2eMonth(location.search) : null) ?? new Date().getMonth()` (scena nie woła `Date`). Usunąć
+`balance.defaultStage` i jego asercję w `tests/round.test.ts` (`describe('balance')` — inaczej typecheck i unit czerwone).
 
 **Contract**: `WelcomeScene.targets(): { ages: (Point & { age: number })[] }`; żadnego tekstu ani liczby balansu w scenie.
 
@@ -314,10 +318,12 @@ scen (po `BootScene`). Usunąć `balance.defaultStage`.
 
 **File**: `src/testing/e2eHook.ts`, `tests/e2e/support/welcome.ts` (nowy), `tests/e2e/task-round.spec.ts`, `tests/e2e/narrator.spec.ts`
 
-**Intent**: Hak: `screen: 'welcome' | 'task' | 'summary' | 'room'` — przy aktywnej `WelcomeScene` bez wołania
-`task().snapshot()`; `learner` (kopia z rejestru albo `null`); `targets.ages`; przy otwartym pokoju `nextRound`/`toRoom`
-→ `null` (follow-up S-05). Helper `passWelcome(page)` (moduł bez `.spec`): `page.clock.setFixedTime` na 15 października
-2026 przed `goto`, czeka na `screen === 'welcome'`, stuka wiek 8 przez `page.touchscreen.tap` (→ E3, jak dziś), czeka na
+**Intent**: Hak: `screen: 'welcome' | 'task' | 'summary' | 'room'` — przy aktywnej `WelcomeScene` `snapshot` i `targets`
+nie wołają ani `task()`, ani `ui()` (`UIScene` jeszcze nie działa, `counter`/`speaker` niezainicjowane — getter rzuciłby, a
+`readHook` zwróciłby `null` na zawsze); `e2eMonth(search): number | null` w tym samym module (`?e2eMonth=0..11`, inaczej
+`null`; czyste parsowanie, nie zapisuje stanu gry); `learner` (kopia z rejestru albo `null`); `targets.ages`; przy otwartym pokoju `nextRound`/`toRoom`
+→ `null` (follow-up S-05). Helper `passWelcome(page)` (moduł bez `.spec`): `goto('/?e2eMonth=9')` (październik; bez
+`page.clock` — zamroziłby tweeny Phasera, F1), czeka na `screen === 'welcome'`, stuka wiek 8 przez `page.touchscreen.tap` (→ E3, jak dziś), czeka na
 rundę. Oba specy używają helpera; tytuł testu lektora „silent at a cold start” przeformułowany („silent when the first
 E3 round opens”).
 
@@ -329,7 +335,7 @@ E3 round opens”).
 
 - `tests/layout.test.ts` obejmuje `WELCOME_TOUCH_TARGETS` (≥ `MIN_TOUCH_TARGET`, w scenie, bez nakładania); unit `<baseline gałęzi> + N`
 - Deliberate break: wysokość przycisku wieku 90 → test układu czerwony; `BootScene` zawsze do `task` → `npx playwright test` czerwony (helper nie widzi powitania); przywrócone; meta-check: test układu czyta stałą widżetu, przejście scen dowodzą specy
-- `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` (te same testy przez helper); `npm run build` drukuje `e2e hook: absent`
+- `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` (te same testy przez helper); `npm run build` drukuje `e2e hook: absent`, a `grep -rl e2eMonth dist/` pusty
 - `grep -rn defaultStage src/` pusty
 - Pełna bramka lokalna zielona
 
@@ -383,7 +389,7 @@ ponownego użycia w S-08/S-12.
 
 **File**: `src/scenes/WelcomeScene.ts`
 
-**Intent**: Przycisk „Rodzic”: `this.input.enabled = false` → bramka → panel → `onConfirm(learner)` →
+**Intent**: Przycisk „Rodzic”: `this.input.enabled = false` → bramka → panel (`month` z `REGISTRY_KEYS.month`) → `onConfirm(learner)` →
 `registry.set(learner)` → `scene.start(task)`; „Anuluj” na bramce lub panelu → zamknięcie i `input.enabled = true`.
 Komentarze DESIGN-GAP (przycisk „Rodzic”, bramka, panel). `targets().parent`; hak: `targets.parent`.
 
@@ -524,7 +530,7 @@ Driver why: ryzyko #12 (proposed, test-plan refresh pending): ścieżka dotyku p
 
 ### Overview
 
-Nowy spec `tests/e2e/first-launch.spec.ts` (projekt `chromium-hook`), zegar ustalony na październik 2026.
+Nowy spec `tests/e2e/first-launch.spec.ts` (projekt `chromium-hook`), miesiąc z `goto('/?e2eMonth=9')` (październik; nigdy `page.clock`, F1).
 
 ### Changes Required:
 
@@ -566,7 +572,7 @@ Testy ścieżki rodzica w tym samym specu, odpowiedź bramki liczona z tekstu DO
 **File**: `tests/e2e/first-launch.spec.ts`
 
 **Intent**: Test 4: „Rodzic” → zła odpowiedź → nowe działanie (inny tekst), komunikat, brak blokady → dobra odpowiedź →
-panel: wiek 8 (październik) → propozycja E3 oznaczona → wybór „Klasa 2, II półrocze” (E4) → „Zatwierdź” → runda 5 zadań,
+panel: wiek 8 (`?e2eMonth=9`) → propozycja E3 oznaczona → wybór „Klasa 2, II półrocze” (E4) → „Zatwierdź” → runda 5 zadań,
 `learner` `{ stage: 'E4', stageOverriddenByParent: true }`, bez rozgrzewki. Test 5: potwierdzenie propozycji → rozgrzewka
 (6 zadań). Test 6: przy otwartej bramce `touchscreen.tap` w punkt przycisku wieku spod nakładki (`targets.ages`) →
 `learner` dalej `null`, `screen` `welcome`, bramka otwarta; „Anuluj” → stuknięcie wieku działa.
@@ -621,6 +627,12 @@ bez przekształceń.
   niepotwierdzona); przepływ działa bez mowy. Wiersz `[human]` 6.5.
 - **Bramka do rozwiązania na kartce**: zdeterminowane dziecko E6 może policzyć 17 · 14 pisemnie; PRD wymaga ochrony
   przed celowym wejściem — zakres w `balance.parentGate`, playtest S-17.
+- **Miesiąc w e2e tylko przez `?e2eMonth`** (plan-review F1): `page.clock.setFixedTime`/`install` zamrażają tweeny
+  Phasera 4 (`TweenManager.getDelta` na `Date.now()`); parametr działa wyłącznie w buildzie e2e (`__E2E_HOOK__`), produkcja
+  go nie zawiera (`grep -rl e2eMonth dist/` w 4.3).
+- **Dotyk DOM poza `#game-container`**: „Zatwierdź” w panelu (DOM) nie przechodzi przez `unlockSpeech` w `main.ts`; na
+  ścieżce rodzica dla E1/E2 lektor może milczeć do pierwszego stuknięcia w canvas, jeśli nakładka jest poza kontenerem —
+  bez szkody dla przepływu (`Narrator.speak` bez `unlock` jest bezpieczne: `safely`, brak wyjątku). Wiersz 6.5.
 - **Helper e2e zależny od opisu etapu** („Klasa 2, I półrocze”): zmiana `pl.stages` wymaga zmiany helpera — świadomie,
   bo spec stuka to, co widzi rodzic.
 
@@ -663,7 +675,7 @@ bez przekształceń.
    odblokowało lektora. → `[human]` 6.5. Zmieniłoby: odsłuch na iPadzie pokaże milczenie — bez szkody dla przepływu.
 8. **Uczeń sesji w `REGISTRY_KEYS.learner`, `balance.defaultStage` usunięte, rozgrzewka w tej samej `TaskScene`**
    (`change.md` decyzja 3). Odrzucone: `scene.start(key, data)`, osobna `WarmupScene`. Zmieniłoby: nic.
-9. **Kolejność faz z helperem e2e w fazie 4 (ścieżka dziecka z ustalonym zegarem) i zmianą na ścieżkę rodzica w fazie 6**,
+9. **Kolejność faz z helperem e2e w fazie 4 (ścieżka dziecka z `?e2eMonth=9`) i zmianą na ścieżkę rodzica w fazie 6**,
    żeby każda faza była zielona w całej bramce, łącznie z e2e. Odrzucone: helper dopiero w fazie e2e (fazy 4–7 czerwone).
    Zmieniłoby: nic.
 10. **Ryzyko #12 cytowane jako „proposed, test-plan refresh pending”**; wpis do test-planu to follow-up, nie ten run.
@@ -713,7 +725,7 @@ bez przekształceń.
 
 - [ ] 4.1 `tests/layout.test.ts` obejmuje `WELCOME_TOUCH_TARGETS`; unit `<baseline gałęzi> + N`
 - [ ] 4.2 Deliberate break: przycisk wieku 90 px → test układu czerwony; `BootScene` zawsze do `task` → e2e czerwony; przywrócone; meta-check
-- [ ] 4.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
+- [ ] 4.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`, `grep -rl e2eMonth dist/` pusty
 - [ ] 4.4 `grep -rn defaultStage src/` pusty
 - [ ] 4.5 Pełna bramka lokalna zielona
 

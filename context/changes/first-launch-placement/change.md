@@ -1,7 +1,7 @@
 ---
 change_id: first-launch-placement
 title: Pierwsze uruchomienie — wiek, etap potwierdzony przez rodzica za bramką i rozgrzewka
-status: planned
+status: plan_reviewed
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null

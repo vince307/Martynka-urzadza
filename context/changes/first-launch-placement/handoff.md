@@ -1,18 +1,18 @@
 # Handoff — `first-launch-placement` (slice S-06)
 
-Written by the `/10x-plan` step: `plan.md` (9 phases, `## Progress` with 46 pending rows) and `plan-brief.md` exist,
-`change.md` is `planned`, roadmap S-06 is `planning`. The next agent must not miss the orchestrator's binding decision:
-the child ALONE reaches a round (age tap → age-proposed stage → warm-up → play); the adult gate guards only CHANGING the
-stage ("Rodzic" on the welcome) — it is not a precondition to play (deviation from FR-012's literal text, `[human]` 7.5).
+Written by the `/10x-plan-review` step: verdict PROCEED, plan fixed in place (1 critical, 2 warnings), `change.md` is
+`plan_reviewed`. The next agent must not miss: the e2e month comes from `?e2eMonth=N` (e2e build only, via
+`REGISTRY_KEYS.month` set in `main.ts` `preBoot`) — never `page.clock`, which freezes Phaser 4 tweens; and the child alone
+reaches a round, the gate guards only changing the stage (`[human]` 7.5).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
-| Commits | 3 on top of `37a9a62` after this step's commit (change identity, research, plan) |
+| Commits | 4 on top of `37a9a62` after this step's commit (change identity, research, plan, plan review) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `planned` |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 46 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
@@ -20,10 +20,10 @@ stage ("Rodzic" on the welcome) — it is not a precondition to play (deviation 
 
 | Path | What it is |
 |---|---|
-| `context/changes/first-launch-placement/plan.md` | Plan: phases 1–3 `tdd` (placement, warm-up, gate in `src/core/`), 4–6 `impl` (WelcomeScene + AgeButton + e2e helper; DOM gate + stage panel; warm-up in TaskScene), 7 `impl` seam sweep, 8–9 `e2e` (#12 proposed) |
-| `context/changes/first-launch-placement/plan-brief.md` | Two-page brief with the decision table |
-| `context/changes/first-launch-placement/change.md` | Status `preparing` → `planned` |
-| `context/foundation/roadmap.md` | S-06 `proposed` → `planning` (At a glance row and `### S-06` Status) |
+| `context/changes/first-launch-placement/reviews/plan-review.md` | Review report (F1–F6, VERDICT: PROCEED) |
+| `context/changes/first-launch-placement/plan.md` | Fixes: Key Discoveries (no `page.clock`), Phase 4 §1–§3 (`REGISTRY_KEYS.month`, `e2eMonth`, hook skips `ui()`/`task()` at welcome, `tests/round.test.ts`), row 4.3 (`grep -rl e2eMonth dist/`), Phase 5 §3, Phase 8/9 month, decision 9, Known risks |
+| `context/changes/first-launch-placement/plan-brief.md` | Helper/e2e rows: `?e2eMonth` instead of a fixed clock |
+| `context/changes/first-launch-placement/change.md` | Status `planned` → `plan_reviewed` |
 | `context/changes/first-launch-placement/handoff.md` | This file |
 
 ## 3. Verification
@@ -31,35 +31,29 @@ stage ("Rodzic" on the welcome) — it is not a precondition to play (deviation 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/first-launch-placement` |
-| Code anchors re-read in this step | `BootScene.create`, `TaskScene.create`/`advance`/`autoReadFirst`/`freshRound`, `pick.ts` `pickSkills`/`playable`, `round.ts` `RoundState`, `e2eHook.ts` `installE2EHook`, `overlay.ts`, `PageButton`, `SummaryPanel` (fixed `stars.left`), `playwright.config.ts` `ROUND_SPEC`, `layout.ts` `SCENE_KEYS`/`REGISTRY_KEYS` — match research |
-| Progress ↔ Success Criteria | one row per criterion in every phase (checked by hand) |
-| Gates (lint, typecheck, unit, build, e2e) | not run — docs-only step (baseline in the contract: main @ 37a9a62, unit 671, e2e 8) |
+| context7 `/microsoft/playwright` clock docs | `setFixedTime` fixes `Date.now()`/`new Date()`, keeps timers; `install` fakes rAF too |
+| `grep Date.now node_modules/phaser/src/tweens/TweenManager.js` | `start` and `getDelta` use `Date.now()`; `step` returns on `delta <= 0` ⇒ tweens frozen under a fixed time (F1) |
+| `grep defaultStage src tests scripts` | `TaskScene.create`, `balance.ts`, **`tests/round.test.ts`** (F2) |
+| `src/testing/e2eHook.ts` `installE2EHook` | `snapshot` calls `ui().counterText()`/`speakerTarget()` unconditionally (F3) |
+| `src/ui/narrator.ts` `speak`/`unlock` | `speak` never requires `unlock`, wrapped in `safely` (F4, harmless) |
+| Progress ↔ phases | 9/9, 46 rows, one `## Progress` |
+| Gates | not run — docs-only step (baseline main @ 37a9a62: unit 671, e2e 8) |
 
 ## 4. Next command
 
-`/10x-plan-review first-launch-placement`
+`/10x-tdd first-launch-placement phase 1`
 
 ## 5. Open
 
-- Plan-review should check: phase 4 size (scene + widget + Boot seam + hook + helper adoption in two specs); that
-  `page.clock.setFixedTime` leaves Phaser timers running in Playwright 1.64; that `narrator.speak` before `unlock` is
-  harmless (phase 6 auto-read of the first task); that `PageButton` can take the "Rodzic" size (`WELCOME_LAYOUT.parent`).
-- `[human]` rows (phase 7: 7.5–7.9; 5.7; 6.5): orchestrator decision vs FR-012, PRD OQ 1 answer, warm-up gap in
-  ZADANIA §1, persona gets E1 on the child path until S-11, gate difficulty, iPad gate check, iPad auto-read.
-- Follow-ups to be written in phase 7 (`follow-ups/review-fixes.md`): risk #12 (`Trigger: /10x-test-plan refresh`),
-  `mountInstallHint` touch pass-through, S-11 save of `SessionLearner`, S-08 reuse of `openParentGate`, picture mode
-  (S-14), maintainer choice on an earlier learner save, repeated prompt in a warm-up (S-07).
-- DESIGN-GAP rows 15+ (phase 7): "Rodzic" button, adult gate, stage panel, sixth dot/star, welcome art, picture mode.
+- `[human]` rows unchanged: 5.7, 6.5, 7.5–7.9 (FR-012 deviation, OQ 1, warm-up gap, persona E1 until S-11, gate difficulty, iPad).
+- Phase 4 implementer: `e2eMonth` lives in `src/testing/e2eHook.ts` (stripped with the hook); row 4.3 proves its absence in `dist/`.
+- Follow-ups and DESIGN-GAP rows still to be written in phase 7 as planned.
 
 ## 6. Autonomous decisions
 
-1. Orchestrator's binding decision applied as written: child alone plays on the age proposal; "Rodzic" path optional
-   (plan Autonomous decisions 1, `[human]` 7.5). Would change if the maintainer wants the gate as a precondition or a
-   learner save lands before S-06.
-2. Parent panel contains the age row, so the parent path realises FR-012 by itself (plan decision 2). Would change with
-   S-11 (age remembered).
-3. Gate 13–19 × 13–19 on a DOM digit pad (research options a + DOM pad). Would change after the S-17 playtest.
-4. e2e helper in phase 4 (child path, clock fixed to October, age 8 → E3) switched to the parent path in phase 6 (age 10,
-   choose E3 ⇒ no warm-up), so every phase passes the full gate including e2e. Would change if phases were merged.
-5. No AskUserQuestion; the skill's complexity/question rounds and phase approval were decided from research + the step
-   prompt; clipboard copy skipped (unattended). Would change only in an interactive session.
+1. F1: e2e month via an e2e-build-only URL parameter read into `REGISTRY_KEYS.month` in `main.ts` `preBoot`. Rejected:
+   `page.clock.setFixedTime` (freezes `TweenManager`), `page.clock.install` (freezes rAF), `addInitScript` patching
+   `Date.prototype.getMonth` (global monkeypatch). Would change if Phaser's tween clock stopped using `Date.now()`.
+2. Phase 4 kept whole (2 new UI components; splitting leaves the round specs red). Would change if the phase-4 agent runs out of context.
+3. Orchestrator's binding decision not revisited; checked for holes (gate-only entry to the panel, warm-up never blocks) — none found.
+4. Triage done in place (skill's AskUserQuestion replaced by fixing CRITICAL/WARNING in plan.md, observations recorded).

@@ -33,7 +33,7 @@ sesji w rejestrze (szew dla S-07, S-08, S-11).
 | Bramka | 13–19 × 13–19, klawiatura cyfr w DOM | Poza zasięgiem E6 nawet celowo; bez klawiatury systemowej iPada | Research → Plan |
 | Dotyk pod nakładką | `WelcomeScene.input.enabled = false`, póki bramka otwarta | Phaser przekazuje dotyk z DOM do obiektów gry | Research |
 | Auto-czytanie | Pierwsze zadanie po powitaniu czytane, gdy `autoRead` (E1–E2) | Stuknięcie wieku w canvas jest gestem | Plan |
-| Helper e2e | Faza 4: ścieżka dziecka (zegar: październik, wiek 8 → E3); faza 6: ścieżka rodzica (wiek 10, wybór E3) | Każda faza zielona w całej bramce, także e2e | Plan |
+| Helper e2e | Faza 4: ścieżka dziecka (`?e2eMonth=9` w buildzie e2e, wiek 8 → E3); faza 6: ścieżka rodzica (wiek 10, wybór E3) | Każda faza zielona w całej bramce, także e2e | Plan |
 
 ## Scope
 
@@ -62,7 +62,7 @@ w tej samej scenie, korekta przy końcu rundy).
 | 5. Bramka i panel DOM (impl) | `parentGate`, `stagePanel`, „Rodzic” | Dotyk przechodzi pod nakładkę |
 | 6. Rozgrzewka w scenie (impl) | 6 zadań, cicha korekta, auto-czytanie | Korekta pominięta przy „Do pokoju” |
 | 7. Seam sweep (impl) | Luki, follow-upy, tokeny, docs, `[human]` | — |
-| 8. E2E dziecko (e2e) | #12 (proposed): wiek → rozgrzewka → korekta | Zależność od daty (zegar ustalony) |
+| 8. E2E dziecko (e2e) | #12 (proposed): wiek → rozgrzewka → korekta | Zależność od daty (`?e2eMonth`, nie `page.clock` — zamroziłby tweeny) |
 | 9. E2E rodzic (e2e) | #12 (proposed): bramka, panel, brak przebicia | Odpowiedź bramki z DOM, nie z haka |
 
 **Prerequisites:** S-05 done (jest); baseline `main` @ `37a9a62`: unit 671, e2e 8.
