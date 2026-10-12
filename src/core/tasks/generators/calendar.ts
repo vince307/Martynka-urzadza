@@ -1,18 +1,18 @@
 // CALENDAR: months in order, quarters and dates with a Roman month
 // (ZADANIA.md, section 4). Names and cases come from data/calendar.ts.
-import { months, quarters } from '../../../data/calendar';
+import { months, quarters, timeFacts, weekdays } from '../../../data/calendar';
 import { pl } from '../../../data/pl';
 import { toRoman } from '../../text/roman';
-import { pickChoices } from '../distractors';
+import { numberChoices, pickChoices } from '../distractors';
 import type { Generator, Task } from '../types';
 
-export type CalendarVariant = 'nextMonth' | 'prevMonth' | 'quarter' | 'romanMonth';
+export type CalendarVariant = 'nextMonth' | 'prevMonth' | 'quarter' | 'romanMonth' | 'nextWeekday' | 'prevWeekday' | 'monthDays' | 'timeFacts';
 
 export interface CalendarParams {
     variants: readonly CalendarVariant[];
 }
 
-const VARIANTS: readonly CalendarVariant[] = ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'];
+const VARIANTS: readonly CalendarVariant[] = ['nextMonth', 'prevMonth', 'quarter', 'romanMonth', 'nextWeekday', 'prevWeekday', 'monthDays', 'timeFacts'];
 const isVariant = (x: unknown): x is CalendarVariant => VARIANTS.includes(x as CalendarVariant);
 
 export const parseCalendarParams = (params: Record<string, unknown>): CalendarParams => {
@@ -24,11 +24,36 @@ export const parseCalendarParams = (params: Record<string, unknown>): CalendarPa
 };
 
 const monthNames = months.map((m) => m.name);
+const weekdayNames = weekdays.map((d) => d.name);
+const weekdaysList = (): string => pl.tasks.weekdaysHint(weekdayNames.join(', '));
+const longMonths = months.filter((m) => m.name !== 'luty');
 const monthsList = (): string => pl.tasks.monthsHint(monthNames.join(', '));
 
 export const generateCalendar: Generator = (skill, rng): Task => {
     const p = parseCalendarParams(skill.params);
     const variant = rng.pick(p.variants);
+    if (variant === 'nextWeekday' || variant === 'prevWeekday') {
+        const i = rng.int(0, weekdays.length - 1);
+        const next = variant === 'nextWeekday';
+        const answer = weekdays[(i + (next ? 1 : weekdays.length - 1)) % weekdays.length].name;
+        const prompt = next ? pl.tasks.nextWeekday(weekdays[i].after) : pl.tasks.prevWeekday(weekdays[i].before);
+        return { skillId: skill.id, prompt, answer, choices: pickChoices(answer, weekdayNames, 3, rng), hint: [weekdaysList()] };
+    }
+    if (variant === 'monthDays') {
+        const m = rng.pick(longMonths);
+        return {
+            skillId: skill.id,
+            prompt: pl.tasks.monthDays(m.name),
+            answer: m.days,
+            choices: [30, 31],
+            hint: [pl.tasks.knuckleHint, pl.tasks.monthDaysHint(m.name, m.days)],
+        };
+    }
+    if (variant === 'timeFacts') {
+        const fact = rng.pick(timeFacts);
+        const choices = numberChoices(fact.answer, rng, { count: 3, min: 1, max: fact.answer * 2 });
+        return { skillId: skill.id, prompt: fact.question, answer: fact.answer, choices, hint: [fact.hint] };
+    }
     const month = rng.pick(months);
     switch (variant) {
         case 'nextMonth': {

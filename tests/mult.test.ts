@@ -42,6 +42,22 @@ describe('generateMult', () => {
         expect(multHint(8, 10)).toEqual(['8 · 10 = 80']);
     });
 
+    it('splits full tens and hundreds by the table, then appends the zeros', () => {
+        expect(multHint(4, 70)).toEqual(['4 · 7 = 28', '28 · 10 = 280']);
+        expect(multHint(3, 200)).toEqual(['3 · 2 = 6', '6 · 100 = 600']);
+        // Single line kept for the bare ·10 and ·100, and for a first factor of 10.
+        expect(multHint(7, 10)).toEqual(['7 · 10 = 70']);
+        expect(multHint(3, 100)).toEqual(['3 · 100 = 300']);
+        expect(multHint(10, 3)).toEqual(['10 · 2 = 20', '20 + 10 = 30']);
+    });
+
+    it('splits a teen factor into tens and units, the grade-3 method (impl-review S-03)', () => {
+        expect(multHint(5, 13)).toEqual(['5 · 10 = 50', '5 · 3 = 15', '50 + 15 = 65']);
+        expect(multHint(3, 18)).toEqual(['3 · 10 = 30', '3 · 8 = 24', '30 + 24 = 54']);
+        expect(multHint(2, 17)).toEqual(['2 · 10 = 20', '2 · 7 = 14', '20 + 14 = 34']);
+        expect(multHint(4, 11)).toEqual(['4 · 10 = 40', '4 · 1 = 4', '40 + 4 = 44']);
+    });
+
     it('rejects malformed params', () => {
         expect(() => parseMultParams({ maxProduct: 2 })).toThrow(TypeError);
         expect(() => parseMultParams({ maxProduct: 30, factors: [] })).toThrow(TypeError);

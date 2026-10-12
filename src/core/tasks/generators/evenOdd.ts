@@ -5,20 +5,24 @@ import type { Generator, Task } from '../types';
 
 export interface EvenOddParams {
     max: number;
+    min: 0 | 1;     // 0 admits zero as a drawn number (E1.6); default 1
     variant: 'single' | 'select';
 }
 
 const SELECT_TILES = 6;
 
 export const parseEvenOddParams = (params: Record<string, unknown>): EvenOddParams => {
-    const { max, variant = 'single' } = params;
+    const { max, min = 1, variant = 'single' } = params;
     if (!Number.isInteger(max) || (max as number) < 10) {
         throw new TypeError(`EVEN_ODD params.max must be an integer >= 10, got ${String(max)}`);
     }
     if (variant !== 'single' && variant !== 'select') {
         throw new TypeError(`EVEN_ODD params.variant must be 'single' | 'select', got ${String(variant)}`);
     }
-    return { max: max as number, variant };
+    if (min !== 0 && min !== 1) {
+        throw new TypeError(`EVEN_ODD params.min must be 0 | 1, got ${String(min)}`);
+    }
+    return { max: max as number, min, variant };
 };
 
 const sameSet = (a: readonly number[], b: readonly number[]): boolean =>
@@ -27,7 +31,7 @@ const sameSet = (a: readonly number[], b: readonly number[]): boolean =>
 export const generateEvenOdd: Generator = (skill, rng): Task => {
     const p = parseEvenOddParams(skill.params);
     if (p.variant === 'single') {
-        const n = rng.int(1, p.max);
+        const n = rng.int(p.min, p.max);
         const isEven = n % 2 === 0;
         return {
             skillId: skill.id,

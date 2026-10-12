@@ -12,7 +12,8 @@ describe('generateComplement', () => {
         const p = parseComplementParams(skill.params);
         it(`${skill.id}: 1000 draws`, () => {
             forEachDraw(generateComplement, skill, { max: p.max }, (task, where) => {
-                const m = /(\d+) do (\d+)\?$/.exec(task.prompt);
+                // impl-review S-03: "Ile trzeba dodać do 2, żeby było 10?" replaces the awkward "Ile brakuje od 2 do 10?".
+                const m = /^Ile trzeba dodać do (\d+), żeby było (\d+)\?$/.exec(task.prompt);
                 expect(m, where).not.toBeNull();
                 const n = Number(m![1]);
                 const target = Number(m![2]);

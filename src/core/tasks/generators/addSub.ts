@@ -3,6 +3,7 @@
 // from free draws in [1, max] or from number shapes ("DU+U", params.shapes).
 import type { Rng } from '../../rng';
 import { drawToken, formatShape, parseShape, tokenValues, type Shape } from '../shapes';
+import { applyOp as apply, arithLine as line, opSign as sign, SAME_SHARE } from '../arith';
 import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
@@ -118,16 +119,17 @@ export const shapeFeasible = (shape: Shape, max: number, bridge: Bridge): boolea
     );
 };
 
-const apply = (a: number, b: number, op: AddSubOp): number => (op === '+' ? a + b : a - b);
-const sign = (op: AddSubOp): string => (op === '+' ? '+' : MINUS);
-const line = (a: number, b: number, op: AddSubOp): string => `${a} ${sign(op)} ${b} = ${apply(a, b, op)}`;
-
 /**
  * Hint steps in the order taught at school: whole tens of b first, then the
  * units; when the units cross a ten, go to the ten first (7 + 6 → 7 + 3 = 10,
  * 10 + 3 = 13; 13 − 6 → 13 − 3 = 10, 10 − 3 = 7). Never produces a "+ 0" step.
  */
 export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
+    if (op === '-' && a >= 20 && a % 10 === 0 && b >= 1 && b <= 9) {
+        // DT − U (70 − 9 = 60 + (10 − 9)): break one ten, subtract from it, add the
+        // other tens; "20 − 7" by analogy with "10 − 7" (impl-review S-03).
+        return [line(10, b, '-'), line(a - 10, 10 - b, '+')];
+    }
     const steps: string[] = [];
     const tens = b - (b % 10);
     const units = b % 10;
@@ -150,10 +152,16 @@ export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
     return steps.length > 0 ? steps : [line(a, b, op)];
 };
 
-/** Operands are at least 1; a − a = 0 stays possible, 30 + 0 does not. */
+/**
+ * Operands are at least 1 and pairs are drawn uniformly, so no single task
+ * dominates a small range; a − a stays possible but rare, 30 + 0 does not.
+ */
 const drawFree = (p: AddSubParams, op: AddSubOp, rng: Rng): [number, number] | undefined => {
-    const a = op === '+' ? rng.int(1, p.max - 1) : rng.int(1, p.max);
-    const b = op === '+' ? rng.int(1, p.max - a) : rng.int(1, a);
+    const a = rng.int(1, p.max);
+    const b = rng.int(1, p.max);
+    if (op === '+' ? a + b > p.max : b > a || (b === a && !rng.chance(SAME_SHARE))) {
+        return undefined;
+    }
     return bridgeMatches(a, b, op, p.bridge) ? [a, b] : undefined;
 };
 
@@ -163,6 +171,9 @@ const drawShaped = (p: AddSubParams, shape: Shape, rng: Rng): [number, number] |
     const b = drawToken(shape.right, rng, p.max);
     const result = apply(a, b, shape.op);
     if (result < 0 || result > p.max || !bridgeMatches(a, b, shape.op, p.bridge)) {
+        return undefined;
+    }
+    if (shape.op === '-' && a === b && !rng.chance(SAME_SHARE)) {
         return undefined;
     }
     return [a, b];

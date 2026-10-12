@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
 import { getGenerator } from '../src/core/tasks/registry';
+import { boundOf } from '../src/core/tasks/bounds';
 import { validateTask } from '../src/core/tasks/validate';
 import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 
-/** Group 1 of ZADANIA.md section 7 as implemented in S-02; the rest arrive in S-03 (E1–E2, E5–E6). */
-const GROUP_1 = ['ADD_SUB', 'MISSING', 'COMPLEMENT', 'ROUNDING', 'MULT', 'DIV', 'HALF', 'COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN', 'CALENDAR', 'WORD', 'COMPARE_DIFF'];
-/** Types that need drawings or art (groups 2–3): allowed to have no skill yet. */
-const LATER = ['CLOCK', 'MASS', 'DATA', 'PUZZLE_GRID', 'LENGTH', 'PLACE_VALUE', 'GRID', 'MULT_GROUPS', 'TEMPERATURE', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY', 'PERIMETER'];
+/** Group 1 of ZADANIA.md section 7, complete after S-03 phases 1–5 (S-02 types plus BONDS … CHOOSE_OP). */
+const GROUP_1 = ['ADD_SUB', 'MISSING', 'COMPLEMENT', 'ROUNDING', 'MULT', 'DIV', 'HALF', 'COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN', 'CALENDAR', 'WORD', 'COMPARE_DIFF', 'BONDS', 'CHAIN', 'MISSING_OP', 'COMPARE_EXPR', 'SEQUENCE', 'FACT_FAMILY', 'CHOOSE_OP'];
+/** Types that need drawings or art (groups 2–3), or are textbook types outside ZADANIA.md section 7: allowed to have no skill yet. */
+const LATER = ['CLOCK', 'MASS', 'DATA', 'PUZZLE_GRID', 'LENGTH', 'PLACE_VALUE', 'GRID', 'MULT_GROUPS', 'TEMPERATURE', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY', 'PERIMETER', 'SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY', 'COUNT', 'ORDINAL', 'INEQUALITY', 'MONEY_PAY', 'ARROW_TABLE', 'WRITTEN', 'CLOCK_ELAPSED', 'UNIT_CHOICE', 'PRICE', 'TIMES_MORE', 'ORDER_OPS', 'TIME_UNITS', 'MIX', 'LOGIC'];
 
-describe('curriculum E3–E4', () => {
+describe('curriculum E1–E6', () => {
     for (const stage of Object.values(stages)) {
         for (const step of stage.steps) {
             it(`${stage.id}.${step.step} covers its group-1 types`, () => {
@@ -32,7 +33,7 @@ describe('curriculum E3–E4', () => {
                 it(`${skill.id}: 200 draws without violations`, () => {
                     const generate = getGenerator(skill.type);
                     expect(generate, skill.type).toBeDefined();
-                    const max = typeof skill.params.max === 'number' ? skill.params.max : undefined;
+                    const max = boundOf(skill);
                     for (let seed = 1; seed <= 4; seed += 1) {
                         const rng = createRng(777 + seed);
                         for (let i = 0; i < 50; i += 1) {

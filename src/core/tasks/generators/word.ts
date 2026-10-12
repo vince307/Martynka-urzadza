@@ -14,7 +14,7 @@ const KINDS: readonly WordKind[] = ['sum', 'left', 'start', 'twoSteps', 'moreBy'
 const MAX_ATTEMPTS = 1000;
 const isWordKind = (value: unknown): value is WordKind => KINDS.includes(value as WordKind);
 /** Smallest `max` for which drawNumbers can produce a story of the kind. */
-const MIN_MAX: Readonly<Record<WordKind, number>> = { sum: 2, left: 2, start: 2, moreBy: 2, twoSteps: 3, age: 6, groups: 4, share: 4, each: 4 };
+export const MIN_MAX: Readonly<Record<WordKind, number>> = { sum: 2, left: 2, start: 2, moreBy: 2, twoSteps: 3, age: 6, groups: 4, share: 4, each: 4 };
 
 export const parseWordParams = (params: Record<string, unknown>): WordParams => {
     const { max, kinds, maxFactor = 10 } = params;
@@ -39,7 +39,7 @@ export const parseWordParams = (params: Record<string, unknown>): WordParams => 
 };
 
 /** Numbers that make the story true and the answer sensible for the kind. */
-const drawNumbers = (kind: WordKind, p: WordParams, rng: Rng): [number, number, number] | undefined => {
+export const drawNumbers = (kind: WordKind, p: WordParams, rng: Rng): [number, number, number] | undefined => {
     switch (kind) {
         case 'sum':
         case 'moreBy':

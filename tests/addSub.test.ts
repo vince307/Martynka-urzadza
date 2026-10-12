@@ -124,7 +124,7 @@ describe('generateAddSub', () => {
         expect(addSubHint(22, 15, '-')).toEqual([`22 ${MINUS} 10 = 12`, `12 ${MINUS} 2 = 10`, `10 ${MINUS} 3 = 7`]);
         expect(addSubHint(7, 6, '+')).toEqual(['7 + 3 = 10', '10 + 3 = 13']);
         expect(addSubHint(8, 2, '+')).toEqual(['8 + 2 = 10']);
-        expect(addSubHint(20, 7, '-')).toEqual([`20 ${MINUS} 7 = 13`]);
+        expect(addSubHint(20, 7, '-')).toEqual([`10 ${MINUS} 7 = 3`, '10 + 3 = 13']); // F12 supersedes the one-line hint
         expect(addSubHint(530, 400, '+')).toEqual(['530 + 400 = 930']);
     });
 
@@ -143,5 +143,45 @@ describe('generateAddSub', () => {
         expect(() => parseAddSubParams({ max: 30, shapes: ['DU+DU'], bridge: 'ten' })).toThrow(/DU\+DU has no solutions/);
         expect(() => parseAddSubParams({ max: 100, shapes: ['DT-U'], bridge: 'ten' })).toThrow(TypeError);
         expect(parseAddSubParams({ max: 100, shapes: ['DU+U'], bridge: 'ten' }).shapes).toHaveLength(1);
+    });
+});
+
+describe('ADD_SUB: rare a − a (E1)', () => {
+    const share = (params: Record<string, unknown>): { same: number; top: number } => {
+        const skill: SkillDef = { id: 'x.addsub', stage: 'E1', step: 1, type: 'ADD_SUB', params, answer: 'keypad' };
+        const rng = createRng(7);
+        let subs = 0;
+        let same = 0;
+        const counts = new Map<string, number>();
+        for (let i = 0; i < 1000; i += 1) {
+            const task = generateAddSub(skill, rng);
+            counts.set(task.prompt, (counts.get(task.prompt) ?? 0) + 1);
+            const m = /^(\d+) − (\d+)$/.exec(task.prompt);
+            if (m) {
+                subs += 1;
+                same += m[1] === m[2] ? 1 : 0;
+            }
+        }
+        return { same: same / subs, top: Math.max(...counts.values()) / 1000 };
+    };
+
+    for (const params of [
+        { max: 5, ops: ['+', '-'], bridge: 'any' },
+        { max: 10, ops: ['+', '-'], bridge: 'any' },
+        { max: 100, shapes: ['DT+DT', 'DT-DT'], bridge: 'none' },
+    ]) {
+        it(`${JSON.stringify(params)}: a − a is rare and no task dominates`, () => {
+            const { same, top } = share(params);
+            expect(same).toBeGreaterThan(0);
+            expect(same).toBeLessThanOrEqual(0.1);
+            expect(top).toBeLessThanOrEqual(0.15);
+        });
+    }
+
+    it('teaches DT − U by breaking one ten: 70 − 9 = 60 + (10 − 9) (F12, impl-review S-03)', () => {
+        expect(addSubHint(70, 9, '-')).toEqual([`10 ${MINUS} 9 = 1`, '60 + 1 = 61']);
+        expect(addSubHint(20, 7, '-')).toEqual([`10 ${MINUS} 7 = 3`, '10 + 3 = 13']);
+        expect(addSubHint(90, 4, '-')).toEqual([`10 ${MINUS} 4 = 6`, '80 + 6 = 86']);
+        expect(addSubHint(10, 3, '-')).toEqual([`10 ${MINUS} 3 = 7`]);
     });
 });

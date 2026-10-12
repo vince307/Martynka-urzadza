@@ -2,18 +2,25 @@
 // without an entry are reported by scripts/sample.ts as "brak generatora"
 // instead of failing. Parsers reject parameters that would have no solutions.
 import { generateAddSub, parseAddSubParams } from './generators/addSub';
+import { generateBonds, parseBondsParams } from './generators/bonds';
 import { generateCalendar, parseCalendarParams } from './generators/calendar';
+import { generateChain, parseChainParams } from './generators/chain';
+import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
+import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
 import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
+import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
 import { generateHalf, parseHalfParams } from './generators/half';
+import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
+import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateWord, parseWordParams } from './generators/word';
 import type { Generator } from './types';
 
@@ -34,6 +41,13 @@ export const generators: Readonly<Record<string, Generator>> = {
     CALENDAR: generateCalendar,
     WORD: generateWord,
     COMPARE_DIFF: generateCompareDiff,
+    BONDS: generateBonds,
+    CHAIN: generateChain,
+    MISSING_OP: generateMissingOp,
+    COMPARE_EXPR: generateCompareExpr,
+    SEQUENCE: generateSequence,
+    FACT_FAMILY: generateFactFamily,
+    CHOOSE_OP: generateChooseOp,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -51,6 +65,13 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     CALENDAR: parseCalendarParams,
     WORD: parseWordParams,
     COMPARE_DIFF: parseCompareDiffParams,
+    BONDS: parseBondsParams,
+    CHAIN: parseChainParams,
+    MISSING_OP: parseMissingOpParams,
+    COMPARE_EXPR: parseCompareExprParams,
+    SEQUENCE: parseSequenceParams,
+    FACT_FAMILY: parseFactFamilyParams,
+    CHOOSE_OP: parseChooseOpParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

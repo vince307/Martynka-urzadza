@@ -1,6 +1,7 @@
 // Mechanical checks shared by the 1000-draw tests and scripts/sample.ts
 // (PRD FR-005): result range, negative numbers, tile choices, hints and Polish
 // numeral agreement for nouns from a dictionary.
+import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
 import type { Task } from './types';
 
@@ -26,7 +27,13 @@ export interface ValidationContext {
  * mentions of temperatures are left to the answer check.
  */
 const NEGATIVE_NUMBER = /(?:^|[=(,:;])\s*[-−]\s?\d/;
-const NUMBER_WORD = /(\d+)\s+(\p{L}+)/gu;
+const NUMBER_WORD = new RegExp(`(${NUMBER_SOURCE})\\s+(\\p{L}+)`, 'gu');
+/**
+ * "ma 1 cyfra": the object of these verbs (and of "o … więcej") takes the
+ * accusative, which differs from the nominative for feminine nouns in -a
+ * ("1 cyfrę", "1 naklejkę"). Masculine and neuter singular objects look the same.
+ */
+const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o) 1 (\p{L}+)/gu;
 
 const texts = (task: Task): string[] => [task.prompt, ...(task.speak ? [task.speak] : []), ...task.hint];
 
@@ -76,7 +83,7 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
         for (const text of texts(task)) {
             for (const match of text.matchAll(NUMBER_WORD)) {
-                const n = Number(match[1]);
+                const n = parseNumber(match[1] ?? '');
                 const entry = formIndex.get(match[2]);
                 if (!entry) {
                     continue;
@@ -84,6 +91,12 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
                 const expected = inflect(n, entry.forms);
                 if (expected !== match[2]) {
                     add('inflection', `"${match[0]}" should be "${n} ${expected}"`);
+                }
+            }
+            for (const match of text.matchAll(ACCUSATIVE_ONE)) {
+                const entry = formIndex.get(match[2]);
+                if (entry && match[2] === entry.forms[0] && match[2].endsWith('a')) {
+                    add('inflection', `"${match[0].trim()}" needs the accusative after "${match[1]}"`);
                 }
             }
         }

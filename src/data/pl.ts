@@ -31,21 +31,50 @@ export const pl = {
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
-        complement: (n: number, target: number) => `Ile brakuje od ${n} do ${target}?`,
+        // Same question as the BONDS hint; "Ile brakuje od 2 do 10?" read awkwardly (impl-review S-03).
+        complement: (n: number, target: number) => `Ile trzeba dodać do ${n}, żeby było ${target}?`,
         complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
-        rounding: (n: number) => `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
-        roundingHint: (n: number, low: number, high: number, nearest: number) => [
+        bonds: (total: number) => `Uzupełnij domek liczby ${total}.`,
+        bondsHint: (shown: number, total: number) => `Ile trzeba dodać do ${shown}, żeby było ${total}?`,
+        factSwapHint: 'Zamiana składników nie zmienia sumy.',
+        factCheck: 'Sprawdź:',
+        factCheckSubHint: 'Dodaj wynik i odjemnik.',
+        factCheckAddHint: 'Odejmij od sumy jeden ze składników.',
+        factCheckDivHint: 'Pomnóż iloraz przez dzielnik.',
+        chooseOp: 'Które działanie pasuje?',
+        chooseOpHint: {
+            sum: 'Przybyło, więc dodajemy.',
+            left: 'Ubyło, więc odejmujemy.',
+            moreBy: 'Jest więcej, więc dodajemy.',
+        },
+        sequence: 'Uzupełnij ciąg:',
+        sequenceHint: (step: number, up: boolean) =>
+            `Każda następna liczba jest o ${step} ${up ? 'większa' : 'mniejsza'}.`,
+        missingOpHint: (a: number, plus: boolean) =>
+            plus ? `Wynik jest większy niż ${a}, więc dodajemy.` : `Wynik jest mniejszy niż ${a}, więc odejmujemy.`,
+        rounding: (n: string, to: 10 | 100 | 1000) =>
+            to === 1000 ? `Który pełny tysiąc jest najbliżej liczby ${n}?`
+            : to === 100 ? `Która pełna setka jest najbliżej liczby ${n}?`
+            : `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
+        roundingHint: (n: string, low: string, high: string, nearest: string) => [
             `${n} jest między ${low} a ${high}`,
             `${n} jest bliżej ${nearest}`,
         ],
         half: (n: number) => `Ile to jest połowa liczby ${n}?`,
         compareHint: (n: number, parts: string) => `${n} to ${parts}`,
+        compareDigitsHint: (n: string, digits: string) => `${n} ma ${digits}`,
+        // Object of "ma" in the accusative: "2 ma 1 cyfrę" (2–7 digits agree through nouns.cyfra).
+        oneDigit: '1 cyfrę',
+        compareMoreDigits: 'Liczba z większą liczbą cyfr jest większa',
+        compareFirstDiffHint: (place: string, x: number, y: number) =>
+            `Porównujemy cyfry od lewej. Pierwsza różna cyfra jest na miejscu ${place}: ${x} i ${y}`,
+        placeNames: ['jedności', 'dziesiątek', 'setek', 'tysięcy', 'dziesiątek tysięcy', 'setek tysięcy', 'milionów'],
         compareEqualHint: 'To takie same liczby',
         evenOdd: (n: number) => `Liczba ${n} jest parzysta czy nieparzysta?`,
         even: 'parzysta',
         odd: 'nieparzysta',
         evenOddHint: (n: number, lastDigit: number, isEven: boolean) =>
-            `${n} kończy się cyfrą ${lastDigit}, więc jest ${isEven ? 'parzysta' : 'nieparzysta'}`,
+            n === 0 ? 'Zero kończy się cyfrą 0, więc jest parzyste' : `${n} kończy się cyfrą ${lastDigit}, więc jest ${isEven ? 'parzysta' : 'nieparzysta'}`,
         selectEven: 'Zaznacz wszystkie liczby parzyste.',
         selectEvenHint: 'Liczby parzyste kończą się na 0, 2, 4, 6 albo 8.',
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
@@ -62,6 +91,12 @@ export const pl = {
         prevMonth: (instrumental: string) => `Który miesiąc jest przed ${instrumental}?`,
         quarterOf: (month: string) => `W którym kwartale roku jest ${month}?`,
         romanMonth: (day: number, roman: string) => `Data ${day} ${roman}. Który to miesiąc?`,
+        nextWeekday: (after: string) => `Jaki dzień tygodnia jest po ${after}?`,
+        prevWeekday: (before: string) => `Jaki dzień tygodnia jest przed ${before}?`,
+        weekdaysHint: (list: string) => `Dni tygodnia po kolei: ${list}`,
+        monthDays: (month: string) => `Ile dni ma ${month}?`,
+        knuckleHint: 'Policz na knykciach: wysokie kostki to miesiące dłuższe, doliny między nimi to krótsze.',
+        monthDaysHint: (month: string, days: number) => `${month[0].toUpperCase()}${month.slice(1)} ma ${days} dni.`,
         monthsHint: (list: string) => `Miesiące po kolei: ${list}`,
         quarterHint: (quarter: string, list: string) => `${quarter} to ${list}`,
         romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,

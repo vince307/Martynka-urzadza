@@ -38,11 +38,27 @@ describe('validateTask', () => {
         expect(validateTask({ ...base, hint: [] }).map((x) => x.rule)).toEqual(['hint']);
     });
 
+    it('reads a grouped number as a whole when checking agreement', () => {
+        // The number is read whole: 10 001 takes "jabłek", not the singular a reader of "001" would pick.
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0001 jabłek.' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0002 jabłek.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0001 jabłko.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+    });
+
     it('checks numeral agreement for dictionary nouns only', () => {
         expect(validateTask({ ...base, prompt: 'Ania ma 2 jabłek.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
         expect(validateTask({ ...base, prompt: 'Ania ma 2 jabłka.' }, { nouns })).toEqual([]);
         expect(validateTask({ ...base, prompt: 'Ania ma 5 jabłek i 12 kredek.' }, { nouns })).toEqual([]);
         expect(validateTask({ ...base, hint: ['22 gruszki'] }, { nouns })).toEqual([]);
         expect(validateTask({ ...base, prompt: '3 smoki' }, { nouns })).toEqual([]);
+    });
+
+    it('flags a feminine nominative after a verb where Polish needs the accusative (1 cyfrę)', () => {
+        // impl-review S-03: "2 ma 1 cyfra" passed every check; the object of "ma" takes the accusative.
+        expect(validateTask({ ...base, hint: ['2 ma 1 cyfra'] }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, prompt: 'Ania kupiła 1 gruszka.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, hint: ['2 ma 1 cyfrę'] }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'Ania ma 1 jabłko.' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'Na półce jest 1 książka.' }, { nouns })).toEqual([]);
     });
 });

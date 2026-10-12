@@ -71,7 +71,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Quality gates and module boundaries | Lint (ESLint, boundary rules), typecheck and tests gate every edit, every turn and every PR; `sample` E3/E4 runs in CI as a content smoke | #6, #5 | lint, gates, content smoke | complete | `context/archive/2026-10-12-testing-quality-gates/` |
+| 1 | Quality gates and module boundaries | Lint (ESLint, boundary rules), typecheck and tests gate every edit, every turn and every PR; `sample` E1–E6 runs in CI as a content smoke | #6, #5 | lint, gates, content smoke | complete | `context/archive/2026-10-12-testing-quality-gates/` |
 | 2 | Deploy and PWA smoke | The deploy job proves the new build is live with the right headers and precache, and that CoiledSpring still answers; rollback is exercised on a schedule | #3, #4 | integration (post-deploy smoke), manual tablet | complete | `context/archive/2026-10-12-testing-deploy-smoke/` |
 | 3 | Content invariants | Property tests over all curriculum data (feasibility, no degenerate tasks, distribution sanity) and a teacher-read checklist for every new template | #1, #5 | unit/property, checklist | complete | `context/archive/2026-10-12-testing-content-invariants/` |
 | 4 | Save, migrations, import | Round-trip and migration tests with fixture saves per version; import validation never loses the current save (starts with roadmap S-11) | #2, #7 | unit + integration | not started | — |
@@ -83,7 +83,7 @@ orchestrator updates Status as artifacts appear on disk.
 | unit + property | Vitest | 5.0.4 | standalone `vitest.config.mts`, tests in `tests/`, seeded rng helpers in `tests/helpers.ts` |
 | lint | ESLint + typescript-eslint | none yet — see Phase 1 | flat config; boundary rules via `no-restricted-imports` / `no-restricted-globals` |
 | typecheck | tsc | 5.7 | `npm run typecheck` covers `src`, `tests`, `scripts` |
-| content smoke | `scripts/sample.ts` | repo | `npm run sample -- E3` exits 1 on violations |
+| content smoke | `scripts/sample.ts` | repo | `npm run sample -- E1` … `E6` exit 1 on violations |
 | deploy smoke | curl in GitHub Actions | none yet — see Phase 2 | after `switch`, before `status` |
 | e2e | none | — | excluded (§7); manual tablet checks after PWA/scene changes |
 | browser checks by the agent | Claude in Chrome | session tool | `npm run preview` + manual assertions; not a CI gate |
@@ -100,7 +100,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|
 | lint + typecheck | local (agent loop) + CI | required | boundary violations, type drift, unused code |
 | unit + property | local (agent loop) + CI | required | generator and logic regressions |
-| content smoke (`sample` E3/E4) | CI on PR | required | data changes that break generation or violate the validator |
+| content smoke (`sample` E1–E6) | CI on PR | required | data changes that break generation or violate the validator |
 | post-edit hook | local (agent loop) | required | lint and related-test failures at edit time |
 | deploy smoke | GitHub Actions after `switch` | required | stale build, wrong headers, broken precache, CoiledSpring regression |
 | manual tablet check | after PWA or scene changes | required (manual) | install, offline start, orientation, touch |
@@ -116,7 +116,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.2 Adding a content template or curriculum data
 
-- **Invariants run automatically**: `tests/contentInvariants.test.ts` draws 1000 tasks per skill of every stage and checks the parser, the validator, the arithmetic of every hint line, that the answer appears in the last hint, number bounds (except CALENDAR, ROMAN, NUMBER_WORDS), no zero operands, degenerate shares (n − n, n : n ≤ 10 %), ·0/·1 only when allowed, variety (≥ 12 distinct tasks, most frequent ≤ 15 %). Thresholds are constants at the top of the file; lower them with a comment when a stage's task space is genuinely small (E1).
+- **Invariants run automatically**: `tests/contentInvariants.test.ts` draws 1000 tasks per skill of every stage and checks the parser, the validator, the arithmetic of every hint line, that the answer appears in the last hint, number bounds (except CALENDAR, ROMAN, NUMBER_WORDS), no zero operands, degenerate shares (n − n, n : n ≤ 10 %), ·0/·1 only when allowed, variety (≥ 12 distinct tasks, most frequent ≤ 15 %). Thresholds are constants at the top of the file; a genuinely small task space (E1) is listed with its measured size in the `SMALL_SPACES` map in `tests/contentInvariants.test.ts`, never by lowering the global threshold. Number patterns in prompts follow `formatNumber.ts` (grouping with a non-breaking space from 5 digits).
 - **Parsers reject infeasible data**: `parseAddSubParams` enumerates the shape values (`DU+DU` with `bridge: 'ten'` and `max: 30` throws), MULT/DIV/WORD check their minima; add the same to every new generator and register it in `parsers` next to `generators`.
 - **Teacher read (manual, every PR touching `src/data/` or generators)**: `npm run sample -- <stage> --count 6`, read every task of the changed steps; numeral agreement and the accusative after verbs ("ma 1 naklejkę"), verb gender matching the name, sensible context, hints that teach the school method without giving the result away first, close but unambiguous distractors, every new noun in `src/data/nouns.ts` with its accusative in the context, prompts of 1–3 sentences. The checklist lives in `.github/pull_request_template.md` and in CLAUDE.md for the agent.
 - **Reference**: `src/data/wordTemplates.ts` (`obj`, `verb`, `isAre`), `tests/wordTemplates.test.ts` (0–100 agreement sweep).

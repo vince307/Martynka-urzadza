@@ -8,12 +8,13 @@ export interface DivParams {
     maxDividend: number;
     maxQuotient: number;            // default 10
     divisors?: readonly number[];   // fixed divisors (:5, :10)
+    quotients?: readonly number[];  // fixed quotients (800 : 4 → 200); overrides maxQuotient
 }
 
 const MAX_ATTEMPTS = 1000;
 
 export const parseDivParams = (params: Record<string, unknown>): DivParams => {
-    const { maxDividend, maxQuotient = 10, divisors } = params;
+    const { maxDividend, maxQuotient = 10, divisors, quotients } = params;
     if (!Number.isInteger(maxDividend) || (maxDividend as number) < 4) {
         throw new TypeError(`DIV params.maxDividend must be an integer >= 4, got ${String(maxDividend)}`);
     }
@@ -27,7 +28,16 @@ export const parseDivParams = (params: Record<string, unknown>): DivParams => {
     if (smallest > (maxDividend as number)) {
         throw new TypeError(`DIV params have no divisions: smallest divisor ${smallest} exceeds maxDividend ${String(maxDividend)}`);
     }
-    return { maxDividend: maxDividend as number, maxQuotient: maxQuotient as number, divisors };
+    if (quotients !== undefined) {
+        if (!Array.isArray(quotients) || quotients.length === 0 || !quotients.every((q) => Number.isInteger(q) && q >= 1)) {
+            throw new TypeError(`DIV params.quotients must be positive integers, got ${JSON.stringify(quotients)}`);
+        }
+        const ds = (divisors as number[] | undefined) ?? [2, 3, 4, 5, 6, 7, 8, 9, 10];
+        if (!ds.some((d) => (quotients as number[]).some((q) => d * q <= (maxDividend as number)))) {
+            throw new TypeError(`DIV params have no division: no divisor times quotient fits maxDividend ${String(maxDividend)}`);
+        }
+    }
+    return { maxDividend: maxDividend as number, maxQuotient: maxQuotient as number, divisors, quotients };
 };
 
 /**
@@ -49,7 +59,7 @@ export const generateDiv: Generator = (skill, rng): Task => {
         if (d > p.maxDividend) {
             continue;
         }
-        const q = drawQuotient(p, d, rng);
+        const q = p.quotients ? rng.pick(p.quotients) : drawQuotient(p, d, rng);
         if (d * q <= p.maxDividend) {
             return {
                 skillId: skill.id,

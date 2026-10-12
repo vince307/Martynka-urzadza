@@ -2,7 +2,7 @@ name: CI
 
 # Quality gates on every pull request (test-plan.md section 5): lint with the
 # module-boundary rules, typecheck, unit/property tests, the content smoke
-# (sample E3/E4 must generate without violations) and the production build.
+# (sample E1–E6 must generate without violations) and the production build.
 on:
   pull_request:
   workflow_dispatch:
@@ -30,6 +30,10 @@ jobs:
       # Local tests of the deploy dispatcher and the agent's ops shim (no server needed).
       - run: bash deploy/test-martynka-deploy.sh
       - run: bash deploy/ops/test-martynka-ops.sh
+      - run: npm run sample -- E1
+      - run: npm run sample -- E2
       - run: npm run sample -- E3
       - run: npm run sample -- E4
+      - run: npm run sample -- E5
+      - run: npm run sample -- E6
       - run: npm run build

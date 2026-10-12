@@ -34,10 +34,10 @@ The same steps as `.github/workflows/ci.yml` (the required PR check).
 |---|---|---|---|
 | lint | `npm run lint` | 3 s | pass/fail |
 | typecheck | `npm run typecheck` | 3 s | none |
-| unit / integration | `npm test && bash deploy/test-martynka-deploy.sh && bash deploy/ops/test-martynka-ops.sh && npm run sample -- E3 && npm run sample -- E4` | 5 s | `Tests +[0-9]+ passed` |
+| unit / integration | `npm test && bash deploy/test-martynka-deploy.sh && bash deploy/ops/test-martynka-ops.sh && npm run sample -- E1 && npm run sample -- E2 && npm run sample -- E3 && npm run sample -- E4 && npm run sample -- E5 && npm run sample -- E6` | 5 s | `Tests +[0-9]+ passed` |
 | build | `npm run build` | 5 s | pass/fail |
 | database tests | none | | none |
-| smoke (against the gate server) | none (the content smoke `sample` E3/E4 needs no server and runs in the unit gate) | | none |
+| smoke (against the gate server) | none (the content smoke `sample` E1–E6 needs no server and runs in the unit gate) | | none |
 | e2e (only when § 11 says E2E=on) | none | | none |
 
 After a migration: none. Migration on data (`POST_MIGRATION_ON_DATA_CMD`): none (no database; the save format and its
