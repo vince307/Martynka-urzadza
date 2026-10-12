@@ -108,7 +108,9 @@ Działa w bramce lokalnej (`npm run build`), w CI (job `check`) i w Deploy (job 
 
 **Kolejność rng.** `generateTask` dokłada kafelki **po** wywołaniu generatora, z tego samego rng — istniejące ziarna
 i testy generatorów dają te same zadania. BONDS zna wylosowaną sumę, więc zwraca `tileRange` (nowe opcjonalne pole
-`Task`), a `generateTask` używa `task.tileRange ?? { min: 0, max: boundOf(skill) }`.
+`Task`), a `generateTask` używa `task.tileRange ?? { min: 0, max: boundOf(skill) }`. Liczba kafelków =
+`min(tileCount, max − min + 1)`: BONDS z sumą 2 ma tylko 3 możliwe wartości {0, 1, 2}, a `numberChoices` przy count 4
+rzuca `RangeError` (zmierzone w plan review: 54/600 zadań `E1.3.bonds_5` przy zakresie `{1, suma}`).
 
 **Stan rundy jest jeden.** Scena trzyma `RoundState` z `core` i po każdej akcji rysuje `roundView(state)`; licznik w
 `UIScene` czyta `registry` (`stars`), który `TaskScene` ustawia z `state`. Hak e2e czyta ten sam `RoundState` przez
@@ -143,7 +145,9 @@ z `numberChoices`. 10 liczbowych umiejętności E1 przechodzi na `'tiles'`. `scr
 
 **File**: `src/core/tasks/generators/bonds.ts`
 
-**Intent**: Ustawić `tileRange` = `{ min: zero ? 0 : 1, max: <wylosowana suma> }`, żeby kafelki były możliwe w domku.
+**Intent**: Ustawić `tileRange` = `{ min: 0, max: <wylosowana suma> }`, żeby żaden kafelek nie był większy od sumy
+(0 to wiarygodny błędny kafelek także przy `zero: false`). `generateTask` przycina liczbę kafelków do rozmiaru zakresu,
+więc suma 2 daje 3 kafelki (FR-006: 3–4), suma ≥ 3 daje 4.
 
 **Contract**: dodatkowe pole w zwracanym `Task`; prompt, answer i hint bez zmian.
 
@@ -164,7 +168,9 @@ helper `skill` w E1 bez zmiany sygnatury.
 
 **Intent**: Sample woła `generateTask` z `balance.tiles.count` i drukuje kafelki; nowy test po każdej umiejętności
 każdego etapu (`stages`): `'tiles'` ⇒ 2–4 unikalne kafelki zawierające odpowiedź, nieujemne, w zakresie; `'keypad'` ⇒
-odpowiedź liczbowa nieujemna; ziarna jak `forEachDraw` (`tests/helpers.ts`). BONDS: każdy kafelek ≤ suma.
+odpowiedź liczbowa nieujemna; ziarna jak `forEachDraw` (`tests/helpers.ts`). BONDS: każdy kafelek ≤ suma, 3 kafelki przy
+sumie 2, 4 przy sumie ≥ 3, zero wyjątków `RangeError` dla `E1.3.bonds_5` (sumy 2–5). Kafelki dołożone przez
+`generateTask` mają ≥ 3 pozycje (kafelki od generatora mogą mieć 2, np. `monthDays`).
 Istniejące niezmienniki różnorodności dalej wołają generator (nie `generateTask`).
 
 **Contract**: test używa `stages` z `src/data/curriculum/index.ts` i `validateTask`.
@@ -200,14 +206,21 @@ z niewiadomym składnikiem dostaje dwie linie: działanie odwrotne bez wyniku, p
 
 **File**: `src/core/round/hints.ts` (nowy)
 
-**Intent**: `firstHint(task)` zwraca `hint[0]`, gdy podpowiedź ma ≥ 2 linie i linia 0 nie kończy się tokenem wyniku,
+**Intent**: `firstHint(task)` zwraca `hint[0]`, gdy podpowiedź ma ≥ 2 linie i linia 0 nie zdradza wyniku (definicja niżej),
 albo gdy typ jest na liście wyjątków (`ROUNDING` — linia 0 to przedział, nie wynik); inaczej `null` (scena pokazuje samo
 „Spróbuj jeszcze raz”). `solutionSteps(task)` zwraca wszystkie linie `hint`, a gdy żadna nie zawiera wyniku jako tokenu,
 dokłada linię z `pl`-owym formatem wyniku przekazanym przez wywołującego.
 
 **Contract**: `firstHint(task: Task): string | null`; `solutionSteps(task: Task, answerLine: (answer: string) => string): string[]`;
 `FIRST_HINT_EXEMPT_TYPES: readonly string[]` (typ z prefiksu `skillId` albo z przekazanej umiejętności — implementujący wybiera, test pokrywa).
-Token wyniku: odpowiedź jako osobny token (granica nie-cyfry), z liczbami formatowanymi jak w podpowiedziach (`formatNumber`).
+Zdradza wynik (jedna definicja dla kodu i testów, ustalona w plan review): odpowiedź liczbowa → **ostatnia liczba**
+linii 0 (liczby formatowane jak w podpowiedziach, `formatNumber`, z odstępem tysięcy) równa się odpowiedzi; odpowiedź
+napisowa lub zbiór → nigdy (zmierzone: 0 wycieków w COMPARE_NUM, CHOOSE_OP, MISSING_OP, CALENDAR; trafienia `=`
+w COMPARE_EXPR to znak równania, nie wynik). Samo wystąpienie odpowiedzi w środku linii **nie** jest wyciekiem —
+zmierzone zbieżności (operand równy wynikowi): CHAIN 50/200, BONDS 74/600, WORD 24/104, ADD_SUB 10/1985.
+SEQUENCE z krokiem równym wynikowi („o 10 mniejsza”, wynik 10) zostaje fałszywie zablokowany (10/200) — akceptowane.
+`solutionSteps` dokłada linię wyniku, gdy ostatnia liczba ostatniej linii ≠ odpowiedź (liczbowa) albo ostatnia linia
+nie zawiera odpowiedzi (napis).
 
 #### 2. F14 — MISSING
 
@@ -224,8 +237,9 @@ wynik (`tests/contentInvariants.test.ts` `ARITHMETIC_LINE`).
 **File**: `tests/hints.test.ts` (nowy), `tests/missing.test.ts`
 
 **Intent**: Na zadaniach z prawdziwych generatorów (HALF, ROUNDING, ADD_SUB wielo- i jednolinijkowe, MISSING obu
-slotów) — `firstHint` nigdy nie zawiera wyniku jako tokenu poza ROUNDING; po wszystkich umiejętnościach E1–E6 ×
-ziarna: `firstHint` ∉ {linia kończąca się wynikiem} i `solutionSteps` zawsze zawiera wynik. MISSING: 2 linie dla składnika,
+slotów) — `firstHint` dla HALF i jednolinijkowych zwraca `null`, dla ROUNDING linię przedziału; po wszystkich
+umiejętnościach E1–E6 × ziarna: dla odpowiedzi liczbowej ostatnia liczba `firstHint` ≠ wynik (poza ROUNDING),
+zbieżność w środku linii (CHAIN, ADD_SUB) nie blokuje podpowiedzi, a `solutionSteps` zawsze kończy się wynikiem. MISSING: 2 linie dla składnika,
 linia 0 bez wyniku.
 
 **Contract**: wzorzec `forEachDraw` (`tests/helpers.ts`).
@@ -585,7 +599,8 @@ Funkcja sprawdzająca czysta i testowana.
 
 **Intent**: `webServer` jako tablica: wpis aplikacji bez zmian (pierwszy), drugi
 `npm run build -- --outDir dist-e2e && npm run preview -- --outDir dist-e2e --port ${HOOK_PORT} --strictPort` z
-`env: { E2E_HOOK: '1' }`, `url` 4397, `reuseExistingServer: !process.env.CI`. Projekt `chromium` dostaje
+`env: { E2E_HOOK: '1' }`, `url` 4397, `reuseExistingServer: false` (plan review: stary serwer na 4397 ma ten sam
+`data-build` = SHA commita, więc spec nie odróżniłby nieaktualnego kodu; zajęty port pada głośno → `E2E_HOOK_PORT`). Projekt `chromium` dostaje
 `testIgnore: /task-round\.spec\.ts/`; nowy projekt `chromium-hook` (te same `use` + `baseURL` 4397, `testMatch: /task-round\.spec\.ts/`).
 `HOOK_PORT = Number(process.env.E2E_HOOK_PORT ?? 4397)`. `.gitignore`: `dist-e2e`; ESLint `globalIgnores`: `dist-e2e/**`.
 
@@ -644,7 +659,8 @@ fazy 5, tabela narzędzi i §6.6 (`/10x-test-plan refresh`), spec #9 (`/10x-test
 
 **File**: `CLAUDE.md` (Current state), `AGENTS.md` (jeśli opisuje sceny/strukturę), pliki faz 1–9
 
-**Intent**: Current state: sceny Boot/Task/UI, widżety, `core/round*`, `balance.ts`, hak e2e i strażnik, dwa serwery e2e.
+**Intent**: Current state: sceny Boot/Task/UI, widżety, `core/round*`, `balance.ts`, hak e2e i strażnik, dwa serwery e2e;
+w akapicie o prekeszu (Commands) lista globów dostaje `ttf` (dziś „js, css, html, png, webp, ogg, m4a and woff2”).
 Seam sweep: zduplikowane helpery (np. formatowanie wyniku w `hints.ts` vs `generateTask`, stałe kluczy scen/registry
 w kilku plikach), nieaktualne komentarze (`E1.ts` „keypad”, `BootScene` placeholder, `main.ts` lista scen), martwe
 klucze `pl` (`bootPlaceholder`, jeśli nieużywany), nieużywane eksporty z faz 1–9; wiersze kitu/test-planu zostają
@@ -729,6 +745,19 @@ Reakcja na dotyk synchronicznie w `pointerdown`; tweeny nie blokują wejścia; c
 ## Migration Notes
 
 Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
+
+## Known risks
+
+- **Dwa buildy na każdy `npx playwright test`** (także pojedynczy spec i `--project chromium`): wpisy `webServer` są
+  globalne, Playwright 1.64 stawia je po kolei (`createPluginSetupTasks` w `node_modules/playwright/lib/runner/index.js`).
+  `dist/` i `dist-e2e/` się nie zderzają (osobne `outDir`, `emptyOutDir` każdego tylko w swoim katalogu), preview 4398
+  dalej serwuje `dist/`. Koszt: drugi build terserem na każdym przebiegu bramki e2e od fazy 9.
+- **Precache + czcionka**: +114 552 B (jeden plik `AtkinsonHyperlegibleNext.ttf`) w `/fonts/`, nie w `/_app/`, więc
+  asercja seeda #8 `/_app/*.js ≥ 2` się nie zmienia; `FontFace` z kontrolowanej strony idzie przez service worker,
+  więc start offline obejmuje czcionkę. Ryzyko: brak `ttf` w globach = cichy fallback na `sans-serif` offline (pilnuje 5.2).
+- **FR-008 częściowo**: po pierwszym błędzie bez podpowiedzi zostają wszystkie typy z jednolinijkową podpowiedzią
+  (MISSING z niewiadomym wynikiem, COMPLEMENT, DIV, COMPARE_DIFF, ROMAN, EVEN_ODD, NUMBER_WORDS, część ADD_SUB/MULT/WORD)
+  i HALF — decyzja `[human]` 10.6, treść S-17.
 
 ## References
 

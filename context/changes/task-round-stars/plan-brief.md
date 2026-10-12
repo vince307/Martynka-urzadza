@@ -30,7 +30,7 @@ i rundę dotykiem (#11) na osobnym buildzie z hakiem; `npm run build` pada, jeś
 | Logika rundy | Czysty reduktor w `core` (`first → second → solution → retype → done`), TDD | Sceny tylko renderują; reguły gwiazdek testowalne właściwościami | Research |
 | Pierwsza podpowiedź | `hint[0]` tylko przy ≥ 2 liniach i linii 0 bez wyniku; ROUNDING wyjęty; inaczej „Spróbuj jeszcze raz” | Maska ogólna zmierzona jako niebezpieczna; pełne podpowiedzi to S-17 | Research + Plan |
 | F14 | MISSING: działanie odwrotne bez wyniku, potem z wynikiem | Follow-up jawnie przypisany do S-04 | Research |
-| Kafelki | `generateTask` dokłada 4 kafelki dla `'tiles'`; BONDS przez `tileRange` | Jedno wejście dla rundy, sample i walidatora; ziarna bez zmian | Research + Plan |
+| Kafelki | `generateTask` dokłada 4 kafelki dla `'tiles'` (przycięte do rozmiaru zakresu: BONDS suma 2 → 3); BONDS przez `tileRange` `{0, suma}` | Jedno wejście dla rundy, sample i walidatora; ziarna bez zmian | Research + Plan |
 | Po poprawnej | Przycisk „Dalej” (kit), bez auto-przejścia | Tempo dziecka, bez „timera” | Research + Plan ([human]) |
 | `'select'` | Wyłączone z losowania do S-13 | Brak widoku w kicie; żaden krok nie pustoszeje | Research + Plan ([human]) |
 | Czcionka | TTF w `public/fonts/`, `ttf` w prekeszu | NFR: lokalna czcionka z polskimi znakami, offline | Research |
