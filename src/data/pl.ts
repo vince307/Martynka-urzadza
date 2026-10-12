@@ -58,6 +58,11 @@ export const pl = {
         ],
         half: (n: number) => `Ile to jest połowa liczby ${n}?`,
         compareHint: (n: number, parts: string) => `${n} to ${parts}`,
+        compareDigitsHint: (n: string, digits: string) => `${n} ma ${digits}`,
+        compareMoreDigits: 'Liczba z większą liczbą cyfr jest większa',
+        compareFirstDiffHint: (place: string, x: number, y: number) =>
+            `Porównujemy cyfry od lewej. Pierwsza różna cyfra jest na miejscu ${place}: ${x} i ${y}`,
+        placeNames: ['jedności', 'dziesiątek', 'setek', 'tysięcy', 'dziesiątek tysięcy', 'setek tysięcy', 'milionów'],
         compareEqualHint: 'To takie same liczby',
         evenOdd: (n: number) => `Liczba ${n} jest parzysta czy nieparzysta?`,
         even: 'parzysta',

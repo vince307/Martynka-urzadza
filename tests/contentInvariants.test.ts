@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
 import { boundOf, UNBOUNDED_TYPES } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
+import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
 import { validateTask } from '../src/core/tasks/validate';
 import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
@@ -22,8 +23,9 @@ const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = 
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n
 const MAX_ZERO_ONE_SHARE = 0.35;   // ·0 and ·1 when allowed
-const ARITHMETIC_LINE = /^(\d+) ([+−·:]) (\d+) = (\d+)$/;
-const BINARY_PROMPT = /^(\d+) ([+−·:]) (\d+)$/;
+const NUM = `(${NUMBER_SOURCE})`;
+const ARITHMETIC_LINE = new RegExp(`^${NUM} ([+−·:]) ${NUM} = ${NUM}$`);
+const BINARY_PROMPT = new RegExp(`^${NUM} ([+−·:]) ${NUM}$`);
 
 const evaluate = (a: number, op: string, b: number): number => (op === '+' ? a + b : op === '−' ? a - b : op === '·' ? a * b : a / b);
 
@@ -64,7 +66,7 @@ for (const stage of Object.values(stages)) {
                         for (const line of task.hint) {
                             const m = ARITHMETIC_LINE.exec(line);
                             if (m) {
-                                expect(evaluate(Number(m[1]), m[2], Number(m[3])), `${where} hint "${line}"`).toBe(Number(m[4]));
+                                expect(evaluate(parseNumber(m[1]), m[2], parseNumber(m[3])), `${where} hint "${line}"`).toBe(parseNumber(m[4]));
                             }
                         }
                         // The last hint either computes the answer (7 + 6 = 13) or checks it
@@ -72,12 +74,12 @@ for (const stage of Object.values(stages)) {
                         // appear among its numbers.
                         const last = ARITHMETIC_LINE.exec(task.hint[task.hint.length - 1] ?? '');
                         if (last && typeof task.answer === 'number') {
-                            expect([1, 3, 4].map((i) => Number(last[i])), `${where} last hint`).toContain(task.answer);
+                            expect([1, 3, 4].map((i) => parseNumber(last[i])), `${where} last hint`).toContain(task.answer);
                         }
                         if (bounded && max !== undefined) {
                             for (const text of texts) {
-                                for (const n of text.match(/\d+/g) ?? []) {
-                                    expect(Number(n), `${where} number ${n} in "${text}"`).toBeLessThanOrEqual(max);
+                                for (const n of text.match(new RegExp(NUMBER_SOURCE, 'g')) ?? []) {
+                                    expect(parseNumber(n), `${where} number ${n} in "${text}"`).toBeLessThanOrEqual(max);
                                 }
                             }
                         }
@@ -85,7 +87,7 @@ for (const stage of Object.values(stages)) {
                         const bp = BINARY_PROMPT.exec(task.prompt);
                         if (bp) {
                             binary += 1;
-                            const [a, op, b] = [Number(bp[1]), bp[2], Number(bp[3])];
+                            const [a, op, b] = [parseNumber(bp[1]), bp[2], parseNumber(bp[3])];
                             if (op === '+' || op === '−') {
                                 expect(Math.min(a, b), `${where} zero operand`).toBeGreaterThanOrEqual(1);
                             }

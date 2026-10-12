@@ -1,6 +1,7 @@
 // Mechanical checks shared by the 1000-draw tests and scripts/sample.ts
 // (PRD FR-005): result range, negative numbers, tile choices, hints and Polish
 // numeral agreement for nouns from a dictionary.
+import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
 import type { Task } from './types';
 
@@ -26,7 +27,7 @@ export interface ValidationContext {
  * mentions of temperatures are left to the answer check.
  */
 const NEGATIVE_NUMBER = /(?:^|[=(,:;])\s*[-−]\s?\d/;
-const NUMBER_WORD = /(\d+)\s+(\p{L}+)/gu;
+const NUMBER_WORD = new RegExp(`(${NUMBER_SOURCE})\\s+(\\p{L}+)`, 'gu');
 
 const texts = (task: Task): string[] => [task.prompt, ...(task.speak ? [task.speak] : []), ...task.hint];
 
@@ -76,7 +77,7 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
         for (const text of texts(task)) {
             for (const match of text.matchAll(NUMBER_WORD)) {
-                const n = Number(match[1]);
+                const n = parseNumber(match[1] ?? '');
                 const entry = formIndex.get(match[2]);
                 if (!entry) {
                     continue;

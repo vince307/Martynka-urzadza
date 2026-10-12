@@ -38,6 +38,13 @@ describe('validateTask', () => {
         expect(validateTask({ ...base, hint: [] }).map((x) => x.rule)).toEqual(['hint']);
     });
 
+    it('reads a grouped number as a whole when checking agreement', () => {
+        // The number is read whole: 10 001 takes "jabłek", not the singular a reader of "001" would pick.
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0001 jabłek.' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0002 jabłek.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, prompt: 'W sadzie jest 10\u00A0001 jabłko.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+    });
+
     it('checks numeral agreement for dictionary nouns only', () => {
         expect(validateTask({ ...base, prompt: 'Ania ma 2 jabłek.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
         expect(validateTask({ ...base, prompt: 'Ania ma 2 jabłka.' }, { nouns })).toEqual([]);

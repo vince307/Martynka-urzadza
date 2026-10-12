@@ -14,6 +14,7 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     gwiazdka: ['gwiazdka', 'gwiazdki', 'gwiazdek'],
     złoty: ['złoty', 'złote', 'złotych'],
     grosz: ['grosz', 'grosze', 'groszy'],
+    cyfra: ['cyfra', 'cyfry', 'cyfr'],
     dziesiątka: ['dziesiątka', 'dziesiątki', 'dziesiątek'],
     jedność: ['jedność', 'jedności', 'jedności'],
     ciastko: ['ciastko', 'ciastka', 'ciastek'],
