@@ -857,9 +857,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 4.1 `tests/summary.test.ts` i nowe przypadki `tests/roundView.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `switchVisible` w `first` / `retype` jako gwiazdka → czerwony; przywrócone; meta-check (stany z reduktora)
-- [ ] 4.3 Pełna bramka lokalna zielona
+- [x] 4.1 `tests/summary.test.ts` i nowe przypadki `tests/roundView.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N` — 1f0b93e
+- [x] 4.2 Deliberate break: `switchVisible` w `first` / `retype` jako gwiazdka → czerwony; przywrócone; meta-check (stany z reduktora) — 1f0b93e
+- [x] 4.3 Pełna bramka lokalna zielona — 1f0b93e
 
 ### Phase 5: Głośnik w HUD i podłączenie lektora
 
