@@ -813,10 +813,10 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 1.1 Nowy test `tests/generateTask.test.ts` czerwony przed implementacją, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: `generateTask` bez kafelków → czerwony; przywrócone; meta-check na prawdziwych danych etapów
-- [ ] 1.3 `npm run sample -- E1` pokazuje kafelki i kończy się `Naruszenia: 0`
-- [ ] 1.4 Pełna bramka lokalna zielona
+- [x] 1.1 Nowy test `tests/generateTask.test.ts` czerwony przed implementacją, zielony po; unit `<baseline gałęzi> + N` — 9f57306
+- [x] 1.2 Deliberate break: `generateTask` bez kafelków → czerwony; przywrócone; meta-check na prawdziwych danych etapów — 9f57306
+- [x] 1.3 `npm run sample -- E1` pokazuje kafelki i kończy się `Naruszenia: 0` — 9f57306
+- [x] 1.4 Pełna bramka lokalna zielona — 9f57306
 
 #### Manual
 
