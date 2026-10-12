@@ -1,24 +1,26 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-Written by the `/10x-research` step of autonomous run 2026-10-12-s04-s08. `research.md` answers the six research questions (Web Speech API, spoken text, summary state, room scene and return, e2e hook, headless testing); `change.md` is now `preparing`; there is no product code yet. The planner must get the gesture rule right: Phaser fires `pointerdown` inside DOM `touchstart`, which the HTML spec does not count as user activation, so the speaker has to speak on `pointerup`. Every e2e narrator test must also stub `speechSynthesis`, because headless Chromium on this Mac has a real Polish voice ("Zosia").
+Written by the `/10x-plan` step of autonomous run 2026-10-12-s04-s08. `plan.md` (12 phases: 4 tdd, 6 impl, 2 e2e) and `plan-brief.md` are written; `change.md` is `planned`; the roadmap row S-05 is `planning`; there is no product code yet. The plan reviewer must check the gesture rule (speech only in `pointerup`, `PageButton` in `pointerup`, `ActionButton` unchanged) and that phase 6 is the first place the `roundEnd` bar disappears, so phases 1–5 keep the old end of round working.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary`, cut from `main` at `8467431` |
-| Commits on branch | 2 after this commit (`ad5535b` change identity, plus this research commit) |
+| Commits on branch | 3 after this commit (`ad5535b` change identity, `35ed687` research, plus this plan commit) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no plan yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 56 (`grep -c '^- \[ \]' plan.md`), none done |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/narrator-round-summary/research.md` | the research write-up: §1 Web Speech API table with cited sources, §2 spoken-text rules and the inventory of `□`/symbols, §3 summary in core, §4 room scene and Phaser sleep/switch, §5 hook and spec changes, §6 what can be tested headless, §7 tokens and copy, plus open questions |
-| `context/changes/narrator-round-summary/change.md` | frontmatter only: status `new` → `preparing` |
+| `context/changes/narrator-round-summary/plan.md` | full plan: 12 phases, each with `Driver:` / `Driver why:`, criteria as baseline + delta, deliberate break + meta-check, `## Autonomous decisions` (14), `## Progress` |
+| `context/changes/narrator-round-summary/plan-brief.md` | two-page brief with the decision table |
+| `context/changes/narrator-round-summary/change.md` | frontmatter status `preparing` → `planned` |
+| `context/foundation/roadmap.md` | S-05 `Status` `proposed` → `planning` (At a glance row and the `### S-05` block) |
 | `context/changes/narrator-round-summary/handoff.md` | this file |
 
 ## 3. Verification
@@ -26,54 +28,48 @@ Written by the `/10x-research` step of autonomous run 2026-10-12-s04-s08. `resea
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/narrator-round-summary` |
-| `npm run sample -- E1..E6 --count 4` | 336 prompt lines. Symbol counts: `−` 71, `+` 61, `□` 56, `:` 50, `=` 44, `·` 34, NBSP 8 (counted from the output, which was not saved) |
-| Playwright probe (`chromium.launch()`, `speechSynthesis.getVoices()`), run once outside the sandbox and deleted afterwards | HeadlessChrome 156.0.8078.4 lists 180 voices, including `Zosia` `pl-PL` with `localService: true` |
-| Reading `node_modules/phaser` 4.2.1 | `InputManager.onTouchStart` → `updateInputPlugins` runs synchronously in DOM `touchstart`. `ScenePlugin.switch` is queued and puts the current scene to sleep. `InputPlugin.update` returns false for an inactive scene |
-| Gates (lint, typecheck, unit, build, e2e) | not run: docs-only step, no code changed |
+| Success Criteria ↔ Progress mapping (script over `plan.md`) | 1:1 for all 12 phases (5/5, 5/5, 4/4, 3/3, 4/4, 6/6, 5/5, 4/4, 4/4, 9/9, 3/3, 3/3); every phase body has a `Driver:` line |
+| `metadata-guard.mjs inspect` / `mark-planned` | inspect OK; `mark-planned` `{"changed":true}` |
+| Code claims re-checked in this step | `roundView`/`barOf` (`roundEnd`, `switchVisible: false`), `TaskScene.advance`/`snapshot`/`targets`, `UIScene.create` (`input.enabled = false`), `ActionButton` (`pointerdown`), `StarCounter.value`, `installE2EHook`, `playwright.config.ts` `ROUND_SPEC`, `pl.round`/`pl.tasks.romanContexts`/`romanMonth`, generators setting `speak` (only `generateMissing`), ESLint browser-globals list |
+| Gates (lint, typecheck, unit, build, e2e) | not run: docs-only step; baseline from the contract `main` @ `8467431`: unit 596 passed, e2e 4 passed |
 
 ## 4. Next command
 
-/10x-plan narrator-round-summary
+/10x-plan-review narrator-round-summary
 
 ## 5. Open
 
-- `[human]` checks to put in the plan:
-  - Polish voice quality on an iPad (Safari PWA) and an Android tablet (PRD Open Question 7);
-  - whether one gesture unlocks speech for the whole iOS session, so auto-read after "Dalej" works;
-  - how numerals in sentences are read aloud ("dwie książki").
-- Product choices for the plan (research.md Open Questions):
-  - leaving the room returns to the summary (kit `preview.js`: `roomReturn`) or starts a new round (change.md decision 3);
-  - the bonus as its own line, or counted in "+N";
-  - what the row of 5 stars means;
-  - the `speak` wording for COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN (read direction) and CALENDAR `romanMonth`. This changes generators, so it needs a teacher read;
-  - numbers above 1000 in speech.
-- New DESIGN-GAP candidates:
-  - the kit summary has no HUD, but FR-011 keeps the counter visible;
-  - the kit HUD shows "Do pokoju" during a task, which FR-011 forbids;
-  - all the candidates listed in change.md (a)–(f).
-- Follow-up candidates:
-  - the "Oblicz" heading is drawn over compare prompts (`src/core/round/prompt.ts` `isExpression`);
-  - a narrator risk for `/10x-test-plan refresh`;
-  - `scripts/sample.ts` should print `speak`;
-  - extend `numberToWords` beyond 1000 if the device listening check needs it;
-  - `Trigger: S-09` for the room-task cost (from change.md).
-- Triggered S-04 follow-ups (see `context/archive/2026-10-12-task-round-stars/follow-ups/review-fixes.md`): HUD switch and drawn counter in the hook are in scope; `pl.title` and the solution-step dots stay deferred, as change.md says.
+- Manual-only Progress rows (checklist for the maintainer):
+  - [ ] 10.5 `[human]` auto-read only as a session default by stage, no parent toggle until S-08 (FR-009)
+  - [ ] 10.6 `[human]` "Do pokoju" not highlighted until S-09 (`summaryView` with `nextRoomTaskCost: null`, FR-010)
+  - [ ] 10.7 `[human]` room returns to the screen the child left (kit), not a new round (against `change.md` decision 3)
+  - [ ] 10.8 `[human]` first task after a cold start is never auto-read (browser gesture rule)
+  - [ ] 10.9 `[human]` iPad (Safari, PWA) and Android listening check: voice quality, numerals in sentences, spelled Roman numerals, one unlock per session (PRD OQ 7)
+  - `[reviewer]` teacher reads: 1.5 (generator `speak`), 2.5 (`czyta:` lines, `pl.speech`), 6.5 (`pl.summary`), 7.4 (`pl.room`); seam sweep 10.4
+  - `[visual]` 5.4, 6.6, 7.5, 9.4 (states named in the plan, 1440×900 and 1024×768)
+- DESIGN-GAPs planned (phase 10 writes them to `docs/design-gaps.md`): (a) highlighted "Do pokoju", (b) bonus line, (c) star row meaning, (d) no voice → speaker hidden, (e) empty room, (f) HUD counter on the summary; row 5 removed; row 4 rewritten by phase 9.
+- Follow-ups planned (phase 10, `follow-ups/review-fixes.md`): room-task cost into `summaryView` (S-09); `numberToWords` above 1000 in speech (condition: listening check); "Oblicz" over compare prompts (`isExpression`); narrator risk for `/10x-test-plan refresh`; `autoRead` toggle (S-08) and save (S-11); carried from S-04: `pl.title` (S-06), solution-step dots.
+- Known risks: iOS sticky activation; `UIScene` with input enabled must not swallow taps meant for `TaskScene` (covered by #11 after phase 5).
 
 ## 6. Autonomous decisions
 
-1. **Research question taken from change.md "Open questions" and the step prompt, without asking anyone.**
-   - Rejected: interviewing the maintainer.
-   - Why: contract rule 1.
+1. **No interview, no complexity confirmation.** The skill asks for both; contract rule 1 forbids asking. Every open product question from research was decided from the kit, PRD and `change.md` and written into `plan.md` `## Autonomous decisions` (1–14).
    - Would change: nothing in this step.
-2. **Web Speech facts gathered by one helper agent doing web research. Phaser, repo and kit facts checked here in the code.**
-   - Rejected: context7 for the Web Speech API. It is a browser API, not a library, so primary specs and bug trackers are better sources.
-   - Why: the facts come from different places.
-   - Would change: a context7 entry for MDN Web Speech, which would be used to re-check §1.
-3. **Ran a headless voice probe outside the sandbox.**
-   - Why: it answers question 6 directly. test-stack.md records that headless Chromium cannot start inside the sandbox.
-   - The probe script was temporary and was deleted. Nothing is committed.
-   - Would change: nothing.
-4. **Recommended the kit's room return (back to the screen the child left) over change.md decision 3, which starts a new round.** Recorded as a recommendation only; the plan decides.
-   - Why: one wake path for both the summary and the HUD switch, and it matches the kit.
-   - Would change: the maintainer wants the room to be a "break" that always resets the round.
-5. **Next step is `/10x-plan`,** as the step prompt fixes.
+2. **Room return follows the kit (back to the screen the child left), against `change.md` decision 3.**
+   - Rejected: a new round after the room.
+   - Why: the kit binds (profile § 6), and it gives one `scene.switch` path for the summary and the HUD switch.
+   - A `[human]` row (10.7) names it. Would change: the maintainer wants the room to reset the round.
+3. **12 phases, speech content first (phases 1–2), the `roundEnd` bar removed only in phase 6.**
+   - Why: each phase must leave the game playable for a fresh agent, and the generator work keeps its own tdd phase with a teacher read (orchestrator guidance).
+   - Would change: the plan review finds a phase too big for one agent; then split it.
+4. **The HUD switch is phase 9, the last code phase before the seam sweep, and cuttable** (orchestrator guidance, `change.md` decision 3).
+   - Would change: if it is cut, design-gaps row 4 and the follow-up go back to S-09.
+5. **The narrator spec is its own file (`tests/e2e/narrator.spec.ts`), with `chromium-hook` `testMatch` widened.**
+   - Rejected: adding it to `task-round.spec.ts`. That file stays on risk #11, which covers the round only.
+   - Every hook spec stubs `speechSynthesis` through `page.addInitScript`.
+   - Would change: `/10x-test-plan refresh` assigns the narrator a risk id.
+6. **Phase 10 uses the profile-path deliberate break proven in S-04,** not a `CLAUDE.md` path.
+   - Why: it is not certain that `validate-rule-files.sh` checks paths inside `CLAUDE.md`.
+   - Would change: the validator does check them.
+7. **Clipboard step skipped.** There is no one to receive it in an unattended run; the command is in §4.
+8. **Next step is `/10x-plan-review`, as the step prompt fixes.**
