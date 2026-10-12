@@ -57,6 +57,9 @@ describe('generateFactFamily', () => {
                 if (variant === 'checkDiv') {
                     expect(Number(m[3]), where).toBeGreaterThanOrEqual(2);
                     expect(Number(m[4]), where).toBeGreaterThanOrEqual(2);
+                    // impl-review S-03: checking division stays within the times table (no 98 : 49).
+                    expect(Number(m[3]), where).toBeLessThanOrEqual(10);
+                    expect(Number(m[4]), where).toBeLessThanOrEqual(10);
                 }
                 expect(task.answer, where).toBe(Number(m[1]));
                 common(task, 100, where);

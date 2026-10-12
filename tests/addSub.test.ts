@@ -124,7 +124,7 @@ describe('generateAddSub', () => {
         expect(addSubHint(22, 15, '-')).toEqual([`22 ${MINUS} 10 = 12`, `12 ${MINUS} 2 = 10`, `10 ${MINUS} 3 = 7`]);
         expect(addSubHint(7, 6, '+')).toEqual(['7 + 3 = 10', '10 + 3 = 13']);
         expect(addSubHint(8, 2, '+')).toEqual(['8 + 2 = 10']);
-        expect(addSubHint(20, 7, '-')).toEqual([`20 ${MINUS} 10 = 10`, '10 + 3 = 13']); // F12 supersedes the one-line hint
+        expect(addSubHint(20, 7, '-')).toEqual([`10 ${MINUS} 7 = 3`, '10 + 3 = 13']); // F12 supersedes the one-line hint
         expect(addSubHint(530, 400, '+')).toEqual(['530 + 400 = 930']);
     });
 
@@ -178,9 +178,10 @@ describe('ADD_SUB: rare a − a (E1)', () => {
         });
     }
 
-    it('teaches DT − U as minus ten, plus the rest (F12)', () => {
-        expect(addSubHint(70, 9, '-')).toEqual([`70 ${MINUS} 10 = 60`, '60 + 1 = 61']);
-        expect(addSubHint(20, 7, '-')).toEqual([`20 ${MINUS} 10 = 10`, '10 + 3 = 13']);
+    it('teaches DT − U by breaking one ten: 70 − 9 = 60 + (10 − 9) (F12, impl-review S-03)', () => {
+        expect(addSubHint(70, 9, '-')).toEqual([`10 ${MINUS} 9 = 1`, '60 + 1 = 61']);
+        expect(addSubHint(20, 7, '-')).toEqual([`10 ${MINUS} 7 = 3`, '10 + 3 = 13']);
+        expect(addSubHint(90, 4, '-')).toEqual([`10 ${MINUS} 4 = 6`, '80 + 6 = 86']);
         expect(addSubHint(10, 3, '-')).toEqual([`10 ${MINUS} 3 = 7`]);
     });
 });

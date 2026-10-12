@@ -31,7 +31,8 @@ export const pl = {
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
-        complement: (n: number, target: number) => `Ile brakuje od ${n} do ${target}?`,
+        // Same question as the BONDS hint; "Ile brakuje od 2 do 10?" read awkwardly (impl-review S-03).
+        complement: (n: number, target: number) => `Ile trzeba dodać do ${n}, żeby było ${target}?`,
         complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
         bonds: (total: number) => `Uzupełnij domek liczby ${total}.`,
         bondsHint: (shown: number, total: number) => `Ile trzeba dodać do ${shown}, żeby było ${total}?`,
@@ -62,6 +63,8 @@ export const pl = {
         half: (n: number) => `Ile to jest połowa liczby ${n}?`,
         compareHint: (n: number, parts: string) => `${n} to ${parts}`,
         compareDigitsHint: (n: string, digits: string) => `${n} ma ${digits}`,
+        // Object of "ma" in the accusative: "2 ma 1 cyfrę" (2–7 digits agree through nouns.cyfra).
+        oneDigit: '1 cyfrę',
         compareMoreDigits: 'Liczba z większą liczbą cyfr jest większa',
         compareFirstDiffHint: (place: string, x: number, y: number) =>
             `Porównujemy cyfry od lewej. Pierwsza różna cyfra jest na miejscu ${place}: ${x} i ${y}`,

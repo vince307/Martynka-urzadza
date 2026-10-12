@@ -1,7 +1,7 @@
 // MISSING_OP: "8 □ 2 = 6", pick the missing sign from two tiles (ZADANIA.md,
 // section 4). Only + and −: with b >= 1 exactly one of them fits.
 import { pl } from '../../../data/pl';
-import { applyOp, arithLine, opSign, type Op } from '../arith';
+import { applyOp, arithLine, opSign, SAME_SHARE, type Op } from '../arith';
 import { BOX } from '../symbols';
 import type { Generator, Task } from '../types';
 
@@ -11,8 +11,6 @@ export interface MissingOpParams {
 }
 
 const MAX_ATTEMPTS = 1000;
-/** Share of "a − a" (result 0) among subtractions, as in ADD_SUB. */
-const SAME_SHARE = 0.05;
 
 export const parseMissingOpParams = (params: Record<string, unknown>): MissingOpParams => {
     const { max, ops } = params;

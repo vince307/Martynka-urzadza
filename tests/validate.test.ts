@@ -52,4 +52,13 @@ describe('validateTask', () => {
         expect(validateTask({ ...base, hint: ['22 gruszki'] }, { nouns })).toEqual([]);
         expect(validateTask({ ...base, prompt: '3 smoki' }, { nouns })).toEqual([]);
     });
+
+    it('flags a feminine nominative after a verb where Polish needs the accusative (1 cyfrę)', () => {
+        // impl-review S-03: "2 ma 1 cyfra" passed every check; the object of "ma" takes the accusative.
+        expect(validateTask({ ...base, hint: ['2 ma 1 cyfra'] }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, prompt: 'Ania kupiła 1 gruszka.' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, hint: ['2 ma 1 cyfrę'] }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'Ania ma 1 jabłko.' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'Na półce jest 1 książka.' }, { nouns })).toEqual([]);
+    });
 });

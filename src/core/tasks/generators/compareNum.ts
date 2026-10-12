@@ -1,5 +1,6 @@
 // COMPARE_NUM: two numbers and the signs <, >, = as tiles (ZADANIA.md,
-// section 4). The hint spells out tens and units.
+// section 4). Up to 100 the hint spells out tens and units; above 100 it
+// compares digit counts or the first differing digit from the left.
 import { nouns } from '../../../data/nouns';
 import { pl } from '../../../data/pl';
 import { formatNumber } from '../../text/formatNumber';
@@ -43,7 +44,10 @@ const largePartner = (a: number, max: number, rng: Rng): number => {
     }
     const lenA = digitCount(a);
     if (rng.chance(1 / 3)) {
-        const lens = Array.from({ length: digitCount(max) }, (_, i) => i + 1).filter((l) => l !== lenA);
+        // One digit more or less: 612 449 □ 2 would be a trivial comparison (impl-review S-03).
+        // A length holding only max itself (7 digits for 1 000 000) is skipped, so the
+        // partner is not "1 000 000" in a sixth of the draws.
+        const lens = [lenA - 1, lenA + 1].filter((l) => l >= 1 && l <= digitCount(max - 1));
         const len = rng.pick(lens);
         const low = len === 1 ? 1 : 10 ** (len - 1);
         return rng.int(low, Math.min(10 ** len - 1, max));
@@ -54,8 +58,12 @@ const largePartner = (a: number, max: number, rng: Rng): number => {
         const b = Math.floor(a / rest) * rest + rng.int(0, rest - 1);
         return b <= max ? b : a;
     }
-    return rng.int(1, max);
+    // Same length as a, so lengths differ only in the branch above.
+    return rng.int(lenA === 1 ? 1 : 10 ** (lenA - 1), Math.min(10 ** lenA - 1, max));
 };
+
+/** Object of "ma": accusative "1 cyfrę", then "2 cyfry", "5 cyfr". */
+const digitsPhrase = (n: number): string => (n === 1 ? pl.tasks.oneDigit : countNoun(n, nouns.cyfra));
 
 const largeHint = (a: number, b: number, sign: string): string[] => {
     const [fa, fb] = [formatNumber(a), formatNumber(b)];
@@ -66,8 +74,8 @@ const largeHint = (a: number, b: number, sign: string): string[] => {
     const [la, lb] = [digitCount(a), digitCount(b)];
     if (la !== lb) {
         return [
-            pl.tasks.compareDigitsHint(fa, countNoun(la, nouns.cyfra)),
-            pl.tasks.compareDigitsHint(fb, countNoun(lb, nouns.cyfra)),
+            pl.tasks.compareDigitsHint(fa, digitsPhrase(la)),
+            pl.tasks.compareDigitsHint(fb, digitsPhrase(lb)),
             pl.tasks.compareMoreDigits,
             last,
         ];

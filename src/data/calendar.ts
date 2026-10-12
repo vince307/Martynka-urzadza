@@ -59,5 +59,5 @@ export const timeFacts: readonly TimeFact[] = [
     { question: 'Ile miesięcy ma rok?', answer: 12, hint: 'Wyobraź sobie kalendarz od stycznia do grudnia i policz kartki.' },
     { question: 'Ile dni ma rok, który nie jest przestępny?', answer: 365, hint: 'Rok to dużo dni, ale mniej niż czterysta.' },
     { question: 'Ile dni ma tydzień?', answer: 7, hint: 'Wymień po kolei: poniedziałek, wtorek, środa, czwartek, piątek, sobota, niedziela.' },
-    { question: 'Ile lat ma wiek?', answer: 100, hint: 'Wiek to inaczej stulecie.' },
+    { question: 'Ile lat trwa jeden wiek?', answer: 100, hint: 'Wiek to inaczej stulecie.' },
 ];

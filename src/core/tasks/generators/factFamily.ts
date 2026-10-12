@@ -16,6 +16,8 @@ export interface FactFamilyParams {
 const VARIANTS: readonly FactVariant[] = ['swap', 'checkSub', 'checkAdd', 'checkDiv'];
 /** Smallest `max` that leaves a task for the variant (swap needs a ≠ b, checkDiv 2 · 2). */
 const MIN_MAX: Readonly<Record<FactVariant, number>> = { swap: 3, checkSub: 2, checkAdd: 2, checkDiv: 4 };
+/** checkDiv keeps divisor and quotient in the times table (2–10). */
+const TABLE = 10;
 const isVariant = (value: unknown): value is FactVariant => VARIANTS.includes(value as FactVariant);
 
 export const parseFactFamilyParams = (params: Record<string, unknown>): FactFamilyParams => {
@@ -67,8 +69,9 @@ export const generateFactFamily: Generator = (skill, rng): Task => {
             return make(`${a} + ${b} = ${a + b}. ${pl.tasks.factCheck} ${a + b} ${MINUS} ${b} = ${BOX}`, a, pl.tasks.factCheckAddHint, arithLine(a + b, b, '-'));
         }
         default: {
-            const divisor = rng.int(2, Math.floor(p.max / 2));
-            const quotient = rng.int(2, Math.floor(p.max / divisor));
+            // Within the times table: checking 98 : 49 by 2 · 49 is not a grade-2/3 check (impl-review S-03).
+            const divisor = rng.int(2, Math.min(TABLE, Math.floor(p.max / 2)));
+            const quotient = rng.int(2, Math.min(TABLE, Math.floor(p.max / divisor)));
             const product = divisor * quotient;
             return make(
                 `${product} ${DIVIDE} ${divisor} = ${quotient}. ${pl.tasks.factCheck} ${quotient} ${TIMES} ${divisor} = ${BOX}`,

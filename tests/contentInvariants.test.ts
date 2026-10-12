@@ -9,8 +9,9 @@ import { nouns } from '../src/data/nouns';
 
 // Content invariants (test-plan.md rollout phase 3) over every skill of every
 // stage: 1000 draws each. Thresholds come from the 2026-10-12 measurement in
-// context/archive/*testing-content-invariants/research.md; adjust them here,
-// with a comment, when a new stage legitimately has a smaller task space.
+// context/archive/*testing-content-invariants/research.md. A skill whose step
+// legitimately has a smaller task space gets a named SMALL_SPACES entry with the
+// measured value; the thresholds themselves stay global.
 const DRAWS = 1000;
 const MIN_DISTINCT = 12;           // distinct (prompt + choices) pairs per 1000 draws
 // Skills whose task space is smaller than MIN_DISTINCT by definition of their step

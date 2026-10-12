@@ -22,6 +22,10 @@ export const parseCompareExprParams = (params: Record<string, unknown>): Compare
     if (!Array.isArray(ops) || ops.length === 0 || !ops.every((o) => o === '+' || o === '-')) {
         throw new TypeError(`COMPARE_EXPR params.ops must be a non-empty list of '+' / '-', got ${JSON.stringify(ops)}`);
     }
+    // Sums only: below 4 there are no two different expressions (1 + 1, 1 + 2 and 2 + 1 only).
+    if (!ops.includes('-') && (max as number) < 4) {
+        throw new TypeError(`COMPARE_EXPR ops ['+'] needs max >= 4, got ${String(max)}`);
+    }
     return { max: max as number, ops: ops as Op[] };
 };
 

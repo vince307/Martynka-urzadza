@@ -48,6 +48,8 @@ describe('generateCompareNum large numbers', () => {
             }
             if (String(a).length !== String(b).length) {
                 differentLength += 1;
+                // impl-review S-03: no trivial pairs such as 612 449 □ 2; lengths differ by one digit.
+                expect(Math.abs(String(a).length - String(b).length), where).toBe(1);
             }
             if (a !== b) {
                 const last = task.hint[task.hint.length - 1];
@@ -56,6 +58,18 @@ describe('generateCompareNum large numbers', () => {
         });
         expect(grouped).toBeGreaterThan(300);
         expect(differentLength).toBeGreaterThan(150);
+    });
+
+    it('a one-digit number "ma 1 cyfrę" (accusative, impl-review S-03)', () => {
+        const mid = { id: 'T.mid', type: 'COMPARE_NUM', params: { max: 1000 } } as never;
+        let oneDigit = 0;
+        // forEachDraw runs validateTask, which flags "ma 1 cyfra".
+        forEachDraw(generateCompareNum, mid, {}, (task) => {
+            if (task.hint.some((h) => h.endsWith(' ma 1 cyfrę'))) {
+                oneDigit += 1;
+            }
+        });
+        expect(oneDigit).toBeGreaterThan(0);
     });
 
     it('max <= 100 keeps the tens and units hint', () => {

@@ -43,6 +43,9 @@ describe('generateChooseOp', () => {
         expect(() => parseChooseOpParams({ max: 10, kinds: [] })).toThrow(TypeError);
         expect(() => parseChooseOpParams({ max: 10 })).toThrow(TypeError);
         expect(() => parseChooseOpParams({ max: 1, kinds: ['sum'] })).toThrow(TypeError);
+        // impl-review S-03: max 2 leaves no third tile; the generator used to throw at draw time.
+        expect(() => parseChooseOpParams({ max: 2, kinds: ['left'] })).toThrow(TypeError);
+        expect(() => parseChooseOpParams({ max: 3, kinds: ['sum', 'left', 'moreBy'] })).not.toThrow();
         expect(parseChooseOpParams({ max: 10, kinds: ['sum', 'left'] })).toEqual({ max: 10, kinds: ['sum', 'left'] });
     });
 });

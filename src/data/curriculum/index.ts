@@ -1,5 +1,5 @@
-// Curriculum stages as data (plan section 4). Stages without content yet are
-// absent, so tools can list what exists.
+// Curriculum stages as data (plan section 4). All six stages E1–E6 have data;
+// steps whose types all come in later groups have no skills yet.
 import type { StageDef, StageId } from '../../core/types';
 import { E1 } from './E1';
 import { E2 } from './E2';

@@ -3,7 +3,7 @@
 // from free draws in [1, max] or from number shapes ("DU+U", params.shapes).
 import type { Rng } from '../../rng';
 import { drawToken, formatShape, parseShape, tokenValues, type Shape } from '../shapes';
-import { applyOp as apply, arithLine as line, opSign as sign } from '../arith';
+import { applyOp as apply, arithLine as line, opSign as sign, SAME_SHARE } from '../arith';
 import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
@@ -126,8 +126,9 @@ export const shapeFeasible = (shape: Shape, max: number, bridge: Bridge): boolea
  */
 export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
     if (op === '-' && a >= 20 && a % 10 === 0 && b >= 1 && b <= 9) {
-        // DT − U (70 − 9): take a whole ten, then give back what was taken too much.
-        return [line(a, 10, '-'), line(a - 10, 10 - b, '+')];
+        // DT − U (70 − 9 = 60 + (10 − 9)): break one ten, subtract from it, add the
+        // other tens; "20 − 7" by analogy with "10 − 7" (impl-review S-03).
+        return [line(10, b, '-'), line(a - 10, 10 - b, '+')];
     }
     const steps: string[] = [];
     const tens = b - (b % 10);
@@ -150,12 +151,6 @@ export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
     }
     return steps.length > 0 ? steps : [line(a, b, op)];
 };
-
-/**
- * Share of "a − a" among drawn subtractions. E1 teaches the zero result, but a
- * uniform pair draw on a tiny range would make it the most common task.
- */
-const SAME_SHARE = 0.05;
 
 /**
  * Operands are at least 1 and pairs are drawn uniformly, so no single task

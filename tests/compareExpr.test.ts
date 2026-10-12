@@ -42,5 +42,9 @@ describe('generateCompareExpr', () => {
         expect(() => parseCompareExprParams({ max: 10, ops: [] })).toThrow(TypeError);
         expect(() => parseCompareExprParams({ max: 10, ops: ['*'] })).toThrow(TypeError);
         expect(() => parseCompareExprParams({ max: 10, ops: ['+', '-'] })).not.toThrow();
+        // impl-review S-03: sums only below 4 have no two different expressions; the generator used to throw at draw time.
+        expect(() => parseCompareExprParams({ max: 3, ops: ['+'] })).toThrow(TypeError);
+        expect(() => parseCompareExprParams({ max: 4, ops: ['+'] })).not.toThrow();
+        expect(() => parseCompareExprParams({ max: 2, ops: ['-'] })).not.toThrow();
     });
 });

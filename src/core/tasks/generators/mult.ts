@@ -62,12 +62,19 @@ const drawFactors = (p: MultParams, rng: Rng): [number, number] | undefined => {
 };
 
 /**
- * Hint: ·0, ·1, ·2, ·5 and ·10 are stated directly; an even factor is doubled
+ * Hint: a teen factor is split into tens and units (5 · 13 → 5 · 10 + 5 · 3);
+ * ·0, ·1, ·2, ·5 and ·10 are stated directly; an even factor is doubled
  * (7 · 4 → 7 · 2 = 14, 14 + 14 = 28); an odd one adds one more group
  * (7 · 3 → 7 · 2 = 14, 14 + 7 = 21).
  */
 export const multHint = (a: number, b: number): string[] => {
     const product = a * b;
+    // A teen factor (5 · 13): tens and units separately, the grade-3 method (E6.4).
+    if (b >= 11 && b <= 19 && a >= 2 && a <= 9) {
+        const tens = a * 10;
+        const units = a * (b - 10);
+        return [`${a} ${TIMES} 10 = ${tens}`, `${a} ${TIMES} ${b - 10} = ${units}`, `${tens} + ${units} = ${product}`];
+    }
     if (a <= 2 || b <= 2 || b === 5 || b === 10 || b === 100) {
         return [`${a} ${TIMES} ${b} = ${product}`];
     }

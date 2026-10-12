@@ -18,6 +18,8 @@ const KINDS: readonly ChooseOpKind[] = ['sum', 'left', 'moreBy'];
 const MAX_ATTEMPTS = 1000;
 const isKind = (value: unknown): value is ChooseOpKind => KINDS.includes(value as ChooseOpKind);
 
+const MIN_TILES_MAX = 3;
+
 export const parseChooseOpParams = (params: Record<string, unknown>): ChooseOpParams => {
     const { max, kinds } = params;
     if (!Number.isInteger(max)) {
@@ -27,8 +29,10 @@ export const parseChooseOpParams = (params: Record<string, unknown>): ChooseOpPa
         throw new TypeError(`CHOOSE_OP params.kinds must be a non-empty list of ${KINDS.join(', ')}, got ${JSON.stringify(kinds)}`);
     }
     for (const kind of kinds) {
-        if ((max as number) < MIN_MAX[kind]) {
-            throw new TypeError(`CHOOSE_OP kind ${kind} needs max >= ${MIN_MAX[kind]}, got ${String(max)}`);
+        // The third tile needs another number besides the two of the story: max >= 3.
+        const min = Math.max(MIN_TILES_MAX, MIN_MAX[kind]);
+        if ((max as number) < min) {
+            throw new TypeError(`CHOOSE_OP kind ${kind} needs max >= ${min}, got ${String(max)}`);
         }
     }
     return { max: max as number, kinds };
