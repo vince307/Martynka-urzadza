@@ -5,12 +5,16 @@ import { E1 } from './E1';
 import { E2 } from './E2';
 import { E3 } from './E3';
 import { E4 } from './E4';
+import { E5 } from './E5';
+import { E6 } from './E6';
 
 export const stages: Readonly<Partial<Record<StageId, StageDef>>> = {
     E1,
     E2,
     E3,
     E4,
+    E5,
+    E6,
 };
 
 export const getStage = (id: string): StageDef | undefined =>
