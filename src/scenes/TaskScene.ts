@@ -109,6 +109,16 @@ export class TaskScene extends Scene {
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
+        // "Do pokoju": the round stays as it is while this scene sleeps; no speech runs over the room.
+        const toRoom = (): void => {
+            this.narrator?.cancel();
+            this.registry.set(REGISTRY_KEYS.narration, null);
+            this.scene.switch(SCENE_KEYS.room);
+        };
+        this.game.events.on(GAME_EVENTS.toRoom, toRoom);
+        // Back from the room: redraw the same state (summary), re-arm its buttons, no auto-reading.
+        this.events.on('wake', () => this.render());
+        this.events.once('shutdown', () => this.game.events.off(GAME_EVENTS.toRoom, toRoom));
 
         // Build id in the corner: the only way to see on a tablet that a silent
         // PWA update has landed. Technical identifier, not player-facing text.

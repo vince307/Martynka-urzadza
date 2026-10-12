@@ -57,6 +57,11 @@ export const pl = {
         toRoom: 'Do pokoju',          // kit summary.png
         earned: (n: number) => `+${n}`,
     },
+    // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the placeholder caption is ours.
+    room: {
+        caption: 'Tu powstanie pokój',
+        resume: 'Wróć do notesu',   // kit room-return view
+    },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,

@@ -6,6 +6,7 @@ import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
+import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { UIScene } from './scenes/UIScene';
 import { installE2EHook } from './testing/e2eHook';
@@ -25,7 +26,7 @@ const createGame = (parent: string, narrator: Narrator): Game =>
             width: GAME_WIDTH,
             height: GAME_HEIGHT,
         },
-        scene: [BootScene, TaskScene, UIScene],
+        scene: [BootScene, TaskScene, RoomScene, UIScene],
         callbacks: { preBoot: (booting) => booting.registry.set(REGISTRY_KEYS.narrator, narrator) },
     });
 

@@ -89,11 +89,11 @@ export const FONT_KEY = 'AtkinsonHyperlegibleNext';
 export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 
 /** Scene keys. */
-export const SCENE_KEYS = { boot: 'Boot', task: 'Task', ui: 'UI' } as const;
+export const SCENE_KEYS = { boot: 'Boot', task: 'Task', room: 'Room', ui: 'UI' } as const;
 
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
-    toRoom: 'to-room',   // the summary's "Do pokoju" was tapped; the room scene comes with phase 7
+    toRoom: 'to-room',   // the summary's "Do pokoju" was tapped; the task scene switches to the room scene
 } as const;
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
@@ -146,6 +146,13 @@ export const SUMMARY_LAYOUT = {
     buttons: { left: 454, top: 816, gap: 36, width: 450, height: 128, radius: 32, border: 5, highlightBorder: 9 },
 } as const;
 
+/** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
+export const ROOM_LAYOUT = {
+    panel: { left: 180, top: 204, width: 1560, height: 840, radius: 40 },
+    caption: { x: 960, y: 520 },
+    resume: { left: 720, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (e)
+} as const;
+
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
@@ -157,6 +164,7 @@ export const TASK_TOUCH_TARGETS = {
     key: { width: TASK_LAYOUT.keypad.keyWidth, height: TASK_LAYOUT.keypad.keyHeight },
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
+    resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
 } as const;
 
 /** Animation durations in milliseconds. */

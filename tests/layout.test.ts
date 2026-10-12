@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS } from '../src/data/layout';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -34,6 +34,14 @@ describe('task screen layout constants', () => {
         expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         const { stars } = SUMMARY_LAYOUT;
         expect(stars.top + stars.size).toBeLessThan(SUMMARY_LAYOUT.earned.top);   // star row sits above "+N"
+    });
+
+    it('keeps the room placeholder\'s way back a touch target inside the room panel', () => {
+        const { resume, panel } = ROOM_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.resume).toEqual({ width: resume.width, height: resume.height });
+        expect(resume.left).toBeGreaterThanOrEqual(panel.left);
+        expect(resume.left + resume.width).toBeLessThanOrEqual(panel.left + panel.width);
+        expect(resume.top + resume.height).toBeLessThanOrEqual(panel.top + panel.height);
     });
 
     it('uses the kit tile height of 136 px, not smaller', () => {
