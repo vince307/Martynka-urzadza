@@ -10,7 +10,7 @@ Written by the `/10x-plan` step of autonomous run 2026-10-12-s04-s08. `plan.md` 
 | Commits on branch | 3 after this commit (`ad5535b` change identity, `35ed687` research, plus this plan commit) |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 56 (`grep -c '^- \[ \]' plan.md`), none done |
+| `## Progress` rows remaining | 55 (`grep -c '^- \[ \]' plan.md`), none done |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
