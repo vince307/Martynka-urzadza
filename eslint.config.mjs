@@ -8,7 +8,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-    globalIgnores(['dist/**', 'dev-dist/**', '.claude/**', 'context/**', 'designs/**', 'docs/**']),
+    globalIgnores(['dist/**', 'dist-e2e/**', 'dev-dist/**', '.claude/**', 'context/**', 'designs/**', 'docs/**']),
     {
         files: ['**/*.ts', '**/*.mts'],
         extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],
@@ -26,7 +26,7 @@ export default defineConfig([
         languageOptions: { globals: globals.node },
     },
     {
-        files: ['src/scenes/**', 'src/pwa/**', 'src/ui/**', 'src/main.ts'],
+        files: ['src/scenes/**', 'src/pwa/**', 'src/ui/**', 'src/testing/**', 'src/main.ts'],
         languageOptions: { globals: globals.browser },
     },
     {

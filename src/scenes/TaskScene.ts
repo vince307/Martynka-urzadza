@@ -26,6 +26,30 @@ import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 import { drawStar, starCounterTarget } from '../ui/widgets/StarCounter';
 
+type Point = { x: number; y: number };
+
+/** What the e2e hook may read of a round (frozen copy). */
+export interface TaskSnapshot {
+    readonly index: number;
+    readonly phase: RoundState['phase'];
+    readonly input: 'tiles' | 'keypad';
+    readonly answer: unknown;
+    readonly choices: readonly (number | string)[];
+    readonly outcomes: RoundState['outcomes'];
+    readonly starsEarned: number;
+    readonly bonusEarned: number;
+    readonly starsTotal: number;
+    readonly counter: number;
+    readonly finished: boolean;
+}
+
+export interface TaskTargets {
+    readonly tiles: readonly (Point & { value: number | string })[];
+    readonly keys: readonly (Point & { key: string })[];
+    readonly next: Point | null;
+    readonly step: Point | null;
+}
+
 const toCssColor = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
 
 /**
@@ -215,6 +239,35 @@ export class TaskScene extends Scene {
                 { x: to.x, y: to.y, scale: 1, duration: ANIMATION.starFlightMs - ANIMATION.starPopMs, ease: 'Sine.easeInOut' },
             ],
             onComplete: () => star.destroy(),
+        });
+    }
+
+    /** Read-only copy of the round for the e2e hook; nothing here can change the scene. */
+    snapshot(): TaskSnapshot {
+        const view = roundView(this.state, pl.round.resultLine);
+        const task = this.state.tasks[this.state.index];
+        return Object.freeze({
+            index: this.state.index,
+            phase: this.state.phase,
+            input: view.input,
+            answer: task.answer,
+            choices: Object.freeze([...(view.input === 'tiles' ? view.choices : [])]),
+            outcomes: Object.freeze([...this.state.outcomes]),
+            starsEarned: this.state.starsEarned,
+            bonusEarned: this.state.bonusEarned,
+            starsTotal: this.sessionStars + this.state.starsEarned,
+            counter: Number(this.registry.get(REGISTRY_KEYS.stars) ?? 0),
+            finished: this.state.finished,
+        });
+    }
+
+    /** Centres of the tappable things in 1920x1080 scene space, for the e2e hook. */
+    targets(): TaskTargets {
+        return Object.freeze({
+            tiles: this.tiles.targets(),
+            keys: this.keypad.targets(),
+            next: this.bar.nextTarget(),
+            step: this.steps.stepTarget(),
         });
     }
 

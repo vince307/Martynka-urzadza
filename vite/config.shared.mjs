@@ -63,6 +63,7 @@ export const sharedConfig = {
     base: '/',
     define: {
         __BUILD_ID__: JSON.stringify(buildId()),
+        __E2E_HOOK__: JSON.stringify(process.env.E2E_HOOK === '1'),
     },
     build: {
         // Hashed bundles live under _app/ so Caddy can mark only them immutable;
