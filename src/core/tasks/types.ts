@@ -12,6 +12,7 @@ export interface Task {
     choices?: (number | string)[];       // for tile answers
     hint: string[];                      // successive hint steps shown after a mistake
     check?: (input: unknown) => boolean; // tasks with several correct answers
+    tileRange?: { min: number; max: number }; // tile values the generator knows to be possible, narrower than the skill bound
 }
 
 export type Generator = (skill: SkillDef, rng: Rng) => Task;

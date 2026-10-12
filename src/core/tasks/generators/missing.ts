@@ -78,22 +78,23 @@ export const generateMissing: Generator = (skill, rng): Task => {
         const hidden = slot === 'left' ? a : slot === 'right' ? b : c;
         const show = (value: number, where: Slot): string => (where === slot ? BOX : String(value));
         const prompt = `${show(a, 'left')} ${symbol(op)} ${show(b, 'right')} = ${show(c, 'result')}`;
-        const inverse = inverseLine(op, slot, a, b, c);
+        const [inverse, found] = inverseOf(op, slot, a, b, c);
         return {
             skillId: skill.id,
             prompt,
             speak: `${pl.tasks.missing} ${prompt}`,
             answer: hidden,
-            // A hidden result is just the operation; a hidden operand needs the inverse.
-            hint: [slot === 'result' ? inverse : pl.tasks.missingHint(inverse)],
+            // A hidden result is just the operation. A hidden operand gets the inverse
+            // operation first, without its result, then the same line completed.
+            hint: slot === 'result' ? [`${inverse} = ${found}`] : [pl.tasks.missingHint(inverse), `${inverse} = ${found}`],
         };
     }
     throw new Error(`MISSING: no equation for ${op} with ${JSON.stringify({ max: p.max, bridge: p.bridge })} after ${MAX_ATTEMPTS} draws`);
 };
 
-/** The operation that computes the hidden number from the two shown ones. */
-const inverseLine = (op: MissingOp, slot: Slot, a: number, b: number, c: number): string => {
-    const line = (x: number, o: MissingOp, y: number, r: number): string => `${x} ${symbol(o)} ${y} = ${r}`;
+/** The operation that computes the hidden number from the two shown ones, and its result. */
+const inverseOf = (op: MissingOp, slot: Slot, a: number, b: number, c: number): [string, number] => {
+    const line = (x: number, o: MissingOp, y: number, r: number): [string, number] => [`${x} ${symbol(o)} ${y}`, r];
     switch (op) {
         case '+':
             return slot === 'result' ? line(a, '+', b, c) : slot === 'left' ? line(c, '-', b, a) : line(c, '-', a, b);

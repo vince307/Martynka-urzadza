@@ -6,6 +6,11 @@ import { defineConfig, devices } from '@playwright/test';
 // gets an explicit --port with --strictPort. E2E_PORT overrides it when 4398 is taken.
 const PORT = Number(process.env.E2E_PORT ?? 4398);
 const baseURL = `http://localhost:${PORT}`;
+// Second server: the e2e build with the read-only test hook (E2E_HOOK=1), in dist-e2e/.
+// 4397 is not protected (autonomous-run.md § 3); E2E_HOOK_PORT overrides it.
+const HOOK_PORT = Number(process.env.E2E_HOOK_PORT ?? 4397);
+const hookURL = `http://localhost:${HOOK_PORT}`;
+const ROUND_SPEC = /task-round\.spec\.ts/;
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -26,13 +31,31 @@ export default defineConfig({
             // automatable in Chromium, so the iPad (WebKit) stays a manual check.
             name: 'chromium',
             use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 }, hasTouch: true },
+            testIgnore: ROUND_SPEC,
+        },
+        {
+            // Same device, but on the e2e build that carries the test hook.
+            name: 'chromium-hook',
+            use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 }, hasTouch: true, baseURL: hookURL },
+            testMatch: ROUND_SPEC,
         },
     ],
-    webServer: {
-        // Production build + preview: the service worker is registered only in production.
-        command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
-    },
+    webServer: [
+        {
+            // Production build + preview: the service worker is registered only in production.
+            command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
+            url: baseURL,
+            reuseExistingServer: !process.env.CI,
+            timeout: 180_000,
+        },
+        {
+            // Hook build in its own directory. Never reused: a stale server on this port would
+            // carry the same build id (commit SHA) and the spec could not tell old code from new.
+            command: `npm run build -- --outDir dist-e2e && npm run preview -- --outDir dist-e2e --port ${HOOK_PORT} --strictPort`,
+            env: { E2E_HOOK: '1' },
+            url: hookURL,
+            reuseExistingServer: false,
+            timeout: 180_000,
+        },
+    ],
 });

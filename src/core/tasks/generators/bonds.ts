@@ -38,6 +38,7 @@ export const generateBonds: Generator = (skill, rng): Task => {
         skillId: skill.id,
         prompt: `${pl.tasks.bonds(total)}\n${equation}`,
         answer: hidden,
+        tileRange: { min: 0, max: total },   // no tile may exceed the sum
         hint: [pl.tasks.bondsHint(shown, total), `${shown} + ${hidden} = ${total}`],
     };
 };

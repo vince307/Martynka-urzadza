@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 /** Must equal PAGE_BACKGROUND in src/data/layout.ts (manifest colours, splash). */
 export const THEME_COLOR = '#FFF5DF';
 
-/** Short commit SHA shown in the corner of the boot screen (__BUILD_ID__). */
+/** Short commit SHA shown in the corner of the task screen (__BUILD_ID__). */
 const buildId = () => {
     const sha = process.env.GITHUB_SHA;
     if (sha) {
@@ -48,7 +48,7 @@ const pwaOptions = {
     includeManifestIcons: false,
     workbox: {
         // Precache the whole build: code, page, icons and future art/audio.
-        globPatterns: ['**/*.{js,css,html,png,webp,ogg,m4a,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,webp,ogg,m4a,woff2,ttf}'],
         // Everything must be precached (no lazy loading): fail loudly, not at
         // the default 2 MiB, when a future asset grows.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
@@ -63,6 +63,7 @@ export const sharedConfig = {
     base: '/',
     define: {
         __BUILD_ID__: JSON.stringify(buildId()),
+        __E2E_HOOK__: JSON.stringify(process.env.E2E_HOOK === '1'),
     },
     build: {
         // Hashed bundles live under _app/ so Caddy can mark only them immutable;
