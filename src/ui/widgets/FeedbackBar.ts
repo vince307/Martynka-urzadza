@@ -10,6 +10,9 @@ const TEXT_COLOR = `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`;
  * The strip at the bottom of the notebook: yellow for a hint or the result to
  * retype, pale green for "Brawo!" with "Dalej". Never red, never a cross.
  */
+// DESIGN-GAP: the kit has a "Podpowiedź" button before the first mistake; the plan shows the hint automatically
+// after it, the solution after the second mistake, and "Spróbuj jeszcze raz" alone when the hint line gives the
+// result away (docs/design-gaps.md rows 1-3, 5).
 export class FeedbackBar {
     private readonly graphics: GameObjects.Graphics;
     private readonly text: GameObjects.Text;

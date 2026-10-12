@@ -53,8 +53,9 @@ export interface TaskTargets {
 const toCssColor = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
 
 /**
- * One round of tasks. The scene keeps a RoundState from core and draws
- * roundView(state); input arrives in the next phases.
+ * One round of tasks. The scene keeps a RoundState from core, draws
+ * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps)
+ * back to core; it decides nothing itself.
  */
 export class TaskScene extends Scene {
     private state!: RoundState;

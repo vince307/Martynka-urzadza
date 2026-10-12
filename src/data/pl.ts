@@ -2,7 +2,6 @@
 // keys, never literals. Task prompts that need a number are functions.
 export const pl = {
     title: 'Martynka urządza',
-    bootPlaceholder: 'Szkielet gry',
     overlay: {
         rotate: 'Obróć tablet',
         rotateHint: 'Gra działa w poziomie.',
@@ -38,8 +37,7 @@ export const pl = {
         gotIt: 'Już wiem',
         deleteKey: 'kasuj',
         okKey: 'OK',
-        stars: (n: number) => `★ ${n}`,
-        // DESIGN-GAP: the kit has no end-of-round bar and no solution result line (docs/design-gaps.md, phase 10).
+        // DESIGN-GAP: the kit has no end-of-round bar and no solution result line (docs/design-gaps.md rows 5-6).
         bonus: (n: number) => `Runda bez błędu! +${n} ★`,
         resultLine: (answer: string) => `Wynik: ${answer}`,
     },

@@ -35,10 +35,10 @@ The same steps as `.github/workflows/ci.yml` (the required PR check).
 | lint | `npm run lint` | 3 s | pass/fail |
 | typecheck | `npm run typecheck` | 3 s | none |
 | unit / integration | `npm test && bash deploy/test-martynka-deploy.sh && bash deploy/ops/test-martynka-ops.sh && npm run sample -- E1 && npm run sample -- E2 && npm run sample -- E3 && npm run sample -- E4 && npm run sample -- E5 && npm run sample -- E6` | 5 s | `Tests +[0-9]+ passed` |
-| build | `npm run build` | 5 s | pass/fail |
+| build | `npm run build` (also checks that the production bundle has no e2e hook: prints `e2e hook: absent (N chunks checked)`, fails the build otherwise) | 5 s | pass/fail |
 | database tests | none | | none |
 | smoke (against the gate server) | none (the content smoke `sample` E1–E6 needs no server and runs in the unit gate) | | none |
-| e2e (only when § 11 says E2E=on) | `npx playwright test` (Playwright builds and serves the app itself on the gate port 4398 — `webServer` in `playwright.config.ts`; never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
+| e2e (only when § 11 says E2E=on) | `npx playwright test` (two servers, both started by Playwright through `webServer` in `playwright.config.ts`: the production build on the gate port 4398 for the seed (risk #8) and the e2e-hook build on 4397 for the round spec (risk #11); never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
 
 After a migration: none. Migration on data (`POST_MIGRATION_ON_DATA_CMD`): none (no database; the save format and its
 migrations arrive with roadmap S-11 and are tested as unit tests, test-plan.md rollout phase 4).
@@ -57,6 +57,7 @@ S-02 were caught only by this read. In an unattended run a review agent does it 
 | Extra env/flags needed for a SECOND instance | none (`--strictPort` per instance) |
 | Gate/smoke port | `4398` |
 | Visual-gate port | `4399` |
+| E2E hook server port | `4397` (`E2E_HOOK_PORT`): the e2e build with the test hook (`dist-e2e/`), started by Playwright, not protected, killed after the run (`lsof -ti :4397 \| xargs kill` if it lingers) |
 | Ports the run must NEVER use or kill (the maintainer's) | `8080` (`npm run dev`), `4173` (`npm run preview`), `4321`, `5000`, `5433`, `7000`, `54321`–`54324`, `54327` (other projects, Docker, macOS) |
 | Kill a run server | `lsof -ti :<port> \| xargs kill` (macOS `lsof` rejects `:A :B`; one `-ti` per port) |
 
