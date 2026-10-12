@@ -556,8 +556,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 2.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy CHAIN i MISSING_OP; `apply`/`sign` tylko w `arith.ts`
-- [ ] 2.2 Celowe zepsucie wyniku pośredniego CHAIN i `b = 0` w MISSING_OP przewraca testy; cofnięte; meta-check
+- [x] 2.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy CHAIN i MISSING_OP; `apply`/`sign` tylko w `arith.ts` — c0e8bc9
+- [x] 2.2 Celowe zepsucie wyniku pośredniego CHAIN i `b = 0` w MISSING_OP przewraca testy; cofnięte; meta-check — c0e8bc9
 
 ### Phase 3: COMPARE_EXPR i SEQUENCE
 
