@@ -1,6 +1,8 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-The visual-gate step captured every [visual] state of rows 5.4, 6.6, 7.5 and 9.4 at 1440 and 1024×768 and found no discrepancy this slice owns: `VISUAL: PASS`, no code changed (e2e evidence from `3f372ca` still applies). Next is `/10x-archive narrator-round-summary`, then ship. The five [human] rows (10.5–10.9) stay open for the maintainer; do not tick them.
+Ship step: archived in `b5cd64e` (`chore(archive): close narrator-round-summary`), roadmap S-05 `done`, Backlog Handoff refreshed (S-06, S-07 ready for `/10x-plan`; follow-up triggers for S-06–S-09 restated in their rows). PR, CI, merge and Deploy are recorded in `context/runs/2026-10-12-s04-s08/run-log.md`.
+
+Earlier: the visual-gate step captured every [visual] state of rows 5.4, 6.6, 7.5 and 9.4 at 1440 and 1024×768 and found no discrepancy this slice owns: `VISUAL: PASS`, no code changed (e2e evidence from `3f372ca` still applies). Next is `/10x-archive narrator-round-summary`, then ship. The five [human] rows (10.5–10.9) stay open for the maintainer; do not tick them.
 
 ## 1. State
 
@@ -8,8 +10,8 @@ The visual-gate step captured every [visual] state of rows 5.4, 6.6, 7.5 and 9.4
 |---|---|
 | Branch | `feat/narrator-round-summary` (cut from `main` at `8467431`) |
 | Commits | docs, p1..p12, `3f372ca` fix (impl-review), review docs, then this step's `docs(narrator-round-summary): bramka wizualna` |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-12-s04-s08/run-log.md |
+| `change.md` status | `archived` (`b5cd64e`, folder moved to `context/archive/2026-10-12-narrator-round-summary/`) |
 | `## Progress` rows remaining | 5 (`grep -c '^- \[ \]' plan.md`), all [human] 10.5–10.9 |
 | Working tree | clean after this commit |
 
@@ -37,7 +39,7 @@ The visual-gate step captured every [visual] state of rows 5.4, 6.6, 7.5 and 9.4
 
 ## 4. Next command
 
-/10x-archive narrator-round-summary, then ship (no hosted db push — no database)
+none — shipped
 
 ## 5. Open
 
@@ -64,5 +66,11 @@ Visual-gate step:
 4. **Kept O1 and O2 as follow-ups, no code change**: O1 is cosmetic and the counter is right; O2 is round building owned by S-07. Would change: as above.
 5. **Did not run the local gate**: only docs and PNGs changed. Would change: any source edit (then the full contract gate, and e2e by the orchestrator).
 6. **Port cleanup by PID of the listener only**: `lsof -ti :4399` also lists Chrome (client sockets in CLOSE_WAIT); only the node listener was killed (sandbox blocks signals, so the single `kill` ran outside it). Would change: nothing; the profile's `lsof -ti … | xargs kill` would have tried to kill Chrome.
+
+Ship step:
+
+7. **Archived despite 5 open [human] rows (10.5–10.9)**: `/10x-archive` warned `5 Progress items still pending (0 automated, 5 manual)`; chose `Continue archiving (Recommended)`. The rows are product decisions and a device listening test for the maintainer (post-run checklist in the PR body), not gates of this slice; the run's full-ship rule (Step 0) covers it. Would change: the maintainer reverses one of decisions 10.5–10.8 before the merge.
+8. **Soft archive warnings accepted**: several [reviewer]/[visual] rows carry review evidence instead of a SHA suffix (expected for manual rows); every cited SHA is an ancestor of the branch, merge is a merge commit, so no repoint. Would change: a squash merge (then SHAs would need repointing).
+9. **Roadmap Backlog Handoff**: S-06 and S-07 `Ready for /10x-plan` = yes (their only prerequisite S-05 is done); S-08, S-09 stay `no` but carry their restated triggers. Would change: nothing.
 
 Earlier steps: see the impl-review handoff in git history (`184da15`) for decisions 1–16 of phases 1–12 and the review.
