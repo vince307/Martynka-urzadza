@@ -60,11 +60,14 @@ for (const step of stage!.steps) {
             try {
                 // Seed per skill and draw: adding a skill elsewhere never reshuffles this one.
                 const task = generate(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)));
-                const max = typeof skill.params.max === 'number' ? skill.params.max : undefined;
+                const bound = skill.params.max ?? skill.params.maxProduct ?? skill.params.maxDividend;
+                const max = typeof bound === 'number' ? bound : undefined;
                 const found = validateTask(task, { max, nouns });
                 violations.push(...found);
                 const flag = found.length > 0 ? '  ⚠' : '';
-                console.log(`    ${task.prompt}  → ${String(task.answer)}   podpowiedź: ${task.hint.join(' · ')}${flag}`);
+                const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
+                const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+                console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
             } catch (error) {
                 errors += 1;
                 console.log(`    BŁĄD ${skill.id}: ${error instanceof Error ? error.message : String(error)}`);

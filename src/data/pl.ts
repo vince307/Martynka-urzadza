@@ -1,4 +1,5 @@
-// All player-facing Polish strings live here. Scenes reference keys, never literals.
+// All player-facing Polish strings live here. Scenes and generators reference
+// keys, never literals. Task prompts that need a number are functions.
 export const pl = {
     title: 'Martynka urządza',
     bootPlaceholder: 'Szkielet gry',
@@ -13,5 +14,56 @@ export const pl = {
         afterInstall: 'Potem uruchamiaj grę z ikony. Działa też bez internetu.',
         installButton: 'Zainstaluj',
         continueButton: 'Zagraj w przeglądarce',
+    },
+    words: {
+        // Verb forms by the subject's gender: [masculine, feminine].
+        had: ['miał', 'miała'],
+        bought: ['kupił', 'kupiła'],
+        gave: ['oddał', 'oddała'],
+        ate: ['zjadł', 'zjadła'],
+        got: ['dostał', 'dostała'],
+        has: 'ma',
+        is: 'jest',
+        are: 'są',
+        and: 'i',
+        willHave: ['będzie miał', 'będzie miała'],
+    },
+    tasks: {
+        missing: 'Jaka liczba pasuje w okienku?',
+        missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
+        complement: (n: number, target: number) => `Ile brakuje od ${n} do ${target}?`,
+        complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
+        rounding: (n: number) => `Która pełna dziesiątka jest najbliżej liczby ${n}?`,
+        roundingHint: (n: number, low: number, high: number, nearest: number) => [
+            `${n} jest między ${low} a ${high}`,
+            `${n} jest bliżej ${nearest}`,
+        ],
+        half: (n: number) => `Ile to jest połowa liczby ${n}?`,
+        compareHint: (n: number, parts: string) => `${n} to ${parts}`,
+        compareEqualHint: 'To takie same liczby',
+        evenOdd: (n: number) => `Liczba ${n} jest parzysta czy nieparzysta?`,
+        even: 'parzysta',
+        odd: 'nieparzysta',
+        evenOddHint: (n: number, lastDigit: number, isEven: boolean) =>
+            `${n} kończy się cyfrą ${lastDigit}, więc jest ${isEven ? 'parzysta' : 'nieparzysta'}`,
+        selectEven: 'Zaznacz wszystkie liczby parzyste.',
+        selectEvenHint: 'Liczby parzyste kończą się na 0, 2, 4, 6 albo 8.',
+        numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
+        wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
+        numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,
+        romanContexts: [
+            (r: string) => `Zegar z cyframi rzymskimi pokazuje ${r}. Która to godzina?`,
+            (r: string) => `Winda zatrzymała się na ${r} piętrze. Które to piętro?`,
+            (r: string) => `Jaką liczbę oznacza ${r}?`,
+        ],
+        toRoman: (n: number) => `Jak zapisać liczbę ${n} cyframi rzymskimi?`,
+        romanHint: (pieces: string, sum: string) => `${pieces}; razem ${sum}`,
+        nextMonth: (locative: string) => `Który miesiąc jest po ${locative}?`,
+        prevMonth: (instrumental: string) => `Który miesiąc jest przed ${instrumental}?`,
+        quarterOf: (month: string) => `W którym kwartale roku jest ${month}?`,
+        romanMonth: (day: number, roman: string) => `Data ${day} ${roman}. Który to miesiąc?`,
+        monthsHint: (list: string) => `Miesiące po kolei: ${list}`,
+        quarterHint: (quarter: string, list: string) => `${quarter} to ${list}`,
+        romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,
     },
 } as const;

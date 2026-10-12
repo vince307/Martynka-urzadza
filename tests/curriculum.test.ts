@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'vitest';
+import { createRng } from '../src/core/rng';
+import { getGenerator } from '../src/core/tasks/registry';
+import { validateTask } from '../src/core/tasks/validate';
+import { stages } from '../src/data/curriculum';
+import { nouns } from '../src/data/nouns';
+
+/** Group 1 of ZADANIA.md section 7 as implemented in S-02; the rest arrive in S-03 (E1–E2, E5–E6). */
+const GROUP_1 = ['ADD_SUB', 'MISSING', 'COMPLEMENT', 'ROUNDING', 'MULT', 'DIV', 'HALF', 'COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN', 'CALENDAR', 'WORD', 'COMPARE_DIFF'];
+/** Types that need drawings or art (groups 2–3): allowed to have no skill yet. */
+const LATER = ['CLOCK', 'MASS', 'DATA', 'PUZZLE_GRID', 'LENGTH', 'PLACE_VALUE', 'GRID', 'MULT_GROUPS', 'TEMPERATURE', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY', 'PERIMETER'];
+
+describe('curriculum E3–E4', () => {
+    for (const stage of Object.values(stages)) {
+        for (const step of stage.steps) {
+            it(`${stage.id}.${step.step} covers its group-1 types`, () => {
+                for (const type of step.types) {
+                    if (GROUP_1.includes(type)) {
+                        expect(step.skills.some((s) => s.type === type), `${stage.id}.${step.step} ${type}`).toBe(true);
+                    } else {
+                        expect(LATER, `${stage.id}.${step.step} ${type} is neither group 1 nor a later type`).toContain(type);
+                    }
+                }
+                for (const skill of step.skills) {
+                    expect(skill.stage).toBe(stage.id);
+                    expect(skill.step).toBe(step.step);
+                    expect(skill.id.startsWith(`${stage.id}.${step.step}.`), skill.id).toBe(true);
+                }
+            });
+
+            for (const skill of step.skills) {
+                it(`${skill.id}: 200 draws without violations`, () => {
+                    const generate = getGenerator(skill.type);
+                    expect(generate, skill.type).toBeDefined();
+                    const max = typeof skill.params.max === 'number' ? skill.params.max : undefined;
+                    for (let seed = 1; seed <= 4; seed += 1) {
+                        const rng = createRng(777 + seed);
+                        for (let i = 0; i < 50; i += 1) {
+                            const task = generate!(skill, rng);
+                            const where = `${skill.id} seed=${seed} draw=${i} "${task.prompt}"`;
+                            expect(task.prompt.length, where).toBeGreaterThan(0);
+                            expect(task.answer, where).toBeDefined();
+                            if (task.choices) {
+                                expect(task.choices.length, where).toBeGreaterThanOrEqual(2);
+                                expect(task.choices.length, where).toBeLessThanOrEqual(6);
+                            }
+                            expect(validateTask(task, { max, nouns }), where).toEqual([]);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    it('skill ids are unique across stages', () => {
+        const ids = Object.values(stages).flatMap((s) => s.steps.flatMap((st) => st.skills.map((sk) => sk.id)));
+        expect(new Set(ids).size).toBe(ids.length);
+    });
+});
