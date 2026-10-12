@@ -1,10 +1,10 @@
 ---
 change_id: generators-remaining-stages
 title: Zadania grupy 1 dla etapów E1–E2 i E5–E6 na wspólnych generatorach
-status: impl_reviewed
+status: archived
 created: 2026-10-12
 updated: 2026-10-12
-archived_at: null
+archived_at: 2026-10-12T18:08:22Z
 ---
 
 ## Notes

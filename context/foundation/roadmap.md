@@ -48,7 +48,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | done |
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | done |
 | S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | done |
-| S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | planning |
+| S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | done |
 | S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | proposed |
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | proposed |
 | S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | proposed |
@@ -170,7 +170,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** zamyka etap M1 (`sample` dla każdego etapu); ryzyko, że dane etapów bez dopracowania treści ujawnią luki w parametrach generatorów, które łatwiej naprawić teraz niż po M2.
-- **Status:** planning
+- **Status:** done
 
 ### S-04: Runda zadań i gwiazdki
 
@@ -355,8 +355,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-01       | installable-offline-pwa     | M0: instalowalna PWA offline na tablecie                | no                    | Po F-01, F-02 |
 | F-03       | generator-test-harness      | M1: vitest, seedowany rng, skrypt sample                | no                    | Po F-01; może iść równolegle z S-01 |
 | S-02       | generators-e3-e4            | M1: generatory grupy 1 dla E3–E4                        | no                    | Po F-03 i S-01 |
-| S-03       | generators-remaining-stages | M1: generatory dla E1–E2 i E5–E6                        | no                    | Po S-02 |
-| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | no                    | Po S-03 |
+| S-03       | generators-remaining-stages | M1: generatory dla E1–E2 i E5–E6                        | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-generators-remaining-stages/`); PR otwarty, merge czeka na „merguj” |
+| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | yes                   | S-03 done (po merge'u PR S-03). Follow-upy `Trigger: S-04`: klawiaturka w E1 zamiast 3–4 kafelków (ZADANIA §4, wiersz [human] 10.7), pierwsza podpowiedź MISSING zdradza wynik (F14) |
 | S-05       | narrator-round-summary      | M2: lektor i podsumowanie rundy                         | no                    | Po S-04 |
 | S-06       | first-launch-placement      | M3: wiek, etap, bramka rodzica, rozgrzewka              | no                    | ∥ S-07 |
 | S-07       | adaptive-curriculum         | M3: wagi, opanowanie, odblokowanie kroków               | no                    | ∥ S-06 |
@@ -407,3 +407,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: dziecko otwiera grę z adresu URL na tablecie, dodaje ją do ekranu początkowego (z instrukcją przy pierwszym uruchomieniu w przeglądarce) i uruchamia offline; w pionie widzi „Obróć tablet”; nowa wersja instaluje się sama przy następnym starcie** — Archived 2026-10-12 → `context/archive/2026-10-11-installable-offline-pwa/`. Lesson: —.
 - **F-03: (foundation) vitest działa na `core/`, generatory dostają seedowany rng, a skrypt próbkujący wypisuje po 3 zadania z każdego kroku etapu i raportuje naruszenia (zakres, ujemne, odmiana)** — Archived 2026-10-12 → `context/archive/2026-10-12-generator-test-harness/`. Lesson: —.
 - **S-02: autor wypisuje z każdego kroku etapów E3 i E4 oryginalne zadania wszystkich typów grupy 1 (ZADANIA.md, sekcja 7) z poprawną odpowiedzią, rozpraszaczami, podpowiedzią krok po kroku i poprawną odmianą liczebników; testy 1000 losowań przechodzą** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-e3-e4/`. Lesson: przegląd treści przez „nauczyciela” wyłapał biernik i podpowiedź IX, których walidator nie widzi; każdy nowy rzeczownik i przypadek musi trafić do danych z testem.
+- **S-03: autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na tych samych generatorach z danymi etapu; testy mechaniczne (zakres, ujemne, rozpraszacze) przechodzą dla wszystkich sześciu etapów; dopracowanie treści tych etapów pozostaje na później (PRD Non-Goals)** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-remaining-stages/`. Lesson: —.
