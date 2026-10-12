@@ -13,6 +13,8 @@ export interface WordParams {
 const KINDS: readonly WordKind[] = ['sum', 'left', 'start', 'twoSteps', 'moreBy', 'age', 'groups', 'share', 'each'];
 const MAX_ATTEMPTS = 1000;
 const isWordKind = (value: unknown): value is WordKind => KINDS.includes(value as WordKind);
+/** Smallest `max` for which drawNumbers can produce a story of the kind. */
+const MIN_MAX: Readonly<Record<WordKind, number>> = { sum: 2, left: 2, start: 2, moreBy: 2, twoSteps: 3, age: 6, groups: 4, share: 4, each: 4 };
 
 export const parseWordParams = (params: Record<string, unknown>): WordParams => {
     const { max, kinds, maxFactor = 10 } = params;
@@ -28,6 +30,9 @@ export const parseWordParams = (params: Record<string, unknown>): WordParams => 
     for (const kind of kinds) {
         if (!templates.some((t) => t.kind === kind)) {
             throw new TypeError(`WORD has no template of kind ${kind}`);
+        }
+        if ((max as number) < MIN_MAX[kind]) {
+            throw new TypeError(`WORD kind ${kind} needs max >= ${MIN_MAX[kind]}, got ${String(max)}`);
         }
     }
     return { max: max as number, kinds, maxFactor: maxFactor as number };

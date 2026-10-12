@@ -45,5 +45,7 @@ describe('generateMult', () => {
     it('rejects malformed params', () => {
         expect(() => parseMultParams({ maxProduct: 2 })).toThrow(TypeError);
         expect(() => parseMultParams({ maxProduct: 30, factors: [] })).toThrow(TypeError);
+        expect(() => parseMultParams({ maxProduct: 9, factors: [10] })).toThrow(/no products/);
+        expect(parseMultParams({ maxProduct: 9, factors: [10], allowZeroOne: true }).factors).toEqual([10]);
     });
 });

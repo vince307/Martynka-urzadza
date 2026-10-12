@@ -2,7 +2,7 @@
 // section 4). Prompts are bare expressions ("7 + 6"); operands come either
 // from free draws in [1, max] or from number shapes ("DU+U", params.shapes).
 import type { Rng } from '../../rng';
-import { drawToken, formatShape, parseShape, type Shape } from '../shapes';
+import { drawToken, formatShape, parseShape, tokenValues, type Shape } from '../shapes';
 import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
@@ -38,6 +38,11 @@ export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams
             throw new TypeError(`ADD_SUB params.shapes must be a non-empty list of strings, got ${JSON.stringify(shapes)}`);
         }
         const parsed = shapes.map(parseShape);
+        for (const shape of parsed) {
+            if (!shapeFeasible(shape, max as number, bridge)) {
+                throw new TypeError(`ADD_SUB shape ${formatShape(shape)} has no solutions with max ${String(max)} and bridge ${bridge}`);
+            }
+        }
         const shapeOps = [...new Set(parsed.map((x) => x.op))];
         if (ops !== undefined && (!Array.isArray(ops) || !ops.every(isOp) || ops.some((o) => !shapeOps.includes(o)))) {
             throw new TypeError(`ADD_SUB params.ops ${JSON.stringify(ops)} must match the ops of shapes ${JSON.stringify(shapes)}`);
@@ -101,6 +106,17 @@ export const hasCarry = (a: number, b: number, op: AddSubOp): boolean => {
 /** 'none' forbids carrying at every digit (also tens into hundreds); 'ten' asks for a units carry. */
 const bridgeMatches = (a: number, b: number, op: AddSubOp, bridge: Bridge): boolean =>
     bridge === 'any' ? true : bridge === 'ten' ? crossesTen(a, b, op) : !hasCarry(a, b, op);
+
+/** At least one operand pair of the shape satisfies max and bridge (at most ~8100 pairs). */
+export const shapeFeasible = (shape: Shape, max: number, bridge: Bridge): boolean => {
+    const rights = tokenValues(shape.right, max);
+    return tokenValues(shape.left, max).some((a) =>
+        rights.some((b) => {
+            const result = apply(a, b, shape.op);
+            return result >= 0 && result <= max && bridgeMatches(a, b, shape.op, bridge);
+        }),
+    );
+};
 
 const apply = (a: number, b: number, op: AddSubOp): number => (op === '+' ? a + b : a - b);
 const sign = (op: AddSubOp): string => (op === '+' ? '+' : MINUS);
