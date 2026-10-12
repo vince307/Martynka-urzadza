@@ -37,7 +37,7 @@ export class FeedbackBar {
         this.graphics.fillStyle(good ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.hint, 1);
         this.graphics.fillRoundedRect(span.x, top, span.width, height, radius);
 
-        const withButton = bar.kind === 'correct';   // the end-of-round button comes with the round restart
+        const withButton = bar.kind === 'correct' || bar.kind === 'roundEnd';   // "Dalej" also starts the next round
         const right = span.x + span.width - padding;
         if (withButton) {
             this.button.show(pl.round.next, right, centerY, PLACEHOLDER_COLORS.turquoise);

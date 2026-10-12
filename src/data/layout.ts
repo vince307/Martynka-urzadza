@@ -37,6 +37,7 @@ export const FONT_SIZES = {
     bar: 36,
     barButton: 40,
     solutionLine: 40,
+    counter: 56,
 } as const;
 
 /** Task screen font: Atkinson Hyperlegible Next, loaded from public/fonts and precached. */
@@ -45,7 +46,10 @@ export const FONT_KEY = 'AtkinsonHyperlegibleNext';
 export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 
 /** Scene keys. */
-export const SCENE_KEYS = { boot: 'Boot', task: 'Task' } as const;
+export const SCENE_KEYS = { boot: 'Boot', task: 'Task', ui: 'UI' } as const;
+
+/** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
+export const REGISTRY_KEYS = { stars: 'stars' } as const;
 
 /**
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
@@ -64,6 +68,8 @@ export const TASK_LAYOUT = {
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     dotCount: 5,
+    // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
+    starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */
@@ -78,6 +84,8 @@ export const ANIMATION = {
     shakeMs: 360,
     shakeDistance: 14,
     starFlightMs: 850,
+    starPopMs: 150,        // the flying star grows first, then travels
+    starPopScale: 1.6,
 } as const;
 
 /** Placeholder frame thickness and inset, in scene pixels. */
