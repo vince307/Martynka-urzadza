@@ -181,6 +181,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:** —
+- **Decisions:** 2026-10-12 (maintainer): w E1 odpowiedzi liczbowe przez 3–4 kafelki zgodnie z ZADANIA §4, nie przez klawiaturkę; S-04 zmienia `answerMode` umiejętności E1 i dobiera dystraktory. E2e rundy (ryzyko #11 planu testów) wymaga haka testowego tylko do odczytu w osobnym buildzie e2e (`context/foundation/test-plan.md`, etap 5).
 - **Risk:** pierwsza rzecz, w którą córka zagra; placeholdery (kolorowe kształty z podpisem) muszą być już czytelne, bo to one dają pierwszy sygnał z gracza.
 - **Status:** proposed
 
@@ -356,7 +357,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | F-03       | generator-test-harness      | M1: vitest, seedowany rng, skrypt sample                | no                    | Po F-01; może iść równolegle z S-01 |
 | S-02       | generators-e3-e4            | M1: generatory grupy 1 dla E3–E4                        | no                    | Po F-03 i S-01 |
 | S-03       | generators-remaining-stages | M1: generatory dla E1–E2 i E5–E6                        | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-generators-remaining-stages/`); PR otwarty, merge czeka na „merguj” |
-| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | yes                   | S-03 done (po merge'u PR S-03). Follow-upy `Trigger: S-04`: klawiaturka w E1 zamiast 3–4 kafelków (ZADANIA §4, wiersz [human] 10.7), pierwsza podpowiedź MISSING zdradza wynik (F14) |
+| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | yes                   | S-03 done (po merge'u PR S-03). Follow-upy `Trigger: S-04`: E1 przechodzi na 3–4 kafelki (decyzja maintainera 2026-10-12, wiersz [human] 10.7), hak testowy e2e dla rundy (plan testów, etap 5), pierwsza podpowiedź MISSING zdradza wynik (F14) |
 | S-05       | narrator-round-summary      | M2: lektor i podsumowanie rundy                         | no                    | Po S-04 |
 | S-06       | first-launch-placement      | M3: wiek, etap, bramka rodzica, rozgrzewka              | no                    | ∥ S-07 |
 | S-07       | adaptive-curriculum         | M3: wagi, opanowanie, odblokowanie kroków               | no                    | ∥ S-06 |
