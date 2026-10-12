@@ -1,4 +1,5 @@
 import { AUTO, Game, Scale } from 'phaser';
+import './style.css';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND } from './data/layout';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
