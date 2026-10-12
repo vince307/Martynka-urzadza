@@ -839,9 +839,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 3.1 `tests/round.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: gwiazdka w `retype` / bonus przy `second` → czerwony; przywrócone; meta-check właściwości
-- [ ] 3.3 Pełna bramka lokalna zielona
+- [x] 3.1 `tests/round.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 7d99976
+- [x] 3.2 Deliberate break: gwiazdka w `retype` / bonus przy `second` → czerwony; przywrócone; meta-check właściwości — 7d99976
+- [x] 3.3 Pełna bramka lokalna zielona — 7d99976
 
 ### Phase 4: Model widoku rundy, wybór umiejętności i bufor klawiaturki
 
