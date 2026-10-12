@@ -923,9 +923,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 10.1 `validate-rule-files.sh` PASS
-- [ ] 10.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [ ] 10.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 10.1 `validate-rule-files.sh` PASS — 08a2597
+- [x] 10.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check — 08a2597
+- [x] 10.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 08a2597
 
 #### Manual
 
