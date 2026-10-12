@@ -166,13 +166,13 @@ Brak.
 
 #### Automated
 
-- [ ] 1.1 `npm test` z deployCheck, lint, typecheck
-- [ ] 1.2 `check:deploy` na produkcji kod 0; ze złym SHA kod 1 (`FAIL build id`)
-- [ ] 1.3 Kryterium preview pominięte (udokumentowane)
+- [x] 1.1 `npm test` z deployCheck, lint, typecheck — 7f839eb
+- [x] 1.2 `check:deploy` na produkcji kod 0; ze złym SHA kod 1 (`FAIL build id`) — 7f839eb
+- [x] 1.3 Kryterium preview pominięte (udokumentowane) — 7f839eb
 
 #### Manual
 
-- [ ] 1.4 Wydruk smoke na produkcji przeczytany, SHA zgodny z origin/main
+- [x] 1.4 Wydruk smoke na produkcji przeczytany, SHA zgodny z origin/main — 7f839eb
 
 ### Phase 2: Workflowy
 

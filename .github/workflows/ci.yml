@@ -27,6 +27,9 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # Local tests of the deploy dispatcher and the agent's ops shim (no server needed).
+      - run: bash deploy/test-martynka-deploy.sh
+      - run: bash deploy/ops/test-martynka-ops.sh
       - run: npm run sample -- E3
       - run: npm run sample -- E4
       - run: npm run build
