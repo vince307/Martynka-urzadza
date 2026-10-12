@@ -10,7 +10,7 @@ Written by `/10x-e2e task-round-stars phase 11` of autonomous run 2026-10-12-s04
 | Commits on branch | 5 docs + p1..p11 (p11 `2132aef`) + handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implemented` |
-| `## Progress` rows remaining | 18, all `[reviewer]`/`[visual]`/`[human]` (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 15, all `[reviewer]`/`[visual]`/`[human]` (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
