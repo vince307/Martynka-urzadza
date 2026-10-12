@@ -570,8 +570,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 4.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy FACT_FAMILY i CHOOSE_OP
-- [ ] 4.2 Celowe zepsucie rozpraszacza CHOOSE_OP i pierwszej linii podpowiedzi FACT_FAMILY przewraca testy; cofnięte; meta-check
+- [x] 4.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy FACT_FAMILY i CHOOSE_OP — 0b5382e
+- [x] 4.2 Celowe zepsucie rozpraszacza CHOOSE_OP i pierwszej linii podpowiedzi FACT_FAMILY przewraca testy; cofnięte; meta-check — 0b5382e
 
 ### Phase 5: CALENDAR — dni tygodnia, dni miesiąca, fakty o czasie; EVEN_ODD z zerem
 
