@@ -8,8 +8,8 @@ Written by the visual-gate fix step (re-dispatch) of autonomous run 2026-10-12-s
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
 | Commits on branch | docs + p1..p11 + `0c0baf4` (impl-review fix) + `ec98195` (impl-review docs) + `daa513e`, `f0ec6d5` (visual-gate fixes) + `87049c5` (drawn blank) + this docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` flips it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-12-s04-s08/run-log.md |
+| `change.md` status | `archived` (`076f702`, folder `context/archive/2026-10-12-task-round-stars/`; roadmap S-04 `done`, Backlog Handoff S-04/S-05 refreshed) |
 | `## Progress` rows remaining | 6: `[human]` 8.5, 10.5–10.8; `[reviewer] (CI at ship)` 9.8 |
 | Working tree | clean after this commit |
 
@@ -56,7 +56,7 @@ Written by the visual-gate fix step (re-dispatch) of autonomous run 2026-10-12-s
 
 ## 4. Next command
 
-`/10x-archive task-round-stars` then ship (no hosted db push — no database)
+none — shipped
 
 ## 5. Open
 
@@ -75,3 +75,5 @@ Written by the visual-gate fix step (re-dispatch) of autonomous run 2026-10-12-s
 4. **Verdict GAPS, not PASS**: all states were captured and the round matches the kit after the fixes, but kit elements (step dots, `= ?`) are still not drawn. Would change: those follow-ups land.
 5. **Frames drawn before `f0ec6d5` kept and marked †** rather than re-captured: only the bare keypad expression is 104 scene px lower in them; the key frames (round start, hint with a line, both solution steps) were re-captured on the final code. Would change: a reviewer needs every frame on the final code.
 6. **Row 7.4 ticked** with the hint-with-line frame captured at both widths (`desktop-04b`, `tablet-04`). V3 slashed zero noted, font unchanged (maintainer decision).
+7. **Archived with 6 open Progress rows** (ship step): `[human]` 8.5 and 10.5–10.8 are the maintainer's post-run checklist (iPad check and product decisions), not code work; `[reviewer]` 9.8 is ticked in the ship step from the PR's CI log. Rejected: holding the archive for them. Would change: the maintainer reverses one of the 10.x decisions before the merge.
+8. **Follow-up added before archiving**: spacing around the drawn blank box (`Trigger: S-17`, `33cedd5`). Restated for S-05 in the roadmap Backlog Handoff: the `Trigger: S-05` follow-ups (task/room switch, e2e `counter`, `pl.title`, step dots).
