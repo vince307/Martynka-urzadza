@@ -32,6 +32,7 @@ type Point = { x: number; y: number };
 export interface TaskSnapshot {
     readonly index: number;
     readonly phase: RoundState['phase'];
+    readonly solutionStep: number;
     readonly input: 'tiles' | 'keypad';
     readonly answer: unknown;
     readonly choices: readonly (number | string)[];
@@ -250,6 +251,7 @@ export class TaskScene extends Scene {
         return Object.freeze({
             index: this.state.index,
             phase: this.state.phase,
+            solutionStep: this.state.solutionStep,
             input: view.input,
             answer: task.answer,
             choices: Object.freeze([...(view.input === 'tiles' ? view.choices : [])]),
