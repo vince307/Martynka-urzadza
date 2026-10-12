@@ -1,6 +1,7 @@
 // Prints sample tasks for every curriculum step of a stage and reports
 // violations (PRD FR-005). Usage: npm run sample -- E3 [--seed N] [--count N]
 // Exit codes: 0 ok, 1 violations or generator errors, 2 usage.
+import { spokenTask } from '../src/core/narration/spoken';
 import { createRng, seedFromString } from '../src/core/rng';
 import { boundOf } from '../src/core/tasks/bounds';
 import { generateTask } from '../src/core/tasks/generateTask';
@@ -9,6 +10,7 @@ import { validateTask, type Violation } from '../src/core/tasks/validate';
 import { balance } from '../src/data/balance';
 import { availableStages, getStage } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
+import { pl } from '../src/data/pl';
 
 const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 3;
@@ -70,6 +72,7 @@ for (const step of stage!.steps) {
                 const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
                 const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
                 console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
+                console.log(`      czyta: ${spokenTask(task, pl.speech, pl.round.calculate)}`);
             } catch (error) {
                 errors += 1;
                 console.log(`    BŁĄD ${skill.id}: ${error instanceof Error ? error.message : String(error)}`);

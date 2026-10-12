@@ -25,6 +25,12 @@ describe('module boundaries', () => {
         expect(await ruleIds('export const n = navigator.userAgent;\n', 'src/core/x.ts')).toContain('no-restricted-globals');
     });
 
+    it('src/core must not use the speech synthesizer (the narrator lives in src/ui)', async () => {
+        expect(await ruleIds("export const v = speechSynthesis.getVoices();\n", 'src/core/x.ts')).toContain('no-restricted-globals');
+        expect(await ruleIds("export const u = new SpeechSynthesisUtterance('a');\n", 'src/core/x.ts')).toContain('no-restricted-globals');
+        expect(await ruleIds("export const v = speechSynthesis.getVoices();\n", 'src/ui/x.ts')).not.toContain('no-restricted-globals');
+    });
+
     it('src/data may import from core only text helpers and types', async () => {
         expect(await ruleIds("import { generators } from '../core/tasks/registry';\nexport const g = generators;\n", 'src/data/x.ts')).toContain('no-restricted-imports');
         expect(await ruleIds("import { createRng } from '../../core/rng';\nexport const r = createRng;\n", 'src/data/curriculum/x.ts')).toContain('no-restricted-imports');

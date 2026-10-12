@@ -13,15 +13,14 @@ export interface RoundView {
         | { kind: 'hint'; line: string | null }       // null: just "try again"
         | { kind: 'solution'; lines: string[]; button: 'next' | 'gotIt' }
         | { kind: 'retype'; line: string }
-        | { kind: 'correct'; star: boolean }
-        | { kind: 'roundEnd'; bonus: number };
+        | { kind: 'correct'; star: boolean };
     inputActive: boolean;
-    switchVisible: boolean;                           // never during a task (FR-011)
+    switchVisible: boolean;                           // between tasks only: solved, before "Dalej" (FR-011)
 }
 
 const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => string): RoundView['bar'] => {
     if (state.finished) {
-        return { kind: 'roundEnd', bonus: state.bonusEarned };
+        return { kind: 'none' };   // the summary layer takes over (summaryView)
     }
     switch (state.phase) {
         case 'first':
@@ -56,6 +55,6 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
         choices: task.choices ? [...task.choices] : [],
         bar: barOf(state, task, answerLine),
         inputActive: !state.finished && ['first', 'second', 'retype'].includes(state.phase),
-        switchVisible: false,
+        switchVisible: !state.finished && state.phase === 'done',
     };
 };

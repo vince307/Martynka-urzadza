@@ -57,9 +57,9 @@ S-02 were caught only by this read. In an unattended run a review agent does it 
 | Extra env/flags needed for a SECOND instance | none (`--strictPort` per instance) |
 | Gate/smoke port | `4398` |
 | Visual-gate port | `4399` |
-| E2E hook server port | `4397` (`E2E_HOOK_PORT`): the e2e build with the test hook (`dist-e2e/`), started by Playwright, not protected, killed after the run (`lsof -ti :4397 \| xargs kill` if it lingers) |
+| E2E hook server port | `4397` (`E2E_HOOK_PORT`): the e2e build with the test hook (`dist-e2e/`), started by Playwright, not protected, killed after the run (`lsof -ti tcp:4397 -sTCP:LISTEN \| xargs kill` if it lingers) |
 | Ports the run must NEVER use or kill (the maintainer's) | `8080` (`npm run dev`), `4173` (`npm run preview`), `4321`, `5000`, `5433`, `7000`, `54321`–`54324`, `54327` (other projects, Docker, macOS) |
-| Kill a run server | `lsof -ti :<port> \| xargs kill` (macOS `lsof` rejects `:A :B`; one `-ti` per port) |
+| Kill a run server | `lsof -ti tcp:<port> -sTCP:LISTEN \| xargs kill` — LISTEN sockets only: a bare `lsof -ti :<port>` also returns the browser's client connections and kills Chrome (found 2026-10-13, run s04-s08); one port per call |
 
 Note: the service worker is registered only in production builds; checks of `sw.js` need `npm run build` +
 `npm run preview -- --port <port>` on a run port, never on 4173.

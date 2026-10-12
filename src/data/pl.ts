@@ -27,6 +27,17 @@ export const pl = {
         and: 'i',
         willHave: ['będzie miał', 'będzie miała'],
     },
+    // Words the narrator says for the glyphs of a task (S-05); core/narration gets them as an argument.
+    speech: {
+        plus: 'plus',
+        minus: 'minus',
+        times: 'razy',
+        divide: 'podzielić przez',
+        equals: 'równa się',
+        blank: 'okienko',
+        less: 'mniejsze niż',
+        greater: 'większe niż',
+    },
     round: {
         calculate: 'Oblicz',
         correct: 'Brawo!',
@@ -37,9 +48,19 @@ export const pl = {
         gotIt: 'Już wiem',
         deleteKey: 'kasuj',
         okKey: 'OK',
-        // DESIGN-GAP: the kit has no end-of-round bar and no solution result line (docs/design-gaps.md rows 5-6).
+        // DESIGN-GAP: the kit has no solution result line (docs/design-gaps.md row 6); the bonus line sits under "+N" on the summary (row 9).
         bonus: (n: number) => `Runda bez błędu! +${n} ★`,
         resultLine: (answer: string) => `Wynik: ${answer}`,
+    },
+    summary: {
+        nextRound: 'Kolejna runda',   // kit summary.png
+        toRoom: 'Do pokoju',          // kit summary.png
+        earned: (n: number) => `+${n}`,
+    },
+    // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the placeholder caption is ours.
+    room: {
+        caption: 'Tu powstanie pokój',
+        resume: 'Wróć do notesu',   // kit room-return view
     },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
@@ -98,6 +119,17 @@ export const pl = {
             (r: string) => `Winda zatrzymała się na ${r} piętrze. Które to piętro?`,
             (r: string) => `Jaką liczbę oznacza ${r}?`,
         ],
+        // Spoken forms (Task.speak): the synthesizer would read Roman numerals as their value, so letters are spelled out.
+        romanLetters: { I: 'i', V: 'fau', X: 'iks', L: 'el', C: 'ce', D: 'de', M: 'em' } as Record<string, string>,
+        romanSpeakContexts: [
+            (spelled: string) => `Zegar z cyframi rzymskimi pokazuje ${spelled}. Która to godzina?`,
+            (spelled: string) => `Winda zatrzymała się na piętrze oznaczonym cyframi rzymskimi ${spelled}. Które to piętro?`,
+            (spelled: string) => `Jaką liczbę oznacza zapis rzymski ${spelled}?`,
+        ],
+        romanMonthSpeak: (day: number, spelled: string) => `Data ${day}, miesiąc zapisany cyframi rzymskimi ${spelled}. Który to miesiąc?`,
+        compareSpeak: (expr: string) => `Jaki znak pasuje w okienku? ${expr}`,
+        compareExprSpeak: (expr: string) => `Porównaj wyniki. Jaki znak pasuje w okienku? ${expr}`,
+        missingOpSpeak: (expr: string) => `Jakiego znaku działania brakuje w okienku? ${expr}`,
         toRoman: (n: number) => `Jak zapisać liczbę ${n} cyframi rzymskimi?`,
         romanHint: (pieces: string, sum: string) => `${pieces}; razem ${sum}`,
         nextMonth: (locative: string) => `Który miesiąc jest po ${locative}?`,

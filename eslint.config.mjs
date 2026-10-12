@@ -32,7 +32,7 @@ export default defineConfig([
     {
         files: ['src/core/**'],
         rules: {
-            'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage'],
+            'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage', 'speechSynthesis', 'SpeechSynthesisUtterance'],
             'no-restricted-imports': [
                 'error',
                 {

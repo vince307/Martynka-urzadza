@@ -4,7 +4,7 @@ import { textStyle } from './textStyle';
 
 
 /** Five-pointed star as a polygon, centred on (x, y). */
-export const drawStar = (graphics: GameObjects.Graphics, x: number, y: number, radius: number, color: number): void => {
+export const drawStar = (graphics: GameObjects.Graphics, x: number, y: number, radius: number, color: number, outline?: { color: number; width: number }): void => {
     graphics.fillStyle(color, 1);
     graphics.beginPath();
     for (let i = 0; i < 10; i++) {
@@ -20,6 +20,10 @@ export const drawStar = (graphics: GameObjects.Graphics, x: number, y: number, r
     }
     graphics.closePath();
     graphics.fillPath();
+    if (outline) {
+        graphics.lineStyle(outline.width, outline.color, 1);
+        graphics.strokePath();
+    }
 };
 
 /** Centre of the counter in scene space: where the flying star lands. */

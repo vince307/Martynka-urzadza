@@ -4,12 +4,16 @@ import type { StageDef } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
+import { narrationOf } from '../core/narration/spoken';
+import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
+import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
     ANIMATION,
+    GAME_EVENTS,
     GAME_HEIGHT,
     PLACEHOLDER_COLORS,
     PLACEHOLDER_FRAME,
@@ -19,9 +23,11 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import type { Narrator } from '../ui/narrator';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
+import { SummaryPanel } from '../ui/widgets/SummaryPanel';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 import { textStyle } from '../ui/widgets/textStyle';
@@ -41,8 +47,10 @@ export interface TaskSnapshot {
     readonly starsEarned: number;
     readonly bonusEarned: number;
     readonly starsTotal: number;
-    readonly counter: number;
     readonly finished: boolean;
+    readonly summary: SummaryView | null;
+    readonly narration: string | null;
+    readonly autoRead: boolean;
 }
 
 export interface TaskTargets {
@@ -50,12 +58,14 @@ export interface TaskTargets {
     readonly keys: readonly (Point & { key: string })[];
     readonly next: Point | null;
     readonly step: Point | null;
+    readonly nextRound: Point | null;
+    readonly toRoom: Point | null;
 }
 
 /**
  * One round of tasks. The scene keeps a RoundState from core, draws
- * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps)
- * back to core; it decides nothing itself.
+ * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps,
+ * the summary's "Kolejna runda" and "Do pokoju") back to core; it decides nothing itself.
  */
 export class TaskScene extends Scene {
     private state!: RoundState;
@@ -64,11 +74,14 @@ export class TaskScene extends Scene {
     private keypad!: Keypad;
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
+    private summary!: SummaryPanel;
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
     private stage!: StageDef;
     private rng!: Rng;
+    private narrator: Narrator | undefined;
+    private autoRead = false;   // session default by stage (FR-009); a parent switch comes with S-08
     private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
 
     constructor() {
@@ -85,6 +98,10 @@ export class TaskScene extends Scene {
             throw new Error(`Unknown default stage ${balance.defaultStage}`);
         }
         this.stage = stage;
+        this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
+        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
+        this.registry.set(REGISTRY_KEYS.narration, null);
+        this.registry.set(REGISTRY_KEYS.roomSwitch, false);
         this.rng = createRng(Date.now() >>> 0);
         this.state = this.freshRound();
         this.registry.set(REGISTRY_KEYS.stars, 0);
@@ -95,7 +112,27 @@ export class TaskScene extends Scene {
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
+        this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
+        // "Do pokoju": the round stays as it is while this scene sleeps; no speech runs over the room.
+        // game.events listeners also run while this scene sleeps (the room is open), so a stale tap is ignored.
+        const toRoom = (): void => {
+            if (this.sys.isSleeping()) {
+                return;
+            }
+            this.narrator?.cancel();
+            this.registry.set(REGISTRY_KEYS.narration, null);
+            this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+            this.scene.switch(SCENE_KEYS.room);
+        };
+        this.game.events.on(GAME_EVENTS.toRoom, toRoom);
+        // Back from the room: redraw the same state (summary), re-arm its buttons, no auto-reading.
+        const onWake = (): void => this.render();
+        this.events.on('wake', onWake);
+        this.events.once('shutdown', () => {
+            this.game.events.off(GAME_EVENTS.toRoom, toRoom);
+            this.events.off('wake', onWake);
+        });
 
         // Build id in the corner: the only way to see on a tablet that a silent
         // PWA update has landed. Technical identifier, not player-facing text.
@@ -113,8 +150,38 @@ export class TaskScene extends Scene {
         graphics.fillRoundedRect(left + border, top + border, width - 2 * border, height - 2 * border, radius - border / 2);
     }
 
+    /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
+    private currentNarration(): string | null {
+        return narrationOf(this.state, {
+            words: pl.speech,
+            calculate: pl.round.calculate,
+            tryAgain: pl.round.tryAgain,
+            answerLine: pl.round.resultLine,
+        });
+    }
+
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
+        const summary = this.currentSummary();
+        if (summary) {
+            // The round is over: the notebook stays, the task layer gives way to the summary page.
+            this.registry.set(REGISTRY_KEYS.narration, null);
+            this.narrator?.cancel();
+            this.dots.update([]);
+            this.tiles.setVisible(false);
+            this.keypad.setVisible(false);
+            this.tiles.setActive(false);
+            this.keypad.setActive(false);
+            this.bar.update({ kind: 'none' }, view.input);
+            this.steps.hide();
+            this.promptTexts.forEach((t) => t.setVisible(false));
+            this.promptBoxes.forEach((g) => g.setVisible(false));
+            this.summary.show(summary);
+            return;
+        }
+        this.summary.hide();
+        this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
         if (this.shownIndex !== this.state.index) {
             this.shownIndex = this.state.index;
@@ -220,18 +287,29 @@ export class TaskScene extends Scene {
         this.render();
     }
 
-    /** "Dalej" after a correct answer. */
+    /** "Dalej" after a correct answer; after the fifth task it opens the summary. */
     private advance(): void {
-        if (this.state.finished) {
-            this.sessionStars += this.state.starsEarned;
-            this.state = this.freshRound();
-            this.shownIndex = -1;
-        } else {
-            const before = this.state.starsEarned;
-            this.state = next(this.state);
-            this.syncStars(before, this.bar.nextTarget());
-        }
+        const before = this.state.starsEarned;
+        this.state = next(this.state);
+        this.syncStars(before, this.bar.nextTarget());
         this.render();
+        this.autoReadFirst();
+    }
+
+    /** "Kolejna runda" on the summary: the finished round's stars join the session, a fresh round starts. */
+    private startNextRound(): void {
+        this.sessionStars += this.state.starsEarned;
+        this.state = this.freshRound();
+        this.shownIndex = -1;
+        this.render();
+        this.autoReadFirst();
+    }
+
+    /** Auto-reading starts only from a tap on "Dalej" or "Kolejna runda" (never at a cold start: no gesture yet). */
+    private autoReadFirst(): void {
+        if (this.autoRead && this.state.phase === 'first') {
+            this.narrator?.speak(this.currentNarration() ?? '');
+        }
     }
 
     private freshRound(): RoundState {
@@ -271,10 +349,16 @@ export class TaskScene extends Scene {
         });
     }
 
+    private currentSummary(): SummaryView | null {
+        return summaryView(this.state, { starsTotal: this.sessionStars + this.state.starsEarned, nextRoomTaskCost: null });
+    }
+
     /** Read-only copy of the round for the e2e hook; nothing here can change the scene. */
     snapshot(): TaskSnapshot {
         const view = roundView(this.state, pl.round.resultLine);
         const task = this.state.tasks[this.state.index];
+        const current = this.currentSummary();
+        const frozenSummary = current ? Object.freeze({ ...current, stars: Object.freeze([...current.stars]) as unknown as boolean[] }) : null;
         return Object.freeze({
             index: this.state.index,
             phase: this.state.phase,
@@ -286,8 +370,10 @@ export class TaskScene extends Scene {
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
             starsTotal: this.sessionStars + this.state.starsEarned,
-            counter: Number(this.registry.get(REGISTRY_KEYS.stars) ?? 0),
             finished: this.state.finished,
+            summary: frozenSummary,
+            narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
+            autoRead: this.autoRead,
         });
     }
 
@@ -298,6 +384,8 @@ export class TaskScene extends Scene {
             keys: this.keypad.targets(),
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
+            nextRound: this.summary.targets().nextRound,
+            toRoom: this.summary.targets().toRoom,
         });
     }
 

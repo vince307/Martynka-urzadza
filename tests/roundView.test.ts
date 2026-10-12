@@ -83,17 +83,17 @@ describe('roundView', () => {
         expect(view(s).dots[0].outcome).toBe('first');
     });
 
-    it('round end carries the bonus, and none when the round had a mistake', () => {
+    it('a finished round has no bar: the summary layer takes over, inputs stay off', () => {
         let s = start(tile);
         for (let i = 0; i < 5; i += 1) {
             s = next(answer(s, s.tasks[s.index].answer));
         }
-        expect(view(s)).toMatchObject({ bar: { kind: 'roundEnd', bonus: 2 }, inputActive: false });
+        expect(view(s)).toMatchObject({ bar: { kind: 'none' }, inputActive: false });
         let m = next(answer(wrong(start(tile)), 5));
         for (let i = 0; i < 4; i += 1) {
             m = next(answer(m, m.tasks[m.index].answer));
         }
-        expect(view(m).bar).toEqual({ kind: 'roundEnd', bonus: 0 });
+        expect(view(m)).toMatchObject({ bar: { kind: 'none' }, inputActive: false });
     });
 
     it('the switch stays hidden in every phase', () => {
@@ -102,6 +102,25 @@ describe('roundView', () => {
         s = wrong(wrong(s));
         expect(view(s).switchVisible).toBe(false);
         s = nextSolutionStep(nextSolutionStep(s));
+        expect(view(s).switchVisible).toBe(false);
+    });
+
+    it('the switch shows between tasks: after a correct answer, before "Dalej" (FR-011)', () => {
+        expect(view(answer(start(tile), 5)).switchVisible).toBe(true);
+        expect(view(answer(wrong(start(tile)), 5)).switchVisible).toBe(true);
+        let s = wrong(wrong(start(tile)));
+        s = answer(nextSolutionStep(nextSolutionStep(s)), 5);
+        expect(s.phase).toBe('done');
+        expect(view(s).switchVisible).toBe(true);
+    });
+
+    it('the switch hides again once the next task starts and on the summary', () => {
+        let s = next(answer(start(tile), 5));
+        expect(view(s).switchVisible).toBe(false);
+        for (let i = 0; i < 4; i += 1) {
+            s = next(answer(s, s.tasks[s.index].answer));
+        }
+        expect(s.finished).toBe(true);
         expect(view(s).switchVisible).toBe(false);
     });
 });

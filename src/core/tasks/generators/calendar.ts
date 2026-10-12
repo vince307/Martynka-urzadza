@@ -2,7 +2,7 @@
 // (ZADANIA.md, section 4). Names and cases come from data/calendar.ts.
 import { months, quarters, timeFacts, weekdays } from '../../../data/calendar';
 import { pl } from '../../../data/pl';
-import { toRoman } from '../../text/roman';
+import { spellRoman, toRoman } from '../../text/roman';
 import { numberChoices, pickChoices } from '../distractors';
 import type { Generator, Task } from '../types';
 
@@ -75,6 +75,7 @@ export const generateCalendar: Generator = (skill, rng): Task => {
             return {
                 skillId: skill.id,
                 prompt: pl.tasks.romanMonth(day, roman),
+                speak: pl.tasks.romanMonthSpeak(day, spellRoman(roman, pl.tasks.romanLetters)),
                 answer: month.name,
                 choices: pickChoices(month.name, monthNames, 3, rng),
                 hint: [pl.tasks.romanMonthHint(roman, month.index), monthsList()],

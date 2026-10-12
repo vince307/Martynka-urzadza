@@ -37,9 +37,11 @@ export const generateMissingOp: Generator = (skill, rng): Task => {
             continue;
         }
         const answer = opSign(op);
+        const prompt = `${a} ${BOX} ${b} = ${c}`;
         return {
             skillId: skill.id,
-            prompt: `${a} ${BOX} ${b} = ${c}`,
+            prompt,
+            speak: pl.tasks.missingOpSpeak(prompt),
             answer,
             choices: rng.shuffle([opSign('+'), opSign('-')]),
             hint: [pl.tasks.missingOpHint(a, op === '+'), arithLine(a, b, op)],
