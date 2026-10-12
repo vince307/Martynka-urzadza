@@ -98,7 +98,7 @@ Trzy fazy: (1) rejestr parserów i wykonalność w parserach + DIV; (2) generycz
 
 #### Automated Verification:
 
-- `test -f .github/pull_request_template.md`; `grep -c 'nauczyciel' CLAUDE.md context/foundation/test-plan.md` ≥ 1 w każdym; `tail -n +2 AGENTS.md | wc -w` ≤ 400; `npm test` zielone
+- `test -f .github/pull_request_template.md`; `grep -ci 'teacher' CLAUDE.md context/foundation/test-plan.md` ≥ 1 w każdym (CLAUDE.md jest po angielsku); `tail -n +2 AGENTS.md | wc -w` ≤ 400; `npm test` zielone
 
 #### Manual Verification:
 
@@ -165,8 +165,8 @@ Brak.
 
 #### Automated
 
-- [ ] 3.1 Szablon PR istnieje; „nauczyciel” w CLAUDE.md i test-plan; AGENTS ≤ 400; `npm test`
+- [x] 3.1 Szablon PR istnieje; „nauczyciel” w CLAUDE.md i test-plan; AGENTS ≤ 400; `npm test` — c3cc29b
 
 #### Manual
 
-- [ ] 3.2 Odczyt szablonu i akapitu CLAUDE.md
+- [x] 3.2 Odczyt szablonu i akapitu CLAUDE.md — c3cc29b

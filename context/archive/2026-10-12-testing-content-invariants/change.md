@@ -1,10 +1,10 @@
 ---
 change_id: testing-content-invariants
 title: Niezmienniki treści: wykonalność parametrów, brak zdegenerowanych zadań, różnorodność, lista „odczytu nauczyciela” (plan testów, etap 3)
-status: implementing
+status: archived
 created: 2026-10-12
 updated: 2026-10-12
-archived_at: null
+archived_at: 2026-10-12T14:36:09Z
 ---
 
 ## Notes
