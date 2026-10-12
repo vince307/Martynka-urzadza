@@ -610,9 +610,9 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 9.1 Bramka z NOWĄ komendą unit (sample E1–E6) zielona; `npm test` = baseline gałęzi + testy umiejętności E5/E6
-- [ ] 9.2 `sample -- E5` i `-- E6` kod 0, `Naruszenia: 0`; `brak generatora` tylko dla `LATER`; E5.4 ·0/·1 ≤ 35 %
-- [ ] 9.3 Celowe zepsucie `E6.9.rounding_100` (`max: 150`) przewraca niezmiennik i `sample -- E6`; cofnięte; meta-check
+- [x] 9.1 Bramka z NOWĄ komendą unit (sample E1–E6) zielona; `npm test` = baseline gałęzi + testy umiejętności E5/E6 — 6607b71
+- [x] 9.2 `sample -- E5` i `-- E6` kod 0, `Naruszenia: 0`; `brak generatora` tylko dla `LATER`; E5.4 ·0/·1 ≤ 35 % — 6607b71
+- [x] 9.3 Celowe zepsucie `E6.9.rounding_100` (`max: 150`) przewraca niezmiennik i `sample -- E6`; cofnięte; meta-check — 6607b71
 
 #### Manual
 
