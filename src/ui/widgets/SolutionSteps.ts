@@ -1,8 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoundView } from '../../core/round/view';
-import { FONT_FAMILY, FONT_SIZES, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
+import { textStyle } from './textStyle';
 
 type SolutionBar = Extract<RoundView['bar'], { kind: 'solution' }>;
 
@@ -13,19 +14,22 @@ export class SolutionSteps {
 
     constructor(scene: Scene, onStep: () => void) {
         this.text = scene.add
-            .text(0, 0, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.solutionLine}px`, color: TEXT_COLOR, align: 'center' })
+            .text(0, 0, '', { ...textStyle('solutionLine'), align: 'center' })
             .setOrigin(0.5, 0)
             .setLineSpacing(TASK_LAYOUT.solution.lineGap)
             .setVisible(false);
         this.button = new ActionButton(scene, onStep);
     }
 
-    /** `top` is the first free y under the prompt; the button sits in the bar zone, centred on `centerX`. */
-    show(bar: SolutionBar, centerX: number, top: number): void {
+    /**
+     * `top` is the first free y under the prompt; lines wrap at `maxWidth` so a long step (the months in order)
+     * stays inside the notebook. The button sits in the bar zone, centred on `centerX`.
+     */
+    show(bar: SolutionBar, centerX: number, top: number, maxWidth: number): void {
         const { bottom, height } = TASK_LAYOUT.bar;
         const buttonCenterY = bottom - height / 2;
         const room = bottom - height - TASK_LAYOUT.solution.bottomGap - top;
-        this.text.setText(bar.lines.join('\n')).setScale(1).setPosition(centerX, top).setVisible(true);
+        this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.join('\n')).setPosition(centerX, top).setVisible(true);
         const scale = Math.max(TASK_LAYOUT.solution.minScale, Math.min(1, room / this.text.height));
         this.text.setScale(scale);
         this.button.showCentered(bar.button === 'next' ? pl.round.nextStep : pl.round.gotIt, centerX, buttonCenterY);

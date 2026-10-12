@@ -1,6 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
 import { keypadInput, type KeypadKey } from '../../core/round/keypad';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, PAGE_BACKGROUND, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { textStyle } from './textStyle';
 import { pl } from '../../data/pl';
 import { keypadGrid, type Rect } from './geometry';
 
@@ -34,21 +35,13 @@ export class Keypad {
         this.field = grid.field;
         this.fieldGraphics = scene.add.graphics();
         this.fieldText = scene.add
-            .text(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, '', {
-                fontFamily: FONT_FAMILY,
-                fontSize: `${FONT_SIZES.answer}px`,
-                color: TEXT_COLOR,
-            })
+            .text(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, '', textStyle('answer'))
             .setOrigin(0.5);
         this.objects.push(this.fieldGraphics, this.fieldText);
         for (const { key, rect } of grid.keys) {
             const graphics = scene.add.graphics();
             const label = scene.add
-                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, labelOf(key), {
-                    fontFamily: FONT_FAMILY,
-                    fontSize: `${key === 'delete' || key === 'ok' ? FONT_SIZES.keyLabel : FONT_SIZES.key}px`,
-                    color: key === 'ok' ? PAGE_BACKGROUND : TEXT_COLOR,
-                })
+                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, labelOf(key), textStyle(key === 'delete' || key === 'ok' ? 'keyLabel' : 'key'))
                 .setOrigin(0.5);
             const zone = scene.add.zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height).setInteractive();
             const button: Button = { key, rect, graphics, pressed: false };
@@ -116,13 +109,13 @@ export class Keypad {
 
     private paintButton({ key, rect, graphics, pressed }: Button): void {
         const { radius } = TASK_LAYOUT.keypad;
-        const fill = key === 'ok' ? PLACEHOLDER_COLORS.turquoise : key === 'delete' ? PLACEHOLDER_COLORS.hint : PLACEHOLDER_COLORS.tile;
+        const fill = key === 'ok' ? PLACEHOLDER_COLORS.next : key === 'delete' ? PLACEHOLDER_COLORS.hint : PLACEHOLDER_COLORS.tile;
         graphics.clear();
         graphics.fillStyle(PLACEHOLDER_COLORS.dotDone, 0.5);
         graphics.fillRoundedRect(rect.x, rect.y + 6, rect.width, rect.height, radius);
         graphics.fillStyle(pressed ? PLACEHOLDER_COLORS.pressed : fill, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
-        graphics.lineStyle(3, key === 'ok' ? PLACEHOLDER_COLORS.deepTeal : PLACEHOLDER_COLORS.tileBorder, 1);
+        graphics.lineStyle(3, key === 'ok' ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
     }
 

@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { textStyle } from './textStyle';
 import { tileRow, type Rect } from './geometry';
 
 export type Choice = number | string;
@@ -36,17 +37,8 @@ export class AnswerTiles {
             const value = choices[i];
             const graphics = this.scene.add.graphics();
             const label = this.scene.add
-                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, String(value), {
-                    fontFamily: FONT_FAMILY,
-                    fontSize: `${FONT_SIZES.answer}px`,
-                    color: TEXT_COLOR,
-                })
+                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, String(value), textStyle('answer'))
                 .setOrigin(0.5);
-            // Words and long numbers shrink to stay inside the tile.
-            const room = rect.width - 2 * tiles.border - 24;
-            if (label.width > room) {
-                label.setScale(room / label.width);
-            }
             const zone = this.scene.add
                 .zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height)
                 .setInteractive();
@@ -57,6 +49,10 @@ export class AnswerTiles {
             this.paint(tile);
             return tile;
         });
+        // Words and long numbers shrink to stay inside the tile, all labels by the same factor so the row reads evenly.
+        const room = (this.tiles[0]?.rect.width ?? 0) - 2 * tiles.border - 24;
+        const scale = Math.min(1, ...this.tiles.map((t) => room / t.label.width));
+        this.tiles.forEach((t) => t.label.setScale(scale));
     }
 
     setActive(active: boolean): void {

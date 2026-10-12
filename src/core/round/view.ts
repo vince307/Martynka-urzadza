@@ -48,7 +48,8 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
     const task = state.tasks[Math.min(state.index, state.tasks.length - 1)];
     return {
         dots: state.tasks.map((_, i) => ({
-            status: state.finished || i < state.index ? 'done' : i === state.index ? 'current' : 'todo',
+            // A settled task is green at once, before "Dalej" (kit correct.png).
+            status: state.finished || i < state.index || (i === state.index && state.phase === 'done') ? 'done' : i === state.index ? 'current' : 'todo',
             outcome: state.outcomes[i],
         })),
         input: task.choices ? 'tiles' : 'keypad',

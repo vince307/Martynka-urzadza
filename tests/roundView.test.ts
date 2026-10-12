@@ -77,6 +77,12 @@ describe('roundView', () => {
         expect(view(s).dots[1].status).toBe('current');
     });
 
+    it('a settled task turns its dot green before "Dalej" (kit correct.png)', () => {
+        const s = answer(start(tile), 5);
+        expect(view(s).dots.map((d) => d.status)).toEqual(['done', 'todo', 'todo', 'todo', 'todo']);
+        expect(view(s).dots[0].outcome).toBe('first');
+    });
+
     it('round end carries the bonus, and none when the round had a mistake', () => {
         let s = start(tile);
         for (let i = 0; i < 5; i += 1) {

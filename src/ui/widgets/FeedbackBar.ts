@@ -1,8 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoundView } from '../../core/round/view';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
+import { textStyle } from './textStyle';
 
 
 /**
@@ -19,14 +20,14 @@ export class FeedbackBar {
 
     constructor(scene: Scene, onNext: () => void) {
         this.graphics = scene.add.graphics();
-        this.text = scene.add.text(0, 0, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.bar}px`, color: TEXT_COLOR, align: 'center' }).setOrigin(0.5);
+        this.text = scene.add.text(0, 0, '', { ...textStyle('bar'), align: 'center' }).setOrigin(0.5);
         this.button = new ActionButton(scene, onNext);
         this.update({ kind: 'none' }, 'tiles');
     }
 
     update(bar: RoundView['bar'], input: 'tiles' | 'keypad'): void {
         const span = TASK_LAYOUT.barSpan[input === 'tiles' ? 'tiles' : 'keypad'];
-        const { height, bottom, radius, padding } = TASK_LAYOUT.bar;
+        const { height, bottom, radius, padding, hintBorder } = TASK_LAYOUT.bar;
         const top = bottom - height;
         const centerY = top + height / 2;
         this.graphics.clear();
@@ -38,11 +39,15 @@ export class FeedbackBar {
         const good = bar.kind === 'correct' || bar.kind === 'roundEnd';
         this.graphics.fillStyle(good ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.hint, 1);
         this.graphics.fillRoundedRect(span.x, top, span.width, height, radius);
+        if (!good) {
+            this.graphics.lineStyle(hintBorder, PLACEHOLDER_COLORS.hintBorder, 1);
+            this.graphics.strokeRoundedRect(span.x, top, span.width, height, radius);
+        }
 
         const withButton = bar.kind === 'correct' || bar.kind === 'roundEnd';   // "Dalej" also starts the next round
         const right = span.x + span.width - padding;
         if (withButton) {
-            this.button.show(pl.round.next, right, centerY, PLACEHOLDER_COLORS.turquoise);
+            this.button.show(pl.round.next, right, centerY, PLACEHOLDER_COLORS.next, PLACEHOLDER_COLORS.nextBorder);
         }
         const buttonLeft = this.button.bounds()?.x ?? right;
         const room = withButton ? buttonLeft - span.x - 2 * padding : span.width - 2 * padding;

@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { FONT_KEY, FONT_URL, SCENE_KEYS } from '../data/layout';
+import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, SCENE_KEYS } from '../data/layout';
 
 /**
  * Loads the task screen font from public/fonts (precached, so it also works
@@ -11,7 +11,7 @@ export class BootScene extends Scene {
     }
 
     preload(): void {
-        this.load.font(FONT_KEY, FONT_URL, 'truetype');
+        this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
     }
 
     create(): void {

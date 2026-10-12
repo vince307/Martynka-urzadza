@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { textStyle } from './textStyle';
 
 
 /** Five-pointed star as a polygon, centred on (x, y). */
@@ -41,7 +42,7 @@ export class StarCounter {
         const centerY = top + height / 2;
         drawStar(graphics, left + starGap + starRadius, centerY, starRadius, PLACEHOLDER_COLORS.butter);
         this.text = scene.add
-            .text(left + width - starGap, centerY, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.counter}px`, color: TEXT_COLOR })
+            .text(left + width - starGap, centerY, '', textStyle('counter'))
             .setOrigin(1, 0.5);
         this.setValue(value);
     }

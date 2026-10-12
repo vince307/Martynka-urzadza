@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { textStyle } from './textStyle';
 
 
 /** A rounded button of the bar (96 px high, at least 220 wide); the tap fires in pointerdown. */
@@ -7,7 +8,8 @@ export class ActionButton {
     private readonly graphics: GameObjects.Graphics;
     private readonly label: GameObjects.Text;
     private readonly zone: GameObjects.Zone;
-    private fill: number = PLACEHOLDER_COLORS.butter;
+    private fill: number = PLACEHOLDER_COLORS.button;
+    private border: number = PLACEHOLDER_COLORS.buttonBorder;
     private rect = { x: 0, y: 0, width: 0, height: 0 };
     private shown = false;
 
@@ -16,7 +18,7 @@ export class ActionButton {
         private readonly onTap: () => void,
     ) {
         this.graphics = scene.add.graphics();
-        this.label = scene.add.text(0, 0, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.barButton}px`, color: TEXT_COLOR }).setOrigin(0.5);
+        this.label = scene.add.text(0, 0, '', textStyle('barButton')).setOrigin(0.5);
         this.zone = scene.add.zone(0, 0, 10, 10).setInteractive();
         this.zone.on('pointerdown', () => {
             if (this.shown) {
@@ -27,19 +29,19 @@ export class ActionButton {
     }
 
     /** Shows the button with its right edge at `right`, centred on `centerY`. */
-    show(text: string, right: number, centerY: number, fill: number = PLACEHOLDER_COLORS.butter): void {
+    show(text: string, right: number, centerY: number, fill: number = PLACEHOLDER_COLORS.button, border: number = PLACEHOLDER_COLORS.buttonBorder): void {
         this.label.setText(text);
         const { bar } = TASK_LAYOUT;
         const width = Math.max(bar.minWidth, this.label.width + 2 * bar.padding);
-        this.place(right - width, centerY, width, fill);
+        this.place(right - width, centerY, width, fill, border);
     }
 
     /** Shows the button centred on `centerX`. */
-    showCentered(text: string, centerX: number, centerY: number, fill: number = PLACEHOLDER_COLORS.butter): void {
+    showCentered(text: string, centerX: number, centerY: number, fill: number = PLACEHOLDER_COLORS.button, border: number = PLACEHOLDER_COLORS.buttonBorder): void {
         this.label.setText(text);
         const { bar } = TASK_LAYOUT;
         const width = Math.max(bar.minWidth, this.label.width + 2 * bar.padding);
-        this.place(centerX - width / 2, centerY, width, fill);
+        this.place(centerX - width / 2, centerY, width, fill, border);
     }
 
     hide(): void {
@@ -61,10 +63,11 @@ export class ActionButton {
         return this.shown ? { x: this.rect.x, width: this.rect.width } : null;
     }
 
-    private place(x: number, centerY: number, width: number, fill: number): void {
+    private place(x: number, centerY: number, width: number, fill: number, border: number): void {
         const { bar } = TASK_LAYOUT;
         this.rect = { x, y: centerY - bar.height / 2, width, height: bar.height };
         this.fill = fill;
+        this.border = border;
         this.shown = true;
         this.graphics.setVisible(true);
         this.label.setVisible(true).setPosition(x + width / 2, centerY);
@@ -75,7 +78,7 @@ export class ActionButton {
         this.graphics.clear();
         this.graphics.fillStyle(this.fill, 1);
         this.graphics.fillRoundedRect(x, this.rect.y, width, bar.height, bar.radius);
-        this.graphics.lineStyle(bar.border, PLACEHOLDER_COLORS.butter, 1);
+        this.graphics.lineStyle(bar.border, this.border, 1);
         this.graphics.strokeRoundedRect(x, this.rect.y, width, bar.height, bar.radius);
     }
 }

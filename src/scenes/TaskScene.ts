@@ -8,9 +8,7 @@ import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
-    FONT_FAMILY,
     ANIMATION,
-    FONT_SIZES,
     GAME_HEIGHT,
     PLACEHOLDER_COLORS,
     PLACEHOLDER_FRAME,
@@ -25,6 +23,7 @@ import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
+import { textStyle } from '../ui/widgets/textStyle';
 import { drawStar, starCounterTarget } from '../ui/widgets/StarCounter';
 
 type Point = { x: number; y: number };
@@ -99,11 +98,7 @@ export class TaskScene extends Scene {
         // Build id in the corner: the only way to see on a tablet that a silent
         // PWA update has landed. Technical identifier, not player-facing text.
         this.add
-            .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, {
-                fontFamily: FONT_FAMILY,
-                fontSize: `${FONT_SIZES.caption}px`,
-                color: TEXT_COLOR,
-            })
+            .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, textStyle('caption'))
             .setOrigin(0, 1);
     }
 
@@ -140,9 +135,10 @@ export class TaskScene extends Scene {
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
         this.bar.update(view.bar, view.input);
         if (view.bar.kind === 'solution') {
-            const span = TASK_LAYOUT.barSpan[view.input];
-            const centerX = span.x + span.width / 2;
-            this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap);
+            // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
+            const centerX = (view.input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression).x;
+            const maxWidth = TASK_LAYOUT.barSpan[view.input].width;   // same width as the bar under them
+            this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth);
         } else {
             this.steps.hide();
         }
@@ -161,22 +157,22 @@ export class TaskScene extends Scene {
         const { prompt } = TASK_LAYOUT;
         const sentence = input === 'tiles' ? prompt : TASK_LAYOUT.promptBeside;
         const expression = input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
+        // DESIGN-GAP: the kit has no frame for a missing-number task; the font has no U+25A1, so "□" falls back to a
+        // smaller system glyph (docs/design-gaps.md row 8).
         if (isExpression(task.prompt)) {
             this.promptTexts.push(
                 this.add
-                    .text(prompt.x, prompt.y, pl.round.calculate, { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.prompt}px`, color })
+                    .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
                     .setOrigin(0.5),
                 this.add
-                    .text(expression.x, expression.y, task.prompt, { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.expression}px`, color })
+                    .text(expression.x, expression.y, task.prompt, textStyle('expression', color))
                     .setOrigin(0.5),
             );
         } else {
             this.promptTexts.push(
                 this.add
                     .text(sentence.x, sentence.y, task.prompt, {
-                        fontFamily: FONT_FAMILY,
-                        fontSize: `${FONT_SIZES.prompt}px`,
-                        color,
+                        ...textStyle('prompt', color),
                         align: 'center',
                         wordWrap: { width: sentence.maxWidth },
                     })
