@@ -31,7 +31,15 @@ describe('generateMissing', () => {
                 for (const n of task.prompt.match(/\d+/g) ?? []) {
                     expect(Number(n), where).toBeLessThanOrEqual(p.max);
                 }
-                expect(task.hint[0], where).toMatch(/\d+ [+−·:] \d+ = \d+/);
+                // The hidden number is revealed by the last hint line; a hidden operand
+                // first gets the inverse operation without the result.
+                expect(task.hint[task.hint.length - 1], where).toMatch(/\d+ [+−·:] \d+ = \d+/);
+                expect(task.hint, where).toHaveLength(/□$/.test(task.prompt) ? 1 : 2);
+                if (task.hint.length === 2) {
+                    expect(task.hint[0], where).not.toContain('=');
+                    expect(task.hint[0], where).toMatch(/\d+ [+−·:] \d+$/);
+                    expect(task.hint[1].startsWith(task.hint[0].split(': ')[1]), where).toBe(true);
+                }
             });
         });
     }
