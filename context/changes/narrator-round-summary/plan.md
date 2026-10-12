@@ -835,10 +835,10 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 2.1 `tests/spoken.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `□` niezamieniane / dwukropek w zdaniu → „podzielić przez” / cyfry rzymskie w mowie / liczby dzielone po `\s` → czerwony; przywrócone; meta-check na `stages`
-- [ ] 2.3 `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `czyta:`
-- [ ] 2.4 Pełna bramka lokalna zielona
+- [x] 2.1 `tests/spoken.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 2d43a08
+- [x] 2.2 Deliberate break: `□` niezamieniane / dwukropek w zdaniu → „podzielić przez” / cyfry rzymskie w mowie / liczby dzielone po `\s` → czerwony; przywrócone; meta-check na `stages` — 2d43a08
+- [x] 2.3 `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `czyta:` — 2d43a08
+- [x] 2.4 Pełna bramka lokalna zielona — 2d43a08
 
 #### Manual
 

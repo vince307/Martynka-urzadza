@@ -1,50 +1,49 @@
 # Handoff — `narrator-round-summary` (slice S-05)
 
-The `/10x-tdd` phase 1 step of autonomous run 2026-10-12-s04-s08 wrote this file. Phase 1 (spoken text in generators) is committed in `d361c99`. The next agent must not get this wrong: the `speak` texts still contain raw operation symbols and `□`; phase 2 turns them into words ("okienko", "plus", ...) and adds the no-leak invariant over E1–E6.
+The `/10x-tdd` phase 2 step of autonomous run 2026-10-12-s04-s08 wrote this file. Phase 2 (spoken text for the round) is committed in `2d43a08`; `spokenText`, `spokenTask` and `narrationOf` exist and nothing calls them yet. The next agent must not get this wrong: phase 3 builds the voice rules and narrator module on top of these; the scene wiring waits for phase 5.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/narrator-round-summary`, cut from `main` at `8467431` |
-| Commits on branch | 5 docs commits + `d361c99` (phase 1) + this handoff commit |
+| Commits on branch | 5 docs commits + `d361c99` (p1) + handoff p1 + `2d43a08` (p2) + this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (unchanged; implementation continues) |
-| `## Progress` rows remaining | 51 (`grep -c '^- \[ \]' plan.md`); rows 1.1–1.4 ticked, 1.5 `[reviewer]` open |
+| `## Progress` rows remaining | 47 (`grep -c '^- \[ \]' plan.md`); rows 1.1–1.4 and 2.1–2.4 ticked; 1.5 and 2.5 `[reviewer]` open |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/data/pl.ts` | `pl.tasks.romanLetters`, `romanSpeakContexts`, `romanMonthSpeak`, `compareSpeak`, `compareExprSpeak`, `missingOpSpeak` |
-| `src/core/text/roman.ts` | `spellRoman(text, letters)` |
-| `src/core/tasks/generators/{compareNum,compareExpr,missingOp,roman,calendar}.ts` | set `Task.speak` (ROMAN only for the reading direction; `toRoman` direction has none) |
-| `scripts/sample.ts` | prints a `mowa:` line under a task that has `speak` |
-| `tests/taskSpeech.test.ts`, `tests/taskSpeechHelpers.ts` | one new file over the real skills of all stages (instead of five edited files): question + whole expression, question text without sign glyphs, ROMAN/CALENDAR without numeral token, digits, number words or month name, `spellRoman` |
-| `context/changes/narrator-round-summary/plan.md` | rows 1.1–1.4 ticked |
+| `src/core/narration/spoken.ts` | `SpeechWords`, `spokenText(text, words)`, `spokenTask(task, words, calculate)`, `narrationOf(state, {words, calculate, tryAgain, answerLine})` |
+| `src/data/pl.ts` | new `pl.speech` (plus, minus, razy, podzielić przez, równa się, okienko, mniejsze niż, większe niż) |
+| `scripts/sample.ts` | prints a `czyta:` line (`spokenTask`) under every task, replacing the phase 1 `mowa:` line |
+| `tests/spoken.test.ts` | 25 tests: hand-written cases, glyph-free invariant, no standalone Roman token, no-leak invariant over all 84 skills of E1–E6 (20 seeds x 10 draws), `narrationOf` per phase |
+| `context/changes/narrator-round-summary/plan.md` | rows 2.1–2.4 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stub state: src changes stashed) | `tests/taskSpeech.test.ts` 12 of 15 failed; first: `E1.2.compare_num_5 seed=1 draw=0 prompt="2 □ 1": expected undefined to be defined` |
-| GREEN | 15/15 after a test fix (substring `trzy` matched inside "zatrzymała"; now whole-word match) |
-| Deliberate break | ROMAN `speak` = `prompt` text and COMPARE_NUM large-branch `speak` removed: 4 red (`E6.10.compare_num_1000000`, `E3.11.roman_12`, `E5.2.roman_12`, `E6.10.roman_2000`); restored, green. Meta-check: the cases come from generators on real stage data, so the break is what turns them red |
-| `npm run lint`, `npm run typecheck` | OK |
-| `npm test` | 611 passed (baseline 596, +15) |
+| RED (stub `spokenText` returning the text unchanged, `pl.speech` added) | 22 of 25 failed; first: `expected '38 + 27' to be 'Oblicz. trzydzieści osiem plus dwadzieścia siedem'` |
+| GREEN | 25/25 after two test fixes: the no-leak check skips an answer whose form is already on the screen (an operand equal to the result), and compares number words as maximal runs ("siedemdziesiąt siedem" is 77, it does not contain 70) |
+| Deliberate break | (a) `□` not replaced: 4 red; (b) colon always division: 2 red ("Uzupełnij ciąg:", fact family line); (c) number regex without NBSP grouping: the "12 345" case red; (d) ROMAN `speak` removed from the generator: "never speaks a standalone Roman numeral token" red on `E3.11.roman_12`. All restored (spoken.ts byte-identical to the backup, roman.ts by `git checkout`). Meta-check: invariants iterate the real `stages` skills, so (d) in a generator turns them red |
+| `npm run lint`, `npm run typecheck` | OK (lint caught literal no-break spaces in the new files; now \\u00A0 escapes) |
+| `npm test` | 636 passed (baseline on branch 611, +25) |
 | deploy and ops scripts | OK, OK |
-| `npm run sample -- E1` … `E6` | each exit 0, `Naruszenia: 0`, `mowa:` lines present |
+| `npm run sample -- E1` … `E6` | each exit 0, `Naruszenia: 0`, `czyta:` lines present |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test` | 4 passed (baseline 4, +0) |
+| `npx playwright test` | 4 passed (baseline 4, +0); first run inside the sandbox failed, the rerun outside it (contract: excludedCommands) passed |
 
 ## 4. Next command
 
-/10x-tdd narrator-round-summary phase 2
+/10x-tdd narrator-round-summary phase 3
 
 ## 5. Open
 
-Teacher read (author's pass, row 1.5 stays for the `[reviewer]`): questions read naturally ("Jaki znak pasuje w okienku? 3 □ 5", "Porównaj wyniki. ...", "Jakiego znaku działania brakuje w okienku? 8 □ 2 = 10"); Roman letters are spelled "fau, i, i", "iks, el, i, iks"; the answer is never in the question. Observations: a single letter reads "zapis rzymski i" (the conjunction "i"), acceptable; E6 long numerals (8 letters) are a long list. `reviews/teacher-read.md` is not written (reviewer's file).
+Teacher read (author's pass, row 2.5 stays for the `[reviewer]`): E1–E6 `czyta:` lines read naturally: "Oblicz. trzydzieści osiem plus dwadzieścia siedem", "Jaki znak pasuje w okienku? trzy okienko pięć", "Porównaj wyniki. Jaki znak pasuje w okienku? dwa plus jeden okienko siedem minus trzy", "dwanaście podzielić przez trzy równa się okienko", "…równa się dwanaście. Sprawdź. dwanaście podzielić przez trzy równa się okienko". Observations for the reviewer: digits inside sentences stay digits (synthesizer reads them; E6 "701954 okienko 701957" is read by the engine); "równa się" as the plan fixed it ("4 = 1 + □" reads "cztery równa się jeden plus okienko"); a colon after a word is read as a full stop pause ("Sprawdź."); hint lines with Roman numerals ("V = 5; razem 5") are NOT spelled in the `second`/`solution` phases (only the task command is); NUMBER_WORDS "Jak zapisać słowami liczbę 26?" keeps digits, so the synthesizer says the number (known risk F9). `reviews/teacher-read.md` is not written (reviewer's file).
 
 Manual-only Progress rows (checklist for the maintainer):
 - [ ] 10.5 `[human]` auto-read only as a session default by stage (FR-009)
@@ -58,10 +57,12 @@ Known risks F8, F9 in `plan.md` `## Known risks` unchanged. Deferred follow-ups:
 
 ## 6. Autonomous decisions
 
-1. **Mixed-phase / test layout.** One new test file `tests/taskSpeech.test.ts` over the real curriculum skills instead of edits to five files.
-   - Why: one place for the shared no-leak definition; the plan said "testy w pięciu plikach" only as a location.
-   - Would change: the reviewer wants per-generator files.
-2. **ROMAN context pick.** The generator now draws the context index with `rng.int` (same draw count as `rng.pick`) so the spoken context matches the written one.
-3. **Phrasing.** Roman reading uses "zapis rzymski ${letters}" for the number question so one letter does not need a plural.
-   - Would change: the teacher read prefers "cyfry rzymskie".
-4. **Gate prompts.** Commit message and between-phase prompts decided in place; stopped after phase 1.
+1. **Where the "Oblicz." prefix lives.** `spokenText` stays pure (text to speech); `spokenTask` / `narrationOf` add `pl.round.calculate` + "." when the whole `speak ?? prompt` is a bare calculation (`isExpression`, the same test the task scene uses). The plan listed the prefix under `spokenText`.
+   - Why: a hint such as "2 + 1 = 3" is also a bare calculation and must not get "Oblicz." in the `second`/`solution` phases.
+   - Would change: the reviewer wants `spokenText` to take `calculate` too.
+2. **Expression scope.** Number words only inside a segment that is entirely a calculation (digits, spaces, `+ − · : ( ) □ = < >`); sentences keep digits (NBSP between digits removed). Glyphs are replaced in both. `(` becomes ", ", `)` is dropped, `;` becomes ",".
+   - Would change: the teacher read wants sentence numbers in words.
+3. **No-leak invariant.** An answer form (digits, number words, text, sign word) already present on the screen exempts the task; number words compare as maximal runs. Array answers are skipped. The invariant runs on `spokenTask` (the command), not on hints.
+   - Would change: hints should also be checked (they reveal by design after the first mistake).
+4. **Sample line.** `czyta:` replaces `mowa:` for every task (not only those with `speak`).
+5. **Gate prompts.** Commit message and between-phase prompts decided in place; stopped after phase 2. Playwright rerun outside the sandbox as the contract's excludedCommands allow.
