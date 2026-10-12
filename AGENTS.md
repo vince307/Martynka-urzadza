@@ -9,18 +9,17 @@
 - Scenes have no balance numbers or player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `wordTemplates.ts`, `rooms.ts`), which imports only `src/core/text/*` and types (lint-enforced).
 - Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` (gitignored) in committed files.
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never cost stars.
-- Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code and comments: English.
-- Phaser 4 differs from v3 (renderer, filters); check v4 docs first.
+- Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code, comments: English.
+- Phaser 4 differs from v3; check v4 docs first.
 - `designs/` is read-only art; `.claude/` is local.
 
 ## Project structure
 
-`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Task, UI), `src/ui/widgets/` (round widgets), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round), `src/testing/` (e2e hook, e2e build only), `src/pwa/`, `src/ui/dom/`; `src/storage/` is empty. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
+`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Task, UI), `src/ui/widgets/` (round widgets), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round), `src/testing/` (e2e hook, e2e build only), `src/pwa/`, `src/ui/dom/`. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
 
 ## Commands
 
-- `npm install`
-- `npm run dev` — Vite on http://localhost:8080 (`-- --host` for tablets).
+- `npm run dev` — Vite on :8080 (`-- --host` for tablets).
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not.
 - `npm run preview` — the only local way to test `sw.js`.
@@ -28,12 +27,12 @@
 
 ## Coding style
 
-TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indentation. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`: `(skill, rng) => Task`.
+TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). Four-space indent. Scene files are PascalCase (`TaskScene.ts`); one generator per task type in `src/core/tasks/generators/`: `(skill, rng) => Task`.
 
 ## Testing
 
-Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tests/helpers.ts`) plus `tests/contentInvariants.test.ts`; content PRs need the teacher read from CLAUDE.md. Quality plan: @context/foundation/test-plan.md. After each milestone verify build and offline behaviour.
+Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tests/helpers.ts`) plus `tests/contentInvariants.test.ts`; content PRs need the teacher read from CLAUDE.md. Quality plan: @context/foundation/test-plan.md. After each milestone verify build and offline.
 
 ## Commits and PRs
 
-Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, open a PR; `main` changes only by merging on GitHub, which deploys to https://martynka-urzadza.pl. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, PR; `main` changes only by a GitHub merge, which deploys to https://martynka-urzadza.pl. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring. Runbook: @deploy/README.md.

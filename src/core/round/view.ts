@@ -29,6 +29,7 @@ const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => st
         case 'second':
             return { kind: 'hint', line: firstHint(task) };
         case 'solution': {
+            // DESIGN-GAP: the kit offers "Pokaż kroki" after the first mistake; the plan walks the steps after the second (docs/design-gaps.md row 2).
             const steps = solutionSteps(task, answerLine);
             return {
                 kind: 'solution',

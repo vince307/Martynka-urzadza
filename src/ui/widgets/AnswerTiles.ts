@@ -1,11 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { tileRow, type Rect } from './geometry';
 
 export type Choice = number | string;
 
-const PRESSED = 0xc9e3b8;   // pressed tile, a step darker than the palette tile
-const TEXT_COLOR = `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`;
 
 interface Tile {
     rect: Rect;
@@ -115,10 +113,10 @@ export class AnswerTiles {
         graphics.clear();
         graphics.fillStyle(PLACEHOLDER_COLORS.dotDone, 0.5);          // soft lower edge
         graphics.fillRoundedRect(rect.x, rect.y + 8, rect.width, rect.height, radius);
-        graphics.fillStyle(tile.pressed ? PRESSED : isCorrect ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.tile, 1);
+        graphics.fillStyle(tile.pressed ? PLACEHOLDER_COLORS.pressed : isCorrect ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.tile, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
         const isHint = this.hintValue !== null && tile.value === this.hintValue;
-        graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.dotDone : isHint ? PLACEHOLDER_COLORS.butter : 0xb9d9c9, 1);
+        graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.dotDone : isHint ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
     }
 

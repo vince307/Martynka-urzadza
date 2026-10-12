@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { E2E_HOOK_MARKER, checkE2EHook, e2eHookGuard } from '../vite/e2eHookGuard.mjs';
 
@@ -33,5 +34,10 @@ describe('e2e hook guard', () => {
         const ctx = { error: (m: string): never => { errors.push(m); throw new Error(m); } };
         expect(() => plugin.generateBundle.call(ctx, {}, bundle)).toThrow(/leaked/);
         expect(errors).toHaveLength(1);
+    });
+
+    it('guards the property the hook really installs (a rename on one side would make the guard pass blindly)', () => {
+        const hook = readFileSync(new URL('../src/testing/e2eHook.ts', import.meta.url), 'utf8');
+        expect(hook).toContain(`'${E2E_HOOK_MARKER}'`);
     });
 });

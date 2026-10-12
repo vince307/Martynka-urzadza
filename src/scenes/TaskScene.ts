@@ -17,6 +17,7 @@ import {
     REGISTRY_KEYS,
     SCENE_KEYS,
     TASK_LAYOUT,
+    TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
@@ -51,8 +52,6 @@ export interface TaskTargets {
     readonly step: Point | null;
 }
 
-const toCssColor = (color: number): string => `#${color.toString(16).padStart(6, '0')}`;
-
 /**
  * One round of tasks. The scene keeps a RoundState from core, draws
  * roundView(state) and forwards taps (tiles, keypad, "Dalej", solution steps)
@@ -76,6 +75,10 @@ export class TaskScene extends Scene {
     }
 
     create(): void {
+        // A restarted scene keeps its fields: start from a clean slate.
+        this.promptTexts = [];
+        this.shownIndex = -1;
+        this.sessionStars = 0;
         const stage = getStage(balance.defaultStage);
         if (!stage) {
             throw new Error(`Unknown default stage ${balance.defaultStage}`);
@@ -99,7 +102,7 @@ export class TaskScene extends Scene {
             .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, {
                 fontFamily: FONT_FAMILY,
                 fontSize: `${FONT_SIZES.caption}px`,
-                color: toCssColor(PLACEHOLDER_COLORS.deepTeal),
+                color: TEXT_COLOR,
             })
             .setOrigin(0, 1);
     }
@@ -154,7 +157,7 @@ export class TaskScene extends Scene {
         this.promptTexts.forEach((t) => t.destroy());
         this.promptTexts = [];
         const task = this.state.tasks[this.state.index];
-        const color = toCssColor(PLACEHOLDER_COLORS.deepTeal);
+        const color = TEXT_COLOR;
         const { prompt } = TASK_LAYOUT;
         const sentence = input === 'tiles' ? prompt : TASK_LAYOUT.promptBeside;
         const expression = input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
@@ -232,7 +235,8 @@ export class TaskScene extends Scene {
 
     private flyStar(from: { x: number; y: number }): void {
         const to = starCounterTarget();
-        const star = this.add.graphics({ x: from.x, y: from.y });
+        // Start above the tapped tile or key so the star never hides the answer.
+        const star = this.add.graphics({ x: from.x, y: from.y - ANIMATION.starStartLift });
         drawStar(star, 0, 0, TASK_LAYOUT.starCounter.starRadius, PLACEHOLDER_COLORS.butter);
         this.tweens.chain({
             targets: star,

@@ -1,13 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import { keypadInput, type KeypadKey } from '../../core/round/keypad';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, PAGE_BACKGROUND, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { keypadGrid, type Rect } from './geometry';
 
-const PRESSED = 0xc9e3b8;
-const TEXT_COLOR = `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`;
-const FIELD_BORDER = 0xb9d9c9;
-const PLACEHOLDER_TEXT = 0x8fb0a8;
 
 interface Button {
     key: KeypadKey;
@@ -51,7 +47,7 @@ export class Keypad {
                 .text(rect.x + rect.width / 2, rect.y + rect.height / 2, labelOf(key), {
                     fontFamily: FONT_FAMILY,
                     fontSize: `${key === 'delete' || key === 'ok' ? FONT_SIZES.keyLabel : FONT_SIZES.key}px`,
-                    color: key === 'ok' ? '#fff5df' : TEXT_COLOR,
+                    color: key === 'ok' ? PAGE_BACKGROUND : TEXT_COLOR,
                 })
                 .setOrigin(0.5);
             const zone = scene.add.zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height).setInteractive();
@@ -124,20 +120,20 @@ export class Keypad {
         graphics.clear();
         graphics.fillStyle(PLACEHOLDER_COLORS.dotDone, 0.5);
         graphics.fillRoundedRect(rect.x, rect.y + 6, rect.width, rect.height, radius);
-        graphics.fillStyle(pressed ? PRESSED : fill, 1);
+        graphics.fillStyle(pressed ? PLACEHOLDER_COLORS.pressed : fill, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
-        graphics.lineStyle(3, key === 'ok' ? PLACEHOLDER_COLORS.deepTeal : FIELD_BORDER, 1);
+        graphics.lineStyle(3, key === 'ok' ? PLACEHOLDER_COLORS.deepTeal : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
     }
 
     private paintField(): void {
         const { x, y, width, height } = this.field;
         this.fieldGraphics.clear();
-        this.fieldGraphics.fillStyle(this.correct ? PLACEHOLDER_COLORS.correct : 0xffffff, 1);
+        this.fieldGraphics.fillStyle(this.correct ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.field, 1);
         this.fieldGraphics.fillRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
-        this.fieldGraphics.lineStyle(4, this.correct ? PLACEHOLDER_COLORS.dotDone : FIELD_BORDER, 1);
+        this.fieldGraphics.lineStyle(4, this.correct ? PLACEHOLDER_COLORS.dotDone : PLACEHOLDER_COLORS.tileBorder, 1);
         this.fieldGraphics.strokeRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
         this.fieldText.setText(this.buffer === '' ? '?' : this.buffer);
-        this.fieldText.setColor(this.buffer === '' ? `#${PLACEHOLDER_TEXT.toString(16)}` : TEXT_COLOR);
+        this.fieldText.setColor(this.buffer === '' ? `#${PLACEHOLDER_COLORS.fieldPlaceholder.toString(16)}` : TEXT_COLOR);
     }
 }

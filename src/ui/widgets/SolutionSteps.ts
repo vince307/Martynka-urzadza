@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoundView } from '../../core/round/view';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { FONT_FAMILY, FONT_SIZES, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
 
@@ -13,7 +13,7 @@ export class SolutionSteps {
 
     constructor(scene: Scene, onStep: () => void) {
         this.text = scene.add
-            .text(0, 0, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.solutionLine}px`, color: `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`, align: 'center' })
+            .text(0, 0, '', { fontFamily: FONT_FAMILY, fontSize: `${FONT_SIZES.solutionLine}px`, color: TEXT_COLOR, align: 'center' })
             .setOrigin(0.5, 0)
             .setLineSpacing(TASK_LAYOUT.solution.lineGap)
             .setVisible(false);

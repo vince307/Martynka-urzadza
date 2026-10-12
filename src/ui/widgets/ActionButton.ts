@@ -1,7 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 
-const TEXT_COLOR = `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`;
 
 /** A rounded button of the bar (96 px high, at least 220 wide); the tap fires in pointerdown. */
 export class ActionButton {

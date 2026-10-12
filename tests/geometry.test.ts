@@ -64,3 +64,14 @@ describe('keypadGrid', () => {
         });
     });
 });
+
+describe('feedback bar', () => {
+    const { bar } = TASK_LAYOUT;
+    const innerBottom = notebook.top + notebook.height - notebook.border;
+    const minGap = 16;   // style guide: 16-32 px gaps
+
+    it('keeps the bar and its buttons off the notebook border and off the tiles', () => {
+        expect(innerBottom - bar.bottom).toBeGreaterThanOrEqual(minGap);
+        expect(bar.bottom - bar.height - (tiles.top + tiles.height)).toBeGreaterThanOrEqual(minGap);
+    });
+});

@@ -18,25 +18,29 @@ export const PLACEHOLDER_COLORS = {
     correct: 0xe5f2d4,     // correct answer feedback
     hint: 0xfff0b9,        // hint and solution bar
     dotDone: 0xa6cf7f,     // finished progress dot
+    pressed: 0xc9e3b8,     // pressed tile or key, a step darker than the tile
+    tileBorder: 0xb9d9c9,  // idle tile outline and keypad entry field
+    field: 0xffffff,       // empty keypad entry field
+    fieldPlaceholder: 0x8fb0a8, // "?" in the empty entry field
 } as const;
+
+/** Deep teal as a CSS colour: every text of the task screen. */
+export const TEXT_COLOR = '#245C59';
 
 /** Same ivory as a CSS colour, for the page background and game config. */
 export const PAGE_BACKGROUND = '#FFF5DF';
 
 /** Font sizes in scene pixels (style guide: prompts 64, calculations 112). */
 export const FONT_SIZES = {
-    title: 112,
-    subtitle: 48,
     caption: 32,
     prompt: 64,
     answer: 90,
     key: 58,
     keyLabel: 36,
     expression: 112,
-    hint: 32,
     bar: 36,
     barButton: 40,
-    solutionLine: 40,
+    solutionLine: 44,       // kit .solution-line 42-44
     counter: 56,
 } as const;
 
@@ -62,12 +66,12 @@ export const TASK_LAYOUT = {
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
     expression: { x: 560, y: 560 },          // beside the keypad
     expressionWide: { x: 960, y: 500 },      // above the tiles
-    tiles: { left: 416, top: 724, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
+    // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
+    tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
     keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24 },
-    bar: { height: 96, minWidth: 220, bottom: 972, radius: 24, padding: 24, border: 4 },
+    bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4 },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
-    dotCount: 5,
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;
@@ -86,10 +90,10 @@ export const ANIMATION = {
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
+    starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 
-/** Placeholder frame thickness and inset, in scene pixels. */
+/** Inset of the build id in the screen corner, in scene pixels. */
 export const PLACEHOLDER_FRAME = {
-    width: 8,
     margin: 24,
 } as const;

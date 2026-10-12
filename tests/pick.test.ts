@@ -56,14 +56,22 @@ describe('pickSkills', () => {
 });
 
 describe('buildRound', () => {
-    it('builds rules.length tasks for every stage; tile tasks carry tileCount choices that include the answer', () => {
+    it('builds rules.length tasks for every stage; tile tasks carry at most tileCount choices that include the answer', () => {
         for (const id of availableStages()) {
+            const stage = stages[id] as StageDef;
+            const mode = new Map(stage.steps.flatMap((step) => step.skills.map((sk) => [sk.id, sk.answer] as const)));
             for (let seed = 1; seed <= 30; seed += 1) {
-                const tasks = buildRound(stages[id] as StageDef, createRng(seed), balance.round, balance.tiles.count);
+                const tasks = buildRound(stage, createRng(seed), balance.round, balance.tiles.count);
                 expect(tasks).toHaveLength(balance.round.length);
                 for (const t of tasks) {
+                    const where = `${t.skillId} seed=${seed}`;
+                    if (mode.get(t.skillId) === 'tiles') {
+                        expect(t.choices, where).toBeDefined();
+                        expect(t.choices!.length, where).toBeGreaterThanOrEqual(2);
+                        expect(t.choices!.length, where).toBeLessThanOrEqual(balance.tiles.count);
+                    }
                     if (t.choices) {
-                        expect(t.choices, `${t.skillId} seed=${seed}`).toContain(t.answer);
+                        expect(t.choices, where).toContain(t.answer);
                     }
                 }
             }

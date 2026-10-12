@@ -1,7 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { FONT_FAMILY, FONT_SIZES, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 
-const TEXT_COLOR = `#${PLACEHOLDER_COLORS.deepTeal.toString(16)}`;
 
 /** Five-pointed star as a polygon, centred on (x, y). */
 export const drawStar = (graphics: GameObjects.Graphics, x: number, y: number, radius: number, color: number): void => {

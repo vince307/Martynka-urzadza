@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 /** Must equal PAGE_BACKGROUND in src/data/layout.ts (manifest colours, splash). */
 export const THEME_COLOR = '#FFF5DF';
 
-/** Short commit SHA shown in the corner of the boot screen (__BUILD_ID__). */
+/** Short commit SHA shown in the corner of the task screen (__BUILD_ID__). */
 const buildId = () => {
     const sha = process.env.GITHUB_SHA;
     if (sha) {
