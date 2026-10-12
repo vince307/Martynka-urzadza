@@ -8,9 +8,11 @@ import { generateChain, parseChainParams } from './generators/chain';
 import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
+import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
 import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
+import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
 import { generateHalf, parseHalfParams } from './generators/half';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
@@ -44,6 +46,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     MISSING_OP: generateMissingOp,
     COMPARE_EXPR: generateCompareExpr,
     SEQUENCE: generateSequence,
+    FACT_FAMILY: generateFactFamily,
+    CHOOSE_OP: generateChooseOp,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -66,6 +70,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     MISSING_OP: parseMissingOpParams,
     COMPARE_EXPR: parseCompareExprParams,
     SEQUENCE: parseSequenceParams,
+    FACT_FAMILY: parseFactFamilyParams,
+    CHOOSE_OP: parseChooseOpParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

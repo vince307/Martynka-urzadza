@@ -35,6 +35,17 @@ export const pl = {
         complementHint: (n: number, target: number) => `${n} + ${target - n} = ${target}`,
         bonds: (total: number) => `Uzupełnij domek liczby ${total}.`,
         bondsHint: (shown: number, total: number) => `Ile trzeba dodać do ${shown}, żeby było ${total}?`,
+        factSwapHint: 'Zamiana składników nie zmienia sumy.',
+        factCheck: 'Sprawdź:',
+        factCheckSubHint: 'Dodaj wynik i odjemnik.',
+        factCheckAddHint: 'Odejmij od sumy jeden ze składników.',
+        factCheckDivHint: 'Pomnóż iloraz przez dzielnik.',
+        chooseOp: 'Które działanie pasuje?',
+        chooseOpHint: {
+            sum: 'Przybyło, więc dodajemy.',
+            left: 'Ubyło, więc odejmujemy.',
+            moreBy: 'Jest więcej, więc dodajemy.',
+        },
         sequence: 'Uzupełnij ciąg:',
         sequenceHint: (step: number, up: boolean) =>
             `Każda następna liczba jest o ${step} ${up ? 'większa' : 'mniejsza'}.`,
