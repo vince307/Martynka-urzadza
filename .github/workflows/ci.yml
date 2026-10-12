@@ -1,0 +1,32 @@
+name: CI
+
+# Quality gates on every pull request (test-plan.md section 5): lint with the
+# module-boundary rules, typecheck, unit/property tests, the content smoke
+# (sample E3/E4 must generate without violations) and the production build.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run sample -- E3
+      - run: npm run sample -- E4
+      - run: npm run build

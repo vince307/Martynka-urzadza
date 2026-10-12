@@ -190,13 +190,13 @@ Brak; baseline naprawiony w fazie 1.
 
 #### Automated
 
-- [ ] 1.1 `npm run lint`, `typecheck`, `npm test` zielone
-- [ ] 1.2 `tests/lint-boundaries.test.ts` przechodzi (4 asercje na ruleId)
-- [ ] 1.3 Konfiguracja ma 2 reguły `no-restricted-imports` i `allowTypeImports`
+- [x] 1.1 `npm run lint`, `typecheck`, `npm test` zielone — fddf420
+- [x] 1.2 `tests/lint-boundaries.test.ts` przechodzi (4 asercje na ruleId) — fddf420
+- [x] 1.3 Konfiguracja ma 2 reguły `no-restricted-imports` i `allowTypeImports` — fddf420
 
 #### Manual
 
-- [ ] 1.4 Celowy import Phasera w core → lint czerwony; cofnięty
+- [x] 1.4 Celowy import Phasera w core → lint czerwony; cofnięty — fddf420
 
 ### Phase 2: CI na PR i lint w deployu
 
