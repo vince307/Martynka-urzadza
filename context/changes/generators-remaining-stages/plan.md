@@ -577,8 +577,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 5.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy CALENDAR i EVEN_ODD; E3.7/E3.11 w `sample -- E3` bez zmian przy tym samym seedzie
-- [ ] 5.2 Celowe zepsucie zawinięcia tygodnia i lutego w `monthDays` przewraca testy; cofnięte; meta-check
+- [x] 5.1 Bramka z kontraktu zielona; `npm test` = baseline gałęzi + testy CALENDAR i EVEN_ODD; E3.7/E3.11 w `sample -- E3` bez zmian przy tym samym seedzie — 8f4a7ee
+- [x] 5.2 Celowe zepsucie zawinięcia tygodnia i lutego w `monthDays` przewraca testy; cofnięte; meta-check — 8f4a7ee
 
 ### Phase 6: Dane E1 i E2
 
