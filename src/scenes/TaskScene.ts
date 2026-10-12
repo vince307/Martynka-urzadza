@@ -102,6 +102,7 @@ export class TaskScene extends Scene {
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
         this.registry.set(REGISTRY_KEYS.narration, null);
+        this.registry.set(REGISTRY_KEYS.roomSwitch, false);
         this.rng = createRng(Date.now() >>> 0);
         this.state = this.freshRound();
         this.registry.set(REGISTRY_KEYS.stars, 0);
@@ -115,9 +116,14 @@ export class TaskScene extends Scene {
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
         // "Do pokoju": the round stays as it is while this scene sleeps; no speech runs over the room.
+        // game.events listeners also run while this scene sleeps (the room is open), so a stale tap is ignored.
         const toRoom = (): void => {
+            if (this.sys.isSleeping()) {
+                return;
+            }
             this.narrator?.cancel();
             this.registry.set(REGISTRY_KEYS.narration, null);
+            this.registry.set(REGISTRY_KEYS.roomSwitch, false);
             this.scene.switch(SCENE_KEYS.room);
         };
         this.game.events.on(GAME_EVENTS.toRoom, toRoom);
@@ -153,6 +159,7 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         if (summary) {
             // The round is over: the notebook stays, the task layer gives way to the summary page.

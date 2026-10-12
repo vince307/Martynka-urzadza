@@ -25,6 +25,17 @@ describe('task screen layout constants', () => {
         expect(speaker.top).toBeLessThanOrEqual(counter.top + counter.height);
     });
 
+    it('keeps the HUD room switch a touch target in the top left, clear of the progress dots and the speaker', () => {
+        const { roomSwitch, speaker } = HUD_LAYOUT;
+        expect(HUD_TOUCH_TARGETS.roomSwitch).toEqual({ width: roomSwitch.width, height: roomSwitch.height });
+        expect(roomSwitch.left).toBeGreaterThanOrEqual(0);
+        expect(roomSwitch.top).toBeGreaterThanOrEqual(0);
+        expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(speaker.left);
+        const dots = TASK_LAYOUT.dots;
+        const dotsLeft = dots.centerX - (2 * dots.gap + dots.radius + dots.ringWidth);   // five dots, centred
+        expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(dotsLeft);
+    });
+
     it('keeps the summary page buttons touch targets, side by side without overlap, inside the notebook', () => {
         const { width, height, left, gap, top } = SUMMARY_LAYOUT.buttons;
         expect(TASK_TOUCH_TARGETS.pageButton).toEqual({ width, height });

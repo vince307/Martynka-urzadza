@@ -28,6 +28,7 @@ export const installE2EHook = (game: Game): void => {
                     ...task().targets(),
                     resume: game.scene.isActive(SCENE_KEYS.room) ? room().resumeTarget() : null,
                     speaker: ui().speakerTarget(),
+                    roomSwitch: ui().roomSwitchTarget(),
                 });
             },
         }),

@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
-import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
+import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import type { Narrator } from '../ui/narrator';
+import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
 import { SpeakerButton } from '../ui/widgets/SpeakerButton';
 import { StarCounter } from '../ui/widgets/StarCounter';
 
@@ -9,13 +10,13 @@ import { StarCounter } from '../ui/widgets/StarCounter';
  * the task scene keeps up to date (stars, narration) and decides no text itself.
  * Input is on only for the speaker: no full-screen or background zone here, otherwise Phaser
  * would stop a tap from reaching the task scene below.
- * DESIGN-GAP: no "Do pokoju" / room switch in the HUD yet (FR-011): there is no room before S-09
- * (docs/design-gaps.md row 4); roundView.switchVisible is ready for it.
+ * "Do pokoju" shows between tasks only (registry roomSwitch, set by the task scene from roundView.switchVisible).
  * DESIGN-GAP: the kit asks an adult to read the task when there is no Polish voice; the speaker is hidden instead.
  */
 export class UIScene extends Scene {
     private counter!: StarCounter;
     private speaker!: SpeakerButton;
+    private roomSwitch!: RoomSwitchButton;
     private narrator: Narrator | undefined;
 
     constructor() {
@@ -43,7 +44,13 @@ export class UIScene extends Scene {
         const unsubscribe = this.narrator?.onAvailability(refreshSpeaker);
         refreshSpeaker();
 
+        this.roomSwitch = new RoomSwitchButton(this, () => this.game.events.emit(GAME_EVENTS.toRoom));
+        const refreshSwitch = (): void => this.roomSwitch.setVisible(this.registry.get(REGISTRY_KEYS.roomSwitch) === true);
+        this.registry.events.on(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
+        refreshSwitch();
+
         this.events.once('shutdown', () => {
+            this.registry.events.off(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.narration}`, refreshSpeaker);
             unsubscribe?.();
@@ -54,6 +61,11 @@ export class UIScene extends Scene {
     /** Shown counter text, for the e2e hook (what is drawn, not the registry value). */
     counterText(): string {
         return this.counter.value();
+    }
+
+    /** Centre of "Do pokoju" in the HUD, or null while it is hidden, for the e2e hook. */
+    roomSwitchTarget(): { x: number; y: number } | null {
+        return this.roomSwitch.target();
     }
 
     /** Centre of the speaker, or null while it is hidden, for the e2e hook. */

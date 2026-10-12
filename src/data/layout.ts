@@ -101,6 +101,7 @@ export const REGISTRY_KEYS = {
     stars: 'stars',
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
+    roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
 } as const;
 
 /**
@@ -132,6 +133,8 @@ export const TASK_LAYOUT = {
  */
 export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
+    // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
+    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14 },
 } as const;
 
 /**
@@ -156,6 +159,7 @@ export const ROOM_LAYOUT = {
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
+    roomSwitch: { width: HUD_LAYOUT.roomSwitch.width, height: HUD_LAYOUT.roomSwitch.height },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */
