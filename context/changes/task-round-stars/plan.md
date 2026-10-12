@@ -855,10 +855,10 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 5.1 `tests/layout.test.ts` zielony; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Po `npm run build`: `grep -c AtkinsonHyperlegibleNext dist/sw.js` ≥ 1
-- [ ] 5.3 Deliberate break: bez `ttf` w glob → grep 0; kafelek 90 → test czerwony; przywrócone; meta-check
-- [ ] 5.4 Pełna bramka lokalna zielona (seed #8 offline z czcionką)
+- [x] 5.1 `tests/layout.test.ts` zielony; unit `<baseline gałęzi> + N` — SHA
+- [x] 5.2 Po `npm run build`: `grep -c AtkinsonHyperlegibleNext dist/sw.js` ≥ 1 — SHA
+- [x] 5.3 Deliberate break: bez `ttf` w glob → grep 0; kafelek 90 → test czerwony; przywrócone; meta-check — SHA
+- [x] 5.4 Pełna bramka lokalna zielona (seed #8 offline z czcionką) — SHA
 
 #### Manual
 

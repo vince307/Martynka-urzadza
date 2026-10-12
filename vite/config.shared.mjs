@@ -48,7 +48,7 @@ const pwaOptions = {
     includeManifestIcons: false,
     workbox: {
         // Precache the whole build: code, page, icons and future art/audio.
-        globPatterns: ['**/*.{js,css,html,png,webp,ogg,m4a,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,webp,ogg,m4a,woff2,ttf}'],
         // Everything must be precached (no lazy loading): fail loudly, not at
         // the default 2 MiB, when a future asset grows.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,

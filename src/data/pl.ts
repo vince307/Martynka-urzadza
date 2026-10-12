@@ -28,6 +28,21 @@ export const pl = {
         and: 'i',
         willHave: ['będzie miał', 'będzie miała'],
     },
+    round: {
+        calculate: 'Oblicz',
+        correct: 'Brawo!',
+        correctStar: 'Brawo! +1 ★',
+        next: 'Dalej',
+        tryAgain: 'Spróbuj jeszcze raz',
+        nextStep: 'Następny krok',
+        gotIt: 'Już wiem',
+        deleteKey: 'kasuj',
+        okKey: 'OK',
+        stars: (n: number) => `★ ${n}`,
+        // DESIGN-GAP: the kit has no end-of-round bar and no solution result line (docs/design-gaps.md, phase 10).
+        bonus: (n: number) => `Runda bez błędu! +${n} ★`,
+        resultLine: (answer: string) => `Wynik: ${answer}`,
+    },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,

@@ -5,6 +5,7 @@ import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
+import { TaskScene } from './scenes/TaskScene';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 
 // Single place for the Phaser game config. Scene size and colours come from
@@ -20,7 +21,7 @@ const createGame = (parent: string): Game =>
             width: GAME_WIDTH,
             height: GAME_HEIGHT,
         },
-        scene: [BootScene],
+        scene: [BootScene, TaskScene],
     });
 
 // Module scripts run after the document is parsed, so the container exists.
