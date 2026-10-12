@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateEvenOdd, parseEvenOddParams } from '../src/core/tasks/generators/evenOdd';
 import { E3 } from '../src/data/curriculum/E3';
 import { pl } from '../src/data/pl';
+import type { SkillDef } from '../src/core/types';
 import { forEachDraw, skillsOfType } from './helpers';
 
 describe('generateEvenOdd', () => {
@@ -35,5 +36,26 @@ describe('generateEvenOdd', () => {
 
     it('rejects malformed params', () => {
         expect(() => parseEvenOddParams({ max: 30, variant: 'all' })).toThrow(TypeError);
+    });
+
+    it('min 0 draws zero as an even number and explains it', () => {
+        const skill: SkillDef = { id: 'T.even_odd.zero', stage: 'E1', step: 6, type: 'EVEN_ODD', params: { max: 10, min: 0, variant: 'single' }, answer: 'tiles' };
+        let zeros = 0;
+        forEachDraw(generateEvenOdd, skill, {}, (task, where) => {
+            const n = Number(/Liczba (\d+) /.exec(task.prompt)?.[1]);
+            expect(n, where).toBeLessThanOrEqual(10);
+            expect(task.answer, where).toBe(n % 2 === 0 ? pl.tasks.even : pl.tasks.odd);
+            if (n === 0) {
+                zeros += 1;
+                expect(task.answer, where).toBe(pl.tasks.even);
+                expect(task.hint.join(' '), where).toContain('0');
+            }
+        });
+        expect(zeros).toBeGreaterThan(0);
+    });
+
+    it('rejects min other than 0 or 1 and leaves the default at 1', () => {
+        expect(() => parseEvenOddParams({ max: 10, min: 2 })).toThrow(TypeError);
+        expect(parseEvenOddParams({ max: 10 }).min).toBe(1);
     });
 });
