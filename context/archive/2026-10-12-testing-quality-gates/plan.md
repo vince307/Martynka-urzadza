@@ -207,16 +207,16 @@ Brak; baseline naprawiony w fazie 1.
 
 #### Manual
 
-- [ ] 2.3 Workflow CI zielony na PR
+- [x] 2.3 Workflow CI zielony na PR — 8b33fcf
 
 ### Phase 3: Hooki i dokumentacja
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` w CLAUDE.md i AGENTS.md; AGENTS ≤ 400 słów
-- [ ] 3.2 Cookbook §6.3 wskazuje test odniesienia
-- [ ] 3.3 `bash -n` hooków
+- [x] 3.1 `npm run lint` w CLAUDE.md i AGENTS.md; AGENTS ≤ 400 słów — 8b33fcf
+- [x] 3.2 Cookbook §6.3 wskazuje test odniesienia — 8b33fcf
+- [x] 3.3 `bash -n` hooków — 8b33fcf
 
 #### Manual
 
-- [ ] 3.4 Raport configure-hook z dowodami; edycja z błędem odesłana
+- [x] 3.4 Raport configure-hook z dowodami; edycja z błędem odesłana — 8b33fcf

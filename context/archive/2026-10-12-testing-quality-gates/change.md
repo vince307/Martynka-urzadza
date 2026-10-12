@@ -1,10 +1,10 @@
 ---
 change_id: testing-quality-gates
 title: Bramki jakości i granice modułów (ESLint, hooki, lint i sample w CI)
-status: implementing
+status: archived
 created: 2026-10-12
 updated: 2026-10-12
-archived_at: null
+archived_at: 2026-10-12T13:32:19Z
 ---
 
 ## Notes
