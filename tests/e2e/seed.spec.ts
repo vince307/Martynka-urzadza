@@ -1,0 +1,37 @@
+// Seed for risk #8 (context/foundation/test-plan.md): the server side is right, but the
+// browser does not boot the game from the service worker cache once the network is gone.
+// Every later e2e test copies this pattern: wait for state (never for time), assert on what
+// the child would see, name the test after the risk.
+import { test, expect } from '@playwright/test';
+
+test('the game boots offline from the service worker cache', async ({ page, context }) => {
+    // Setup: the first, online launch installs the service worker and precaches the build.
+    await page.goto('/');
+    const container = page.locator('#game-container');
+    const buildId = await container.getAttribute('data-build');
+    expect(buildId).toBeTruthy();
+    // Going offline before the worker controls the page would test nothing: the reload
+    // would simply fail. clientsClaim makes the active worker take the page over.
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+
+    // Action: cut the network and launch again.
+    await context.setOffline(true);
+    const servedBySw: string[] = [];
+    const servedByNetwork: string[] = [];
+    page.on('response', (response) => {
+        (response.fromServiceWorker() ? servedBySw : servedByNetwork).push(new URL(response.url()).pathname);
+    });
+    await page.reload();
+
+    // Assertion: the same build boots, the canvas is drawn, and the page and every hashed
+    // bundle came from the worker's cache. A green reload without fromServiceWorker proves
+    // nothing (risk #8, Risk Response Guidance).
+    await expect(container).toHaveAttribute('data-build', buildId!);
+    await expect(container.locator('canvas')).toBeVisible();
+    expect(servedByNetwork).toEqual([]);
+    expect(servedBySw).toContain('/');
+    expect(servedBySw.filter((path) => path.startsWith('/_app/') && path.endsWith('.js')).length).toBeGreaterThanOrEqual(2);
+
+    // Cleanup: back online, so nothing leaks into the next test (each test gets a fresh context anyway).
+    await context.setOffline(false);
+});

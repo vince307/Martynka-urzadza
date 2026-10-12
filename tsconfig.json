@@ -26,6 +26,7 @@
         "src",
         "tests",
         "scripts",
-        "vitest.config.mts"
+        "vitest.config.mts",
+        "playwright.config.ts"
     ]
 }
