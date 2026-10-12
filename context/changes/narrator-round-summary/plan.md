@@ -179,7 +179,7 @@ umiejętności): `speak` obecny, nie zdradza wyniku (definicja wyżej), przechod
 
 #### Manual Verification:
 
-- [reviewer] Odczyt nauczyciela `npm run sample -- E1/E3/E5 --count 6` dla kroków z COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR: pytanie naturalne, nie zdradza wyniku, literowanie cyfr rzymskich zrozumiałe dla dziecka; wynik w `reviews/teacher-read.md`
+- [reviewer] Odczyt nauczyciela `npm run sample -- E1` … `-- E6 --count 6` (każdy etap ze zmienionym krokiem: COMPARE_NUM/COMPARE_EXPR/MISSING_OP są w E1, E2, E4, E6; ROMAN w E3, E5; CALENDAR `romanMonth` w E3) dla kroków z COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR: pytanie naturalne, nie zdradza wyniku, literowanie cyfr rzymskich zrozumiałe dla dziecka; wynik w `reviews/teacher-read.md`
 
 ---
 
@@ -208,15 +208,19 @@ w danej fazie rundy.
 
 **File**: `src/core/narration/spoken.ts` (nowy)
 
-**Intent**: `spokenText(text, words)`: dzieli tekst na zdania/linie (`\n`, `. `, `? `, `: `); segment będący gołym
-działaniem (`isExpression`) dostaje liczby ≤ 1000 słownie (`numberToWords`), większe cyframi bez twardej spacji; symbole
+**Intent**: `spokenText(text, words)`: dzieli tekst na zdania/linie (`\n`, `. `, `? ` i dwukropek przyklejony do słowa,
+`/(?<=\p{L}):\s/u` — nigdy ` : ` dzielenia, bo „12 : 3 = □” też zawiera `: `); segment będący gołym
+działaniem (`isExpression`) dostaje liczby ≤ 1000 słownie (`numberToWords`), większe cyframi bez twardej spacji — liczby
+wyłuskiwane wzorcem `NUMBER_SOURCE` i `parseNumber` (`src/core/text/formatNumber.ts`), nigdy dzieleniem po białych znakach
+(NBSP to `\s`: „12 345” nie może dać „dwanaście trzysta czterdzieści pięć”); poza działaniami NBSP usuwana tylko między
+cyframi (jedyne źródło NBSP to `formatNumber`); symbole
 `+ − · : = □ < >` na słowa (`:` tylko między liczbami); twarde spacje usunięte; `\n` → „. ”. Polecenie będące gołym
 działaniem dostaje prefiks `pl.round.calculate` + „.” (kit: „Oblicz. 38 plus 27”). `narrationOf(state, words, calculate,
 tryAgain)` → tekst do odczytu: `first`/`done` — polecenie (`task.speak ?? task.prompt`); `second` — „Spróbuj jeszcze
 raz.” + `firstHint` (albo samo polecenie, gdy podpowiedzi brak); `solution`/`retype` — ostatnia widoczna linia kroku;
 `finished` → `null`.
 
-**Contract**: `spokenText(text: string, words: SpeechWords): string`; `narrationOf(state: RoundState, opts: { words; calculate; tryAgain; answerLine }): string | null`.
+**Contract**: `spokenText(text: string, words: SpeechWords): string`; `narrationOf(state: RoundState, opts: { words; calculate; tryAgain; answerLine }): string | null` — zwraca gotowy tekst mówiony (już po `spokenText`); sceny nie wołają `spokenText` drugi raz.
 
 #### 3. Sample i testy
 
@@ -224,8 +228,14 @@ raz.” + `firstHint` (albo samo polecenie, gdy podpowiedzi brak); `solution`/`r
 
 **Intent**: Sample drukuje linię `czyta:` (wynik `spokenText` dla `speak ?? prompt`). Testy: przypadki z kitu
 („38 + 27” → „Oblicz. trzydzieści osiem plus dwadzieścia siedem”), MISSING z okienkiem, dzielenie vs dwukropek w zdaniu
-(„Uzupełnij ciąg:” bez „podzielić przez”), NBSP; niezmiennik po wszystkich umiejętnościach E1–E6 × ziarna (`stages`,
-`generateTask`): wynik bez `− · □ < >`, NBSP, `=` i `:` między cyframi; `narrationOf` dla każdej fazy (`round.test`
+(„Uzupełnij ciąg:” bez „podzielić przez”; „12 : 3 = □” → „dwanaście podzielić przez trzy …”; FACT_FAMILY „… Sprawdź: 4 · 3 = □”),
+NBSP („12 345 □ 12 354” zawiera „12345” i „12354”, nie „dwanaście”; „Zaokrąglij 12 345 …” → „12345”), liczba 1000 → „tysiąc”,
+1001 → cyfry (strażnik zakresu `numberToWords`); niezmiennik po wszystkich umiejętnościach E1–E6 × ziarna (`stages`,
+`generateTask`): wynik bez `− · □ < >`, NBSP, `=` i `:` między cyframi; **niezmiennik „mowa nie zdradza wyniku”** na tych
+samych zadaniach: (i) `spokenText(speak ?? prompt)` nie ma samodzielnego tokenu cyfr rzymskich (`/(?<![\p{L}])[IVXLCDM]+(?![\p{L}])/u`
+— syntezator czyta go jak liczbę); (ii) jeśli żadna forma odpowiedzi (cyfry bez NBSP, `numberToWords(answer)` dla liczby
+całkowitej ≤ 1000, odpowiedź-tekst małymi literami, słowo `pl.speech` dla odpowiedzi-znaku `< > = + − · :`) nie występuje
+jako token w widocznym poleceniu, to nie występuje też jako token w tekście mówionym; `narrationOf` dla każdej fazy (`round.test`
 wzorce budowania stanu).
 
 ### Success Criteria:
@@ -233,7 +243,7 @@ wzorce budowania stanu).
 #### Automated Verification:
 
 - `tests/spoken.test.ts` czerwony przed implementacją, zielony po; unit `<baseline gałęzi> + N`
-- Deliberate break: `□` nie zamieniane → niezmiennik czerwony; `:` w „Uzupełnij ciąg:” → „podzielić przez” → czerwony; przywrócone; meta-check: niezmiennik iteruje prawdziwe `stages`, więc łapie też `speak` z fazy 1
+- Deliberate break: `□` nie zamieniane → niezmiennik czerwony; `:` w „Uzupełnij ciąg:” → „podzielić przez” → czerwony; ROMAN `speak` bez literowania (cyfry rzymskie w mowie) → niezmiennik „nie zdradza wyniku” czerwony; liczby dzielone po `\s` → przypadek „12 345” czerwony; przywrócone; meta-check: niezmiennik iteruje prawdziwe `stages`, więc łapie też `speak` z fazy 1
 - `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `czyta:`
 - Pełna bramka lokalna zielona
 
@@ -290,7 +300,7 @@ błąd wypowiedzi nie rzuca.
 
 - Dwa nowe pliki testów czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
 - Deliberate break: `utterance.voice` nieustawiany → test czerwony; `pickPolishVoice` bez normalizacji `_` → czerwony; przywrócone; meta-check: atrapa zgłasza głosy tak jak Android (`pl_PL`) i Chromium (pusta lista do zdarzenia)
-- `npm run lint` zielony bez zmian granic ESLint (`src/ui/**` ma już globale przeglądarki; `src/core/narration/**` bez globali)
+- `npm run lint` zielony; granica `src/core/**` domknięta: `speechSynthesis` i `SpeechSynthesisUtterance` dopisane do `no-restricted-globals` w `eslint.config.mjs` (dziś lista ma tylko `window`, `document`, `navigator`, `localStorage`, a `no-undef` jest wyłączone dla TS — rdzeń mógłby ich użyć bez błędu) i przypadek w `tests/lint-boundaries.test.ts`; `src/ui/**` ma już globale przeglądarki; komenda bramki bez zmian
 - Pełna bramka lokalna zielona
 
 ---
@@ -380,7 +390,7 @@ pierwszym DOM `pointerup`/`touchend` kontenera, `cancel` na `visibilitychange` �
 
 **Intent**: `SpeakerButton` reaguje w `pointerup`, ma `target()` (null, gdy ukryty). `UIScene`: `input.enabled = true`,
 głośnik widoczny = `narrator.available && registry.narration !== null`, stuknięcie → `narrator.speak(registry.narration)`.
-`TaskScene.render` ustawia `narration` = `spokenText` z `narrationOf(...)` (słowa z `pl.speech`); przy nowym zadaniu
+`TaskScene.render` ustawia `narration` = `narrationOf(...)` (gotowy tekst mówiony; słowa z `pl.speech`); przy nowym zadaniu
 i `autoRead` (z `defaultAutoRead(stage.id, balance.narrator.autoReadStages)`, pole sceny) woła `narrator.speak`.
 DESIGN-GAP (d): kit bez głosu prosi dorosłego, plan ukrywa przycisk.
 
@@ -536,7 +546,7 @@ bez setterów.
 
 - `npm run build` drukuje `e2e hook: absent (N chunks checked)`; `grep -rl __martynkaE2E dist/` pusty
 - `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present`
-- Deliberate break: import `src/testing/e2eHook.ts` z `UIScene` bez warunku → `npm run build` pada z komunikatem strażnika; przywrócone; meta-check: dowodzi nowej ścieżki wycieku (hak czyta trzy sceny)
+- Deliberate break: `installE2EHook(game)` wywołane w `src/main.ts` poza `if (__E2E_HOOK__)` → `npm run build` pada z komunikatem strażnika; przywrócone; meta-check: sam import bez wywołania NIE jest przerwą (Rollup usuwa nieużyty eksport razem ze znacznikiem, build zostaje zielony) — przerwa musi wciągnąć kod haka do bundla; scen nie importują haka (cykl `e2eHook` → `TaskScene`)
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
 
 ---
@@ -560,7 +570,10 @@ w fazie `done` (dziecko stuka „Dalej”).
 
 **Intent**: `HUD_LAYOUT.roomSwitch` (left 104, top 44, 316×104); `REGISTRY_KEYS.roomSwitch` ustawiane przez `TaskScene`
 z `view.switchVisible`; `UIScene` pokazuje przycisk i emituje zdarzenie gry `toRoom`, które `TaskScene` obsługuje jak
-przycisk podsumowania. Hak: `targets.roomSwitch`. `UIScene` zdejmuje komentarz DESIGN-GAP 4; wiersz 4 w
+przycisk podsumowania. Przed `scene.switch` do pokoju `TaskScene` zeruje `REGISTRY_KEYS.roomSwitch` (obok `narration`),
+a po `wake` odtwarza je z `roundView` — inaczej „Do pokoju” z HUD zostaje widoczne w pokoju (uśpiona `TaskScene` nie
+renderuje), a stuknięcie trafiłoby do uśpionej sceny przez `game.events` (słuchacze `game.events` działają także w uśpionej
+scenie — Phaser `Systems.sleep` ich nie odpina; obsługa `toRoom` w `TaskScene` sprawdza `this.sys.isSleeping()`). W pokoju przełącznikiem jest „Wróć do notesu” (FR-011). Hak: `targets.roomSwitch`. `UIScene` zdejmuje komentarz DESIGN-GAP 4; wiersz 4 w
 `docs/design-gaps.md` przepisany: kit pokazuje „Do pokoju” zawsze, PRD FR-011 ukrywa w trakcie rozwiązywania.
 
 **Contract**: `RoomSwitchButton.setVisible(on)`, `target()`; tekst `pl.summary.toRoom` współdzielony.
@@ -655,8 +668,8 @@ Driver why: ryzyko #11 (runda dotykiem do końca) kończy się teraz na podsumow
 **Intent**: Testy 1–3 kończą się `screen === 'summary'`, `summary.earned`/`stars`/`bonus` zgodnymi z PRD i `counterText`
 równym sumie; test 1 dodatkowo stuka „Kolejna runda” → `screen === 'task'`, `index 0`, suma zachowana. Nowy test:
 runda do podsumowania → „Do pokoju” → `screen === 'room'`, `counterText` bez zmian → „Wróć do notesu” → `screen === 'summary'`
-z tym samym `summary`; plus (gdy faza 9 jest) poprawna odpowiedź → `roomSwitch` widoczny → pokój → powrót → ta sama runda,
-`phase === 'done'`, „Dalej” działa. Tytuły z `#11`.
+z tym samym `summary`; plus (gdy faza 9 jest, w tym samym teście pokoju, więc delta zostaje +1) poprawna odpowiedź → `roomSwitch` widoczny →
+pokój (`targets.roomSwitch === null`) → powrót → ta sama runda, `phase === 'done'`, „Dalej” działa. Tytuły z `#11`.
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; `npx playwright test tests/e2e/task-round.spec.ts`.
 
@@ -740,6 +753,11 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 - **Jakość polskiego głosu** (PRD OQ 7): nie do sprawdzenia w headless; przepływ działa bez głosu (spec fazy 12).
 - **`UIScene` z włączonym wejściem** nad `TaskScene`: dotyk poza przyciskami HUD musi dochodzić do kafelków — pilnują
   testy #11 (faza 11) od pierwszego przebiegu po fazie 5.
+  Phaser blokuje niższe sceny, gdy dotyk trafi w dowolny interaktywny obiekt `UIScene` (`InputPlugin.update`, `total > 0`):
+  w `UIScene` żadnej pełnoekranowej strefy trafień ani interaktywnego tła, tylko przyciski HUD (plan-review F8).
+- **NUMBER_WORDS „Jak zapisać słownie liczbę 23?”**: syntezator przeczyta „23” jako „dwadzieścia trzy”, czyli brzmienie
+  odpowiedzi. To nie przeciek ponad widoczne polecenie (dziecko zna liczbę z cyfr; ćwiczenie to zapis słowny), więc
+  niezmiennik „nie zdradza wyniku” (faza 2) przechodzi bez wyjątku; odczyt nauczyciela 2.5 ocenia, czy to zostaje (plan-review F9).
 
 ## References
 
@@ -811,14 +829,14 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1/E3/E5 --count 6` dla COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR (`reviews/teacher-read.md`)
+- [ ] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1` … `-- E6 --count 6` dla COMPARE_NUM, COMPARE_EXPR, MISSING_OP, ROMAN, CALENDAR (`reviews/teacher-read.md`)
 
 ### Phase 2: Tekst mówiony dla rundy
 
 #### Automated
 
 - [ ] 2.1 `tests/spoken.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `□` niezamieniane / dwukropek w zdaniu → „podzielić przez” → czerwony; przywrócone; meta-check na `stages`
+- [ ] 2.2 Deliberate break: `□` niezamieniane / dwukropek w zdaniu → „podzielić przez” / cyfry rzymskie w mowie / liczby dzielone po `\s` → czerwony; przywrócone; meta-check na `stages`
 - [ ] 2.3 `npm run sample -- E1` … `-- E6` kończą się `Naruszenia: 0` i pokazują `czyta:`
 - [ ] 2.4 Pełna bramka lokalna zielona
 
@@ -832,7 +850,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 - [ ] 3.1 `tests/narratorVoice.test.ts` i `tests/narrator.test.ts` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
 - [ ] 3.2 Deliberate break: bez `utterance.voice` / bez normalizacji `_` → czerwony; przywrócone; meta-check atrapy (Android `pl_PL`, Chromium pusta lista)
-- [ ] 3.3 `npm run lint` zielony bez zmian granic ESLint
+- [ ] 3.3 `npm run lint` zielony; `speechSynthesis`/`SpeechSynthesisUtterance` zakazane w `src/core/**` (ESLint + `tests/lint-boundaries.test.ts`)
 - [ ] 3.4 Pełna bramka lokalna zielona
 
 ### Phase 4: Model podsumowania i widoczność przełącznika
@@ -888,7 +906,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 - [ ] 8.1 `npm run build` drukuje `e2e hook: absent (N chunks checked)`; grep `__martynkaE2E` w `dist/` pusty
 - [ ] 8.2 `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present`
-- [ ] 8.3 Deliberate break: bezwarunkowy import haka z `UIScene` → build pada; przywrócone; meta-check
+- [ ] 8.3 Deliberate break: bezwarunkowe wywołanie `installE2EHook` w `main.ts` → build pada; przywrócone; meta-check (sam import to nie przerwa)
 - [ ] 8.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
 
 ### Phase 9: Przełącznik „Do pokoju” w HUD między zadaniami
