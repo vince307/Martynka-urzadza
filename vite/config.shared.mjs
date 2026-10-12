@@ -44,9 +44,14 @@ const pwaOptions = {
             { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
     },
+    // Icons are already covered by the png glob below.
+    includeManifestIcons: false,
     workbox: {
         // Precache the whole build: code, page, icons and future art/audio.
         globPatterns: ['**/*.{js,css,html,png,webp,ogg,m4a,woff2}'],
+        // Everything must be precached (no lazy loading): fail loudly, not at
+        // the default 2 MiB, when a future asset grows.
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,

@@ -7,18 +7,6 @@ interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<unknown>;
 }
 
-// Captured as early as possible: Chrome may fire it before or after the hint
-// is shown, or never (engagement heuristics), so the install button is added
-// to the visible overlay whenever the event arrives.
-let installPrompt: BeforeInstallPromptEvent | null = null;
-let onPromptAvailable: (() => void) | null = null;
-
-window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    installPrompt = event as BeforeInstallPromptEvent;
-    onPromptAvailable?.();
-});
-
 const instructionFor = (platform: Platform): string =>
     platform === 'ipad' ? pl.install.ipad : pl.install.android;
 
@@ -31,6 +19,17 @@ export const mountInstallHint = (parent: HTMLElement, platform: Platform, standa
     if (!shouldShowInstallHint(platform, standalone)) {
         return;
     }
+
+    // Chrome fires beforeinstallprompt asynchronously, before or after the
+    // hint is shown, or never (engagement heuristics): keep the event and add
+    // the install button to the visible overlay whenever it arrives.
+    let installPrompt: BeforeInstallPromptEvent | null = null;
+    let onPromptAvailable: (() => void) | null = null;
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        installPrompt = event as BeforeInstallPromptEvent;
+        onPromptAvailable?.();
+    });
 
     const actions = document.createElement('div');
     actions.className = 'overlay-actions';
