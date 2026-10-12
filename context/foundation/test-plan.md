@@ -102,7 +102,7 @@ orchestrator updates Status as artifacts appear on disk.
 | unit + property | local (agent loop) + CI | required | generator and logic regressions |
 | content smoke (`sample` E3/E4) | CI on PR | required | data changes that break generation or violate the validator |
 | post-edit hook | local (agent loop) | required | lint and related-test failures at edit time |
-| deploy smoke | GitHub Actions after `switch` | required after §3 Phase 2 | stale build, wrong headers, broken precache, CoiledSpring regression |
+| deploy smoke | GitHub Actions after `switch` | required | stale build, wrong headers, broken precache, CoiledSpring regression |
 | manual tablet check | after PWA or scene changes | required (manual) | install, offline start, orientation, touch |
 | pre-commit lint | local git hook | optional (not configured) | edits made outside the agent |
 
@@ -127,7 +127,10 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.4 Adding a deploy smoke check
 
-- TBD — see §3 Phase 2.
+- **Location**: `scripts/deploy-check/parse.ts` (pure parsers and comparisons, unit-tested) and `scripts/check-deploy.ts` (fetch + report, exit 0/1/2).
+- **Reference test**: `tests/deployCheck.test.ts` — sample `index.html` and `sw.js` fragments as constants, positive and negative cases per parser.
+- **Run locally**: `npm run check:deploy -- https://martynka-urzadza.pl <sha7>` (`NODE_USE_ENV_PROXY=1` inside the agent sandbox); the deploy workflow runs it after `switch`.
+- **Pattern**: assert observable server facts (status, headers, body literals), never log lines; keep the network layer thin so a new check is a parser plus a `record(...)` line.
 
 ### 6.5 Adding a save migration test
 
@@ -135,6 +138,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.6 Per-rollout-phase notes
 
+- Phase 2 (2026-10-12): Node's `fetch` ignores proxy environment variables; inside the agent sandbox the smoke needs `NODE_USE_ENV_PROXY=1` (CI has direct egress). `index.html` also preloads the Phaser chunk, so three bundles are checked. CoiledSpring cannot be observed from CI (tailnet ACL and the restricted key); the bootstrap checklist in `deploy/README.md` section 10 covers it.
 - Phase 1 (2026-10-12): ESLint 10 needs `eslint.config.mjs` because `package.json` has no `"type": "module"`; the core `no-restricted-imports` rule already understands type-only imports (`allowTypeImports`), so the typescript-eslint variant is not needed. Programmatic linting in tests must spread `tseslint.configs.disableTypeChecked` into `overrideConfig` (flat objects, no `extends`). The baseline needed type predicates instead of `as` casts after `Array.isArray` checks.
 
 ## 7. What We Deliberately Don't Test

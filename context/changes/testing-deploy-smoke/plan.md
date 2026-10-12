@@ -178,8 +178,8 @@ Brak.
 
 #### Automated
 
-- [ ] 2.1 YAML parsuje; `check:deploy` w deploy.yml; testy dyspozytorów w ci.yml
-- [ ] 2.2 Testy dyspozytorów lokalnie OK
+- [x] 2.1 YAML parsuje; `check:deploy` w deploy.yml; testy dyspozytorów w ci.yml — 5a75f5e
+- [x] 2.2 Testy dyspozytorów lokalnie OK — 5a75f5e
 
 #### Manual
 
