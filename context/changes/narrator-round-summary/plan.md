@@ -904,10 +904,10 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 8.1 `npm run build` drukuje `e2e hook: absent (N chunks checked)`; grep `__martynkaE2E` w `dist/` pusty
-- [ ] 8.2 `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present`
-- [ ] 8.3 Deliberate break: bezwarunkowe wywołanie `installE2EHook` w `main.ts` → build pada; przywrócone; meta-check (sam import to nie przerwa)
-- [ ] 8.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 8.1 `npm run build` drukuje `e2e hook: absent (N chunks checked)`; grep `__martynkaE2E` w `dist/` pusty — 58d7497
+- [x] 8.2 `E2E_HOOK=1 npm run build -- --outDir dist-e2e` drukuje `e2e hook: present` — 58d7497
+- [x] 8.3 Deliberate break: bezwarunkowe wywołanie `installE2EHook` w `main.ts` → build pada; przywrócone; meta-check (sam import to nie przerwa) — 58d7497
+- [x] 8.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 58d7497 (unit 669 = baza 669 + 0; e2e: orkiestrator 4 passed na niezacommitowanym drzewie, Chromium w tej sesji: MachPort 1100)
 
 ### Phase 9: Przełącznik „Do pokoju” w HUD między zadaniami
 
