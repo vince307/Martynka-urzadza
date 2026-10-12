@@ -98,10 +98,10 @@ orchestrator updates Status as artifacts appear on disk.
 
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
-| lint + typecheck | local (agent loop) + CI | required after §3 Phase 1 | boundary violations, type drift, unused code |
+| lint + typecheck | local (agent loop) + CI | required | boundary violations, type drift, unused code |
 | unit + property | local (agent loop) + CI | required | generator and logic regressions |
-| content smoke (`sample` E3/E4) | CI on PR | required after §3 Phase 1 | data changes that break generation or violate the validator |
-| post-edit hook | local (agent loop) | required after §3 Phase 1 | lint and related-test failures at edit time |
+| content smoke (`sample` E3/E4) | CI on PR | required | data changes that break generation or violate the validator |
+| post-edit hook | local (agent loop) | required | lint and related-test failures at edit time |
 | deploy smoke | GitHub Actions after `switch` | required after §3 Phase 2 | stale build, wrong headers, broken precache, CoiledSpring regression |
 | manual tablet check | after PWA or scene changes | required (manual) | install, offline start, orientation, touch |
 | pre-commit lint | local git hook | optional (not configured) | edits made outside the agent |
@@ -120,7 +120,10 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.3 Adding a lint boundary rule
 
-- TBD — see §3 Phase 1.
+- **Location**: `eslint.config.mjs`, one config object per directory scope (`files: ['src/<dir>/**']`) with `no-restricted-imports` (paths, `patterns` with `regex` and `allowTypeImports`) or `no-restricted-globals`.
+- **Reference test**: `tests/lint-boundaries.test.ts` — lints synthetic sources through the ESLint API with typed rules disabled and asserts the `ruleId`; add a positive and a negative case for every new rule.
+- **Run locally**: `npm run lint` (whole repo, `--max-warnings 0`), `npx vitest run tests/lint-boundaries.test.ts`.
+- **Do not**: write a custom import-graph script; scope rules by directory instead.
 
 ### 6.4 Adding a deploy smoke check
 
@@ -132,7 +135,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.6 Per-rollout-phase notes
 
-(Appended by each phase.)
+- Phase 1 (2026-10-12): ESLint 10 needs `eslint.config.mjs` because `package.json` has no `"type": "module"`; the core `no-restricted-imports` rule already understands type-only imports (`allowTypeImports`), so the typescript-eslint variant is not needed. Programmatic linting in tests must spread `tseslint.configs.disableTypeChecked` into `overrideConfig` (flat objects, no `extends`). The baseline needed type predicates instead of `as` casts after `Array.isArray` checks.
 
 ## 7. What We Deliberately Don't Test
 

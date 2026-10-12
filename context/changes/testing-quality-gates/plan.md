@@ -202,8 +202,8 @@ Brak; baseline naprawiony w fazie 1.
 
 #### Automated
 
-- [ ] 2.1 YAML obu workflowów parsuje; `npm run lint` w każdym
-- [ ] 2.2 `sample -- E3` w ci.yml
+- [x] 2.1 YAML obu workflowów parsuje; `npm run lint` w każdym — 33af648
+- [x] 2.2 `sample -- E3` w ci.yml — 33af648
 
 #### Manual
 
