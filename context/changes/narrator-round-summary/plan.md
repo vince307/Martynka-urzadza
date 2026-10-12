@@ -871,7 +871,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 5.4 [visual] Zrzuty task-tiles i task-keypad z głośnikiem oraz task-tiles bez głosu przy 1440×900 i 1024×768
+- [x] 5.4 [visual] Zrzuty task-tiles i task-keypad z głośnikiem oraz task-tiles bez głosu przy 1440×900 i 1024×768 — visual gate: `screenshots/desktop-01`, `-05`, `-12`, `tablet-01`, `-05`, `-12`, `-13` (`reviews/visual-review.md`)
 
 ### Phase 6: Ekran podsumowania z „Kolejna runda” i „Do pokoju”
 
@@ -885,7 +885,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 #### Manual
 
 - [x] 6.5 [reviewer] Teksty `pl.summary` czytane jak przez nauczyciela — impl-review: PASS (`reviews/teacher-read.md`)
-- [ ] 6.6 [visual] Zrzuty summary (czysta runda z bonusem; runda z przepisaniem) z licznikiem w HUD przy 1440×900 i 1024×768
+- [x] 6.6 [visual] Zrzuty summary (czysta runda z bonusem; runda z przepisaniem) z licznikiem w HUD przy 1440×900 i 1024×768 — visual gate: `desktop-06`, `-11`, `tablet-06`, `-11`; +7 = 5 × 1 + 2, licznik 7; potem +4, licznik 11
 
 ### Phase 7: Pusta scena pokoju i powrót
 
@@ -898,7 +898,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 #### Manual
 
 - [x] 7.4 [reviewer] Podpis placeholdera pokoju i „Wróć do notesu” czytane jak przez nauczyciela — impl-review: PASS (`reviews/teacher-read.md`)
-- [ ] 7.5 [visual] Zrzuty room (licznik nad pokojem) i summary po powrocie przy 1440×900 i 1024×768
+- [x] 7.5 [visual] Zrzuty room (licznik nad pokojem) i summary po powrocie przy 1440×900 i 1024×768 — visual gate: `desktop-07`, `-08`, `tablet-07`, `-08`
 
 ### Phase 8: Hak e2e — ekran, rysowany licznik, podsumowanie, głośnik, pokój
 
@@ -919,7 +919,7 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Manual
 
-- [ ] 9.4 [visual] Zrzuty correct z przełącznikiem, hint bez przełącznika, room z HUD, task po powrocie przy 1440×900 i 1024×768
+- [x] 9.4 [visual] Zrzuty correct z przełącznikiem, hint bez przełącznika, room z HUD, task po powrocie przy 1440×900 i 1024×768 — visual gate: `desktop-02`, `-09`, `-03`, `-04`, `tablet-02`, `-09`, `-03`, `-04`
 
 ### Phase 10: Seam sweep, luki projektu, follow-upy i dokumentacja
 

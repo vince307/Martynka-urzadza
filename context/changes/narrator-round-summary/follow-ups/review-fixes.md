@@ -37,3 +37,10 @@ Each item has a `Trigger:` line; later slices and reviews grep for it.
   Trigger: S-17 or the next change to `romanHint`
 - e2e hook: while the room is open, `targets.nextRound` and `targets.toRoom` still report the sleeping summary's buttons; report `null` when `screen === 'room'`.
   Trigger: the next change to `src/testing/e2eHook.ts`
+
+## From the visual gate (2026-10-13)
+
+- A star still in flight when the child taps "Do pokoju" stops while `TaskScene` sleeps and finishes its flight after "Wróć do notesu" (the counter already shows the new value). Cosmetic; finish or drop the flying star on `sleep` in `TaskScene` if the room scene (S-09) makes it noticeable (`screenshots/desktop-04`, `tablet-04`).
+  Trigger: S-09 or the next change to the star flight in `TaskScene`
+- A round can show the same prompt twice in a row ("Liczba 22 jest parzysta czy nieparzysta?" as tasks 2 and 3 of one E3 round): `pickSkills` draws skills with repeats and the generator can repeat its numbers. Avoid an identical prompt within one round.
+  Trigger: S-07 (adaptive curriculum changes round building)
