@@ -253,14 +253,14 @@ Brak zmian w zapisie i scenach. Włączenie `strictPropertyInitialization` nie w
 
 #### Automated
 
-- [ ] 1.1 `npm run typecheck` z `tests/` i `scripts/`, bez `strictPropertyInitialization: false`
-- [ ] 1.2 `npm test` przechodzi z testami rng i plural
-- [ ] 1.3 Workflow ma `npm test`, YAML parsuje
-- [ ] 1.4 Brak importów Phasera w `src/core`
+- [x] 1.1 `npm run typecheck` z `tests/` i `scripts/`, bez `strictPropertyInitialization: false` — 23fbaf5
+- [x] 1.2 `npm test` przechodzi z testami rng i plural — 23fbaf5
+- [x] 1.3 Workflow ma `npm test`, YAML parsuje — 23fbaf5
+- [x] 1.4 Brak importów Phasera w `src/core` — 23fbaf5
 
 #### Manual
 
-- [ ] 1.5 Hook `related-tests` uruchamia `tests/rng.test.ts` po edycji `rng.ts`
+- [x] 1.5 Hook `related-tests` uruchamia `tests/rng.test.ts` po edycji `rng.ts` — 23fbaf5
 
 ### Phase 2: Model zadania, rejestr i generator ADD_SUB z danymi E3
 
