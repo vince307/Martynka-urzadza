@@ -8,8 +8,8 @@ The `/10x-impl-review generators-remaining-stages` step of run `2026-10-12-s03-r
 |---|---|
 | Branch | `feat/generators-remaining-stages`, cut from `main` at `a24b502` |
 | Commits | … `69cf447` (handoff p10) + `499e449` `fix(generators-remaining-stages): poprawki z impl-review …` + this `docs(generators-remaining-stages): impl-review` commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
+| Pushed / PR / merged | PR/CI/merge recorded in `context/runs/2026-10-12-s03-remaining-stages/run-log.md` (ship step: push + PR open, merge awaits the maintainer) |
+| `change.md` status | `archived` (`chore(archive): close generators-remaining-stages`, b35787e); roadmap S-03 `done`, Backlog Handoff refreshed (S-04 ready for `/10x-plan`) |
 | `## Progress` rows remaining | 3: 10.5 [reviewer] (CI at ship), 10.6 [human], 10.7 [human] |
 | Working tree | clean except the maintainer's untracked `designs/martynka-expansion-v1/` (never staged) |
 
@@ -43,7 +43,7 @@ The `/10x-impl-review generators-remaining-stages` step of run `2026-10-12-s03-r
 
 ## 4. Next command
 
-`/10x-archive generators-remaining-stages` then ship
+none — PR open, merge awaits the maintainer's „merguj”
 
 ## 5. Open
 
@@ -87,3 +87,8 @@ The `/10x-impl-review generators-remaining-stages` step of run `2026-10-12-s03-r
    - Why: F8 changes the S-02 word data and the rng sequence of WORD and CHOOSE_OP.
    - Would change: the maintainer flagging it in 10.6.
 8. **The skill's continuation question was decided as "Triage findings now"** (contract: never ask). A "how to proceed" question means this step stops after the review.
+9. **Archive step: the `/10x-archive` warning prompt was answered "Continue archiving"** (contract: never ask).
+   - Warnings: 3 Progress rows pending (10.5 `[reviewer] (CI at ship)`, ticked by the ship step from the CI log; 10.6 and 10.7 `[human]`, a post-run checklist for the maintainer, not a blocker); rows 6.4/9.4/10.4 end with „(reviews/teacher-read.md)” after the SHA, so the SHA-suffix regex flags them (soft signal only).
+   - SHA history: no PR merged yet, so the branch commits are not on `main` by design; no repointing offered.
+   - Roadmap: S-03 `done` in At a glance and the item body, `## Done` entry added; Backlog Handoff S-04 „Ready for /10x-plan” = yes, with the two `Trigger: S-04` follow-ups restated (E1 keypad vs 3–4 tiles, F14 MISSING first hint).
+   - Would change: CI red on the PR, or the maintainer's 10.6 read asking for content changes before merge.
