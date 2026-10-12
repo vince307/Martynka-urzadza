@@ -1,6 +1,6 @@
 ---
 title: Autonomous run profile — Martynka urządza
-status: draft            # draft → confirmed (only `references/setup.md` § Prove flips it)
+status: confirmed        # draft → confirmed (only `references/setup.md` § Prove flips it)
 skill_version: 6
 created: 2026-10-12
 updated: 2026-10-12
@@ -146,7 +146,7 @@ The game renders into one Phaser canvas: assert visuals by screenshot, text chec
 |---|---|
 | Files `scripts/validate-rule-files.sh` checks | § 1 rule files + every `context/runs/*/agent-contract.md` |
 | Path roots it recognises | `\.claude|\.github|src|docs|context|tests|scripts|deploy|public|vite|designs` |
-| Paths asserted on purpose although absent | none |
+| Paths asserted on purpose although absent | `public/assets` (art lands in M7, roadmap S-16), `src/storage/idb.ts` (IndexedDB save, roadmap S-11) — both named in CLAUDE.md's target architecture |
 | Clean-tree allow-list (the maintainer's uncommitted entries) | none |
 | Human-checklist file (run close appends point 4 of the report; optional) | `docs/human-checklist.md` |
 
@@ -162,4 +162,9 @@ The game renders into one Phaser canvas: assert visuals by screenshot, text chec
 
 ## 12. Proven on
 
-PROVEN-PLACEHOLDER
+`2026-10-12` — on branch `docs/autonomous-run-profile` at `104e6a9` (the profile's own PR): `validate-rule-files.sh` PASS
+(77 paths, 2 planned paths allow-listed), `tree-clean.sh` CLEAN, `baseline.sh` line:
+`lint OK; typecheck OK; unit OK Tests  236 passed; build OK`; `preflight.sh`: every line PASS/SKIP/NOTE except
+the three that only main can satisfy (profile confirmed, on main, main = origin) — re-run on `main` after the merge.
+Deliberate breaks: a missing rule file → `validate-rule-files.sh` FAIL; `GATE_UNIT="false"` → `baseline.sh` `unit FAIL`;
+an uncommitted edit → `tree-clean.sh` DIRTY. Production slots: none (rollback is human, see § 5).
