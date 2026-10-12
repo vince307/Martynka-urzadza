@@ -1,58 +1,66 @@
 # Handoff — `task-round-stars` (slice S-04)
 
-Written by `/10x-impl-review task-round-stars` (full plan, phases 1–11) of autonomous run 2026-10-12-s04-s08. Verdict APPROVED, `MERGE: CLEAR`; review fixes are in `0c0baf4`. The next step must take its screenshots after `0c0baf4`: the bar, tiles and star start moved (V2, V4).
+Written by the visual-gate step of autonomous run 2026-10-12-s04-s08. Every `[visual]` state of the round is captured at 1440 and 1024 (+420×760), six kit discrepancies were fixed in `daa513e` and `f0ec6d5`, and the verdict is `VISUAL: GAPS` (non-blocking). The next agent must not "fix" the slashed zero (V3, a maintainer decision) and must not take the GAPS line for a blocker: it ships.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
-| Commits on branch | docs + p1..p11 + `0c0baf4` (fix) + this docs commit |
+| Commits on branch | docs + p1..p11 + `0c0baf4` (impl-review fix) + `ec98195` (impl-review docs) + `daa513e`, `f0ec6d5` (visual-gate fixes) + this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 10 (`[visual]` 5.6, 6.4, 7.4, 8.4; `[human]` 8.5, 10.5–10.8; `[reviewer] (CI at ship)` 9.8) |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` flips it) |
+| `## Progress` rows remaining | 6: `[human]` 8.5, 10.5–10.8; `[reviewer] (CI at ship)` 9.8 |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/task-round-stars/reviews/impl-review.md` | report, 0 critical / 6 warnings (all fixed) / 6 observations, ends with `MERGE: CLEAR` |
-| `src/data/layout.ts` | `TEXT_COLOR`, palette `pressed/tileBorder/field/fieldPlaceholder`, `solutionLine` 44, `tiles.top` 712, `bar.bottom` 960, `ANIMATION.starStartLift`; dead keys removed |
-| `src/ui/widgets/*.ts` | colours from `layout.ts` instead of local copies |
-| `src/scenes/TaskScene.ts` | `create` resets fields; `flyStar` starts above the tile; `toCssColor` removed |
-| `src/core/round/view.ts`, `vite/config.shared.mjs` | DESIGN-GAP row 2 comment; build-id comment corrected |
-| `tests/geometry.test.ts`, `tests/pick.test.ts`, `tests/e2eHookGuard.test.ts` | bar gap test, tile choices in `buildRound`, hook marker matches `e2eHook.ts` |
-| `AGENTS.md` | body trimmed to 400 words |
-| `plan.md`, `change.md`, `follow-ups/review-fixes.md` | rows 1.5, 2.5, 5.5, 7.5, 10.4 ticked; status; new follow-ups with `Trigger:` |
+| `context/changes/task-round-stars/reviews/visual-review.md` | states table, hand-checked stars (7 and 5), targets at 1024, findings F1–F6 with fixes, kept items, open observations; ends with the `VISUAL:` line |
+| `context/changes/task-round-stars/screenshots/*.png`, `screenshots/README.md` | 31 frames (desktop, tablet, portrait) + table state · desktop · tablet · how reached; † marks frames drawn before `f0ec6d5` |
+| `src/data/layout.ts` | `FONT_WEIGHTS`, `FONT_WEIGHT_RANGE`, palette `button`, `buttonBorder`, `hintBorder`, `next`, `nextBorder`; `TASK_LAYOUT.expression` {620, 456}; `bar.hintBorder` |
+| `src/ui/widgets/textStyle.ts` (new) | `textStyle(role, color)`: family, size and kit weight per text role |
+| `src/scenes/BootScene.ts` | `load.font` with FontFace `weight: FONT_WEIGHT_RANGE` |
+| `src/scenes/TaskScene.ts` | `textStyle` everywhere; solution centred on the expression and wrapped at the bar width; DESIGN-GAP 8 comment in `drawPrompt` |
+| `src/ui/widgets/{ActionButton,FeedbackBar,Keypad,SolutionSteps,StarCounter,AnswerTiles}.ts` | kit button tokens and border, hint-bar outline, OK key colours, line wrap, uniform tile label scale |
+| `src/core/round/view.ts` | `roundView`: the current dot is `done` once `phase === 'done'` |
+| `tests/layout.test.ts`, `tests/roundView.test.ts` | weights 650–750, solution column inside the notebook and left of the keypad, green dot after a settled task |
+| `docs/design-gaps.md` | row 8: missing-number blank (font has no U+25A1) |
+| `context/changes/task-round-stars/follow-ups/review-fixes.md` | new section "Visual gate": step-indicator dots, `= ?` copy, bar text at 1024, star over the "9" key |
+| `context/changes/task-round-stars/plan.md` | rows 5.6, 6.4, 7.4, 8.4 ticked — `f0ec6d5` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| lint / typecheck | OK / OK (before and after fixes) |
-| unit (contract command) | 588 before fixes (baseline 441, +147); 590 after `0c0baf4` (baseline 441, +149); deploy and ops tests OK; `sample` E1–E6 `Naruszenia: 0` |
+| lint / typecheck | OK / OK (after `daa513e` and again after `f0ec6d5`) |
+| unit (contract command) | 593 passed (baseline 441, +152; +3 in this step); deploy and ops tests OK; `sample` E1–E6 `Naruszenia: 0` |
 | build | OK, `e2e hook: absent (2 chunks checked)`; `__martynkaE2E` 0 hits in `dist/` |
-| `npx playwright test` | 4 passed (baseline 1, +3) before and after fixes; ports 4397/4398 empty |
-| Break A | bonus also for second-try rounds in `round.ts` `next`: `round.test.ts` 2 red, e2e test 2 red `Expected: 0 / Received: 2`; restored. Meta: unit and e2e catch it independently |
-| Breaks B–D | tiles skipped in `generateTask` → `pick.test.ts` red; hook property renamed → marker test red; `bar.bottom` 972 → gap test red `expected 4 to be >= 16`; all restored |
-| Teacher reads | `sample -- E1 --count 6`, MISSING E1/E3/E4, `pl.round`: pass (details in the report) |
+| `npx playwright test` (sandbox off) | 4 passed (baseline 1, +3) after `daa513e`; after `f0ec6d5` one run had 1 red + 1 not run while my `npm run build` wrote `dist/` in parallel, then 4 passed in 4 sequential runs; ports 4397/4398/4399 empty at the end |
+| Break: `FONT_WEIGHTS.prompt` 400 | `tests/layout.test.ts` red `expected 400 to be greater than or equal to 650`; restored. Meta: proves the token, not the loader; the loader is proven by `document.fonts` reporting `200 800` and the bold frames |
+| Break: `TASK_LAYOUT.expression.x` 760 | geometry test red `expected 1115 to be less than or equal to 1040`; restored. Meta: proves the column constants; the wrap itself is proven by `tablet-16` |
+| Dot test | written first, red (`['current', …]`), then green after the `roundView` change |
+| Visual gate | Claude in Chrome, port 4399, own tabs closed; hand check 5 × 1 + 2 = 7 (clean round) and 5 × 1 + 0 = 5 (one second try) matched the counter on screen |
 
 ## 4. Next command
 
-`visual gate (orchestrator), then /10x-archive task-round-stars and ship`
+`/10x-archive task-round-stars` then ship (no hosted db push — no database)
 
 ## 5. Open
 
-- [visual] 5.6, 6.4, 7.4, 8.4: screenshots at 1440×900, 1024×768 (and 420×760 rotate overlay) after `0c0baf4`.
-- [human] 8.5 iPad touch latency; 10.5–10.8 product decisions (Dalej, "Spróbuj jeszcze raz" alone, select excluded, switch not drawn).
+- [human] 8.5 iPad: touch latency < 100 ms, star flight does not block "Dalej"; also judge the bar text size at the tablet (follow-up "Bar text at the tablet size").
+- [human] 10.5–10.8 product decisions ("Dalej" instead of auto-advance, "Spróbuj jeszcze raz" alone, `'select'` excluded, no switch drawn).
 - [reviewer] (CI at ship) 9.8: job `check`, step `Run npm run build`, regex `e2e hook: absent \([0-9]+ chunks checked\)`.
-- Follow-ups in `follow-ups/review-fixes.md`: V3 slashed zero (maintainer), bar text size, `wordTemplates.ts` `contexts` złoty + buy, `roundView` mode from choices, `firstHint` ROUNDING by id, e2e `counter` vs `StarCounter` `value`, `snapshot` answer copy, `hints.test.ts` skip count.
+- DESIGN-GAP 8 added (`docs/design-gaps.md`, `TaskScene.drawPrompt`).
+- Follow-ups (`follow-ups/review-fixes.md`): step-indicator dots (`roundView`, `SolutionSteps`), `= ?` copy (`TaskScene.drawPrompt`, `pl.ts`), bar text at 1024 (`FONT_SIZES.bar`), star start over the "9" key (`TaskScene.flyStar`), plus the earlier ones (V3 slashed zero, `wordTemplates.ts` złoty, `roundView` mode, `firstHint` ROUNDING, e2e `counter`, `snapshot` copy, `hints.test.ts` skips).
+- The dev server does not hot-reload in this sandbox: after an edit, restart it before a screenshot.
 
 ## 6. Autonomous decisions
 
-1. **Triage without asking**: all warnings fixed in one `fix` commit (cheap, tested); observations needing model changes deferred to follow-ups. Would change: a CRITICAL found by the visual gate.
-2. **V1**: solution lines raised to the kit's 44 px; bar text kept at 36 px (kit 34). Rejected: inventing a larger size outside the kit. Would change: the visual gate or iPad check finds the bar unreadable.
-3. **V2**: tiles moved up 12 px from the kit's 724 to keep 16 px gaps both sides of the bar (kit gaps 16–32). Would change: a kit revision of the task layout.
-4. **V3**: not changed; the font has no plain zero and the kit approves the slashed one. Would change: maintainer asks for a plain 0 (needs another font).
-5. **`pl.title` kept** though unused today, as the game title for S-05 screens. Would change: S-05 not using it.
+1. **Fixed six token/layout discrepancies on the branch** (weights, button colours, keypad column, wrap, green dot, tile scale) instead of only recording them: each is a value or geometry the kit states, cheap and tested. Rejected: deferring them to S-16. Would change: a kit revision of the task screen.
+2. **Step-indicator dots and `= ?` left as follow-ups**: both need a core/view or copy change across stages (step count in `roundView`; a `pl.ts` string and E5–E6 width checks), larger than a gate fix. Would change: the maintainer wants them before ship.
+3. **`□` glyph recorded as DESIGN-GAP 8**, not redrawn in code: the kit has no missing-number frame, so any box would be invented. Would change: the kit adds the frame or the maintainer picks a drawn box.
+4. **Verdict GAPS, not PASS**: all states were captured and the round matches the kit after the fixes, but kit elements (step dots, `= ?`) are still not drawn. Would change: those follow-ups land.
+5. **Frames drawn before `f0ec6d5` kept and marked †** rather than re-captured: only the bare keypad expression is 104 scene px lower in them; the key frames (round start, hint with a line, both solution steps) were re-captured on the final code. Would change: a reviewer needs every frame on the final code.
+6. **Row 7.4 ticked** with the hint-with-line frame captured at both widths (`desktop-04b`, `tablet-04`). V3 slashed zero noted, font unchanged (maintainer decision).

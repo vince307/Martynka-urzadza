@@ -863,7 +863,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 #### Manual
 
 - [x] 5.5 [reviewer] Nowe teksty `pl.round` czytane jak przez nauczyciela — impl-review
-- [ ] 5.6 [visual] Zrzut startu rundy (czcionka, kropki) przy 1440×900 i 1024×768
+- [x] 5.6 [visual] Zrzut startu rundy (czcionka, kropki) przy 1440×900 i 1024×768 — f0ec6d5 (reviews/visual-review.md)
 
 ### Phase 6: Kafelki i klawiaturka
 
@@ -875,7 +875,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 6.4 [visual] Zrzuty task-tiles i task-keypad przy 1440×900 i 1024×768; cele ≥ 48 CSS px przy 1024×768
+- [x] 6.4 [visual] Zrzuty task-tiles i task-keypad przy 1440×900 i 1024×768; cele ≥ 48 CSS px przy 1024×768 — f0ec6d5 (reviews/visual-review.md)
 
 ### Phase 7: Pasek podpowiedzi, kroki rozwiązania i „Dalej”
 
@@ -887,7 +887,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 7.4 [visual] Zrzuty hint (z linią i bez), second try, solution steps (pierwszy i ostatni krok), retype, correct przy 1440×900 i 1024×768
+- [x] 7.4 [visual] Zrzuty hint (z linią i bez), second try, solution steps (pierwszy i ostatni krok), retype, correct przy 1440×900 i 1024×768 — f0ec6d5 (reviews/visual-review.md)
 - [x] 7.5 [reviewer] Brak czerwonego krzyżyka, licznika czasu i ujemnej zmiany gwiazdek — impl-review
 
 ### Phase 8: Nakładka UI z licznikiem gwiazdek, lot gwiazdki i koniec rundy
@@ -900,7 +900,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 8.4 [visual] Zrzut round end with bonus (+2 ★, ★ 7) przy 1440×900 i 1024×768; 420×760 z nakładką „Obróć tablet”
+- [x] 8.4 [visual] Zrzut round end with bonus (+2 ★, ★ 7) przy 1440×900 i 1024×768; 420×760 z nakładką „Obróć tablet” — f0ec6d5 (reviews/visual-review.md)
 - [ ] 8.5 [human] iPad: dotyk < 100 ms, lot gwiazdki nie blokuje „Dalej”
 
 ### Phase 9: Hak e2e w osobnym buildzie i strażnik bundla produkcyjnego

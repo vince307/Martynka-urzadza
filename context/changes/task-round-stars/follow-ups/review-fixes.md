@@ -53,3 +53,14 @@ Each item has a `Trigger:` line; later slices and reviews grep for it.
   Trigger: impl-review of task-round-stars, or S-16 (art pack)
 - V4: the flying star briefly covers the answer tile it starts from.
   Trigger: impl-review of task-round-stars
+
+## Visual gate (reviews/visual-review.md), discrepancies left open
+
+- Solution step indicator: the kit (`solution-step-1.png`, `.step-indicator`) shows one dot per step under the lines (active turquoise with deep-teal ring, others `#e0cf9e`); the scene draws none. Needs the total step count in `src/core/round/view.ts` `roundView` (`bar.kind === 'solution'`), then a small widget in `src/ui/widgets/SolutionSteps.ts`.
+  Trigger: S-05 or the next change to `SolutionSteps`
+- Expression copy: the kit writes `38 + 27 = ?`; generators give `38 + 27` and the scene shows it bare (`src/scenes/TaskScene.ts` `drawPrompt`). Adding ` = ?` needs the string in `src/data/pl.ts` and a width check for the longest E5–E6 expressions beside the keypad.
+  Trigger: S-07 (curriculum stages) or a kit revision of the task screen
+- Bar text at the tablet size: 36 scene px is about 19 CSS px at 1024×768, and two-line hints or the months line in a retype shrink further (about 13 CSS px in `tablet-17-retype-tiles.png`). Same root as the V1 follow-up above.
+  Trigger: iPad check (row 8.5)
+- In keypad mode the flying star starts 116 px above OK, over the "9" key, for its first frames (`TaskScene.flyStar`, `ANIMATION.starStartLift`).
+  Trigger: next change to `flyStar`
