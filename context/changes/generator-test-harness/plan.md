@@ -266,13 +266,13 @@ Brak zmian w zapisie i scenach. Włączenie `strictPropertyInitialization` nie w
 
 #### Automated
 
-- [ ] 2.1 `npm test` z `addSub.test.ts` (3 × 1000 losowań)
-- [ ] 2.2 `typecheck` i brak Phasera w `core`/`curriculum`
-- [ ] 2.3 `E3.steps.length` = 11 przez tsx
+- [x] 2.1 `npm test` z `addSub.test.ts` (3 × 1000 losowań) — 4dfe6ee
+- [x] 2.2 `typecheck` i brak Phasera w `core`/`curriculum` — 4dfe6ee
+- [x] 2.3 `E3.steps.length` = 11 przez tsx — 4dfe6ee
 
 #### Manual
 
-- [ ] 2.4 Przegląd `E3.ts` względem ZADANIA §3 E3 i §2
+- [x] 2.4 Przegląd `E3.ts` względem ZADANIA §3 E3 i §2 — 4dfe6ee
 
 ### Phase 3: Walidator naruszeń i skrypt sample
 
