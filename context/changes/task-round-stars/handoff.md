@@ -1,13 +1,13 @@
 # Handoff — `task-round-stars` (slice S-04)
 
-Written by the visual-gate step of autonomous run 2026-10-12-s04-s08. Every `[visual]` state of the round is captured at 1440 and 1024 (+420×760), six kit discrepancies were fixed in `daa513e` and `f0ec6d5`, and the verdict is `VISUAL: GAPS` (non-blocking). The next agent must not "fix" the slashed zero (V3, a maintainer decision) and must not take the GAPS line for a blocker: it ships.
+Written by the visual-gate fix step (re-dispatch) of autonomous run 2026-10-12-s04-s08; it follows the visual gate, whose DESIGN-GAP 8 (the "□" glyph) is now resolved by a drawn box (`87049c5`). Every `[visual]` state of the round is captured at 1440 and 1024 (+420×760), six kit discrepancies were fixed in `daa513e` and `f0ec6d5`, and the verdict is `VISUAL: GAPS` (non-blocking). The next agent must not "fix" the slashed zero (V3, a maintainer decision) and must not take the GAPS line for a blocker: it ships.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
-| Commits on branch | docs + p1..p11 + `0c0baf4` (impl-review fix) + `ec98195` (impl-review docs) + `daa513e`, `f0ec6d5` (visual-gate fixes) + this docs commit |
+| Commits on branch | docs + p1..p11 + `0c0baf4` (impl-review fix) + `ec98195` (impl-review docs) + `daa513e`, `f0ec6d5` (visual-gate fixes) + `87049c5` (drawn blank) + this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` flips it) |
 | `## Progress` rows remaining | 6: `[human]` 8.5, 10.5–10.8; `[reviewer] (CI at ship)` 9.8 |
@@ -43,6 +43,17 @@ Written by the visual-gate step of autonomous run 2026-10-12-s04-s08. Every `[vi
 | Dot test | written first, red (`['current', …]`), then green after the `roundView` change |
 | Visual gate | Claude in Chrome, port 4399, own tabs closed; hand check 5 × 1 + 2 = 7 (clean round) and 5 × 1 + 0 = 5 (one second try) matched the counter on screen |
 
+### 3b. Fix after the gate (observed)
+
+| Command | Result |
+|---|---|
+| lint / typecheck | OK / OK |
+| unit | 596 passed (baseline 441 on main, 593 before this step, +3: `tests/promptBlank.test.ts`) |
+| build | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test` (sandbox off) | 4 passed (baseline 1) |
+| Break: `splitBlanks` drops the blank piece | `tests/promptBlank.test.ts` red (`expected [ { kind: 'text', text: '2 + 9 =' } ] to deeply equal [ …(2) ]`, total width 80 vs 160); restored, green. Meta: proves split and layout, not the drawing; the drawing is proven by `tablet-14b/c/d` |
+| Screenshots | `tablet-14b/c/d`, `desktop-14b/c` (dev server port 4399, own tab closed, server stopped) |
+
 ## 4. Next command
 
 `/10x-archive task-round-stars` then ship (no hosted db push — no database)
@@ -52,7 +63,7 @@ Written by the visual-gate step of autonomous run 2026-10-12-s04-s08. Every `[vi
 - [human] 8.5 iPad: touch latency < 100 ms, star flight does not block "Dalej"; also judge the bar text size at the tablet (follow-up "Bar text at the tablet size").
 - [human] 10.5–10.8 product decisions ("Dalej" instead of auto-advance, "Spróbuj jeszcze raz" alone, `'select'` excluded, no switch drawn).
 - [reviewer] (CI at ship) 9.8: job `check`, step `Run npm run build`, regex `e2e hook: absent \([0-9]+ chunks checked\)`.
-- DESIGN-GAP 8 added (`docs/design-gaps.md`, `TaskScene.drawPrompt`).
+- DESIGN-GAP 8 resolved: blank drawn as a box (`docs/design-gaps.md` row 8, `TaskScene.drawExpression`, `src/core/round/promptBlank.ts`).
 - Follow-ups (`follow-ups/review-fixes.md`): step-indicator dots (`roundView`, `SolutionSteps`), `= ?` copy (`TaskScene.drawPrompt`, `pl.ts`), bar text at 1024 (`FONT_SIZES.bar`), star start over the "9" key (`TaskScene.flyStar`), plus the earlier ones (V3 slashed zero, `wordTemplates.ts` złoty, `roundView` mode, `firstHint` ROUNDING, e2e `counter`, `snapshot` copy, `hints.test.ts` skips).
 - The dev server does not hot-reload in this sandbox: after an edit, restart it before a screenshot.
 

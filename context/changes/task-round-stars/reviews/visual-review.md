@@ -73,4 +73,8 @@ build` writing `dist/` in parallel and passed on every sequential re-run.
   (`tablet-17`); same root as the earlier V1 follow-up, for the iPad check (row 8.5).
 - O4 In keypad mode the flying star starts over the "9" key for its first frames.
 
-VISUAL: GAPS — every [visual] state captured at 1440 and 1024 (+420×760 overlay) and six kit discrepancies fixed (daa513e, f0ec6d5); open: kit step-indicator dots and "= ?" copy not drawn, small bar text at 1024, new DESIGN-GAP 8 (□ glyph)
+## Fix after the gate
+
+DESIGN-GAP 8 is resolved in `87049c5`: `splitBlanks` / `layoutPieces` (`src/core/round/promptBlank.ts`, test `tests/promptBlank.test.ts`) split an expression on "□", `TaskScene.drawExpression` draws the text pieces and an outlined rounded box (`TASK_LAYOUT.blank`, about one digit wide and 84 px tall in the 1920 space, stroke in the text colour) between them; the task data and generators still carry "□". Re-captured with the box last (`tablet-14b`, `desktop-14b`), in the middle (`tablet-14c`, `desktop-14c`) and first (`tablet-14d`): the blank is clearly visible and the row stays centred on the expression point beside the keypad. The centred layout (tiles) uses the same helper with `expressionWide`; MISSING always takes the keypad, so it has no frame. Gate: lint, typecheck, unit 596 (593 + 3), build `e2e hook: absent`, playwright 4 passed. Break (helper drops the box) turned the test red, restored.
+
+VISUAL: GAPS — every [visual] state captured; the blank is now a drawn box (87049c5); open: kit step-indicator dots and "= ?" copy not drawn, small bar text at 1024

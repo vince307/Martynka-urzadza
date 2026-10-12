@@ -39,6 +39,9 @@ capture, not a stuck star: the counter and later frames show them landing).
 | Round end with bonus (+2 ★, counter 7) | `desktop-12-round-end-bonus-7.png` | `tablet-12-round-end-bonus-7.png` † | fresh load, five first-try answers, "Dalej" ×4 |
 | Round end without bonus (counter 5) | `desktop-13-round-end-no-bonus-5.png` | — | fresh load, task 1 wrong then right, tasks 2–5 first try |
 | Missing-number blank (DESIGN-GAP 8) | — | `tablet-14-missing-box-glyph.png` † | task `2 + 9 = □` in a clean round |
+| Drawn blank, box last (after the fix) | `desktop-14b-missing-box-last.png` (720×390, half scale) | `tablet-14b-missing-box-last.png` | `3 + 9 = □`; same-origin iframe with a fixed `Date.now` (seed 2) on the dev server, so the first task is known |
+| Drawn blank, box in the middle | `desktop-14c-missing-box-middle.png` (720×390) | `tablet-14c-missing-box-middle.png` | `12 − □ = 9`, seed 121 |
+| Drawn blank, box first | — | `tablet-14d-missing-box-first.png` | `□ + 4 = 11`, seed 17 |
 | "Obróć tablet" over a running round | — | `portrait-420x760-rotate-overlay.png` (420×760) | iframe resized from 1024×768 during round 1 task 1; back to 1024×768 the round was unchanged (counter 1, "Dalej") |
 
 Kit frames compared (read-only, `designs/martynka-maths-A-v1/screenshots/`): `task-tiles.png`, `task-keypad.png`,
