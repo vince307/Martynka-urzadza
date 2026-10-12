@@ -10,7 +10,7 @@ Phase 12 (the last, e2e: narrator by touch on a fake synthesizer) is committed i
 | Commits | docs, p1..p12 (p12 = `03dfa1c`), handoff commits |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implemented` (updated 2026-10-13) |
-| `## Progress` rows remaining | 17 (reviewer, visual and human rows only) |
+| `## Progress` rows remaining | 14 (reviewer, visual and human rows only) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
