@@ -3,6 +3,7 @@ import { createRng, type Rng } from '../core/rng';
 import type { StageDef } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
+import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
 import { buildRound } from '../core/round/pick';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
@@ -64,6 +65,7 @@ export class TaskScene extends Scene {
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
     private promptTexts: GameObjects.Text[] = [];
+    private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
     private stage!: StageDef;
     private rng!: Rng;
@@ -146,28 +148,31 @@ export class TaskScene extends Scene {
 
     /** Lowest y of the prompt texts, so the solution lines start under them. */
     private promptBottom(): number {
-        return Math.max(...this.promptTexts.map((t) => t.getBounds().bottom));
+        return Math.max(
+            ...this.promptTexts.map((t) => t.getBounds().bottom),
+            ...this.promptBoxes.map((g) => g.y + TASK_LAYOUT.blank.height / 2),
+        );
     }
 
     private drawPrompt(input: 'tiles' | 'keypad'): void {
         this.promptTexts.forEach((t) => t.destroy());
         this.promptTexts = [];
+        this.promptBoxes.forEach((g) => g.destroy());
+        this.promptBoxes = [];
         const task = this.state.tasks[this.state.index];
         const color = TEXT_COLOR;
         const { prompt } = TASK_LAYOUT;
         const sentence = input === 'tiles' ? prompt : TASK_LAYOUT.promptBeside;
         const expression = input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
-        // DESIGN-GAP: the kit has no frame for a missing-number task; the font has no U+25A1, so "□" falls back to a
-        // smaller system glyph (docs/design-gaps.md row 8).
+        // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
+        // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
             this.promptTexts.push(
                 this.add
                     .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
                     .setOrigin(0.5),
-                this.add
-                    .text(expression.x, expression.y, task.prompt, textStyle('expression', color))
-                    .setOrigin(0.5),
             );
+            this.drawExpression(task.prompt, expression, color);
         } else {
             this.promptTexts.push(
                 this.add
@@ -179,6 +184,28 @@ export class TaskScene extends Scene {
                     .setOrigin(0.5, 0),
             );
         }
+    }
+
+    /** The expression centred on `at`; each "□" becomes an outlined box the size of a digit. */
+    private drawExpression(text: string, at: Point, color: string): void {
+        const blank = TASK_LAYOUT.blank;
+        const pieces = splitBlanks(text);
+        const made = pieces.map((p) =>
+            p.kind === 'text' ? this.add.text(0, 0, p.text, textStyle('expression', color)).setOrigin(0, 0.5) : null,
+        );
+        const { placed } = layoutPieces(pieces, (_t, i) => made[i]?.width ?? 0, blank.width, blank.gap);
+        placed.forEach(({ piece, left, width }, i) => {
+            const t = made[i];
+            if (piece.kind === 'text' && t) {
+                t.setPosition(at.x + left, at.y);
+                this.promptTexts.push(t);
+            } else {
+                const box = this.add.graphics({ x: at.x + left + width / 2, y: at.y });
+                box.lineStyle(blank.lineWidth, parseInt(color.slice(1), 16), 1);
+                box.strokeRoundedRect(-width / 2, -blank.height / 2, width, blank.height, blank.radius);
+                this.promptBoxes.push(box);
+            }
+        });
     }
 
     /** A tile or the keypad's OK handed in an answer: core decides, the scene redraws. */
