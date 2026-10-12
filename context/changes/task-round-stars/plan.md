@@ -881,9 +881,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 7.1 Unit `<baseline gałęzi> + 0`
-- [ ] 7.2 Deliberate break: `roundView` `retype` → `none` → czerwony; przywrócone; meta-check (model, nie rysowanie)
-- [ ] 7.3 Pełna bramka lokalna zielona
+- [x] 7.1 Unit `<baseline gałęzi> + 0` — 6ab3f66
+- [x] 7.2 Deliberate break: `roundView` `retype` → `none` → czerwony; przywrócone; meta-check (model, nie rysowanie) — 6ab3f66
+- [x] 7.3 Pełna bramka lokalna zielona — 6ab3f66
 
 #### Manual
 
