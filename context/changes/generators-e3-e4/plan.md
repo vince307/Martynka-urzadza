@@ -291,12 +291,12 @@ Jeden test przechodzi przez wszystkie umiejętności obu etapów; dokumentacja o
 
 #### Automated
 
-- [ ] 3.1 `npm test` z szablonami (0…100) i WORD/COMPARE_DIFF, `typecheck`
-- [ ] 3.2 `sample -- E3` kod 0 z E3.1; bez `undefined`/`NaN`
+- [x] 3.1 `npm test` z szablonami (0…100) i WORD/COMPARE_DIFF, `typecheck` — 0601a1a
+- [x] 3.2 `sample -- E3` kod 0 z E3.1; bez `undefined`/`NaN` — 0601a1a
 
 #### Manual
 
-- [ ] 3.3 Odczyt 20 zadań tekstowych E3.1: gramatyka, odmiana, rodzaj
+- [x] 3.3 Odczyt 20 zadań tekstowych E3.1: gramatyka, odmiana, rodzaj — 0601a1a
 
 ### Phase 4: Test całego programu E3–E4, sample i dokumentacja
 

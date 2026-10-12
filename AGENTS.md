@@ -6,8 +6,8 @@
 
 - Implement milestones M0–M8 (@Martynka-urzadza.md section 11) in order; never reorder.
 - `src/core/` must not import Phaser. Write its logic with vitest tests first, then the scene.
-- Scenes contain no balance numbers and no player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `rooms.ts`).
-- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` from committed files (gitignored).
+- Scenes have no balance numbers or player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `wordTemplates.ts`, `rooms.ts`), which imports only `src/core/text/*` and types.
+- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` (gitignored) from committed files.
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never remove stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Identifiers and comments are English.
 - Phaser 4 differs from v3 (renderer, filters); check the v4 docs first.
@@ -24,7 +24,7 @@ M0 shell: `src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/BootS
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not type-check.
 - `npm run preview` — the only local way to test `sw.js`.
-- `npm test` — vitest (`npx vitest run tests/<name>.test.ts` for one file); `npm run sample -- E3` prints tasks per step with violations. No lint yet.
+- `npm test` — vitest (`npx vitest run tests/<name>.test.ts` for one file); `npm run sample -- E3` prints tasks per step with violations.
 
 ## Coding style
 
@@ -32,7 +32,7 @@ TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). F
 
 ## Testing
 
-Vitest in `tests/` (standalone `vitest.config.mts`). Each skill gets a 1000-draw test on seeded `createRng`: range, no negatives, bridging per params, distinct distractors, inflection (`validateTask`). After every milestone verify build and offline behaviour.
+Vitest in `tests/` (standalone `vitest.config.mts`). Each skill gets a 1000-draw test on seeded `createRng` (`tests/helpers.ts`): range, negatives, bridging, distractors, inflection via `validateTask` (nouns in `data/nouns.ts`). After every milestone verify build and offline behaviour.
 
 ## Commits and PRs
 
