@@ -891,9 +891,9 @@ Brak: bez bazy danych; `autoRead` i gwiazdki w pamięci sesji do S-11 (profil §
 
 #### Automated
 
-- [ ] 7.1 Test układu obejmuje `resume`; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: `resume` 90 px → test układu czerwony; przywrócone; meta-check
-- [ ] 7.3 Pełna bramka lokalna zielona
+- [x] 7.1 Test układu obejmuje `resume`; unit `<baseline gałęzi> + N` — b146a0f
+- [x] 7.2 Deliberate break: `resume` 90 px → test układu czerwony; przywrócone; meta-check — b146a0f (obserwowany czerwony: resume height 90 < 96; meta-check: PageButton rysuje z tej samej stałej, przejścia scen dowodzi e2e fazy 11)
+- [x] 7.3 Pełna bramka lokalna zielona — b146a0f
 
 #### Manual
 
