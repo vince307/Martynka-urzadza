@@ -49,7 +49,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | done |
 | S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | done |
 | S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | done |
-| S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | planning |
+| S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | done |
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | proposed |
 | S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | proposed |
 | S-07  | adaptive-curriculum         | M3   | gra dobiera zadania wg wag i opanowania, odblokowuje kroki, łagodzi trudność      | S-05                 | FR-013, FR-014                  | proposed |
@@ -183,7 +183,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **Decisions:** 2026-10-12 (maintainer): w E1 odpowiedzi liczbowe przez 3–4 kafelki zgodnie z ZADANIA §4, nie przez klawiaturkę; S-04 zmienia `answerMode` umiejętności E1 i dobiera dystraktory. E2e rundy (ryzyko #11 planu testów) wymaga haka testowego tylko do odczytu w osobnym buildzie e2e (`context/foundation/test-plan.md`, etap 5).
 - **Risk:** pierwsza rzecz, w którą córka zagra; placeholdery (kolorowe kształty z podpisem) muszą być już czytelne, bo to one dają pierwszy sygnał z gracza.
-- **Status:** planning
+- **Status:** done
 
 ### S-05: Lektor i podsumowanie rundy
 
@@ -357,8 +357,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | F-03       | generator-test-harness      | M1: vitest, seedowany rng, skrypt sample                | no                    | Po F-01; może iść równolegle z S-01 |
 | S-02       | generators-e3-e4            | M1: generatory grupy 1 dla E3–E4                        | no                    | Po F-03 i S-01 |
 | S-03       | generators-remaining-stages | M1: generatory dla E1–E2 i E5–E6                        | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-generators-remaining-stages/`); PR otwarty, merge czeka na „merguj” |
-| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | yes                   | S-03 done (po merge'u PR S-03). Follow-upy `Trigger: S-04`: E1 przechodzi na 3–4 kafelki (decyzja maintainera 2026-10-12, wiersz [human] 10.7), hak testowy e2e dla rundy (plan testów, etap 5), pierwsza podpowiedź MISSING zdradza wynik (F14) |
-| S-05       | narrator-round-summary      | M2: lektor i podsumowanie rundy                         | no                    | Po S-04 |
+| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-task-round-stars/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08 |
+| S-05       | narrator-round-summary      | M2: lektor i podsumowanie rundy                         | yes                   | S-04 done. Follow-upy `Trigger: S-05` w `context/archive/2026-10-12-task-round-stars/follow-ups/review-fixes.md`: przełącznik zadania/pokój (`roundView.switchVisible`, FR-011; S-05 lub S-09), e2e `counter` nie sprawdza rysowanej liczby (`StarCounter.value`), `pl.title` na ekranach Welcome/podsumowania, kropki kroków rozwiązania (`roundView`, `SolutionSteps`) |
 | S-06       | first-launch-placement      | M3: wiek, etap, bramka rodzica, rozgrzewka              | no                    | ∥ S-07 |
 | S-07       | adaptive-curriculum         | M3: wagi, opanowanie, odblokowanie kroków               | no                    | ∥ S-06 |
 | S-08       | parent-settings-progress    | M3: ustawienia rodzica i podgląd postępów               | no                    | Po S-06, S-07 |
@@ -409,3 +409,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-03: (foundation) vitest działa na `core/`, generatory dostają seedowany rng, a skrypt próbkujący wypisuje po 3 zadania z każdego kroku etapu i raportuje naruszenia (zakres, ujemne, odmiana)** — Archived 2026-10-12 → `context/archive/2026-10-12-generator-test-harness/`. Lesson: —.
 - **S-02: autor wypisuje z każdego kroku etapów E3 i E4 oryginalne zadania wszystkich typów grupy 1 (ZADANIA.md, sekcja 7) z poprawną odpowiedzią, rozpraszaczami, podpowiedzią krok po kroku i poprawną odmianą liczebników; testy 1000 losowań przechodzą** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-e3-e4/`. Lesson: przegląd treści przez „nauczyciela” wyłapał biernik i podpowiedź IX, których walidator nie widzi; każdy nowy rzeczownik i przypadek musi trafić do danych z testem.
 - **S-03: autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na tych samych generatorach z danymi etapu; testy mechaniczne (zakres, ujemne, rozpraszacze) przechodzą dla wszystkich sześciu etapów; dopracowanie treści tych etapów pozostaje na później (PRD Non-Goals)** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-remaining-stages/`. Lesson: —.
+- **S-04: dziecko rozwiązuje rundę zadań dotykiem (kafelki lub klawiaturka) z kropkami postępu, dostaje gwiazdkę za każde poprawne zadanie (także w drugiej próbie) i bonus za rundę bez błędu; po błędzie widzi potrząśnięcie i podpowiedź, po drugiej pomyłce rozwiązanie krok po kroku i przepisuje wynik; licznik gwiazdek jest zawsze widoczny, przełącznik ukryty w trakcie zadania.** — Archived 2026-10-12 → `context/archive/2026-10-12-task-round-stars/`. Lesson: —.
