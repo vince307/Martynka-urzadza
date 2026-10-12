@@ -1,26 +1,30 @@
 # Handoff — `task-round-stars` (slice S-04)
 
-Written by the `/10x-research` step of autonomous run 2026-10-12-s04-s08. `research.md` answers the seven research
-questions with source anchors; no plan or product code yet. The next agent must not adopt a generic "mask the answer"
-hint rule: it was measured unsafe (ROUNDING, COMPLEMENT, DIV, 1-line ADD_SUB/MULT), see `research.md` § 2.
+Written by the `/10x-plan` step of autonomous run 2026-10-12-s04-s08. `plan.md` (11 phases, 55 Progress rows) and
+`plan-brief.md` exist; no product code yet. The next agent must not let the e2e hook build replace the production
+build that seed #8 tests: the plan keeps the app `webServer` entry byte-identical (4398) and adds a second entry
+(`dist-e2e/`, port 4397) plus a `chromium-hook` project (plan § Implementation Approach, Phase 9).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
-| Commits on branch | 2 (`docs(task-round-stars): change identity (autonomous run)`, `docs(task-round-stars): research`) |
+| Commits on branch | 3 after this step (`docs(task-round-stars): change identity (autonomous run)`, `docs(task-round-stars): research`, `docs(task-round-stars): plan`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below staged) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 55 (`grep -c '^- \[ \]' plan.md`) |
+| Roadmap | S-04 `planning` (at-a-glance row and item body) |
+| Working tree | clean after the commit (only the five files below staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/task-round-stars/research.md` | Research: round state machine and star rules from the PRD, hint-leak table for all 21 generators, E1 tiles simulation and `'select'` handling, Phaser 4 scene/widget split, font/precache finding, e2e hook build (measured dead-code removal), test-plan risks, design binding and kit copy, open choices for the plan |
-| `context/changes/task-round-stars/change.md` | Frontmatter only: `status` new → preparing |
+| `context/changes/task-round-stars/plan.md` | Plan: 11 phases with `Driver:` lines, Success Criteria, `## Autonomous decisions` (13), `## Progress` |
+| `context/changes/task-round-stars/plan-brief.md` | Two-page brief: decisions table, phases at a glance |
+| `context/changes/task-round-stars/change.md` | Frontmatter `status: preparing → planned` |
+| `context/foundation/roadmap.md` | S-04 status `proposed → planning` (table + body) |
 | `context/changes/task-round-stars/handoff.md` | This file |
 
 ## 3. Verification
@@ -28,33 +32,34 @@ hint rule: it was measured unsafe (ROUNDING, COMPLEMENT, DIV, 1-line ADD_SUB/MUL
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/task-round-stars` |
-| Throwaway hint audit (`node --import tsx`, scratchpad, 50 seeds × every skill E1–E6 = 4 850 tasks) | `hint[0]` leaks: MISSING/COMPLEMENT/DIV/COMPARE_DIFF 100%, ADD_SUB 53% and MULT 49% (exactly their 1-line hints), HALF 100%; BONDS/CHAIN/CHOOSE_OP/COMPARE_EXPR/MISSING_OP/FACT_FAMILY/SEQUENCE/ROUNDING 0% real |
-| Throwaway `numberChoices` simulation (10 E1 keypad skills × 1000 × count 3 and 4) | 0 throws; answer position ~uniform; BONDS with `boundOf` gives impossible tiles (needs drawn total) |
-| Throwaway Vite 6 + terser build, `define: { __E2E_HOOK__ }` from `process.env` | hook marker: 0 hits without flag, 1 hit with flag |
-| Read of `node_modules/playwright/lib/runner/index.js` (webServer `launchProcess`) | `env` = `{...DEFAULT_ENVIRONMENT_VARIABLES, ...process.env, ...options.env}` |
+| `metadata-guard.mjs inspect` / `mark-planned` | change.md hash matched; `{"changed":true}` → `status: planned` |
+| Plan structure (`grep -c '^## Phase'`, `grep -c '^Driver:'`, `grep -c '^- \[ \]'`) | 11 / 11 / 55; Success Criteria ↔ Progress rows checked one to one per phase |
+| `gh run view 38294537061 --log` (CI job `check`, job id 114962348864) | step `Run npm run build` shows `> vite build --config vite/config.prod.mjs` and no further output (prod `logLevel: 'warning'`) — basis for row 9.8 |
 | lint / typecheck / unit / build / e2e | not run: docs-only step (no code touched); baseline on main `58244a5` per contract (lint OK, typecheck OK, unit 441 passed, build OK, e2e 1 passed) — inherited, unverified |
 
 No deliberate break: nothing testable was written in this step.
 
 ## 4. Next command
 
-`/10x-plan task-round-stars`
+`/10x-plan-review task-round-stars`
 
 ## 5. Open
 
-- Choices for the plan (recommendation in `research.md` § Open Questions): "Dalej" vs auto-advance (Dalej); ROUNDING exempt from the hint rule (yes, by type list); font TTF + `ttf` in `vite/config.shared.mjs` `globPatterns` now (yes); 3 vs 4 E1 tiles (4, from `balance.ts`); `'select'` excluded until S-13 (yes); where the hook-absence grep runs (CI, deploy build, `scripts/check-deploy.ts` `main`).
-- E2E hook: `env: { E2E_HOOK: '1' }` on the app `webServer` entry (allowed addition), `__E2E_HOOK__` in `sharedConfig.define`; seed #8 then runs on the hook build — note it in the plan.
-- DESIGN-GAP candidates for `docs/design-gaps.md` (created by the implementing step): kit "Podpowiedź" before an error, "Pokaż kroki" after the first error, another normal try after the steps instead of a retype without a star, "⌂ Do pokoju" in the HUD during a task (FR-011), round end before S-05, retype state copy, `'select'` mode.
-- Follow-ups to write in this slice's `follow-ups/review-fixes.md`: hint content class c/b (COMPLEMENT, HALF, NUMBER_WORDS, ROMAN to-Roman, CALENDAR quarter, COMPARE_NUM equal, 1-line ADD_SUB/MULT, WORD, COMPARE_DIFF, DIV, EVEN_ODD single) `Trigger: S-17`; `'select'` UI `Trigger: S-13`; `context/foundation/test-plan.md` §3 phase 5 row, tools table and §6.6 stale `Trigger: /10x-test-plan refresh`; #9 rotate overlay has no spec.
-- F14 in scope: `src/core/tasks/generators/missing.ts` `generateMissing` (two lines for a hidden operand) + teacher read.
-- Manual (maintainer, iPad): touch reaction < 100 ms.
+- Drivers: 1–4 `tdd`, 5–10 `impl` (10 = seam sweep, profile § 2/§ 3 + env comments), 11 `e2e` (risk #11).
+- Gate commands unchanged in this slice; Phase 9 adds a guard inside `npm run build` (prints `e2e hook: absent (N chunks checked)`) and a second Playwright `webServer` on port 4397 (`E2E_HOOK_PORT`), `dist-e2e/` in `.gitignore` and ESLint ignores. Phase 10 writes the port into `context/foundation/autonomous-run.md` § 3.
+- Human checklist (manual Progress rows): 8.5 iPad touch < 100 ms; 10.5 „Dalej” vs auto-advance; 10.6 only „Spróbuj jeszcze raz” when `hint[0]` leaks (FR-008); 10.7 `'select'` excluded until S-13; 10.8 task/room switch not drawn (FR-011).
+- `[reviewer]` teacher reads: 1.5 (E1 tiles), 2.5 (MISSING / F14), 5.5 (`pl.round` strings); 9.8 is `(CI at ship)`.
+- `[visual]` rows: 5.6, 6.4, 7.4, 8.4 — states task-tiles, task-keypad, hint, second try, solution steps, retype, correct, round end with bonus at 1440×900 and 1024×768, plus 420×760 rotate overlay.
+- DESIGN-GAPs and follow-ups are written by Phase 10 (`docs/design-gaps.md`, `follow-ups/review-fixes.md`); list in plan Phase 10 § 2.
 - No `lessons.md` in `context/foundation/`.
 
 ## 6. Autonomous decisions
 
-1. **Scope taken from `change.md` § Open questions + step prompt; no AskUserQuestion.** Rejected: asking for scope. Why: contract rule 1. Would change: a maintainer question list on disk.
-2. **Hint policy: keep `change.md` decision 3 (≥ 2 lines and line 0 not ending in the answer token), refined with a ROUNDING exemption; no generic mask.** Rejected: trailing/token mask for all types (measured unsafe or useless). Why: per-type masks are content work for S-17. Would change: the plan choosing per-type masks for class b types now.
-3. **E2E hook via an `env` key on the app `webServer` entry, not a second server/port or `--mode e2e`.** Rejected: second entry + `dist-e2e/` (contract allows one extra port; doubles build), changing the app command. Why: ownership rules in `.claude/skills/10x-e2e-setup/references/playwright-setup-templates.md` allow an `env` key; dead-code removal measured. Would change: the maintainer requiring the seed to run on the exact production bundle (then a second build/serve step is needed and the contract port rule must be revisited).
-4. **`'select'` skills excluded from S-04 draws, follow-up to S-13.** Rejected: building multi-select now. Why: roadmap § S-13 introduces select; no kit view; no step left empty. Would change: the plan finding US-01 needs every unlocked skill drawable now.
-5. **Recommend kit "Dalej" after a correct answer.** Rejected: auto-advance timer. Why: kit `correct.png` shows it; star flight still non-blocking. Would change: the plan reading plan §6 "następne zadanie" as automatic.
-6. **Clipboard copy skipped** (unattended run); command in §4.
+1. **E2E hook in a separate build (`dist-e2e/`, port 4397, project `chromium-hook`); seed #8 stays on the production build at 4398.** Rejected: research's `env: { E2E_HOOK: '1' }` on the app entry (seed would test the hook build — orchestrator constraint), `--mode e2e` (changes the app command), port 4399 (visual port; `reuseExistingServer` could hit a dev server). Why: keeps #8 on the shipped bundle and the app entry untouched. Would change: maintainer accepting one build, or 4397 being taken (then `E2E_HOOK_PORT`).
+2. **Hook-absence proof = Vite plugin guard inside `npm run build` (fails on marker in prod, fails on missing marker in the hook build).** Rejected: separate grep step in CI/deploy/gate (command changes, easy to skip), live assertion in `scripts/check-deploy.ts` (follow-up). Why: runs in the local gate, CI `check` and Deploy `build` with no command change. Would change: a deploy that builds with another command.
+3. **„Dalej” after a correct answer.** Rejected: auto-advance. Why: kit `correct.png`; no timers. Would change: maintainer (row 10.5).
+4. **ROUNDING exempt from the first-hint rule by type list.** Rejected: accepting false blocks. Why: line 0 is the interval, a good hint. Would change: S-17 rewriting ROUNDING hints.
+5. **Font: TTF now in `public/fonts/` + `ttf` in precache globs.** Rejected: `woff2` conversion, deferral to S-16. Why: NFR local Polish font offline in the first playable scene. Would change: a `woff2` in the art pack.
+6. **4 E1 tiles from `balance.tiles.count`.** Rejected: 3. Why: kit shows 4; measured 0 throws. Would change: play observation.
+7. **`'select'`/`'drag'` excluded until S-13; switch not drawn; round end = „+2 ★” bar + „Dalej” to the next round; default stage E3.** Why: research + change.md decisions; no kit views. Would change: rows 10.7/10.8, S-05/S-06.
+8. **Decided without AskUserQuestion** (contract rule 1): complexity HIGH, 0 questions — research and change.md settled every product choice; phase-structure approval taken as recommended. Clipboard copy skipped (unattended run).

@@ -49,7 +49,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | done |
 | S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | done |
 | S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | done |
-| S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | proposed |
+| S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | planning |
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | proposed |
 | S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | proposed |
 | S-07  | adaptive-curriculum         | M3   | gra dobiera zadania wg wag i opanowania, odblokowuje kroki, łagodzi trudność      | S-05                 | FR-013, FR-014                  | proposed |
@@ -183,7 +183,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** —
 - **Decisions:** 2026-10-12 (maintainer): w E1 odpowiedzi liczbowe przez 3–4 kafelki zgodnie z ZADANIA §4, nie przez klawiaturkę; S-04 zmienia `answerMode` umiejętności E1 i dobiera dystraktory. E2e rundy (ryzyko #11 planu testów) wymaga haka testowego tylko do odczytu w osobnym buildzie e2e (`context/foundation/test-plan.md`, etap 5).
 - **Risk:** pierwsza rzecz, w którą córka zagra; placeholdery (kolorowe kształty z podpisem) muszą być już czytelne, bo to one dają pierwszy sygnał z gracza.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-05: Lektor i podsumowanie rundy
 

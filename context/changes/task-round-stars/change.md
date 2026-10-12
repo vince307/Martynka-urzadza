@@ -1,7 +1,7 @@
 ---
 change_id: task-round-stars
 title: Runda zadań dotykiem z gwiazdkami, podpowiedzią i drugą próbą
-status: preparing
+status: planned
 created: 2026-10-12
 updated: 2026-10-12
 archived_at: null
