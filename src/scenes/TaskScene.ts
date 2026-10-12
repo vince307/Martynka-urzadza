@@ -7,7 +7,7 @@ import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
-import { summaryView } from '../core/round/summary';
+import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
@@ -49,6 +49,9 @@ export interface TaskSnapshot {
     readonly starsTotal: number;
     readonly counter: number;
     readonly finished: boolean;
+    readonly summary: SummaryView | null;
+    readonly narration: string | null;
+    readonly autoRead: boolean;
 }
 
 export interface TaskTargets {
@@ -56,6 +59,8 @@ export interface TaskTargets {
     readonly keys: readonly (Point & { key: string })[];
     readonly next: Point | null;
     readonly step: Point | null;
+    readonly nextRound: Point | null;
+    readonly toRoom: Point | null;
 }
 
 /**
@@ -148,7 +153,7 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
-        const summary = summaryView(this.state, { starsTotal: this.sessionStars + this.state.starsEarned, nextRoomTaskCost: null });
+        const summary = this.currentSummary();
         if (summary) {
             // The round is over: the notebook stays, the task layer gives way to the summary page.
             this.registry.set(REGISTRY_KEYS.narration, null);
@@ -334,10 +339,16 @@ export class TaskScene extends Scene {
         });
     }
 
+    private currentSummary(): SummaryView | null {
+        return summaryView(this.state, { starsTotal: this.sessionStars + this.state.starsEarned, nextRoomTaskCost: null });
+    }
+
     /** Read-only copy of the round for the e2e hook; nothing here can change the scene. */
     snapshot(): TaskSnapshot {
         const view = roundView(this.state, pl.round.resultLine);
         const task = this.state.tasks[this.state.index];
+        const current = this.currentSummary();
+        const frozenSummary = current ? Object.freeze({ ...current, stars: Object.freeze([...current.stars]) as unknown as boolean[] }) : null;
         return Object.freeze({
             index: this.state.index,
             phase: this.state.phase,
@@ -351,6 +362,9 @@ export class TaskScene extends Scene {
             starsTotal: this.sessionStars + this.state.starsEarned,
             counter: Number(this.registry.get(REGISTRY_KEYS.stars) ?? 0),
             finished: this.state.finished,
+            summary: frozenSummary,
+            narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
+            autoRead: this.autoRead,
         });
     }
 
@@ -361,6 +375,8 @@ export class TaskScene extends Scene {
             keys: this.keypad.targets(),
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
+            nextRound: this.summary.targets().nextRound,
+            toRoom: this.summary.targets().toRoom,
         });
     }
 

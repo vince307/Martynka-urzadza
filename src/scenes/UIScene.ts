@@ -50,4 +50,14 @@ export class UIScene extends Scene {
         });
         this.input.enabled = true;
     }
+
+    /** Shown counter text, for the e2e hook (what is drawn, not the registry value). */
+    counterText(): string {
+        return this.counter.value();
+    }
+
+    /** Centre of the speaker, or null while it is hidden, for the e2e hook. */
+    speakerTarget(): { x: number; y: number } | null {
+        return this.speaker.target();
+    }
 }
