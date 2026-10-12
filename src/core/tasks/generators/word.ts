@@ -12,19 +12,20 @@ export interface WordParams {
 
 const KINDS: readonly WordKind[] = ['sum', 'left', 'start', 'twoSteps', 'moreBy', 'age', 'groups', 'share', 'each'];
 const MAX_ATTEMPTS = 1000;
+const isWordKind = (value: unknown): value is WordKind => KINDS.includes(value as WordKind);
 
 export const parseWordParams = (params: Record<string, unknown>): WordParams => {
     const { max, kinds, maxFactor = 10 } = params;
     if (!Number.isInteger(max) || (max as number) < 5) {
         throw new TypeError(`WORD params.max must be an integer >= 5, got ${String(max)}`);
     }
-    if (!Array.isArray(kinds) || kinds.length === 0 || !kinds.every((k) => KINDS.includes(k))) {
+    if (!Array.isArray(kinds) || kinds.length === 0 || !kinds.every(isWordKind)) {
         throw new TypeError(`WORD params.kinds must be a non-empty list of ${KINDS.join(', ')}, got ${JSON.stringify(kinds)}`);
     }
     if (!Number.isInteger(maxFactor) || (maxFactor as number) < 2) {
         throw new TypeError(`WORD params.maxFactor must be an integer >= 2, got ${String(maxFactor)}`);
     }
-    for (const kind of kinds as WordKind[]) {
+    for (const kind of kinds) {
         if (!templates.some((t) => t.kind === kind)) {
             throw new TypeError(`WORD has no template of kind ${kind}`);
         }
