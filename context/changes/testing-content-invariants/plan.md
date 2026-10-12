@@ -143,12 +143,12 @@ Brak.
 
 #### Automated
 
-- [ ] 1.1 test, lint, typecheck zielone; sample E3/E4 kod 0
-- [ ] 1.2 `DU+DU`/`ten`/30 odrzucone przy parsowaniu
+- [x] 1.1 test, lint, typecheck zielone; sample E3/E4 kod 0 — b3de506
+- [x] 1.2 `DU+DU`/`ten`/30 odrzucone przy parsowaniu — b3de506
 
 #### Manual
 
-- [ ] 1.3 Odczyt `sample` E3.10: iloraz 1 rzadki
+- [x] 1.3 Odczyt `sample` E3.10: iloraz 1 rzadki — b3de506
 
 ### Phase 2: Generyczny test własności
 

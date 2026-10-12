@@ -30,16 +30,26 @@ export const parseDivParams = (params: Record<string, unknown>): DivParams => {
     return { maxDividend: maxDividend as number, maxQuotient: maxQuotient as number, divisors };
 };
 
-/** Quotient 1 (n : n) about one draw in ten; otherwise 2..maxQuotient. */
-const ONE_SHARE = 0.1;
-const drawQuotient = (p: DivParams, rng: Rng): number =>
-    p.maxQuotient < 2 || rng.chance(ONE_SHARE) ? 1 : rng.int(2, p.maxQuotient);
+/**
+ * Quotient for a divisor: 1 (n : n) about one draw in ten, otherwise uniform
+ * in 2..min(maxQuotient, maxDividend / d). Drawing within the feasible range
+ * keeps the share of n : n at ONE_SHARE instead of inflating it through
+ * rejected draws.
+ */
+const ONE_SHARE = 0.08;
+const drawQuotient = (p: DivParams, d: number, rng: Rng): number => {
+    const top = Math.min(p.maxQuotient, Math.floor(p.maxDividend / d));
+    return top < 2 || rng.chance(ONE_SHARE) ? 1 : rng.int(2, top);
+};
 
 export const generateDiv: Generator = (skill, rng): Task => {
     const p = parseDivParams(skill.params);
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
         const d = p.divisors ? rng.pick(p.divisors) : rng.int(2, 10);
-        const q = drawQuotient(p, rng);
+        if (d > p.maxDividend) {
+            continue;
+        }
+        const q = drawQuotient(p, d, rng);
         if (d * q <= p.maxDividend) {
             return {
                 skillId: skill.id,
