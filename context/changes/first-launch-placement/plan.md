@@ -723,11 +723,11 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 4.1 `tests/layout.test.ts` obejmuje `WELCOME_TOUCH_TARGETS`; unit `<baseline gałęzi> + N`
+- [x] 4.1 `tests/layout.test.ts` obejmuje `WELCOME_TOUCH_TARGETS`; unit `<baseline gałęzi> + N` — a51338d (761 → 764, +3)
 - [ ] 4.2 Deliberate break: przycisk wieku 90 px → test układu czerwony; `BootScene` zawsze do `task` → e2e czerwony; przywrócone; meta-check
 - [ ] 4.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`, `grep -rl e2eMonth dist/` pusty
-- [ ] 4.4 `grep -rn defaultStage src/` pusty
-- [ ] 4.5 Pełna bramka lokalna zielona
+- [x] 4.4 `grep -rn defaultStage src/` pusty — a51338d
+- [x] 4.5 Pełna bramka lokalna zielona — a51338d (e2e: orchestrator gate)
 
 #### Manual
 
