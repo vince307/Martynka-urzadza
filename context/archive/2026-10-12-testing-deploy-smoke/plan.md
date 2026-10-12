@@ -183,14 +183,14 @@ Brak.
 
 #### Manual
 
-- [ ] 2.3 CI na PR zielone
+- [x] 2.3 CI na PR zielone — a3c45c1
 
 ### Phase 3: Runbook, cookbook, weryfikacja po merge
 
 #### Automated
 
-- [ ] 3.1 `check:deploy` w README i CLAUDE.md; parse.ts w test-plan; AGENTS ≤ 400
+- [x] 3.1 `check:deploy` w README i CLAUDE.md; parse.ts w test-plan; AGENTS ≤ 400 — f5a7328
 
 #### Manual
 
-- [ ] 3.2 Job deploy po merge zielony ze smoke; `check:deploy` z sesji kod 0
+- [x] 3.2 Job deploy po merge zielony ze smoke; `check:deploy` z sesji kod 0 — 0fa8dfb
