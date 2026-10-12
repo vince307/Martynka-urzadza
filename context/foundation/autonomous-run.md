@@ -38,7 +38,7 @@ The same steps as `.github/workflows/ci.yml` (the required PR check).
 | build | `npm run build` | 5 s | pass/fail |
 | database tests | none | | none |
 | smoke (against the gate server) | none (the content smoke `sample` E1–E6 needs no server and runs in the unit gate) | | none |
-| e2e (only when § 11 says E2E=on) | none | | none |
+| e2e (only when § 11 says E2E=on) | `npx playwright test` (Playwright builds and serves the app itself on the gate port 4398 — `webServer` in `playwright.config.ts`; never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
 
 After a migration: none. Migration on data (`POST_MIGRATION_ON_DATA_CMD`): none (no database; the save format and its
 migrations arrive with roadmap S-11 and are tested as unit tests, test-plan.md rollout phase 4).
@@ -126,6 +126,8 @@ Note: the service worker is registered only in production builds; checks of `sw.
 - npm cache: `npm_config_cache="$TMPDIR/npm-cache"` (the sandbox cannot write `~/.npm/_cacache`).
 - `.claude/hooks/*` is not writable from sandboxed Bash (Edit tool works); never edit hooks during a run.
 - The sandbox `grep` (ugrep) rejects backreferences.
+- Headless Chromium (Playwright) cannot start inside the sandbox on macOS (`MachPortRendezvousServer … Permission denied`): `npx playwright *` must run with the sandbox DISABLED. The maintainer adds `npx playwright *` to `excludedCommands`; until then the e2e gate needs a permission prompt, which blocks a background agent.
+- `npx playwright install chromium` writes `~/Library/Caches/ms-playwright` (outside the sandbox); already done once on this machine.
 - Claude in Chrome ignores window resize: portrait checks go through a same-origin iframe of the given size.
 - Hooks: a per-edit ESLint + related-tests hook and an end-of-turn gate (lint, tsc, vitest) send the agent back once.
 
@@ -154,13 +156,17 @@ The game renders into one Phaser canvas: assert visuals by screenshot, text chec
 
 | | |
 |---|---|
-| E2E | `off` — no `test-stack.md`; `context/foundation/test-plan.md` § 7 excludes browser e2e in CI |
+| E2E | `on` — local gate only (`context/foundation/test-stack.md` § E2E, seed `tests/e2e/seed.spec.ts`); `context/foundation/test-plan.md` § 7 still excludes browser e2e in CI (refresh 2026-10-12) |
 | Hooks | `.claude/hooks/lint-edited-file.sh` (PostToolUse Write/Edit, ESLint `--max-warnings 0`), `.claude/hooks/related-tests.sh` (`vitest related`), `.claude/hooks/end-of-turn.sh` (Stop: ESLint on changed files, `tsc`, `vitest run`) |
 | Test plan | `context/foundation/test-plan.md` present (rollout phases 1–3 complete, phase 4 after S-11) |
 | Closing audit default (`RUN_AUDIT`) | `static` |
 | On failure (`RUN_ON_FAILURE`) | `park` — park: WIP pushed, PR left open, independent slices continue |
 
 ## 12. Proven on
+
+`2026-10-12` (E2E on) — on branch `feat/e2e-local-gate` at `d03a2ae` + the e2e setup: `validate-rule-files.sh` PASS
+(89 paths), `baseline.sh` line: `lint OK; typecheck OK; unit OK Tests  441 passed; build OK; e2e OK 1 passed`. Deliberate
+break: JS bundles removed from the precache globs → the seed fails (`data-build` empty after the offline reload); restored.
 
 `2026-10-12` — on branch `docs/autonomous-run-profile` at `104e6a9` (the profile's own PR): `validate-rule-files.sh` PASS
 (77 paths, 2 planned paths allow-listed), `tree-clean.sh` CLEAN, `baseline.sh` line:
