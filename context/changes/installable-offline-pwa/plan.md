@@ -297,11 +297,11 @@ Zmiana `assets/` → `_app/`: stare wydania na VPS nadal mają `assets/`, ale Ca
 
 - [x] 3.1 Caddyfile `/_app/*` bez `/assets/`; workflow sprawdza manifest — e2bd7cc
 - [x] 3.2 deploy.yml parsuje się jako YAML; AGENTS.md ≤ 400 słów — e2bd7cc
-- [ ] 3.3 Nagłówki na martynka-urzadza.pl: manifest i sw.js `no-cache`, `_app` `immutable`, `rel="manifest"` w HTML
+- [x] 3.3 Nagłówki na martynka-urzadza.pl: manifest i sw.js `no-cache`, `_app` `immutable`, `rel="manifest"` w HTML — ab029e4
 
 #### Manual
 
-- [ ] 3.4 Workflow zielony; bootstrap `[ok]` z nowym Caddyfile; CoiledSpring działa
+- [x] 3.4 Workflow zielony; bootstrap `[ok]` z nowym Caddyfile; CoiledSpring działa — ab029e4
 - [ ] 3.5 iPad: instrukcja, instalacja, start z ikony, offline, „Obróć tablet”
 - [ ] 3.6 Android: instrukcja lub „Zainstaluj”, instalacja, start z ikony, offline, poziom
-- [ ] 3.7 Komputer: brak instrukcji; SHA builda zgodny z origin/main
+- [x] 3.7 Komputer: brak instrukcji; SHA builda zgodny z origin/main — ab029e4
