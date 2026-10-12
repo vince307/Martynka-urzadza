@@ -27,6 +27,17 @@ export const pl = {
         and: 'i',
         willHave: ['będzie miał', 'będzie miała'],
     },
+    // Words the narrator says for the glyphs of a task (S-05); core/narration gets them as an argument.
+    speech: {
+        plus: 'plus',
+        minus: 'minus',
+        times: 'razy',
+        divide: 'podzielić przez',
+        equals: 'równa się',
+        blank: 'okienko',
+        less: 'mniejsze niż',
+        greater: 'większe niż',
+    },
     round: {
         calculate: 'Oblicz',
         correct: 'Brawo!',
