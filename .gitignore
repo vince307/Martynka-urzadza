@@ -48,6 +48,10 @@ playwright/.cache/
 # archiwum paczki graficznej (77 MB) — dubluje rozpakowany katalog designs/martynka-maths-A-v1/
 designs/*.zip
 
+# nowe paczki i poprawki designera — lokalnie, nie brudzą drzewa (decyzja 2026-10-12);
+# już śledzony designs/martynka-maths-A-v1/ zostaje w repo (gitignore nie dotyczy śledzonych plików)
+designs/
+
 # notatki z analizy podręczników — tylko lokalnie, nie w publicznym repo (decyzja 2026-10-10)
 docs/zrodla/
 
