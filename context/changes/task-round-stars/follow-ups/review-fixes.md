@@ -64,3 +64,5 @@ Each item has a `Trigger:` line; later slices and reviews grep for it.
   Trigger: iPad check (row 8.5)
 - In keypad mode the flying star starts 116 px above OK, over the "9" key, for its first frames (`TaskScene.flyStar`, `ANIMATION.starStartLift`).
   Trigger: next change to `flyStar`
+- The spacing between the drawn blank box and the neighbouring `−` / `=` is tight (`tablet-14b/c/d`; `src/core/round/promptBlank.ts` layout, `TaskScene.drawExpression`); widen the gap around the box.
+  Trigger: S-17
