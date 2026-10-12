@@ -820,7 +820,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1 --count 6` dla 10 zmienionych umiejętności (kafelki)
+- [x] 1.5 [reviewer] Odczyt nauczyciela `sample -- E1 --count 6` dla 10 zmienionych umiejętności (kafelki) — impl-review (reviews/impl-review.md)
 
 ### Phase 2: Pierwsza podpowiedź bez wyniku i F14
 
@@ -833,7 +833,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela kroków z MISSING (`sample -- E1/E3/E4 --count 6`)
+- [x] 2.5 [reviewer] Odczyt nauczyciela kroków z MISSING (`sample -- E1/E3/E4 --count 6`) — impl-review
 
 ### Phase 3: Automat rundy i gwiazdki
 
@@ -862,7 +862,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Nowe teksty `pl.round` czytane jak przez nauczyciela
+- [x] 5.5 [reviewer] Nowe teksty `pl.round` czytane jak przez nauczyciela — impl-review
 - [ ] 5.6 [visual] Zrzut startu rundy (czcionka, kropki) przy 1440×900 i 1024×768
 
 ### Phase 6: Kafelki i klawiaturka
@@ -888,7 +888,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 #### Manual
 
 - [ ] 7.4 [visual] Zrzuty hint (z linią i bez), second try, solution steps (pierwszy i ostatni krok), retype, correct przy 1440×900 i 1024×768
-- [ ] 7.5 [reviewer] Brak czerwonego krzyżyka, licznika czasu i ujemnej zmiany gwiazdek
+- [x] 7.5 [reviewer] Brak czerwonego krzyżyka, licznika czasu i ujemnej zmiany gwiazdek — impl-review
 
 ### Phase 8: Nakładka UI z licznikiem gwiazdek, lot gwiazdki i koniec rundy
 
@@ -929,7 +929,7 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Manual
 
-- [ ] 10.4 [reviewer] Seam sweep: duplikaty, nieaktualne komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`
+- [x] 10.4 [reviewer] Seam sweep: duplikaty, nieaktualne komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md` — 0c0baf4
 - [ ] 10.5 [human] Decyzja: „Dalej” zamiast automatycznego przejścia (plan §6)
 - [ ] 10.6 [human] Decyzja: samo „Spróbuj jeszcze raz”, gdy pierwsza linia zdradza wynik (FR-008)
 - [ ] 10.7 [human] Decyzja: `'select'` wyłączone z losowania do S-13 (US-01)

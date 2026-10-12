@@ -1,48 +1,58 @@
 # Handoff — `task-round-stars` (slice S-04)
 
-Written by `/10x-e2e task-round-stars phase 11` of autonomous run 2026-10-12-s04-s08. All 11 phases are committed (p11 `2132aef`). Last phase: `change.md` status is now `implemented`.
+Written by `/10x-impl-review task-round-stars` (full plan, phases 1–11) of autonomous run 2026-10-12-s04-s08. Verdict APPROVED, `MERGE: CLEAR`; review fixes are in `0c0baf4`. The next step must take its screenshots after `0c0baf4`: the bar, tiles and star start moved (V2, V4).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/task-round-stars`, cut from `main` at `58244a5` |
-| Commits on branch | 5 docs + p1..p11 (p11 `2132aef`) + handoff commits |
+| Commits on branch | docs + p1..p11 + `0c0baf4` (fix) + this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | 15, all `[reviewer]`/`[visual]`/`[human]` (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 10 (`[visual]` 5.6, 6.4, 7.4, 8.4; `[human]` 8.5, 10.5–10.8; `[reviewer] (CI at ship)` 9.8) |
+| Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/task-round.spec.ts` | 3 tests titled `#11 ...` (clean round +7, wrong tap then right keeps the star and drops the bonus, two wrong taps -> solution steps -> retype pays 0); project `chromium-hook`, port 4397; taps via `page.touchscreen.tap` mapped from 1920x1080 through the canvas box; serial mode + 60 s timeout |
-| `src/scenes/TaskScene.ts` | `TaskSnapshot.solutionStep` added (read-only hook field, so the spec waits for each solution step tap) |
+| `context/changes/task-round-stars/reviews/impl-review.md` | report, 0 critical / 6 warnings (all fixed) / 6 observations, ends with `MERGE: CLEAR` |
+| `src/data/layout.ts` | `TEXT_COLOR`, palette `pressed/tileBorder/field/fieldPlaceholder`, `solutionLine` 44, `tiles.top` 712, `bar.bottom` 960, `ANIMATION.starStartLift`; dead keys removed |
+| `src/ui/widgets/*.ts` | colours from `layout.ts` instead of local copies |
+| `src/scenes/TaskScene.ts` | `create` resets fields; `flyStar` starts above the tile; `toCssColor` removed |
+| `src/core/round/view.ts`, `vite/config.shared.mjs` | DESIGN-GAP row 2 comment; build-id comment corrected |
+| `tests/geometry.test.ts`, `tests/pick.test.ts`, `tests/e2eHookGuard.test.ts` | bar gap test, tile choices in `buildRound`, hook marker matches `e2eHook.ts` |
+| `AGENTS.md` | body trimmed to 400 words |
+| `plan.md`, `change.md`, `follow-ups/review-fixes.md` | rows 1.5, 2.5, 5.5, 7.5, 10.4 ticked; status; new follow-ups with `Trigger:` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npx playwright test` | 4 passed (baseline 1, +3); ports 4397/4398 empty afterwards; outside the sandbox |
-| Break 1 (rule) | `settle` pays a star for the retype -> test 3 red: `Expected: 0 / Received: 1`; unit `round.test.ts` also red (3 failed), restored |
-| Break 2 (rule) | bonus granted with a retype in the round -> test 2 red: `Expected: 0 / Received: 2` (bonusEarned); restored |
-| Break 3 (plan) | `AnswerTiles` `press` reports tile index + 1 -> test 1 red: `Expected: "done" / Received: "second"`; restored. Meta-check: `vitest` stays 588 passed under this break, so only the touch path through the scene catches it |
-| Gate | lint OK, typecheck OK, Tests 588 passed (+0), deploy and ops tests OK, `sample` E1-E6 `Naruszenia: 0`, build OK (`e2e hook: absent (2 chunks checked)`) |
-| Stability | spec ran 3 x 3 repeats green after serial mode; before it, 3 parallel software-rendered canvases timed out on taps |
+| lint / typecheck | OK / OK (before and after fixes) |
+| unit (contract command) | 588 before fixes (baseline 441, +147); 590 after `0c0baf4` (baseline 441, +149); deploy and ops tests OK; `sample` E1–E6 `Naruszenia: 0` |
+| build | OK, `e2e hook: absent (2 chunks checked)`; `__martynkaE2E` 0 hits in `dist/` |
+| `npx playwright test` | 4 passed (baseline 1, +3) before and after fixes; ports 4397/4398 empty |
+| Break A | bonus also for second-try rounds in `round.ts` `next`: `round.test.ts` 2 red, e2e test 2 red `Expected: 0 / Received: 2`; restored. Meta: unit and e2e catch it independently |
+| Breaks B–D | tiles skipped in `generateTask` → `pick.test.ts` red; hook property renamed → marker test red; `bar.bottom` 972 → gap test red `expected 4 to be >= 16`; all restored |
+| Teacher reads | `sample -- E1 --count 6`, MISSING E1/E3/E4, `pl.round`: pass (details in the report) |
 
 ## 4. Next command
 
-`/10x-impl-review task-round-stars`
+`visual gate (orchestrator), then /10x-archive task-round-stars and ship`
 
 ## 5. Open
 
-- Rows 10.4 and other `[reviewer]`, `[visual]`, `[human]` rows stay unticked; visual findings V1-V4 are in `follow-ups/review-fixes.md`.
-- Full e2e runs take about 35 s (two builds).
+- [visual] 5.6, 6.4, 7.4, 8.4: screenshots at 1440×900, 1024×768 (and 420×760 rotate overlay) after `0c0baf4`.
+- [human] 8.5 iPad touch latency; 10.5–10.8 product decisions (Dalej, "Spróbuj jeszcze raz" alone, select excluded, switch not drawn).
+- [reviewer] (CI at ship) 9.8: job `check`, step `Run npm run build`, regex `e2e hook: absent \([0-9]+ chunks checked\)`.
+- Follow-ups in `follow-ups/review-fixes.md`: V3 slashed zero (maintainer), bar text size, `wordTemplates.ts` `contexts` złoty + buy, `roundView` mode from choices, `firstHint` ROUNDING by id, e2e `counter` vs `StarCounter` `value`, `snapshot` answer copy, `hints.test.ts` skip count.
 
 ## 6. Autonomous decisions
 
-1. **Added `solutionStep` to the hook snapshot** (one read-only field) instead of sleeping or guessing: the number of solution steps varies per task. Would change: a way to read the step from the screen.
-2. **Serial mode in the spec** because parallel workers starved the frame loop; tests remain independent (fresh context each).
-3. **Two extra rule breaks** (retype pays, bonus with a mistake) besides the plan's tile break: in E3 most tasks use the keypad, so the tile break alone only proves the tile path where a tile task is drawn.
-4. Skill prompts (commit message, next phase) decided in place; stopped after phase 11 with the epilogue.
+1. **Triage without asking**: all warnings fixed in one `fix` commit (cheap, tested); observations needing model changes deferred to follow-ups. Would change: a CRITICAL found by the visual gate.
+2. **V1**: solution lines raised to the kit's 44 px; bar text kept at 36 px (kit 34). Rejected: inventing a larger size outside the kit. Would change: the visual gate or iPad check finds the bar unreadable.
+3. **V2**: tiles moved up 12 px from the kit's 724 to keep 16 px gaps both sides of the bar (kit gaps 16–32). Would change: a kit revision of the task layout.
+4. **V3**: not changed; the font has no plain zero and the kit approves the slashed one. Would change: maintainer asks for a plain 0 (needs another font).
+5. **`pl.title` kept** though unused today, as the game title for S-05 screens. Would change: S-05 not using it.
