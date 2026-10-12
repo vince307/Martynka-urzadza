@@ -869,9 +869,9 @@ Brak: bez bazy danych; gwiazdki w pamięci do S-11 (profil § 4).
 
 #### Automated
 
-- [ ] 6.1 `tests/geometry.test.ts` zielony; unit `<baseline gałęzi> + N`
-- [ ] 6.2 Deliberate break: ujemny odstęp kafelków → czerwony; przywrócone; meta-check
-- [ ] 6.3 Pełna bramka lokalna zielona
+- [x] 6.1 `tests/geometry.test.ts` zielony; unit `<baseline gałęzi> + N` — 6396fcb
+- [x] 6.2 Deliberate break: ujemny odstęp kafelków → czerwony; przywrócone; meta-check — 6396fcb
+- [x] 6.3 Pełna bramka lokalna zielona — 6396fcb
 
 #### Manual
 
