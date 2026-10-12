@@ -47,7 +47,6 @@ export interface TaskSnapshot {
     readonly starsEarned: number;
     readonly bonusEarned: number;
     readonly starsTotal: number;
-    readonly counter: number;
     readonly finished: boolean;
     readonly summary: SummaryView | null;
     readonly narration: string | null;
@@ -367,7 +366,6 @@ export class TaskScene extends Scene {
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
             starsTotal: this.sessionStars + this.state.starsEarned,
-            counter: Number(this.registry.get(REGISTRY_KEYS.stars) ?? 0),
             finished: this.state.finished,
             summary: frozenSummary,
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
