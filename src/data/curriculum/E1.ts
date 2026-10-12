@@ -1,10 +1,11 @@
 // Stage E1 (grade 1, first semester): steps from docs/ZADANIA.md, section 3.
 // Skills carry the parameters of group-1 generators (roadmap S-03); drawing
 // and art types (shapes, counting, money, measures) arrive in M6. Numeric
-// answers use the keypad; sign and choice answers use tiles.
+// answers are tiles too (maintainer decision 2026-10-12, roadmap S-04): every
+// E1 answer is a tap on 3–4 tiles, so E1 has no keypad skill.
 import type { SkillDef, StageDef } from '../../core/types';
 
-const skill = (id: string, step: number, type: string, params: SkillDef['params'], answer: SkillDef['answer'] = 'keypad'): SkillDef => ({
+const skill = (id: string, step: number, type: string, params: SkillDef['params'], answer: SkillDef['answer'] = 'tiles'): SkillDef => ({
     id,
     stage: 'E1',
     step,

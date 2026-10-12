@@ -3,8 +3,10 @@
 // Exit codes: 0 ok, 1 violations or generator errors, 2 usage.
 import { createRng, seedFromString } from '../src/core/rng';
 import { boundOf } from '../src/core/tasks/bounds';
+import { generateTask } from '../src/core/tasks/generateTask';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask, type Violation } from '../src/core/tasks/validate';
+import { balance } from '../src/data/balance';
 import { availableStages, getStage } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 
@@ -60,7 +62,7 @@ for (const step of stage!.steps) {
         for (let i = 0; i < count; i += 1) {
             try {
                 // Seed per skill and draw: adding a skill elsewhere never reshuffles this one.
-                const task = generate(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)));
+                const task = generateTask(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)), { tileCount: balance.tiles.count });
                 const max = boundOf(skill);
                 const found = validateTask(task, { max, nouns });
                 violations.push(...found);
