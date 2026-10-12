@@ -603,8 +603,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 8.1 Bramka z komendą z fazy 6 zielona; `npm test` = baseline gałęzi + testy ROUNDING, DIV, MULT; `sample -- E3/E4 --seed 2` bez zmian
-- [ ] 8.2 Celowe zepsucie remisu ROUNDING i `quotients` DIV przewraca testy; cofnięte; meta-check
+- [x] 8.1 Bramka z komendą z fazy 6 zielona; `npm test` = baseline gałęzi + testy ROUNDING, DIV, MULT; `sample -- E3/E4 --seed 2` bez zmian — 9bdb2b0
+- [x] 8.2 Celowe zepsucie remisu ROUNDING i `quotients` DIV przewraca testy; cofnięte; meta-check — 9bdb2b0
 
 ### Phase 9: Dane E5 i E6
 
