@@ -1,10 +1,10 @@
 ---
 change_id: testing-deploy-smoke
 title: Smoke wdrożenia i PWA po każdym deployu (plan testów, etap 2)
-status: implementing
+status: archived
 created: 2026-10-12
 updated: 2026-10-12
-archived_at: null
+archived_at: 2026-10-12T14:23:06Z
 ---
 
 ## Notes
