@@ -596,8 +596,8 @@ Z plan-review (`reviews/plan-review.md`); nie blokują, rozstrzyga odczyt nauczy
 
 #### Automated
 
-- [ ] 7.1 Bramka z komendą z fazy 6 zielona; `npm test` = baseline gałęzi + testy formatNumber i COMPARE_NUM
-- [ ] 7.2 Celowe zepsucie wzorca liczby i grupowania przewraca testy; cofnięte; meta-check
+- [x] 7.1 Bramka z komendą z fazy 6 zielona; `npm test` = baseline gałęzi + testy formatNumber i COMPARE_NUM — a843254
+- [x] 7.2 Celowe zepsucie wzorca liczby i grupowania przewraca testy; cofnięte; meta-check — a843254
 
 ### Phase 8: ROUNDING do setek i tysięcy, DIV z listą ilorazów, podpowiedź MULT dla pełnych dziesiątek
 
