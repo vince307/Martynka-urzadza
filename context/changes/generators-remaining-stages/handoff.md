@@ -15,7 +15,7 @@ COMPARE_EXPR, SEQUENCE, FACT_FAMILY, CHOOSE_OP) have no generator in `src/core/t
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `new` |
 | `## Progress` rows remaining | n/a — no `plan.md` yet |
-| Working tree | clean after the commit (checked with `git status --porcelain`) |
+| Working tree | clean for this step's files; `git status --porcelain` shows untracked `designs/martynka-expansion-v1/` not created by this step (maintainer's, left untouched, not staged) |
 
 ## 2. Artifacts
 
