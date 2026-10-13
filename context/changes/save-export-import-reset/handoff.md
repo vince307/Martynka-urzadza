@@ -1,78 +1,61 @@
 # Handoff — `save-export-import-reset` (slice S-12)
 
-Written by the `/10x-plan-review` step of run `2026-10-13-s12-s14`. Verdict PROCEED: the plan (7 phases: tdd, tdd, tdd,
-impl, impl, impl, e2e) was checked against the code and five warnings were fixed in `plan.md`; no product code changed.
-The next agent must not get wrong: `Autosaver.replace` refuses a second call (`Busy`) and uses ONE `writesOff()`
-predicate (`blockedBy !== null || replacing || replaced`) in `save`, `markDirty` and the `save` loop condition; on a
-failed write it re-arms the debounce when `dirty` — never `block()`.
+Written by the `/10x-tdd phase 1` step of run `2026-10-13-s12-s14`. Phase 1 is committed (`2e435cf`); rows 1.1-1.3 ticked, 1.4 left open because e2e could not start here. The next agent must not get wrong: `replace` never calls `block()`; one `writesOff()` predicate guards `save`, `markDirty` and the `save` loop.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | 4 on the branch: `ca0c645` change identity, `23d8dcc` research, `631c767` plan, and `docs(save-export-import-reset): plan review` (this step) |
+| Commits | 6 on the branch: 4 docs steps, `2e435cf` phase 1, plus this handoff/Progress docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 43 (`grep -c '^- \[ \]' plan.md`; was 42, +7.6 break p7e) |
-| Working tree | clean after the commit (five paths staged explicitly) |
+| `change.md` status | `plan_reviewed` (left; not edited by this step) |
+| `## Progress` rows remaining | 40 (`grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/save-export-import-reset/reviews/plan-review.md` | Review report: 0 critical, 5 warnings (all fixed), 3 observations; ends with `VERDICT: PROCEED` |
-| `context/changes/save-export-import-reset/plan.md` | Fixes: `replace` contract (`Busy`, `consecutiveFailures = 0`, re-arm on failure, `writesOff()`), phase-1 tests; `DIALOG_CALLBACKS` + `onClose`; export dialog takes `file: (now) => {text, fileName}` and `now` (scene never calls `Date`); phase 7 (b) builds a playable v1 file in the spec, files chosen via `filechooser`, new break p7e + Progress 7.6 (old 7.6 → 7.7); two Known risks (p7c invisible in browser, no reload after success) |
-| `context/changes/save-export-import-reset/plan-brief.md` | Phase 7 row: 5 breaks |
-| `context/changes/save-export-import-reset/change.md` | `status: plan_reviewed` |
-| `context/changes/save-export-import-reset/handoff.md` | This handoff |
+| `src/core/autosave.ts` | `Autosaver.replace`, `current`, `ReplaceResult`, `AutosaveStatus.replace`, `writesOff()` |
+| `src/core/save.ts` | `freshSession(firstRoom, stars = 0)` (imports `emptyRoomState` from `./rooms`, `initialSettings` from `./placement`) |
+| `src/main.ts` | local `freshSession` removed; calls `freshSession(FIRST_ROOM, seeded ?? 0)` |
+| `tests/autosave.test.ts` | new `describe('Autosaver.replace …')`, 10 tests |
+| `tests/save.test.ts` | new `describe('freshSession …')`, 2 tests |
+| `tests/saveHealth.test.ts` | status helper gets `replace: 'idle'` (type only) |
+| `context/changes/save-export-import-reset/plan.md` | Progress 1.1-1.3 ticked with sha |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/save-export-import-reset` (observed) |
-| `ls context/foundation/lessons.md` | absent — no lesson applies |
-| Grounding (`ls`, `grep`) | 15/15 plan paths exist; symbols confirmed in code: `createAutosaver` (`block` one-way, no `replace`, loop checks only `blockedBy`), `freshSession` local in `src/main.ts`, `requestPersistence` drops `persist()`, `UIScene.openSettings` session + `saveHealthView(saver.status())`, `InputSession.run` sync, `DIALOG_CALLBACKS` counts 4/4, e2e hook `save()` spreads `saver.status()`, `?e2eSave=unreadable` → `version 99` (`future`), `FIRST_ROOM = 'salon'` vs fixture room `living` |
-| `grep -c '^Driver: ' plan.md` | 7 (tdd ×3, impl ×3, e2e ×1 after the phase-6 seam sweep) |
-| Success Criteria ↔ Progress | one-to-one per phase (P7 now 7 rows) |
-| lint / typecheck / unit / build / e2e | not run: docs-only step. Baseline on main (contract, inherited, unverified): `lint OK; typecheck OK; unit OK Tests 1176 passed; build OK; e2e OK 33 passed` |
-
-No deliberate break: nothing testable was written.
+| RED (stub `replace` returning `{ok:false,error:'stub'}`, `freshSession` throwing) | 11 failed: `AssertionError: expected { ok: false, error: 'stub' } to deeply equal { ok: true }`; `Error: stub` for freshSession. Not a missing-import failure |
+| GREEN | `npx vitest run`: 1188 passed (baseline 1176, +12) |
+| lint / typecheck | OK / OK |
+| unit gate (`npm test`, deploy tests, `sample` E1-E6) | OK, Tests 1188 passed (+12) |
+| build | OK, `e2e hook: absent (2 chunks checked)` |
+| e2e `npx playwright test` | NOT RUN: Chromium cannot start in this session (`MachPortRendezvousServer … Permission denied`). **The orchestrator must run e2e** (affects 1.4). Phase 1 touches `main.ts` only by moving `freshSession` |
+| `git diff --stat tests/fixtures` | empty; `SAVE_VERSION` still 1 |
+| Break B1: remove `await inflight` in `replace` | first attempt stayed green (test too weak: both writes held in order). Test sharpened (snapshot write held, replace write instant) then red: "waits for a write in flight, then writes the given state after it"; restored, green |
+| Break B2: remove `replaced = true` | red: "turns every later write off after a success", "a second replace … is Busy"; restored |
+| Break B3: no `replacing = false` on failure | red: "after a failed write … autosave resumes", "a failed replace of a dirty game lets the debounce timer write …"; restored |
+| Meta-check | the breaks target the plan's contract (research option C: replaced save must not be overwritten by the old game), not implementation details. The "no write after replace" proof lives in this unit test, as the plan says |
 
 ## 4. Next command
 
-`/10x-tdd save-export-import-reset phase 1`
+`/10x-tdd save-export-import-reset phase 2`
 
 ## 5. Open
 
-- Human checklist (Progress `[human]` rows): 4.7 iPad share sheet → Files, Android PWA share/download; 5.6 file picker
-  import on both tablets; 6.8 `.txt` with JSON content against FR-022's literal "plik JSON"; 6.9 acceptance of the new copy
-  (`pl.saveTransfer`, `pl.saveFailed.detail`, `pl.settings.saveNotYet`/`saveEarlier`/`savePersist`); 6.10 `persist()` answer
-  on both tablets.
-- DESIGN-GAP rows to add in `docs/design-gaps.md`: 46–51 (phases 4–6), row 44 rewritten in phase 4.
-- E2E: phases 4–7 need the orchestrator's Chromium (request-file protocol, `e2e-request-p<N>.md` + `git apply` break
-  patches `e2e-break-p4.patch`, `e2e-break-p7a…p7e.patch` in the change dir). Phase 7 (b) must NOT import
-  `tests/fixtures/save-v1.json` (format fixture: unknown room `living`, non-curriculum skill ids, `pendingUnlock`).
-- Carried risks (plan `## Known risks`): second tab of one origin; reload may start a waiting newer build; p7c break likely
-  green in the browser (proof of "no write after `replace`" lives in the phase-1 unit test of `createAutosaver`); a
-  `reload()` that never runs leaves writes off for the session.
-- Follow-ups to write in phase 6 (`follow-ups/review-fixes.md`): L-S1 (`src/core/save.ts` `decodeSave`), N-7
-  (`src/core/autosave.ts` `loadSave`), F7 (`src/data/pl.ts` `settings.empty`), two tabs, full field path in `saveProblem`,
-  import from the welcome screen — each with `Trigger:`.
+- Orchestrator: run `npx playwright test` (33 expected) before ticking 1.4; then 1.4 may be ticked with the sha.
+- 1.5 `[reviewer]` row not mine.
+- Phase 1 test note: `replace` takes an encoded `SaveState` (tests use `encodeSave(session(n))`); a raw `SessionSave` is `InvalidSave`.
+- Carried from earlier handoff: DESIGN-GAP rows 46-51, e2e request-file protocol for phases 4-7, human checklist, follow-ups to write in phase 6.
 
 ## 6. Autonomous decisions
 
-- **Verdict PROCEED, fixes applied in place** (contract: CRITICAL → fix, WARNING → fix if obvious). Rejected: RETHINK —
-  the `replace` + reload approach matches the code (`block()` one-way, `pagehide`/`visibilitychange` flush in
-  `src/main.ts` `start`). Would change: evidence that a reload in the iPad home-screen app loses state.
-- **Code verification inline, no sub-agent** (skill step 3 suggests one). Why: the risky claims sit in six known files and
-  were read directly. Would change: a plan touching unknown callers across modules.
-- **F2: phase 7 (b) uses a spec-built playable v1 value**, not the format fixture. Rejected: fixing the fixture (frozen v1
-  fixtures must not change). Would change: a shared "playable save" e2e fixture appearing in `tests/e2e/support/`.
-- **F5: added break p7e and Progress 7.6** (renumbered 7.6 → 7.7). Why: FR-022's "summary before overwrite" had only a
-  reviewer row. Would change: none.
-- **F3/F8 as Known risks, not plan changes.** Why: making the saver dirty at import time in e2e has no deterministic hook;
-  the unit test proves the rule. Would change: an e2e seam that marks the saver dirty.
-- **F7 (`.txt` vs FR-022) not overturned** — justified, already `[human]` 6.8.
-- **`change.md` status set by a direct edit**: `metadata-guard.mjs` has no `mark-plan-reviewed` command.
+- TDD gate: implementation absent (`replace`, `current`, `freshSession` did not exist) and testable; driver stays `tdd`. Mixed-phase prompt: the `main.ts` move of `freshSession` was done inline as scaffolding, phase keeps `Driver: tdd`.
+- Stub first (wrong values / throw) so RED is an assertion failure; stubs replaced by the real code in GREEN.
+- 1.4 left unticked: the full local gate was not observed in full (no e2e). Rejected: ticking on the strength of unit+build. Would change: orchestrator's green e2e.
+- Manual confirmation gate, commit message, next-phase question: decided in place; committed the planned set only (six paths + plan.md), stopped after the phase.
+- Break B1 initially did not go red; strengthened the test rather than accepting a vacuous break.
