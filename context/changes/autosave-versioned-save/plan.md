@@ -70,8 +70,10 @@ Z `context/changes/autosave-versioned-save/research.md` (commit `5b49883`), `cha
 
 ### Key Discoveries:
 
-- Rejestr Phasera emituje `changedata-<key>` tylko przy zmianie (nie przy pierwszym `set` w `preBoot` — to `setdata`),
-  więc słuchacze podpięci po utworzeniu gry nie zapisują stanu startowego.
+- Rejestr Phasera emituje `changedata-<key>` tylko przy zmianie **istniejącego** klucza; pierwszy `set` klucza emituje
+  wyłącznie `setdata` (`node_modules/phaser/src/data/DataManager.js` `setValue`). Słuchacze podpięci po utworzeniu gry nie
+  zapisują więc stanu startowego z `preBoot` — ale też **nie zobaczą powitania**: `learner` nie istnieje przed
+  `WelcomeScene.start`, więc jego pierwszy `registry.set` to `setdata`, nie `changedata-learner` (plan-review F1).
 - `TaskScene.finishRound` rozkłada `Adaptation` z `endRound` na ucznia (follow-up adaptive-curriculum): enkoder musi
   wybierać klucze jawnie, inaczej pole tylko-sesyjne wycieknie do formatu.
 - `changeStageByParent` już zeruje `pendingUnlock`; zapis jako `{ stage, step }` i odrzucenie przy niezgodnym etapie
@@ -128,6 +130,11 @@ zostawia grę grywalną; do fazy 4 nic nie pisze do IndexedDB.
 - **Start asynchroniczny bez top-level `await`.** `main.ts` przenosi tworzenie gry do `async function start()` wołanej po
   `installErrorBoundary` (domyślny cel Vite 6 nie zna top-level `await`); `loadSave` nigdy nie odrzuca, więc odrzucenie
   `start` to prawdziwy błąd startu i słusznie podnosi kartę błędu.
+- **Autozapis słucha `changedata` i `setdata`, nie tylko `changedata-<key>`** (plan-review F1). Ogólne zdarzenia
+  rejestru `changedata` (`parent, key, value, previous`) i `setdata` (`parent, key, value`) filtrowane po jednej stałej
+  `SAVE_KEYS` (`src/data/layout.ts`: `stars`, `rooms`, `currentRoom`, `learner`, `settings`), której używa też migawka.
+  Słuchacze podpięte po `new Game`, więc `setdata` z `preBoot` ich nie budzi; powitanie (pierwszy `set` ucznia) — tak.
+  Bez tego wybór wieku/etapu ginie przy zabiciu aplikacji przed pierwszą gwiazdką, a e2e test 3 nie widzi blokady.
 - **`?e2eStars` tylko przy świeżym starcie** (`load === 'fresh'`): spec przeładowujący ten sam adres musi zobaczyć zapisane
   saldo.
 
@@ -314,8 +321,10 @@ Jedyny moduł dotykający IndexedDB; cienki, z jednym ponowieniem po utracie po�
 **File**: `package.json`, `package-lock.json`
 
 **Intent**: dokładne polecenia (Bash z `allowed_domains: ["registry.npmjs.org"]`):
-`npm_config_cache="$TMPDIR/npm-cache" npm install idb-keyval@6.3.0` oraz
-`npm_config_cache="$TMPDIR/npm-cache" npm install -D fake-indexeddb@6.2.5`; oba pliki commitowane w tej fazie. Polecenia
+`npm_config_cache="$TMPDIR/npm-cache" npm install --save-exact idb-keyval@6.3.0` oraz
+`npm_config_cache="$TMPDIR/npm-cache" npm install --save-exact -D fake-indexeddb@6.2.5` (dokładne wersje w
+`package.json`, bez `^`: biblioteka formatu jednokierunkowego nie zmienia się przy `npm install` bez przeglądu —
+plan-review F2); oba pliki commitowane w tej fazie. Polecenia
 bramki się nie zmieniają (`tests/**/*.test.ts` obejmuje nowe testy) — bez wiersza aktualizacji profilu.
 
 #### 2. Adapter
@@ -358,7 +367,7 @@ nie rzuca.
 
 #### Automated Verification:
 
-- `npm ls idb-keyval fake-indexeddb` pokazuje 6.3.0 i 6.2.5 (dev); `package-lock.json` w commicie
+- `npm ls idb-keyval fake-indexeddb` pokazuje 6.3.0 i 6.2.5 (dev); `package.json` ma `"idb-keyval": "6.3.0"` i `"fake-indexeddb": "6.2.5"` (bez `^`); `package-lock.json` w commicie
 - `tests/idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją (stub `read` zwraca `undefined` zawsze → asercja round-trip; brak reguły → asercja), zielone po; unit `<baseline gałęzi> + N`
 - Deliberate break: blok `idb-keyval` w `eslint.config.mjs` nadpisuje regułę `phaser` w `src/core/**` (wzorzec bez powtórzenia) → przypadek „src/core must not import Phaser” czerwony; adapter zapisuje `JSON.stringify(value)` → test „decodeSave na odczycie = ok” czerwony; przywrócone; meta-check: dowodzi kolejności bloków flat config i prawdziwego round-tripu, nie atrapy portu
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona (adapter jeszcze nieużywany w `main.ts`)
@@ -388,14 +397,16 @@ loadSave(store)`; stan startowy: `loaded` → stan sesji z `floorToCalendar` na 
 `unreadable`/`unavailable` → wartości świeże, autozapis zablokowany (`unreadable` → karta w fazie 5; w tej fazie tylko
 `console.warn` i gra od powitania). `createGame` przyjmuje stan startowy (`SessionSave`), `preBoot` ustawia `learner` tylko
 gdy nie-`null`. Po utworzeniu gry: `createAutosaver` (zegary `window`, `balance.save.debounceMs`, migawka czyta pięć
-kluczy rejestru, `onFirstWrite` → `requestPersistence`), słuchacze `registry.events` `changedata-<key>` dla `stars`,
-`rooms`, `currentRoom`, `learner`, `settings` → `markDirty`; autozapis w rejestrze pod nowym kluczem. Słuchacz
+kluczy rejestru, `onFirstWrite` → `requestPersistence`), słuchacze `registry.events` `changedata` **i** `setdata`
+filtrowane po `SAVE_KEYS` → `markDirty` (Critical Implementation Details; samo `changedata-<key>` przegapia pierwszy
+`set` ucznia w powitaniu); autozapis w rejestrze pod nowym kluczem. Słuchacz
 `visibilitychange` (`hidden`) dostaje `flush('hidden')` obok `narrator.cancel()`; nowy `pagehide` → `flush('hidden')`.
 Handler granicy błędów: krok `autosaver.block('fatal')` (przez `booted`, jak `game`). `start()` wołane jako
 `void start()` — jego odrzucenie to błąd startu (karta).
 
 **Contract**: `REGISTRY_KEYS.saver` (`src/data/layout.ts`, komentarz: autozapis gry, `{ flush, status }`, ustawiany przed
-scenami); kolejność: granica błędów → wczytanie → gra → autozapis → hak e2e → reszta jak dziś.
+scenami); `SAVE_KEYS` (`src/data/layout.ts`, lista pięciu kluczy zapisu — jedyne miejsce, z którego czytają słuchacze i
+migawka); kolejność: granica błędów → wczytanie → gra → autozapis → hak e2e → reszta jak dziś.
 
 #### 2. Zapisy natychmiastowe
 
@@ -403,7 +414,7 @@ scenami); kolejność: granica błędów → wczytanie → gra → autozapis →
 
 **Intent**: `RoomScene.dispatch` w gałęzi `bought` po zapisie `rooms` i `stars` woła `flush('now')` autozapisu z
 rejestru (brak w rejestrze → nic; obietnica ignorowana jawnie `void`, bo nigdy nie odrzuca). `TaskScene.finishRound` — to
-samo po ostatnim `registry.set` końca rundy. Gałąź `changed` i pozostałe zapisy zostają przy debounce (decyzja 4).
+samo na samym końcu metody, **po** `finishWarmup()` (rozgrzewka ustawia ucznia drugi raz: etap i `warmupPending: false`). Gałąź `changed` i pozostałe zapisy zostają przy debounce (decyzja 4).
 Scena nie zna magazynu ani formatu.
 
 **Contract**: interfejs w rejestrze `{ flush(reason: 'now' | 'hidden'): Promise<void>; status(): AutosaveStatus }` (typ z
@@ -557,7 +568,7 @@ ma komentarz `DESIGN-GAP` w kodzie.
 
 **Intent**: z `Trigger:` — pierwsza zmiana formatu (v2): fikstura `save-v1.json` zostaje, nowa `save-v2.json`, e2e na
 dwóch buildach (#10, jeden origin; decyzja 9) i kopia starego zapisu `profile:default:backup-v1` przed pierwszym zapisem
-po migracji; S-12: eksport/import z panelu rodzica używa `rawExportText`/`exportRawSave`, import przyjmuje `.txt` i `.json`,
+po migracji, a także ochrona przed dwiema instancjami originu (plan-review F5); S-12: eksport/import z panelu rodzica używa `rawExportText`/`exportRawSave`, import przyjmuje `.txt` i `.json`,
 `validateSave` jako walidator importu (#7), F7 `pl.settings.empty`; test-plan refresh: §6.5 „Adding a save migration
 test” dostaje konwencję fikstur, faza 4 — status (unit + restart e2e dostarczone, dwa buildy czekają na v2); profil
 autonomicznego runu: `src/storage/idb.ts` przestaje być ścieżką „planowaną” (§ 10). Przeniesione bez zmian: F3
@@ -633,7 +644,10 @@ Test 3 „#2 FR-021 an unreadable save shows the parent card, exports the raw co
 `typeIntoGate` z `support/welcome.ts`) → `page.waitForEvent('download')` (headless Chromium bez `navigator.share`) →
 nazwa `pl.saveFailed.fileName`, treść zawiera `"version": 99` i `"stars": 7` → karta nadal widoczna → „Graj dalej” →
 karta znika, `screen === 'welcome'`, `save.load === 'unreadable'`, `blocked === true` → stuknięcie wieku (cel z
-`targets.ages`) → `expect.poll` `save.skipped ≥ 1` → `save.writes === 0`.
+`targets.ages`; pierwszy `set` ucznia = `setdata`, który autozapis słucha) → `expect.poll` `save.skipped + save.writes ≥ 1`
+(próba zapisu nastąpiła — przy blokadzie jako pominięcie, przy break C jako zapis) → `save.writes === 0` i
+`save.skipped ≥ 1`. Asercja `skipped ≥ 1` sama nie dowodzi blokady (break C nie podnosi `skipped`, test padłby na
+przekroczeniu czasu, nie na `writes`) — stąd suma w poll (plan-review F1).
 
 **Contract**: `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; `expect.poll` na snapshot, bez `waitForTimeout`;
 `npx playwright test tests/e2e/save-restart.spec.ts`. Chromium niedostępny w sesji agenta → plik
@@ -699,6 +713,13 @@ zapisu, karta z eksportem.
 - **Eviction w Safari**: `persist()` po pierwszym zapisie; prawdziwą kopią zapasową jest eksport S-12.
 - **Format jednokierunkowy**: wiersz `[human]` 6.6 przed pierwszym deployem; każda późniejsza zmiana to migracja z fiksturą.
 - **Chromium w sesji agenta**: fazy 4–5 oddają e2e orkiestratorowi, faza 7 pisze `e2e-request-s11-p7.md` z patchami A–D.
+- **Walidacja v1 nie może się zaostrzyć**: każdy przyszły build musi przyjąć to, co build v1 przyjął i zapisał;
+  zaostrzenie `validateSave` bez migracji zamieniłoby dobre zapisy w „nieczytelne” (karta przy każdym starcie).
+  Strażnikiem jest zamrożona `tests/fixtures/save-v1.json` — dlatego musi pochodzić z prawdziwego stanu gry (round-trip
+  na funkcjach `core`), nie z minimalnego literału (plan-review F4).
+- **Dwie instancje tego samego originu** (Android: aplikacja z ekranu początkowego i karta Chrome dzielą IndexedDB):
+  ostatni zapis wygrywa, więc stara karta może cofnąć postęp. Poza zakresem v1 (jedno dziecko, jedno okno); rozwiązanie
+  (np. `BroadcastChannel`/licznik zapisu) to zmiana formatu → follow-up (plan-review F5).
 - **Ścisła walidacja**: błąd w enkoderze dałby kartę przy każdym starcie — niezmiennik `decodeSave(encodeSave(s))` = `ok`
   w testach i walidacja przed każdym zapisem.
 
@@ -772,7 +793,7 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev); `package-lock.json` w commicie
+- [ ] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie
 - [ ] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N
 - [ ] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check
 - [ ] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
