@@ -1,45 +1,45 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
-Written by `/10x-tdd` phase 1 (committed 20808c9): core reducers for change mode, hit-testing, room gesture and `roomDone` are done and green. The next agent must keep the change branch of `stepPanel` from ever returning `bought` and must feed `roomGesture` (not scene logic) from the scene in phase 4.
+Written by `/10x-tdd` phase 2 (committed 9c79ea2): room list view, `ROOM_ORDER`, child hold threshold, caption anchors and room-done/change strings are done and green. The next agent (phase 3, `e2eStars` seam) must keep the seam out of `dist/` (guard marker) and not touch the strings without a teacher read.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
-| Commits | identity, research, plan, plan review, `20808c9` (phase 1), handoff p1 |
+| Commits | identity, research, plan, plan review, `20808c9` (phase 1), handoff p1, `9c79ea2` (phase 2) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 38 (phase 1 rows 1.1-1.3 ticked) |
+| `## Progress` rows remaining | 35 (phases 1-2 rows ticked; 2.4 [reviewer] left) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/variantPanel.ts` | `PanelState` with `mode: 'buy' | 'change'`, `change` event, `changed` result; change branch never spends |
-| `src/core/roomHit.ts` | new: `slotBox`, `slotAt`, `holdPoint`, `Point`/`Box`/`SlotSizes` |
-| `src/core/roomGesture.ts` | new: `roomGesture`, `ROOM_GESTURE_IDLE` over `longPress` |
-| `src/core/rooms.ts` | `roomDone` |
-| `tests/roomHit.test.ts`, `tests/roomGesture.test.ts` | new; `tests/variantPanel.test.ts` (mode literals, change cases, property with `change`), `tests/rooms.test.ts` (`roomDone`) |
-| `context/changes/variant-change-room-done/plan.md`, `change.md`, `handoff.md` | Progress 1.1-1.3 ticked; status `implementing` |
+| `src/core/types.ts` | `RoomListEntry` |
+| `src/core/rooms.ts` | `roomsListView`, `RoomListItem` |
+| `src/data/rooms.ts` | `ROOM_ORDER`, `captionAnchor`, `SlotPlaceholder.caption` (floor, walls anchors) |
+| `src/data/balance.ts` | `roomHold` 600 ms / 40 px |
+| `src/data/layout.ts` | `ROOM_LAYOUT.slot.captionCharWidth` |
+| `src/data/pl.ts` | `pl.room.done`, `pl.room.change` |
+| `tests/rooms.test.ts`, `tests/roomsData.test.ts` | new cases |
+| `plan.md` | Progress 2.1-2.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm test` | 1064 passed (baseline 1035, +29) |
-| `npm run lint`, `npx tsc --noEmit`, `npm run build` | clean; build "e2e hook: absent" |
-| RED (stubs returning wrong values) | `roomGesture`: "expected [ 'stub', 'stub', 'stub' ] to deeply equal [ null, null, 'sofa' ]"; `roomHit`/`roomDone`/`variantPanel` change cases also red on assertions (40 failing) |
-| Break 1: change confirm bumps `tasksDone` and spends 5 | 19 red (change-mode confirm tests, property seeds); restored |
-| Break 2: `slotAt` takes lowest depth | 5 red ("middle of the sofa", rug, edges); restored |
-| Break 3: `roomGesture` opens on `up` outside change mode | red "a tap outside change mode opens nothing"; restored |
-| Meta-check | oracles come from FR-018 ("change is free"), US-02 AC and hand-computed SALON boxes, not from the code |
-| `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate; baseline 24 e2e |
+| `npm test` | 1071 passed (branch baseline 1064, +7) |
+| `npm run lint`, `npx tsc --noEmit`, `npm run build`, `sample` E1-E6 | clean; "e2e hook: absent"; sample ok |
+| RED (stubs with wrong values) | "expected [] to deeply equal [ …(2) ]"; "expected 0 to be greater than or equal to 500"; "floor vs rug: expected false to be true" |
+| Break: `unlocked = true` and `holdMs = 2000` | 3 red (list cases, hold threshold); restored |
+| Meta-check | oracles from FR-019 (unlock is data) and FR-018 (short hold), not from the data values |
+| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate; baseline 24 |
 
 ## 4. Next command
 
-`/10x-tdd variant-change-room-done phase 2`
+`/10x-tdd variant-change-room-done phase 3`
 
 ## 5. Open
 
@@ -60,3 +60,4 @@ Written by `/10x-tdd` phase 1 (committed 20808c9): core reducers for change mode
 4. Deep mode without a sub-agent: the riskiest claims were few and local, verified directly. Would change: a broader blast radius.
 5. Phase 1 stayed `Driver: tdd`; adding the `mode: 'buy'` literal to `PanelState` and the existing tests was done inline as the type change. Stubs (wrong values) were written before tests only to get an assertion RED. Would change: none.
 6. `Box` is `{left, top, right, bottom}` and `roomGesture` returns `held` only while the press is `holding`. Would change: phase 4 scene needs another shape.
+7. Phase 2: caption anchors floor (300, 820) and walls (300, 240), `captionCharWidth` 20 (conservative estimate). Strings teacher-read: gender/accusative fine ("Stuknij mebel"), no numerals, short sentences. `RoomView` must use `captionAnchor` in phase 4. Would change: visual gate shows overlap.
