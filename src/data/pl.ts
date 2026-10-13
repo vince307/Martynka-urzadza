@@ -61,7 +61,7 @@ export const pl = {
         body: 'Zapis gry został na tablecie bez zmian. Rodzic może zachować jego kopię.',
         export: 'Zachowaj kopię',
         continue: 'Graj dalej',
-        note: 'Dziś gra nie zapisze postępów.',
+        note: 'Tym razem gra nie zapisze postępów.',
         fileName: 'martynka-zapis.txt',
     },
     install: {

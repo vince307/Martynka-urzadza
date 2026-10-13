@@ -92,8 +92,9 @@ const narrator = createNarrator(
 const month = (__E2E_HOOK__ ? e2eMonth(window.location.search) : null) ?? new Date().getMonth();
 // The error boundary goes up before the game exists (the game starts inside a font promise). When the game breaks
 // the child sees a calm card; every step is guarded on its own so the handler itself can never throw.
-const booted: { game?: Game; saver?: Autosaver } = {};   // filled once the game exists; the boundary reads it lazily
+const booted: { game?: Game; saver?: Autosaver; failed?: boolean } = {};   // filled once the game exists; the boundary reads it lazily
 installErrorBoundary(window, () => {
+    booted.failed = true;   // a failure while the save is read (or the unreadable card is up) means the game never starts
     const attempt = (step: () => void): void => {
         try {
             step();
@@ -140,6 +141,10 @@ const start = async (): Promise<void> => {
                 },
             });
         });
+    }
+    // The error card is final: a game started under it would run (and save) a state nobody can see.
+    if (booted.failed) {
+        return;
     }
     let session: SessionSave;
     if (outcome.kind === 'loaded') {

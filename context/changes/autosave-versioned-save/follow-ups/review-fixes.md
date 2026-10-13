@@ -27,3 +27,12 @@ Each item has a `Trigger:` line; later slices grep for them.
 - S-08 (save `Settings` and the history with `example`): done, phase 1 (`settings`, `history`).
 - S-09 / S-10 (save after a purchase and after a variant change; no "seen" flag for "Pokój gotowy!"): purchase is immediate (`flush('now')`), a variant change goes through the 500 ms debounce (decision 4); the room-done card is derived from the rooms, no flag was needed.
 - Observability (error card promise, noise list, `BootScene` hand-over): decisions 8 and 12; the save module catches its own errors, the error boundary blocks the autosave on a fatal error; the hand-over runs outside the font promise.
+
+## From the implementation review (reviews/impl-review.md)
+
+- F3: the `unavailable` load (IndexedDB unreadable at start) blocks the autosave in `src/main.ts` `start()` (`blocked: outcome.kind === 'unreadable' || 'unavailable'`), but only the `unreadable` branch is proven in the browser (e2e break C); the `unavailable` wiring rests on the unit test of `createAutosaver` and code reading. Add an `?e2eSave=unavailable` seam (store whose `read` rejects) with a spec "nothing is written after a failed read".
+  Trigger: next change to `start()` in `src/main.ts` or to `src/testing/e2eHook.ts` `e2eSaveStore`
+- F4: `tests/e2eHookGuard.test.ts` covers `e2eSave` only through the marker list; add the two explicit cases from plan phase 5 (production chunk with `e2eSave` -> `ok: false`; e2e build without `e2eSave` -> `ok: false`).
+  Trigger: next change to `vite/e2eHookGuard.mjs`
+- F5: `src/ui/dom/saveExport.ts` `exportRawSave` falls back to a download when `navigator.share` fails with anything but `AbortError` (plan: log and keep the card); it uses the `window.setTimeout`/`URL` globals beside the injected `doc`. Behaviour is safer than the plan; confirm on the iPad export check (row 5.7).
+  Trigger: human checklist row 5.7 (export on iPad / Android)
