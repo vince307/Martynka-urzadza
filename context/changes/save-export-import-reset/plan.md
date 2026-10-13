@@ -751,8 +751,8 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [x] 3.2 Deliberate break: `notYet` przed `failing` / wynik `onFirstWrite` nie zapisany → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — df18f2f
+- [x] 3.2 Deliberate break: `notYet` przed `failing` / wynik `onFirstWrite` nie zapisany → czerwone; przywrócone; meta-check — df18f2f
 - [ ] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
