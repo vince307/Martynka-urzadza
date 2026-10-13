@@ -7,7 +7,7 @@ import {
     placeByParent,
     previousStage,
     proposeStage,
-    type SessionLearner,
+    type PlacedLearner,
 } from '../src/core/placement';
 import { placementData } from '../src/data/placement';
 import type { StageId } from '../src/core/types';
@@ -128,7 +128,7 @@ describe('placeByParent', () => {
 
 describe('needsPlacement', () => {
     it('is true without a learner and false with one', () => {
-        const learner: SessionLearner = { age: 8, stage: 'E3', stageOverriddenByParent: false, warmupPending: false };
+        const learner: PlacedLearner = { age: 8, stage: 'E3', stageOverriddenByParent: false, warmupPending: false };
         expect(needsPlacement(null)).toBe(true);
         expect(needsPlacement(learner)).toBe(false);
     });

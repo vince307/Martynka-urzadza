@@ -1,4 +1,4 @@
-import { placeByParent, proposeStage, type SessionLearner } from '../../core/placement';
+import { placeByParent, proposeStage, type PlacedLearner } from '../../core/placement';
 import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { placementData } from '../../data/placement';
@@ -8,7 +8,7 @@ import { createButton, createText } from './overlay';
 export interface StagePanelOptions {
     /** Month of the session (0-11), as the placement needs it. */
     month: number;
-    onConfirm: (learner: SessionLearner) => void;
+    onConfirm: (learner: PlacedLearner) => void;
     onCancel: () => void;
     parent?: HTMLElement;
 }

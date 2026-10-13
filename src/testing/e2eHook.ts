@@ -25,13 +25,22 @@ export const e2eMonth = (search: string): number | null => {
     return month <= 11 ? month : null;
 };
 
+/** Recursively frozen value: the nested mastery, streak and history of the learner stay read-only. */
+const deepFreeze = <T>(value: T): T => {
+    if (typeof value === 'object' && value !== null) {
+        Object.values(value).forEach(deepFreeze);
+        Object.freeze(value);
+    }
+    return value;
+};
+
 export const installE2EHook = (game: Game): void => {
     const welcome = (): WelcomeScene => game.scene.getScene(SCENE_KEYS.welcome) as WelcomeScene;
     const onWelcome = (): boolean => game.scene.isActive(SCENE_KEYS.welcome);
     const inRoom = (): boolean => game.scene.isActive(SCENE_KEYS.room);
     const learner = (): Readonly<SessionLearner> | null => {
         const value = game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
-        return value ? Object.freeze({ ...value }) : null;
+        return value ? deepFreeze(structuredClone(value)) : null;
     };
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;

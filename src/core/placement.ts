@@ -1,9 +1,12 @@
 // Placement of a new learner: age x month -> proposed stage (docs/ZADANIA.md section 1).
 // Pure: the month is always an argument, there is no Date here.
-import type { LearnerState, StageId } from './types';
+import type { Adaptation, LearnerState, StageId } from './types';
 
-/** The learner as the running game needs it; S-11 will persist it. */
-export type SessionLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
+/** What placement decides: age and stage (S-06). */
+export type PlacedLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
+
+/** The learner as the running game needs it (placement + adaptation state); S-11 will persist it. */
+export type SessionLearner = PlacedLearner & Adaptation & { pendingUnlock: number | null };
 
 export type Band = 'autumn' | 'spring' | 'summer';
 
@@ -30,12 +33,12 @@ export function proposeStage(age: number, month: number, data: PlacementData): S
     throw new RangeError(`month ${month} is in no band`);
 }
 
-export function placeByChild(age: number, month: number, data: PlacementData): SessionLearner {
+export function placeByChild(age: number, month: number, data: PlacementData): PlacedLearner {
     const stage = proposeStage(age, month, data);
     return { age, stage, stageOverriddenByParent: false, warmupPending: previousStage(stage) !== null };
 }
 
-export function placeByParent(age: number, chosen: StageId, month: number, data: PlacementData): SessionLearner {
+export function placeByParent(age: number, chosen: StageId, month: number, data: PlacementData): PlacedLearner {
     const overridden = chosen !== proposeStage(age, month, data);
     return {
         age,
@@ -45,6 +48,6 @@ export function placeByParent(age: number, chosen: StageId, month: number, data:
     };
 }
 
-export function needsPlacement(learner: SessionLearner | null): boolean {
+export function needsPlacement(learner: PlacedLearner | null): boolean {
     return learner === null;
 }

@@ -7,7 +7,7 @@ import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
-import { buildRound } from '../core/round/pick';
+import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
@@ -322,10 +322,11 @@ export class TaskScene extends Scene {
     /** "Dalej" after a correct answer; after the fifth task it opens the summary. */
     private advance(): void {
         const before = this.state.starsEarned;
+        const wasFinished = this.state.finished;
         this.state = next(this.state);
         this.syncStars(before, this.bar.nextTarget());
-        if (this.warmup && this.state.finished) {
-            this.finishWarmup();
+        if (!wasFinished && this.state.finished) {
+            this.finishRound();
         }
         this.render();
         this.autoReadFirst();
@@ -353,7 +354,37 @@ export class TaskScene extends Scene {
             const rules = { ...balance.round, length: balance.warmup.length };
             return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries), rules);
         }
-        return startRound(buildRound(this.stage, this.rng, balance.round, balance.tiles.count), balance.round);
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const previousId = previousStage(this.stage.id);
+        const tasks = buildAdaptiveRound(
+            this.stage,
+            previousId ? getStage(previousId) : undefined,
+            learner,
+            roundWeights(learner, balance),
+            this.rng,
+            balance.round,
+            balance.tiles.count,
+        );
+        return startRound(tasks, balance.round);
+    }
+
+    /**
+     * The round just finished (once per round: "Do pokoju" and coming back cannot skip or repeat it): core updates mastery
+     * and, after an ordinary round, unlocks a step and the easing counters; the warm-up then settles the stage.
+     */
+    private finishRound(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const results = this.state.tasks.map((task, i) => ({ skillId: task.skillId, outcome: this.state.outcomes[i] }));
+        const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
+        // The unlock card (phase 7) shows pendingUnlock; until then the step moves on quietly.
+        this.registry.set(REGISTRY_KEYS.learner, {
+            ...learner,
+            ...adaptation,
+            pendingUnlock: unlocked ?? learner.pendingUnlock,
+        } satisfies SessionLearner);
+        if (this.warmup) {
+            this.finishWarmup();
+        }
     }
 
     /**

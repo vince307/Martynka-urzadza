@@ -1,6 +1,9 @@
 import { Scene } from 'phaser';
-import { placeByChild, type SessionLearner } from '../core/placement';
+import { startLearning } from '../core/curriculum';
+import { placeByChild, type PlacedLearner, type SessionLearner } from '../core/placement';
 import { createRng } from '../core/rng';
+import { stages } from '../data/curriculum';
+import { balance } from '../data/balance';
 import { GAME_HEIGHT, PLACEHOLDER_FRAME, REGISTRY_KEYS, SCENE_KEYS, WELCOME_LAYOUT } from '../data/layout';
 import { pl } from '../data/pl';
 import { placementData } from '../data/placement';
@@ -81,7 +84,12 @@ export class WelcomeScene extends Scene {
         });
     }
 
-    private start(learner: SessionLearner): void {
+    private start(placed: PlacedLearner): void {
+        const learner: SessionLearner = {
+            ...placed,
+            ...startLearning(stages, placed.age, this.sessionMonth(), placementData, balance.curriculum),
+            pendingUnlock: null,
+        };
         this.chosen = true;
         this.closeDialog = undefined;
         this.input.enabled = true;

@@ -109,7 +109,7 @@ export const REGISTRY_KEYS = {
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
-    learner: 'learner',       // the session's SessionLearner (core/placement), absent until the child has said the age
+    learner: 'learner',       // the session's SessionLearner (core/placement: placement + adaptation state, S-07), absent until the child has said the age
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
 } as const;
 
