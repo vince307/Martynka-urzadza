@@ -833,7 +833,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [ ] 9.1 `npx playwright test tests/e2e/adaptive.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1`
-- [ ] 9.2 Deliberate break: `TaskScene.startNextRound` ignoruje `pendingUnlock` → test czerwony; przywrócone; meta-check (unit zielone)
-- [ ] 9.3 Druga przerwa: „Dalej” karty nie czyści `pendingUnlock` → test czerwony; przywrócone; meta-check
-- [ ] 9.4 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 9.1 `npx playwright test tests/e2e/adaptive.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1` — 7d03dc7 (orchestrator run: spec 1/1 passed 41.9s, suite 15/15 = 14 + 1)
+- [x] 9.2 Deliberate break: `TaskScene.startNextRound` ignoruje `pendingUnlock` → test czerwony; przywrócone; meta-check (unit zielone) — 7d03dc7 (red: Expected screen "unlock", Received "task", support/hook.ts:62 via adaptive.spec.ts:65; unit green)
+- [x] 9.3 Druga przerwa: „Dalej” karty nie czyści `pendingUnlock` → test czerwony; przywrócone; meta-check — 7d03dc7 (red: adaptive.spec.ts:76 pendingUnlock Received 4; unit green)
+- [x] 9.4 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 7d03dc7 (build e2e hook: absent; servers killed by orchestrator)
