@@ -15,7 +15,7 @@
 
 ## Project structure
 
-`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Welcome, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/` (dialogs). `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
+`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Welcome, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration, `curriculum.ts` and `mastery.ts` for adaptive difficulty), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/` (dialogs). `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
 
 ## Commands
 
@@ -35,4 +35,4 @@ Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tes
 
 ## Commits and PRs
 
-Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, PR; `main` changes only by a GitHub merge, which deploys to https://martynka-urzadza.pl. Server work: `ssh martynka-ops <cmd>` as one plain command (`sync`, then `bootstrap` after `deploy/` changes); never touch CoiledSpring. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, PR; `main` changes only by a GitHub merge, which deploys to https://martynka-urzadza.pl. Server work: `ssh martynka-ops <cmd>` as one plain command; never touch CoiledSpring. Runbook: @deploy/README.md.

@@ -23,12 +23,14 @@ export const E1: StageDef = {
         {
             step: 2,
             title: 'Liczby 1–5: liczenie, „który z kolei”, znaki <, >, =',
+            childName: 'Porównywanie liczb do 5',
             types: ['COUNT', 'ORDINAL', 'COMPARE_NUM'],
             skills: [skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles')],
         },
         {
             step: 3,
             title: '+ i − do 5 z obrazkami, brakujący składnik do 5',
+            childName: 'Działania do 5',
             types: ['ADD_SUB', 'MISSING', 'BONDS', 'CHOOSE_OP'],
             skills: [
                 addSub('E1.3.add_sub_5', 3, { max: 5, ops: ['+', '-'], bridge: 'any' }),
@@ -40,6 +42,7 @@ export const E1: StageDef = {
         {
             step: 4,
             title: 'Liczby 6–7, dni tygodnia, rozkłady 6 i 7',
+            childName: 'Rozkłady liczb 6 i 7',
             types: ['COUNT', 'BONDS', 'CALENDAR'],
             skills: [
                 skill('E1.4.bonds_6_7', 4, 'BONDS', { totals: [6, 7] }),
@@ -49,6 +52,7 @@ export const E1: StageDef = {
         {
             step: 5,
             title: 'Liczby 8–9, trzy składniki, odejmowanie dwóch liczb po kolei',
+            childName: 'Działania do 9',
             types: ['ADD_SUB', 'CHAIN', 'WORD'],
             skills: [
                 addSub('E1.5.add_sub_9', 5, { max: 9, ops: ['+', '-'], bridge: 'any' }),
@@ -59,6 +63,7 @@ export const E1: StageDef = {
         {
             step: 6,
             title: 'Zero, parzyste i nieparzyste',
+            childName: 'Parzyste i nieparzyste',
             types: ['EVEN_ODD'],
             skills: [
                 skill('E1.6.even_odd_single_10', 6, 'EVEN_ODD', { max: 10, min: 0, variant: 'single' }, 'tiles'),
@@ -68,6 +73,7 @@ export const E1: StageDef = {
         {
             step: 7,
             title: 'Liczba 10: rozkłady, dopełnianie do 10, porównywanie działań',
+            childName: 'Rozkład i dopełnianie do 10',
             types: ['BONDS', 'COMPLEMENT', 'COMPARE_EXPR'],
             skills: [
                 skill('E1.7.bonds_10', 7, 'BONDS', { totals: [10] }),
@@ -79,6 +85,7 @@ export const E1: StageDef = {
         {
             step: 9,
             title: 'Działania do 10 mieszane, brakujący znak + / −, nierówności',
+            childName: 'Działania do 10',
             types: ['ADD_SUB', 'MISSING_OP', 'INEQUALITY'],
             skills: [
                 addSub('E1.9.add_sub_10', 9, { max: 10, ops: ['+', '-'], bridge: 'any' }),
@@ -89,6 +96,7 @@ export const E1: StageDef = {
         {
             step: 11,
             title: 'Zegar — pełne godziny; miesiące; kilogram; pieniądze do 10 zł',
+            childName: 'Miesiące roku',
             types: ['CLOCK', 'CALENDAR', 'MASS', 'MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE'],
             skills: [skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles')],
         },

@@ -58,7 +58,7 @@ if (warmup) {
         console.log(`${stage!.id}: bez rozgrzewki (brak poprzedniego etapu)`);
         process.exit(0);
     }
-    const tasks = buildWarmup(stage!, previousDef, createRng(seed), balance.warmup, balance.tiles.count);
+    const tasks = buildWarmup(stage!, previousDef, createRng(seed), balance.warmup, balance.tiles.count, balance.round.uniqueRetries);
     console.log(`Rozgrzewka ${stage!.id} (pierwsze ${balance.warmup.previousCount} z ${previousDef.id}, reszta z początku ${stage!.id}), ziarno ${seed}`);
     const warmupViolations: Violation[] = [];
     tasks.forEach((task, i) => {
@@ -77,7 +77,7 @@ const violations: Violation[] = [];
 let errors = 0;
 
 for (const step of stage!.steps) {
-    console.log(`\n${stage!.id}.${step.step} ${step.title}`);
+    console.log(`\n${stage!.id}.${step.step} ${step.title}${step.childName ? `  [dziecko: ${step.childName}]` : ''}`);
     if (step.skills.length === 0) {
         console.log(`  (brak generatora: ${step.types.join(', ')})`);
         continue;

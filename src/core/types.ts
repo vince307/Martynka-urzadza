@@ -18,6 +18,7 @@ export interface SkillDef {
 export interface StepDef {
     step: number;             // 1-based order within the stage (ZADANIA.md, section 3)
     title: string;            // author-facing step name (Polish), not shown to the child
+    childName?: string;       // short nominative name shown to the child on the "Nowa umiejętność!" card; set on playable steps only
     types: string[];          // task types the catalogue lists for this step
     skills: SkillDef[];       // skills with parameters; empty until a generator exists
 }
@@ -61,7 +62,12 @@ export interface LearnerState {
     mastery: Record<string, number>;        // skillId -> 0..5
     streak: Record<string, number>;         // consecutive correct answers
     history: { skillId: string; ok: boolean; firstTry: boolean; at: number }[]; // last ~200
+    weakStreak: number;                     // consecutive rounds with fewer than 3 first-try answers
+    easedRounds: number;                    // rounds still to be drawn with the easing weights
 }
+
+/** The part of the learner that adapts to answers (S-07). */
+export type Adaptation = Pick<LearnerState, 'unlockedStep' | 'mastery' | 'streak' | 'history' | 'weakStreak' | 'easedRounds'>;
 
 export interface RoomState {
     tasksDone: number;                      // renovation tasks completed

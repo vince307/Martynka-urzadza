@@ -51,7 +51,7 @@ describe('buildWarmup', () => {
             const fromPrevious = allSkillIds(previous);
             const fromCurrent = firstStepsSkillIds(stage, rules.currentSteps);
             for (let seed = 1; seed <= SEEDS; seed += 1) {
-                const tasks = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count);
+                const tasks = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries);
                 const where = `${id} seed=${seed}`;
                 expect(tasks, where).toHaveLength(rules.length);
                 tasks.forEach((task, i) => {
@@ -105,5 +105,20 @@ describe('warmupResult', () => {
         expect(warmupResult('E4', [null, null, null, null, null, null], rules.minFirstTry)).toBe('E3');
         expect(warmupResult('E4', ['first', 'first', 'first', null, null, null], rules.minFirstTry)).toBe('E3');
         expect(warmupResult('E4', ['first', 'first', 'first', 'first', null, null], rules.minFirstTry)).toBe('E4');
+    });
+});
+
+describe('buildWarmup prompt uniqueness (S-07 phase 3)', () => {
+    it('no prompt repeats inside a warm-up, for every stage and 200 seeds', () => {
+        for (const id of IDS) {
+            const stage = stageOf(id);
+            const previous = stageOf(previousStage(id) as StageId);
+            for (let seed = 1; seed <= 200; seed += 1) {
+                const tasks = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries);
+                const prompts = tasks.map((t) => t.prompt);
+                expect(tasks, `${id} seed=${seed}`).toHaveLength(rules.length);
+                expect(new Set(prompts).size, `${id} seed=${seed} ${JSON.stringify(prompts)}`).toBe(prompts.length);
+            }
+        }
     });
 });

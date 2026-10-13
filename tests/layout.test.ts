@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
 import { placementData } from '../src/data/placement';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -46,6 +46,21 @@ describe('task screen layout constants', () => {
         expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         const { stars } = SUMMARY_LAYOUT;
         expect(stars.top + stars.size).toBeLessThan(SUMMARY_LAYOUT.earned.top);   // star row sits above "+N"
+    });
+
+    it('keeps the unlock card button a touch target, centred inside the card, which sits inside the notebook', () => {
+        const { card, button, art, name } = UNLOCK_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.unlockNext).toEqual({ width: button.width, height: button.height });
+        expect(button.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(button.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(button.left + button.width / 2).toBe(card.left + card.width / 2);
+        expect(button.top + button.height).toBeLessThanOrEqual(card.top + card.height - card.border);
+        expect(art.top + art.size).toBeLessThan(name.y);                          // the art sits above the name
+        expect(name.y + FONT_SIZES.unlockName).toBeLessThan(button.top);          // the name sits above the button
+        const notebook = TASK_LAYOUT.notebook;
+        expect(card.left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
+        expect(card.left + card.width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(card.top + card.height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
     });
 
     it('keeps the room placeholder\'s way back a touch target inside the room panel', () => {
@@ -97,7 +112,7 @@ describe('task screen layout constants', () => {
         for (const [role, weight] of Object.entries(FONT_WEIGHTS)) {
             expect(weight, role).toBeGreaterThanOrEqual(min);
             expect(weight, role).toBeLessThanOrEqual(max);
-            if (role !== 'caption' && role !== 'brand') {   // the build id is technical; the kit brand line is 800 (.welcome-brand)
+            if (role !== 'caption' && role !== 'brand' && role !== 'unlockTitle') {   // the build id is technical; the kit brand line and the unlock title are 800 (.welcome-brand, .unlock-card h2)
                 expect(weight, role).toBeGreaterThanOrEqual(650);
                 expect(weight, role).toBeLessThanOrEqual(750);
             }

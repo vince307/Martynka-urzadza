@@ -1,14 +1,8 @@
-import type { StageId } from '../core/types';
+import type { PlacementData } from '../core/placement';
 
 // Placement table of docs/ZADANIA.md section 1: child age x month band -> proposed stage.
 // Months are Date#getMonth() values (0 = January).
-export type Band = 'autumn' | 'spring' | 'summer';
-
-export const placementData: {
-    ages: readonly number[];
-    monthBands: Record<Band, readonly number[]>;
-    table: Record<Band, Record<number, StageId>>;
-} = {
+export const placementData = {
     ages: [6, 7, 8, 9, 10], // 10 stands for "10+"
     monthBands: {
         autumn: [8, 9, 10, 11, 0], // September-January
@@ -20,4 +14,4 @@ export const placementData: {
         spring: { 6: 'E1', 7: 'E2', 8: 'E4', 9: 'E6', 10: 'E6' },
         summer: { 6: 'E1', 7: 'E2', 8: 'E4', 9: 'E6', 10: 'E6' }, // same as spring today, kept as in the document
     },
-};
+} satisfies PlacementData;

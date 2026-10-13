@@ -3,6 +3,7 @@ import { createRng } from '../src/core/rng';
 import { getGenerator } from '../src/core/tasks/registry';
 import { boundOf } from '../src/core/tasks/bounds';
 import { validateTask } from '../src/core/tasks/validate';
+import { playable } from '../src/core/round/pick';
 import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 
@@ -57,4 +58,26 @@ describe('curriculum E1–E6', () => {
         const ids = Object.values(stages).flatMap((s) => s.steps.flatMap((st) => st.skills.map((sk) => sk.id)));
         expect(new Set(ids).size).toBe(ids.length);
     });
+});
+
+describe('child-facing step names', () => {
+    for (const stage of Object.values(stages)) {
+        const named = stage.steps.filter((step) => step.skills.some(playable));
+        for (const step of named) {
+            it(`${stage.id}.${step.step} has a short childName`, () => {
+                const name = step.childName;
+                expect(name, `${stage.id}.${step.step} childName`).toBeTruthy();
+                expect(name!.length, name).toBeLessThanOrEqual(28);
+                expect(name!, name).toMatch(/^\p{Lu}/u);
+                expect(name!, name).not.toMatch(/\.$/);
+            });
+        }
+        it(`${stage.id}: childNames are distinct and only on playable steps`, () => {
+            const names = named.map((step) => step.childName);
+            expect(new Set(names).size).toBe(names.length);
+            for (const step of stage.steps.filter((s) => !s.skills.some(playable))) {
+                expect(step.childName, `${stage.id}.${step.step}`).toBeUndefined();
+            }
+        });
+    }
 });

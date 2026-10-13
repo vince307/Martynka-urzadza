@@ -35,6 +35,8 @@ export const PLACEHOLDER_COLORS = {
     starOutline: 0xae802c,      // kit .star-icon stroke
     ageButton: 0xeaf6df,        // kit .age-button gradient (#f8fff0 to #dceecf), flattened to its middle
     ageButtonBorder: 0xabc49b,  // kit .age-button border
+    unlockCard: 0xfff7de,       // kit .unlock-card gradient (#fffef4 to #fff0c8), flattened to its middle
+    unlockBorder: 0xd8bc6f,     // kit .unlock-card border
     ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
 
@@ -62,6 +64,8 @@ export const FONT_SIZES = {
     bonusLine: 44,          // DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line
     brand: 62,              // kit .welcome-brand
     ageDigit: 112,          // kit .age-button
+    unlockTitle: 66,        // kit .unlock-card h2
+    unlockName: 48,         // kit .unlock-name
 } as const;
 
 /**
@@ -85,6 +89,8 @@ export const FONT_WEIGHTS = {
     bonusLine: 650,
     brand: 800,             // kit .welcome-brand
     ageDigit: 750,          // kit .age-button
+    unlockTitle: 800,       // kit .unlock-card h2
+    unlockName: 750,        // kit .unlock-name
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -109,7 +115,7 @@ export const REGISTRY_KEYS = {
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
-    learner: 'learner',       // the session's SessionLearner (core/placement), absent until the child has said the age
+    learner: 'learner',       // the session's SessionLearner (core/placement: placement + adaptation state, S-07), absent until the child has said the age
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
 } as const;
 
@@ -160,6 +166,20 @@ export const SUMMARY_LAYOUT = {
 } as const;
 
 /**
+ * "Nowa umiejętność!" card (kit unlock.png, screen.css .unlock-card, .unlock-art, .unlock-name, .page-button inside it), on the notebook.
+ * Absolute scene coordinates: card left 388 / top 284 (kit), title top = card top + border + 56, art 200 x 200 centred 34 px under the title line,
+ * name 10 px under the art, button 450 x 108 centred, 36 px above the card's inner bottom.
+ * DESIGN-GAP (docs/design-gaps.md row 22): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
+ */
+export const UNLOCK_LAYOUT = {
+    card: { left: 388, top: 284, width: 1144, height: 660, border: 7, radius: 46 },
+    title: { x: 960, y: 347 },
+    art: { centerX: 960, top: 461, size: 200 },
+    name: { x: 960, y: 675, maxWidth: 1100 },
+    button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
+} as const;
+
+/**
  * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
  * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
  * DESIGN-GAP (docs/design-gaps.md row 20): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
@@ -199,6 +219,7 @@ export const TASK_TOUCH_TARGETS = {
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
     resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
+    unlockNext: { width: UNLOCK_LAYOUT.button.width, height: UNLOCK_LAYOUT.button.height },
 } as const;
 
 /** Animation durations in milliseconds. */
