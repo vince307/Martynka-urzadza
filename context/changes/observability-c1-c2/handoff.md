@@ -45,7 +45,7 @@ Written by the phase-6 finishing step of `/10x-e2e observability-c1-c2` (autonom
 
 ## 4. Next command
 
-/10x-e2e observability-c1-c2 phase 7
+/10x-e2e observability-c1-c2 phase 7 (finishing: orchestrator runs context/runs/2026-10-13-fix-observability/e2e-request-p7.md, then a finisher commits the uncommitted spec + hook.ts helper with evidence, ticks 7.1-7.3, sets change.md `implemented`; afterwards /10x-impl-review observability-c1-c2)
 
 ## 5. Open
 
@@ -58,3 +58,4 @@ Written by the phase-6 finishing step of `/10x-e2e observability-c1-c2` (autonom
 2. Query switches go through an optional `query` record on `openWelcome`/`openGate`/`passWelcomeAsParent`/`passWelcome`; `openSettings` moved from parent-settings.spec into `support/welcome.ts` (no duplicate); `ROUND_SPEC` += error-boundary.
 3. Rows 6.1-6.4 ticked from the orchestrator's recorded run (Chromium unavailable to agents), sha b672e74.
 4. Row 5.2 ticked from the orchestrator's 18/18 on f97228a.
+5. Phase 7: Chromium unavailable (MachPort, 3 tries): request-file protocol; spec and `fakePolishVoice` (support/hook.ts) left UNCOMMITTED; `e2e-break-p7.patch` written and `git apply --check` clean. The test asserts `not.toBeVisible` for the voice case (the line is hidden, not removed).
