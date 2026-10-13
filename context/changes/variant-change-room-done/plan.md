@@ -698,7 +698,7 @@ definicja (dane), nie zapis.
 
 - [x] 2.1 Nowe testy czerwone przed danymi (stub listy, podpisy bez kotwic), zielone po; unit baseline + N — 9c79ea2
 - [x] 2.2 Deliberate break zapowiedź bez `roomDone` / `holdMs = 2000` → czerwone; przywrócone; meta-check — 9c79ea2
-- [x] 2.3 `npm run lint`; sample E1–E6 bez zmian; pełna bramka lokalna zielona — 9c79ea2 (e2e: not runnable in this session (MachPort), orchestrator gate)
+- [x] 2.3 `npm run lint`; sample E1–E6 bez zmian; pełna bramka lokalna zielona — 9c79ea2 (e2e: orchestrator run on f028599, 24 passed)
 
 #### Manual
 
@@ -708,10 +708,10 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 3.1 `e2eStars.test.ts` i przypadek strażnika czerwone przed implementacją, zielone po; unit baseline + N
-- [ ] 3.2 `npm run build` drukuje `e2e hook: absent`; build `E2E_HOOK=1` przechodzi z `e2eStars` w wymaganych markerach
-- [ ] 3.3 Deliberate break `e2eStars(...)` bez `__E2E_HOOK__` → `npm run build` czerwony; przywrócone; meta-check
-- [ ] 3.4 Pełna bramka lokalna zielona
+- [x] 3.1 `e2eStars.test.ts` i przypadek strażnika czerwone przed implementacją, zielone po; unit baseline + N — 41c4c7b
+- [x] 3.2 `npm run build` drukuje `e2e hook: absent`; build `E2E_HOOK=1` przechodzi z `e2eStars` w wymaganych markerach — 41c4c7b
+- [x] 3.3 Deliberate break `e2eStars(...)` bez `__E2E_HOOK__` → `npm run build` czerwony; przywrócone; meta-check — 41c4c7b
+- [x] 3.4 Pełna bramka lokalna zielona — 41c4c7b (e2e: not runnable in this session (MachPort), orchestrator gate)
 
 #### Manual
 
