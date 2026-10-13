@@ -64,7 +64,7 @@ export class VariantPanel {
         this.hide();
     }
 
-    /** `size` is the slot's placeholder size, so every thumbnail keeps the shape of the furniture. */
+    /** `size` is the slot's placeholder size, so every thumbnail keeps the shape of the furniture; wide slots (floor, walls) are drawn at least `thumbs.minAspect` high. */
     show(looks: [Look, Look, Look], size: { width: number; height: number }, preview: 0 | 1 | 2 | null): void {
         const { tray, thumbs, choose, close } = ROOM_LAYOUT;
         this.shown = true;
@@ -87,7 +87,7 @@ export class VariantPanel {
             const room = thumbs.size - 2 * thumbs.inset;
             const scale = Math.min(room / size.width, room / size.height);
             const w = size.width * scale;
-            const h = size.height * scale;
+            const h = Math.max(size.height * scale, w * thumbs.minAspect);
             drawLook(t, { left: left + (thumbs.size - w) / 2, top: top + (thumbs.size - h) / 2, width: w, height: h }, look, scale, 10);
             t.lineStyle(selected ? thumbs.selectedBorder : thumbs.border, selected ? PLACEHOLDER_COLORS.deepTeal : PLACEHOLDER_COLORS.pageButtonSecondaryBorder, 1);
             t.strokeRoundedRect(left, top, thumbs.size, thumbs.size, thumbs.radius);

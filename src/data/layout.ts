@@ -213,11 +213,15 @@ export const ROOM_LAYOUT = {
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
     // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail
     // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md): the kit has no panel.
-    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20 },
-    choose: { left: 1100, top: 800, width: 480, height: 108, radius: 32, border: 5 },
-    close: { left: 1100, top: 924, width: 480, height: 96, radius: 32, border: 5 },
+    // minAspect: a thumbnail is at least this high relative to its width, so the wide floor and walls read as a swatch, not a thin strip.
+    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, minAspect: 0.5 },
+    // "Wybieram" ends where the task button begins: after a purchase the next task's button appears at once, so the second tap
+    // of a double tap must not land on it (impl-review F1). "Zamknij" may share its place (it would re-open the same panel).
+    choose: { left: 1100, top: 792, width: 480, height: 100, radius: 32, border: 5 },
+    close: { left: 1100, top: 908, width: 480, height: 96, radius: 32, border: 5 },
     // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
-    taskButton: { left: 900, top: 880, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    // Top aligned with `resume`, below "Wybieram".
+    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
     // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (docs/design-gaps.md): the kit has no slots.
     slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
 } as const;

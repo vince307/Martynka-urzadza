@@ -108,6 +108,24 @@ describe('task screen layout constants', () => {
         }
     });
 
+    it('keeps "Wybieram" clear of the task button and "Wróć do notesu", so the second tap of a double tap after a purchase lands on nothing', () => {
+        // After a purchase RoomScene.redraw shows the next task's button and the return button in the same step
+        // (impl-review F1). "Zamknij" may share the task button's place: a double tap there re-opens the same panel.
+        type Rect = { left: number; top: number; right: number; bottom: number };
+        const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
+        const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const { choose, taskButton, resume } = ROOM_LAYOUT;
+        expect(overlap(rect(choose), rect(taskButton))).toBe(false);
+        expect(overlap(rect(choose), rect(resume))).toBe(false);
+    });
+
+    it('gives every variant thumbnail a readable height, even for the wide floor and walls', () => {
+        const { thumbs } = ROOM_LAYOUT;
+        const room = thumbs.size - 2 * thumbs.inset;
+        expect(thumbs.minAspect * room).toBeGreaterThanOrEqual(room / 3);
+        expect(thumbs.minAspect).toBeLessThanOrEqual(1);
+    });
+
     it('keeps the variant panel touch targets 96 px or more, inside the tray, apart from each other and clear of the HUD', () => {
         const { tray, thumbs, choose, close } = ROOM_LAYOUT;
         expect(ROOM_TOUCH_TARGETS.thumb).toEqual({ width: thumbs.size, height: thumbs.size });
