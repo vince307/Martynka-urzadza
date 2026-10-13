@@ -73,6 +73,13 @@ export class PageButton {
         }
     }
 
+    /** Draw order, for a button that sits over other layers of its scene (the "Pokój gotowy!" card). */
+    setDepth(depth: number): this {
+        this.graphics.setDepth(depth);
+        this.label.setDepth(depth + 1);
+        return this;
+    }
+
     hide(): void {
         this.shown = false;
         this.pressed = false;

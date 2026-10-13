@@ -222,8 +222,24 @@ export const ROOM_LAYOUT = {
     // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
     // Top aligned with `resume`, below "Wybieram".
     taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
-    // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (docs/design-gaps.md): the kit has no slots.
-    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
+    // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
+    // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
+    modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
+    // Slot captions and the dashed outline of an empty slot; holdOutline is the thick outline of the slot under a holding finger.
+    // DESIGN-GAP (docs/design-gaps.md rows 32 and 37): the kit has no slots and no hold view.
+    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22, captionCharWidth: 20, holdOutline: 10 },
+} as const;
+
+/**
+ * "Pokój gotowy!" card (S-10): a butter-framed card over the room with the list of rooms (a tile per room, the last one a teaser) and "Dalej".
+ * It ends above `ROOM_LAYOUT.tray`, and "Dalej" sits above "Wybieram", so the second tap of a double tap on the last "Wybieram" cannot close the card.
+ * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no such card nor room list; the look follows the unlock card.
+ */
+export const ROOM_DONE_LAYOUT = {
+    card: { left: 388, top: 220, width: 1144, height: 560, border: 7, radius: 46 },
+    title: { x: 960, y: 262 },
+    tiles: { left: 490, top: 372, width: 440, height: 200, gap: 60, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.2, captionY: 172, markRadius: 26, markInset: 34 },
+    button: { left: 735, top: 624, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
@@ -255,6 +271,8 @@ export const ROOM_TOUCH_TARGETS = {
     thumb: { width: ROOM_LAYOUT.thumbs.size, height: ROOM_LAYOUT.thumbs.size },
     choose: { width: ROOM_LAYOUT.choose.width, height: ROOM_LAYOUT.choose.height },
     close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
+    modeButton: { width: ROOM_LAYOUT.modeButton.width, height: ROOM_LAYOUT.modeButton.height },
+    cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
 } as const;
 
 /** Animation durations in milliseconds. */

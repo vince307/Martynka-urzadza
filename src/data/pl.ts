@@ -119,6 +119,9 @@ export const pl = {
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
         name: 'Salon',
+        // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
+        done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
+        change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
         // Imperative with the accusative, keyed by RoomTaskDef.label.
         tasks: {
             fixFloor: 'Napraw podłogę',
@@ -233,3 +236,9 @@ export const pl = {
         romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,
     },
 } as const;
+
+/** Room texts looked up by a data key (RoomTaskDef.label, SlotDef.id); an unknown key yields undefined. */
+export const roomText = {
+    task: (key: string): string | undefined => (pl.room.tasks as Readonly<Record<string, string>>)[key],
+    slot: (key: string): string | undefined => (pl.room.slots as Readonly<Record<string, string>>)[key],
+};

@@ -52,6 +52,11 @@ export interface RoomDef {
     tasks: RoomTaskDef[];     // completed in order
 }
 
+/** One entry of the room list shown on the "Pokój gotowy!" card: a room, or a teaser for a room that does not exist yet. */
+export type RoomListEntry =
+    | { room: string; unlockAfter?: string }
+    | { teaser: true; unlockAfter: string };
+
 // --- saved state ---
 
 /** A mistake the parent can read in the progress preview: the first wrong try of a task. Raw JSON-safe values, formatted on display. */

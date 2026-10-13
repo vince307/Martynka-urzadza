@@ -1,8 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoomDef, RoomState } from '../../core/types';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
-import { pl } from '../../data/pl';
-import { SALON_PLACEHOLDERS, type Look } from '../../data/rooms';
+import { roomText } from '../../data/pl';
+import { captionAnchor, SALON_PLACEHOLDERS, type Look } from '../../data/rooms';
+import { slotBox } from '../../core/roomHit';
 import { textStyle } from './textStyle';
 
 export interface RoomPreview {
@@ -20,13 +21,34 @@ export interface Box { left: number; top: number; width: number; height: number 
  */
 export class RoomView {
     private readonly graphics: GameObjects.Graphics;
+    private readonly outline: GameObjects.Graphics;
     private captions: GameObjects.Text[] = [];
+    private room: RoomDef | null = null;
 
     constructor(private readonly scene: Scene) {
         this.graphics = scene.add.graphics();
+        this.outline = scene.add.graphics().setDepth(1);
+    }
+
+    /**
+     * A thick static outline around the slot under a holding finger, or none. No motion, so no reduced-motion branch.
+     * DESIGN-GAP (docs/design-gaps.md row 37): the kit has no hold view; the outline is ours.
+     */
+    highlight(slotId: string | null): void {
+        const g = this.outline;
+        g.clear();
+        const slot = this.room?.slots.find((s) => s.id === slotId);
+        const size = slot ? SALON_PLACEHOLDERS[slot.id] : undefined;
+        if (!slot || !size) {
+            return;
+        }
+        const b = slotBox(slot, size);
+        g.lineStyle(ROOM_LAYOUT.slot.holdOutline, PLACEHOLDER_COLORS.deepTeal, 1);
+        g.strokeRoundedRect(b.left, b.top, b.right - b.left, b.bottom - b.top, ROOM_LAYOUT.slot.radius);
     }
 
     render(room: RoomDef, state: RoomState, preview: RoomPreview | null): void {
+        this.room = room;
         const { area, wallBottom } = ROOM_LAYOUT;
         const g = this.graphics;
         g.clear();
@@ -45,15 +67,17 @@ export class RoomView {
             if (!size) {
                 return;
             }
-            const box: Box = { left: slot.x - size.width / 2, top: slot.y - size.height / 2, width: size.width, height: size.height };
+            const b = slotBox(slot, size);
+            const box: Box = { left: b.left, top: b.top, width: b.right - b.left, height: b.bottom - b.top };
             const variant = chosen[slot.id];
-            const caption = (pl.room.slots as Record<string, string>)[slot.id] ?? slot.id;
+            const caption = roomText.slot(slot.id) ?? slot.id;
             if (variant === undefined) {
                 this.drawDashed(box);
             } else {
                 drawLook(this.graphics, box, size.variants[variant]);
             }
-            this.captions.push(this.scene.add.text(slot.x, slot.y, caption, textStyle('caption')).setOrigin(0.5));
+            const at = captionAnchor(slot, size);
+            this.captions.push(this.scene.add.text(at.x, at.y, caption, textStyle('caption')).setOrigin(0.5));
         });
     }
 
@@ -100,4 +124,26 @@ export function drawLook(g: GameObjects.Graphics, box: Box, look: Look, scale = 
             }
         }
     }
+}
+
+/**
+ * The room at a small scale: walls, floor and the furnished slots by depth (empty slots are left out). `left`/`top` is where the
+ * room's `area` corner lands; used by the "Pokój gotowy!" card for its list of rooms.
+ */
+export function drawRoomMiniature(g: GameObjects.Graphics, room: RoomDef, state: RoomState, left: number, top: number, scale: number): void {
+    const { area, wallBottom, slot: slotStyle } = ROOM_LAYOUT;
+    g.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
+    g.fillRect(left, top, area.width * scale, (wallBottom - area.top) * scale);
+    g.fillStyle(PLACEHOLDER_COLORS.tile, 1);
+    g.fillRect(left, top + (wallBottom - area.top) * scale, area.width * scale, (area.top + area.height - wallBottom) * scale);
+    [...room.slots].sort((a, b) => a.depth - b.depth).forEach((slot) => {
+        const size = SALON_PLACEHOLDERS[slot.id];
+        const variant = state.chosen[slot.id];
+        if (!size || variant === undefined) {
+            return;
+        }
+        const b = slotBox(slot, size);
+        const box: Box = { left: left + (b.left - area.left) * scale, top: top + (b.top - area.top) * scale, width: (b.right - b.left) * scale, height: (b.bottom - b.top) * scale };
+        drawLook(g, box, size.variants[variant], scale, slotStyle.radius * scale);
+    });
 }

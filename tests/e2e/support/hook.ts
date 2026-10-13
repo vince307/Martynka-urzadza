@@ -20,7 +20,7 @@ export interface Snapshot {
     counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; taskId: string; preview: 0 | 1 | 2 | null } } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; modeText: string | null } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -58,6 +58,9 @@ export interface Targets {
     thumbs?: Point[];
     choose?: Point | null;
     close?: Point | null;
+    modeButton?: Point | null;
+    cardNext?: Point | null;
+    slots?: Record<string, Point>;
     roomSwitch: Point | null;
     speaker: Point | null;
     ages?: (Point & { age: number })[];
@@ -142,7 +145,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };

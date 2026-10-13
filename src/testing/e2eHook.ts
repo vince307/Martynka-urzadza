@@ -26,6 +26,18 @@ export const e2eMonth = (search: string): number | null => {
     return month <= 11 ? month : null;
 };
 
+export const E2E_MAX_STARS = 500;
+
+/** `?e2eStars=0..500` sets the starting star balance in the e2e build (a seam, not a save); anything else is null. */
+export const e2eStars = (search: string): number | null => {
+    const raw = new URLSearchParams(search).get('e2eStars');
+    if (raw === null || !/^\d{1,3}$/.test(raw)) {
+        return null;
+    }
+    const stars = Number(raw);
+    return stars <= E2E_MAX_STARS ? stars : null;
+};
+
 export type E2EFailSite = 'step' | 'boot' | 'settings';
 
 /** Message of the error thrown at a forced failure site; also a build guard marker. */
@@ -93,6 +105,9 @@ export const installE2EHook = (game: Game): void => {
                     thumbs: inRoom() ? room().thumbTargets() : [],
                     choose: inRoom() ? room().chooseTarget() : null,
                     close: inRoom() ? room().closeTarget() : null,
+                    modeButton: inRoom() ? room().modeButtonTarget() : null,
+                    cardNext: inRoom() ? room().cardNextTarget() : null,
+                    slots: inRoom() ? room().slotTargets() : {},
                     speaker: ui().speakerTarget(),
                     roomSwitch: ui().roomSwitchTarget(),
                     settingsIcon: ui().settingsTarget(),
