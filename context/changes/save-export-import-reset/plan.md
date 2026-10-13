@@ -792,9 +792,9 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [x] 6.1 `validate-rule-files.sh` PASS
-- [x] 6.2 Deliberate break: `onReset` bez `session.run` → `dialogSessions` czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [x] 6.3 `rawExportText` usunięte lub uzasadnione; `freshSession` nie żyje w `main.ts`
+- [x] 6.1 `validate-rule-files.sh` PASS — cc58e16
+- [x] 6.2 Deliberate break: `onReset` bez `session.run` → `dialogSessions` czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — cc58e16
+- [x] 6.3 `rawExportText` usunięte lub uzasadnione; `freshSession` nie żyje w `main.ts` — cc58e16
 - [ ] 6.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

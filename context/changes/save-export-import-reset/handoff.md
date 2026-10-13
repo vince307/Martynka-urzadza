@@ -7,7 +7,7 @@ Written by the `/10x-implement phase 6` step of run `2026-10-13-s12-s14`. Phase 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | phases 1-5 `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`; phase 6 see `git log` (`feat(save-export-import-reset): ... (p6)`) |
+| Commits | phases 1-5 `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`; phase 6 `cc58e16` |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` (epilogue waits for phase 7) |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (6.4 e2e half, 6.5-6.10 manual, phase 7) |
