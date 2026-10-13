@@ -1,52 +1,48 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
-Written by `/10x-implement` phase 5 (committed f5e153a): the "Pokój gotowy!" card with the room list and the "Zmień wygląd" mode; green except e2e (orchestrator gate). Phase 6 (seam sweep, design gaps 37-41, follow-ups, docs) is next.
+Written by `/10x-implement` phase 6: seam sweep, design gaps 37-41, follow-ups, CLAUDE.md. Phase 7 (e2e) is next.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
-| Commits | ..., `8baf606` (phase 4), handoff p4, `f5e153a` (phase 5) |
+| Commits | ..., `8baf606` (phase 4), handoff p4, `f5e153a` (phase 5), handoff p5, `3e3931d` (phase 6) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 22 (5.1-5.4 ticked; 5.5 [reviewer], 5.6, 5.7 [visual] left) |
+| `## Progress` rows remaining | 18 (6.1-6.4 ticked; 6.5 [reviewer], 6.6-6.9 [human], 5.5-5.7 left) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/RoomDoneCard.ts` | new: card, title, a tile per `RoomListItem` (miniature + check mark; teaser dashed, padlock while locked), "Dalej" (`PageButton.setDepth(5)`), `target()` |
-| `src/ui/widgets/RoomView.ts` | `drawRoomMiniature(g, room, state, left, top, scale)` |
-| `src/scenes/RoomScene.ts` | `mode`, `card` (set at once in `dispatch` on the last purchase), `cardDrawn` (after `purchasePopMs`, 0 with reduced motion), `showCard` (auto-read via `effectiveAutoRead` + narrator), `modeButton`, `blocked = open \|\| card` disables holdZone/task/mode/resume; `roomGesture` gets `mode: this.mode`; narration = done.spoken / change.hint / task; snapshot `done`/`mode`/`card`/`modeText`; `modeButtonTarget`, `cardNextTarget` |
-| `src/data/layout.ts` | `ROOM_LAYOUT.modeButton` (1010,892, 570x128: right of the 3rd thumbnail, so it does not copy `taskButton`'s rect), `ROOM_DONE_LAYOUT` (card ends at tray.top 780, "Dalej" at 735,624), `ROOM_TOUCH_TARGETS.modeButton/cardNext` |
-| `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | `targets.modeButton`, `targets.cardNext`; snapshot types |
-| `tests/layout.test.ts` | +2 tests (mode/card targets, tiles in card) |
+| `docs/design-gaps.md` | rows 37-41 (hold view, change mode, done card, room list, card reading + captions) |
+| `CLAUDE.md` | S-10 paragraph in Current state (states `ROOM_LAYOUT.modeButton` is right of the 3rd thumbnail, off the task button's rect) |
+| `src/scenes/RoomScene.ts` | class comment now says it owns panel, hold, mode and card |
+| `context/changes/variant-change-room-done/follow-ups/review-fixes.md` | new: S-11 / S-16 / v1.1 / M8 items with `Trigger:`; closing of the S-09 `Trigger: S-10` items with phase refs |
 | `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` | deferred break A for phase 7 (unchanged) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm test` | 1076 passed (baseline 1074, +2) |
-| `npm run lint`, `npm run typecheck`, deploy tests, `sample` E1-E6 | clean / exit 0 |
-| `npm run build` | "e2e hook: absent (2 chunks checked)" |
-| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate; expected 24 passed (+0) |
-| Deliberate break | `ROOM_LAYOUT.modeButton.top` 892 -> 800 made the new `layout.test.ts` test red (`expected true to be false`, overlap with thumbnail/"Wybieram"); restored. Meta-check: it protects the disjointness of rectangles, not looks. |
-
-Request for orchestrator: `npx playwright test` on f5e153a must stay 24 passed (no spec touched; `RoomScene` changes affect the room spec path: hold zone, task button, panel).
+| `npm test` | 1076 passed (baseline 1076, +0) |
+| lint, typecheck, deploy tests, `sample` E1-E6, build | clean; "e2e hook: absent (2 chunks checked)" |
+| `validate-rule-files.sh` | PASS (6 files, 186 paths) |
+| Deliberate break | `CLAUDE.md` `src/core/roomHit.ts` -> `roomHits.ts`: validator FAIL (missing 1); restored, PASS. Meta-check: it reads paths asserted by the rule files. |
+| `grep S-10 src/` | no stale announcements ("comes with"/"is S-10"/"brings") |
+| `npx playwright test` | not run here: phase 6 changes comments and docs only; orchestrator run on b15b900 was 24 passed |
 
 ## 4. Next command
 
-`/10x-implement variant-change-room-done phase 6`
+`/10x-e2e variant-change-room-done phase 7`
 
 ## 5. Open
 
-- Phase 7 must use `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` (break A, row 7.2). Hook now exposes `snapshot.room.card/mode/done/modeText`, `targets.modeButton/cardNext`.
-- `[human]`/`[visual]` rows: 3.5, 4.6, 4.7, 5.6, 5.7, 6.6-6.9. `[reviewer]` 2.4, 5.5.
-- DESIGN-GAP rows 37-41 go into `docs/design-gaps.md` in phase 6: code comments exist for 37 (hold view), 38 and 40 (mode button, `ROOM_LAYOUT.modeButton`), 39 and 40 (card and room list, `ROOM_DONE_LAYOUT`, `RoomDoneCard`); `pl.ts` comment cites 37-41.
-- Not verified in a browser: card layering (card graphics depth 5 over RoomView captions depth 0), thumbnail look, padlock/check shapes, "Zamknij"/mode button shared place.
+- Phase 7 must use `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` (break A, row 7.2). Hook exposes `snapshot.room.card/mode/done/modeText`, `targets.modeButton/cardNext`.
+- `[human]`/`[visual]` rows: 3.5, 4.6, 4.7, 5.6, 5.7, 6.6-6.9. `[reviewer]` 2.4, 5.5, 6.5.
+- Not verified in a browser: card layering, thumbnail look, padlock/check shapes, "Zamknij"/mode button shared place.
 
 ## 6. Autonomous decisions
 
@@ -63,3 +59,4 @@ Request for orchestrator: `npx playwright test` on f5e153a must stay 24 passed (
 10. Phase 4 e2e not runnable (MachPort): orchestrator gate; break deferred to phase 7 as the plan says.
 11. Phase 5: `ROOM_LAYOUT.modeButton` is 1010,892 570x128, not the `taskButton` rect (that rect overlaps the 3rd thumbnail; plan said "miniatury nie nachodzą"). Card is 220..780 (ends at tray.top) with "Dalej" at y 624 above "Wybieram" instead of reusing `UNLOCK_LAYOUT.button`. `RoomDoneCard.show(items, room, state)` takes the salon's `RoomDef` + state for the miniature (one room in v1); tile name is `pl.room.name`. `PageButton.setDepth` added so the button sits over the card graphics. Auto-read stage comes from the registry learner (`effectiveAutoRead`), speaking skipped without settings/learner. Would change: visual gate shows overlap or odd layering.
 12. Phase 5 e2e not runnable (MachPort): orchestrator gate. Teacher read of strings (row 5.5 stays [reviewer]): "Pokój gotowy!", "Salon", "Wkrótce", "Dalej", "Zmień wygląd", "Gotowe", "Stuknij mebel, który chcesz zmienić." - no numerals, imperative accusative OK.
+13. Phase 6: docs only. Archived S-09 follow-ups are not edited; their closure is recorded in this change's follow-ups file. Design gap row text for 32/36 is covered inside rows 41 (no separate edit to rows 32 and 36). Would change: reviewer wants the old rows amended.

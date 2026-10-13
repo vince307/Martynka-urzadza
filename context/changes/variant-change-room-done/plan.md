@@ -751,10 +751,10 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [x] 6.1 `validate-rule-files.sh` PASS
-- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check (roomHit.ts→roomHits.ts: missing 1, FAIL; the validator reads paths from rules)
-- [x] 6.3 `grep "S-10" src/` bez nieaktualnych zapowiedzi
-- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 (e2e: comments and docs only; orchestrator run on b15b900, 24 passed)
+- [x] 6.1 `validate-rule-files.sh` PASS — 3e3931d
+- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check (roomHit.ts→roomHits.ts: missing 1, FAIL; the validator reads paths from rules) — 3e3931d
+- [x] 6.3 `grep "S-10" src/` bez nieaktualnych zapowiedzi — 3e3931d
+- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 (e2e: comments and docs only; orchestrator run on b15b900, 24 passed) — 3e3931d
 
 #### Manual
 
