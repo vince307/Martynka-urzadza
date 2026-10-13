@@ -113,7 +113,8 @@ export const pl = {
         fromFile: 'Z pliku',
         stars: (n: number) => countNoun(n, ['gwiazdka', 'gwiazdki', 'gwiazdek']),
         noStage: 'przed wyborem etapu',
-        room: (name: string, done: number, total: number) => `${name}: ${done} z ${total}`,
+        // Room names are lower case in data (they sit inside sentences); a summary line starts with a capital.
+        room: (name: string, done: number, total: number) => `${name.charAt(0).toUpperCase()}${name.slice(1)}: ${done} z ${total}`,
         load: 'Wczytaj',
         rejected: {
             'too-big': 'Ten plik jest za duży, to nie jest zapis tej gry. Obecne postępy zostały bez zmian.',

@@ -22,6 +22,8 @@ describe('pl.saveTransfer import copy', () => {
 
     it('formats a room line', () => {
         expect(pl.saveTransfer.room('Salon', 3, 10)).toBe('Salon: 3 z 10');
+        // Room names are lower case in data (they live inside sentences); the line starts with a capital (visual gate).
+        expect(pl.saveTransfer.room('salon', 0, 10)).toBe('Salon: 0 z 10');
     });
 
     it('asks before a reset, advises a copy and keeps the destructive label off the cancel label', () => {

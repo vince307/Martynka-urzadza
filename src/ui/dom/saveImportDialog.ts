@@ -24,7 +24,8 @@ export interface SaveImportDialogOptions {
 
 /**
  * Import in two steps (FR-022): pick a file, then compare "Teraz" and "Z pliku" and tap "Wczytaj". A file that
- * fails is refused with a calm line and the save is never touched; only the second step calls `apply`.
+ * fails is refused with a calm line and the save is never touched; only the second step calls `apply`, and that step
+ * opens with the focus on "Anuluj".
  * DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; built from the S-06 dialog parts.
  * Returns the function that closes the dialog.
  */
@@ -81,6 +82,8 @@ export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, a
             message,
             actions,
         ]);
+        // "Wczytaj" overwrites the child's progress: the initial focus goes to the safe "Anuluj", never to the overwrite.
+        cancel.focus();
     };
 
     const stepOne = (rejection?: ImportRejection): void => {

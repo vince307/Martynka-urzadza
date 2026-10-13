@@ -122,6 +122,8 @@ test('#7 #2 a valid file replaces the save only after the summary and survives t
     await expect(dialog.getByText(pl.saveTransfer.stars(IMPORTED_STARS))).toBeVisible();
     await expect(dialog.getByText(pl.stages[IMPORTED_STAGE])).toBeVisible();
     await expect(dialog.getByText(pl.saveTransfer.room(SALON.name, 0, SALON.tasks.length))).toHaveCount(2);
+    // The overwrite is never the default: the focus starts on "Anuluj" (visual gate).
+    await expect(dialog.getByRole('button', { name: pl.parent.cancel, exact: true })).toBeFocused();
     expect((await snapshot(page)).stars).toBe(0);
 
     await reloadedBy(page, () => dialog.getByRole('button', { name: pl.saveTransfer.load, exact: true }).tap());
