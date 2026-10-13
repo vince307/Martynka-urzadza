@@ -768,9 +768,9 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 7.1 `room-change.spec.ts` zielony (2 passed); pełne `npx playwright test` baseline e2e + 2
-- [ ] 7.2 Deliberate break A: przytrzymanie wysyła `open` zamiast `change`, oraz patch fazy 4 (saldo przy `changed`) → czerwone; przywrócone; meta-check
-- [ ] 7.3 Deliberate break B: scena karmi `roomGesture` trybem `change` zawsze (stuknięcie poza trybem otwiera panel) → czerwony; przywrócone; meta-check
-- [ ] 7.4 Deliberate break C: brak karty po zakupie kończącym pokój → czerwony; przywrócone; meta-check
-- [ ] 7.5 Deliberate break D: miniatura odpala na `pointerup` bez `pointerdown` → czerwony na `preview === null` po przytrzymaniu nad miniaturą; przywrócone; meta-check
-- [ ] 7.6 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite
+- [x] 7.1 `room-change.spec.ts` zielony (2 passed); pełne `npx playwright test` baseline e2e + 2 — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
+- [x] 7.2 Deliberate break A: przytrzymanie wysyła `open` zamiast `change`, oraz patch fazy 4 (saldo przy `changed`) → czerwone; przywrócone; meta-check — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
+- [x] 7.3 Deliberate break B: scena karmi `roomGesture` trybem `change` zawsze (stuknięcie poza trybem otwiera panel) → czerwony; przywrócone; meta-check — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
+- [x] 7.4 Deliberate break C: brak karty po zakupie kończącym pokój → czerwony; przywrócone; meta-check — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
+- [x] 7.5 Deliberate break D: miniatura odpala na `pointerup` bez `pointerdown` → czerwony na `preview === null` po przytrzymaniu nad miniaturą; przywrócone; meta-check — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
+- [x] 7.6 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite — 14891b9 (orchestrator e2e run, round 3, see handoff §3)
