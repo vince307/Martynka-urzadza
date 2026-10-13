@@ -633,7 +633,7 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela nowych zdań FR-013 i ZADANIA § 1
+- [x] 2.5 [reviewer] Odczyt nauczyciela nowych zdań FR-013 i ZADANIA § 1 — impl-review a2472cf
 - [ ] 2.6 [human] Decyzja opiekuna H-7 w FR-013 i ZADANIA § 1; odblokowanie przy 60–70 % trafności (~25–35 rund) — kalibracja S-17
 
 ### Phase 3: Klasyfikator sygnału błędu, parser `?e2eFail=` i strażnik z listą znaczników
@@ -656,8 +656,8 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Odczyt nauczyciela `pl.errorCard` (tytuł, zdanie, przycisk, wersja)
-- [ ] 4.6 [reviewer] Callbacki okien w `session.run`, zwolnienie raz, wyjątek nie połykany, handler awarii nie rzuca, `e2eFail` tylko pod `__E2E_HOOK__`
+- [x] 4.5 [reviewer] Odczyt nauczyciela `pl.errorCard` (tytuł, zdanie, przycisk, wersja) — impl-review a2472cf
+- [x] 4.6 [reviewer] Callbacki okien w `session.run`, zwolnienie raz, wyjątek nie połykany, handler awarii nie rzuca, `e2eFail` tylko pod `__E2E_HOOK__` — impl-review a2472cf
 - [ ] 4.7 [visual] Zrzuty karty po awarii w klatce (`step`) i startu (`boot`) — 1440×900 i 1024×768
 - [ ] 4.8 [human] Odstępstwo od PRD „niczego stracić”: do S-11 restart z karty kończy sesję; karta na każdą awarię
 
@@ -673,8 +673,8 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Manual
 
-- [ ] 5.6 [reviewer] Odczyt nauczyciela `pl.settings.noVoice`
-- [ ] 5.7 [reviewer] Seam sweep: martwe pola, komentarze, duplikaty; DESIGN-GAP 29–30 w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:`
+- [x] 5.6 [reviewer] Odczyt nauczyciela `pl.settings.noVoice` — impl-review a2472cf
+- [x] 5.7 [reviewer] Seam sweep: martwe pola, komentarze, duplikaty; DESIGN-GAP 29–30 w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:` — impl-review a2472cf
 - [ ] 5.8 [visual] Zrzuty panelu bez polskiego głosu i z polskim głosem — 1440×900 i 1024×768
 - [ ] 5.9 [human] Przełącznik czytania aktywny bez głosu (PRD milczy; FR-009 ukrywa tylko przycisk HUD)
 
