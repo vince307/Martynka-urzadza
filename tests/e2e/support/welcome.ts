@@ -43,9 +43,20 @@ const openWelcome = async (page: Page, search: string): Promise<void> => {
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
 };
 
-/** Parent path: gate, then age 10 and stage E3; lands on the first task of a normal (no warm-up) round of stage E3. */
-export const passWelcome = async (page: Page): Promise<void> => {
-    await openWelcome(page, '');
+export interface ParentChoice {
+    /** The age button as the parent reads it ("8", "10+"). */
+    age: string;
+    /** The stage button as the parent reads it ("Klasa 2, II półrocze"). */
+    stageLabel: string;
+    /** The stage the learner must have afterwards (E3, E4). */
+    stage: string;
+    /** Month pinned by ?e2eMonth (the e2e build only); undefined = the real clock. */
+    month?: number;
+}
+
+/** Parent path: gate, then the chosen age and stage; lands on the first task of a normal (no warm-up) round. The stage must differ from the proposal, or the warm-up would follow. */
+export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Promise<void> => {
+    await openWelcome(page, choice.month === undefined ? '' : `?e2eMonth=${choice.month}`);
     let parent: { x: number; y: number } | undefined;
     await expect
         .poll(async () => {
@@ -69,15 +80,19 @@ export const passWelcome = async (page: Page): Promise<void> => {
     // The panel: replaces the gate dialog once the gate has closed.
     const panel = page.getByRole('dialog', { name: 'Ustawienia startowe' });
     await expect(panel).toBeVisible();
-    await panel.getByRole('button', { name: PARENT_AGE, exact: true }).tap();
-    await panel.getByRole('button', { name: STAGE_LABEL, exact: true }).tap();
+    await panel.getByRole('button', { name: choice.age, exact: true }).tap();
+    await panel.getByRole('button', { name: choice.stageLabel, exact: true }).tap();
     await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
 
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('task');
     const learner = (await readHook(page, 'snapshot'))?.learner;
-    expect(learner?.stage).toBe(STAGE);
+    expect(learner?.stage).toBe(choice.stage);
     expect(learner?.warmupPending).toBe(false);
 };
+
+/** Parent path, age 10 and stage E3 in every month (the proposal is E6, so E3 is an override). */
+export const passWelcome = (page: Page): Promise<void> =>
+    passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE });
 
 /** Child path: taps `age` with the month pinned by ?e2eMonth (the e2e build only); the warm-up follows when the stage has a previous one. */
 export const passWelcomeAsChild = async (page: Page, age: number, month: number): Promise<void> => {
