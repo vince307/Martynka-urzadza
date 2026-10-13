@@ -41,6 +41,8 @@ Seam sweep findings: `playable` is defined once (`pick.ts`) and imported; `pickS
 
 ## 5. Open
 
+- Phase 9 written but NOT committed (Chromium MachPort): see `context/runs/2026-10-12-s04-s08/e2e-request-s07-p9.md`; the finishing agent runs the commands, commits `tests/e2e/adaptive.spec.ts`, `tests/e2e/support/hook.ts`, `tests/e2e/support/welcome.ts`, `playwright.config.ts`, ticks 9.1-9.4, sets change.md `implemented` and §4 = `/10x-impl-review adaptive-curriculum`.
+
 - Rows 5.5, 6.5, 7.5, 8.4 [reviewer]; 7.6 [visual]; 8.5-8.10 [human] as the plan names them (cold start resets mastery; rule D calendar floor, E3 October steps 1, 2, 6 and the ~1 month lead on E3 October / E6 February; majority = `>= ceil(0.5 n)`; unlock during easing; easing = weights 20/50/30; no automatic stage advance).
 - Phase 9 (e2e #13) needs `?e2eMonth=8`, parent path E4, see plan; Chromium cannot launch in agent sessions, so expect `e2e-request-s07-p9.md`.
 - The proposed test-plan risk #13 and the calendar-floor calibration are in the follow-ups file.
