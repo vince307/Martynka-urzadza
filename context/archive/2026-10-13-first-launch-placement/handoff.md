@@ -10,8 +10,8 @@ UPDATE (re-dispatch): O1 is fixed in `9b9b9d3` (sentence prompts draw the box; `
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
 | Commits | O1 fix `9b9b9d3`, p1 `d79ba20` … p9 `3320b20`, review fix `a6f091b`, visual fixes `aa34170`, `317926b`, plus docs/handoff commits; the last is `docs(first-launch-placement): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-12-s04-s08/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-10-13-first-launch-placement/` by `c23b48a`; roadmap S-06 `done`, Backlog Handoff refreshed) |
 | `## Progress` rows remaining | 7, all `[human]`: 5.7, 6.5, 7.5–7.9 |
 | Working tree | clean after the visual-gate commit |
 
@@ -48,7 +48,7 @@ Observed in this step.
 
 ## 4. Next command
 
-/10x-archive first-launch-placement, then ship (no hosted db push)
+none — shipped
 
 ## 5. Open
 
@@ -92,3 +92,8 @@ Visual-gate step:
 15. **The dev server was restarted after each fix** because Vite's watcher did not pick up edits in this sandboxed session (the served `style.css` stayed stale); the build id in the frames therefore names the commit. Kill ran outside the sandbox (signals are blocked inside), LISTEN pid only. Would change: a session where HMR works (then one server for the whole gate).
 16. **Tablet warm-up reached through the parent path (confirm the proposal), desktop through the child path**, so both entries into the warm-up are on record; the tablet has no override-round frame (row 5.6 does not ask for it). Would change: nothing.
 17. **Ran the e2e suite myself** (Chromium launched in this session as one plain command), so the orchestrator's re-run is a confirmation, not a dependency. Would change: a Chromium launch failure (then the orchestrator's run is the evidence).
+
+Archive + ship step:
+
+19. **Archived despite 7 open Progress rows** (`Continue archiving`, the skill's recommended label for 0 automated / 7 manual): rows 5.7, 6.5, 7.5–7.9 are all `[human]` and form the post-run checklist for the maintainer, not a blocker. No SHA repointing: every Progress SHA is an ancestor of the branch and the PR merges with `--merge` (no squash), so the SHAs survive on main. Rows without a SHA suffix (reviewer/visual/validator rows) stay as they are. Would change: a `[human]` row the maintainer marks as blocking before merge.
+20. **Roadmap Backlog Handoff**: S-06 → Done; S-07 stays ready (gains the S-06 `Trigger: S-07` follow-ups: duplicate warm-up prompt, impl-review F5); S-08 stays `no` (S-07 not done) with the S-06 `Trigger: S-08` follow-ups (stage change behind `openParentGate`, F2 e2e helpers); S-11, S-14, S-17 rows restate their S-06 triggers; risk #12 is named in the S-06 row for `/10x-test-plan --refresh`. Would change: nothing.
