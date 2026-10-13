@@ -3,8 +3,8 @@
 // synthesizer is replaced by a fake installed before the page scripts run: it offers the voices a
 // test chooses and records every utterance. Runs in the chromium-hook project (read-only hook,
 // window.__martynkaE2E). Speech needs a user gesture, so the speaker must react to the END of a
-// touch (pointerup) and the game must stay silent until the child taps; stage E3 (age 8
-// in October, through the welcome helper) has automatic reading off, so "Dalej" is silent too.
+// touch (pointerup) and the game must stay silent until the child taps; stage E3 (the welcome
+// helper's parent path: age 10, stage E3 chosen instead of the proposal) has automatic reading off, so "Dalej" is silent too.
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
 

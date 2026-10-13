@@ -67,13 +67,13 @@ export const openStagePanel = ({ month, onConfirm, onCancel, parent = document.b
         confirm.disabled = age === null || stage === null;
     };
 
-    const group = (heading: string, className: string, buttons: HTMLButtonElement[]): HTMLElement[] => {
+    const group = (key: 'age' | 'stage', heading: string, className: string, buttons: HTMLButtonElement[]): HTMLElement[] => {
         const row = document.createElement('div');
         row.className = className;
         row.setAttribute('role', 'group');
         row.append(...buttons);
         const title = createText('p', heading);
-        const id = `panel-${heading}`;
+        const id = `parent-panel-${key}`; // an IDREF: no spaces (aria-labelledby is a space-separated list)
         title.id = id;
         row.setAttribute('aria-labelledby', id);
         return [title, row];
@@ -90,8 +90,8 @@ export const openStagePanel = ({ month, onConfirm, onCancel, parent = document.b
         parent,
         createText('h1', pl.parent.panelTitle),
         [
-            ...group(pl.parent.ageHeading, 'parent-choices', ageButtons.map((a) => a.button)),
-            ...group(pl.parent.stageHeading, 'parent-choices parent-choices-stages', stageButtons.map((s) => s.button)),
+            ...group('age', pl.parent.ageHeading, 'parent-choices', ageButtons.map((a) => a.button)),
+            ...group('stage', pl.parent.stageHeading, 'parent-choices parent-choices-stages', stageButtons.map((s) => s.button)),
             actions,
         ],
         cancel,

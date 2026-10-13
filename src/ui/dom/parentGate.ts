@@ -58,12 +58,9 @@ export const openParentGate = ({ rng, onPass, onCancel, parent = document.body }
     const keys = document.createElement('div');
     keys.className = 'parent-keys';
     const digitButton = (key: GateKey): HTMLButtonElement => createButton(key, () => press(key));
-    keys.append(
-        ...DIGITS.map(digitButton),
-        createButton('⌫', () => press('back')),
-        digitButton('0'),
-    );
-    keys.children[9].setAttribute('aria-label', pl.parent.deleteKey);
+    const back = createButton('⌫', () => press('back'));
+    back.setAttribute('aria-label', pl.parent.deleteKey);
+    keys.append(...DIGITS.map(digitButton), back, digitButton('0'));
     const ok = createButton(pl.parent.okKey, submit);
     ok.classList.add('parent-primary');
     const actions = document.createElement('div');

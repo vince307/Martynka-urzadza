@@ -8,11 +8,13 @@ import type { WelcomeScene } from '../scenes/WelcomeScene';
 
 /**
  * Read-only window onto the running game for the e2e build (E2E_HOOK=1). Only
- * main.ts, inside `if (__E2E_HOOK__)`, imports this module, and the production
- * build fails when its marker shows up in a bundle (vite/e2eHookGuard.mjs).
+ * main.ts imports this module and uses it only behind `__E2E_HOOK__`, so the
+ * production build drops it; the build fails when its marker shows up in a
+ * bundle (vite/e2eHookGuard.mjs).
  * No module-level code beyond declarations: importing it changes nothing.
  * Getters only; every value is a frozen copy. The scenes never import this file.
  */
+
 /** `?e2eMonth=0..11` pins the session month in the e2e build; anything else is null (pure parsing, no state). */
 export const e2eMonth = (search: string): number | null => {
     const raw = new URLSearchParams(search).get('e2eMonth');
