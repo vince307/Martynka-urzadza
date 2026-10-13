@@ -1101,10 +1101,10 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [x] 10.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod (e2e part: orchestrator)
-- [x] 10.2 `validate-rule-files.sh` PASS
-- [x] 10.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 10.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod (e2e part: orchestrator) — 165ef79
+- [x] 10.2 `validate-rule-files.sh` PASS — 165ef79
+- [x] 10.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — 165ef79
+- [x] 10.4 `npm run build` drukuje `e2e hook: absent (` — 165ef79
 
 #### Manual
 
