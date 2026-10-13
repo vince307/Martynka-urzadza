@@ -1017,7 +1017,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — bd16d47 (e2e 37 passed by the orchestrator on f5471e6)
 - [x] 4.2 Deliberate break: `pictureLayout` bez rozdzielenia przy rozwiązaniu → czerwony; przywrócone; meta-check — bd16d47
 - [x] 4.3 `npm run build` drukuje `e2e hook: absent (` — bd16d47
 
@@ -1032,7 +1032,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Automated
 
 - [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0 lub + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [ ] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (`
+- [x] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (` — SHA
 
 #### Manual
 

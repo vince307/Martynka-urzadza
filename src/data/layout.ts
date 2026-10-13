@@ -17,6 +17,8 @@ export const PLACEHOLDER_COLORS = {
     turquoise: 0x54beb4,
     deepTeal: 0x245c59,
     butter: 0xf1ce6b,
+    blockHundred: 0xd9edd3, // kit reference/base-ten.svg flat
+    blockTen: 0xa6ddd2,     // kit reference/base-ten.svg rod
     tile: 0xe3f0d9,        // answer tile and keypad key
     correct: 0xe5f2d4,     // correct answer feedback
     hint: 0xfff0b9,        // hint and solution bar
@@ -42,6 +44,9 @@ export const PLACEHOLDER_COLORS = {
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
     ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
+
+/** DESIGN-GAP row 53: column colours of a bar chart, in order. */
+export const CHART_COLORS: readonly number[] = [0x54beb4, 0xf1ce6b, 0xc98460, 0xa6cf7f, 0xc99b66];
 
 /** Deep teal as a CSS colour: every text of the task screen. */
 export const TEXT_COLOR = '#245C59';
@@ -72,6 +77,8 @@ export const FONT_SIZES = {
     clockDigit: 28,         // kit reference/clock.svg digits
     rulerDigit: 30,         // kit reference/ruler.svg digits
     rulerUnit: 26,          // kit reference/ruler.svg "cm"
+    chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
+    chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
 } as const;
 
 /**
@@ -100,6 +107,8 @@ export const FONT_WEIGHTS = {
     clockDigit: 700,        // kit reference/clock.svg
     rulerDigit: 700,        // kit reference/ruler.svg
     rulerUnit: 700,
+    chartLabel: 700,
+    chartAxis: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -174,6 +183,14 @@ export const TASK_LAYOUT = {
         keypad: { x: 236, y: 470, width: 768, height: 378 },
         keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
     },
+    // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
+    // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
+    blocks: {
+        hundred: { width: 180, height: 180, radius: 6 }, ten: { width: 22, height: 180, radius: 4 }, one: { width: 22, height: 22, radius: 4 },
+        gap: 12, groupGap: 40, rowGap: 24, border: 4, line: 2, cells: 10, maxScale: 1.5,
+    },
+    // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
+    chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;
