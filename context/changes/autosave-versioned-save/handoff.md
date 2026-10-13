@@ -33,7 +33,7 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 | `npm test` | 1139 passed (baseline 1079, +60 over main incl. phases 1-3, +1 this phase) |
 | deploy tests, `sample` E1..E6, `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` precaches both js chunks |
 | `grep idb-keyval src/` | only `src/storage/idb.ts` |
-| `npx playwright test` | not runnable in this session (MachPort denied, ran plain once: 10 failed at browser launch, 16 not run) -- orchestrator gate for 29da899; it must stay 26 green |
+| `npx playwright test` | (e2e: orchestrator gate after fix round, 6e1cf7b) orchestrator run on 36d40c9 was 25 passed, 1 failed (`parent-settings.spec.ts:158`, second part resumed the saved game: `task` instead of `welcome`; cause: `context.newPage()` shares IndexedDB; fix: `browser.newContext()` for the second part, closed at the end; no other spec opens a second page in one context; round 2 here: Chromium not runnable (MachPort)). Earlier note: not runnable in this session (MachPort denied, ran plain once: 10 failed at browser launch, 16 not run) -- orchestrator gate for 29da899; it must stay 26 green |
 | Unit break | drop `REGISTRY_KEYS.settings` from `SAVE_KEYS` -> `tests/saveKeys.test.ts` red (`expected [ 'currentRoom', 'learner', ...(2) ] to deeply equal [ ...(3) ]`); restored |
 | E2E break (deferred) | `e2e-break-s11-p4.patch`, proof in phase 7 row 7.3. Meta-check: without a reload spec nothing in the suite sees the seam load -> registry -> save; the break is meaningless before phase 7 |
 
@@ -69,3 +69,4 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 - Phase 4: no change to `error-boundary.spec.ts` (step 5 only if red; orchestrator run decides).
 - Phase 2's row 2.3 now cites the orchestrator e2e run on 75eaa08 (26 passed).
 - E2E: not run (MachPort); orchestrator gate for 43af7ea, no game wiring changed.
+- Phase 4 round 2: spec `parent-settings.spec.ts` #14 second part now uses a fresh browser context (`6e1cf7b`); product behaviour (resume) was correct. `error-boundary.spec.ts` untouched (green in orchestrator run).
