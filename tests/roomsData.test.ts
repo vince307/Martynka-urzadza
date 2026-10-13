@@ -7,6 +7,7 @@ import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
 import { FIRST_ROOM, ROOMS, ROOM_ORDER, SALON, SALON_PLACEHOLDERS, captionAnchor } from '../src/data/rooms';
 import { MIN_TOUCH_TARGET } from '../src/data/layout';
+import { slotBox } from '../src/core/roomHit';
 
 const BACKGROUND_SLOTS = ['floor', 'walls'];
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
@@ -142,6 +143,28 @@ describe('salon data', () => {
                 const b = boxes[j];
                 const apart = a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
                 expect(apart, `${a.id} vs ${b.id}`).toBe(true);
+            }
+        }
+    });
+
+    // Visual gate S-10: the rug caption at the slot centre sat on the sofa (drawn later, higher depth), so "dywan"
+    // read as a label of the sofa. A caption must stay clear of every slot drawn above its own.
+    it('keeps every salon caption off the slots drawn above its slot', () => {
+        const { slot: slotLayout } = ROOM_LAYOUT;
+        for (const slot of SALON.slots) {
+            const ph = SALON_PLACEHOLDERS[slot.id];
+            if (!ph) throw new Error(slot.id);
+            const text = (pl.room.slots as Record<string, string>)[slot.id] ?? '';
+            const { x, y } = captionAnchor(slot, ph);
+            const w = text.length * slotLayout.captionCharWidth;
+            const h = 32;
+            const cap = { left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
+            for (const above of SALON.slots.filter((s) => s.depth > slot.depth)) {
+                const size = SALON_PLACEHOLDERS[above.id];
+                if (!size) throw new Error(above.id);
+                const b = slotBox(above, size);
+                const apart = cap.right <= b.left || b.right <= cap.left || cap.bottom <= b.top || b.bottom <= cap.top;
+                expect(apart, `${slot.id} caption under ${above.id}`).toBe(true);
             }
         }
     });

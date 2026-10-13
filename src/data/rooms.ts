@@ -64,7 +64,7 @@ const looks = (a: Look['fill'], b: Look['fill'], c: Look['fill']): [Look, Look, 
 export const SALON_PLACEHOLDERS: Record<string, SlotPlaceholder> = {
     floor: { width: 1560, height: 340, caption: { x: 300, y: 820 }, variants: looks('oak', 'butter', 'terracotta') },
     walls: { width: 1560, height: 316, caption: { x: 300, y: 240 }, variants: looks('paleLeaf', 'turquoise', 'butter') },
-    rug: { width: 700, height: 120, variants: looks('terracotta', 'turquoise', 'butter') },
+    rug: { width: 700, height: 120, caption: { x: 960, y: 740 }, variants: looks('terracotta', 'turquoise', 'butter') },
     curtains: { width: 200, height: 300, variants: looks('turquoise', 'terracotta', 'butter') },
     picture: { width: 240, height: 180, variants: looks('butter', 'turquoise', 'terracotta') },
     shelf: { width: 300, height: 100, variants: looks('oak', 'terracotta', 'deepTeal') },
