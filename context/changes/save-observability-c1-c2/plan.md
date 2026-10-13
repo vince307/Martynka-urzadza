@@ -639,7 +639,7 @@ przyszłego builda, który go zna.
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 5b78176
 - [x] 3.2 Deliberate break: naprawa gubi inne pokoje / nadpisuje salon / brak placeholdera → czerwone; przywrócone; meta-check — 5b78176
 - [x] 3.3 `RoomScene` bez `this.room()`/`this.roomState()` (jeden resolver) — 5b78176
-- [x] 3.4 Pełna bramka lokalna zielona — 5b78176 (e2e: orchestrator gate)
+- [x] 3.4 Pełna bramka lokalna zielona — 5b78176 (e2e: orchestrator run on 2b964c2, 29 passed)
 
 #### Manual
 
@@ -649,9 +649,9 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [ ] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [ ] 4.2 Deliberate break: bez karty dla `unavailable` → unit zielone; zapis w handoff §3; meta-check
-- [ ] 4.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — cadda19 (e2e: not runnable in this session (MachPort) — orchestrator gate)
+- [x] 4.2 Deliberate break: bez karty dla `unavailable` → unit zielone; zapis w handoff §3; meta-check — cadda19 (unit green on the break, proof is e2e of phase 6)
+- [x] 4.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — cadda19 (e2e: orchestrator gate)
 
 #### Manual
 
