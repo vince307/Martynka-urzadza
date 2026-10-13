@@ -777,8 +777,8 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 - [ ] 5.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0`
 - [ ] 5.2 Deliberate break: `WelcomeScene.start` bez `startLearning` → e2e czerwony; przywrócone; meta-check (runda zależy od stanu w rejestrze)
-- [ ] 5.3 `npm run build` drukuje `e2e hook: absent`
-- [ ] 5.4 Pełna bramka lokalna zielona
+- [x] 5.3 `npm run build` drukuje `e2e hook: absent` — 0aedeff
+- [x] 5.4 Pełna bramka lokalna zielona — 0aedeff (e2e: orchestrator gate)
 
 #### Manual
 
