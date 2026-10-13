@@ -1,27 +1,30 @@
 # Handoff — `parent-settings-progress` (slice S-08)
 
-Written by the `research` step (autonomous run 2026-10-12-s04-s08): `research.md` answers the six questions with
-evidence, and `change.md` is now `preparing`. The next agent must keep two things right. First, the in-place stage
-change has to add the open round's stars to `TaskScene.sessionStars` (as `beginRound` does), or the counter drops.
-Second, game input under the DOM dialogs is suspended globally through `game.input.enabled`, not scene by scene.
+Written by the `plan` step (autonomous run 2026-10-12-s04-s08). `plan.md` has 11 phases: e2e helper de-dup (impl),
+four tdd logic phases, three impl glue/UI phases, the seam sweep, and two e2e phases for #14 (proposed). The next agent
+must check two things against the code. First, `TaskScene.applyParentStage` adds the open round's stars to
+`sessionStars` before `freshRound()`. Second, the stage change is triggered by `GAME_EVENTS.parentStage` plus the `wake`
+check, not by `changedata-learner` (that would fire inside `finishWarmup`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
-| Commits | `db487d2` (change identity) + one docs commit from this step: `docs(parent-settings-progress): research` |
+| Commits | `db487d2` (change identity), `965c602` (research), and one docs commit from this step: `docs(parent-settings-progress): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 53 (all) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/parent-settings-progress/research.md` | The research, anchored by symbol. It covers: the long press in Phaser 4.2.1 plus a CDP held-touch helper; the icon spot (x 1782–1878, y 952–1048); global input suspension; the in-place stage-change recipe; capturing `firstWrong` and `example` in the history; the weakest-skills ranking and empty states; `effectiveAutoRead`; hook additions; proposed risk #14; the e2e helper de-dup |
-| `context/changes/parent-settings-progress/change.md` | Frontmatter only: status `new` → `preparing` |
+| `context/changes/parent-settings-progress/plan.md` | Full plan: 11 phases, each with `Driver:`/`Driver why:` lines; 13 autonomous decisions; Known risks; `## Progress` |
+| `context/changes/parent-settings-progress/plan-brief.md` | Two-page brief with the key-decisions table |
+| `context/changes/parent-settings-progress/change.md` | Frontmatter status `preparing` → `planned` |
+| `context/foundation/roadmap.md` | S-08 `proposed` → `planning`, in At a glance and in the `### S-08` block |
 | `context/changes/parent-settings-progress/handoff.md` | This file |
 
 ## 3. Verification
@@ -30,46 +33,55 @@ Second, game input under the DOM dialogs is suspended globally through `game.inp
 |---|---|
 | `git branch --show-current` | `feat/parent-settings-progress` |
 | Local gate | Not run: docs-only step, no source file changed |
-| Decisive claims re-checked by grep | All five confirmed: `InputPlugin.isActive` requires `manager.enabled`; the `TouchManager` window listeners check `manager.enabled`; `Pointer.touchcancel` sets `wasCanceled = true`; `currentStepOf` in `src/core/curriculum.ts` is a private `const`; `recordRound` slices to `historyLength`; `ROUND_SPEC` in `playwright.config.ts` limits the `chromium-hook` project |
-| Prompt statistics | Throwaway tsx script outside the repo: 3280 tasks (seed 7, 40 per playable skill). Prompt length median 9, p95 77, max 115 characters |
+| `grep -c '^- \[ \]' plan.md` | 53 |
+| `grep -nE '^Driver:' plan.md` | 11 lines: impl, tdd ×4, impl ×4, e2e ×2. The e2e phases (10, 11) come after the seam sweep (phase 9) |
+| Success Criteria ↔ Progress | Checked by hand: one Progress row per criterion in every phase. The Chromium fallback for phases 10–11 is a note, not a criterion |
+| Code claims re-read in this step | `TaskScene` (`create`, `beginRound`, `finishRound`, `finishWarmup`, `onWake`, `toRoom`), `UIScene.create`, `round.ts` `answer`, `mastery.ts` `recordRound`, `curriculum.ts` `currentStepOf` (private), `placement.ts`, `types.ts` `Settings`, `dialog.ts`, `stagePanel.ts`, `parentGate.ts`, `installHint.ts`, `main.ts`, `e2eHook.ts`, `layout.ts` `HUD_LAYOUT`/`REGISTRY_KEYS`, `playwright.config.ts` `ROUND_SPEC`, `support/{hook,welcome}.ts` exports |
 | Deliberate break | None: no test or code in this step |
 
 ## 4. Next command
 
-/10x-plan parent-settings-progress
+/10x-plan-review parent-settings-progress
 
 ## 5. Open
 
-- Plan decisions, each with a recommendation in `research.md` § Open Questions:
-  - the `Settings` shape (`autoRead: boolean | null` vs a separate `autoReadByParent`);
-  - the parent-facing skill name (step `title` plus mistake examples);
-  - a history filter to the current stage;
-  - the movement tolerance (~30 game px) and the 2000 ms threshold in `balance`;
-  - whether `mountInstallHint` joins the input suspension in this slice.
-- A new e2e spec must be added to `ROUND_SPEC` in `playwright.config.ts`, otherwise it runs without the hook.
-- No DOM unit-test environment exists (no jsdom or happy-dom). S-06 covers its DOM by e2e only; S-08 should do the same unless the plan adds a dependency.
-- Only a device can confirm these: no callout or loupe on iPad during a 2 s hold, `contextmenu` on Android (suppression recommended), and no synthetic click on the dialog after the finger lifts (the e2e should prove it).
-- Proposed test-plan risk **#14**, wording in `research.md` § 6. It goes to follow-ups as `Trigger: /10x-test-plan refresh`; no test-plan edit in this slice.
-- DESIGN-GAPs to add after row 24 of `docs/design-gaps.md`: the settings icon and its spot, the parent settings panel, and the progress view with its empty state.
-- `[human]` rows carried over from `change.md`: settings are session-only until S-11, and an open round is abandoned on a parent stage change.
+- `[human]` rows (post-run checklist):
+  - 6.7: the install hint no longer leaks taps (iPad/Android).
+  - 9.6: settings stay session-only until S-11. After a cold start the parent sees the welcome again, the default auto-read and an empty progress view.
+  - 9.7: the feel of the 2 s hold on iPad/Android.
+  - 9.8: the PRD deviations, (a) to (e).
+- The reviewer should check these in plan-review:
+  - Is `REGISTRY_KEYS.inputSuspender` set in `preBoot` from `booting.input` valid in Phaser 4.2.1? The `InputManager` must exist at `preBoot`. If it does not, the counter is created lazily on first use.
+  - Is the progress panel readable at 1024×768?
+- DESIGN-GAPs 25–28 are planned for phase 9 (`docs/design-gaps.md`): the icon and its spot, the parent panel, the progress view with its empty state, and the hold without feedback.
+- Follow-ups planned for phase 9 (`follow-ups/review-fixes.md`): risk #14 for the test plan; for S-11, saving `Settings`, the history `example` field and `pendingUnlock` as `{ stage, step }`; the early save for daily play; S-12 adds export/import/reset to the same panel; S-17 calibrates `holdMs`/`moveTolerance`.
+- Every follow-up whose `Trigger:` names S-08 is in scope:
+  - the `autoRead` switch: phases 3, 6 and 7;
+  - the stage change behind the gate: phases 3, 6 and 7;
+  - the e2e helpers: phase 1;
+  - `pendingUnlock`, cleared on a stage change: phase 3;
+  - the history example: phase 4;
+  - the install-hint leak, an adjacent trigger: phase 6.
 
 ## 6. Autonomous decisions
 
-1. **The research question came from `change.md` § Open questions plus the step prompt; no interview was held** (contract rule 1).
-   - Rejected: asking for scope.
-   - Why: the artifacts define it fully.
-   - What would change it: none in an unattended run.
-2. **Recommended global `game.input.enabled` suspension (ref-counted) over looping through the scenes.**
-   - Rejected: `getScenes(true)` with saved per-scene flags. It misses the sleeping `TaskScene`, it does not cover the install hint mounted at boot, and `UIScene.create` forces input on.
-   - What would change it: a widget that needs `POINTER_UP_OUTSIDE` while a dialog is open (none found in `src/`).
-3. **Recommended a weakest-skills ranking limited to skills with at least one first-try miss.**
-   - Rejected: mastery alone.
-   - Why: mastery is 0 both for skills never played and for skills played correctly fewer than 3 times.
-   - What would change it: if mastery gained a "seen" marker.
-4. **Recommended step `title` plus mistake examples as the parent-facing skill name.**
-   - Rejected: a new `SkillDef.label` for 82 skills (large teacher-read surface) and task-type labels (still ambiguous in 4 steps).
-   - What would change it: the maintainer wants named skills, which means new content in `src/data/`.
-5. **Delegation: three read-only workers in parallel.**
-   - The decisive claims were re-checked in the main context.
-   - Rejected: a single local sweep, because the areas were independent.
-   - What would change it: nothing for this step.
+1. **Every open question from research was decided as research and the orchestrator recommended.** The detail is in plan.md § Autonomous decisions 1–13. The choices were:
+   - `autoRead: boolean | null`;
+   - the skill named by the step title plus mistake examples;
+   - the history filtered to the current stage;
+   - a 30 px tolerance and 2000 ms, both in `balance.parentSettings`;
+   - the install-hint fix on the global counter.
+   - Rejected: the alternatives listed there.
+   - What would change it: the maintainer's `[human]` 9.8 review.
+2. **The panel applies changes on „Zatwierdź”/„Anuluj” rather than as instant toggles** (plan decision 10).
+   - Why: the parent can look at the progress view without side effects.
+   - What would change it: a playtest showing that parents forget to confirm.
+3. **The stage-change trigger is a game event plus a `wake` check, not a registry `changedata` listener.**
+   - Why: `finishWarmup` writes the learner's new stage before it sets `this.stage`, so a registry listener would fire in the middle of the warm-up.
+   - What would change it: `finishWarmup` reordered and covered by a test.
+4. **Phase 1 (e2e helper de-dup) comes first, as impl** (orchestrator guidance).
+   - Proof: the 15 specs stay green with no assertion changed.
+   - The orchestrator runs the specs if Chromium does not launch in the agent session.
+5. **No AskUserQuestion; complexity rated HIGH.**
+   - The skill's interview rounds and phase-structure approval were decided in place, following the research and the orchestrator guidance (contract rule 1).
+   - The clipboard copy was skipped (unattended session).

@@ -53,7 +53,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | done |
 | S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | done |
 | S-07  | adaptive-curriculum         | M3   | gra dobiera zadania wg wag i opanowania, odblokowuje kroki, łagodzi trudność      | S-05                 | FR-013, FR-014                  | done |
-| S-08  | parent-settings-progress    | M3   | rodzic zmienia etap i widzi zwięzły podgląd postępów za bramką                   | S-06, S-07           | FR-015, US-03                   | proposed |
+| S-08  | parent-settings-progress    | M3   | rodzic zmienia etap i widzi zwięzły podgląd postępów za bramką                   | S-06, S-07           | FR-015, US-03                   | planning |
 | S-09  | first-furniture-purchase    | M4   | dziecko wydaje gwiazdki na zadanie remontowe i wybiera jeden z 3 wariantów        | S-08                 | FR-016, FR-017, US-02           | proposed |
 | S-10  | variant-change-room-done    | M4   | dziecko zmienia wariant za darmo, widzi „Pokój gotowy!” i robi poprawki           | S-09                 | FR-018, FR-019                  | proposed |
 | S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | proposed |
@@ -233,7 +233,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** zamyka etap M3; podgląd czyta historię z S-07, więc idzie po niej; eksport/import/reset dochodzą dopiero w S-12 (etap M5).
-- **Status:** proposed
+- **Status:** planning
 
 ### S-09: Pierwszy mebel za gwiazdki
 
