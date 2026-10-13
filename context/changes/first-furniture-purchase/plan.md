@@ -709,8 +709,8 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 - [x] 4.1 `sessionStars` usunięte; `REGISTRY_KEYS.stars` pisane w `TaskScene` tylko w `syncStars` — 314a2a7
 - [x] 4.2 `summary.test.ts` bez zmian zielony, `motion.test.ts` zielony; unit baseline + N — 314a2a7
-- [ ] 4.3 `npx playwright test` zielony, baseline e2e + 0 (asercje `starsTotal` bez zmian) (orchestrator gate)
-- [ ] 4.4 Deliberate break `syncStars` bez delty → `task-round.spec.ts` czerwony; przywrócone; meta-check (orchestrator gate)
+- [x] 4.3 `npx playwright test` zielony, baseline e2e + 0 (asercje `starsTotal` bez zmian) (orchestrator gate) — 314a2a7 (e2e: orchestrator run on cc0c888, 23 passed)
+- [x] 4.4 Deliberate break `syncStars` bez delty → `task-round.spec.ts` czerwony; przywrócone; meta-check (orchestrator gate) — 314a2a7 (orchestrator: e2e-break-s09-p4.patch → task-round.spec.ts "#11 a clean round…" red, Expected 1 Received 2 on starsTotal; reverted)
 - [x] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona — 314a2a7
 
 #### Manual
@@ -721,10 +721,10 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [ ] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; testy `ROOM_LAYOUT.panel` przepisane; unit baseline + N
-- [ ] 5.2 Deliberate break przycisk zadania na zębatce → czerwony; przywrócone; meta-check
-- [ ] 5.3 `room.caption` usunięte; `npx playwright test` zielony, baseline e2e + 0
-- [ ] 5.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; testy `ROOM_LAYOUT.panel` przepisane; unit baseline + N
+- [x] 5.2 Deliberate break przycisk zadania na zębatce → czerwony; przywrócone; meta-check
+- [ ] 5.3 `room.caption` usunięte; `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)
+- [x] 5.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
 
 #### Manual
 

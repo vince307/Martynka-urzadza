@@ -19,6 +19,8 @@ export interface Snapshot {
     stars: number;
     counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    /** What the open room shows (room screen only). */
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; affordable: boolean; buttonText: string } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -52,6 +54,7 @@ export interface Targets {
     toRoom: Point | null;
     unlockNext: Point | null;
     resume: Point | null;
+    taskButton?: Point | null;
     roomSwitch: Point | null;
     speaker: Point | null;
     ages?: (Point & { age: number })[];

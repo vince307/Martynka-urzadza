@@ -205,15 +205,16 @@ export const WELCOME_LAYOUT = {
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
-/** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
+/** Room scene (S-09): the salon drawn in code over `area`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
-    panel: { left: 180, top: 204, width: 1560, height: 840, radius: 40 },
-    caption: { x: 960, y: 520 },
     resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md row 12)
     area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal, phase 5 may tune it)
     wallBottom: 520,                                            // wall and floor meet here
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
-    taskButton: { left: 900, top: 880, width: 720, height: 128 }, // current renovation task button
+    // Current renovation task button. DESIGN-GAP (docs/design-gaps.md, phase 7): the kit has no task button; page-button look, ours.
+    taskButton: { left: 900, top: 880, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (phase 7): the kit has no slots.
+    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
 } as const;
 
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
@@ -235,8 +236,13 @@ export const TASK_TOUCH_TARGETS = {
     key: { width: TASK_LAYOUT.keypad.keyWidth, height: TASK_LAYOUT.keypad.keyHeight },
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
-    resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
     unlockNext: { width: UNLOCK_LAYOUT.button.width, height: UNLOCK_LAYOUT.button.height },
+} as const;
+
+/** Interactive rectangles of the room scene, checked against MIN_TOUCH_TARGET. */
+export const ROOM_TOUCH_TARGETS = {
+    resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
+    taskButton: { width: ROOM_LAYOUT.taskButton.width, height: ROOM_LAYOUT.taskButton.height },
 } as const;
 
 /** Animation durations in milliseconds. */
