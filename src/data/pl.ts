@@ -28,6 +28,7 @@ export const pl = {
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',
         autoReadOff: 'Wyłączone',
+        noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',
         currentStep: (index: number, total: number, title: string) => `Krok ${index} z ${total}: ${title}`,

@@ -114,7 +114,8 @@ export class UIScene extends Scene {
         if (!learner || !suspender || this.session?.active()) {
             return;
         }
-        this.narrator?.cancel();
+        const narrator = this.narrator;
+        narrator?.cancel();
         const session = openInputSession(suspender);   // every dialog callback below runs in it: a throw ends the hold and goes on to the error boundary
         this.session = session;
         this.hold = IDLE;   // the lifted finger is lost over the dialog: nothing may stay "held"
@@ -134,6 +135,7 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
+                    watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
