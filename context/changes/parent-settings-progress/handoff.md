@@ -7,7 +7,7 @@ Written by the phase 3 step (`/10x-tdd` phase 3, autonomous run 2026-10-12-s04-s
 | | |
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
-| Commits | `db487d2`, `965c602`, `d355ca0`, `33a40d3`, `d72768a` (p1), `6616124`, `7087b16` (p2), `6616124`..., `8f53d98` (p3), plus this handoff commit |
+| Commits | `db487d2`, `965c602`, `d355ca0`, `33a40d3`, `d72768a` (p1), `6616124`, `7087b16` (p2), `8f53d98` (p3), plus this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (status moves at the last phase) |
 | `## Progress` rows remaining | 43 (phases 1-3 fully ticked) |
