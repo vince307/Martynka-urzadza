@@ -739,9 +739,9 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [x] 2.2 Deliberate break: `ok` po samym `JSON.parse` / brak limitu / `saveProblem` pomija `stars` → czerwone; przywrócone; meta-check
-- [x] 2.3 Pełna bramka lokalna zielona; `tests/fixtures/` bez zmian
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 5debed5
+- [x] 2.2 Deliberate break: `ok` po samym `JSON.parse` / brak limitu / `saveProblem` pomija `stars` → czerwone; przywrócone; meta-check — 5debed5
+- [x] 2.3 Pełna bramka lokalna zielona; `tests/fixtures/` bez zmian — 5debed5
 
 #### Manual
 

@@ -1,61 +1,57 @@
 # Handoff — `save-export-import-reset` (slice S-12)
 
-Written by the `/10x-tdd phase 1` step of run `2026-10-13-s12-s14`. Phase 1 is committed (`2e435cf`); rows 1.1-1.3 ticked, 1.4 left open because e2e could not start here. The next agent must not get wrong: `replace` never calls `block()`; one `writesOff()` predicate guards `save`, `markDirty` and the `save` loop.
+Written by the `/10x-tdd phase 2` step of run `2026-10-13-s12-s14`. Phase 2 is committed (sha in `git log`, subject `test(save-export-import-reset): … (p2)`); rows 1.4 (orchestrator e2e) and 2.1-2.3 ticked. The next agent must not get wrong: `parseImport` always goes through `decodeSave`; `validateSave` is now `saveProblem(v) === null`; `rawExportText` stays until phase 6.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | 6 on the branch: 4 docs steps, `2e435cf` phase 1, plus this handoff/Progress docs commit |
+| Commits | phase 1 `2e435cf`, phase 2 commit, plus handoff docs commits |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (left; not edited by this step) |
-| `## Progress` rows remaining | 40 (`grep -c '^- \[ \]' plan.md`) |
+| `change.md` status | `implementing` or `plan_reviewed` (not edited by this step) |
+| `## Progress` rows remaining | 35 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/autosave.ts` | `Autosaver.replace`, `current`, `ReplaceResult`, `AutosaveStatus.replace`, `writesOff()` |
-| `src/core/save.ts` | `freshSession(firstRoom, stars = 0)` (imports `emptyRoomState` from `./rooms`, `initialSettings` from `./placement`) |
-| `src/main.ts` | local `freshSession` removed; calls `freshSession(FIRST_ROOM, seeded ?? 0)` |
-| `tests/autosave.test.ts` | new `describe('Autosaver.replace …')`, 10 tests |
-| `tests/save.test.ts` | new `describe('freshSession …')`, 2 tests |
-| `tests/saveHealth.test.ts` | status helper gets `replace: 'idle'` (type only) |
-| `context/changes/save-export-import-reset/plan.md` | Progress 1.1-1.3 ticked with sha |
+| `src/core/saveFile.ts` | new: `SAVE_FILE_APP`, `exportFileText`, `parseImport`, `saveSummary`, types `ExportInput`, `ImportResult`, `ImportRejection`, `SaveSummary` |
+| `src/core/save.ts` | `saveProblem` (first bad top-level key); `validateSave` now `saveProblem(v) === null` |
+| `src/data/balance.ts` | `balance.save.importMaxBytes = 1_000_000` |
+| `tests/saveFile.test.ts` | new, 36 tests |
+| `context/changes/save-export-import-reset/plan.md` | Progress 1.4, 2.1-2.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stub `replace` returning `{ok:false,error:'stub'}`, `freshSession` throwing) | 11 failed: `AssertionError: expected { ok: false, error: 'stub' } to deeply equal { ok: true }`; `Error: stub` for freshSession. Not a missing-import failure |
-| GREEN | `npx vitest run`: 1188 passed (baseline 1176, +12) |
-| lint / typecheck | OK / OK |
-| unit gate (`npm test`, deploy tests, `sample` E1-E6) | OK, Tests 1188 passed (+12) |
-| build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `npx playwright test` | NOT RUN: Chromium cannot start in this session (`MachPortRendezvousServer … Permission denied`). **The orchestrator must run e2e** (affects 1.4). Phase 1 touches `main.ts` only by moving `freshSession` |
-| `git diff --stat tests/fixtures` | empty; `SAVE_VERSION` still 1 |
-| Break B1: remove `await inflight` in `replace` | first attempt stayed green (test too weak: both writes held in order). Test sharpened (snapshot write held, replace write instant) then red: "waits for a write in flight, then writes the given state after it"; restored, green |
-| Break B2: remove `replaced = true` | red: "turns every later write off after a success", "a second replace … is Busy"; restored |
-| Break B3: no `replacing = false` on failure | red: "after a failed write … autosave resumes", "a failed replace of a dirty game lets the debounce timer write …"; restored |
-| Meta-check | the breaks target the plan's contract (research option C: replaced save must not be overwritten by the old game), not implementation details. The "no write after replace" proof lives in this unit test, as the plan says |
+| RED (stubs: `parseImport` always `not-json`, `saveProblem` null, `saveSummary` stars -1) | 31 failed, e.g. `AssertionError: expected { kind: 'rejected', …(2) } to deeply equal { kind: 'ok', …(2) }`; `AssertionError: expected null to be 'version'` |
+| GREEN | `npm test`: 1224 passed (branch baseline 1188, +36) |
+| lint / typecheck / deploy tests / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)`. One lint error (`no-base-to-string` in a test) fixed |
+| `git diff --stat tests/fixtures` | empty |
+| e2e `npx playwright test` | NOT RUN OK: Chromium cannot start here (tests failed to launch, 16 did not run). The orchestrator must run e2e; phase 2 changes no UI or `main.ts` |
+| Break B1: `parseImport` skips `decodeSave` | red (7 tests: envelope, bare, future, ...); restored |
+| Break B2: no size limit | red: "text longer than the limit is too-big"; restored |
+| Break B3: `saveProblem` without the `stars` check | red: "negative stars is corrupt and names the field" plus 4 earlier save tests; restored |
+| Meta-check | B3 is also caught by older `validateSave` tests, because `validateSave` shares the code now; the `saveProblem`-specific proof is the "names stars" / agreement tests. B1/B2 target the plan's rule (parsable is not valid; limit before parse) |
 
 ## 4. Next command
 
-`/10x-tdd save-export-import-reset phase 2`
+`/10x-tdd save-export-import-reset phase 3`
 
 ## 5. Open
 
-- Orchestrator: run `npx playwright test` (33 expected) before ticking 1.4; then 1.4 may be ticked with the sha.
-- 1.5 `[reviewer]` row not mine.
-- Phase 1 test note: `replace` takes an encoded `SaveState` (tests use `encodeSave(session(n))`); a raw `SessionSave` is `InvalidSave`.
-- Carried from earlier handoff: DESIGN-GAP rows 46-51, e2e request-file protocol for phases 4-7, human checklist, follow-ups to write in phase 6.
+- Orchestrator: run `npx playwright test` (33 expected) on the phase 2 commit; no UI changed.
+- 2.4 `[reviewer]` row not mine.
+- `exportFileText` throws only for a non-serialisable `save` kind (cannot happen for a `SaveState`).
+- Carried: DESIGN-GAP rows 46-51, e2e request-file protocol for phases 4-7, human checklist, follow-ups in phase 6.
 
 ## 6. Autonomous decisions
 
-- TDD gate: implementation absent (`replace`, `current`, `freshSession` did not exist) and testable; driver stays `tdd`. Mixed-phase prompt: the `main.ts` move of `freshSession` was done inline as scaffolding, phase keeps `Driver: tdd`.
-- Stub first (wrong values / throw) so RED is an assertion failure; stubs replaced by the real code in GREEN.
-- 1.4 left unticked: the full local gate was not observed in full (no e2e). Rejected: ticking on the strength of unit+build. Would change: orchestrator's green e2e.
-- Manual confirmation gate, commit message, next-phase question: decided in place; committed the planned set only (six paths + plan.md), stopped after the phase.
-- Break B1 initially did not go red; strengthened the test rather than accepting a vacuous break.
+- TDD gate: `saveFile.ts`, `saveProblem`, `importMaxBytes` absent and testable; driver stays `tdd`. Not mixed: `balance.ts` constant added inline with the GREEN step.
+- Stubs first so RED is an assertion failure.
+- `saveProblem` returns `'version'` for a non-record (first key checked); `validateSave` delegates to it.
+- Bare-save acceptance requires no `app` key and numeric `version`; an `app` of another game is `not-ours`.
+- Manual gate, commit message, next-phase question decided in place; planned set only, stopped after the phase.
