@@ -1032,7 +1032,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Automated
 
 - [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0 lub + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [x] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (` — SHA
+- [x] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (` — 9b7da6e
 
 #### Manual
 
