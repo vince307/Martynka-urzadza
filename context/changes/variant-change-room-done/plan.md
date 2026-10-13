@@ -729,8 +729,8 @@ definicja (dane), nie zapis.
 
 #### Manual
 
-- [ ] 4.6 [visual] Obrys przytrzymania, panel zmiany bez/z podglądem, po zmianie, „pop” dywanu nad kanapą (V2), podpisy (V1) — 1440×900 i 1024×768
-- [ ] 4.7 [visual] Reduced motion: zmiana bez „popu” i cząsteczek
+- [x] 4.6 [visual] Obrys przytrzymania, panel zmiany bez/z podglądem, po zmianie, „pop” dywanu nad kanapą (V2), podpisy (V1) — 1440×900 i 1024×768 — bramka wizualna (zrzuty 01–06; podpis dywanu poprawiony a3dade4; V2 uchwycone, follow-up S-16)
+- [x] 4.7 [visual] Reduced motion: zmiana bez „popu” i cząsteczek — bramka wizualna (zrzuty 11–12)
 
 ### Phase 5: „Pokój gotowy!” z listą pokoi i tryb „Zmień wygląd”
 
@@ -744,8 +744,8 @@ definicja (dane), nie zapis.
 #### Manual
 
 - [x] 5.5 [reviewer] Teacher read napisów karty i trybu w kontekście — impl-review
-- [ ] 5.6 [visual] Karta „Pokój gotowy!” z listą, gotowy pokój z „Zmień wygląd”, tryb „Gotowe”, panel zmiany ze stuknięcia — 1440×900 i 1024×768
-- [ ] 5.7 [visual] Reduced motion: karta od razu po ostatnim „Wybieram”
+- [x] 5.6 [visual] Karta „Pokój gotowy!” z listą, gotowy pokój z „Zmień wygląd”, tryb „Gotowe”, panel zmiany ze stuknięcia — 1440×900 i 1024×768 — bramka wizualna (zrzuty 07–10b)
+- [x] 5.7 [visual] Reduced motion: karta od razu po ostatnim „Wybieram” — bramka wizualna (zrzut 13 vs 07a)
 
 ### Phase 6: Seam sweep, luki projektu, follow-upy i dokumentacja
 

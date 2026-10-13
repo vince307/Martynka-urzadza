@@ -27,3 +27,15 @@ Each item has a `Trigger:` line; later slices grep for them.
   Trigger: S-16
 - F5: the change-mode hint „Stuknij mebel, który chcesz zmienić.” names furniture while floor, walls and curtains also change; alternative „Stuknij to, co chcesz zmienić.” — maintainer's copy decision.
   Trigger: human checklist row 6.8 (S-10)
+
+## From the visual gate (reviews/visual-review.md)
+
+- V2: the change/purchase pop (`RoomScene.celebrate`) draws the rug over the sofa for 2 × 260 ms (frame 05); with per-slot objects for art, pop the slot's own object at its depth.
+  Trigger: S-16
+- V3: placeholder captions vanish on a matching fill ("stolik" on the deep-teal table, "obraz" faint on turquoise over turquoise walls); art replaces the backgrounds, or give captions a light backing.
+  Trigger: S-16
+- V4: the change mode has no visible cue beyond the button reading "Gotowe"; the hint is narration only and not auto-read. Options: auto-read `pl.room.change.hint` on entering the mode, or draw it above the room (needs a DESIGN-GAP row).
+  Trigger: human checklist row 6.7 (S-10)
+- V5: the change panel does not mark the thumbnail of the current look (the room shows it).
+  Trigger: human checklist row 6.7 (S-10)
+- Closed here: V2 from S-09 captured (frame 05); V1 captions confirmed apart, plus the rug caption moved off the sofa (a3dade4).
