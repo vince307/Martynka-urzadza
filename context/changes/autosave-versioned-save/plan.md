@@ -824,7 +824,7 @@ zapisu, karta z eksportem.
 #### Manual
 
 - [x] 5.5 [reviewer] Teacher read `pl.saveFailed` (tytuł, zdanie, przyciski, notka, nazwa pliku) — b59e247 (notka „Dziś” → „Tym razem”)
-- [ ] 5.6 [visual] Karta, bramka nad kartą, powitanie po „Graj dalej” — 1440×900 i 1024×768
+- [x] 5.6 [visual] Karta, bramka nad kartą, powitanie po „Graj dalej” — 1440×900 i 1024×768
 - [ ] 5.7 [human] Eksport kopii na iPadzie (aplikacja z ekranu początkowego) i Androidzie
 - [ ] 5.8 [human] Szew `?e2eSave=unreadable` jako droga e2e i bramki wizualnej do karty
 
