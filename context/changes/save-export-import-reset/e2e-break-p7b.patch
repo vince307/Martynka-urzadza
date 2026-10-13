@@ -1,0 +1,13 @@
+diff --git a/src/scenes/UIScene.ts b/src/scenes/UIScene.ts
+index 4a6e34f..768982b 100644
+--- a/src/scenes/UIScene.ts
++++ b/src/scenes/UIScene.ts
+@@ -182,7 +182,7 @@ export class UIScene extends Scene {
+             summarize,
+             roomName: (id) => ROOMS[id]?.name ?? id,
+             maxBytes: balance.save.importMaxBytes,
+-            apply: (state) => saver.replace(state),
++            apply: () => Promise.resolve({ ok: true as const }),
+             onClose: () => session.run(() => this.closeSettings()),
+         });
+     }

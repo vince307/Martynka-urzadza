@@ -1,0 +1,13 @@
+diff --git a/src/ui/dom/saveImportDialog.ts b/src/ui/dom/saveImportDialog.ts
+index 9b3d704..14ad721 100644
+--- a/src/ui/dom/saveImportDialog.ts
++++ b/src/ui/dom/saveImportDialog.ts
+@@ -106,7 +106,7 @@ export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, a
+             file.text().then(
+                 (text) => {
+                     const result = parseImport(text, maxBytes);
+-                    if (result.kind === 'ok') stepTwo(result.session);
++                    if (result.kind === 'ok') void apply(encodeSave(result.session)).then(() => reload());
+                     else refuse(result.reason, result.problem);
+                 },
+                 () => refuse('not-json', null),
