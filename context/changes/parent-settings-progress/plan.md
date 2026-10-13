@@ -907,7 +907,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Manual
 
-- [ ] 6.6 [reviewer] `applyParentStage`: strażnik tego samego etapu, gwiazdki przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb i tekstu w scenach
+- [x] 6.6 [reviewer] `applyParentStage`: strażnik tego samego etapu, gwiazdki przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb i tekstu w scenach — impl-review (TaskScene.applyParentStage: all five guards present; no numbers/text in scenes)
 - [ ] 6.7 [human] iPad/Android w przeglądarce: „Graj w przeglądarce” podpowiedzi instalacji nie trafia w kafelek pod spodem
 
 ### Phase 7: Ikona ustawień z przytrzymaniem i panel rodzica (etap, auto-czytanie)
@@ -921,7 +921,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Odczyt nauczyciela `pl.settings` (tytuł, nagłówek i przyciski auto-czytania)
+- [x] 7.5 [reviewer] Odczyt nauczyciela `pl.settings` (tytuł, nagłówek i przyciski auto-czytania) — 4388673 (impl-review teacher read: titles fine)
 - [ ] 7.6 [visual] Zrzuty: zadanie z ikoną, pokój z ikoną, bramka nad zadaniem, panel ustawień — 1440×900 i 1024×768
 
 ### Phase 8: Podgląd postępów w panelu
@@ -934,7 +934,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Manual
 
-- [ ] 8.4 [reviewer] Odczyt nauczyciela napisów podglądu (`progressHeading`, `currentStep`, `weakestHeading`, `mastery`, `example`, `empty`) z realnymi poleceniami
+- [x] 8.4 [reviewer] Odczyt nauczyciela napisów podglądu (`progressHeading`, `currentStep`, `weakestHeading`, `mastery`, `example`, `empty`) z realnymi poleceniami — 4388673 (impl-review teacher read with real E1/E3/E5 examples; „poprawnie:” → „poprawna:”)
 - [ ] 8.5 [visual] Zrzuty podglądu: pusty, 1 pozycja, 3 pozycje z długim poleceniem — 1440×900 i 1024×768; „Zatwierdź”/„Anuluj” widoczne bez przewijania
 
 ### Phase 9: Seam sweep, luki projektu, follow-upy i dokumentacja
@@ -948,7 +948,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Manual
 
-- [ ] 9.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP 25–28 w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:`
+- [x] 9.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP 25–28 w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:` — 4388673 (impl-review: duplicated DESIGN-GAP in SettingsIcon removed; gaps 25–28 match code; 6 Trigger lines)
 - [ ] 9.6 [human] Do S-11 wszystko sesyjne: po zimnym starcie powitanie od nowa, auto-czytanie domyślne, podgląd z podłogi kalendarza i pusty; „zapamiętana” tylko w sesji
 - [ ] 9.7 [human] Przytrzymanie 2 s na iPadzie i Androidzie: wygodne dla rodzica, nieosiągalne przypadkiem, bez lupy/menu, palec nie wciska cyfry bramki
 - [ ] 9.8 [human] Odstępstwa od dosłownego PRD: przerwana runda poza opanowaniem; „3 najsłabsze” tylko z błędami; nazwa = tytuł kroku + przykłady; podgląd z bieżącego etapu; ikona w HUD, nie na powitaniu

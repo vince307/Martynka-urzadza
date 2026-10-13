@@ -32,3 +32,18 @@ Każdy wpis ma `Trigger:`; późniejsze slice'y szukają ich grepem.
 
 - Kalibracja `holdMs` (2000) i `moveTolerance` (30) w `balance.parentSettings` na prawdziwym tablecie: wystarcza
   rodzicowi, nie zdarza się dziecku trzymającemu tablet za róg. Trigger: S-17
+
+## Impl-review (2026-10-13, `reviews/impl-review.md`)
+
+- (F4) `src/pwa/installHint.ts` `mountInstallHint`: the `beforeinstallprompt` listener stays registered after "Graj w
+  przeglądarce" and keeps calling `preventDefault()`, hiding the browser's own install prompt for the session (code from
+  S-01, not changed in intent by S-08). Remove the listener or stop preventing the default in `dismiss`.
+  Trigger: the next change to src/pwa
+- (F5) `src/scenes/UIScene.ts`: the long-press state returns to idle only in `UIScene.openSettings`; another holder of the
+  input suspender opening over the HUD would leave a hold armed. Feed `{ type: 'reset' }` from the suspender (or on every
+  `suspend`) when a second overlay can open above the HUD. Trigger: any new overlay that calls `suspend()` while the HUD exists
+- (F6) `src/scenes/WelcomeScene.ts` `openParent` casts `registry.get(REGISTRY_KEYS.inputSuspender)` without the
+  `undefined` guard `UIScene.openSettings` has; pick one style. Trigger: the next change to WelcomeScene or UIScene
+- (F7) `src/data/pl.ts` `settings.empty` ("Za mało odpowiedzi z błędami…") also shows for a child who made no first-try
+  mistakes at all; a parent may read it as "no data". Consider a separate line for "no mistakes yet" once the save
+  (S-11) keeps long histories. Trigger: S-11, or a parent's feedback on the preview
