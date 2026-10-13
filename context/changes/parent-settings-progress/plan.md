@@ -967,8 +967,8 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [x] 11.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (3 passed); pełne e2e `<baseline gałęzi e2e> + 3`
-- [x] 11.2 Deliberate break: `applyParentStage` bez dodania gwiazdek → test (a) czerwony; przywrócone; meta-check
-- [x] 11.3 Druga przerwa: `finishRound` bez `roundResults` (albo kandydaci z `ok === false`) → test (b) czerwony; przywrócone; meta-check
-- [x] 11.4 Trzecia przerwa: `effectiveAutoRead` ignoruje ustawienia → test (a) czerwony; przywrócone
-- [x] 11.5 Build `e2e hook: absent`; `e2eMonth` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (3 passed); pełne e2e `<baseline gałęzi e2e> + 3` — 51b4f9b (this session: spec 3/3 twice; full suite 18/18 = baseline 16 + 2)
+- [x] 11.2 Deliberate break: `applyParentStage` bez dodania gwiazdek → test (a) czerwony; przywrócone; meta-check — 51b4f9b (break a red at spec:105 starsTotal Expected 1, Received 0; unit 948 green)
+- [x] 11.3 Druga przerwa: `finishRound` bez `roundResults` (albo kandydaci z `ok === false`) → test (b) czerwony; przywrócone; meta-check — 51b4f9b (break b: finishRound maps roundResults without example → red at spec:166 toContainText "odpowiedź dziecka: 4,"; unit 948 green)
+- [x] 11.4 Trzecia przerwa: `effectiveAutoRead` ignoruje ustawienia → test (a) czerwony; przywrócone — 51b4f9b (break c red at spec:108 autoRead Expected true, Received false; unit narratorVoice red too)
+- [x] 11.5 Build `e2e hook: absent`; `e2eMonth` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 51b4f9b (lint, typecheck, 948 unit, build e2e hook: absent, grep e2eMonth dist/ empty; 4397/4398 free)
