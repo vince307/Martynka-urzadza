@@ -11,6 +11,7 @@ import { generateCompareDiff, parseCompareDiffParams } from './generators/compar
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
 import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
+import { generateData, parseDataParams } from './generators/data';
 import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
 import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
@@ -20,6 +21,7 @@ import { generateMissingOp, parseMissingOpParams } from './generators/missingOp'
 import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
+import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
@@ -52,6 +54,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     CHOOSE_OP: generateChooseOp,
     CLOCK: generateClock,
     LENGTH: generateLength,
+    PLACE_VALUE: generatePlaceValue,
+    DATA: generateData,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -78,6 +82,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     CHOOSE_OP: parseChooseOpParams,
     CLOCK: parseClockParams,
     LENGTH: parseLengthParams,
+    PLACE_VALUE: parsePlaceValueParams,
+    DATA: parseDataParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

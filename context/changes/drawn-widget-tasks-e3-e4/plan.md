@@ -995,7 +995,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 43002aa
 - [x] 2.2 Deliberate break: `later` bez przejścia przez 12 / `ruler` od zera / `leaksAnswer` tylko liczbowy → czerwone; przywrócone; meta-check — 43002aa
 - [x] 2.3 Klucze `generators` i `parsers` równe — 43002aa
-- [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 43002aa (e2e 37 passed by the orchestrator on 84d6a2d)
 
 #### Manual
 
@@ -1005,8 +1005,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: remis w DATA / zła składnia `read` / parser przyjmuje `build` 150 → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — PENDING
+- [x] 3.2 Deliberate break: remis w DATA / zła składnia `read` / parser przyjmuje `build` 150 → czerwone; przywrócone; meta-check — PENDING
 - [ ] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

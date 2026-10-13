@@ -27,4 +27,5 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     rok: ['rok', 'lata', 'lat'],
     godzina: ['godzina', 'godziny', 'godzin'],
     minuta: ['minuta', 'minuty', 'minut'],
+    setka: ['setka', 'setki', 'setek'],
 };
