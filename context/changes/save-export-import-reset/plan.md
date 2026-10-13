@@ -733,7 +733,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `replace` bez `block()`; status `replace` runtime; `core` bez globali
+- [x] 1.5 [reviewer] `replace` bez `block()`; status `replace` runtime; `core` bez globali — b85f251 (impl-review)
 
 ### Phase 2: Plik zapisu — koperta, `parseImport`, podsumowanie, `saveProblem`
 
@@ -745,7 +745,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 2.4 [reviewer] `saveFile.ts` bez globali i bez importu `src/data/`; build parametrem
+- [x] 2.4 [reviewer] `saveFile.ts` bez globali i bez importu `src/data/`; build parametrem — b85f251 (impl-review)
 
 ### Phase 3: Zdrowie zapisu — „jeszcze nie zapisano”, wcześniejsze porażki, wynik `persist()`
 
@@ -757,7 +757,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 3.4 [reviewer] Odczyt nauczyciela `saveNotYet`, `saveEarlier` (1/2/5), `savePersist.*`
+- [x] 3.4 [reviewer] Odczyt nauczyciela `saveNotYet`, `saveEarlier` (1/2/5), `savePersist.*` — b85f251 (impl-review)
 
 ### Phase 4: Eksport z potwierdzeniem i powód z buildem na karcie
 
@@ -770,7 +770,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Odczyt nauczyciela tekstów eksportu i `saveFailed.detail`; notka prywatności
+- [x] 4.5 [reviewer] Odczyt nauczyciela tekstów eksportu i `saveFailed.detail`; notka prywatności — b85f251 (impl-review)
 - [ ] 4.6 [visual] Zrzuty: panel z „Zapisz kopię”, dialog eksportu przed/po, karta z kodem i wersją — 1440×900 i 1024×768
 - [ ] 4.7 [human] iPad (ekran początkowy) share sheet → Pliki; Android (PWA) share/pobranie; linia wyniku zgodna
 
@@ -784,7 +784,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 5.4 [reviewer] `apply` tylko po kroku 2 i „Wczytaj”; odrzucenie nie dotyka savera; odczyt nauczyciela tekstów importu
+- [x] 5.4 [reviewer] `apply` tylko po kroku 2 i „Wczytaj”; odrzucenie nie dotyka savera; odczyt nauczyciela tekstów importu — b85f251 (impl-review)
 - [ ] 5.5 [visual] Zrzuty: import krok 1, odrzucony plik, podsumowanie „Teraz / Z pliku” — 1440×900 i 1024×768
 - [ ] 5.6 [human] iPad (ekran początkowy) i Android (PWA): wybór pliku, `.txt` wybieralny, import kończy się stanem z pliku
 
@@ -799,8 +799,8 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty; DESIGN-GAP 46–51; follow-upy z `Trigger:`
-- [ ] 6.6 [reviewer] Odczyt nauczyciela tekstów resetu
+- [x] 6.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty; DESIGN-GAP 46–51; follow-upy z `Trigger:` — b85f251 (impl-review)
+- [x] 6.6 [reviewer] Odczyt nauczyciela tekstów resetu — b85f251 (impl-review)
 - [ ] 6.7 [visual] Zrzuty: panel z trzema przyciskami, dialog resetu, „Zapis gry” `notYet` i `ok` ze zdaniem trwałości — 1440×900 i 1024×768
 - [ ] 6.8 [human] Decyzja wbrew literze FR-022: eksport `.txt` z treścią JSON zamiast `.json`
 - [ ] 6.9 [human] Akceptacja tekstów `pl.saveTransfer`, `pl.saveFailed.detail`, `pl.settings.saveNotYet`/`saveEarlier`/`savePersist`
