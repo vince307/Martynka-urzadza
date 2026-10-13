@@ -152,7 +152,7 @@ export const HUD_LAYOUT = {
  */
 export const SUMMARY_LAYOUT = {
     title: { x: 960, y: 290 },                                  // kit .page-title: top 290, centred between left 310 and right 280 (about 975)
-    stars: { left: 656, top: 420, gap: 26, size: 98, outline: 3 },
+    stars: { left: 656, top: 420, gap: 26, size: 98, outline: 3, kitCount: 5 },
     earned: { centerX: 960, top: 578, starSize: 114, gap: 28 }, // kit .earned: 600 wide box at left 660, 124 px line
     bonus: { x: 960, y: 722 },                                  // DESIGN-GAP (docs/design-gaps.md row 9): below "+N", only with the clean-round bonus
     buttons: { left: 454, top: 816, gap: 36, width: 450, height: 128, radius: 32, border: 5, highlightBorder: 9 },

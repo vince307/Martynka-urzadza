@@ -1,5 +1,5 @@
 import { Scene, type GameObjects } from 'phaser';
-import type { SessionLearner } from '../core/placement';
+import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import type { StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
@@ -8,6 +8,7 @@ import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
+import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
@@ -54,6 +55,7 @@ export interface TaskSnapshot {
     readonly summary: SummaryView | null;
     readonly narration: string | null;
     readonly autoRead: boolean;
+    readonly warmup: boolean;
 }
 
 export interface TaskTargets {
@@ -85,6 +87,7 @@ export class TaskScene extends Scene {
     private rng!: Rng;
     private narrator: Narrator | undefined;
     private autoRead = false;   // session default by stage (FR-009); a parent switch comes with S-08
+    private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
 
     constructor() {
@@ -105,6 +108,7 @@ export class TaskScene extends Scene {
             throw new Error(`Unknown stage ${learner.stage}`);
         }
         this.stage = stage;
+        this.warmup = learner.warmupPending && previousStage(stage.id) !== null;
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
         this.registry.set(REGISTRY_KEYS.narration, null);
@@ -121,6 +125,8 @@ export class TaskScene extends Scene {
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
+        // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
+        this.autoReadFirst();
         // "Do pokoju": the round stays as it is while this scene sleeps; no speech runs over the room.
         // game.events listeners also run while this scene sleeps (the room is open), so a stale tap is ignored.
         const toRoom = (): void => {
@@ -290,6 +296,9 @@ export class TaskScene extends Scene {
         const before = this.state.starsEarned;
         this.state = next(this.state);
         this.syncStars(before, this.bar.nextTarget());
+        if (this.warmup && this.state.finished) {
+            this.finishWarmup();
+        }
         this.render();
         this.autoReadFirst();
     }
@@ -311,7 +320,29 @@ export class TaskScene extends Scene {
     }
 
     private freshRound(): RoundState {
+        const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
+        if (this.warmup && previous) {
+            const rules = { ...balance.round, length: balance.warmup.length };
+            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count), rules);
+        }
         return startRound(buildRound(this.stage, this.rng, balance.round, balance.tiles.count), balance.round);
+    }
+
+    /**
+     * The warm-up is over: core decides whether the stage drops by one; the child sees an ordinary summary.
+     * Done now, not at "Kolejna runda", so "Do pokoju" and coming back cannot skip it.
+     */
+    private finishWarmup(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const stageId = warmupResult(this.stage.id, this.state.outcomes, balance.warmup.minFirstTry);
+        const stage = getStage(stageId);
+        if (!stage) {
+            throw new Error(`Unknown stage ${stageId}`);
+        }
+        this.registry.set(REGISTRY_KEYS.learner, { ...learner, stage: stageId, warmupPending: false } satisfies SessionLearner);
+        this.stage = stage;
+        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
+        this.warmup = false;
     }
 
     /** The counter shows the new total at once; the star flies after it without blocking input. */
@@ -373,6 +404,7 @@ export class TaskScene extends Scene {
             summary: frozenSummary,
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
             autoRead: this.autoRead,
+            warmup: this.warmup,
         });
     }
 
