@@ -1007,7 +1007,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — d481d3c
 - [x] 3.2 Deliberate break: remis w DATA / zła składnia `read` / parser przyjmuje `build` 150 → czerwone; przywrócone; meta-check — d481d3c
-- [ ] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — d481d3c (e2e 37 passed by the orchestrator on 5ec763f)
 
 #### Manual
 
@@ -1018,8 +1018,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Automated
 
 - [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [ ] 4.2 Deliberate break: `pictureLayout` bez rozdzielenia przy rozwiązaniu → czerwony; przywrócone; meta-check
-- [ ] 4.3 `npm run build` drukuje `e2e hook: absent (`
+- [x] 4.2 Deliberate break: `pictureLayout` bez rozdzielenia przy rozwiązaniu → czerwony; przywrócone; meta-check — bd16d47
+- [x] 4.3 `npm run build` drukuje `e2e hook: absent (` — bd16d47
 
 #### Manual
 
