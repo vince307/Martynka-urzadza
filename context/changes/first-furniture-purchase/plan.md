@@ -680,16 +680,16 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 - [x] 1.1 `stars.test.ts` i `rooms.test.ts` czerwone przed implementacją (asercja), zielone po; unit baseline + N — d792eee
 - [x] 1.2 Deliberate break `>` zamiast `>=` i `earn` bez strażnika → czerwone; przywrócone; meta-check — d792eee
-- [ ] 1.3 Pełna bramka lokalna zielona
+- [x] 1.3 Pełna bramka lokalna zielona — d792eee (e2e: orchestrator run on 323024b)
 
 ### Phase 2: Dane salonu i napisy zadań remontowych
 
 #### Automated
 
-- [ ] 2.1 `roomsData.test.ts` czerwony przed danymi (asercja liczności), zielony po; unit baseline + N
-- [ ] 2.2 Deliberate break kanapa w tacy / powtórzony wzór → czerwone; przywrócone; meta-check
-- [ ] 2.3 `npm run lint` bez naruszeń granic dla `src/data/rooms.ts`
-- [ ] 2.4 Pełna bramka lokalna zielona (sample E1–E6 bez zmian)
+- [x] 2.1 `roomsData.test.ts` czerwony przed danymi (asercja liczności), zielony po; unit baseline + N — 59c9253
+- [x] 2.2 Deliberate break kanapa w tacy / powtórzony wzór → czerwone; przywrócone; meta-check — 59c9253
+- [x] 2.3 `npm run lint` bez naruszeń granic dla `src/data/rooms.ts` — 59c9253
+- [x] 2.4 Pełna bramka lokalna zielona (sample E1–E6 bez zmian) — 59c9253 (e2e: orchestrator gate)
 
 #### Manual
 
