@@ -160,10 +160,10 @@ Docs-only; verification is the grep checks above plus lint/typecheck (no source 
 
 #### Automated
 
-- [x] 2.1 No code fences in the file
-- [x] 2.2 §7 has at most 7 bullets and no "Open (" line
-- [x] 2.3 §8 dates are 2026-10-13
-- [x] 2.4 `npm run lint` and `npm run typecheck` pass
+- [x] 2.1 No code fences in the file — df3354a
+- [x] 2.2 §7 has at most 7 bullets and no "Open (" line — df3354a
+- [x] 2.3 §8 dates are 2026-10-13 — df3354a
+- [x] 2.4 `npm run lint` and `npm run typecheck` pass — df3354a
 
 #### Manual
 
