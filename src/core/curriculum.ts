@@ -2,7 +2,7 @@
 // so a child is neither dropped at step 1 of a stage the class is half through nor handed the whole stage with nothing
 // left to unlock. Pure: the month is an argument, there is no Date here.
 // After S-11 (persistence) the same call gives the floor as max(saved step, calendarStart).
-import { proposeStage, type PlacementData } from './placement';
+import { proposeStage, STAGE_ORDER, type PlacementData } from './placement';
 import type { Rng } from './rng';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
 import { recordRound, type MasteryRules, type SkillResult } from './mastery';
@@ -18,7 +18,6 @@ export interface CurriculumRules {
     readonly unlockShare: number;
 }
 
-const ORDER: readonly StageId[] = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6'];
 const SEMESTER_MONTHS = 5; // September-January, February-June
 
 /** Step numbers that have at least one playable skill, in curriculum order. */
@@ -34,9 +33,9 @@ export const calendarStart = (stage: StageDef, age: number, month: number, data:
     const steps = playableSteps(stage);
     if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
     const calendarStage = proposeStage(age, month, data);
-    const behind = ORDER.indexOf(stage.id) < ORDER.indexOf(calendarStage);
+    const behind = STAGE_ORDER.indexOf(stage.id) < STAGE_ORDER.indexOf(calendarStage);
     const position = (month + 4) % 12; // September 0 ... June 9, July 10, August 11
-    const semesterStart = ORDER.indexOf(stage.id) % 2 === 0 ? 0 : SEMESTER_MONTHS;
+    const semesterStart = STAGE_ORDER.indexOf(stage.id) % 2 === 0 ? 0 : SEMESTER_MONTHS;
     const progress = behind ? 1 : Math.min(1, Math.max(0, (position - semesterStart + 0.5) / SEMESTER_MONTHS));
     const k = Math.min(steps.length, Math.max(1, Math.max(rules.minStartSteps, Math.ceil(progress * steps.length))));
     return steps[k - 1];
@@ -51,11 +50,17 @@ export const startLearning = (
     rules: CurriculumRules,
 ): Adaptation => {
     const unlockedStep = {} as Adaptation['unlockedStep'];
-    for (const id of ORDER) {
+    for (const id of STAGE_ORDER) {
         const stage = stages[id];
         if (stage) unlockedStep[id] = calendarStart(stage, age, month, data, rules);
     }
     return { unlockedStep, mastery: {}, streak: {}, history: [], weakStreak: 0, easedRounds: 0 };
+};
+
+/** The playable step at `unlockedStep`, or the nearest lower one; below the first playable step, the first. */
+const currentStepOf = (steps: readonly number[], unlockedStep: number): number => {
+    const below = steps.filter((n) => n <= unlockedStep);
+    return below.length > 0 ? below[below.length - 1] : steps[0];
 };
 
 /**
@@ -66,8 +71,7 @@ export const startLearning = (
 export const skillBuckets = (stage: StageDef, previous: StageDef | undefined, unlockedStep: number): SkillBuckets => {
     const steps = playableSteps(stage);
     if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
-    const below = steps.filter((n) => n <= unlockedStep);
-    const currentStep = below.length > 0 ? below[below.length - 1] : steps[0];
+    const currentStep = currentStepOf(steps, unlockedStep);
     const skillsOf = (pick: (step: number) => boolean): SkillDef[] =>
         stage.steps.filter((s) => pick(s.step)).flatMap((s) => s.skills.filter(playable));
     return {
@@ -110,9 +114,7 @@ export type RoundResult = SkillResult;
 export const unlockReady = (stage: StageDef, adaptation: Adaptation, rules: CurriculumRules & Pick<MasteryRules, 'unlockAt'>): number | null => {
     const steps = playableSteps(stage);
     if (steps.length === 0) return null;
-    const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
-    const below = steps.filter((n) => n <= unlocked);
-    const current = below.length > 0 ? below[below.length - 1] : steps[0];
+    const current = currentStepOf(steps, adaptation.unlockedStep[stage.id] ?? 1);
     const next = steps.find((n) => n > current);
     if (next === undefined) return null;
     const skills = stage.steps.filter((s) => s.step === current).flatMap((s) => s.skills.filter(playable));

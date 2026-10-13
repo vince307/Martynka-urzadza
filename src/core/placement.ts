@@ -17,11 +17,12 @@ export interface PlacementData {
     readonly table: Record<Band, Record<number, StageId>>;
 }
 
-const ORDER: readonly StageId[] = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6'];
+/** Stages in school order (grade x semester). */
+export const STAGE_ORDER: readonly StageId[] = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6'];
 
 export function previousStage(id: StageId): StageId | null {
-    const i = ORDER.indexOf(id);
-    return i > 0 ? ORDER[i - 1] : null;
+    const i = STAGE_ORDER.indexOf(id);
+    return i > 0 ? STAGE_ORDER[i - 1] : null;
 }
 
 export function proposeStage(age: number, month: number, data: PlacementData): StageId {

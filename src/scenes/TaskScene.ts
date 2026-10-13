@@ -374,12 +374,21 @@ export class TaskScene extends Scene {
         this.autoReadFirst();
     }
 
-    /** "Kolejna runda" on the summary: the finished round's stars join the session, a fresh round starts. */
+    /**
+     * "Kolejna runda" on the summary: the unlock card when a step is pending, else a fresh round.
+     * DESIGN-GAP (docs/design-gaps.md row 24): the kit shows the card only after "Kolejna runda"; a pending unlock also
+     * waits through "Do pokoju" and back, because it lives in the learner (pendingUnlock), not in the summary.
+     */
     private startNextRound(): void {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         if (learner.pendingUnlock !== null) {
             // A step was unlocked at the end of the round: the card comes first; "Dalej" starts the round.
             this.unlockShown = true;
+            if (this.unlockView() === null) {
+                // No card to draw (a step without a child name): never leave the child on the summary; clear it and play on.
+                this.closeUnlock();
+                return;
+            }
             this.render();
             this.autoReadUnlock();
             return;
@@ -396,7 +405,10 @@ export class TaskScene extends Scene {
         this.autoReadFirst();
     }
 
-    /** The tap on "Kolejna runda" was the gesture: the card is read when auto-reading is on. */
+    /**
+     * The tap on "Kolejna runda" was the gesture: the card is read when auto-reading is on.
+     * DESIGN-GAP (docs/design-gaps.md row 23): the kit does not say whether the card is read aloud.
+     */
     private autoReadUnlock(): void {
         if (this.autoRead && this.unlockShown) {
             this.narrator?.speak((this.registry.get(REGISTRY_KEYS.narration) as string | null) ?? '');

@@ -7,7 +7,7 @@ import { textStyle } from './textStyle';
 /**
  * The "Nowa umiejętność!" card on the notebook (kit unlock.png): a butter-framed card with the title, a book,
  * the name of the unlocked step and the "Dalej" button. It draws the name it is given and decides nothing.
- * DESIGN-GAP (docs/design-gaps.md): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
+ * DESIGN-GAP (docs/design-gaps.md row 22): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
  */
 export class UnlockCard {
     private readonly card: GameObjects.Graphics;

@@ -169,7 +169,7 @@ export const SUMMARY_LAYOUT = {
  * "Nowa umiejętność!" card (kit unlock.png, screen.css .unlock-card, .unlock-art, .unlock-name, .page-button inside it), on the notebook.
  * Absolute scene coordinates: card left 388 / top 284 (kit), title top = card top + border + 56, art 200 x 200 centred 34 px under the title line,
  * name 10 px under the art, button 450 x 108 centred, 36 px above the card's inner bottom.
- * DESIGN-GAP (docs/design-gaps.md): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
+ * DESIGN-GAP (docs/design-gaps.md row 22): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
  */
 export const UNLOCK_LAYOUT = {
     card: { left: 388, top: 284, width: 1144, height: 660, border: 7, radius: 46 },

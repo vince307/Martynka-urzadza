@@ -25,7 +25,7 @@ export const E4: StageDef = {
         {
             step: 2,
             title: '36 + 2, 47 − 5, 47 + 3, 50 − 3',
-            childName: 'Działania z małą liczbą',
+            childName: 'Działania do 100',
             types: ['ADD_SUB'],
             skills: [skill('E4.2.add_sub_100_units', 2, 'ADD_SUB', { max: 100, shapes: ['DU+U', 'DU-U', 'DT-U'], bridge: 'none' })],
         },

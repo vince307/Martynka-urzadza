@@ -1,5 +1,6 @@
-// Shared by the round specs (risk #11 and the narrator): gets past the welcome screen the way a parent
-// does, so the round starts on stage E3 with no warm-up. Not a spec itself (no .spec in the name, so
+// Shared by the round specs (risk #11, the narrator and the adaptive spec #13): gets past the welcome screen
+// the way a parent does. passWelcome starts on stage E3 with no warm-up; passWelcomeAsParent takes the age,
+// stage and month. Not a spec itself (no .spec in the name, so
 // Playwright does not collect it).
 //   - "Rodzic" is tapped on the canvas (page.touchscreen.tap, position from the hook's targets).
 //   - The adult gate is read from the DOM like an adult would: the product comes from the visible

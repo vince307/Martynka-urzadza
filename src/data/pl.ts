@@ -85,7 +85,7 @@ export const pl = {
         toRoom: 'Do pokoju',          // kit summary.png
         earned: (n: number) => `+${n}`,
     },
-    // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP: the kit has no narration of the card).
+    // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP, docs/design-gaps.md row 23: the kit has no narration of the card).
     unlock: {
         title: 'Nowa umiejętność!',
         next: 'Dalej',

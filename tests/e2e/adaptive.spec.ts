@@ -4,7 +4,7 @@
 // in between), and "Dalej" must clear it and start a round, so the card never blocks later rounds.
 // The parent sets E4 in September (?e2eMonth=8, the e2e build only: never page.clock, it freezes
 // Phaser's tweens), so the calendar floor puts the learner on step 2 and the child masters it by
-// playing right on the first try. The unlock itself (majority of mastery, cooldown) is proved by the
+// playing right on the first try. The unlock itself (share of mastered skills, one step per round) is proved by the
 // unit tests; this proves that the scenes show it and clear it. Runs in the chromium-hook project.
 import { test, expect } from '@playwright/test';
 import { E4 } from '../../src/data/curriculum/E4';
