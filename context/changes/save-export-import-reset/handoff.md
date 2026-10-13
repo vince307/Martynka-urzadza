@@ -1,15 +1,15 @@
 # Handoff — `save-export-import-reset` (slice S-12)
 
-Written by the visual-gate step of run `2026-10-13-s12-s14`. Verdict `VISUAL: PASS`; two discrepancies were fixed in `76cdea4` (import step 2 opened with the focus on the overwrite "Wczytaj", now "Anuluj"; the summary line read "salon: …", now "Salon: …"), the frames were re-captured on `76cdea4`, and the full local gate is green. The next agent (archive + ship) must not get wrong: only `[human]` rows remain open (5); they are the maintainer's checklist, not a reason to block.
+Written by the visual-gate step of run `2026-10-13-s12-s14`; final pre-merge state written by the archive + ship step (this copy is archived). Verdict `VISUAL: PASS`; two discrepancies were fixed in `76cdea4` (import step 2 opened with the focus on the overwrite "Wczytaj", now "Anuluj"; the summary line read "salon: …", now "Salon: …"), the frames were re-captured on `76cdea4`, and the full local gate is green. The next agent (archive + ship) must not get wrong: only `[human]` rows remain open (5); they are the maintainer's checklist, not a reason to block.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | phases `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`, `cc58e16`, `c85022f`; review fix `b85f251`; review docs `23792f8`; visual fix `76cdea4`; + this visual-gate docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (archive sets it next) |
+| Commits | phases `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`, `cc58e16`, `c85022f`; review fix `b85f251`; review docs `23792f8`; visual fix `76cdea4`; visual-gate docs `5ccdd96`; ship handoff + `chore(archive): close save-export-import-reset` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s12-s14/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-10-13-save-export-import-reset/`) |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` = 5: `[human]` 4.7, 5.6, 6.8, 6.9, 6.10 |
 | Working tree | clean after the handoff commit |
 
@@ -43,7 +43,7 @@ Written by the visual-gate step of run `2026-10-13-s12-s14`. Verdict `VISUAL: PA
 
 ## 4. Next command
 
-`/10x-archive save-export-import-reset then ship (no hosted db push — none exists)`
+none — shipped
 
 ## 5. Open
 
@@ -62,3 +62,5 @@ Written by the visual-gate step of run `2026-10-13-s12-s14`. Verdict `VISUAL: PA
 - **Row 6.7 ticked although `notYet` was not captured**: the state is unreachable through the product (first write 500 ms after the welcome, panel needs 2 s + gate), recorded in the row and the review; the precedent is the save-observability gate (`fatal` code-reviewed only). Would change: a seam that delays the first write, or the maintainer wanting a screenshot — then un-tick and add the seam in a follow-up.
 - **Hand-check file uses 22 stars** (not the e2e's 7) so "Teraz" and "Z pliku" differ and the "gwiazdki" form is exercised. Would change: nothing.
 - **Kit frames not captured**: the kit has no settings/export/import/reset/card views (gap rows 44, 46–51).
+- **Archive with 5 open `[human]` rows** (ship step): `/10x-archive` warned 5 pending (0 automated, 5 manual) and recommended "Continue archiving"; chosen. Rows 4.7, 5.6, 6.8–6.10 are the maintainer's post-run checklist (devices, FR-022 `.txt` decision, copy acceptance), listed in the PR's "Dla właściciela produktu". Rejected: "Resume implementation" (nothing automated left). Would change: a `[human]` row that the maintainer marks as blocking before merge.
+- **No SHA repoint**: the Progress SHAs live on the slice branch, and the PR merges with `--merge` (no squash), so they stay reachable from `main`. Would change: a squash merge.
