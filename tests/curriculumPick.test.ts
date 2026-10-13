@@ -27,7 +27,7 @@ const stage = (id: StageId): StageDef => {
 const previousOf = (id: StageId): StageDef | undefined => (id === 'E1' ? undefined : stage(ALL[ALL.indexOf(id) - 1]));
 
 // Independent oracle of "playable" (what the task scene can answer and a generator exists for).
-const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select') && getGenerator(s.type) !== undefined;
+const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag') && getGenerator(s.type) !== undefined;
 const playableOf = (st: StageDef, pred: (step: number) => boolean): SkillDef[] =>
     st.steps.filter((step) => pred(step.step)).flatMap((step) => step.skills.filter(isPlayable));
 const ids = (skills: readonly SkillDef[]): string[] => skills.map((s) => s.id);

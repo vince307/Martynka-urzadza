@@ -182,6 +182,8 @@ export const pl = {
         gotIt: 'Już wiem',
         deleteKey: 'kasuj',
         okKey: 'OK',
+        // DESIGN-GAP (docs/design-gaps.md row 55): the kit has no tray of blocks; the labels under the tray blocks are ours.
+        trayLabels: { hundred: 'Setki', ten: 'Dziesiątki', one: 'Jedności' },
         // DESIGN-GAP: the kit has no solution result line (docs/design-gaps.md row 6); the bonus line sits under "+N" on the summary (row 9).
         bonus: (n: number) => `Runda bez błędu! +${n} ★`,
         resultLine: (answer: string) => `Wynik: ${answer}`,

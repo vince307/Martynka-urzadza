@@ -75,6 +75,7 @@ export const E3: StageDef = {
                 addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' }),
                 skill('E3.6.place_read_30', 6, 'PLACE_VALUE', { variant: 'read', min: 11, max: 30 }),
                 skill('E3.6.place_tens_30', 6, 'PLACE_VALUE', { variant: 'tens', min: 11, max: 30 }),
+                skill('E3.6.place_build_30', 6, 'PLACE_VALUE', { variant: 'build', min: 11, max: 30 }, 'drag'),
             ],
         },
         {

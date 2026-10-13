@@ -1,4 +1,6 @@
 import { Scene, type GameObjects } from 'phaser';
+import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
+import type { InputSuspender } from '../core/inputSuspend';
 import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
@@ -13,6 +15,7 @@ import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
+import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
@@ -37,6 +40,7 @@ import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
+import { BlockMat, type BlockMatTargets } from '../ui/widgets/BlockMat';
 import { SelectTiles } from '../ui/widgets/SelectTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
@@ -62,6 +66,8 @@ export interface TaskSnapshot {
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
     readonly choices: readonly (number | string)[];
     readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
+    readonly mat: Readonly<Mat>;   // the blocks on the mat of the 'drag' mode
+    readonly carrying: boolean;    // a block is under a finger ('drag' mode)
     readonly outcomes: RoundState['outcomes'];
     readonly starsEarned: number;
     readonly bonusEarned: number;
@@ -80,6 +86,7 @@ export interface TaskTargets {
     readonly keys: readonly (Point & { key: string })[];
     readonly selectTiles: readonly (Point & { value: number | string })[];
     readonly selectOk: Point | null;
+    readonly drag: BlockMatTargets;
     readonly next: Point | null;
     readonly step: Point | null;
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
@@ -98,6 +105,10 @@ export class TaskScene extends Scene {
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
     private select!: SelectTiles;
+    private blockMat!: BlockMat;
+    private dragState: BlockDragState = initialBlockDrag();
+    private dragGeo = dragGeometry(dragLayout(TASK_LAYOUT.drag, []), []);
+    private dragLive = false;   // the 'drag' task is open and takes the child's touches
     private keypad!: Keypad;
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
@@ -122,6 +133,10 @@ export class TaskScene extends Scene {
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'step') {
             this.registry.set(REGISTRY_KEYS.forcedFailure, null);   // once
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only
+        }
+        // A dialog over the canvas swallows the lift of the finger: a block in the air must not survive it.
+        if (this.dragState.carrying && (this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspended()) {
+            this.feedDrag({ type: 'reset' });
         }
     }
 
@@ -153,6 +168,18 @@ export class TaskScene extends Scene {
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
+        this.blockMat = new BlockMat(this, (value) => this.submit(value));
+        this.dragState = initialBlockDrag();
+        this.dragLive = false;
+        // The whole scene feeds the block-drag reducer with raw pointer events (core/blockDrag decides); it acts only while a 'drag' task takes touches.
+        type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
+        const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
+        this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
+        this.input.on('pointermove', (p: Raw) => this.feedDrag({ type: 'move', pointerId: p.id, x: p.x, y: p.y }));
+        this.input.on('pointerup', (p: Raw) => this.feedDrag(lift(p)));
+        this.input.on('pointerupoutside', (p: Raw) => this.feedDrag(lift(p)));
+        const onSleep = (): void => this.feedDrag({ type: 'reset' });
+        this.events.on('sleep', onSleep);
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
@@ -166,6 +193,7 @@ export class TaskScene extends Scene {
             if (this.sys.isSleeping()) {
                 return;
             }
+            this.feedDrag({ type: 'reset' });
             this.narrator?.cancel();
             this.endFlyingStars();
             this.registry.set(REGISTRY_KEYS.narration, null);
@@ -195,6 +223,7 @@ export class TaskScene extends Scene {
             this.game.events.off(GAME_EVENTS.toRoom, toRoom);
             this.game.events.off(GAME_EVENTS.parentStage, onParentStage);
             this.events.off('wake', onWake);
+            this.events.off('sleep', onSleep);
         });
 
         // Build id in the corner: the only way to see on a tablet that a silent
@@ -251,10 +280,6 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
-        if (view.input === 'drag') {
-            // Unreachable until phase 9 of S-13: `playable` never lets this mode into a round.
-            throw new Error(`Unsupported input mode ${view.input}`);
-        }
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         const unlock = this.unlockView();
@@ -279,6 +304,7 @@ export class TaskScene extends Scene {
         this.summary.hide();
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
+        const task0 = this.state.tasks[this.state.index];
         if (this.shownIndex !== this.state.index) {
             this.shownIndex = this.state.index;
             this.drawPrompt(view.input);
@@ -289,6 +315,12 @@ export class TaskScene extends Scene {
             if (view.input === 'select') {
                 this.select.setChoices(view.choices);
             }
+            // A new task starts with an empty mat and nothing in the air.
+            this.dragState = initialBlockDrag();
+            const kinds = dragKinds(typeof task0.answer === 'number' ? task0.answer : 0);
+            const layout = dragLayout(TASK_LAYOUT.drag, kinds);
+            this.dragGeo = dragGeometry(layout, kinds);
+            this.blockMat.setLayout(layout, kinds);
         }
         const task = this.state.tasks[this.state.index];
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
@@ -299,6 +331,12 @@ export class TaskScene extends Scene {
         this.tiles.setVisible(view.input === 'tiles');
         this.keypad.setVisible(view.input === 'keypad');
         this.select.setVisible(view.input === 'select');
+        this.dragLive = view.input === 'drag' && view.inputActive;
+        if (!this.dragLive && this.dragState.carrying) {
+            this.dragState = { mat: this.dragState.mat, carrying: null };
+        }
+        this.blockMat.setVisible(view.input === 'drag');
+        this.blockMat.render(this.dragState, this.dragLive, view.bar.kind !== 'solution');
         this.select.setActive(view.input === 'select' && view.inputActive);
         this.tiles.setActive(view.input === 'tiles' && view.inputActive);
         this.keypad.setActive(view.input === 'keypad' && view.inputActive);
@@ -313,7 +351,7 @@ export class TaskScene extends Scene {
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
-            const lines = view.visual ? layout.lines : null;
+            const lines = view.input === 'drag' ? TASK_LAYOUT.drag.solutionLines : view.visual ? layout.lines : null;
             if (lines) {
                 this.steps.show(view.bar, lines.x + lines.width / 2, lines.y, lines.width, lines.y + lines.height);
             } else {
@@ -330,8 +368,10 @@ export class TaskScene extends Scene {
     }
 
     /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
-    private hideTaskLayer(input: 'tiles' | 'keypad' | 'select'): void {
+    private hideTaskLayer(input: AnswerMode): void {
         this.dots.update([]);
+        this.dragLive = false;
+        this.blockMat.setVisible(false);
         this.tiles.setVisible(false);
         this.select.setVisible(false);
         this.select.setActive(false);
@@ -372,7 +412,7 @@ export class TaskScene extends Scene {
         );
     }
 
-    private drawPrompt(input: 'tiles' | 'keypad' | 'select'): void {
+    private drawPrompt(input: AnswerMode): void {
         this.promptTexts.forEach((t) => t.destroy());
         this.promptTexts = [];
         this.promptBoxes.forEach((g) => g.destroy());
@@ -464,6 +504,7 @@ export class TaskScene extends Scene {
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
             this.select.clear();   // a wrong set is cleared too
+            this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
             this.shake();
         }
         this.render();
@@ -613,6 +654,9 @@ export class TaskScene extends Scene {
         if (view.input === 'select') {
             return this.select.okTarget();
         }
+        if (view.input === 'drag') {
+            return this.blockMat.okTarget();
+        }
         return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
     }
 
@@ -677,6 +721,8 @@ export class TaskScene extends Scene {
             visual: task.visual ? structuredClone(task.visual) : null,
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
             selected: Object.freeze([...this.select.selected()]),
+            mat: Object.freeze({ ...this.dragState.mat }),
+            carrying: this.dragState.carrying !== null,
             outcomes: Object.freeze([...this.state.outcomes]),
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
@@ -698,6 +744,7 @@ export class TaskScene extends Scene {
             keys: this.keypad.targets(),
             selectTiles: this.select.targets(),
             selectOk: this.select.okTarget(),
+            drag: this.blockMat.targets(),
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
             picture: this.picture.bounds(),
@@ -705,6 +752,18 @@ export class TaskScene extends Scene {
             toRoom: this.summary.targets().toRoom,
             unlockNext: this.unlockCard.target(),
         });
+    }
+
+    /** One raw pointer event for the block-drag reducer; touches count only while a 'drag' task is open, a cancel or reset always does. */
+    private feedDrag(event: BlockDragEvent): void {
+        if (!this.dragLive && event.type !== 'cancel' && event.type !== 'reset') {
+            return;
+        }
+        const before = this.dragState;
+        this.dragState = stepBlockDrag(before, event, this.dragGeo, balance.blockDrag);
+        if (this.dragState !== before) {
+            this.blockMat.render(this.dragState, this.dragLive, this.state.phase !== 'solution');
+        }
     }
 
     /** "Następny krok" / "Już wiem". */

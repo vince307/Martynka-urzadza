@@ -1,7 +1,7 @@
 // Geometry of the `drag` mode (S-13 phase 8). Oracle: the notebook rectangle and the bar from TASK_LAYOUT, the plan's
 // "tray on the right where the keypad is, mat on the left", and "9 blocks of each kind fit on the mat".
 import { describe, expect, it } from 'vitest';
-import { dragGeometry, dragLayout, insideRect, interiorPoint, type Rect } from '../src/core/round/dragLayout';
+import { dragGeometry, dragKinds, dragLayout, insideRect, interiorPoint, type Rect } from '../src/core/round/dragLayout';
 import type { BlockKind } from '../src/core/blockDrag';
 import { TASK_LAYOUT } from '../src/data/layout';
 
@@ -79,5 +79,14 @@ describe('dragLayout', () => {
     it('insideRect includes the edges', () => {
         expect(insideRect({ x: 10, y: 10, width: 5, height: 5 }, 15, 15)).toBe(true);
         expect(insideRect({ x: 10, y: 10, width: 5, height: 5 }, 16, 15)).toBe(false);
+    });
+});
+
+describe('dragKinds', () => {
+    it('lists tens and ones below 100 and adds hundreds from 100', () => {
+        expect(dragKinds(23)).toEqual(['ten', 'one']);
+        expect(dragKinds(99)).toEqual(['ten', 'one']);
+        expect(dragKinds(100)).toEqual(['hundred', 'ten', 'one']);
+        expect(dragKinds(256)).toEqual(['hundred', 'ten', 'one']);
     });
 });

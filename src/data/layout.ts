@@ -195,6 +195,8 @@ export const TASK_LAYOUT = {
         mat: { x: 236, y: 380, width: 944, height: 460 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         cellInset: 8, columns: 3, maxPerKind: 9,
+        labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.3,
+        solutionLines: { x: 1240, y: 380, width: 440, height: 440 },   // the solution steps take the tray's place
     },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.

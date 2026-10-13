@@ -1,8 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
+import type { BlockKind } from '../../core/blockDrag';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
 
-export type BlockKind = 'hundred' | 'ten' | 'one';
+export type { BlockKind };
 
 export interface PlacedBlock {
     kind: BlockKind;
@@ -87,6 +88,31 @@ export const blocksLayout = (hundreds: number, tens: number, ones: number, rect:
     };
 };
 
+/** One block (flat, rod or cube) in its rectangle; `scale` is the factor from the own units of TASK_LAYOUT.blocks (line widths and radii follow it). */
+export const drawBlock = (g: GameObjects.Graphics, b: PlacedBlock, scale: number): void => {
+    const spec = TASK_LAYOUT.blocks;
+    const teal = PLACEHOLDER_COLORS.deepTeal;
+    const fill = b.kind === 'hundred' ? PLACEHOLDER_COLORS.blockHundred : b.kind === 'ten' ? PLACEHOLDER_COLORS.blockTen : PLACEHOLDER_COLORS.butter;
+    g.fillStyle(fill, 1);
+    g.fillRoundedRect(b.x, b.y, b.width, b.height, spec[b.kind].radius * scale);
+    g.lineStyle(spec.line * scale, teal, 1);
+    if (b.kind === 'hundred') {
+        for (let i = 1; i < spec.cells; i++) {
+            const dx = (b.width * i) / spec.cells;
+            const dy = (b.height * i) / spec.cells;
+            g.lineBetween(b.x + dx, b.y, b.x + dx, b.y + b.height);
+            g.lineBetween(b.x, b.y + dy, b.x + b.width, b.y + dy);
+        }
+    } else if (b.kind === 'ten') {
+        for (let i = 1; i < spec.cells; i++) {
+            const dy = (b.height * i) / spec.cells;
+            g.lineBetween(b.x, b.y + dy, b.x + b.width, b.y + dy);
+        }
+    }
+    g.lineStyle(spec.border * scale, teal, 1);
+    g.strokeRoundedRect(b.x, b.y, b.width, b.height, spec[b.kind].radius * scale);
+};
+
 /** Hundreds flats (10 x 10 grid), tens rods (10 cells) and ones cubes, drawn in code (kit reference/base-ten.svg). */
 export class BaseTenBlocks {
     private readonly graphics: GameObjects.Graphics;
@@ -98,31 +124,11 @@ export class BaseTenBlocks {
 
     render(hundreds: number, tens: number, ones: number, rect: Rect): void {
         this.area = rect;
-        const spec = TASK_LAYOUT.blocks;
         const { scale, blocks } = blocksLayout(hundreds, tens, ones, rect);
-        const teal = PLACEHOLDER_COLORS.deepTeal;
         const g = this.graphics;
         g.clear().setVisible(true);
         for (const b of blocks) {
-            const fill = b.kind === 'hundred' ? PLACEHOLDER_COLORS.blockHundred : b.kind === 'ten' ? PLACEHOLDER_COLORS.blockTen : PLACEHOLDER_COLORS.butter;
-            g.fillStyle(fill, 1);
-            g.fillRoundedRect(b.x, b.y, b.width, b.height, spec[b.kind].radius * scale);
-            g.lineStyle(spec.line * scale, teal, 1);
-            if (b.kind === 'hundred') {
-                for (let i = 1; i < spec.cells; i++) {
-                    const dx = (b.width * i) / spec.cells;
-                    const dy = (b.height * i) / spec.cells;
-                    g.lineBetween(b.x + dx, b.y, b.x + dx, b.y + b.height);
-                    g.lineBetween(b.x, b.y + dy, b.x + b.width, b.y + dy);
-                }
-            } else if (b.kind === 'ten') {
-                for (let i = 1; i < spec.cells; i++) {
-                    const dy = (b.height * i) / spec.cells;
-                    g.lineBetween(b.x, b.y + dy, b.x + b.width, b.y + dy);
-                }
-            }
-            g.lineStyle(spec.border * scale, teal, 1);
-            g.strokeRoundedRect(b.x, b.y, b.width, b.height, spec[b.kind].radius * scale);
+            drawBlock(g, b, scale);
         }
     }
 

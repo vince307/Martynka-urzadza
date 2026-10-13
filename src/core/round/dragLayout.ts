@@ -67,3 +67,6 @@ export const dragGeometry = (layout: DragLayout, kinds: readonly BlockKind[]): B
         return null;
     },
 });
+
+/** The block kinds of a build task: ones and tens below 100, hundreds as well from 100 (the tray lists only these). */
+export const dragKinds = (answer: number): BlockKind[] => (answer >= 100 ? ['hundred', 'ten', 'one'] : ['ten', 'one']);

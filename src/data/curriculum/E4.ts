@@ -24,6 +24,7 @@ export const E4: StageDef = {
                 skill('E4.1.compare_num_100', 1, 'COMPARE_NUM', { max: 100 }, 'tiles'),
                 skill('E4.1.place_read_100', 1, 'PLACE_VALUE', { variant: 'read', min: 20, max: 99 }),
                 skill('E4.1.place_decompose_100', 1, 'PLACE_VALUE', { variant: 'decompose', min: 21, max: 99 }),
+                skill('E4.1.place_build_100', 1, 'PLACE_VALUE', { variant: 'build', min: 21, max: 99 }, 'drag'),
             ],
         },
         {
