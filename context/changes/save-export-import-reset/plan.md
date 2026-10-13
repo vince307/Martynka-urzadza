@@ -753,7 +753,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — df18f2f
 - [x] 3.2 Deliberate break: `notYet` przed `failing` / wynik `onFirstWrite` nie zapisany → czerwone; przywrócone; meta-check — df18f2f
-- [ ] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — df18f2f (e2e 33 passed, run by the orchestrator on ab16cb3)
 
 #### Manual
 
@@ -763,10 +763,10 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
 - [ ] 4.2 `save-restart.spec.ts` zielony (orkiestrator, `e2e-request-p4.md`); pełne e2e `<baseline gałęzi e2e> + 0`
 - [ ] 4.3 Deliberate break: `onExport` bez `session.run` → `dialogSessions` czerwony; patch `e2e-break-p4.patch` (pobranie bez dialogu) → FR-021 czerwony, unit zielone; meta-check
-- [ ] 4.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 4.4 `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
 

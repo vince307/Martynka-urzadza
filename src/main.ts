@@ -26,7 +26,9 @@ import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
-import { exportRawSave } from './ui/dom/saveExport';
+import { exportFileText } from './core/saveFile';
+import { openSaveExportDialog } from './ui/dom/saveExportDialog';
+import { RAW_FILE_NAME } from './ui/dom/saveExport';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
@@ -128,16 +130,25 @@ const start = async (): Promise<void> => {
         // Either way the game starts only on "Graj dalej", in a fresh session with the saver blocked. Only an
         // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
         const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
+        const reason = outcome.kind === 'unreadable' ? outcome.reason : null;
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
                 copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
+                detail: reason === null ? undefined : pl.saveFailed.detail(reason, __BUILD_ID__),
                 onExport:
                     raw === null
                         ? undefined
                         : () => {
                               openParentGate({
                                   rng: createRng(Math.floor(Math.random() * 0x100000000)),
-                                  onPass: () => void exportRawSave(raw),
+                                  onPass: () =>
+                                      openSaveExportDialog({
+                                          file: (now) => ({
+                                              text: exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: reason ?? 'unknown', raw }),
+                                              fileName: RAW_FILE_NAME,
+                                          }),
+                                          onClose: () => undefined,
+                                      }),
                                   onCancel: () => undefined,
                               });
                           },

@@ -7,11 +7,14 @@ import { progressView } from '../core/progress';
 import { createRng } from '../core/rng';
 import type { Settings } from '../core/types';
 import { balance } from '../data/balance';
+import { pl } from '../data/pl';
 import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { saveHealthView } from '../core/saveHealth';
+import { exportFileText } from '../core/saveFile';
+import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
@@ -142,9 +145,21 @@ export class UIScene extends Scene {
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
+                    ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
                 });
                 }),
+        });
+    }
+
+    /** Export step: replaces the panel in the same input session; the file is built at the tap, from the saver's current state. */
+    private openExport(saver: Autosaver, session: InputSession): void {
+        this.closeDialog = openSaveExportDialog({
+            file: (now) => ({
+                text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
+                fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
+            }),
+            onClose: () => session.run(() => this.closeSettings()),
         });
     }
 

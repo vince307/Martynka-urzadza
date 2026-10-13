@@ -22,6 +22,8 @@ export interface SettingsPanelOptions {
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null }) => void;
     onCancel: () => void;
+    /** "Zapisz kopię": the panel closes and the caller opens the export dialog. Absent = no button (no saver). */
+    onExport?: () => void;
     /** Subscribes to "a Polish voice is available" (called at once and on changes); returns the unsubscribe. Absent = no narrator: the line stays visible. */
     watchVoice?: (callback: (available: boolean) => void) => () => void;
     parent?: HTMLElement;
@@ -35,7 +37,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, onConfirm, onCancel, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, onConfirm, onCancel, onExport, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -88,7 +90,17 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     actions.className = 'parent-actions parent-actions-sticky';
     actions.append(confirm, createButton(pl.parent.cancel, cancel));
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), createProgressView(progress), actions], cancel);
+    // DESIGN-GAP 46 (docs/design-gaps.md): the kit has no place for save actions; a quiet button row under "Zapis gry".
+    const saveActions = document.createElement('div');
+    saveActions.className = 'parent-choices';
+    if (onExport) {
+        saveActions.append(createButton(pl.saveTransfer.exportButton, () => {
+            close();
+            onExport();
+        }));
+    }
+
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(onExport ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

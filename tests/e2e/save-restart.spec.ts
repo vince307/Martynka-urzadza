@@ -109,14 +109,24 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     await expect(card).toBeVisible();
 
     // "Zachowaj kopię" sits behind the adult check; headless Chromium has no share sheet, so the copy is a download.
-    const downloaded = page.waitForEvent('download');
+    // L-S2: the gate leads to a confirmation; nothing is downloaded until "Zapisz plik".
+    await expect(card.getByText(/^Kod: future · Wersja /)).toBeVisible();
     await card.getByRole('button', { name: pl.saveFailed.export }).tap();
     await typeIntoGate(page, (await gateProblem(page)).product);
+    const exportDialog = page.getByRole('dialog', { name: pl.saveTransfer.exportTitle });
+    await expect(exportDialog).toBeVisible();
+    const downloaded = page.waitForEvent('download');
+    await exportDialog.getByRole('button', { name: pl.saveTransfer.saveFile }).tap();
     const download = await downloaded;
+    await expect(exportDialog.getByText(pl.saveTransfer.exportOutcome.downloaded)).toBeVisible();
+    await exportDialog.getByRole('button', { name: pl.saveTransfer.close }).tap();
+    await expect(exportDialog).toBeHidden();
     expect(download.suggestedFilename()).toBe(pl.saveFailed.fileName);
     const text = await readFile(await download.path(), 'utf8');
     expect(text).toContain('"version": 99');
     expect(text).toContain('"stars": 7');
+    expect(text).toContain('"build"');
+    expect(text).toContain('"reason": "future"');
     await expect(card).toBeVisible();
 
     // "Graj dalej": the game starts on the welcome screen with writes blocked.

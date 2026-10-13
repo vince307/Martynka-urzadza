@@ -84,6 +84,24 @@ export const pl = {
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
         fileName: 'martynka-zapis.txt',
+        // DESIGN-GAP 51: the kit has no line for the reason of a failed read; a code and the build, for the parent to quote.
+        detail: (reason: string, build: string) => `Kod: ${reason} · Wersja ${build}`,
+    },
+    // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
+    saveTransfer: {
+        exportButton: 'Zapisz kopię',
+        exportTitle: 'Kopia zapisu',
+        exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
+        privacy: 'Plik zawiera postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.',
+        saveFile: 'Zapisz plik',
+        close: 'Zamknij',
+        exportOutcome: {
+            shared: 'Kopia została przekazana wybranej aplikacji.',
+            downloaded: 'Plik został pobrany na to urządzenie.',
+            cancelled: 'Anulowano. Nic nie zostało zapisane.',
+            failed: 'Nie udało się zapisać pliku. Spróbuj jeszcze raz.',
+        },
+        fileName: (date: string) => `martynka-zapis-${date}.txt`,
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
     saveUnavailable: {
