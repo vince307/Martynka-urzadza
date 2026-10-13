@@ -1075,7 +1075,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 - [x] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 1f5ab33 (unit 1427 + 39 = 1466)
 - [x] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check — 1f5ab33
-- [ ] 8.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 8.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 1f5ab33 (e2e 37 passed by the orchestrator on bfeac5e)
 
 #### Manual
 
@@ -1085,11 +1085,11 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `sample` E3/E4 bez naruszeń
+- [x] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `sample` E3/E4 bez naruszeń — f1d6375
 - [ ] 9.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` i `drag` w puli
-- [ ] 9.3 `Unsupported input mode` i „wait for their own UI” usunięte
-- [ ] 9.4 Deliberate break: `playable` bez `drag` → test puli czerwony; przywrócone; meta-check
-- [ ] 9.5 `npm run build` drukuje `e2e hook: absent (`
+- [x] 9.3 `Unsupported input mode` i „wait for their own UI” usunięte — f1d6375
+- [x] 9.4 Deliberate break: `playable` bez `drag` → test puli czerwony; przywrócone; meta-check — f1d6375
+- [x] 9.5 `npm run build` drukuje `e2e hook: absent (` — f1d6375
 
 #### Manual
 
