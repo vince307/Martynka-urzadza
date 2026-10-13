@@ -1,17 +1,17 @@
 # Handoff — `observability-c1-c2` (slice fix:observability-c1-c2, non-roadmap)
 
-Written by `/10x-implement observability-c1-c2 phase 5` (autonomous run 2026-10-13-fix-observability).
+Written by `/10x-e2e observability-c1-c2 phase 6` (blocked: e2e request file) (autonomous run 2026-10-13-fix-observability).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/observability-c1-c2` |
-| Commits | phase 1 = 6ad5d53, phase 2 = 1af1734, phase 3 = 478a100, phase 4 = b2affa1, phase 5 = 799a75f, then this handoff |
+| Commits | phase 1 = 6ad5d53, phase 2 = 1af1734, phase 3 = 478a100, phase 4 = b2affa1, phase 5 = 799a75f, then handoff p5; phase 6 NOT committed (waits for the orchestrator's e2e run) |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` |
-| Working tree | clean after this commit |
+| Working tree | dirty on purpose: uncommitted phase-6 spec + helper edits (`tests/e2e/error-boundary.spec.ts`, `support/welcome.ts`, `parent-settings.spec.ts`, `playwright.config.ts`) |
 
 ## 2. Artifacts
 
@@ -39,17 +39,16 @@ Written by `/10x-implement observability-c1-c2 phase 5` (autonomous run 2026-10-
 
 ## 4. Next command
 
-Phase 6 is `Driver: e2e`:
+Phase 6 is waiting for the orchestrator's e2e run (`context/runs/2026-10-13-fix-observability/e2e-request-p6.md`), then a finishing agent commits it:
 /10x-e2e observability-c1-c2 phase 6
 
 ## 5. Open
 
-- Row 5.2 (e2e baseline 18 + 0) awaits the orchestrator on 799a75f.
+- Phase 6 rows 6.1-6.4 open until the orchestrator runs the green commands and both breaks (`e2e-break-p6.patch`, `e2e-break-p6b.patch`).
 - Manual: [reviewer] 2.5, 4.5, 4.6, 5.6, 5.7; [human] 2.6, 4.8, 5.9; [visual] 4.7, 5.8.
-- Follow-ups are in `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-1. Stayed in this context, one commit, stopped after phase 5; commit message as proposed.
-2. `noVoice` is hidden until the first `watchVoice` callback (called synchronously on subscribe). Would change: nothing.
-3. Row 5.2 left open (e2e orchestrator gate).
+1. Chromium cannot launch here (MachPort, 3 tries): request-file protocol; spec left uncommitted.
+2. Query switches go through an optional `query` record on `openWelcome`/`openGate`/`passWelcomeAsParent`/`passWelcome`; `openSettings` moved from parent-settings.spec into `support/welcome.ts` (no duplicate); `ROUND_SPEC` += error-boundary.
+3. Row 5.2 ticked from the orchestrator's 18/18 on f97228a.
