@@ -1,5 +1,7 @@
 # Handoff — `adaptive-curriculum` (slice S-07)
 
+UPDATE (ship step): archived by `3864267` (`chore(archive): close adaptive-curriculum`); the open [human] rows 8.5–8.10 stay as the maintainer's post-run checklist (archive decision: Continue archiving — 0 automated, 6 manual rows pending; no SHA repoint, every cited sha is an ancestor of the branch head).
+
 Written by the visual gate (autonomous run 2026-10-12-s04-s08). `VISUAL: PASS`, no code changed in this step (docs and
 screenshots only), so the e2e re-run on `88e898c` the impl-review asked for still applies unchanged — this session
 could not launch Chromium either.
@@ -10,8 +12,8 @@ could not launch Chromium either.
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
 | Commits | phases `8fd7bd0` … `7d03dc7` (p9), review fix `88e898c`, impl-review `94ae4de`; this step adds one docs commit `docs(adaptive-curriculum): bramka wizualna` (no `fix` commit) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-12-s04-s08/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-10-13-adaptive-curriculum/` by `3864267`; roadmap S-07 `done`, Backlog Handoff refreshed: S-08 ready for `/10x-plan`, S-07 triggers restated on S-08, S-11, S-16, S-17) |
 | `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 8.5–8.10 [human] |
 | Working tree | clean after the commit (capture scratch lives outside the repo) |
 
@@ -39,7 +41,7 @@ could not launch Chromium either.
 
 ## 4. Next command
 
-/10x-archive adaptive-curriculum, then ship (no hosted db push)
+none — shipped
 
 ## 5. Open
 
