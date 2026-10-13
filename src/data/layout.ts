@@ -223,7 +223,7 @@ export const ROOM_LAYOUT = {
     // Top aligned with `resume`, below "Wybieram".
     taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
     // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (docs/design-gaps.md): the kit has no slots.
-    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
+    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22, captionCharWidth: 20 },
 } as const;
 
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */

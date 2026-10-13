@@ -2,7 +2,7 @@
 // AC: stars are spent once, only on confirm, never below 0; a refused purchase
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
-import { currentTask, emptyRoomState, nextTaskCost, purchase, roomDone, taskButtonView } from '../src/core/rooms';
+import { currentTask, emptyRoomState, nextTaskCost, purchase, roomDone, roomsListView, taskButtonView } from '../src/core/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
 
 const room: RoomDef = {
@@ -93,5 +93,32 @@ describe('roomDone (S-10)', () => {
         expect(roomDone(room, { tasksDone: 0, chosen: {} })).toBe(false);
         expect(roomDone(room, { tasksDone: 1, chosen: { floor: 0 } })).toBe(false);
         expect(roomDone(room, { tasksDone: 2, chosen: { floor: 0, sofa: 1 } })).toBe(true);
+    });
+});
+
+describe('roomsListView (FR-019: unlocking is data, not scene logic)', () => {
+    const rooms = { test: room };
+    const order = [{ room: 'test' }, { teaser: true as const, unlockAfter: 'test' }];
+    const finished: RoomState = { tasksDone: 2, chosen: {} };
+
+    it('lists an unfinished room as unlocked and not done, and its teaser as locked', () => {
+        const view = roomsListView(order, rooms, { test: { tasksDone: 1, chosen: {} } });
+        expect(view).toEqual([
+            { kind: 'room', id: 'test', nameKey: 'test', done: false, unlocked: true },
+            { kind: 'teaser', id: null, nameKey: null, done: false, unlocked: false },
+        ]);
+    });
+
+    it('unlocks the teaser once the room it follows is done', () => {
+        const view = roomsListView(order, rooms, { test: finished });
+        expect(view[0]).toMatchObject({ done: true, unlocked: true });
+        expect(view[1]).toMatchObject({ kind: 'teaser', unlocked: true, done: false });
+    });
+
+    it('treats a missing state as an empty room and an unknown unlockAfter as locked', () => {
+        const view = roomsListView([...order, { teaser: true, unlockAfter: 'nowhere' }], rooms, {});
+        expect(view[0]).toMatchObject({ done: false, unlocked: true });
+        expect(view[1]?.unlocked).toBe(false);
+        expect(view[2]?.unlocked).toBe(false);
     });
 });

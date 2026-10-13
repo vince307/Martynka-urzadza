@@ -1,6 +1,6 @@
 // Room purchase logic (S-09), pure: no Phaser, no registry. The scene passes
 // the balance in and writes the result back (plan "State sequencing").
-import type { RoomDef, RoomState, RoomTaskDef } from './types';
+import type { RoomDef, RoomListEntry, RoomState, RoomTaskDef } from './types';
 
 type Variant = 0 | 1 | 2;
 
@@ -57,4 +57,29 @@ export function purchase(room: RoomDef, state: RoomState, stars: number, variant
 
 export function roomDone(room: RoomDef, state: RoomState): boolean {
     return state.tasksDone >= room.tasks.length;
+}
+
+export interface RoomListItem {
+    kind: 'room' | 'teaser';
+    id: string | null;        // room id, null for a teaser
+    nameKey: string | null;   // the room's key into pl.room.name, null for a teaser
+    done: boolean;            // only a room can be done
+    unlocked: boolean;
+}
+
+export function roomsListView(
+    order: readonly RoomListEntry[],
+    rooms: Readonly<Record<string, RoomDef>>,
+    states: Readonly<Record<string, RoomState>>,
+): RoomListItem[] {
+    return order.map((entry) => {
+        const id = 'room' in entry ? entry.room : null;
+        const room = id === null ? undefined : rooms[id];
+        const done = room !== undefined && id !== null && roomDone(room, states[id] ?? emptyRoomState());
+        const after = entry.unlockAfter;
+        const afterRoom = after === undefined ? undefined : rooms[after];
+        const unlocked = after === undefined
+            || (afterRoom !== undefined && roomDone(afterRoom, states[after] ?? emptyRoomState()));
+        return { kind: id === null ? 'teaser' : 'room', id, nameKey: id, done, unlocked };
+    });
 }

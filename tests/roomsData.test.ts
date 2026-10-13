@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { pl } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { FIRST_ROOM, ROOMS, SALON, SALON_PLACEHOLDERS } from '../src/data/rooms';
+import { FIRST_ROOM, ROOMS, ROOM_ORDER, SALON, SALON_PLACEHOLDERS, captionAnchor } from '../src/data/rooms';
+import { MIN_TOUCH_TARGET } from '../src/data/layout';
 
 const BACKGROUND_SLOTS = ['floor', 'walls'];
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
@@ -91,5 +92,57 @@ describe('salon data', () => {
     it('writes the stars still missing as digits only', () => {
         expect(pl.room.short(3, 5)).toBe('masz 3/5');
         expect(pl.room.short(0, 15)).toBe('masz 0/15');
+    });
+
+    it('lists the salon first, then a teaser that unlocks after a listed room (FR-019)', () => {
+        expect(ROOM_ORDER.length).toBeGreaterThanOrEqual(2);
+        expect(ROOM_ORDER[0]).toMatchObject({ room: FIRST_ROOM });
+        const ids = ROOM_ORDER.flatMap((e) => ('room' in e ? [e.room] : []));
+        for (const id of ids) {
+            expect(ROOMS[id], id).toBeDefined();
+            expect(typeof (pl.room as { name: unknown }).name, id).toBe('string');
+        }
+        for (const entry of ROOM_ORDER) if (entry.unlockAfter !== undefined) expect(ids).toContain(entry.unlockAfter);
+        expect(ROOM_ORDER.some((e) => 'teaser' in e)).toBe(true);
+    });
+
+    it('holds a child briefly (FR-018): shorter than the parent hold, above platform press thresholds, drift under half a target', () => {
+        expect(balance.roomHold.holdMs).toBeLessThan(balance.parentSettings.holdMs);
+        expect(balance.roomHold.holdMs).toBeGreaterThanOrEqual(500);
+        expect(balance.roomHold.moveTolerance).toBeGreaterThan(0);
+        expect(balance.roomHold.moveTolerance).toBeLessThan(MIN_TOUCH_TARGET / 2);
+    });
+
+    it('has the room-done and change-mode strings', () => {
+        for (const text of [pl.room.done.title, pl.room.done.spoken, pl.room.done.teaser, pl.room.change.enter, pl.room.change.exit, pl.room.change.hint]) {
+            expect(text.trim().length).toBeGreaterThan(0);
+        }
+    });
+
+    it('keeps the salon captions apart from each other and inside the room area', () => {
+        const { area, slot: slotLayout } = ROOM_LAYOUT;
+        const boxes = SALON.slots.map((slot) => {
+            const ph = SALON_PLACEHOLDERS[slot.id];
+            if (!ph) throw new Error(slot.id);
+            const text = (pl.room.slots as Record<string, string>)[slot.id] ?? '';
+            const { x, y } = captionAnchor(slot, ph);
+            const w = text.length * slotLayout.captionCharWidth;
+            const h = 32;
+            return { id: slot.id, left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
+        });
+        for (const b of boxes) {
+            expect(b.left, b.id).toBeGreaterThanOrEqual(area.left);
+            expect(b.right, b.id).toBeLessThanOrEqual(area.left + area.width);
+            expect(b.top, b.id).toBeGreaterThanOrEqual(area.top);
+            expect(b.bottom, b.id).toBeLessThanOrEqual(area.top + area.height);
+        }
+        for (let i = 0; i < boxes.length; i++) {
+            for (let j = i + 1; j < boxes.length; j++) {
+                const a = boxes[i];
+                const b = boxes[j];
+                const apart = a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+                expect(apart, `${a.id} vs ${b.id}`).toBe(true);
+            }
+        }
     });
 });

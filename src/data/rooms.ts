@@ -1,7 +1,7 @@
 // The first room, authored as data (S-09). Slot coordinates are in the 1920x1080
 // scene. Looks are placeholders drawn in code until the art arrives (S-16),
 // which removes SALON_PLACEHOLDERS; RoomTaskDef.label is a key into pl.room.tasks.
-import type { RoomDef, SlotDef } from '../core/types';
+import type { RoomDef, RoomListEntry, SlotDef } from '../core/types';
 import type { PLACEHOLDER_COLORS } from './layout';
 
 export interface Look {
@@ -13,6 +13,12 @@ export interface SlotPlaceholder {
     width: number;
     height: number;
     variants: [Look, Look, Look];
+    caption?: { x: number; y: number };   // where the caption is drawn when the slot centre is not a good place (wide slots)
+}
+
+/** Scene point of a slot's caption: the anchor when the placeholder has one, otherwise the slot centre. */
+export function captionAnchor(slot: SlotDef, placeholder: SlotPlaceholder): { x: number; y: number } {
+    return placeholder.caption ?? { x: slot.x, y: slot.y };
 }
 
 const slot = (id: string, x: number, y: number, depth: number): SlotDef => ({
@@ -56,8 +62,8 @@ const looks = (a: Look['fill'], b: Look['fill'], c: Look['fill']): [Look, Look, 
 ];
 
 export const SALON_PLACEHOLDERS: Record<string, SlotPlaceholder> = {
-    floor: { width: 1560, height: 340, variants: looks('oak', 'butter', 'terracotta') },
-    walls: { width: 1560, height: 316, variants: looks('paleLeaf', 'turquoise', 'butter') },
+    floor: { width: 1560, height: 340, caption: { x: 300, y: 820 }, variants: looks('oak', 'butter', 'terracotta') },
+    walls: { width: 1560, height: 316, caption: { x: 300, y: 240 }, variants: looks('paleLeaf', 'turquoise', 'butter') },
     rug: { width: 700, height: 120, variants: looks('terracotta', 'turquoise', 'butter') },
     curtains: { width: 200, height: 300, variants: looks('turquoise', 'terracotta', 'butter') },
     picture: { width: 240, height: 180, variants: looks('butter', 'turquoise', 'terracotta') },
@@ -70,3 +76,8 @@ export const SALON_PLACEHOLDERS: Record<string, SlotPlaceholder> = {
 
 export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON };
 export const FIRST_ROOM = 'salon';
+
+export const ROOM_ORDER: readonly RoomListEntry[] = [
+    { room: 'salon' },
+    { teaser: true, unlockAfter: 'salon' },   // unlocks when the salon is done (FR-019); a real second room replaces it in v1.1
+];

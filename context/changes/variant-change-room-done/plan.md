@@ -696,9 +696,9 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed danymi (stub listy, podpisy bez kotwic), zielone po; unit baseline + N
-- [ ] 2.2 Deliberate break zapowiedź bez `roomDone` / `holdMs = 2000` → czerwone; przywrócone; meta-check
-- [ ] 2.3 `npm run lint`; sample E1–E6 bez zmian; pełna bramka lokalna zielona
+- [x] 2.1 Nowe testy czerwone przed danymi (stub listy, podpisy bez kotwic), zielone po; unit baseline + N — SHA
+- [x] 2.2 Deliberate break zapowiedź bez `roomDone` / `holdMs = 2000` → czerwone; przywrócone; meta-check — SHA
+- [x] 2.3 `npm run lint`; sample E1–E6 bez zmian; pełna bramka lokalna zielona — SHA (e2e: not runnable in this session (MachPort), orchestrator gate)
 
 #### Manual
 
