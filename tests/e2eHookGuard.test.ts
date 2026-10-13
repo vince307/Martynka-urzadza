@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { E2E_HOOK_MARKER, checkE2EHook, e2eHookGuard } from '../vite/e2eHookGuard.mjs';
+import { E2E_HOOK_MARKER, E2E_HOOK_MARKERS, E2E_REQUIRED_MARKERS, checkE2EHook, e2eHookGuard } from '../vite/e2eHookGuard.mjs';
 
 const clean = [
     { fileName: '_app/index-a.js', code: 'console.log(1)' },
@@ -39,5 +39,37 @@ describe('e2e hook guard', () => {
     it('guards the property the hook really installs (a rename on one side would make the guard pass blindly)', () => {
         const hook = readFileSync(new URL('../src/testing/e2eHook.ts', import.meta.url), 'utf8');
         expect(hook).toContain(`'${E2E_HOOK_MARKER}'`);
+    });
+
+    it('lists every marker with the hook marker first', () => {
+        expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure']);
+        expect(E2E_REQUIRED_MARKERS).toEqual([E2E_HOOK_MARKER]);
+    });
+
+    it.each(E2E_HOOK_MARKERS.map((m) => [m] as const))('fails a production chunk holding only %s and names it', (marker) => {
+        const result = checkE2EHook([...clean, { fileName: '_app/index-d.js', code: `x("${marker}")` }], false);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain(marker);
+        expect(result.message).toContain('_app/index-d.js');
+    });
+
+    it('fails the e2e build when a required marker is missing, with an injected list', () => {
+        const required = [E2E_HOOK_MARKER, 'e2e-forced-failure'];
+        const result = checkE2EHook(leaky, true, required);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain('e2e-forced-failure');
+        const full = [...leaky, { fileName: '_app/index-e.js', code: 'throw new Error("e2e-forced-failure")' }];
+        expect(checkE2EHook(full, true, required)).toEqual({ ok: true, message: 'e2e hook: present (4 chunks checked)' });
+    });
+
+    it('does not require the other markers in the e2e build by default', () => {
+        expect(checkE2EHook(leaky, true).ok).toBe(true);
+    });
+
+    it('every marker appears literally in the hook source', () => {
+        const hook = readFileSync(new URL('../src/testing/e2eHook.ts', import.meta.url), 'utf8');
+        for (const marker of E2E_HOOK_MARKERS) {
+            expect(hook, marker).toContain(marker);
+        }
     });
 });
