@@ -741,9 +741,9 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [x] 1.1 `tests/mastery.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [x] 1.2 Deliberate break: `'second'` jak `'first'` / seria nie zerowana → czerwony; przywrócone; meta-check (reguła z ZADANIA, liczby z `balance`)
-- [x] 1.3 `grep -rn "from '../data" src/core/` pusty (F5)
+- [x] 1.1 `tests/mastery.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 8fd7bd0
+- [x] 1.2 Deliberate break: `'second'` jak `'first'` / seria nie zerowana → czerwony; przywrócone; meta-check (reguła z ZADANIA, liczby z `balance`) — 8fd7bd0
+- [x] 1.3 `grep -rn "from '../data" src/core/` pusty (F5) — 8fd7bd0
 - [ ] 1.4 Pełna bramka lokalna zielona
 
 ### Phase 2: Podłoga kalendarza i start nauki
