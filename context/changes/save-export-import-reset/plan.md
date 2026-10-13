@@ -771,7 +771,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 #### Manual
 
 - [x] 4.5 [reviewer] Odczyt nauczyciela tekstów eksportu i `saveFailed.detail`; notka prywatności — b85f251 (impl-review)
-- [ ] 4.6 [visual] Zrzuty: panel z „Zapisz kopię”, dialog eksportu przed/po, karta z kodem i wersją — 1440×900 i 1024×768
+- [x] 4.6 [visual] Zrzuty: panel z „Zapisz kopię”, dialog eksportu przed/po, karta z kodem i wersją — 1440×900 i 1024×768 — 76cdea4 (screenshots/ 01–04, 09)
 - [ ] 4.7 [human] iPad (ekran początkowy) share sheet → Pliki; Android (PWA) share/pobranie; linia wyniku zgodna
 
 ### Phase 5: Import z podsumowaniem
@@ -785,7 +785,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 #### Manual
 
 - [x] 5.4 [reviewer] `apply` tylko po kroku 2 i „Wczytaj”; odrzucenie nie dotyka savera; odczyt nauczyciela tekstów importu — b85f251 (impl-review)
-- [ ] 5.5 [visual] Zrzuty: import krok 1, odrzucony plik, podsumowanie „Teraz / Z pliku” — 1440×900 i 1024×768
+- [x] 5.5 [visual] Zrzuty: import krok 1, odrzucony plik, podsumowanie „Teraz / Z pliku” — 1440×900 i 1024×768 — 76cdea4 (screenshots/ 05–07; poprawka: fokus kroku 2 na „Anuluj”, „Salon” wielką literą)
 - [ ] 5.6 [human] iPad (ekran początkowy) i Android (PWA): wybór pliku, `.txt` wybieralny, import kończy się stanem z pliku
 
 ### Phase 6: Reset z potwierdzeniem, luki projektu, follow-upy, dokumentacja i seam sweep
@@ -801,7 +801,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 - [x] 6.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty; DESIGN-GAP 46–51; follow-upy z `Trigger:` — b85f251 (impl-review)
 - [x] 6.6 [reviewer] Odczyt nauczyciela tekstów resetu — b85f251 (impl-review)
-- [ ] 6.7 [visual] Zrzuty: panel z trzema przyciskami, dialog resetu, „Zapis gry” `notYet` i `ok` ze zdaniem trwałości — 1440×900 i 1024×768
+- [x] 6.7 [visual] Zrzuty: panel z trzema przyciskami, dialog resetu, „Zapis gry” `notYet` i `ok` ze zdaniem trwałości — 1440×900 i 1024×768 — 76cdea4 (screenshots/ 01, 02, 08, 10; `notYet` nieosiągalny w produkcie — pierwszy zapis przed otwarciem panelu, tylko unit `tests/saveHealth.test.ts`)
 - [ ] 6.8 [human] Decyzja wbrew literze FR-022: eksport `.txt` z treścią JSON zamiast `.json`
 - [ ] 6.9 [human] Akceptacja tekstów `pl.saveTransfer`, `pl.saveFailed.detail`, `pl.settings.saveNotYet`/`saveEarlier`/`savePersist`
 - [ ] 6.10 [human] Urządzenia: wynik `persist()` w „Zapis gry” na iPadzie i na Androidzie
