@@ -761,15 +761,15 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 - [x] 3.1 `tests/curriculumPick.test.ts` czerwony przed, zielony po; `tests/warmup.test.ts` z unikalnością zielony; unit `<baseline gałęzi> + N` — ee93ff9
 - [x] 3.2 Deliberate break: `earlier` z krokami > bieżącego / brak ponownego losowania → czerwony; przywrócone; meta-check (prawdziwe `stages`, rozkład z próby) — ee93ff9
 - [x] 3.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0` — ee93ff9
-- [x] 3.4 Pełna bramka lokalna zielona — ee93ff9 (e2e: orchestrator gate)
+- [x] 3.4 Pełna bramka lokalna zielona — ee93ff9 (e2e 14/14 on ee93ff9, orchestrator)
 
 ### Phase 4: Koniec rundy — odblokowanie kroku i łagodzenie
 
 #### Automated
 
-- [ ] 4.1 `tests/curriculumEnd.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `>` zamiast `>=` / `weakStreak` nie zerowany → czerwony; przywrócone; meta-check (oczekiwania z decyzji 3)
-- [ ] 4.3 Pełna bramka lokalna zielona
+- [x] 4.1 `tests/curriculumEnd.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — dba1791
+- [x] 4.2 Deliberate break: `>` zamiast `>=` / `weakStreak` nie zerowany → czerwony; przywrócone; meta-check (oczekiwania z decyzji 3) — dba1791
+- [x] 4.3 Pełna bramka lokalna zielona — dba1791 (e2e: orchestrator gate)
 
 ### Phase 5: Sklejka w scenach — uczeń sesji, runda adaptacyjna, koniec rundy, hak
 
