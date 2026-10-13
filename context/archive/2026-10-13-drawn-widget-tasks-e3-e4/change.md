@@ -1,10 +1,10 @@
 ---
 change_id: drawn-widget-tasks-e3-e4
 title: Zadania z widżetami rysowanymi w kodzie dla E3–E4 (zegar, linijka, klocki, diagram) i tryby select/drag
-status: impl_reviewed
+status: archived
 created: 2026-10-13
-updated: 2026-10-14
-archived_at: null
+updated: 2026-10-13
+archived_at: 2026-10-13T23:24:48Z
 ---
 
 ## Notes
