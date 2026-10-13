@@ -199,3 +199,26 @@ export const silenceSpeech = async (page: Page): Promise<void> => {
         Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
     });
 };
+
+/** A device with a Polish voice: the narrator finds it at once. Call before the page loads. */
+export const fakePolishVoice = async (page: Page): Promise<void> => {
+    await page.addInitScript(() => {
+        class FakeUtterance {
+            voice: { lang: string } | null = null;
+            lang = '';
+            rate = 1;
+            onend: (() => void) | null = null;
+            onerror: (() => void) | null = null;
+            constructor(public text: string) {}
+        }
+        const synth = {
+            getVoices: () => [{ lang: 'pl-PL', localService: true }],
+            speak: () => undefined,
+            cancel: () => undefined,
+            addEventListener: () => undefined,
+            removeEventListener: () => undefined,
+        };
+        Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+        Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: FakeUtterance, configurable: true });
+    });
+};
