@@ -748,10 +748,10 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [ ] 7.1 `validate-rule-files.sh` PASS
-- [ ] 7.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check
-- [ ] 7.3 `grep "comes with S-09|S-09 brings" src/` pusty
-- [ ] 7.4 Pełna bramka lokalna zielona; unit baseline + 0
+- [x] 7.1 `validate-rule-files.sh` PASS
+- [x] 7.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check
+- [x] 7.3 `grep "comes with S-09|S-09 brings" src/` pusty
+- [x] 7.4 Pełna bramka lokalna zielona; unit baseline + 0
 
 #### Manual
 

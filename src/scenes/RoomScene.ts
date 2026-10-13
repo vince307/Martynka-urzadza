@@ -149,7 +149,7 @@ export class RoomScene extends Scene {
 
     /** Pop of the new furniture and a burst of stars; nothing at all when the child asked for less motion. */
     private celebrate(bought: Bought): void {
-        // DESIGN-GAP (docs/design-gaps.md, phase 7): the purchase has no sound yet; the hook for it is here.
+        // DESIGN-GAP (docs/design-gaps.md): the purchase has no sound yet; the hook for it is here.
         this.playPurchaseSound();
         if (prefersReducedMotion()) {
             return;

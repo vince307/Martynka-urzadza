@@ -8,7 +8,7 @@ import { textStyle } from './textStyle';
 /**
  * Button of the current renovation task: label, star and cost. Affordable = the primary page-button look;
  * short of stars = faded, with "masz X/Y" underneath. It fires on pointerup after a press that began on it (like PageButton).
- * DESIGN-GAP (docs/design-gaps.md, phase 7): the kit has no task button; this look is ours.
+ * DESIGN-GAP (docs/design-gaps.md): the kit has no task button; this look is ours.
  */
 export class RoomTaskButton {
     private readonly graphics: GameObjects.Graphics;

@@ -11,7 +11,7 @@ type Point = { x: number; y: number };
  * The variant tray of the room: three thumbnails (the slot's shape in scale, with the variant's colour and pattern),
  * "Wybieram" and "Zamknij". The chosen thumbnail lifts and gets a thick border. "Wybieram" is faded and silent until a
  * thumbnail is chosen. Every button fires on pointerup after a press that began on it.
- * DESIGN-GAP (docs/design-gaps.md, phase 7): the kit has no variant panel; this look is ours.
+ * DESIGN-GAP (docs/design-gaps.md): the kit has no variant panel; this look is ours.
  */
 export class VariantPanel {
     private readonly graphics: GameObjects.Graphics;

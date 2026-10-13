@@ -207,18 +207,18 @@ export const WELCOME_LAYOUT = {
 
 /** Room scene (S-09): the salon drawn in code over `area`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
-    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md row 12)
-    area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal, phase 5 may tune it)
+    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
+    area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal)
     wallBottom: 520,                                            // wall and floor meet here
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
     // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail
-    // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md, phase 7): the kit has no panel.
+    // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md): the kit has no panel.
     thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20 },
     choose: { left: 1100, top: 800, width: 480, height: 108, radius: 32, border: 5 },
     close: { left: 1100, top: 924, width: 480, height: 96, radius: 32, border: 5 },
-    // Current renovation task button. DESIGN-GAP (docs/design-gaps.md, phase 7): the kit has no task button; page-button look, ours.
+    // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
     taskButton: { left: 900, top: 880, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
-    // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (phase 7): the kit has no slots.
+    // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (docs/design-gaps.md): the kit has no slots.
     slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
 } as const;
 

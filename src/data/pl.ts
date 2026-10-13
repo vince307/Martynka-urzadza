@@ -117,7 +117,7 @@ export const pl = {
         resume: 'Wróć do notesu',   // kit room-return view
         choose: 'Wybieram',
         close: 'Zamknij',
-        // DESIGN-GAP (docs/design-gaps.md rows 31-36, added in S-09 phase 7): the kit has no slots, task button or variant panel copy; these strings are ours.
+        // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
         name: 'Salon',
         // Imperative with the accusative, keyed by RoomTaskDef.label.
         tasks: {

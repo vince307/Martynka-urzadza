@@ -16,7 +16,7 @@ export interface Box { left: number; top: number; width: number; height: number 
  * The room drawn in code: walls above `wallBottom`, floor below, then the slots by depth. An empty slot is a dashed
  * outline with its name; a furnished one (or one shown in the preview) is a rounded shape with colour, pattern and name.
  * It takes no input.
- * DESIGN-GAP (docs/design-gaps.md, phase 7): the kit's room.png is a finished room and has no slots; this is a placeholder until S-16.
+ * DESIGN-GAP (docs/design-gaps.md): the kit's room.png is a finished room and has no slots; this is a placeholder until S-16.
  */
 export class RoomView {
     private readonly graphics: GameObjects.Graphics;
