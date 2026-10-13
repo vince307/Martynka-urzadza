@@ -1059,8 +1059,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 7.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` w puli; jednorazowo `task-round` z `?e2eSkills=E3.7.select_even_30` zielony
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 8f73f98 (e2e by the orchestrator on 0b7f402: 37 passed; select one-off 4 passed)
+- [x] 7.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` w puli; jednorazowo `task-round` z `?e2eSkills=E3.7.select_even_30` zielony — 8f73f98 (e2e by the orchestrator on 0b7f402: 37 passed; select one-off 4 passed)
 - [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eSkills` nieobecny w `dist/` — 8f73f98
 - [x] 7.4 Deliberate break: `toggleSelected` nie zdejmuje → czerwony; meta-check nazwy klucza rejestru vs marker; przywrócone — 8f73f98
 
@@ -1073,8 +1073,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check
+- [x] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — p8 commit (unit 1427 + 39 = 1466)
+- [x] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check — p8 commit
 - [ ] 8.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

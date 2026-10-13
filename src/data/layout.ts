@@ -188,6 +188,14 @@ export const TASK_LAYOUT = {
         keypad: { x: 236, y: 470, width: 768, height: 378 },
         keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
     },
+    // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
+    // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).
+    drag: {
+        tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
+        mat: { x: 236, y: 380, width: 944, height: 460 },
+        ok: { x: 1240, y: 724, width: 440, height: 96 },
+        cellInset: 8, columns: 3, maxPerKind: 9,
+    },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
     blocks: {
