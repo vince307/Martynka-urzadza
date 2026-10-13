@@ -3,7 +3,7 @@ title: Autonomous run profile — Martynka urządza
 status: confirmed        # draft → confirmed (only `references/setup.md` § Prove flips it)
 skill_version: 6
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 env: context/foundation/autonomous-run.env
 ---
 
@@ -127,7 +127,8 @@ Note: the service worker is registered only in production builds; checks of `sw.
 - npm cache: `npm_config_cache="$TMPDIR/npm-cache"` (the sandbox cannot write `~/.npm/_cacache`).
 - `.claude/hooks/*` is not writable from sandboxed Bash (Edit tool works); never edit hooks during a run.
 - The sandbox `grep` (ugrep) rejects backreferences.
-- Headless Chromium (Playwright) cannot start inside the sandbox on macOS (`MachPortRendezvousServer … Permission denied`): `npx playwright *` must run with the sandbox DISABLED. The maintainer adds `npx playwright *` to `excludedCommands`; until then the e2e gate needs a permission prompt, which blocks a background agent.
+- Headless Chromium (Playwright) cannot start inside the sandbox on macOS (`MachPortRendezvousServer … Permission denied`): `npx playwright *` must run with the sandbox DISABLED. `npx playwright *` is in `excludedCommands` (2026-10-12) and works in the orchestrator session as ONE plain command (no `cd &&`, pipes or env prefix). In subagent sessions it works only sometimes (run 2026-10-12-s04-s08: denied, sandboxed, then fine in S-08): e2e-driver phases keep the request-file protocol (the agent writes the spec + break patches, the orchestrator runs them), and a subagent never disables the sandbox for it on its own.
+- Claude in Chrome cannot drive the Phaser long press (synthetic pointer/touch events are ignored): the visual gate screenshots gestures with a throwaway Playwright spec reusing `tests/e2e/support/*` against the hook build on 4399, kept in a gitignored `*.local` folder and moved out before the lint gate.
 - `npx playwright install chromium` writes `~/Library/Caches/ms-playwright` (outside the sandbox); already done once on this machine.
 - Claude in Chrome ignores window resize: portrait checks go through a same-origin iframe of the given size.
 - Hooks: a per-edit ESLint + related-tests hook and an end-of-turn gate (lint, tsc, vitest) send the agent back once.
