@@ -1,7 +1,7 @@
 ---
 change_id: adaptive-curriculum
 title: Adaptacja trudności — wagi kroków, opanowanie 0–5, „Nowa umiejętność!” i łagodzenie
-status: new
+status: preparing
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
