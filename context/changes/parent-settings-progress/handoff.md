@@ -62,3 +62,4 @@ visual gate (orchestrator), then /10x-archive parent-settings-progress
 3. Subagent warnings on repeated step titles and the unrecorded interrupted round were downgraded to OBSERVATION (F8): both are planned decisions ("What We're NOT Doing") already routed to row 9.8.
 4. `pl.settings.empty` kept unchanged (F7 follow-up): the e2e spec and design-gaps row 27 quote it, and it is correct Polish.
 5. The plan's phase 8 text was not edited (historical record); the review report names the change.
+- Visual gate (orchestrator, 2026-10-13): the settings panel with a long progress list ran off the screen and text showed under the sticky bar; fixed in 9167fb1 by making the dialog that holds the sticky bar its own scroll container (`.parent-dialog:has(> .parent-actions-sticky)`), bar flush on the bottom edge; gate and empty panel unchanged.
