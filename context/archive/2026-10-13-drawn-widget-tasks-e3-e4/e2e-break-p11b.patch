@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 4f6b833..e140f0d 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -173,7 +173,7 @@ export class TaskScene extends Scene {
+         this.dragLive = false;
+         // The whole scene feeds the block-drag reducer with raw pointer events (core/blockDrag decides); it acts only while a 'drag' task takes touches.
+         type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
+-        const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
++        const lift = (p: Raw): BlockDragEvent => ({ type: 'up', pointerId: p.id, x: p.x, y: p.y });
+         this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
+         this.input.on('pointermove', (p: Raw) => this.feedDrag({ type: 'move', pointerId: p.id, x: p.x, y: p.y }));
+         this.input.on('pointerup', (p: Raw) => this.feedDrag(lift(p)));

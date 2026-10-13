@@ -22,11 +22,16 @@ const stage = (id: StageId): StageDef => {
 // E5 that month belongs to a later calendar stage, so it also exercises the `behind` branch.
 const AUTUMN = [8, 9, 10, 11, 0];
 const SPRING = [1, 2, 3, 4, 5];
+// S-13 (E3 and E4 became fully playable: n = 11 and n = 8) rows recomputed by hand from rule D, never from the code:
+// progress = (position - semesterStart + 0.5) / 5 = 0.1, 0.3, 0.5, 0.7, 0.9 for the five months, 1 behind or after;
+// k = min(n, max(2, ceil(progress * n))) and every step is playable, so the step equals k.
+//   E3 (n = 11): ceil(1.1) 2, ceil(3.3) 4, ceil(5.5) 6, ceil(7.7) 8, ceil(9.9) 10; the month after is behind -> 11.
+//   E4 (n = 8):  ceil(0.8) 1 -> floor of 2, ceil(2.4) 3, ceil(4.0) 4, ceil(5.6) 6, ceil(7.2) 8; July is still E4 -> progress 1 -> 8.
 const ORACLE: { id: StageId; age: number; months: number[]; after: number; expected: number[] }[] = [
     { id: 'E1', age: 6, months: AUTUMN, after: 1, expected: [3, 4, 5, 7, 11, 11] },
     { id: 'E2', age: 7, months: SPRING, after: 6, expected: [3, 4, 5, 7, 10, 10] },
-    { id: 'E3', age: 8, months: AUTUMN, after: 1, expected: [2, 6, 7, 9, 11, 11] },
-    { id: 'E4', age: 8, months: SPRING, after: 6, expected: [2, 2, 4, 6, 8, 8] },
+    { id: 'E3', age: 8, months: AUTUMN, after: 1, expected: [2, 4, 6, 8, 10, 11] },
+    { id: 'E4', age: 8, months: SPRING, after: 6, expected: [2, 3, 4, 6, 8, 8] },
     { id: 'E5', age: 9, months: AUTUMN, after: 1, expected: [2, 3, 6, 8, 10, 11] },
     { id: 'E6', age: 10, months: SPRING, after: 6, expected: [4, 5, 6, 8, 10, 10] },
 ];
@@ -35,8 +40,8 @@ describe('playableSteps', () => {
     it('lists the steps with at least one playable skill, in order, for every real stage', () => {
         expect(playableSteps(stage('E1'))).toEqual([2, 3, 4, 5, 6, 7, 9, 11]);
         expect(playableSteps(stage('E2'))).toEqual([1, 3, 4, 5, 6, 7, 9, 10]);
-        expect(playableSteps(stage('E3'))).toEqual([1, 2, 6, 7, 8, 9, 10, 11]);
-        expect(playableSteps(stage('E4'))).toEqual([1, 2, 4, 5, 6, 8]);
+        expect(playableSteps(stage('E3'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        expect(playableSteps(stage('E4'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
         expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 6, 7, 8, 9, 10, 11]);
         expect(playableSteps(stage('E6'))).toEqual([1, 4, 5, 6, 7, 8, 9, 10]);
     });
@@ -65,7 +70,7 @@ describe('calendarStart (rule D)', () => {
     it('does not start a stage ahead of its semester before minStartSteps playable steps', () => {
         // E4 for age 8 in September: the calendar stage is E3, E4 has no progress yet, the floor is the 2nd playable step.
         expect(calendarStart(stage('E4'), 8, 8, placementData, RULES)).toBe(2);
-        expect(calendarStart(stage('E4'), 8, 8, placementData, { ...RULES, minStartSteps: 3 })).toBe(4);
+        expect(calendarStart(stage('E4'), 8, 8, placementData, { ...RULES, minStartSteps: 3 })).toBe(3);
     });
 
     it('rejects an age or month outside the placement table', () => {
@@ -79,7 +84,7 @@ describe('startLearning', () => {
         const a = startLearning(stages, 8, 9, placementData, RULES);
         expect(Object.keys(a.unlockedStep).sort()).toEqual(ALL);
         for (const id of ALL) expect(a.unlockedStep[id]).toBe(calendarStart(stage(id), 8, 9, placementData, RULES));
-        expect(a.unlockedStep.E3).toBe(6); // October, the oracle row
+        expect(a.unlockedStep.E3).toBe(4); // October, the oracle row
         expect(a.unlockedStep.E2).toBe(10); // behind
         expect(a.mastery).toEqual({});
         expect(a.streak).toEqual({});

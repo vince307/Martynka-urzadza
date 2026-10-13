@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { buildAdaptiveRound, calendarStart, playableSteps, skillBuckets, startLearning } from '../src/core/curriculum';
 import { createRng } from '../src/core/rng';
 import { pickRoundSkills, type Weights } from '../src/core/round/pick';
-import { distinctTasks } from '../src/core/round/unique';
+import { distinctTasks, taskKey } from '../src/core/round/unique';
 import { getGenerator } from '../src/core/tasks/registry';
 import type { Task } from '../src/core/tasks/types';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
@@ -27,7 +27,7 @@ const stage = (id: StageId): StageDef => {
 const previousOf = (id: StageId): StageDef | undefined => (id === 'E1' ? undefined : stage(ALL[ALL.indexOf(id) - 1]));
 
 // Independent oracle of "playable" (what the task scene can answer and a generator exists for).
-const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad') && getGenerator(s.type) !== undefined;
+const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag') && getGenerator(s.type) !== undefined;
 const playableOf = (st: StageDef, pred: (step: number) => boolean): SkillDef[] =>
     st.steps.filter((step) => pred(step.step)).flatMap((step) => step.skills.filter(isPlayable));
 const ids = (skills: readonly SkillDef[]): string[] => skills.map((s) => s.id);
@@ -39,19 +39,19 @@ const currentStep = (st: StageDef, unlocked: number): number => {
 };
 
 describe('skillBuckets', () => {
-    it('E3 step 6: current = step 6, earlier = playable steps 1-2, previous = all of E2', () => {
+    it('E3 step 6: current = step 6, earlier = playable steps 1-5, previous = all of E2', () => {
         const b = skillBuckets(stage('E3'), previousOf('E3'), 6);
         expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([6]));
-        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2]));
+        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2, 3, 4, 5]));
         expect(ids(b.previous)).toEqual(ids(playableOf(stage('E2'), () => true)));
         expect(b.current.length).toBeGreaterThan(0);
     });
 
     it('an unplayable unlocked step falls back to the nearest lower playable step', () => {
-        // E3 steps 3-5 have no playable skill: unlocked step 4 plays step 2.
-        const b = skillBuckets(stage('E3'), previousOf('E3'), 4);
-        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([2]));
-        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1]));
+        // E5 step 5 has no playable skill (capacity and mass wait for S-14): unlocked step 5 plays step 4.
+        const b = skillBuckets(stage('E5'), previousOf('E5'), 5);
+        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([4]));
+        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2, 3]));
     });
 
     it('an unplayable step below every playable one falls back to the first playable step', () => {
@@ -153,8 +153,9 @@ describe('buildAdaptiveRound', () => {
                     const where = `${id} month=${month} seed=${seed}`;
                     expect(tasks, where).toHaveLength(rules.length);
                     for (const t of tasks) expect(allowed.has(t.skillId), `${where} ${t.skillId}`).toBe(true);
-                    const prompts = tasks.map((t) => t.prompt);
-                    expect(new Set(prompts).size, `${where} ${JSON.stringify(prompts)}`).toBe(prompts.length);
+                    // A task is told apart by its prompt and its drawing ("Jaka to liczba?" differs by the blocks).
+                    const keys = tasks.map((t) => taskKey(t));
+                    expect(new Set(keys).size, `${where} ${JSON.stringify(keys)}`).toBe(keys.length);
                 }
             }
         }
@@ -172,6 +173,18 @@ describe('distinctTasks', () => {
         const out = distinctTasks([skill, skill, skill], rng, () => task(`p${Math.floor(calls++ / 3)}`), 20);
         expect(out).toHaveLength(3);
         expect(new Set(out.map((t) => t.prompt)).size).toBe(3);
+    });
+
+    it('does not treat the same prompt with another drawing as a repeat, but does with an identical drawing', () => {
+        const withClock = (minute: number): Task => ({ ...task('Która godzina?'), visual: { kind: 'clock', hour: 3, minute } });
+        let calls = 0;
+        const other = distinctTasks([skill, skill], createRng(3), () => withClock(calls++ < 1 ? 0 : 30), 20);
+        expect(other.map((t) => t.visual)).toEqual([{ kind: 'clock', hour: 3, minute: 0 }, { kind: 'clock', hour: 3, minute: 30 }]);
+        expect(calls).toBe(2);   // no redraw: the drawings differ
+
+        calls = 0;
+        const same = distinctTasks([skill, skill], createRng(3), () => { calls += 1; return withClock(calls <= 5 ? 0 : 45); }, 20);
+        expect(same.map((t) => (t.visual as { minute: number }).minute)).toEqual([0, 45]);   // identical drawing redrawn
     });
 
     it('a constant generator ends in duplicates after the retry limit, without hanging', () => {

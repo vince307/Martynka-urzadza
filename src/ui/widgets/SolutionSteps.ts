@@ -24,11 +24,12 @@ export class SolutionSteps {
     /**
      * `top` is the first free y under the prompt; lines wrap at `maxWidth` so a long step (the months in order)
      * stays inside the notebook. The button sits in the bar zone, centred on `centerX`.
+     * `limit` is the lowest y the lines may reach (a drawing's lines rectangle); by default the bar zone.
      */
-    show(bar: SolutionBar, centerX: number, top: number, maxWidth: number): void {
+    show(bar: SolutionBar, centerX: number, top: number, maxWidth: number, limit?: number): void {
         const { bottom, height } = TASK_LAYOUT.bar;
         const buttonCenterY = bottom - height / 2;
-        const room = bottom - height - TASK_LAYOUT.solution.bottomGap - top;
+        const room = (limit ?? bottom - height - TASK_LAYOUT.solution.bottomGap) - top;
         this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.join('\n')).setPosition(centerX, top).setVisible(true);
         const scale = Math.max(TASK_LAYOUT.solution.minScale, Math.min(1, room / this.text.height));
         this.text.setScale(scale);

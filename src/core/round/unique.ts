@@ -2,9 +2,17 @@
 import type { Rng } from '../rng';
 import type { Task } from '../tasks/types';
 import type { SkillDef } from '../types';
+import { visualKey } from '../tasks/visual';
 
 /**
- * One task per skill, in order. A task whose `prompt` already appeared is redrawn from the same skill up to
+ * What makes two tasks the same task: the prompt and the drawing. A multi-select task has one fixed prompt, so its
+ * tiles count too (the choices of other modes are random distractors and must not).
+ */
+export const taskKey = (task: Task): string =>
+    `${task.prompt}|${visualKey(task.visual)}${task.input === 'select' ? `|${(task.choices ?? []).join('/')}` : ''}`;
+
+/**
+ * One task per skill, in order. A task whose `prompt` and drawing already appeared is redrawn from the same skill up to
  * `retries` times; after that the duplicate stays, so the round always has `skills.length` tasks and never hangs.
  * The skill choice (and so the weights) is untouched. `generate` closes over the rng, so a redraw is a new draw; the
  * `_rng` parameter only keeps the signature the plan names.
@@ -18,10 +26,10 @@ export const distinctTasks = (
     const seen = new Set<string>();
     return skills.map((skill) => {
         let task = generate(skill);
-        for (let attempt = 0; attempt < retries && seen.has(task.prompt); attempt += 1) {
+        for (let attempt = 0; attempt < retries && seen.has(taskKey(task)); attempt += 1) {
             task = generate(skill);
         }
-        seen.add(task.prompt);
+        seen.add(taskKey(task));
         return task;
     });
 };

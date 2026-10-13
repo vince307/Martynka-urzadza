@@ -6,6 +6,7 @@ import { createText } from './overlay';
  * Parent's progress preview (US-03, FR-015): the current step and the weakest skills with mistake examples, or the
  * empty state. Renders a ProgressView and computes nothing; the examples show the child's answers to the adult only.
  * DESIGN-GAP (docs/design-gaps.md row 27): the kit has no progress view or empty state; plain headings and lists.
+ * DESIGN-GAP (docs/design-gaps.md row 58): an example of a drawn task (a clock, blocks) is shown without its drawing.
  */
 export const createProgressView = (view: ProgressView): HTMLElement => {
     const section = document.createElement('section');

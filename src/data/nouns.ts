@@ -25,4 +25,7 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     półka: ['półka', 'półki', 'półek'],
     naklejka: ['naklejka', 'naklejki', 'naklejek'],
     rok: ['rok', 'lata', 'lat'],
+    godzina: ['godzina', 'godziny', 'godzin'],
+    minuta: ['minuta', 'minuty', 'minut'],
+    setka: ['setka', 'setki', 'setek'],
 };

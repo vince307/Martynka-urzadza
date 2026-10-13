@@ -45,10 +45,12 @@ test('#13 (proposed, test-plan refresh pending) mastering the current step shows
     const summary = await snapshot(page);
     expect(summary.screen).toBe('summary');
     const unlocked = summary.learner!.pendingUnlock!;
-    expect(unlocked).toBeGreaterThan(START_STEP);
+    // E4.3 (the clock) became playable in S-13, so step 2 now leads to step 3.
+    expect(unlocked).toBe(3);
     expect(unlockedAfter).toBe(unlocked);
     const expectedName = E4.steps.find((s) => s.step === unlocked)?.childName;
     expect(expectedName).toBeTruthy();
+    expect(expectedName).toBe('Zegar: minuty i kwadrans');
 
     // The card waits through "Do pokoju" and back.
     await tapTarget(page, 'toRoom');

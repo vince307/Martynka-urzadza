@@ -9,6 +9,7 @@ import { createRng, seedFromString } from '../src/core/rng';
 import { boundOf } from '../src/core/tasks/bounds';
 import { generateTask } from '../src/core/tasks/generateTask';
 import { getGenerator } from '../src/core/tasks/registry';
+import { describeVisual } from '../src/core/tasks/visual';
 import { validateTask, type Violation } from '../src/core/tasks/validate';
 import { balance } from '../src/data/balance';
 import { availableStages, getStage } from '../src/data/curriculum';
@@ -67,6 +68,9 @@ if (warmup) {
         warmupViolations.push(...found);
         const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
         const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+        if (task.visual) {
+            console.log(`     visual: ${describeVisual(task.visual)}`);
+        }
         console.log(`  ${i + 1}. [${task.skillId}] ${task.prompt}  → ${answer}${choices}${found.length > 0 ? '  ⚠' : ''}`);
     });
     console.log(`\nNaruszenia: ${warmupViolations.length}`);
@@ -99,6 +103,9 @@ for (const step of stage!.steps) {
                 const flag = found.length > 0 ? '  ⚠' : '';
                 const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
                 const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+                if (task.visual) {
+                    console.log(`    visual: ${describeVisual(task.visual)}`);
+                }
                 console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
                 console.log(`      czyta: ${spokenTask(task, pl.speech, pl.round.calculate)}`);
             } catch (error) {

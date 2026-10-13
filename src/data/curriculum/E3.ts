@@ -1,6 +1,6 @@
 // Stage E3 (grade 2, first semester): steps from docs/ZADANIA.md, section 3.
 // Skills carry the parameters of group-1 generators (roadmap S-02); drawing
-// and art types (clock, mass, grid, temperature) arrive in M6.
+// and art types (mass, grid, temperature) arrive in M6; clock, ruler, blocks and charts are drawn (S-13).
 import type { SkillDef, StageDef } from '../../core/types';
 
 const skill = (id: string, step: number, type: string, params: SkillDef['params'], answer: SkillDef['answer'] = 'keypad'): SkillDef => ({
@@ -37,15 +37,46 @@ export const E3: StageDef = {
                 skill('E3.2.missing_20', 2, 'MISSING', { max: 20, ops: ['+', '-'], bridge: 'ten' }),
             ],
         },
-        { step: 3, title: 'Zegar: pełne godziny, obliczenia zegarowe', types: ['CLOCK'], skills: [] },
-        { step: 4, title: 'Waga: kg, dag; diagramy', types: ['MASS', 'DATA'], skills: [] },
-        { step: 5, title: 'Kwadrat magiczny, odcinki w cm', types: ['PUZZLE_GRID', 'LENGTH'], skills: [] },
+        {
+            step: 3,
+            title: 'Zegar: pełne godziny, obliczenia zegarowe',
+            childName: 'Zegar: pełne godziny',
+            types: ['CLOCK'],
+            skills: [
+                skill('E3.3.clock_read_full', 3, 'CLOCK', { variant: 'read', minuteStep: 60 }, 'tiles'),
+                skill('E3.3.clock_later_full', 3, 'CLOCK', { variant: 'later', minuteStep: 60, maxShift: 3 }, 'tiles'),
+            ],
+        },
+        {
+            step: 4,
+            title: 'Waga: kg, dag; diagramy',
+            childName: 'Diagramy',
+            types: ['MASS', 'DATA'],
+            skills: [
+                skill('E3.4.data_most_10', 4, 'DATA', { variant: 'most', maxValue: 10, bars: 4 }, 'tiles'),
+                skill('E3.4.data_least_10', 4, 'DATA', { variant: 'least', maxValue: 10, bars: 4 }, 'tiles'),
+                skill('E3.4.data_howmany_10', 4, 'DATA', { variant: 'howMany', maxValue: 10, bars: 3 }),
+                skill('E3.4.data_diff_10', 4, 'DATA', { variant: 'diff', maxValue: 10, bars: 3 }),
+            ],
+        },
+        {
+            step: 5,
+            title: 'Kwadrat magiczny, odcinki w cm',
+            childName: 'Mierzenie odcinków',
+            types: ['PUZZLE_GRID', 'LENGTH'],
+            skills: [skill('E3.5.length_ruler_cm_15', 5, 'LENGTH', { variant: 'ruler', unit: 'cm', lengthCm: 15, minMm: 20, maxMm: 120, startShift: 0.4 })],
+        },
         {
             step: 6,
             title: 'Liczby 21–30, + i − do 30 bez przekroczenia',
             childName: 'Działania do 30',
             types: ['PLACE_VALUE', 'ADD_SUB'],
-            skills: [addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' })],
+            skills: [
+                addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' }),
+                skill('E3.6.place_read_30', 6, 'PLACE_VALUE', { variant: 'read', min: 11, max: 30 }),
+                skill('E3.6.place_tens_30', 6, 'PLACE_VALUE', { variant: 'tens', min: 11, max: 30 }),
+                skill('E3.6.place_build_30', 6, 'PLACE_VALUE', { variant: 'build', min: 11, max: 30 }, 'drag'),
+            ],
         },
         {
             step: 7,
@@ -92,6 +123,7 @@ export const E3: StageDef = {
             childName: 'Cyfry rzymskie i kwartały',
             types: ['CLOCK', 'ROMAN', 'CALENDAR', 'TEMPERATURE'],
             skills: [
+                skill('E3.11.clock_24h', 11, 'CLOCK', { variant: 'h24', minuteStep: 60 }, 'tiles'),
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E3.11.calendar', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
             ],

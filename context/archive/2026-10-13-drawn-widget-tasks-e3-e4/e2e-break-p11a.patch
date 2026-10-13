@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/SelectTiles.ts b/src/ui/widgets/SelectTiles.ts
+index c95bcb1..dfb564c 100644
+--- a/src/ui/widgets/SelectTiles.ts
++++ b/src/ui/widgets/SelectTiles.ts
+@@ -34,7 +34,7 @@ export class SelectTiles {
+     ) {
+         this.ok = new ActionButton(scene, () => {
+             if (this.active) {
+-                this.onSubmit(selectionAnswer(this.marked));
++                this.onSubmit(selectionAnswer([]));
+             }
+         });
+     }

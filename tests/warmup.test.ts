@@ -8,6 +8,7 @@ import { buildWarmup, warmupResult } from '../src/core/round/warmup';
 import { previousStage } from '../src/core/placement';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask } from '../src/core/tasks/validate';
+import { taskKey } from '../src/core/round/unique';
 import { boundOf } from '../src/core/tasks/bounds';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -20,7 +21,7 @@ const rules = balance.warmup;
 
 // Independent oracle: what "playable" means, restated from the scene's needs.
 const playableSkills = (skills: readonly SkillDef[]): SkillDef[] =>
-    skills.filter((s) => (s.answer === 'tiles' || s.answer === 'keypad') && getGenerator(s.type) !== undefined);
+    skills.filter((s) => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag') && getGenerator(s.type) !== undefined);
 const stageOf = (id: StageId): StageDef => getStage(id) as StageDef;
 const allSkillIds = (stage: StageDef): Set<string> => new Set(playableSkills(stage.steps.flatMap((s) => s.skills)).map((s) => s.id));
 const firstStepsSkillIds = (stage: StageDef, n: number): Set<string> =>
@@ -115,9 +116,10 @@ describe('buildWarmup prompt uniqueness (S-07 phase 3)', () => {
             const previous = stageOf(previousStage(id) as StageId);
             for (let seed = 1; seed <= 200; seed += 1) {
                 const tasks = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries);
-                const prompts = tasks.map((t) => t.prompt);
+                // A task is told apart by its prompt and its drawing ("Jaka to liczba?" differs by the blocks).
+                const keys = tasks.map((t) => taskKey(t));
                 expect(tasks, `${id} seed=${seed}`).toHaveLength(rules.length);
-                expect(new Set(prompts).size, `${id} seed=${seed} ${JSON.stringify(prompts)}`).toBe(prompts.length);
+                expect(new Set(keys).size, `${id} seed=${seed} ${JSON.stringify(keys)}`).toBe(keys.length);
             }
         }
     });

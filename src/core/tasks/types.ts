@@ -2,12 +2,14 @@
 // of the skill definition and a seeded rng, so tests can replay any task.
 import type { Rng } from '../rng';
 import type { SkillDef } from '../types';
+import type { AnswerMode, TaskVisual } from './visual';
 
 export interface Task {
     skillId: string;
     prompt: string;                      // player-facing text (Polish) or a bare expression
     speak?: string;                      // text for the narrator, when it differs from prompt
-    visual?: unknown;                    // drawing description (clock, coins, objects)
+    visual?: TaskVisual;                 // drawing description (clock, ruler, blocks, bars)
+    input?: AnswerMode;                  // how the child answers; stamped by generateTask from the skill
     answer: number | string | number[];
     choices?: (number | string)[];       // for tile answers
     hint: string[];                      // successive hint steps shown after a mistake

@@ -1,0 +1,11 @@
+import { describe, expect, it } from 'vitest';
+import { formatTime } from '../src/core/text/time';
+
+describe('formatTime', () => {
+    it('writes the school notation with a dot and two-digit minutes', () => {
+        expect(formatTime(15, 0)).toBe('15.00');
+        expect(formatTime(7, 5)).toBe('7.05');
+        expect(formatTime(0, 30)).toBe('0.30');
+        expect(formatTime(12, 45)).toBe('12.45');
+    });
+});

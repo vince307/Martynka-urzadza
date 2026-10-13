@@ -24,6 +24,12 @@ const lastNumber = (line: string): number | undefined => {
 /** An open expression ("18 − 9"): its last number is an operand, the result is not stated. */
 const OPEN_EXPRESSION = new RegExp(`[+−·:] (?:${NUMBER_SOURCE})$`);
 
+/** A clock answer as the school writes it ("15.00", "7.05"); only these text answers are judged as leaks. */
+const TIME_TEXT = /^\d{1,2}\.\d{2}$/;
+
+/** The time as a whole token: "1.00" is not found inside "11.00" or "1.005". */
+const containsTime = (line: string, time: string): boolean => new RegExp(`(?<![\\d.])${time.replace('.', '\\.')}(?!\\d)`).test(line);
+
 /**
  * A line gives the result away when its last number is the numeric answer.
  * String and set answers are never judged: a middle-of-line number equal to the
@@ -31,7 +37,9 @@ const OPEN_EXPRESSION = new RegExp(`[+−·:] (?:${NUMBER_SOURCE})$`);
  * expression without "=" ("18 − 9" for 9 + □ = 18).
  */
 const leaksAnswer = (task: Task, line: string): boolean =>
-    typeof task.answer === 'number' && lastNumber(line) === task.answer && !(!line.includes('=') && OPEN_EXPRESSION.test(line));
+    typeof task.answer === 'number'
+        ? lastNumber(line) === task.answer && !(!line.includes('=') && OPEN_EXPRESSION.test(line))
+        : typeof task.answer === 'string' && TIME_TEXT.test(task.answer) && containsTime(line, task.answer);
 
 /** Hint for the first wrong answer, or null when the child should just try again. */
 export const firstHint = (task: Task): string | null => {

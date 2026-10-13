@@ -2,11 +2,13 @@
 // task data; fixed player-facing wording is mapped from `kind` by the scene.
 import type { Outcome, RoundState } from '../round';
 import type { Task } from '../tasks/types';
+import type { AnswerMode, TaskVisual } from '../tasks/visual';
 import { firstHint, solutionSteps } from './hints';
 
 export interface RoundView {
     dots: { status: 'done' | 'current' | 'todo'; outcome: Outcome | null }[];
-    input: 'tiles' | 'keypad';
+    input: AnswerMode;
+    visual: TaskVisual | null;
     choices: (number | string)[];
     bar:
         | { kind: 'none' }
@@ -51,7 +53,8 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
             status: state.finished || i < state.index || (i === state.index && state.phase === 'done') ? 'done' : i === state.index ? 'current' : 'todo',
             outcome: state.outcomes[i],
         })),
-        input: task.choices ? 'tiles' : 'keypad',
+        input: task.input ?? (task.choices ? 'tiles' : 'keypad'),   // the fallback serves hand-built tasks in tests
+        visual: task.visual ?? null,
         choices: task.choices ? [...task.choices] : [],
         bar: barOf(state, task, answerLine),
         inputActive: !state.finished && ['first', 'second', 'retype'].includes(state.phase),

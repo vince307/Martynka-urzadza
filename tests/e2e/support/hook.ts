@@ -2,15 +2,23 @@
 // Every tap is a page.touchscreen.tap at a scene point from the hook's targets (1920x1080 space).
 // Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
 // (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
-import { expect, type Page } from '@playwright/test';
+import { expect, type CDPSession, type Page } from '@playwright/test';
 
 export interface Point { x: number; y: number }
+export type BlockKind = 'hundred' | 'ten' | 'one';
 export interface Snapshot {
     index: number;
     solutionStep: number;
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad';
+    input: 'tiles' | 'keypad' | 'select' | 'drag';
     answer: unknown;
+    /** The drawing of the open task (a copy), null for a task without one. */
+    visual?: { kind: string } | null;
+    /** The tiles marked in the 'select' mode. */
+    selected?: (number | string)[];
+    /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */
+    mat?: Record<BlockKind, number>;
+    carrying?: boolean;
     outcomes: (string | null)[];
     starsEarned: number;
     bonusEarned: number;
@@ -50,7 +58,13 @@ export interface Snapshot {
 export interface Targets {
     tiles: (Point & { value: number | string })[];
     keys: (Point & { key: string })[];
+    selectTiles?: (Point & { value: number | string })[];
+    selectOk?: Point | null;
+    /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
+    drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
     next: Point | null;
+    /** The rectangle of the drawing (null while hidden); a spec aims at its interior. */
+    picture?: { x: number; y: number; width: number; height: number } | null;
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;
@@ -130,6 +144,63 @@ export const holdTouch = async (page: Page, point: Point, ms: number, drift = 0)
     }
 };
 
+/**
+ * A finger dragging from `from` to `to` (scene space): raw CDP touchStart, `steps` touchMove points along the line,
+ * then touchEnd. The drag is the gesture; there is no wait, and the caller polls the hook for the result.
+ */
+export const dragTouch = async (page: Page, from: Point, to: Point, steps = 8): Promise<void> => {
+    await dragGesture(page, from, to, steps, 'touchEnd');
+};
+
+/** The same drag, but the system cancels the touch (touchCancel) instead of lifting the finger. */
+export const cancelTouch = async (page: Page, from: Point, to: Point, steps = 8): Promise<void> => {
+    await dragGesture(page, from, to, steps, 'touchCancel');
+};
+
+const dragGesture = async (page: Page, from: Point, to: Point, steps: number, end: 'touchEnd' | 'touchCancel'): Promise<void> => {
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        await dragOn(cdp, page, from, to, steps, end);
+    } finally {
+        await cdp.detach();
+    }
+};
+
+/** One drag on an open CDP session (a build of many blocks reuses one session instead of opening one per block). */
+const dragOn = async (cdp: CDPSession, page: Page, from: Point, to: Point, steps: number, end: 'touchEnd' | 'touchCancel'): Promise<void> => {
+    const start = await toPage(page, from);
+    const stop = await toPage(page, to);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+    for (let step = 1; step <= steps; step++) {
+        const at = { x: start.x + ((stop.x - start.x) * step) / steps, y: start.y + ((stop.y - start.y) * step) / steps };
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: end, touchPoints: [] });
+};
+
+/** Touch-move points per block in a build: enough to pass `startDistance`, few enough that a round of builds stays fast. */
+const BUILD_STEPS = 3;
+
+/** Builds `value` on the mat of a 'drag' task: each block dragged from its tray to the mat, the hook's mat count polled after each. */
+export const buildOnMat = async (page: Page, value: number): Promise<void> => {
+    const { drag } = await targets(page);
+    expect(drag?.mat).toBeTruthy();
+    const counts: Record<BlockKind, number> = { hundred: Math.floor(value / 100), ten: Math.floor(value / 10) % 10, one: value % 10 };
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        for (const kind of ['hundred', 'ten', 'one'] as const) {
+            for (let i = 1; i <= counts[kind]; i++) {
+                const from = drag!.tray[kind];
+                expect(from, `tray block ${kind}`).toBeTruthy();
+                await dragOn(cdp, page, from!, drag!.mat!, BUILD_STEPS, 'touchEnd');
+                await expect.poll(async () => (await snapshot(page)).mat?.[kind]).toBe(i);
+            }
+        }
+    } finally {
+        await cdp.detach();
+    }
+};
+
 export const screenIs = async (page: Page, screen: Snapshot['screen']): Promise<void> => {
     await expect.poll(async () => (await snapshot(page)).screen).toBe(screen);
 };
@@ -147,7 +218,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
@@ -160,14 +231,34 @@ export const tapNumber = async (page: Page, value: number): Promise<void> => {
     await tapScene(page, keys.find((k) => k.key === 'ok')!);
 };
 
-/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. Returns the value given. */
-export const answerWrong = async (page: Page): Promise<number | string> => {
+/**
+ * An answer the task certainly rejects: another tile, answer + 1 on the keypad or on the mat (drag), or one marked tile that is not in the
+ * answer set (select; never depends on the tile order). Returns the value given.
+ */
+export const answerWrong = async (page: Page): Promise<number | string | (number | string)[]> => {
     const state = await snapshot(page);
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
         const tile = tiles.find((t) => t.value !== state.answer)!;
         await tapScene(page, tile);
         return tile.value;
+    }
+    if (state.input === 'select') {
+        const { selectTiles, selectOk } = await targets(page);
+        const right = state.answer as number[];
+        const tile = selectTiles!.find((t) => !right.includes(t.value as number))!;
+        await tapScene(page, tile);
+        await tapScene(page, selectOk!);
+        return [tile.value];
+    }
+    if (state.input === 'drag') {
+        // Builds the answer + 1 (one cube more), or the answer - 1 when the ones are already 9 (a cube less, never a 10th cube).
+        const { drag } = await targets(page);
+        const right = state.answer as number;
+        const given = right % 10 === 9 ? right - 1 : right + 1;
+        await buildOnMat(page, given);
+        await tapScene(page, drag!.ok!);
+        return given;
     }
     const given = (state.answer as number) + 1;
     await tapNumber(page, given);
@@ -179,6 +270,16 @@ export const answerRight = async (page: Page): Promise<void> => {
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
         await tapScene(page, tiles.find((t) => t.value === state.answer)!);
+    } else if (state.input === 'select') {
+        const { selectTiles, selectOk } = await targets(page);
+        for (const value of state.answer as number[]) {
+            await tapScene(page, selectTiles!.find((t) => t.value === value)!);
+        }
+        await tapScene(page, selectOk!);
+    } else if (state.input === 'drag') {
+        const { drag } = await targets(page);
+        await buildOnMat(page, state.answer as number);
+        await tapScene(page, drag!.ok!);
     } else {
         await tapNumber(page, state.answer as number);
     }

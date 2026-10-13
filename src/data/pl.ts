@@ -1,6 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
-import { countNoun } from '../core/text/plural';
+import { countNoun, pluralCategory } from '../core/text/plural';
+import { nouns } from './nouns';
 
 export const pl = {
     title: 'Martynka urządza',
@@ -181,6 +182,8 @@ export const pl = {
         gotIt: 'Już wiem',
         deleteKey: 'kasuj',
         okKey: 'OK',
+        // DESIGN-GAP (docs/design-gaps.md row 55): the kit has no tray of blocks; the labels under the tray blocks are ours.
+        trayLabels: { hundred: 'Setki', ten: 'Dziesiątki', one: 'Jedności' },
         // DESIGN-GAP: the kit has no solution result line (docs/design-gaps.md row 6); the bonus line sits under "+N" on the summary (row 9).
         bonus: (n: number) => `Runda bez błędu! +${n} ★`,
         resultLine: (answer: string) => `Wynik: ${answer}`,
@@ -318,6 +321,60 @@ export const pl = {
         monthsHint: (list: string) => `Miesiące po kolei: ${list}`,
         quarterHint: (quarter: string, list: string) => `${quarter} to ${list}`,
         romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,
+        // CLOCK and LENGTH (S-13). Times are written the school way ("3.30", "15.00"); the drawing carries the clock face and the ruler.
+        clockRead: 'Która godzina jest na zegarze?',
+        clockReadSpeak: 'Popatrz na zegar. Która godzina?',
+        // After "za" the object is in the accusative: "za 1 godzinę", "za 2 godziny".
+        clockLater: (n: number) => `Zegar pokazuje godzinę. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
+        clockLaterSpeak: (n: number) => `Popatrz na zegar. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
+        clockH24: 'Zegar pokazuje godzinę po południu. Która to godzina w zapisie 24-godzinnym?',
+        clockH24Speak: 'Popatrz na zegar. Jest po południu. Która to godzina w zapisie 24-godzinnym?',
+        clockHandsHint: 'Najpierw spójrz na krótką wskazówkę: pokazuje godzinę. Potem na długą: pokazuje minuty.',
+        // Past the full hour the short hand has left the number (at 3.40 it is nearer 4): name both numbers it is between.
+        clockShortHandHint: (hour: number, minute: number, next: number) =>
+            minute === 0 ? `Krótka wskazówka jest przy ${hour}.` : `Krótka wskazówka jest między ${hour} a ${next}, więc godzina to ${hour}.`,
+        clockLongHandHint: (marker: number, minute: number) =>
+            minute === 0 ? 'Długa wskazówka jest na 12, więc jest pełna godzina.' : `Długa wskazówka jest na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
+        clockAnswerHint: (time: string) => `Na zegarze jest ${time}.`,
+        clockLaterAnswerHint: (time: string) => `Będzie ${time}.`,
+        clockLaterNowHint: (time: string) => `Teraz jest ${time}.`,
+        clockH24Hint: 'Po południu do godziny z zegara dodaj 12.',
+        clockH24AnswerHint: (time: string) => `Zapis 24-godzinny: ${time}.`,
+        lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),
+        lengthRulerSpeak: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Popatrz na linijkę. Ile centymetrów ma odcinek?' : 'Popatrz na linijkę. Ile milimetrów ma odcinek?'),
+        lengthReadMarksHint: 'Sprawdź, gdzie odcinek się zaczyna i gdzie się kończy.',
+        lengthFromZeroHint: (to: number, len: number, unit: 'cm' | 'mm') => `Odcinek zaczyna się na 0 i kończy na ${to}. Ma ${len} ${unit}.`,
+        lengthAnswerHint: (len: number, unit: 'cm' | 'mm') => `Odcinek ma ${len} ${unit}.`,
+        lengthConvert: (m: number, cm: number) => (cm === 0 ? `${m} m to ile centymetrów?` : `${m} m ${cm} cm to ile centymetrów?`),
+        lengthMetreHint: '1 m = 100 cm',
+        rulerUnitLabel: 'cm',   // printed at the end of the drawn ruler (its digits count centimetres, also on the millimetre ruler)
+        lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
+        // PLACE_VALUE and DATA (S-13). The blocks and the bar chart are drawings; the texts only name them.
+        placeValueRead: 'Jaka to liczba?',
+        placeValueReadSpeak: 'Popatrz na klocki. Jaka to liczba?',
+        placeValueTens: 'Ile jest dziesiątek na obrazku?',
+        placeValueTensSpeak: 'Popatrz na klocki. Ile jest dziesiątek?',
+        placeValueBuild: (n: number) => `Zbuduj z klocków liczbę ${n}.`,
+        placeValueReadHint: 'Policz osobno dziesiątki i jedności.',
+        placeValueReadHundredsHint: 'Policz osobno setki, dziesiątki i jedności.',
+        placeValueHundredsLine: (h: number) => `${countNoun(h, nouns.setka)} to ${h * 100}`,
+        placeValueTensLine: (t: number) => `${countNoun(t, nouns.dziesiątka)} to ${t * 10}`,
+        placeValueReadAnswerHint: (n: number) => `To jest liczba ${n}.`,
+        placeValueTensHint: 'Długie klocki to dziesiątki. Policz je.',
+        placeValueTensAnswerHint: (t: number) => `${pluralCategory(t) === 'few' ? 'Są' : 'Jest'} ${countNoun(t, nouns.dziesiątka)}.`,
+        placeValueDecomposeHint: 'Od całej liczby odejmij to, co już jest.',
+        placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
+        placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
+            `Liczba ${n} to ${[t > 0 ? countNoun(t, nouns.dziesiątka) : '', o > 0 ? countNoun(o, nouns.jedność) : ''].filter((x) => x !== '').join(' i ')}.`,
+        dataMostLeast: 'Porównaj wysokość słupków.',
+        dataValuesHint: (pairs: string) => `Wysokości słupków: ${pairs}.`,
+        dataMostAnswerHint: (label: string) => `Najwyższy jest słupek „${label}”.`,
+        dataLeastAnswerHint: (label: string) => `Najniższy jest słupek „${label}”.`,
+        dataHowMany: (intro: string, acc: string) => `${intro} Ile dzieci zagłosowało na ${acc}?`,
+        dataHowManyHint: (label: string) => `Znajdź słupek „${label}” i zobacz, do której kreski sięga.`,
+        dataHowManyAnswerHint: (label: string, value: number) => `Słupek „${label}” sięga do ${value}.`,
+        dataDiff: (intro: string, more: string, less: string) => `${intro} O ile więcej dzieci zagłosowało na ${more} niż na ${less}?`,
+        dataDiffHint: 'Odczytaj oba słupki i odejmij mniejszą wysokość od większej.',
     },
 } as const;
 

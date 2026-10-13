@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoundView } from '../../core/round/view';
+import type { AnswerMode } from '../../core/tasks/visual';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
@@ -25,8 +26,8 @@ export class FeedbackBar {
         this.update({ kind: 'none' }, 'tiles');
     }
 
-    update(bar: RoundView['bar'], input: 'tiles' | 'keypad'): void {
-        const span = TASK_LAYOUT.barSpan[input === 'tiles' ? 'tiles' : 'keypad'];
+    update(bar: RoundView['bar'], input: AnswerMode): void {
+        const span = TASK_LAYOUT.barSpan[input === 'keypad' ? 'keypad' : 'tiles'];
         const { height, bottom, radius, padding, hintBorder } = TASK_LAYOUT.bar;
         const top = bottom - height;
         const centerY = top + height / 2;

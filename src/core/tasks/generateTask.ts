@@ -18,7 +18,8 @@ export const generateTask = (skill: SkillDef, rng: Rng, opts: GenerateTaskOption
     if (!generate) {
         throw new Error(`No generator for task type ${skill.type} (skill ${skill.id})`);
     }
-    const task = generate(skill, rng);
+    const generated = generate(skill, rng);
+    const task: Task = { ...generated, input: skill.answer };
     if (skill.answer !== 'tiles' || task.choices !== undefined || typeof task.answer !== 'number') {
         return task;
     }
