@@ -899,7 +899,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 6.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
+- [x] 6.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — e2e 15/15 on ebd0351, orchestrator run (run-log line "S-08 p6 impl")
 - [x] 6.2 Deliberate break: powitanie bez wstrzymania / getter bez ustawień → unit zielone; zapis w handoff §3, dowód w e2e faz 10–11; meta-check — ebd0351
 - [x] 6.3 Build `e2e hook: absent`; `__martynkaE2E` nieobecne w `dist/` — ebd0351
 - [x] 6.4 `this.input.enabled` usunięte z `WelcomeScene` — ebd0351
@@ -914,10 +914,10 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 7.1 `tests/layout.test.ts` obejmuje ikonę (rozmiar, w scenie, poza notesem i panelem pokoju, bez nakładania z HUD); unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: ikona na x 1700 → test układu czerwony; przywrócone; meta-check (przepływ → e2e fazy 10)
+- [x] 7.1 `tests/layout.test.ts` obejmuje ikonę (rozmiar, w scenie, poza notesem i panelem pokoju, bez nakładania z HUD); unit `<baseline gałęzi> + N` — b5efc5e (947 → 948, +1)
+- [x] 7.2 Deliberate break: ikona na x 1700 → test układu czerwony; przywrócone; meta-check (przepływ → e2e fazy 10) — b5efc5e
 - [ ] 7.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
-- [ ] 7.4 Pełna bramka lokalna zielona
+- [x] 7.4 Pełna bramka lokalna zielona — b5efc5e (e2e: orchestrator gate)
 
 #### Manual
 
