@@ -1,5 +1,9 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
+Final pre-merge state written by the ship step: archived to `context/archive/2026-10-13-variant-change-room-done/`,
+roadmap S-10 done, Backlog Handoff refreshed (S-10 done, S-11 ready for `/10x-plan`, S-11 triggers restated). Open
+[human] rows 3.5, 6.6–6.9 are a post-run checklist (listed in the PR under „Dla właściciela produktu”), not a blocker.
+
 Written by the visual-gate step. All [visual] rows are captured and ticked; one real discrepancy (the rug caption drawn on the sofa) is fixed in `a3dade4` with a data guard. Only [human] rows remain; the slice is ready to archive and ship. Do not "fix" V2–V5 in the archive/ship steps: they are follow-ups with triggers.
 
 ## 1. State
@@ -8,8 +12,8 @@ Written by the visual-gate step. All [visual] rows are captured and ticked; one 
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
 | Commits | `a8deb20`..HEAD (phases 1–7, fix `96f7514`, review docs, this step's `a3dade4` fix + `docs(variant-change-room-done): bramka wizualna`) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (archive step sets the final status) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s09-s11/run-log.md (ship step pushes after this archive commit) |
+| `change.md` status | `archived` (ship step, `/10x-archive`) |
 | `## Progress` rows remaining | 5, all [human]: 3.5, 6.6, 6.7, 6.8, 6.9 |
 | Working tree | clean after this commit |
 
@@ -43,7 +47,7 @@ Hand-checked: 40 − 35 = 5 before the change, 5 − 0 = 5 after it; 96 − 81 =
 
 ## 4. Next command
 
-/10x-archive variant-change-room-done then ship
+none — shipped
 
 ## 5. Open
 
@@ -65,5 +69,9 @@ V2. Fixed the rug caption in data (`SALON_PLACEHOLDERS.rug.caption`) with the gu
 V3. V2 (rug pop over the sofa) captured but not fixed: `RoomView` draws the room in one `Graphics`, so a depth-correct pop needs per-slot objects, which the art slice S-16 introduces; a fix now would be thrown away. Would change: S-16 slipping past v1 release.
 V4. Change-mode hint left as narration (plan and gap 38 say so); judged a weak cue for a 7-year-old and sent to the maintainer's row 6.7 instead of inventing a visible hint line (not in the kit). Would change: the maintainer asks for a visible or auto-read hint.
 V5. VISUAL verdict GAPS (not PASS) because V2–V5 remain visible in the frames, though none blocks shipping.
+
+Ship step:
+
+S1. Archived despite 5 open [human] rows (3.5, 6.6–6.9; 0 automated): `/10x-archive` labels "Continue archiving" (Recommended) for manual-only rows, and the step prompt makes them a post-run checklist. Would change: an automated row left open.
 
 Earlier steps (kept): impl-review R1–R4 (reviewed in place; F1/F2 fixed, F3 accepted, F4/F6 to S-16, F5 to row 6.8; `holdPoint` hook-only); plan triage and phases 1–7 decisions 1–17 as recorded in `reviews/impl-review.md` and the plan (gesture reducer in core, `e2eStars` seam with cap 500, `modeButton` 1010,892 570×128, card 220..780 with "Dalej" at y 624, `holdPoint` margin step/2).
