@@ -796,17 +796,17 @@ zapisu, karta z eksportem.
 - [x] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie — 43af7ea
 - [x] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N — 43af7ea
 - [x] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check — 43af7ea
-- [x] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona — 43af7ea (e2e: orchestrator gate)
+- [x] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona — 43af7ea (e2e: orchestrator run on bffbb30, 26 passed)
 
 ### Phase 4: Wpięcie zapisu w grę — wczytanie na starcie, autozapis, zapisy natychmiastowe, cykl życia strony
 
 #### Automated
 
-- [ ] 4.1 `idb-keyval` importowany tylko w `src/storage/idb.ts`; `npm run lint` zielony
-- [ ] 4.2 `npm run build` drukuje `e2e hook: absent`; precache obejmuje chunk z adapterem; unit baseline + 0..N
-- [ ] 4.3 `npx playwright test` zielony, baseline e2e + 0 (seed offline i `error-boundary.spec.ts` z zapisem)
-- [ ] 4.4 Deliberate break odroczony: patch `e2e-break-s11-p4.patch` (start zawsze świeży) zapisany, dowód w fazie 7 (7.3); meta-check w handoff
-- [ ] 4.5 Pełna bramka lokalna zielona
+- [x] 4.1 `idb-keyval` importowany tylko w `src/storage/idb.ts`; `npm run lint` zielony — 29da899
+- [x] 4.2 `npm run build` drukuje `e2e hook: absent`; precache obejmuje chunk z adapterem; unit baseline + 0..N — 29da899
+- [x] 4.3 `npx playwright test` zielony, baseline e2e + 0 (seed offline i `error-boundary.spec.ts` z zapisem) — 29da899 (e2e: orchestrator gate)
+- [x] 4.4 Deliberate break odroczony: patch `e2e-break-s11-p4.patch` (start zawsze świeży) zapisany, dowód w fazie 7 (7.3); meta-check w handoff — 29da899
+- [x] 4.5 Pełna bramka lokalna zielona — 29da899 (e2e: orchestrator gate)
 
 #### Manual
 

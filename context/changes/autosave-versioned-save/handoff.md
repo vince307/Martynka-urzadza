@@ -1,17 +1,16 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by `/10x-tdd autosave-versioned-save phase 3` of run 2026-10-13-s09-s11. Phase 3 (IndexedDB adapter, dependencies, lint
-boundary) is committed at 43af7ea; the adapter is still unused by `main.ts`. Do not edit `tests/fixtures/save-v1*.json` (frozen).
+Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s09-s11. Phase 4 (save wired into the game) is committed at 29da899. Do not edit `tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, plus handoff commits |
+| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 29 (`grep -c '^- \[ \]' plan.md`); 1.x-3.x done |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; 1.x-4.x done (4.6 human open) |
 | Roadmap | S-11 `planning` (unchanged) |
 | Working tree | clean after the commit |
 
@@ -19,28 +18,28 @@ boundary) is committed at 43af7ea; the adapter is still unused by `main.ts`. Do 
 
 | Path | What it is |
 |---|---|
-| `src/storage/idb.ts` | `createIdbSaveStore` (one key `profile:<id>`, one retry with a fresh store on `InvalidStateError`/`UnknownError`), `requestPersistence`, `SAVE_KEY_PREFIX` |
-| `eslint.config.mjs` | `idb-keyval` restricted outside `src/storage` (consts `IDB_KEYVAL*` repeated in the core/data/other blocks), `indexedDB` banned in `src/core`, `src/storage` has browser globals |
-| `tests/idbStore.test.ts` | 6 tests on fake-indexeddb; `tests/lint-boundaries.test.ts` +3 cases |
-| `package.json`, `package-lock.json` | `idb-keyval` 6.3.0, `fake-indexeddb` 6.2.5 (dev), exact |
+| `src/main.ts` | `start()` async: `createIdbSaveStore` -> `loadSave` -> session (`floorToCalendar` on a loaded learner; `?e2eStars` only on `fresh`) -> `createGame(session)` -> `createAutosaver` (blocked on `unreadable`/`unavailable`) -> `setdata` + `changedata` listeners filtered by `SAVE_KEYS`; `visibilitychange` hidden and `pagehide` call `flush('hidden')`; error boundary calls `saver.block('fatal')` |
+| `src/data/layout.ts` | `REGISTRY_KEYS.saver`, `SAVE_KEYS` (five keys) |
+| `src/scenes/{RoomScene,TaskScene,BootScene}.ts` | `flush('now')` after the `bought` registry writes and at the very end of `finishRound` (after `finishWarmup`); BootScene hands over in `time.delayedCall(0)` |
+| `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | read-only `save` status in the snapshot (welcome and later screens) |
+| `tests/saveKeys.test.ts` | SAVE_KEYS lists exactly the five keys |
+| `context/runs/2026-10-13-s09-s11/e2e-break-s11-p4.patch` | deliberate e2e break (gitignored dir): `createGame` always gets `freshSession(0)`; expect phase 7 test 1 red on `screen !== 'welcome'` after reload; `git apply --check` passes on 29da899 |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stub `read` undefined, no rules) | idbStore: `AssertionError: expected undefined to deeply equal { version: 1, ... }` (4 of 6 red); lint-boundaries: `expected [] to include 'no-restricted-imports'` (2 red) |
-| GREEN | 14/14 in the two files |
-| Break A: core block without the `phaser` entries | red: "src/core must not import Phaser", "the idb-keyval rule keeps the Phaser and src/data boundaries"; restored |
-| Break B: adapter writes `JSON.stringify(value)` | red: round-trip, second write, profiles, uncloneable (4 of 6); restored |
-| Meta-check | break A proves flat-config override order; break B proves a real structured-clone round trip (fake-indexeddb), not a port mock |
 | `npm run lint`, `typecheck` | OK |
-| `npm test` | 1138 passed (baseline 1079, +59 over main incl. phases 1-2) |
-| deploy tests, `sample` E1..E6, `npm run build` | OK, `e2e hook: absent` |
-| `npx playwright test` | not runnable in this session (MachPort) -- orchestrator gate; adapter unused by the game |
+| `npm test` | 1139 passed (baseline 1079, +60 over main incl. phases 1-3, +1 this phase) |
+| deploy tests, `sample` E1..E6, `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` precaches both js chunks |
+| `grep idb-keyval src/` | only `src/storage/idb.ts` |
+| `npx playwright test` | not runnable in this session (MachPort denied, ran plain once: 10 failed at browser launch, 16 not run) -- orchestrator gate for 29da899; it must stay 26 green |
+| Unit break | drop `REGISTRY_KEYS.settings` from `SAVE_KEYS` -> `tests/saveKeys.test.ts` red (`expected [ 'currentRoom', 'learner', ...(2) ] to deeply equal [ ...(3) ]`); restored |
+| E2E break (deferred) | `e2e-break-s11-p4.patch`, proof in phase 7 row 7.3. Meta-check: without a reload spec nothing in the suite sees the seam load -> registry -> save; the break is meaningless before phase 7 |
 
 ## 4. Next command
 
-`/10x-implement autosave-versioned-save phase 4` (`Driver: impl`)
+`/10x-implement autosave-versioned-save phase 5` (`Driver: impl`)
 
 ## 5. Open
 
@@ -64,5 +63,9 @@ boundary) is committed at 43af7ea; the adapter is still unused by `main.ts`. Do 
 - Phase 3: `idb-keyval` restriction lives in a separate block for scenes/pwa/ui/testing/main plus entries in the core and data
   blocks (flat config replaces a rule per block). Reversal: none needed.
 - Phase 3: `requestPersistence` reads `navigator.storage` (global, allowed in `src/storage`); no `indexedDB` use outside idb-keyval.
+- Phase 4: Chromium could not launch (MachPort); e2e is the orchestrator gate. Rows 4.3/4.5 cite it; 3.4 now cites the orchestrator run on bffbb30.
+- Phase 4: rotate overlay, speech unlock, contextmenu and service worker stay synchronous at module level; only the hook and the install hint (need the game) are inside `start()`.
+- Phase 4: `registry.get(saver)` typed `Pick<Autosaver,'flush'>` in scenes; no scene knows the store.
+- Phase 4: no 1 s ... change to `error-boundary.spec.ts` (step 5 only if red; orchestrator run decides).
 - Phase 2's row 2.3 now cites the orchestrator e2e run on 75eaa08 (26 passed).
 - E2E: not run (MachPort); orchestrator gate for 43af7ea, no game wiring changed.
