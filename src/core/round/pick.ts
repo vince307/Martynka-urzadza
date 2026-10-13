@@ -9,7 +9,7 @@ import { getGenerator } from '../tasks/registry';
 import type { Task } from '../tasks/types';
 import type { SkillDef, StageDef, StepDef } from '../types';
 
-const playable = (skill: SkillDef): boolean =>
+export const playable = (skill: SkillDef): boolean =>
     (skill.answer === 'tiles' || skill.answer === 'keypad') && getGenerator(skill.type) !== undefined;
 
 /** The first `n` steps that have at least one playable skill, in curriculum order. */
