@@ -815,9 +815,9 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [x] 8.1 `validate-rule-files.sh` PASS
-- [x] 8.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [x] 8.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` (albo − testy usuniętego `buildRound`)
+- [x] 8.1 `validate-rule-files.sh` PASS — b0dc1fe
+- [x] 8.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check — b0dc1fe
+- [x] 8.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` (albo − testy usuniętego `buildRound`) — b0dc1fe (e2e: orchestrator gate)
 
 #### Manual
 
