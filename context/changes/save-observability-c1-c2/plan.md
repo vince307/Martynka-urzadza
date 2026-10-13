@@ -681,8 +681,8 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [ ] 6.1 `save-restart.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
-- [ ] 6.2 Deliberate break (patch): karta tylko dla `unreadable` → (a), (b) czerwone; przywrócone
-- [ ] 6.3 Deliberate break (patch): `loadSave` bez limitu w `start` → (b) czerwony, unit zielone; meta-check
-- [ ] 6.4 Deliberate break (patch): `UIScene` bez `saveHealth` → (a), (c), (d) czerwone; przywrócone
-- [ ] 6.5 `e2e hook: absent`; `e2eSave` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery zabite
+- [x] 6.1 `save-restart.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4` — a44f3b4 (orchestrator e2e run, see handoff §3)
+- [x] 6.2 Deliberate break (patch): karta tylko dla `unreadable` → (a), (b) czerwone; przywrócone — a44f3b4 (orchestrator e2e run, see handoff §3)
+- [x] 6.3 Deliberate break (patch): `loadSave` bez limitu w `start` → (b) czerwony, unit zielone; meta-check — a44f3b4 (orchestrator e2e run, see handoff §3)
+- [x] 6.4 Deliberate break (patch): `UIScene` bez `saveHealth` → (a), (c), (d) czerwone; przywrócone — a44f3b4 (orchestrator e2e run, see handoff §3)
+- [x] 6.5 `e2e hook: absent`; `e2eSave` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery zabite — a44f3b4 (orchestrator e2e run, see handoff §3)

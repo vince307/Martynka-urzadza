@@ -1,52 +1,51 @@
 # Handoff — `save-observability-c1-c2` (slice fix, non-roadmap)
 
-Written by `impl` phase 5: the "Zapis gry" panel section, design gaps, follow-ups, seam sweep (commit 9204dd8). e2e was NOT run here (Chromium MachPort), so it is the orchestrator's gate on 9204dd8.
+Written by the phase 6 finishing step: the e2e spec is committed (a44f3b4) with the orchestrator's run as evidence; all implementation phases are done and `change.md` is `implemented`. Next is the review; do not re-run Playwright for the spec, its evidence is in §3.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-observability-c1-c2`, cut from `main` at `4698110` |
-| Commits | phases 1-4 `fb2e7bb`, `11b492c`, `5b78176`, `cadda19`; phase 5 `9204dd8` + this handoff commit |
+| Commits | phases 1-5 `fb2e7bb`, `11b492c`, `5b78176`, `cadda19`, `9204dd8`; phase 6 `a44f3b4` + this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implementing` |
-| Progress rows remaining | reviewer/human/visual rows 1.5, 3.5, 4.4-4.6, 5.6-5.10 and all of phase 6 |
+| `change.md` status | `implemented` |
+| Progress rows remaining | reviewer/human/visual rows 1.5, 3.5, 4.4-4.6, 5.6-5.10 only |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/dom/saveHealthView.ts` | `createSaveHealthView(view)`: section.parent-save (data-state ok/failing/off), heading, one sentence, "Ostatni zapis: HH:MM" for `ok` with a write time |
-| `src/ui/dom/settingsPanel.ts` | optional `saveHealth`, section between reading and progress |
-| `src/scenes/UIScene.ts` | `openSettings` passes `saveHealthView(saver.status())` (registry `saver`) |
-| `src/data/pl.ts` | `pl.settings.saveHeading/saveOk/saveLast/saveFailing/saveOff.*` (plan text verbatim) |
-| `docs/design-gaps.md` | row 43 rewritten, row 45 added |
-| `context/changes/save-observability-c1-c2/follow-ups/review-fixes.md` | follow-ups with `Trigger:` lines, incl. validateSave first bad field and throw on open panel without placeholder |
-| `CLAUDE.md`, `src/main.ts`, `src/style.css` | Current state paragraph; DESIGN-GAP 43 comment fixed; `.parent-save` styles |
+| `tests/e2e/save-restart.spec.ts` | 4 new tests (risk #2): unavailable-save card (C-1), read limit (M-S4), parent panel save section ok/failing/off (C-2) |
+| `context/changes/save-observability-c1-c2/plan.md` | rows 6.1-6.5 ticked |
+| `context/changes/save-observability-c1-c2/change.md` | status `implemented` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
+| `npm run lint`, `npm run typecheck` | clean / clean (this step) |
 | `npm test` | 1172 passed (baseline 1172, +0) |
-| lint, typecheck, `validate-rule-files.sh` | clean / clean / PASS |
 | `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -rl e2eSave dist` empty |
-| `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate |
-| Break: CLAUDE.md names `src/ui/dom/saveHealthPanel.ts` | `validate-rule-files.sh` FAIL (missing: 1); restored, PASS. First try used a case-different name and passed (case-insensitive APFS), so a differently named file was needed |
-| Break: UIScene without `saveHealth` | not unit-reachable (unit 1172 green expected); proof is e2e phase 6 (a, c, d); no patch written |
-| Seam sweep | `grep "nothing is shown" src/` only an unrelated phrase in spoken.ts; no `blocked:` option in main.ts; RoomScene has no `room()/roomState()`; loadSave/e2eHook comments already current; main.ts DESIGN-GAP 43 comment updated |
+| `npx playwright test tests/e2e/save-restart.spec.ts` (orchestrator) | 7 passed (3 existing + 4 new) |
+| `npx playwright test` (orchestrator) | 33 passed (baseline 29, +4) |
+| Break p6a: card only for `unreadable` (proves phase 4) | RED C-1 and M-S4: `getByRole('alertdialog', { name: 'Gra nie może teraz zapisywać postępów' })` toBeVisible, element(s) not found; reverted |
+| Break p6b: `loadSave(store)` without the limit | RED only M-S4, same locator not found; C-1 green; reverted |
+| Break p6c: `UIScene.openSettings` passes no `saveHealth` (proves phase 5) | RED C-1 (data-state "off"), C-2 failing and ok: `section.parent-save` not found; reverted |
+| Break p6d: `saveHealthView` drops the `failing` rule | RED C-2 failing: `data-state` Expected "failing", Received "ok"; reverted |
+| Meta-check | each break turned red only the tests tied to its rule; after the last revert only the spec was dirty |
 
 ## 4. Next command
 
-Orchestrator: follow `context/runs/2026-10-13-fix-save-observability/e2e-request-p6.md`, then re-dispatch a finishing agent: `/10x-e2e save-observability-c1-c2 phase 6` (commit spec + evidence, ticks 6.1-6.5, change.md `implemented`). After it: `/10x-impl-review save-observability-c1-c2`.
+/10x-impl-review save-observability-c1-c2
 
 ## 5. Open
 
-- Phase 6 spec written, uncommitted (e2e: not runnable in this session (MachPort) - orchestrator gate); rows 6.1-6.5 open. Phase 5 e2e rows cite the orchestrator run "p5" (29 passed on 89adbf6).
-- Manual rows 5.6-5.10, 1.5, 3.5, 4.4-4.6 still open.
+- Manual rows still open: 1.5, 3.5, 4.4, 5.6, 5.7 [reviewer]; 4.5, 5.9, 5.10 [human]; 4.6, 5.8 [visual].
+- Follow-ups with `Trigger:` lines in `context/changes/save-observability-c1-c2/follow-ups/review-fixes.md`; DESIGN-GAP 43 and 45 in `docs/design-gaps.md`.
 
 ## 6. Autonomous decisions
 
-- Breaks p6a (card), p6b (load limit), p6c (UIScene saveHealth), p6d (failing rule) written; p6a and p6c also prove phase 4 and 5 behaviour that had no patches.
-- Spec left uncommitted per the request-file protocol.
+- Committed the spec unchanged, relying on the orchestrator's e2e run (Chromium not run in this session by instruction); ticked 6.1-6.5 citing it. Phase 4 and 5 rows already ticked earlier; their break proofs are the p6a and p6c lines above.
+- Would change if: the orchestrator's output were found stale against `a44f3b4` (the spec file is byte-identical to what it ran).
