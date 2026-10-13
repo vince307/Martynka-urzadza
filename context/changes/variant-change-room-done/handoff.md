@@ -1,17 +1,17 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
-Written by `/10x-implement` phase 6: seam sweep, design gaps 37-41, follow-ups, CLAUDE.md. Phase 7 (e2e) is next.
+Written by the fix step after the phase-7 e2e round 2 found a product defect (hold never opened the change panel). Phase 7 (e2e) is still open.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
-| Commits | ..., `8baf606` (phase 4), handoff p4, `f5e153a` (phase 5), handoff p5, `3e3931d` (phase 6) |
+| Commits | ..., `8baf606` (phase 4), handoff p4, `f5e153a` (phase 5), handoff p5, `3e3931d` (phase 6), handoffs p6/p7, `96f7514` (fix: hold point margin) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | 18 (6.1-6.4 ticked; 6.5 [reviewer], 6.6-6.9 [human], 5.5-5.7 left) |
-| Working tree | clean after the handoff commit |
+| Working tree | `tests/e2e/room-change.spec.ts`, `playwright.config.ts` uncommitted (phase 7 owns them) |
 
 ## 2. Artifacts
 
@@ -25,22 +25,24 @@ Written by `/10x-implement` phase 6: seam sweep, design gaps 37-41, follow-ups, 
 
 ## 3. Verification
 
+Fix step (after orchestrator round 2): root cause in `src/core/roomHit.ts` `holdPoint`. It returned the first grid point of the slot rectangle, i.e. its top-left corner, which sits on the slot's edge. With only the floor bought that is (180, 520). The hook build runs at 1280x720, so 520 game px = 346.67 page px and the touch comes back as 519.99: outside the floor box (top 520), walls not bought, `slotAt` → null, `roomGesture` `down` with a null slot returns idle — no press, no `heldSlot`, panel closed. Matches the diagnostic log exactly. The sofa (test 2, tap path) worked because its corner (720, 480) maps to whole page pixels. Ruled out by reading: hold zone covers the point (zone 180..1740 x 204..860, inclusive hit test; HUD zones are elsewhere or disabled; panel zones hidden), `pointerout`/`move` do not fire during a still touch, `tick` from `update()` reaches `holdMs` (same reducer as the S-08 hold).
+
 | Command | Result |
 |---|---|
-| `npm test` | 1076 passed (baseline 1076, +0) |
-| lint, typecheck, deploy tests, `sample` E1-E6, build | clean; "e2e hook: absent (2 chunks checked)" |
-| `validate-rule-files.sh` | PASS (6 files, 186 paths) |
-| Deliberate break | `CLAUDE.md` `src/core/roomHit.ts` -> `roomHits.ts`: validator FAIL (missing 1); restored, PASS. Meta-check: it reads paths asserted by the rule files. |
-| `grep S-10 src/` | no stale announcements ("comes with"/"is S-10"/"brings") |
-| `npx playwright test` | not run here: phase 6 changes comments and docs only; orchestrator run on b15b900 was 24 passed |
+| RED `npx vitest run tests/roomHit.test.ts` | `AssertionError: floor at 178,518: expected null to be 'floor'` (new tests "keeps a margin from the edge: the floor alone bought (phase-7 e2e case)" and "... for every slot, each bought alone and all bought") |
+| Fix | `holdPoint` returns the first grid point whose 3x3 neighbourhood at ±step/2 all hits the slot; floor alone → (200, 540) |
+| `npm test` | 1078 passed (baseline 1076, +2) |
+| lint, typecheck, build | clean; "e2e hook: absent (2 chunks checked)" |
+| `npx playwright test tests/e2e/room-change.spec.ts` | 2 passed (Chromium launched in this session) |
+| break patches p4, p7a-p7d | all pass `git apply --check` after the fix (none regenerated) |
 
 ## 4. Next command
 
-Orchestrator: run `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md`, then dispatch a finishing agent (commit spec + config, tick 7.1-7.6, change.md `implemented`). After that: `/10x-impl-review variant-change-room-done`.
+`/10x-e2e variant-change-room-done phase 7` (finish: full `npx playwright test`, the breaks from `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md`, commit spec + config, tick 7.1-7.6, change.md `implemented`). After that: `/10x-impl-review variant-change-room-done`.
 
 ## 5. Open
 
-- Uncommitted: `tests/e2e/room-change.spec.ts`, `playwright.config.ts` (ROUND_SPEC). Chromium blocked (MachPort) in this session, 3 tries.
+- Uncommitted: `tests/e2e/room-change.spec.ts`, `playwright.config.ts` (ROUND_SPEC), untouched by the fix step. The spec is green on `96f7514`; breaks not yet re-run.
 - Patches `e2e-break-s10-p7a..d.patch` + existing p4 patch committed; none applied here.
 - Rows 7.1-7.5 untouched; 7.6 partly seen (lint, typecheck, unit 1076, build "e2e hook: absent"); full gate row cites orchestrator run on b5aa8db (24 passed) for the baseline.
 
@@ -64,3 +66,5 @@ Orchestrator: run `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md`, then 
 14. Phase 7: e2e not runnable (MachPort): `e2e: not runnable in this session (MachPort) — orchestrator gate`. Spec left uncommitted per protocol; request file written. Hold-over-thumbnail point asserted inside the floor rect. Would change: green run shows the point hits another slot.
 
 15. Phase 7 round 2: `toRoom` fixed (first task solved by retype, pays 0, then `roomSwitch`); Chromium again not launchable (MachPort); spec + config stay uncommitted; request file has "Round 2 changes". Would change: green run shows other state-dependent targets.
+
+16. Fix step: fixed the geometry in core (`holdPoint` margin) rather than widening `slotAt` or the scene's hit zone: the slot rectangle is what the child sees, so a touch on its very edge missing it is correct; the e2e target must sit inside. Margin step/2 = 10 px covers the ±1.5 px scale rounding. Would change: a device check shows real fingers miss small slots.
