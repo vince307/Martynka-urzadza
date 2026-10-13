@@ -982,7 +982,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 42a0bee
 - [x] 1.2 Deliberate break: klucz samego `prompt` / brak stempla `input` / `visualKey` bez `minute` → czerwone; przywrócone; meta-check — 42a0bee
 - [x] 1.3 `npm run sample -- E3` bez regresji; `tests/fixtures/` bez zmian — 42a0bee
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 42a0bee (e2e 37 passed by the orchestrator on c7db600)
 
 #### Manual
 
@@ -992,9 +992,9 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `later` bez przejścia przez 12 / `ruler` od zera / `leaksAnswer` tylko liczbowy → czerwone; przywrócone; meta-check
-- [ ] 2.3 Klucze `generators` i `parsers` równe
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — @@SHA@@
+- [x] 2.2 Deliberate break: `later` bez przejścia przez 12 / `ruler` od zera / `leaksAnswer` tylko liczbowy → czerwone; przywrócone; meta-check — @@SHA@@
+- [x] 2.3 Klucze `generators` i `parsers` równe — @@SHA@@
 - [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

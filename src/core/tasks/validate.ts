@@ -32,9 +32,9 @@ const NUMBER_WORD = new RegExp(`(${NUMBER_SOURCE})\\s+(\\p{L}+)`, 'gu');
 /**
  * "ma 1 cyfra": the object of these verbs (and of "o … więcej") takes the
  * accusative, which differs from the nominative for feminine nouns in -a
- * ("1 cyfrę", "1 naklejkę"). Masculine and neuter singular objects look the same.
+ * ("1 cyfrę", "1 naklejkę", "za 1 godzinę"). Masculine and neuter singular objects look the same.
  */
-const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o) 1 (\p{L}+)/gu;
+const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o|za) 1 (\p{L}+)/gu;
 
 const texts = (task: Task): string[] => [task.prompt, ...(task.speak ? [task.speak] : []), ...task.hint];
 

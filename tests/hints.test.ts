@@ -74,6 +74,7 @@ describe('firstHint', () => {
 
     it('never leaks a numeric answer as the last number of the first hint line (all stages)', () => {
         let shown = 0;
+        let skipped = 0;
         for (const skill of allSkills) {
             if (skill.type === 'ROMAN') {
                 continue;
@@ -83,6 +84,7 @@ describe('firstHint', () => {
                 try {
                     task = draw(skill, seed);
                 } catch {
+                    skipped += 1;
                     continue;
                 }
                 const first = firstHint(task);
@@ -97,6 +99,8 @@ describe('firstHint', () => {
             }
         }
         expect(shown).toBeGreaterThan(100);
+        // No skill may silently drop out of the leak check (every skill of every stage generates today).
+        expect(skipped).toBe(0);
     });
 
     it('a number equal to the answer in the middle of the line does not block the hint (CHAIN, ADD_SUB)', () => {
@@ -110,6 +114,14 @@ describe('firstHint', () => {
         expect(firstHint({ ...task, hint: ['18 − 9 = 9', 'x'] })).toBeNull();
     });
 
+    it('a text answer stated as a whole token in the first line blocks the hint (clock "15.00")', () => {
+        const base = { skillId: 'E3.3.clock_x', prompt: 'p', answer: '15.00' };
+        expect(firstHint({ ...base, hint: ['Po południu dodaj 12: 15.00', 'Zapis: 15.00'] })).toBeNull();
+        expect(firstHint({ ...base, hint: ['3 + 12 = 15', 'Zapis: 15.00'] })).toBe('3 + 12 = 15');
+        // "11.00" is not "1.00": a longer time that merely contains the answer's characters is no leak.
+        expect(firstHint({ ...base, answer: '1.00', hint: ['Teraz jest 11.00', 'Będzie 1.00'] })).toBe('Teraz jest 11.00');
+    });
+
     it('string answers are never judged as leaks', () => {
         expect(firstHint({ skillId: 'E3.1.compare_num_x', prompt: 'p', answer: '<', hint: ['3 < 5', 'x'] })).toBe('3 < 5');
         expect(firstHint({ skillId: 'E3.1.compare_num_x', prompt: 'p', answer: '<', hint: ['3 < 5'] })).toBeNull();
@@ -118,12 +130,14 @@ describe('firstHint', () => {
 
 describe('solutionSteps', () => {
     it('ends with the answer for every skill of every stage', () => {
+        let skipped = 0;
         for (const skill of allSkills) {
             for (let seed = 0; seed < 8; seed += 1) {
                 let task: Task;
                 try {
                     task = draw(skill, seed);
                 } catch {
+                    skipped += 1;
                     continue;
                 }
                 const steps = solutionSteps(task, answerLine);
@@ -138,6 +152,7 @@ describe('solutionSteps', () => {
                 }
             }
         }
+        expect(skipped).toBe(0);
     });
 
     it('adds the answer line only when the hint does not end with the result', () => {

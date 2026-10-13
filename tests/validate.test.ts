@@ -61,6 +61,12 @@ describe('validateTask', () => {
         expect(validateTask({ ...base, prompt: 'Ania ma 1 jabłko.' }, { nouns })).toEqual([]);
         expect(validateTask({ ...base, prompt: 'Na półce jest 1 książka.' }, { nouns })).toEqual([]);
     });
+
+    it('flags "za 1 godzina" (accusative after "za": za 1 godzinę)', () => {
+        expect(validateTask({ ...base, prompt: 'Która będzie za 1 godzina?' }, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...base, prompt: 'Która będzie za 1 godzinę?' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...base, prompt: 'Która będzie za 2 godziny?' }, { nouns })).toEqual([]);
+    });
 });
 
 describe('validateTask drawing', () => {

@@ -1,6 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
 import { countNoun } from '../core/text/plural';
+import { nouns } from './nouns';
 
 export const pl = {
     title: 'Martynka urządza',
@@ -318,6 +319,31 @@ export const pl = {
         monthsHint: (list: string) => `Miesiące po kolei: ${list}`,
         quarterHint: (quarter: string, list: string) => `${quarter} to ${list}`,
         romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,
+        // CLOCK and LENGTH (S-13). Times are written the school way ("3.30", "15.00"); the drawing carries the clock face and the ruler.
+        clockRead: 'Która godzina jest na zegarze?',
+        clockReadSpeak: 'Popatrz na zegar. Która godzina?',
+        // After "za" the object is in the accusative: "za 1 godzinę", "za 2 godziny".
+        clockLater: (n: number) => `Zegar pokazuje godzinę. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
+        clockLaterSpeak: (n: number) => `Popatrz na zegar. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
+        clockH24: 'Zegar pokazuje godzinę po południu. Jak zapisać ją w zapisie 24-godzinnym?',
+        clockH24Speak: 'Popatrz na zegar. Jest po południu. Jak zapisać tę godzinę w zapisie 24-godzinnym?',
+        clockHandsHint: 'Najpierw spójrz na krótką wskazówkę: pokazuje godzinę. Potem na długą: pokazuje minuty.',
+        clockShortHandHint: (hour: number) => `Krótka wskazówka jest przy ${hour}.`,
+        clockLongHandHint: (marker: number, minute: number) =>
+            minute === 0 ? 'Długa wskazówka jest na 12, więc jest pełna godzina.' : `Długa wskazówka jest na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
+        clockAnswerHint: (time: string) => `Na zegarze jest ${time}.`,
+        clockLaterAnswerHint: (time: string) => `Będzie ${time}.`,
+        clockLaterNowHint: (time: string) => `Teraz jest ${time}.`,
+        clockH24Hint: 'Po południu do godziny z zegara dodaj 12.',
+        clockH24AnswerHint: (time: string) => `Zapis 24-godzinny: ${time}.`,
+        lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),
+        lengthRulerSpeak: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Popatrz na linijkę. Ile centymetrów ma odcinek?' : 'Popatrz na linijkę. Ile milimetrów ma odcinek?'),
+        lengthReadMarksHint: 'Sprawdź, gdzie odcinek się zaczyna i gdzie się kończy.',
+        lengthFromZeroHint: (to: number, len: number, unit: 'cm' | 'mm') => `Odcinek zaczyna się w 0 i kończy na ${to}. Ma ${len} ${unit}.`,
+        lengthAnswerHint: (len: number, unit: 'cm' | 'mm') => `Odcinek ma ${len} ${unit}.`,
+        lengthConvert: (m: number, cm: number) => (cm === 0 ? `${m} m to ile centymetrów?` : `${m} m ${cm} cm to ile centymetrów?`),
+        lengthMetreHint: '1 m = 100 cm',
+        lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
     },
 } as const;
 

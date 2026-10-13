@@ -78,6 +78,10 @@ for (const stage of Object.values(stages)) {
                         if (last && typeof task.answer === 'number') {
                             expect([1, 3, 4].map((i) => parseNumber(last[i])), `${where} last hint`).toContain(task.answer);
                         }
+                        // A text answer ("3.30") must be stated in the last hint just like a number.
+                        if (typeof task.answer === 'string' && skill.type === 'CLOCK') {
+                            expect(task.hint[task.hint.length - 1], `${where} last hint`).toContain(task.answer);
+                        }
                         if (bounded && max !== undefined) {
                             for (const text of texts) {
                                 for (const n of text.match(new RegExp(NUMBER_SOURCE, 'g')) ?? []) {
