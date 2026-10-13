@@ -10,8 +10,8 @@ five [human] rows stay open for the maintainer and belong in the PR body.
 |---|---|
 | Branch | `feat/drawn-widget-tasks-e3-e4`, cut from `main` at `b57433c` |
 | Commits | docs/plan + p1–p11 (`42a0bee` … `bf87c24`) + handoffs + review fix `1965c28` + review `7ab1e78` + visual fix `26a25df` + this docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` sets the final state) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s12-s14/run-log.md |
+| `change.md` status | `archived` (ship step, `/10x-archive`; folder moved to `context/archive/2026-10-13-drawn-widget-tasks-e3-e4/`) |
 | `## Progress` rows remaining | 5 (`grep -c '^- \[ \]' plan.md`): [human] 4.6, 6.9, 9.8, 10.6, 10.7. [visual] 4.4, 6.8, 7.6, 9.7 ticked in this step |
 | Working tree | clean after the commit (the throwaway spec lives in the session scratchpad, not in the repo) |
 
@@ -46,7 +46,7 @@ five [human] rows stay open for the maintainer and belong in the PR body.
 
 ## 4. Next command
 
-/10x-archive drawn-widget-tasks-e3-e4 then ship (no hosted db push — none exists)
+none — shipped
 
 ## 5. Open
 
@@ -64,3 +64,4 @@ five [human] rows stay open for the maintainer and belong in the PR body.
 4. **O1–O3 left as follow-ups, not fixed here.** Why: they are legibility choices without a kit reference (layout of many blocks, solution split beside the keypad), and fixing them changes shared layout code (`blocksLayout` feeds the mat) after the review; counts and readings are correct. What would change it: [human] 9.8/10.7 calling them confusing, or a gap the next slice must touch anyway.
 5. **Kit frames compared, not copied into `screenshots/`** (`designs/` is gitignored, the repo is public). What would change it: the maintainer asking for `kit-*` copies in the change folder.
 6. **Capture build id shows `7ab1e78`**: frames were taken on the working tree with the fix before it was committed as `26a25df` (README says so). What would change it: a reviewer needing the corner id to match → re-capture on the committed tree.
+7. **Archived with 5 open [human] rows (ship step).** `/10x-archive` warned: 5 manual Progress rows pending (4.6, 6.9, 9.8, 10.6, 10.7), 0 automated; 32 ticked rows without a sha suffix (docs/visual ticks; every cited sha is an ancestor of HEAD, no repoint). Chosen: archive (the skill's Recommended option for manual-only rows); rejected: resume implementation. Why: [human] rows are the maintainer's post-run checklist, listed in the PR body. What would change it: an automated row left open, or the maintainer rejecting a decision in 4.6/6.9/10.6.
