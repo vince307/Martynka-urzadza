@@ -175,7 +175,10 @@ Date.now(), … })`; `block('fatal')` bez zmian w wywołaniu.
 
 **File**: `tests/autosave.test.ts`, `tests/saveHealth.test.ts` (nowy), `tests/save.test.ts`
 
-**Intent**: `makeClock` wystawia `now`. Autosaver: start z `blockedBy: 'unavailable'` → `blocked: true`,
+**Intent**: `makeClock` wystawia `now`. Migracja istniejących wywołań (plan-review F2): domyślne `blocked: false` w `setup`
+→ `blockedBy: null` + `now: clock.now`; test ryzyka #2 „after a ${load} load nothing is ever written” → `setup({ load,
+blockedBy: load, … })` z tymi samymi asercjami (`writes 0`, `blocked: true`, `skipped > 0`) plus `blockedBy: load` —
+nie wolno go osłabić ani usunąć. Autosaver: start z `blockedBy: 'unavailable'` → `blocked: true`,
 `blockedBy: 'unavailable'`, `lastError` = `loadError`; `block('fatal')` po `unavailable` → `blockedBy` zostaje
 `'unavailable'`; `block('fatal')` na zdrowym → `'fatal'`; zapis udany → `lastWriteAt` = czas zegara,
 `consecutiveFailures 0`; dwa nieudane (`store.write` rzuca `DOMException`-podobny `{ name: 'QuotaExceededError' }`) →
@@ -309,7 +312,10 @@ H-R3 na krawędzi (`main.ts`) i w scenie (obrona w głębi); M-R5 i L-R10 jako t
 → dochodzi `salon: emptyRoomState()`, `kuchnia` nietknięta; wynik naprawy → `validateSave(encodeSave(...))` prawdziwe;
 wejście niezmutowane (`structuredClone` przed/po). Dane: inwarianty dziś na `SALON` (sloty = zadania, koszty, pierwszy
 w jednej czystej rundzie) w pętli po `Object.values(ROOMS)`; każdy slot ma placeholder w `SALON_PLACEHOLDERS` (M-R5);
-`roomText.slot(id)` i `roomText.task(label)` zwracają tekst dla każdego slotu i zadania (L-R10).
+`roomText.slot(id)` i `roomText.task(label)` zwracają tekst dla każdego slotu i zadania (L-R10). Plan-review F5: obie
+zamrożone fixtury v1 mają `currentRoom: "living"` (spoza `ROOMS`) — dodatkowy przypadek: fixtura → `decodeSave` →
+`repairCurrentRoom(…, Object.keys(ROOMS), FIRST_ROOM)` → `currentRoom 'salon'`, `rooms.living` równe wejściu, a
+`tests/fixtures/` bez zmian.
 
 ### Success Criteria:
 
@@ -422,7 +428,11 @@ M-S1 (`Trigger: first save-format change (v2) or the next change to deploy/`), M
 reporting lost progress`), M-S3 + L-S1 (`Trigger: S-12 or the next change to saveFailedCard.ts`), M-R4 (`Trigger: the
 first change to a room's task list order`), L-S2 (`Trigger: S-12`), L-S3 (`Trigger: the next change to the
 visibilitychange handler in main.ts`), L-R8, L-R9, L-R11 (`Trigger: the next change to RoomScene / stars.ts`); F4 S-11
-(`tests/e2eHookGuard.test.ts` jawne przypadki `e2eSave`) przeniesiony z tym samym `Trigger:`; S-12 „show the save state
+(`tests/e2eHookGuard.test.ts` jawne przypadki `e2eSave`) przeniesiony z tym samym `Trigger:`; plan-review F3: kierunki
+audytu nierealizowane tu — C-2 „`validateSave` zwraca ścieżkę pierwszego złego pola do logu” (`Trigger: S-12 import
+validator or the first InvalidSave seen in the parent panel`), M-R5 „rzucić (karta) przy otwartym panelu bez
+placeholdera” (`Trigger: the second room in src/data/rooms.ts or the next change to RoomScene redraw/celebrate`), C-2
+„delikatny sygnał po N porażkach” — odrzucony (kontrakt: nic dla dziecka), wpis jako zamknięty z uzasadnieniem; S-12 „show the save state
 to the parent” oznaczone jako zamknięte tą zmianą. `CLAUDE.md` Current state: status runtime autosavera, `saveHealthView`,
 sekcja w panelu, karta „zapis niedostępny”, `loadTimeoutMs`, `repairCurrentRoom`, szwy `?e2eSave=unavailable|hang|writefail`.
 
@@ -478,11 +488,14 @@ Cztery testy w `tests/e2e/save-restart.spec.ts` (projekt `chromium-hook`, już w
 **File**: `tests/e2e/save-restart.spec.ts`
 
 **Intent**: (a) „#2 C-1 a save the browser will not give shows the card, plays without writing and says so in the parent
-panel”: `openWelcome(page, undefined, { e2eSave: 'unavailable' })` → `getByRole('alertdialog', { name: pl.saveUnavailable.title })`,
-przycisk `pl.saveFailed.export` `toHaveCount(0)`, „Graj dalej” → powitanie → dziecko przechodzi powitanie →
+panel”: `page.goto('/?e2eSave=unavailable')` jak spec „#2 FR-021” (plan-review F1: **nie** `openWelcome`/`passWelcome*` —
+czekają na `__martynkaE2E`, a hak powstaje dopiero po zamknięciu karty, i same nawigują) →
+`getByRole('alertdialog', { name: pl.saveUnavailable.title })`, przycisk `pl.saveFailed.export` `toHaveCount(0)`,
+„Graj dalej” → `waitForFunction('__martynkaE2E' in window)` → `screenIs(page, 'welcome')` → tap wieku w miejscu
+(`targets(page).ages[0]`, jak spec FR-021; wiek 6 = E1, bez rozgrzewki) → `expect.poll` ekran `task` →
 `snapshot.save` `toMatchObject({ load: 'unavailable', blocked: true, blockedBy: 'unavailable', lastError: 'UnknownError', writes: 0 })`
 i `skipped > 0` → `openSettings` → tekst `pl.settings.saveOff.unavailable` widoczny. (b) „#2 M-S4 a read that never
-answers ends in the same card after the load timeout”: `e2eSave: 'hang'` → karta widoczna → „Graj dalej” → `snapshot.save`
+answers ends in the same card after the load timeout”: `page.goto('/?e2eSave=hang')` (nie `openWelcome`) → karta widoczna → „Graj dalej” → `snapshot.save`
 `{ load: 'unavailable', blockedBy: 'unavailable', lastError: 'timeout' }`. (c) „#2 C-2 failed writes show in the parent
 panel”: `e2eSave: 'writefail'` → `passWelcome` → `expect.poll` aż `consecutiveFailures >= 1` i `lastError
 'QuotaExceededError'` → `openSettings` → tekst `pl.settings.saveFailing`. (d) „#2 C-2 the parent panel says the game
@@ -548,6 +561,8 @@ przyszłego builda, który go zna.
 - **Godzina w panelu** zależy od strefy i `toLocaleTimeString` przeglądarki — e2e nie asertuje godziny.
 - **Spóźnione odrzucenie** — jeśli `.catch` zginie w refaktorze, karta awarii wróci nad działającą grą; test fazy 2 go pilnuje.
 - **Chromium w sesji agenta**: faza 6 może wymagać protokołu pliku żądania (`prompt-phase.md`).
+- **M-R6 dowiedziony pośrednio** (plan-review F6): e2e (c) pokazuje porażkę dowolnego zapisu, nie zakupu; zakup woła ten sam
+  `flush('now')` → `attempt`, więc status jest ten sam. Gdyby scena kiedyś zapisywała inną ścieżką — test zakupu z `writefail`.
 
 ## References
 
