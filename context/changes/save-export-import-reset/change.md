@@ -1,7 +1,7 @@
 ---
 change_id: save-export-import-reset
 title: Eksport, import i reset zapisu w panelu rodzica oraz domknięcie ustaleń audytu zapisu
-status: new
+status: preparing
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
