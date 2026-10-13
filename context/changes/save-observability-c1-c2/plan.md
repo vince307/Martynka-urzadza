@@ -636,10 +636,10 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — SHA
-- [x] 3.2 Deliberate break: naprawa gubi inne pokoje / nadpisuje salon / brak placeholdera → czerwone; przywrócone; meta-check — SHA
-- [x] 3.3 `RoomScene` bez `this.room()`/`this.roomState()` (jeden resolver) — SHA
-- [x] 3.4 Pełna bramka lokalna zielona — SHA (e2e: orchestrator gate)
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 5b78176
+- [x] 3.2 Deliberate break: naprawa gubi inne pokoje / nadpisuje salon / brak placeholdera → czerwone; przywrócone; meta-check — 5b78176
+- [x] 3.3 `RoomScene` bez `this.room()`/`this.roomState()` (jeden resolver) — 5b78176
+- [x] 3.4 Pełna bramka lokalna zielona — 5b78176 (e2e: orchestrator gate)
 
 #### Manual
 
