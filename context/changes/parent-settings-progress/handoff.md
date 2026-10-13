@@ -10,9 +10,9 @@ follow-ups. Next agent: the visual rows 7.6 and 8.5 are still open; the example 
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
 | Commits | p1–p11 + epilogue as before, fix `4388673`, plus this `docs(parent-settings-progress): impl-review` commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 6: 6.7, 9.6, 9.7, 9.8 [human]; 7.6, 8.5 [visual] |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-12-s04-s08/run-log.md (ship step, full ship) |
+| `change.md` status | `archived` (archive step, `chore(archive): close parent-settings-progress`) |
+| `## Progress` rows remaining | 4 [human]: 6.7, 9.6, 9.7, 9.8 — post-run checklist for the maintainer, not a ship blocker; 7.6, 8.5 ticked by the visual gate (9167fb1) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
@@ -44,14 +44,15 @@ follow-ups. Next agent: the visual rows 7.6 and 8.5 are still open; the example 
 
 ## 4. Next command
 
-/10x-archive parent-settings-progress
+none — shipped
 
 ## 5. Open
 
-- Visual rows: 7.6 (task/room with gear, gate, settings panel) and 8.5 (preview empty / 1 / 3 items, actions visible without scrolling), 1440×900 and 1024×768.
+- Visual rows 7.6 and 8.5: closed by the visual gate (V-S08-1 fixed in 9167fb1).
+- Triggers restated for later slices: test-plan risk #14 (`/10x-test-plan refresh` or before S-11); persistence + early save (S-11); export privacy (S-12); hold calibration (S-17); F4 (next change to src/pwa); F5 (any new overlay calling `suspend()` while the HUD exists); F6 (next change to WelcomeScene/UIScene); F7/F8 (S-11 or parent feedback).
 - Human checklist: 6.7 install hint tap on iPad/Android; 9.6 session-only state until S-11; 9.7 2 s hold on devices; 9.8 PRD deviations (incl. repeated step titles in "Do poćwiczenia", F8).
 - Follow-ups F4 (`mountInstallHint` listener), F5 (`UIScene` hold reset on foreign suspension), F6 (`WelcomeScene.openParent` cast), F7 (`pl.settings.empty` meaning) in `follow-ups/review-fixes.md`.
-- `context/foundation/roadmap.md` S-08 still says `planning` — the archive step updates it.
+- `context/foundation/roadmap.md` S-08 set to `done` by the archive step; Backlog Handoff refreshed (S-09 ready for /10x-plan).
 - Test (b) of `parent-settings.spec.ts` keeps its ~0.1 % residual flake (handoff p11 §6.1).
 - Plan text (phase 8) still quotes "poprawnie:"; the code is authoritative.
 
@@ -63,3 +64,4 @@ follow-ups. Next agent: the visual rows 7.6 and 8.5 are still open; the example 
 4. `pl.settings.empty` kept unchanged (F7 follow-up): the e2e spec and design-gaps row 27 quote it, and it is correct Polish.
 5. The plan's phase 8 text was not edited (historical record); the review report names the change.
 - Visual gate (orchestrator, 2026-10-13): the settings panel with a long progress list ran off the screen and text showed under the sticky bar; fixed in 9167fb1 by making the dialog that holds the sticky bar its own scroll container (`.parent-dialog:has(> .parent-actions-sticky)`), bar flush on the bottom edge; gate and empty panel unchanged.
+6. Archive step (ship): archived with 4 open [human] rows (6.7, 9.6, 9.7, 9.8) — they need a real iPad/Android and the maintainer's PRD judgement, so they are a post-run checklist in the PR body, not a blocker. Rejected: "Resume implementation" (nothing automated is pending). Would change: a [human] row the maintainer marks as a merge blocker. Progress rows whose sha is followed by a parenthetical evidence note are a soft SHA-suffix warning only; every cited sha is an ancestor of the branch, so no repoint.
