@@ -775,8 +775,8 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [ ] 5.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0`
-- [ ] 5.2 Deliberate break: `WelcomeScene.start` bez `startLearning` → e2e czerwony; przywrócone; meta-check (runda zależy od stanu w rejestrze)
+- [x] 5.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0` — orchestrator, run-log line "S-07 p5 impl" (e2e 14/14 on 0aedeff; break red: #12 first-launch.spec.ts:146, #11 support/welcome.ts:76; restored)
+- [x] 5.2 Deliberate break: `WelcomeScene.start` bez `startLearning` → e2e czerwony; przywrócone; meta-check (runda zależy od stanu w rejestrze) — orchestrator, run-log line "S-07 p5 impl" (e2e 14/14 on 0aedeff; break red: #12 first-launch.spec.ts:146, #11 support/welcome.ts:76; restored)
 - [x] 5.3 `npm run build` drukuje `e2e hook: absent` — 0aedeff
 - [x] 5.4 Pełna bramka lokalna zielona — 0aedeff (e2e: orchestrator gate)
 
@@ -788,10 +788,10 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [ ] 6.1 `tests/curriculum.test.ts` (test nazw) czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 6.2 Deliberate break: brak nazwy E3.6 / nazwa 40 znaków → czerwony; przywrócone; meta-check (ten sam predykat `playable`)
-- [ ] 6.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0` i drukują nazwy
-- [ ] 6.4 Pełna bramka lokalna zielona
+- [x] 6.1 `tests/curriculum.test.ts` (test nazw) czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 58bf417
+- [x] 6.2 Deliberate break: brak nazwy E3.6 / nazwa 40 znaków → czerwony; przywrócone; meta-check (ten sam predykat `playable`) — 58bf417
+- [x] 6.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0` i drukują nazwy — 58bf417
+- [x] 6.4 Pełna bramka lokalna zielona — 58bf417 (e2e: orchestrator gate)
 
 #### Manual
 
