@@ -10,7 +10,7 @@ Written by the phase 7 step (`/10x-implement` phase 7, autonomous run 2026-10-12
 | Commits | p1-p6 as before (last `ebd0351`, handoff `6b8ee8b`), `b5efc5e` (p7), plus this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (status moves at the last phase) |
-| `## Progress` rows remaining | 25 (7.3 open for e2e, 7.5 reviewer, 7.6 visual, 6.6, 6.7 human, plus phases 8-11) |
+| `## Progress` rows remaining | 28 (7.3 open for e2e, 7.5 reviewer, 7.6 visual, 6.6, 6.7 human, plus phases 8-11) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
