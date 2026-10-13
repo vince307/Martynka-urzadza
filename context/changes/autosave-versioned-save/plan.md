@@ -832,10 +832,10 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [x] 6.1 `validate-rule-files.sh` PASS — @@
-- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check — @@
-- [x] 6.3 `grep "S-11" src/` bez nieaktualnych zapowiedzi — @@
-- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 — @@
+- [x] 6.1 `validate-rule-files.sh` PASS — ae919d0
+- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check — ae919d0
+- [x] 6.3 `grep "S-11" src/` bez nieaktualnych zapowiedzi — ae919d0
+- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 — ae919d0
 
 #### Manual
 

@@ -1,16 +1,16 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by `/10x-implement autosave-versioned-save phase 5` of run 2026-10-13-s09-s11. Phase 5 (unreadable-save card, export, `?e2eSave` seam) is committed at 00998c0. Do not edit `tests/fixtures/save-v1*.json` (frozen).
+Written by `/10x-implement autosave-versioned-save phase 6` of run 2026-10-13-s09-s11. Phase 6 (seam sweep, DESIGN-GAP 42-44, follow-ups, CLAUDE.md) is committed at ae919d0. Do not edit `tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, `00998c0` p5, plus handoff commits |
+| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, `00998c0` p5, `ae919d0` p6, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; 1.x-4.x done (4.6 human open) |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; 1.x-6.4 done (4.6 human open; manual rows 5.5-5.8, 6.5-6.9 open) |
 | Roadmap | S-11 `planning` (unchanged) |
 | Working tree | clean after the commit |
 
@@ -44,9 +44,13 @@ Phase 5 verification: lint, typecheck OK; npm test 1142 passed (baseline 1079, +
 (`e2e hook leaked ... (e2eSave in _app/index-*.js)`); restored, proves the guard on the real bundle. `npx playwright test`: not
 runnable in this session (MachPort) -- orchestrator gate; must stay 26 passed. No e2e spec added (phase 7).
 
+Phase 6 verification: `validate-rule-files.sh` PASS (189 paths); break (`CLAUDE.md` -> `src/core/saves.ts`) -> `MISSING: src/core/saves.ts`, FAIL; restored, PASS.
+lint, typecheck OK; npm test 1142 passed (baseline 1142, +0); build `e2e hook: absent`; `npx playwright test` ran here: 26 passed.
+`grep S-11 src/` has no "will/until/replaces" announcements.
+
 ## 4. Next command
 
-`/10x-implement autosave-versioned-save phase 6` (`Driver: impl`)
+`/10x-e2e autosave-versioned-save phase 7`
 
 ## 5. Open
 
@@ -82,3 +86,7 @@ runnable in this session (MachPort) -- orchestrator gate; must stay 26 passed. N
 - Phase 2's row 2.3 now cites the orchestrator e2e run on 75eaa08 (26 passed).
 - E2E: not run (MachPort); orchestrator gate for 43af7ea, no game wiring changed.
 - Phase 4 round 2: spec `parent-settings.spec.ts` #14 second part now uses a fresh browser context (`6e1cf7b`); product behaviour (resume) was correct. `error-boundary.spec.ts` untouched (green in orchestrator run).
+
+- Phase 6: `SAVE_KEYS` stays in `src/data/layout.ts` (subset of `REGISTRY_KEYS`, `core` cannot import it, `main.ts` already imports layout); recorded in follow-ups. `LearnerState` is not dead (`SavedLearner`/`Adaptation` pick from it), no change.
+- Phase 6: profile (`autonomous-run.md` sec. 10, `idb.ts` no longer planned) and `docs/human-checklist.md` S-11 wording left to the orchestrator; listed in follow-ups. For the profile: from S-11 a "fresh device" in e2e is a new browser context.
+- Phase 6: DESIGN-GAP comments for rows 43 and 44 added in `main.ts` and `saveExport.ts`; the roadmap and test-plan texts untouched (follow-up `/10x-test-plan refresh`).
