@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { balance } from '../src/data/balance';
 import { placementData } from '../src/data/placement';
 import { stages } from '../src/data/curriculum';
-import { calendarStart, playableSteps, startLearning, type CurriculumRules } from '../src/core/curriculum';
-import { proposeStage } from '../src/core/placement';
+import { calendarStart, floorToCalendar, playableSteps, startLearning, type CurriculumRules } from '../src/core/curriculum';
+import { proposeStage, type SessionLearner } from '../src/core/placement';
 import type { StageDef, StageId } from '../src/core/types';
 
 const RULES: CurriculumRules = { weights: { current: 60, earlier: 30, previous: 10 }, minStartSteps: 2, unlockShare: 0.5 };
@@ -89,8 +89,47 @@ describe('startLearning', () => {
     });
 });
 
+describe('balance.save', () => {
+    it('pins the autosave debounce to the PRD short delay', () => {
+        expect(balance.save.debounceMs).toBe(500);
+    });
+});
+
 describe('balance.curriculum', () => {
     it('pins the weights, the start floor and the unlock share to the PRD rule', () => {
         expect(balance.curriculum).toEqual(RULES);
+    });
+});
+
+describe('floorToCalendar (loaded learner, S-11)', () => {
+    const base = (unlockedStep: SessionLearner['unlockedStep']): SessionLearner => ({
+        age: 8,
+        stage: 'E3',
+        stageOverriddenByParent: false,
+        warmupPending: false,
+        ...startLearning(stages, 8, 9, placementData, RULES),
+        unlockedStep,
+        pendingUnlock: null,
+    });
+    const calendar = startLearning(stages, 8, 9, placementData, RULES).unlockedStep;
+
+    it('raises a stage saved below the calendar start and leaves higher ones alone', () => {
+        const saved = { ...calendar, E3: 1, E4: 11 };
+        const out = floorToCalendar(base(saved), stages, 9, placementData, RULES);
+        expect(out.unlockedStep.E3).toBe(calendar.E3);
+        expect(out.unlockedStep.E4).toBe(11);
+        expect(out.unlockedStep.E2).toBe(calendar.E2);
+    });
+
+    it('fills a missing stage with the calendar start', () => {
+        const rest: Partial<SessionLearner['unlockedStep']> = { ...calendar };
+        delete rest.E5;
+        const out = floorToCalendar(base(rest as SessionLearner['unlockedStep']), stages, 9, placementData, RULES);
+        expect(out.unlockedStep.E5).toBe(calendar.E5);
+    });
+
+    it('returns the same object when nothing changes', () => {
+        const learner = base({ ...calendar });
+        expect(floorToCalendar(learner, stages, 9, placementData, RULES)).toBe(learner);
     });
 });

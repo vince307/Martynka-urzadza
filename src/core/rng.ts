@@ -1,6 +1,6 @@
 // Seeded pseudo-random generator for task generators and tests. sfc32 (128-bit
 // state, passes PractRand) seeded from a single number through mulberry32, so
-// the save file only has to keep `rngSeed: number` (plan section 5).
+// a seed is one number. The save file keeps no seed: every use gets its own seed.
 // No Phaser or DOM imports here: src/core stays testable in plain Node.
 
 export interface Rng {

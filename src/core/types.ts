@@ -90,12 +90,26 @@ export interface Settings {
     autoRead: boolean | null;               // parent's choice for reading prompts aloud; null = no choice yet, the stage default applies (FR-009)
 }
 
-export interface SaveState {
-    version: number;
+/** The learner as it is saved: what the game keeps between sessions (S-11). The session-only fields are not in it. */
+export type SavedLearner = Pick<
+    LearnerState,
+    'age' | 'stage' | 'stageOverriddenByParent' | 'unlockedStep' | 'mastery' | 'streak' | 'history' | 'weakStreak' | 'easedRounds'
+> & {
+    warmupPending: boolean;
+    /** A step unlocked in the last round and not yet shown; the stage keeps the card from landing on another stage after a change. */
+    pendingUnlock: { stage: StageId; step: number } | null;
+};
+
+/** Save format, version 1: what the game really keeps (deviation from plan section 5, change autosave-versioned-save decision 1; no rngSeed). */
+export interface SaveV1 {
+    version: 1;
+    profileId: string;
     stars: number;
-    learner: LearnerState;
     rooms: Record<string, RoomState>;
     currentRoom: string;
     settings: Settings;
-    rngSeed: number;
+    learner: SavedLearner | null;
 }
+
+/** The current save version's shape. */
+export type SaveState = SaveV1;

@@ -21,7 +21,11 @@ export class BootScene extends Scene {
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only
         }
-        const learner = (this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null;
-        this.scene.start(needsPlacement(learner) ? SCENE_KEYS.welcome : SCENE_KEYS.task);
+        // Hand over on the next loop step, outside the font promise: an exception of the start then reaches the error
+        // boundary itself instead of being swallowed by the promise's catch and followed by a second error.
+        this.time.delayedCall(0, () => {
+            const learner = (this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null;
+            this.scene.start(needsPlacement(learner) ? SCENE_KEYS.welcome : SCENE_KEYS.task);
+        });
     }
 }

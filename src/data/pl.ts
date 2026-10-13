@@ -55,6 +55,15 @@ export const pl = {
         restart: 'Zacznij od nowa',
         build: (id: string) => `Wersja ${id}`,
     },
+    // DESIGN-GAP 42: the kit has no copy for a save that cannot be read; the parent sees it, the child only taps "Graj dalej".
+    saveFailed: {
+        title: 'Nie udało się wczytać zapisu',
+        body: 'Zapis gry został na tablecie bez zmian. Rodzic może zachować jego kopię.',
+        export: 'Zachowaj kopię',
+        continue: 'Graj dalej',
+        note: 'Tym razem gra nie zapisze postępów.',
+        fileName: 'martynka-zapis.txt',
+    },
     install: {
         title: 'Zainstaluj grę na tablecie',
         ipad: 'Stuknij Udostępnij (kwadrat ze strzałką), potem „Do ekranu początkowego”.',

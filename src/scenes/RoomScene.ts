@@ -19,6 +19,7 @@ import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
 import { drawLook, RoomView } from '../ui/widgets/RoomView';
 import { drawStar } from '../ui/widgets/StarCounter';
 import { VariantPanel } from '../ui/widgets/VariantPanel';
+import type { Autosaver } from '../core/autosave';
 
 const PURCHASE_STAR_TEXTURE = 'purchase-star';
 
@@ -200,6 +201,8 @@ export class RoomScene extends Scene {
             const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
             this.registry.set(REGISTRY_KEYS.rooms, { ...rooms, [room.id]: step.state });
             this.registry.set(REGISTRY_KEYS.stars, step.stars);
+            // A purchase is saved at once, after both registry writes (the snapshot is taken when the write starts).
+            void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
             if (roomDone(room, step.state)) {
                 // The last purchase: the controls go off now, the card is drawn once the new furniture has popped.
                 this.card = true;

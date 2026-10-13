@@ -38,6 +38,25 @@ describe('module boundaries', () => {
         expect(await ruleIds("import { countNoun } from '../core/text/plural';\nexport const c = countNoun;\n", 'src/data/x.ts')).not.toContain('no-restricted-imports');
     });
 
+    it('idb-keyval is importable only in src/storage', async () => {
+        const code = "import { get } from 'idb-keyval';\nexport const g = get;\n";
+        for (const path of ['src/core/x.ts', 'src/scenes/x.ts', 'src/data/x.ts', 'src/ui/x.ts']) {
+            expect(await ruleIds(code, path)).toContain('no-restricted-imports');
+        }
+        expect(await ruleIds("import { get } from 'idb-keyval/dist/index';\nexport const g = get;\n", 'src/scenes/x.ts')).toContain('no-restricted-imports');
+        expect(await ruleIds(code, 'src/storage/x.ts')).not.toContain('no-restricted-imports');
+    });
+
+    it('src/core must not touch indexedDB, src/storage may', async () => {
+        expect(await ruleIds('export const d = indexedDB;\n', 'src/core/x.ts')).toContain('no-restricted-globals');
+        expect(await ruleIds('export const d = indexedDB;\n', 'src/storage/x.ts')).not.toContain('no-restricted-globals');
+    });
+
+    it('the idb-keyval rule keeps the Phaser and src/data boundaries', async () => {
+        expect(await ruleIds("import { Game } from 'phaser';\nexport const g = Game;\n", 'src/core/x.ts')).toContain('no-restricted-imports');
+        expect(await ruleIds("import { generators } from '../core/tasks/registry';\nexport const g = generators;\n", 'src/data/x.ts')).toContain('no-restricted-imports');
+    });
+
     it('scenes may import Phaser and use the browser', async () => {
         expect(await ruleIds("import { Scene } from 'phaser';\nexport const s = Scene;\nexport const w = window.innerWidth;\n", 'src/scenes/x.ts')).toEqual([]);
     });

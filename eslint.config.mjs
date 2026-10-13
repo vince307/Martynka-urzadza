@@ -7,6 +7,9 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const IDB_KEYVAL = { name: 'idb-keyval', message: 'Only src/storage/idb.ts may import idb-keyval.' };
+const IDB_KEYVAL_SUBPATHS = { group: ['idb-keyval/*'], message: 'Only src/storage/idb.ts may import idb-keyval.' };
+
 export default defineConfig([
     globalIgnores(['dist/**', 'dist-e2e/**', 'dev-dist/**', '.claude/**', 'context/**', 'designs/**', 'docs/**']),
     {
@@ -26,18 +29,26 @@ export default defineConfig([
         languageOptions: { globals: globals.node },
     },
     {
-        files: ['src/scenes/**', 'src/pwa/**', 'src/ui/**', 'src/testing/**', 'src/main.ts'],
+        files: ['src/scenes/**', 'src/pwa/**', 'src/ui/**', 'src/testing/**', 'src/storage/**', 'src/main.ts'],
         languageOptions: { globals: globals.browser },
+    },
+    {
+        // idb-keyval has one importer: src/storage/idb.ts (the only browser-storage module).
+        // Core and data repeat their own restrictions below: a flat-config rule is replaced, not merged.
+        files: ['src/scenes/**', 'src/pwa/**', 'src/ui/**', 'src/testing/**', 'src/main.ts'],
+        rules: {
+            'no-restricted-imports': ['error', { paths: [IDB_KEYVAL], patterns: [IDB_KEYVAL_SUBPATHS] }],
+        },
     },
     {
         files: ['src/core/**'],
         rules: {
-            'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage', 'speechSynthesis', 'SpeechSynthesisUtterance'],
+            'no-restricted-globals': ['error', 'window', 'document', 'navigator', 'localStorage', 'indexedDB', 'speechSynthesis', 'SpeechSynthesisUtterance'],
             'no-restricted-imports': [
                 'error',
                 {
-                    paths: [{ name: 'phaser', message: 'src/core must stay Phaser-free (AGENTS.md).' }],
-                    patterns: [{ group: ['phaser/*'], message: 'src/core must stay Phaser-free (AGENTS.md).' }],
+                    paths: [{ name: 'phaser', message: 'src/core must stay Phaser-free (AGENTS.md).' }, IDB_KEYVAL],
+                    patterns: [{ group: ['phaser/*'], message: 'src/core must stay Phaser-free (AGENTS.md).' }, IDB_KEYVAL_SUBPATHS],
                 },
             ],
         },
@@ -48,7 +59,9 @@ export default defineConfig([
             'no-restricted-imports': [
                 'error',
                 {
+                    paths: [IDB_KEYVAL],
                     patterns: [
+                        IDB_KEYVAL_SUBPATHS,
                         {
                             regex: '^(\\.\\./)+core/(?!text/)',
                             allowTypeImports: true,

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "profileId": "default",
+  "stars": 0,
+  "rooms": { "living": { "tasksDone": 0, "chosen": {} } },
+  "currentRoom": "living",
+  "settings": { "autoRead": null },
+  "learner": null
+}

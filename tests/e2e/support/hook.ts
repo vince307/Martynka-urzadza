@@ -29,6 +29,8 @@ export interface Snapshot {
     unlock: { step: number; name: string } | null;
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
+    /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
+    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; dirty: boolean; writes: number; failures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | null } | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */

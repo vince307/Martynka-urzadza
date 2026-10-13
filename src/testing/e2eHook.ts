@@ -1,4 +1,5 @@
 import type { Game } from 'phaser';
+import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { SessionLearner } from '../core/placement';
 import type { Settings } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -38,6 +39,22 @@ export const e2eStars = (search: string): number | null => {
     return stars <= E2E_MAX_STARS ? stars : null;
 };
 
+/** `?e2eSave=unreadable` makes the e2e build start with an in-memory store holding an unreadable save; anything else is null. */
+export const e2eSave = (search: string): 'unreadable' | null =>
+    new URLSearchParams(search).get('e2eSave') === 'unreadable' ? 'unreadable' : null;
+
+/** In-memory store for the e2e seam: reads a save from a future version, remembers writes. Never touches IndexedDB. */
+export const e2eSaveStore = (): SaveStore => {
+    let value: unknown = { version: 99, profileId: 'default', stars: 7 };
+    return {
+        read: () => Promise.resolve(value),
+        write: (next) => {
+            value = next;
+            return Promise.resolve();
+        },
+    };
+};
+
 export type E2EFailSite = 'step' | 'boot' | 'settings';
 
 /** Message of the error thrown at a forced failure site; also a build guard marker. */
@@ -72,6 +89,10 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.settings) as Settings | undefined;
         return deepFreeze(structuredClone(value ?? { autoRead: null }));
     };
+    const save = (): Readonly<AutosaveStatus> | null => {
+        const saver = game.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
+        return saver ? deepFreeze({ ...saver.status() }) : null;
+    };
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
@@ -81,12 +102,12 @@ export const installE2EHook = (game: Game): void => {
             get snapshot() {
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), counterText: ui().counterText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), counterText: ui().counterText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

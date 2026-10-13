@@ -1,0 +1,172 @@
+// Save format and decoder (S-11, test-plan risks #2 and #10). Pure: no Phaser, no browser, no data imports.
+// The save is ONE object under one key, so an interrupted write leaves the previous save whole.
+// Version 1 is a one-way door: it ships to children's devices. A change to the shape adds a version, a migration step
+// in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
+import { STAGE_ORDER, type SessionLearner } from './placement';
+import type { RoomState, SaveState, SavedLearner, Settings, StageId } from './types';
+
+export const SAVE_VERSION = 1;
+export const DEFAULT_PROFILE = 'default';
+
+/** The part of the registry state that is saved. */
+export interface SessionSave {
+    stars: number;
+    rooms: Record<string, RoomState>;
+    currentRoom: string;
+    settings: Settings;
+    learner: SessionLearner | null;
+}
+
+export type DecodeResult =
+    | { kind: 'ok'; session: SessionSave; migratedFrom: number | null }
+    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' };
+
+type Migration = (raw: unknown) => unknown;
+
+/** Steps that lift a save of version N to version N+1. Empty while v1 is the only version. */
+const MIGRATIONS: Readonly<Record<number, Migration>> = {};
+
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
+const isStage = (v: unknown): v is StageId => typeof v === 'string' && (STAGE_ORDER as readonly string[]).includes(v);
+const hasOnly = (o: Record<string, unknown>, ok: (v: unknown) => boolean): boolean => Object.values(o).every(ok);
+
+const validRoom = (v: unknown): v is RoomState =>
+    isRecord(v) && isCount(v.tasksDone) && isRecord(v.chosen) && hasOnly(v.chosen, (x) => x === 0 || x === 1 || x === 2);
+
+const validExample = (v: unknown): boolean =>
+    isRecord(v) &&
+    typeof v.prompt === 'string' &&
+    (typeof v.given === 'number' || typeof v.given === 'string') &&
+    (typeof v.answer === 'number' || typeof v.answer === 'string' || (Array.isArray(v.answer) && v.answer.every((n) => typeof n === 'number')));
+
+const validHistoryEntry = (v: unknown): boolean =>
+    isRecord(v) &&
+    typeof v.skillId === 'string' &&
+    typeof v.ok === 'boolean' &&
+    typeof v.firstTry === 'boolean' &&
+    typeof v.at === 'number' &&
+    Number.isFinite(v.at) &&
+    (v.example === undefined || validExample(v.example));
+
+const validLearner = (v: unknown): v is SavedLearner => {
+    if (!isRecord(v)) return false;
+    if (!isCount(v.age) || !isStage(v.stage)) return false;
+    if (typeof v.stageOverriddenByParent !== 'boolean' || typeof v.warmupPending !== 'boolean') return false;
+    if (!isRecord(v.unlockedStep) || !hasOnly(v.unlockedStep, isCount)) return false;
+    if (!isRecord(v.mastery) || !hasOnly(v.mastery, isCount)) return false;
+    if (!isRecord(v.streak) || !hasOnly(v.streak, isCount)) return false;
+    if (!Array.isArray(v.history) || !v.history.every(validHistoryEntry)) return false;
+    if (!isCount(v.weakStreak) || !isCount(v.easedRounds)) return false;
+    const p = v.pendingUnlock;
+    return p === null || (isRecord(p) && isStage(p.stage) && isCount(p.step));
+};
+
+/** Strict check of a v1 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
+export function validateSave(value: unknown): value is SaveState {
+    if (!isRecord(value) || value.version !== 1) return false;
+    if (typeof value.profileId !== 'string' || !isCount(value.stars)) return false;
+    if (!isRecord(value.rooms) || !hasOnly(value.rooms, validRoom)) return false;
+    if (typeof value.currentRoom !== 'string' || !Object.prototype.hasOwnProperty.call(value.rooms, value.currentRoom)) return false;
+    if (!isRecord(value.settings)) return false;
+    const autoRead = value.settings.autoRead;
+    if (autoRead !== null && typeof autoRead !== 'boolean') return false;
+    return value.learner === null || validLearner(value.learner);
+}
+
+const copyRoom = (r: RoomState): RoomState => ({ tasksDone: r.tasksDone, chosen: { ...r.chosen } });
+const copyRooms = (rooms: Record<string, RoomState>): Record<string, RoomState> =>
+    Object.fromEntries(Object.entries(rooms).map(([id, r]) => [id, copyRoom(r)]));
+
+const copyHistory = (history: SavedLearner['history']): SavedLearner['history'] =>
+    history.map((h) => ({
+        skillId: h.skillId,
+        ok: h.ok,
+        firstTry: h.firstTry,
+        at: h.at,
+        ...(h.example
+            ? { example: { prompt: h.example.prompt, given: h.example.given, answer: Array.isArray(h.example.answer) ? [...h.example.answer] : h.example.answer } }
+            : {}),
+    }));
+
+/** The learner as saved: fields are picked one by one, so a field added to the session later is never saved by accident. */
+function savedLearner(l: SessionLearner, pendingStep: number | null): SavedLearner {
+    return {
+        age: l.age,
+        stage: l.stage,
+        stageOverriddenByParent: l.stageOverriddenByParent,
+        warmupPending: l.warmupPending,
+        unlockedStep: { ...l.unlockedStep },
+        mastery: { ...l.mastery },
+        streak: { ...l.streak },
+        history: copyHistory(l.history),
+        weakStreak: l.weakStreak,
+        easedRounds: l.easedRounds,
+        pendingUnlock: pendingStep === null ? null : { stage: l.stage, step: pendingStep },
+    };
+}
+
+export function encodeSave(session: SessionSave, profileId: string = DEFAULT_PROFILE): SaveState {
+    return {
+        version: 1,
+        profileId,
+        stars: session.stars,
+        rooms: copyRooms(session.rooms),
+        currentRoom: session.currentRoom,
+        settings: { autoRead: session.settings.autoRead },
+        learner: session.learner ? savedLearner(session.learner, session.learner.pendingUnlock) : null,
+    };
+}
+
+function toSession(save: SaveState): SessionSave {
+    const l = save.learner;
+    return {
+        stars: save.stars,
+        rooms: copyRooms(save.rooms),
+        currentRoom: save.currentRoom,
+        settings: { autoRead: save.settings.autoRead },
+        learner: l
+            ? {
+                  age: l.age,
+                  stage: l.stage,
+                  stageOverriddenByParent: l.stageOverriddenByParent,
+                  warmupPending: l.warmupPending,
+                  unlockedStep: { ...l.unlockedStep },
+                  mastery: { ...l.mastery },
+                  streak: { ...l.streak },
+                  history: copyHistory(l.history),
+                  weakStreak: l.weakStreak,
+                  easedRounds: l.easedRounds,
+                  pendingUnlock: l.pendingUnlock !== null && l.pendingUnlock.stage === l.stage ? l.pendingUnlock.step : null,
+              }
+            : null,
+    };
+}
+
+/** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
+export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Migration>> = MIGRATIONS): DecodeResult {
+    if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt' };
+    const from = raw.version;
+    if (from > SAVE_VERSION) return { kind: 'unreadable', reason: 'future' };
+    let current: unknown = raw;
+    try {
+        for (let v = from; v < SAVE_VERSION; v++) {
+            const step = Object.prototype.hasOwnProperty.call(migrations, v) ? migrations[v] : undefined;
+            if (!step) return { kind: 'unreadable', reason: 'unknown-version' };
+            current = step(current);
+        }
+        if (!validateSave(current)) return { kind: 'unreadable', reason: 'corrupt' };
+        return { kind: 'ok', session: toSession(current), migratedFrom: from < SAVE_VERSION ? from : null };
+    } catch {
+        return { kind: 'unreadable', reason: 'corrupt' };
+    }
+}
+
+/** Text of a raw stored value for the parent's backup copy. Falls back to String() when it cannot be serialised; never throws. */
+export function rawExportText(raw: unknown): string {
+    try {
+        return JSON.stringify(raw, null, 2) ?? String(raw);
+    } catch {
+        return String(raw);
+    }
+}

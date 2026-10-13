@@ -155,7 +155,7 @@ test('#14 (proposed) the progress view shows the empty state, then the skill mis
     await expect(list).toContainText(`odpowiedź dziecka: ${given},`);
 });
 
-test('#14 (proposed) the settings panel says when the device has no Polish voice, and says nothing when it has one', async ({ page, context }) => {
+test('#14 (proposed) the settings panel says when the device has no Polish voice, and says nothing when it has one', async ({ page, browser }) => {
     const noVoice = 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.'; // pl.settings.noVoice
 
     // No voice: the line is in the open panel.
@@ -167,13 +167,16 @@ test('#14 (proposed) the settings panel says when the device has no Polish voice
     await panel.getByRole('button', { name: 'Anuluj', exact: true }).tap();
     await expect(panel).toHaveCount(0);
 
-    // A Polish voice: a fresh page (one canvas at a time), the panel shows no such line.
+    // A Polish voice: a fresh device (a new browser context has its own storage, so the welcome
+    // screen shows instead of resuming the saved game), the panel shows no such line.
     await page.close();
-    const withVoice = await context.newPage();
+    const freshContext = await browser.newContext();
+    const withVoice = await freshContext.newPage();
     await fakePolishVoice(withVoice);
     await passWelcome(withVoice);
     await phaseIs(withVoice, 'first');
     panel = await openSettings(withVoice);
     await expect(panel.getByRole('button', { name: 'Zatwierdź', exact: true })).toBeVisible();
     await expect(panel.getByText(noVoice)).not.toBeVisible();
+    await freshContext.close();
 });
