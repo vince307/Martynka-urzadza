@@ -791,6 +791,6 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 9.1 `npx playwright test tests/e2e/first-launch.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3`
-- [ ] 9.2 Deliberate break: `WelcomeScene` bez `input.enabled = false` przy bramce → test 6 czerwony; przywrócone; meta-check (unit zielone)
-- [ ] 9.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 9.1 `npx playwright test tests/e2e/first-launch.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3` — 3320b20 (orchestrator: spec 6/6, suite 14/14)
+- [x] 9.2 Deliberate break: `WelcomeScene` bez `input.enabled = false` przy bramce → test 6 czerwony; przywrócone; meta-check (unit zielone) — 3320b20 (orchestrator: red at first-launch.spec.ts:286 expect(blocked.learner).toBeNull())
+- [x] 9.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — 3320b20 (lint, typecheck, unit 765, build e2e hook absent; orchestrator e2e 14/14)
