@@ -167,8 +167,9 @@ export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
     question: { x: 960, y: 290 },
     ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
-    // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the bottom-right corner.
-    parent: { left: 1596, top: 922, width: 260, height: 110, radius: 32, border: 5 },
+    // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the notebook's
+    // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
+    parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
 /** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */

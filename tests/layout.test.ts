@@ -70,13 +70,16 @@ describe('task screen layout constants', () => {
         expect(WELCOME_LAYOUT.question.y + FONT_SIZES.summaryTitle).toBeLessThan(top);   // the question sits above the buttons
     });
 
-    it('keeps the welcome parent button a touch target, inside the screen and clear of the age buttons', () => {
+    it('keeps the welcome parent button a touch target, inside the notebook and clear of the age buttons', () => {
         const { left, top, width, height } = WELCOME_LAYOUT.parent;
         expect(WELCOME_TOUCH_TARGETS.parent).toEqual({ width, height });
         expect(WELCOME_TOUCH_TARGETS.parent.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
         expect(WELCOME_TOUCH_TARGETS.parent.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
-        expect(left + width).toBeLessThanOrEqual(GAME_WIDTH);
-        expect(top + height).toBeLessThanOrEqual(GAME_HEIGHT);
+        // Visual gate S-06: the button used to straddle the notebook's bottom-right border; it sits inside, like the kit's page buttons.
+        const notebook = TASK_LAYOUT.notebook;
+        expect(left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
+        expect(left + width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         const ages = WELCOME_LAYOUT.ages;
         expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + ages.shadow);
     });
