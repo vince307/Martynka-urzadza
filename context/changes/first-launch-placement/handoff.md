@@ -1,68 +1,68 @@
 # Handoff — `first-launch-placement` (slice S-06)
 
-Written by the `/10x-impl-review` step (full plan, phases 1–9). The verdict is APPROVED with no critical findings. Fix commit `a6f091b` changes code after `3320b20`: `stagePanel` aria ids, how `parentGate` builds the ⌫ key, and comments. Change.md is `impl_reviewed`. The next agent must not miss this: this session could not launch Chromium, so the orchestrator re-runs `npx playwright test` on `a6f091b` before the visual gate and ship (expected 14 passed).
+Written by the visual-gate step. Every [visual] state of rows 4.7, 5.6 and 6.4 was captured at 1440 and 1024×768 with Claude in Chrome; two real discrepancies were fixed on the branch (`aa34170` „Rodzic” inside the notebook, `317926b` the stage panel fits a 768 px tablet), the full local gate and `npx playwright test` (14 passed) were re-run after each, and the verdict is `VISUAL: GAPS` only for a follow-up outside this slice's views (O1, tiny □ glyph in E2 sentence prompts, Trigger: S-07). The next agent must not miss this: code changed after the impl-review (`a6f091b`), but only `src/data/layout.ts`, `tests/layout.test.ts`, `src/style.css` and `docs/design-gaps.md`, and e2e was observed green on `317926b` in this step.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
-| Commits | p1 `d79ba20` … p9 `3320b20`, review fix `a6f091b`, plus docs/handoff commits; the last is `docs(first-launch-placement): impl-review` |
+| Commits | p1 `d79ba20` … p9 `3320b20`, review fix `a6f091b`, visual fixes `aa34170`, `317926b`, plus docs/handoff commits; the last is `docs(first-launch-placement): bramka wizualna` |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 10: `[visual]` 4.7, 5.6, 6.4; `[human]` 5.7, 6.5, 7.5–7.9 |
-| Working tree | clean after the impl-review commit |
+| `## Progress` rows remaining | 7, all `[human]`: 5.7, 6.5, 7.5–7.9 |
+| Working tree | clean after the visual-gate commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/first-launch-placement/reviews/impl-review.md` | review report: 9 findings, 0 critical; ends with the MERGE line |
-| `context/changes/first-launch-placement/reviews/teacher-read.md` | teacher reads for rows 1.4, 2.5, 4.6 and 5.5, all PASS |
-| `src/ui/dom/stagePanel.ts` | `group` ids are now `parent-panel-age`/`parent-panel-stage`; they used to contain spaces (F1) |
-| `src/ui/dom/parentGate.ts` | the ⌫ button gets its `aria-label` directly instead of through `keys.children[9]` (F4) |
-| `src/testing/e2eHook.ts`, `tests/e2e/narrator.spec.ts`, `CLAUDE.md` | stale comments and docs fixed (F3) |
-| `context/changes/first-launch-placement/follow-ups/review-fixes.md` | adds F2 (e2e helper duplication, Trigger: S-08), F5 (core → data type import, Trigger: S-07) and F6 (dialog keydown propagation, Trigger: first Phaser keyboard input) |
-| `context/changes/first-launch-placement/plan.md` | rows 1.4, 2.5, 4.6, 5.5 and 7.4 ticked |
-| `context/changes/first-launch-placement/change.md` | status `impl_reviewed` |
+| `src/data/layout.ts` | `WELCOME_LAYOUT.parent` moved to left 1420, top 834 (inside the notebook; DESIGN-GAP 15 comment updated) — `aa34170` |
+| `tests/layout.test.ts` | the parent-button layout test asserts the button sits inside the notebook (red on the old values) — `aa34170` |
+| `src/style.css` | `.parent-choices-stages` two-column grid, smaller half-width stage labels, „(propozycja)” on its own line, `.parent-dialog` `margin-block: auto` — `317926b` |
+| `docs/design-gaps.md` | rows 15 and 17 describe the new placement and the two-column panel |
+| `context/changes/first-launch-placement/screenshots/*.png` | 12 desktop frames (incl. 2 before-fix) + 9 tablet frames, PNG, ~4 MB |
+| `context/changes/first-launch-placement/screenshots/README.md` | state · desktop · tablet · how reached; capture setup, month (October 2026) |
+| `context/changes/first-launch-placement/reviews/visual-review.md` | states, hand-checked numbers, touch targets, findings and fixes; ends with the `VISUAL:` line |
+| `context/changes/first-launch-placement/follow-ups/review-fixes.md` | new section „From the visual gate”: O1 (□ glyph in sentence prompts, Trigger: S-07) |
+| `context/changes/first-launch-placement/plan.md` | rows 4.7, 5.6, 6.4 ticked |
 
 ## 3. Verification
 
-All of the following were observed in this step, on `3320b20` and again on `a6f091b`.
+Observed in this step.
 
 | Command | Result |
 |---|---|
-| `npm run lint`, `npm run typecheck` | exit 0 |
-| `npm test` | 53 files, 765 passed (main baseline 671, +94) |
+| `npx vitest run tests/layout.test.ts` with the new assertion on the old layout | red: `expected 1856 to be less than or equal to 1724` (deliberate red-first; then fixed, 14 passed). Meta-check: the assertion compares the real `WELCOME_LAYOUT.parent` with the real `TASK_LAYOUT.notebook`, so it proves the placement, not a fixture |
+| `npm run lint`, `npm run typecheck` | exit 0 (after `aa34170` and after the CSS fix) |
+| `npm test` | 53 files, 765 passed (main baseline 671, +94; the fixes add no test case, they tighten one) |
 | `bash deploy/test-martynka-deploy.sh`, `bash deploy/ops/test-martynka-ops.sh` | OK, OK |
 | `npm run sample -- E1` … `E6` | `Naruszenia: 0` each |
-| `npm run sample -- E1 … E6 --warmup` | E1 "bez rozgrzewki"; E2–E6 6 tasks each, `Naruszenia: 0` |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -rl e2eMonth dist/` and `grep -rl __martynkaE2E dist/` both empty |
-| `grep -rn defaultStage src/ tests/ scripts/` | empty |
-| `npx playwright test`, one plain run | Chromium did not launch (MachPort): 4 failed / 10 did not run, all launch errors. E2E evidence is inherited from the orchestrator: 14/14 on `3320b20` (baseline 8 + 6), with the breaks recorded in `context/runs/2026-10-12-s04-s08/e2e-request-s06-p8.md` and `-p9.md`. **Not re-run on `a6f091b`: the orchestrator runs it.** Servers on 4397 and 4398 were killed. |
-| Deliberate break (TDD p2) | `warmupResult` with `<=` instead of `<` made `tests/warmup.test.ts` fail 2 (`E2 first=4: expected 'E1' to be 'E2'`), as in handoff p2. Restored: 11 passed. Meta-check: the test reads real outcomes against the threshold, so the break proves the threshold edge and not a fixture. |
-| Hooks | `.claude/settings.json` and `.claude/hooks/*` were not modified in the slice; no `--no-verify` |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test` (one plain command, Chromium launched) | 14 passed on `aa34170`'s tree and again on the CSS fix (baseline 8 + 6); ports 4397/4398 had no listener afterwards |
+| Visual capture (Claude in Chrome, own tab, port 4399) | 21 frames; every [visual] state at both sizes; build id `317926b` in the final frames; tab closed, server on 4399 stopped |
+| Hooks | `.claude/settings.json` and `.claude/hooks/*` untouched; no `--no-verify` |
 
 ## 4. Next command
 
-visual gate (orchestrator), then /10x-archive first-launch-placement and ship
+/10x-archive first-launch-placement, then ship (no hosted db push)
 
 ## 5. Open
 
-- **The orchestrator re-runs e2e on `a6f091b`** (`npx playwright test`, expected 14 passed). No spec selects by the changed ids, and the order of the digit keys is unchanged.
-- `[visual]` 4.7, 5.6, 6.4 cover the welcome screen, the gate (before and after a wrong answer), the panel in 3 states, the warm-up with 6 dots, the summary with 6 stars, and the round after the warm-up, at 1440×900 and 1024×768.
-- `[human]` checklist:
-  - 5.7: on an iPad, use the gate and the panel with a finger and check that no touch reaches the welcome screen underneath.
+- `VISUAL: GAPS` reason: O1 — a `□` inside a sentence prompt (FACT_FAMILY check variant, `TaskScene` `isExpression` branch) renders as the font's tiny fallback glyph; children meet it now that E2 is playable. Follow-up in `follow-ups/review-fixes.md` („From the visual gate”), Trigger: S-07.
+- `[human]` checklist (unchanged):
+  - 5.7: on an iPad, use the gate and the panel with a finger and check that no touch reaches the welcome screen underneath (also: the two-column panel reads well in landscape).
   - 6.5: on an iPad, check that the first E1/E2 task is read aloud automatically.
   - 7.5: the child starts alone; parent confirmation is optional.
   - 7.6: PRD OQ1, no warm-up after a parent override.
   - 7.7: warm-up composition 3 + 3, threshold < 4 of 6.
   - 7.8: until S-11 the welcome screen appears at every cold start.
   - 7.9: gate range 13–19 × 13–19.
-- Follow-ups are in `follow-ups/review-fixes.md`: risk #12 for the test plan, the `mountInstallHint` touch leak, S-11, S-08, S-14, an earlier learner save, a duplicate warm-up prompt (S-07), the warm-up bonus (S-17), parent-path speech (S-17), plus the new F2 (S-08), F5 (S-07) and F6.
-- Recorded and accepted (no follow-up): F7 `AgeButton` duplicates `PageButton`'s tap logic; F8 design-gap row 21 has no code comment.
+- DESIGN-GAP rows 15 and 17 were reworded (placement, two columns); no new row.
+- Earlier follow-ups stay in `follow-ups/review-fixes.md` (risk #12, `mountInstallHint` touch leak, S-11, S-08, S-14, earlier learner save, duplicate warm-up prompt, warm-up bonus, parent-path speech, F2, F5, F6).
 
 ## 6. Autonomous decisions
+
 
 Earlier steps (kept):
 1. Bare numbers: only the three named in the S-05 follow-up were tokenised; the other house-icon coordinates in `RoomSwitchButton.draw` stay.
@@ -72,9 +72,18 @@ Earlier steps (kept):
 5. Phase 8 finish: the spec was committed as is.
 6. Phase 9 finish: the spec was committed as is; change.md was set to `implemented`.
 
-This step:
+Impl-review step:
 7. **Warnings fixed in place, not deferred**: F1, the aria ids (a real accessibility defect, two-line fix), and F3, the stale docs. Rejected: deferring them, because they are cheap and the code change does not touch anything a spec selects. Would change the answer: if a spec selected the group by name or id, I would have deferred the change to avoid an unverified e2e change.
 8. **F2 (e2e helper duplication) deferred** to S-08. Rejected: refactoring four specs now, because Chromium cannot run in this session and the change would be unverified e2e code right before ship. Would change the answer: a session that can run Playwright.
 9. **Row 7.4 ticked** although the e2e helpers stay duplicated. The production code has no duplicates, and the test-code duplication was a deliberate earlier decision (4) now queued as F2. Rejected: leaving 7.4 open, because nothing in production code fails the sweep. Would change the answer: the maintainer counts test-helper duplication as a seam-sweep failure.
 10. **MERGE: CLEAR, conditional on the orchestrator's e2e re-run on `a6f091b`.** Rejected: BLOCKED, because there are no critical findings and every other suite is green as observed in this step. Would change the answer: a red e2e run on `a6f091b`.
 11. The `a6f091b` commit message says "JSDoc nad installE2EHook", but the header actually stays at the top of the module, separated by a blank line. It was not amended (the contract forbids amending); the discrepancy is noted in the report under F3.
+
+Visual-gate step:
+
+12. **Fixed „Rodzic” over the notebook border on the branch** (`aa34170`) instead of recording it: a button straddling the notebook frame is a layout defect, not something the kit lacks. Placed where the kit draws the cushion (DESIGN-GAP 20 leaves that corner empty). Rejected: outside the notebook (no room: 88 px below, 180 px to the right for a 260 px button) and a smaller button (≥ 96 px rule). Would change: the maintainer prefers the parent entry outside the child's notebook — then a smaller corner icon needs a kit view first.
+13. **Fixed the stage panel overflow with CSS only** (`317926b`): two columns, one row per grade. Rejected: leaving the scroll (the primary action hidden below the fold on the target tablet), shrinking every button under 64 px, and shortening the copy (`pl.stages` passed the teacher read). Would change: a kit view for the parent panel.
+14. **`VISUAL: GAPS`, not PASS**, because O1 is a visible defect a child now meets in the warm-up, even though it lives in the S-04 prompt renderer; not fixed here (needs boxes inside wrapped text plus its own test, outside this slice's views). Would change: the maintainer counts O1 as S-06's (E2 became playable here) — then a `fix(first-launch-placement)` before ship.
+15. **The dev server was restarted after each fix** because Vite's watcher did not pick up edits in this sandboxed session (the served `style.css` stayed stale); the build id in the frames therefore names the commit. Kill ran outside the sandbox (signals are blocked inside), LISTEN pid only. Would change: a session where HMR works (then one server for the whole gate).
+16. **Tablet warm-up reached through the parent path (confirm the proposal), desktop through the child path**, so both entries into the warm-up are on record; the tablet has no override-round frame (row 5.6 does not ask for it). Would change: nothing.
+17. **Ran the e2e suite myself** (Chromium launched in this session as one plain command), so the orchestrator's re-run is a confirmation, not a dependency. Would change: a Chromium launch failure (then the orchestrator's run is the evidence).

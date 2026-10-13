@@ -732,7 +732,7 @@ bez przekształceń.
 #### Manual
 
 - [x] 4.6 [reviewer] Odczyt nauczyciela `pl.welcome` i marki — impl-review (PASS, `reviews/teacher-read.md`)
-- [ ] 4.7 [visual] Zrzut welcome przy 1440×900 i 1024×768 vs `welcome.png`
+- [x] 4.7 [visual] Zrzut welcome przy 1440×900 i 1024×768 vs `welcome.png` — bramka wizualna (`reviews/visual-review.md`; poprawka aa34170: „Rodzic” wewnątrz notesu)
 
 ### Phase 5: Bramka i panel rodzica w DOM (przycisk „Rodzic”)
 
@@ -746,7 +746,7 @@ bez przekształceń.
 #### Manual
 
 - [x] 5.5 [reviewer] Odczyt nauczyciela/rodzica `pl.parent` i `pl.stages` (`reviews/teacher-read.md`) — impl-review (PASS)
-- [ ] 5.6 [visual] Zrzuty welcome z „Rodzic”, bramka, bramka po złej odpowiedzi, panel w 3 stanach przy 1440×900 i 1024×768
+- [x] 5.6 [visual] Zrzuty welcome z „Rodzic”, bramka, bramka po złej odpowiedzi, panel w 3 stanach przy 1440×900 i 1024×768 — bramka wizualna (`reviews/visual-review.md`; poprawka 317926b: panel mieści się w 768 px)
 - [ ] 5.7 [human] iPad: bramka i panel palcem, brak przebicia dotyku do powitania
 
 ### Phase 6: Rozgrzewka w TaskScene, auto-czytanie po powitaniu, helper na ścieżkę rodzica
@@ -759,7 +759,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 6.4 [visual] Zrzuty rozgrzewka (6 kropek), podsumowanie 6 gwiazdek, runda po rozgrzewce przy 1440×900 i 1024×768
+- [x] 6.4 [visual] Zrzuty rozgrzewka (6 kropek), podsumowanie 6 gwiazdek, runda po rozgrzewce przy 1440×900 i 1024×768 — bramka wizualna (`reviews/visual-review.md`)
 - [ ] 6.5 [human] iPad: auto-czytanie pierwszego zadania E1/E2 po stuknięciu wieku
 
 ### Phase 7: Seam sweep, luki projektu, follow-upy i dokumentacja

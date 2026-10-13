@@ -12,3 +12,7 @@
 - (impl-review F2) E2E helpers duplicated in 3–4 copies (`readHook`, `tapScene`, `fromHook`, `tapNumber`, `answerWrong`/`answerRight`, `phaseIs`; gate steps in `tests/e2e/support/welcome.ts` `passWelcome` and `tests/e2e/first-launch.spec.ts` `openGate`/`typeIntoGate`): move them to `tests/e2e/support/hook.ts` and export the gate steps from `support/welcome.ts`. Trigger: S-08 (reuses the gate in e2e)
 - (impl-review F5) `src/core/placement.ts` imports the type of `placementData` from `src/data/placement.ts` (core → data type import): declare a `PlacementData` interface in core instead. Trigger: S-07
 - (impl-review F6) `src/ui/dom/dialog.ts` `openDialog` `handleKey` does not `stopPropagation`: gate digits would reach a future Phaser keyboard listener. Trigger: first Phaser keyboard input in src
+
+## From the visual gate
+
+- (visual O1) A `□` inside a sentence prompt (FACT_FAMILY check variant, e.g. „5 − 1 = 4. Sprawdź: 4 + 1 = □”) is drawn as the font's tiny fallback glyph: `TaskScene` draws outlined boxes only for expression prompts (`isExpression` → `drawExpression`, `src/core/round/promptBlank.ts` `splitBlanks`/`layoutPieces`, design-gaps row 8). S-06 makes E2 playable (age 7 from February, the age-8 warm-up), so children now meet it. Fix: draw the box inside wrapped sentence prompts too (or keep sentence prompts free of `□`), with a test. Trigger: S-07
