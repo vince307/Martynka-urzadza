@@ -689,7 +689,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 - [x] 2.1 `roomsData.test.ts` czerwony przed danymi (asercja liczności), zielony po; unit baseline + N — 59c9253
 - [x] 2.2 Deliberate break kanapa w tacy / powtórzony wzór → czerwone; przywrócone; meta-check — 59c9253
 - [x] 2.3 `npm run lint` bez naruszeń granic dla `src/data/rooms.ts` — 59c9253
-- [x] 2.4 Pełna bramka lokalna zielona (sample E1–E6 bez zmian) — 59c9253 (e2e: orchestrator gate)
+- [x] 2.4 Pełna bramka lokalna zielona (sample E1–E6 bez zmian) — 59c9253 (e2e: orchestrator run on 382072a)
 
 #### Manual
 
@@ -699,9 +699,9 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [ ] 3.1 `variantPanel.test.ts` czerwony przed implementacją (asercja), zielony po; unit baseline + N
-- [ ] 3.2 Deliberate break `confirm` bez zamknięcia / `open` bez opłacalności → czerwone; przywrócone; meta-check
-- [ ] 3.3 Pełna bramka lokalna zielona
+- [x] 3.1 `variantPanel.test.ts` czerwony przed implementacją (asercja), zielony po; unit baseline + N — 94873fd
+- [x] 3.2 Deliberate break `confirm` bez zamknięcia / `open` bez opłacalności → czerwone; przywrócone; meta-check — 94873fd
+- [x] 3.3 Pełna bramka lokalna zielona — 94873fd (e2e: orchestrator gate)
 
 ### Phase 4: Jedno saldo w rejestrze, koszt w podsumowaniu, gwiazdka w locie i „ogranicz ruch”
 
