@@ -7,7 +7,6 @@ export interface MasteryRules {
     readonly unlockAt: number;
     readonly streakForGain: number;
     readonly gain: number;
-    readonly loss: number;
     readonly historyLength: number;
 }
 
@@ -32,7 +31,7 @@ export function recordRound(adaptation: Adaptation, results: readonly SkillResul
                 streak[skillId] = run;
             }
         } else {
-            mastery[skillId] = Math.max(0, (mastery[skillId] ?? 0) - rules.loss);
+            mastery[skillId] = mastery[skillId] ?? 0; // a miss resets the streak and never lowers mastery (maintainer decision H-7, 2026-10-13)
             streak[skillId] = 0;
         }
         added.push({ skillId, ok: outcome !== 'retype', firstTry: outcome === 'first', at, ...(outcome !== 'first' && example ? { example } : {}) });

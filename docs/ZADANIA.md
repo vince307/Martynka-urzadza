@@ -46,7 +46,7 @@ W v1 pełna jakość treści (polecenia, podpowiedzi) jest gwarantowana dla E3�
 
 ### Adaptacja trudności
 - Każda umiejętność (typ zadania × krok) ma licznik opanowania 0–5. Liczy się tylko pierwsza próba.
-- 3 poprawne z rzędu → +1; błąd → −1 (długość serii i wartości zmian w `balance.ts`).
+- 3 poprawne z rzędu → +1; błąd zeruje serię, opanowanie nie spada (długość serii i wartości zmian w `balance.ts`).
 - Opanowanie ≥ 4 w większości umiejętności kroku (udział w `balance.ts`) → odblokowanie następnego kroku i krótka scenka „Nowa umiejętność!”. Jedna trudna umiejętność nie blokuje całego kroku.
 - 2 rundy z rzędu poniżej 3/5 → gra na chwilę wraca do łatwiejszych wariantów (mniejszy zakres, tryb z obrazkami).
 

@@ -11,7 +11,7 @@ import { balance } from '../src/data/balance';
 import { stages } from '../src/data/curriculum';
 
 const CURRICULUM = { weights: { current: 60, earlier: 30, previous: 10 }, minStartSteps: 2, unlockShare: 0.5 };
-const MASTERY: MasteryRules = { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, loss: 1, historyLength: 200 };
+const MASTERY: MasteryRules = { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, historyLength: 200 };
 const EASING: EasingRules = { weakBelow: 3, weakRounds: 2, rounds: 2, weights: { current: 20, earlier: 50, previous: 30 } };
 const RULES = { curriculum: CURRICULUM, mastery: MASTERY, easing: EASING };
 
@@ -157,7 +157,9 @@ describe('easing after weak rounds', () => {
         expect(r.adaptation.unlockedStep.E3).toBe(1);
         expect(r.adaptation.weakStreak).toBe(1);
         expect(r.adaptation.easedRounds).toBe(1);
-        expect(r.adaptation.mastery[ids[0]]).toBe(3); // the mastery did change
+        expect(r.adaptation.mastery[ids[0]]).toBe(4); // a miss never lowers mastery
+        expect(r.adaptation.streak[ids[0]]).toBe(0); // the warm-up result was recorded
+        expect(r.adaptation.history.at(-1)).toMatchObject({ skillId: ids[0], firstTry: false });
     });
 
     it('a step can unlock during easing, and the easing counter still goes down', () => {
