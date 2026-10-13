@@ -39,16 +39,14 @@ Written by `impl` phase 5: the "Zapis gry" panel section, design gaps, follow-up
 
 ## 4. Next command
 
-`/10x-e2e save-observability-c1-c2 phase 6`
+Orchestrator: follow `context/runs/2026-10-13-fix-save-observability/e2e-request-p6.md`, then re-dispatch a finishing agent: `/10x-e2e save-observability-c1-c2 phase 6` (commit spec + evidence, ticks 6.1-6.5, change.md `implemented`). After it: `/10x-impl-review save-observability-c1-c2`.
 
 ## 5. Open
 
-- Manual rows 5.6, 5.7 [reviewer], 5.8 [visual], 5.9, 5.10 [human]; 1.5, 3.5, 4.4-4.6 still open.
-- Teacher read of the new strings: calm, no jargon, no numerals, no blame (saveFailing says progress "may not be kept", stated plainly). Reviewer 5.6 stays open.
-- Phase 6 hooks: section selector `section.parent-save[data-state=ok|failing|off]`, sentences from `pl.settings.save*`.
+- Phase 6 spec written, uncommitted (e2e: not runnable in this session (MachPort) - orchestrator gate); rows 6.1-6.5 open. Phase 5 e2e rows cite the orchestrator run "p5" (29 passed on 89adbf6).
+- Manual rows 5.6-5.10, 1.5, 3.5, 4.4-4.6 still open.
 
 ## 6. Autonomous decisions
 
-- Section markup is a `section.parent-save` with `data-state` for e2e; styles reuse the progress section pattern. Reversal: none.
-- Follow-ups for L-S2, L-R8/9/11 carry only the plan's Trigger lines (no extra description beyond the audit id). Reversal: reviewer.
-- Phase 4 rows 3.4/4.1/4.3 now cite the orchestrator runs from the run log.
+- Breaks p6a (card), p6b (load limit), p6c (UIScene saveHealth), p6d (failing rule) written; p6a and p6c also prove phase 4 and 5 behaviour that had no patches.
+- Spec left uncommitted per the request-file protocol.
