@@ -110,14 +110,17 @@ orchestrator updates Status as artifacts appear on disk.
 | typecheck | tsc | 5.7 | `npm run typecheck` covers `src`, `tests`, `scripts` |
 | content smoke | `scripts/sample.ts` | repo | `npm run sample -- E1` … `E6` exit 1 on violations |
 | deploy smoke | `scripts/check-deploy.ts` (Node fetch) in GitHub Actions | repo | `npm run check:deploy` after `switch` |
-| e2e | Playwright | none yet — see Phase 5 | Chromium only, local gate only (never CI, §7); `webServer` runs the production build with `vite preview --port 4398 --strictPort` (never the default 4173); Playwright cannot automate service workers in WebKit, so the iPad stays a manual check |
-| browser checks by the agent | Claude in Chrome | session tool | `npm run preview` + manual assertions; not a CI gate |
+| e2e | Playwright (`@playwright/test`) | 1.64.0 | Chromium only, local gate only (never CI, §7). Two projects and two web servers in `playwright.config.ts`: `chromium` runs the seed against the production build on port 4398 (the service worker registers only there); `chromium-hook` runs the round specs against an `E2E_HOOK=1` build in `dist-e2e/` on port 4397, never reused (a stale server carries the same build id). Never port 4173. Desktop Chrome with `hasTouch`, no Android profile. Playwright cannot automate service workers in WebKit, so the iPad stays manual (Phase 7) |
+| e2e build guard | `vite/e2eHookGuard.mjs` (Vite plugin) | repo | `npm run build` fails if any e2e marker (`__martynkaE2E`, `e2eMonth`, `e2eFail`, `e2e-forced-failure`) reaches `dist/`; the hook build fails if any is missing |
+| difficulty-curve simulation | Vitest | none yet — see Phase 6 | seeded synthetic children over the real `core` round, mastery and curriculum functions |
+| device checklist | manual (maintainer, iPad + Android) | none yet — see Phase 7 | replaces WebKit automation and performance timing (§7) |
+| browser checks by the agent | Claude in Chrome | session tool | `npm run preview` + manual assertions; cannot drive the 2 s long press, so gestures use a throwaway Playwright spec in a gitignored `*.local` folder; not a gate |
 
 **Stack grounding tools (current session):**
-- Docs: Context7 — used for vitest 5 and vite-plugin-pwa facts in archived research, and for Playwright service-worker, offline and touch facts in the 2026-10-12 refresh; checked: 2026-10-12
-- Search: Exa.ai / web fetch — used for Chrome/WebKit PWA behaviour; checked: 2026-10-12
-- Runtime/browser: Claude in Chrome — used for preview checks of PWA and overlays; not a gate; checked: 2026-10-12
-- Provider/platform: `gh` (GitHub API, workflow runs) and `ssh martynka-ops` / `ssh cs-ops` (VPS status) — quality-gate relevant for Phase 2; checked: 2026-10-12
+- Docs: Context7 — used for vitest 5 and vite-plugin-pwa facts in archived research, and for Playwright service-worker, offline and touch facts in the 2026-10-12 refresh; the Playwright 1.64 clock vs Phaser 4.2.1 tweens conflict comes from the S-06 plan review, not from docs; checked: 2026-10-12
+- Search: Exa.ai / web fetch — used for Chrome/WebKit PWA behaviour; not needed in the 2026-10-13 refresh; checked: 2026-10-12
+- Runtime/browser: Claude in Chrome — used for preview checks of PWA and overlays; not a gate; checked: 2026-10-13
+- Provider/platform: `gh` (GitHub API, workflow runs) and `ssh martynka-ops` (VPS status) — quality-gate relevant for Phase 2; checked: 2026-10-13
 
 ## 5. Quality Gates
 
@@ -128,8 +131,10 @@ orchestrator updates Status as artifacts appear on disk.
 | content smoke (`sample` E1–E6) | CI on PR | required | data changes that break generation or violate the validator |
 | post-edit hook | local (agent loop) | required | lint and related-test failures at edit time |
 | deploy smoke | GitHub Actions after `switch` | required | stale build, wrong headers, broken precache, CoiledSpring regression |
-| local browser e2e (Playwright, Chromium) | local (agent loop gate), never CI | planned — required after §3 Phase 5 | offline start from cache, rotate overlay, touch round (S-04), update path (S-11) |
-| manual tablet check | after PWA or scene changes | required (manual) | install, iPad/WebKit offline start, real-device orientation and touch |
+| local browser e2e (Playwright, Chromium) | local (agent loop gate, orchestrator runs it outside the sandbox), never CI | required (§3 Phase 5 complete) | offline start from cache, touch round, first launch, adaptation, parent settings, error card, narrator; update path after Phase 4 |
+| e2e build guard | `npm run build` (local + CI) | required | an e2e hook, query parameter or forced failure leaking into the production bundle |
+| difficulty-curve simulation | local + CI (part of the unit suite) | planned — required after §3 Phase 6 | a balance or curriculum change that makes steps unlock too slowly, too fast, or never |
+| manual device check (iPad + Android) | maintainer, every change to touch handling or scenes; after PWA changes | required (manual) — checklist after §3 Phase 7 | install, iPad/WebKit offline start, real-device orientation and touch, gestures, voice, error card |
 | pre-commit lint | local git hook | optional (not configured) | edits made outside the agent |
 
 ## 6. Cookbook Patterns
@@ -167,9 +172,27 @@ orchestrator updates Status as artifacts appear on disk.
 
 ### 6.6 Adding a local browser e2e test
 
-- TBD — see §3 Phase 5. Patterns the phase must fill in: wait until the service worker controls the page before going offline; assert `fromServiceWorker()` on the navigation and the bundles, not just a green reload; run desktop Chromium with `hasTouch` and a landscape tablet viewport, not an Android device profile (its install hint covers the canvas); read round state only through the e2e-only hook, never a DOM mirror.
+- **Location**: `tests/e2e/<flow>.spec.ts`; helpers in `tests/e2e/support/hook.ts` (read the hook, map scene coordinates, tap, answer) and `tests/e2e/support/welcome.ts` (reach a state through the product). A spec that needs the hook must match the `ROUND_SPEC` pattern in `playwright.config.ts` so it runs in `chromium-hook`; offline/PWA specs run in `chromium` against the production build.
+- **Reference tests**: `tests/e2e/seed.spec.ts` (offline start: wait until the worker controls the page, go offline, reload, assert `fromServiceWorker()` on the navigation and the bundles), `tests/e2e/task-round.spec.ts` (touch round), `tests/e2e/parent-settings.spec.ts` (long press), `tests/e2e/error-boundary.spec.ts` (forced failures).
+- **Reaching a state**: through the product only — `passWelcome` (parent path, stage E3, no warm-up) or `passWelcomeAsChild` (age tap, pinned month); never by writing storage or setting state through the hook. Fix the month with `?e2eMonth=0..11`; force a failure with `?e2eFail=step|boot|settings`. Both exist only in the e2e build.
+- **Never `page.clock`**: a fixed clock freezes `Date.now()`, Phaser tweens read it for their delta, so tweens stop (camera shake stays offset, the star flight hangs). Pin dates through `?e2eMonth` instead. Wait for state through the hook, never for time.
+- **Touch**: `tapScene` maps 1920×1080 scene coordinates through the canvas box and taps with the real touchscreen; `holdTouch` sends touch start/move/end over CDP (`Input.dispatchTouchEvent`) — its hold is the only fixed wait a spec may have, because the hold is the gesture. Desktop Chromium with `hasTouch`, never an Android device profile (its install hint covers the canvas).
+- **Reading state**: only from the read-only hook (`window.__martynkaE2E`); a gate answer comes from the dialog text, never from the hook. A new hook field or query parameter must be added to the marker list in `vite/e2eHookGuard.mjs`, so the production build fails if it leaks and the hook build fails if it is dropped.
+- **Proof of a new spec**: a deliberate break of the production rule (not a label or selector) as a `git apply` patch must turn the spec red. Chromium cannot start inside the agent sandbox, so an implementing subagent writes the spec and the patch, and the orchestrator runs green, applies the break, sees red and reverts (`context/foundation/autonomous-run.md`).
+- **Below the browser**: a dialog callback that can throw is covered by a source test, `tests/dialogSessions.test.ts`, which parses `UIScene` and `WelcomeScene` with the TypeScript compiler API and requires every `onPass`/`onConfirm`/`onCancel` to run inside an input session (fixed count per file); add new callbacks there, not as another e2e.
+- **Run locally**: `npx playwright test` (builds and serves both servers itself, about 15 s warm); one spec: `npx playwright test tests/e2e/<flow>.spec.ts`.
 
-### 6.7 Per-rollout-phase notes
+### 6.7 Adding a difficulty-curve simulation case
+
+- TBD — see §3 Phase 6. Expected values come from the #17 range in §2, never from the balance data.
+
+### 6.8 Running the device checklist
+
+- TBD — see §3 Phase 7.
+
+### 6.9 Per-rollout-phase notes
+
+- Phase 5 (2026-10-12/13, delivered inside S-04..S-08 and `observability-c1-c2`): a fixed Playwright clock froze Phaser tweens, hence `?e2eMonth`; Chromium launches only sometimes from subagent sessions, hence the orchestrator-run break patches; Claude in Chrome cannot drive the long press, hence CDP touch. The rotate overlay (#9) never got a spec and moved to the device checklist.
 
 - Phase 3 (2026-10-12): "last hint ends with the answer" was wrong for inverse-check hints (6 · 7 = 42 for 42 : 6), so the invariant is "the answer appears among the numbers of the last hint". Rejection sampling skews distributions: DIV drew quotient 1 uniformly and then rejected large products, inflating n : n to 17 %; drawing inside the feasible range fixed it. Measured baselines are in the archived research of this phase.
 - Phase 2 (2026-10-12): Node's `fetch` ignores proxy environment variables; inside the agent sandbox the smoke needs `NODE_USE_ENV_PROXY=1` (CI has direct egress). `index.html` also preloads the Phaser chunk, so three bundles are checked. CoiledSpring cannot be observed from CI (tailnet ACL and the restricted key); the bootstrap checklist in `deploy/README.md` section 10 covers it.
@@ -181,15 +204,14 @@ orchestrator updates Status as artifacts appear on disk.
 - **Browser e2e in CI** — the local Playwright gate (§3 Phase 5) plus the manual tablet check after deploys give the signal; CI e2e would cost more than it catches for a one-device product. Re-evaluate if a second device class appears. (Source: interview Q5; kept in the 2026-10-12 refresh.)
 - **Scene looks and task content in browser e2e** — e2e asserts flows, never pixels or task text; looks stay manual (see snapshots above), task content is covered by unit/property invariants and the teacher read. (Source: interview 2026-10-12 refresh.)
 - **Code coverage as a metric** — no threshold; risk scenarios decide what gets tested. (Source: interview Q5.)
-- **Narrator voice quality** — no Polish voice never blocks a flow (PRD NFR); checked on devices in M2.
-
-Open (neither chosen nor excluded, interview 2026-10-12 refresh): **WebKit in e2e** (it could cover the overlay and touch, not offline start; the iPad stays manual) and **performance** (offline start < 3 s, touch < 100 ms; a desktop timing would not represent the target tablet).
+- **Narrator voice quality** — no Polish voice never blocks a flow (PRD NFR); voice presence is a device-checklist item (Phase 7).
+- **Performance tests and WebKit automation** — a desktop timing does not represent the target tablet (offline start < 3 s, touch < 100 ms), and Playwright cannot automate service workers in WebKit; both are checked by hand on the iPad and an Android tablet (§3 Phase 7). Re-evaluate if a device lab or WebKit service-worker support appears. (Source: interview 2026-10-13.)
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-10-12
-- Stack versions last verified: 2026-10-12
-- AI-native tool references last verified: 2026-10-12
+- Strategy (§1–§5) last reviewed: 2026-10-13
+- Stack versions last verified: 2026-10-13
+- AI-native tool references last verified: 2026-10-13
 
 Refresh (`/10x-test-plan --refresh`) when:
 

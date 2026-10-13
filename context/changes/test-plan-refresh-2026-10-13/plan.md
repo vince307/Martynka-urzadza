@@ -148,9 +148,9 @@ Docs-only; verification is the grep checks above plus lint/typecheck (no source 
 
 #### Automated
 
-- [x] 1.1 §2 has rows #1-#17 and the guidance table has 17 rows
-- [x] 1.2 §2 Source cells carry no file anchors
-- [x] 1.3 §3 rows parse; rows 1, 2, 3, 5 complete, rows 4, 6, 7 not started
+- [x] 1.1 §2 has rows #1-#17 and the guidance table has 17 rows — 05aef97
+- [x] 1.2 §2 Source cells carry no file anchors — 05aef97
+- [x] 1.3 §3 rows parse; rows 1, 2, 3, 5 complete, rows 4, 6, 7 not started — 05aef97
 
 #### Manual
 
@@ -160,10 +160,10 @@ Docs-only; verification is the grep checks above plus lint/typecheck (no source 
 
 #### Automated
 
-- [ ] 2.1 No code fences in the file
-- [ ] 2.2 §7 has at most 7 bullets and no "Open (" line
-- [ ] 2.3 §8 dates are 2026-10-13
-- [ ] 2.4 `npm run lint` and `npm run typecheck` pass
+- [x] 2.1 No code fences in the file
+- [x] 2.2 §7 has at most 7 bullets and no "Open (" line
+- [x] 2.3 §8 dates are 2026-10-13
+- [x] 2.4 `npm run lint` and `npm run typecheck` pass
 
 #### Manual
 
