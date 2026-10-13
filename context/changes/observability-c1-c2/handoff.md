@@ -1,13 +1,13 @@
 # Handoff — `observability-c1-c2` (slice fix:observability-c1-c2, non-roadmap)
 
-Written by `/10x-implement observability-c1-c2 phase 4` (autonomous run 2026-10-13-fix-observability).
+Written by `/10x-implement observability-c1-c2 phase 5` (autonomous run 2026-10-13-fix-observability).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/observability-c1-c2` |
-| Commits | phase 1 = 6ad5d53, phase 2 = 1af1734, phase 3 = 478a100, phase 4 = b2affa1, then this handoff |
+| Commits | phase 1 = 6ad5d53, phase 2 = 1af1734, phase 3 = 478a100, phase 4 = b2affa1, phase 5 = 799a75f, then this handoff |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` |
@@ -17,37 +17,39 @@ Written by `/10x-implement observability-c1-c2 phase 4` (autonomous run 2026-10-
 
 | Path | What it is |
 |---|---|
-| `src/ui/dom/errorBoundary.ts` | `installErrorBoundary(win, onFatal)`: `error` + `unhandledrejection`, bubbling, decision via `isFatalSignal`, re-entrancy flag, try/catch around `onFatal` |
-| `src/ui/dom/errorCard.ts` | `mountErrorCard` (idempotent, role alertdialog, focus on button); `.overlay-error` z-index 18; `pl.errorCard`; DESIGN-GAP 29 row |
-| `src/main.ts` | boundary before `createGame`; card, then suspend (never released), then `loop.sleep()`, each in its own try/catch; forced failure set in `preBoot` only under `__E2E_HOOK__` |
-| `src/data/layout.ts` | `REGISTRY_KEYS.forcedFailure` (no marker text in name or value) |
-| `src/scenes/{TaskScene,BootScene,UIScene,WelcomeScene}.ts` | sites `step` (`TaskScene.update`, once), `boot`, `settings` (`applySettings`) behind `__E2E_HOOK__`; Welcome/UI hold an `InputSession`, every dialog callback in `session.run`; F6 guard in `openParent` |
-| `vite/e2eHookGuard.mjs`, `tests/e2eHookGuard.test.ts` | `E2E_REQUIRED_MARKERS` = full list; pin test + two tests reworked |
+| `src/ui/dom/settingsPanel.ts` | `watchVoice` option: subscribes at open, unsubscribes in the single `close` (confirm, cancel, Escape, shutdown); muted paragraph `pl.settings.noVoice`, hidden while a voice is available, visible without a narrator; DESIGN-GAP 30 |
+| `src/scenes/UIScene.ts` | passes `watchVoice` from the narrator |
+| `src/data/pl.ts` | `settings.noVoice` |
+| `docs/design-gaps.md` | row 30 (row 29 existed from phase 4) |
+| `context/changes/observability-c1-c2/follow-ups/review-fixes.md` | follow-ups, each with `Trigger:` |
+| `CLAUDE.md` | Current state: error boundary, input sessions, `?e2eFail=`, mastery rule, no-voice line |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | lint / typecheck | OK / OK |
-| unit | baseline 948 -> 972 after phase 3, phase 4 delta +0 (two guard tests reworked, pin changed): 972 passed; deploy scripts + sample E1-E6 no violations |
-| build | `e2e hook: absent (2 chunks checked)`; grep dist for e2eFail, e2e-forced-failure, e2eMonth, __martynkaE2E: no match; `E2E_HOOK=1` build: `e2e hook: present (2 chunks checked)`; `grep releaseInput src` empty |
-| break | main.ts without `installErrorBoundary` + `UIScene.onConfirm` outside `session.run`: unit stayed 972 green (expected, this phase claims no unit coverage of the wiring; proof is e2e phase 6 and review 4.6); restored. Meta-check: green is the honest result, the guard tests cover only the marker list |
-| e2e | not runnable in this session (MachPort: `browserType.launch` closed, 6 failed/12 not run) - orchestrator gate; row 4.1 left open |
-| teacher read | "Ups! Gra się zatrzymała." / "Dotknij przycisku, a gra uruchomi się od nowa." / "Zacznij od nowa" / "Wersja <id>": calm, no blame, no word "błąd", no promise of kept progress, short |
+| unit | 972 passed (baseline 948 + 24 from phases 1-3, phase 5 delta +0); deploy scripts OK; sample E1-E6 no violations |
+| validate-rule-files | PASS; break (CLAUDE.md path `errorCardX.ts`) -> FAIL missing: 1; restored -> PASS. Note: `errorcard.ts` (case only) passes on case-insensitive APFS, so the plan's literal break needed a different name |
+| build | `e2e hook: absent (2 chunks checked)`; grep dist for e2eFail, e2e-forced-failure, e2eMonth, __martynkaE2E: empty; `grep releaseInput\|a miss = -1 src` empty |
+| break | UIScene without `watchVoice`: unit stayed 972 green (expected; proof is e2e phase 7); restored |
+| e2e | not runnable in this session (MachPort: 6 failed/12 not run) - orchestrator gate; 4.1 ticked from the run log (18/18 on e753365) |
+| teacher read | `pl.settings.noVoice` "Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.": clear to a parent, no jargon, correct Polish |
+| seam sweep | no stale `releaseInput`, `loss`, single-marker or -1 wording left in `src/`; headers of `inputSuspend.ts`, `mastery.ts`, `e2eHookGuard.mjs` already current |
 
 ## 4. Next command
 
-Phase 5 is `Driver: impl`:
-/10x-implement observability-c1-c2 phase 5
+Phase 6 is `Driver: e2e`:
+/10x-e2e observability-c1-c2 phase 6
 
 ## 5. Open
 
-- Row 4.1 (e2e, baseline 18 + 0) awaits the orchestrator on b2affa1; phases 1-3 e2e per run-log.
-- Manual: [reviewer] 2.5, 4.5, 4.6; [human] 2.6, 4.8, 5.9; [visual] 4.7, 5.8.
-- Follow-up noted in plan Known risks: original boot exception does not reach console.error (Trigger: S-11 or next BootScene change).
+- Row 5.2 (e2e baseline 18 + 0) awaits the orchestrator on 799a75f.
+- Manual: [reviewer] 2.5, 4.5, 4.6, 5.6, 5.7; [human] 2.6, 4.8, 5.9; [visual] 4.7, 5.8.
+- Follow-ups are in `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-1. Stayed in this context, one commit, stopped after phase 4. Commit message as proposed.
-2. Boundary reads the game through a `booted` holder object (lint prefer-const rejected a `let`). Would change: nothing.
-3. `step` site clears its registry value before throwing (fires once). Would change: a spec needs repeated failures.
+1. Stayed in this context, one commit, stopped after phase 5; commit message as proposed.
+2. `noVoice` is hidden until the first `watchVoice` callback (called synchronously on subscribe). Would change: nothing.
+3. Row 5.2 left open (e2e orchestrator gate).

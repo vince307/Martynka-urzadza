@@ -649,7 +649,7 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [ ] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
+- [x] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — b2affa1 (e2e 18/18: orchestrator gate, run log)
 - [x] 4.2 Build `e2e hook: absent` / `present` (pełna lista wymagana); znaczniki e2e nieobecne w `dist/`; `releaseInput` usunięte z `src/` — b2affa1
 - [x] 4.3 Deliberate break: bez `installErrorBoundary` / `applySettings` poza `session.run` → unit zielone; zapis w handoff §3; meta-check — b2affa1
 - [x] 4.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (pin listy wymaganej) — b2affa1 (e2e: orchestrator gate)
@@ -665,11 +665,11 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [ ] 5.1 `validate-rule-files.sh` PASS
+- [x] 5.1 `validate-rule-files.sh` PASS — 799a75f
 - [ ] 5.2 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [ ] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; panel bez `watchVoice` → unit zielone, zapis w handoff §3; meta-check
-- [ ] 5.4 `a miss = -1` i `releaseInput` nieobecne w `src/`
-- [ ] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; panel bez `watchVoice` → unit zielone, zapis w handoff §3; meta-check — 799a75f
+- [x] 5.4 `a miss = -1` i `releaseInput` nieobecne w `src/` — 799a75f
+- [x] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 799a75f (e2e: orchestrator gate)
 
 #### Manual
 
