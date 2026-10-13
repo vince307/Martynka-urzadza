@@ -967,8 +967,8 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (3 passed); pełne e2e `<baseline gałęzi e2e> + 3`
-- [ ] 11.2 Deliberate break: `applyParentStage` bez dodania gwiazdek → test (a) czerwony; przywrócone; meta-check
-- [ ] 11.3 Druga przerwa: `finishRound` bez `roundResults` (albo kandydaci z `ok === false`) → test (b) czerwony; przywrócone; meta-check
-- [ ] 11.4 Trzecia przerwa: `effectiveAutoRead` ignoruje ustawienia → test (a) czerwony; przywrócone
-- [ ] 11.5 Build `e2e hook: absent`; `e2eMonth` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (3 passed); pełne e2e `<baseline gałęzi e2e> + 3`
+- [x] 11.2 Deliberate break: `applyParentStage` bez dodania gwiazdek → test (a) czerwony; przywrócone; meta-check
+- [x] 11.3 Druga przerwa: `finishRound` bez `roundResults` (albo kandydaci z `ok === false`) → test (b) czerwony; przywrócone; meta-check
+- [x] 11.4 Trzecia przerwa: `effectiveAutoRead` ignoruje ustawienia → test (a) czerwony; przywrócone
+- [x] 11.5 Build `e2e hook: absent`; `e2eMonth` nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite

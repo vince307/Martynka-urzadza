@@ -25,12 +25,20 @@ export interface Snapshot {
     unlock: { step: number; name: string } | null;
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
+    /** Stage of the open round (task screens only). */
+    stage?: string;
+    /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */
+    autoRead?: boolean;
+    /** The parent's saved choices; autoRead null = no choice yet. */
+    settings?: { autoRead: boolean | null };
     learner: {
         stage: string;
         unlockedStep: Record<string, number>;
         pendingUnlock: number | null;
         warmupPending?: boolean;
         stageOverriddenByParent?: boolean;
+        /** Answer history (newest last); firstTry false = a miss on the first try. */
+        history?: { skillId: string; firstTry: boolean }[];
     } | null;
 }
 export interface Targets {
@@ -139,15 +147,18 @@ export const tapNumber = async (page: Page, value: number): Promise<void> => {
     await tapScene(page, keys.find((k) => k.key === 'ok')!);
 };
 
-/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. */
-export const answerWrong = async (page: Page): Promise<void> => {
+/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. Returns the value given. */
+export const answerWrong = async (page: Page): Promise<number | string> => {
     const state = await snapshot(page);
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => t.value !== state.answer)!);
-    } else {
-        await tapNumber(page, (state.answer as number) + 1);
+        const tile = tiles.find((t) => t.value !== state.answer)!;
+        await tapScene(page, tile);
+        return tile.value;
     }
+    const given = (state.answer as number) + 1;
+    await tapNumber(page, given);
+    return given;
 };
 
 export const answerRight = async (page: Page): Promise<void> => {

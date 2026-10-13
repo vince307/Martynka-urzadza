@@ -60,7 +60,7 @@ const frames = (page: Page, n: number): Promise<void> =>
     );
 
 /** The answer the test wants: the right one, or one the task certainly rejects. */
-const answer = (page: Page, right: boolean): Promise<void> => (right ? answerRight(page) : answerWrong(page));
+const answer = (page: Page, right: boolean): Promise<void> => (right ? answerRight(page) : answerWrong(page).then(() => undefined));
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);
