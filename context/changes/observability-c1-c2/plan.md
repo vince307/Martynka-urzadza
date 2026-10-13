@@ -640,10 +640,10 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [x] 3.1 Nowe testy klasyfikatora, parsera i strażnika czerwone przed, zielone po; unit `<baseline gałęzi> + N` — SHA
-- [x] 3.2 Build: komunikat `e2e hook: absent (` / `present (` dosłownie bez zmian — SHA
-- [x] 3.3 Deliberate break: klasyfikator bez reguły `hasError` / strażnik tylko pierwszy znacznik → czerwone; przywrócone; meta-check — SHA
-- [x] 3.4 Pełna bramka lokalna zielona — SHA (e2e: orchestrator gate)
+- [x] 3.1 Nowe testy klasyfikatora, parsera i strażnika czerwone przed, zielone po; unit `<baseline gałęzi> + N` — 478a100
+- [x] 3.2 Build: komunikat `e2e hook: absent (` / `present (` dosłownie bez zmian — 478a100
+- [x] 3.3 Deliberate break: klasyfikator bez reguły `hasError` / strażnik tylko pierwszy znacznik → czerwone; przywrócone; meta-check — 478a100
+- [x] 3.4 Pełna bramka lokalna zielona — 478a100 (e2e: orchestrator gate)
 
 ### Phase 4: Granica błędów z kartą, miejsca wyzwolenia e2e i sceny na helperze sesji
 

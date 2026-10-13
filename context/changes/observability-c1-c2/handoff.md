@@ -36,7 +36,7 @@ Written by `/10x-tdd observability-c1-c2 phase 3` (autonomous run 2026-10-13-fix
 
 ## 4. Next command
 
-/10x-impl-review is not next: phase 4 is `Driver: impl`.
+Phase 4 is `Driver: impl`:
 /10x-implement observability-c1-c2 phase 4
 
 ## 5. Open
