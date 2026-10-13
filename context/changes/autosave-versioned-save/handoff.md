@@ -1,46 +1,51 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by the `plan-review` step (`/10x-plan-review autosave-versioned-save`) of run 2026-10-13-s09-s11. Verdict
-PROCEED; 1 critical + 2 warnings fixed in plan.md (no product code yet). The next agent must not let any write happen
-when the load was not `fresh`/`loaded`, and must listen to registry `setdata` as well as `changedata` (filtered by
-`SAVE_KEYS`): the welcome's first `learner` set is a `setdata`.
+Written by `/10x-tdd autosave-versioned-save phase 1` of run 2026-10-13-s09-s11. Phase 1 (format v1, decoder, fixtures) is
+committed at 7cf32a4; nothing writes to IndexedDB yet. The next agent must keep `src/core/save.ts` pure and must not edit
+`tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | 4 on the branch after this step (`… change identity`, `… research`, `… plan`, `docs(autosave-versioned-save): plan review`) |
+| Commits | docs x4, `7cf32a4` test p1, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 39 (`grep -c '^- \[ \]' plan.md`), none done |
-| Roadmap | S-11 `planning` (unchanged by this step) |
+| `change.md` status | `plan_reviewed` (unchanged; the status flip is left to the orchestrator or a later phase) |
+| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`); 1.1-1.3 done |
+| Roadmap | S-11 `planning` (unchanged) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/autosave-versioned-save/reviews/plan-review.md` | Review report: 1 critical, 2 warnings, 3 observations, all triaged; `VERDICT: PROCEED` |
-| `context/changes/autosave-versioned-save/plan.md` | Fixes: F1 `setdata`+`changedata` listeners on `SAVE_KEYS` (Key Discoveries, Critical Implementation Details, phase 4 §1, phase 7 test 3); F2 `--save-exact` (phase 3, row 3.1); F3 flush after `finishWarmup` (phase 4 §2); F4/F5 Known risks; F5 follow-up in phase 6 |
-| `context/changes/autosave-versioned-save/change.md` | Status `plan_reviewed` |
-| `context/changes/autosave-versioned-save/handoff.md` | This file |
+| `src/core/save.ts` | `SAVE_VERSION`, `DEFAULT_PROFILE`, `SessionSave`, `DecodeResult`, `encodeSave`, `decodeSave` (migration chain, injectable), `validateSave`, `rawExportText` |
+| `src/core/types.ts` | `SaveState` replaced by `SaveV1` (+ alias `SaveState`), `SavedLearner`; `rngSeed` gone |
+| `src/core/rng.ts` | header comment no longer promises `rngSeed` in the save |
+| `tests/save.test.ts` | 34 tests |
+| `tests/fixtures/save-v1.json`, `save-v1-fresh.json` | frozen hand-written v1 saves |
+| `context/changes/autosave-versioned-save/plan.md` | Progress 1.1-1.3 ticked with 7cf32a4 |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/autosave-versioned-save` |
-| `node_modules/phaser/src/data/DataManager.js` `setValue` | new key emits only `setdata`; existing key emits `changedata` + `changedata-<key>` (basis of F1) |
-| `grep registry.set src/scenes` | `WelcomeScene.start` is the first `set` of `learner`; `preBoot` (`src/main.ts`) never sets it |
-| `npm view idb-keyval@6.3.0 version`, `npm view fake-indexeddb@6.2.5 version` | `6.3.0`, `6.2.5` (both exist) |
-| `package.json` | existing deps use `^` (`phaser`), hence F2 |
-| `grep -c '^- \[ \]' plan.md` | 39 (unchanged; Progress↔Phase consistent, every phase has `Driver:`) |
-| Gates (lint, typecheck, unit, build, e2e) | not run — docs-only step; baseline on the branch = contract line (main f67b9f4: unit 1079, e2e 26) |
+| RED (stubs returning constants) `npx vitest run tests/save.test.ts` | 16 of 34 failed; first: `AssertionError: expected { kind: 'unreadable', …(1) } to deeply equal { Object (kind, migratedFrom, ...) }` (fixture decode) |
+| GREEN | 34/34 |
+| Deliberate break 1: `encodeSave` spreads the learner (`{...session.learner}`) | red: 4 tests (round trip, fresh round trip, session-only field, pending unlock stage); restored |
+| Deliberate break 2: `from > SAVE_VERSION` -> `from > 99` | red: "a save from a future version is left alone"; restored |
+| Deliberate break 3: no `currentRoom in rooms` check | red: "a v1 save with current room outside the rooms is corrupt"; restored |
+| Meta-check | expectations are hand-written fixtures and literals, not encoder output (the fixture test compares to a literal); break 1 reds on round-trip too because the saved stage-bound `pendingUnlock` shape differs, which is the intended protection |
+| `npm run lint`, `npm run typecheck` | OK |
+| `npm test` | 1113 passed (baseline 1079, +34) |
+| deploy tests, `npm run sample -- E1..E6` | run, no violations printed |
+| `npm run build` | OK, e2e hook absent |
+| `npx playwright test` | not runnable in this session (MachPort Permission denied) — orchestrator gate |
 
 ## 4. Next command
 
-`/10x-tdd autosave-versioned-save` (phase 1, `Driver: tdd`)
+`/10x-tdd autosave-versioned-save phase 2` (`Driver: tdd`)
 
 ## 5. Open
 
@@ -73,3 +78,11 @@ when the load was not `fresh`/`loaded`, and must listen to registry `setdata` as
   `SAVE_KEYS` path proven by tests 1–2).
 - Product decisions in plan.md `## Autonomous decisions` 1–14 checked against PRD FR-020/FR-021/US-04: none clearly
   wrong; each PRD/plan deviation already has a `[human]` row (6.6–6.9, 5.7, 5.8). Verdict PROCEED, not RETHINK.
+- Phase 1: `unlockedStep` validation requires whole numbers per present key but does not require all six stages (chosen so a
+  save is never unreadable only for a missing stage key); reversal: require `STAGE_ORDER` keys if the game starts reading a
+  missing stage as a crash.
+- Phase 1: `pendingUnlock` is encoded as `{ stage: learner.stage, step }` and decoded to `null` when the stage differs, per plan.
+- Phase 1: fresh fixture has `rooms: { living: … }` because `currentRoom` must be a key of `rooms`; reversal: if the game ever
+  saves with empty `rooms`, relax that rule via a migration, not silently.
+- Phase 1 test builds the session with `endRound(...)` (real core), `Outcome` 'second' stands for a hint-assisted answer.
+- E2E: not run (Chromium MachPort denied); orchestrator gate for 7cf32a4, no e2e-relevant code changed.
