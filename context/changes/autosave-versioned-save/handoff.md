@@ -1,13 +1,13 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s09-s11. Phase 4 (save wired into the game) is committed at 29da899. Do not edit `tests/fixtures/save-v1*.json` (frozen).
+Written by `/10x-implement autosave-versioned-save phase 5` of run 2026-10-13-s09-s11. Phase 5 (unreadable-save card, export, `?e2eSave` seam) is committed at 00998c0. Do not edit `tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, plus handoff commits |
+| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, `00998c0` p5, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; 1.x-4.x done (4.6 human open) |
@@ -18,6 +18,8 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 
 | Path | What it is |
 |---|---|
+| `src/ui/dom/saveFailedCard.ts`, `saveExport.ts` | card (`mountSaveFailedCard`, z-index 10 so the adult gate (15) opens over it, no input switch: no canvas yet) and `exportRawSave` (`canShare({files})` -> share, AbortError silent, else `<a download>`) |
+| `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs`, `tests/e2eSave.test.ts` | `e2eSave(search)`, `e2eSaveStore()` (in memory, version 99, never IndexedDB), marker `e2eSave` |
 | `src/main.ts` | `start()` async: `createIdbSaveStore` -> `loadSave` -> session (`floorToCalendar` on a loaded learner; `?e2eStars` only on `fresh`) -> `createGame(session)` -> `createAutosaver` (blocked on `unreadable`/`unavailable`) -> `setdata` + `changedata` listeners filtered by `SAVE_KEYS`; `visibilitychange` hidden and `pagehide` call `flush('hidden')`; error boundary calls `saver.block('fatal')` |
 | `src/data/layout.ts` | `REGISTRY_KEYS.saver`, `SAVE_KEYS` (five keys) |
 | `src/scenes/{RoomScene,TaskScene,BootScene}.ts` | `flush('now')` after the `bought` registry writes and at the very end of `finishRound` (after `finishWarmup`); BootScene hands over in `time.delayedCall(0)` |
@@ -37,9 +39,14 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 | Unit break | drop `REGISTRY_KEYS.settings` from `SAVE_KEYS` -> `tests/saveKeys.test.ts` red (`expected [ 'currentRoom', 'learner', ...(2) ] to deeply equal [ ...(3) ]`); restored |
 | E2E break (deferred) | `e2e-break-s11-p4.patch`, proof in phase 7 row 7.3. Meta-check: without a reload spec nothing in the suite sees the seam load -> registry -> save; the break is meaningless before phase 7 |
 
+Phase 5 verification: lint, typecheck OK; npm test 1142 passed (baseline 1079, +63; +3 this phase); deploy tests and sample E1..E6 OK;
+`npm run build` `e2e hook: absent`, `E2E_HOOK=1` build `present`. Break: `e2eSave(...)` in `main.ts` without `__E2E_HOOK__` -> build red
+(`e2e hook leaked ... (e2eSave in _app/index-*.js)`); restored, proves the guard on the real bundle. `npx playwright test`: not
+runnable in this session (MachPort) -- orchestrator gate; must stay 26 passed. No e2e spec added (phase 7).
+
 ## 4. Next command
 
-`/10x-implement autosave-versioned-save phase 5` (`Driver: impl`)
+`/10x-implement autosave-versioned-save phase 6` (`Driver: impl`)
 
 ## 5. Open
 
@@ -58,6 +65,11 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 
 
 ## 6. Autonomous decisions
+
+- Phase 5: card z-index 10 (not 18 like the error card) so the parent gate dialog (15) shows over it; "Zachowaj kopię" is class `overlay-secondary`.
+- Phase 5: export file via `canShare({ files })`; the plan's `text/plain` .txt kept; `URL.revokeObjectURL` on a 0 ms timeout after the click.
+- Phase 5: strings in `pl.saveFailed` as planned (teacher read by the author: short, no numerals, parent understands the save is untouched); rows 5.5-5.8 stay open for reviewer/visual/human. DESIGN-GAP rows 42-44 are written in phase 6.
+- Phase 5: first-RED not observed separately for `e2eSave.test.ts` (impl phase); break proven on the real bundle.
 
 - Phase 3: npm install ran sandboxed with `allowed_domains: ["registry.npmjs.org"]` and worked; exact versions, no `^`.
 - Phase 3: `idb-keyval` restriction lives in a separate block for scenes/pwa/ui/testing/main plus entries in the core and data
