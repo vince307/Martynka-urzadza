@@ -858,17 +858,17 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 - [x] 1.1 Diff tylko w `tests/e2e/**`; brak lokalnych kopii `readHook`/`tapScene`/`fromHook` w specach — d72768a
 - [x] 1.2 Liczba `expect(` przed = po (poza przeniesionymi do `support/`); 15 × `test(` bez zmian — d72768a
-- [ ] 1.3 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` (15 passed)
-- [ ] 1.4 Deliberate break: `phaseIs` w `support/hook.ts` odwrócone → task-round i first-launch czerwone; przywrócone; meta-check
+- [x] 1.3 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` (15 passed) — d72768a (orchestrator, run-log "S-08 p1 impl": e2e 15/15 on d72768a)
+- [x] 1.4 Deliberate break: `phaseIs` w `support/hook.ts` odwrócone → task-round i first-launch czerwone; przywrócone; meta-check — d72768a (orchestrator, run-log "S-08 p1 impl": phaseIs inverted red in task-round and first-launch at support/hook.ts:90, restored)
 - [x] 1.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — d72768a (e2e: orchestrator gate)
 
 ### Phase 2: Maszyna przytrzymania i licznik wstrzymania wejścia
 
 #### Automated
 
-- [ ] 2.1 `tests/longPress.test.ts` i `tests/inputSuspend.test.ts` czerwone przed (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `>` zamiast `>=` / `resume` bez idempotencji → czerwone; przywrócone; meta-check (progi z `balance.parentSettings`)
-- [ ] 2.3 Pełna bramka lokalna zielona
+- [x] 2.1 `tests/longPress.test.ts` i `tests/inputSuspend.test.ts` czerwone przed (asercja), zielone po; unit `<baseline gałęzi> + N` — 7087b16 (RED: AssertionError expected true to be false / expected +0 to be 1; unit 881 + 21)
+- [x] 2.2 Deliberate break: `>` zamiast `>=` / `resume` bez idempotencji → czerwone; przywrócone; meta-check (progi z `balance.parentSettings`) — 7087b16 (`>=` to `>` red in 5 longPress tests; `resume` without the guard red in 2 inputSuspend tests; restored)
+- [x] 2.3 Pełna bramka lokalna zielona — 7087b16 (e2e: orchestrator gate)
 
 ### Phase 3: Ustawienia sesji i zmiana etapu przez rodzica
 
