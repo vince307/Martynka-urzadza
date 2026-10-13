@@ -108,6 +108,10 @@ na końcu (faza 7). Każda faza zostawia grę grywalną: do fazy 4 nic w pokoju 
   (`InputSuspender.suspended()` → `cancel` w `update`). Czas zawsze `this.time.now` (ten sam zegar co `down`, wzorzec `UIScene`).
 - **Stuknięcie w trybie zmiany.** `up` przed odpaleniem przytrzymania, w trybie `change`, na slocie z `down` → to samo
   zdarzenie `change`. Poza trybem `up` przed progiem nic nie robi (FR-018: stuknięcie nie otwiera).
+- **Reguły gestu w `core`, nie w scenie** (plan-review F1). Odpalenie, stuknięcie w trybie, `up` po odpaleniu (nic),
+  `cancel`/`reset` liczy czysty `roomGesture` (`src/core/roomGesture.ts`, faza 1, test-first) na `longPress`; scena tylko
+  karmi go zdarzeniami Phasera z `slotAt` przy `down` i wykonuje wynik (`open: slot` → `dispatch({ type: 'change', slot })`,
+  `held` → obrys).
 - **Karta po ostatnim zakupie.** Stan karty ustawiany synchronicznie w `dispatch` (zakup z `currentTask === null` po nim),
   rysowanie opóźnione o `ANIMATION.purchasePopMs` (0 przy „ogranicz ruch”). Od chwili ustawienia stanu: strefa
   przytrzymania, przycisk trybu i „Wróć do notesu” wyłączone. Karta i tryb zerowane na `sleep`.
@@ -118,7 +122,7 @@ na końcu (faza 7). Każda faza zostawia grę grywalną: do fazy 4 nic w pokoju 
 ## Phase 1: Tryb zmiany w reduktorze panelu i trafianie slotu pod palcem
 
 Driver: tdd
-Driver why: gałąź zmiany w `stepPanel`, `core/roomHit.ts` i `roomDone` nie istnieją; failing testy (zmiana nie rusza salda ani `tasksDone`, pusty slot nie otwiera, najwyższy urządzony slot wygrywa, dywan osiągalny obok kanapy) prowadzą implementację.
+Driver why: gałąź zmiany w `stepPanel`, `core/roomHit.ts`, `core/roomGesture.ts` i `roomDone` nie istnieją; failing testy (zmiana nie rusza salda ani `tasksDone`, pusty slot nie otwiera, najwyższy urządzony slot wygrywa, dywan osiągalny obok kanapy) prowadzą implementację.
 
 ### Overview
 
@@ -162,11 +166,26 @@ gdy slot nieurządzony albo całkiem zasłonięty.
 
 **Intent**: `roomDone(room, state)` = `state.tasksDone >= room.tasks.length`.
 
-#### 4. Testy
+#### 4. Gest w pokoju (plan-review F1)
 
-**File**: `tests/variantPanel.test.ts`, `tests/roomHit.test.ts` (nowy), `tests/rooms.test.ts`
+**File**: `src/core/roomGesture.ts` (nowy)
 
-**Intent**: istniejące oczekiwania `{ kind: 'open', taskId, preview }` dostają `mode: 'buy'` (5 miejsc z `taskId`);
+**Intent**: czysty reduktor nad `longPress`, żeby reguły gestu dziecka nie żyły w scenie (CLAUDE.md: logika w `core`,
+testy najpierw). Stan = `LongPressState` + `slot: string | null` (slot trafiony przy `down`). `down` z `slot === null`
+→ nic nie startuje (stan `idle`); `down` z slotem → `holding`, `held = slot`; `tick` po progu → `open = slot`, stan
+`fired` (raz na gest); `up` w `holding` (przed progiem) → `open = slot` tylko przy `mode === 'change'`, inaczej `null`;
+`up` w `fired` → `open = null` (puszczenie palca po odpaleniu nic nie otwiera ani nie wybiera); `move` > tolerancji,
+`cancel`, `reset` → `idle`, `held = null`.
+
+**Contract**: `roomGesture(state: RoomGestureState, event: LongPressEvent, ctx: { mode: 'normal' | 'change'; slot:
+string | null; rules: LongPressRules }): { state: RoomGestureState; open: string | null; held: string | null }`
+(`ctx.slot` czytane tylko przy `down`); `ROOM_GESTURE_IDLE`.
+
+#### 5. Testy
+
+**File**: `tests/variantPanel.test.ts`, `tests/roomHit.test.ts` (nowy), `tests/rooms.test.ts`, `tests/roomGesture.test.ts` (nowy)
+
+**Intent**: istniejące oczekiwania `{ kind: 'open', taskId, preview }` dostają `mode: 'buy'` (literały `PanelState` z `taskId` — `expected` otwarcia, helper `open(preview)` i stan przy `close`; oczekiwania `bought` z `taskId` zostają bez `mode`, plan-review F5);
 nowe przypadki: `change` na urządzonym → `open/change` z `preview: null`; na pustym, nieznanym slocie, przy otwartym
 panelu → bez zmian; `confirm` bez podglądu → bez zmian; `confirm` z podglądem → `chosen[slot]` zmieniony, `stars`,
 `tasksDone` i `bought` bez zmian, `changed` ustawione, panel `closed`; `confirm` ×2 → jedna zmiana; `open` przy panelu
@@ -176,15 +195,17 @@ wejściu” i „suma kosztów kupionych = start + zarobki − koniec” nadal (
 z pełnym `chosen` — środek kanapy → `sofa`, (650, 700) → `rug`, (960, 740) → `rug`, punkt na podłodze poza meblami →
 `floor`, ściana → `walls`; nieurządzona kanapa → pod nią `rug`/`floor`; pusty `chosen` → `null` wszędzie; punkt poza
 `area` → `null`; `holdPoint` zwraca punkt dla każdego urządzonego slotu `SALON` (każdy osiągalny) i `null` dla
-nieurządzonego. `roomDone` przy 9 i 10 zadaniach.
+nieurządzonego. `roomDone` przy 9 i 10 zadaniach. `roomGesture`: stuknięcie poza trybem → `open === null`; stuknięcie w
+trybie → `open === slot`; przytrzymanie ≥ progu → `open === slot` dokładnie raz (kolejne `tick` → `null`); `up` po
+odpaleniu → `null`; dryf > tolerancji, `cancel`, `reset` → `idle`, `held === null`; `down` bez slotu → nic przy `tick`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- `tests/roomHit.test.ts` i nowe przypadki `variantPanel.test.ts`/`rooms.test.ts` czerwone przed implementacją (asercja na stubie, nie brak modułu), zielone po; unit `<baseline gałęzi> + N`
-- Deliberate break: gałąź `confirm` zmiany woła `purchase` zamiast zapisu `chosen` → testy „zmiana nie rusza salda” i własność ryzyka #16 czerwone; `slotAt` bierze najniższy `depth` → test „środek kanapy → sofa” czerwony; przywrócone; meta-check: oczekiwania z FR-018 („zmiana darmowa”), US-02 AC i ryzyka #16, nie z kodu
-- `npm run lint` bez naruszeń granic (`src/core/roomHit.ts` bez Phasera i `src/data`); pełna bramka lokalna zielona (scena kompiluje się bez zmian)
+- `tests/roomHit.test.ts`, `tests/roomGesture.test.ts` i nowe przypadki `variantPanel.test.ts`/`rooms.test.ts` czerwone przed implementacją (asercja na stubie, nie brak modułu), zielone po; unit `<baseline gałęzi> + N`
+- Deliberate break: gałąź `confirm` zmiany woła `purchase` zamiast zapisu `chosen` → testy „zmiana nie rusza salda” i własność ryzyka #16 czerwone; `slotAt` bierze najniższy `depth` → test „środek kanapy → sofa” czerwony; `roomGesture` otwiera na `up` także poza trybem → test „stuknięcie poza trybem” czerwony; przywrócone; meta-check: oczekiwania z FR-018 („zmiana darmowa”), US-02 AC i ryzyka #16, nie z kodu
+- `npm run lint` bez naruszeń granic (`src/core/roomHit.ts`, `src/core/roomGesture.ts` bez Phasera i `src/data`); pełna bramka lokalna zielona (scena kompiluje się bez zmian)
 
 ---
 
@@ -341,10 +362,11 @@ slotami — bez ruchu, więc bez gałęzi „ogranicz ruch”. Podgląd (`RoomPr
 
 **File**: `src/scenes/RoomScene.ts`
 
-**Intent**: pole `hold: LongPressState` + `holdSlot`; jedna interaktywna strefa nad `ROOM_LAYOUT.area` tworzona przed
-przyciskami, aktywna tylko przy zamkniętym panelu i bez karty; `pointerdown` → `slotAt` (rozmiary z
-`SALON_PLACEHOLDERS`); `up`/`out`/`pointermove`/`update`-`tick` jak w `UIScene` z `balance.roomHold`; odpalenie →
-`dispatch({ type: 'change', slot })`. `update` przy zawieszonym wejściu (`REGISTRY_KEYS.inputSuspender`) karmi `cancel`.
+**Intent**: pole `gesture: RoomGestureState` (`core/roomGesture.ts`, faza 1); jedna interaktywna strefa nad
+`ROOM_LAYOUT.area` tworzona przed przyciskami, aktywna tylko przy zamkniętym panelu i bez karty; `pointerdown` → `slotAt`
+(rozmiary z `SALON_PLACEHOLDERS`) jako `ctx.slot`; `up`/`out`/`pointermove`/`update`-`tick` karmią `roomGesture` z
+`balance.roomHold` (zegar `this.time.now`, wzorzec `UIScene.feed`); `open` → `dispatch({ type: 'change', slot })`,
+`held` → obrys. Scena nie decyduje sama, kiedy gest otwiera panel. `update` przy zawieszonym wejściu (`REGISTRY_KEYS.inputSuspender`) karmi `cancel`.
 `redraw`: podgląd dla `panel.slot` w trybie zmiany, dla `currentTask.slot` w trybie zakupu; `VariantPanel.show` z wyglądem
 slotu panelu. `dispatch`: przy `changed` zapis tylko `rooms` + `celebrate(changed)`; `celebrate` przyjmuje `{ slot,
 variant }`. Reset `hold` i obrysu na `sleep`, otwarcie panelu, `cancel`. F5: typowany helper tekstu (np. `roomText`
@@ -402,7 +424,8 @@ Karta po 10. zakupie, potem przycisk trybu „poprawek” w miejscu przycisku za
 bieżącego wyglądu — tło + urządzone sloty w skali, przez helper z `RoomView.ts`; podpis `pl.room.name`; znak ukończenia
 rysowany kształtem, nie tylko kolorem) i zapowiedź (wyblakła, kłódka/obrys przerywany, `pl.room.done.teaser`); przycisk
 `pl.unlock.next` „Dalej”. Kafelki nie są przyciskami. `ROOM_DONE_LAYOUT` (karta jak `UNLOCK_LAYOUT.card`, kafelki ≥ 96 px
-choć nieinteraktywne, przycisk ≥ 96 px). `targets` dla haka.
+choć nieinteraktywne, przycisk ≥ 96 px i **poza** prostokątem `ROOM_LAYOUT.choose` — przycisk `UNLOCK_LAYOUT` (735–1185 ×
+793–901) nachodzi na „Wybieram” (1100–1580 × 792–892), więc nie kopiować go 1:1; plan-review F3). `targets` dla haka.
 
 **Contract**: `show(items: RoomListItem[], salonState: RoomState)`, `hide()`, callback `onNext()`, `buttonTarget()`.
 DESIGN-GAP komentarz (wiersze 39, 40).
@@ -432,7 +455,7 @@ zakupie); po zamknięciu panelu tryb trwa. `sleep` → `mode = 'normal'`, `card 
 
 #### Automated Verification:
 
-- `tests/layout.test.ts`: `modeButton`, `cardNext` ≥ `MIN_TOUCH_TARGET`, w scenie, poza zębatką i HUD; `modeButton` nie nachodzi na „Wróć do notesu”; żaden cel tacy panelu nie nachodzi na `modeButton` (wzorzec F1 S-09: drugie stuknięcie „Wybieram” nie trafia w przycisk trybu); karta mieści się w scenie i nie nachodzi na zębatkę; unit `<baseline gałęzi> + N`
+- `tests/layout.test.ts`: `modeButton`, `cardNext` ≥ `MIN_TOUCH_TARGET`, w scenie, poza zębatką i HUD; `modeButton` nie nachodzi na „Wróć do notesu”; miniatury i „Wybieram” nie nachodzą na `modeButton` (wzorzec F1 S-09: drugie stuknięcie „Wybieram” nie trafia w przycisk trybu); „Zamknij” dzieli miejsce z `modeButton` z założenia, jak z przyciskiem zadania w S-09 (`ROOM_LAYOUT.close` leży w prostokącie `taskButton`; podwójne stuknięcie „Zamknij” przełącza tryb, nic nie kosztuje) — komentarz w teście (plan-review F2); `cardNext` nie nachodzi na „Wybieram” ani miniatury (podwójne stuknięcie ostatniego „Wybieram” nie zamyka karty, zwłaszcza przy „ogranicz ruch”, gdy karta jest od razu — plan-review F3); karta mieści się w scenie i nie nachodzi na zębatkę; unit `<baseline gałęzi> + N`
 - Deliberate break: `modeButton.top = 800` (nachodzi na „Wybieram”) → test układu czerwony; przywrócone; meta-check: test chroni rozłączność celów, nie wygląd
 - `grep -n "room.name" src/` pokazuje użycie w `RoomDoneCard` (F4)
 - `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
@@ -532,7 +555,11 @@ na `targets.slots.floor` → `panel.kind === 'closed'`, `hold === 'idle'` → `h
 `closed` → `holdTouch(…, holdMs + 400, drift = moveTolerance * 3)` → `closed` → `holdTouch(…, holdMs + 400)` →
 `panel.mode === 'change'`, `panel.slot === 'floor'`, `stars === S` → miniatura różna od `chosen.floor` → „Wybieram” →
 `chosen.floor` nowy, `stars === S`, `tasksDone === 1`, `panel.kind === 'closed'`, `currentTask.id` nadal drugie zadanie,
-`counterText === String(S)` jako dodatkowa → przytrzymanie miejsca pustego slotu (np. `holdPoint` niedostępny → środek
+`counterText === String(S)` jako dodatkowa → przytrzymanie podłogi w punkcie, który po otwarciu panelu leży na
+miniaturze 0 (np. `{ x: thumbs.left + thumbs.size / 2, y: thumbs.top + 16 }` z `ROOM_LAYOUT` — wewnątrz prostokąta
+podłogi, poza innymi urządzonymi slotami; spec sprawdza to założenie asercją przed gestem) → `panel.mode === 'change'`,
+`panel.slot === 'floor'`, `panel.preview === null` (puszczenie palca po odpaleniu niczego nie wybrało) → „Zamknij” →
+przytrzymanie miejsca pustego slotu (np. `holdPoint` niedostępny → środek
 `curtains` z `SALON`) → `closed`. Test 2 „FR-019 the last purchase shows »Pokój gotowy!« and the change mode changes for
 free”: `query: { e2eStars: '96' }` → 10 zakupów dotykiem (pętla: `taskButton` → `thumbs[0]` → `choose`, czekanie na
 `tasksDone`) → `room.card` niepusty, `card.items` = salon `done` + zapowiedź `unlocked`, `stars === 0`, `resume === null`
@@ -551,8 +578,9 @@ free”: `query: { e2eStars: '96' }` → 10 zakupów dotykiem (pętla: `taskButt
 
 - `npx playwright test tests/e2e/room-change.spec.ts` zielony (2 passed); pełne `npx playwright test`: `<baseline gałęzi e2e> + 2` passed
 - Deliberate break A (patch tylko `src/scenes/RoomScene.ts`, REGUŁA): odpalone przytrzymanie wysyła `{ type: 'open' }` zamiast `{ type: 'change', slot }` (otwiera panel zakupu następnego zadania; `S = 15 ≥ 6`) → test 1 czerwony na `panel.mode === 'change'` / `stars === S` po „Wybieram”; drugi patch `e2e-break-s10-p4.patch` z fazy 4 (`dispatch` pisze saldo przy `changed`) → test 1 czerwony na `stars === S`; oba przywrócone; meta-check: `variantPanel.test.ts` zielony — e2e dowodzi szwu sceny
-- Deliberate break B (patch, REGUŁA): strefa przytrzymania otwiera panel na `pointerup` przed progiem (stuknięcie = zmiana poza trybem) → test 1 czerwony na `panel.kind === 'closed'` po stuknięciu; przywrócone; meta-check: unit `longPress` zielony
+- Deliberate break B (patch tylko `src/scenes/RoomScene.ts`, REGUŁA): scena karmi `roomGesture` z `mode: 'change'` niezależnie od trybu (stuknięcie = zmiana poza trybem) → test 1 czerwony na `panel.kind === 'closed'` po stuknięciu; przywrócone; meta-check: unit `longPress` i `roomGesture` zielone — e2e dowodzi szwu sceny
 - Deliberate break C (patch, REGUŁA): `RoomScene.dispatch` nie ustawia karty po zakupie kończącym pokój → test 2 czerwony na `room.card`; przywrócone; meta-check: unit `roomDone` zielony
+- Deliberate break D (patch tylko `src/ui/widgets/VariantPanel.ts`, REGUŁA): miniatura odpala na `pointerup` bez `pointerdown` na niej (bez warunku `this.pressed === key`) → test 1 czerwony na `panel.preview === null` po przytrzymaniu nad miniaturą; przywrócone; meta-check: dowodzi, że puszczenie palca po przytrzymaniu nie wybiera wariantu (plan-review F4)
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite po przebiegu
 
 ---
@@ -598,6 +626,9 @@ definicja (dane), nie zapis.
 - **Typ `PanelState` zmienia kształt** (`mode`): istniejące oczekiwania w `variantPanel.test.ts` aktualizowane w fazie 1;
   `room-purchase.spec.ts` czyta tylko `kind`/`preview` — bez zmian.
 - **Długi spec 2** (10 zakupów): bez rund, tylko dotyk w pokoju; budżet `test.setTimeout(120_000)` jak w `room-purchase.spec.ts`.
+- **Plan-review (F1–F4) poprawił plan przed fazą 1**: reguły gestu w `core/roomGesture.ts` (faza 1), „Zamknij” dzieli
+  miejsce z `modeButton` z założenia, `cardNext` poza „Wybieram”, break D na puszczenie palca nad miniaturą. Raport:
+  `reviews/plan-review.md`.
 - **Karta tylko przy zdarzeniu**: po S-11 (zimny start z gotowym pokojem) karta nie wróci — zamierzone, follow-up `Trigger: S-11`.
 
 ## Autonomous decisions
@@ -657,8 +688,8 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 1.1 `roomHit.test.ts` i nowe przypadki `variantPanel`/`rooms` czerwone przed implementacją (asercja), zielone po; unit baseline + N
-- [ ] 1.2 Deliberate break `confirm` zmiany woła `purchase` / `slotAt` z najniższym `depth` → czerwone; przywrócone; meta-check
+- [ ] 1.1 `roomHit.test.ts`, `roomGesture.test.ts` i nowe przypadki `variantPanel`/`rooms` czerwone przed implementacją (asercja), zielone po; unit baseline + N
+- [ ] 1.2 Deliberate break `confirm` zmiany woła `purchase` / `slotAt` z najniższym `depth` / `roomGesture` otwiera na `up` poza trybem → czerwone; przywrócone; meta-check
 - [ ] 1.3 `npm run lint` bez naruszeń granic; pełna bramka lokalna zielona
 
 ### Phase 2: Lista pokoi z odblokowaniem w danych, próg przytrzymania, kotwice podpisów i napisy
@@ -705,7 +736,7 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 5.1 `layout.test.ts`: `modeButton`, `cardNext` ≥ 96 px, rozłączne z tacą, „Wróć do notesu”, zębatką i HUD; karta w scenie; unit baseline + N
+- [ ] 5.1 `layout.test.ts`: `modeButton`, `cardNext` ≥ 96 px; `modeButton` rozłączny z miniaturami, „Wybieram”, „Wróć do notesu”, zębatką i HUD („Zamknij” dzieli miejsce z założenia); `cardNext` rozłączny z „Wybieram” i miniaturami; karta w scenie; unit baseline + N
 - [ ] 5.2 Deliberate break `modeButton` na „Wybieram” → czerwony; przywrócone; meta-check
 - [ ] 5.3 `pl.room.name` używane w `RoomDoneCard` (F4)
 - [ ] 5.4 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona
@@ -739,6 +770,7 @@ definicja (dane), nie zapis.
 
 - [ ] 7.1 `room-change.spec.ts` zielony (2 passed); pełne `npx playwright test` baseline e2e + 2
 - [ ] 7.2 Deliberate break A: przytrzymanie wysyła `open` zamiast `change`, oraz patch fazy 4 (saldo przy `changed`) → czerwone; przywrócone; meta-check
-- [ ] 7.3 Deliberate break B: stuknięcie poza trybem otwiera panel → czerwony; przywrócone; meta-check
+- [ ] 7.3 Deliberate break B: scena karmi `roomGesture` trybem `change` zawsze (stuknięcie poza trybem otwiera panel) → czerwony; przywrócone; meta-check
 - [ ] 7.4 Deliberate break C: brak karty po zakupie kończącym pokój → czerwony; przywrócone; meta-check
-- [ ] 7.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite
+- [ ] 7.5 Deliberate break D: miniatura odpala na `pointerup` bez `pointerdown` → czerwony na `preview === null` po przytrzymaniu nad miniaturą; przywrócone; meta-check
+- [ ] 7.6 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite

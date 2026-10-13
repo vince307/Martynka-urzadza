@@ -57,7 +57,7 @@ pokoi, próg, napisy, układ) ← `RoomScene` tylko rysuje i karmi gesty; rejest
 
 | Phase | What it delivers | Key risk |
 | --- | --- | --- |
-| 1. Reduktor + trafianie (tdd) | gałąź zmiany, `slotAt`, `holdPoint`, `roomDone` | zmiana odejmuje gwiazdki |
+| 1. Reduktor + trafianie (tdd) | gałąź zmiany, `slotAt`, `holdPoint`, `roomGesture`, `roomDone` | zmiana odejmuje gwiazdki |
 | 2. Dane i napisy (tdd) | lista pokoi, próg, kotwice podpisów, kopia | polszczyzna, próg |
 | 3. Szew `e2eStars` (tdd) | parser + marker strażnika | wyciek do `dist/` |
 | 4. Przytrzymanie w pokoju (impl) | strefa, obrys, panel zmiany, F5/V1 | gest kradnie stuknięcia |
