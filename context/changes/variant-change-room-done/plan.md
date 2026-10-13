@@ -723,7 +723,7 @@ definicja (dane), nie zapis.
 
 - [x] 4.1 Rzutowania F5 usunięte z `RoomScene`; `snapshot` przez `this.room()`
 - [x] 4.2 `layout.test.ts` bez zmian zielony; unit baseline + 0..N
-- [x] 4.3 `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)
+- [x] 4.3 `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)  — 8baf606 (e2e: orchestrator run on e100dca, 24 passed)
 - [x] 4.4 Deliberate break odroczony: patch `e2e-break-s10-p4.patch` (`dispatch` pisze saldo przy `changed`) zapisany, dowód w fazie 7 (7.2); meta-check w handoff
 - [x] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
 
@@ -736,10 +736,10 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 5.1 `layout.test.ts`: `modeButton`, `cardNext` ≥ 96 px; `modeButton` rozłączny z miniaturami, „Wybieram”, „Wróć do notesu”, zębatką i HUD („Zamknij” dzieli miejsce z założenia); `cardNext` rozłączny z „Wybieram” i miniaturami; karta w scenie; unit baseline + N
-- [ ] 5.2 Deliberate break `modeButton` na „Wybieram” → czerwony; przywrócone; meta-check
-- [ ] 5.3 `pl.room.name` używane w `RoomDoneCard` (F4)
-- [ ] 5.4 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 5.1 `layout.test.ts`: `modeButton`, `cardNext` ≥ 96 px; `modeButton` rozłączny z miniaturami, „Wybieram”, „Wróć do notesu”, zębatką i HUD („Zamknij” dzieli miejsce z założenia); `cardNext` rozłączny z „Wybieram” i miniaturami; karta w scenie; unit baseline + N — f5e153a
+- [x] 5.2 Deliberate break `modeButton` na „Wybieram” → czerwony; przywrócone; meta-check — f5e153a (meta-check: protects rectangle disjointness from thumbnails/"Wybieram", not looks)
+- [x] 5.3 `pl.room.name` używane w `RoomDoneCard` (F4) — f5e153a
+- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — f5e153a (e2e: orchestrator gate)
 
 #### Manual
 
