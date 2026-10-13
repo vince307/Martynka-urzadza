@@ -614,10 +614,10 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Fixtury v1 w obie strony równe sobie; `SAVE_VERSION` = 1; `tests/fixtures/` bez zmian
-- [ ] 1.3 Deliberate break: ostatni powód wygrywa / brak zerowania `consecutiveFailures` / porażki przed blokadą w widoku → czerwone; przywrócone; meta-check
-- [ ] 1.4 Pełna bramka lokalna zielona
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — fb2e7bb
+- [x] 1.2 Fixtury v1 w obie strony równe sobie; `SAVE_VERSION` = 1; `tests/fixtures/` bez zmian — fb2e7bb
+- [x] 1.3 Deliberate break: ostatni powód wygrywa / brak zerowania `consecutiveFailures` / porażki przed blokadą w widoku → czerwone; przywrócone; meta-check — fb2e7bb
+- [x] 1.4 Pełna bramka lokalna zielona — fb2e7bb (e2e: orchestrator gate)
 
 #### Manual
 
