@@ -269,17 +269,24 @@ canvas {
     font-weight: 400;
 }
 
-/* Parent settings (S-08): the overlay is the one scroll; "Zatwierdź" / "Anuluj" stay in view at the bottom of it. */
+/* Parent settings (S-08): a dialog with the sticky bar scrolls inside itself (it fits the overlay's margin), so the bar sits flush on its bottom edge. */
+.parent-dialog:has(> .parent-actions-sticky) {
+    max-height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 0;
+}
+
 .parent-actions-sticky {
     position: sticky;
     bottom: 0;
     width: 100%;
-    padding-block: 12px;
+    padding-block: 12px 24px;
     background: var(--parent-paper);
     box-shadow: 0 -8px 8px -8px var(--parent-border);
 }
 
-/* Parent progress preview (S-08): inside the one overlay scroll, under the choices; long word-problem prompts wrap. */
+/* Parent progress preview (S-08): inside the dialog's scroll, under the choices; long word-problem prompts wrap. */
 .parent-progress {
     width: 100%;
     text-align: left;
