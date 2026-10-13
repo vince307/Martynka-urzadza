@@ -351,7 +351,7 @@ export class TaskScene extends Scene {
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
         if (this.warmup && previous) {
             const rules = { ...balance.round, length: balance.warmup.length };
-            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count), rules);
+            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries), rules);
         }
         return startRound(buildRound(this.stage, this.rng, balance.round, balance.tiles.count), balance.round);
     }

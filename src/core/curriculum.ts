@@ -3,8 +3,12 @@
 // left to unlock. Pure: the month is an argument, there is no Date here.
 // After S-11 (persistence) the same call gives the floor as max(saved step, calendarStart).
 import { proposeStage, type PlacementData } from './placement';
-import { playable } from './round/pick';
-import type { Adaptation, StageDef, StageId } from './types';
+import type { Rng } from './rng';
+import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
+import { distinctTasks } from './round/unique';
+import { generateTask } from './tasks/generateTask';
+import type { Task } from './tasks/types';
+import type { Adaptation, SkillDef, StageDef, StageId } from './types';
 
 /** Numbers of the curriculum rules; they come from data/balance.ts as arguments. */
 export interface CurriculumRules {
@@ -51,4 +55,38 @@ export const startLearning = (
         if (stage) unlockedStep[id] = calendarStart(stage, age, month, data, rules);
     }
     return { unlockedStep, mastery: {}, streak: {}, history: [], weakStreak: 0, easedRounds: 0 };
+};
+
+/**
+ * The three pools a round draws from. `current` is the playable step at `unlockedStep` (an unplayable step falls to the
+ * nearest lower playable one, and below the first playable step to the first), `earlier` the playable steps before it,
+ * `previous` all playable skills of the previous stage (empty for E1).
+ */
+export const skillBuckets = (stage: StageDef, previous: StageDef | undefined, unlockedStep: number): SkillBuckets => {
+    const steps = playableSteps(stage);
+    if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
+    const below = steps.filter((n) => n <= unlockedStep);
+    const currentStep = below.length > 0 ? below[below.length - 1] : steps[0];
+    const skillsOf = (pick: (step: number) => boolean): SkillDef[] =>
+        stage.steps.filter((s) => pick(s.step)).flatMap((s) => s.skills.filter(playable));
+    return {
+        current: skillsOf((n) => n === currentStep),
+        earlier: skillsOf((n) => n < currentStep),
+        previous: previous ? previous.steps.flatMap((s) => s.skills.filter(playable)) : [],
+    };
+};
+
+/** A round of `rules.length` tasks drawn by weight from the buckets of the learner's unlocked step, prompts distinct. */
+export const buildAdaptiveRound = (
+    stage: StageDef,
+    previous: StageDef | undefined,
+    adaptation: Adaptation,
+    weights: Weights,
+    rng: Rng,
+    rules: { readonly length: number; readonly uniqueRetries: number },
+    tileCount: number,
+): Task[] => {
+    const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
+    const skills = pickRoundSkills(skillBuckets(stage, previous, unlocked), weights, rng, rules.length);
+    return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);
 };
