@@ -4,8 +4,8 @@ import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from
 
 /**
  * Loads the task screen font from public/fonts (precached, so it also works
- * offline) and hands over: to the welcome screen while the session has no learner,
- * otherwise to the task scene. Nothing is drawn here.
+ * offline) and hands over: to the welcome screen while `needsPlacement` says the
+ * session has no learner, otherwise to the task scene. Nothing is drawn here.
  */
 export class BootScene extends Scene {
     constructor() {

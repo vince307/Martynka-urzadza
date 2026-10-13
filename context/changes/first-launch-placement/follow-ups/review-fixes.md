@@ -1,0 +1,11 @@
+# Follow-ups — first-launch-placement (S-06)
+
+- Add test-plan risk #12 to `context/foundation/test-plan.md` §2: "The first launch cannot be finished by touch or ends on the wrong stage: an age tap misses, a tap on the adult gate reaches the game underneath, a wrong gate answer locks the parent out, the parent's choice is not the stage played, or the warm-up raises the stage, lowers it by more than one or below E1" | High | Medium | PRD FR-012, US-03 AC; roadmap S-06; Phaser window touch forwarding. Guidance: unit (table x 12 months x 5 ages, warm-up grading, gate) + local e2e of the touch path; must challenge "placement logic has tests, so the screen works" and "a DOM overlay covers the canvas, so the canvas gets no touch"; anti-pattern: the gate answer read from the hook instead of the DOM text, assertions that depend on the current month without a fixed month (`?e2eMonth`). Source: research §5. Trigger: /10x-test-plan refresh (joins the open queue of the narrator and #9 entries)
+- `mountInstallHint` (`src/pwa/installHint.ts`) lets a tap on its overlay through to the round underneath (a tile can be hit). The adult gate solved this with `input.enabled = false` under dialogs. Trigger: the next change to `src/ui/dom` or `src/pwa`
+- Persist `SessionLearner` with `warmupPending` and call `needsPlacement` on the loaded state, so the welcome appears only at the very first launch. Trigger: S-11
+- Stage change from the settings behind the same `openParentGate` (stage panel). Trigger: S-08
+- "Picture mode" (no reading) for 6-year-olds is skipped (design-gaps row 21). Trigger: S-14
+- Maintainer decision: an earlier save of the learner alone (age, stage), before daily use, because until S-11 every cold start asks the age again and a 7-year-old in grade 2 starts on E1 in October unless a parent takes the "Rodzic" path. Trigger: before S-11, or any deploy used for daily play
+- The warm-up can show the same prompt twice (two steps drawn from the same pool). Trigger: S-07
+- Warm-up pays the clean-round bonus (+2) unscaled for 6 tasks; check at the S-17 playtest. Trigger: S-17
+- On the parent path an E1/E2 stage may stay silent until the first canvas tap (the "Zatwierdź" tap is DOM, so speech may be locked). Trigger: S-17 iPad playtest

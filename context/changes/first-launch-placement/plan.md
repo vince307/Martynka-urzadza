@@ -753,8 +753,8 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 6.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0`
-- [ ] 6.2 Deliberate break: helper na ścieżce dziecka → `task-round.spec.ts` czerwony (6 zadań); przywrócone; meta-check (rozgrzewka startuje w scenie)
+- [x] 6.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0` — 96674ca (orchestrator: e2e 8/8, run-log "S-06 p6 impl"; unit 765 = +0)
+- [x] 6.2 Deliberate break: helper na ścieżce dziecka → `task-round.spec.ts` czerwony (6 zadań); przywrócone; meta-check (rozgrzewka startuje w scenie) — 96674ca (orchestrator, run-log "S-06 p6 impl": `Expected: "summary" / Received: "task"` at tests/e2e/task-round.spec.ts:116, restored)
 - [x] 6.3 Pełna bramka lokalna zielona — 96674ca (lint, typecheck, unit 765 = +0, deploy/ops, sample E1-E6 Naruszenia: 0, build e2e hook: absent; e2e: orchestrator gate)
 
 #### Manual
@@ -766,9 +766,9 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 7.1 `validate-rule-files.sh` PASS
-- [ ] 7.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [ ] 7.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 7.1 `validate-rule-files.sh` PASS — PASS (rule files: 4, missing: 0)
+- [x] 7.2 Deliberate break: profil wskazuje nieistniejący plik → FAIL; przywrócone; meta-check — `RULE_FILES` w `autonomous-run.env` + `NOPE.md` ⇒ `missing: 1`, FAIL; przywrócone, PASS (walidator czyta listę z profilu, nie stały zestaw)
+- [x] 7.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — (lint, typecheck, unit 765 = +0, deploy/ops, sample E1-E6 Naruszenia: 0, build e2e hook: absent; e2e: orchestrator gate)
 
 #### Manual
 

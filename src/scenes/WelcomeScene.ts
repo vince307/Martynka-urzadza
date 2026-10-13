@@ -40,7 +40,7 @@ export class WelcomeScene extends Scene {
             const button = new AgeButton(this, String(age), left + i * (width + gap), top, () => this.choose(age));
             this.buttons.push({ age, button });
         });
-        // DESIGN-GAP (docs/design-gaps.md): the kit has no parent entry. The adult gate and the stage panel are DOM dialogs.
+        // DESIGN-GAP (docs/design-gaps.md rows 15-17): the kit has no parent entry. The adult gate and the stage panel are DOM dialogs.
         const { left: pl0, top: pt0, ...size } = WELCOME_LAYOUT.parent;
         this.parentButton = new PageButton(this, () => this.openParent());
         this.parentButton.show(pl.parent.entry, pl0, pt0, 'secondary', false, size);

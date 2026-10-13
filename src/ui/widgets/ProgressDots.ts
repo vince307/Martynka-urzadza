@@ -2,7 +2,10 @@ import type { GameObjects, Scene } from 'phaser';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { RoundView } from '../../core/round/view';
 
-/** Five dots of the round: finished green, current turquoise with a ring, future empty. */
+/**
+ * One dot per task of the round (5, or 6 in the warm-up): finished green, current turquoise with a ring, future empty.
+ * DESIGN-GAP (docs/design-gaps.md row 18): the kit draws 5 dots; the sixth is the same dot, the row stays centred.
+ */
 export class ProgressDots {
     private readonly graphics: GameObjects.Graphics;
 

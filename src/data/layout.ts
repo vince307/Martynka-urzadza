@@ -127,7 +127,7 @@ export const TASK_LAYOUT = {
     expressionWide: { x: 960, y: 500 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24 },
+    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
@@ -143,7 +143,7 @@ export const TASK_LAYOUT = {
 export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
-    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14 },
+    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
 } as const;
 
 /**
@@ -161,13 +161,13 @@ export const SUMMARY_LAYOUT = {
 /**
  * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
  * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
- * DESIGN-GAP (docs/design-gaps.md): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
+ * DESIGN-GAP (docs/design-gaps.md row 20): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
  */
 export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
     question: { x: 960, y: 290 },
     ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
-    // DESIGN-GAP (docs/design-gaps.md): the kit has no parent entry; secondary page button in the bottom-right corner.
+    // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the bottom-right corner.
     parent: { left: 1596, top: 922, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
@@ -202,6 +202,7 @@ export const TASK_TOUCH_TARGETS = {
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
     shakeMs: 360,
+    shakeSegments: 6,      // shakeMs / shakeSegments is one sideways swing (yoyo, 2 repeats)
     shakeDistance: 14,
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels

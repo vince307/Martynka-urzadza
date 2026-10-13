@@ -5,7 +5,7 @@ export const pl = {
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
     },
-    // DESIGN-GAP (docs/design-gaps.md): the kit has no parent entry, adult gate or stage panel; the texts are ours.
+    // DESIGN-GAP (docs/design-gaps.md rows 15-17): the kit has no parent entry, adult gate or stage panel; the texts are ours.
     parent: {
         entry: 'Rodzic',
         gateTitle: 'Pytanie dla rodzica',

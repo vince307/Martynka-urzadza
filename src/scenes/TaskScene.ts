@@ -312,7 +312,7 @@ export class TaskScene extends Scene {
         this.autoReadFirst();
     }
 
-    /** Auto-reading starts only from a tap on "Dalej" or "Kolejna runda" (never at a cold start: no gesture yet). */
+    /** Auto-reading starts from a tap on "Dalej" or "Kolejna runda", or once at the scene start (the age tap or the parent confirmation was the gesture). */
     private autoReadFirst(): void {
         if (this.autoRead && this.state.phase === 'first') {
             this.narrator?.speak(this.currentNarration() ?? '');
@@ -434,7 +434,7 @@ export class TaskScene extends Scene {
         this.tweens.add({
             targets: camera,
             scrollX: { from: -ANIMATION.shakeDistance, to: ANIMATION.shakeDistance },
-            duration: ANIMATION.shakeMs / 6,
+            duration: ANIMATION.shakeMs / ANIMATION.shakeSegments,
             yoyo: true,
             repeat: 2,
             onComplete: () => {

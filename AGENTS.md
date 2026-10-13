@@ -10,12 +10,12 @@
 - Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` (gitignored) in committed files.
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never cost stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code, comments: English.
-- Phaser 4 differs from v3; check v4 docs first.
+- Phaser 4 differs from v3; check its docs.
 - `designs/` is read-only art; `.claude/` is local.
 
 ## Project structure
 
-`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/`. `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
+`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Welcome, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/` (dialogs). `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
 
 ## Commands
 
@@ -31,7 +31,7 @@ TypeScript strict with `noUnusedLocals`/`noUnusedParameters` (@tsconfig.json). F
 
 ## Testing
 
-Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tests/helpers.ts`) plus `tests/contentInvariants.test.ts`; content PRs need the teacher read from CLAUDE.md. Quality plan: @context/foundation/test-plan.md. After each milestone verify build and offline.
+Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tests/helpers.ts`) plus `tests/contentInvariants.test.ts`; content PRs need the teacher read from CLAUDE.md. Quality plan: @context/foundation/test-plan.md.
 
 ## Commits and PRs
 

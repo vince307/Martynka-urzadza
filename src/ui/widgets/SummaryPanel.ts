@@ -11,7 +11,7 @@ import { textStyle } from './textStyle';
  * one, "star +N", the clean-round bonus line when there is one, and the two page buttons.
  * It draws a SummaryView from core and decides nothing.
  * DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line; ours sits under "+N", only with the bonus.
- * DESIGN-GAP (docs/design-gaps.md rows for the sixth dot and sixth star are added in phase 7): the kit has 5 of each; the 6-task warm-up centres 6.
+ * DESIGN-GAP (docs/design-gaps.md rows 18 and 19): the kit has 5 dots and 5 stars; the 6-task warm-up draws 6 of each, the stars centred.
  * DESIGN-GAP (docs/design-gaps.md row 11): the kit draws 5 full stars; ours are pale for a task that paid none.
  */
 export class SummaryPanel {
