@@ -24,6 +24,7 @@
     "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
+    "idb-keyval": "6.3.0",
     "phaser": "^4.2.1"
   },
   "devDependencies": {
@@ -31,6 +32,7 @@
     "@playwright/test": "^1.64.0",
     "@types/node": "^22.20.5",
     "eslint": "^10.12.0",
+    "fake-indexeddb": "6.2.5",
     "globals": "^17.13.0",
     "terser": "^5.51.2",
     "tsx": "^4.23.15",

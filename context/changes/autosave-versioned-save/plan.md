@@ -793,10 +793,10 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie
-- [ ] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N
-- [ ] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check
-- [ ] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie
+- [x] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N
+- [x] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check
+- [x] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
 
 ### Phase 4: Wpięcie zapisu w grę — wczytanie na starcie, autozapis, zapisy natychmiastowe, cykl życia strony
 
