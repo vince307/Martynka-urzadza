@@ -1031,7 +1031,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0 lub + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0 lub + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 9b7da6e (e2e 37 passed by the orchestrator on 95691b0)
 - [x] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (` — 9b7da6e
 
 #### Manual
@@ -1042,12 +1042,12 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 6.3 Żaden krok grupy 1 pusty; każdy grywalny krok ma `childName`
-- [ ] 6.4 Deliberate break: brak `childName` E4.3 / E3.4 z powrotem `skills: []` → czerwone; przywrócone; meta-check
-- [ ] 6.5 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`
-- [ ] 6.6 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 7824b24
+- [x] 6.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń, z linią `visual:` — 7824b24
+- [x] 6.3 Żaden krok grupy 1 pusty; każdy grywalny krok ma `childName` — 7824b24
+- [x] 6.4 Deliberate break: brak `childName` E4.3 / E3.4 z powrotem `skills: []` → czerwone; przywrócone; meta-check — 7824b24
+- [x] 6.5 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0` — 7824b24 (e2e 37 passed, run in this session)
+- [x] 6.6 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — 7824b24
 
 #### Manual
 
