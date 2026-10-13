@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
 import { placementData } from '../src/data/placement';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -117,6 +117,64 @@ describe('task screen layout constants', () => {
         const { choose, taskButton, resume } = ROOM_LAYOUT;
         expect(overlap(rect(choose), rect(taskButton))).toBe(false);
         expect(overlap(rect(choose), rect(resume))).toBe(false);
+    });
+
+    it('keeps the mode button and the "Pokój gotowy!" button touch targets in the scene, clear of the panel controls, "Wróć do notesu", the gear and the HUD', () => {
+        // "Zamknij" shares the mode button's place on purpose (like the task button in S-09): a double tap on "Zamknij" toggles the mode and costs nothing.
+        type Rect = { left: number; top: number; right: number; bottom: number };
+        const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
+        const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const { modeButton, choose, resume, thumbs, tray } = ROOM_LAYOUT;
+        const { button, card } = ROOM_DONE_LAYOUT;
+        expect(ROOM_TOUCH_TARGETS.modeButton).toEqual({ width: modeButton.width, height: modeButton.height });
+        expect(ROOM_TOUCH_TARGETS.cardNext).toEqual({ width: button.width, height: button.height });
+        for (const target of [ROOM_TOUCH_TARGETS.modeButton, ROOM_TOUCH_TARGETS.cardNext]) {
+            expect(target.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            expect(target.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        }
+        const thumbRects = [0, 1, 2].map((i) => rect({ left: thumbs.left + i * (thumbs.size + thumbs.gap), top: thumbs.top - thumbs.lift, width: thumbs.size, height: thumbs.size + thumbs.lift }));
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        const hud = [settings, speaker, roomSwitch, TASK_LAYOUT.starCounter].map(rect);
+        for (const r of [rect(modeButton), rect(button)]) {
+            expect(r.left).toBeGreaterThanOrEqual(0);
+            expect(r.top).toBeGreaterThanOrEqual(0);
+            expect(r.right).toBeLessThanOrEqual(GAME_WIDTH);
+            expect(r.bottom).toBeLessThanOrEqual(GAME_HEIGHT);
+            for (const h of hud) {
+                expect(overlap(r, h)).toBe(false);
+            }
+        }
+        for (const r of [rect(modeButton), rect(button)]) {
+            for (const other of [...thumbRects, rect(choose)]) {
+                expect(overlap(r, other)).toBe(false);
+            }
+        }
+        // "Wróć do notesu" and the mode button are on screen together; the card hides the way back.
+        expect(overlap(rect(modeButton), rect(resume))).toBe(false);
+        // The card sits above the tray, inside the room area's width and clear of the gear and the HUD; "Dalej" is inside it.
+        const cardRect = rect(card);
+        expect(cardRect.bottom).toBeLessThanOrEqual(tray.top);
+        expect(cardRect.left).toBeGreaterThanOrEqual(0);
+        expect(cardRect.right).toBeLessThanOrEqual(GAME_WIDTH);
+        for (const h of hud) {
+            expect(overlap(cardRect, h)).toBe(false);
+        }
+        const buttonRect = rect(button);
+        expect(buttonRect.left).toBeGreaterThanOrEqual(cardRect.left);
+        expect(buttonRect.right).toBeLessThanOrEqual(cardRect.right);
+        expect(buttonRect.top).toBeGreaterThanOrEqual(cardRect.top);
+        expect(buttonRect.bottom).toBeLessThanOrEqual(cardRect.bottom);
+    });
+
+    it('lays the room list tiles of the "Pokój gotowy!" card inside it and above "Dalej"', () => {
+        const { card, tiles, button, title } = ROOM_DONE_LAYOUT;
+        const total = 2 * tiles.width + tiles.gap;
+        const first = card.left + card.width / 2 - total / 2;
+        expect(first).toBeGreaterThanOrEqual(card.left);
+        expect(first + total).toBeLessThanOrEqual(card.left + card.width);
+        expect(tiles.top).toBeGreaterThan(title.y);
+        expect(tiles.top + tiles.height).toBeLessThanOrEqual(button.top);
+        expect(ROOM_LAYOUT.area.width * tiles.thumbScale).toBeLessThanOrEqual(tiles.width);
     });
 
     it('gives every variant thumbnail a readable height, even for the wide floor and walls', () => {

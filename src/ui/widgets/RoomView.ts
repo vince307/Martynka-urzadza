@@ -125,3 +125,25 @@ export function drawLook(g: GameObjects.Graphics, box: Box, look: Look, scale = 
         }
     }
 }
+
+/**
+ * The room at a small scale: walls, floor and the furnished slots by depth (empty slots are left out). `left`/`top` is where the
+ * room's `area` corner lands; used by the "Pokój gotowy!" card for its list of rooms.
+ */
+export function drawRoomMiniature(g: GameObjects.Graphics, room: RoomDef, state: RoomState, left: number, top: number, scale: number): void {
+    const { area, wallBottom, slot: slotStyle } = ROOM_LAYOUT;
+    g.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
+    g.fillRect(left, top, area.width * scale, (wallBottom - area.top) * scale);
+    g.fillStyle(PLACEHOLDER_COLORS.tile, 1);
+    g.fillRect(left, top + (wallBottom - area.top) * scale, area.width * scale, (area.top + area.height - wallBottom) * scale);
+    [...room.slots].sort((a, b) => a.depth - b.depth).forEach((slot) => {
+        const size = SALON_PLACEHOLDERS[slot.id];
+        const variant = state.chosen[slot.id];
+        if (!size || variant === undefined) {
+            return;
+        }
+        const b = slotBox(slot, size);
+        const box: Box = { left: left + (b.left - area.left) * scale, top: top + (b.top - area.top) * scale, width: (b.right - b.left) * scale, height: (b.bottom - b.top) * scale };
+        drawLook(g, box, size.variants[variant], scale, slotStyle.radius * scale);
+    });
+}

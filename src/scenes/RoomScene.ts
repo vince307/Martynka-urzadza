@@ -4,14 +4,17 @@ import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
 import { holdPoint, slotAt } from '../core/roomHit';
-import { currentTask, emptyRoomState, taskButtonView } from '../core/rooms';
-import type { RoomDef, RoomState } from '../core/types';
+import { effectiveAutoRead } from '../core/narration/voice';
+import { currentTask, emptyRoomState, roomDone, roomsListView, taskButtonView, type RoomListItem } from '../core/rooms';
+import type { RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, PLACEHOLDER_COLORS, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl, roomText } from '../data/pl';
-import { FIRST_ROOM, ROOMS, SALON_PLACEHOLDERS } from '../data/rooms';
+import { FIRST_ROOM, ROOM_ORDER, ROOMS, SALON_PLACEHOLDERS } from '../data/rooms';
+import type { Narrator } from '../ui/narrator';
 import { prefersReducedMotion } from '../ui/motion';
 import { PageButton } from '../ui/widgets/PageButton';
+import { RoomDoneCard } from '../ui/widgets/RoomDoneCard';
 import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
 import { drawLook, RoomView } from '../ui/widgets/RoomView';
 import { drawStar } from '../ui/widgets/StarCounter';
@@ -29,6 +32,10 @@ export interface RoomSnapshot {
     panel: PanelState;
     hold: 'idle' | 'holding';
     heldSlot: string | null;
+    done: boolean;
+    mode: 'normal' | 'change';
+    card: { title: string; items: RoomListItem[] } | null;
+    modeText: string | null;
 }
 
 /**
@@ -46,6 +53,12 @@ export class RoomScene extends Scene {
     private panel: PanelState = { kind: 'closed' };
     private gesture: RoomGestureState = ROOM_GESTURE_IDLE;
     private holdZone!: GameObjects.Zone;
+    private modeButton!: PageButton;
+    private doneCard!: RoomDoneCard;
+    private mode: 'normal' | 'change' = 'normal';
+    /** The last purchase finished the room: the child's controls stay off until "Dalej" (set at once, drawn after the pop). */
+    private card = false;
+    private cardDrawn = false;
 
     constructor() {
         super(SCENE_KEYS.room);
@@ -54,6 +67,9 @@ export class RoomScene extends Scene {
     create(): void {
         this.view = new RoomView(this);
         this.gesture = ROOM_GESTURE_IDLE;
+        this.mode = 'normal';
+        this.card = false;
+        this.cardDrawn = false;
         // Under every button (created later, so drawn and hit first): a hold on a furnished slot opens its change panel (S-10).
         const { area } = ROOM_LAYOUT;
         this.holdZone = this.add.zone(area.left + area.width / 2, area.top + area.height / 2, area.width, area.height).setInteractive();
@@ -74,10 +90,23 @@ export class RoomScene extends Scene {
             () => this.dispatch({ type: 'confirm' }),
             () => this.dispatch({ type: 'close' }),
         );
+        this.modeButton = new PageButton(this, () => {
+            this.mode = this.mode === 'change' ? 'normal' : 'change';
+            this.resetGesture();
+            this.redraw();
+        });
+        this.doneCard = new RoomDoneCard(this, () => {
+            this.card = false;
+            this.cardDrawn = false;
+            this.redraw();
+        });
         const button = new PageButton(this, () => this.scene.switch(SCENE_KEYS.task));
         this.resume = button;
         const refresh = (): void => {
             this.panel = { kind: 'closed' };
+            this.mode = 'normal';
+            this.card = false;
+            this.cardDrawn = false;
             this.resetGesture();
             this.redraw();
         };
@@ -89,8 +118,11 @@ export class RoomScene extends Scene {
         };
         refresh();
         const onSleep = (): void => {
-            // The panel never outlives the visit: the way out is hidden while it is open, but a settings dialog could cover it.
+            // The panel, the card and the change mode never outlive the visit: the way out is hidden while they are up, but a settings dialog could cover it.
             this.panel = { kind: 'closed' };
+            this.mode = 'normal';
+            this.card = false;
+            this.cardDrawn = false;
             this.resetGesture();
         };
         this.events.on('wake', refresh);
@@ -114,12 +146,12 @@ export class RoomScene extends Scene {
 
     /** The gesture reducer decides when a hold opens the panel; the scene only supplies the slot under the finger and runs the result. */
     private feed(event: LongPressEvent): void {
-        if (this.panel.kind === 'open') {
+        if (this.panel.kind === 'open' || this.card) {
             return;
         }
         const room = this.room();
         const slot = event.type === 'down' ? slotAt(room, SALON_PLACEHOLDERS, this.roomState().chosen, { x: event.x, y: event.y }) : null;
-        const result = roomGesture(this.gesture, event, { mode: 'normal', slot, rules: balance.roomHold });
+        const result = roomGesture(this.gesture, event, { mode: this.mode, slot, rules: balance.roomHold });
         this.gesture = result.state;
         this.view.highlight(result.held);
         if (result.open !== null) {
@@ -167,12 +199,45 @@ export class RoomScene extends Scene {
             const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
             this.registry.set(REGISTRY_KEYS.rooms, { ...rooms, [room.id]: step.state });
             this.registry.set(REGISTRY_KEYS.stars, step.stars);
+            if (roomDone(room, step.state)) {
+                // The last purchase: the controls go off now, the card is drawn once the new furniture has popped.
+                this.card = true;
+                this.cardDrawn = false;
+                this.resetGesture();
+            }
         }
         this.redraw();
+        if (this.card && !this.cardDrawn) {
+            const delay = prefersReducedMotion() ? 0 : ANIMATION.purchasePopMs;
+            if (delay === 0) {
+                this.showCard();
+            } else {
+                this.time.delayedCall(delay, () => this.showCard());
+            }
+        }
         const celebrated = step.bought ?? step.changed;
         if (celebrated) {
             this.celebrate(celebrated);
         }
+    }
+
+    private showCard(): void {
+        if (!this.card || this.cardDrawn) {
+            return;
+        }
+        this.cardDrawn = true;
+        this.redraw();
+        const settings = this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined;
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as { stage: string } | undefined;
+        if (settings && learner && effectiveAutoRead(settings, learner.stage, balance.narrator.autoReadStages)) {
+            // The tap on "Wybieram" was the gesture that unlocks speech (like the unlock card after "Dalej").
+            (this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined)?.speak(pl.room.done.spoken);
+        }
+    }
+
+    private listItems(): RoomListItem[] {
+        const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
+        return roomsListView(ROOM_ORDER, ROOMS, rooms);
     }
 
     private redraw(): void {
@@ -180,29 +245,45 @@ export class RoomScene extends Scene {
         const state = this.roomState();
         const task = currentTask(room, state);
         const open = this.panel.kind === 'open';
+        const blocked = open || this.card;
         const panelSlot = this.panel.kind === 'open' ? (this.panel.mode === 'change' ? this.panel.slot : task?.slot) : undefined;
         const preview = this.panel.kind === 'open' && this.panel.preview !== null && panelSlot ? { slot: panelSlot, variant: this.panel.preview } : null;
         if (this.holdZone.input) {
-            this.holdZone.input.enabled = !open;
+            this.holdZone.input.enabled = !blocked;
         }
         this.view.render(room, state, preview);
         const taskView = taskButtonView(room, state, this.stars());
-        this.taskButton.show(open ? null : taskView);
+        this.taskButton.show(blocked ? null : taskView);
+        const { modeButton } = ROOM_LAYOUT;
+        if (!blocked && roomDone(room, state)) {
+            this.modeButton.show(this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter, modeButton.left, modeButton.top, 'primary', false, modeButton);
+        } else {
+            this.modeButton.hide();
+        }
+        if (this.cardDrawn) {
+            this.doneCard.show(this.listItems(), room, state);
+        } else {
+            this.doneCard.hide();
+        }
         const { resume } = ROOM_LAYOUT;
         if (open) {
-            this.resumeButton().hide();
             const placeholder = panelSlot ? SALON_PLACEHOLDERS[panelSlot] : undefined;
             if (placeholder) {
                 this.variantPanel.show(placeholder.variants, placeholder, this.panel.kind === 'open' ? this.panel.preview : null);
             }
         } else {
             this.variantPanel.hide();
+        }
+        if (blocked) {
+            this.resumeButton().hide();
+        } else {
             // A press that began before the switch must not count, so the button is re-armed on every redraw.
             this.resumeButton().show(pl.room.resume, resume.left, resume.top, 'primary', false, resume);
         }
         // The speaker reads what the button asks for; the task scene overwrites it on its wake.
         const label = taskView ? roomText.task(taskView.label) : undefined;
-        this.registry.set(REGISTRY_KEYS.narration, label ?? null);
+        const narration = this.card ? pl.room.done.spoken : this.mode === 'change' ? pl.room.change.hint : label;
+        this.registry.set(REGISTRY_KEYS.narration, narration ?? null);
     }
 
     private resumeButton(): PageButton {
@@ -268,6 +349,14 @@ export class RoomScene extends Scene {
         return this.variantPanel.thumbTargets();
     }
 
+    modeButtonTarget(): { x: number; y: number } | null {
+        return this.modeButton.target();
+    }
+
+    cardNextTarget(): { x: number; y: number } | null {
+        return this.doneCard.target();
+    }
+
     chooseTarget(): { x: number; y: number } | null {
         return this.variantPanel.chooseTarget();
     }
@@ -306,6 +395,10 @@ export class RoomScene extends Scene {
             panel: { ...this.panel },
             hold: this.gesture.press.kind === 'idle' ? 'idle' : 'holding',
             heldSlot: this.gesture.slot,
+            done: roomDone(room, state),
+            mode: this.mode,
+            card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems() } : null,
+            modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
     }
 }
