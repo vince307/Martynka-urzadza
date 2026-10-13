@@ -1,6 +1,6 @@
 # Handoff — `first-launch-placement` (slice S-06)
 
-Written by `/10x-implement` phase 7: seam sweep, bare numbers to tokens, DESIGN-GAP rows 15-21, follow-ups, docs. Not the last phase: phase 8 is the e2e for risk #12. The next agent must not miss: e2e could not run in this session (MachPort), so the orchestrator runs `npx playwright test` on the phase 7 commit (expected 8 passed).
+Written by `/10x-e2e` phase 8 (risk #12 spec). Not the last phase. The next agent must not miss: phase 8 is NOT committed. Chromium cannot launch here (MachPort), so the spec `tests/e2e/first-launch.spec.ts` and the `playwright.config.ts` change (ROUND_SPEC) are uncommitted in the working tree; the orchestrator runs the commands in `context/runs/2026-10-12-s04-s08/e2e-request-s06-p8.md`, records the outputs there, and re-dispatches a finishing agent that commits `test(first-launch-placement): ... (p8)` and ticks 8.1-8.3.
 
 ## 1. State
 
@@ -11,7 +11,7 @@ Written by `/10x-implement` phase 7: seam sweep, bare numbers to tokens, DESIGN-
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; phase 7 of nine) |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` |
-| Working tree | clean after the handoff commit |
+| Working tree | uncommitted: `tests/e2e/first-launch.spec.ts` (new), `playwright.config.ts` (ROUND_SPEC) |
 
 ## 2. Artifacts
 
@@ -28,20 +28,19 @@ Written by `/10x-implement` phase 7: seam sweep, bare numbers to tokens, DESIGN-
 
 | Command | Result |
 |---|---|
-| `npm run lint` / `typecheck` | clean |
-| `npm test` | 765 passed in 53 files (baseline 671; delta +94 from p1..p5; p7 +0) |
-| deploy + ops shell tests; `sample -- E1..E6` | OK; `Naruszenia: 0` x6 |
-| `npm run build` | ok, `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS; break (`NOPE.md` added to `RULE_FILES` in `autonomous-run.env`) gave `missing: 1`, FAIL; restored, PASS. A first break in the profile markdown (§ 1 table) stayed PASS: the script reads the `.env`, not the markdown |
-| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate (3 failed / 5 did not run, browser launch failures) |
+| `npx eslint` on spec + config, `npx tsc --noEmit` | clean |
+| `npx playwright test tests/e2e/first-launch.spec.ts` (3 tries) | e2e: not runnable in this session (MachPort) — orchestrator gate |
+| deliberate break | `e2e-break-s06-p8.patch` (TaskScene.finishWarmup ignores `warmupResult`); expected red: test 2 `expect(end.learner).toMatchObject({ stage: 'E2', ... })`; not yet observed |
 
-Teacher read: no new player-facing Polish string in this phase.
+Teacher read: no player-facing string added.
 
 ## 4. Next command
 
-`/10x-e2e first-launch-placement phase 8`
+`/10x-e2e first-launch-placement phase 9` (after the orchestrator's phase 8 evidence and the finishing commit)
 
 ## 5. Open
+
+- Phase 8 rows 8.1-8.3 open until the orchestrator run; 3 tests: age 8 clean warm-up stays E3 then 5-task round; age 8 with 3 first-try mistakes (minFirstTry 4 of 6) drops to E2; age 6 E1 without warm-up.
 
 - E2E on the p7 commit is the orchestrator's gate (expected 8 passed; only comments, tokens with equal values and docs changed).
 - Open rows: `[reviewer]` 1.4, 2.5, 4.6, 5.5, 7.4; `[visual]` 4.7, 5.6, 6.4; `[human]` 5.7, 6.5, 7.5-7.9.
@@ -52,3 +51,4 @@ Teacher read: no new player-facing Polish string in this phase.
 1. Bare numbers: only the three named in the S-05 follow-up were tokenised; the other house-icon coordinates in `RoomSwitchButton.draw` are icon geometry in a 56 px box and stay.
 2. Gap rows 20 (no welcome art) and 21 (picture mode) added as the plan lists them; row 21 points at `src/data/placement.ts`, which has no code comment, so no `DESIGN-GAP` comment was added there.
 3. AGENTS.md kept under 400 words by trimming one sentence and shortening another instead of dropping the scenes update.
+4. Phase 8: E2 drop uses 3 wrong first tries (balance.warmup.minFirstTry = 4 of 6); helpers duplicated in the spec as the other specs do; no commit because Chromium cannot launch (contract fallback).
