@@ -766,7 +766,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [ ] 8.1 `room-purchase.spec.ts` zielony; pełne `npx playwright test` baseline e2e + 1
-- [ ] 8.2 Deliberate break scena omija `stepPanel` i woła `purchase` przy każdym „Wybieram” → czerwony; przywrócone; meta-check
-- [ ] 8.3 Druga przerwa: odjęcie przy wyborze miniatury → czerwony; przywrócone; meta-check
-- [ ] 8.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite
+- [x] 8.1 `room-purchase.spec.ts` zielony; pełne `npx playwright test` baseline e2e + 1 — f1f04a4 (orchestrator e2e run, see handoff §3)
+- [x] 8.2 Deliberate break scena omija `stepPanel` i woła `purchase` przy każdym „Wybieram” → czerwony; przywrócone; meta-check — f1f04a4 (orchestrator e2e run, see handoff §3)
+- [x] 8.3 Druga przerwa: odjęcie przy wyborze miniatury → czerwony; przywrócone; meta-check — f1f04a4 (orchestrator e2e run, see handoff §3)
+- [x] 8.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite — f1f04a4 (orchestrator e2e run, see handoff §3)
