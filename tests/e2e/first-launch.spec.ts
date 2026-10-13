@@ -19,13 +19,15 @@ interface Snapshot {
     screen: 'welcome' | 'task' | 'summary' | 'room';
     summary: { earned: number; bonus: number; stars: boolean[] } | null;
     warmup: boolean;
-    learner: { stage: string; warmupPending?: boolean } | null;
+    learner: { stage: string; warmupPending?: boolean; stageOverriddenByParent?: boolean } | null;
 }
 interface Targets {
     tiles: (Point & { value: number | string })[];
     keys: (Point & { key: string })[];
     next: Point | null;
     nextRound: Point | null;
+    ages?: (Point & { age: number })[];
+    parent?: Point;
 }
 
 const OCTOBER = 9;
@@ -189,4 +191,105 @@ test('#12 (proposed) age 6 starts on E1 with no warm-up and a round of 5 tasks',
     expect(end.outcomes).toHaveLength(ROUND_LENGTH);
     expect(end.summary?.stars).toHaveLength(ROUND_LENGTH);
     expect(end.learner?.stage).toBe('E1');
+});
+
+// The parent path (risk #12, proposed): the gate and the panel are DOM dialogs above the canvas. Like
+// an adult, the test reads the problem from the dialog text; the hook never exposes the answer.
+const PARENT_AGE = 8;
+const gateProblem = async (page: Page): Promise<{ text: string; product: number }> => {
+    const prompt = page.getByRole('dialog', { name: 'Pytanie dla rodzica' }).getByText(/Ile to jest/);
+    await expect(prompt).toBeVisible();
+    const text = (await prompt.textContent()) ?? '';
+    const factors = /(\d+)\s*·\s*(\d+)/.exec(text);
+    expect(factors).not.toBeNull();
+    return { text, product: Number(factors![1]) * Number(factors![2]) };
+};
+
+const typeIntoGate = async (page: Page, value: number): Promise<void> => {
+    const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
+    for (const digit of String(value)) {
+        await gate.getByRole('button', { name: digit, exact: true }).tap();
+    }
+    await gate.getByRole('button', { name: 'OK', exact: true }).tap();
+};
+
+/** Opens the welcome screen (month pinned to October) and taps "Rodzic": the gate is open afterwards. */
+const openGate = async (page: Page): Promise<void> => {
+    await page.goto(`/?e2eMonth=${OCTOBER}`);
+    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
+    const { parent } = await fromHook(page, 'targets');
+    expect(parent).toBeDefined();
+    await tapScene(page, parent!);
+    await expect(page.getByRole('dialog', { name: 'Pytanie dla rodzica' })).toBeVisible();
+};
+
+/** Gate passed with the right product; the stage panel is open afterwards. */
+const openPanel = async (page: Page): Promise<void> => {
+    await openGate(page);
+    await typeIntoGate(page, (await gateProblem(page)).product);
+    await expect(page.getByRole('dialog', { name: 'Ustawienia startowe' })).toBeVisible();
+};
+
+test('#12 (proposed) a wrong gate answer gives a calm message and a new problem without a lockout; the right one opens the panel and an overridden stage starts a plain round', async ({ page }) => {
+    await openGate(page);
+    const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
+    // A wrong answer twice in a row: no lockout, the gate stays usable.
+    for (let attempt = 0; attempt < 2; attempt++) {
+        await typeIntoGate(page, (await gateProblem(page)).product + 1);
+        await expect(gate.getByRole('status')).toHaveText('To nie ta liczba. Spróbuj z nowym działaniem.');
+        await expect(gate).toBeVisible();
+    }
+    await typeIntoGate(page, (await gateProblem(page)).product);
+
+    const panel = page.getByRole('dialog', { name: 'Ustawienia startowe' });
+    await expect(panel).toBeVisible();
+    await expect(gate).toBeHidden();
+    await panel.getByRole('button', { name: String(PARENT_AGE), exact: true }).tap();
+    // Age 8 in October proposes E3 and the proposal is marked.
+    await expect(panel.getByRole('button', { name: /Klasa 2, I półrocze.*propozycja/ })).toBeVisible();
+    await panel.getByRole('button', { name: 'Klasa 2, II półrocze', exact: true }).tap();
+    await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
+
+    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    const start = await snapshot(page);
+    expect(start.learner).toMatchObject({ stage: 'E4', stageOverriddenByParent: true, warmupPending: false });
+    expect(start.warmup).toBe(false);
+    await playRound(page, ROUND_LENGTH, 0);
+    expect((await snapshot(page)).outcomes).toHaveLength(ROUND_LENGTH);
+});
+
+test('#12 (proposed) a parent who confirms the proposal gets the proposed stage and the warm-up of 6 tasks', async ({ page }) => {
+    await openPanel(page);
+    const panel = page.getByRole('dialog', { name: 'Ustawienia startowe' });
+    await panel.getByRole('button', { name: String(PARENT_AGE), exact: true }).tap();
+    await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
+
+    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    const start = await snapshot(page);
+    expect(start.learner).toMatchObject({ stage: 'E3', stageOverriddenByParent: false, warmupPending: true });
+    expect(start.warmup).toBe(true);
+    await playRound(page, WARMUP_LENGTH, 0);
+    expect((await snapshot(page)).outcomes).toHaveLength(WARMUP_LENGTH);
+});
+
+test('#12 (proposed) with the gate open a tap under the overlay on an age button does nothing; after "Anuluj" the same tap works', async ({ page }) => {
+    await openGate(page);
+    const { ages } = await targets(page);
+    const age = ages?.find((a) => a.age === PARENT_AGE);
+    expect(age).toBeDefined();
+
+    await tapScene(page, age!);
+    // Two frames so Phaser has handled the touch, if it were going to.
+    await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))));
+    const blocked = await snapshot(page);
+    expect(blocked.learner).toBeNull();
+    expect(blocked.screen).toBe('welcome');
+    await expect(page.getByRole('dialog', { name: 'Pytanie dla rodzica' })).toBeVisible();
+
+    await page.getByRole('dialog', { name: 'Pytanie dla rodzica' }).getByRole('button', { name: 'Anuluj', exact: true }).tap();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await tapScene(page, age!);
+    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    expect((await snapshot(page)).learner?.stage).toBe('E3');
 });
