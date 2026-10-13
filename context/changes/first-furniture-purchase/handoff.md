@@ -1,28 +1,30 @@
 # Handoff — `first-furniture-purchase` (slice S-09)
 
-Written by the `research` step (`/10x-research first-furniture-purchase`, autonomous run 2026-10-13-s09-s11).
-`research.md` answers the unknowns from change.md; status `preparing`. The one thing the next agent must not get wrong:
-the balance moves to the registry as the one source (initialised in `main.ts` `preBoot`), `TaskScene` adds the DELTA
-`state.starsEarned - before` in `syncStars` (the only two growth points are the paid answer and the round bonus in
-`src/core/round.ts`), and `TaskScene.sessionStars` disappears — never two counters.
+Written by the `plan` step (`/10x-plan first-furniture-purchase`, autonomous run 2026-10-13-s09-s11). `plan.md` has 8
+phases (3 tdd, 4 impl, 1 e2e) with `## Progress` (42 rows); status `planned`. The one thing the next agent must not get
+wrong: the star balance lives ONLY in the registry (`REGISTRY_KEYS.stars`, initialised in `main.ts` `preBoot`), `TaskScene`
+adds the delta in `syncStars` only, and the room spends only through `core` `stepPanel`/`purchase` — never a scene-side
+comparison or a second counter.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-furniture-purchase`, cut from `main` at `bb969f7` |
-| Commits | 2: `77c94d4` change identity, then this `docs(first-furniture-purchase): research` |
+| Commits | 3: `77c94d4` change identity, `1acc0b2` research, then this `docs(first-furniture-purchase): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no plan.md yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 42 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/first-furniture-purchase/research.md` | findings: balance ownership, purchase/panel reducer shape (risk #16), HUD input over the room, e2e hook extension, room geometry proposal, Phaser 4 particles + reduced motion, kit binding and copy, follow-ups |
-| `context/changes/first-furniture-purchase/change.md` | frontmatter only: status `new` → `preparing` |
+| `context/changes/first-furniture-purchase/plan.md` | full plan: 8 phases with `Driver:` lines, Known risks, Autonomous decisions (14), Progress |
+| `context/changes/first-furniture-purchase/plan-brief.md` | two-page brief |
+| `context/changes/first-furniture-purchase/change.md` | frontmatter status `preparing` → `planned` |
+| `context/foundation/roadmap.md` | S-09 status `proposed` → `planning` (At a glance row + `### S-09` body) |
 | `context/changes/first-furniture-purchase/handoff.md` | this file |
 
 ## 3. Verification
@@ -30,27 +32,28 @@ the balance moves to the registry as the one source (initialised in `main.ts` `p
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/first-furniture-purchase` |
-| `grep REGISTRY_KEYS.stars / starsTotal` in `src`, `tests` | readers: `UIScene.create` (counter), `summaryView`, e2e `task-round.spec.ts`, `parent-settings.spec.ts` (`starsTotal`) |
-| `grep scene.start/restart` in `src` | `TaskScene` started only by `BootScene.create` and `WelcomeScene`; never restarted |
-| `node_modules/phaser` 4.2.1 types | `particles(x,y,texture,config)`, `ParticleEmitter.explode`, `Graphics.generateTexture` present; no reduced-motion API |
+| `grep -nE '^Driver:' plan.md` | 8 lines: tdd, tdd, tdd, impl, impl, impl, impl, e2e (e2e after the seam-sweep phase 7) |
+| `grep -c '^- \[ \]' plan.md` | 42 = sum of every phase's Success Criteria (3+5+3+6+5+6+10+4) |
+| `metadata-guard.mjs mark-planned` | `{"changed":true}` |
+| `grep -n "paid" src/core/round.ts` | retype pays 0 stars — basis for the e2e "short" path in phase 8 |
 | gates | not run — docs-only step, no product code changed |
 
 ## 4. Next command
 
-`/10x-plan first-furniture-purchase`
+`/10x-plan-review first-furniture-purchase`
 
 ## 5. Open
 
-- Product choices research recommends (plan decides, research.md `## Open Questions`): HUD speaker reads the current task label in the room (yes); `TaskScene.flyStar` honours reduced motion via one `src/ui/` helper with injected `matchMedia` (yes, plan §9 + kit); "Wróć do notesu" hidden while the variant panel is open (yes); slot list + cost curve 5–15 (`[human]`, change.md decision 2).
-- Pre-existing gap found: `TaskScene.flyStar` ignores `prefers-reduced-motion` (plan §9, kit `.flying-star`).
-- Follow-ups in scope (archive `2026-10-12-narrator-round-summary/follow-ups/review-fixes.md`): `nextRoomTaskCost` in `TaskScene.currentSummary`; star in flight on `toRoom` (kill/finish before `scene.switch`). Shared HUD button: out of scope unless a HUD button changes.
-- DESIGN-GAP rows to add from 31 in `docs/design-gaps.md` (a–e per change.md); rows 10 and 12 to update; `pl.room.caption`, `ROOM_LAYOUT.caption` to remove.
-- Palette: oak `#C99B66` and terracotta `#C98460` (style guide) are not in `PLACEHOLDER_COLORS` yet; variants must differ beyond colour.
-- `[human]` rows the plan carries: slots/costs, no sound in S-09 (FR-017 literal), room state session-only until S-11.
-- Teacher read of every new Polish string.
+- `[human]` rows (plan phase 7): 7.6 slot list + cost curve 5–15 (`src/data/rooms.ts` `SALON`); 7.7 no sound, deviation from literal FR-017; 7.8 balance and room session-only until S-11; 7.9 panel/button UX choices without kit source; 7.10 iPad/Android device check.
+- `[visual]` rows 4.6, 5.5, 6.5, 6.6; `[reviewer]` teacher reads 2.5, 6.4; seam sweep 7.5.
+- DESIGN-GAP rows 31–36 to add, rows 10 and 12 to update (phase 7 `docs/design-gaps.md`).
+- Follow-up "shared HUD button" stays open (no HUD button changes); new follow-ups listed in phase 7 §2.
+- Plan-review should check: phase 2 as `tdd` (data invariants lead content) vs `impl`; phase 4 deliberate break depends on e2e (orchestrator gate if Chromium is unavailable); room geometry in phase 2 (`ROOM_LAYOUT.area/tray/taskButton`) before the UI phases.
 
 ## 6. Autonomous decisions
 
-- Question/scope derived from change.md + handoff §5 (no AskUserQuestion, contract rule 1). Rejected: a broader re-survey. Would change: a new unknown surfacing in plan.
-- No sub-agents: the scope (5 scenes, layout, hook, 2 core files) fit the main context; the skill defaults to 2–4 workers for multi-area scope. Rejected: parallel Explore workers (duplicate reading of the same small files). Would change: a larger codebase area.
-- Recommended registry as the single balance (not a new core singleton): the registry already carries session state that S-11 will persist, and `UIScene` already listens to it. Would change: S-11 choosing a central store object instead.
+- No AskUserQuestion (contract rule 1): complexity, question budget and phase approval decided in place — research + change.md already settled every product question; remaining choices recorded in plan.md `## Autonomous decisions` 1–14. Would change: a plan-review finding.
+- No sub-agents: research mapped every file; a few targeted reads (`TaskScene` star flow, `layout.ts`, `e2eHook.ts`, `round.ts` `paid`) filled the gaps. Rejected: Explore fan-out (duplicate reading). Would change: a larger unmapped area.
+- Placeholder looks in a separate `SALON_PLACEHOLDERS` table instead of extending `SlotDef` (keeps the plan §5 type for S-16 art). Would change: S-16 needing slot size in `SlotDef`.
+- Preview starts empty and "Wybieram" stays inactive until a thumbnail is picked (FR-017 "wybiera"); rejected preselecting variant 0. Would change: playtest.
+- Roadmap status set to `planning` per the skill and committed with the plan (run rule).
