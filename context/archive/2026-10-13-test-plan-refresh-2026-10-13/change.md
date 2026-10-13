@@ -1,10 +1,10 @@
 ---
 change_id: test-plan-refresh-2026-10-13
 title: Refresh the test plan after S-04..S-08 and the observability fix
-status: implemented
+status: archived
 created: 2026-10-13
 updated: 2026-10-13
-archived_at: null
+archived_at: 2026-10-13T08:03:13Z
 ---
 
 ## Notes
