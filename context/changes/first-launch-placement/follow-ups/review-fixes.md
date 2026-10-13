@@ -9,3 +9,6 @@
 - The warm-up can show the same prompt twice (two steps drawn from the same pool). Trigger: S-07
 - Warm-up pays the clean-round bonus (+2) unscaled for 6 tasks; check at the S-17 playtest. Trigger: S-17
 - On the parent path an E1/E2 stage may stay silent until the first canvas tap (the "Zatwierdź" tap is DOM, so speech may be locked). Trigger: S-17 iPad playtest
+- (impl-review F2) E2E helpers duplicated in 3–4 copies (`readHook`, `tapScene`, `fromHook`, `tapNumber`, `answerWrong`/`answerRight`, `phaseIs`; gate steps in `tests/e2e/support/welcome.ts` `passWelcome` and `tests/e2e/first-launch.spec.ts` `openGate`/`typeIntoGate`): move them to `tests/e2e/support/hook.ts` and export the gate steps from `support/welcome.ts`. Trigger: S-08 (reuses the gate in e2e)
+- (impl-review F5) `src/core/placement.ts` imports the type of `placementData` from `src/data/placement.ts` (core → data type import): declare a `PlacementData` interface in core instead. Trigger: S-07
+- (impl-review F6) `src/ui/dom/dialog.ts` `openDialog` `handleKey` does not `stopPropagation`: gate digits would reach a future Phaser keyboard listener. Trigger: first Phaser keyboard input in src

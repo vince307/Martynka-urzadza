@@ -696,7 +696,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 1.4 [reviewer] Odczyt nauczyciela: `src/data/placement.ts` vs `docs/ZADANIA.md` §1 (`reviews/teacher-read.md`)
+- [x] 1.4 [reviewer] Odczyt nauczyciela: `src/data/placement.ts` vs `docs/ZADANIA.md` §1 (`reviews/teacher-read.md`) — impl-review (PASS, wiersz po wierszu)
 
 ### Phase 2: Rozgrzewka — skład i korekta w dół
 
@@ -709,7 +709,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela `sample -- E2 … E6 --warmup` (`reviews/teacher-read.md`)
+- [x] 2.5 [reviewer] Odczyt nauczyciela `sample -- E2 … E6 --warmup` (`reviews/teacher-read.md`) — impl-review (PASS)
 
 ### Phase 3: Bramka dla dorosłego — działanie i wpisywanie cyfr
 
@@ -731,7 +731,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 4.6 [reviewer] Odczyt nauczyciela `pl.welcome` i marki
+- [x] 4.6 [reviewer] Odczyt nauczyciela `pl.welcome` i marki — impl-review (PASS, `reviews/teacher-read.md`)
 - [ ] 4.7 [visual] Zrzut welcome przy 1440×900 i 1024×768 vs `welcome.png`
 
 ### Phase 5: Bramka i panel rodzica w DOM (przycisk „Rodzic”)
@@ -745,7 +745,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Odczyt nauczyciela/rodzica `pl.parent` i `pl.stages` (`reviews/teacher-read.md`)
+- [x] 5.5 [reviewer] Odczyt nauczyciela/rodzica `pl.parent` i `pl.stages` (`reviews/teacher-read.md`) — impl-review (PASS)
 - [ ] 5.6 [visual] Zrzuty welcome z „Rodzic”, bramka, bramka po złej odpowiedzi, panel w 3 stanach przy 1440×900 i 1024×768
 - [ ] 5.7 [human] iPad: bramka i panel palcem, brak przebicia dotyku do powitania
 
@@ -772,7 +772,7 @@ bez przekształceń.
 
 #### Manual
 
-- [ ] 7.4 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`; gołe liczby z follow-upu S-05
+- [x] 7.4 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`; gołe liczby z follow-upu S-05 — a6f091b (nieaktualne komentarze poprawione; duplikaty helperów e2e → follow-up F2; wiersz 21 bez komentarza zaakceptowany, `reviews/impl-review.md`)
 - [ ] 7.5 [human] Decyzja orkiestratora wbrew FR-012: dziecko startuje samo na etapie z wieku, potwierdzenie rodzica opcjonalne
 - [ ] 7.6 [human] Odpowiedź na PRD Open Question 1: bez rozgrzewki po zmianie etapu przez rodzica
 - [ ] 7.7 [human] Luka ZADANIA §1: skład 3 + 3, próg < 4 z 6, E1 bez rozgrzewki, korekta cicha
