@@ -90,3 +90,6 @@ lint, typecheck OK; npm test 1142 passed (baseline 1142, +0); build `e2e hook: a
 - Phase 6: `SAVE_KEYS` stays in `src/data/layout.ts` (subset of `REGISTRY_KEYS`, `core` cannot import it, `main.ts` already imports layout); recorded in follow-ups. `LearnerState` is not dead (`SavedLearner`/`Adaptation` pick from it), no change.
 - Phase 6: profile (`autonomous-run.md` sec. 10, `idb.ts` no longer planned) and `docs/human-checklist.md` S-11 wording left to the orchestrator; listed in follow-ups. For the profile: from S-11 a "fresh device" in e2e is a new browser context.
 - Phase 6: DESIGN-GAP comments for rows 43 and 44 added in `main.ts` and `saveExport.ts`; the roadmap and test-plan texts untouched (follow-up `/10x-test-plan refresh`).
+
+## p7 runda 2
+Test 2 w save-restart.spec.ts poprawiony (po reloadzie otwiera się nowe pierwsze zadanie: helper `finishTaskWithoutStars`, potem `roomSwitch`). Chromium nadal nie startuje w sesji agenta; spec i config niezacommitowane, czeka na run orkiestratora (e2e-request-s11-p7.md, "Round 2 changes").
