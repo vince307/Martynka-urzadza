@@ -7,7 +7,7 @@ Written by the finishing agent of `/10x-e2e` phase 8 (risk #12 spec). Not the la
 | | |
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
-| Commits | plan-review commits + p1 `d79ba20` + p2 `403644c` + p3 `e4920f3` + p4 `a51338d` + p5 `012867b` + p6 `96674ca` + p7 + p8 `26f0787` + handoff commits |
+| Commits | plan-review commits + p1 `d79ba20` + p2 `403644c` + p3 `e4920f3` + p4 `a51338d` + p5 `012867b` + p6 `96674ca` + p7 `22db90d` + p8 `26f0787` + handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; phase 8 of nine) |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` |
@@ -39,19 +39,19 @@ Review against e2e-quality-rules: no waitForTimeout, web-first polls, titles car
 
 ## 4. Next command
 
-
+`/10x-e2e first-launch-placement phase 9`
 
 ## 5. Open
 
 - Rows 8.1-8.3 ticked. Phase 9 (rows 9.1-9.3) next: parent path through the gate by touch, test 6.
 - E2E on later commits is the orchestrator's gate (MachPort in sub-sessions).
-- Open rows:  1.4, 2.5, 4.6, 5.5, 7.4;  4.7, 5.6, 6.4;  5.7, 6.5, 7.5-7.9.
-- Risk #12 is only proposed in the follow-ups; the spec cites  in titles.
+- Open rows: `[reviewer]` 1.4, 2.5, 4.6, 5.5, 7.4; `[visual]` 4.7, 5.6, 6.4; `[human]` 5.7, 6.5, 7.5-7.9.
+- Risk #12 is only proposed in the follow-ups; the spec cites `#12` in titles.
 
 ## 6. Autonomous decisions
 
 1. Bare numbers: only the three named in the S-05 follow-up were tokenised; the other house-icon coordinates in `RoomSwitchButton.draw` are icon geometry in a 56 px box and stay.
 2. Gap rows 20 (no welcome art) and 21 (picture mode) added as the plan lists them; row 21 points at `src/data/placement.ts`, which has no code comment, so no `DESIGN-GAP` comment was added there.
 3. AGENTS.md kept under 400 words by trimming one sentence and shortening another instead of dropping the scenes update.
-4. Phase 8: E2 drop uses 3 wrong first tries (balance.warmup.minFirstTry = 4 of 6); helpers duplicated in the spec as the other specs do; no commit because Chromium cannot launch (contract fallback).
+4. Phase 8: E2 drop uses 3 wrong first tries (balance.warmup.minFirstTry = 4 of 6); helpers duplicated in the spec as the other specs do; left uncommitted at first because Chromium cannot launch (contract fallback), committed in the finishing step.
 5. Phase 8 finish: spec not rewritten; reviewed and committed as is; row 8.3 ticked on local gate plus the orchestrator's e2e run.
