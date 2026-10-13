@@ -63,16 +63,24 @@ const validLearner = (v: unknown): v is SavedLearner => {
     return p === null || (isRecord(p) && isStage(p.stage) && isCount(p.step));
 };
 
+/** The first top-level key of a v1 save that fails the strict check, or null when the value is a valid save. */
+export function saveProblem(value: unknown): string | null {
+    if (!isRecord(value)) return 'version';
+    if (value.version !== 1) return 'version';
+    if (typeof value.profileId !== 'string') return 'profileId';
+    if (!isCount(value.stars)) return 'stars';
+    if (!isRecord(value.rooms) || !hasOnly(value.rooms, validRoom)) return 'rooms';
+    if (typeof value.currentRoom !== 'string' || !Object.prototype.hasOwnProperty.call(value.rooms, value.currentRoom)) return 'currentRoom';
+    if (!isRecord(value.settings)) return 'settings';
+    const autoRead = value.settings.autoRead;
+    if (autoRead !== null && typeof autoRead !== 'boolean') return 'settings';
+    if (value.learner !== null && !validLearner(value.learner)) return 'learner';
+    return null;
+}
+
 /** Strict check of a v1 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
 export function validateSave(value: unknown): value is SaveState {
-    if (!isRecord(value) || value.version !== 1) return false;
-    if (typeof value.profileId !== 'string' || !isCount(value.stars)) return false;
-    if (!isRecord(value.rooms) || !hasOnly(value.rooms, validRoom)) return false;
-    if (typeof value.currentRoom !== 'string' || !Object.prototype.hasOwnProperty.call(value.rooms, value.currentRoom)) return false;
-    if (!isRecord(value.settings)) return false;
-    const autoRead = value.settings.autoRead;
-    if (autoRead !== null && typeof autoRead !== 'boolean') return false;
-    return value.learner === null || validLearner(value.learner);
+    return saveProblem(value) === null;
 }
 
 const copyRoom = (r: RoomState): RoomState => ({ tasksDone: r.tasksDone, chosen: { ...r.chosen } });

@@ -729,7 +729,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 2e435cf
 - [x] 1.2 Fixtury v1 w obie strony równe sobie; `SAVE_VERSION` = 1; `tests/fixtures/` bez zmian — 2e435cf
 - [x] 1.3 Deliberate break: brak czekania na `inflight` / zapisy nie wyłączone po sukcesie / `replacing` nie zdjęte po porażce → czerwone; przywrócone; meta-check — 2e435cf
-- [ ] 1.4 Pełna bramka lokalna zielona
+- [x] 1.4 Pełna bramka lokalna zielona — 2e435cf (e2e 33 passed, run by the orchestrator on 6ce9f4c)
 
 #### Manual
 
@@ -739,9 +739,9 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `ok` po samym `JSON.parse` / brak limitu / `saveProblem` pomija `stars` → czerwone; przywrócone; meta-check
-- [ ] 2.3 Pełna bramka lokalna zielona; `tests/fixtures/` bez zmian
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [x] 2.2 Deliberate break: `ok` po samym `JSON.parse` / brak limitu / `saveProblem` pomija `stars` → czerwone; przywrócone; meta-check
+- [x] 2.3 Pełna bramka lokalna zielona; `tests/fixtures/` bez zmian
 
 #### Manual
 
