@@ -115,12 +115,16 @@ orkiestrator (subagent zwykle nie startuje Chromium, profil § 8).
 
 **Kontrakt `replace` (faza 1; zależą od niego fazy 5, 6, 7).** `src/core/autosave.ts`:
 `Autosaver.replace(state: SaveState): Promise<ReplaceResult>`, `ReplaceResult = { ok: true } | { ok: false; error: string }`.
-Kolejność: (1) `blockedBy === 'fatal'` → `{ ok: false, error: 'Blocked' }` bez zapisu; (2) `!validateSave(state)` →
+Kolejność: (0) `replacing || replaced` → `{ ok: false, error: 'Busy' }` bez zapisu (drugie wywołanie w toku albo po
+sukcesie; plan-review F4); (1) `blockedBy === 'fatal'` → `{ ok: false, error: 'Blocked' }` bez zapisu; (2) `!validateSave(state)` →
 `{ ok: false, error: 'InvalidSave' }` bez zapisu; (3) ustaw `replacing = true` (osobna flaga, **nie** `blockedBy`;
 `save` i `markDirty` traktują ją jak blokadę: `skipped++`), `cancelTimer()`; (4) `await inflight` (jeśli jest);
 (5) `await store.write(state)`; sukces → `replaced = true` (zapisy zostają wyłączone do przeładowania), `writes++`,
-`lastWriteAt = now()`, `{ ok: true }`; porażka → `replacing = false`, `failures++`, `consecutiveFailures++`,
-`lastError = errorName(e)`, `dirty` bez zmian (zwykły autozapis wraca), `{ ok: false, error }`. Dozwolone przy
+`lastWriteAt = now()`, `consecutiveFailures = 0`, `{ ok: true }`; porażka → `replacing = false`, `failures++`,
+`consecutiveFailures++`, `lastError = errorName(e)`, `dirty` bez zmian i przy `dirty` ponownie uzbrojony timer debounce
+(zmiany pominięte w trakcie `replace` nie czekają na następne `markDirty`), `{ ok: false, error }`. Jeden predykat
+`writesOff() = blockedBy !== null || replacing || replaced` w `save`, `markDirty` **i** w warunku pętli `save`
+(`next = ok && dirty && !writesOff() ? …`) — zamiast trzech osobnych sprawdzeń (plan-review F4). Dozwolone przy
 `blockedBy` `unreadable`/`unavailable` (droga odzyskania). `AutosaveStatus += replace: 'idle' | 'writing' | 'done'`.
 `Autosaver.current(): SaveState` = `encodeSave(snapshot())` (eksport z rejestru, synchronicznie).
 `freshSession(firstRoom: string, stars = 0): SessionSave` w `src/core/save.ts` (używa `emptyRoomState`,
@@ -156,8 +160,11 @@ error = `lastError ?? 'Error'`). Atrybut `data-state` sekcji zostaje `kind` (ist
 **Przepływ dialogów (fazy 4–6).** Kroki to osobne `openDialog` otwierane po zamknięciu panelu w **tej samej** sesji
 `UIScene.session` (bez drugiego `suspend()` → follow-up F5 nie odpala). Callbacki przekazywane przez `UIScene`
 (`onExport`, `onImport`, `onReset` panelu; `onConfirm`/`onCancel` kroków) to strzałki z ciałem `session.run(...)`;
-`DIALOG_CALLBACKS` w `tests/dialogSessions.test.ts` rośnie o `onExport`, `onImport`, `onReset`, a oczekiwana liczba
-`UIScene.ts` rośnie o liczbę nowych przypisań. Część asynchroniczna (`share`, `file.text()`, `replace`) żyje w module DOM z
+`DIALOG_CALLBACKS` w `tests/dialogSessions.test.ts` rośnie o `onExport`, `onImport`, `onReset` **oraz `onClose`** (nazwa
+callbacku kroków eksportu/importu/resetu — bez niej goły `onClose` zostawiłby test zielonym; plan-review F1), a oczekiwana
+liczba `UIScene.ts` rośnie o liczbę nowych przypisań (`WelcomeScene.ts` bez zmian: nie ma `onClose`). `UIScene` nie woła
+`Date` (konwencja z `main.ts`: „scenes never call Date”): data pliku i `exportedAt` powstają w `saveExportDialog.ts` z
+wstrzykniętego `now = () => new Date()` (plan-review F6). Część asynchroniczna (`share`, `file.text()`, `replace`) żyje w module DOM z
 własnym `try/catch` i kończy się wynikiem albo `reload()` (wstrzyknięte, domyślnie `() => window.location.reload()`);
 `session.run` łapie tylko synchroniczne rzuty. „Anuluj”/„Zamknij”/Escape w kroku → `closeSettings` (powrót do gry, nie do
 panelu).
@@ -200,7 +207,8 @@ tak jak `blockedBy` (licznik `skipped`), bez nowego `BlockReason`.
 potem podany stan); po sukcesie `markDirty` + `flush('hidden')` nie piszą (`writes` rośnie tylko o `replace`, `skipped`
 rośnie); po porażce (`store.write` rzuca `{ name: 'QuotaExceededError' }`) wynik `{ ok: false, error: 'QuotaExceededError' }`,
 następny `flush('now')` pisze snapshot; przy `blockedBy: 'fatal'` → `{ ok: false, error: 'Blocked' }`, 0 zapisów; przy
-`blockedBy: 'unreadable'` → zapis przechodzi; stan niewalidny → `InvalidSave`, 0 zapisów; `current()` równe
+`blockedBy: 'unreadable'` → zapis przechodzi; stan niewalidny → `InvalidSave`, 0 zapisów; drugie `replace` w toku i po
+sukcesie → `Busy`, jeden zapis; po porażce z `dirty` timer debounce pisze snapshot bez `flush`; `current()` równe
 `encodeSave(snapshot())`. `freshSession('salon')` przechodzi `validateSave(encodeSave(...))`, `learner: null`, `stars 0`.
 Fixtury v1 w obie strony bez zmian.
 
@@ -361,7 +369,7 @@ pierwsze, potem pobranie; nigdy nie rzuca.
 
 **File**: `src/ui/dom/saveExportDialog.ts` (nowy)
 
-**Intent**: `openSaveExportDialog({ text, fileName, onClose, parent? })`: tytuł, jedno zdanie, notka prywatności
+**Intent**: `openSaveExportDialog({ file: (now: Date) => { text: string; fileName: string }, onClose, now?, parent? })`: tytuł, jedno zdanie, notka prywatności
 (`overlay-muted`), „Zapisz plik” (woła `saveFileToDevice` w handlerze stuknięcia, potem linia wyniku i zmiana przycisków
 na „Zamknij”), „Anuluj”/Escape → `onClose`. Komentarz `DESIGN-GAP 47`.
 
@@ -382,8 +390,9 @@ na „Zamknij”), „Anuluj”/Escape → `onClose`. Komentarz `DESIGN-GAP 47`.
 
 **Intent**: `SettingsPanelOptions.onExport?: () => void` → przycisk `pl.saveTransfer.exportButton` w rzędzie akcji pod
 „Zapis gry” (rząd tylko, gdy jest saver); `UIScene.onExport: () => session.run(() => this.openExport())` — zamyka panel,
-otwiera dialog z `exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt, save: saver.current() })` i
-`pl.saveTransfer.fileName(date)`; `onClose` → `closeSettings` (w `session.run`). Komentarz `DESIGN-GAP 46`.
+otwiera dialog z `file: (now) => ({ text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt:
+now.toISOString(), save: saver.current() }), fileName: pl.saveTransfer.fileName(<RRRR-MM-DD z now>) })`; `onClose` →
+`closeSettings` (w `session.run`). Komentarz `DESIGN-GAP 46`.
 
 #### 5. Teksty, luki, testy
 
@@ -395,7 +404,7 @@ postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.'`, `
 `exportOutcome: { shared, downloaded, cancelled, failed }`, `fileName: (date) => \`martynka-zapis-${date}.txt\``);
 `pl.saveFailed.detail: (reason, build) => \`Kod: ${reason} · Wersja ${build}\``. Wiersze 46, 47, 51 w
 `docs/design-gaps.md`; wiersz 44 przepisany (koperta JSON w `.txt`, nazwa z datą dla bieżącego zapisu). `DIALOG_CALLBACKS`
-+ `onExport`, nowe liczby. Test FR-021: po bramce `getByRole('dialog', { name: pl.saveTransfer.exportTitle })` →
++ `onExport`, `onClose`, nowe liczby. Test FR-021: po bramce `getByRole('dialog', { name: pl.saveTransfer.exportTitle })` →
 „Zapisz plik” → download; asercje pliku dalej (`"version": 99`, `"stars": 7`) plus `"build"` i `"reason": "future"`
 (wartość z szwu `unreadable`); linia wyniku `pl.saveTransfer.exportOutcome.downloaded`.
 
@@ -405,7 +414,7 @@ postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.'`, `
 
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (`dialogSessions` z nowymi liczbami)
 - `npx playwright test tests/e2e/save-restart.spec.ts` zielony (orkiestrator, protokół request-file: `e2e-request-p4.md` w katalogu zmiany); pełne `npx playwright test`: `<baseline gałęzi e2e> + 0`
-- Deliberate break: `onExport` w `UIScene` bez `session.run` → `tests/dialogSessions.test.ts` czerwony; przywrócone. Break (patch `e2e-break-p4.patch`, tylko kod produkcyjny): `main.ts` woła `saveFileToDevice` od razu po bramce (bez dialogu) → test FR-021 czerwony na `dialog`; meta-check: unit zielone przy tej przerwie — L-S2 dowodzi tylko e2e
+- Deliberate break: `onExport` w `UIScene` bez `session.run` → `tests/dialogSessions.test.ts` czerwony; to samo dla `onClose` kroku eksportu; przywrócone. Break (patch `e2e-break-p4.patch`, tylko kod produkcyjny): `main.ts` woła `saveFileToDevice` od razu po bramce (bez dialogu) → test FR-021 czerwony na `dialog`; meta-check: unit zielone przy tej przerwie — L-S2 dowodzi tylko e2e
 - `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual Verification:
@@ -583,9 +592,17 @@ zmian: `npx playwright test`.
 `expect.poll` `writes >= 1` → zapamiętane gwiazdki/etap → panel → „Wczytaj z pliku” → `setInputFiles({ name: 'zly.txt',
 mimeType: 'text/plain', buffer: '{"hello":1}' })` → tekst `pl.saveTransfer.rejected['not-ours']`; drugi plik z kopertą i
 `stars: -1` → `rejected.corrupt` → „Zamknij” → `page.reload()` → ekran `task`, gwiazdki i etap jak przed. (b) „#7 #2 a valid
-file replaces the save only after the summary and survives the reload”: świeży kontekst, `passWelcome` → import
-`tests/fixtures/save-v1.json` (goły v1) → podsumowanie „Z pliku” z gwiazdkami fixtury → „Wczytaj” → `waitForEvent`
-nawigacji / `fromHook` po przeładowaniu → `snapshot.save.load === 'loaded'`, gwiazdki = fixtura, etap = fixtura.
+file replaces the save only after the summary and survives the reload”: świeży kontekst, `passWelcome` → import gołej
+wartości v1 zbudowanej **w specu** jako stan, który da się grać (plan-review F2: `tests/fixtures/save-v1.json` to fixtura
+formatu — pokój `living` nieznany grze, identyfikatory umiejętności spoza programu, `pendingUnlock` — po przeładowaniu
+`repairCurrentRoom` i karta odblokowania zmieniłyby przebieg): `version 1`, `stars 7`, `rooms: { salon: { tasksDone: 0,
+chosen: {} } }`, `currentRoom: 'salon'`, `learner` z etapem innym niż ten z `passWelcome` (np. `E3`), pustymi `mastery`/
+`streak`/`history`, bez `pendingUnlock`; wartość przechodzi `validateSave` w teście jednostkowym fazy 2 albo w specu przez
+odczyt po imporcie → podsumowanie „Z pliku” z „7 gwiazdek”, etapem i „Salon: 0 z 10” → „Wczytaj” → `waitForEvent`
+nawigacji / `fromHook` po przeładowaniu → `snapshot.save.load === 'loaded'`, gwiazdki 7, etap z pliku. Pliki we wszystkich
+testach wybierane przez `page.waitForEvent('filechooser')` po stuknięciu „Wybierz plik” / „Wybierz inny plik” →
+`chooser.setFiles(...)` (ćwiczy prawdziwe `input.click()` w stuknięciu), nie `setInputFiles` na ukrytym polu; pole po
+każdym `change` ma `value = ''` (ponowny wybór tego samego pliku odpala `change`).
 (c) „#2 #10 an export from the panel round-trips through import”: runda → „Zapisz kopię” → „Zapisz plik” → download
 (`suggestedFilename` pasuje do `martynka-zapis-\d{4}-\d{2}-\d{2}\.txt`, treść ma `"app": "martynka-urzadza"`, `"build"`,
 `"kind": "save"`) → nowy kontekst → import tego pliku → po przeładowaniu gwiazdki jak w kontekście źródłowym. (d) „#2 reset
@@ -597,7 +614,7 @@ asks first and ends on the welcome screen”: runda → „Zacznij od nowa” �
 
 **Chromium niedostępny w sesji agenta**: protokół request-file — spec bez commita, `e2e-request-p7.md` w katalogu zmiany
 (komendy zielonych uruchomień i tabela przerw jak `context/runs/2026-10-13-fix-save-observability/e2e-request-p6.md`),
-patche `e2e-break-p7a.patch` … `e2e-break-p7d.patch` (tylko kod produkcyjny), `STATUS: BLOCKED — e2e needs orchestrator run
+patche `e2e-break-p7a.patch` … `e2e-break-p7e.patch` (tylko kod produkcyjny), `STATUS: BLOCKED — e2e needs orchestrator run
 (request file written)`; agent kończący commituje spec po wyniku orkiestratora.
 
 ### Success Criteria:
@@ -609,6 +626,7 @@ patche `e2e-break-p7a.patch` … `e2e-break-p7d.patch` (tylko kod produkcyjny), 
 - Deliberate break (patch `e2e-break-p7b.patch`): `UIScene.openImport` `apply` zwraca `{ ok: true }` bez `saver.replace` → (b), (c) czerwone na gwiazdkach po przeładowaniu; meta-check: unit zielone — e2e dowodzi sklejki, nie `replace`
 - Deliberate break (patch `e2e-break-p7c.patch`): `replace` po sukcesie nie wyłącza zapisów → (b) lub (d) czerwony (`pagehide` nadpisuje); meta-check: czy przerwa jest widoczna w przeglądarce — jeśli zielona, zapis w handoff §3, dowód zostaje w unit fazy 1
 - Deliberate break (patch `e2e-break-p7d.patch`): reset bez `reload()` → (d) czerwony na `welcome`; przywrócone
+- Deliberate break (patch `e2e-break-p7e.patch`): `saveImportDialog` po `parseImport` `ok` woła `apply` od razu (bez kroku 2 i „Wczytaj”) → (b) czerwony na podsumowaniu „Z pliku”; przywrócone (reguła „podsumowanie przed nadpisaniem”, FR-022)
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
 ---
@@ -652,6 +670,12 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
   „pobrano” znaczy tylko „przeglądarka przyjęła plik” (`[human]` 4.x).
 - **`accept` w wyborze pliku** filtruje częściowo na iOS/Android — treść jest walidowana i tak.
 - **Chromium w sesji agenta**: fazy 4–7 mogą wymagać protokołu request-file.
+- **`pagehide` po `replace` w przeglądarce** (plan-review F3): w chwili `replace` autosaver zwykle nie jest `dirty`
+  (stan zapisany na końcu rundy), więc przerwa `e2e-break-p7c.patch` prawdopodobnie zostanie zielona — reguła „po
+  udanym `replace` nic nie pisze do przeładowania” ma dowód tylko w unit fazy 1; e2e 7.4 wolno zamknąć zapisem w handoff §3.
+- **Brak przeładowania po udanym `replace`** (plan-review F8): jeśli `reload()` nie zadziała, gra biegnie dalej z
+  wyłączonymi zapisami do końca sesji, a następny start wczyta stan z pliku — postęp tej sesji ginie po cichu. Akceptowane
+  (przeładowanie jest synchroniczne po sukcesie); „Zapis gry” tego nie pokazuje.
 
 ## References
 
@@ -791,4 +815,5 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 - [ ] 7.3 Deliberate break (patch `e2e-break-p7b.patch`): `apply` bez `saver.replace` → (b), (c) czerwone; meta-check
 - [ ] 7.4 Deliberate break (patch `e2e-break-p7c.patch`): `replace` nie wyłącza zapisów → (b) lub (d) czerwony albo zapis w handoff §3; meta-check
 - [ ] 7.5 Deliberate break (patch `e2e-break-p7d.patch`): reset bez `reload()` → (d) czerwony; przywrócone
-- [ ] 7.6 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 7.6 Deliberate break (patch `e2e-break-p7e.patch`): import bez kroku podsumowania → (b) czerwony; przywrócone
+- [ ] 7.7 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite

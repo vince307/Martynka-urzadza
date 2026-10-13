@@ -64,7 +64,7 @@ wstrzykniętym `reload`. `UIScene.openSettings` przekazuje `onExport/onImport/on
 | 4. Eksport (impl) | Dialog potwierdzenia, M-S3 na karcie, test FR-021 zaktualizowany | Aktywacja `share()` na iPadzie |
 | 5. Import (impl) | Wybór pliku, podsumowanie, `replace` + przeładowanie | Nadpisanie bez podsumowania |
 | 6. Reset + seam sweep (impl) | Dialog resetu, luki 46–51, follow-upy, `CLAUDE.md` | Duplikaty z faz 4–5 |
-| 7. E2E (e2e) | `save-transfer.spec.ts`: 4 testy + 4 przerwy | Chromium tylko u orkiestratora |
+| 7. E2E (e2e) | `save-transfer.spec.ts`: 4 testy + 5 przerw | Chromium tylko u orkiestratora |
 
 **Prerequisites:** S-11 i save-observability-c1-c2 na `main` (są); baseline unit 1176, e2e 33 @ `f3088d4`.
 **Estimated effort:** 7 faz, każda jednym świeżym agentem; e2e faz 4–7 przez protokół request-file.
