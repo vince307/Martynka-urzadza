@@ -12,6 +12,8 @@ export interface Snapshot {
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
     input: 'tiles' | 'keypad' | 'select' | 'drag';
     answer: unknown;
+    /** The drawing of the open task (a copy), null for a task without one. */
+    visual?: { kind: string } | null;
     /** The tiles marked in the 'select' mode. */
     selected?: (number | string)[];
     /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */
@@ -61,6 +63,8 @@ export interface Targets {
     /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
     drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
     next: Point | null;
+    /** The rectangle of the drawing (null while hidden); a spec aims at its interior. */
+    picture?: { x: number; y: number; width: number; height: number } | null;
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;

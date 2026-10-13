@@ -1,0 +1,12 @@
+diff --git a/src/core/blockDrag.ts b/src/core/blockDrag.ts
+index 763d428..c1493ec 100644
+--- a/src/core/blockDrag.ts
++++ b/src/core/blockDrag.ts
+@@ -74,6 +74,6 @@ export const stepBlockDrag = (
+         return { mat: from === 'tray' ? put(state.mat, kind, rules.maxPerKind) : take(state.mat, kind), carrying: null };
+     }
+     const over = geo.onMat(event.x, event.y);
+-    if (from === 'tray') return { mat: over ? put(state.mat, kind, rules.maxPerKind) : state.mat, carrying: null };
++    if (from === 'tray') return { mat: put(state.mat, kind, rules.maxPerKind), carrying: null };
+     return { mat: over ? state.mat : take(state.mat, kind), carrying: null };
+ };

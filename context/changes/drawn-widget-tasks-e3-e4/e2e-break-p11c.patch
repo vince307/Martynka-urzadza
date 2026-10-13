@@ -1,0 +1,12 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 4f6b833..d1101f3 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -327,6 +327,7 @@ export class TaskScene extends Scene {
+         const solutionShown = view.bar.kind === 'solution';
+         const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown);
+         this.picture.render(view.visual, layout.picture);
++        this.picture.hide();
+         const finishedTask = this.state.phase === 'done';
+         this.tiles.setVisible(view.input === 'tiles');
+         this.keypad.setVisible(view.input === 'keypad');
