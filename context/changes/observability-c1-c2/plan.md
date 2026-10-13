@@ -650,9 +650,9 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 #### Automated
 
 - [ ] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [x] 4.2 Build `e2e hook: absent` / `present` (pełna lista wymagana); znaczniki e2e nieobecne w `dist/`; `releaseInput` usunięte z `src/` — SHA
-- [x] 4.3 Deliberate break: bez `installErrorBoundary` / `applySettings` poza `session.run` → unit zielone; zapis w handoff §3; meta-check — SHA
-- [x] 4.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (pin listy wymaganej) — SHA (e2e: orchestrator gate)
+- [x] 4.2 Build `e2e hook: absent` / `present` (pełna lista wymagana); znaczniki e2e nieobecne w `dist/`; `releaseInput` usunięte z `src/` — b2affa1
+- [x] 4.3 Deliberate break: bez `installErrorBoundary` / `applySettings` poza `session.run` → unit zielone; zapis w handoff §3; meta-check — b2affa1
+- [x] 4.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (pin listy wymaganej) — b2affa1 (e2e: orchestrator gate)
 
 #### Manual
 
