@@ -37,12 +37,12 @@ The ordering rule stays: no answer mode enters `playable` (`src/core/round/pick.
 
 ## 4. Next command
 
-`/10x-tdd drawn-widget-tasks-e3-e4 phase 3`
+`/10x-implement drawn-widget-tasks-e3-e4 phase 4`
 
 ## 5. Open
 
-- Row 3.3 stays unticked until the orchestrator runs e2e (expect 37 passed); rows 1.5, 2.5, 3.4 are [reviewer]. Teacher read of printed draws: agreement ("5 setek", "2 dziesiątki", "1 jedność"), accusative after "na" ("na kota", "na kolor czerwony"), hints do not state the result first;  shows PLACE_VALUE/DATA only after phase 6.
-- Manual  rows and DESIGN-GAPs 52-58 as in the plan-review handoff (phases 4-10).
+- Row 3.3 stays unticked until the orchestrator runs e2e (expect 37 passed); rows 1.5, 2.5, 3.4 are [reviewer]. Teacher read of printed draws: agreement ("5 setek", "2 dziesiątki", "1 jedność"), accusative after "na" ("na kota", "na kolor czerwony"), hints do not state the result first; `sample` shows PLACE_VALUE/DATA only after phase 6.
+- Manual `[human]` rows and DESIGN-GAPs 52-58 as in the plan-review handoff (phases 4-10).
 - `TaskScene.render` temporary throw for `select`/`drag` is removed in phases 7 and 9.
 - ARTIFACT GAP: none.
 
