@@ -1,63 +1,55 @@
 # Handoff — `save-export-import-reset` (slice S-12)
 
-Written by the `/10x-implement phase 4` step of run `2026-10-13-s12-s14`. Phase 4 is committed (`2042dc8`, `feat(save-export-import-reset): … (p4)`); rows 3.3, 4.1, 4.4 ticked with sha. The next agent must not get wrong: e2e for phase 4 (rows 4.2, 4.3 e2e part) waits for the orchestrator; the export dialog is `openSaveExportDialog({ file, onClose })` and phases 5-6 should mirror it (a step replaces the panel in the same `UIScene.session`).
+Written by the `/10x-implement phase 5` step of run `2026-10-13-s12-s14`. Phase 5 is committed (`8c5bb41`, `feat(save-export-import-reset): Import z podsumowaniem (p5)`); rows 4.2, 4.3 ticked from the orchestrator's phase-4 e2e, rows 5.1, 5.2 ticked with sha. The next agent must not get wrong: the import dialog is `openSaveImportDialog({ current, summarize, roomName, maxBytes, apply, onClose })` and phase 6's reset dialog should mirror it (a step replaces the panel in the same `UIScene.session`; `onReset` and its `onClose` go through `session.run`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | phase 1 `2e435cf`, phase 2 `5debed5`, phase 3 `df18f2f`, phase 4 `2042dc8`, plus handoff docs commits |
+| Commits | phase 1 `2e435cf`, phase 2 `5debed5`, phase 3 `df18f2f`, phase 4 `2042dc8`, phase 5 `8c5bb41`, plus handoff docs commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` or `plan_reviewed` (not edited by this step) |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` |
 | Working tree | clean after the docs commit |
 
-
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/dom/saveExport.ts` | `saveFileToDevice(text, fileName, nav?, doc?) : Promise<'shared'\|'downloaded'\|'cancelled'\|'failed'>`, `RAW_FILE_NAME`; `exportRawSave` removed |
-| `src/ui/dom/saveExportDialog.ts` | new: confirmation dialog, nothing leaves before "Zapisz plik" (L-S2) |
-| `src/ui/dom/settingsPanel.ts`, `src/scenes/UIScene.ts` | `onExport` option, "Zapisz kopię" row; `UIScene.openExport` builds the file from `saver.current()` |
-| `src/ui/dom/saveFailedCard.ts`, `src/main.ts` | `detail` line "Kod: … · Wersja …" (M-S3), raw export through the dialog with the envelope (`kind: 'raw'`, reason, build) |
-| `src/data/pl.ts` | `pl.saveTransfer` (export part), `pl.saveFailed.detail` |
-| `docs/design-gaps.md` | rows 44 (rewritten), 46, 47, 51 (48-50 still for phase 6) |
-| `tests/dialogSessions.test.ts`, `tests/e2e/save-restart.spec.ts` | `onExport`/`onClose` in `DIALOG_CALLBACKS`, UIScene count 6; FR-021 through the dialog |
-| `e2e-request-p4.md`, `e2e-break-p4.patch` | request file and break patch for the orchestrator |
-
+| `src/ui/dom/saveImportDialog.ts` | new: step 1 (hidden file input, refusal lines, `console.warn` with reason and problem), step 2 ("Teraz" / "Z pliku", "Wczytaj" -> `apply` -> `reload()`; failure -> `applyFailed`, no reload) |
+| `src/ui/dom/settingsPanel.ts`, `src/scenes/UIScene.ts` | `onImport` option and button; `UIScene.openImport` (current from `decodeSave(saver.current())`, `apply: saver.replace`) |
+| `src/data/pl.ts` | `pl.saveTransfer` import part (`importButton`, `importTitle`, `importBody`, `importPrivacy`, `choose`, `chooseOther`, `now`, `fromFile`, `stars`, `noStage`, `room`, `load`, `rejected.*`, `applyFailed`) |
+| `docs/design-gaps.md` | row 48 (49-50 still for phase 6) |
+| `tests/dialogSessions.test.ts`, `tests/saveTransferCopy.test.ts` | `onImport` in `DIALOG_CALLBACKS`, UIScene count 8; stars agreement 0/1/2/4/5/12/22/100, every rejection text, room line |
+| `e2e-request-p5.md` | request for the orchestrator (full suite expect 33) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| lint / typecheck / `npm test` / deploy tests / sample E1-E6 / build | OK; unit 1238 passed (branch baseline 1238, +0: only an existing test changed); `e2e hook: absent (2 chunks checked)` |
-| e2e `npx playwright test tests/e2e/save-restart.spec.ts` | NOT RUN OK: Chromium cannot start (7 failed at launch). The orchestrator must run `e2e-request-p4.md` (full suite expect 33) |
-| Break B1: `onExport` without `session.run` | red: `onExport at line 148`; restored |
-| Break B2: `onClose` without `session.run` | red: `onClose at line 162`; restored |
-| e2e break `e2e-break-p4.patch` (download right after the gate) | NOT RUN (orchestrator): expect FR-021 red on the `dialog` "Kopia zapisu"; `git apply --check` passes |
-| Meta-check | B1/B2 prove only the session wiring; L-S2 (no download before the tap) is proven only by e2e, as the plan says |
-
+| lint / typecheck / `npm test` / deploy tests / sample E1-E6 / build | OK; unit 1248 passed (branch baseline 1238, +10); `e2e hook: absent (2 chunks checked)` |
+| e2e `npx playwright test tests/e2e/save-restart.spec.ts` | NOT RUN OK: Chromium cannot start (all failed at launch). The orchestrator must run `e2e-request-p5.md` (full suite expect 33) and then tick 5.3 |
+| Break B1: `onImport` without `session.run` | red: `onImport at line 152`; restored |
+| Break B2: `future` text without "Zaktualizuj grę" | red: `expected ... to contain 'Zaktualizuj grę'`; restored |
+| Meta-check | B1 proves only the session wiring, B2 only the copy. That `apply` is reachable only after step 2 and "Wczytaj", and that a refusal never touches the saver, is proven only by phase 7 e2e (as the plan says); by construction `apply` is called in one place, the "Wczytaj" handler |
 
 ## 4. Next command
 
-`/10x-implement save-export-import-reset phase 5`
-
+`/10x-implement save-export-import-reset phase 6`
 
 ## 5. Open
 
-- Orchestrator: run `e2e-request-p4.md` (spec, full suite = 33, break patch red then `git checkout -- src/main.ts`); then tick 4.2 and 4.3.
-- Rows 4.5 [reviewer], 4.6 [visual], 4.7 [human], 3.4/2.4/1.5 [reviewer] are not mine.
-- 4.3 left unticked (its e2e half is pending).
-- Carried: DESIGN-GAP rows 48-50 and follow-ups in phase 6; `balance.save.importMaxBytes` for phase 5.
-
+- Orchestrator: run `e2e-request-p5.md`; then tick 5.3 (its build half, `e2e hook: absent`, already passed here).
+- Rows 5.4 [reviewer], 5.5 [visual], 5.6 [human] and the older [reviewer]/[visual]/[human] rows are not mine.
+- Carried to phase 6: DESIGN-GAP rows 49-50, follow-ups, `rawExportText`, `freshSession` out of `main.ts`.
+- The room name in "Teraz"/"Z pliku" comes from `ROOMS[id].name` (UIScene), the dialog itself takes a `roomName` callback.
 
 ## 6. Autonomous decisions
 
-- Driver `impl`, executed in this context (no subagent): small, wiring-heavy phase.
-- Escape in the export dialog behaves like "Anuluj" (`finish`: close, then `onClose` -> `closeSettings`).
-- After "cancelled"/"failed" the "Zapisz plik" button stays so the parent can retry; only after "shared"/"downloaded" it becomes "Zamknij". Rejected: always closing (a cancelled share sheet would end the flow).
-- Outcome texts invented within the plan's key names (`shared`, `downloaded`, `cancelled`, `failed`), flagged by the DESIGN-GAP 46/47 comments for the [reviewer] row.
-- Unavailable-store card gets no `detail` (nothing to quote but the error name; the plan specifies the line for the unreadable reason only).
+- Driver `impl`, executed in this context (no subagent).
+- Added `importPrivacy` ("Wybierz plik zapisany z tej gry. Plik nie jest nigdzie wysyłany.") instead of reusing the export privacy line, which warns about sending the file to strangers and reads wrongly on import. Flagged by DESIGN-GAP 48 for the [reviewer] row.
+- `rejected['unknown-version']` text invented ("Nie rozpoznaję wersji tego zapisu. Obecne postępy zostały bez zmian."), the plan left it as "…".
+- A file read error maps to the `not-json` refusal text; the "Zamknij" label replaces "Anuluj" after a refusal or a failed apply.
+- `onImport` button shown only when the saver exists (like `onExport`).
 - Manual gate, commit message, next-phase question decided in place; stopped after the phase.

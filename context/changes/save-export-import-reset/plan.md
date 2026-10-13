@@ -778,8 +778,8 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (+10)
-- [x] 5.2 Deliberate break: `onImport` bez `session.run` / brak tekstu `future` → czerwone; przywrócone; meta-check (przepływ w e2e fazy 7)
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (+10) — 8c5bb41
+- [x] 5.2 Deliberate break: `onImport` bez `session.run` / brak tekstu `future` → czerwone; przywrócone; meta-check (przepływ w e2e fazy 7) — 8c5bb41
 - [ ] 5.3 E2E (orkiestrator) `<baseline gałęzi e2e> + 0`; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
