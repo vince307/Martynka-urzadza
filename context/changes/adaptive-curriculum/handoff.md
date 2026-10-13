@@ -1,27 +1,29 @@
 # Handoff — `adaptive-curriculum` (slice S-07)
 
-Written by the `/10x-research` step: `research.md` answers the five questions, `change.md` is `preparing`. The next agent
-must not start the child at the first playable step on every cold start: research recommends a school-calendar floor
-(`calendarStart(stage, month, age)`, research § 1, rule D) so production keeps its variety until S-11; and "większość"
-is `≥ ceil(0.5·n)`, not `> 0.5` (corrects change.md decision 2).
+Written by the `/10x-plan` step: `plan.md` (9 phases: 1–4 and 6 `tdd`, 5, 7, 8 `impl`, 9 `e2e`) and `plan-brief.md`
+exist, `change.md` is `planned`, the roadmap row is `planning`. The next agent must not plan the start of the unlock
+pointer as "first playable step": the plan fixes the school-calendar floor (rule D, formula and expected table in
+plan.md § Critical Implementation Details), and "większość" is `≥ ceil(0.5 · n)`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
-| Commits | 2 on top of `fd68216` (change identity; this step's `docs(adaptive-curriculum): research`) |
+| Commits | 3 on top of `fd68216` (change identity; research; this step's `docs(adaptive-curriculum): plan`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (via `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no plan.md yet) |
+| `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 45 (all; 8 of them `[human]`/`[reviewer]`/`[visual]`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/adaptive-curriculum/research.md` | Research: start rule (options A–D, rule D with per-stage/month table), weights/mastery/unlock/easing with proposed `balance` shape, prompt uniqueness (pool sizes), unlock card (kit copy, 48 child-facing step names), e2e (determinism, hook fields, proposed risk #13 wording), F5 |
-| `context/changes/adaptive-curriculum/change.md` | Status `new` → `preparing`, `updated` (metadata guard only) |
+| `context/changes/adaptive-curriculum/plan.md` | Implementation plan with `Driver:` lines, Critical Implementation Details (rule D formula + table), Known risks, Autonomous decisions 1–12, `## Progress` |
+| `context/changes/adaptive-curriculum/plan-brief.md` | Two-page brief |
+| `context/changes/adaptive-curriculum/change.md` | Status `preparing` → `planned` (metadata guard only) |
+| `context/foundation/roadmap.md` | S-07 status `proposed` → `planning` (At a glance row + item body) |
 | `context/changes/adaptive-curriculum/handoff.md` | This file |
 
 ## 3. Verification
@@ -29,36 +31,37 @@ is `≥ ceil(0.5·n)`, not `> 0.5` (corrects change.md decision 2).
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/adaptive-curriculum` |
-| Prompt-pool measurement (`node --import tsx $TMPDIR/pool/pool.ts`, 2000 draws per playable skill, outside the repo) | 6 skills < 20 prompts, smallest `E1.7.complement_10` 9; playable steps per stage as in research § 1 table |
-| Source reads | PRD (Success Criteria, US-01, FR-007/012/013/014/020, Business Logic), `Martynka-urzadza.md` §2/4/5/6/8/11, ZADANIA §1/§3, kit `preview.js`/`maths.css`/`style-guide.md`, test-plan § 2/§ 7, test-stack § E2E, specs + `support/welcome.ts`, `e2eHook.ts`, `e2eHookGuard.mjs`, `TaskScene`, core round/warm-up/placement |
+| Rule D table check (`node $TMPDIR/cal.mjs`, outside the repo, formula from research § 1) | all 36 cells equal the research table (E1 3,4,5,7,11,11 … E6 4,5,6,8,10,10) — used as the phase-2 oracle |
+| Success Criteria ↔ Progress mapping (python count per phase) | 1:4/4, 2:3/3, 3:4/4, 4:3/3, 5:5/5, 6:5/5, 7:6/6, 8:10/10, 9:4/4 |
+| `metadata-guard.mjs mark-planned` | `{"changed":true}` |
 | Gates (lint, typecheck, unit, build, e2e) | not run — docs-only step, no code changed (baseline in the contract: main at fd68216, unit 767, e2e 14) |
 
 ## 4. Next command
 
-`/10x-plan adaptive-curriculum`
+`/10x-plan-review adaptive-curriculum`
 
 ## 5. Open
 
-- Plan must decide (record under Autonomous decisions, `[human]` rows): start rule D (calendar floor; no literal PRD
-  text, Success Criteria "zgodne z tym, co jest aktualnie w szkole" is the anchor); unlock during easing (research
-  recommends allowing; change.md decision 4 said no); easing by weights instead of "mniejszy zakres, tryb z obrazkami";
-  session-only adaptation until S-11; no stage auto-advance.
-- Teacher read: new child-facing step-name field in `src/data/curriculum/*` (48 playable steps) and `pl.unlock` strings.
-- DESIGN-GAP candidates (to `docs/design-gaps.md`): card narration; card after "Do pokoju".
-- Follow-ups for the plan to write into `follow-ups/review-fixes.md`: test-plan refresh with risk #13 (wording in research
-  § 5) and #12; `test-stack.md` § E2E missing the `chromium-hook` project / port 4397; ` = ?` moved to `Trigger: S-16`.
-- If the plan picks a start rule that depends on the month for the parent path, `tests/e2e/support/welcome.ts`
-  `passWelcome` needs `?e2eMonth` (today it uses the real date).
+- `[human]` rows (plan Phase 8): 8.5 session-only until S-11; 8.6 rule D (E3 in October steps 1, 2, 6; whole stage from
+  January; parent path to a lower stage = whole stage); 8.7 `≥ ceil(0.5·n)`; 8.8 unlock during easing; 8.9 easing by
+  weights; 8.10 no stage auto-advance.
+- Teacher read: 48 `StepDef.childName` (phase 6, row 6.5) and `pl.unlock` (row 7.5).
+- E2E phase 9: if Chromium cannot launch, the request file `context/runs/2026-10-12-s04-s08/e2e-request-s07-p9.md` with
+  break patches on `TaskScene.startNextRound` (ignores `pendingUnlock`) and the card's „Dalej” (does not clear `pendingUnlock`).
+- Follow-ups the phase-8 agent writes (`follow-ups/review-fixes.md`): test-plan risks #13/#12, `test-stack.md` § E2E
+  `chromium-hook`, ` = ?` → `Trigger: S-16`, S-11 floor `max(saved, calendarStart)`, early save now covers mastery, S-08
+  history without prompt, S-17 calibration.
+- DESIGN-GAPs planned (rows 22+): narrator on the card, card after „Do pokoju”, book placeholder.
 
 ## 6. Autonomous decisions
 
-1. Question scope taken from the step prompt + `change.md` § Open questions; no AskUserQuestion. Would change if the
-   orchestrator adds questions.
-2. Recommended start rule D (school-calendar floor, `behind` stage → whole stage, `minStartSteps` 2) over A (first step:
-   regresses variety), B (whole stage: nothing to unlock), C (parent path only). Would change if the author wants every
-   step earned (A, with a `[human]` row accepting the regression until S-11).
-3. "Większość" = `≥ ceil(0.5·n)` because strict majority blocks a 2-skill step on one hard skill (ZADANIA §1). Would
-   change if the author reads "większość" literally and accepts that.
-4. Uniqueness by `prompt` string with same-skill retries (20), duplicate accepted after the limit. Would change if the
-   teacher read finds near-duplicates with different strings disturbing.
-5. Measurements via a throwaway script in `$TMPDIR` (no repo change); delegated reads to 3 read-only sub-agents.
+1. Rule D calendar floor adopted per orchestrator guidance; rejected A (first step, regression), B (whole stage, nothing to
+   unlock), C. Would change if the author wants every step earned or S-11 lands first.
+2. Unlock allowed during easing (reverses change.md decision 4; PRD silent) — `[human]` 8.8. Would change after the S-17 playtest.
+3. `unlockedStep` initialised for all six stages at placement (`startLearning`), so the warm-up correction and S-08 need no
+   recomputation. Would change if S-11 wants only played stages stored.
+4. The card is read aloud when `autoRead` (kit silent → DESIGN-GAP), because E1 children cannot read the step name.
+5. Scene wiring (phase 5) lands before the card (phase 7): an unlock moves the step silently and sets `pendingUnlock`
+   until then, so every phase stays green.
+6. The new e2e spec uses a new shared `tests/e2e/support/hook.ts`; migrating older specs stays follow-up F2 (`Trigger: S-08`).
+7. Interview/complexity/structure confirmations of the skill decided in place (no AskUserQuestion); clipboard skipped.
