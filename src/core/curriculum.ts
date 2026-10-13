@@ -5,6 +5,7 @@
 import { proposeStage, type PlacementData } from './placement';
 import type { Rng } from './rng';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
+import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
 import { generateTask } from './tasks/generateTask';
 import type { Task } from './tasks/types';
@@ -90,3 +91,61 @@ export const buildAdaptiveRound = (
     const skills = pickRoundSkills(skillBuckets(stage, previous, unlocked), weights, rng, rules.length);
     return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);
 };
+
+/** Numbers of the easing rule; they come from data/balance.ts as arguments. */
+export interface EasingRules {
+    readonly weakBelow: number;
+    readonly weakRounds: number;
+    readonly rounds: number;
+    readonly weights: Weights;
+}
+
+export type RoundResult = SkillResult;
+
+/**
+ * The playable step to unlock next, or null. The current step is the nearest playable one at or below
+ * `unlockedStep` (as in `skillBuckets`); it is ready when at least ceil(unlockShare * n) of its n playable skills
+ * have mastery >= unlockAt. There must be a later playable step.
+ */
+export const unlockReady = (stage: StageDef, adaptation: Adaptation, rules: CurriculumRules & Pick<MasteryRules, 'unlockAt'>): number | null => {
+    const steps = playableSteps(stage);
+    if (steps.length === 0) return null;
+    const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
+    const below = steps.filter((n) => n <= unlocked);
+    const current = below.length > 0 ? below[below.length - 1] : steps[0];
+    const next = steps.find((n) => n > current);
+    if (next === undefined) return null;
+    const skills = stage.steps.filter((s) => s.step === current).flatMap((s) => s.skills.filter(playable));
+    const mastered = skills.filter((k) => (adaptation.mastery[k.id] ?? 0) >= rules.unlockAt).length;
+    return mastered >= Math.ceil(rules.unlockShare * skills.length) ? next : null;
+};
+
+/**
+ * Everything that happens when a round ends: mastery from the first tries, then (normal rounds only) at most one
+ * unlocked step and the easing counters. A warm-up only records mastery.
+ */
+export const endRound = (
+    adaptation: Adaptation,
+    stage: StageDef,
+    results: readonly RoundResult[],
+    at: number,
+    kind: 'round' | 'warmup',
+    rules: { curriculum: CurriculumRules; mastery: MasteryRules; easing: EasingRules },
+): { adaptation: Adaptation; unlocked: number | null } => {
+    let next = recordRound(adaptation, results, at, rules.mastery);
+    if (kind === 'warmup') return { adaptation: next, unlocked: null };
+    const unlocked = unlockReady(stage, next, { ...rules.curriculum, unlockAt: rules.mastery.unlockAt });
+    if (unlocked !== null) next = { ...next, unlockedStep: { ...next.unlockedStep, [stage.id]: unlocked } };
+    let eased = next.easedRounds > 0 ? next.easedRounds - 1 : 0;
+    const firstTries = results.filter((r) => r.outcome === 'first').length;
+    let weak = firstTries < rules.easing.weakBelow ? next.weakStreak + 1 : 0;
+    if (weak === rules.easing.weakRounds) {
+        eased = rules.easing.rounds;
+        weak = 0;
+    }
+    return { adaptation: { ...next, weakStreak: weak, easedRounds: eased }, unlocked };
+};
+
+/** Bucket weights for the next round: the easing weights while easing rounds remain, else the normal ones. */
+export const roundWeights = (adaptation: Adaptation, rules: { curriculum: CurriculumRules; easing: EasingRules }): Weights =>
+    adaptation.easedRounds > 0 ? rules.easing.weights : rules.curriculum.weights;
