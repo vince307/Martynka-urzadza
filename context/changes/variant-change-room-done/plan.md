@@ -702,7 +702,7 @@ definicja (dane), nie zapis.
 
 #### Manual
 
-- [ ] 2.4 [reviewer] Teacher read: „Pokój gotowy!”, „Wkrótce”, „Zmień wygląd”, „Gotowe”, wskazówka lektora, „Salon”
+- [x] 2.4 [reviewer] Teacher read: „Pokój gotowy!”, „Wkrótce”, „Zmień wygląd”, „Gotowe”, wskazówka lektora, „Salon” — impl-review (F5 copy note)
 
 ### Phase 3: Szew `?e2eStars=N` w buildzie haka
 
@@ -743,7 +743,7 @@ definicja (dane), nie zapis.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Teacher read napisów karty i trybu w kontekście
+- [x] 5.5 [reviewer] Teacher read napisów karty i trybu w kontekście — impl-review
 - [ ] 5.6 [visual] Karta „Pokój gotowy!” z listą, gotowy pokój z „Zmień wygląd”, tryb „Gotowe”, panel zmiany ze stuknięcia — 1440×900 i 1024×768
 - [ ] 5.7 [visual] Reduced motion: karta od razu po ostatnim „Wybieram”
 
@@ -758,7 +758,7 @@ definicja (dane), nie zapis.
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:`
+- [x] 6.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:` — impl-review (F1, F2 fixed; F4 follow-up)
 - [ ] 6.6 [human] Próg przytrzymania dziecka 600 ms / 40 px do strojenia na urządzeniu
 - [ ] 6.7 [human] Decyzje UX trybu, karty i listy bez źródła w kicie
 - [ ] 6.8 [human] Kopia „Zmień wygląd” zamiast dosłownego „poprawki” (FR-019) i „Wkrótce”

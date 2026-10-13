@@ -18,3 +18,12 @@ Each item has a `Trigger:` line; later slices grep for them.
 - F5 (repeated casts): `roomText` in `src/data/pl.ts`, phase 4 (8baf606).
 - V1 (colliding captions): `captionAnchor` for wide slots, phase 2 (9c79ea2), used by `RoomView` since phase 4.
 - V2 (rug pop over the sofa): the change re-runs the purchase animation; to be captured at the S-10 visual gate (row 5.6).
+
+## From the implementation review (reviews/impl-review.md)
+
+- F4: two `Box` types — `src/core/roomHit.ts` `Box` (edges) and `src/ui/widgets/RoomView.ts` `Box` (width/height); rename one or add a converter when slot frames change for art.
+  Trigger: S-16
+- F6: `RoomDoneCard` `drawRoomTile`/`drawTeaserTile` draw the check mark and padlock with inline numbers; move them into `ROOM_DONE_LAYOUT.tiles` if the placeholders outlive the art.
+  Trigger: S-16
+- F5: the change-mode hint „Stuknij mebel, który chcesz zmienić.” names furniture while floor, walls and curtains also change; alternative „Stuknij to, co chcesz zmienić.” — maintainer's copy decision.
+  Trigger: human checklist row 6.8 (S-10)

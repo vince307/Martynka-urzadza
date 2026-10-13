@@ -222,11 +222,11 @@ export const ROOM_LAYOUT = {
     // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
     // Top aligned with `resume`, below "Wybieram".
     taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
+    // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
+    modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
     // Slot captions and the dashed outline of an empty slot; holdOutline is the thick outline of the slot under a holding finger.
     // DESIGN-GAP (docs/design-gaps.md rows 32 and 37): the kit has no slots and no hold view.
-    // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
-    // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md rows 38 and 40): the kit has no change mode.
-    modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
     slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22, captionCharWidth: 20, holdOutline: 10 },
 } as const;
 

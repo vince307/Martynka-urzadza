@@ -1,55 +1,65 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
-Written by the phase-7 finishing step. All automated phases (1-7) are committed; review, visual and human rows remain.
+Written by the implementation-review step. Phases 1–7 are committed and reviewed (APPROVED, `MERGE: CLEAR`); only the visual gate and [human] rows remain. Do not re-open the reducer or the seam: both were re-proven by breaks in this step.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
-| Commits | ..., `3e3931d` (phase 6), `96f7514` (fix: hold point margin), `14891b9` (phase 7 e2e spec + config), handoffs |
+| Commits | `a8deb20`..HEAD (phases 1–7, fix `96f7514`, handoffs) + this step's `docs(variant-change-room-done): przegląd implementacji` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | [reviewer]/[visual]/[human] rows only (5.5-5.7, 6.5-6.9) |
-| Working tree | clean after this handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 9: [visual] 4.6, 4.7, 5.6, 5.7; [human] 3.5, 6.6, 6.7, 6.8, 6.9 |
+| Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/room-change.spec.ts` | 2 tests: hold opens the free change panel (stars unchanged, tap outside the mode does not open, thumbnail preview), and the finishing purchase shows "Pokój gotowy!" |
-| `playwright.config.ts` | `ROUND_SPEC` entry for the hook-build round spec |
-| `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md` | rounds 1-3 and the orchestrator evidence |
-| `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch`, `e2e-break-s10-p7a..d.patch` | the five deliberate breaks |
-| `docs/design-gaps.md`, `follow-ups/review-fixes.md` | gaps 37-41, S-11/S-16/v1.1/M8 items |
+| `context/changes/variant-change-room-done/reviews/impl-review.md` | full-plan review: 0 critical, 1 warning (fixed), 5 observations; teacher read; seam checks; ends with `MERGE: CLEAR` |
+| `docs/design-gaps.md` | row 38 corrected (F1: the second tap of a double tap on „Zamknij” toggles the mode) |
+| `src/data/layout.ts` | `ROOM_LAYOUT.modeButton`/`slot` comments reordered, row reference 38 (F2; comment-only, no value changed) |
+| `context/changes/variant-change-room-done/follow-ups/review-fixes.md` | F4, F6 (`Trigger: S-16`), F5 (`Trigger: human checklist row 6.8`) |
+| `context/changes/variant-change-room-done/plan.md` | rows 2.4, 5.5, 6.5 [reviewer] ticked |
+| `context/changes/variant-change-room-done/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
-Orchestrator e2e run, round 3 (on `96f7514` + the spec, now `14891b9`): `room-change.spec.ts` 2 passed; full `npx playwright test` 26 passed (baseline 24 + 2). Each break applied alone, spec red, reverted:
+Observed in this step (baseline on `36ead3c`: 1035 unit, 24 e2e):
 
-| Break | Red assertion |
+| Command | Result |
 |---|---|
-| p4 (dispatch writes stars on `changed`) | test 1 :122 `expect(changed.state.stars).toBe(S)` Expected 15 Received 14; test 2 :190 `toBe(0)` Expected 0 Received -1 |
-| p7a (fired hold dispatches `open`) | test 1 :113 `toMatchObject({kind:'open', mode:'change', slot:'floor'})` received mode "buy"; test 2 :184 panel stayed closed |
-| p7b (gesture mode always `change`) | test 1 :101 `panel.kind` Expected "closed" Received "open" after the plain tap |
-| p7c (no card on the finishing purchase) | test 2 :163 `room.card` not.toBeNull, Received null (poll timeout) |
-| p7d (VariantPanel fires on pointerup without pointerdown) | test 1 :138 `held.preview` toBeNull, Received 0 |
+| `npm run lint` | clean (before and after the F2 comment edit) |
+| `npm run typecheck` | clean |
+| unit command (contract) | exit 0: `npm test` 1078 passed (baseline 1035, +43), deploy/ops scripts OK, `sample` E1–E6 `Naruszenia: 0` |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -rlE "e2eStars|__martynkaE2E|e2eMonth|e2eFail|E2E_MAX_STARS" dist/` empty |
+| `npx playwright test` (plain, this session) | 26 passed (baseline 24, +2); 4397/4398 not listening afterwards |
+| `validate-rule-files.sh` | PASS (186 paths, missing 0) |
 
-Phase 7 found a product defect: `holdPoint` returned the slot rectangle's top-left edge, which a touch at 1280x720 missed (519.99 vs 520); fixed in `96f7514` (3x3 margin, +2 unit tests).
-
-This step ran: `npm run lint` clean, `npm run typecheck` clean, unit command exit 0 (`npm test` 1078 passed, deploy and ops scripts, `sample` E1-E6), `npm run build` prints "e2e hook: absent (2 chunks checked)". Playwright not run here (orchestrator evidence above).
+Deliberate breaks re-executed: (1) `stepChange` returns `stars - 1` → `variantPanel.test.ts` red on "confirm with a preview … spends and counts nothing", "works when the room is complete and the balance is zero" and the risk #16 property seeds; restored. Meta-check: expectations from FR-018/risk #16, not the code. (2) `main.ts` reads `e2eStars` without `__E2E_HOOK__` → `npm run build` fails "e2e hook leaked … (e2eStars in _app/index-….js)"; restored. Meta-check: proves the guard on the real bundle. Orchestrator e2e breaks p4, p7a–d inherited (round 3), not re-run; the full suite was.
 
 ## 4. Next command
 
-`/10x-impl-review variant-change-room-done`
+visual gate (S-10 hold outline, change panel, change mode, Pokój gotowy! card)
 
 ## 5. Open
 
-- Rows 5.5 (teacher read), 6.5 [reviewer], 6.6-6.9 [human] (iPad/Android hold, tap in mode, card, reduced motion) and the visual gate are not mine.
-- Fix `96f7514` (holdPoint margin) came from this phase; real-finger misses on small slots belong to the device check 6.9.
+- [visual] 4.6, 4.7, 5.6, 5.7: hold outline (`RoomView.highlight`), change panel without/with preview, rug pop over the sofa (V2), captions (`captionAnchor`), card `RoomDoneCard`, mode button „Zmień wygląd”/„Gotowe”, reduced motion — 1440×900 and 1024×768, hook build with `?e2eStars=40`/`96`; gestures via a throwaway Playwright spec (profile § 8).
+- [human] 3.5 (`?e2eStars` seam), 6.6 (`balance.roomHold` 600 ms / 40 px), 6.7 (UX decisions of mode/card/list), 6.8 (copy „Zmień wygląd”, „Wkrótce”, and F5 hint „Stuknij mebel…”), 6.9 (iPad/Android).
+- Follow-ups in `follow-ups/review-fixes.md`: S-11 save after change, S-16 art (+F4 `Box` types, F6 `RoomDoneCard` glyph numbers), v1.1 `ROOM_ORDER`, M8 tuning, F5 copy.
+- F3 accepted: `RoomScene.redraw` narration follows `card`, so the speaker can read „Pokój gotowy!” during the 260 ms pop.
 
 ## 6. Autonomous decisions
 
+Impl-review step:
+
+R1. Reviewed in the main session without the skill's two sub-agents: ~1000 code lines in 20 files read in full; the riskiest claims verified by reading and re-run breaks. Rejected: delegating (would only summarise the same files). Would change: a larger diff.
+R2. Triage in place: F1 (doc row) and F2 (comments) fixed as cheap; F3 accepted; F4/F6 deferred to S-16 (art reworks those files); F5 left to the maintainer's copy row 6.8. Would change: maintainer disagreement on disk.
+R3. `holdPoint` (fix `96f7514`) judged hook-only: its sole caller is `RoomScene.slotTargets` → `targets.slots`; the product's touch uses `slotAt`, unchanged. Would change: a product caller of `holdPoint` appears.
+R4. Teacher read passes all new strings; „mebel” noted (F5) rather than changed, because the plan fixed the copy and row 6.8 is the maintainer's. Would change: maintainer picks the alternative.
+
+Earlier steps (kept):
 
 1. Triage done in place (no AskUserQuestion): every CRITICAL/WARNING fixed in plan.md with its recommended fix; OBSERVATIONS F6/F7 accepted. Would change: maintainer disagreement on disk.
 2. F1 — added pure `roomGesture` to phase 1 (tdd) rather than leaving gesture rules in `RoomScene` (rejected: in-scene feed like `UIScene`, untestable before phase 7). Why: CLAUDE.md logic-in-core rule and the slice check "hold must not trigger on release". Would change: phase-1 agent finds it duplicates `longPress` wholesale.

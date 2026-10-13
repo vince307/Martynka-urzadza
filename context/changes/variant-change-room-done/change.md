@@ -1,7 +1,7 @@
 ---
 change_id: variant-change-room-done
 title: Darmowa zmiana wariantu, „Pokój gotowy!”, lista pokoi i „poprawki” w salonie
-status: implemented
+status: impl_reviewed
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
