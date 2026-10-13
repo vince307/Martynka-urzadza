@@ -7,7 +7,7 @@ import { endRound } from '../src/core/curriculum';
 import { placeByChild, type SessionLearner } from '../src/core/placement';
 import type { SkillResult } from '../src/core/mastery';
 import { purchase } from '../src/core/rooms';
-import { DEFAULT_PROFILE, SAVE_VERSION, decodeSave, encodeSave, freshSession, rawExportText, validateSave, type SessionSave } from '../src/core/save';
+import { DEFAULT_PROFILE, SAVE_VERSION, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
 import { startLearning } from '../src/core/curriculum';
 import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -214,18 +214,6 @@ describe('the decoder does not mutate its input', () => {
         if (result.kind !== 'ok') throw new Error('unreadable');
         asRecord(asRecord(raw.rooms).living).tasksDone = 99;
         expect(result.session.rooms.living.tasksDone).toBe(3);
-    });
-});
-
-describe('rawExportText never throws', () => {
-    it('indents an object as JSON', () => {
-        expect(rawExportText({ a: 1 })).toBe('{\n  "a": 1\n}');
-    });
-    it('falls back to String for a BigInt and a cycle', () => {
-        expect(rawExportText({ n: 1n })).toBe('[object Object]');
-        const cycle: Record<string, unknown> = {};
-        cycle.self = cycle;
-        expect(rawExportText(cycle)).toBe('[object Object]');
     });
 });
 

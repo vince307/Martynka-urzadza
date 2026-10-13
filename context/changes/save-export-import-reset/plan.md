@@ -780,7 +780,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 - [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (+10) — 8c5bb41
 - [x] 5.2 Deliberate break: `onImport` bez `session.run` / brak tekstu `future` → czerwone; przywrócone; meta-check (przepływ w e2e fazy 7) — 8c5bb41
-- [ ] 5.3 E2E (orkiestrator) `<baseline gałęzi e2e> + 0`; `npm run build` drukuje `e2e hook: absent (`
+- [x] 5.3 E2E (orkiestrator) `<baseline gałęzi e2e> + 0`; `npm run build` drukuje `e2e hook: absent (` — 8c5bb41 (e2e 33 passed by the orchestrator on 165de82)
 
 #### Manual
 
@@ -792,9 +792,9 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [ ] 6.1 `validate-rule-files.sh` PASS
-- [ ] 6.2 Deliberate break: `onReset` bez `session.run` → `dialogSessions` czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 6.3 `rawExportText` usunięte lub uzasadnione; `freshSession` nie żyje w `main.ts`
+- [x] 6.1 `validate-rule-files.sh` PASS
+- [x] 6.2 Deliberate break: `onReset` bez `session.run` → `dialogSessions` czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
+- [x] 6.3 `rawExportText` usunięte lub uzasadnione; `freshSession` nie żyje w `main.ts`
 - [ ] 6.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

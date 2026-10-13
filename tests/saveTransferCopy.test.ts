@@ -23,4 +23,10 @@ describe('pl.saveTransfer import copy', () => {
     it('formats a room line', () => {
         expect(pl.saveTransfer.room('Salon', 3, 10)).toBe('Salon: 3 z 10');
     });
+
+    it('asks before a reset, advises a copy and keeps the destructive label off the cancel label', () => {
+        expect(pl.saveTransfer.resetTitle).toMatch(/\?$/);
+        expect(pl.saveTransfer.resetHint).toContain('zapisz kopię');
+        expect(pl.saveTransfer.resetConfirm).not.toBe(pl.parent.cancel);
+    });
 });

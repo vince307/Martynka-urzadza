@@ -124,6 +124,12 @@ export const pl = {
             'unknown-version': 'Nie rozpoznaję wersji tego zapisu. Obecne postępy zostały bez zmian.',
         },
         applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
+        // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.
+        resetButton: 'Zacznij od nowa',
+        resetTitle: 'Zacząć grę od nowa?',
+        resetBody: 'Znikną wszystkie postępy z tego urządzenia:',
+        resetHint: 'Jeśli chcesz je zachować, najpierw zapisz kopię.',
+        resetConfirm: 'Zacznij od nowa',
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
     saveUnavailable: {

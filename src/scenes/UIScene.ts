@@ -13,10 +13,11 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { saveHealthView } from '../core/saveHealth';
-import { decodeSave, type SessionSave } from '../core/save';
+import { decodeSave, encodeSave, freshSession, type SessionSave } from '../core/save';
 import { exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
-import { ROOMS } from '../data/rooms';
+import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
+import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
@@ -150,6 +151,7 @@ export class UIScene extends Scene {
                     onCancel: () => session.run(() => this.closeSettings()),
                     ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
                     ...(saver ? { onImport: () => session.run(() => this.openImport(saver, session)) } : {}),
+                    ...(saver ? { onReset: () => session.run(() => this.openReset(saver, session)) } : {}),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
                 });
                 }),
@@ -180,6 +182,22 @@ export class UIScene extends Scene {
             summarize,
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
+            apply: (state) => saver.replace(state),
+            onClose: () => session.run(() => this.closeSettings()),
+        });
+    }
+
+    /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
+    private openReset(saver: Autosaver, session: InputSession): void {
+        const decoded = decodeSave(saver.current());
+        if (decoded.kind !== 'ok') {
+            this.closeSettings();
+            return;
+        }
+        this.closeDialog = openSaveResetDialog({
+            current: saveSummary(decoded.session, ROOMS),
+            roomName: (id) => ROOMS[id]?.name ?? id,
+            fresh: () => encodeSave(freshSession(FIRST_ROOM)),
             apply: (state) => saver.replace(state),
             onClose: () => session.run(() => this.closeSettings()),
         });

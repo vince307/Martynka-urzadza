@@ -73,7 +73,7 @@ export class WelcomeScene extends Scene {
         }
         const month = this.sessionMonth();
         const suspender = this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
-        if (!suspender || this.session) {
+        if (!suspender || this.session?.active()) {
             return;
         }
         const resume = (): void => {

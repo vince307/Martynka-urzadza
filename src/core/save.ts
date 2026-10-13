@@ -171,15 +171,6 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
     }
 }
 
-/** Text of a raw stored value for the parent's backup copy. Falls back to String() when it cannot be serialised; never throws. */
-export function rawExportText(raw: unknown): string {
-    try {
-        return JSON.stringify(raw, null, 2) ?? String(raw);
-    } catch {
-        return String(raw);
-    }
-}
-
 /** The empty game of a first launch and of a reset; the caller names the first room (core does not import data). */
 export function freshSession(firstRoom: string, stars = 0): SessionSave {
     return { stars, rooms: { [firstRoom]: emptyRoomState() }, currentRoom: firstRoom, settings: initialSettings(), learner: null };

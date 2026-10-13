@@ -5,6 +5,7 @@ import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
+import { createSummaryList } from './saveSummaryView';
 
 export interface SaveImportDialogOptions {
     /** The summary of the save on this device ("Teraz"). */
@@ -20,18 +21,6 @@ export interface SaveImportDialogOptions {
     reload?: () => void;
     parent?: HTMLElement;
 }
-
-const summaryBlock = (title: string, summary: SaveSummary, roomName: (id: string) => string): HTMLElement => {
-    const box = document.createElement('div');
-    box.className = 'import-summary';
-    const lines = [
-        pl.saveTransfer.stars(summary.stars),
-        summary.stage ? pl.stages[summary.stage] : pl.saveTransfer.noStage,
-        ...summary.rooms.map((r) => pl.saveTransfer.room(roomName(r.id), r.done, r.total)),
-    ];
-    box.append(createText('h2', title), ...lines.map((line) => createText('p', line)));
-    return box;
-};
 
 /**
  * Import in two steps (FR-022): pick a file, then compare "Teraz" and "Z pliku" and tap "Wczytaj". A file that
@@ -87,8 +76,8 @@ export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, a
         actions.className = 'parent-actions';
         actions.append(load, cancel);
         show(pl.saveTransfer.importTitle, [
-            summaryBlock(pl.saveTransfer.now, current, roomName),
-            summaryBlock(pl.saveTransfer.fromFile, summarize(session), roomName),
+            createSummaryList(pl.saveTransfer.now, current, roomName),
+            createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName),
             message,
             actions,
         ]);

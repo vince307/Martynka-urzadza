@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
-const DIALOG_CALLBACKS = new Set(['onPass', 'onConfirm', 'onCancel', 'onExport', 'onImport', 'onClose']);
+const DIALOG_CALLBACKS = new Set(['onPass', 'onConfirm', 'onCancel', 'onExport', 'onImport', 'onReset', 'onClose']);
 
 interface Callback {
     name: string;
@@ -43,9 +43,9 @@ const dialogCallbacks = (file: string): Callback[] => {
 describe('parent dialog callbacks run in the input session (C-2)', () => {
     // Expected counts keep the test from passing on a file where the callbacks moved elsewhere.
     it.each([
-        ['UIScene.ts', 8],
+        ['UIScene.ts', 10],
         ['WelcomeScene.ts', 4],
-    ])('%s wraps every onPass/onConfirm/onCancel/onExport/onImport/onClose in session.run', (file, count) => {
+    ])('%s wraps every onPass/onConfirm/onCancel/onExport/onImport/onReset/onClose in session.run', (file, count) => {
         const callbacks = dialogCallbacks(file);
         expect(callbacks).toHaveLength(count);
         expect(callbacks.filter((c) => !c.inSession).map((c) => `${c.name} at line ${c.line}`)).toEqual([]);
