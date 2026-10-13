@@ -1,15 +1,15 @@
 # Handoff — `save-observability-c1-c2` (slice fix, non-roadmap)
 
-Written by the visual-gate step: every [visual] row captured and verified (`VISUAL: PASS`), no production code changed, full local gate green including e2e (33 passed, run in this session). Next is archive then ship; the three [human] rows stay open and go to the PR / human checklist, they do not block shipping.
+Written by the archive + ship step (final pre-merge state): change archived to `context/archive/2026-10-13-save-observability-c1-c2/`; the three [human] rows stay open as a post-run checklist (PR body "Dla właściciela produktu" + `docs/human-checklist.md` at run close), they do not block shipping. PR/CI/merge/deploy recorded in context/runs/2026-10-13-fix-save-observability/run-log.md.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-observability-c1-c2`, cut from `main` at `4698110` |
-| Commits | phases `fb2e7bb`..`a44f3b4`, review fix `d455c40`, review `8af55af`, this visual-gate commit `docs(save-observability-c1-c2): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Commits | phases `fb2e7bb`..`a44f3b4`, review fix `d455c40`, review `8af55af`, visual gate `f75b4e5`, this archive commit `docs(save-observability-c1-c2): archiwizacja` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-fix-save-observability/run-log.md |
+| `change.md` status | `archived` |
 | Progress rows remaining | 3 (`grep -c '^- \[ \]' plan.md`): 4.5, 5.9, 5.10 — all [human] |
 | Working tree | clean after the commit (throwaway spec moved to the session scratchpad, `dist-e2e/` is gitignored) |
 
@@ -38,7 +38,7 @@ Written by the visual-gate step: every [visual] row captured and verified (`VISU
 
 ## 4. Next command
 
-`/10x-archive save-observability-c1-c2 then ship`
+none — shipped
 
 ## 5. Open
 
@@ -49,6 +49,10 @@ Written by the visual-gate step: every [visual] row captured and verified (`VISU
 - Follow-ups with `Trigger:` in `follow-ups/review-fixes.md`; DESIGN-GAP 42, 43, 45 in `docs/design-gaps.md`.
 
 ## 6. Autonomous decisions
+
+- Archive step: "Continue archiving" (Recommended — 0 automated, 3 manual pending). The [human] rows 4.5, 5.9, 5.10 need a device and the maintainer's acceptance of form and copy; the run cannot do them, so they become a post-run checklist in the PR body. Would change if: the maintainer made any of them a merge condition.
+- Archive step: no SHA repoint — the PR merges with `--merge` (no squash), so every Progress SHA stays reachable from `main`; Progress rows with a note after the SHA are a soft warning only. Would change if: the PR were squash-merged.
+- Archive step: no roadmap row (non-roadmap change, `grep` of `roadmap.md` for the change id: 0) — roadmap left untouched. Commit message from the step prompt (`docs(...): archiwizacja`) instead of the skill's `chore(archive): close ...`.
 
 - Playwright fallback instead of Claude in Chrome: seams need fresh browser contexts and the gear needs a 2 s Phaser long press (profile § 8). Would change if: Claude in Chrome could drive canvas long presses.
 - Panel frames scrolled with `scrollIntoView({ block: 'center' })` after the first run showed the section under the sticky actions at 1024×768; recorded as observation O2, not fixed (existing panel behaviour since S-08, ordering is [human] 5.9). Would change if: the maintainer wants the save line above the fold.
