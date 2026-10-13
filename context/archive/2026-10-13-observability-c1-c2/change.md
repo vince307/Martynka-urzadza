@@ -1,10 +1,10 @@
 ---
 change_id: observability-c1-c2
 title: Granica błędów, zwalnianie wejścia po wyjątku, stan lektora w ustawieniach i opanowanie bez kary
-status: impl_reviewed
+status: archived
 created: 2026-10-13
 updated: 2026-10-13
-archived_at: null
+archived_at: 2026-10-13T07:17:35Z
 ---
 
 ## Notes
