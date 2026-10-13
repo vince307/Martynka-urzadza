@@ -10,7 +10,7 @@ export interface RoomPreview {
     variant: 0 | 1 | 2;
 }
 
-interface Box { left: number; top: number; width: number; height: number }
+export interface Box { left: number; top: number; width: number; height: number }
 
 /**
  * The room drawn in code: walls above `wallBottom`, floor below, then the slots by depth. An empty slot is a dashed
@@ -51,7 +51,7 @@ export class RoomView {
             if (variant === undefined) {
                 this.drawDashed(box);
             } else {
-                this.drawFurniture(box, size.variants[variant]);
+                drawLook(this.graphics, box, size.variants[variant]);
             }
             this.captions.push(this.scene.add.text(slot.x, slot.y, caption, textStyle('caption')).setOrigin(0.5));
         });
@@ -78,23 +78,25 @@ export class RoomView {
         run(box.left, box.top, 0, 1, box.height);
         run(box.left + box.width, box.top, 0, 1, box.height);
     }
+}
 
-    private drawFurniture(box: Box, look: Look): void {
-        const { radius, patternInset, stripeWidth, stripeStep, dotRadius, dotStep, patternAlpha } = ROOM_LAYOUT.slot;
-        const g = this.graphics;
-        g.fillStyle(PLACEHOLDER_COLORS[look.fill], 1);
-        g.fillRoundedRect(box.left, box.top, box.width, box.height, radius);
-        g.fillStyle(PLACEHOLDER_COLORS.deepTeal, patternAlpha);
-        const inner = { left: box.left + patternInset, top: box.top + patternInset, width: box.width - 2 * patternInset, height: box.height - 2 * patternInset };
-        if (look.pattern === 'stripes') {
-            for (let x = 0; x + stripeWidth <= inner.width; x += stripeStep) {
-                g.fillRect(inner.left + x, inner.top, stripeWidth, inner.height);
-            }
-        } else if (look.pattern === 'dots') {
-            for (let x = dotRadius; x + dotRadius <= inner.width; x += dotStep) {
-                for (let y = dotRadius; y + dotRadius <= inner.height; y += dotStep) {
-                    g.fillCircle(inner.left + x, inner.top + y, dotRadius);
-                }
+/** A placeholder piece of furniture: colour with a pattern. `scale` shrinks the pattern for thumbnails. */
+export function drawLook(g: GameObjects.Graphics, box: Box, look: Look, scale = 1, radiusOverride?: number): void {
+    const { radius, patternInset, stripeWidth, stripeStep, dotRadius, dotStep, patternAlpha } = ROOM_LAYOUT.slot;
+    g.fillStyle(PLACEHOLDER_COLORS[look.fill], 1);
+    g.fillRoundedRect(box.left, box.top, box.width, box.height, radiusOverride ?? radius);
+    g.fillStyle(PLACEHOLDER_COLORS.deepTeal, patternAlpha);
+    const inset = patternInset * scale;
+    const inner = { left: box.left + inset, top: box.top + inset, width: box.width - 2 * inset, height: box.height - 2 * inset };
+    if (look.pattern === 'stripes') {
+        for (let x = 0; x + stripeWidth * scale <= inner.width; x += stripeStep * scale) {
+            g.fillRect(inner.left + x, inner.top, stripeWidth * scale, inner.height);
+        }
+    } else if (look.pattern === 'dots') {
+        const r = dotRadius * scale;
+        for (let x = r; x + r <= inner.width; x += dotStep * scale) {
+            for (let y = r; y + r <= inner.height; y += dotStep * scale) {
+                g.fillCircle(inner.left + x, inner.top + y, r);
             }
         }
     }

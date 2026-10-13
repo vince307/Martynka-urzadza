@@ -108,6 +108,38 @@ describe('task screen layout constants', () => {
         }
     });
 
+    it('keeps the variant panel touch targets 96 px or more, inside the tray, apart from each other and clear of the HUD', () => {
+        const { tray, thumbs, choose, close } = ROOM_LAYOUT;
+        expect(ROOM_TOUCH_TARGETS.thumb).toEqual({ width: thumbs.size, height: thumbs.size });
+        expect(ROOM_TOUCH_TARGETS.choose).toEqual({ width: choose.width, height: choose.height });
+        expect(ROOM_TOUCH_TARGETS.close).toEqual({ width: close.width, height: close.height });
+        for (const target of [ROOM_TOUCH_TARGETS.thumb, ROOM_TOUCH_TARGETS.choose, ROOM_TOUCH_TARGETS.close]) {
+            expect(target.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            expect(target.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        }
+        type Rect = { left: number; top: number; right: number; bottom: number };
+        const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
+        const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const trayRect = rect(tray);
+        const thumbRects = [0, 1, 2].map((i) => rect({ left: thumbs.left + i * (thumbs.size + thumbs.gap), top: thumbs.top - thumbs.lift, width: thumbs.size, height: thumbs.size + thumbs.lift }));
+        const all = [...thumbRects, rect(choose), rect(close)];
+        for (const r of all) {
+            expect(r.left).toBeGreaterThanOrEqual(trayRect.left);
+            expect(r.top).toBeGreaterThanOrEqual(trayRect.top);
+            expect(r.right).toBeLessThanOrEqual(trayRect.right);
+            expect(r.bottom).toBeLessThanOrEqual(trayRect.bottom);
+        }
+        for (let i = 0; i < all.length; i++) {
+            for (let j = i + 1; j < all.length; j++) {
+                expect(overlap(all[i], all[j])).toBe(false);
+            }
+        }
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        for (const h of [settings, speaker, roomSwitch, TASK_LAYOUT.starCounter]) {
+            expect(overlap(trayRect, rect(h))).toBe(false);
+        }
+    });
+
     it('keeps the welcome age buttons touch targets, side by side without overlap, inside the notebook', () => {
         const { left, top, width, height, gap } = WELCOME_LAYOUT.ages;
         expect(WELCOME_TOUCH_TARGETS.age).toEqual({ width, height });

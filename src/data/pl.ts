@@ -115,6 +115,8 @@ export const pl = {
     // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
     room: {
         resume: 'Wróć do notesu',   // kit room-return view
+        choose: 'Wybieram',
+        close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36, added in S-09 phase 7): the kit has no slots, task button or variant panel copy; these strings are ours.
         name: 'Salon',
         // Imperative with the accusative, keyed by RoomTaskDef.label.
