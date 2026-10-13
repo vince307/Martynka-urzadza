@@ -49,3 +49,21 @@ Wysłane i wdrożone: S-04 runda zadań (#20, 8467431), S-05 lektor i podsumowan
 - [ ] S-04 10.5 – 10.8: „Dalej” zamiast automatycznego przejścia; samo „Spróbuj jeszcze raz”, gdy pierwsza linia podpowiedzi zdradza wynik; typ `select` poza losowaniem do S-13; przełącznik zadania/pokój do S-05/S-09.
 - [ ] S-05 10.5 – 10.8: auto-czytanie domyślne od etapu; „Do pokoju” bez wyróżnienia do S-09; z pokoju powrót na ekran, z którego dziecko wyszło; pierwsze zadanie po zimnym starcie nie jest czytane automatycznie (wymóg gestu przeglądarki).
 - [ ] Bramka e2e w biegu: testy e2e uruchamiał orkiestrator (Chromium nie startował w sesjach agentów), łamania zachowań przez patche `git apply`. Wynik każdego łamania jest w dzienniku biegu.
+
+## Bieg 2026-10-13-fix-observability (poprawka po audycie, PR #27)
+
+Wysłane i wdrożone: `observability-c1-c2` (#27, merge 298c74d, Deploy 38361972416). C-1: zamiast zamrożonego ekranu karta „Ups! Gra się zatrzymała.” z przyciskiem „Zacznij od nowa”. C-2: okna dialogowe zawsze oddają dotyk, nawet po wyjątku. H-6: panel mówi, gdy nie ma polskiego głosu. H-7: błąd w pierwszej próbie zeruje serię, opanowanie nie spada. Main po biegu: 974 testy jednostkowe, 23 e2e.
+
+### Do zrobienia
+
+- [ ] P0 — Przejrzyj audyt kontrolny, PR #28 (nie scalony przez bieg): 0 CRITICAL; C-1, C-2, H-6 zamknięte, H-7 częściowo (rodzic nie widzi postępu do odblokowania), H-3/H-4 (lektor gubi błędy mowy) otwarte. Nowe: N-1 — granica błędów instaluje się po importach i po `createNarrator` w `src/main.ts`, więc wyjątek tam nadal daje pusty ekran bez karty; N-4 — karta pokazuje tylko wersję, bez kodu błędu. Źródło: `context/audits/observability/2026-10-13_0924-…md` na gałęzi PR #28.
+- [ ] P0 — `/10x-test-plan --refresh` (interaktywne): przyjmij ryzyka #12–#15 (#15 = karta zamiast zamrożonego ekranu, nowy spec `tests/e2e/error-boundary.spec.ts`).
+- [ ] P1 — Kalibracja progu opanowania po H-7 przy playteście: model badania daje ok. 19 / 14 / 11 rund do odblokowania kroku przy 60 / 70 / 80 % trafności (wcześniej 335 / 61 / 20). Źródło: zarchiwizowany plan, wiersz 2.6; `Trigger: S-17`.
+- [ ] P1 — Na iPadzie i Androidzie: karta błędu czytelna palcem, „Zacznij od nowa” przeładowuje grę; linia o braku głosu na urządzeniu bez polskiego głosu.
+- [ ] P2 — Follow-upy z impl-review (F3–F6) i audytu kontrolnego (N-2, N-3, N-5, N-6, L-12). Źródło: `context/archive/2026-10-13-observability-c1-c2/follow-ups/review-fixes.md`, PR #28.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Do S-11 restart z karty kończy sesję (wiek, etap, opanowanie od nowa), wbrew dosłownemu PRD „niczego stracić”; karta pokazuje się na każdą awarię uznaną za krytyczną (wiersz 4.8).
+- [ ] Przełącznik czytania na głos zostaje aktywny bez polskiego głosu; panel tylko o tym mówi (wiersz 5.9).
+- [ ] Odrzucenia `AbortError` / `NotAllowedError` traktowane jako szum (mowa, audio); od S-11 trzeba to sprawdzić dla IndexedDB (follow-up `Trigger: S-11`).
