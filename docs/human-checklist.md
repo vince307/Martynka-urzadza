@@ -90,3 +90,20 @@ Wysłane i wdrożone: S-09 `first-furniture-purchase` (#31, merge 36ead3c, Deplo
 - [ ] S-11 6.7: na karcie nieczytelnego zapisu „Graj dalej” bez bramki dorosłego (dziecko samo nie utknie), eksport za bramką; po nieudanym odczycie gra w tej sesji nic nie zapisuje.
 - [ ] S-11 6.9: tekst karty błędu („Ups! Gra się zatrzymała.”) bez obietnicy zapisanego postępu; wyjątek fatalny blokuje autozapis tej sesji.
 - [ ] Bramka e2e w biegu: Chromium nie startował w 16 z 18 sesji agentów; testy i łamania (patche `git apply`) uruchamiał orkiestrator, wyniki w dzienniku biegu. Faza 7 S-10 znalazła błąd punktu docelowego haka (`holdPoint` na krawędzi slotu, poprawka 96f7514 — dziecka nie dotyczy).
+
+## Bieg 2026-10-13-fix-save-observability (poprawka po audycie, PR #36)
+
+Wysłane i wdrożone: `save-observability-c1-c2` (#36, merge d13d9a3, Deploy 38424548530). C-1: gdy przeglądarka nie udostępnia zapisu albo odczyt nie kończy się w 5 s, przed grą pokazuje się karta „Gra nie może teraz zapisywać postępów”, a nazwa błędu trafia do konsoli. C-2: panel rodzica ma sekcję „Zapis gry” (działa / nieudane próby / wyłączony, z godziną ostatniego zapisu). H-R3: nieznany pokój w zapisie jest naprawiany przy wczytaniu, bez ruszania innych pokojów. Format zapisu bez zmian (v1). Main po biegu: 1176 testów jednostkowych, 33 e2e.
+
+### Do zrobienia
+
+- [ ] P0 — Przejrzyj audyt kontrolny, PR #37 (nie scalony przez bieg): 0 CRITICAL (było 2). Zamknięte C-1, M-S4, M-S5, M-R6, H-R3, L-R10; częściowo C-2 (teraz C-2r, medium: `InvalidSave` nie wskazuje pola, rodzic widzi porażki tylko po otwarciu panelu) i M-R5. Nowe: N-7 (medium) — odczyt przerwany po limicie i odczyt odrzucony dają ten sam tekst, karta nie ma ponowienia, a limit 5000 ms nie był mierzony na tablecie (`src/core/autosave.ts` `loadSave`); N-8 (low) — panel mówi „działa” przed pierwszym zapisem. Źródło: `context/audits/observability/2026-10-13_1751-zdrowie-zapisu-po-poprawce.md` na gałęzi PR #37.
+- [ ] P1 — iPad i Android (wiersz 4.5): tryb prywatny / zablokowane dane witryn → karta pojawia się tylko wtedy, gdy magazyn naprawdę jest niedostępny; zmierz czas zimnego odczytu zapisu na iPadzie (czy 5 s wystarcza — N-7).
+- [ ] P2 — Follow-upy: `context/archive/2026-10-13-save-observability-c1-c2/follow-ups/review-fixes.md` (M-S1 zasada rollbacku vs wersja zapisu, M-S2 wynik `persist()`, M-S3 powód na karcie, M-R4 kolejność zadań, L-*).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] 5.9 — DESIGN-GAP 43 zmieniony: zamiast „nic nie pokazujemy” jest linia „Zapis gry” w panelu rodzica (za bramką) i karta przed grą dla niedostępnego zapisu (DESIGN-GAP 45, bez eksportu, „Graj dalej” bez bramki).
+- [ ] 5.10 — Teksty: `pl.saveUnavailable`, `pl.settings.save*`; O1: „Ostatnie próby zapisu się nie udały” także po jednej nieudanej próbie.
+- [ ] Limit odczytu 5000 ms (`balance.save.loadTimeoutMs`); pierwszy powód blokady zapisu wygrywa; panel pokazuje stan z chwili otwarcia.
+- [ ] Nowe szwy tylko w buildzie e2e: `?e2eSave=unavailable|hang|writefail` (strażnik buildu sprawdza każdy).
