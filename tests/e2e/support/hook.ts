@@ -23,6 +23,8 @@ export interface Snapshot {
     narration: string | null;
     speakerVisible: boolean;
     unlock: { step: number; name: string } | null;
+    /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
+    inputEnabled: boolean;
     learner: {
         stage: string;
         unlockedStep: Record<string, number>;
@@ -44,6 +46,7 @@ export interface Targets {
     speaker: Point | null;
     ages?: (Point & { age: number })[];
     parent?: Point;
+    settingsIcon?: Point;
 }
 interface Hook { snapshot: Snapshot; targets: Targets }
 
@@ -82,6 +85,30 @@ export const tapScene = async (page: Page, point: Point): Promise<void> => {
     await page.touchscreen.tap(at.x, at.y);
 };
 
+/**
+ * A finger held on `point` (scene space) for `ms`: raw CDP touchStart, optional drift of `drift` scene px along x
+ * (5 touchMove steps), the hold itself, touchEnd. The hold is the gesture, not a synchronisation wait: it is the only
+ * fixed-time wait a spec may have (a long press cannot be observed any other way).
+ */
+export const holdTouch = async (page: Page, point: Point, ms: number, drift = 0): Promise<void> => {
+    const from = await toPage(page, point);
+    const to = await toPage(page, { x: point.x + drift, y: point.y });
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
+        if (drift !== 0) {
+            for (let step = 1; step <= 5; step++) {
+                const at = { x: from.x + ((to.x - from.x) * step) / 5, y: from.y };
+                await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+            }
+        }
+        await page.waitForTimeout(ms);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    } finally {
+        await cdp.detach();
+    }
+};
+
 export const screenIs = async (page: Page, screen: Snapshot['screen']): Promise<void> => {
     await expect.poll(async () => (await snapshot(page)).screen).toBe(screen);
 };
@@ -99,7 +126,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
