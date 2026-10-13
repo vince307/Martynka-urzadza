@@ -1,7 +1,7 @@
 ---
 change_id: parent-settings-progress
 title: Ustawienia rodzica — zmiana etapu, auto-czytanie i podgląd postępów za bramką
-status: new
+status: preparing
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
