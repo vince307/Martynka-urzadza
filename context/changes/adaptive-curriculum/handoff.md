@@ -1,62 +1,56 @@
 # Handoff — `adaptive-curriculum` (slice S-07)
 
-Written by `/10x-tdd adaptive-curriculum phase 6`. Phase 6 committed (`58bf417`); rows 5.1, 5.2 ticked from the orchestrator's run-log line "S-07 p5 impl". Row 6.5 is [reviewer]; the e2e of phase 6 is the orchestrator's gate.
+Written by `/10x-implement adaptive-curriculum phase 7`. Phase 7 committed (`e584911`). Rows 5.5, 6.5, 7.5 are [reviewer], 7.6 [visual]; row 7.3 waits for the orchestrator's e2e.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
-| Commits | phase 1 `8fd7bd0`, 2 `1c384c5`, 3 `ee93ff9`, 4 `dba1791`, 5 `0aedeff`, 6 `58bf417`; this handoff after it |
+| Commits | phase 1 `8fd7bd0`, 2 `1c384c5`, 3 `ee93ff9`, 4 `dba1791`, 5 `0aedeff`, 6 `58bf417`, 7 `e584911`; this handoff after it |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 5.5 [reviewer], 6.5 [reviewer], phases 7-9 |
+| `## Progress` rows remaining | 5.5, 6.5, 7.3 (orchestrator e2e), 7.5, 7.6 [reviewer]/[visual], phases 8-9 |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/types.ts` | `StepDef.childName?: string` |
-| `src/data/curriculum/E1.ts` … `E6.ts` | 48 `childName` values on the playable steps (those with a `playable` skill) |
-| `tests/curriculum.test.ts` | block "child-facing step names": per playable step non-empty, ≤ 28 chars, capital first letter, no trailing dot; per stage distinct and absent on non-playable steps (+54 tests) |
-| `scripts/sample.ts` | step header prints `[dziecko: <childName>]` |
+| `src/ui/widgets/UnlockCard.ts` | new widget: card, code-drawn book, title, step name, "Dalej" (`PageButton`); `show(name)`, `hide()`, `target()` |
+| `src/scenes/TaskScene.ts` | `unlockShown` flag; `render()` card branch before the summary branch (`hideTaskLayer`, `unlockView`); `startNextRound` shows the card when `pendingUnlock !== null`, `closeUnlock` clears it and calls `beginRound`; `TaskSnapshot.unlock`, `TaskTargets.unlockNext` |
+| `src/data/layout.ts`, `src/data/pl.ts` | `UNLOCK_LAYOUT`, colours `unlockCard`/`unlockBorder`, font roles `unlockTitle` 66/800 and `unlockName` 48/750, `TASK_TOUCH_TARGETS.unlockNext`; `pl.unlock` {title, next, spoken} |
+| `src/testing/e2eHook.ts` | `screen: 'unlock'` (order room, unlock, summary, task), `targets.unlockNext` (null in the room) |
+| `tests/layout.test.ts` | unlock card test (+1); weight test exempts `unlockTitle` (kit 800) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | lint / typecheck | OK / OK |
-| unit (`npm test`) | baseline 827 + 54 = 881 passed; `sample` E1-E6 `Naruszenia: 0` x6 |
+| unit (`npm test`) | baseline 881 + 1 = 882 passed; deploy tests OK x2; `sample` E1-E6 `Naruszenia: 0` x6 |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| RED | first run after adding `childName?` to the type: `AssertionError: E1.2 childName: expected undefined to be truthy` (54 failures) |
-| Break | removed E3.6 name -> `AssertionError: E3.6 childName: expected undefined to be truthy`; 44-char name -> `expected 44 to be less than or equal to 28`; both restored (green again) |
-| e2e `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate; phase 6 changes data only |
+| Break | `UNLOCK_LAYOUT.button.height` 108 -> 90: `AssertionError: unlockNext height: expected 90 to be greater than or equal to 96` (2 tests red); restored, green |
+| e2e `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate |
 
-Names for the [reviewer] row 6.5 (stage.step: name; ≤ 28 chars, nominative, derived from the step title and the actual skills):
-- E1: .2 Porównywanie liczb do 5; .3 Działania do 5; .4 Rozkłady liczb 6 i 7; .5 Działania do 9; .6 Parzyste i nieparzyste; .7 Rozkład i dopełnianie do 10; .9 Działania do 10; .11 Miesiące roku
-- E2: .1 Działania do 20; .3 Dodawanie z przekroczeniem; .4 Przemienność dodawania; .5 Odejmowanie z przekroczeniem; .6 Sprawdzanie odejmowania; .7 Dziesiątki do 100; .9 Działania na liczbach do 99; .10 Dni tygodnia i miesiące
-- E3: .1 Zadania tekstowe do 20; .2 Działania do 20 z okienkiem; .6 Działania do 30; .7 Parzyste i liczby słowami; .8 Przekraczanie dziesiątki; .9 Mnożenie do 30; .10 Dzielenie do 30; .11 Cyfry rzymskie i kwartały
-- E4: .1 Porównywanie liczb do 100; .2 Działania z małą liczbą; .4 Dopełnianie do dziesiątki; .5 Działania dwucyfrowe; .6 Mnożenie i dzielenie do 50; .8 Liczby trzycyfrowe
-- E5: .1 Powtórka do 100; .2 Dwucyfrowe i cyfry rzymskie; .3 Liczby słowami i kalendarz; .4 Mnożenie przez 0, 1, 5, 10; .6 Liczenie różnymi sposobami; .7 O ile więcej, o ile mniej; .8 Mnożenie przez 6, 7, 8, 9; .9 Dzielenie do 100; .10 Zadania tekstowe do 100; .11 Miesiące i kwartały
-- E6: .1 Kalendarz i czas; .4 Mnożenie i dzielenie do 100; .5 Dopełnianie do 100 i 1000; .6 Działania do 1000; .7 Sprawdzanie działań; .8 Mnożenie i dzielenie do 1000; .9 Zaokrąglanie liczb; .10 Duże liczby i rzymskie
+Orchestrator: run `npx playwright test` on `e584911`, expect 14 passed (+0; no spec reaches the card yet, phase 9 does). Visual (row 7.6): the card shows after "Kolejna runda" only when `learner.pendingUnlock` is set (hook: `screen === 'unlock'`, tap `targets.unlockNext`).
 
 ## 4. Next command
 
-`/10x-implement adaptive-curriculum phase 7`
+`/10x-implement adaptive-curriculum phase 8`
 
 ## 5. Open
 
-- Row 6.5 [reviewer]: teacher read of the 48 names above (write `reviews/teacher-read.md`). Row 5.5 [reviewer].
-- Orchestrator: run `npx playwright test` on `58bf417` (expect 14 passed; data-only phase).
-- Phase 7 must read `learner.pendingUnlock` (set in phase 5, not yet cleared) and show `childName` of the unlocked step; the card width limit is 28 chars.
-- Teacher-read notes: E1.11 and E2.10 names cover only the generated calendar skills (the step title also lists clock/money/bar chart). E4.2 "Działania z małą liczbą" and E3.8 "Przekraczanie dziesiątki" are the least obvious; reviewer may reword (data-only, same ≤ 28 limit).
+- Row 7.5 [reviewer]: teacher read of `pl.unlock` — title „Nowa umiejętność!” (kit), „Dalej” (kit), spoken line „Nowa umiejętność! <nazwa kroku>.”
+- Row 7.6 [visual]: screenshots vs `unlock.png`. The book is a code-drawn placeholder; the button label uses the 46 px `pageButton` role (kit 44 inside the card).
+- Phase 8 must add the design-gap rows to `docs/design-gaps.md`: book art (S-16), card narration, card after "Do pokoju" (the code carries DESIGN-GAP comments in `UnlockCard.ts` and `layout.ts`).
+- Rows 5.5, 6.5 still [reviewer]; 6.5 notes in the p6 handoff are unchanged (48 names in `E1.ts`…`E6.ts`).
 
 ## 6. Autonomous decisions
 
-1. Skill questions decided in place: TDD in this context, proposed commit message, stop after phase 6.
-2. The orchestrator's example „Dodawanie do 20 z przekroczeniem” (32 chars) exceeds the plan's 28-char limit (one 48 px line in 1144 px); used „Dodawanie z przekroczeniem” (26) and „Odejmowanie z przekroczeniem” (28) instead. Would change if the card allowed two lines.
-3. Names describe the skills the step really plays (not the whole `title`, which lists unbuilt drawing types), e.g. E1.11 „Miesiące roku”.
-4. `childName` only on steps with a `playable` skill (the test enforces absence elsewhere).
-5. Rows 5.1/5.2 ticked citing the run-log line "S-07 p5 impl" (orchestrator e2e 14/14 on 0aedeff, break red, restored).
-6. Plan SHA placeholders in rows 6.1-6.4 filled with the phase commit `58bf417` in the handoff commit.
+1. Skill questions decided in place: implement in this context, proposed commit message, stop after phase 7.
+2. Card state is a scene flag `unlockShown` read by `render()`; the pending data stays in the registry learner. "Dalej" clears `pendingUnlock` before `beginRound`, so the next round draws from the raised `unlockedStep`. Stars of the finished round join the session only in `beginRound`, once.
+3. If `pendingUnlock` has no `childName` in the stage steps (cannot happen for playable steps), `unlockView` returns null and the summary shows; would change if a non-playable step could unlock.
+4. `closeUnlock` is the only place that clears `pendingUnlock`; the room switch is hidden (`roomSwitch` false) while the card is open, so "Do pokoju" is only reachable from the summary and the card waits.
+5. Spoken line `Nowa umiejętność! <name>.`, read on the "Kolejna runda" tap when `autoRead`, via the existing narration registry key (the HUD speaker reads the same).
+6. Kit title weight 800 is allowed in the weight test (like the brand line).

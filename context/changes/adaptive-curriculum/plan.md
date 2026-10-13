@@ -801,10 +801,10 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [ ] 7.1 `tests/layout.test.ts` obejmuje przycisk karty; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: przycisk karty 90 px → czerwony; przywrócone; meta-check (przepływ → e2e fazy 9)
-- [ ] 7.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
-- [ ] 7.4 Pełna bramka lokalna zielona
+- [x] 7.1 `tests/layout.test.ts` obejmuje przycisk karty; unit `<baseline gałęzi> + N` — e584911
+- [x] 7.2 Deliberate break: przycisk karty 90 px → czerwony; przywrócone; meta-check (przepływ → e2e fazy 9) — e584911
+- [ ] 7.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent` — build `e2e hook: absent` e584911; e2e open: orchestrator gate
+- [x] 7.4 Pełna bramka lokalna zielona — e584911 (e2e: orchestrator gate)
 
 #### Manual
 
