@@ -14,7 +14,7 @@ import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
 import { emptyRoomState } from './core/rooms';
 import { FIRST_ROOM } from './data/rooms';
-import { e2eFail, e2eMonth, installE2EHook } from './testing/e2eHook';
+import { e2eFail, e2eMonth, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
@@ -22,7 +22,7 @@ import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } fro
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, startStars: number): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -40,7 +40,8 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.month, month);
                 booting.registry.set(REGISTRY_KEYS.settings, initialSettings());
                 // Session state until the save arrives (S-11 replaces these values with the saved ones).
-                booting.registry.set(REGISTRY_KEYS.stars, 0);
+                // startStars is 0 in production; the e2e build may seed it with ?e2eStars=N (a seam, not a save).
+                booting.registry.set(REGISTRY_KEYS.stars, startStars);
                 booting.registry.set(REGISTRY_KEYS.rooms, { [FIRST_ROOM]: emptyRoomState() });
                 booting.registry.set(REGISTRY_KEYS.currentRoom, FIRST_ROOM);
                 if (__E2E_HOOK__) {
@@ -91,7 +92,8 @@ installErrorBoundary(window, () => {
     attempt(() => (booted.game?.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspend());
     attempt(() => booted.game?.loop.sleep());
 });
-const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null);
+const startStars = (__E2E_HOOK__ ? e2eStars(window.location.search) : null) ?? 0;
+const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, startStars);
 booted.game = game;
 // Speech needs a user gesture: the first tap or touch after a Polish voice is known unlocks it
 // for the session (voices may load after the first tap, so the listeners stay until then).
