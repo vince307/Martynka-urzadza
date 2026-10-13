@@ -85,4 +85,19 @@ Observations, recorded as follow-ups (`follow-ups/review-fixes.md`, „From the 
 - O2 With the tab hidden, Chrome throttles the frame loop and flying stars sit mid-flight across the summary until
   frames run (the same note as the S-05 gate). Capture artefact, not a product defect.
 
-VISUAL: GAPS — every [visual] state of rows 4.7, 5.6, 6.4 captured at 1440 and 1024×768 and matches the kit within DESIGN-GAP 15–21 after two fixes (aa34170 „Rodzic” inside the notebook, 317926b panel fits 768 px); E3 for age 8 in October, 304 = 16 · 19, +8 = 6 × 1 + 2, targets ≥ 48 CSS px; open: O1 tiny □ glyph in E2 sentence prompts (follow-up, Trigger: S-07)
+## Fix after the gate (O1)
+
+Commit `9b9b9d3` (`fix(first-launch-placement): luka □ rysowana także w zdaniach`): sentence prompts containing „□” are
+now word-wrapped by core (`wrapBlankLines` in `src/core/round/promptBlank.ts`, pure, unit-tested in
+`tests/promptBlank.test.ts`) into lines of text phrases and code-drawn outlined boxes (`TaskScene.drawSentence`,
+`TASK_LAYOUT.blankInline` sized for the prompt font); task data and generators keep „□”. Deliberate break (box piece
+replaced by a text „□” in `wrapBlankLines`) turned the new test red (`AssertionError … toEqual`), restored, green.
+Full gate after the fix: lint, typecheck, unit 767 (765 + 2), deploy/ops scripts OK, `sample` E1–E6 0 violations,
+build `e2e hook: absent`, `npx playwright test` 14 passed.
+
+Re-captured (dev server 4399, own tab, closed after): `desktop-11-sentence-blank-e2.jpg` (E2 „Sprawdź: 9 + 2 = □”,
+1440, wrapped to two lines, box as tall as a digit, same stroke as the expression box) and `tablet-10-sentence-blank.jpg`
+(1024×768 iframe, „5 = 4 + □”, box at the line end). A SEQUENCE prompt did not come up in the drawn rounds; it takes the
+same path (a sentence with „□” between words, covered by the unit test on „Uzupełnij ciąg: 80, □, 60, 50”).
+
+VISUAL: PASS — every [visual] state of rows 4.7, 5.6, 6.4 matches the kit within DESIGN-GAP 15–21 after fixes aa34170, 317926b and 9b9b9d3; O1 (tiny □ glyph in sentence prompts) fixed and re-captured at 1440 and 1024×768; no open items

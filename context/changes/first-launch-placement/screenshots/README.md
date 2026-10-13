@@ -30,6 +30,7 @@ after they did).
 | warm-up, 6 dots | `desktop-08-warmup-6-dots.png` (child path: age 8) | `tablet-07-warmup-6-dots-after-confirm.png` (parent confirmed the proposal) | age „8” / proposal + „Zatwierdź” |
 | warm-up summary, 6 stars centred, +8 | `desktop-09-warmup-summary-6-stars.png` | `tablet-08-warmup-summary-6-stars.png` | six first-try answers, „Dalej” |
 | normal round after the warm-up (5 dots) | `desktop-10-round-after-warmup-5-dots.png` | `tablet-09-round-after-warmup-5-dots.png` | „Kolejna runda” |
+| sentence prompt with the drawn box (O1 fix, build `9b9b9d3`) | `desktop-11-sentence-blank-e2.jpg` („11 − 2 = 9. Sprawdź: 9 + 2 = □”, E2, wrapped, box on line 2) | `tablet-10-sentence-blank.jpg` („Uzupełnij domek liczby 5. 5 = 4 + □”, 1024×768) | desktop: parent path 14 · 15 = 210, age 7, „Klasa 1, II półrocze”; tablet: child path, age 7 |
 | before the fixes (evidence) | `desktop-00-welcome-before-fix.png` („Rodzic” over the notebook border, build `ebe6ebc`), `desktop-00-panel-before-fix.png` (panel 845 px, buttons below the fold, build `aa34170`) | — | same taps |
 
 Kit frames compared (read-only, `designs/martynka-maths-A-v1/screenshots/`): `welcome.png`, `summary.png`,
