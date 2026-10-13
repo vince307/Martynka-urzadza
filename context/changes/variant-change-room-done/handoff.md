@@ -46,7 +46,7 @@ Request for orchestrator (e2e check of the seam in the hook build): `npx playwri
 
 ## 4. Next command
 
-`/10x-tdd variant-change-room-done phase 3`
+`/10x-implement variant-change-room-done phase 4`
 
 ## 5. Open
 
