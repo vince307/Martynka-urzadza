@@ -29,6 +29,7 @@ import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
 import { exportRawSave } from './ui/dom/saveExport';
+import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
@@ -132,18 +133,23 @@ const start = async (): Promise<void> => {
     if (outcome.kind === 'unavailable') {
         console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
     }
-    if (outcome.kind === 'unreadable') {
-        // The old save stays untouched. The parent may keep a copy (behind the adult check); the game starts only on "Graj dalej".
-        const raw = outcome.raw;
+    if (outcome.kind === 'unreadable' || outcome.kind === 'unavailable') {
+        // Either way the game starts only on "Graj dalej", in a fresh session with the saver blocked. Only an
+        // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
+        const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                onExport: () => {
-                    openParentGate({
-                        rng: createRng(Math.floor(Math.random() * 0x100000000)),
-                        onPass: () => void exportRawSave(raw),
-                        onCancel: () => undefined,
-                    });
-                },
+                copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
+                onExport:
+                    raw === null
+                        ? undefined
+                        : () => {
+                              openParentGate({
+                                  rng: createRng(Math.floor(Math.random() * 0x100000000)),
+                                  onPass: () => void exportRawSave(raw),
+                                  onCancel: () => undefined,
+                              });
+                          },
                 onContinue: () => {
                     card.remove();
                     resolve();

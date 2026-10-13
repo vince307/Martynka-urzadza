@@ -64,6 +64,13 @@ export const pl = {
         note: 'Tym razem gra nie zapisze postępów.',
         fileName: 'martynka-zapis.txt',
     },
+    // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
+    saveUnavailable: {
+        title: 'Gra nie może teraz zapisywać postępów',
+        body: 'Przeglądarka nie udostępniła zapisu gry. Można grać dalej. Jeśli to się powtarza, sprawdź, czy przeglądarka nie blokuje danych stron.',
+        continue: 'Graj dalej',
+        note: 'Tym razem gra nie zapisze postępów.',
+    },
     install: {
         title: 'Zainstaluj grę na tablecie',
         ipad: 'Stuknij Udostępnij (kwadrat ze strzałką), potem „Do ekranu początkowego”.',
