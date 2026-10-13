@@ -36,13 +36,13 @@ Written by `/10x-implement` phase 6: seam sweep, design gaps 37-41, follow-ups, 
 
 ## 4. Next command
 
-`/10x-e2e variant-change-room-done phase 7`
+Orchestrator: run `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md`, then dispatch a finishing agent (commit spec + config, tick 7.1-7.6, change.md `implemented`). After that: `/10x-impl-review variant-change-room-done`.
 
 ## 5. Open
 
-- Phase 7 must use `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` (break A, row 7.2). Hook exposes `snapshot.room.card/mode/done/modeText`, `targets.modeButton/cardNext`.
-- `[human]`/`[visual]` rows: 3.5, 4.6, 4.7, 5.6, 5.7, 6.6-6.9. `[reviewer]` 2.4, 5.5, 6.5.
-- Not verified in a browser: card layering, thumbnail look, padlock/check shapes, "Zamknij"/mode button shared place.
+- Uncommitted: `tests/e2e/room-change.spec.ts`, `playwright.config.ts` (ROUND_SPEC). Chromium blocked (MachPort) in this session, 3 tries.
+- Patches `e2e-break-s10-p7a..d.patch` + existing p4 patch committed; none applied here.
+- Rows 7.1-7.5 untouched; 7.6 partly seen (lint, typecheck, unit 1076, build "e2e hook: absent"); full gate row cites orchestrator run on b5aa8db (24 passed) for the baseline.
 
 ## 6. Autonomous decisions
 
@@ -60,3 +60,5 @@ Written by `/10x-implement` phase 6: seam sweep, design gaps 37-41, follow-ups, 
 11. Phase 5: `ROOM_LAYOUT.modeButton` is 1010,892 570x128, not the `taskButton` rect (that rect overlaps the 3rd thumbnail; plan said "miniatury nie nachodzą"). Card is 220..780 (ends at tray.top) with "Dalej" at y 624 above "Wybieram" instead of reusing `UNLOCK_LAYOUT.button`. `RoomDoneCard.show(items, room, state)` takes the salon's `RoomDef` + state for the miniature (one room in v1); tile name is `pl.room.name`. `PageButton.setDepth` added so the button sits over the card graphics. Auto-read stage comes from the registry learner (`effectiveAutoRead`), speaking skipped without settings/learner. Would change: visual gate shows overlap or odd layering.
 12. Phase 5 e2e not runnable (MachPort): orchestrator gate. Teacher read of strings (row 5.5 stays [reviewer]): "Pokój gotowy!", "Salon", "Wkrótce", "Dalej", "Zmień wygląd", "Gotowe", "Stuknij mebel, który chcesz zmienić." - no numerals, imperative accusative OK.
 13. Phase 6: docs only. Archived S-09 follow-ups are not edited; their closure is recorded in this change's follow-ups file. Design gap row text for 32/36 is covered inside rows 41 (no separate edit to rows 32 and 36). Would change: reviewer wants the old rows amended.
+
+14. Phase 7: e2e not runnable (MachPort): `e2e: not runnable in this session (MachPort) — orchestrator gate`. Spec left uncommitted per protocol; request file written. Hold-over-thumbnail point asserted inside the floor rect. Would change: green run shows the point hits another slot.
