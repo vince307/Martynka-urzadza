@@ -986,7 +986,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `visual.ts` bez Phasera i globali; `TaskVisual` tylko liczby i etykiety
+- [x] 1.5 [reviewer] `visual.ts` bez Phasera i globali; `TaskVisual` tylko liczby i etykiety — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 2: Generatory CLOCK i LENGTH
 
@@ -999,7 +999,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela szablonów CLOCK/LENGTH i 6 losowań na wariant z testu
+- [x] 2.5 [reviewer] Odczyt nauczyciela szablonów CLOCK/LENGTH i 6 losowań na wariant z testu — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 3: Generatory PLACE_VALUE (odczyt i budowa) i DATA
 
@@ -1011,7 +1011,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 3.4 [reviewer] Odczyt nauczyciela szablonów PLACE_VALUE/DATA i `charts.ts`
+- [x] 3.4 [reviewer] Odczyt nauczyciela szablonów PLACE_VALUE/DATA i `charts.ts` — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 4: Obszar rysunku w `TaskScene`, `ClockFace` i `Ruler`
 
@@ -1024,7 +1024,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Manual
 
 - [ ] 4.4 [visual] Zrzuty: tarcza (pełna godzina, 7.45), tarcza z podpowiedzią, tarcza z krokami obok, linijka cm nie od zera, linijka mm, linijka z krokami — 1440×900 i 1024×768
-- [ ] 4.5 [reviewer] Widżety bez tekstów i liczb balansu; `TaskPicture` w `hideTaskLayer`
+- [x] 4.5 [reviewer] Widżety bez tekstów i liczb balansu; `TaskPicture` w `hideTaskLayer` — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 4.6 [human] Decyzja wbrew podpisowi kitu „3:30”: czasy zapisane kropką wg ZADANIA („15.00”, „7.30”)
 
 ### Phase 5: `BaseTenBlocks` i `BarChart`
@@ -1036,7 +1036,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 5.3 [reviewer] Widżety bez tekstów i liczb balansu; geometria klocka wyeksportowana; DESIGN-GAP 53
+- [x] 5.3 [reviewer] Widżety bez tekstów i liczb balansu; geometria klocka wyeksportowana; DESIGN-GAP 53 — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 6: Nowe kroki grywalne E3/E4 — dane programu, testy przypięte do kolejności i e2e
 
@@ -1051,7 +1051,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 6.7 [reviewer] Odczyt nauczyciela `sample` E3/E4 `--count 6` dla E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8
+- [x] 6.7 [reviewer] Odczyt nauczyciela `sample` E3/E4 `--count 6` dla E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8 — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 6.8 [visual] Zrzuty: klocki (E3.6, E4.8), diagram `most` i `diff`, diagram z krokami, karta „Nowa umiejętność!” E3.3 (i zegar/linijka, jeśli 4.4 ich nie ma) — 1440×900 i 1024×768
 - [ ] 6.9 [human] Decyzja wbrew literze roadmapy S-13: bez osi, słupka pisemnego, grafów, figur; grid/obwód/„ustaw zegar” → S-13b; DATA w zakresie
 
@@ -1066,7 +1066,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Odczyt nauczyciela `selectEven` w E1.6 i E3.7; `answerWrong` dla `select` niezależny od kolejności
+- [x] 7.5 [reviewer] Odczyt nauczyciela `selectEven` w E1.6 i E3.7; `answerWrong` dla `select` niezależny od kolejności — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 7.6 [visual] Zrzuty: `select` przed, z dwoma zaznaczonymi, po złym zbiorze, w krokach, w `retype` — 1440×900 i 1024×768
 
 ### Phase 8: Reduktor przeciągania klocków w `core`
@@ -1079,7 +1079,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 8.4 [reviewer] `blockDrag.ts` bez Phasera i globali; surowe zdarzenia; liczby w `balance.ts`
+- [x] 8.4 [reviewer] `blockDrag.ts` bez Phasera i globali; surowe zdarzenia; liczby w `balance.ts` — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 9: Tryb `drag` — zasobnik i mata, PLACE_VALUE „zbuduj”, helpery e2e
 
@@ -1093,7 +1093,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 9.6 [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1
+- [x] 9.6 [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1 — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 9.7 [visual] Zrzuty: `drag` start, klocek w locie, po upuszczeniu na matę, po upuszczeniu poza matą, podpowiedź, kroki obok maty, podsumowanie po zadaniu z rysunkiem — 1440×900 i 1024×768
 - [ ] 9.8 [human] Prawdziwy tablet (iPad, Android): odczucie przeciągania, krawędź maty, stuknięcia, gest systemowy; `select` bez przypadkowych stuknięć
 
@@ -1108,7 +1108,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 10.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii; DESIGN-GAP 52–58; follow-upy z `Trigger:` (także plikowe)
+- [x] 10.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii; DESIGN-GAP 52–58; follow-upy z `Trigger:` (także plikowe) — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 10.6 [human] Decyzje wbrew literze ZADANIA: CLOCK bez przeciągania wskazówek; 24-godzinny tarcza → „15.00”; budowa także stuknięciem i bez setek; podgląd rodzica bez rysunku
 - [ ] 10.7 [human] Akceptacja tekstów nowych zadań i `childName` E3.3, E3.4, E3.5, E4.3, E4.7
 
