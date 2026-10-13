@@ -10,7 +10,7 @@ Written by `/10x-implement first-furniture-purchase phase 5` (autonomous run 202
 | Commits | docs commits, `d792eee` p1, `59c9253` p2, `94873fd` p3, `314a2a7` p4, `1d58e0e` feat(p5), then this `docs(first-furniture-purchase): handoff p5` |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 25 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 24 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
