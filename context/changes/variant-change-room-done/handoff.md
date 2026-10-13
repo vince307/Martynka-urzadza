@@ -62,3 +62,5 @@ Orchestrator: run `context/runs/2026-10-13-s09-s11/e2e-request-s10-p7.md`, then 
 13. Phase 6: docs only. Archived S-09 follow-ups are not edited; their closure is recorded in this change's follow-ups file. Design gap row text for 32/36 is covered inside rows 41 (no separate edit to rows 32 and 36). Would change: reviewer wants the old rows amended.
 
 14. Phase 7: e2e not runnable (MachPort): `e2e: not runnable in this session (MachPort) — orchestrator gate`. Spec left uncommitted per protocol; request file written. Hold-over-thumbnail point asserted inside the floor rect. Would change: green run shows the point hits another slot.
+
+15. Phase 7 round 2: `toRoom` fixed (first task solved by retype, pays 0, then `roomSwitch`); Chromium again not launchable (MachPort); spec + config stay uncommitted; request file has "Round 2 changes". Would change: green run shows other state-dependent targets.
