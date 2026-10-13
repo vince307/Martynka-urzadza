@@ -783,9 +783,9 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 8.1 `npx playwright test tests/e2e/first-launch.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3`
-- [ ] 8.2 Deliberate break: `TaskScene` bez `warmupResult` → test 2 czerwony; przywrócone; meta-check (unit zielone)
-- [ ] 8.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 8.1 `npx playwright test tests/e2e/first-launch.spec.ts` zielony; pełne e2e `<baseline gałęzi e2e> + 3` — 26f0787 (orchestrator: spec 3/3, suite 11/11)
+- [x] 8.2 Deliberate break: `TaskScene` bez `warmupResult` → test 2 czerwony; przywrócone; meta-check (unit zielone) — 26f0787 (orchestrator: red at first-launch.spec.ts:169 Expected stage "E2", Received "E3")
+- [x] 8.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — 26f0787 (lint, typecheck, unit 765, build e2e hook absent; orchestrator e2e 11/11)
 
 ### Phase 9: Ścieżka rodzica przez bramkę dotykiem — e2e (#12, proposed)
 
