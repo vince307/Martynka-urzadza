@@ -787,16 +787,16 @@ zapisu, karta z eksportem.
 
 - [x] 2.1 `autosave.test.ts` i nowe przypadki `curriculumStart.test.ts` czerwone przed implementacją, zielone po; unit baseline + N — 76f6df1 (e2e: orchestrator gate)
 - [x] 2.2 Deliberate break ignorowane `blocked` / `flush` bez anulowania timera / `write` bez `catch` → czerwone; przywrócone; meta-check — 76f6df1 (e2e: orchestrator gate)
-- [x] 2.3 `npm run lint` (granice `core`); pełna bramka lokalna zielona — 76f6df1 (e2e: orchestrator gate)
+- [x] 2.3 `npm run lint` (granice `core`); pełna bramka lokalna zielona — 76f6df1 (e2e: orchestrator run on 75eaa08, 26 passed)
 
 ### Phase 3: Adapter IndexedDB, zależności i granica modułu magazynu
 
 #### Automated
 
-- [x] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie
-- [x] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N
-- [x] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check
-- [x] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 3.1 `npm ls` pokazuje `idb-keyval` 6.3.0 i `fake-indexeddb` 6.2.5 (dev), w `package.json` bez `^`; `package-lock.json` w commicie — 43af7ea
+- [x] 3.2 `idbStore.test.ts` i nowe przypadki `lint-boundaries.test.ts` czerwone przed implementacją, zielone po; unit baseline + N — 43af7ea
+- [x] 3.3 Deliberate break blok `idb-keyval` nadpisuje regułę `phaser` / adapter zapisuje tekst JSON → czerwone; przywrócone; meta-check — 43af7ea
+- [x] 3.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona — 43af7ea (e2e: orchestrator gate)
 
 ### Phase 4: Wpięcie zapisu w grę — wczytanie na starcie, autozapis, zapisy natychmiastowe, cykl życia strony
 
