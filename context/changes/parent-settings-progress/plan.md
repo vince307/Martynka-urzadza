@@ -874,9 +874,9 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 3.1 Nowe testy `effectiveAutoRead` i `changeStageByParent` czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: `pendingUnlock` nie czyszczone / `||` zamiast `??` → czerwone; przywrócone; meta-check
-- [ ] 3.3 Pełna bramka lokalna zielona
+- [x] 3.1 Nowe testy `effectiveAutoRead` i `changeStageByParent` czerwone przed, zielone po; unit `<baseline gałęzi> + N` — 8f53d98 (RED: expected false to be true / expected 'E3' to be 'E4'; unit 902 + 8)
+- [x] 3.2 Deliberate break: `pendingUnlock` nie czyszczone / `||` zamiast `??` → czerwone; przywrócone; meta-check — 8f53d98 (2 tests red: parent choice wins, fields reset; restored)
+- [x] 3.3 Pełna bramka lokalna zielona — 8f53d98 (e2e 15 passed, run in this session)
 
 ### Phase 4: Pierwsza zła odpowiedź i przykłady błędów w historii
 
