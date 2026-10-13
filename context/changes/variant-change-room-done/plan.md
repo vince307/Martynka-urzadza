@@ -721,11 +721,11 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 4.1 Rzutowania F5 usunięte z `RoomScene`; `snapshot` przez `this.room()`
-- [ ] 4.2 `layout.test.ts` bez zmian zielony; unit baseline + 0..N
-- [ ] 4.3 `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)
-- [ ] 4.4 Deliberate break odroczony: patch `e2e-break-s10-p4.patch` (`dispatch` pisze saldo przy `changed`) zapisany, dowód w fazie 7 (7.2); meta-check w handoff
-- [ ] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 4.1 Rzutowania F5 usunięte z `RoomScene`; `snapshot` przez `this.room()`
+- [x] 4.2 `layout.test.ts` bez zmian zielony; unit baseline + 0..N
+- [x] 4.3 `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)
+- [x] 4.4 Deliberate break odroczony: patch `e2e-break-s10-p4.patch` (`dispatch` pisze saldo przy `changed`) zapisany, dowód w fazie 7 (7.2); meta-check w handoff
+- [x] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
 
 #### Manual
 

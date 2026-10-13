@@ -236,3 +236,9 @@ export const pl = {
         romanMonthHint: (roman: string, index: number) => `${roman} to ${index}, czyli ${index}. miesiąc roku`,
     },
 } as const;
+
+/** Room texts looked up by a data key (RoomTaskDef.label, SlotDef.id); an unknown key yields undefined. */
+export const roomText = {
+    task: (key: string): string | undefined => (pl.room.tasks as Readonly<Record<string, string>>)[key],
+    slot: (key: string): string | undefined => (pl.room.slots as Readonly<Record<string, string>>)[key],
+};

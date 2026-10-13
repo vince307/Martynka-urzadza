@@ -1,7 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { TaskButtonView } from '../../core/rooms';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
-import { pl } from '../../data/pl';
+import { pl, roomText } from '../../data/pl';
 import { drawStar } from './StarCounter';
 import { textStyle } from './textStyle';
 
@@ -68,7 +68,7 @@ export class RoomTaskButton {
         g.lineStyle(border, view.affordable ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.pageButtonSecondaryBorder, 1);
         g.strokeRoundedRect(left, top, width, height, radius);
         const rowY = view.affordable ? top + height / 2 : top + height * 0.38;
-        const text = (pl.room.tasks as Record<string, string>)[view.label] ?? view.label;
+        const text = roomText.task(view.label) ?? view.label;
         this.label.setText(text).setScale(1).setPosition(left + textInset, rowY).setAlpha(view.affordable ? 1 : 0.8);
         const room = width - 2 * textInset - costWidth;
         if (this.label.width > room) {

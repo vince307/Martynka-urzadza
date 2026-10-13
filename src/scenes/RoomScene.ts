@@ -1,9 +1,14 @@
-import { Scene } from 'phaser';
+import { Scene, type GameObjects } from 'phaser';
+import { balance } from '../data/balance';
+import type { InputSuspender } from '../core/inputSuspend';
+import type { LongPressEvent } from '../core/longPress';
+import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
+import { holdPoint, slotAt } from '../core/roomHit';
 import { currentTask, emptyRoomState, taskButtonView } from '../core/rooms';
 import type { RoomDef, RoomState } from '../core/types';
-import { stepPanel, type Bought, type PanelEvent, type PanelState } from '../core/variantPanel';
+import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, PLACEHOLDER_COLORS, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
-import { pl } from '../data/pl';
+import { pl, roomText } from '../data/pl';
 import { FIRST_ROOM, ROOMS, SALON_PLACEHOLDERS } from '../data/rooms';
 import { prefersReducedMotion } from '../ui/motion';
 import { PageButton } from '../ui/widgets/PageButton';
@@ -22,6 +27,8 @@ export interface RoomSnapshot {
     affordable: boolean;
     buttonText: string;
     panel: PanelState;
+    hold: 'idle' | 'holding';
+    heldSlot: string | null;
 }
 
 /**
@@ -37,6 +44,8 @@ export class RoomScene extends Scene {
     private taskButton!: RoomTaskButton;
     private variantPanel!: VariantPanel;
     private panel: PanelState = { kind: 'closed' };
+    private gesture: RoomGestureState = ROOM_GESTURE_IDLE;
+    private holdZone!: GameObjects.Zone;
 
     constructor() {
         super(SCENE_KEYS.room);
@@ -44,6 +53,14 @@ export class RoomScene extends Scene {
 
     create(): void {
         this.view = new RoomView(this);
+        this.gesture = ROOM_GESTURE_IDLE;
+        // Under every button (created later, so drawn and hit first): a hold on a furnished slot opens its change panel (S-10).
+        const { area } = ROOM_LAYOUT;
+        this.holdZone = this.add.zone(area.left + area.width / 2, area.top + area.height / 2, area.width, area.height).setInteractive();
+        this.holdZone.on('pointerdown', (p: { id: number; x: number; y: number }) => this.feed({ type: 'down', id: p.id, x: p.x, y: p.y, now: this.time.now }));
+        this.holdZone.on('pointerup', (p: { id: number; wasCanceled?: boolean }) => this.feed(p.wasCanceled ? { type: 'cancel' } : { type: 'up', id: p.id }));
+        this.holdZone.on('pointerout', () => this.feed({ type: 'cancel' }));
+        this.input.on('pointermove', (p: { id: number; x: number; y: number }) => this.feed({ type: 'move', id: p.id, x: p.x, y: p.y }));
         this.taskButton = new RoomTaskButton(this, (affordable) => {
             if (!affordable) {
                 this.scene.switch(SCENE_KEYS.task);
@@ -61,6 +78,7 @@ export class RoomScene extends Scene {
         this.resume = button;
         const refresh = (): void => {
             this.panel = { kind: 'closed' };
+            this.resetGesture();
             this.redraw();
         };
         const onStars = (): void => {
@@ -73,6 +91,7 @@ export class RoomScene extends Scene {
         const onSleep = (): void => {
             // The panel never outlives the visit: the way out is hidden while it is open, but a settings dialog could cover it.
             this.panel = { kind: 'closed' };
+            this.resetGesture();
         };
         this.events.on('wake', refresh);
         this.events.on('sleep', onSleep);
@@ -82,6 +101,36 @@ export class RoomScene extends Scene {
             this.events.off('sleep', onSleep);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
         });
+    }
+
+    update(): void {
+        if (this.gesture.press.kind === 'idle') {
+            return;
+        }
+        const suspender = this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
+        // A dialog over the canvas swallows the lift of the finger: the hold must not survive it.
+        this.feed(suspender?.suspended() ? { type: 'cancel' } : { type: 'tick', now: this.time.now });
+    }
+
+    /** The gesture reducer decides when a hold opens the panel; the scene only supplies the slot under the finger and runs the result. */
+    private feed(event: LongPressEvent): void {
+        if (this.panel.kind === 'open') {
+            return;
+        }
+        const room = this.room();
+        const slot = event.type === 'down' ? slotAt(room, SALON_PLACEHOLDERS, this.roomState().chosen, { x: event.x, y: event.y }) : null;
+        const result = roomGesture(this.gesture, event, { mode: 'normal', slot, rules: balance.roomHold });
+        this.gesture = result.state;
+        this.view.highlight(result.held);
+        if (result.open !== null) {
+            this.resetGesture();
+            this.dispatch({ type: 'change', slot: result.open });
+        }
+    }
+
+    private resetGesture(): void {
+        this.gesture = ROOM_GESTURE_IDLE;
+        this.view.highlight(null);
     }
 
     private roomId(): string {
@@ -106,14 +155,23 @@ export class RoomScene extends Scene {
         const room = this.room();
         const step = stepPanel(this.panel, event, { room, state: this.roomState(), stars: this.stars() });
         this.panel = step.panel;
+        if (this.panel.kind === 'open') {
+            this.resetGesture();
+        }
+        if (step.changed) {
+            // A change is free: only the room is written, never the balance (core/variantPanel returns the same stars).
+            const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
+            this.registry.set(REGISTRY_KEYS.rooms, { ...rooms, [room.id]: step.state });
+        }
         if (step.bought) {
             const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
             this.registry.set(REGISTRY_KEYS.rooms, { ...rooms, [room.id]: step.state });
             this.registry.set(REGISTRY_KEYS.stars, step.stars);
         }
         this.redraw();
-        if (step.bought) {
-            this.celebrate(step.bought);
+        const celebrated = step.bought ?? step.changed;
+        if (celebrated) {
+            this.celebrate(celebrated);
         }
     }
 
@@ -122,14 +180,18 @@ export class RoomScene extends Scene {
         const state = this.roomState();
         const task = currentTask(room, state);
         const open = this.panel.kind === 'open';
-        const preview = this.panel.kind === 'open' && this.panel.preview !== null && task ? { slot: task.slot, variant: this.panel.preview } : null;
+        const panelSlot = this.panel.kind === 'open' ? (this.panel.mode === 'change' ? this.panel.slot : task?.slot) : undefined;
+        const preview = this.panel.kind === 'open' && this.panel.preview !== null && panelSlot ? { slot: panelSlot, variant: this.panel.preview } : null;
+        if (this.holdZone.input) {
+            this.holdZone.input.enabled = !open;
+        }
         this.view.render(room, state, preview);
         const taskView = taskButtonView(room, state, this.stars());
         this.taskButton.show(open ? null : taskView);
         const { resume } = ROOM_LAYOUT;
         if (open) {
             this.resumeButton().hide();
-            const placeholder = task ? SALON_PLACEHOLDERS[task.slot] : undefined;
+            const placeholder = panelSlot ? SALON_PLACEHOLDERS[panelSlot] : undefined;
             if (placeholder) {
                 this.variantPanel.show(placeholder.variants, placeholder, this.panel.kind === 'open' ? this.panel.preview : null);
             }
@@ -139,7 +201,7 @@ export class RoomScene extends Scene {
             this.resumeButton().show(pl.room.resume, resume.left, resume.top, 'primary', false, resume);
         }
         // The speaker reads what the button asks for; the task scene overwrites it on its wake.
-        const label = taskView ? (pl.room.tasks as Record<string, string>)[taskView.label] : undefined;
+        const label = taskView ? roomText.task(taskView.label) : undefined;
         this.registry.set(REGISTRY_KEYS.narration, label ?? null);
     }
 
@@ -148,7 +210,7 @@ export class RoomScene extends Scene {
     }
 
     /** Pop of the new furniture and a burst of stars; nothing at all when the child asked for less motion. */
-    private celebrate(bought: Bought): void {
+    private celebrate(bought: { slot: string; variant: 0 | 1 | 2 }): void {
         // DESIGN-GAP (docs/design-gaps.md): the purchase has no sound yet; the hook for it is here.
         this.playPurchaseSound();
         if (prefersReducedMotion()) {
@@ -214,9 +276,23 @@ export class RoomScene extends Scene {
         return this.variantPanel.closeTarget();
     }
 
+    /** A point where a hold lands on each furnished slot, for the e2e hook. */
+    slotTargets(): Record<string, { x: number; y: number }> {
+        const out: Record<string, { x: number; y: number }> = {};
+        const room = this.room();
+        const { chosen } = this.roomState();
+        for (const slot of room.slots) {
+            const at = holdPoint(room, SALON_PLACEHOLDERS, chosen, slot.id);
+            if (at) {
+                out[slot.id] = at;
+            }
+        }
+        return out;
+    }
+
     /** Read-only copy of what the room shows, for the e2e hook. */
     snapshot(): RoomSnapshot {
-        const room = ROOMS[this.roomId()] ?? ROOMS[FIRST_ROOM];
+        const room = this.room();
         const state = this.roomState();
         const task = currentTask(room, state);
         const view = taskButtonView(room, state, this.stars());
@@ -228,6 +304,8 @@ export class RoomScene extends Scene {
             affordable: view?.affordable ?? false,
             buttonText: this.taskButton.text(),
             panel: { ...this.panel },
+            hold: this.gesture.press.kind === 'idle' ? 'idle' : 'holding',
+            heldSlot: this.gesture.slot,
         };
     }
 }
