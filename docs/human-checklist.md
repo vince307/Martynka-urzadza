@@ -67,3 +67,26 @@ Wysłane i wdrożone: `observability-c1-c2` (#27, merge 298c74d, Deploy 38361972
 - [ ] Do S-11 restart z karty kończy sesję (wiek, etap, opanowanie od nowa), wbrew dosłownemu PRD „niczego stracić”; karta pokazuje się na każdą awarię uznaną za krytyczną (wiersz 4.8).
 - [ ] Przełącznik czytania na głos zostaje aktywny bez polskiego głosu; panel tylko o tym mówi (wiersz 5.9).
 - [ ] Odrzucenia `AbortError` / `NotAllowedError` traktowane jako szum (mowa, audio); od S-11 trzeba to sprawdzić dla IndexedDB (follow-up `Trigger: S-11`).
+
+## Bieg 2026-10-13-s09-s11 (S-09 – S-11, PR #31 – #33, pełny ship)
+
+Wysłane i wdrożone: S-09 `first-furniture-purchase` (#31, merge 36ead3c, Deploy 38378666969), S-10 `variant-change-room-done` (#32, merge f67b9f4, Deploy 38390574032), S-11 `autosave-versioned-save` (#33, merge 6617da3, Deploy 38402662110). Main po biegu: 1142 testy jednostkowe, 29 e2e. Od S-11 postęp zapisuje się na urządzeniu (IndexedDB, format v1 — jednokierunkowy).
+
+### Do zrobienia
+
+- [ ] P0 — Przejrzyj audyt po biegu, PR #34 (nie scalony przez bieg): 2 CRITICAL, oba w S-11. C-1: gdy IndexedDB nie da się odczytać (`loadSave` → `unavailable`), błąd ginie bez śladu, dziecko widzi „pierwsze uruchomienie”, a sesja nic nie zapisuje (`src/core/autosave.ts` `loadSave`, `src/main.ts` `start`). C-2: trwałe błędy zapisu zostawiają tylko `console.error`; dziecko widzi kupiony mebel, który znika po zimnym starcie (`createAutosaver` → `attempt`). H-R3: `currentRoom` z nieznanym pokojem (np. po rollbacku) nadpisuje postęp salonu bez śladu (`src/scenes/RoomScene.ts` `room`). Źródło: `context/audits/observability/2026-10-13_1514-zakup-zmiana-wariantu-autozapis.md` na gałęzi PR #34.
+- [ ] P0 — Akceptacja formatu zapisu v1, zanim urządzenia zbiorą dużo zapisów (S-11 wiersz 6.6): bez `rngSeed`, `learner` może być `null`, `warmupPending`, `pendingUnlock: { stage, step }`, `profileId`. Każda zmiana po tym = migracja v2. Źródło: `context/archive/2026-10-13-autosave-versioned-save/plan.md`.
+- [ ] P1 — iPad i Android (S-11 4.6, 5.7; S-10 6.9; S-09 7.10): stan po zamknięciu z przełącznika aplikacji, po restarcie tabletu i po cichej aktualizacji; eksport kopii w aplikacji z ekranu początkowego; przytrzymanie mebla palcem (600 ms / 40 px, S-10 6.6), tryb „Zmień wygląd”, karta „Pokój gotowy!”; zakup palcem i podwójne „Wybieram”; „ogranicz ruch”.
+- [ ] P1 — `/10x-test-plan --refresh`: faza 4 ma status `implementing` (import czeka na S-12, test na dwóch buildach — ryzyko #10 — odroczony do v2, S-11 6.8); ryzyko #16 rozszerzone o „zmiana wariantu nic nie kosztuje”.
+- [ ] P2 — Follow-upy z przeglądów i bramek wizualnych: S-09 V1/V2 (podpisy, „pop” dywanu nad kanapą), S-10 V2–V5 (pop dywanu, blade podpisy na tym samym kolorze — S-16; brak widocznego trybu zmiany i brak oznaczenia obecnego wyglądu — wiersz 6.7), S-11 F3–F5 (brak dowodu w przeglądarce, że `unavailable` blokuje zapis; eksport po nieudanym udostępnieniu spada do pobrania). Źródła: `context/archive/2026-10-13-{first-furniture-purchase,variant-change-room-done,autosave-versioned-save}/follow-ups/review-fixes.md`.
+- [ ] P2 — Wpisy wyżej mówiące „sesyjne do S-11” (np. S-06 7.5, „restart z karty kończy sesję”, S-09 7.8) są nieaktualne: od S-11 stan przetrwa restart, a karta błędu blokuje autozapis tej sesji.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] S-09 7.6, 7.9: salon z 10 slotów, koszty 5–15 (razem 96 gwiazdek, ok. 14 czystych rund); panel 3 wariantów i przycisk „masz X/Y” bez wzoru w kicie (DESIGN-GAP 31–36).
+- [ ] S-09 7.7: zakup bez dźwięku do S-16 — wbrew dosłownemu FR-017 (animacja + dźwięk).
+- [ ] S-10 6.8: „Zmień wygląd” / „Gotowe” zamiast dosłownego „poprawki” z FR-019; zapowiedź następnego pokoju bez nazwy („Wkrótce”); kafelek „Wkrótce” bez kłódki (raport fazy 5 ją wspominał, zrzut jej nie pokazuje).
+- [ ] S-10 3.5 i S-11 5.8: szwy tylko w buildzie e2e — `?e2eStars=N` (tylko świeży start) i `?e2eSave=unreadable`; strażnik buildu sprawdza, że nie trafiają do `dist/`.
+- [ ] S-11 6.7: na karcie nieczytelnego zapisu „Graj dalej” bez bramki dorosłego (dziecko samo nie utknie), eksport za bramką; po nieudanym odczycie gra w tej sesji nic nie zapisuje.
+- [ ] S-11 6.9: tekst karty błędu („Ups! Gra się zatrzymała.”) bez obietnicy zapisanego postępu; wyjątek fatalny blokuje autozapis tej sesji.
+- [ ] Bramka e2e w biegu: Chromium nie startował w 16 z 18 sesji agentów; testy i łamania (patche `git apply`) uruchamiał orkiestrator, wyniki w dzienniku biegu. Faza 7 S-10 znalazła błąd punktu docelowego haka (`holdPoint` na krawędzi slotu, poprawka 96f7514 — dziecka nie dotyczy).

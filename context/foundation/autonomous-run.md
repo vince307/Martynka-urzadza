@@ -131,6 +131,7 @@ Note: the service worker is registered only in production builds; checks of `sw.
 - Claude in Chrome cannot drive the Phaser long press (synthetic pointer/touch events are ignored): the visual gate screenshots gestures with a throwaway Playwright spec reusing `tests/e2e/support/*` against the hook build on 4399, kept in a gitignored `*.local` folder and moved out before the lint gate.
 - `npx playwright install chromium` writes `~/Library/Caches/ms-playwright` (outside the sandbox); already done once on this machine.
 - Claude in Chrome ignores window resize: portrait checks go through a same-origin iframe of the given size.
+- Run 2026-10-13-s09-s11: subagent sessions could not launch Chromium in 16 of 18 tries (MachPort); the request-file protocol (agent writes spec + `git apply` break patches, the orchestrator runs them, a finishing agent commits) carried every e2e phase. A sandboxed `npm install` with `allowed_domains: ["registry.npmjs.org"]` worked in a subagent.
 - Hooks: a per-edit ESLint + related-tests hook and an end-of-turn gate (lint, tsc, vitest) send the agent back once.
 
 ## 9. Screenshots (visual gate)
@@ -140,7 +141,10 @@ Note: the service worker is registered only in production builds; checks of `sw.
 | Desktop / mobile widths | 1440 / 1024 (landscape tablet, 1024×768; the game does not support phones or portrait) |
 | Mobile trick if the browser cannot go that narrow | same-origin iframe: `document.body.append(iframe)` with `src="/"`, fixed width/height (e.g. 1024×768, and 420×760 for the "Obróć tablet" overlay) |
 | Playwright fallback auth flow | none — public routes |
-| Reaching UI states | through the product, never by writing to IndexedDB |
+| Reaching UI states | through the product, never by writing to IndexedDB; e2e-only shortcuts exist in the hook build only: `?e2eMonth`, `?e2eFail`, `?e2eStars=N` (fresh start only, S-10), `?e2eSave=unreadable` (S-11) |
+| Fresh device in e2e | since S-11 saves persist: a reload or a second page in the same browser context resumes the saved game; a fresh device is a NEW browser context (`browser.newContext()`); never open or clear IndexedDB from a test, read it back through the hook's read-only `save` status |
+| Reaching the room in e2e | the HUD room switch exists only BETWEEN tasks: answer (or retype) the open task first, then tap `roomSwitch` (two specs in run 2026-10-13-s09-s11 failed on this) |
+| Hook target points | interior points of a shape, never an edge: page↔game scaling at 1280×720 is fractional, an edge point can land outside (S-10 `holdPoint` fix) |
 
 The game renders into one Phaser canvas: assert visuals by screenshot, text checks only for DOM overlays (`src/ui/dom/`).
 
@@ -150,7 +154,7 @@ The game renders into one Phaser canvas: assert visuals by screenshot, text chec
 |---|---|
 | Files `scripts/validate-rule-files.sh` checks | § 1 rule files + every `context/runs/*/agent-contract.md` |
 | Path roots it recognises | `\.claude|\.github|src|docs|context|tests|scripts|deploy|public|vite|designs` |
-| Paths asserted on purpose although absent | `public/assets` (art lands in M7, roadmap S-16), `src/storage/idb.ts` (IndexedDB save, roadmap S-11) — both named in CLAUDE.md's target architecture |
+| Paths asserted on purpose although absent | `public/assets` (art lands in M7, roadmap S-16) — named in CLAUDE.md's target architecture (`src/storage/idb.ts` exists since S-11, 2026-10-13) |
 | Clean-tree allow-list (the maintainer's uncommitted entries) | none |
 | Human-checklist file (run close appends point 4 of the report; optional) | `docs/human-checklist.md` |
 
