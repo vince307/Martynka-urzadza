@@ -734,9 +734,9 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [x] 6.1 `layout.test.ts`: miniatury, „Wybieram”, „Zamknij” ≥ 96 px, w tacy, rozłączne; taca poza zębatką; unit baseline + N — SHA
-- [x] 6.2 Deliberate break miniatura 80×80 → czerwony; przywrócone; meta-check — SHA
-- [x] 6.3 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — SHA (e2e: orchestrator gate)
+- [x] 6.1 `layout.test.ts`: miniatury, „Wybieram”, „Zamknij” ≥ 96 px, w tacy, rozłączne; taca poza zębatką; unit baseline + N — d8ca40e
+- [x] 6.2 Deliberate break miniatura 80×80 → czerwony; przywrócone; meta-check — d8ca40e
+- [x] 6.3 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — d8ca40e (e2e: orchestrator gate)
 
 #### Manual
 
