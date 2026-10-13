@@ -1,57 +1,58 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by the finishing step of phase 7 (e2e driver) of run 2026-10-13-s09-s11. Phase 7 is committed at a403b21 (spec `tests/e2e/save-restart.spec.ts`, `playwright.config.ts` ROUND_SPEC gains `save-restart`). All seven phases are done; `change.md` status is `implemented`. Do not edit `tests/fixtures/save-v1*.json` (frozen).
+Written by the implementation-review step of run 2026-10-13-s09-s11. Review is filed (`reviews/impl-review.md`, MERGE: CLEAR); two warnings were fixed in b59e247, which **changes production code** (`src/main.ts` `start`, `src/data/pl.ts` `saveFailed.note`), so the orchestrator must re-run the full e2e on the final commit. Do not edit `tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | docs x4, `7cf32a4` p1, `76f6df1` p2, `43af7ea` p3, `29da899` p4, `00998c0` p5, `ae919d0` p6, `a403b21` p7, plus handoff commits |
+| Commits | p1-p7 (`7cf32a4` .. `a403b21`), fix `b59e247`, docs/handoff commits, plus this review commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | only [reviewer]/[visual]/[human] rows (4.6, 5.5-5.8, 6.5-6.9) |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 8, all [visual]/[human]: 4.6, 5.6, 5.7, 5.8, 6.6, 6.7, 6.8, 6.9 (reviewer rows 5.5 and 6.5 ticked, b59e247) |
 | Roadmap | S-11 `planning` (unchanged) |
-| Working tree | clean after the commit |
+| Working tree | clean after the commit (Playwright's gitignored `test-results/` from the failed sandbox run aside) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/save-restart.spec.ts` | 3 tests: restart keeps state (#2), purchase saved at once (#10), unreadable save untouched (#16) |
-| `playwright.config.ts` | `save-restart` added to `ROUND_SPEC` (hook build, port 4397); webServer entries untouched |
-| `context/runs/2026-10-13-s09-s11/e2e-break-s11-p7{a,b,c,d}.patch`, `e2e-request-s11-p7.md` | break patches and orchestrator evidence (gitignored dir) |
-| Earlier artifacts | unchanged from phases 1-6 (card, export, `e2eSave` seam, autosaver wiring) |
+| `context/changes/autosave-versioned-save/reviews/impl-review.md` | full-plan review, phases 1-7, 2 warnings fixed, 4 observations, MERGE line |
+| `src/main.ts` (`installErrorBoundary` handler, `start`) | `booted.failed` set by the handler; `start()` returns before the game when a fatal signal came during the load or the unreadable card |
+| `src/data/pl.ts` (`saveFailed.note`) | "Tym razem gra nie zapisze postępów." (was "Dziś …") |
+| `docs/design-gaps.md` row 42 | card is shown before the game starts, not over the canvas |
+| `context/changes/autosave-versioned-save/follow-ups/review-fixes.md` | review follow-ups F3 (`unavailable` e2e seam), F4 (guard cases), F5 (export fallback), each with `Trigger:` |
+| `context/changes/autosave-versioned-save/plan.md`, `change.md` | rows 5.5, 6.5 ticked; status `impl_reviewed` |
 
 ## 3. Verification
 
-| Command | Result |
+| Command | Result (observed in this step) |
 |---|---|
-| `npm run lint`, `typecheck` | OK |
-| `npm test` + deploy tests + `sample` E1..E6 | 1142 passed (+0 this phase), 0 violations |
-| `npx playwright test` | orchestrator run, round 2: spec 3 passed; full suite 29 passed (baseline 26 + 3) |
-| Break p7a (RoomScene `bought` without `flush('now')`) | RED test 2 `save-restart.spec.ts:84` `toMatchObject {lastReason:'now', dirty:false}`, received lastReason "change"; restored |
-| Break p7b (start ignores the loaded session; this supersedes `e2e-break-s11-p4.patch`, the phase-4 deferred break) | RED test 1 `:51` `screenIs 'task'`, received "welcome"; also test 2 `:65` stars Expected 20 Received 0; restored |
-| Break p7c (autosave not blocked after `unreadable`) | RED test 3 `:127` `toMatchObject {load:'unreadable', blocked:true}`, received blocked false; restored |
-| Break p7d (`?e2eStars` overrides loaded balance) | RED test 2 `:94` `counterText` Expected "15" Received "20"; restored |
-| `npm run build` | `e2e hook: absent` (phase 6 run; no production code changed since) |
+| `npm run lint`, `npm run typecheck` | OK, before and after b59e247 |
+| `npm test` | 1142 passed = baseline 1079 + 63 (slice); fix adds +0 |
+| deploy tests, `sample` E1..E6 | OK, 0 violations |
+| `npm run build` | `e2e hook: absent`; `grep -rlE "e2eSave\|e2eStars\|__martynkaE2E" dist/` → no match |
+| `npx playwright test` | one plain run: Chromium killed by the sandbox (mach port permission), 13 failed at launch, 0 at an assertion; evidence is the orchestrator's round 2 on a403b21 (29 passed = 26 + 3; breaks p7a-p7d RED). e2e: orchestrator re-runs on the review's final commit |
+| Deliberate break | `createAutosaver` ignoring `options.blocked` → `tests/autosave.test.ts` 2 RED (unreadable / unavailable never written); restored, 12 green, diff clean. Meta-check: proves the core rule; the browser wiring is proven for `unreadable` only (break p7c), `unavailable` is follow-up F3 |
+| Hook bypass check | `.claude/settings.json` and hooks untouched; none |
 
 ## 4. Next command
 
-`/10x-impl-review autosave-versioned-save`
+visual gate (S-11 failed-load card, restored game after reload)
 
 ## 5. Open
 
-- Manual rows (human checklist): 4.6 [human] iPad/Android restart, kill, silent update keep state; 5.5 [reviewer] teacher
-  read `pl.saveFailed`; 5.6 [visual] card, gate over card, welcome after "Graj dalej" at 1440x900 and 1024x768; 5.7 [human]
-  export on iPad home-screen app and Android; 5.8 [human] `?e2eSave` seam; 6.5 [reviewer] seam sweep; 6.6 [human] v1
-  deviates from plan §5; 6.7 [human] card gating; 6.8 [human] two-build e2e (#10) deferred to v2; 6.9 [human] `pl.errorCard.body` unchanged.
-- DESIGN-GAP rows 42-44 written in phase 6.
-- Carried follow-ups: observability F3, F4, parent-settings F7; profile sec. 10 and `docs/human-checklist.md` S-11 wording left to the orchestrator.
-- Known risks from review: v1 validation never tightens without a migration (F4); two same-origin instances, last writer wins (F5).
+- Human checklist: 4.6 iPad/Android restart, kill, silent update keep state (`src/main.ts` `start`); 5.6 [visual] card, gate over card, welcome after "Graj dalej" at 1440x900 and 1024x768 (`src/ui/dom/saveFailedCard.ts` `mountSaveFailedCard`, reachable via `?e2eSave=unreadable` in the hook build); 5.7 export on iPad home-screen app and Android (`src/ui/dom/saveExport.ts` `exportRawSave`); 5.8 `?e2eSave` seam; 6.6 v1 deviates from plan §5 (`src/core/types.ts` `SaveV1`) — accept before the first deploy; 6.7 card gating; 6.8 two-build e2e deferred to v2; 6.9 `pl.errorCard.body` unchanged.
+- E2E re-run needed on the final commit (production code changed in b59e247).
+- Follow-ups: `follow-ups/review-fixes.md` (v2 migration, two builds, two instances, S-12 export/import, carried F3/F4 observability, review F3-F5).
+- DESIGN-GAP rows 42-44 (42 wording corrected).
+- Known risks: v1 validation must never tighten without a migration (`src/core/save.ts` `validateSave`); two same-origin instances, last writer wins.
 
 ## 6. Autonomous decisions
 
-- Phase 7: spec proven by the orchestrator (Chromium not runnable in agent sessions); finishing step changed nothing in the spec, ran lint/typecheck/unit itself, committed spec + config by path.
-- Phase 7: `e2e-break-s11-p4.patch` superseded by p7b; row 4.4 stays ticked, its proof is p7b (row 7.3).
-- Earlier decisions (phases 1-6) are in git history of this file (commit `ae919d0` handoff).
+- F1 fixed in place (WARNING, cheap): `booted.failed` guard in `src/main.ts` `start` rather than blocking only the saver — rejected "block the saver on creation" because the game itself would still run unseen under the error card. Would change: the maintainer wanting the game to start after a non-fatal pre-game error (then `isFatalSignal` is the place, not `start`).
+- F2 fixed in place: note wording "Tym razem" (teacher read). Would change: the maintainer's own copy for DESIGN-GAP 42.
+- F3-F5 recorded as follow-ups, not fixed: they add tests/seams or confirm device behaviour, none can lose a save today.
+- Kept the p1 `unlockedStep` relaxation: `floorToCalendar` fills a missing stage at load, so requiring all six keys would only make good saves unreadable. Would change: a stage the game reads without the floor.
+- Triage decided in place (no AskUserQuestion), contract rule 1.

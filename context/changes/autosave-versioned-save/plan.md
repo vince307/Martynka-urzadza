@@ -823,7 +823,7 @@ zapisu, karta z eksportem.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Teacher read `pl.saveFailed` (tytuł, zdanie, przyciski, notka, nazwa pliku)
+- [x] 5.5 [reviewer] Teacher read `pl.saveFailed` (tytuł, zdanie, przyciski, notka, nazwa pliku) — b59e247 (notka „Dziś” → „Tym razem”)
 - [ ] 5.6 [visual] Karta, bramka nad kartą, powitanie po „Graj dalej” — 1440×900 i 1024×768
 - [ ] 5.7 [human] Eksport kopii na iPadzie (aplikacja z ekranu początkowego) i Androidzie
 - [ ] 5.8 [human] Szew `?e2eSave=unreadable` jako droga e2e i bramki wizualnej do karty
@@ -839,7 +839,7 @@ zapisu, karta z eksportem.
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:`
+- [x] 6.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:` — b59e247 (wiersz 42 poprawiony)
 - [ ] 6.6 [human] Format v1 odchodzi od planu §5 (bez `rngSeed`, `learner` nullable, `warmupPending`, `pendingUnlock: { stage, step }`, `profileId`) — akceptacja przed pierwszym deployem
 - [ ] 6.7 [human] Karta nieczytelnego zapisu: eksport za bramką, „Graj dalej” bez bramki (wbrew rekomendacji researchu)
 - [ ] 6.8 [human] E2E na dwóch buildach (#10, test-plan faza 4) odroczone do v2
