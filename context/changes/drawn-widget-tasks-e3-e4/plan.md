@@ -1086,7 +1086,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Automated
 
 - [x] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `sample` E3/E4 bez naruszeń — f1d6375
-- [ ] 9.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` i `drag` w puli
+- [x] 9.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` i `drag` w puli — f1d6375 (e2e by the orchestrator on f1c3780: 37 passed; drag one-off 4 passed)
 - [x] 9.3 `Unsupported input mode` i „wait for their own UI” usunięte — f1d6375
 - [x] 9.4 Deliberate break: `playable` bez `drag` → test puli czerwony; przywrócone; meta-check — f1d6375
 - [x] 9.5 `npm run build` drukuje `e2e hook: absent (` — f1d6375
@@ -1101,10 +1101,10 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 10.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [ ] 10.2 `validate-rule-files.sh` PASS
-- [ ] 10.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 10.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 10.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod (e2e part: orchestrator)
+- [x] 10.2 `validate-rule-files.sh` PASS
+- [x] 10.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
+- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { pl } from '../src/data/pl';
 import { createRng } from '../src/core/rng';
 import { firstHint } from '../src/core/round/hints';
 import { generatePlaceValue, parsePlaceValueParams } from '../src/core/tasks/generators/placeValue';
@@ -126,5 +127,29 @@ describe('parsePlaceValueParams', () => {
         ['missing bounds', { variant: 'read' }],
     ])('rejects %s', (_name, params) => {
         expect(() => parsePlaceValueParams(params)).toThrow(TypeError);
+    });
+});
+
+describe('PLACE_VALUE answer hint: numeral agreement', () => {
+    // "Jest 1 dziesiątka." / "Są 2 dziesiątki." / "Jest 5 dziesiątek." - never "Dziesiątek jest N".
+    const expected = (t: number): string => {
+        const noun = t === 1 ? 'dziesiątka' : [2, 3, 4].includes(t % 10) && ![12, 13, 14].includes(t % 100) ? 'dziesiątki' : 'dziesiątek';
+        const verb = t === 1 || noun === 'dziesiątek' ? 'Jest' : 'Są';
+        return `${verb} ${t} ${noun}.`;
+    };
+    it('the final tens hint agrees with the count for 0..100', () => {
+        for (let t = 0; t <= 100; t += 1) {
+            expect(pl.tasks.placeValueTensAnswerHint(t), `t=${t}`).toBe(expected(t));
+        }
+    });
+    it('spot checks', () => {
+        expect(pl.tasks.placeValueTensAnswerHint(1)).toBe('Jest 1 dziesiątka.');
+        expect(pl.tasks.placeValueTensAnswerHint(2)).toBe('Są 2 dziesiątki.');
+        expect(pl.tasks.placeValueTensAnswerHint(5)).toBe('Jest 5 dziesiątek.');
+    });
+    it('the drawn tens task ends with that hint for 1000 draws', () => {
+        forEachDraw(generatePlaceValue, TENS_30, { max: 30 }, (task, where) => {
+            expect(task.hint[task.hint.length - 1], where).toBe(expected(task.answer as number));
+        });
     });
 });

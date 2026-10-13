@@ -1,6 +1,6 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
-import { countNoun } from '../core/text/plural';
+import { countNoun, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
 export const pl = {
@@ -359,7 +359,7 @@ export const pl = {
         placeValueTensLine: (t: number) => `${countNoun(t, nouns.dziesiątka)} to ${t * 10}`,
         placeValueReadAnswerHint: (n: number) => `To jest liczba ${n}.`,
         placeValueTensHint: 'Długie klocki to dziesiątki. Policz je.',
-        placeValueTensAnswerHint: (t: number) => `Dziesiątek jest ${t}.`,
+        placeValueTensAnswerHint: (t: number) => `${pluralCategory(t) === 'few' ? 'Są' : 'Jest'} ${countNoun(t, nouns.dziesiątka)}.`,
         placeValueDecomposeHint: 'Od całej liczby odejmij to, co już jest.',
         placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
         placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
