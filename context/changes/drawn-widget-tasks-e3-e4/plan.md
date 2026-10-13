@@ -1061,8 +1061,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 - [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
 - [ ] 7.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` w puli; jednorazowo `task-round` z `?e2eSkills=E3.7.select_even_30` zielony
-- [ ] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eSkills` nieobecny w `dist/`
-- [ ] 7.4 Deliberate break: `toggleSelected` nie zdejmuje → czerwony; meta-check nazwy klucza rejestru vs marker; przywrócone
+- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eSkills` nieobecny w `dist/` — 8f73f98
+- [x] 7.4 Deliberate break: `toggleSelected` nie zdejmuje → czerwony; meta-check nazwy klucza rejestru vs marker; przywrócone — 8f73f98
 
 #### Manual
 
