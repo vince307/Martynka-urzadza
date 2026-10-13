@@ -56,7 +56,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-08  | parent-settings-progress    | M3   | rodzic zmienia etap i widzi zwięzły podgląd postępów za bramką                   | S-06, S-07           | FR-015, US-03                   | done |
 | S-09  | first-furniture-purchase    | M4   | dziecko wydaje gwiazdki na zadanie remontowe i wybiera jeden z 3 wariantów        | S-08                 | FR-016, FR-017, US-02           | done |
 | S-10  | variant-change-room-done    | M4   | dziecko zmienia wariant za darmo, widzi „Pokój gotowy!” i robi poprawki           | S-09                 | FR-018, FR-019                  | done |
-| S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | proposed |
+| S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | planning |
 | S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | proposed |
 | S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | proposed |
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | proposed |
@@ -269,7 +269,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** do tej pory stan żył w pamięci; wprowadzenie zapisu po M4 (zgodnie z planem) oznacza, że format zapisu obejmuje od razu cały stan pętli, co zmniejsza liczbę migracji później.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-12: Eksport, import i reset zapisu
 
