@@ -1116,9 +1116,9 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [x] 11.1 `drawn-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5` — SHA (e2e by the orchestrator: 5 passed (51.1s); full suite 42 passed = 37 + 5)
-- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): „OK” wysyła pusty zbiór → (b), (e) czerwone; przywrócone — SHA (e2e by the orchestrator: RED (b) phaseIs(page, 'done') Expected "done", Received "solution")
-- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): anulowany dotyk jako `up` → (d) czerwony; meta-check — SHA (e2e by the orchestrator: RED (d) mat toEqual {hundred:0,ten:0,one:0} received ten: 1; reducer unit tests stay green)
-- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): rysunek ukryty → (a) czerwony; meta-check — SHA (e2e by the orchestrator: RED (a) expect(picture).toBeTruthy() received null)
-- [x] 11.5 Deliberate break (patch `e2e-break-p11d.patch`): upuszczenie poza matą dokłada → (c) czerwony; przywrócone — SHA (e2e by the orchestrator: RED (c) mat toEqual {hundred:0,ten:1,one:0} received one: 1)
-- [x] 11.6 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — SHA (e2e by the orchestrator: e2e hook: absent (2 chunks checked); lint, typecheck, npm test 1475, sample E1-E6 0 violations; servers killed by the orchestrator)
+- [x] 11.1 `drawn-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5` — bf87c24 (e2e by the orchestrator: 5 passed (51.1s); full suite 42 passed = 37 + 5)
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): „OK” wysyła pusty zbiór → (b), (e) czerwone; przywrócone — bf87c24 (e2e by the orchestrator: RED (b) phaseIs(page, 'done') Expected "done", Received "solution")
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): anulowany dotyk jako `up` → (d) czerwony; meta-check — bf87c24 (e2e by the orchestrator: RED (d) mat toEqual {hundred:0,ten:0,one:0} received ten: 1; reducer unit tests stay green)
+- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): rysunek ukryty → (a) czerwony; meta-check — bf87c24 (e2e by the orchestrator: RED (a) expect(picture).toBeTruthy() received null)
+- [x] 11.5 Deliberate break (patch `e2e-break-p11d.patch`): upuszczenie poza matą dokłada → (c) czerwony; przywrócone — bf87c24 (e2e by the orchestrator: RED (c) mat toEqual {hundred:0,ten:1,one:0} received one: 1)
+- [x] 11.6 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — bf87c24 (e2e by the orchestrator: e2e hook: absent (2 chunks checked); lint, typecheck, npm test 1475, sample E1-E6 0 violations; servers killed by the orchestrator)
