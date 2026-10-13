@@ -16,7 +16,7 @@ import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
-import { pictureLayout } from '../core/round/pictureLayout';
+import { belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
 import type { AnswerMode, TaskVisual } from '../core/tasks/visual';
@@ -24,6 +24,7 @@ import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
     ANIMATION,
+    FONT_SIZES,
     GAME_EVENTS,
     GAME_HEIGHT,
     PLACEHOLDER_COLORS,
@@ -327,7 +328,9 @@ export class TaskScene extends Scene {
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
         const solutionShown = view.bar.kind === 'solution';
         const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown);
-        this.picture.render(view.visual, layout.picture);
+        // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
+        const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap) : layout.picture;
+        this.picture.render(view.visual, pictureRect);
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles');
         this.keypad.setVisible(view.input === 'keypad');
@@ -437,15 +440,21 @@ export class TaskScene extends Scene {
         } else if (task.prompt.includes(BLANK)) {
             this.drawSentence(task.prompt, sentence, color);
         } else {
-            this.promptTexts.push(
-                this.add
-                    .text(sentence.x, sentence.y, task.prompt, {
-                        ...textStyle('prompt', color),
-                        align: 'center',
-                        wordWrap: { width: sentence.maxWidth },
-                    })
-                    .setOrigin(0.5, 0),
-            );
+            const text = this.add
+                .text(sentence.x, sentence.y, task.prompt, {
+                    ...textStyle('prompt', color),
+                    align: 'center',
+                    wordWrap: { width: sentence.maxWidth },
+                })
+                .setOrigin(0.5, 0);
+            if (task.visual) {
+                // A pictured task's prompt ends above its drawing: a long one steps its font down (visual gate S-13).
+                const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
+                const limit = pictureLayout(TASK_LAYOUT.picture, input, false).picture.y - promptGap;
+                const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
+                text.setFontSize(size);
+            }
+            this.promptTexts.push(text);
         }
     }
 

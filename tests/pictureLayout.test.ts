@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clockHandAngles, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
+import { belowPrompt, clockHandAngles, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { TASK_LAYOUT } from '../src/data/layout';
 
 const spec = TASK_LAYOUT.picture;
@@ -62,5 +62,34 @@ describe('clockHandAngles', () => {
         expect(clockHandAngles(15, 0).hour).toBe(clockHandAngles(3, 0).hour);
         expect(clockHandAngles(7, 45).hour).toBeGreaterThan(clockHandAngles(7, 30).hour);
         expect(clockHandAngles(7, 45).hour).toBeLessThan(clockHandAngles(8, 0).hour);
+    });
+});
+
+describe('belowPrompt (visual gate S-13: a five-line chart prompt beside the keypad ran over the chart)', () => {
+    it('keeps the rectangle when the prompt ends above it', () => {
+        expect(belowPrompt(spec.keypad, spec.keypad.y - 40, 16)).toEqual(spec.keypad);
+    });
+
+    it('moves the top under a long prompt and keeps the bottom', () => {
+        const r = belowPrompt(spec.keypad, 600, 16);
+        expect(r.y).toBe(616);
+        expect(r.y + r.height).toBe(spec.keypad.y + spec.keypad.height);
+        expect(r.x).toBe(spec.keypad.x);
+        expect(r.width).toBe(spec.keypad.width);
+    });
+
+    it('never gives a negative height', () => {
+        expect(belowPrompt(spec.keypad, 5000, 16).height).toBe(0);
+    });
+});
+
+describe('fitSize', () => {
+    it('takes the largest size that fits, stepping down from the maximum', () => {
+        expect(fitSize(64, 44, 4, (s) => s <= 50)).toBe(48);
+        expect(fitSize(64, 44, 4, () => true)).toBe(64);
+    });
+
+    it('stops at the minimum when nothing fits', () => {
+        expect(fitSize(64, 44, 4, () => false)).toBe(44);
     });
 });

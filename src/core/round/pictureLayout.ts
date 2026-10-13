@@ -34,6 +34,25 @@ export const pictureLayout = (
     return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
 };
 
+/**
+ * The drawing rectangle kept under the prompt: its top moves down to `promptBottom + gap` when a long prompt ends below it,
+ * its bottom stays (the drawing then scales down into what is left). Height never goes below 0.
+ */
+export const belowPrompt = (rect: PictureRect, promptBottom: number, gap: number): PictureRect => {
+    const top = Math.max(rect.y, promptBottom + gap);
+    return { x: rect.x, y: top, width: rect.width, height: Math.max(0, rect.y + rect.height - top) };
+};
+
+/** The largest size from `max` down to `min` in `step`s for which `fits(size)` holds; `min` when none does. */
+export const fitSize = (max: number, min: number, step: number, fits: (size: number) => boolean): number => {
+    for (let size = max; size > min; size -= step) {
+        if (fits(size)) {
+            return size;
+        }
+    }
+    return min;
+};
+
 /** Hand angles of a 12-hour dial in degrees clockwise from 12; the hour hand moves with the minutes. */
 export const clockHandAngles = (hour: number, minute: number): { hour: number; minute: number } => ({
     hour: (((hour % 12) + minute / 60) * 30) % 360,

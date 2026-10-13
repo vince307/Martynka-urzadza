@@ -16,7 +16,7 @@ const RULER = {
     halfTick: { length: 20, width: 2 },
     mmTick: { length: 10, width: 2 },
     digitDrop: 80,       // digit baseline below the body top
-    unitX: 27,           // "cm" label centre, after the last mark
+    unitX: 41,           // "cm" label centre after the last mark (kit ruler.svg: last digit at 620, "cm" at 661; 27 ran "15" into "cm")
     // DESIGN-GAP (docs/design-gaps.md row 56): the kit draws no measured segment; it floats above the ruler on a lead line to each end.
     segment: { gap: 44, width: 8, cap: 26 },
     lead: { width: 2, alpha: 0.35 },

@@ -183,6 +183,9 @@ export const TASK_LAYOUT = {
     // or one above the other (keypad). All rectangles are x, y, width, height in scene pixels.
     picture: {
         promptY: 232,
+        // Visual gate S-13: a long prompt (a chart question beside the keypad wraps to five lines) steps its font down to
+        // `promptMinSize` until it ends `promptGap` above the drawing; if it still does not, the drawing moves down under it.
+        promptGap: 16, promptMinSize: 44, promptSizeStep: 4,
         tiles: { x: 661, y: 396, width: 600, height: 294 },
         tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
         keypad: { x: 236, y: 470, width: 768, height: 378 },
@@ -195,7 +198,7 @@ export const TASK_LAYOUT = {
         mat: { x: 236, y: 380, width: 944, height: 460 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         cellInset: 8, columns: 3, maxPerKind: 9,
-        labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.3, radius: 28,
+        labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.2, radius: 28,   // trayScale 1.3 put the 10 rod on the tray tile border (visual gate S-13)
         solutionLines: { x: 1240, y: 380, width: 440, height: 440 },   // the solution steps take the tray's place
     },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
