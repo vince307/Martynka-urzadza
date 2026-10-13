@@ -4,6 +4,8 @@ import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
 import { createAutosaver, loadSave, type Autosaver } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
+import { repairCurrentRoom } from './core/rooms';
+import { FIRST_ROOM, ROOMS } from './data/rooms';
 import type { SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings } from './core/types';
@@ -21,7 +23,6 @@ import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
 import { emptyRoomState } from './core/rooms';
-import { FIRST_ROOM } from './data/rooms';
 import { E2E_LOAD_TIMEOUT_MS, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
@@ -159,7 +160,11 @@ const start = async (): Promise<void> => {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
-        session = { ...outcome.session, learner };
+        const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
+        session = repaired.session;
+        if (repaired.repairedFrom !== null) {
+            console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${FIRST_ROOM}`);
+        }
     } else {
         // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;

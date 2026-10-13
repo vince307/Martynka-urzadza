@@ -630,16 +630,16 @@ przyszłego builda, który go zna.
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 11b492c
 - [x] 2.2 Build: `e2e hook: absent (`; `e2eSave` nieobecne w `dist/`; build e2e `e2e hook: present (` — 11b492c
 - [x] 2.3 Deliberate break: bez `.catch` porzuconego odczytu / timer nieczyszczony / bez nazwy błędu → czerwone; przywrócone; meta-check — 11b492c
-- [x] 2.4 Pełna bramka lokalna zielona — 11b492c (e2e: orchestrator gate)
+- [x] 2.4 Pełna bramka lokalna zielona — 11b492c (e2e: orchestrator run on 65dfce8, 29 passed)
 
 ### Phase 3: Naprawa nieznanego pokoju przy wczytaniu i jeden resolver w `RoomScene`
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: naprawa gubi inne pokoje / nadpisuje salon / brak placeholdera → czerwone; przywrócone; meta-check
-- [ ] 3.3 `RoomScene` bez `this.room()`/`this.roomState()` (jeden resolver)
-- [ ] 3.4 Pełna bramka lokalna zielona
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — SHA
+- [x] 3.2 Deliberate break: naprawa gubi inne pokoje / nadpisuje salon / brak placeholdera → czerwone; przywrócone; meta-check — SHA
+- [x] 3.3 `RoomScene` bez `this.room()`/`this.roomState()` (jeden resolver) — SHA
+- [x] 3.4 Pełna bramka lokalna zielona — SHA (e2e: orchestrator gate)
 
 #### Manual
 
