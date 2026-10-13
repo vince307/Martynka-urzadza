@@ -663,11 +663,11 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [ ] 5.1 `validate-rule-files.sh` PASS
-- [ ] 5.2 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [ ] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; `UIScene` bez `saveHealth` → unit zielone, zapis w handoff §3; meta-check
-- [ ] 5.4 „nothing is shown” nieobecne w `src/`; opcja `blocked` usunięta z `main.ts`
-- [ ] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 5.1 `validate-rule-files.sh` PASS
+- [x] 5.2 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
+- [x] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; `UIScene` bez `saveHealth` → unit zielone, zapis w handoff §3; meta-check
+- [x] 5.4 „nothing is shown” nieobecne w `src/`; opcja `blocked` usunięta z `main.ts`
+- [x] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
 
 #### Manual
 

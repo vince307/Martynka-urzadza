@@ -309,6 +309,15 @@ canvas {
 }
 
 /* Parent progress preview (S-08): inside the dialog's scroll, under the choices; long word-problem prompts wrap. */
+.parent-save {
+    width: 100%;
+    text-align: left;
+}
+
+.parent-save h2 {
+    margin-bottom: 8px;
+}
+
 .parent-progress {
     width: 100%;
     text-align: left;

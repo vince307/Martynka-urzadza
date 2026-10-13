@@ -181,7 +181,7 @@ const start = async (): Promise<void> => {
     }
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, session);
     booted.game = game;
-    // DESIGN-GAP 43 (docs/design-gaps.md): the kit does not say the child or a parent sees that the game saves; nothing is shown.
+    // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({
         store,
         snapshot: () => ({
