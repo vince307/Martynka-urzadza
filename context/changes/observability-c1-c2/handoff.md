@@ -1,16 +1,16 @@
 # Handoff — `observability-c1-c2` (slice fix:observability-c1-c2, non-roadmap)
 
-Written by `/10x-impl-review observability-c1-c2` (autonomous run 2026-10-13-fix-observability). Verdict APPROVED, `MERGE: CLEAR`; one review fix committed (a2472cf). `change.md` is `impl_reviewed`. Do not tick the [visual] or [human] rows without their evidence.
+Final pre-merge state, written by the ship step (autonomous run 2026-10-13-fix-observability) before `/10x-archive`. impl-review: APPROVED, `MERGE: CLEAR`; visual gate passed (rows 4.7, 5.8 ticked in d289783). Open [human] rows 2.6, 4.8, 5.9 are a post-run checklist for the maintainer.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/observability-c1-c2` (cut from `main` at `a34aeee`) |
-| Commits | phases 1-7 (6ad5d53 … d6211e1), review fix a2472cf `fix(observability-c1-c2): poprawki po impl-review …`, then this `docs(observability-c1-c2): impl-review` |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 5: [visual] 4.7, 5.8; [human] 2.6, 4.8, 5.9 |
+| Commits | phases 1-7 (6ad5d53 … d6211e1), review fix a2472cf, impl-review 9219e25, visual gate d289783, then the archive commit |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-fix-observability/run-log.md |
+| `change.md` status | `archived` (by `/10x-archive`) |
+| `## Progress` rows remaining | 3 [human]: 2.6, 4.8, 5.9 (post-run checklist, not a blocker) |
 | Working tree | clean after this commit (`context/runs/` untracked as always) |
 
 ## 2. Artifacts
@@ -40,12 +40,10 @@ Written by `/10x-impl-review observability-c1-c2` (autonomous run 2026-10-13-fix
 
 ## 4. Next command
 
-visual gate (orchestrator), then /10x-archive observability-c1-c2
+none — shipped
 
 ## 5. Open
 
-- [visual] 4.7: screenshots of the card after `?e2eFail=step` and `?e2eFail=boot`, 1440×900 and 1024×768, hook build on 4399.
-- [visual] 5.8: settings panel without a Polish voice (line visible) and with one (line absent), both sizes; "Zatwierdź"/"Anuluj" visible without scrolling.
 - [human] 2.6: H-7 in FR-013 and ZADANIA § 1; unlock at 60-70 % accuracy (~25-35 rounds), calibration S-17.
 - [human] 4.8: until S-11 a restart from the card ends the session; the card shows on every failure.
 - [human] 5.9: reading toggle stays active without a voice.
@@ -57,3 +55,4 @@ visual gate (orchestrator), then /10x-archive observability-c1-c2
 2. F1 fixed only in the new spec; `tests/e2e/support/welcome.ts` keeps its literal dialog names (pre-existing pattern across the file). Would change: a cleanup change for the e2e support helpers.
 3. F3-F6 recorded, not fixed: no effect on a child while the card is final; fixing touches product code after a green e2e run. Would change: a non-final error path or a parent's report.
 4. Triage done in place (no AskUserQuestion, contract rule 1); continuation option "Done".
+5. Ship step: archived with [human] 2.6, 4.8, 5.9 open. Why: they are product-owner confirmations of decisions already made (H-7 by the maintainer, the final card until S-11, the active toggle without a voice), no code depends on them; they are listed in the PR body. Would change: the maintainer rejecting one of them, which becomes a new change.
