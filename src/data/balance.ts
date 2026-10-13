@@ -11,5 +11,6 @@ export const balance = {
     easing: { weakBelow: 3, weakRounds: 2, rounds: 2, weights: { current: 20, earlier: 50, previous: 30 } }, // PRD FR-014 / ZADANIA section 1: two rounds in a row with fewer than 3 of 5 right on the first try ease the next 2 rounds; easing = weights 20/50/30 (instead of "smaller range, picture mode")
     parentSettings: { holdMs: 2000, moveTolerance: 30, weakestCount: 3, examplesPerSkill: 2 }, // PRD US-03 AC / FR-015: hold the settings icon 2 s (longer than a child's ordinary press), finger drift up to 30 game px (under half of the 96 px icon), preview shows the 3 weakest skills with up to 2 mistake examples each
     roomHold: { holdMs: 600, moveTolerance: 40 }, // PRD FR-018: a short hold on a furnished item opens the change panel; 600 ms is above the platform press thresholds (Android 400-500 ms, iOS 0.5 s) so a slow tap stays a tap, below the parent's 2 s; 40 game px is about 21 CSS px at 1024 wide, under half of a 96 px target
+    save: { debounceMs: 500 }, // PRD FR-020 "short delay" after a change before the autosave writes (plan section 8); a kill inside the window loses at most the last ~0.5 s, purchases and round ends are saved at once
     tiles: { count: 4 },   // answer tiles per task, including the correct one (kit task-tiles.png shows 4)
 } as const;

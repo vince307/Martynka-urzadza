@@ -2,7 +2,7 @@
 // so a child is neither dropped at step 1 of a stage the class is half through nor handed the whole stage with nothing
 // left to unlock. Pure: the month is an argument, there is no Date here.
 // After S-11 (persistence) the same call gives the floor as max(saved step, calendarStart).
-import { proposeStage, STAGE_ORDER, type PlacementData } from './placement';
+import { proposeStage, STAGE_ORDER, type PlacementData, type SessionLearner } from './placement';
 import type { Rng } from './rng';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
 import { recordRound, type MasteryRules, type SkillResult } from './mastery';
@@ -55,6 +55,29 @@ export const startLearning = (
         if (stage) unlockedStep[id] = calendarStart(stage, age, month, data, rules);
     }
     return { unlockedStep, mastery: {}, streak: {}, history: [], weakStreak: 0, easedRounds: 0 };
+};
+
+/** Raises every stage of a loaded learner to the school-calendar start (max of saved and calendar). */
+export const floorToCalendar = (
+    learner: SessionLearner,
+    stages: Readonly<Partial<Record<StageId, StageDef>>>,
+    month: number,
+    data: PlacementData,
+    rules: CurriculumRules,
+): SessionLearner => {
+    const unlockedStep = { ...learner.unlockedStep };
+    let changed = false;
+    for (const id of STAGE_ORDER) {
+        const stage = stages[id];
+        if (!stage) continue;
+        const floor = calendarStart(stage, learner.age, month, data, rules);
+        const saved = (learner.unlockedStep as Partial<Record<StageId, number>>)[id];
+        if (saved === undefined || saved < floor) {
+            unlockedStep[id] = floor;
+            changed = true;
+        }
+    }
+    return changed ? { ...learner, unlockedStep } : learner;
 };
 
 /** The playable step at `unlockedStep`, or the nearest lower one; below the first playable step, the first. */
