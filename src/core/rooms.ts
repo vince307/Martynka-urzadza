@@ -54,3 +54,7 @@ export function purchase(room: RoomDef, state: RoomState, stars: number, variant
         bought: { taskId: task.id, slot: task.slot, variant },
     };
 }
+
+export function roomDone(room: RoomDef, state: RoomState): boolean {
+    return state.tasksDone >= room.tasks.length;
+}

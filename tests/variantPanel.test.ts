@@ -31,7 +31,7 @@ const fresh = (): RoomState => emptyRoomState();
 describe('opening', () => {
     it('opens for an affordable current task with an empty preview', () => {
         const r = stepPanel(CLOSED, { type: 'open' }, { room, state: fresh(), stars: 5 });
-        expect(r.panel).toEqual({ kind: 'open', taskId: 't1', preview: null });
+        expect(r.panel).toEqual({ kind: 'open', mode: 'buy', taskId: 't1', preview: null });
         expect(r.bought).toBeNull();
         expect(r.stars).toBe(5);
     });
@@ -49,7 +49,7 @@ describe('opening', () => {
 });
 
 describe('picking and confirming', () => {
-    const open = (preview: 0 | 1 | 2 | null): PanelState => ({ kind: 'open', taskId: 't1', preview });
+    const open = (preview: 0 | 1 | 2 | null): PanelState => ({ kind: 'open', mode: 'buy', taskId: 't1', preview });
     it('a pick sets and overrides the preview without spending', () => {
         const a = stepPanel(open(null), { type: 'pick', variant: 2 }, { room, state: fresh(), stars: 20 });
         expect(a.panel).toEqual(open(2));
@@ -112,11 +112,83 @@ describe('picking and confirming', () => {
 describe('closing', () => {
     it('closes without spending, whatever the preview', () => {
         const s = fresh();
-        const r = stepPanel({ kind: 'open', taskId: 't1', preview: 2 }, { type: 'close' }, { room, state: s, stars: 20 });
+        const r = stepPanel({ kind: 'open', mode: 'buy', taskId: 't1', preview: 2 }, { type: 'close' }, { room, state: s, stars: 20 });
         expect(r.panel).toEqual(CLOSED);
         expect(r.stars).toBe(20);
         expect(r.state).toBe(s);
         expect(r.bought).toBeNull();
+    });
+});
+
+describe('change mode (S-10, FR-018: a change is free)', () => {
+    const furnished = (): RoomState => ({ tasksDone: 2, chosen: { floor: 0, sofa: 1 } });
+    const changeOpen = (slot: string, preview: 0 | 1 | 2 | null): PanelState => ({ kind: 'open', mode: 'change', slot, preview });
+    it('change on a furnished slot opens the change panel with an empty preview', () => {
+        const r = stepPanel(CLOSED, { type: 'change', slot: 'sofa' }, { room, state: furnished(), stars: 3 });
+        expect(r.panel).toEqual(changeOpen('sofa', null));
+        expect(r.stars).toBe(3);
+        expect(r.bought).toBeNull();
+        expect(r.changed).toBeNull();
+    });
+    it('change on an empty or unknown slot stays closed', () => {
+        const ctx = { room, state: furnished(), stars: 3 };
+        expect(stepPanel(CLOSED, { type: 'change', slot: 'lamp' }, ctx).panel).toEqual(CLOSED);
+        expect(stepPanel(CLOSED, { type: 'change', slot: 'nope' }, ctx).panel).toEqual(CLOSED);
+    });
+    it('change while a panel is open is ignored', () => {
+        const ctx = { room, state: furnished(), stars: 3 };
+        const open: PanelState = { kind: 'open', mode: 'buy', taskId: 't3', preview: null };
+        expect(stepPanel(open, { type: 'change', slot: 'sofa' }, ctx).panel).toEqual(open);
+        const other = changeOpen('floor', 1);
+        expect(stepPanel(other, { type: 'change', slot: 'sofa' }, ctx).panel).toEqual(other);
+    });
+    it('a buy open is ignored while the change panel is open', () => {
+        const p = changeOpen('sofa', null);
+        expect(stepPanel(p, { type: 'open' }, { room, state: furnished(), stars: 50 }).panel).toEqual(p);
+    });
+    it('confirm without a preview changes nothing', () => {
+        const s = furnished();
+        const r = stepPanel(changeOpen('sofa', null), { type: 'confirm' }, { room, state: s, stars: 9 });
+        expect(r.panel).toEqual(changeOpen('sofa', null));
+        expect(r.state).toBe(s);
+        expect(r.changed).toBeNull();
+    });
+    it('a pick sets the preview in the change panel', () => {
+        const r = stepPanel(changeOpen('sofa', null), { type: 'pick', variant: 2 }, { room, state: furnished(), stars: 9 });
+        expect(r.panel).toEqual(changeOpen('sofa', 2));
+    });
+    it('confirm with a preview rewrites the variant and spends and counts nothing', () => {
+        const before = furnished();
+        const r = stepPanel(changeOpen('sofa', 2), { type: 'confirm' }, { room, state: before, stars: 9 });
+        expect(r.panel).toEqual(CLOSED);
+        expect(r.stars).toBe(9);
+        expect(r.bought).toBeNull();
+        expect(r.changed).toEqual({ slot: 'sofa', variant: 2 });
+        expect(r.state).toEqual({ tasksDone: 2, chosen: { floor: 0, sofa: 2 } });
+        expect(before.chosen.sofa).toBe(1);
+    });
+    it('a second confirm in a row changes nothing', () => {
+        const first = stepPanel(changeOpen('sofa', 2), { type: 'confirm' }, { room, state: furnished(), stars: 9 });
+        const second = stepPanel(first.panel, { type: 'confirm' }, { room, state: first.state, stars: first.stars });
+        expect(second.changed).toBeNull();
+        expect(second.state).toBe(first.state);
+    });
+    it('close leaves the room and the balance as they were', () => {
+        const s = furnished();
+        const r = stepPanel(changeOpen('sofa', 1), { type: 'close' }, { room, state: s, stars: 9 });
+        expect(r.panel).toEqual(CLOSED);
+        expect(r.state).toBe(s);
+        expect(r.stars).toBe(9);
+    });
+    it('works when the room is complete and the balance is zero', () => {
+        const done: RoomState = { tasksDone: 3, chosen: { floor: 0, sofa: 1, lamp: 2 } };
+        const opened = stepPanel(CLOSED, { type: 'change', slot: 'lamp' }, { room, state: done, stars: 0 });
+        expect(opened.panel).toEqual(changeOpen('lamp', null));
+        const picked = stepPanel(opened.panel, { type: 'pick', variant: 0 }, { room, state: done, stars: 0 });
+        const r = stepPanel(picked.panel, { type: 'confirm' }, { room, state: done, stars: 0 });
+        expect(r.changed).toEqual({ slot: 'lamp', variant: 0 });
+        expect(r.stars).toBe(0);
+        expect(r.state.tasksDone).toBe(3);
     });
 });
 
@@ -137,12 +209,13 @@ describe('random event sequences (risk #16)', () => {
                 stars = earn(stars, delta);
                 earned += delta;
             }
-            const roll = rng.int(0, 3);
+            const roll = rng.int(0, 4);
             const event: PanelEvent =
                 roll === 0 ? { type: 'open' }
                 : roll === 1 ? { type: 'pick', variant: rng.pick([0, 1, 2] as const) }
                 : roll === 2 ? { type: 'confirm' }
-                : { type: 'close' };
+                : roll === 3 ? { type: 'close' }
+                : { type: 'change', slot: rng.pick(['floor', 'sofa', 'lamp', 'nope']) };
             const costBefore = currentTask(room, state)?.cost ?? 0;
             const doneBefore = state.tasksDone;
             const r = stepPanel(panel, event, { room, state, stars });
@@ -153,7 +226,14 @@ describe('random event sequences (risk #16)', () => {
                 spent += costBefore;
             } else {
                 expect(r.stars, fail('no purchase, same stars')).toBe(stars);
-                expect(r.state, fail('no purchase, same state')).toBe(state);
+                expect(r.state.tasksDone, fail('no purchase, same tasksDone')).toBe(doneBefore);
+                if (r.changed) {
+                    expect(event.type, fail('changed only on confirm')).toBe('confirm');
+                    expect(r.state.chosen[r.changed.slot], fail('variant written')).toBe(r.changed.variant);
+                    expect(r.state.tasksDone, fail('change does not count')).toBe(state.tasksDone);
+                } else {
+                    expect(r.state, fail('no purchase, same state')).toBe(state);
+                }
             }
             expect(r.stars, fail('balance >= 0')).toBeGreaterThanOrEqual(0);
             stars = r.stars;

@@ -2,7 +2,7 @@
 // AC: stars are spent once, only on confirm, never below 0; a refused purchase
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
-import { currentTask, emptyRoomState, nextTaskCost, purchase, taskButtonView } from '../src/core/rooms';
+import { currentTask, emptyRoomState, nextTaskCost, purchase, roomDone, taskButtonView } from '../src/core/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
 
 const room: RoomDef = {
@@ -85,5 +85,13 @@ describe('purchase', () => {
         expect(r.ok && r.state.chosen).toEqual({ floor: 1, sofa: 0 });
         expect(r.ok && r.stars).toBe(2);
         expect(s).toEqual({ tasksDone: 1, chosen: { floor: 1 } });
+    });
+});
+
+describe('roomDone (S-10)', () => {
+    it('is false while a task is left and true once all are done', () => {
+        expect(roomDone(room, { tasksDone: 0, chosen: {} })).toBe(false);
+        expect(roomDone(room, { tasksDone: 1, chosen: { floor: 0 } })).toBe(false);
+        expect(roomDone(room, { tasksDone: 2, chosen: { floor: 0, sofa: 1 } })).toBe(true);
     });
 });
