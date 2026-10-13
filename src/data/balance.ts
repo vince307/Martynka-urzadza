@@ -6,5 +6,6 @@ export const balance = {
     parentGate: { factorMin: 13, factorMax: 19, maxDigits: 3 }, // adult gate: two-digit x two-digit, outside E6 multiplication (6 x 12, 4 x 70); product 169-361
     keypad: { maxDigits: 7 }, // largest answers are 7-digit (E6)
     narrator: { rate: 0.85, voicePollMs: 250, voiceTimeoutMs: 3000, cancelGapMs: 80, autoReadStages: ['E1', 'E2'] }, // speech rate, voice-list polling, pause after cancel (Safari), stages that read tasks aloud by default
+    mastery: { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, loss: 1, historyLength: 200 }, // mastery 0..5 per skill from the first try only (ZADANIA section 1 "Adaptacja trudności"): 3 correct in a row = +1, a miss = -1, a step unlocks at >= 4; history keeps the last ~200 answers (plan section 5)
     tiles: { count: 4 },   // answer tiles per task, including the correct one (kit task-tiles.png shows 4)
 } as const;
