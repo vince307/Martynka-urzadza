@@ -1,5 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
+import { countNoun } from '../core/text/plural';
+
 export const pl = {
     title: 'Martynka urządza',
     welcome: {
@@ -39,6 +41,15 @@ export const pl = {
         saveHeading: 'Zapis gry',
         saveOk: 'Postępy zapisują się na tym urządzeniu.',
         saveLast: (time: string) => `Ostatni zapis: ${time}`,
+        // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
+        saveNotYet: 'Gra jeszcze niczego nie zapisała. Zapis nastąpi po pierwszej zmianie.',
+        saveEarlier: (count: number, error: string) => `Wcześniej: ${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} (${error}).`,
+        savePersist: {
+            granted: 'Przeglądarka nie usunie zapisu sama.',
+            denied: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+            unsupported: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+            error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+        },
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',

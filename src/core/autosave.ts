@@ -21,6 +21,9 @@ export function errorName(e: unknown): string {
     return typeof name === 'string' && name !== '' ? name : 'Error';
 }
 
+/** Outcome of asking the browser not to evict the save (audit M-S2). Runtime only. */
+export type Persistence = 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error';
+
 export type WriteReason = 'change' | 'now' | 'hidden';
 
 export interface AutosaveStatus {
@@ -38,6 +41,8 @@ export interface AutosaveStatus {
     lastWriteAt: number | null;
     /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
     replace: 'idle' | 'writing' | 'done';
+    /** Runtime only (never saved): what the browser answered to the persistence request after the first write. */
+    persistence: Persistence;
 }
 
 export interface AutosaverOptions {
@@ -50,7 +55,7 @@ export interface AutosaverOptions {
     now: () => number;
     loadError?: string;
     log: (...args: unknown[]) => void;
-    onFirstWrite?: () => void;
+    onFirstWrite?: () => Promise<Persistence> | void;
 }
 
 export type ReplaceResult = { ok: true } | { ok: false; error: string };
@@ -116,6 +121,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let firstDone = false;
     let replacing = false;
     let replaced = false;
+    let persistence: Persistence = 'unknown';
     // One predicate for every write path: a block, a replace in progress, or a replaced save (until the page reloads).
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
@@ -138,8 +144,18 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             if (!firstDone) {
                 firstDone = true;
                 try {
-                    options.onFirstWrite?.();
+                    const pending = options.onFirstWrite?.();
+                    if (pending !== undefined) {
+                        pending.then(
+                            (result) => void (persistence = result),
+                            (e: unknown) => {
+                                persistence = 'error';
+                                log('autosave: onFirstWrite failed', e);
+                            },
+                        );
+                    }
                 } catch (e) {
+                    persistence = 'error';
                     log('autosave: onFirstWrite failed', e);
                 }
             }
@@ -241,6 +257,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastReason,
             lastError,
             lastWriteAt,
+            persistence,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };

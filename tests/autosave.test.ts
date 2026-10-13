@@ -251,6 +251,34 @@ describe('createAutosaver schedule', () => {
     });
 });
 
+describe('createAutosaver persistence result (audit M-S2)', () => {
+    const dirtyFlush = async (t: ReturnType<typeof setup>): Promise<void> => {
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+    };
+
+    it('starts unknown, also without onFirstWrite after a write', async () => {
+        const t = setup();
+        expect(t.saver.status().persistence).toBe('unknown');
+        await dirtyFlush(t);
+        expect(t.saver.status().persistence).toBe('unknown');
+    });
+
+    it('keeps the resolved result of onFirstWrite', async () => {
+        const t = setup({ onFirstWrite: () => Promise.resolve('granted') });
+        await dirtyFlush(t);
+        expect(t.saver.status().persistence).toBe('granted');
+    });
+
+    it('a rejected onFirstWrite is error and reaches nobody as an unhandled rejection', async () => {
+        const t = setup({ onFirstWrite: () => Promise.reject(new Error('no')) });
+        await dirtyFlush(t);
+        expect(t.saver.status().persistence).toBe('error');
+        expect(rejections).toEqual([]);
+    });
+});
+
 describe('createAutosaver never overwrites what it could not read (risk #2)', () => {
     for (const load of ['unreadable', 'unavailable'] as const) {
         it(`after a ${load} load nothing is ever written`, async () => {

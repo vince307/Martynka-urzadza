@@ -11,11 +11,22 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
     const section = document.createElement('section');
     section.className = 'parent-save';
     section.dataset.state = view.kind;
-    const sentence = view.kind === 'off' ? pl.settings.saveOff[view.cause] : view.kind === 'failing' ? pl.settings.saveFailing : pl.settings.saveOk;
+    const sentence =
+        view.kind === 'off'
+            ? pl.settings.saveOff[view.cause]
+            : view.kind === 'failing'
+              ? pl.settings.saveFailing
+              : view.kind === 'notYet'
+                ? pl.settings.saveNotYet
+                : pl.settings.saveOk;
     section.append(createText('h2', pl.settings.saveHeading), createText('p', sentence));
-    if (view.kind === 'ok' && view.lastWriteAt !== null) {
-        const time = new Date(view.lastWriteAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-        section.append(createText('p', pl.settings.saveLast(time)));
+    if (view.kind === 'ok') {
+        if (view.lastWriteAt !== null) {
+            const time = new Date(view.lastWriteAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            section.append(createText('p', pl.settings.saveLast(time)));
+        }
+        if (view.earlierFailures !== null) section.append(createText('p', pl.settings.saveEarlier(view.earlierFailures.count, view.earlierFailures.error)));
     }
+    if (view.persistence !== 'unknown') section.append(createText('p', pl.settings.savePersist[view.persistence]));
     return section;
 };

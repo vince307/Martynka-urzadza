@@ -45,7 +45,15 @@ describe('IndexedDB save store', () => {
         await expect(freshStore().write(bad)).rejects.toThrow();
     });
 
-    it('requestPersistence without navigator.storage does not throw', () => {
-        expect(() => requestPersistence()).not.toThrow();
+    it('requestPersistence without navigator.storage is unsupported and does not throw', async () => {
+        await expect(requestPersistence({} as Navigator)).resolves.toBe('unsupported');
+    });
+
+    it('requestPersistence maps persist() to granted, denied, and error (throw or reject)', async () => {
+        const nav = (persist: () => unknown): Navigator => ({ storage: { persist } }) as unknown as Navigator;
+        await expect(requestPersistence(nav(() => Promise.resolve(true)))).resolves.toBe('granted');
+        await expect(requestPersistence(nav(() => Promise.resolve(false)))).resolves.toBe('denied');
+        await expect(requestPersistence(nav(() => { throw new Error('x'); }))).resolves.toBe('error');
+        await expect(requestPersistence(nav(() => Promise.reject(new Error('x'))))).resolves.toBe('error');
     });
 });
