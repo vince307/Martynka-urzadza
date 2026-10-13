@@ -1,64 +1,57 @@
 # Handoff — `save-export-import-reset` (slice S-12)
 
-Written by the `/10x-implement phase 6` step of run `2026-10-13-s12-s14`. Phase 6 (reset dialog, design gaps, follow-ups, CLAUDE.md, seam sweep) is committed; the last impl phase is done. The next agent (phase 7, e2e) must not get wrong: the reset flow is `openSaveResetDialog({ current, roomName, fresh, apply, onClose })`, `apply` is `saver.replace(encodeSave(freshSession(FIRST_ROOM)))`, and "Anuluj" has the initial focus.
+Written by the `/10x-e2e phase 7` step of run `2026-10-13-s12-s14`. All phases (1-7) are committed and `change.md` is `implemented`; the e2e spec is green with every planned break observed. The next agent (impl-review) must not get wrong: break p7c stayed GREEN in the browser (see §3), the proof of "writes off after replace" lives only in the phase 1 unit tests.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-export-import-reset`, cut from `main` at `f3088d4` |
-| Commits | phases 1-5 `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`; phase 6 `cc58e16` |
+| Commits | phases 1-6 `2e435cf`, `5debed5`, `df18f2f`, `2042dc8`, `8c5bb41`, `cc58e16`; phase 7 `c85022f` (+ this handoff commit) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implementing` (epilogue waits for phase 7) |
-| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (6.4 e2e half, 6.5-6.10 manual, phase 7) |
-| Working tree | clean after the commit |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` = 15, all `[reviewer]`/`[visual]`/`[human]` rows |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/dom/saveResetDialog.ts` | new reset dialog (summary, hint, "Anuluj" focused, plain "Zacznij od nowa" -> `apply` -> `reload()`; failure -> `applyFailed`) |
-| `src/ui/dom/saveSummaryView.ts` | new shared `createSummaryList`, taken out of `saveImportDialog.ts` |
-| `src/ui/dom/settingsPanel.ts`, `src/scenes/UIScene.ts` | `onReset` button and `UIScene.openReset` (in `session.run`) |
-| `src/data/pl.ts` | `saveTransfer.resetButton/resetTitle/resetBody/resetHint/resetConfirm` |
-| `src/core/save.ts`, `tests/save.test.ts` | `rawExportText` removed (no callers since phase 4) with its test |
-| `src/scenes/WelcomeScene.ts` | guard `this.session?.active()` like `UIScene` (F6) |
-| `src/data/layout.ts` | `REGISTRY_KEYS.saver` comment updated |
-| `docs/design-gaps.md` | rows 49, 50 added (46-51 now complete) |
-| `follow-ups/review-fixes.md` | new, six items each with `Trigger:` |
-| `CLAUDE.md` | S-12 sentence in Current state; "Not yet present" no longer lists S-12; `rawExportText` removed from the S-11 list |
-| `tests/dialogSessions.test.ts`, `tests/saveTransferCopy.test.ts` | `onReset` in `DIALOG_CALLBACKS`, UIScene count 10; reset copy test |
-| `e2e-request-p6.md` | request for the orchestrator (full suite expect 33) |
+| `tests/e2e/save-transfer.spec.ts` | 4 tests (chromium-hook): `#7` rejected files leave the save, `#7 #2` valid file replaces only after the summary and survives the reload, `#2 #10` export round-trips to another device (new context), `#2` reset asks first and ends on the welcome screen |
+| `playwright.config.ts` | `save-transfer` added to `ROUND_SPEC` (app webServer entries untouched) |
+| `context/changes/save-export-import-reset/e2e-break-p7{a..e}.patch` | the five deliberate breaks, production code only (`git apply`) |
+| `plan.md`, `change.md` | Progress ticks with shas, status `implemented` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| lint / typecheck / `npm test` / deploy tests / sample E1-E6 / build | OK; unit 1247 passed (branch baseline 1248 after phase 5, -1: the 3-case `rawExportText` describe (2 tests) removed, +1 reset copy test); `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS (236 paths, 0 missing) |
-| Break B1: `onReset` without `session.run` | red: `onReset at line 154`; restored |
-| Break B2: CLAUDE.md names `src/core/savefilex.ts` | FAIL (`missing: 1`); restored. A first try with `savefile.ts` stayed PASS: the macOS filesystem is case-insensitive, so the plan's example path is not a valid break here |
-| Meta-check | B1 proves only the session wiring (the test reads scene syntax), B2 only that the validator reads paths from rule files. That reset replaces the save only after the second tap, and the reload, is proven only by phase 7 e2e |
-| `npx playwright test` | NOT RUN OK: Chromium cannot start in the subagent sandbox. The orchestrator must run `e2e-request-p6.md` (expect 33) and then tick the e2e half of 6.4 |
-| Seam sweep | `rawExportText` removed; `freshSession` was already only imported in `main.ts` (defined in `core/save.ts`); import/reset summary lines now one helper; stale comments `saveExport.ts`, `saveHealth.ts` already correct, `REGISTRY_KEYS.saver` fixed; `WelcomeScene` guard aligned; file name has two sources by design (`pl.saveTransfer.fileName` dated vs `pl.saveFailed.fileName` raw copy), each used in one place |
+| `npx playwright test save-transfer` (observed) | 4 passed |
+| full `npx playwright test` (observed, outside the sandbox) | 37 passed (branch e2e baseline 33 + 4) |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; nothing listening on 4397/4398 afterwards |
+| eslint on the spec, `tsc --noEmit` | clean. Unit/sample not re-run in this step (only the spec and `ROUND_SPEC` changed after phase 6) |
+| Break p7a (`parseImport` returns ok for a numeric `version` without `decodeSave`) | RED: test (a) on `rejected.corrupt` text; (b), (c), (d) green; restored |
+| Break p7b (`openImport` `apply` returns ok without `saver.replace`) | RED: (b) and (c) on `stars` 7 expected, 0 received after the reload; (a), (d) green; restored. Meta-check: proves the seam from "Wczytaj" to the saver, not `replace` itself (unit) |
+| Break p7c (`replaced = false` after a successful `replace`, writes stay on) | GREEN, all 4 pass. Row 7.4 allows this ("zapis w handoff §3"): after an import/reset the page reloads at once, and nothing is dirty at `pagehide`, so a late overwrite cannot be provoked from the browser without a seam; the rule "writes off after replace" stays proven by the phase 1 unit tests |
+| Break p7d (reset dialog does not call `reload()`) | RED: (d) `screenIs(welcome)` expected welcome, received task (first version waited on the `load` event and failed by timeout only; the spec now asserts the screen); restored |
+| Break p7e (import calls `apply` straight after `parseImport` ok) | RED: (b) on the "Teraz" heading, (c) on the "7 gwiazdek" summary; restored |
+| Meta-check on (a) | the envelope is the game's own with `stars: -1`, so only strict validation (not JSON shape, not the `app` tag) can reject it |
 
 ## 4. Next command
 
-`/10x-e2e save-export-import-reset phase 7`
+`/10x-impl-review save-export-import-reset`
 
 ## 5. Open
 
-- Orchestrator: run `e2e-request-p6.md`, then tick the e2e half of row 6.4 (row 6.4 left unticked here).
-- Rows 6.5 [reviewer], 6.6 [reviewer], 6.7 [visual], 6.8-6.10 [human] and the earlier [reviewer]/[visual]/[human] rows are not mine.
-- DESIGN-GAP rows 46-51 exist in `docs/design-gaps.md`; comments `DESIGN-GAP 46/47/48/49/44/45/51` in code match.
-- Follow-ups: `follow-ups/review-fixes.md` (`decodeSave` L-S1, `loadSave` N-7, `settings.empty` F7, two cards one origin, `saveProblem` path, import from the welcome screen).
-- Phase 7 needs `reset` e2e: the reset dialog's hook targets are DOM (no hook needed); the confirm button text is `pl.saveTransfer.resetConfirm`, same as the panel button `resetButton` (use the dialog scope).
+- Rows 6.5, 6.6 `[reviewer]`, 6.7 `[visual]`, 6.8-6.10 `[human]` and the earlier `[reviewer]`/`[visual]`/`[human]` rows are not ticked (not mine).
+- Possible gap for the reviewer: p7c is not provable in the browser (see §3); if wanted, a hook-only seam that dirties the state before the replace would make it visible (not built).
+- Follow-ups: `follow-ups/review-fixes.md`. DESIGN-GAP rows 46-51 in `docs/design-gaps.md`.
+- Environment note: in this session `npx playwright test` launches Chromium only as a plain command (a pipe or `cd &&` made it run sandboxed and fail with `MachPortRendezvousServer ... Permission denied`); cwd was not the repo, so `--config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts` was passed.
 
 ## 6. Autonomous decisions
 
-- Driver `impl`, done in this context (no subagent); manual gate, commit message and next-phase question decided in place; stopped after the phase.
-- Reset confirm button is a plain button (not `parent-primary`, no `overlay-secondary`: that class is styled only inside the save-failed card); "Anuluj" first in DOM so the dialog's default focus goes to it. Would change if the reviewer wants a visibly distinct destructive style.
-- The dialog takes `fresh: () => SaveState` so the empty save is built at the tap; `UIScene` passes `encodeSave(freshSession(FIRST_ROOM))`.
-- UIScene `DIALOG_CALLBACKS` count is 10 (the reset adds `onReset` and its `onClose`).
-- Used `savefilex.ts` for break B2 because the case-insensitive filesystem makes `savefile.ts` resolve.
-- Removed `rawExportText` rather than justify it (no callers).
+- Chromium launched, so no request file was written; the spec was committed after the breaks (contract rule).
+- The round is followed by "Kolejna runda" before the panel is opened, because the HUD gear is read on the task screen. Would change if the hook ever exposes the gear on the summary.
+- Reset test asserts `screenIs('welcome')` and `learner === null` instead of waiting for the `load` event, so a missing reload fails on an assertion, not a timeout.
+- The import file is a bare v1 value built in the spec (stage E4, `pendingUnlock: null`, empty mastery); the frozen fixture is not used because `repairCurrentRoom` and the unlock card would change the course. Would change if the fixture is made playable.
+- p7c row ticked with the green result recorded, per the row's own alternative.

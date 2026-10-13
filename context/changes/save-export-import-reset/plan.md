@@ -795,7 +795,7 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 - [x] 6.1 `validate-rule-files.sh` PASS — cc58e16
 - [x] 6.2 Deliberate break: `onReset` bez `session.run` → `dialogSessions` czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — cc58e16
 - [x] 6.3 `rawExportText` usunięte lub uzasadnione; `freshSession` nie żyje w `main.ts` — cc58e16
-- [ ] 6.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 6.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — cc58e16 (e2e 33 passed by the orchestrator on 10f9f64)
 
 #### Manual
 
@@ -810,10 +810,10 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [ ] 7.1 `save-transfer.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
-- [ ] 7.2 Deliberate break (patch `e2e-break-p7a.patch`): `parseImport` bez `decodeSave` → (a) czerwony; przywrócone
-- [ ] 7.3 Deliberate break (patch `e2e-break-p7b.patch`): `apply` bez `saver.replace` → (b), (c) czerwone; meta-check
-- [ ] 7.4 Deliberate break (patch `e2e-break-p7c.patch`): `replace` nie wyłącza zapisów → (b) lub (d) czerwony albo zapis w handoff §3; meta-check
-- [ ] 7.5 Deliberate break (patch `e2e-break-p7d.patch`): reset bez `reload()` → (d) czerwony; przywrócone
-- [ ] 7.6 Deliberate break (patch `e2e-break-p7e.patch`): import bez kroku podsumowania → (b) czerwony; przywrócone
-- [ ] 7.7 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 7.1 `save-transfer.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4` — c85022f
+- [x] 7.2 Deliberate break (patch `e2e-break-p7a.patch`): `parseImport` bez `decodeSave` → (a) czerwony; przywrócone — c85022f
+- [x] 7.3 Deliberate break (patch `e2e-break-p7b.patch`): `apply` bez `saver.replace` → (b), (c) czerwone; meta-check — c85022f
+- [x] 7.4 Deliberate break (patch `e2e-break-p7c.patch`): `replace` nie wyłącza zapisów → (b) lub (d) czerwony albo zapis w handoff §3; meta-check — c85022f
+- [x] 7.5 Deliberate break (patch `e2e-break-p7d.patch`): reset bez `reload()` → (d) czerwony; przywrócone — c85022f
+- [x] 7.6 Deliberate break (patch `e2e-break-p7e.patch`): import bez kroku podsumowania → (b) czerwony; przywrócone — c85022f
+- [x] 7.7 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — c85022f
