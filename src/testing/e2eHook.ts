@@ -53,7 +53,7 @@ export const installE2EHook = (game: Game): void => {
                     return Object.freeze({ screen: 'welcome' as const, learner: learner() });
                 }
                 const round = task().snapshot();
-                const screen = inRoom() ? 'room' : round.summary ? 'summary' : 'task';
+                const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
                 return Object.freeze({ ...round, screen, learner: learner(), counterText: ui().counterText(), speakerVisible: speaker !== null });
             },
@@ -68,6 +68,7 @@ export const installE2EHook = (game: Game): void => {
                     // The sleeping task scene keeps its summary buttons: not tappable while the room is open.
                     nextRound: inRoom() ? null : round.nextRound,
                     toRoom: inRoom() ? null : round.toRoom,
+                    unlockNext: inRoom() ? null : round.unlockNext,
                     resume: inRoom() ? room().resumeTarget() : null,
                     speaker: ui().speakerTarget(),
                     roomSwitch: ui().roomSwitchTarget(),

@@ -31,6 +31,7 @@ import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
 import { SummaryPanel } from '../ui/widgets/SummaryPanel';
+import { UnlockCard } from '../ui/widgets/UnlockCard';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 import { textStyle } from '../ui/widgets/textStyle';
@@ -56,6 +57,7 @@ export interface TaskSnapshot {
     readonly narration: string | null;
     readonly autoRead: boolean;
     readonly warmup: boolean;
+    readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
 }
 
 export interface TaskTargets {
@@ -65,6 +67,7 @@ export interface TaskTargets {
     readonly step: Point | null;
     readonly nextRound: Point | null;
     readonly toRoom: Point | null;
+    readonly unlockNext: Point | null;
 }
 
 /**
@@ -80,6 +83,8 @@ export class TaskScene extends Scene {
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
     private summary!: SummaryPanel;
+    private unlockCard!: UnlockCard;
+    private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
@@ -99,6 +104,7 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.shownIndex = -1;
         this.sessionStars = 0;
+        this.unlockShown = false;
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
         if (!learner) {
             throw new Error('The task scene needs a learner in the registry (the welcome scene places one)');
@@ -124,6 +130,7 @@ export class TaskScene extends Scene {
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.unlockCard = new UnlockCard(this, () => this.closeUnlock());
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
         this.autoReadFirst();
@@ -168,19 +175,22 @@ export class TaskScene extends Scene {
         const view = roundView(this.state, pl.round.resultLine);
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
+        const unlock = this.unlockView();
+        if (unlock) {
+            // The card comes before the summary: nothing may redraw the summary over it.
+            this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+            this.registry.set(REGISTRY_KEYS.narration, pl.unlock.spoken(unlock.name));
+            this.hideTaskLayer(view.input);
+            this.summary.hide();
+            this.unlockCard.show(unlock.name);
+            return;
+        }
+        this.unlockCard.hide();
         if (summary) {
             // The round is over: the notebook stays, the task layer gives way to the summary page.
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.narrator?.cancel();
-            this.dots.update([]);
-            this.tiles.setVisible(false);
-            this.keypad.setVisible(false);
-            this.tiles.setActive(false);
-            this.keypad.setActive(false);
-            this.bar.update({ kind: 'none' }, view.input);
-            this.steps.hide();
-            this.promptTexts.forEach((t) => t.setVisible(false));
-            this.promptBoxes.forEach((g) => g.setVisible(false));
+            this.hideTaskLayer(view.input);
             this.summary.show(summary);
             return;
         }
@@ -215,6 +225,38 @@ export class TaskScene extends Scene {
         } else {
             this.steps.hide();
         }
+    }
+
+    /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
+    private hideTaskLayer(input: 'tiles' | 'keypad'): void {
+        this.dots.update([]);
+        this.tiles.setVisible(false);
+        this.keypad.setVisible(false);
+        this.tiles.setActive(false);
+        this.keypad.setActive(false);
+        this.bar.update({ kind: 'none' }, input);
+        this.steps.hide();
+        this.promptTexts.forEach((t) => t.setVisible(false));
+        this.promptBoxes.forEach((g) => g.setVisible(false));
+    }
+
+    /** The card to draw: the learner's pending step with its child-facing name, only while the card is open. */
+    private unlockView(): { step: number; name: string } | null {
+        if (!this.unlockShown) {
+            return null;
+        }
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const step = learner.pendingUnlock;
+        const name = step === null ? undefined : this.stage.steps.find((s) => s.step === step)?.childName;
+        return step !== null && name ? { step, name } : null;
+    }
+
+    /** "Dalej" on the card: the pending unlock is cleared (the step was raised at the end of the round) and the next round starts. */
+    private closeUnlock(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        this.registry.set(REGISTRY_KEYS.learner, { ...learner, pendingUnlock: null } satisfies SessionLearner);
+        this.unlockShown = false;
+        this.beginRound();
     }
 
     /** Lowest y of the prompt texts, so the solution lines start under them. */
@@ -334,11 +376,31 @@ export class TaskScene extends Scene {
 
     /** "Kolejna runda" on the summary: the finished round's stars join the session, a fresh round starts. */
     private startNextRound(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        if (learner.pendingUnlock !== null) {
+            // A step was unlocked at the end of the round: the card comes first; "Dalej" starts the round.
+            this.unlockShown = true;
+            this.render();
+            this.autoReadUnlock();
+            return;
+        }
+        this.beginRound();
+    }
+
+    /** The finished round's stars join the session and a fresh round starts. */
+    private beginRound(): void {
         this.sessionStars += this.state.starsEarned;
         this.state = this.freshRound();
         this.shownIndex = -1;
         this.render();
         this.autoReadFirst();
+    }
+
+    /** The tap on "Kolejna runda" was the gesture: the card is read when auto-reading is on. */
+    private autoReadUnlock(): void {
+        if (this.autoRead && this.unlockShown) {
+            this.narrator?.speak((this.registry.get(REGISTRY_KEYS.narration) as string | null) ?? '');
+        }
     }
 
     /** Auto-reading starts from a tap on "Dalej" or "Kolejna runda", or once at the scene start (the age tap or the parent confirmation was the gesture). */
@@ -464,6 +526,7 @@ export class TaskScene extends Scene {
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
             autoRead: this.autoRead,
             warmup: this.warmup,
+            unlock: this.unlockView(),
         });
     }
 
@@ -476,6 +539,7 @@ export class TaskScene extends Scene {
             step: this.steps.stepTarget(),
             nextRound: this.summary.targets().nextRound,
             toRoom: this.summary.targets().toRoom,
+            unlockNext: this.unlockCard.target(),
         });
     }
 
