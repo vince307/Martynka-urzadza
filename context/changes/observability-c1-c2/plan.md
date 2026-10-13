@@ -64,7 +64,7 @@ Z `research.md` (commit `2c49bff`) i odczytu kodu w tym kroku (`feat/observabili
   (wybór rodzica zapisany na później); linia znika, gdy głos dojdzie przy otwartym panelu.
 - Błąd w pierwszej próbie: seria = 0, opanowanie bez zmian; opanowanie nigdy nie maleje. PRD FR-013 i ZADANIA § 1 mówią to samo.
 - Build produkcyjny: `e2e hook: absent (N chunks checked)` z listą znaczników (`__martynkaE2E`, `e2eMonth`, `e2eFail`,
-  `e2e-forced-failure`); build e2e zawiera wszystkie. Spec `tests/e2e/error-boundary.spec.ts` (#15, proposed) i test H-6
+  `e2e-forced-failure`); build e2e zawiera wszystkie (wymóg od fazy 4). Spec `tests/e2e/error-boundary.spec.ts` (#15, proposed) i test H-6
   w `tests/e2e/parent-settings.spec.ts` (#14, proposed).
 
 ### Key Discoveries:
@@ -96,7 +96,7 @@ H-7 z dokumentami, (3) klasyfikator sygnału błędu, parser `?e2eFail=` i stra�
 skleja granicę na krawędzi: `src/ui/dom/errorBoundary.ts` (listenery → `ErrorSignal` → `isFatalSignal`) i jedną
 nową kartę `src/ui/dom/errorCard.ts`, miejsca wyzwolenia tylko w buildzie e2e, sceny na helperze sesji (C-2, F6).
 Faza 5: linia „brak głosu” w panelu (zmiana istniejącego komponentu) + luki projektu, follow-upy, `CLAUDE.md`, seam
-sweep. Faza 6 (e2e) po seam sweep: ryzyko #15 (proposed) i dopisek do #14 (proposed).
+sweep. Fazy e2e po seam sweep: 6 — ryzyko #15 (proposed), 7 — dopisek do #14 (proposed).
 
 **Bramka lokalna** (kontrakt § Verification): komendy lint, typecheck, unit, build, e2e **bez zmian**. Komunikat
 strażnika buildu zostaje dosłownie `e2e hook: absent (N chunks checked)` / `present (…)` (profil § 2 go cytuje). Faza 6
@@ -107,8 +107,10 @@ poszerza `ROUND_SPEC` o `error-boundary` (ta sama komenda `npx playwright test`)
 **Kolejność w `main.ts` (faza 4).** Granica instalowana **przed** `createGame` (łapie start w obietnicy czcionki).
 Gra powstaje później, więc reakcja na awarię czyta `game` leniwie: `mountErrorCard` (najpierw — dziecko ma zobaczyć
 kartę, nawet gdy reszta zawiedzie) → wstrzymanie wejścia przez `REGISTRY_KEYS.inputSuspender`, jeśli gra i licznik już
-są (uchwyt nigdy nie zwalniany) → `game.loop.sleep()`. Kroki po karcie w osobnych `try/catch` z `console.error` —
-handler awarii nie może sam rzucić (rekurencja `error`). Karta idempotentna: druga awaria tylko loguje.
+są (uchwyt nigdy nie zwalniany) → `game.loop.sleep()`. **Każdy** krok, także `mountErrorCard`, w osobnym `try/catch` z
+`console.error`, a `installErrorBoundary` woła `onFatal` w `try/catch` i trzyma flagę „już obsługuję” (wejście
+ponowne tylko loguje) — handler awarii nie może sam rzucić (rekurencja `error`: rzut z listenera to kolejne zdarzenie
+`error`). Karta idempotentna: druga awaria tylko loguje. (plan-review F3)
 
 **Helper sesji (kontrakt dla faz 1 i 4).** W `src/core/inputSuspend.ts`:
 `openInputSession(suspender: InputSuspender): InputSession` z `run<T>(fn: () => T): T` (wyjątek → `end()`, potem
@@ -116,13 +118,18 @@ rzut dalej, bez opakowania), `end(): void` (idempotentne: zwolnienie uchwytu raz
 wstrzymanie w chwili utworzenia. Sceny trzymają `InputSession | undefined` zamiast `releaseInput`; każdy callback okna
 (`onPass`, `onConfirm`, `onCancel`) biegnie w `session.run(…)`; `closeSettings`/`resumeInput` = `session.end()`.
 
-**Miejsca wyzwolenia e2e (faza 4).** `?e2eFail=step|boot|settings|welcome` → `e2eFail(search)` czytane w `main.ts`
-tylko pod `__E2E_HOOK__`, zapisane w rejestrze (`REGISTRY_KEYS.e2eFail`, komentarz „e2e build only”). Każde miejsce:
-`if (__E2E_HOOK__ && registry.get(REGISTRY_KEYS.e2eFail) === '<site>') throw new Error(E2E_FORCED_FAILURE)`
-(`E2E_FORCED_FAILURE = 'e2e-forced-failure'` z `src/testing/e2eHook.ts`). `step`: `TaskScene.update` (jednorazowo;
+**Miejsca wyzwolenia e2e (faza 4).** `?e2eFail=step|boot|settings` → `e2eFail(search)` czytane w `main.ts`
+tylko pod `__E2E_HOOK__`, zapisane w rejestrze pod `REGISTRY_KEYS.forcedFailure` (komentarz „e2e build only; never set
+in production”). **Nazwa i wartość klucza nie mogą zawierać żadnego znacznika strażnika** — `REGISTRY_KEYS` z
+`src/data/layout.ts` trafia do `dist/` w całości (nazwy właściwości nie są mangle'owane), więc klucz `e2eFail` wywróciłby
+build produkcyjny (plan-review F1). Każde miejsce:
+`if (__E2E_HOOK__ && registry.get(REGISTRY_KEYS.forcedFailure) === '<site>') throw new Error(E2E_FORCED_FAILURE)`
+(`E2E_FORCED_FAILURE = 'e2e-forced-failure'` z `src/testing/e2eHook.ts`; sceny importują z tego modułu tylko tę stałą,
+używaną wyłącznie za `__E2E_HOOK__` — komentarz nagłówka modułu poprawiony). `step`: `TaskScene.update` (jednorazowo;
 nośnik a). `boot`: `BootScene.create` (nośnik c). `settings`: pierwsza linia `UIScene.applySettings` wewnątrz
-`session.run` (C-2 + nośnik b). `welcome`: `WelcomeScene.start` na ścieżce rodzica wewnątrz `session.run` (C-2, tylko
-do zrzutu karty nad powitaniem). DCE usuwa wszystko w produkcji; strażnik i grep to dowodzą.
+`session.run` (C-2 + nośnik b). Bez `welcome` (plan-review F5: karta na `.overlay` jest nieprzezroczysta, zrzut nad
+powitaniem = zrzut nad zadaniem; zwolnienie w `WelcomeScene` dowodzi vitest + przegląd 4.6). DCE usuwa wszystko w
+produkcji; strażnik i grep to dowodzą.
 
 ## Phase 1: Bezpieczne zwolnienie wejścia — L-8 i helper sesji
 
@@ -248,7 +255,7 @@ błędu z komunikatem pustym, `'Script error.'` albo zaczynającym się od `'Res
 
 **File**: `src/testing/e2eHook.ts`
 
-**Intent**: `e2eFail(search): E2EFailSite | null` obok `e2eMonth` (`'step' | 'boot' | 'settings' | 'welcome'`, reszta
+**Intent**: `e2eFail(search): E2EFailSite | null` obok `e2eMonth` (`'step' | 'boot' | 'settings'`, reszta
 `null`); `E2E_FORCED_FAILURE = 'e2e-forced-failure'` (komunikat rzucanego błędu = znacznik strażnika).
 
 #### 3. Strażnik buildu
@@ -257,7 +264,10 @@ błędu z komunikatem pustym, `'Script error.'` albo zaczynającym się od `'Res
 
 **Intent**: `E2E_HOOK_MARKERS = ['__martynkaE2E', 'e2eMonth', 'e2eFail', 'e2e-forced-failure']` (`E2E_HOOK_MARKER` zostaje
 jako pierwszy element dla istniejącego testu); produkcja: żaden znacznik w żadnym chunku (komunikat nazywa znacznik i
-chunk); build e2e: każdy znacznik w co najmniej jednym chunku. Komunikat sukcesu dosłownie bez zmian.
+chunk). Build e2e w tej fazie sprawdza dalej **tylko** `__martynkaE2E` — `e2eFail` i `E2E_FORCED_FAILURE` nie mają
+jeszcze wywołań (wpięcie w fazie 4), więc tree-shaking usuwa je z buildu e2e i wymóg „każdy znacznik obecny” wywróciłby
+`npx playwright test` tej fazy (plan-review F2). Funkcja przyjmuje osobną listę znaczników wymaganych w buildzie e2e
+(`E2E_REQUIRED_MARKERS`, dziś `['__martynkaE2E']`); faza 4 poszerza ją do pełnej listy. Komunikat sukcesu dosłownie bez zmian.
 
 #### 4. Testy
 
@@ -266,8 +276,9 @@ chunk); build e2e: każdy znacznik w co najmniej jednym chunku. Komunikat sukces
 **Intent**: klasyfikator: `error` z obiektem → awaria; `'ResizeObserver loop completed with undelivered notifications'`
 i `'ResizeObserver loop limit exceeded'` bez obiektu → szum; ten sam komunikat **z** obiektem → awaria; `'Script error.'`
 i `''` → szum; `foreign` → szum; odrzucenie `Error` / ciągu / `undefined` → awaria; `AbortError`, `NotAllowedError` →
-szum; `TypeError` → awaria. Parser: każda z 4 wartości, wielkość liter, pusty, nieznany, powtórzony parametr. Strażnik:
-chunk z samym `e2eFail` w produkcji → błąd nazywający `e2eFail`; build e2e bez `e2e-forced-failure` → błąd; czysty →
+szum; `TypeError` → awaria. Parser: każda z 3 wartości (`welcome` → `null`), wielkość liter, pusty, nieznany, powtórzony parametr. Strażnik:
+chunk z samym `e2eFail` w produkcji → błąd nazywający `e2eFail`; build e2e bez znacznika z listy wymaganych → błąd
+(lista wstrzyknięta w teście, np. `['__martynkaE2E', 'e2e-forced-failure']`); czysty →
 ten sam komunikat co dziś; test „guards the property the hook really installs” rozszerzony: każdy znacznik występuje
 dosłownie w `src/testing/e2eHook.ts`.
 
@@ -321,7 +332,15 @@ rodzica 15, pod „Obróć tablet” 20). Komentarz `DESIGN-GAP 29`. Teksty `pl.
 
 **Intent**: wg Critical Implementation Details (granica przed `createGame`, karta → wstrzymanie → `game.loop.sleep()`,
 restart = `window.location.reload()`). `e2eFail` czytane tylko pod `__E2E_HOOK__` i ustawiane w `preBoot` pod
-`REGISTRY_KEYS.e2eFail` (nowy klucz z komentarzem „e2e build only; null in production”).
+`REGISTRY_KEYS.forcedFailure` (nowy klucz z komentarzem „e2e build only; never set in production”; nazwa i wartość bez
+znacznika strażnika — F1).
+
+#### 3a. Strażnik — pełna lista w buildzie e2e
+
+**File**: `vite/e2eHookGuard.mjs`, `tests/e2eHookGuard.test.ts`
+
+**Intent**: `E2E_REQUIRED_MARKERS` = pełna lista `E2E_HOOK_MARKERS` (wszystkie wywołania istnieją od tej fazy); test
+pinuje, że lista wymagana równa się liście zakazanej. Build `E2E_HOOK=1` drukuje `e2e hook: present (`.
 
 #### 4. Sceny
 
@@ -330,22 +349,22 @@ restart = `window.location.reload()`). `e2eFail` czytane tylko pod `__E2E_HOOK__
 **Intent**: `UIScene` i `WelcomeScene` trzymają `InputSession` zamiast `releaseInput`; każdy callback okna w
 `session.run(…)`; `closeSettings`/`resumeInput` = `end()`; strażniki otwarcia na `session?.active()`. F6:
 `WelcomeScene.openParent` z tym samym strażnikiem `undefined` co `UIScene.openSettings`. Miejsca wyzwolenia `step`,
-`boot`, `settings`, `welcome` wg Critical Implementation Details. Shutdown scen kończy sesję jak dziś.
+`boot`, `settings` wg Critical Implementation Details (bez `welcome`). Shutdown scen kończy sesję jak dziś.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- `npm run build` drukuje `e2e hook: absent (`; `grep -rlE "e2eFail|e2e-forced-failure|e2eMonth|__martynkaE2E" dist/` pusty; `grep -rn "releaseInput" src/` pusty
+- `npm run build` drukuje `e2e hook: absent (`; `E2E_HOOK=1` build drukuje `e2e hook: present (` z pełną listą wymaganą; `grep -rlE "e2eFail|e2e-forced-failure|e2eMonth|__martynkaE2E" dist/` pusty; `grep -rn "releaseInput" src/` pusty
 - Deliberate break: `main.ts` bez `installErrorBoundary` → unit zielone (zapis w handoff §3: ta faza nie twierdzi pokrycia; dowód w e2e fazy 6); `UIScene` woła `applySettings` poza `session.run` → unit zielone (zwolnienie dowodzi faza 1, sklejkę — przegląd); przywrócone; meta-check zapisany
-- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (N = test pinu listy wymaganej)
 
 #### Manual Verification:
 
 - [reviewer] Odczyt nauczyciela `pl.errorCard` (`title`, `body`, `restart`, `build`): spokojnie, bez winy dziecka, bez obietnicy zachowania postępów, krótko
 - [reviewer] Każdy callback okna rodzica w `session.run`, wstrzymanie zwalniane dokładnie raz, wyjątek nie połykany; handler awarii nie może rzucić; miejsca `e2eFail` tylko pod `__E2E_HOOK__`; brak tekstu i liczb w scenach
-- [visual] Zrzuty karty nad zadaniem (`?e2eFail=step`) i nad powitaniem (`?e2eFail=welcome`, ścieżka „Rodzic”) przy 1440×900 i 1024×768, z serwera z `E2E_HOOK=1` na porcie 4399
+- [visual] Zrzuty karty po awarii w klatce (`?e2eFail=step`) i po awarii startu (`?e2eFail=boot`) przy 1440×900 i 1024×768, z serwera z `E2E_HOOK=1` na porcie 4399
 - [human] Odstępstwo od dosłownego PRD („nie da się niczego stracić”): do S-11 restart z karty kończy sesję — dziecko wraca do powitania, gwiazdki i etap sesji przepadają; karta pojawia się na każdą awarię, także gdy pętla jeszcze żyje
 
 ---
@@ -353,7 +372,7 @@ restart = `window.location.reload()`). `e2eFail` czytane tylko pod `__E2E_HOOK__
 ## Phase 5: Linia „brak polskiego głosu” w panelu, luki projektu, follow-upy i seam sweep
 
 Driver: impl
-Driver why: zmiana istniejącego komponentu DOM (bez nowej logiki w `core`) plus dokumentacja i porządki — dowód linii w e2e fazy 6.
+Driver why: zmiana istniejącego komponentu DOM (bez nowej logiki w `core`) plus dokumentacja i porządki — dowód linii w e2e fazy 7.
 
 ### Overview
 
@@ -383,7 +402,11 @@ i 30 (linia o braku polskiego głosu w panelu). Follow-upy z `Trigger:` — ryzy
 (`Trigger: S-11`); widoczność „opanowane k / ⌈n/2⌉” dla rodzica (`Trigger: S-17 or a parent's feedback`); F5 stan
 przytrzymania przy nakładce, po której gra toczy się dalej (`Trigger: any non-terminal overlay that suspends input`);
 `audio.noAudio` / odrzucenia audio (`Trigger: S-16 or the first sound`); audyt M-1/M-2/M-13, H-3/H-4 jako otwarte
-(`Trigger: next change to TaskScene / narrator`). Zamknięte: S-06 „`mountInstallHint` przepuszcza stuknięcie”, S-05 cele
+(`Trigger: next change to TaskScene / narrator`); lista szumu `AbortError`/`NotAllowedError` do przejrzenia, bo
+IndexedDB odrzuca przerwaną transakcję jako `AbortError` (prawdziwa awaria zapisu byłaby tylko `console.warn`) (`Trigger:
+S-11 or the first promise the app itself awaits`); przekazanie z `BootScene.create` wyjąć z obietnicy czcionki Phasera,
+żeby oryginalny wyjątek startu doszedł do granicy (dziś `.catch` `FontFile` go połyka jako „Font failed to load”, a kartę
+wywołuje wtórny `TypeError`) (`Trigger: S-11 or the next change to BootScene`). Zamknięte: S-06 „`mountInstallHint` przepuszcza stuknięcie”, S-05 cele
 haka w pokoju (dowody z research).
 
 #### 3. Dokumentacja i seam sweep
@@ -401,7 +424,7 @@ głosu”. Seam sweep: nieaktualne komentarze (`inputSuspend.ts` nagłówek, `UI
 
 - `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
 - `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` (`parent-settings.spec.ts` z `silenceSpeech` widzi nową linię i nie pęka)
-- Deliberate break: `CLAUDE.md` wskazuje nieistniejący `src/ui/dom/errorcard.ts` → `validate-rule-files.sh` FAIL; przywrócone; meta-check: walidator czyta ścieżki z reguł (profil § 10). Panel bez `watchVoice` → unit zielone (dowód w e2e fazy 6, zapis w handoff §3)
+- Deliberate break: `CLAUDE.md` wskazuje nieistniejący `src/ui/dom/errorcard.ts` → `validate-rule-files.sh` FAIL; przywrócone; meta-check: walidator czyta ścieżki z reguł (profil § 10). Panel bez `watchVoice` → unit zielone (dowód w e2e fazy 7, zapis w handoff §3)
 - `grep -rn "a miss = -1\|releaseInput" src/` pusty
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
 
@@ -414,61 +437,85 @@ głosu”. Seam sweep: nieaktualne komentarze (`inputSuspend.ts` nagłówek, `UI
 
 ---
 
-## Phase 6: Karta zamiast zamrożonego ekranu i linia o braku głosu — e2e (#15 proposed, #14 proposed)
+## Phase 6: Karta zamiast zamrożonego ekranu — e2e (#15 proposed)
 
 Driver: e2e
-Driver why: ryzyko #15 (proposed, test-plan refresh pending): wyjątek zostawia zamrożony ekran bez słowa albo martwy dotyk — istnieje tylko w renderowanej stronie (pętla RAF, obietnica czcionki, listener dotyku); H-6 to #14 (proposed, panel rodzica); zbudowane w fazach 4–5, kontrakt `E2E=on`.
+Driver why: ryzyko #15 (proposed, test-plan refresh pending): wyjątek zostawia zamrożony ekran bez słowa albo martwy dotyk — istnieje tylko w renderowanej stronie (pętla RAF, obietnica czcionki, listener dotyku); zbudowane w fazie 4, kontrakt `E2E=on`.
 
 ### Overview
 
-Nowy spec `tests/e2e/error-boundary.spec.ts` (projekt `chromium-hook`) i jeden test w `tests/e2e/parent-settings.spec.ts`.
+Nowy spec `tests/e2e/error-boundary.spec.ts` (projekt `chromium-hook`), 4 testy.
 
 ### Changes Required:
 
-#### 1. Projekt
+#### 1. Projekt i pomocnik
 
-**File**: `playwright.config.ts`
+**File**: `playwright.config.ts`, `tests/e2e/support/welcome.ts`
 
-**Intent**: `ROUND_SPEC` obejmuje `error-boundary` (wpis `webServer` aplikacji nietknięty).
+**Intent**: `ROUND_SPEC` obejmuje `error-boundary` (wpis `webServer` aplikacji nietknięty). `openWelcome`/`passWelcome`
+dostają opcjonalny parametr zapytania (np. `{ e2eFail: 'step' }`), doklejany do URL obok `e2eMonth` — dziś `openWelcome`
+przyjmuje tylko miesiąc (plan-review F8); istniejące wywołania bez zmian.
 
 #### 2. Spec granicy
 
 **File**: `tests/e2e/error-boundary.spec.ts` (nowy)
 
 **Intent**: (a) „#15 (proposed) an exception in a frame shows the restart card instead of a frozen screen”:
-`silenceSpeech`, `passWelcome` z `?e2eFail=step` (przez `openWelcome`/URL) → `getByRole('alertdialog', { name: pl.errorCard.title })`
+`silenceSpeech`, `passWelcome` z `?e2eFail=step` → `getByRole('alertdialog', { name: pl.errorCard.title })`
 widoczny, `snapshot.inputEnabled === false`, tekst wersji = `data-build`; tap „Zacznij od nowa” → nowa nawigacja
 (`page.waitForEvent('load')`). (b) „#15 (proposed) a failure while the game boots shows the card” (`?e2eFail=boot`,
-nośnik `unhandledrejection`). (c) „#15 (proposed) an exception in the parent settings callback shows the card, not a dead
-screen”: `passWelcome` → przytrzymanie, bramka, panel, „Zatwierdź” z `?e2eFail=settings` → karta widoczna, dialog
-„Ustawienia rodzica” nieobecny. (d) „#15 (proposed) browser noise does not show the card”: `page.evaluate` →
-`window.dispatchEvent(new ErrorEvent('error', { message: 'ResizeObserver loop completed with undelivered notifications' }))`
+nośnik `unhandledrejection` — patrz Known risks). (c) „#15 (proposed) an exception in the parent settings callback shows
+the card, not a dead screen”: `passWelcome` → przytrzymanie, bramka, panel, „Zatwierdź” z `?e2eFail=settings` → karta
+widoczna, dialog „Ustawienia rodzica” nieobecny. (d) „#15 (proposed) browser noise does not show the card”:
+`page.evaluate` → `window.dispatchEvent(new ErrorEvent('error', { message: 'ResizeObserver loop completed with undelivered notifications' }))`
 → karta `toHaveCount(0)`, następne poprawne stuknięcie w rundzie działa (`answerRight` → faza `done`).
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; nigdy `page.clock`; teksty przez `getByRole`
 z wartościami z `pl`; żadnej asercji na stosie/komunikacie wyjątku.
 
-#### 3. Test H-6
-
-**File**: `tests/e2e/parent-settings.spec.ts`
-
-**Intent**: „#14 (proposed) the settings panel says when no Polish voice exists”: z `silenceSpeech` → panel → tekst
-`pl.settings.noVoice` widoczny; z polską atrapą głosu (wzorzec listy z `narrator.spec.ts`, wydzielony do
-`tests/e2e/support/hook.ts` jako `fakePolishVoice(page)`, jeśli kopia byłaby druga) → tekst `toHaveCount(0)`.
-
 **Chromium niedostępny w sesji agenta**: protokół `context/runs/2026-10-13-fix-observability/prompt-phase.md` — spec
-bez commita, `e2e-request-p6.md` z komendami i patchami przerw `e2e-break-p6.patch`, `e2e-break-p6b.patch`,
-`e2e-break-p6c.patch` (tylko kod produkcyjny, REGUŁA), `STATUS: BLOCKED — e2e needs orchestrator run (request file written)`.
+bez commita, `e2e-request-p6.md` z komendami i patchami przerw `e2e-break-p6.patch`, `e2e-break-p6b.patch` (tylko kod
+produkcyjny, REGUŁA), `STATUS: BLOCKED — e2e needs orchestrator run (request file written)`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- `npx playwright test tests/e2e/error-boundary.spec.ts tests/e2e/parent-settings.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5` passed
+- `npx playwright test tests/e2e/error-boundary.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4` passed
 - Deliberate break (patch, REGUŁA): `errorBoundary.ts` bez listenera `unhandledrejection` → (b) czerwony, (a) zielony (dowód, że oba listenery są potrzebne; jeśli (b) zostaje zielony, nośnik startu to `error` — zapis w handoff §3 i `## Known risks`); przywrócone
 - Druga przerwa (patch, REGUŁA): `isFatalSignal` zwraca zawsze `true` → (d) czerwony; przywrócone; meta-check: unit fazy 3 też czerwony — wariant sklejki: `errorBoundary.ts` ustawia `hasError: true` zawsze → e2e (d) czerwony, unit zielony
-- Trzecia przerwa (patch, REGUŁA): `UIScene` nie podaje `watchVoice` → test H-6 czerwony na braku linii; przywrócone; meta-check: unit zielone (szew sceny)
 - `npm run build` drukuje `e2e hook: absent (`; `grep -rlE "e2eFail|e2e-forced-failure" dist/` pusty; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+
+---
+
+## Phase 7: Linia o braku polskiego głosu w panelu — e2e (#14 proposed)
+
+Driver: e2e
+Driver why: H-6 to ryzyko #14 (proposed, panel rodzica): linia zależy od `speechSynthesis` przeglądarki i subskrypcji w otwartym panelu DOM — widać ją tylko w renderowanej stronie; zbudowane w fazie 5, kontrakt `E2E=on`.
+
+### Overview
+
+Jeden test w `tests/e2e/parent-settings.spec.ts` (wydzielony z dawnej fazy 6 przez plan-review F7).
+
+### Changes Required:
+
+#### 1. Test H-6
+
+**File**: `tests/e2e/parent-settings.spec.ts`, `tests/e2e/support/hook.ts`
+
+**Intent**: „#14 (proposed) the settings panel says when no Polish voice exists”: z `silenceSpeech` → panel → tekst
+`pl.settings.noVoice` widoczny; z polską atrapą głosu (wzorzec listy z `narrator.spec.ts`, wydzielony do
+`tests/e2e/support/hook.ts` jako `fakePolishVoice(page)`, jeśli kopia byłaby druga) → tekst `toHaveCount(0)`.
+
+**Chromium niedostępny w sesji agenta**: jak w fazie 6 — `e2e-request-p7.md`, patch `e2e-break-p7.patch`.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `npx playwright test tests/e2e/parent-settings.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 1` passed
+- Deliberate break (patch, REGUŁA): `UIScene` nie podaje `watchVoice` → test H-6 czerwony na braku linii; przywrócone; meta-check: unit zielone (szew sceny)
+- Pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
 ---
 
@@ -482,7 +529,7 @@ bez commita, `e2e-request-p6.md` z komendami i patchami przerw `e2e-break-p6.pat
 
 ### Integration Tests:
 
-- `npm run sample -- E1..E6`; `npm run build` ze strażnikiem (absent/present); e2e: istniejące 18 + #15 (proposed) × 4 + #14 (proposed) × 1.
+- `npm run sample -- E1..E6`; `npm run build` ze strażnikiem (absent/present); e2e: istniejące 18 + #15 (proposed) × 4 (faza 6) + #14 (proposed) × 1 (faza 7).
 
 ### Manual Testing Steps:
 
@@ -501,15 +548,23 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 ## Known risks
 
-- **Nośnik startu niezweryfikowany w runtime** (research § 1): wyjątek w `BootScene.create` wnioskowany jako
-  `unhandledrejection`. Granica słucha obu, więc karta pojawi się tak czy inaczej; przerwa fazy 6 to rozstrzyga i zapisuje.
-- **Dwukrotne `create` w obietnicy czcionki**: Phaser może wywołać ukończenie ładowania drugi raz po pierwszym wyjątku —
-  przy prawdziwej awarii startu scena może zostać w połowie zbudowana pod kartą. Karta jest końcowa, więc bez skutku.
+- **Nośnik startu — potwierdzony odczytem kodu, nie śladem runtime** (plan-review F4): `LoaderPlugin.loadComplete`
+  niszczy pliki (`File.destroy` → `loader = null`) **przed** `emit(COMPLETE)`, a `SceneManager` słucha `once` — wyjątek w
+  `BootScene.create` łapie `.catch` w `FontFile.onProcess` (`console.warn('Font failed to load')`, bez obiektu błędu),
+  drugie `onProcessComplete` rzuca `TypeError` na `this.loader === null` → `unhandledrejection` z **wtórnym** `TypeError`.
+  Karta się pojawi, drugiego `create` nie ma; ale oryginalny wyjątek startu nie trafia do `console.error` granicy —
+  follow-up (`Trigger: S-11 or the next change to BootScene`). Przerwa 6.2 potwierdza nośnik w runtime.
 - **Szum spoza listy** (inne przeglądarki, rozszerzenia z originem strony): mógłby pokazać kartę bez potrzeby. Lista w
   czystej funkcji, łatwa do poszerzenia; `console.warn`/`console.error` pokazują, co przyszło.
 - **Restart traci sesję do S-11** (wiersz `[human]` 4.8): karta nie obiecuje zachowania postępów.
 - **Szybsze odblokowanie po H-7** (wiersz `[human]` 2.6): dziecko z 30–40 % błędów może odblokować krok — S-17.
-- **Chromium w sesji agenta**: faza 6 może wymagać protokołu pliku żądania (`prompt-phase.md`).
+- **Chromium w sesji agenta**: fazy 6 i 7 mogą wymagać protokołu pliku żądania (`prompt-phase.md`).
+- **`AbortError`/`NotAllowedError` jako szum** (plan-review F6): dziś w `src/` nie ma żadnej obietnicy (`grep` `.then(`,
+  `await`, `new Promise` pusty; `registerServiceWorker` i `prompt()` mają własne `.catch`), a Phaser nie odrzuca tymi nazwami
+  w ścieżkach, których gra używa — nic prawdziwego się nie ukrywa. Od S-11 przerwana transakcja IndexedDB to `AbortError`
+  → follow-up z `Trigger: S-11`.
+- **Fokus pod kartą**: jeśli awaria (nie z callbacku) wypadnie przy otwartym oknie rodzica, `openDialog` dalej trzyma Tab
+  w oknie pod kartą — tylko klawiatura (cel: dotyk), karta końcowa; bez zmian.
 
 ## References
 
@@ -542,16 +597,17 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 6. **H-6: `watchVoice` (subskrypcja), przełącznik aktywny** (research § 5, change.md decyzja 6). Odrzucone: statyczne
    `voiceAvailable` (nieaktualne, gdy głos dojdzie po otwarciu); wyłączenie przełącznika (gubi wybór rodzica). →
    `[human]` 5.9. Zmieniłoby: kit dostanie wzór stanu „niedostępne”.
-7. **Wyzwalacz e2e `?e2eFail=step|boot|settings|welcome`** czytany jak `?e2eMonth`, rejestr `REGISTRY_KEYS.e2eFail`,
+7. **Wyzwalacz e2e `?e2eFail=step|boot|settings`** czytany jak `?e2eMonth`, rejestr `REGISTRY_KEYS.forcedFailure`,
    znacznik `e2e-forced-failure`, strażnik z listą (`__martynkaE2E`, `e2eMonth`, `e2eFail`, `e2e-forced-failure`) —
    kontrakt („prove it with the build guard and a grep”). Odrzucone: `fail()` na `window.__martynkaE2E` (hak jest
-   tylko do odczytu); sam `page.evaluate` (nie odtwarza nośników a, c ani C-2). `welcome` istnieje tylko dla zrzutu
-   karty nad powitaniem — bez testu e2e (zwolnienie dowodzi vitest). Zmieniłoby: Phaser dostanie własny hook błędów.
+   tylko do odczytu); sam `page.evaluate` (nie odtwarza nośników a, c ani C-2). `welcome` usunięte w plan-review (F5):
+   karta jest nieprzezroczysta, więc zrzut nad powitaniem niczego nie dodaje. Klucz rejestru `forcedFailure` (nie
+   `e2eFail` — F1). Zmieniłoby: Phaser dostanie własny hook błędów.
 8. **Teksty**: karta „Ups! Gra się zatrzymała.” / „Dotknij przycisku, a gra uruchomi się od nowa.” / „Zacznij od nowa” /
    „Wersja …”; panel: „Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.” (kierunek
    z audytu; bez „błąd”, bez obietnicy postępów). Teacher read w fazach 4 i 5. Zmieniłoby: odczyt nauczyciela.
-9. **Sześć faz; e2e na końcu po seam sweep (faza 5)**; ryzyko granicy nazwane „#15 (proposed)”, H-6 dopisane do „#14
-   (proposed)” jak S-06..S-08. Zmieniłoby: plan-review uzna fazę 6 za za dużą — podział na 6 (granica) i 7 (H-6).
+9. **Siedem faz (plan-review F7 podzielił e2e); e2e na końcu po seam sweep (faza 5)**: faza 6 — granica (#15 proposed),
+   faza 7 — linia H-6 (#14 proposed), jak S-06..S-08.
 10. **Brak wiersza roadmapy** — zmiana spoza roadmapy, statusów nie edytujemy (prompt kroku).
 
 ## Progress
@@ -594,15 +650,15 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 #### Automated
 
 - [ ] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [ ] 4.2 Build `e2e hook: absent`; znaczniki e2e nieobecne w `dist/`; `releaseInput` usunięte z `src/`
+- [ ] 4.2 Build `e2e hook: absent` / `present` (pełna lista wymagana); znaczniki e2e nieobecne w `dist/`; `releaseInput` usunięte z `src/`
 - [ ] 4.3 Deliberate break: bez `installErrorBoundary` / `applySettings` poza `session.run` → unit zielone; zapis w handoff §3; meta-check
-- [ ] 4.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [ ] 4.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (pin listy wymaganej)
 
 #### Manual
 
 - [ ] 4.5 [reviewer] Odczyt nauczyciela `pl.errorCard` (tytuł, zdanie, przycisk, wersja)
 - [ ] 4.6 [reviewer] Callbacki okien w `session.run`, zwolnienie raz, wyjątek nie połykany, handler awarii nie rzuca, `e2eFail` tylko pod `__E2E_HOOK__`
-- [ ] 4.7 [visual] Zrzuty karty nad zadaniem i nad powitaniem — 1440×900 i 1024×768
+- [ ] 4.7 [visual] Zrzuty karty po awarii w klatce (`step`) i startu (`boot`) — 1440×900 i 1024×768
 - [ ] 4.8 [human] Odstępstwo od PRD „niczego stracić”: do S-11 restart z karty kończy sesję; karta na każdą awarię
 
 ### Phase 5: Linia „brak polskiego głosu” w panelu, luki projektu, follow-upy i seam sweep
@@ -622,12 +678,19 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 - [ ] 5.8 [visual] Zrzuty panelu bez polskiego głosu i z polskim głosem — 1440×900 i 1024×768
 - [ ] 5.9 [human] Przełącznik czytania aktywny bez głosu (PRD milczy; FR-009 ukrywa tylko przycisk HUD)
 
-### Phase 6: Karta zamiast zamrożonego ekranu i linia o braku głosu — e2e (#15 proposed, #14 proposed)
+### Phase 6: Karta zamiast zamrożonego ekranu — e2e (#15 proposed)
 
 #### Automated
 
-- [ ] 6.1 Specy `error-boundary` i `parent-settings` zielone; pełne e2e `<baseline gałęzi e2e> + 5`
+- [ ] 6.1 Spec `error-boundary` zielony; pełne e2e `<baseline gałęzi e2e> + 4`
 - [ ] 6.2 Deliberate break: bez listenera `unhandledrejection` → test startu czerwony (albo zapis nośnika); przywrócone
 - [ ] 6.3 Druga przerwa: `isFatalSignal` zawsze `true` (wariant sklejki: `hasError` zawsze `true`) → test szumu czerwony; przywrócone; meta-check
-- [ ] 6.4 Trzecia przerwa: `UIScene` bez `watchVoice` → test H-6 czerwony; przywrócone; meta-check
-- [ ] 6.5 Build `e2e hook: absent`; znaczniki e2e nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 6.4 Build `e2e hook: absent`; znaczniki e2e nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+
+### Phase 7: Linia o braku polskiego głosu w panelu — e2e (#14 proposed)
+
+#### Automated
+
+- [ ] 7.1 Test H-6 w `parent-settings` zielony; pełne e2e `<baseline gałęzi e2e> + 1`
+- [ ] 7.2 Deliberate break: `UIScene` bez `watchVoice` → test H-6 czerwony; przywrócone; meta-check
+- [ ] 7.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite

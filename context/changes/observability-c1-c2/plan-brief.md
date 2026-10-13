@@ -32,7 +32,7 @@ i trafia do karty. Panel mówi, gdy brak polskiego głosu. Opanowanie nigdy nie 
 | C-2 | helper `openInputSession` (`run` zwalnia przy wyjątku i rzuca dalej) + `finally` w liczniku | jedno miejsce testowalne w vitest; wyjątek widzi granica | Research (opcja b) / Plan |
 | H-6 | opcja `watchVoice` (subskrypcja), przełącznik aktywny, linia pod nim | głos może dojść przy otwartym panelu | Research / Plan |
 | H-7 | błąd → seria 0, opanowanie bez zmian; `loss` usunięte | decyzja opiekuna, nie agenta | Maintainer |
-| Test-only wyzwalacz | `?e2eFail=` (step, boot, settings, welcome) pod `__E2E_HOOK__`, strażnik z listą 4 znaczników | kontrakt: dowód strażnikiem i grepem | Research / Plan |
+| Test-only wyzwalacz | `?e2eFail=` (step, boot, settings) pod `__E2E_HOOK__`, klucz rejestru `forcedFailure`, strażnik z listą 4 znaczników (wymóg obecności w buildzie e2e od fazy 4) | kontrakt: dowód strażnikiem i grepem | Research / Plan |
 | `audio.noAudio` | nie | dźwięk należy do S-16 | Plan |
 
 ## Scope
@@ -57,10 +57,11 @@ w `session.run`. E2E wymusza awarie flagą czytaną tylko w buildzie e2e (DCE + 
 | 3. Klasyfikator i strażnik (tdd) | `isFatalSignal`, `e2eFail`, lista znaczników | komunikat strażnika musi zostać dosłownie |
 | 4. Granica z kartą (impl) | `errorBoundary`, `errorCard`, sceny na sesji, miejsca wyzwolenia | handler awarii nie może sam rzucić |
 | 5. Linia „brak głosu” + seam sweep (impl) | `watchVoice`, DESIGN-GAP 29–30, follow-upy, `CLAUDE.md` | odpięcie subskrypcji na każdej ścieżce zamknięcia |
-| 6. E2E (#15, #14 proposed) | 4 testy granicy + 1 test H-6 (+5) | Chromium w sesji agenta → plik żądania |
+| 6. E2E granicy (#15 proposed) | 4 testy granicy (+4) | Chromium w sesji agenta → plik żądania |
+| 7. E2E H-6 (#14 proposed) | 1 test linii „brak głosu” (+1) | atrapa polskiego głosu |
 
 **Prerequisites:** gałąź `feat/observability-c1-c2`, research zatwierdzone; brak nowych zależności.
-**Estimated effort:** 6 sesji agenta (po jednej na fazę), faza 6 zależna od orkiestratora dla Chromium.
+**Estimated effort:** 7 sesji agenta (po jednej na fazę), fazy 6–7 zależne od orkiestratora dla Chromium.
 
 ## Open Risks & Assumptions
 
