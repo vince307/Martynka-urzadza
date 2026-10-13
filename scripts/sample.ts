@@ -1,7 +1,10 @@
 // Prints sample tasks for every curriculum step of a stage and reports
-// violations (PRD FR-005). Usage: npm run sample -- E3 [--seed N] [--count N]
+// violations (PRD FR-005). Usage: npm run sample -- E3 [--seed N] [--count N] [--warmup]
+// --warmup prints one placement warm-up of the stage instead (for the teacher read).
 // Exit codes: 0 ok, 1 violations or generator errors, 2 usage.
+import { previousStage } from '../src/core/placement';
 import { spokenTask } from '../src/core/narration/spoken';
+import { buildWarmup } from '../src/core/round/warmup';
 import { createRng, seedFromString } from '../src/core/rng';
 import { boundOf } from '../src/core/tasks/bounds';
 import { generateTask } from '../src/core/tasks/generateTask';
@@ -16,7 +19,7 @@ const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 3;
 
 const usage = (): never => {
-    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N]');
+    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N] [--warmup]');
     console.error(`Etapy z danymi: ${availableStages().join(', ')}`);
     process.exit(2);
 };
@@ -24,6 +27,7 @@ const usage = (): never => {
 const args = process.argv.slice(2);
 const options: Record<string, number> = { seed: DEFAULT_SEED, count: DEFAULT_COUNT };
 let stageId: string | undefined;
+let warmup = false;
 for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--seed' || arg === '--count') {
@@ -33,6 +37,8 @@ for (let i = 0; i < args.length; i += 1) {
         }
         options[arg.slice(2)] = value;
         i += 1;
+    } else if (arg === '--warmup') {
+        warmup = true;
     } else if (arg.startsWith('--') || stageId !== undefined) {
         usage();
     } else {
@@ -43,6 +49,28 @@ const { seed, count } = options;
 const stage = stageId ? getStage(stageId) : undefined;
 if (!stage) {
     usage();
+}
+
+if (warmup) {
+    const previous = previousStage(stage!.id);
+    const previousDef = previous ? getStage(previous) : undefined;
+    if (!previousDef) {
+        console.log(`${stage!.id}: bez rozgrzewki (brak poprzedniego etapu)`);
+        process.exit(0);
+    }
+    const tasks = buildWarmup(stage!, previousDef, createRng(seed), balance.warmup, balance.tiles.count);
+    console.log(`Rozgrzewka ${stage!.id} (pierwsze ${balance.warmup.previousCount} z ${previousDef.id}, reszta z początku ${stage!.id}), ziarno ${seed}`);
+    const warmupViolations: Violation[] = [];
+    tasks.forEach((task, i) => {
+        const skill = [...stage!.steps, ...previousDef.steps].flatMap((s) => s.skills).find((s) => s.id === task.skillId);
+        const found = validateTask(task, { max: skill ? boundOf(skill) : undefined, nouns });
+        warmupViolations.push(...found);
+        const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
+        const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+        console.log(`  ${i + 1}. [${task.skillId}] ${task.prompt}  → ${answer}${choices}${found.length > 0 ? '  ⚠' : ''}`);
+    });
+    console.log(`\nNaruszenia: ${warmupViolations.length}`);
+    process.exit(warmupViolations.length > 0 ? 1 : 0);
 }
 
 const violations: Violation[] = [];

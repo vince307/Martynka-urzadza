@@ -115,7 +115,7 @@ export class Keypad {
         graphics.fillRoundedRect(rect.x, rect.y + 6, rect.width, rect.height, radius);
         graphics.fillStyle(pressed ? PLACEHOLDER_COLORS.pressed : fill, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
-        graphics.lineStyle(3, key === 'ok' ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.tileBorder, 1);
+        graphics.lineStyle(TASK_LAYOUT.keypad.keyBorder, key === 'ok' ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
     }
 
@@ -124,7 +124,7 @@ export class Keypad {
         this.fieldGraphics.clear();
         this.fieldGraphics.fillStyle(this.correct ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.field, 1);
         this.fieldGraphics.fillRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
-        this.fieldGraphics.lineStyle(4, this.correct ? PLACEHOLDER_COLORS.dotDone : PLACEHOLDER_COLORS.tileBorder, 1);
+        this.fieldGraphics.lineStyle(TASK_LAYOUT.keypad.fieldBorder, this.correct ? PLACEHOLDER_COLORS.dotDone : PLACEHOLDER_COLORS.tileBorder, 1);
         this.fieldGraphics.strokeRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
         this.fieldText.setText(this.buffer === '' ? '?' : this.buffer);
         this.fieldText.setColor(this.buffer === '' ? `#${PLACEHOLDER_COLORS.fieldPlaceholder.toString(16)}` : TEXT_COLOR);

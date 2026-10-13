@@ -8,6 +8,7 @@
 // the room is entered from there or from the HUD switch between tasks and left with
 // "Wróć do notesu". The star total is read from the text the HUD counter draws.
 import { test, expect, type Page } from '@playwright/test';
+import { passWelcome } from './support/welcome';
 
 interface Point { x: number; y: number }
 interface Snapshot {
@@ -21,7 +22,7 @@ interface Snapshot {
     bonusEarned: number;
     starsTotal: number;
     counterText: string;
-    screen: 'task' | 'summary' | 'room';
+    screen: 'welcome' | 'task' | 'summary' | 'room';
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
 }
@@ -138,9 +139,7 @@ test.beforeEach(async ({ page }) => {
         const silent = { getVoices: () => [], speak: () => undefined, cancel: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined };
         Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
     });
-    await page.goto('/');
-    // A stale server without the hook would fail every test with an unreadable error.
-    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await passWelcome(page);
     await expect.poll(async () => (await snapshot(page)).phase).toBe('first');
 });
 

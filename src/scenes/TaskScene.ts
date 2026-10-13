@@ -1,12 +1,14 @@
 import { Scene, type GameObjects } from 'phaser';
+import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
-import type { StageDef } from '../core/types';
+import type { StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
-import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
+import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
+import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { getStage } from '../data/curriculum';
@@ -24,6 +26,7 @@ import {
 } from '../data/layout';
 import { pl } from '../data/pl';
 import type { Narrator } from '../ui/narrator';
+import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
@@ -37,6 +40,7 @@ type Point = { x: number; y: number };
 
 /** What the e2e hook may read of a round (frozen copy). */
 export interface TaskSnapshot {
+    readonly stage: StageId;
     readonly index: number;
     readonly phase: RoundState['phase'];
     readonly solutionStep: number;
@@ -51,6 +55,7 @@ export interface TaskSnapshot {
     readonly summary: SummaryView | null;
     readonly narration: string | null;
     readonly autoRead: boolean;
+    readonly warmup: boolean;
 }
 
 export interface TaskTargets {
@@ -82,6 +87,7 @@ export class TaskScene extends Scene {
     private rng!: Rng;
     private narrator: Narrator | undefined;
     private autoRead = false;   // session default by stage (FR-009); a parent switch comes with S-08
+    private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
 
     constructor() {
@@ -93,11 +99,16 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.shownIndex = -1;
         this.sessionStars = 0;
-        const stage = getStage(balance.defaultStage);
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
+        if (!learner) {
+            throw new Error('The task scene needs a learner in the registry (the welcome scene places one)');
+        }
+        const stage = getStage(learner.stage);
         if (!stage) {
-            throw new Error(`Unknown default stage ${balance.defaultStage}`);
+            throw new Error(`Unknown stage ${learner.stage}`);
         }
         this.stage = stage;
+        this.warmup = learner.warmupPending && previousStage(stage.id) !== null;
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
         this.registry.set(REGISTRY_KEYS.narration, null);
@@ -106,7 +117,7 @@ export class TaskScene extends Scene {
         this.state = this.freshRound();
         this.registry.set(REGISTRY_KEYS.stars, 0);
         this.scene.launch(SCENE_KEYS.ui);
-        this.drawNotebook();
+        drawNotebook(this);
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
@@ -114,6 +125,8 @@ export class TaskScene extends Scene {
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.render();
+        // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
+        this.autoReadFirst();
         // "Do pokoju": the round stays as it is while this scene sleeps; no speech runs over the room.
         // game.events listeners also run while this scene sleeps (the room is open), so a stale tap is ignored.
         const toRoom = (): void => {
@@ -139,15 +152,6 @@ export class TaskScene extends Scene {
         this.add
             .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, textStyle('caption'))
             .setOrigin(0, 1);
-    }
-
-    private drawNotebook(): void {
-        const { left, top, width, height, border, radius } = TASK_LAYOUT.notebook;
-        const graphics = this.add.graphics();
-        graphics.fillStyle(PLACEHOLDER_COLORS.turquoise, 1);
-        graphics.fillRoundedRect(left, top, width, height, radius);
-        graphics.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
-        graphics.fillRoundedRect(left + border, top + border, width - 2 * border, height - 2 * border, radius - border / 2);
     }
 
     /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
@@ -240,6 +244,8 @@ export class TaskScene extends Scene {
                     .setOrigin(0.5),
             );
             this.drawExpression(task.prompt, expression, color);
+        } else if (task.prompt.includes(BLANK)) {
+            this.drawSentence(task.prompt, sentence, color);
         } else {
             this.promptTexts.push(
                 this.add
@@ -251,6 +257,32 @@ export class TaskScene extends Scene {
                     .setOrigin(0.5, 0),
             );
         }
+    }
+
+    /** A sentence prompt with "□": wrapped by core into lines of text phrases and outlined boxes (top edge at `at.y`). */
+    private drawSentence(text: string, at: { x: number; y: number; maxWidth: number }, color: string): void {
+        const blank = TASK_LAYOUT.blankInline;
+        const style = textStyle('prompt', color);
+        const measure = (t: string): number => {
+            const m = this.add.text(0, 0, t, style).setVisible(false);
+            const w = m.width;
+            m.destroy();
+            return w;
+        };
+        const space = measure('a a') - measure('aa');
+        wrapBlankLines(text, measure, blank.width, space, at.maxWidth).forEach(({ placed }, row) => {
+            const y = at.y + blank.lineHeight * row + blank.lineHeight / 2;
+            placed.forEach(({ piece, left, width }) => {
+                if (piece.kind === 'text') {
+                    this.promptTexts.push(this.add.text(at.x + left, y, piece.text, style).setOrigin(0, 0.5));
+                } else {
+                    const box = this.add.graphics({ x: at.x + left + width / 2, y });
+                    box.lineStyle(blank.lineWidth, parseInt(color.slice(1), 16), 1);
+                    box.strokeRoundedRect(-width / 2, -blank.height / 2, width, blank.height, blank.radius);
+                    this.promptBoxes.push(box);
+                }
+            });
+        });
     }
 
     /** The expression centred on `at`; each "□" becomes an outlined box the size of a digit. */
@@ -292,6 +324,9 @@ export class TaskScene extends Scene {
         const before = this.state.starsEarned;
         this.state = next(this.state);
         this.syncStars(before, this.bar.nextTarget());
+        if (this.warmup && this.state.finished) {
+            this.finishWarmup();
+        }
         this.render();
         this.autoReadFirst();
     }
@@ -305,7 +340,7 @@ export class TaskScene extends Scene {
         this.autoReadFirst();
     }
 
-    /** Auto-reading starts only from a tap on "Dalej" or "Kolejna runda" (never at a cold start: no gesture yet). */
+    /** Auto-reading starts from a tap on "Dalej" or "Kolejna runda", or once at the scene start (the age tap or the parent confirmation was the gesture). */
     private autoReadFirst(): void {
         if (this.autoRead && this.state.phase === 'first') {
             this.narrator?.speak(this.currentNarration() ?? '');
@@ -313,7 +348,29 @@ export class TaskScene extends Scene {
     }
 
     private freshRound(): RoundState {
+        const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
+        if (this.warmup && previous) {
+            const rules = { ...balance.round, length: balance.warmup.length };
+            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count), rules);
+        }
         return startRound(buildRound(this.stage, this.rng, balance.round, balance.tiles.count), balance.round);
+    }
+
+    /**
+     * The warm-up is over: core decides whether the stage drops by one; the child sees an ordinary summary.
+     * Done now, not at "Kolejna runda", so "Do pokoju" and coming back cannot skip it.
+     */
+    private finishWarmup(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const stageId = warmupResult(this.stage.id, this.state.outcomes, balance.warmup.minFirstTry);
+        const stage = getStage(stageId);
+        if (!stage) {
+            throw new Error(`Unknown stage ${stageId}`);
+        }
+        this.registry.set(REGISTRY_KEYS.learner, { ...learner, stage: stageId, warmupPending: false } satisfies SessionLearner);
+        this.stage = stage;
+        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
+        this.warmup = false;
     }
 
     /** The counter shows the new total at once; the star flies after it without blocking input. */
@@ -360,6 +417,7 @@ export class TaskScene extends Scene {
         const current = this.currentSummary();
         const frozenSummary = current ? Object.freeze({ ...current, stars: Object.freeze([...current.stars]) as unknown as boolean[] }) : null;
         return Object.freeze({
+            stage: this.stage.id,
             index: this.state.index,
             phase: this.state.phase,
             solutionStep: this.state.solutionStep,
@@ -374,6 +432,7 @@ export class TaskScene extends Scene {
             summary: frozenSummary,
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
             autoRead: this.autoRead,
+            warmup: this.warmup,
         });
     }
 
@@ -403,7 +462,7 @@ export class TaskScene extends Scene {
         this.tweens.add({
             targets: camera,
             scrollX: { from: -ANIMATION.shakeDistance, to: ANIMATION.shakeDistance },
-            duration: ANIMATION.shakeMs / 6,
+            duration: ANIMATION.shakeMs / ANIMATION.shakeSegments,
             yoyo: true,
             repeat: 2,
             onComplete: () => {

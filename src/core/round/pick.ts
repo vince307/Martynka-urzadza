@@ -7,10 +7,14 @@ import type { RoundRules } from '../round';
 import { generateTask } from '../tasks/generateTask';
 import { getGenerator } from '../tasks/registry';
 import type { Task } from '../tasks/types';
-import type { SkillDef, StageDef } from '../types';
+import type { SkillDef, StageDef, StepDef } from '../types';
 
 const playable = (skill: SkillDef): boolean =>
     (skill.answer === 'tiles' || skill.answer === 'keypad') && getGenerator(skill.type) !== undefined;
+
+/** The first `n` steps that have at least one playable skill, in curriculum order. */
+export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>
+    stage.steps.filter((step) => step.skills.some(playable)).slice(0, n);
 
 /** `count` skills drawn uniformly (with repeats) from the playable skills of the stage. */
 export const pickSkills = (stage: StageDef, rng: Rng, count: number): SkillDef[] => {

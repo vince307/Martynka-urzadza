@@ -3,16 +3,17 @@
 // synthesizer is replaced by a fake installed before the page scripts run: it offers the voices a
 // test chooses and records every utterance. Runs in the chromium-hook project (read-only hook,
 // window.__martynkaE2E). Speech needs a user gesture, so the speaker must react to the END of a
-// touch (pointerup) and the game must stay silent until the child taps; the default stage (E3)
-// has automatic reading off, so "Dalej" is silent too.
+// touch (pointerup) and the game must stay silent until the child taps; stage E3 (the welcome
+// helper's parent path: age 10, stage E3 chosen instead of the proposal) has automatic reading off, so "Dalej" is silent too.
 import { test, expect, type Page } from '@playwright/test';
+import { passWelcome } from './support/welcome';
 
 interface Point { x: number; y: number }
 interface Snapshot {
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
     input: 'tiles' | 'keypad';
     answer: unknown;
-    screen: 'task' | 'summary' | 'room';
+    screen: 'welcome' | 'task' | 'summary' | 'room';
     narration: string | null;
     speakerVisible: boolean;
 }
@@ -130,8 +131,7 @@ test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);
 
 const openGame = async (page: Page): Promise<void> => {
-    await page.goto('/');
-    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await passWelcome(page);
     await phaseIs(page, 'first');
 };
 
@@ -141,7 +141,7 @@ test.describe('narrator with a Polish voice', () => {
         await openGame(page);
     });
 
-    test('#narrator the game is silent at a cold start and "Dalej" stays silent on the default stage', async ({ page }) => {
+    test('#narrator the game is silent when the first E3 round opens and "Dalej" stays silent on that stage', async ({ page }) => {
         await expect.poll(async () => (await snapshot(page)).speakerVisible).toBe(true);
         await frames(page, 30); // negative check: a wrongly started speech would have been spoken by now
         expect(await spokenSoFar(page)).toEqual([]);
@@ -149,7 +149,7 @@ test.describe('narrator with a Polish voice', () => {
         await tapNext(page);
         await expect.poll(async () => (await snapshot(page)).phase).toBe('first');
         await frames(page, 30);
-        expect(await spokenSoFar(page)).toEqual([]); // the default stage E3 has automatic reading off
+        expect(await spokenSoFar(page)).toEqual([]); // stage E3 has automatic reading off
     });
 
     test('#narrator the speaker reads the narration on pointerup only, in Polish, without the answer; a wrong answer reads the retry prompt', async ({ page }) => {

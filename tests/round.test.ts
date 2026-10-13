@@ -46,7 +46,6 @@ const failTask = (s: RoundState): RoundState => {
 describe('balance', () => {
     it('keeps the PRD numbers as data', () => {
         expect(balance.round).toEqual({ length: 5, starPerTask: 1, cleanRoundBonus: 2 });
-        expect(balance.defaultStage).toBe('E3');
     });
 });
 

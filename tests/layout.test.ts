@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS } from '../src/data/layout';
+import { placementData } from '../src/data/placement';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_LAYOUT, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -55,6 +56,34 @@ describe('task screen layout constants', () => {
         expect(resume.top + resume.height).toBeLessThanOrEqual(panel.top + panel.height);
     });
 
+    it('keeps the welcome age buttons touch targets, side by side without overlap, inside the notebook', () => {
+        const { left, top, width, height, gap } = WELCOME_LAYOUT.ages;
+        expect(WELCOME_TOUCH_TARGETS.age).toEqual({ width, height });
+        expect(WELCOME_TOUCH_TARGETS.age.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(WELCOME_TOUCH_TARGETS.age.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(gap).toBeGreaterThan(0);
+        const notebook = TASK_LAYOUT.notebook;
+        const count = placementData.ages.length;
+        expect(left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
+        expect(left + count * width + (count - 1) * gap).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(top + height + WELCOME_LAYOUT.ages.shadow).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        expect(WELCOME_LAYOUT.question.y + FONT_SIZES.summaryTitle).toBeLessThan(top);   // the question sits above the buttons
+    });
+
+    it('keeps the welcome parent button a touch target, inside the notebook and clear of the age buttons', () => {
+        const { left, top, width, height } = WELCOME_LAYOUT.parent;
+        expect(WELCOME_TOUCH_TARGETS.parent).toEqual({ width, height });
+        expect(WELCOME_TOUCH_TARGETS.parent.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(WELCOME_TOUCH_TARGETS.parent.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        // Visual gate S-06: the button used to straddle the notebook's bottom-right border; it sits inside, like the kit's page buttons.
+        const notebook = TASK_LAYOUT.notebook;
+        expect(left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
+        expect(left + width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        const ages = WELCOME_LAYOUT.ages;
+        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + ages.shadow);
+    });
+
     it('uses the kit tile height of 136 px, not smaller', () => {
         expect(TASK_LAYOUT.tiles.height).toBeGreaterThanOrEqual(136);
     });
@@ -68,7 +97,7 @@ describe('task screen layout constants', () => {
         for (const [role, weight] of Object.entries(FONT_WEIGHTS)) {
             expect(weight, role).toBeGreaterThanOrEqual(min);
             expect(weight, role).toBeLessThanOrEqual(max);
-            if (role !== 'caption') {   // the build id is technical, not a kit text
+            if (role !== 'caption' && role !== 'brand') {   // the build id is technical; the kit brand line is 800 (.welcome-brand)
                 expect(weight, role).toBeGreaterThanOrEqual(650);
                 expect(weight, role).toBeLessThanOrEqual(750);
             }

@@ -11,6 +11,7 @@ import { textStyle } from './textStyle';
  * one, "star +N", the clean-round bonus line when there is one, and the two page buttons.
  * It draws a SummaryView from core and decides nothing.
  * DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line; ours sits under "+N", only with the bonus.
+ * DESIGN-GAP (docs/design-gaps.md rows 18 and 19): the kit has 5 dots and 5 stars; the 6-task warm-up draws 6 of each, the stars centred.
  * DESIGN-GAP (docs/design-gaps.md row 11): the kit draws 5 full stars; ours are pale for a task that paid none.
  */
 export class SummaryPanel {
@@ -37,8 +38,10 @@ export class SummaryPanel {
         const { stars, earned, buttons } = SUMMARY_LAYOUT;
         this.title.setVisible(true);
         this.row.setVisible(true).clear();
+        // The row keeps the kit's left edge for the usual 5 stars and stays centred for any other count (the 6-task warm-up).
+        const rowShift = ((stars.kitCount - view.stars.length) * (stars.size + stars.gap)) / 2;
         view.stars.forEach((paid, i) => {
-            const x = stars.left + stars.size / 2 + i * (stars.size + stars.gap);
+            const x = stars.left + rowShift + stars.size / 2 + i * (stars.size + stars.gap);
             drawStar(this.row, x, stars.top + stars.size / 2, stars.size / 2, paid ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.starEmpty, {
                 color: PLACEHOLDER_COLORS.starOutline,
                 width: stars.outline,

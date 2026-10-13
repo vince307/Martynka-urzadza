@@ -33,6 +33,9 @@ export const PLACEHOLDER_COLORS = {
     pageButtonHighlight: 0xf1ce6b, // DESIGN-GAP (docs/design-gaps.md row 10): "Do pokoju" highlighted when a renovation task is affordable
     starEmpty: 0xeadfbe,        // a task of the summary row that paid no star
     starOutline: 0xae802c,      // kit .star-icon stroke
+    ageButton: 0xeaf6df,        // kit .age-button gradient (#f8fff0 to #dceecf), flattened to its middle
+    ageButtonBorder: 0xabc49b,  // kit .age-button border
+    ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
 
 /** Deep teal as a CSS colour: every text of the task screen. */
@@ -57,6 +60,8 @@ export const FONT_SIZES = {
     earned: 124,            // kit .earned
     pageButton: 46,         // kit .page-button
     bonusLine: 44,          // DESIGN-GAP (docs/design-gaps.md row 9): the kit has no bonus line
+    brand: 62,              // kit .welcome-brand
+    ageDigit: 112,          // kit .age-button
 } as const;
 
 /**
@@ -78,6 +83,8 @@ export const FONT_WEIGHTS = {
     earned: 750,            // kit .earned
     pageButton: 750,        // kit .page-button
     bonusLine: 650,
+    brand: 800,             // kit .welcome-brand
+    ageDigit: 750,          // kit .age-button
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -89,7 +96,7 @@ export const FONT_KEY = 'AtkinsonHyperlegibleNext';
 export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
 
 /** Scene keys. */
-export const SCENE_KEYS = { boot: 'Boot', task: 'Task', room: 'Room', ui: 'UI' } as const;
+export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', ui: 'UI' } as const;
 
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
@@ -102,6 +109,8 @@ export const REGISTRY_KEYS = {
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
+    learner: 'learner',       // the session's SessionLearner (core/placement), absent until the child has said the age
+    month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
 } as const;
 
 /**
@@ -115,10 +124,11 @@ export const TASK_LAYOUT = {
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
     expression: { x: 620, y: 456 },          // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside
     blank: { width: 64, height: 84, lineWidth: 8, radius: 12, gap: 24 },   // drawn "□" in an expression (DESIGN-GAP 8): about one digit of the expression font; gap = a word space
+    blankInline: { width: 52, height: 68, lineWidth: 6, radius: 10, lineHeight: 92 },   // drawn "□" inside a sentence prompt (DESIGN-GAP 8): about one digit of the prompt font
     expressionWide: { x: 960, y: 500 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24 },
+    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
@@ -134,7 +144,7 @@ export const TASK_LAYOUT = {
 export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
-    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14 },
+    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
 } as const;
 
 /**
@@ -143,10 +153,24 @@ export const HUD_LAYOUT = {
  */
 export const SUMMARY_LAYOUT = {
     title: { x: 960, y: 290 },                                  // kit .page-title: top 290, centred between left 310 and right 280 (about 975)
-    stars: { left: 656, top: 420, gap: 26, size: 98, outline: 3 },
+    stars: { left: 656, top: 420, gap: 26, size: 98, outline: 3, kitCount: 5 },
     earned: { centerX: 960, top: 578, starSize: 114, gap: 28 }, // kit .earned: 600 wide box at left 660, 124 px line
     bonus: { x: 960, y: 722 },                                  // DESIGN-GAP (docs/design-gaps.md row 9): below "+N", only with the clean-round bonus
     buttons: { left: 454, top: 816, gap: 36, width: 450, height: 128, radius: 32, border: 5, highlightBorder: 9 },
+} as const;
+
+/**
+ * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
+ * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
+ * DESIGN-GAP (docs/design-gaps.md row 20): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
+ */
+export const WELCOME_LAYOUT = {
+    brand: { x: 960, y: 64 },
+    question: { x: 960, y: 290 },
+    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
+    // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the notebook's
+    // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
+    parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
 /** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
@@ -162,6 +186,12 @@ export const HUD_TOUCH_TARGETS = {
     roomSwitch: { width: HUD_LAYOUT.roomSwitch.width, height: HUD_LAYOUT.roomSwitch.height },
 } as const;
 
+/** Interactive rectangle of the welcome screen, checked against MIN_TOUCH_TARGET. */
+export const WELCOME_TOUCH_TARGETS = {
+    age: { width: WELCOME_LAYOUT.ages.width, height: WELCOME_LAYOUT.ages.height },
+    parent: { width: WELCOME_LAYOUT.parent.width, height: WELCOME_LAYOUT.parent.height },
+} as const;
+
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */
 export const TASK_TOUCH_TARGETS = {
     tile: { width: TASK_LAYOUT.tiles.width, height: TASK_LAYOUT.tiles.height },
@@ -174,6 +204,7 @@ export const TASK_TOUCH_TARGETS = {
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
     shakeMs: 360,
+    shakeSegments: 6,      // shakeMs / shakeSegments is one sideways swing (yoyo, 2 repeats)
     shakeDistance: 14,
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels

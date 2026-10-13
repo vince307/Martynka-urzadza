@@ -60,7 +60,7 @@ export class RoomSwitchButton {
     }
 
     private draw(pressed: boolean): void {
-        const { left, top, width, height, radius, border, iconSize, iconGap } = HUD_LAYOUT.roomSwitch;
+        const { left, top, width, height, radius, border, iconSize, iconGap, iconStroke } = HUD_LAYOUT.roomSwitch;
         const { fill, pressed: pressedFill, borderColor } = HUD_LAYOUT.speaker;
         const g = this.graphics;
         g.clear();
@@ -75,7 +75,7 @@ export class RoomSwitchButton {
         this.label.setPosition(iconX + iconSize + iconGap, top + height / 2);
         // House: roof triangle over a body with a door, in a 56 px box.
         const u = iconSize / 56;
-        g.lineStyle(4 * u, PLACEHOLDER_COLORS.deepTeal, 1);
+        g.lineStyle(iconStroke * u, PLACEHOLDER_COLORS.deepTeal, 1);
         g.beginPath();
         g.moveTo(iconX + 4 * u, iconY + 28 * u);
         g.lineTo(iconX + 28 * u, iconY + 6 * u);

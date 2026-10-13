@@ -1,0 +1,18 @@
+# Follow-ups — first-launch-placement (S-06)
+
+- Add test-plan risk #12 to `context/foundation/test-plan.md` §2: "The first launch cannot be finished by touch or ends on the wrong stage: an age tap misses, a tap on the adult gate reaches the game underneath, a wrong gate answer locks the parent out, the parent's choice is not the stage played, or the warm-up raises the stage, lowers it by more than one or below E1" | High | Medium | PRD FR-012, US-03 AC; roadmap S-06; Phaser window touch forwarding. Guidance: unit (table x 12 months x 5 ages, warm-up grading, gate) + local e2e of the touch path; must challenge "placement logic has tests, so the screen works" and "a DOM overlay covers the canvas, so the canvas gets no touch"; anti-pattern: the gate answer read from the hook instead of the DOM text, assertions that depend on the current month without a fixed month (`?e2eMonth`). Source: research §5. Trigger: /10x-test-plan refresh (joins the open queue of the narrator and #9 entries)
+- `mountInstallHint` (`src/pwa/installHint.ts`) lets a tap on its overlay through to the round underneath (a tile can be hit). The adult gate solved this with `input.enabled = false` under dialogs. Trigger: the next change to `src/ui/dom` or `src/pwa`
+- Persist `SessionLearner` with `warmupPending` and call `needsPlacement` on the loaded state, so the welcome appears only at the very first launch. Trigger: S-11
+- Stage change from the settings behind the same `openParentGate` (stage panel). Trigger: S-08
+- "Picture mode" (no reading) for 6-year-olds is skipped (design-gaps row 21). Trigger: S-14
+- Maintainer decision: an earlier save of the learner alone (age, stage), before daily use, because until S-11 every cold start asks the age again and a 7-year-old in grade 2 starts on E1 in October unless a parent takes the "Rodzic" path. Trigger: before S-11, or any deploy used for daily play
+- The warm-up can show the same prompt twice (two steps drawn from the same pool). Trigger: S-07
+- Warm-up pays the clean-round bonus (+2) unscaled for 6 tasks; check at the S-17 playtest. Trigger: S-17
+- On the parent path an E1/E2 stage may stay silent until the first canvas tap (the "Zatwierdź" tap is DOM, so speech may be locked). Trigger: S-17 iPad playtest
+- (impl-review F2) E2E helpers duplicated in 3–4 copies (`readHook`, `tapScene`, `fromHook`, `tapNumber`, `answerWrong`/`answerRight`, `phaseIs`; gate steps in `tests/e2e/support/welcome.ts` `passWelcome` and `tests/e2e/first-launch.spec.ts` `openGate`/`typeIntoGate`): move them to `tests/e2e/support/hook.ts` and export the gate steps from `support/welcome.ts`. Trigger: S-08 (reuses the gate in e2e)
+- (impl-review F5) `src/core/placement.ts` imports the type of `placementData` from `src/data/placement.ts` (core → data type import): declare a `PlacementData` interface in core instead. Trigger: S-07
+- (impl-review F6) `src/ui/dom/dialog.ts` `openDialog` `handleKey` does not `stopPropagation`: gate digits would reach a future Phaser keyboard listener. Trigger: first Phaser keyboard input in src
+
+## From the visual gate
+
+- (visual O1, CLOSED by `9b9b9d3`: sentence prompts draw the box via `wrapBlankLines`/`TaskScene.drawSentence`) A `□` inside a sentence prompt (FACT_FAMILY check variant, e.g. „5 − 1 = 4. Sprawdź: 4 + 1 = □”) is drawn as the font's tiny fallback glyph: `TaskScene` draws outlined boxes only for expression prompts (`isExpression` → `drawExpression`, `src/core/round/promptBlank.ts` `splitBlanks`/`layoutPieces`, design-gaps row 8). S-06 makes E2 playable (age 7 from February, the age-8 warm-up), so children now meet it. Fix: draw the box inside wrapped sentence prompts too (or keep sentence prompts free of `□`), with a test. Trigger: S-07
