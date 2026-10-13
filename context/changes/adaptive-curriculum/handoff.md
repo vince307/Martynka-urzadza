@@ -10,7 +10,7 @@ this step; phase 9 is now ONE e2e test with `test.setTimeout(180_000)`.
 | | |
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
-| Commits | 6 on top of `fd68216` (change identity; research; plan; handoff fixes; this plan review) |
+| Commits | 8 on top of `fd68216` (change identity; research; plan; 3 handoff fixes; plan review; this count fix) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 44 (all; 11 of them `[human]`/`[reviewer]`/`[visual]`) |
