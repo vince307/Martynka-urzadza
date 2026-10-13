@@ -36,20 +36,23 @@ const learner = (history: Entry[], mastery: Record<string, number> = {}, unlocke
 const ids = (a: Adaptation): string[] => progressView(E3, a, RULES).weakest.map((w) => w.skillId);
 
 describe('currentStep and the step line', () => {
-    it('counts only playable steps: E3 has 8, step 11 is the 8th', () => {
-        expect(progressView(E3, learner([], {}, 11), RULES).step).toEqual({ index: 8, total: 8, title: E3.steps.find((s) => s.step === 11)?.title });
+    it('counts only playable steps: E3 has 11, step 11 is the 11th', () => {
+        expect(progressView(E3, learner([], {}, 11), RULES).step).toEqual({ index: 11, total: 11, title: E3.steps.find((s) => s.step === 11)?.title });
     });
 
-    it('starts at 1 of 8 on the first playable step and takes the title from the step', () => {
+    it('starts at 1 of 11 on the first playable step and takes the title from the step', () => {
         const view = progressView(E3, learner([], {}, 1), RULES);
         expect(view.step.index).toBe(1);
-        expect(view.step.total).toBe(8);
+        expect(view.step.total).toBe(11);
         expect(view.step.title).toBe('Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”');
     });
 
-    it('an unplayable unlocked step (4) counts as the nearest lower playable one (2 = 2nd of 8)', () => {
-        expect(currentStep(E3, 4)).toBe(2);
-        expect(progressView(E3, learner([], {}, 4), RULES).step.index).toBe(2);
+    it('an unplayable unlocked step (E5 step 5) counts as the nearest lower playable one (4 = 4th of 10)', () => {
+        const E5 = stages.E5 as StageDef;
+        expect(currentStep(E5, 5)).toBe(4);
+        const view = progressView(E5, { ...learner([], {}, 5), unlockedStep: { E5: 5 } as Adaptation['unlockedStep'] }, RULES);
+        expect(view.step.index).toBe(4);
+        expect(view.step.total).toBe(10);
     });
 
     it('below the first playable step it is the first', () => {

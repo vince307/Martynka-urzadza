@@ -73,16 +73,16 @@ describe('unlocking a step', () => {
         expect(two.unlocked).toBe(11);
     });
 
-    it('step with 5 skills: 2 of 5 does not unlock, 3 of 5 does (next playable step 8, 7 has none)', () => {
+    it('step with 5 skills: 2 of 5 does not unlock, 3 of 5 does (next playable step 7)', () => {
         const ids = skillIds('E4', 6);
         expect(end(learner('E4', 6, masteryOf(ids, [4, 4, 3, 0, 0])), 'E4', 5).unlocked).toBeNull();
         const three = end(learner('E4', 6, masteryOf(ids, [4, 4, 5, 0, 0])), 'E4', 5);
-        expect(three.unlocked).toBe(8);
+        expect(three.unlocked).toBe(7);
     });
 
-    it('skips unplayable steps: E3 step 2 leads to step 6', () => {
-        const ids = skillIds('E3', 2);
-        expect(end(learner('E3', 2, masteryOf(ids, [4, 4])), 'E3', 5).unlocked).toBe(6);
+    it('skips unplayable steps: E5 step 4 leads to step 6 (step 5 has none)', () => {
+        const ids = skillIds('E5', 4);
+        expect(end(learner('E5', 4, masteryOf(ids, [4, 4])), 'E5', 5).unlocked).toBe(6);
     });
 
     it('the last playable step has nothing to unlock', () => {
@@ -108,8 +108,8 @@ describe('unlocking a step', () => {
     });
 
     it('an unplayable unlocked step is judged by the nearest lower playable step', () => {
-        const ids = skillIds('E3', 2);
-        const r = end(learner('E3', 4, masteryOf(ids, [4, 4])), 'E3', 5);
+        const ids = skillIds('E5', 4);
+        const r = end(learner('E5', 5, masteryOf(ids, [4, 4])), 'E5', 5);
         expect(r.unlocked).toBe(6);
     });
 });

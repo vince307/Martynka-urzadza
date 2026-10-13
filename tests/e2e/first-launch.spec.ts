@@ -57,6 +57,8 @@ test('#12 (proposed) age 8 in October warms up on E3 with 6 tasks, a clean warm-
     expect(end.outcomes).toEqual(Array(WARMUP_LENGTH).fill('first'));
     expect(end.summary?.stars).toEqual(Array(WARMUP_LENGTH).fill(true));
     expect(end.learner).toMatchObject({ stage: 'E3', warmupPending: false });
+    // October is the second month of the semester: rule D opens E3 at its 4th step (S-13: all 11 steps playable).
+    expect(end.learner?.unlockedStep.E3).toBe(4);
 
     const { nextRound } = await targets(page);
     expect(nextRound).not.toBeNull();

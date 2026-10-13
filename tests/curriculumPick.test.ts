@@ -10,6 +10,7 @@ import { createRng } from '../src/core/rng';
 import { pickRoundSkills, type Weights } from '../src/core/round/pick';
 import { distinctTasks } from '../src/core/round/unique';
 import { getGenerator } from '../src/core/tasks/registry';
+import { visualKey } from '../src/core/tasks/visual';
 import type { Task } from '../src/core/tasks/types';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -39,19 +40,19 @@ const currentStep = (st: StageDef, unlocked: number): number => {
 };
 
 describe('skillBuckets', () => {
-    it('E3 step 6: current = step 6, earlier = playable steps 1-2, previous = all of E2', () => {
+    it('E3 step 6: current = step 6, earlier = playable steps 1-5, previous = all of E2', () => {
         const b = skillBuckets(stage('E3'), previousOf('E3'), 6);
         expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([6]));
-        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2]));
+        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2, 3, 4, 5]));
         expect(ids(b.previous)).toEqual(ids(playableOf(stage('E2'), () => true)));
         expect(b.current.length).toBeGreaterThan(0);
     });
 
     it('an unplayable unlocked step falls back to the nearest lower playable step', () => {
-        // E3 steps 3-5 have no playable skill: unlocked step 4 plays step 2.
-        const b = skillBuckets(stage('E3'), previousOf('E3'), 4);
-        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([2]));
-        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1]));
+        // E5 step 5 has no playable skill (capacity and mass wait for S-14): unlocked step 5 plays step 4.
+        const b = skillBuckets(stage('E5'), previousOf('E5'), 5);
+        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([4]));
+        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2, 3]));
     });
 
     it('an unplayable step below every playable one falls back to the first playable step', () => {
@@ -153,8 +154,9 @@ describe('buildAdaptiveRound', () => {
                     const where = `${id} month=${month} seed=${seed}`;
                     expect(tasks, where).toHaveLength(rules.length);
                     for (const t of tasks) expect(allowed.has(t.skillId), `${where} ${t.skillId}`).toBe(true);
-                    const prompts = tasks.map((t) => t.prompt);
-                    expect(new Set(prompts).size, `${where} ${JSON.stringify(prompts)}`).toBe(prompts.length);
+                    // A task is told apart by its prompt and its drawing ("Jaka to liczba?" differs by the blocks).
+                    const keys = tasks.map((t) => `${t.prompt}|${visualKey(t.visual)}`);
+                    expect(new Set(keys).size, `${where} ${JSON.stringify(keys)}`).toBe(keys.length);
                 }
             }
         }
