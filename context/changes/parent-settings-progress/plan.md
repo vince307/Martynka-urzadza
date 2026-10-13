@@ -882,9 +882,9 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 4.1 Nowe testy `firstWrong`, `roundResults`, `recordRound` z przykładem czerwone przed, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `firstWrong` nadpisywane w `second` / przykład przy `first` → czerwone; przywrócone; meta-check
-- [ ] 4.3 Pełna bramka lokalna zielona
+- [x] 4.1 Nowe testy `firstWrong`, `roundResults`, `recordRound` z przykładem czerwone przed, zielone po; unit `<baseline gałęzi> + N` — b34c1ee (RED: expected undefined to deeply equal [null x5]; unit 910 + 14 = 924)
+- [x] 4.2 Deliberate break: `firstWrong` nadpisywane w `second` / przykład przy `first` → czerwone; przywrócone; meta-check — b34c1ee (2 tests red; restored)
+- [x] 4.3 Pełna bramka lokalna zielona — b34c1ee (e2e: orchestrator gate)
 
 ### Phase 5: Podgląd postępów — bieżący krok i najsłabsze umiejętności
 
