@@ -620,16 +620,16 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 - [x] 1.1 Nowe testy (rzucający `onRelease`, sesja) czerwone przed (asercja), zielone po; unit `<baseline gałęzi> + N` — 6ad5d53
 - [x] 1.2 Deliberate break: `enabled` poza `finally` / `run` bez `end()` przy wyjątku → czerwone; przywrócone; meta-check — 6ad5d53
-- [x] 1.3 Pełna bramka lokalna zielona — 6ad5d53 (e2e: orchestrator gate)
+- [x] 1.3 Pełna bramka lokalna zielona — 6ad5d53 (e2e: orchestrator gate, 18/18 on 6ad5d53 per run-log)
 
 ### Phase 2: Opanowanie bez kary za błąd (H-7, decyzja opiekuna)
 
 #### Automated
 
-- [ ] 2.1 Odwrócone i nowe testy czerwone przed zmianą `recordRound`, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 `loss` usunięte z `mastery.ts` i `balance.ts`; FR-013 i ZADANIA § 1 bez kary za błąd
-- [ ] 2.3 Deliberate break: odejmowanie przywrócone → „keeps mastery” i własność czerwone; przywrócone; meta-check
-- [ ] 2.4 `sample` E1–E6 zielone; pełna bramka lokalna zielona
+- [x] 2.1 Odwrócone i nowe testy czerwone przed zmianą `recordRound`, zielone po; unit `<baseline gałęzi> + N` — 1af1734
+- [x] 2.2 `loss` usunięte z `mastery.ts` i `balance.ts`; FR-013 i ZADANIA § 1 bez kary za błąd — 1af1734
+- [x] 2.3 Deliberate break: odejmowanie przywrócone → „keeps mastery” i własność czerwone; przywrócone; meta-check — 1af1734
+- [x] 2.4 `sample` E1–E6 zielone; pełna bramka lokalna zielona — 1af1734 (e2e: orchestrator gate)
 
 #### Manual
 
