@@ -617,7 +617,7 @@ przyszłego builda, który go zna.
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — fb2e7bb
 - [x] 1.2 Fixtury v1 w obie strony równe sobie; `SAVE_VERSION` = 1; `tests/fixtures/` bez zmian — fb2e7bb
 - [x] 1.3 Deliberate break: ostatni powód wygrywa / brak zerowania `consecutiveFailures` / porażki przed blokadą w widoku → czerwone; przywrócone; meta-check — fb2e7bb
-- [x] 1.4 Pełna bramka lokalna zielona — fb2e7bb (e2e: orchestrator gate)
+- [x] 1.4 Pełna bramka lokalna zielona — fb2e7bb (e2e: orchestrator run on a1dfa86, 29 passed)
 
 #### Manual
 
@@ -627,10 +627,10 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Build: `e2e hook: absent (`; `e2eSave` nieobecne w `dist/`; build e2e `e2e hook: present (`
-- [ ] 2.3 Deliberate break: bez `.catch` porzuconego odczytu / timer nieczyszczony / bez nazwy błędu → czerwone; przywrócone; meta-check
-- [ ] 2.4 Pełna bramka lokalna zielona
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 11b492c
+- [x] 2.2 Build: `e2e hook: absent (`; `e2eSave` nieobecne w `dist/`; build e2e `e2e hook: present (` — 11b492c
+- [x] 2.3 Deliberate break: bez `.catch` porzuconego odczytu / timer nieczyszczony / bez nazwy błędu → czerwone; przywrócone; meta-check — 11b492c
+- [x] 2.4 Pełna bramka lokalna zielona — 11b492c (e2e: orchestrator gate)
 
 ### Phase 3: Naprawa nieznanego pokoju przy wczytaniu i jeden resolver w `RoomScene`
 

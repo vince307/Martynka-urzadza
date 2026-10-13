@@ -1,55 +1,59 @@
 # Handoff — `save-observability-c1-c2` (slice fix, non-roadmap)
 
-Written by `tdd` phase 1: autosaver health status + `saveHealthView` landed test-first (commit fb2e7bb). Do not forget: e2e was NOT run here (Chromium MachPort), so it is the orchestrator's gate on fb2e7bb.
+Written by `tdd` phase 2: `loadSave` error name + read limit and the four `?e2eSave=` seams landed test-first (commit 11b492c). e2e was NOT run here (Chromium MachPort), so it is the orchestrator's gate on 11b492c; the abandoned-read `.catch` is redundant with the race today and guarded only against refactors (see §3).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-observability-c1-c2`, cut from `main` at `4698110` |
-| Commits | phase 1 code `fb2e7bb` + this handoff commit on top of the plan-review commit |
+| Commits | phase 1 `fb2e7bb`, phase 2 code `11b492c` + this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| Progress rows remaining | 31 (`grep -c '^- \[ \]' plan.md`; 1.5 is `[reviewer]`) |
+| Progress rows remaining | 27 (`grep -c '^- \[ \]' plan.md`; 1.5 is `[reviewer]`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/autosave.ts` | `BlockReason`, `errorName`, status +`blockedBy/lastError/lastWriteAt/consecutiveFailures`, options `blockedBy/now/loadError?`, `block(reason)` first reason wins, `InvalidSave` name |
-| `src/core/saveHealth.ts` | new: `saveHealthView` (off/failing/ok) |
-| `src/main.ts` | `createAutosaver` gets `blockedBy` and `now: Date.now` |
-| `tests/autosave.test.ts`, `tests/saveHealth.test.ts`, `tests/save.test.ts` | new tests; risk-#2 test migrated to `blockedBy: load` with the same assertions (plus `blockedBy`) |
-| `tests/e2e/support/hook.ts` | `save` type extended with the new status fields (type only) |
-| `plan.md`, `change.md` | rows 1.1-1.4 ticked, status `implementing` |
+| `src/core/autosave.ts` | `LoadOutcome` `unavailable` carries `error`; `loadSave(store, limit?)` races the read against injected timers, clears the timer, catches the abandoned read |
+| `src/data/balance.ts` | `save.loadTimeoutMs: 5000` |
+| `src/testing/e2eHook.ts` | `E2ESaveSeam`, `e2eSave` (4 values), `e2eSaveStore(seam)`, `E2E_LOAD_TIMEOUT_MS = 300` |
+| `src/main.ts` | seam + limit wiring (`hang` uses 300 ms, hook build only), `console.warn` for `unavailable`, `loadError` to the autosaver, shared `timers` |
+| `tests/autosave.test.ts`, `tests/e2eSave.test.ts` | new describe `loadSave failure cause and read limit`, parser and store seam tests |
+| `plan.md` | rows 2.1-2.4 ticked, 1.4 note fixed |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stubs `errorName`/`saveHealthView`) | 9 failed, e.g. `expected '' to be 'TypeError'`, `expected { kind: 'failing' } to deeply equal { kind: 'off', cause: 'unreadable' }`, `expected [ {version:1,…} ] to have a length of +0 but got 1` (risk-#2 test with `blockedBy`) |
-| `npx vitest run` | 1152 passed (baseline 1142, +10) |
-| `npm run lint`, `npx tsc --noEmit` | clean |
-| `npm run build` | ok, `e2e hook: absent` |
+| RED (no stubs needed: new args/values ignored at runtime) | 9 failed, e.g. `expected { kind: 'unavailable' } to deeply equal { kind: 'unavailable', error: 'Error' }`, `expected undefined to deeply equal { kind: 'unavailable', error: 'timeout' }`, `unavailable: expected null to be 'unavailable'` |
+| `npx vitest run` / `npm test` | 1162 passed (phase 1 branch 1152, +10; main 1142) |
+| lint, typecheck, deploy tests, `sample` E1-E6 | clean / OK |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -rl e2eSave dist/` empty |
+| `E2E_HOOK=1 npm run build` | `e2e hook: present (2 chunks checked)` |
+| Deliberate leak (`const seam = e2eSave(...)` without `__E2E_HOOK__` in main.ts) | build FAILED: `e2e hook leaked into the production bundle (e2eSave in _app/index-….js)`; restored, build absent again |
 | `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate |
-| Break `blockedBy ??= reason` → `= reason` | "first reason" test red; restored |
-| Break `consecutiveFailures = 0` commented out | "records its time and clears the streak" red; restored |
-| Break `saveHealthView` failures before block | "every block reason is off ... also while writes had failed" red; restored |
-| Meta-check | each break names the rule from the plan/audit (C-2, M-S5), not an implementation detail; suite green again after restore |
-| v1 fixtures round trip (1.2) | green before and after; `git diff tests/fixtures/` empty |
+| Break: no `clearTimeout` | "faster than the limit ... no timer" red; restored |
+| Break: `error: 'Error'` always | name tests red (4 failed); restored |
+| Break: no `.catch` on the abandoned read | STAYED GREEN (the `Promise.race` already subscribes to the read, so the late rejection is handled); restored |
+| Break: race replaced by `read.then(ok)` without `.catch` (the refactor the test guards) | "rejects after the limit ... unhandled rejection" red by the test's own `unhandledRejection` listener assertion (`expected [ Error: late ] to deeply equal []`), not vitest's global report; restored |
+| Meta-check | the plan's `.catch` break is not red on its own; the equivalent break through the refactor path is, via the listener |
 
 ## 4. Next command
 
-`/10x-tdd save-observability-c1-c2 phase 2`
+`/10x-tdd save-observability-c1-c2 phase 3`
 
 ## 5. Open
 
-- Row 1.5 `[reviewer]`: `lastError` is name only (`errorName`), status is outside `SaveState`, `core` has no globals (`Date.now` only in `src/main.ts`).
-- e2e on fb2e7bb: orchestrator gate (row 1.4 carries the note).
+- Row 1.5 `[reviewer]` (phase 1). e2e on 11b492c: orchestrator gate.
+- Note for impl-review: the `.catch` in `loadSave` is defensive (race already handles the read); kept because the plan requires it at race start.
+- Karta dla `unavailable` is phase 4; the outcome is already logged and `loadError` reaches the autosaver.
 
 ## 6. Autonomous decisions
 
-- Stubs-first for RED (`errorName`, `saveHealthView`), as the prompt requires an assertion failure. Reversal: none.
-- Also updated the `save` type in `tests/e2e/support/hook.ts` (needed for typecheck-consistency with the new status; hook itself passes the status object through). Reversal: if the hook later whitelists fields.
-- Commit messages: proposed ones taken; handoff/plan ticks in a second commit because the SHA is only known after the first.
+- No stubs for RED: the new parameters and seam values fail on assertions at runtime. Reversal: none.
+- Timeout is signalled by rejecting the race with an `Error` named `timeout` (lint forbids non-Error rejections), turned into `error: 'timeout'` by `errorName`. Reversal: if a typed timeout is wanted.
+- The plan's `.catch` break stays green; recorded honestly, the refactor-path break is the proof. Reversal: drop the `.catch` if impl-review calls it dead code.
+- `timers` hoisted in `start` and shared between `loadSave` and `createAutosaver`.
