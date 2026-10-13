@@ -10,15 +10,19 @@
 // The strings are what the parent reads (src/data/pl.ts); a change there is a change here, on purpose.
 // passWelcomeAsChild is the child path (tap an age): with the warm-up it plays 6 tasks first.
 import { expect, type Page } from '@playwright/test';
-import { fromHook, readHook, tapScene } from './hook';
+import { fromHook, holdTouch, readHook, targets, tapScene } from './hook';
 
 const PARENT_AGE = '10+';
 const STAGE_LABEL = 'Klasa 2, I półrocze';
 const STAGE = 'E3';
 
-/** Loads the game (the month may be pinned by ?e2eMonth, the e2e build only) and waits for the welcome screen. */
-export const openWelcome = async (page: Page, month?: number): Promise<void> => {
-    await page.goto(month === undefined ? '/' : `/?e2eMonth=${month}`);
+/** Loads the game (the month may be pinned by ?e2eMonth, other e2e-build switches such as e2eFail go in `query`) and waits for the welcome screen. */
+export const openWelcome = async (page: Page, month?: number, query: Record<string, string> = {}): Promise<void> => {
+    const params = new URLSearchParams(query);
+    if (month !== undefined) {
+        params.set('e2eMonth', String(month));
+    }
+    await page.goto(params.size === 0 ? '/' : `/?${params.toString()}`);
     // A stale server without the hook would fail every test with an unreadable error.
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
@@ -43,8 +47,8 @@ export const typeIntoGate = async (page: Page, value: number): Promise<void> => 
 };
 
 /** Opens the welcome screen and taps "Rodzic": the gate is open afterwards. */
-export const openGate = async (page: Page, month?: number): Promise<void> => {
-    await openWelcome(page, month);
+export const openGate = async (page: Page, month?: number, query?: Record<string, string>): Promise<void> => {
+    await openWelcome(page, month, query);
     const { parent } = await fromHook(page, 'targets');
     expect(parent).toBeDefined();
     await tapScene(page, parent!);
@@ -60,11 +64,13 @@ export interface ParentChoice {
     stage: string;
     /** Month pinned by ?e2eMonth (the e2e build only); undefined = the real clock. */
     month?: number;
+    /** Extra e2e-build query switches (e2eFail). */
+    query?: Record<string, string>;
 }
 
 /** Parent path: gate, then the chosen age and stage; lands on the first task of a normal (no warm-up) round. The stage must differ from the proposal, or the warm-up would follow. */
 export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Promise<void> => {
-    await openGate(page, choice.month);
+    await openGate(page, choice.month, choice.query);
     // The gate: the product is computed here from the visible problem.
     await typeIntoGate(page, (await gateProblem(page)).product);
 
@@ -82,8 +88,8 @@ export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Pro
 };
 
 /** Parent path, age 10 and stage E3 in every month (the proposal is E6, so E3 is an override). */
-export const passWelcome = (page: Page): Promise<void> =>
-    passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE });
+export const passWelcome = (page: Page, query?: Record<string, string>): Promise<void> =>
+    passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE, query });
 
 /** Child path: taps `age` with the month pinned by ?e2eMonth (the e2e build only); the warm-up follows when the stage has a previous one. */
 export const passWelcomeAsChild = async (page: Page, age: number, month: number): Promise<void> => {
@@ -97,4 +103,17 @@ export const passWelcomeAsChild = async (page: Page, age: number, month: number)
         .toBe(true);
     await tapScene(page, button!);
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('task');
+};
+
+const HOLD_MS = 2000; // balance.parentSettings.holdMs: the hold is the gesture, not a wait
+
+/** Holds the gear, passes the adult gate with the product read from the dialog; the settings panel is open afterwards. */
+export const openSettings = async (page: Page) => {
+    const icon = (await targets(page)).settingsIcon;
+    expect(icon).toBeDefined();
+    await holdTouch(page, icon!, HOLD_MS + 300);
+    await typeIntoGate(page, (await gateProblem(page)).product);
+    const panel = page.getByRole('dialog', { name: 'Ustawienia rodzica' });
+    await expect(panel).toBeVisible();
+    return panel;
 };

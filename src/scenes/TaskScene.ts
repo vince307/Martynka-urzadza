@@ -25,6 +25,7 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
@@ -96,6 +97,13 @@ export class TaskScene extends Scene {
 
     constructor() {
         super(SCENE_KEYS.task);
+    }
+
+    update(): void {
+        if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'step') {
+            this.registry.set(REGISTRY_KEYS.forcedFailure, null);   // once
+            throw new Error(E2E_FORCED_FAILURE);   // e2e build only
+        }
     }
 
     create(): void {

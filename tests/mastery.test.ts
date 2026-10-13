@@ -1,13 +1,14 @@
 // Origin: S-07 phase 1. Rule from docs/ZADANIA.md section 1 and PRD FR-014: mastery 0..5 per skill, counted from the
-// first try only; 3 correct first tries in a row = +1, a miss on the first try = -1. The numbers below are the rule,
+// first try only; 3 correct first tries in a row = +1, a miss on the first try resets the streak and never lowers mastery (maintainer decision H-7, 2026-10-13). The numbers below are the rule,
 // not read from the implementation; one test pins balance.mastery to the same rule.
 import { describe, expect, it } from 'vitest';
 import { balance } from '../src/data/balance';
 import { recordRound, type MasteryRules, type SkillResult } from '../src/core/mastery';
 import type { Adaptation } from '../src/core/types';
 import type { Outcome } from '../src/core/round';
+import { createRng } from '../src/core/rng';
 
-const RULES: MasteryRules = { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, loss: 1, historyLength: 200 };
+const RULES: MasteryRules = { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, historyLength: 200 };
 
 const empty = (): Adaptation => ({ unlockedStep: {} as Adaptation['unlockedStep'], mastery: {}, streak: {}, history: [], weakStreak: 0, easedRounds: 0 });
 const run = (a: Adaptation, outcomes: (Outcome | null)[], skillId = 'S', at = 1): Adaptation =>
@@ -26,16 +27,29 @@ describe('recordRound mastery', () => {
         expect(a.streak.S).toBe(2);
     });
 
-    it('lowers mastery by one and resets the streak after a second-try answer', () => {
+    it('keeps mastery and resets the streak after a second-try answer', () => {
         const start = { ...empty(), mastery: { S: 3 }, streak: { S: 2 } };
         const a = run(start, ['second']);
+        expect(a.mastery.S).toBe(3);
+        expect(a.streak.S).toBe(0);
+    });
+
+    it('keeps mastery and resets the streak after a retype as well', () => {
+        const a = run({ ...empty(), mastery: { S: 2 }, streak: { S: 2 } }, ['retype']);
         expect(a.mastery.S).toBe(2);
         expect(a.streak.S).toBe(0);
     });
 
-    it('lowers mastery after a retype as well', () => {
-        const a = run({ ...empty(), mastery: { S: 2 } }, ['retype']);
-        expect(a.mastery.S).toBe(1);
+    it('never lowers mastery over random outcome sequences', () => {
+        for (let seed = 1; seed <= 20; seed++) {
+            const rng = createRng(seed);
+            let a: Adaptation = { ...empty(), mastery: { S: rng.int(0, 5) } };
+            for (let i = 0; i < 40; i++) {
+                const before = a.mastery.S ?? 0;
+                a = run(a, [rng.pick<Outcome>(['first', 'first', 'second', 'retype'])]);
+                expect(a.mastery.S ?? 0, `seed ${seed} step ${i}`).toBeGreaterThanOrEqual(before);
+            }
+        }
     });
 
     it('never raises mastery on a second-try answer', () => {
@@ -45,6 +59,7 @@ describe('recordRound mastery', () => {
 
     it('does not go below 0 or above 5', () => {
         expect(run(empty(), ['second', 'retype']).mastery.S).toBe(0);
+        expect(run({ ...empty(), mastery: { S: 5 } }, ['second']).mastery.S).toBe(5);
         const top = run({ ...empty(), mastery: { S: 5 } }, ['first', 'first', 'first']);
         expect(top.mastery.S).toBe(5);
     });

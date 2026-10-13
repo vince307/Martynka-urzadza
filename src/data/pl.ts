@@ -28,6 +28,7 @@ export const pl = {
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',
         autoReadOff: 'Wyłączone',
+        noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',
         currentStep: (index: number, total: number, title: string) => `Krok ${index} z ${total}: ${title}`,
@@ -47,6 +48,12 @@ export const pl = {
     overlay: {
         rotate: 'Obróć tablet',
         rotateHint: 'Gra działa w poziomie.',
+    },
+    errorCard: {
+        title: 'Ups! Gra się zatrzymała.',
+        body: 'Dotknij przycisku, a gra uruchomi się od nowa.',
+        restart: 'Zacznij od nowa',
+        build: (id: string) => `Wersja ${id}`,
     },
     install: {
         title: 'Zainstaluj grę na tablecie',

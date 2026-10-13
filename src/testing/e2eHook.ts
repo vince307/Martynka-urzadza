@@ -26,6 +26,19 @@ export const e2eMonth = (search: string): number | null => {
     return month <= 11 ? month : null;
 };
 
+export type E2EFailSite = 'step' | 'boot' | 'settings';
+
+/** Message of the error thrown at a forced failure site; also a build guard marker. */
+export const E2E_FORCED_FAILURE = 'e2e-forced-failure';
+
+const FAIL_SITES: readonly string[] = ['step', 'boot', 'settings'];
+
+/** `?e2eFail=step|boot|settings` names the site that throws on purpose in the e2e build; anything else is null. */
+export const e2eFail = (search: string): E2EFailSite | null => {
+    const raw = new URLSearchParams(search).get('e2eFail');
+    return raw !== null && FAIL_SITES.includes(raw) ? (raw as E2EFailSite) : null;
+};
+
 /** Recursively frozen value: the nested mastery, streak and history of the learner stay read-only. */
 const deepFreeze = <T>(value: T): T => {
     if (typeof value === 'object' && value !== null) {

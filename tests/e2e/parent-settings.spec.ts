@@ -5,8 +5,8 @@
 // (touch gesture, DOM dialog over the canvas), so this runs in the chromium-hook project (window.__martynkaE2E).
 // The finger is held with raw CDP touch events (holdTouch); the hold time is the gesture, not a wait.
 import { test, expect, type Page } from '@playwright/test';
-import { gateProblem, passWelcome, passWelcomeAsParent, typeIntoGate } from './support/welcome';
-import { answerRight, answerWrong, holdTouch, phaseIs, playTaskRight, readHook, screenIs, silenceSpeech, snapshot, tapNext, tapScene, tapTarget, targets } from './support/hook';
+import { openSettings, passWelcome, passWelcomeAsParent } from './support/welcome';
+import { answerRight, answerWrong, fakePolishVoice, holdTouch, phaseIs, playTaskRight, readHook, screenIs, silenceSpeech, snapshot, tapNext, tapScene, tapTarget, targets } from './support/hook';
 
 const HOLD_MS = 2000; // balance.parentSettings.holdMs: the spec holds clearly under and over it
 const DRIFT = 40; // scene px: over the 30 px tolerance, still inside the 96 px icon
@@ -70,17 +70,6 @@ test('#14 (proposed) only a 2-second hold on the settings icon opens the adult g
     await answerRight(page);
     await phaseIs(page, 'done');
 });
-
-/** Holds the gear, passes the adult gate with the product read from the dialog; the settings panel is open afterwards. */
-const openSettings = async (page: Page) => {
-    const icon = (await targets(page)).settingsIcon;
-    expect(icon).toBeDefined();
-    await holdTouch(page, icon!, HOLD_MS + 300);
-    await typeIntoGate(page, (await gateProblem(page)).product);
-    const panel = page.getByRole('dialog', { name: 'Ustawienia rodzica' });
-    await expect(panel).toBeVisible();
-    return panel;
-};
 
 test('#14 (proposed) a parent stage change replaces the open round with the new stage at once and keeps the stars, and the auto-read choice survives the next stage change', async ({ page }) => {
     await silenceSpeech(page);
@@ -164,4 +153,27 @@ test('#14 (proposed) the progress view shows the empty state, then the skill mis
     await expect(list).toBeVisible();
     await expect(list.getByRole('listitem').filter({ hasText: /opanowanie \d+ z \d+/ })).toHaveCount(1);
     await expect(list).toContainText(`odpowiedź dziecka: ${given},`);
+});
+
+test('#14 (proposed) the settings panel says when the device has no Polish voice, and says nothing when it has one', async ({ page, context }) => {
+    const noVoice = 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.'; // pl.settings.noVoice
+
+    // No voice: the line is in the open panel.
+    await silenceSpeech(page);
+    await passWelcome(page);
+    await phaseIs(page, 'first');
+    let panel = await openSettings(page);
+    await expect(panel.getByText(noVoice)).toBeVisible();
+    await panel.getByRole('button', { name: 'Anuluj', exact: true }).tap();
+    await expect(panel).toHaveCount(0);
+
+    // A Polish voice: a fresh page (one canvas at a time), the panel shows no such line.
+    await page.close();
+    const withVoice = await context.newPage();
+    await fakePolishVoice(withVoice);
+    await passWelcome(withVoice);
+    await phaseIs(withVoice, 'first');
+    panel = await openSettings(withVoice);
+    await expect(panel.getByRole('button', { name: 'Zatwierdź', exact: true })).toBeVisible();
+    await expect(panel.getByText(noVoice)).not.toBeVisible();
 });

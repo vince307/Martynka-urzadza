@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { needsPlacement, type SessionLearner } from '../core/placement';
+import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 
 /**
@@ -17,6 +18,9 @@ export class BootScene extends Scene {
     }
 
     create(): void {
+        if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
+            throw new Error(E2E_FORCED_FAILURE);   // e2e build only
+        }
         const learner = (this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null;
         this.scene.start(needsPlacement(learner) ? SCENE_KEYS.welcome : SCENE_KEYS.task);
     }

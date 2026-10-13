@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import type { InputSuspender } from '../core/inputSuspend';
+import { openInputSession, type InputSession, type InputSuspender } from '../core/inputSuspend';
 import { IDLE, longPress, type LongPressEvent, type LongPressState } from '../core/longPress';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { changeStageByParent, initialSettings, type SessionLearner } from '../core/placement';
@@ -11,6 +11,7 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
+import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
@@ -37,7 +38,7 @@ export class UIScene extends Scene {
     private settingsIcon!: SettingsIcon;
     private hold: LongPressState = IDLE;
     private closeDialog: (() => void) | undefined;
-    private releaseInput: (() => void) | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
+    private session: InputSession | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
 
     constructor() {
         super(SCENE_KEYS.ui);
@@ -72,7 +73,7 @@ export class UIScene extends Scene {
         // A restarted scene keeps its fields: start from a clean slate.
         this.hold = IDLE;
         this.closeDialog = undefined;
-        this.releaseInput = undefined;
+        this.session = undefined;
         this.settingsIcon = new SettingsIcon(this, {
             down: (p) => this.feed({ type: 'down', id: p.id, x: p.x, y: p.y, now: this.time.now }),
             up: (p) => this.feed(p.wasCanceled ? { type: 'cancel' } : { type: 'up', id: p.id }),
@@ -110,16 +111,19 @@ export class UIScene extends Scene {
     private openSettings(): void {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
         const suspender = this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
-        if (!learner || !suspender || this.releaseInput) {
+        if (!learner || !suspender || this.session?.active()) {
             return;
         }
-        this.narrator?.cancel();
-        this.releaseInput = suspender.suspend();
+        const narrator = this.narrator;
+        narrator?.cancel();
+        const session = openInputSession(suspender);   // every dialog callback below runs in it: a throw ends the hold and goes on to the error boundary
+        this.session = session;
         this.hold = IDLE;   // the lifted finger is lost over the dialog: nothing may stay "held"
         this.closeDialog = openParentGate({
             rng: createRng(Math.floor(Math.random() * 2 ** 32)),
-            onCancel: () => this.closeSettings(),
-            onPass: () => {
+            onCancel: () => session.run(() => this.closeSettings()),
+            onPass: () =>
+                session.run(() => {
                 const settings = (this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined) ?? initialSettings();
                 const readStages = balance.narrator.autoReadStages;
                 const stage = getStage(learner.stage);
@@ -131,16 +135,20 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
+                    watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
-                    onCancel: () => this.closeSettings(),
-                    onConfirm: (result) => this.applySettings(result.stage, result.autoRead),
+                    onCancel: () => session.run(() => this.closeSettings()),
+                    onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
                 });
-            },
+                }),
         });
     }
 
     /** The learner and the settings come from core; the task scene reacts to the event only when the stage changed. */
     private applySettings(stage: SessionLearner['stage'], autoRead: boolean | null): void {
+        if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'settings') {
+            throw new Error(E2E_FORCED_FAILURE);   // e2e build only
+        }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         const changed = changeStageByParent(learner, stage);
         this.registry.set(REGISTRY_KEYS.settings, { autoRead });
@@ -153,8 +161,8 @@ export class UIScene extends Scene {
 
     private closeSettings(): void {
         this.closeDialog = undefined;
-        this.releaseInput?.();
-        this.releaseInput = undefined;
+        this.session?.end();
+        this.session = undefined;
     }
 
     /** Centre of the settings gear, for the e2e hook. */

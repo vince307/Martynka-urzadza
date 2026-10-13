@@ -18,6 +18,8 @@ export interface SettingsPanelOptions {
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null }) => void;
     onCancel: () => void;
+    /** Subscribes to "a Polish voice is available" (called at once and on changes); returns the unsubscribe. Absent = no narrator: the line stays visible. */
+    watchVoice?: (callback: (available: boolean) => void) => () => void;
     parent?: HTMLElement;
 }
 
@@ -26,8 +28,10 @@ export interface SettingsPanelOptions {
  * "Anuluj" / Escape. The reading choice stays null until the parent taps On or Off. One overlay scroll,
  * the two actions stick to the bottom of it (plan review F2). Returns the function that closes the panel.
  * DESIGN-GAP (docs/design-gaps.md row 26): the kit has no settings view; built from the S-06 dialog parts.
+ * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
+ * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, onConfirm, onCancel, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, onConfirm, onCancel, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -51,6 +55,10 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     readingTitle.id = 'settings-panel-reading';
     readingRow.setAttribute('aria-labelledby', readingTitle.id);
 
+    const noVoice = createText('p', pl.settings.noVoice, 'overlay-muted');
+    noVoice.hidden = watchVoice !== undefined;
+    let unwatch: (() => void) | undefined;
+
     const refresh = (): void => {
         stageChoices.show(chosenStage);
         const reading = chosenReading ?? autoReadDefault(chosenStage);
@@ -58,20 +66,28 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         off.setAttribute('aria-pressed', String(!reading));
     };
 
-    const confirm = createButton(pl.parent.confirm, () => {
+    const close = (): void => {
+        unwatch?.();
+        unwatch = undefined;
         handle.close();
+    };
+    const confirm = createButton(pl.parent.confirm, () => {
+        close();
         onConfirm({ stage: chosenStage, autoRead: chosenReading });
     });
     confirm.classList.add('parent-primary');
     const cancel = (): void => {
-        handle.close();
+        close();
         onCancel();
     };
     const actions = document.createElement('div');
     actions.className = 'parent-actions parent-actions-sticky';
     actions.append(confirm, createButton(pl.parent.cancel, cancel));
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, createProgressView(progress), actions], cancel);
     refresh();
-    return handle.close;
+    unwatch = watchVoice?.((available) => {
+        noVoice.hidden = available;
+    });
+    return close;
 };

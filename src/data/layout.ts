@@ -120,6 +120,7 @@ export const REGISTRY_KEYS = {
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
     settings: 'settings',     // the session's Settings (core/types: parent's auto-reading choice), set before the scenes start (main.ts)
     inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
+    forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
 /**

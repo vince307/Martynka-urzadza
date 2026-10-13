@@ -1,22 +1,33 @@
-// Keeps the e2e test hook out of production. The marker is the property the hook
-// puts on window (src/testing/e2eHook.ts); it must appear in no production chunk
-// and in every chunk set built with E2E_HOOK=1 (otherwise the hook vanished and
+// Keeps the e2e test hook out of production. The markers are strings the e2e-only
+// code carries (src/testing/e2eHook.ts); none may appear in any production chunk.
+// The e2e build must contain the required ones (otherwise the hook vanished and
 // the e2e project would fail with a confusing error).
 export const E2E_HOOK_MARKER = '__martynkaE2E';
+export const E2E_HOOK_MARKERS = [E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure'];
+// Markers that must be in the e2e build: every one has a caller there, so a missing one means the hook was dropped.
+export const E2E_REQUIRED_MARKERS = [...E2E_HOOK_MARKERS];
 
 /**
  * @param {{ fileName: string; code: string }[]} chunks
  * @param {boolean} expectHook
+ * @param {string[]} [required]
  * @returns {{ ok: boolean; message: string }}
  */
-export const checkE2EHook = (chunks, expectHook) => {
-    const withMarker = chunks.filter((c) => c.code.includes(E2E_HOOK_MARKER)).map((c) => c.fileName);
+export const checkE2EHook = (chunks, expectHook, required = E2E_REQUIRED_MARKERS) => {
     const state = expectHook ? 'present' : 'absent';
-    if (!expectHook && withMarker.length > 0) {
-        return { ok: false, message: `e2e hook leaked into the production bundle (${E2E_HOOK_MARKER} in ${withMarker.join(', ')})` };
-    }
-    if (expectHook && withMarker.length === 0) {
-        return { ok: false, message: `E2E_HOOK=1 but ${E2E_HOOK_MARKER} is in no chunk: the hook was dropped from the e2e build` };
+    if (!expectHook) {
+        for (const marker of E2E_HOOK_MARKERS) {
+            const files = chunks.filter((c) => c.code.includes(marker)).map((c) => c.fileName);
+            if (files.length > 0) {
+                return { ok: false, message: `e2e hook leaked into the production bundle (${marker} in ${files.join(', ')})` };
+            }
+        }
+    } else {
+        for (const marker of required) {
+            if (!chunks.some((c) => c.code.includes(marker))) {
+                return { ok: false, message: `E2E_HOOK=1 but ${marker} is in no chunk: the hook was dropped from the e2e build` };
+            }
+        }
     }
     return { ok: true, message: `e2e hook: ${state} (${chunks.length} chunks checked)` };
 };
