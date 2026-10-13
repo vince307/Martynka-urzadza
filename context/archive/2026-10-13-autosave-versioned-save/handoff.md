@@ -1,17 +1,17 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by the visual-gate step of run 2026-10-13-s09-s11. Visual gate is done: VISUAL: PASS, plan row 5.6 ticked, and no production code changed in this step. The full e2e ran green on `9be4701`, which is the final code commit. Do not edit `tests/fixtures/save-v1*.json` (they are frozen).
+Written by the visual-gate step of run 2026-10-13-s09-s11; final pre-merge state written by the ship step (archive + ship). Visual gate is done: VISUAL: PASS, plan row 5.6 ticked, and no production code changed in this step. The full e2e ran green on `9be4701`, which is the final code commit. Do not edit `tests/fixtures/save-v1*.json` (they are frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | p1-p7 (`7cf32a4` .. `a403b21`), fix `b59e247`, review `9be4701`, and this step's `docs(autosave-versioned-save): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
+| Commits | p1-p7 (`7cf32a4` .. `a403b21`), fix `b59e247`, review `9be4701`, visual gate `dacc1e5`, archive `docs(autosave-versioned-save): archiwizacja` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s09-s11/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-10-13-autosave-versioned-save/`) |
 | `## Progress` rows remaining | 7, all [human]: 4.6, 5.7, 5.8, 6.6, 6.7, 6.8, 6.9 (5.6 [visual] ticked in this step) |
-| Roadmap | S-11 `planning` (unchanged; archive/ship updates it) |
+| Roadmap | S-11 `done` (At a glance, item, `## Done`); Backlog Handoff: S-11 Done, S-12 ready for `/10x-plan` |
 | Working tree | clean after the commit; `dist-e2e/` (gitignored) left by the build |
 
 ## 2. Artifacts
@@ -37,7 +37,7 @@ Written by the visual-gate step of run 2026-10-13-s09-s11. Visual gate is done: 
 
 ## 4. Next command
 
-`/10x-archive autosave-versioned-save then ship`
+none — shipped
 
 ## 5. Open
 
