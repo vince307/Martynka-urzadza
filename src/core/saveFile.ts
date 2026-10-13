@@ -25,7 +25,7 @@ export interface SaveSummary {
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const text = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 
-/** Pretty JSON of the envelope; a raw value that cannot be serialised falls back to String(); never throws. */
+/** Pretty JSON of the envelope; a raw value that cannot be serialised falls back to String(). Throws only for a save that is not serialisable (encodeSave never builds one). */
 export function exportFileText(input: ExportInput): string {
     try {
         return JSON.stringify({ app: SAVE_FILE_APP, ...input }, null, 2);

@@ -98,7 +98,7 @@ export const pl = {
         exportOutcome: {
             shared: 'Kopia została przekazana wybranej aplikacji.',
             downloaded: 'Plik został pobrany na to urządzenie.',
-            cancelled: 'Anulowano. Nic nie zostało zapisane.',
+            cancelled: 'Anulowano. Kopia nie powstała.',
             failed: 'Nie udało się zapisać pliku. Spróbuj jeszcze raz.',
         },
         fileName: (date: string) => `martynka-zapis-${date}.txt`,
@@ -106,7 +106,7 @@ export const pl = {
         importButton: 'Wczytaj z pliku',
         importTitle: 'Wczytaj zapis z pliku',
         importBody: 'Wczytanie zastąpi obecne postępy na tym urządzeniu.',
-        importPrivacy: 'Wybierz plik zapisany z tej gry. Plik nie jest nigdzie wysyłany.',
+        importPrivacy: 'Wybierz kopię zapisu z tej gry. Plik nie jest nigdzie wysyłany.',
         choose: 'Wybierz plik',
         chooseOther: 'Wybierz inny plik',
         now: 'Teraz',
@@ -121,7 +121,7 @@ export const pl = {
             'not-ours': 'To nie jest plik zapisu tej gry. Obecne postępy zostały bez zmian.',
             corrupt: 'Plik zapisu jest uszkodzony. Obecne postępy zostały bez zmian.',
             future: 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę i spróbuj ponownie. Obecne postępy zostały bez zmian.',
-            'unknown-version': 'Nie rozpoznaję wersji tego zapisu. Obecne postępy zostały bez zmian.',
+            'unknown-version': 'Nie można rozpoznać wersji tego zapisu. Obecne postępy zostały bez zmian.',
         },
         applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
         // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.
