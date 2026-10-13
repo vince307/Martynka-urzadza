@@ -1,0 +1,89 @@
+// Room purchase logic (S-09 phase 1, test-plan risk #16). Oracle: FR-016/US-02
+// AC: stars are spent once, only on confirm, never below 0; a refused purchase
+// changes nothing. The test room is written out here, not read from data.
+import { describe, expect, it } from 'vitest';
+import { currentTask, emptyRoomState, nextTaskCost, purchase, taskButtonView } from '../src/core/rooms';
+import type { RoomDef, RoomState } from '../src/core/types';
+
+const room: RoomDef = {
+    id: 'test',
+    name: 'Test',
+    background: 'bg',
+    slots: [
+        { id: 'floor', x: 0, y: 0, depth: 1, variants: ['a', 'b', 'c'] },
+        { id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] },
+    ],
+    tasks: [
+        { id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
+        { id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
+    ],
+};
+
+const deepFreeze = <T extends object>(o: T): T => {
+    for (const v of Object.values(o) as unknown[]) {
+        if (typeof v === 'object' && v !== null) deepFreeze(v);
+    }
+    return Object.freeze(o);
+};
+
+describe('current task', () => {
+    it('starts empty and points at the first task', () => {
+        const s = emptyRoomState();
+        expect(s.tasksDone).toBe(0);
+        expect(s.chosen).toEqual({});
+        expect(currentTask(room, s)?.id).toBe('t1');
+        expect(nextTaskCost(room, s)).toBe(5);
+    });
+    it('advances with tasksDone and is null after the last task', () => {
+        expect(currentTask(room, { tasksDone: 1, chosen: {} })?.id).toBe('t2');
+        expect(nextTaskCost(room, { tasksDone: 1, chosen: {} })).toBe(8);
+        expect(currentTask(room, { tasksDone: 2, chosen: {} })).toBeNull();
+        expect(nextTaskCost(room, { tasksDone: 2, chosen: {} })).toBeNull();
+        expect(taskButtonView(room, { tasksDone: 2, chosen: {} }, 99)).toBeNull();
+    });
+});
+
+describe('taskButtonView', () => {
+    const s = emptyRoomState();
+    it('is not affordable one star short and shows have/need', () => {
+        expect(taskButtonView(room, s, 4)).toMatchObject({ taskId: 't1', label: 'fixFloor', cost: 5, affordable: false, have: 4, need: 5 });
+    });
+    it('is affordable at exactly the cost', () => {
+        expect(taskButtonView(room, s, 5)).toMatchObject({ affordable: true, have: 5, need: 5 });
+    });
+    it('clamps have to the cost when the balance is larger', () => {
+        expect(taskButtonView(room, s, 6)).toMatchObject({ affordable: true, have: 5, need: 5 });
+    });
+});
+
+describe('purchase', () => {
+    it('with exactly the cost buys down to 0, advances one task and stores the variant', () => {
+        const r = purchase(room, emptyRoomState(), 5, 2);
+        expect(r.ok).toBe(true);
+        if (!r.ok) return;
+        expect(r.stars).toBe(0);
+        expect(r.state.tasksDone).toBe(1);
+        expect(r.state.chosen).toEqual({ floor: 2 });
+        expect(r.bought).toEqual({ taskId: 't1', slot: 'floor', variant: 2 });
+    });
+    it('one star short is refused and nothing changes', () => {
+        const s = deepFreeze(emptyRoomState());
+        expect(purchase(room, s, 4, 0)).toEqual({ ok: false, reason: 'short' });
+        expect(s).toEqual({ tasksDone: 0, chosen: {} });
+    });
+    it('refuses variants outside 0..2 and non-integers', () => {
+        for (const v of [-1, 3, 1.5, Number.NaN]) {
+            expect(purchase(room, emptyRoomState(), 50, v)).toEqual({ ok: false, reason: 'bad-variant' });
+        }
+    });
+    it('after the last task there is nothing to buy', () => {
+        expect(purchase(room, { tasksDone: 2, chosen: {} }, 50, 0)).toEqual({ ok: false, reason: 'no-task' });
+    });
+    it('does not mutate its arguments and keeps earlier choices', () => {
+        const s: RoomState = deepFreeze({ tasksDone: 1, chosen: { floor: 1 } });
+        const r = purchase(room, s, 10, 0);
+        expect(r.ok && r.state.chosen).toEqual({ floor: 1, sofa: 0 });
+        expect(r.ok && r.stars).toBe(2);
+        expect(s).toEqual({ tasksDone: 1, chosen: { floor: 1 } });
+    });
+});
