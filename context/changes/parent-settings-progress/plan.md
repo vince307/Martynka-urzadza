@@ -922,7 +922,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 #### Manual
 
 - [x] 7.5 [reviewer] Odczyt nauczyciela `pl.settings` (tytuł, nagłówek i przyciski auto-czytania) — 4388673 (impl-review teacher read: titles fine)
-- [ ] 7.6 [visual] Zrzuty: zadanie z ikoną, pokój z ikoną, bramka nad zadaniem, panel ustawień — 1440×900 i 1024×768
+- [x] 7.6 [visual] Zrzuty: zadanie z ikoną, pokój z ikoną, bramka nad zadaniem, panel ustawień — 1440×900 i 1024×768 — 9167fb1 (orchestrator visual gate 2026-10-13: task/room icon, gate, panel empty/1/many at 1440×900 and 1024×768; sticky-bar fix)
 
 ### Phase 8: Podgląd postępów w panelu
 
@@ -935,7 +935,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 #### Manual
 
 - [x] 8.4 [reviewer] Odczyt nauczyciela napisów podglądu (`progressHeading`, `currentStep`, `weakestHeading`, `mastery`, `example`, `empty`) z realnymi poleceniami — 4388673 (impl-review teacher read with real E1/E3/E5 examples; „poprawnie:” → „poprawna:”)
-- [ ] 8.5 [visual] Zrzuty podglądu: pusty, 1 pozycja, 3 pozycje z długim poleceniem — 1440×900 i 1024×768; „Zatwierdź”/„Anuluj” widoczne bez przewijania
+- [x] 8.5 [visual] Zrzuty podglądu: pusty, 1 pozycja, 3 pozycje z długim poleceniem — 1440×900 i 1024×768; „Zatwierdź”/„Anuluj” widoczne bez przewijania — 9167fb1 (orchestrator visual gate 2026-10-13: task/room icon, gate, panel empty/1/many at 1440×900 and 1024×768; sticky-bar fix)
 
 ### Phase 9: Seam sweep, luki projektu, follow-upy i dokumentacja
 

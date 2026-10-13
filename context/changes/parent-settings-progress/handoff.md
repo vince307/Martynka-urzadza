@@ -44,7 +44,7 @@ follow-ups. Next agent: the visual rows 7.6 and 8.5 are still open; the example 
 
 ## 4. Next command
 
-visual gate (orchestrator), then /10x-archive parent-settings-progress
+/10x-archive parent-settings-progress
 
 ## 5. Open
 
