@@ -682,10 +682,10 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [ ] 6.1 Spec `error-boundary` zielony; pełne e2e `<baseline gałęzi e2e> + 4`
-- [ ] 6.2 Deliberate break: bez listenera `unhandledrejection` → test startu czerwony (albo zapis nośnika); przywrócone
-- [ ] 6.3 Druga przerwa: `isFatalSignal` zawsze `true` (wariant sklejki: `hasError` zawsze `true`) → test szumu czerwony; przywrócone; meta-check
-- [ ] 6.4 Build `e2e hook: absent`; znaczniki e2e nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 6.1 Spec `error-boundary` zielony; pełne e2e `<baseline gałęzi e2e> + 4` — b672e74 (spec 4/4, suite 22 = 18 + 4, orchestrator run)
+- [x] 6.2 Deliberate break: bez listenera `unhandledrejection` → test startu czerwony (albo zapis nośnika); przywrócone — b672e74 (break a red at error-boundary.spec:42, restored)
+- [x] 6.3 Druga przerwa: `isFatalSignal` zawsze `true` (wariant sklejki: `hasError` zawsze `true`) → test szumu czerwony; przywrócone; meta-check — b672e74 (break b red at spec:66 + unit errorSignal 4 red, restored)
+- [x] 6.4 Build `e2e hook: absent`; znaczniki e2e nieobecne w `dist/`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — b672e74 (build e2e hook absent, dist grep clean; orchestrator gate)
 
 ### Phase 7: Linia o braku polskiego głosu w panelu — e2e (#14 proposed)
 
