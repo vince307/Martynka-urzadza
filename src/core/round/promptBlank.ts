@@ -38,3 +38,68 @@ export const layoutPieces = (
     });
     return { placed, width: total };
 };
+
+export type PromptLine = { placed: PlacedPiece[]; width: number };
+
+/**
+ * Word-wraps a sentence prompt that contains "□" into lines of text phrases and boxes, each line centred on
+ * x = 0. Text between boxes stays one phrase (measured whole); a box glued to punctuation ("□?") has no gap.
+ * `maxWidth` is measured with the same callbacks, so the scene never needs the font's own wrapping here.
+ */
+export const wrapBlankLines = (
+    prompt: string,
+    textWidth: (text: string) => number,
+    blankWidth: number,
+    spaceWidth: number,
+    maxWidth: number,
+): PromptLine[] => {
+    const words = prompt.split(/\s+/u).filter((w) => w !== '');
+    const widthOf = (word: string): number =>
+        word.split(BLANK).reduce((sum, part, i, all) => sum + (part === '' ? 0 : textWidth(part)) + (i < all.length - 1 ? blankWidth : 0), 0);
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let rowWidth = 0;
+    for (const word of words) {
+        const w = widthOf(word);
+        if (row.length > 0 && rowWidth + spaceWidth + w > maxWidth) {
+            rows.push(row);
+            row = [];
+        }
+        rowWidth = row.length === 0 ? w : rowWidth + spaceWidth + w;
+        row.push(word);
+    }
+    if (row.length > 0) {
+        rows.push(row);
+    }
+    return rows.map((rowWords) => {
+        const items: { piece: PromptPiece; gap: number }[] = [];
+        rowWords.forEach((word, wi) => {
+            let gap = wi === 0 ? 0 : spaceWidth;
+            word.split(BLANK).forEach((part, i, all) => {
+                if (part !== '') {
+                    const last = items[items.length - 1];
+                    if (i === 0 && wi > 0 && last && last.piece.kind === 'text') {
+                        last.piece = { kind: 'text', text: `${last.piece.text} ${part}` };   // plain words share one phrase
+                    } else {
+                        items.push({ piece: { kind: 'text', text: part }, gap: i === 0 ? gap : 0 });
+                    }
+                    gap = 0;
+                }
+                if (i < all.length - 1) {
+                    items.push({ piece: { kind: 'blank' }, gap: i === 0 ? gap : 0 });
+                    gap = 0;
+                }
+            });
+        });
+        const widths = items.map(({ piece }) => (piece.kind === 'blank' ? blankWidth : textWidth(piece.text)));
+        const total = widths.reduce((a, b) => a + b, 0) + items.reduce((a, it, i) => a + (i === 0 ? 0 : it.gap), 0);
+        let left = -total / 2;
+        const placed = items.map((it, i) => {
+            left += i === 0 ? 0 : it.gap;
+            const p = { piece: it.piece, left, width: widths[i] };
+            left += widths[i];
+            return p;
+        });
+        return { placed, width: total };
+    });
+};

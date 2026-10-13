@@ -4,7 +4,7 @@ import { createRng, type Rng } from '../core/rng';
 import type { StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
-import { layoutPieces, splitBlanks } from '../core/round/promptBlank';
+import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { defaultAutoRead } from '../core/narration/voice';
 import { buildRound } from '../core/round/pick';
@@ -244,6 +244,8 @@ export class TaskScene extends Scene {
                     .setOrigin(0.5),
             );
             this.drawExpression(task.prompt, expression, color);
+        } else if (task.prompt.includes(BLANK)) {
+            this.drawSentence(task.prompt, sentence, color);
         } else {
             this.promptTexts.push(
                 this.add
@@ -255,6 +257,32 @@ export class TaskScene extends Scene {
                     .setOrigin(0.5, 0),
             );
         }
+    }
+
+    /** A sentence prompt with "□": wrapped by core into lines of text phrases and outlined boxes (top edge at `at.y`). */
+    private drawSentence(text: string, at: { x: number; y: number; maxWidth: number }, color: string): void {
+        const blank = TASK_LAYOUT.blankInline;
+        const style = textStyle('prompt', color);
+        const measure = (t: string): number => {
+            const m = this.add.text(0, 0, t, style).setVisible(false);
+            const w = m.width;
+            m.destroy();
+            return w;
+        };
+        const space = measure('a a') - measure('aa');
+        wrapBlankLines(text, measure, blank.width, space, at.maxWidth).forEach(({ placed }, row) => {
+            const y = at.y + blank.lineHeight * row + blank.lineHeight / 2;
+            placed.forEach(({ piece, left, width }) => {
+                if (piece.kind === 'text') {
+                    this.promptTexts.push(this.add.text(at.x + left, y, piece.text, style).setOrigin(0, 0.5));
+                } else {
+                    const box = this.add.graphics({ x: at.x + left + width / 2, y });
+                    box.lineStyle(blank.lineWidth, parseInt(color.slice(1), 16), 1);
+                    box.strokeRoundedRect(-width / 2, -blank.height / 2, width, blank.height, blank.radius);
+                    this.promptBoxes.push(box);
+                }
+            });
+        });
     }
 
     /** The expression centred on `at`; each "□" becomes an outlined box the size of a digit. */
