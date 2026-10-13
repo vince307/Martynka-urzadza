@@ -32,7 +32,11 @@ export function slotAt(
     return best?.id ?? null;
 }
 
-/** A point (grid of `step` px inside the slot rectangle) where `slotAt` returns this slot; null if none. */
+/**
+ * A point (grid of `step` px inside the slot rectangle) where `slotAt` returns this slot with a margin of `step / 2`
+ * on every side; null if none. The margin matters: a real touch on the scaled canvas lands a pixel or so off the asked
+ * point (520 game px is 346.67 page px at 1280 wide), so a point on the slot's edge can miss it.
+ */
 export function holdPoint(
     room: RoomDef, sizes: SlotSizes, chosen: Readonly<Record<string, number>>, slotId: string, step = 20,
 ): Point | null {
@@ -40,9 +44,13 @@ export function holdPoint(
     const size = sizes[slotId];
     if (!slot || !size || chosen[slotId] === undefined) return null;
     const box = slotBox(slot, size);
+    const m = step / 2;
+    const near = [-m, 0, m];
+    const clear = (x: number, y: number): boolean =>
+        near.every((dx) => near.every((dy) => slotAt(room, sizes, chosen, { x: x + dx, y: y + dy }) === slotId));
     for (let y = box.top; y <= box.bottom; y += step) {
         for (let x = box.left; x <= box.right; x += step) {
-            if (slotAt(room, sizes, chosen, { x, y }) === slotId) return { x, y };
+            if (clear(x, y)) return { x, y };
         }
     }
     return null;

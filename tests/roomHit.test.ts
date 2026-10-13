@@ -55,6 +55,28 @@ describe('holdPoint', () => {
             expect(slotAt(SALON, sizes, all, p!), s.id).toBe(s.id);
         }
     });
+    // A real touch lands within a pixel or so of the asked point (the canvas is scaled, 1080 / 720 = 1.5 game px per
+    // page px, and 520 / 1.5 rounds): a point on the slot's edge misses it. Phase-7 e2e: the floor alone bought gave
+    // (180, 520), the hold read 519.99 and opened nothing.
+    const shifts = [-2, 0, 2];
+    const robust = (chosen: Record<string, number>, id: string) => {
+        const p = holdPoint(SALON, sizes, chosen, id);
+        expect(p, id).not.toBeNull();
+        for (const dx of shifts) {
+            for (const dy of shifts) {
+                expect(slotAt(SALON, sizes, chosen, { x: p!.x + dx, y: p!.y + dy }), `${id} at ${p!.x + dx},${p!.y + dy}`).toBe(id);
+            }
+        }
+    };
+    it('keeps a margin from the edge: the floor alone bought (phase-7 e2e case)', () => {
+        robust({ floor: 0 }, 'floor');
+    });
+    it('keeps a margin from the edge for every slot, each bought alone and all bought', () => {
+        for (const s of SALON.slots) {
+            robust({ [s.id]: 0 }, s.id);
+            robust(all, s.id);
+        }
+    });
     it('is null for an unfurnished slot', () => {
         expect(holdPoint(SALON, sizes, {}, 'sofa')).toBeNull();
     });
