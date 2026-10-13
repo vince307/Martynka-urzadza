@@ -691,6 +691,6 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [ ] 7.1 Test H-6 w `parent-settings` zielony; pełne e2e `<baseline gałęzi e2e> + 1`
-- [ ] 7.2 Deliberate break: `UIScene` bez `watchVoice` → test H-6 czerwony; przywrócone; meta-check
-- [ ] 7.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 7.1 Test H-6 w `parent-settings` zielony; pełne e2e `<baseline gałęzi e2e> + 1` — d6211e1 (parent-settings 4/4, suite 23 = 22 + 1; break (UIScene without watchVoice) red at spec:178, unit 972 green; full gate green (orchestrator gate))
+- [x] 7.2 Deliberate break: `UIScene` bez `watchVoice` → test H-6 czerwony; przywrócone; meta-check — d6211e1 (parent-settings 4/4, suite 23 = 22 + 1; break (UIScene without watchVoice) red at spec:178, unit 972 green; full gate green (orchestrator gate))
+- [x] 7.3 Pełna bramka lokalna zielona; serwery 4397/4398 zabite — d6211e1 (parent-settings 4/4, suite 23 = 22 + 1; break (UIScene without watchVoice) red at spec:178, unit 972 green; full gate green (orchestrator gate))
