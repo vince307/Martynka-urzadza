@@ -5,7 +5,7 @@ import type { Adaptation, LearnerState, Settings, StageId } from './types';
 /** What placement decides: age and stage (S-06). */
 export type PlacedLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
 
-/** The learner as the running game needs it (placement + adaptation state); S-11 will persist it. */
+/** The learner as the running game needs it (placement + adaptation state); the save keeps it (core/save, S-11). */
 export type SessionLearner = PlacedLearner & Adaptation & { pendingUnlock: number | null };
 
 export type Band = 'autumn' | 'spring' | 'summer';
@@ -53,7 +53,7 @@ export function needsPlacement(learner: PlacedLearner | null): boolean {
     return learner === null;
 }
 
-/** Session settings before the parent chose anything (S-08; S-11 will persist them). */
+/** Session settings before the parent chose anything (S-08; the save keeps them once chosen, S-11). */
 export function initialSettings(): Settings {
     return { autoRead: null };
 }

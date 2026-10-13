@@ -8,6 +8,7 @@ const isAbort = (error: unknown): boolean => typeof error === 'object' && error 
  * (iPad, Android), otherwise a download. Cancelling the sheet is silent; any other failure is logged and the
  * card stays. Never throws.
  */
+// DESIGN-GAP 44 (docs/design-gaps.md): the kit does not say how a parent keeps a copy; a .txt through the share sheet first.
 export const exportRawSave = async (raw: unknown, nav: Navigator = navigator, doc: Document = document): Promise<void> => {
     try {
         const file = new File([rawExportText(raw)], pl.saveFailed.fileName, { type: 'text/plain' });

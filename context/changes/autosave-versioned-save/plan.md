@@ -819,7 +819,7 @@ zapisu, karta z eksportem.
 - [x] 5.1 `e2eSave.test.ts` i przypadek strażnika czerwone przed implementacją, zielone po; unit baseline + N — 00998c0
 - [x] 5.2 `npm run build` drukuje `e2e hook: absent`; build `E2E_HOOK=1` przechodzi z `e2eSave` w wymaganych markerach — 00998c0
 - [x] 5.3 Deliberate break `e2eSave(...)` bez `__E2E_HOOK__` → `npm run build` czerwony; przywrócone; meta-check — 00998c0
-- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; pełna bramka lokalna zielona — 00998c0 (e2e: orchestrator gate)
+- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; pełna bramka lokalna zielona — 00998c0 (e2e: orchestrator run on bd71eeb, 26 passed)
 
 #### Manual
 
@@ -832,10 +832,10 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 6.1 `validate-rule-files.sh` PASS
-- [ ] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check
-- [ ] 6.3 `grep "S-11" src/` bez nieaktualnych zapowiedzi
-- [ ] 6.4 Pełna bramka lokalna zielona; unit baseline + 0
+- [x] 6.1 `validate-rule-files.sh` PASS — @@
+- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check — @@
+- [x] 6.3 `grep "S-11" src/` bez nieaktualnych zapowiedzi — @@
+- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 — @@
 
 #### Manual
 

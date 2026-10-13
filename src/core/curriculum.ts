@@ -1,7 +1,7 @@
 // Where learning starts (S-07, rule D): the first unlocked step of a stage is a floor taken from the school calendar,
 // so a child is neither dropped at step 1 of a stage the class is half through nor handed the whole stage with nothing
 // left to unlock. Pure: the month is an argument, there is no Date here.
-// After S-11 (persistence) the same call gives the floor as max(saved step, calendarStart).
+// For a loaded save the same call gives the floor, and the session takes max(saved step, calendarStart) per stage (floorToCalendar, S-11).
 import { proposeStage, STAGE_ORDER, type PlacementData, type SessionLearner } from './placement';
 import type { Rng } from './rng';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
