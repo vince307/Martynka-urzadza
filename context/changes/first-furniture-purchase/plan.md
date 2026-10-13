@@ -244,8 +244,9 @@ Reduktor panelu nad `purchase` z fazy 1: jedyna droga, którą scena wydaje gwia
 **Intent**: stan `closed` | `open(taskId, preview: 0|1|2|null)`; zdarzenia `open`, `pick(variant)`, `confirm`, `close`.
 `open` tylko przy istniejącym i opłacalnym zadaniu (inaczej bez zmian — scena kieruje wtedy do zadań); `pick` tylko w
 `open`, nadpisuje podgląd; `confirm` w `open` z podglądem → `purchase`; sukces zamyka panel i zwraca nowy stan pokoju,
-saldo i `bought`; brak podglądu lub odmowa zakupu → bez zmian; `close` → `closed`, nic nie odejmuje. Każde zdarzenie w
-`closed` poza `open` → bez zmian.
+saldo i `bought`; brak podglądu lub odmowa zakupu → bez zmian; `confirm` (i `pick`) przy `panel.taskId` różnym od
+`currentTask(room, state)?.id` (panel nieaktualny: zadanie już kupione) → `closed` bez zakupu; `close` → `closed`, nic
+nie odejmuje. Każde zdarzenie w `closed` poza `open` → bez zmian.
 
 **Contract**: `stepPanel(panel: PanelState, event: PanelEvent, ctx: { room: RoomDef; state: RoomState; stars: number }): { panel: PanelState; state: RoomState; stars: number; bought: Bought | null }` — `state`/`stars` identyczne (`===`) z wejściem, gdy `bought === null`.
 
@@ -254,7 +255,8 @@ saldo i `bought`; brak podglądu lub odmowa zakupu → bez zmian; `close` → `c
 **File**: `tests/variantPanel.test.ts` (nowy)
 
 **Intent**: przypadki z Overview; `confirm` ×2 → jeden zakup; `open` przy saldzie koszt − 1 → `closed`, saldo bez zmian;
-`pick` w `closed` ignorowany; po ostatnim zadaniu `open` ignorowany. Własnościowy (seeded `src/core/rng.ts`, 20 ziaren × 200
+`pick` w `closed` ignorowany; po ostatnim zadaniu `open` ignorowany; `confirm` na nieaktualnym panelu (`open` z `taskId`
+pierwszego zadania po jego zakupie, saldo wystarczające na drugie) → `closed`, saldo i `tasksDone` bez zmian. Własnościowy (seeded `src/core/rng.ts`, 20 ziaren × 200
 zdarzeń, saldo startowe 0–120, losowe `earn` między zdarzeniami): saldo ≥ 0 zawsze; `start + zarobki − koniec = suma
 kosztów kupionych zadań`; `tasksDone` rośnie o 1 dokładnie przy `bought !== null`; `bought` tylko po `confirm`;
 niepowodzenie wypisuje ziarno.
@@ -372,7 +374,11 @@ krótki = wyblakły (`pageButtonSecondary`, alfa), etykieta + gwiazdka + „masz
 na `wake` i `changedata-stars`; krótki tap → `scene.switch(task)` (jak „Wróć do notesu”). Narracja: na `create`/`wake`
 `REGISTRY_KEYS.narration` = etykieta bieżącego zadania albo `null` (głośnik HUD ją czyta; `TaskScene.onWake` nadpisuje po
 powrocie). Usunąć `pl.room.caption`, `ROOM_LAYOUT.caption`, stary turkusowy panel. `ROOM_TOUCH_TARGETS` (`resume`,
-`taskButton`) — `TASK_TOUCH_TARGETS.resume` przenosi się tam. Komentarz klasy opisuje nowy pokój.
+`taskButton`) — `TASK_TOUCH_TARGETS.resume` przenosi się tam. Komentarz klasy opisuje nowy pokój. Usunięcie
+`ROOM_LAYOUT.panel` łamie dwa istniejące testy w `tests/layout.test.ts` („keeps the parent settings icon … outside the
+notebook and the room panel” i „keeps the room placeholder's way back a touch target inside the room panel”): pierwszy
+sprawdza zębatkę względem `ROOM_LAYOUT.area` (prawa krawędź ≤ `settings.left`), drugi zastępuje test `ROOM_TOUCH_TARGETS`
+niżej — ochrona „stuknięcie w pokój nigdy nie trafia w zębatkę” zostaje.
 
 #### 4. Hak
 
@@ -386,7 +392,7 @@ Typy `Snapshot`/`Targets` dostają pola opcjonalne.
 
 #### Automated Verification:
 
-- `tests/layout.test.ts`: każdy wpis `ROOM_TOUCH_TARGETS` ≥ `MIN_TOUCH_TARGET`; `resume` i `taskButton` w scenie, bez nakładania się na siebie, na zębatkę (`HUD_LAYOUT.settings`) i na licznik/głośnik; unit `<baseline gałęzi> + N`
+- `tests/layout.test.ts`: każdy wpis `ROOM_TOUCH_TARGETS` ≥ `MIN_TOUCH_TARGET`; `resume` i `taskButton` w scenie, bez nakładania się na siebie, na zębatkę (`HUD_LAYOUT.settings`) i na licznik/głośnik; dwa istniejące testy z `ROOM_LAYOUT.panel` przepisane na `ROOM_LAYOUT.area` / `ROOM_TOUCH_TARGETS` (nie usunięte); unit `<baseline gałęzi> + N`
 - Deliberate break: `taskButton.left` = 1700 (nachodzi na zębatkę) → test układu czerwony; przywrócone; meta-check: test chroni rozłączność celów dotyku, nie wygląd
 - `grep -rn "caption" src/data/pl.ts src/scenes/RoomScene.ts` bez `room.caption`; `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`; `task-round.spec.ts` nadal trafia „Wróć do notesu” przez `targets.resume`)
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
@@ -546,7 +552,9 @@ nothing”: `silenceSpeech`, `passWelcome` (rodzic, E1 — bez rozgrzewki). Pier
 rozwiązania (dwie złe odpowiedzi → rozwiązanie → retype płaci 0, `src/core/round.ts`) → faza `done`, `stars === 0`,
 `roomSwitch` widoczny → „Do pokoju” → `snapshot.room.affordable === false`, `buttonText` zawiera `masz 0/5` → stuknięcie
 `taskButton` → `screen === 'task'`, `stars === 0`. Dokończenie rundy i jedna czysta runda (`playRound` wzorcem
-`task-round.spec.ts`) → `S = stars ≥ 5`, `summary.roomHighlighted === true` → „Do pokoju” → `taskButton` →
+`task-round.spec.ts`; między rundami `screen === 'unlock'` → `unlockNext`, bo karta „Nowa umiejętność!” może wypaść) aż
+`S = stars ≥ koszt 1. + koszt 2. zadania` (5 + 6 z `SALON.tasks`, asercja warunku wstępnego wprost — inaczej podwójne
+stuknięcie nie miałoby czym kupić drugi raz i test przeszedłby pusto), `summary.roomHighlighted === true` → „Do pokoju” → `taskButton` →
 `panel.kind === 'open'`, `stars === S` (otwarcie nic nie odejmuje) → `close` → `stars === S`, `tasksDone === 0` →
 `taskButton` → `choose` bez podglądu → `stars === S`, panel otwarty → `thumbs[1]` → `panel.preview === 1`, `stars === S`
 → dwa szybkie stuknięcia `choose` → `stars === S - 5`, `tasksDone === 1`, `chosen.floor === 1`, `panel.kind ===
@@ -563,7 +571,7 @@ Chromium niedostępny w sesji agenta → plik `context/runs/2026-10-13-s09-s11/e
 #### Automated Verification:
 
 - `npx playwright test tests/e2e/room-purchase.spec.ts` zielony (1 passed); pełne `npx playwright test`: `<baseline gałęzi e2e> + 1` passed
-- Deliberate break (patch tylko na kodzie produkcyjnym, REGUŁA): `RoomScene` woła `stepPanel` z `confirm` bez zapisania zamkniętego panelu (scena trzyma stary `open`) → drugie stuknięcie kupuje drugi raz → test czerwony na `stars === S - 5` / `tasksDone === 1`; przywrócone; meta-check: unit `variantPanel.test.ts` zielony — e2e dowodzi szwu sceny
+- Deliberate break (patch tylko na kodzie produkcyjnym, REGUŁA): obsługa „Wybieram” w `RoomScene` omija `stepPanel` i woła `purchase(room, state, stars, preview)` wprost przy każdym stuknięciu (panel nie zamyka się przed drugim) → drugie szybkie stuknięcie kupuje drugie zadanie (saldo S ≥ 11 to umożliwia) → test czerwony na `stars === S - 5` / `tasksDone === 1`; przywrócone; meta-check: unit `variantPanel.test.ts` zielony — e2e dowodzi szwu sceny (sam „nieaktualny panel” nie wystarczy jako break: reduktor z fazy 3 odrzuca `confirm` na nieaktualnym panelu)
 - Druga przerwa (patch, REGUŁA): `RoomScene` zapisuje saldo przy `pick` (odjęcie przy podglądzie) → test czerwony na `stars === S` po wyborze miniatury; przywrócone; meta-check: unit zielony (szew sceny)
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite po przebiegu
 
@@ -607,6 +615,10 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 - **Chromium w sesji agenta** (`MachPortRendezvous`): fazy 4–6 oddają e2e orkiestratorowi, faza 8 pisze `e2e-request-p8.md` z patchami przerw.
 - **Saldo w rejestrze vs istniejące specy**: faza 4 nie zmienia asercji `starsTotal`; czerwony spec po fazie 4 = błąd szwu, nie spec do poprawienia.
 - **Pas dolny przy 1024×768**: przycisk zadania 720 px z długą etykietą („Postaw kwiatek” + gwiazdka + „masz 12/13”) — tekst skalowany do szerokości (wzorzec `PageButton`), sprawdza bramka wizualna faz 5–6.
+- **Pusty test podwójnego stuknięcia (plan-review F1)**: e2e #16 dowodzi „dwa stuknięcia = jeden zakup” tylko przy saldzie
+  wystarczającym na dwa zadania; spec gra rundy do `S ≥ koszt1 + koszt2` i asertuje ten warunek, zanim stuknie dwa razy.
+- **Nieaktualny panel (plan-review F2)**: reduktor odrzuca `confirm`/`pick` na panelu otwartym dla już kupionego zadania;
+  to także chroni S-10 (zmiana wariantu użyje tego samego panelu).
 - **Miniatury bez grafiki**: warianty różnią się kolorem i wzorem, nie kształtem mebla; dziecko może nie rozpoznać, co wybiera, zanim przyjdzie grafika (S-16) — podgląd w pokoju to łagodzi.
 
 ## References
@@ -709,7 +721,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [ ] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; unit baseline + N
+- [ ] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; testy `ROOM_LAYOUT.panel` przepisane; unit baseline + N
 - [ ] 5.2 Deliberate break przycisk zadania na zębatce → czerwony; przywrócone; meta-check
 - [ ] 5.3 `room.caption` usunięte; `npx playwright test` zielony, baseline e2e + 0
 - [ ] 5.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
@@ -755,6 +767,6 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 #### Automated
 
 - [ ] 8.1 `room-purchase.spec.ts` zielony; pełne `npx playwright test` baseline e2e + 1
-- [ ] 8.2 Deliberate break scena nie zamyka panelu po zakupie → czerwony; przywrócone; meta-check
+- [ ] 8.2 Deliberate break scena omija `stepPanel` i woła `purchase` przy każdym „Wybieram” → czerwony; przywrócone; meta-check
 - [ ] 8.3 Druga przerwa: odjęcie przy wyborze miniatury → czerwony; przywrócone; meta-check
 - [ ] 8.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite
