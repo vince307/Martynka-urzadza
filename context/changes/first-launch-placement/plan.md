@@ -724,8 +724,8 @@ bez przekształceń.
 #### Automated
 
 - [x] 4.1 `tests/layout.test.ts` obejmuje `WELCOME_TOUCH_TARGETS`; unit `<baseline gałęzi> + N` — a51338d (761 → 764, +3)
-- [ ] 4.2 Deliberate break: przycisk wieku 90 px → test układu czerwony; `BootScene` zawsze do `task` → e2e czerwony; przywrócone; meta-check
-- [ ] 4.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`, `grep -rl e2eMonth dist/` pusty
+- [x] 4.2 Deliberate break: przycisk wieku 90 px → test układu czerwony; `BootScene` zawsze do `task` → e2e czerwony; przywrócone; meta-check — a51338d (unit: `expected 90 to be greater than or equal to 96`; e2e: orchestrator, run-log "S-06 p4 impl", `Expected: "welcome" / Received: undefined` at tests/e2e/support/welcome.ts:34, restored)
+- [x] 4.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`, `grep -rl e2eMonth dist/` pusty — a51338d (orchestrator: e2e 8/8, grep empty, run-log "S-06 p4 impl")
 - [x] 4.4 `grep -rn defaultStage src/` pusty — a51338d
 - [x] 4.5 Pełna bramka lokalna zielona — a51338d (e2e: orchestrator gate)
 
@@ -738,10 +738,10 @@ bez przekształceń.
 
 #### Automated
 
-- [ ] 5.1 Test układu obejmuje „Rodzic”; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: „Rodzic” 90 px → czerwony; przywrócone; meta-check (wejście pod nakładką → e2e fazy 9)
+- [x] 5.1 Test układu obejmuje „Rodzic”; unit `<baseline gałęzi> + N` — 012867b (764 → 765, +1)
+- [x] 5.2 Deliberate break: „Rodzic” 90 px → czerwony; przywrócone; meta-check (wejście pod nakładką → e2e fazy 9) — 012867b
 - [ ] 5.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`)
-- [ ] 5.4 Pełna bramka lokalna zielona
+- [x] 5.4 Pełna bramka lokalna zielona — 012867b (e2e: orchestrator gate)
 
 #### Manual
 
