@@ -58,7 +58,8 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-10  | variant-change-room-done    | M4   | dziecko zmienia wariant za darmo, widzi „Pokój gotowy!” i robi poprawki           | S-09                 | FR-018, FR-019                  | done |
 | S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | done     |
 | S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | done     |
-| S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | proposed |
+| S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | planning |
+| S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | proposed |
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | proposed |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | proposed |
 | S-16  | final-art-sound             | M7   | dziecko widzi docelową grafikę salonu i ekranów E3–E4, animacje, słyszy dźwięki   | S-14, S-15           | FR-026                          | blocked  |
@@ -74,7 +75,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | B      | Zadania i gwiazdki (M1–M2)   | `F-03` → `S-02` → `S-03` → `S-04` → `S-05`     | Joins Stream A at `S-01`. Inwestycja w `core/` (generatory, runda); E3–E4 najpierw (market-feedback). |
 | C      | Etap i adaptacja (M3)        | `S-06` → `S-07` → `S-08`                       | Joins Stream B at `S-05`. `S-06` ∥ `S-07`; `S-08` je spina.           |
 | D      | Pokój i zapis (M4–M5)        | `S-09` → `S-10` → `S-11` → `S-12`              | Joins Stream C at `S-08`. Zawiera gwiazdę przewodnią `S-09`.          |
-| E      | Rysunki, grafika, testy (M6–M8) | `S-13` → `S-14` → `S-15` → `S-16` → `S-17`  | Joins Stream D at `S-12`. `S-13` ∥ `S-15`; `S-16` zablokowany grafiką mebli. |
+| E      | Rysunki, grafika, testy (M6–M8) | `S-13` → `S-13b` → `S-14` → `S-15` → `S-16` → `S-17`  | Joins Stream D at `S-12`. `S-13` ∥ `S-15`; `S-16` zablokowany grafiką mebli. |
 
 ## Baseline
 
@@ -293,6 +294,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** największy etap planu (M6); E3–E4 najpierw, żeby córka zobaczyła nowe typy zadań, zanim powstaną wszystkie; pierwsze tryby odpowiedzi „drag” i „select”.
+- **Status:** planning
+
+### S-13b: Zadania na siatce i „ustaw zegar” dla E3–E4
+
+- **Outcome:** dziecko rozwiązuje kwadrat magiczny (E3.5), zadania na siatce z kodowaniem pól (E3.7) i obwody figur na siatce (E4.7) oraz ustawia zegar przeciąganiem wskazówek (CLOCK, E3–E4).
+- **Change ID:** drawn-grid-tasks-e3-e4
+- **PRD refs:** FR-023 (grupa 2, E3–E4)
+- **Prerequisites:** S-13
+- **Parallel with:** S-15
+- **Blockers:** —
+- **Unknowns:** gest kątowy wskazówek na tablecie (przyciąganie do 5 minut).
+- **Risk:** wydzielone z S-13 (plan `context/changes/drawn-widget-tasks-e3-e4/plan.md`, decyzja autonomiczna 1): PUZZLE_GRID, GRID i PERIMETER dzielą jeden widżet siatki (`square-grid.svg`), „ustaw zegar” to drugi typ `drag`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania tych kroków.
 - **Status:** proposed
 
 ### S-14: Zadania z grafiką i pełny zestaw typów dla wszystkich etapów
@@ -366,7 +379,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-10       | variant-change-room-done    | M4: zmiana wariantu, „Pokój gotowy!”                    | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-variant-change-room-done/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s09-s11. Darmowa zmiana wariantu po przytrzymaniu urządzonego slotu (600 ms / 40 px, `balance.roomHold`) i w trybie „Zmień wygląd” po ukończeniu pokoju, karta „Pokój gotowy!” po ostatnim zakupie, lista pokoi (salon + zapowiedź „Wkrótce”); follow-upy S-09 `Trigger: S-10` (przytrzymanie, F4 `pl.room.name`, F5 rzutowania, V1 podpisy) zamknięte; V2 „pop” dywanu nad kanapą i V3 znikające podpisy → S-16. Szew `?e2eStars` tylko w buildzie z hookiem (strażnik w `vite/e2eHookGuard.mjs`). Otwarte wiersze [human] 3.5, 6.6–6.9 (szew e2eStars, próg przytrzymania, UX trybu/karty/listy z V4/V5, kopia „Zmień wygląd” vs FR-019 „poprawki”, urządzenia) — lista kontrolna po runie |
 | S-11       | autosave-versioned-save     | M5: autozapis i wersjonowany zapis                      | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-autosave-versioned-save/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s09-s11. Format zapisu v1 (jednokierunkowy na urządzeniach dzieci) w IndexedDB przez `idb-keyval` (`src/storage/idb.ts`), dekoder z łańcuchem migracji w `src/core/save.ts`, autozapis 500 ms + ukrycie karty, natychmiast po zakupie i końcu rundy; nieczytelny lub nowszy zapis nigdy nie jest nadpisywany (karta z eksportem kopii). Follow-upy S-06/S-07/S-08/S-09/S-10 `Trigger: S-11` zamknięte. Otwarte wiersze [human] 4.6, 5.7, 5.8, 6.6 (akceptacja kształtu v1 vs plan §5), 6.7, 6.8, 6.9 — lista kontrolna po runie. Nowe follow-upy (`context/archive/2026-10-13-autosave-versioned-save/follow-ups/review-fixes.md`): migracja v2 + e2e na dwóch buildach (ryzyko #10) + dwie instancje jednego originu (`Trigger: first save-format change (v2)`), F3–F5, odświeżenie test-planu (faza 4) i profilu runu |
 | S-12       | save-export-import-reset    | M5: eksport, import, reset                              | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-save-export-import-reset/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. Eksport kopii (`.txt` z kopertą JSON: aplikacja, build, powód) dopiero po potwierdzeniu, import po walidacji i podsumowaniu „Teraz / Z pliku” (gwiazdki, etap, pokój), reset z potwierdzeniem; format zapisu nadal v1 (bez migracji). Zamknięte: follow-upy S-11/S-08 `Trigger: S-12` oraz audyt 2026-10-13_1751 M-S3, L-S2, N-8, M-S2 (N-7 poza zakresem). Otwarte wiersze [human] 4.7, 5.6, 6.8 (`.txt` wbrew literze FR-022), 6.9, 6.10 — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-13-save-export-import-reset/follow-ups/review-fixes.md`): import/reset nad nieczytelnym zapisem (F1, `Trigger: first save-format change (v2) or the first deploy rollback across a save version, or the next change to saveImportDialog.ts / saveResetDialog.ts`), dwie karty jednego originu i L-S1 (`Trigger: first save-format change (v2)`), N-7 (pomiar iPada), import z ekranu powitalnego. Do sprawdzenia: podgląd postępów pokazał „Krok 8 z 8” dla E3 po jednej rundzie (nie kod S-12) |
-| S-13       | drawn-widget-tasks-e3-e4    | M6: widżety rysowane w kodzie dla E3–E4                 | yes                   | ∥ S-15. S-12 done (Prerequisites spełnione); run `/10x-plan drawn-widget-tasks-e3-e4` |
+| S-13       | drawn-widget-tasks-e3-e4    | M6: widżety rysowane w kodzie dla E3–E4                 | yes                   | ∥ S-15. Planning — plan `context/changes/drawn-widget-tasks-e3-e4/plan.md` (9 faz); zakres zawężony: siatka, obwód, „ustaw zegar” → S-13b |
+| S-13b      | drawn-grid-tasks-e3-e4      | M6: siatka, kwadrat magiczny, obwód, „ustaw zegar”      | no                    | Po S-13 (wydzielone z S-13 przy planie, 2026-10-13) |
 | S-14       | art-tasks-all-stages        | M6: zadania z grafiką, pełny zestaw typów               | no                    | Po S-13. Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): „tryb z obrazkami” dla 6-latków pominięty (design-gaps wiersz 21) |
 | S-15       | minigame-daily-puzzle       | M6: minigra i zagadka dnia                              | yes                   | ∥ S-13. S-12 done (Prerequisites spełnione); przed planem rozstrzygnąć Open Roadmap Question 2 (które minigry, mnożnik zagadki dnia) |
 | S-16       | final-art-sound             | M7: docelowa grafika i dźwięk                           | no                    | Zablokowane grafiką mebli. Z S-07 (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`): książka na karcie „Nowa umiejętność!” to placeholder z kodu (DESIGN-GAP 22), ` = ?` po wyrażeniu w poleceniu |
