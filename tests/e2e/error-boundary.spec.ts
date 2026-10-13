@@ -52,7 +52,7 @@ test('#15 (proposed) an exception in the parent settings callback shows the card
     await panel.getByRole('button', { name: pl.parent.confirm, exact: true }).tap();
 
     await expect(card(page)).toBeVisible();
-    await expect(page.getByRole('dialog', { name: 'Ustawienia rodzica' })).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: pl.settings.title })).toHaveCount(0);
 });
 
 test('#15 (proposed) browser noise does not show the card', async ({ page }) => {
