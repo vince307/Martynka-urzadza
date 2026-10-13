@@ -6,14 +6,13 @@ import { createAutosaver, loadSave, type Autosaver } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { repairCurrentRoom } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
-import type { SessionSave } from './core/save';
+import { freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
-import { initialSettings } from './core/placement';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
@@ -22,7 +21,6 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { emptyRoomState } from './core/rooms';
 import { E2E_LOAD_TIMEOUT_MS, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
@@ -111,13 +109,6 @@ installErrorBoundary(window, () => {
     // The state at the moment of an exception is uncertain: never save it (a bad save would bring the card back at every start).
     attempt(() => booted.saver?.block('fatal'));
 });
-const freshSession = (stars: number): SessionSave => ({
-    stars,
-    rooms: { [FIRST_ROOM]: emptyRoomState() },
-    currentRoom: FIRST_ROOM,
-    settings: initialSettings(),
-    learner: null,
-});
 
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
@@ -174,7 +165,7 @@ const start = async (): Promise<void> => {
     } else {
         // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
-        session = freshSession(seeded ?? 0);
+        session = freshSession(FIRST_ROOM, seeded ?? 0);
         if (outcome.kind === 'unreadable') {
             console.warn(`Save unreadable (${outcome.reason}); playing without saving this session`);
         }

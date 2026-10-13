@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createAutosaver, errorName, loadSave, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
-import { decodeSave, type SessionSave } from '../src/core/save';
+import { decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
@@ -399,5 +399,111 @@ describe('autosave health status (audit C-2, M-S5)', () => {
         expect(errorName('boom')).toBe('Error');
         expect(errorName(undefined)).toBe('Error');
         expect(errorName({ name: '' })).toBe('Error');
+    });
+});
+
+describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save is not overwritten by the old game', () => {
+    it('waits for a write in flight, then writes the given state after it', async () => {
+        const t = setup();
+        t.state.hold = true;
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        t.state.hold = false; // the replace write itself is instant: only waiting for the held snapshot keeps the order
+        const result = t.saver.replace(encodeSave(session(77)));
+        await settle();
+        t.release();
+        expect(await result).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([1, 77]);
+    });
+
+    it('turns every later write off after a success', async () => {
+        const t = setup();
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        t.set(9);
+        t.saver.markDirty();
+        t.clock.advance(1000);
+        await t.saver.flush('hidden');
+        await t.saver.flush('now');
+        expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
+        expect(t.saver.status().skipped).toBeGreaterThan(0);
+        expect(t.saver.status().replace).toBe('done');
+    });
+
+    it('after a failed write reports the error name and autosave resumes with the snapshot', async () => {
+        const t = setup();
+        t.state.fail = true;
+        const result = await t.saver.replace(encodeSave(session(5)));
+        expect(result.ok).toBe(false);
+        expect(result.ok === false && result.error).toBe('Error');
+        expect(t.saver.status().replace).toBe('idle');
+        expect(t.saver.status().failures).toBe(1);
+        t.state.fail = false;
+        t.set(3);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.state.writes.map((w) => w.stars)).toEqual([3]);
+    });
+
+    it('names a thrown QuotaExceededError', async () => {
+        const saver = createAutosaver({
+            store: { read: () => Promise.resolve(undefined), write: () => Promise.reject(Object.assign(new Error('q'), { name: 'QuotaExceededError' })) },
+            snapshot: () => session(1),
+            timers: makeClock().timers,
+            delayMs: 500,
+            load: 'fresh',
+            blockedBy: null,
+            now: () => 0,
+            log: () => undefined,
+        });
+        expect(await saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'QuotaExceededError' });
+    });
+
+    it('a failed replace of a dirty game lets the debounce timer write the snapshot without a flush', async () => {
+        const t = setup();
+        t.saver.markDirty();
+        t.state.fail = true;
+        const result = await t.saver.replace(encodeSave(session(5)));
+        expect(result.ok).toBe(false);
+        t.state.fail = false;
+        t.set(8);
+        t.clock.advance(500);
+        await settle();
+        expect(t.state.writes.map((w) => w.stars)).toEqual([8]);
+    });
+
+    it('refuses when fatal, writes nothing', async () => {
+        const t = setup({ blockedBy: 'fatal' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+    });
+
+    it('works on an unreadable save (the way out)', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
+    });
+
+    it('refuses an invalid state without writing', async () => {
+        const t = setup();
+        expect(await t.saver.replace({ version: 1 } as unknown as SaveState)).toEqual({ ok: false, error: 'InvalidSave' });
+        expect(t.state.writes).toEqual([]);
+    });
+
+    it('a second replace, in flight or after success, is Busy and writes once', async () => {
+        const t = setup();
+        t.state.hold = true;
+        const first = t.saver.replace(encodeSave(session(5)));
+        expect(await t.saver.replace(encodeSave(session(6)))).toEqual({ ok: false, error: 'Busy' });
+        t.state.hold = false;
+        t.release();
+        expect(await first).toEqual({ ok: true });
+        expect(await t.saver.replace(encodeSave(session(7)))).toEqual({ ok: false, error: 'Busy' });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
+    });
+
+    it('current() is the encoded snapshot', () => {
+        const t = setup();
+        expect(t.saver.current()).toEqual(encodeSave(session(1)));
     });
 });

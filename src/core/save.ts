@@ -2,7 +2,8 @@
 // The save is ONE object under one key, so an interrupted write leaves the previous save whole.
 // Version 1 is a one-way door: it ships to children's devices. A change to the shape adds a version, a migration step
 // in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
-import { STAGE_ORDER, type SessionLearner } from './placement';
+import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
+import { emptyRoomState } from './rooms';
 import type { RoomState, SaveState, SavedLearner, Settings, StageId } from './types';
 
 export const SAVE_VERSION = 1;
@@ -169,4 +170,9 @@ export function rawExportText(raw: unknown): string {
     } catch {
         return String(raw);
     }
+}
+
+/** The empty game of a first launch and of a reset; the caller names the first room (core does not import data). */
+export function freshSession(firstRoom: string, stars = 0): SessionSave {
+    return { stars, rooms: { [firstRoom]: emptyRoomState() }, currentRoom: firstRoom, settings: initialSettings(), learner: null };
 }

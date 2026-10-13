@@ -36,6 +36,8 @@ export interface AutosaveStatus {
     /** Name of the last write or read error (never a message); stays after a later success. */
     lastError: string | null;
     lastWriteAt: number | null;
+    /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
+    replace: 'idle' | 'writing' | 'done';
 }
 
 export interface AutosaverOptions {
@@ -51,8 +53,12 @@ export interface AutosaverOptions {
     onFirstWrite?: () => void;
 }
 
+export type ReplaceResult = { ok: true } | { ok: false; error: string };
+
 export interface Autosaver {
     markDirty(): void;
+    replace(state: SaveState): Promise<ReplaceResult>;
+    current(): SaveState;
     flush(reason: 'now' | 'hidden'): Promise<void>;
     block(reason: BlockReason): void;
     status(): AutosaveStatus;
@@ -108,6 +114,10 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let skipped = 0;
     let lastReason: WriteReason | null = null;
     let firstDone = false;
+    let replacing = false;
+    let replaced = false;
+    // One predicate for every write path: a block, a replace in progress, or a replaced save (until the page reloads).
+    const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
     const cancelTimer = (): void => {
         if (timer !== null) timers.clearTimeout(timer);
@@ -145,7 +155,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     };
 
     const save = (reason: WriteReason): Promise<void> => {
-        if (blockedBy !== null) {
+        if (writesOff()) {
             skipped++;
             return Promise.resolve();
         }
@@ -160,7 +170,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             while (next !== null) {
                 rerun = null;
                 const ok = await attempt(next);
-                next = ok && dirty && blockedBy === null ? (rerun ?? null) : null;
+                next = ok && dirty && !writesOff() ? (rerun ?? null) : null;
             }
         })();
         inflight = run.finally(() => {
@@ -169,20 +179,52 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         return inflight;
     };
 
+    const arm = (): void => {
+        cancelTimer();
+        timer = timers.setTimeout(() => {
+            timer = null;
+            void save('change');
+        }, delayMs);
+    };
+
+    const replace = async (state: SaveState): Promise<ReplaceResult> => {
+        if (replacing || replaced) return { ok: false, error: 'Busy' };
+        if (blockedBy === 'fatal') return { ok: false, error: 'Blocked' };
+        if (!validateSave(state)) return { ok: false, error: 'InvalidSave' };
+        replacing = true;
+        cancelTimer();
+        try {
+            await inflight;
+            await store.write(state);
+        } catch (e) {
+            replacing = false;
+            failures++;
+            consecutiveFailures++;
+            lastError = errorName(e);
+            log('autosave: replace failed', e);
+            if (dirty) arm();
+            return { ok: false, error: lastError };
+        }
+        replacing = false;
+        replaced = true;
+        writes++;
+        lastWriteAt = options.now();
+        consecutiveFailures = 0;
+        return { ok: true };
+    };
+
     return {
         markDirty: () => {
             dirty = true;
-            if (blockedBy !== null) {
+            if (writesOff()) {
                 skipped++;
                 return;
             }
-            cancelTimer();
-            timer = timers.setTimeout(() => {
-                timer = null;
-                void save('change');
-            }, delayMs);
+            arm();
         },
         flush: (reason) => save(reason),
+        replace,
+        current: () => encodeSave(snapshot()),
         block: (reason) => {
             blockedBy ??= reason;
             cancelTimer();
@@ -199,6 +241,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastReason,
             lastError,
             lastWriteAt,
+            replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };
 }

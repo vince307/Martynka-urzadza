@@ -7,7 +7,7 @@ import { endRound } from '../src/core/curriculum';
 import { placeByChild, type SessionLearner } from '../src/core/placement';
 import type { SkillResult } from '../src/core/mastery';
 import { purchase } from '../src/core/rooms';
-import { DEFAULT_PROFILE, SAVE_VERSION, decodeSave, encodeSave, rawExportText, validateSave, type SessionSave } from '../src/core/save';
+import { DEFAULT_PROFILE, SAVE_VERSION, decodeSave, encodeSave, freshSession, rawExportText, validateSave, type SessionSave } from '../src/core/save';
 import { startLearning } from '../src/core/curriculum';
 import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -241,4 +241,19 @@ describe('the v1 format did not change (save-observability-c1-c2)', () => {
             for (const key of ['blockedBy', 'lastError', 'lastWriteAt', 'consecutiveFailures']) expect(key in asRecord(encoded)).toBe(false);
         });
     }
+});
+
+describe('freshSession (S-12): the one empty game, used by first launch and by reset', () => {
+    it('is a valid, empty, playable save in the given room', () => {
+        const fresh = freshSession('salon');
+        expect(fresh.stars).toBe(0);
+        expect(fresh.learner).toBeNull();
+        expect(fresh.currentRoom).toBe('salon');
+        expect(Object.keys(fresh.rooms)).toEqual(['salon']);
+        expect(validateSave(encodeSave(fresh))).toBe(true);
+    });
+
+    it('carries seeded stars', () => {
+        expect(freshSession('salon', 12).stars).toBe(12);
+    });
 });
