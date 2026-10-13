@@ -1,19 +1,18 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the `/10x-new` step: the change folder exists with `change.md` (identity, roadmap corrections, full
-remaining-steps inventory, scope split, assets weight, triggered follow-ups, decisions); no code yet. The next agent
-must not plan the whole "full set per stage": S-14 is narrowed to pack A art (money, scale, jugs, thermometer, icons)
-plus data-only reuse of S-13 widgets (change.md `## Autonomous decisions` 1); written column, graphs, number line,
-text-only types and E1.1 are proposed as S-14b/S-14c/S-14d.
+Written by the `/10x-research` step: `research.md` settles the first raster load, the WebP pipeline, answer modes,
+MONEY_PAY, curriculum/test effects, e2e runtime, nouns and the save format; no code yet. The next agent must not
+plan MONEY_PAY into S-14 (research decision 1: dropped, follow-up) and must not plan any new answer mode — every new
+skill is tiles or keypad so the e2e helpers stay untouched.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | 1 on top of `bb00d7f`: `docs(art-tasks-all-stages): change identity (autonomous run)` |
+| Commits | 2 on top of `bb00d7f`: change identity, `docs(art-tasks-all-stages): research` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
 | Working tree | clean after the commit |
 
@@ -21,7 +20,8 @@ text-only types and E1.1 are proposed as S-14b/S-14c/S-14d.
 
 | Path | What it is |
 |---|---|
-| `context/changes/art-tasks-all-stages/change.md` | Change identity: roadmap claim vs repo table, steps × missing types × widget/art × answer mode for E1–E6, S-14 scope (types, steps, widgets, exact kit files, `public/assets/` names), proposed S-14b/S-14c/S-14d, design-kit bindings and DESIGN-GAP candidates (rows from 59), assets weight (WebP measured), migration verdict (none), triggered follow-ups, 7 autonomous decisions |
+| `context/changes/art-tasks-all-stages/research.md` | Research: 11 findings sections, code references by symbol, 4 autonomous decisions, proposed 9 phases for `/10x-plan`, open questions |
+| `context/changes/art-tasks-all-stages/change.md` | Frontmatter only: `status: new → preparing`, `updated` |
 | `context/changes/art-tasks-all-stages/handoff.md` | This handoff |
 
 ## 3. Verification
@@ -29,59 +29,52 @@ text-only types and E1.1 are proposed as S-14b/S-14c/S-14d.
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `git merge-base HEAD main` | `bb00d7f` (observed) |
-| inventory script over `src/data/curriculum/E1.ts`–`E6.ts` (step `types` minus skill types, `node --import tsx`) | 63 steps, 10 without skills, 37 with a missing type, 32 distinct missing types (observed; tabled in change.md) |
-| `cwebp -q 85 -alpha_q 90 -resize ½` over `designs/martynka-maths-A-v1/assets/{money,measuring}/*.png` (scratchpad output, not committed) | 31 files → 331 204 bytes WebP vs ≈ 9.9 MB PNG (observed) |
-| `grep -n "Trigger:" context/archive/*/follow-ups/review-fixes.md` filtered for S-14/money/scale/thermometer/number line/written/picture | 10 entries, all tabled in change.md (observed) |
+| `which cwebp` / `cwebp -version` | `/usr/local/bin/cwebp`, 1.1.0 (observed by a research worker) |
+| same `cwebp` command twice on one kit PNG (scratchpad) | identical SHA (observed by a research worker) |
+| throwaway `node --import tsx` script in the scratchpad: dummy skill in E1.8, E1.10, E2.2, E2.8, E5.5, `calendarStart` for every age × month | start-step shifts tabled in research § 7 (observed by a research worker; nothing written in the repo) |
+| spot checks in main context: `vite/config.shared.mjs` `globPatterns` has `webp`; `src/main.ts` no `mipmapFilter`; E1 tiles-only header + `tests/generateTask.test.ts` pin; `validate.ts` `NEGATIVE_NUMBER`/`NUMBER_WORD`; `plural.ts` `pluralCategory` throws on negatives | confirmed (observed) |
 | lint / typecheck / unit / build / e2e | not run: docs-only step, no code changed (baseline on main bb00d7f per contract: unit 1482 passed, e2e 42 passed — inherited, unverified) |
 
 No deliberate break: nothing testable was changed.
 
 ## 4. Next command
 
-`/10x-research art-tasks-all-stages`
+`/10x-plan art-tasks-all-stages`
 
 ## 5. Open
 
-- Research questions (from change.md): first raster loading in `src/scenes/BootScene.ts` (`preload`) and precache proof
-  (`vite/config.shared.mjs` `globPatterns`, `tests/e2e/seed.spec.ts`); asset conversion script in `scripts/` (model
-  `scripts/make-icons.mjs`; `cwebp` at `/usr/local/bin`, not a dependency); new `TaskVisual` kinds in
-  `src/core/tasks/visual.ts` (`visualKey`, `validateVisual`, `describeVisual`) and where denominations/weights/ml live
-  (core vs `src/data/`, boundary rule); generalising `src/core/blockDrag.ts` (`BlockKind`) and
-  `src/core/round/dragLayout.ts` for MONEY_PAY without breaking `E4.1.place_build_100` / `adaptive.spec.ts`;
-  O2 keypad-solution picture rect (`TASK_LAYOUT.picture.keypadSolution` in `src/data/layout.ts`, `pictureLayout`);
-  tiles vs keypad for negative temperatures and zł+gr amounts (`src/core/round/keypad.ts` has no `−`/`,`);
-  `reference/thermometer-face.js` mapping into Phaser Graphics; effect of 5 newly playable steps (E1.8, E1.10, E2.2,
-  E2.8, E5.5) on `src/core/curriculum.ts` (`calendarStart`, `floorToCalendar`, `skillBuckets`) and warm-up.
-- Proposed roadmap items not yet written: S-14b `number-line-written-arrows`, S-14c `text-measure-time-types`,
-  S-14d `e1-shapes-picture-mode`, and S-13b widened with PERIMETER E5.12/E6.3 — the plan step (or `/10x-roadmap`)
-  records them.
-- Profile drift for the orchestrator: `context/foundation/autonomous-run.md` § 10 lists `public/assets` as absent until
-  S-16; S-14 creates it (agents do not edit the profile).
-- Plan § 10 says money "PNG"; S-14 ships WebP (decision 3) — candidate [human] checklist row.
-- Missing nouns if icons enter prompts: `lampa`, `klucz`, `kłębek`, `czajniczek`, plus measure nouns (`dzbanek`,
-  `odważnik`, `litr`, `kilogram`, `dekagram`, `stopień`) in `src/data/nouns.ts`.
-- DESIGN-GAP candidates (not yet in `docs/design-gaps.md`): wallet drop target, money table layout, item on a pan /
-  level-only scale, missing gram/5 dag/tonne weights, other vessels, plates for MULT_GROUPS, negative temperature input,
-  keypad-solution picture (rev. rows 52/57).
-- Triggered follow-ups in scope: O2, `pictureLayout` select/drag overlap, three `Rect` types, `pointerupoutside`
-  (if drag wiring changes). Out (re-trigger at archive): number line → S-14b; BONDS pairs / CHOOSE_OP picture and
-  picture mode → S-14d; hint highlight → "S-16 or a teacher read"; mat regrouping → "a child stuck on E4.8".
+- Plan inputs (research § "Proposed S-14 phases"): P1 core visual kinds + money format + validator negative allowance
+  and string-answer leak check (`src/core/tasks/validate.ts` `validateTask`, `src/core/round/hints.ts` `leaksAnswer`) +
+  unified `Rect`; P2 assets (`scripts/make-task-art.mjs`, `public/assets/tasks/**`, `src/data/taskArt.ts`,
+  `BootScene.preload`, seed offline assertion); P3 money; P4 mass; P5 capacity; P6 temperature + O2 layout; P7
+  COUNT/MULT_GROUPS; P8 S-13 widget data + curriculum test pins; P9 e2e + visual gate.
+- **Seed gap:** `tests/e2e/seed.spec.ts` passes even if an asset is not precached (`requestfailed` not collected) —
+  P2 must add the assertion (e2e request-file protocol).
+- **O2 triggered:** `TASK_LAYOUT.picture.keypadSolution` (`src/data/layout.ts`) gives a thermometer 63×190 px —
+  picture-left layout needed (`src/core/round/pictureLayout.ts` `pictureLayout`); this also fires the "three Rect
+  types" follow-up.
+- Tests to update (research § 8): `tests/curriculumStart.test.ts` `ORACLE` + `playableSteps`,
+  `tests/curriculumPick.test.ts` (E5 step 5 fallback), `tests/curriculumEnd.test.ts` (E2.1 pin, E5 4→6),
+  `tests/progress.test.ts` (E5 step 5), `tests/curriculum.test.ts` (five `childName`s).
+- Follow-up to file at plan/archive: MONEY_PAY (generic `stepBlockDrag`, wallet layout, `Wallet`, drag-variant
+  dispatch, `tests/e2e/support/hook.ts` branches) → S-14d or its own slice.
+- Nouns to add with accusative if used in prompts (`src/data/nouns.ts`): litr, kilogram, dekagram, stopień, moneta,
+  banknot, odważnik, dzbanek, lampa, klucz, kłębek, czajniczek; decimals only as abbreviations on screen.
+- Carried from the previous handoff: profile § 10 `public/assets` row goes stale (orchestrator); plan § 10 "PNG" vs
+  WebP and loose files vs atlas → [human] checklist row; DESIGN-GAP candidates listed in `change.md`.
 - ARTIFACT GAP: none.
 
 ## 6. Autonomous decisions
 
-1. Scope split — S-14 = pack A art types (MONEY_COUNT, MONEY_CHANGE, MONEY_PAY, MASS at balance, CAPACITY,
-   TEMPERATURE, COUNT, MULT_GROUPS) + data for S-13 widgets in E1/E2/E5/E6; the rest → proposed S-14b/c/d and S-13b.
-   Rejected the full set (~25–30 phases) and money-only. Reverses if research finds widgets smaller (pull in top S-14c
-   text types) or MONEY_PAY too risky (move it out).
-2. MONEY_PAY kept but first to cut. Reverses if generalising `blockDrag` endangers E4.8 / `adaptive.spec`.
-3. Assets as script-generated WebP at half resolution, committed, no atlas (331 KB vs ≈ 10 MB). Reverses if the
-   visual gate shows blur on a DPR-2 tablet (then full resolution, still WebP).
-4. MASS drawn only at balance; heavier/lighter, grams, 5 dag, tonne, gross/net/tare as text (S-14c), never invented
-   art. Reverses if the maintainer supplies a separate beam/pans or gram weights.
-5. Negative temperatures and zł+gr amounts answered with tiles; `Keypad` unchanged. Reverses if research finds tiles
-   too guessable for E5/E6.
-6. No save migration (mastery keyed by skill id; `validateSave` checks shape only). Reverses if gesture state or amounts
-   had to be saved — rejected.
-7. Next step `/10x-research` (fixed by the orchestrator; warranted by the unknowns above).
+1. MONEY_PAY dropped from S-14 (follow-up). Rejected: generic reducer + wallet in S-14. Why: new layout, widget,
+   drag-variant dispatch, hook targets/helpers and a non-number input — ≈ 2 phases and a risk to every spec using
+   `answerRight`. Would change: phase budget left after P1–P9 or a maintainer request.
+2. String tiles for negative temperatures and zł+gr amounts; number tiles in E1; keypad from E3 for whole units;
+   `Keypad` unchanged (confirms change.md decision 5). Would change: a teacher read finds tiles too guessable in E5/E6.
+3. Asset pipeline = local `cwebp` script, committed outputs, sizes ≤ 2× display (≈ 0.5 MB). Would change: the
+   maintainer wants CI to regenerate art (WASM encoder dependency).
+4. Missing image is non-fatal with a drawn fallback (`textures.exists`). Would change: a decision to make missing art
+   a build/test failure.
+5. Scope split S-14b/c/d confirmed; S-14 = 9 phases. If tight, cut next: E5.5 ¼ l/¼ kg extras, then E6.1 differences.
+   Would change: the plan sizing a phase larger than ~2 UI components.
+6. Research ran without `AskUserQuestion` (contract rule 1); scope came from `change.md`.
