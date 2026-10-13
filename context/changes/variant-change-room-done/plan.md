@@ -688,9 +688,9 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [x] 1.1 `roomHit.test.ts`, `roomGesture.test.ts` i nowe przypadki `variantPanel`/`rooms` czerwone przed implementacją (asercja), zielone po; unit baseline + N
-- [x] 1.2 Deliberate break `confirm` zmiany woła `purchase` / `slotAt` z najniższym `depth` / `roomGesture` otwiera na `up` poza trybem → czerwone; przywrócone; meta-check
-- [x] 1.3 `npm run lint` bez naruszeń granic; pełna bramka lokalna zielona
+- [x] 1.1 `roomHit.test.ts`, `roomGesture.test.ts` i nowe przypadki `variantPanel`/`rooms` czerwone przed implementacją (asercja), zielone po; unit baseline + N — 20808c9
+- [x] 1.2 Deliberate break `confirm` zmiany woła `purchase` / `slotAt` z najniższym `depth` / `roomGesture` otwiera na `up` poza trybem → czerwone; przywrócone; meta-check — 20808c9
+- [x] 1.3 `npm run lint` bez naruszeń granic; pełna bramka lokalna zielona — 20808c9 (e2e: orchestrator gate)
 
 ### Phase 2: Lista pokoi z odblokowaniem w danych, próg przytrzymania, kotwice podpisów i napisy
 
