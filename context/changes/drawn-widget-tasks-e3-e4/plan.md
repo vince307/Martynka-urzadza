@@ -1023,7 +1023,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Manual
 
-- [ ] 4.4 [visual] Zrzuty: tarcza (pełna godzina, 7.45), tarcza z podpowiedzią, tarcza z krokami obok, linijka cm nie od zera, linijka mm, linijka z krokami — 1440×900 i 1024×768
+- [x] 4.4 [visual] Zrzuty: tarcza (pełna godzina, 7.45), tarcza z podpowiedzią, tarcza z krokami obok, linijka cm nie od zera, linijka mm, linijka z krokami — 1440×900 i 1024×768 — `screenshots/` 01–11 (7.45 → captured 9.45 on desktop; the forced round draws a random time), `reviews/visual-review.md`; fix `26a25df` (cm label)
 - [x] 4.5 [reviewer] Widżety bez tekstów i liczb balansu; `TaskPicture` w `hideTaskLayer` — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 4.6 [human] Decyzja wbrew podpisowi kitu „3:30”: czasy zapisane kropką wg ZADANIA („15.00”, „7.30”)
 
@@ -1052,7 +1052,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Manual
 
 - [x] 6.7 [reviewer] Odczyt nauczyciela `sample` E3/E4 `--count 6` dla E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8 — impl-review 2026-10-14 (reviews/impl-review.md)
-- [ ] 6.8 [visual] Zrzuty: klocki (E3.6, E4.8), diagram `most` i `diff`, diagram z krokami, karta „Nowa umiejętność!” E3.3 (i zegar/linijka, jeśli 4.4 ich nie ma) — 1440×900 i 1024×768
+- [x] 6.8 [visual] Zrzuty: klocki (E3.6, E4.8), diagram `most` i `diff`, diagram z krokami, karta „Nowa umiejętność!” E3.3 (i zegar/linijka, jeśli 4.4 ich nie ma) — 1440×900 i 1024×768 — `screenshots/` 12–16, 30; unlock card captured for E4.3 („Zegar: minuty i kwadrans”), not E3.3 (no route to an E3.3 unlock: see visual-review); fix `26a25df` (prompt over the chart)
 - [ ] 6.9 [human] Decyzja wbrew literze roadmapy S-13: bez osi, słupka pisemnego, grafów, figur; grid/obwód/„ustaw zegar” → S-13b; DATA w zakresie
 
 ### Phase 7: Tryb `select` — zaznaczanie kafelków, helpery e2e i szew `?e2eSkills`
@@ -1067,7 +1067,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Manual
 
 - [x] 7.5 [reviewer] Odczyt nauczyciela `selectEven` w E1.6 i E3.7; `answerWrong` dla `select` niezależny od kolejności — impl-review 2026-10-14 (reviews/impl-review.md)
-- [ ] 7.6 [visual] Zrzuty: `select` przed, z dwoma zaznaczonymi, po złym zbiorze, w krokach, w `retype` — 1440×900 i 1024×768
+- [x] 7.6 [visual] Zrzuty: `select` przed, z dwoma zaznaczonymi, po złym zbiorze, w krokach, w `retype` — 1440×900 i 1024×768 — `screenshots/` 17–21
 
 ### Phase 8: Reduktor przeciągania klocków w `core`
 
@@ -1094,7 +1094,7 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 #### Manual
 
 - [x] 9.6 [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1 — impl-review 2026-10-14 (reviews/impl-review.md)
-- [ ] 9.7 [visual] Zrzuty: `drag` start, klocek w locie, po upuszczeniu na matę, po upuszczeniu poza matą, podpowiedź, kroki obok maty, podsumowanie po zadaniu z rysunkiem — 1440×900 i 1024×768
+- [x] 9.7 [visual] Zrzuty: `drag` start, klocek w locie, po upuszczeniu na matę, po upuszczeniu poza matą, podpowiedź, kroki obok maty, podsumowanie po zadaniu z rysunkiem — 1440×900 i 1024×768 — `screenshots/` 22–29; fix `26a25df` (tray rod margin)
 - [ ] 9.8 [human] Prawdziwy tablet (iPad, Android): odczucie przeciągania, krawędź maty, stuknięcia, gest systemowy; `select` bez przypadkowych stuknięć
 
 ### Phase 10: Dokumentacja, follow-upy i seam sweep

@@ -29,3 +29,10 @@ Each item has a `Trigger:` line; later slices grep for it.
 - Learners saved on E3.6, E4.1 or E4.8 see those steps grow from 1-2 to 3-4 skills, so unlocking needs `ceil(0.5·n)` mastered skills (slower, nothing lost). Trigger: S-13 PR body (mention it)
 - `clock_read_half` / `clock_read_quarter` also draw full hours (half / a quarter of the time); `h24` says "po południu" also for 18.00-23.00 ("wieczorem"). Trigger: [human] row 10.7 text acceptance
 - Three identical rectangle types (`dragLayout` `Rect`, `pictureLayout` `PictureRect`, `ui/widgets/geometry` `Rect`). Trigger: next change to dragLayout or pictureLayout
+
+## From the visual gate (2026-10-14, `reviews/visual-review.md`)
+
+- O1: base-ten reading wraps the ones into a second row under the rods/flat (28 shows 3 cubes beside the rods and 5 under them); counts are right but the ones do not read as one group. `src/ui/widgets/BaseTenBlocks.ts` `blocksLayout` / `flow` (shared with the mat). Trigger: [human] 10.7 or 9.8 calling it confusing, or the next change to `blocksLayout`
+- O2: a chart in the keypad solution phase gets 190 scene px (`TASK_LAYOUT.picture.keypadSolution.picture`); axis numbers are unreadable there (≈ 6 CSS px at 1440). Trigger: next change to `pictureLayout` / the solution layout beside the keypad, or S-14 adding more keypad pictures
+- O3: blocks on the mat are small (cubes ≈ 10 CSS px on a 1024 tablet; `TASK_LAYOUT.drag.mat`, 3 × 3 cells per kind). Trigger: [human] 9.8 (tablet feel)
+- The visual gate did not capture a mat block lifted while the finger is down (the `BlockMat.render` lifted-block item above stays open). Trigger: [human] 9.8
