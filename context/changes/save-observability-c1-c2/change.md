@@ -1,7 +1,7 @@
 ---
 change_id: save-observability-c1-c2
 title: Zdrowie zapisu widoczne dla rodzica, przyczyna nieudanego odczytu i naprawa nieznanego pokoju
-status: implemented
+status: impl_reviewed
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
