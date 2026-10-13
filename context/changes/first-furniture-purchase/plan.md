@@ -721,10 +721,10 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [x] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; testy `ROOM_LAYOUT.panel` przepisane; unit baseline + N
-- [x] 5.2 Deliberate break przycisk zadania na zębatce → czerwony; przywrócone; meta-check
+- [x] 5.1 `layout.test.ts`: `ROOM_TOUCH_TARGETS` ≥ 96 px, rozłączne, poza zębatką i HUD; testy `ROOM_LAYOUT.panel` przepisane; unit baseline + N — 1d58e0e
+- [x] 5.2 Deliberate break przycisk zadania na zębatce → czerwony; przywrócone; meta-check — 1d58e0e
 - [ ] 5.3 `room.caption` usunięte; `npx playwright test` zielony, baseline e2e + 0 (orchestrator gate)
-- [x] 5.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 5.4 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona — 1d58e0e (e2e: orchestrator gate)
 
 #### Manual
 
