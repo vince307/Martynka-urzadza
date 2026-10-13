@@ -75,7 +75,7 @@ export interface RoomState {
 }
 
 export interface Settings {
-    autoRead: boolean;                      // read prompts aloud automatically (parent setting)
+    autoRead: boolean | null;               // parent's choice for reading prompts aloud; null = no choice yet, the stage default applies (FR-009)
 }
 
 export interface SaveState {

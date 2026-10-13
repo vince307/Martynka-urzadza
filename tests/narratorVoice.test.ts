@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultAutoRead, isPolishLang, pickPolishVoice } from '../src/core/narration/voice';
+import { defaultAutoRead, effectiveAutoRead, isPolishLang, pickPolishVoice } from '../src/core/narration/voice';
 
 const voice = (lang: string, localService: boolean, name = lang) => ({ lang, localService, name });
 
@@ -55,5 +55,21 @@ describe('defaultAutoRead', () => {
     it('is off for an unknown stage and for an empty list', () => {
         expect(defaultAutoRead('X9', stages)).toBe(false);
         expect(defaultAutoRead('E1', [])).toBe(false);
+    });
+});
+
+describe('effectiveAutoRead', () => {
+    const stages = ['E1', 'E2'];
+
+    it('falls back to the stage default while the parent has not chosen (null)', () => {
+        expect(effectiveAutoRead({ autoRead: null }, 'E1', stages)).toBe(true);
+        expect(effectiveAutoRead({ autoRead: null }, 'E3', stages)).toBe(false);
+    });
+
+    it('lets the parent choice win at every stage', () => {
+        expect(effectiveAutoRead({ autoRead: false }, 'E1', stages)).toBe(false);
+        expect(effectiveAutoRead({ autoRead: true }, 'E4', stages)).toBe(true);
+        expect(effectiveAutoRead({ autoRead: true }, 'E1', stages)).toBe(true);
+        expect(effectiveAutoRead({ autoRead: false }, 'E6', stages)).toBe(false);
     });
 });

@@ -1,6 +1,6 @@
 // Placement of a new learner: age x month -> proposed stage (docs/ZADANIA.md section 1).
 // Pure: the month is always an argument, there is no Date here.
-import type { Adaptation, LearnerState, StageId } from './types';
+import type { Adaptation, LearnerState, Settings, StageId } from './types';
 
 /** What placement decides: age and stage (S-06). */
 export type PlacedLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
@@ -51,4 +51,23 @@ export function placeByParent(age: number, chosen: StageId, month: number, data:
 
 export function needsPlacement(learner: PlacedLearner | null): boolean {
     return learner === null;
+}
+
+/** Session settings before the parent chose anything (S-08; S-11 will persist them). */
+export function initialSettings(): Settings {
+    return { autoRead: null };
+}
+
+/** The parent moved the child to another stage (US-03). Same stage returns the same object. */
+export function changeStageByParent(learner: SessionLearner, stage: StageId): SessionLearner {
+    if (learner.stage === stage) return learner;
+    return {
+        ...learner,
+        stage,
+        stageOverriddenByParent: true,
+        warmupPending: false,
+        pendingUnlock: null,
+        weakStreak: 0,
+        easedRounds: 0,
+    };
 }
