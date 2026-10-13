@@ -175,7 +175,8 @@ const start = async (): Promise<void> => {
         timers: { setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: (id) => window.clearTimeout(id as number) },
         delayMs: balance.save.debounceMs,
         load: outcome.kind,
-        blocked: outcome.kind === 'unreadable' || outcome.kind === 'unavailable',
+        blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
+        now: () => Date.now(),
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
     });

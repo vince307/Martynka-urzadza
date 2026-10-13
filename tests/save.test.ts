@@ -228,3 +228,17 @@ describe('rawExportText never throws', () => {
         expect(rawExportText(cycle)).toBe('[object Object]');
     });
 });
+
+describe('the v1 format did not change (save-observability-c1-c2)', () => {
+    for (const name of ['save-v1.json', 'save-v1-fresh.json']) {
+        it(`${name} decodes and encodes back to itself, without any health status keys`, () => {
+            const raw = fixture(name);
+            const r = decodeSave(raw);
+            if (r.kind !== 'ok') throw new Error('fixture');
+            const encoded = encodeSave(r.session);
+            expect(SAVE_VERSION).toBe(1);
+            expect(encoded).toEqual(raw);
+            for (const key of ['blockedBy', 'lastError', 'lastWriteAt', 'consecutiveFailures']) expect(key in asRecord(encoded)).toBe(false);
+        });
+    }
+});

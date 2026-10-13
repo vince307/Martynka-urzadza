@@ -3,7 +3,7 @@
 // Implementation Details (never write what was not read, never write what cannot be read, never an unhandled rejection).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createAutosaver, loadSave, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { createAutosaver, errorName, loadSave, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { decodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 
@@ -52,6 +52,7 @@ const makeClock = () => {
             },
             clearTimeout: (id: unknown): void => void timers.delete(id as number),
         },
+        now: (): number => now,
         pending: () => timers.size,
         advance: (ms: number): void => {
             now += ms;
@@ -84,7 +85,8 @@ const setup = (over: Partial<AutosaverOptions> & { initial?: unknown } = {}) => 
         timers: clock.timers,
         delayMs: 500,
         load: 'fresh',
-        blocked: false,
+        blockedBy: null,
+        now: clock.now,
         log: (...a) => void logs.push(a),
         ...over,
     });
@@ -187,14 +189,14 @@ describe('createAutosaver schedule', () => {
 describe('createAutosaver never overwrites what it could not read (risk #2)', () => {
     for (const load of ['unreadable', 'unavailable'] as const) {
         it(`after a ${load} load nothing is ever written`, async () => {
-            const t = setup({ load, blocked: true, initial: { version: 2 } });
+            const t = setup({ load, blockedBy: load, initial: { version: 2 } });
             t.saver.markDirty();
             t.clock.advance(5000);
             await t.saver.flush('now');
             await t.saver.flush('hidden');
             expect(t.state.writes).toHaveLength(0);
             expect(t.state.value).toEqual({ version: 2 });
-            expect(t.saver.status()).toMatchObject({ blocked: true, writes: 0 });
+            expect(t.saver.status()).toMatchObject({ blocked: true, blockedBy: load, writes: 0 });
             expect(t.saver.status().skipped).toBeGreaterThan(0);
         });
     }
@@ -279,5 +281,58 @@ describe('createAutosaver failures (risk #16)', () => {
             } else expect(stars, `seed ${seed}`).toBe(0);
         }
         expect(rejections).toEqual([]);
+    });
+});
+
+describe('autosave health status (audit C-2, M-S5)', () => {
+    it('a start blocked as unavailable reports the reason and the load error; a later fatal block keeps the first reason', () => {
+        const t = setup({ load: 'unavailable', blockedBy: 'unavailable', loadError: 'UnknownError' });
+        expect(t.saver.status()).toMatchObject({ blocked: true, blockedBy: 'unavailable', lastError: 'UnknownError' });
+        t.saver.block('fatal');
+        expect(t.saver.status().blockedBy).toBe('unavailable');
+    });
+
+    it('block() on a healthy saver records fatal', () => {
+        const t = setup();
+        expect(t.saver.status()).toMatchObject({ blocked: false, blockedBy: null, lastError: null, lastWriteAt: null, consecutiveFailures: 0 });
+        t.saver.block('fatal');
+        expect(t.saver.status()).toMatchObject({ blocked: true, blockedBy: 'fatal' });
+    });
+
+    it('a write records its time and clears the streak; the last error name stays and the lifetime counter keeps counting', async () => {
+        const t = setup();
+        t.clock.advance(1234);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status()).toMatchObject({ writes: 1, lastWriteAt: 1234, consecutiveFailures: 0, lastError: null });
+
+        t.store.write = () => Promise.reject(Object.assign(new Error('quota'), { name: 'QuotaExceededError' }));
+        for (let i = 0; i < 2; i++) {
+            t.saver.markDirty();
+            await t.saver.flush('now');
+        }
+        expect(t.saver.status()).toMatchObject({ failures: 2, consecutiveFailures: 2, lastError: 'QuotaExceededError', lastWriteAt: 1234 });
+
+        t.clock.advance(100);
+        t.store.write = () => Promise.resolve();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status()).toMatchObject({ failures: 2, consecutiveFailures: 0, lastError: 'QuotaExceededError', lastWriteAt: 1334 });
+    });
+
+    it('a snapshot that does not validate is named InvalidSave', async () => {
+        const t = setup();
+        t.setRaw({ ...session(1), stars: -3 });
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, lastError: 'InvalidSave' });
+    });
+
+    it('errorName keeps only a name, never a message', () => {
+        expect(errorName(new TypeError('secret'))).toBe('TypeError');
+        expect(errorName({ name: 'QuotaExceededError', message: 'x' })).toBe('QuotaExceededError');
+        expect(errorName('boom')).toBe('Error');
+        expect(errorName(undefined)).toBe('Error');
+        expect(errorName({ name: '' })).toBe('Error');
     });
 });
