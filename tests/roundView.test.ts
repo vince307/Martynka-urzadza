@@ -14,6 +14,23 @@ const start = (first: Task): RoundState => startRound([first, ...rest(4)], balan
 const view = (s: RoundState) => roundView(s, line);
 const wrong = (s: RoundState): RoundState => answer(s, -1);
 
+describe('roundView input and drawing', () => {
+    it('takes the mode from the task, a select task stays select, no input falls back to the old rule', () => {
+        const picked: Task = { ...tile, input: 'select' };
+        expect(view(start(picked)).input).toBe('select');
+        expect(view(start({ ...keys, input: 'drag' })).input).toBe('drag');
+        expect(view(start({ ...tile, input: 'keypad' })).input).toBe('keypad');
+        expect(view(start(tile)).input).toBe('tiles');
+        expect(view(start(keys)).input).toBe('keypad');
+    });
+
+    it('carries the drawing of the current task, null without one', () => {
+        const visual = { kind: 'clock', hour: 3, minute: 30 } as const;
+        expect(view(start({ ...tile, visual })).visual).toEqual(visual);
+        expect(view(start(tile)).visual).toBeNull();
+    });
+});
+
 describe('roundView', () => {
     it('first try: no bar, input active, switch hidden, dots start current/todo', () => {
         const v = view(start(tile));

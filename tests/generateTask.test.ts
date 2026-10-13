@@ -125,3 +125,15 @@ describe('E1.3.bonds_5 tiles', () => {
         expect([...seenTotals].sort((a, b) => a - b)).toEqual([2, 3, 4, 5]);
     });
 });
+
+describe('generateTask answer mode', () => {
+    it('stamps every task with the answer mode of its skill (all stages, both select skills included)', () => {
+        const skills = allSkills();
+        expect(skills.filter((s) => s.answer === 'select').length).toBeGreaterThanOrEqual(2);
+        for (const skill of skills) {
+            if (!getGenerator(skill.type)) continue;
+            const task = generateTask(skill, createRng(77), { tileCount: TILE_COUNT });
+            expect(task.input, skill.id).toBe(skill.answer);
+        }
+    });
+});

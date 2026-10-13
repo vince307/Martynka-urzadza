@@ -174,6 +174,18 @@ describe('distinctTasks', () => {
         expect(new Set(out.map((t) => t.prompt)).size).toBe(3);
     });
 
+    it('does not treat the same prompt with another drawing as a repeat, but does with an identical drawing', () => {
+        const withClock = (minute: number): Task => ({ ...task('Która godzina?'), visual: { kind: 'clock', hour: 3, minute } });
+        let calls = 0;
+        const other = distinctTasks([skill, skill], createRng(3), () => withClock(calls++ < 1 ? 0 : 30), 20);
+        expect(other.map((t) => t.visual)).toEqual([{ kind: 'clock', hour: 3, minute: 0 }, { kind: 'clock', hour: 3, minute: 30 }]);
+        expect(calls).toBe(2);   // no redraw: the drawings differ
+
+        calls = 0;
+        const same = distinctTasks([skill, skill], createRng(3), () => { calls += 1; return withClock(calls <= 5 ? 0 : 45); }, 20);
+        expect(same.map((t) => (t.visual as { minute: number }).minute)).toEqual([0, 45]);   // identical drawing redrawn
+    });
+
     it('a constant generator ends in duplicates after the retry limit, without hanging', () => {
         let calls = 0;
         const out = distinctTasks([skill, skill, skill, skill, skill], createRng(1), () => {

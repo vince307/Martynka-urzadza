@@ -9,7 +9,7 @@ export interface Snapshot {
     index: number;
     solutionStep: number;
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad';
+    input: 'tiles' | 'keypad' | 'select' | 'drag';
     answer: unknown;
     outcomes: (string | null)[];
     starsEarned: number;

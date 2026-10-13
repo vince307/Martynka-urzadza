@@ -13,6 +13,7 @@ import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
+import type { AnswerMode } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
@@ -51,7 +52,7 @@ export interface TaskSnapshot {
     readonly index: number;
     readonly phase: RoundState['phase'];
     readonly solutionStep: number;
-    readonly input: 'tiles' | 'keypad';
+    readonly input: AnswerMode;
     readonly answer: unknown;
     readonly choices: readonly (number | string)[];
     readonly outcomes: RoundState['outcomes'];
@@ -236,6 +237,10 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        if (view.input === 'select' || view.input === 'drag') {
+            // Unreachable until phases 7 and 9 of S-13: `playable` never lets these modes into a round.
+            throw new Error(`Unsupported input mode ${view.input}`);
+        }
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         const unlock = this.unlockView();

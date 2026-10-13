@@ -979,9 +979,9 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: klucz samego `prompt` / brak stempla `input` / `visualKey` bez `minute` → czerwone; przywrócone; meta-check
-- [ ] 1.3 `npm run sample -- E3` bez regresji; `tests/fixtures/` bez zmian
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`@@SHA@@
+- [x] 1.2 Deliberate break: klucz samego `prompt` / brak stempla `input` / `visualKey` bez `minute` → czerwone; przywrócone; meta-check@@SHA@@
+- [x] 1.3 `npm run sample -- E3` bez regresji; `tests/fixtures/` bez zmian@@SHA@@
 - [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

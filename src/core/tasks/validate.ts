@@ -4,8 +4,9 @@
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
 import type { Task } from './types';
+import { validateVisual } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual';
 
 export interface Violation {
     skillId: string;
@@ -67,6 +68,12 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
         if (!Array.isArray(task.answer) && !task.choices.includes(task.answer)) {
             add('choices', `answer ${String(task.answer)} not among ${JSON.stringify(task.choices)}`);
+        }
+    }
+
+    if (task.visual) {
+        for (const problem of validateVisual(task.visual)) {
+            add('visual', problem);
         }
     }
 

@@ -4,6 +4,7 @@ import { boundOf, UNBOUNDED_TYPES } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
 import { validateTask } from '../src/core/tasks/validate';
+import { visualKey } from '../src/core/tasks/visual';
 import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 
@@ -60,7 +61,7 @@ for (const stage of Object.values(stages)) {
 
                         expect(validateTask(task, { max, nouns }), where).toEqual([]);
 
-                        const key = `${task.prompt}|${(task.choices ?? []).join('/')}`;
+                        const key = `${task.prompt}|${visualKey(task.visual)}|${(task.choices ?? []).join('/')}`;
                         seen.set(key, (seen.get(key) ?? 0) + 1);
 
                         const texts = [task.prompt, ...task.hint];

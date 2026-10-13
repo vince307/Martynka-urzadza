@@ -62,3 +62,16 @@ describe('validateTask', () => {
         expect(validateTask({ ...base, prompt: 'Na półce jest 1 książka.' }, { nouns })).toEqual([]);
     });
 });
+
+describe('validateTask drawing', () => {
+    const base = { skillId: 'T.1', prompt: 'Która godzina?', answer: '3.00', hint: ['Krótka wskazówka'] };
+    it('reports a drawing that breaks its own rules', () => {
+        const found = validateTask({ ...base, visual: { kind: 'clock', hour: 25, minute: 0 } });
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ skillId: 'T.1', rule: 'visual' });
+    });
+    it('accepts a good drawing and a task without one', () => {
+        expect(validateTask({ ...base, visual: { kind: 'clock', hour: 3, minute: 0 } })).toEqual([]);
+        expect(validateTask(base)).toEqual([]);
+    });
+});
