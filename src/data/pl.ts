@@ -33,7 +33,7 @@ export const pl = {
         currentStep: (index: number, total: number, title: string) => `Krok ${index} z ${total}: ${title}`,
         weakestHeading: 'Do poćwiczenia',
         mastery: (value: number, max: number) => `opanowanie ${value} z ${max}`,
-        example: (prompt: string, given: string, answer: string) => `${prompt} — odpowiedź dziecka: ${given}, poprawnie: ${answer}`,
+        example: (prompt: string, given: string, answer: string) => `${prompt} — odpowiedź dziecka: ${given}, poprawna: ${answer}`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
