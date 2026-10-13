@@ -26,7 +26,7 @@ dotykiem, przerwany dotyk nigdy nie kładzie klocka. Zapis zostaje v1.
 | Decision | Choice | Why (1 sentence) | Source |
 | --- | --- | --- | --- |
 | Zakres slice'a | S-13 bez siatki (PUZZLE_GRID, GRID, PERIMETER) i „ustaw zegar” → nowe S-13b | Siatka to osobna rodzina widżetów; z nią > 9 faz | Research / Plan |
-| `drag` w S-13 | Tak (fazy 7–8), tylko PLACE_VALUE „zbuduj” do 99 | Plan mieści się w 9 fazach, warunek przeniesienia nie zachodzi | Research / Plan |
+| `drag` w S-13 | Tak (fazy 8–9), tylko PLACE_VALUE „zbuduj” do 99 | Zakres mieści się w planie (po plan-review 11 mniejszych faz), warunek przeniesienia nie zachodzi | Research / Plan |
 | Model rysunku | Unia `TaskVisual` (`clock`, `ruler`, `blocks`, `bars`) + `visualKey` w kluczu unikalności | Stały prompt „Która godzina?” nie może być duplikatem | Research |
 | Tryb odpowiedzi | `Task.input` stemplowany w `generateTask` ze `skill.answer` | `roundView` dziś zgaduje z `choices` | Research |
 | Kroki rozwiązania przy rysunku | Obok rysunku (kafelki: rysunek w lewo, linie w prawo; klawiatura: rysunek mniejszy u góry, linie pod nim) | Dziecko widzi to, co liczy | Plan |
@@ -61,21 +61,23 @@ helperami e2e (sześć speców losuje E3).
 | 2. CLOCK + LENGTH (tdd) | Generatory z parserami i 1000 losowań | Przejście przez 12, wycieki tekstowe |
 | 3. PLACE_VALUE + DATA (tdd) | Generatory odczytu, budowy, diagramu | Remisy, odmiana etykiet |
 | 4. Rysunek w scenie + `ClockFace` + `Ruler` (impl) | Pierwsze rysunki, linie obok rysunku | Miejsce na linie rozwiązania |
-| 5. `BaseTenBlocks` + `BarChart` + dane E3/E4 (impl) | 5 nowych kroków grywalnych | Testy i e2e przypięte do kolejności |
-| 6. Tryb `select` (impl) | E1.6, E3.7 w rundach; szew `?e2eSkills` | Helpery e2e przed `playable` |
-| 7. Reduktor `blockDrag` (tdd) | Gest w `core` | Anulowanie ≠ upuszczenie |
-| 8. Tryb `drag` + seam sweep (impl) | Budowa liczby z klocków | Odczucie na tablecie |
-| 9. E2E #11 (e2e) | `drawn-tasks.spec.ts` (+5) | Chromium w sesji agenta |
+| 5. `BaseTenBlocks` + `BarChart` (impl) | Wszystkie rysunki odczytu | Zawijanie klocków w prostokącie |
+| 6. Dane E3/E4 (impl) | 5 nowych kroków grywalnych | Testy i e2e przypięte do kolejności |
+| 7. Tryb `select` (impl) | E1.6, E3.7 w rundach; szew `?e2eSkills` | Helpery e2e przed `playable` |
+| 8. Reduktor `blockDrag` (tdd) | Gest w `core` | Anulowanie ≠ upuszczenie |
+| 9. Tryb `drag` (impl) | Budowa liczby z klocków | Odczucie na tablecie |
+| 10. Dokumentacja + seam sweep (impl) | Follow-upy, `CLAUDE.md`, DESIGN-GAP | Follow-upy z triggerem plikowym |
+| 11. E2E #11 (e2e) | `drawn-tasks.spec.ts` (+5) | Chromium w sesji agenta |
 
 **Prerequisites:** S-12 done (`b57433c`); baseline unit 1247, e2e 37.
-**Estimated effort:** 9 sesji agenta (jedna na fazę) + odczyt nauczyciela + bramka wizualna.
+**Estimated effort:** 11 sesji agenta (jedna na fazę) + odczyt nauczyciela + bramka wizualna.
 
 ## Open Risks & Assumptions
 
 - Pula „wcześniejsze” od razu dostaje zegar/diagram/linijkę dla dziecka na E3 ≥ 6 (akceptowane, łatwe zadania).
 - E3.5 i E4.7 częściowe do S-13b/S-14 (próg odblokowania zmieni się później).
-- Przeciąganie na prawdziwym tablecie — tylko `[human]` 8.10.
-- `[human]`: zapis czasu wbrew kitowi (4.6), zakres wbrew roadmapie (5.9), decyzje wbrew ZADANIA (8.11), teksty (8.12).
+- Przeciąganie na prawdziwym tablecie — tylko `[human]` 9.8.
+- `[human]`: zapis czasu wbrew kitowi (4.6), zakres wbrew roadmapie (6.9), decyzje wbrew ZADANIA (10.6, w tym kierunek 24-godzinny i budowa bez setek), teksty (10.7).
 
 ## Success Criteria (Summary)
 

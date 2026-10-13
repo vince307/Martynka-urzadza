@@ -103,17 +103,18 @@ Z `research.md` (commit `bf5b81c`) i odczytu kodu w tym kroku:
 
 Trzy fazy czystej logiki test-first: (1) model rysunku i trybu odpowiedzi + unikalność + `sample`; (2) generatory CLOCK
 i LENGTH; (3) generatory PLACE_VALUE i DATA. Generatory w fazach 2–3 nie trafiają jeszcze do danych programu (kolejność
-kroków zmienia się raz, w fazie 5). Potem dwie fazy widżetów po dwa komponenty: (4) obszar rysunku w `TaskScene` +
-`ClockFace` + `Ruler`; (5) `BaseTenBlocks` + `BarChart` + nowe umiejętności w `E3.ts`/`E4.ts` z aktualizacją testów
-przypiętych do kolejności. (6) tryb `select`: widżet + helpery e2e + szew `?e2eSkills` + `playable` dopuszcza `select` —
-w jednej fazie. (7) reduktor przeciągania w `core` (tdd). (8) tryb `drag`: tacka i mata, PLACE_VALUE „zbuduj”, helpery
-e2e, `playable` dopuszcza `drag`, dokumentacja, follow-upy, seam sweep. (9) e2e (#11).
+kroków zmienia się raz, w fazie 6). Potem dwie fazy widżetów po dwa komponenty: (4) obszar rysunku w `TaskScene` +
+`ClockFace` + `Ruler`; (5) `BaseTenBlocks` + `BarChart`. (6) nowe umiejętności w `E3.ts`/`E4.ts` z aktualizacją testów
+przypiętych do kolejności i speców `first-launch`/`adaptive`. (7) tryb `select`: widżet + helpery e2e + szew `?e2eSkills` +
+`playable` dopuszcza `select` — w jednej fazie. (8) reduktor przeciągania w `core` (tdd). (9) tryb `drag`: tacka i mata,
+PLACE_VALUE „zbuduj”, helpery e2e, `playable` dopuszcza `drag`. (10) dokumentacja, follow-upy, seam sweep. (11) e2e (#11).
+Plan-review F1 rozdzielił dawne fazy 5 (widżety + dane) i 8 (drag + dokumentacja + sweep).
 
 **Reguła kolejności (research decyzja 5):** helpery e2e uczą się trybu w tej samej fazie (albo wcześniej), w której
 `playable` go dopuszcza; testy i specy przypięte do kolejności kroków zmieniają się w tej samej fazie co dane. Każda faza
 zostawia pełny zestaw zielony.
 
-**Bramka lokalna** (kontrakt § Verification): komendy bez zmian. Faza 9 dopisuje `drawn-tasks` do `ROUND_SPEC`. E2E po
+**Bramka lokalna** (kontrakt § Verification): komendy bez zmian. Faza 11 dopisuje `drawn-tasks` do `ROUND_SPEC`. E2E po
 każdej fazie zwykle uruchamia orkiestrator (protokół request-file, profil § 8).
 
 ## Critical Implementation Details
@@ -138,14 +139,15 @@ w testach), `RoundView.visual: TaskVisual | null`. Klucz unikalności zadania = 
 `distinctTasks` i (z `choices`) w inwariantach treści. Czas jako tekst: `formatTime(hour, minute)` w nowym
 `src/core/text/time.ts` → `"15.00"`, `"7.05"`, `"0.30"` (kropka, minuty zawsze dwie cyfry; notacja ZADANIA § 4).
 
-**Szew `?e2eSkills` (faza 6).** `e2eSkills(search): string[] | null` w `src/testing/e2eHook.ts` (lista id umiejętności po
+**Szew `?e2eSkills` (faza 7).** `e2eSkills(search): string[] | null` w `src/testing/e2eHook.ts` (lista id umiejętności po
 przecinku); `src/main.ts` czyta go tylko w gałęzi `__E2E_HOOK__` i kładzie do rejestru pod kluczem
 `REGISTRY_KEYS.forcedSkills = 'forcedSkills'` — **nie** `e2eSkills`, bo `REGISTRY_KEYS` jest w buildzie produkcyjnym, a
 `checkE2EHook` szuka markerów jako tekstu. `TaskScene.freshRound` (nie rozgrzewka): gdy lista jest ustawiona i każde id
-istnieje w bieżącym etapie, skille rundy = te id powtarzane do długości rundy (5), inaczej zwykły dobór. Marker `e2eSkills`
+istnieje w bieżącym etapie i jest `playable` (plan-review F7: id trybu jeszcze niedopuszczonego nie może dojść do
+`render`), skille rundy = te id powtarzane do długości rundy (5), inaczej zwykły dobór. Marker `e2eSkills`
 dopisany do `E2E_HOOK_MARKERS`; `npm run build` drukuje `e2e hook: absent (`.
 
-**Reduktor przeciągania (faza 7).** Nowy `src/core/blockDrag.ts`, wzór `src/core/longPress.ts`:
+**Reduktor przeciągania (faza 8).** Nowy `src/core/blockDrag.ts`, wzór `src/core/longPress.ts`:
 `BlockKind = 'hundred' | 'ten' | 'one'`; stan `{ mat: Record<BlockKind, number>; carrying: null | { pointerId; kind;
 from: 'tray' | 'mat'; x; y; startX; startY; moved: boolean } }`; zdarzenia `down{pointerId,x,y}`, `move`, `up`, `cancel`,
 `reset`; geometria wstrzyknięta jako czyste funkcje `trayAt(x,y): BlockKind | null`, `matBlockAt(x,y): BlockKind | null`,
@@ -203,7 +205,7 @@ bierze tryb z zadania, dodaje `visual`. Zamyka follow-up S-04 „carry the mode 
 
 **Intent**: typy szersze o `select`/`drag` (`hideTaskLayer`, `drawPrompt`, `TaskSnapshot.input`, `Snapshot.input`);
 `TaskScene.render` rzuca `Error('Unsupported input mode …')` dla `select`/`drag` (nieosiągalne: `playable` ich nie
-dopuszcza; granica błędów pokaże kartę) — usunięte w fazach 6 i 8.
+dopuszcza; granica błędów pokaże kartę) — usunięte w fazach 7 i 9.
 
 #### 4. Unikalność, walidacja, czas, `sample`
 
@@ -248,7 +250,7 @@ Driver why: generatory CLOCK i LENGTH nie istnieją — failing testy 1000 losow
 
 ### Overview
 
-Dwa typy z rysunkiem, jeszcze bez danych programu (kroki zmieniają się w fazie 5).
+Dwa typy z rysunkiem, jeszcze bez danych programu (kroki zmieniają się w fazie 6).
 
 ### Changes Required:
 
@@ -258,7 +260,10 @@ Dwa typy z rysunkiem, jeszcze bez danych programu (kroki zmieniają się w fazie
 
 **Intent**: warianty `read` (tarcza → która godzina), `later` (tarcza → która będzie za `n` godzin, `n` 1–`maxShift`,
 z przejściem przez 12), `h24` (popołudniowa godzina na tarczy → zapis 24-godzinny 13.00–23.00). `minuteStep` 60 (pełne
-godziny), 30, 15, 5. Odpowiedź tekstem `formatTime`, **3 kafelki** (`choices`, ZADANIA „wybór z 3”); dystraktory: zamienione
+godziny), 30, 15, 5. **Dziedzina godzin (plan-review F4):** `read` i `later` losują `hour` 1–12 (tarcza 12-godzinna,
+dwunasta to „12.00”, nigdy „0.00”), `later` liczy modulo 12 z wynikiem 1–12 (11.00 + 2 → 1.00, 10.00 + 2 → 12.00); `h24`
+losuje 13–23 (tarcza rysuje `hour % 12`, prompt mówi „po południu”), dystraktor „bez 12” (3.00 zamiast 15.00) jest
+obowiązkowy. Odpowiedź tekstem `formatTime`, **3 kafelki** (`choices`, ZADANIA „wybór z 3”); dystraktory: zamienione
 wskazówki (gdy dają poprawny czas), ±1 godzina, ±`minuteStep`; różne, w zakresie. Rysunek `clock`. `speak` nazywa rysunek
 bez czasu („Popatrz na zegar. Która godzina?”). Podpowiedzi: krótka wskazówka → godzina, długa → minuty, ostatnia zawiera
 odpowiedź. CLOCK dopisany do `UNBOUNDED_TYPES` (ograniczony własnymi parametrami).
@@ -294,10 +299,12 @@ odpowiedź” przyjmuje odpowiedź tekstową.
 **File**: `tests/clock.test.ts` (nowy), `tests/length.test.ts` (nowy), `tests/hints.test.ts` (klucze rejestru sprawdza istniejący `tests/contentInvariants.test.ts`)
 
 **Intent**: `forEachDraw` (20 ziaren × 50) dla każdego wariantu na syntetycznych umiejętnościach z parametrami
-planowanymi dla E3/E4 (tabela w fazie 5): odpowiedź przeliczona z rysunku niezależnie (wyrocznia z `hour`/`minute`/`fromMm`
+planowanymi dla E3/E4 (tabela w fazie 6): odpowiedź przeliczona z rysunku niezależnie (wyrocznia z `hour`/`minute`/`fromMm`
 /`toMm`, nie z implementacji), `validateTask` + `validateVisual` bez naruszeń, odpowiedź wśród 3 różnych kafelków, `later`
-przez 12 (11.00 + 2 → 1.00), `h24` 13–23, odcinek nie od zera występuje; parser odrzuca każdy zły przypadek z kontraktu;
-`firstHint` dla zadania CLOCK z czasem w pierwszej podpowiedzi → `null`.
+przez 12 (11.00 + 2 → 1.00), `h24` 13–23, `read`/`later` tylko 1–12 (nigdy „0.00”), odcinek nie od zera występuje; parser odrzuca każdy zły przypadek z kontraktu;
+`firstHint` dla zadania CLOCK z czasem w pierwszej podpowiedzi → `null`. `tests/hints.test.ts`: `try/catch { continue }`
+wokół losowania liczy pominięcia i oczekuje ich dokładnej liczby (follow-up `Trigger: next change to tests/hints.test.ts`,
+archiwum `2026-10-12-task-round-stars` — ta faza go uruchamia; plan-review F3).
 
 ### Success Criteria:
 
@@ -310,7 +317,7 @@ przez 12 (11.00 + 2 → 1.00), `h24` 13–23, odcinek nie od zera występuje; pa
 
 #### Manual Verification:
 
-- [reviewer] Odczyt nauczyciela szablonów `pl.tasks.clock*`/`length*` i po 6 losowań na wariant wydrukowanych z testu (`sample` pokaże je dopiero w fazie 5): odmiana („za 2 godziny”, „5 centymetrów”), podpowiedzi uczą metody bez wyniku w pierwszym kroku, dystraktory bliskie i jednoznaczne
+- [reviewer] Odczyt nauczyciela szablonów `pl.tasks.clock*`/`length*` i po 6 losowań na wariant wydrukowanych z testu (`sample` pokaże je dopiero w fazie 6): odmiana („za 2 godziny”, „5 centymetrów”), podpowiedzi uczą metody bez wyniku w pierwszym kroku, dystraktory bliskie i jednoznaczne
 
 ---
 
@@ -321,7 +328,7 @@ Driver why: PLACE_VALUE i DATA nie mają generatorów — failing testy 1000 los
 
 ### Overview
 
-Pozostałe dwa typy; wariant `build` jest gotowy w `core`, choć tryb `drag` dojdzie w fazie 8.
+Pozostałe dwa typy; wariant `build` jest gotowy w `core`, choć tryb `drag` dojdzie w fazie 9.
 
 ### Changes Required:
 
@@ -360,7 +367,7 @@ owoc, zwierzę, kolor — każdy rzeczownik w `src/data/nouns.ts` z odmianą uż
 
 **File**: `tests/placeValue.test.ts` (nowy), `tests/data.test.ts` (nowy)
 
-**Intent**: `forEachDraw` dla każdego wariantu z parametrami z tabeli fazy 5: odpowiedź = `100·h + 10·t + o` z pól
+**Intent**: `forEachDraw` dla każdego wariantu z parametrami z tabeli fazy 6: odpowiedź = `100·h + 10·t + o` z pól
 rysunku; `tens` = `t`; `decompose` się zgadza; `build` bez rysunku, odpowiedź w `min`–`max`; DATA: odpowiedź `most`/`least`
 liczona z `bars` (jedyne maksimum/minimum), `diff` = różnica wartości nazwanych w prompcie, `validateVisual` bez naruszeń;
 parser odrzuca każdy zły przypadek.
@@ -382,11 +389,11 @@ parser odrzuca każdy zły przypadek.
 ## Phase 4: Obszar rysunku w `TaskScene`, `ClockFace` i `Ruler`
 
 Driver: impl
-Driver why: dwa nowe widżety Phaser Graphics i sklejka w `TaskScene` (obszar rysunku, kroki rozwiązania obok rysunku) — zachowanie widać tylko na płótnie; czysta geometria `pictureLayout` dostaje test jednostkowy, reszta dowód w zrzutach i e2e fazy 9.
+Driver why: dwa nowe widżety Phaser Graphics i sklejka w `TaskScene` (obszar rysunku, kroki rozwiązania obok rysunku) — zachowanie widać tylko na płótnie; czysta geometria `pictureLayout` dostaje test jednostkowy, reszta dowód w zrzutach i e2e fazy 11.
 
 ### Overview
 
-Pierwszy rysunek na ekranie zadania; rysunki CLOCK i LENGTH gotowe na dane z fazy 5.
+Pierwszy rysunek na ekranie zadania; rysunki CLOCK i LENGTH gotowe na dane z fazy 6.
 
 ### Changes Required:
 
@@ -410,7 +417,7 @@ dyspozytor)
 wskazówka godzinowa krótka/gruba teal, minutowa długa `#54BEB4`, piasta; godzina wskazówki uwzględnia minuty); `Ruler` wg
 `reference/ruler.svg` (korpus maślany, cm co 56 px skalowane do prostokąta, kreski cm/pół cm, mm dla `unit 'mm'`, cyfry
 cm), nad linijką odcinek z końcami (DESIGN-GAP 56). `TaskPicture.render(visual | null, rect)` wybiera widżet; rodzaje
-`blocks`/`bars` rysują prostokąt-placeholder z etykietą do fazy 5. Kolory z `PLACEHOLDER_COLORS`/palety kitu w
+`blocks`/`bars` rysują prostokąt-placeholder z etykietą do fazy 5 (dane programu dopiero w fazie 6, po widżetach). Kolory z `PLACEHOLDER_COLORS`/palety kitu w
 `src/data/layout.ts`.
 
 **Contract**: wzorzec widżetów: `constructor(scene)`, `render(...)` czyści i rysuje, `setVisible`, `bounds(): Rect` dla haka.
@@ -436,26 +443,26 @@ prompt przy rysunku w trybie kafelków bez zmian (nad pasem). Hak: `snapshot.vis
 #### Automated Verification:
 
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (`pictureLayout`); e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- Deliberate break: `pictureLayout` z rozwiązaniem zwraca te same prostokąty co bez → test rozłączności czerwony; przywrócone; meta-check: test geometrii nie dowodzi, że scena go używa — to dowodzą zrzuty i e2e fazy 9
+- Deliberate break: `pictureLayout` z rozwiązaniem zwraca te same prostokąty co bez → test rozłączności czerwony; przywrócone; meta-check: test geometrii nie dowodzi, że scena go używa — to dowodzą zrzuty i e2e fazy 11
 - `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual Verification:
 
-- [visual] Zrzuty (szew `?e2eSkills` jeszcze nie istnieje — umiejętności CLOCK/LENGTH podpięte lokalnie w pliku `*.local`, nie commitowane, albo zrzuty przeniesione do fazy 5): tarcza w trybie kafelków (pełna godzina i 7.45), tarcza z paskiem podpowiedzi, tarcza z krokami rozwiązania obok, linijka cm z odcinkiem nie od zera (klawiatura), linijka mm, linijka z krokami rozwiązania — 1440×900 i 1024×768
+- [visual] Zrzuty (szew `?e2eSkills` jeszcze nie istnieje — umiejętności CLOCK/LENGTH podpięte lokalnie w pliku `*.local`, nie commitowane, albo zrzuty przeniesione do fazy 6 — wiersz 6.8): tarcza w trybie kafelków (pełna godzina i 7.45), tarcza z paskiem podpowiedzi, tarcza z krokami rozwiązania obok, linijka cm z odcinkiem nie od zera (klawiatura), linijka mm, linijka z krokami rozwiązania — 1440×900 i 1024×768
 - [reviewer] Widżety bez tekstów i liczb balansu w kodzie (teksty z `pl`, geometria z `layout.ts`); `TaskPicture` w `hideTaskLayer`
 - [human] Decyzja wbrew podpisowi kitu `reference/clock.svg` („3:30”): czasy w grze zapisane kropką wg ZADANIA § 4 („15.00”, „7.30”)
 
 ---
 
-## Phase 5: `BaseTenBlocks`, `BarChart` i nowe kroki grywalne E3/E4
+## Phase 5: `BaseTenBlocks` i `BarChart`
 
 Driver: impl
-Driver why: dwa widżety rysowane i zmiana danych programu, która przestawia kolejność kroków — dowód w zaktualizowanych testach przypiętych do kolejności, inwariantach treści, odczycie nauczyciela i e2e `first-launch`/`adaptive`.
+Driver why: dwa nowe widżety Phaser Graphics bez zmiany danych — zachowanie widać tylko na płótnie; dowód w bramce, zrzutach fazy 6 (gdy dane istnieją) i e2e fazy 11.
 
 ### Overview
 
-Wszystkie rysunki odczytu na ekranie; kroki E3.3, E3.4, E3.5, E4.3, E4.7 grywalne (tryby `tiles`/`keypad` — helpery e2e
-już je znają).
+Wszystkie cztery rysunki odczytu gotowe przed danymi programu; `TaskPicture` bez placeholderów. Plan-review F1: dawna faza 5
+(dwa widżety + dane + testy przypięte + dwa specy e2e) rozdzielona na tę fazę i fazę 6.
 
 ### Changes Required:
 
@@ -469,9 +476,41 @@ oś pionowa 0–`scaleMax` z liniami siatki co 1 lub 2, słupki w kolorach `PLAC
 wartości **bez** podpisów nad słupkami — dziecko odczytuje z osi). `TaskPicture` bez placeholderów.
 
 **Contract**: wzorzec widżetów z fazy 4; `BaseTenBlocks` eksportuje czystą geometrię klocka (rozmiar komórki), z której
-skorzysta mata w fazie 8.
+skorzysta mata w fazie 9.
 
-#### 2. Dane programu
+#### 2. Luki projektu
+
+**File**: `docs/design-gaps.md`
+
+**Intent**: wiersz 53 (diagram słupkowy — brak referencji); komentarz `DESIGN-GAP 53` w `BarChart`.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` lub `+ N` (test czystej geometrii klocka, jeśli wydzielona); e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- `TaskPicture` bez gałęzi placeholdera (`grep -n "placeholder" src/ui/widgets/TaskPicture.ts` pusty); `npm run build` drukuje `e2e hook: absent (`
+
+#### Manual Verification:
+
+- [reviewer] Widżety bez tekstów i liczb balansu w kodzie (geometria z `layout.ts`); geometria klocka wyeksportowana dla maty; wiersz DESIGN-GAP 53
+
+---
+
+## Phase 6: Nowe kroki grywalne E3/E4 — dane programu, testy przypięte do kolejności i e2e
+
+Driver: impl
+Driver why: zmiana danych programu, która przestawia kolejność kroków — dowód w zaktualizowanych testach przypiętych do kolejności (wyrocznia startu liczona ręcznie), inwariantach treści, odczycie nauczyciela i e2e `first-launch`/`adaptive`; generatory i widżety już istnieją.
+
+### Overview
+
+Kroki E3.3, E3.4, E3.5, E4.3, E4.7 grywalne (tryby `tiles`/`keypad` — helpery e2e już je znają: `answerRight`/`answerWrong`
+porównują wartości kafelków bez względu na typ, więc kafelki tekstowe „15.00” i etykiety diagramu działają). Jedyna faza,
+która zmienia kolejność kroków.
+
+### Changes Required:
+
+#### 1. Dane programu
 
 **File**: `src/data/curriculum/E3.ts`, `src/data/curriculum/E4.ts`
 
@@ -491,26 +530,28 @@ skorzysta mata w fazie 8.
 
 `childName` i nazwy w tabeli to propozycja; odczyt nauczyciela może je poprawić (zmiana bez wpływu na kolejność).
 
-#### 3. Testy przypięte do kolejności i e2e
+#### 2. Testy przypięte do kolejności i e2e
 
 **File**: `tests/curriculumStart.test.ts`, `tests/curriculumPick.test.ts`, `tests/curriculumEnd.test.ts`,
 `tests/progress.test.ts`, `tests/warmup.test.ts`/`tests/placement.test.ts` (jeśli przypinają krok startu),
 `tests/e2e/first-launch.spec.ts`, `tests/e2e/adaptive.spec.ts`
 
-**Intent**: grywalne kroki E3 `[1..11]`, E4 `[1..8]`; `ORACLE` startu kalendarzowego dla E3/E4 przeliczony ręcznie z reguły D
-(`k = min(n, max(minStartSteps, ceil(progress·n)))`) — tabela research § 3 (a) jako wyrocznia, nie z implementacji;
-`startLearning` → `unlockedStep.E3` 4 (październik); „earlier” przy E3 kroku 6 = kroki 1–5; testy „nieodgrywalny krok
-odblokowany” przeniesione na krok, który zostaje pusty (np. E2.2 albo E5.5 — sprawdzone grepem `skills: []`);
-odblokowania E3 2→3, E4 2→3, 6→7; postęp „E3 ma 11 kroków”. E2E: `first-launch` (8 lat, październik → E3 krok 4 po
-rozgrzewce), `adaptive` (E4: następny krok 3, nazwa z `childName`). Fixtura `tests/fixtures/save-v1.json` bez zmian (jej
-`pendingUnlock {E3, 3}` staje się prawdziwą kartą — test ładowania zostaje zielony).
+**Intent**: grywalne kroki E3 `[1..11]`, E4 `[1..8]` (`playableSteps` w `tests/curriculumStart.test.ts`); `ORACLE` startu
+kalendarzowego dla E3/E4 przeliczony ręcznie z reguły D (`k = min(n, max(minStartSteps, ceil(progress·n)))`) — tabela
+research § 3 (a) jako wyrocznia, nie z implementacji (research wyprowadził ręcznie tylko październik — pozostałe miesiące
+wiersza liczone ręcznie w tej fazie i zapisane w komentarzu testu); `startLearning` → `unlockedStep.E3` 4 (październik);
+„earlier” przy E3 kroku 6 = kroki 1–5; testy „nieodgrywalny krok odblokowany” przeniesione na krok, który zostaje pusty
+(np. E2.2 albo E5.5 — sprawdzone grepem `skills: []`); odblokowania E3 2→3, E4 2→3, 6→7; postęp „E3 ma 11 kroków”. E2E:
+`first-launch` (8 lat, październik → E3 krok 4 po rozgrzewce), `adaptive` (E4: następny krok 3, nazwa z `childName`).
+Fixtura `tests/fixtures/save-v1.json` bez zmian (jej `pendingUnlock {E3, 3}` staje się prawdziwą kartą — test ładowania
+zostaje zielony).
 
-#### 4. Luki projektu
+#### 3. Luki projektu
 
 **File**: `docs/design-gaps.md`
 
-**Intent**: wiersz 53 (diagram słupkowy — brak referencji), 58 (podgląd błędów rodzica bez rysunku: „Która godzina?” bez
-tarczy, `MistakeExample` bez zmiany formatu).
+**Intent**: wiersz 58 (podgląd błędów rodzica bez rysunku: „Która godzina?” bez tarczy, `MistakeExample` bez zmiany
+formatu).
 
 ### Success Criteria:
 
@@ -519,22 +560,22 @@ tarczy, `MistakeExample` bez zmiany formatu).
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (inwarianty treści obejmują nowe umiejętności automatycznie)
 - `npm run sample -- E3 --count 6` i `npm run sample -- E4 --count 6` bez naruszeń; każde zadanie nowej umiejętności drukuje linię `visual:` (poza `decompose`, `convert`)
 - Żaden krok z typem grupy 1 nie jest pusty (istniejący inwariant); kroki E3.3, E3.4, E3.5, E4.3, E4.7 mają `childName` (nowy test: każdy grywalny krok ma `childName`)
-- Deliberate break: usunięty `childName` E4.3 → nowy test czerwony (i `adaptive.spec` czerwony na karcie — orkiestrator); `ORACLE` z tabeli research vs implementacja: zmieniony `minStartSteps` → test startu czerwony; przywrócone; meta-check: wyrocznia startu liczona ręcznie z reguły D
-- E2E (orkiestrator, `e2e-request-p5.md`): `first-launch.spec.ts` i `adaptive.spec.ts` zielone; pełne `npx playwright test` `<baseline gałęzi e2e> + 0`
+- Deliberate break: usunięty `childName` E4.3 → nowy test czerwony (i `adaptive.spec` czerwony na karcie — orkiestrator); E3.4 z powrotem `skills: []` → `playableSteps` E3 i wiersz `ORACLE` E3 czerwone; przywrócone; meta-check: wyrocznia startu liczona ręcznie z reguły D, a przerwa zmienia dane, nie stałą `RULES` testu (plan-review F2: zmiana `minStartSteps` w `balance.ts` nie czerwieni testu, który ma własne `RULES`)
+- E2E (orkiestrator, `e2e-request-p6.md`): `first-launch.spec.ts` i `adaptive.spec.ts` zielone; pełne `npx playwright test` `<baseline gałęzi e2e> + 0`
 - `git diff --stat tests/fixtures/` pusty; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual Verification:
 
 - [reviewer] Odczyt nauczyciela `npm run sample -- E3 --count 6` i `E4 --count 6` dla kroków E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8 (każde zadanie, z linią rysunku): poprawność odczytu, odmiana, biernik, podpowiedzi bez wyniku w pierwszym kroku, dystraktory zegara jednoznaczne, `childName` zrozumiałe dla 8-latka
-- [visual] Zrzuty: klocki odczyt (E3.6 i E4.8 z setkami, klawiatura), diagram `most` (kafelki z etykietami) i `diff` (klawiatura), diagram z krokami rozwiązania, karta „Nowa umiejętność!” z `childName` E3.3 — 1440×900 i 1024×768
+- [visual] Zrzuty: klocki odczyt (E3.6 i E4.8 z setkami, klawiatura), diagram `most` (kafelki z etykietami) i `diff` (klawiatura), diagram z krokami rozwiązania, karta „Nowa umiejętność!” z `childName` E3.3; oraz zrzuty zegara/linijki z fazy 4 (4.4), jeśli tam nie powstały — 1440×900 i 1024×768
 - [human] Decyzja wbrew literze roadmapy S-13 („oś liczbowa, słupek pisemny, grafy i figury”): S-13 dostarcza zegar, linijkę, klocki i diagram; PUZZLE_GRID, GRID, PERIMETER, „ustaw zegar” → S-13b; oś, słupek pisemny, grafy, figury E1–E2 → S-14; DATA wchodzi, choć nie ma go w liście grupy 2 planu § 11 M6
 
 ---
 
-## Phase 6: Tryb `select` — zaznaczanie kafelków, helpery e2e i szew `?e2eSkills`
+## Phase 7: Tryb `select` — zaznaczanie kafelków, helpery e2e i szew `?e2eSkills`
 
 Driver: impl
-Driver why: nowy widżet zaznaczania i sklejka w `TaskScene`/haku/helperach e2e; logika poprawności już istnieje (`check` przez `sameSet` w EVEN_ODD) — czysty stan zaznaczenia to jedna funkcja z testem, dowód przepływu w e2e fazy 9.
+Driver why: nowy widżet zaznaczania i sklejka w `TaskScene`/haku/helperach e2e; logika poprawności już istnieje (`check` przez `sameSet` w EVEN_ODD) — czysty stan zaznaczenia to jedna funkcja z testem, dowód przepływu w e2e fazy 11.
 
 ### Overview
 
@@ -591,7 +632,7 @@ zwraca podany zbiór; typ zwrotu `answerWrong` poszerzony. `playTaskRight`/`play
 #### Automated Verification:
 
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- E2E (orkiestrator, `e2e-request-p6.md`): pełne `npx playwright test` `<baseline gałęzi e2e> + 0` — sześć speców z losowaniem E3 zielonych z `select` w puli; dodatkowo raz `npx playwright test tests/e2e/task-round.spec.ts` z lokalną (niecommitowaną) zmianą `passWelcome` na URL `?e2eSkills=E3.7.select_even_30` — zielony (dowód helpera przed fazą 9)
+- E2E (orkiestrator, `e2e-request-p7.md`): pełne `npx playwright test` `<baseline gałęzi e2e> + 0` — sześć speców z losowaniem E3 zielonych z `select` w puli; dodatkowo raz `npx playwright test tests/e2e/task-round.spec.ts` z lokalną (niecommitowaną) zmianą wywołania w specu na `passWelcome(page, { e2eSkills: 'E3.7.select_even_30' })` (`passWelcome` już przyjmuje `query`) — zielony (dowód helpera przed fazą 11)
 - `npm run build` drukuje `e2e hook: absent (`; `grep -c e2eSkills dist/_app/*.js` = 0
 - Deliberate break: `toggleSelected` nie zdejmuje zaznaczenia → test czerwony; marker `e2eSkills` usunięty z `E2E_HOOK_MARKERS` przy kluczu rejestru nazwanym `e2eSkills` → strażnik buildu nie łapie wycieku (meta-check: dlatego klucz rejestru ma inną nazwę; zapis w handoff §3); przywrócone
 
@@ -602,7 +643,7 @@ zwraca podany zbiór; typ zwrotu `answerWrong` poszerzony. `playTaskRight`/`play
 
 ---
 
-## Phase 7: Reduktor przeciągania klocków w `core`
+## Phase 8: Reduktor przeciągania klocków w `core`
 
 Driver: tdd
 Driver why: `blockDrag` i geometria zasobnika/maty nie istnieją — failing testy sekwencji zdarzeń (anulowany dotyk, drugi palec, upuszczenie poza matą, limit 9, stuknięcie) prowadzą czysty reduktor przed jakąkolwiek sceną.
@@ -650,25 +691,25 @@ klocka maty −1; klocek z maty upuszczony poza matą −1; 10. dziesiątka → 
 
 ---
 
-## Phase 8: Tryb `drag` — zasobnik i mata, PLACE_VALUE „zbuduj”, helpery e2e, dokumentacja i seam sweep
+## Phase 9: Tryb `drag` — zasobnik i mata, PLACE_VALUE „zbuduj”, helpery e2e
 
 Driver: impl
-Driver why: nowy widżet maty z zasobnikiem i sklejka zdarzeń wskaźnika w `TaskScene` na gotowym reduktorze z fazy 7, helper CDP i dane — zachowanie dotyku widać tylko w przeglądarce; ostatnia faza `impl`/`tdd`, więc także seam sweep całej zmiany.
+Driver why: nowy widżet maty z zasobnikiem i sklejka zdarzeń wskaźnika w `TaskScene` na gotowym reduktorze z fazy 8, helper CDP i dane — zachowanie dotyku widać tylko w przeglądarce.
 
 ### Overview
 
 Pierwsze zadanie przeciągania: „Zbuduj z klocków liczbę 23.” (E3.6, E4.1). Helpery e2e uczą się `drag` w tej samej fazie,
-w której `playable` go dopuszcza.
+w której `playable` go dopuszcza. Dokumentacja i seam sweep są w fazie 10 (plan-review F1).
 
 ### Changes Required:
 
 #### 1. Widżet
 
-**File**: `src/ui/widgets/BlockMat.ts` (nowy)
+**File**: `src/ui/widgets/BlockMat.ts` (nowy), `docs/design-gaps.md`
 
 **Intent**: zasobnik (pręt i kostka z geometrii `BaseTenBlocks`, podpisy rodzaju z `pl`), mata (jasne pole z ramką
 przerywaną), klocki na macie wg `dragLayout`, niesiony klocek pod palcem (cień kitu 4 px), „OK” jak w `SelectTiles`;
-`render(state)` z `BlockDragState`. DESIGN-GAP 55 (zasobnik, mata, upuszczenie poza celem — brak w kicie).
+`render(state)` z `BlockDragState`. DESIGN-GAP 55 (zasobnik, mata, upuszczenie poza celem — brak w kicie): wiersz i komentarz.
 
 **Contract**: `constructor(scene, onSubmit: (value: number) => void)`, `render(state, active)`, `setVisible`,
 `targets(): { tray: Record<BlockKind, Point>; mat: Point; ok: Point; matBlocks: { kind; x; y }[] }` (punkty wewnętrzne).
@@ -681,8 +722,10 @@ przerywaną), klocki na macie wg `dragLayout`, niesiony klocek pod palcem (cień
 **Intent**: tryb `drag` w `render`/`hideTaskLayer`/`answerSpot`; zdarzenia wskaźnika sceny → `stepBlockDrag` tylko przy
 `inputActive` i trybie `drag` (wzór `RoomScene.create`/`update`); przełącznik wejścia i `sleep`/`wake` → `reset`; nowe
 zadanie i zła odpowiedź → pusta mata; usunięty `throw`. Hak: `snapshot.mat`, `snapshot.carrying` (bool), `targets.drag`.
-`playable` dopuszcza `drag` (wszystkie cztery tryby). Dane: `E3.6.place_build_30` PLACE_VALUE `{build, 11, 30}` drag,
-`E4.1.place_build_100` `{build, 21, 99}` drag. `pick.test.ts`: umiejętności `drag` w puli.
+`playable` dopuszcza `drag` (wszystkie cztery tryby) i nagłówek `pick.ts` przestaje mówić „wait for their own UI”. Dane:
+`E3.6.place_build_30` PLACE_VALUE `{build, 11, 30}` drag, `E4.1.place_build_100` `{build, 21, 99}` drag (kroki już grywalne
+— kolejność kroków bez zmian; zmienia się tylko liczba umiejętności kroku, więc próg `ceil(0.5·n)` — pełny unit i e2e to
+sprawdzają). `pick.test.ts`: umiejętności `drag` w puli.
 
 #### 3. Helpery e2e
 
@@ -694,54 +737,85 @@ dziesiątki i jedności, `dragTouch` z `targets.drag.tray[kind]` do `targets.dra
 `answerWrong` — buduje `answer + 1` (dodatkowa jedność; `answer − 1` gdy jedności = 9) i „OK”. Między przeciągnięciami
 `expect.poll` na `snapshot.mat`.
 
-#### 4. Luki, follow-upy, dokumentacja
-
-**File**: `docs/design-gaps.md`, `context/changes/drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md` (nowy), `CLAUDE.md`
-
-**Intent**: wiersz 55; sprawdzenie, że wiersze 52–58 i komentarze `DESIGN-GAP` w kodzie się zgadzają; wiersz 7 oznaczony
-jako zamknięty przez 54/55. Follow-upy z `Trigger:`: S-13b (PUZZLE_GRID, GRID, PERIMETER, „ustaw zegar”; `Trigger: S-13b`),
-BONDS pary / CHOOSE_OP z obrazkiem (`Trigger: S-13b or S-14`), podświetlenie na rysunku w podpowiedzi (`Trigger: S-14 or a
-teacher read asking for it`), rysunek w podglądzie błędów rodzica (`Trigger: first save-format change (v2)`), oś liczbowa
-jako podpowiedź ADD_SUB (`Trigger: S-14`), regrupowanie 10 jedności i setki na macie (`Trigger: S-14 or a child stuck on
-E4.8`). Zamknięte tu: follow-upy S-04 „select/drag UI”, „mode on Task”, „snapshot answer copy”. `CLAUDE.md` Current state:
-zdanie o S-13 (`TaskVisual`, `Task.input`, `pictureLayout`, widżety, `blockDrag`, `select`, `?e2eSkills`); „Not yet
-present” poprawione (grupa 2–4 tylko częściowo; grid/obwód w S-13b).
-
-#### 5. Seam sweep
-
-**File**: pliki faz 1–8
-
-**Intent**: brak martwego `throw` dla trybów; `TaskPicture` bez placeholderów; jedna geometria klocka (`BaseTenBlocks` ↔
-`BlockMat`); jedna geometria OK (`SelectTiles` ↔ `BlockMat`); nieaktualne komentarze (`pick.ts` nagłówek „'select' and
-'drag' wait for their own UI (S-13)”, `view.ts`, `types.ts` „drawing description”); `answerSpot` z gałęzią na każdy tryb;
-`hideTaskLayer` ukrywa każdy nowy widżet (zrzut ekranu podsumowania po zadaniu z rysunkiem).
-
 ### Success Criteria:
 
 #### Automated Verification:
 
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run sample -- E3 --count 6` i `E4` bez naruszeń (nowe umiejętności `build`)
-- E2E (orkiestrator, `e2e-request-p8.md`): pełne `npx playwright test` `<baseline gałęzi e2e> + 0` — specy z losowaniem E3 zielone z `select` i `drag` w puli
-- `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
+- E2E (orkiestrator, `e2e-request-p9.md`): pełne `npx playwright test` `<baseline gałęzi e2e> + 0` — specy z losowaniem E3 zielone z `select` i `drag` w puli
 - `grep -rn "Unsupported input mode" src/` pusty; `grep -n "wait for their own UI" src/core/round/pick.ts` pusty
-- Deliberate break: `playable` bez `drag` → test „umiejętności `drag` w puli” czerwony; `CLAUDE.md` wskazuje nieistniejący `src/core/blockdrag.ts` → `validate-rule-files.sh` FAIL; przywrócone; meta-check: walidator czyta ścieżki z reguł, a sklejkę zdarzeń sceny (anulowanie ≠ upuszczenie) dowodzi dopiero e2e fazy 9 (`e2e-break-p9b.patch`)
+- Deliberate break: `playable` bez `drag` → test „umiejętności `drag` w puli” czerwony; przywrócone; meta-check: sklejkę zdarzeń sceny (anulowanie ≠ upuszczenie) dowodzi dopiero e2e fazy 11 (`e2e-break-p11b.patch`)
 - `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual Verification:
 
-- [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii z faz 1–8; DESIGN-GAP 52–58; follow-upy z `Trigger:`
 - [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1 (`npm run sample -- E3 --count 6`, `E4`): „Zbuduj z klocków liczbę 23.”, podpowiedzi „2 dziesiątki i 3 jedności”
 - [visual] Zrzuty (gest przez rzutowy spec Playwright `*.local` na buildzie haka, profil § 8): `drag` start (pusta mata), klocek w locie pod palcem, po upuszczeniu na matę (2 pręty, 3 kostki), po upuszczeniu poza matą (klocek wrócił), pasek podpowiedzi po złej liczbie, kroki rozwiązania obok maty, podsumowanie rundy po zadaniu z rysunkiem (nic nie zostaje) — 1440×900 i 1024×768
 - [human] Prawdziwy tablet (iPad z ekranu początkowego, Android PWA): przeciąganie klocka palcem płynne, upuszczenie na krawędzi maty przewidywalne, stuknięcie dokłada/zdejmuje, gest systemowy (przeciągnięcie od krawędzi) nie kładzie klocka; `select` zaznacza bez przypadkowych podwójnych stuknięć
-- [human] Decyzje wbrew literze ZADANIA § 4: CLOCK bez „przeciągania wskazówek” (→ S-13b); budowa liczby także stuknięciem w zasobnik (nie tylko przeciąganiem); podgląd błędów rodzica bez rysunku
+
+---
+
+## Phase 10: Dokumentacja, follow-upy i seam sweep
+
+Driver: impl
+Driver why: ostatnia faza `impl`/`tdd` — seam sweep całej zmiany, luki projektu, follow-upy i `CLAUDE.md`; nic do prowadzenia failing testem, dowód w walidatorze plików reguł i pełnej bramce.
+
+### Overview
+
+Zamknięcie zmiany przed e2e: dokumenty zgodne z kodem, martwy kod i komentarze z faz 1–9 usunięte, każdy odłożony temat ma
+`Trigger:`.
+
+### Changes Required:
+
+#### 1. Luki, follow-upy, dokumentacja
+
+**File**: `docs/design-gaps.md`, `context/changes/drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md` (nowy), `CLAUDE.md`
+
+**Intent**: sprawdzenie, że wiersze 52–58 i komentarze `DESIGN-GAP` w kodzie się zgadzają; wiersz 7 oznaczony jako
+zamknięty przez 54/55. Follow-upy z `Trigger:`: S-13b (PUZZLE_GRID, GRID, PERIMETER, „ustaw zegar”; `Trigger: S-13b`),
+BONDS pary / CHOOSE_OP z obrazkiem (`Trigger: S-13b or S-14`), podświetlenie na rysunku w podpowiedzi (`Trigger: S-14 or a
+teacher read asking for it`), rysunek w podglądzie błędów rodzica i przykład błędu dla `select` (tablica nie trafia do
+`firstWrong`; `Trigger: first save-format change (v2)`), oś liczbowa jako podpowiedź ADD_SUB (`Trigger: S-14`),
+regrupowanie 10 jedności i setki na macie (`Trigger: S-14 or a child stuck on E4.8`). Zamknięte tu: follow-upy S-04
+„select/drag UI”, „mode on Task”, „snapshot answer copy” (archiwum `2026-10-12-task-round-stars`). Follow-upy z triggerem
+plikowym, który ta zmiana uruchamia (plan-review F3) — każdy zamknięty, jeśli faza dotknęła ich kodu, albo przeniesiony z
+nowym `Trigger:` i powodem: wskaźnik kroków rozwiązania (`Trigger: the next change to SolutionSteps`, archiwum
+`2026-10-12-narrator-round-summary`; faza 4 zmienia tylko prostokąt `SolutionSteps.show`), „Oblicz.” przed porównaniami
+(`Trigger: S-17 or the next change to drawPrompt`; faza 1 poszerza tylko typy), ustalenia audytu M-1, M-2, M-13, H-3, H-4
+(`Trigger: next change to TaskScene / narrator`, archiwum `2026-10-13-observability-c1-c2` — przeczytać, zamknąć dotknięte).
+`CLAUDE.md` Current state: zdanie o S-13 (`TaskVisual`, `Task.input`, `pictureLayout`, widżety, `blockDrag`, `select`,
+`?e2eSkills`); „Not yet present” poprawione (grupa 2–4 tylko częściowo; grid/obwód w S-13b).
+
+#### 2. Seam sweep
+
+**File**: pliki faz 1–9
+
+**Intent**: brak martwego `throw` dla trybów; `TaskPicture` bez placeholderów; jedna geometria klocka (`BaseTenBlocks` ↔
+`BlockMat`); jedna geometria OK (`SelectTiles` ↔ `BlockMat`); nieaktualne komentarze (`view.ts`, `types.ts` „drawing
+description”); `answerSpot` z gałęzią na każdy tryb; `hideTaskLayer` ukrywa każdy nowy widżet (zrzut ekranu podsumowania
+po zadaniu z rysunkiem — wiersz 9.7 [visual]).
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
+- `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
+- Deliberate break: `CLAUDE.md` wskazuje nieistniejący `src/core/blockdrag.ts` → `validate-rule-files.sh` FAIL; przywrócone; meta-check: walidator czyta ścieżki z reguł, nie treść zdań
+- `npm run build` drukuje `e2e hook: absent (`
+
+#### Manual Verification:
+
+- [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii z faz 1–9; DESIGN-GAP 52–58; follow-upy z `Trigger:` (także plikowe z plan-review F3)
+- [human] Decyzje wbrew literze ZADANIA § 4: CLOCK bez „przeciągania wskazówek” (→ S-13b); 24-godzinny w kierunku tarcza → „15.00” (ZADANIA: „15.00 to która na tarczy?”); budowa liczby także stuknięciem w zasobnik i bez setek (E4.8 tylko odczyt); podgląd błędów rodzica bez rysunku
 - [human] Akceptacja tekstów nowych zadań (`pl.tasks.clock*`, `length*`, `placeValue*`, `data*`, `src/data/charts.ts`) i `childName` E3.3, E3.4, E3.5, E4.3, E4.7
 
 ---
 
-## Phase 9: Zadania z rysunkiem, `select` i `drag` dotykiem — e2e (#11)
+## Phase 11: Zadania z rysunkiem, `select` i `drag` dotykiem — e2e (#11)
 
 Driver: e2e
-Driver why: ryzyko #11 (runda grana prawdziwą ścieżką dotyku) dla nowych trybów i rysunku istnieje tylko w renderowanej stronie z CDP touch i skalowaniem FIT; zbudowane w fazach 4–8, kontrakt `E2E=on`.
+Driver why: ryzyko #11 (runda grana prawdziwą ścieżką dotyku) dla nowych trybów i rysunku istnieje tylko w renderowanej stronie z CDP touch i skalowaniem FIT; zbudowane w fazach 4–10, kontrakt `E2E=on`.
 
 ### Overview
 
@@ -754,8 +828,8 @@ Nowy `tests/e2e/drawn-tasks.spec.ts` (projekt `chromium-hook`), umiejętności w
 
 **File**: `playwright.config.ts`, `tests/e2e/support/welcome.ts`
 
-**Intent**: `drawn-tasks` w regexie `ROUND_SPEC`; `passWelcome` przyjmuje opcjonalny ciąg zapytania (np.
-`?e2eSkills=…`) bez zmiany dotychczasowych wywołań. Komenda bramki bez zmian.
+**Intent**: `drawn-tasks` w regexie `ROUND_SPEC`; `passWelcome(page, query?)` już przyjmuje parametry URL
+(`Record<string, string>`, np. `{ e2eSkills: '…' }`) — `welcome.ts` bez zmian (plan-review F6). Komenda bramki bez zmian.
 
 #### 2. Spec
 
@@ -776,9 +850,9 @@ klocka na macie → `mat` −1 → zbudowanie odpowiedzi → „OK” → gwiazd
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; punkty z haka (wnętrza kształtów); żadnego
 `page.clock`, żadnego czekania na czas — `expect.poll` na migawce.
 
-**Chromium niedostępny w sesji agenta**: protokół request-file — spec bez commita, `e2e-request-p9.md` w katalogu zmiany
+**Chromium niedostępny w sesji agenta**: protokół request-file — spec bez commita, `e2e-request-p11.md` w katalogu zmiany
 (komendy zielonych uruchomień i tabela przerw jak `context/archive/2026-10-13-save-export-import-reset/` — plik
-`e2e-request-p7.md`), patche `e2e-break-p9a.patch` … `e2e-break-p9d.patch` (tylko kod produkcyjny), `STATUS: BLOCKED —
+`e2e-request-p7.md`), patche `e2e-break-p11a.patch` … `e2e-break-p11d.patch` (tylko kod produkcyjny), `STATUS: BLOCKED —
 e2e needs orchestrator run (request file written)`; agent kończący commituje spec po wyniku orkiestratora. Wzór uruchomienia
 w podagencie: jedno zwykłe `npx playwright test --config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts …`.
 
@@ -787,10 +861,10 @@ w podagencie: jedno zwykłe `npx playwright test --config=/Users/kamilp/Dev/Mart
 #### Automated Verification:
 
 - `npx playwright test tests/e2e/drawn-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5` passed
-- Deliberate break (patch `e2e-break-p9a.patch`): „OK” w `SelectTiles` wysyła pusty zbiór zamiast zaznaczonego → (b), (e) czerwone; przywrócone
-- Deliberate break (patch `e2e-break-p9b.patch`): `TaskScene` mapuje `wasCanceled`/`pointerupoutside` na `up` zamiast `cancel` → (d) czerwony; meta-check: unit fazy 7 zielone przy tej przerwie — e2e dowodzi sklejki, nie reduktora
-- Deliberate break (patch `e2e-break-p9c.patch`): `TaskScene.render` nie pokazuje `TaskPicture` (`setVisible(false)`) → (a) czerwony na `targets.picture`; meta-check: hak czyta widoczność widżetu, nie piksele — piksele dowodzą zrzuty fazy 4–5
-- Deliberate break (patch `e2e-break-p9d.patch`): upuszczenie z `moved` poza matą dokłada klocek → (c) czerwony; przywrócone
+- Deliberate break (patch `e2e-break-p11a.patch`): „OK” w `SelectTiles` wysyła pusty zbiór zamiast zaznaczonego → (b), (e) czerwone; przywrócone
+- Deliberate break (patch `e2e-break-p11b.patch`): `TaskScene` mapuje `wasCanceled`/`pointerupoutside` na `up` zamiast `cancel` → (d) czerwony; meta-check: unit fazy 8 zielone przy tej przerwie — e2e dowodzi sklejki, nie reduktora
+- Deliberate break (patch `e2e-break-p11c.patch`): `TaskScene.render` nie pokazuje `TaskPicture` (`setVisible(false)`) → (a) czerwony na `targets.picture`; meta-check: hak czyta widoczność widżetu, nie piksele — piksele dowodzą zrzuty fazy 4–5
+- Deliberate break (patch `e2e-break-p11d.patch`): upuszczenie z `moved` poza matą dokłada klocek → (c) czerwony; przywrócone; meta-check: tę regułę pilnują też unit fazy 8 — e2e dowodzi, że scena oddaje zdarzenia reduktorowi (plan-review F8)
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
 ---
@@ -810,7 +884,7 @@ w podagencie: jedno zwykłe `npx playwright test --config=/Users/kamilp/Dev/Mart
 
 ### Manual Testing Steps:
 
-1. Zrzuty każdego stanu z faz 4, 5, 6, 8 — 1440×900 i 1024×768.
+1. Zrzuty każdego stanu z faz 4, 6, 7, 9 — 1440×900 i 1024×768.
 2. Odczyt nauczyciela wszystkich zmienionych kroków (E1.6, E3.3–E3.7, E3.11, E4.1, E4.3, E4.7, E4.8).
 3. Tablet: przeciąganie i zaznaczanie palcem, gest systemowy w trakcie przeciągania.
 
@@ -833,10 +907,14 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 - **E3.5 i E4.7 częściowe** (bez PUZZLE_GRID/PERIMETER/CAPACITY): dziecko odblokowuje je samą linijką; S-13b/S-14 dołożą
   umiejętności, co zmieni próg `ceil(0.5·n)` — akceptowane.
 - **Przeciąganie na iPadzie**: gest od krawędzi ekranu może dać `touchcancel` — reduktor go ignoruje (dowód e2e (d)), ale
-  odczucie sprawdza tylko `[human]` 8.x.
-- **Chromium w sesji agenta**: fazy 5, 6, 8, 9 mogą wymagać protokołu request-file.
-- **Zrzuty fazy 4** bez szwu `?e2eSkills` (dochodzi w fazie 6): zrzuty zegara/linijki mogą przejść do fazy 5 (dane) — wiersz
-  4.x zamyka się wtedy w fazie 5.
+  odczucie sprawdza tylko `[human]` 9.8.
+- **Chromium w sesji agenta**: fazy 6, 7, 9, 11 mogą wymagać protokołu request-file.
+- **Zrzuty fazy 4** bez szwu `?e2eSkills` (dochodzi w fazie 7): zrzuty zegara/linijki mogą przejść do fazy 6 (dane) — wiersz
+  4.4 zamyka się wtedy razem z 6.8.
+- **`select` bez przykładu błędu i z powtórką promptu** (plan-review F9): pierwsza zła odpowiedź `select` to tablica, której
+  `captureFirstWrong` (`src/core/round.ts`) nie zapisuje — podgląd rodzica nie pokaże przykładu (follow-up v2, faza 10);
+  prompt `select` jest stały i bez rysunku, więc dwa zadania `select` w jednej rundzie mają ten sam klucz `distinctTasks`
+  (jak dziś każdy stały prompt) — akceptowane, pula E3 ma ~25 umiejętności.
 
 ## References
 
@@ -853,8 +931,9 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 1. **Podział slice'a utrzymany: S-13 = infrastruktura rysunku + CLOCK (odczyt), LENGTH, PLACE_VALUE (odczyt i budowa
    `drag`), DATA, `select`, `drag`; PUZZLE_GRID, GRID, PERIMETER i „ustaw zegar” → S-13b (proposed, dopisane do roadmapy w
    tym commicie).** Odrzucone: wciągnięcie siatki (12+ faz), przeniesienie `drag` do S-13b (plan mieści się w 9 fazach z
-   `drag`, więc warunek research „> 9 faz” nie zachodzi). Wbrew literze roadmapy → `[human]` 5.x. Zmieniłoby: faza 8
-   przekraczająca budżet kontekstu agenta — wtedy `drag` (fazy 7–8) wychodzi do S-13b, a S-13 kończy się na fazie 6 + e2e.
+   `drag`, więc warunek research „> 9 faz” nie zachodzi; plan-review podzielił tę samą pracę na 11 mniejszych faz — zakres się
+   nie zmienił, więc warunek, który mierzył zakres, dalej nie zachodzi). Wbrew literze roadmapy → `[human]` 6.9. Zmieniłoby: faza 9
+   przekraczająca budżet kontekstu agenta — wtedy `drag` (fazy 8–9) wychodzi do S-13b, a S-13 kończy się na fazie 7 + 10 + e2e.
 2. **Zakres DATA: diagram słupkowy, 3–4 słupki, wartości 1–10 w E3.4, wartości różne (bez remisu na szczycie i dnie),
    etykiety z `src/data/charts.ts` (tematy z rzeczownikami w słowniku).** Odrzucone: wartości do 20 (oś za gęsta na 450 px),
    piktogram (drugi widżet), tabela (tekst). Zmieniłoby: odczyt nauczyciela uznający 10 za za mało dla połowy E3 albo
@@ -868,27 +947,28 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
    wskazania wskazówki nie uczy.
 5. **`drag` z własnym reduktorem w `core`; stuknięcie w zasobnik też dokłada klocek, stuknięcie klocka na macie go
    zdejmuje.** Odrzucone: drag Phasera (anulowanie = upuszczenie), sam drag bez stuknięcia (7-latki na szkle), przycisk
-   „wyczyść matę” (dodatkowy element bez kitu). Wbrew literze ZADANIA („przeciągane na tackę”) → `[human]` 8.x. Zmieniłoby:
+   „wyczyść matę” (dodatkowy element bez kitu). Wbrew literze ZADANIA („przeciągane na tackę”) → `[human]` 10.6. Zmieniłoby:
    test na tablecie, w którym stuknięcia dokładają klocki przypadkiem.
 6. **Budowa bez setek (`build` max 99, mata do 9 klocków na rodzaj, bez regrupowania).** Zmieniłoby: dziecko utknięte na E4.8
    — follow-up.
 7. **CLOCK: odpowiedź kafelkami (3, tekst „15.00”/„7.30” wg ZADANIA), 24-godzinny jako „popołudniowa godzina na tarczy →
    zapis 13–23”.** Odrzucone: klawiatura (brak kropki), słowa („piętnasta” — dłuższe kafelki, inny zapis niż szkoła),
-   kafelki z tarczami (trzy tarcze na ekranie — nowy widżet). Wbrew podpisowi kitu „3:30” → `[human]` 4.x. Zmieniłoby:
+   kafelki z tarczami (trzy tarcze na ekranie — nowy widżet). Wbrew podpisowi kitu „3:30” → `[human]` 4.6; kierunek 24-godzinny wbrew przykładowi ZADANIA → `[human]` 10.6. Zmieniłoby:
    odczyt nauczyciela wskazujący zapis słowny w podręcznikach etapu.
 8. **LENGTH na klawiaturze, odpowiedzi całkowite (cm w E3, mm w E4); m ↔ cm tekstem.** Odrzucone: pół centymetra w E3
    (klawiatura bez przecinka). Zmieniłoby: krok wymagający ułamków — dopiero E5+.
 9. **Szew e2e `?e2eSkills` (hak, marker w strażniku) zamiast losowania do skutku.** Research zakładał brak nowego szwu;
    deterministyczny spec `select`/`drag` go wymaga (losowanie przy 1 z ~25 umiejętności E3 = niestabilny test). Klucz rejestru
    `forcedSkills` (nie marker). Zmieniłoby: istniejący sposób wymuszenia zadania w buildzie haka (nie znaleziony).
-10. **Kolejność kroków zmienia się raz (faza 5) — generatory w fazach 2–3 bez danych programu**; odczyt nauczyciela przez
-    `sample` w fazie 5 i 8, w fazach 2–3 z losowań drukowanych w teście. Odrzucone: dane w fazach 2–3 (trzykrotna aktualizacja
+10. **Kolejność kroków zmienia się raz (faza 6) — generatory w fazach 2–3 bez danych programu**; odczyt nauczyciela przez
+    `sample` w fazie 6 i 9, w fazach 2–3 z losowań drukowanych w teście. Odrzucone: dane w fazach 2–3 (trzykrotna aktualizacja
     testów przypiętych i speców `first-launch`/`adaptive`). Zmieniłoby: brak.
-11. **Helpery e2e w fazie, która dopuszcza tryb** (6 — `select`, 8 — `drag`), dowód helpera `select` jednorazowym
-    uruchomieniem z `?e2eSkills` w fazie 6; pełna spec w fazie 9. Research decyzja 5.
-12. **Brak zmiany zapisu; podgląd rodzica bez rysunku** (DESIGN-GAP 58, follow-up z triggerem v2) → `[human]` 8.x.
-13. **Dziewięć faz: 3 × tdd (model, CLOCK+LENGTH, PLACE_VALUE+DATA), 1 × tdd (reduktor), 4 × impl (po ≤ 2 nowe komponenty
-    UI: ClockFace+Ruler, BaseTenBlocks+BarChart, SelectTiles, BlockMat; `TaskPicture` to dyspozytor), 1 × e2e po seam sweep.**
+11. **Helpery e2e w fazie, która dopuszcza tryb** (7 — `select`, 9 — `drag`), dowód helpera `select` jednorazowym
+    uruchomieniem z `?e2eSkills` w fazie 7; pełna spec w fazie 11. Research decyzja 5.
+12. **Brak zmiany zapisu; podgląd rodzica bez rysunku** (DESIGN-GAP 58, follow-up z triggerem v2) → `[human]` 10.6.
+13. **Jedenaście faz (po plan-review F1; plan pisał dziewięć): 3 × tdd (model, CLOCK+LENGTH, PLACE_VALUE+DATA), 1 × tdd
+    (reduktor), 6 × impl (ClockFace+Ruler, BaseTenBlocks+BarChart, dane E3/E4, SelectTiles, BlockMat, dokumentacja + seam
+    sweep; po ≤ 2 nowe komponenty UI, `TaskPicture` to dyspozytor), 1 × e2e po seam sweep.**
 14. **Roadmapa: S-13 → `planning`** (skill) i nowa pozycja **S-13b `drawn-grid-tasks-e3-e4` (proposed)**, commit z planem.
 
 ## Progress
@@ -947,76 +1027,98 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 - [ ] 4.5 [reviewer] Widżety bez tekstów i liczb balansu; `TaskPicture` w `hideTaskLayer`
 - [ ] 4.6 [human] Decyzja wbrew podpisowi kitu „3:30”: czasy zapisane kropką wg ZADANIA („15.00”, „7.30”)
 
-### Phase 5: `BaseTenBlocks`, `BarChart` i nowe kroki grywalne E3/E4
+### Phase 5: `BaseTenBlocks` i `BarChart`
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 5.3 Żaden krok grupy 1 pusty; każdy grywalny krok ma `childName`
-- [ ] 5.4 Deliberate break: brak `childName` E4.3 / zmieniony `minStartSteps` → czerwone; przywrócone; meta-check
-- [ ] 5.5 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`
-- [ ] 5.6 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0 lub + N`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [ ] 5.2 `TaskPicture` bez placeholdera; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
 
-- [ ] 5.7 [reviewer] Odczyt nauczyciela `sample` E3/E4 `--count 6` dla E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8
-- [ ] 5.8 [visual] Zrzuty: klocki (E3.6, E4.8), diagram `most` i `diff`, diagram z krokami, karta „Nowa umiejętność!” E3.3 — 1440×900 i 1024×768
-- [ ] 5.9 [human] Decyzja wbrew literze roadmapy S-13: bez osi, słupka pisemnego, grafów, figur; grid/obwód/„ustaw zegar” → S-13b; DATA w zakresie
+- [ ] 5.3 [reviewer] Widżety bez tekstów i liczb balansu; geometria klocka wyeksportowana; DESIGN-GAP 53
 
-### Phase 6: Tryb `select` — zaznaczanie kafelków, helpery e2e i szew `?e2eSkills`
+### Phase 6: Nowe kroki grywalne E3/E4 — dane programu, testy przypięte do kolejności i e2e
 
 #### Automated
 
 - [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` w puli; jednorazowo `task-round` z `?e2eSkills=E3.7.select_even_30` zielony
-- [ ] 6.3 `npm run build` drukuje `e2e hook: absent (`; `e2eSkills` nieobecny w `dist/`
-- [ ] 6.4 Deliberate break: `toggleSelected` nie zdejmuje → czerwony; meta-check nazwy klucza rejestru vs marker; przywrócone
+- [ ] 6.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń, z linią `visual:`
+- [ ] 6.3 Żaden krok grupy 1 pusty; każdy grywalny krok ma `childName`
+- [ ] 6.4 Deliberate break: brak `childName` E4.3 / E3.4 z powrotem `skills: []` → czerwone; przywrócone; meta-check
+- [ ] 6.5 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`
+- [ ] 6.6 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Odczyt nauczyciela `selectEven` w E1.6 i E3.7; `answerWrong` dla `select` niezależny od kolejności
-- [ ] 6.6 [visual] Zrzuty: `select` przed, z dwoma zaznaczonymi, po złym zbiorze, w krokach, w `retype` — 1440×900 i 1024×768
+- [ ] 6.7 [reviewer] Odczyt nauczyciela `sample` E3/E4 `--count 6` dla E3.3, E3.4, E3.5, E3.6, E3.11, E4.1, E4.3, E4.7, E4.8
+- [ ] 6.8 [visual] Zrzuty: klocki (E3.6, E4.8), diagram `most` i `diff`, diagram z krokami, karta „Nowa umiejętność!” E3.3 (i zegar/linijka, jeśli 4.4 ich nie ma) — 1440×900 i 1024×768
+- [ ] 6.9 [human] Decyzja wbrew literze roadmapy S-13: bez osi, słupka pisemnego, grafów, figur; grid/obwód/„ustaw zegar” → S-13b; DATA w zakresie
 
-### Phase 7: Reduktor przeciągania klocków w `core`
+### Phase 7: Tryb `select` — zaznaczanie kafelków, helpery e2e i szew `?e2eSkills`
 
 #### Automated
 
-- [ ] 7.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check
-- [ ] 7.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [ ] 7.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` w puli; jednorazowo `task-round` z `?e2eSkills=E3.7.select_even_30` zielony
+- [ ] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eSkills` nieobecny w `dist/`
+- [ ] 7.4 Deliberate break: `toggleSelected` nie zdejmuje → czerwony; meta-check nazwy klucza rejestru vs marker; przywrócone
 
 #### Manual
 
-- [ ] 7.4 [reviewer] `blockDrag.ts` bez Phasera i globali; surowe zdarzenia; liczby w `balance.ts`
+- [ ] 7.5 [reviewer] Odczyt nauczyciela `selectEven` w E1.6 i E3.7; `answerWrong` dla `select` niezależny od kolejności
+- [ ] 7.6 [visual] Zrzuty: `select` przed, z dwoma zaznaczonymi, po złym zbiorze, w krokach, w `retype` — 1440×900 i 1024×768
 
-### Phase 8: Tryb `drag` — zasobnik i mata, PLACE_VALUE „zbuduj”, helpery e2e, dokumentacja i seam sweep
+### Phase 8: Reduktor przeciągania klocków w `core`
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `sample` E3/E4 bez naruszeń
-- [ ] 8.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` i `drag` w puli
-- [ ] 8.3 `validate-rule-files.sh` PASS
-- [ ] 8.4 `Unsupported input mode` i „wait for their own UI” usunięte
-- [ ] 8.5 Deliberate break: `playable` bez `drag` → test puli czerwony; `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 8.6 `npm run build` drukuje `e2e hook: absent (`
+- [ ] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [ ] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check
+- [ ] 8.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
-- [ ] 8.7 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii; DESIGN-GAP 52–58; follow-upy z `Trigger:`
-- [ ] 8.8 [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1
-- [ ] 8.9 [visual] Zrzuty: `drag` start, klocek w locie, po upuszczeniu na matę, po upuszczeniu poza matą, podpowiedź, kroki obok maty, podsumowanie po zadaniu z rysunkiem — 1440×900 i 1024×768
-- [ ] 8.10 [human] Prawdziwy tablet (iPad, Android): odczucie przeciągania, krawędź maty, stuknięcia, gest systemowy; `select` bez przypadkowych stuknięć
-- [ ] 8.11 [human] Decyzje wbrew literze ZADANIA: CLOCK bez przeciągania wskazówek; budowa także stuknięciem; podgląd rodzica bez rysunku
-- [ ] 8.12 [human] Akceptacja tekstów nowych zadań i `childName` E3.3, E3.4, E3.5, E4.3, E4.7
+- [ ] 8.4 [reviewer] `blockDrag.ts` bez Phasera i globali; surowe zdarzenia; liczby w `balance.ts`
 
-### Phase 9: Zadania z rysunkiem, `select` i `drag` dotykiem — e2e (#11)
+### Phase 9: Tryb `drag` — zasobnik i mata, PLACE_VALUE „zbuduj”, helpery e2e
 
 #### Automated
 
-- [ ] 9.1 `drawn-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5`
-- [ ] 9.2 Deliberate break (patch `e2e-break-p9a.patch`): „OK” wysyła pusty zbiór → (b), (e) czerwone; przywrócone
-- [ ] 9.3 Deliberate break (patch `e2e-break-p9b.patch`): anulowany dotyk jako `up` → (d) czerwony; meta-check
-- [ ] 9.4 Deliberate break (patch `e2e-break-p9c.patch`): rysunek ukryty → (a) czerwony; meta-check
-- [ ] 9.5 Deliberate break (patch `e2e-break-p9d.patch`): upuszczenie poza matą dokłada → (c) czerwony; przywrócone
-- [ ] 9.6 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `sample` E3/E4 bez naruszeń
+- [ ] 9.2 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `select` i `drag` w puli
+- [ ] 9.3 `Unsupported input mode` i „wait for their own UI” usunięte
+- [ ] 9.4 Deliberate break: `playable` bez `drag` → test puli czerwony; przywrócone; meta-check
+- [ ] 9.5 `npm run build` drukuje `e2e hook: absent (`
+
+#### Manual
+
+- [ ] 9.6 [reviewer] Odczyt nauczyciela `build` w E3.6 i E4.1
+- [ ] 9.7 [visual] Zrzuty: `drag` start, klocek w locie, po upuszczeniu na matę, po upuszczeniu poza matą, podpowiedź, kroki obok maty, podsumowanie po zadaniu z rysunkiem — 1440×900 i 1024×768
+- [ ] 9.8 [human] Prawdziwy tablet (iPad, Android): odczucie przeciągania, krawędź maty, stuknięcia, gest systemowy; `select` bez przypadkowych stuknięć
+
+### Phase 10: Dokumentacja, follow-upy i seam sweep
+
+#### Automated
+
+- [ ] 10.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
+- [ ] 10.2 `validate-rule-files.sh` PASS
+- [ ] 10.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
+- [ ] 10.4 `npm run build` drukuje `e2e hook: absent (`
+
+#### Manual
+
+- [ ] 10.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii; DESIGN-GAP 52–58; follow-upy z `Trigger:` (także plikowe)
+- [ ] 10.6 [human] Decyzje wbrew literze ZADANIA: CLOCK bez przeciągania wskazówek; 24-godzinny tarcza → „15.00”; budowa także stuknięciem i bez setek; podgląd rodzica bez rysunku
+- [ ] 10.7 [human] Akceptacja tekstów nowych zadań i `childName` E3.3, E3.4, E3.5, E4.3, E4.7
+
+### Phase 11: Zadania z rysunkiem, `select` i `drag` dotykiem — e2e (#11)
+
+#### Automated
+
+- [ ] 11.1 `drawn-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 5`
+- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): „OK” wysyła pusty zbiór → (b), (e) czerwone; przywrócone
+- [ ] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): anulowany dotyk jako `up` → (d) czerwony; meta-check
+- [ ] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): rysunek ukryty → (a) czerwony; meta-check
+- [ ] 11.5 Deliberate break (patch `e2e-break-p11d.patch`): upuszczenie poza matą dokłada → (c) czerwony; przywrócone
+- [ ] 11.6 `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
