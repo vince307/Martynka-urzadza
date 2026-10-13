@@ -1,0 +1,144 @@
+// Risks #2, #10 (the part "a reload comes back to the saved state") and #16 ("when the save is written", after a purchase)
+// of context/foundation/test-plan.md; FR-020 (autosave) and FR-021 (an unreadable save is never overwritten).
+// The reducers and the autosaver are unit-tested; this spec proves the seams in the real browser: the load outcome reaches the
+// session before the first frame, the room scene flushes a purchase at once, and a failed load blocks every write.
+// Persistence: a reload keeps IndexedDB, so the state after it can only come from the SAVE. IndexedDB is never opened or written
+// here: the saved state is read through the read-only hook (snapshot.save + the game state). Runs in the chromium-hook project.
+import { readFile } from 'node:fs/promises';
+import { test, expect, type Page } from '@playwright/test';
+import { passWelcome, gateProblem, typeIntoGate } from './support/welcome';
+import { answerRight, answerWrong, fromHook, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
+import { pl } from '../../src/data/pl';
+
+test.setTimeout(120_000);
+
+// Two misses, the solution and a retype pay no star: the balance stays as it was, and the room switch appears (it exists only between tasks).
+async function finishTaskWithoutStars(page: Page): Promise<void> {
+    await phaseIs(page, 'first');
+    await answerWrong(page);
+    await phaseIs(page, 'second');
+    await answerWrong(page);
+    await phaseIs(page, 'solution');
+    for (let guard = 0; guard < 10 && (await snapshot(page)).phase === 'solution'; guard++) {
+        const was = await snapshot(page);
+        await tapTarget(page, 'step');
+        await expect.poll(async () => {
+            const now = await snapshot(page);
+            return now.phase !== 'solution' || now.solutionStep > was.solutionStep;
+        }).toBe(true);
+    }
+    await phaseIs(page, 'retype');
+    await answerRight(page);
+    await phaseIs(page, 'done');
+}
+
+
+test('#2 #10 a reload comes back to the saved learner, stars and room', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eMonth: '10' });
+    await playRoundRight(page, 5);
+    // The round end is saved at once (not by the debounce).
+    await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ load: 'fresh', lastReason: 'now', dirty: false });
+    const before = await snapshot(page);
+    expect(before.save!.writes).toBeGreaterThanOrEqual(1);
+    expect(Number(before.counterText)).toBeGreaterThan(0); // differs from a fresh start
+    expect(before.learner?.history).toHaveLength(5);
+    const learner = before.learner!;
+
+    await page.reload();
+    await fromHook(page, 'snapshot');
+    // Not the welcome screen: the learner came from the save.
+    await screenIs(page, 'task');
+    const after = await snapshot(page);
+    expect(after.save?.load).toBe('loaded');
+    expect(after.counterText).toBe(before.counterText);
+    expect(after.stars).toBe(before.stars);
+    expect(after.learner?.stage).toBe(learner.stage);
+    expect(after.learner?.history).toEqual(learner.history);
+    expect(after.learner?.pendingUnlock).toBe(learner.pendingUnlock);
+    expect(after.learner?.warmupPending).toBe(false);
+});
+
+test('#16 FR-020 a purchase is saved at once and ?e2eStars seeds only a fresh start', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eStars: '20', e2eMonth: '10' });
+    expect((await snapshot(page)).stars).toBe(20);
+    await finishTaskWithoutStars(page);
+    await tapTarget(page, 'roomSwitch');
+    await screenIs(page, 'room');
+    expect((await snapshot(page)).stars).toBe(20);
+
+    // The floor: open the purchase panel, preview a thumbnail, "Wybieram".
+    await tapTarget(page, 'taskButton');
+    await expect.poll(async () => (await snapshot(page)).room?.panel.kind).toBe('open');
+    const thumbs = (await targets(page)).thumbs ?? [];
+    expect(thumbs.length).toBe(3);
+    await tapScene(page, thumbs[1]);
+    await expect.poll(async () => {
+        const panel = (await snapshot(page)).room?.panel;
+        return panel?.kind === 'open' ? panel.preview : null;
+    }).toBe(1);
+    await tapTarget(page, 'choose');
+    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(1);
+    // Saved at once: the reason is "now" and nothing waits for the debounce.
+    await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ lastReason: 'now', dirty: false });
+    const bought = await snapshot(page);
+    expect(bought.stars).toBe(15);
+    const chosen = bought.room!.chosen;
+
+    // The address still carries e2eStars=20: the saved balance wins over the seam.
+    await page.reload();
+    await screenIs(page, 'task');
+    const after = await snapshot(page);
+    expect(after.save?.load).toBe('loaded');
+    expect(after.counterText).toBe('15');
+    // The reload opened a new first task: pay nothing again, then the room switch exists.
+    await finishTaskWithoutStars(page);
+    expect((await snapshot(page)).stars).toBe(15);
+    await tapTarget(page, 'roomSwitch');
+    await screenIs(page, 'room');
+    const room = (await snapshot(page)).room!;
+    expect(room.tasksDone).toBe(1);
+    expect(room.chosen.floor).toBe(chosen.floor);
+});
+
+test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy and is never written', async ({ page }) => {
+    await silenceSpeech(page);
+    await page.goto('/?e2eSave=unreadable');
+    const card = page.getByRole('alertdialog', { name: pl.saveFailed.title });
+    await expect(card).toBeVisible();
+
+    // "Zachowaj kopię" sits behind the adult check; headless Chromium has no share sheet, so the copy is a download.
+    const downloaded = page.waitForEvent('download');
+    await card.getByRole('button', { name: pl.saveFailed.export }).tap();
+    await typeIntoGate(page, (await gateProblem(page)).product);
+    const download = await downloaded;
+    expect(download.suggestedFilename()).toBe(pl.saveFailed.fileName);
+    const text = await readFile(await download.path(), 'utf8');
+    expect(text).toContain('"version": 99');
+    expect(text).toContain('"stars": 7');
+    await expect(card).toBeVisible();
+
+    // "Graj dalej": the game starts on the welcome screen with writes blocked.
+    await card.getByRole('button', { name: pl.saveFailed.continue }).tap();
+    await expect(card).toBeHidden();
+    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await screenIs(page, 'welcome');
+    expect((await snapshot(page)).save).toMatchObject({ load: 'unreadable', blocked: true });
+
+    // The first change of the learner (an age tap) asks for a save: with the block it is skipped, never written.
+    let age: { x: number; y: number } | undefined;
+    await expect.poll(async () => {
+        age = (await targets(page)).ages?.[0];
+        return age !== undefined;
+    }).toBe(true);
+    await tapScene(page, age!);
+    await screenIs(page, 'task');
+    await expect.poll(async () => {
+        const save = (await snapshot(page)).save;
+        return save ? save.skipped + save.writes : 0;
+    }).toBeGreaterThanOrEqual(1);
+    const save = (await snapshot(page)).save!;
+    expect(save.writes).toBe(0);
+    expect(save.skipped).toBeGreaterThanOrEqual(1);
+});
