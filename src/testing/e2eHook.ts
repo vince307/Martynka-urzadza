@@ -1,5 +1,5 @@
 import type { Game } from 'phaser';
-import type { Autosaver, AutosaveStatus } from '../core/autosave';
+import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { SessionLearner } from '../core/placement';
 import type { Settings } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -37,6 +37,22 @@ export const e2eStars = (search: string): number | null => {
     }
     const stars = Number(raw);
     return stars <= E2E_MAX_STARS ? stars : null;
+};
+
+/** `?e2eSave=unreadable` makes the e2e build start with an in-memory store holding an unreadable save; anything else is null. */
+export const e2eSave = (search: string): 'unreadable' | null =>
+    new URLSearchParams(search).get('e2eSave') === 'unreadable' ? 'unreadable' : null;
+
+/** In-memory store for the e2e seam: reads a save from a future version, remembers writes. Never touches IndexedDB. */
+export const e2eSaveStore = (): SaveStore => {
+    let value: unknown = { version: 99, profileId: 'default', stars: 7 };
+    return {
+        read: () => Promise.resolve(value),
+        write: (next) => {
+            value = next;
+            return Promise.resolve();
+        },
+    };
 };
 
 export type E2EFailSite = 'step' | 'boot' | 'settings';

@@ -816,10 +816,10 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 5.1 `e2eSave.test.ts` i przypadek strażnika czerwone przed implementacją, zielone po; unit baseline + N
-- [ ] 5.2 `npm run build` drukuje `e2e hook: absent`; build `E2E_HOOK=1` przechodzi z `e2eSave` w wymaganych markerach
-- [ ] 5.3 Deliberate break `e2eSave(...)` bez `__E2E_HOOK__` → `npm run build` czerwony; przywrócone; meta-check
-- [ ] 5.4 `npx playwright test` zielony, baseline e2e + 0; pełna bramka lokalna zielona
+- [x] 5.1 `e2eSave.test.ts` i przypadek strażnika czerwone przed implementacją, zielone po; unit baseline + N
+- [x] 5.2 `npm run build` drukuje `e2e hook: absent`; build `E2E_HOOK=1` przechodzi z `e2eSave` w wymaganych markerach
+- [x] 5.3 Deliberate break `e2eSave(...)` bez `__E2E_HOOK__` → `npm run build` czerwony; przywrócone; meta-check
+- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; pełna bramka lokalna zielona
 
 #### Manual
 

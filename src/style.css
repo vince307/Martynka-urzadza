@@ -101,6 +101,22 @@ canvas {
     z-index: 18;
 }
 
+/* Unreadable-save card (DESIGN-GAP 42): below the parent dialogs (15) so the adult check opens over it. */
+.overlay-save-failed {
+    display: flex;
+    z-index: 10;
+}
+
+.overlay-save-failed button {
+    min-height: 96px;
+}
+
+.overlay-save-failed .overlay-secondary {
+    background: #FFF0CA;
+    color: #245C59;
+    border: 2px solid #C0A363;
+}
+
 /* The rotate overlay sits above everything and shows only in portrait. */
 .overlay-rotate {
     z-index: 20;

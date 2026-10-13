@@ -22,9 +22,13 @@ import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
 import { emptyRoomState } from './core/rooms';
 import { FIRST_ROOM } from './data/rooms';
-import { e2eFail, e2eMonth, e2eStars, installE2EHook } from './testing/e2eHook';
+import { e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
+import { createRng } from './core/rng';
+import { openParentGate } from './ui/dom/parentGate';
+import { exportRawSave } from './ui/dom/saveExport';
+import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
 
@@ -115,8 +119,28 @@ const freshSession = (stars: number): SessionSave => ({
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    const store = createIdbSaveStore();
+    // The e2e build may start with an in-memory store holding an unreadable save (?e2eSave=unreadable); never IndexedDB.
+    const store = __E2E_HOOK__ && e2eSave(window.location.search) === 'unreadable' ? e2eSaveStore() : createIdbSaveStore();
     const outcome = await loadSave(store);
+    if (outcome.kind === 'unreadable') {
+        // The old save stays untouched. The parent may keep a copy (behind the adult check); the game starts only on "Graj dalej".
+        const raw = outcome.raw;
+        await new Promise<void>((resolve) => {
+            const card = mountSaveFailedCard(document.body, {
+                onExport: () => {
+                    openParentGate({
+                        rng: createRng(Math.floor(Math.random() * 0x100000000)),
+                        onPass: () => void exportRawSave(raw),
+                        onCancel: () => undefined,
+                    });
+                },
+                onContinue: () => {
+                    card.remove();
+                    resolve();
+                },
+            });
+        });
+    }
     let session: SessionSave;
     if (outcome.kind === 'loaded') {
         const learner = outcome.session.learner
