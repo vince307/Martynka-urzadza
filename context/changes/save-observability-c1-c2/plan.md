@@ -649,9 +649,9 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [x] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — cadda19 (e2e: not runnable in this session (MachPort) — orchestrator gate)
+- [x] 4.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — cadda19 (e2e: orchestrator run on b337d4c, 29 passed)
 - [x] 4.2 Deliberate break: bez karty dla `unavailable` → unit zielone; zapis w handoff §3; meta-check — cadda19 (unit green on the break, proof is e2e of phase 6)
-- [x] 4.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — cadda19 (e2e: orchestrator gate)
+- [x] 4.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — cadda19 (e2e: orchestrator run on b337d4c, 29 passed)
 
 #### Manual
 
@@ -663,11 +663,11 @@ przyszłego builda, który go zna.
 
 #### Automated
 
-- [x] 5.1 `validate-rule-files.sh` PASS
-- [x] 5.2 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [x] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; `UIScene` bez `saveHealth` → unit zielone, zapis w handoff §3; meta-check
-- [x] 5.4 „nothing is shown” nieobecne w `src/`; opcja `blocked` usunięta z `main.ts`
-- [x] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 5.1 `validate-rule-files.sh` PASS — 9204dd8
+- [x] 5.2 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0` — 9204dd8 (e2e: orchestrator gate)
+- [x] 5.3 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; `UIScene` bez `saveHealth` → unit zielone, zapis w handoff §3; meta-check — 9204dd8 (UIScene without saveHealth: unit green, proof in e2e of phase 6)
+- [x] 5.4 „nothing is shown” nieobecne w `src/`; opcja `blocked` usunięta z `main.ts` — 9204dd8
+- [x] 5.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 9204dd8 (e2e: orchestrator gate)
 
 #### Manual
 
