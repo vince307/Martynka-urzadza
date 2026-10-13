@@ -715,7 +715,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Manual
 
-- [ ] 4.6 [visual] Podsumowanie z wyróżnionym „Do pokoju” i bez — 1440×900 i 1024×768
+- [x] 4.6 [visual] Podsumowanie z wyróżnionym „Do pokoju” i bez — 1440×900 i 1024×768 — reviews/visual-review.md, screenshots 02/04 (9096a52)
 
 ### Phase 5: Salon w pokoju i przycisk bieżącego zadania
 
@@ -728,7 +728,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Manual
 
-- [ ] 5.5 [visual] Salon 0 gwiazdek („masz 0/5”), salon 7 gwiazdek, głośnik w pokoju — 1440×900 i 1024×768
+- [x] 5.5 [visual] Salon 0 gwiazdek („masz 0/5”), salon 7 gwiazdek, głośnik w pokoju — 1440×900 i 1024×768 — reviews/visual-review.md, screenshots 01/05 (9096a52)
 
 ### Phase 6: Panel wariantów, podgląd w pokoju i zatwierdzenie z animacją
 
@@ -741,8 +741,8 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 #### Manual
 
 - [x] 6.4 [reviewer] Teacher read: „Wybieram”, „Zamknij” i napisy `pl.room` w kontekście pokoju — impl-review (PASS)
-- [ ] 6.5 [visual] Panel bez podglądu, podgląd 1/2/3, salon po zakupie, klatka animacji — 1440×900 i 1024×768
-- [ ] 6.6 [visual] Reduced motion: zakup bez animacji, lot gwiazdki wyłączony
+- [x] 6.5 [visual] Panel bez podglądu, podgląd 1/2/3, salon po zakupie, klatka animacji — 1440×900 i 1024×768 — reviews/visual-review.md, screenshots 06–09; fix 9096a52 (F1, miniatury)
+- [x] 6.6 [visual] Reduced motion: zakup bez animacji, lot gwiazdki wyłączony — reviews/visual-review.md, screenshots 03/10/11 (9096a52)
 
 ### Phase 7: Seam sweep, luki projektu, follow-upy i dokumentacja
 

@@ -1,60 +1,61 @@
 # Handoff — `first-furniture-purchase` (slice S-09)
 
-Written by `/10x-impl-review first-furniture-purchase` (autonomous run 2026-10-13-s09-s11). The slice is implemented and
-reviewed: APPROVED, `MERGE: CLEAR`; only [visual] and [human] rows remain. The next agent must not forget F1 (follow-up):
-"Wybieram" and the task button overlap in a 28 px strip — check it at the visual gate.
+Written by the visual-gate step (autonomous run 2026-10-13-s09-s11). All [visual] rows are captured and ticked; F1
+("Wybieram" over the task button) and the thin floor/walls thumbnails are fixed in `9096a52` (layout data + one line in
+`VariantPanel.show`), so production code changed after impl-review — the e2e suite was re-run green on it. Only the
+five [human] rows remain; the next agent must not tick them.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-furniture-purchase`, cut from `main` at `bb969f7` |
-| Commits | 23 before this step (`77c94d4`..`6f41b1f`), then fix `4f63d28` and this review commit |
+| Commits | 26 before this step's docs commit (`77c94d4`..`9096a52`), then `docs(first-furniture-purchase): bramka wizualna` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`): [visual] 4.6, 5.5, 6.5, 6.6; [human] 7.6–7.10 |
-| Working tree | clean after this commit |
+| `change.md` status | `impl_reviewed` (unchanged) |
+| `## Progress` rows remaining | 5 (`grep -c '^- \[ \]' plan.md`): [human] 7.6–7.10 |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/first-furniture-purchase/reviews/impl-review.md` | full-plan review, phases 1–8, verdict APPROVED, `MERGE: CLEAR` |
-| `docs/design-gaps.md` | rows 34 and 36 now match the code (`4f63d28`) |
-| `CLAUDE.md` | S-09 sentence: burst of stars from the slot, reduced motion also stops the flying star (`4f63d28`) |
-| `src/scenes/RoomScene.ts` | class comment only: owns only the variant panel's state (`4f63d28`, no behaviour change) |
-| `context/changes/first-furniture-purchase/follow-ups/review-fixes.md` | F1, F4, F5 with `Trigger:` lines |
-| `context/changes/first-furniture-purchase/plan.md` | rows 2.5, 6.4, 7.5 ticked |
-| `context/changes/first-furniture-purchase/change.md` | status `impl_reviewed` |
+| `src/data/layout.ts` | `ROOM_LAYOUT.choose` y 792–892, `close` y 908–1004, `taskButton` top 892 (aligned with `resume`), `thumbs.minAspect` 0.5 (`9096a52`) |
+| `src/ui/widgets/VariantPanel.ts` | `show`: thumbnail height at least `w * thumbs.minAspect` (`9096a52`) |
+| `tests/layout.test.ts` | two new cases: "Wybieram" clear of the task button and "Wróć do notesu"; readable thumbnail height (`9096a52`) |
+| `context/changes/first-furniture-purchase/reviews/visual-review.md` | visual review, hand-checked 7 − 5 = 2, ends with the `VISUAL:` line |
+| `context/changes/first-furniture-purchase/screenshots/` | 26 PNG frames (13 states × desktop 1440×900 / tablet 1024×768) + `README.md` |
+| `context/changes/first-furniture-purchase/plan.md` | rows 4.6, 5.5, 6.5, 6.6 ticked |
+| `context/changes/first-furniture-purchase/follow-ups/review-fixes.md` | F1 marked resolved; S-16 thumbnail item updated; V1 (caption collision), V2 (rug pop not captured) added with `Trigger:` |
+| `docs/design-gaps.md` | row 33: wide-slot thumbnails at least half as high as wide |
 
 ## 3. Verification
 
-| Command | Result (observed in this step) |
+| Command | Result (observed in this step, on `9096a52` working tree) |
 |---|---|
-| `npm run lint` / `npm run typecheck` | OK / OK, on `6f41b1f` and again after `4f63d28` |
-| `npm test` + deploy tests + ops tests + `npm run sample -- E1..E6` | OK; vitest 1033 = baseline 974 + 59 (3 + 10 + 8 + 32 + 5 + layout net 1); sample `Naruszenia: 0` for every stage; vitest 1033 again after `4f63d28` |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)`, before and after the fix |
-| `npx playwright test` (plain, this session, on `6f41b1f`) | 24 passed = baseline 23 + 1; 4397/4398 killed after |
-| `validate-rule-files.sh` | PASS (183 paths, 0 missing) after the fix |
-| Deliberate break | `stepPanel` keeps the panel open after a confirm → `variantPanel.test.ts` "confirm with a preview buys, closes the panel…" red; plus re-targeting the next task → "a second confirm in a row buys nothing…" red too; restored, tree clean. Meta-check: the first break alone leaves the double-confirm test green because the stale-panel guard is a second defence (same as p3); the second break shows the double-confirm test guards the reducer. |
-
-The fix commit changes no runtime behaviour (one comment in `src/`, docs), so the e2e run on `6f41b1f` stands; the orchestrator may re-run e2e on the final commit if its gate needs it.
+| `npm run lint` / `npm run typecheck` | OK / OK |
+| `npm test` + deploy tests + ops tests + `sample` E1–E6 | vitest 1035 = baseline 974 + 61 (S-09's 59 + 2 new layout cases); deploy/ops OK; `Naruszenia: 0` ×6 |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test` (one plain command) | 24 passed = baseline 23 + 1; 4397/4398 killed after |
+| Red-before-green | the two new `layout.test.ts` cases failed on the old data (overlap `true`; `minAspect` undefined → NaN), green after the data change; meta-check: the overlap case would also go red if `taskButton.top` moved back under 892 or `choose` grew downwards, which is exactly F1 |
+| Visual capture | Playwright throwaway spec (moved out of the repo before the gate) against the hook build on 4399: 8 tests passed, frames at `9096a52`; server on 4399 killed |
 
 ## 4. Next command
 
-`visual gate (S-09 room, task button, variant panel)`
+`/10x-archive first-furniture-purchase then ship`
 
 ## 5. Open
 
-- [visual] 4.6 summary with/without highlighted "Do pokoju"; 5.5 salon at 0 and 7 stars, speaker in the room; 6.5 panel without preview, previews 1/2/3, after purchase, animation frame; 6.6 reduced motion — 1440×900 and 1024×768.
-- At the visual gate also check: F1 overlap (`ROOM_LAYOUT.choose` vs `ROOM_LAYOUT.taskButton`), thin floor/walls thumbnails (`VariantPanel.show`, S-16 follow-up), the rug pop drawing over the sofa (`RoomScene.celebrate`, F7).
-- [human] 7.6 slot list, labels and costs; 7.7 no sound vs FR-017; 7.8 session-only until S-11; 7.9 panel UX decisions; 7.10 iPad/Android purchase, double "Wybieram", reduced motion.
-- Follow-ups in `follow-ups/review-fixes.md`: F1 (Trigger: S-09 visual gate or S-10), F4 `pl.room.name` dead key (S-10), F5 repeated lookups in `RoomScene`/`RoomTaskButton`/`RoomView` (next change to them), plus the earlier S-10/S-11/S-16/M8 items.
+- [human] 7.6 slot list, labels and cost curve (5…15, 96 stars); 7.7 no sound vs FR-017; 7.8 balance and salon session-only until S-11; 7.9 panel UX decisions without a kit source; 7.10 iPad/Android: purchase by finger, double "Wybieram", system "reduce motion".
+- Follow-ups (`follow-ups/review-fixes.md`): V1 slot captions "podłoga"/"dywan" overlap and "ściany" on the "obraz" outline (`RoomView.render`, `src/data/rooms.ts`; Trigger S-16 or S-10); V2 rug pop over the sofa not captured (`RoomScene.celebrate`; Trigger S-10 visual gate); F4, F5 (S-10); earlier S-10/S-11/S-16/M8 items.
+- "Zamknij" still shares the task button's place on purpose (a double tap there re-opens the same panel); the 7.10 device check should confirm it does not confuse a child.
+- No new DESIGN-GAP rows; row 33 updated.
 
 ## 6. Autonomous decisions
 
-- **Reviewed directly instead of two subagents** (skill Step 2): the diff is 26 files / ~1.5k lines, small enough to read whole; the drift and quality checks are in the report. Would change: a diff too large for one context.
-- **F1 deferred, not fixed**: the fix moves the room's bottom band, and the visual gate (next step) is where layout is tuned with screenshots; no stars are at risk (open deducts nothing). Rejected: changing `ROOM_LAYOUT` blind now. Would change: the visual gate or the device check shows children hitting the strip — then fix before merge.
-- **F2/F3/F6 fixed in one `fix(...)` commit** (docs and a comment, cheap, contract: WARNING → fix if cheap).
-- **No `AskUserQuestion`**: triage done in place per the contract; report saved with decisions filled in.
-- **e2e run by this agent**: the plain `npx playwright test` worked in this session (no MachPortRendezvous), so the review cites its own run, not only the orchestrator's.
+- **Playwright instead of Claude in Chrome for the matrix**: Chrome answered, but its tab was `visibilityState: hidden`, so the Phaser loop ran only during screenshots, and reduced motion cannot be emulated from the extension. Rejected: driving ~30 timed steps through a paused loop. Would change: a foreground extension tab with a running loop.
+- **F1 fixed by moving "Wybieram" up and the task button down (data only), not strict disjointness of every tray target**: "Wybieram" is the only target whose tap shows a *different* panel on a double tap; "Zamknij" re-opens the same one and thumbnails close nothing. Strict disjointness needs a re-layout of the room's bottom band (resume left, task button right, no room for two 480 px buttons above y 880). Would change: the device check (7.10) showing children re-opening the panel with "Zamknij".
+- **Thumbnail minimum aspect fixed now (cheap, one line + data)** instead of leaving it to S-16. Would change: art in S-16 replaces swatches anyway.
+- **Caption collision left as a follow-up (V1)**: it is placeholder text; a proper fix needs a caption anchor in room data or art. Would change: S-10 touching `RoomView`.
+- **Kit room frame compared but not committed**: the repo is public and `designs/` is gitignored; earlier gates did the same.
+- **Worked example missing**: `context/archive/2026-10-13-parent-settings-progress/` has no visual review or screenshots (ARTIFACT GAP, minor); used `context/archive/2026-10-13-adaptive-curriculum/` as the model.
