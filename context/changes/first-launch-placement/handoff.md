@@ -1,15 +1,15 @@
 # Handoff — `first-launch-placement` (slice S-06)
 
-Written by `/10x-implement` phase 5: the DOM adult gate, the parent stage panel and the „Rodzic” entry on the welcome are committed (`012867b`). The next agent must not miss: e2e could not run in this session (MachPort), so the orchestrator must run `npx playwright test` on `012867b` (expected: 8 passed, no new spec) before phase 6.
+Written by `/10x-implement` phase 6: the warm-up runs in `TaskScene`, the stage is corrected silently after it, `autoRead` is recomputed, and the e2e helper `passWelcome` now takes the parent path (`96674ca`). The next agent must not miss: e2e could not run in this session (MachPort), so the orchestrator must run the commands in §3 on `96674ca` (expected 8 passed) and the deliberate break of row 6.2 before phase 7.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/first-launch-placement`, cut from `main` at `37a9a62` |
-| Commits | plan-review commits + p1 `d79ba20` + p2 `403644c` + p3 `e4920f3` + p4 `a51338d` + p5 `012867b` + handoff commits |
+| Commits | plan-review commits + p1 `d79ba20` + p2 `403644c` + p3 `e4920f3` + p4 `a51338d` + p5 `012867b` + p6 `96674ca` + handoff commits |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (unchanged; phase 5 of nine) |
+| `change.md` status | `plan_reviewed` (unchanged; phase 6 of nine) |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` |
 | Working tree | clean after the handoff commit |
 
@@ -17,43 +17,42 @@ Written by `/10x-implement` phase 5: the DOM adult gate, the parent stage panel 
 
 | Path | What it is |
 |---|---|
-| `src/ui/dom/dialog.ts` | `openDialog(parent, title, body, onEscape, onKey?)`: `role="dialog"`, `aria-modal`, `aria-labelledby`, focus on the first button, Tab trapped, Escape, focus returned on close; returns `{ dialog, close }` |
-| `src/ui/dom/parentGate.ts` | `openParentGate({ rng, onPass, onCancel, parent? })` returns the close function; challenge from `core/parentGate`, digit pad 0-9 + „⌫” + „OK” + „Anuluj”, readout `aria-live="polite"`, keyboard digits/Backspace/Enter/Escape; wrong answer = new problem + calm message + cleared field, no counter, no lockout; the answer lives only in the closure (no attribute, no hook field) |
-| `src/ui/dom/stagePanel.ts` | `openStagePanel({ month, onConfirm, onCancel, parent? })`: ages from `placementData.ages`, stages E1-E6 with `pl.stages`, age choice marks the proposal (`proposeStage`) and preselects it unless the parent already picked a stage, `aria-pressed`, „Zatwierdź” disabled until age and stage are set, result `placeByParent` |
-| `src/scenes/WelcomeScene.ts` | „Rodzic” `PageButton` (secondary) -> `input.enabled = false` -> gate -> panel -> `registry.learner` -> Task; cancel on either restores `input.enabled = true`; dialog closed on scene shutdown; `targets()` has `parent` |
-| `src/data/layout.ts`, `pl.ts`, `src/style.css` | `WELCOME_LAYOUT.parent` (1596,922, 260 x 110) + `WELCOME_TOUCH_TARGETS.parent`; `pl.parent`, `pl.stages`; `.overlay-parent`, `.parent-*` styles with `--parent-*` tokens on `:root`, buttons >= 64 CSS px, `:focus-visible` |
-| `src/testing/e2eHook.ts` | welcome `targets` = `{ ages, parent }`; nothing about the gate |
-| `tests/layout.test.ts` | +1: parent button is a touch target, inside the screen, below the age buttons |
-| `context/changes/first-launch-placement/plan.md` | rows 4.2, 4.3, 5.1, 5.2, 5.4 ticked |
+| `src/scenes/TaskScene.ts` | `create`: `warmup = learner.warmupPending && previousStage(stage) !== null`; `freshRound` builds `buildWarmup(...)` with `RoundRules {...balance.round, length: balance.warmup.length}` while `warmup` is set; `advance`: when the state becomes `finished` in the warm-up, `finishWarmup()` calls `warmupResult`, writes `{...learner, stage, warmupPending: false}` to the registry, recomputes `this.stage`, `this.autoRead`, clears `warmup` (so the summary is ordinary and "Do pokoju"/return cannot skip the correction); `autoReadFirst()` after the first `render` in `create` (the age tap was the gesture); `TaskSnapshot.warmup` (read-only, in the hook through the spread) |
+| `src/ui/widgets/SummaryPanel.ts`, `src/data/layout.ts` | star row shifted by `(SUMMARY_LAYOUT.stars.kitCount - count) * (size + gap) / 2`: 5 stars stay on the kit's left edge, 6 are centred; `kitCount: 5` is new in layout |
+| `tests/e2e/support/welcome.ts` | `passWelcome(page)` = parent path: `targets.parent` tap -> `getByRole('dialog')` -> problem read from the dialog text with `/(\d+)\s*·\s*(\d+)/`, product computed in the helper, digits via `getByRole('button', {name, exact}).tap()`, „OK” -> `getByRole('dialog', {name: 'Ustawienia startowe'})` -> „10+” -> „Klasa 2, I półrocze” -> „Zatwierdź” -> waits for `screen === 'task'`, asserts `learner.stage === 'E3'` and `warmupPending === false`. No clock pinned, no `waitForTimeout`, answer never from the hook. New export `passWelcomeAsChild(page, age, month)` (child path with `?e2eMonth`) for phase 8 and the row 6.2 break |
+| `context/changes/first-launch-placement/plan.md` | rows 5.3, 6.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `npm run lint` / `typecheck` | clean |
-| `npm test` | 765 passed in 53 files (baseline 671; delta +94 = p1 +71, p2 +11, p3 +8, p4 +3, p5 +1) |
-| deploy + ops shell tests; `sample -- E1..E6` | ok; `Naruszenia: 0` x6 |
-| `npm run build` | ok, `e2e hook: absent (2 chunks checked)`; `grep -rl e2eMonth dist/` empty |
-| Break: „Rodzic” height 110 -> 90 | `tests/layout.test.ts`: `expected 90 to be greater than or equal to 96`; restored. Meta-check: proves the size constant only; that input is off under the dialog is proved by the e2e of phase 9 |
-| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate (3 failed / 5 did not run, all browser launch failures) |
+| `npm test` | 765 passed in 53 files (baseline 671; delta +94 = p1..p5, p6 +0 as the plan says: logic is in phase 2) |
+| deploy + ops shell tests; `sample -- E1..E6` | OK; `Naruszenia: 0` x6 |
+| `npm run build` | ok, `e2e hook: absent (2 chunks checked)`; `grep -rl "e2eMonth\|__martynkaE2E" dist/` empty |
+| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate (3 failed / 5 did not run, all browser launch failures; the helper is unproven in a browser) |
+| Row 6.2 break | not observed here (no browser) |
 
-Orchestrator: run `npx playwright test` on `012867b` (expected 8 passed). No browser check of the dialogs was done; the `[visual]` row 5.6 needs gate/panel screenshots at 1440x900 and 1024x768 (welcome with „Rodzic”, gate, gate after a wrong answer, panel without age, with age, with another stage).
+Orchestrator commands on `96674ca`:
+1. `npx playwright test` — expected 8 passed, no new spec.
+2. Break (row 6.2), then restore with `git checkout tests/e2e/support/welcome.ts`: append `export const passWelcome = (page: Page): Promise<void> => passWelcomeAsChild(page, 8, 9);` is a redeclaration, so instead rename the original export in the file to `passWelcomeAsParent` and add `export const passWelcome = (page: Page): Promise<void> => passWelcomeAsChild(page, 8, 9);` (age 8, October -> E3 with warm-up). Then `npx playwright test tests/e2e/task-round.spec.ts` — expected red: the round has 6 tasks (the 5-task clean round never reaches the summary at index 4, `ROUND_LENGTH` is 5). Meta-check: red proves the child path starts the warm-up in the scene (`snapshot.warmup`).
+
+No new Polish string was added (teacher read: nothing to read).
 
 ## 4. Next command
 
-`/10x-implement first-launch-placement phase 6`
+`/10x-implement first-launch-placement phase 7`
 
 ## 5. Open
 
-- Row 5.3 (`npx playwright test` green) open for the orchestrator. `[reviewer]` 5.5 (teacher read of `pl.parent`, `pl.stages`: „Ile to jest 14 · 17?”, „To nie ta liczba. Spróbuj z nowym działaniem.”, „Ustawienia startowe”, „Wiek dziecka”, „Etap nauki”, „(propozycja)”, „Zatwierdź”, age „10+”), `[visual]` 5.6 and `[human]` 5.7 not done here; earlier `[reviewer]` 1.4, 2.5, 4.6 and `[visual]` 4.7 unchanged.
-- DESIGN-GAP: parent entry, gate and panel are not in the kit; code comments in `layout.ts` and `pl.ts` name them; the row in `docs/design-gaps.md` belongs to phase 7 (with the sunflower/cushion row).
-- Gate dialog uses a seed from `Math.random()` in `WelcomeScene.openParent` (no determinism needed; the e2e of phase 9 must read the problem from the DOM text).
-- The panel does not yet start the warm-up (phase 6 handles `warmupPending`; the parent path yields it false when the stage was overridden).
+- Rows 6.1 and 6.2 open for the orchestrator (e2e green and the break); `[visual]` 6.4 (warm-up 6 dots, summary with 6 centred stars, normal round after the warm-up, 1440x900 and 1024x768) and `[human]` 6.5 not done here. Also open: `[reviewer]` 1.4, 2.5, 4.6, 5.5, `[visual]` 4.7, 5.6, `[human]` 5.7.
+- DESIGN-GAP rows for the sixth dot and sixth star (and the parent entry/gate/panel) belong to phase 7 `docs/design-gaps.md`; a code comment in `SummaryPanel` names them.
+- Warm-up stars are paid like a normal round (6 stars + the clean-round bonus of 2); the bonus is not scaled for 6 tasks (balance unchanged). Worth a look in the S-17 playtest.
+- The unlocked-speech assumption (first task read after the age tap) holds only for the child path; on the parent path the „Zatwierdź” tap is DOM, so an E1/E2 stage may stay silent until the first canvas tap (plan Known risks, row 6.5).
 
 ## 6. Autonomous decisions
 
-1. Shared `openDialog` helper in `src/ui/dom/dialog.ts` (focus trap, Escape, restore focus) instead of duplicating it in the two dialogs; the plan lists two modules, this is a third small one.
-2. Both dialogs append to `document.body` by default (`parent` option for tests); styles use `--parent-*` custom properties on `:root`, because the existing overlays use literals and the brief asks for tokens.
-3. Stage choice is not reset by a later age choice once the parent picked a stage by hand (`stageChosenByParent`); the proposal tag still follows the age.
-4. Age 10 is shown as „10+” through `pl.parent.ageOption(age, openEnded)` (the last of `placementData.ages`).
-5. Plan rows 4.2/4.3 ticked on the orchestrator's evidence (run-log line „S-06 p4 impl”), 5.3 left open.
+1. `autoReadFirst()` is called once in `create` for every start (not only after the welcome), because the scene is only reachable through the welcome now; on E3+ `autoRead` is false so nothing is spoken (narrator spec unchanged).
+2. The sixth-star centring is a layout rule in the widget driven by `SUMMARY_LAYOUT.stars.kitCount` (new layout constant) instead of a balance import in the widget.
+3. Helper kept both paths: `passWelcome` (parent, used by the specs) and `passWelcomeAsChild` (child path, used by phase 8 and the row 6.2 break) instead of deleting the child path.
+4. Row 5.3 ticked on the run-log line "S-06 p5 impl" (e2e 8 passed on `012867b`); 6.1/6.2 left open because no browser ran here.

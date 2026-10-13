@@ -740,7 +740,7 @@ bez przekształceń.
 
 - [x] 5.1 Test układu obejmuje „Rodzic”; unit `<baseline gałęzi> + N` — 012867b (764 → 765, +1)
 - [x] 5.2 Deliberate break: „Rodzic” 90 px → czerwony; przywrócone; meta-check (wejście pod nakładką → e2e fazy 9) — 012867b
-- [ ] 5.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`)
+- [x] 5.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`) — 012867b (orchestrator: e2e 8/8, run-log "S-06 p5 impl")
 - [x] 5.4 Pełna bramka lokalna zielona — 012867b (e2e: orchestrator gate)
 
 #### Manual
@@ -755,7 +755,7 @@ bez przekształceń.
 
 - [ ] 6.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); unit `<baseline gałęzi> + 0`
 - [ ] 6.2 Deliberate break: helper na ścieżce dziecka → `task-round.spec.ts` czerwony (6 zadań); przywrócone; meta-check (rozgrzewka startuje w scenie)
-- [ ] 6.3 Pełna bramka lokalna zielona
+- [x] 6.3 Pełna bramka lokalna zielona — 96674ca (lint, typecheck, unit 765 = +0, deploy/ops, sample E1-E6 Naruszenia: 0, build e2e hook: absent; e2e: orchestrator gate)
 
 #### Manual
 
