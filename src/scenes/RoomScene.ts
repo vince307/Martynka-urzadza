@@ -39,11 +39,12 @@ export interface RoomSnapshot {
 }
 
 /**
- * The room (S-09): the salon drawn in code, "Wróć do notesu" and the button of the current renovation task.
- * It owns only the variant panel's state: the star balance and the room progress live in the game registry, the scene only draws them
- * and redraws on wake. The task scene sleeps underneath and wakes exactly as it was left.
+ * The room (S-09, S-10): the salon drawn in code, "Wróć do notesu" and the button of the current renovation task.
+ * It owns the variant panel's state, the child's hold gesture, the change mode and the "Pokój gotowy!" card: the star balance and the room
+ * progress live in the game registry, the scene only draws them and redraws on wake. The task scene sleeps underneath and wakes as it was left.
  * A task the child cannot afford yet sends them back to the notebook; an affordable one opens the variant panel, and only "Wybieram" there spends stars (core/variantPanel).
- * DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only.
+ * A hold on a furnished slot (or a tap in the change mode of a done room) opens the panel for a free change; the last purchase shows the card.
+ * DESIGN-GAP (docs/design-gaps.md rows 12 and 37-41): the kit has the return button only.
  */
 export class RoomScene extends Scene {
     private resume: PageButton | undefined;

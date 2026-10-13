@@ -739,7 +739,7 @@ definicja (dane), nie zapis.
 - [x] 5.1 `layout.test.ts`: `modeButton`, `cardNext` ≥ 96 px; `modeButton` rozłączny z miniaturami, „Wybieram”, „Wróć do notesu”, zębatką i HUD („Zamknij” dzieli miejsce z założenia); `cardNext` rozłączny z „Wybieram” i miniaturami; karta w scenie; unit baseline + N — f5e153a
 - [x] 5.2 Deliberate break `modeButton` na „Wybieram” → czerwony; przywrócone; meta-check — f5e153a (meta-check: protects rectangle disjointness from thumbnails/"Wybieram", not looks)
 - [x] 5.3 `pl.room.name` używane w `RoomDoneCard` (F4) — f5e153a
-- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — f5e153a (e2e: orchestrator gate)
+- [x] 5.4 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — f5e153a (e2e: orchestrator run on b15b900, 24 passed)
 
 #### Manual
 
@@ -751,10 +751,10 @@ definicja (dane), nie zapis.
 
 #### Automated
 
-- [ ] 6.1 `validate-rule-files.sh` PASS
-- [ ] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check
-- [ ] 6.3 `grep "S-10" src/` bez nieaktualnych zapowiedzi
-- [ ] 6.4 Pełna bramka lokalna zielona; unit baseline + 0
+- [x] 6.1 `validate-rule-files.sh` PASS
+- [x] 6.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check (roomHit.ts→roomHits.ts: missing 1, FAIL; the validator reads paths from rules)
+- [x] 6.3 `grep "S-10" src/` bez nieaktualnych zapowiedzi
+- [x] 6.4 Pełna bramka lokalna zielona; unit baseline + 0 (e2e: comments and docs only; orchestrator run on b15b900, 24 passed)
 
 #### Manual
 
