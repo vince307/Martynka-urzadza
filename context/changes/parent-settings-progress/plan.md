@@ -916,7 +916,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 - [x] 7.1 `tests/layout.test.ts` obejmuje ikonę (rozmiar, w scenie, poza notesem i panelem pokoju, bez nakładania z HUD); unit `<baseline gałęzi> + N` — b5efc5e (947 → 948, +1)
 - [x] 7.2 Deliberate break: ikona na x 1700 → test układu czerwony; przywrócone; meta-check (przepływ → e2e fazy 10) — b5efc5e
-- [ ] 7.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
+- [x] 7.3 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent` — b5efc5e (orchestrator, run-log "S-08 p7 impl": e2e 15/15 on b5efc5e; build `e2e hook: absent`)
 - [x] 7.4 Pełna bramka lokalna zielona — b5efc5e (e2e: orchestrator gate)
 
 #### Manual
@@ -929,8 +929,8 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 #### Automated
 
 - [ ] 8.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
-- [ ] 8.2 Deliberate break: panel z pustą historią → unit zielone; zapis w handoff §3, dowód w e2e fazy 11; meta-check
-- [ ] 8.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 8.2 Deliberate break: panel z pustą historią → unit zielone; zapis w handoff §3, dowód w e2e fazy 11; meta-check — HASH
+- [x] 8.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — HASH (948 + 0; e2e: orchestrator gate)
 
 #### Manual
 

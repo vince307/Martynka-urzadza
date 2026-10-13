@@ -278,3 +278,33 @@ canvas {
     background: var(--parent-paper);
     box-shadow: 0 -8px 8px -8px var(--parent-border);
 }
+
+/* Parent progress preview (S-08): inside the one overlay scroll, under the choices; long word-problem prompts wrap. */
+.parent-progress {
+    width: 100%;
+    text-align: left;
+}
+
+.parent-progress h2 {
+    margin-bottom: 8px;
+}
+
+.parent-progress ul {
+    margin: 8px 0 0;
+    padding-left: 1.2em;
+}
+
+.parent-progress li {
+    margin-bottom: 8px;
+}
+
+.parent-progress-heading,
+.parent-progress-skill {
+    font-weight: 700;
+}
+
+.parent-progress-examples {
+    font-size: 0.8em;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}

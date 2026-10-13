@@ -1,7 +1,9 @@
+import type { ProgressView } from '../../core/progress';
 import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog } from './dialog';
 import { createButton, createText } from './overlay';
+import { createProgressView } from './progressView';
 import { createStageChoices } from './stageChoices';
 
 export interface SettingsPanelOptions {
@@ -11,6 +13,8 @@ export interface SettingsPanelOptions {
     autoRead: boolean | null;
     /** Automatic reading in effect for a stage when the parent made no choice (shown until they tap On or Off). */
     autoReadDefault: (stage: StageId) => boolean;
+    /** Preview of the learner's progress in the current stage (the learner's, not the stage picked in the panel). */
+    progress: ProgressView;
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null }) => void;
     onCancel: () => void;
@@ -18,12 +22,12 @@ export interface SettingsPanelOptions {
 }
 
 /**
- * Parent's settings (US-03): stage and automatic reading, applied together by "Zatwierdź" and dropped by
+ * Parent's settings (US-03): stage, automatic reading and the progress preview, applied together by "Zatwierdź" and dropped by
  * "Anuluj" / Escape. The reading choice stays null until the parent taps On or Off. One overlay scroll,
  * the two actions stick to the bottom of it (plan review F2). Returns the function that closes the panel.
  * DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no settings view; built from the S-06 dialog parts.
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, onConfirm, onCancel, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, onConfirm, onCancel, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -67,7 +71,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, onConfirm,
     actions.className = 'parent-actions parent-actions-sticky';
     actions.append(confirm, createButton(pl.parent.cancel, cancel));
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, createProgressView(progress), actions], cancel);
     refresh();
     return handle.close;
 };

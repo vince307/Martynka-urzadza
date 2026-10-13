@@ -3,9 +3,11 @@ import type { InputSuspender } from '../core/inputSuspend';
 import { IDLE, longPress, type LongPressEvent, type LongPressState } from '../core/longPress';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { changeStageByParent, initialSettings, type SessionLearner } from '../core/placement';
+import { progressView } from '../core/progress';
 import { createRng } from '../core/rng';
 import type { Settings } from '../core/types';
 import { balance } from '../data/balance';
+import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
@@ -120,9 +122,15 @@ export class UIScene extends Scene {
             onPass: () => {
                 const settings = (this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined) ?? initialSettings();
                 const readStages = balance.narrator.autoReadStages;
+                const stage = getStage(learner.stage);
+                if (!stage) {
+                    this.closeSettings();
+                    return;
+                }
                 this.closeDialog = openSettingsPanel({
                     stage: learner.stage,
                     autoRead: settings.autoRead,
+                    progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => this.closeSettings(),
                     onConfirm: (result) => this.applySettings(result.stage, result.autoRead),

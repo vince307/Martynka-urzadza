@@ -28,6 +28,13 @@ export const pl = {
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',
         autoReadOff: 'Wyłączone',
+        // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
+        progressHeading: 'Postępy',
+        currentStep: (index: number, total: number, title: string) => `Krok ${index} z ${total}: ${title}`,
+        weakestHeading: 'Do poćwiczenia',
+        mastery: (value: number, max: number) => `opanowanie ${value} z ${max}`,
+        example: (prompt: string, given: string, answer: string) => `${prompt} — odpowiedź dziecka: ${given}, poprawnie: ${answer}`,
+        empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
         E1: 'Klasa 1, I półrocze',
