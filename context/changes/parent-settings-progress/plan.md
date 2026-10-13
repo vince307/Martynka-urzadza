@@ -900,10 +900,10 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 #### Automated
 
 - [ ] 6.1 `npx playwright test` zielony: `<baseline gałęzi e2e> + 0`
-- [ ] 6.2 Deliberate break: powitanie bez wstrzymania / getter bez ustawień → unit zielone; zapis w handoff §3, dowód w e2e faz 10–11; meta-check
-- [ ] 6.3 Build `e2e hook: absent`; `__martynkaE2E` nieobecne w `dist/`
-- [ ] 6.4 `this.input.enabled` usunięte z `WelcomeScene`
-- [ ] 6.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 6.2 Deliberate break: powitanie bez wstrzymania / getter bez ustawień → unit zielone; zapis w handoff §3, dowód w e2e faz 10–11; meta-check — ebd0351
+- [x] 6.3 Build `e2e hook: absent`; `__martynkaE2E` nieobecne w `dist/` — ebd0351
+- [x] 6.4 `this.input.enabled` usunięte z `WelcomeScene` — ebd0351
+- [x] 6.5 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — ebd0351 (e2e: orchestrator gate)
 
 #### Manual
 

@@ -1,54 +1,56 @@
 # Handoff — `parent-settings-progress` (slice S-08)
 
-Written by the phase 5 step (`/10x-tdd` phase 5, autonomous run 2026-10-12-s04-s08). Phase 5 added the pure `progressView` (current step "krok N z M" over playable steps, 3 weakest skills of the current stage with mistake examples, empty state) and exported `currentStep`, test-first. Phases 1-5 of 11 are committed; e2e for 6238cb6 is the orchestrator's gate (Chromium not launchable here; the orchestrator ran 15/15 on b34c1ee).
+Written by the phase 6 step (`/10x-implement` phase 6, autonomous run 2026-10-12-s04-s08). Phase 6 glued the phase 2-5 logic into the scenes: one game-wide input suspender, welcome and install hint on it, `GAME_EVENTS.parentStage` with the stage change in `TaskScene`, `effectiveAutoRead` as a getter, read-only hook fields. Phases 1-6 of 11 are committed; e2e is the orchestrator's gate (Chromium not launchable here).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
-| Commits | `db487d2`, `965c602`, `d355ca0`, `33a40d3`, `d72768a` (p1), `6616124`, `7087b16` (p2), `8f53d98` (p3), `b34c1ee` (p4), `6238cb6` (p5), plus this handoff commit |
+| Commits | p1-p5 as before (last `6238cb6`), `ebd0351` (p6), plus this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (status moves at the last phase) |
-| `## Progress` rows remaining | 36 (phases 1-5 fully ticked) |
+| `## Progress` rows remaining | 31 (6.1 open for e2e, 6.6 reviewer, 6.7 human, plus phases 7-11) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/progress.ts` | `progressView(stage, adaptation, { mastery: { max }, view: { weakestCount, examplesPerSkill } }): ProgressView` = `{ step: { index, total, title }, weakest: { skillId, title, mastery, max, examples[{prompt, given, answer}] }[] }`; examples formatted (`formatNumber`, array joined by ", ", `\n` to space) |
-| `src/core/curriculum.ts` | `currentStepOf` replaced by exported `currentStep(stage, unlockedStep)`; `skillBuckets` and `unlockReady` use it |
-| `tests/progress.test.ts` | 23 tests on hand-built E3 histories |
+| `src/data/layout.ts` | `GAME_EVENTS.parentStage`, `REGISTRY_KEYS.settings`, `REGISTRY_KEYS.inputSuspender` |
+| `src/main.ts` | `preBoot` sets `initialSettings()` and `createInputSuspender(booting.input, onRelease = every pointer.reset())`; `contextmenu` preventDefault on `#game-container`; install hint gets `() => suspender.suspend()` |
+| `src/pwa/installHint.ts` | `mountInstallHint(parent, platform, standalone, suspend?)` holds the suspension until `dismiss` (closes the S-06 tap-leak follow-up) |
+| `src/scenes/WelcomeScene.ts` | `openParent` holds a suspender hold (`releaseInput`); `resumeInput()` in both `onCancel`, `start()` and `shutdown`; no `this.input.enabled` left |
+| `src/scenes/TaskScene.ts` | `autoRead` is a getter on `effectiveAutoRead(registry settings, stage, balance.narrator.autoReadStages)`; `applyParentStage(read)` (same-stage guard, narrator cancel, camera tween kill, `sessionStars += state.starsEarned` before `freshRound()`, no restart); listener for `GAME_EVENTS.parentStage` (guarded by `isSleeping`) and `onWake` comparing `learner.stage` (no auto-read on wake); `finishRound` already used `roundResults` since p4 |
+| `src/testing/e2eHook.ts` | `snapshot.settings` (frozen copy) and `snapshot.inputEnabled` (`game.input.enabled`), also on the welcome |
 
 ## 3. Verification
 
 | Command | Result (observed in this step) |
 |---|---|
-| RED (stub returning step 0/0 and `weakest: []`) | `AssertionError: expected [] to deeply equal [ 'E3.1.word_20' ]`, `expected +0 to be 1`, `expected { index: +0, total: +0, title: '' } to deeply equal { index: 8, total: 8, ... }`; 19 red, then green |
 | `npm run lint` / `npm run typecheck` | both clean |
-| `npm test` + deploy tests + `sample` E1-E6 | exit 0; 947 passed (branch baseline 924, +23); existing tests unedited |
-| `npm run build` | OK, `e2e hook: absent` |
-| Deliberate break | candidate filter `!h.ok` instead of `!h.firstTry`: "a second-try answer is a first-try miss" red; candidates also taken from other stages: "ignores history of another stage" red; both restored |
-| Meta-check | oracles are FR-015 / decision 5 (current stage only, first-try miss, mastery asc, misses desc, newer first, program order), written by hand; the 5-candidate test cuts to 3 |
-| `grep -n "const currentStepOf" src/core/curriculum.ts` | empty |
-| e2e | `e2e: not runnable in this session (MachPort) — orchestrator gate` (`npx playwright test` died with MachPortRendezvous Permission denied, 10 did not run) |
+| `npm test` + deploy tests + `sample` E1-E6 | exit 0; 947 passed (branch baseline 947, +0) |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `grep -rl __martynkaE2E dist/` empty; `parentStage`/`inputSuspender` only in the app bundle `dist/_app/index-*.js` |
+| `grep -n "this.input.enabled" src/scenes/WelcomeScene.ts` | empty |
+| Deliberate break 1 | `WelcomeScene.openParent` without the suspend: unit stays 947 green (as the plan expects); proof only by e2e phase 10 |
+| Deliberate break 2 | `autoRead` getter ignoring parent settings: unit stays green; `narrator.spec.ts` stays green too because settings cannot be changed yet (not run here); proof in e2e phase 11. Both restored (lint, typecheck clean) |
+| Meta-check | both breaks are seams no unit covers (scenes), so phase 6 claims no coverage; they are the planned proof targets of phases 10-11 |
+| e2e | `e2e: not runnable in this session (MachPort) — orchestrator gate`. `npx playwright test` died with MachPortRendezvous/SIGTRAP (5 failed to launch, 10 did not run). Orchestrator command: `npx playwright test` (expected 15 passed, the specs are unedited); no e2e break patch needed (no assertion depends on a browser-only change; file not written) |
 
 ## 4. Next command
 
-/10x-implement parent-settings-progress phase 6
+/10x-implement parent-settings-progress phase 7
 
 ## 5. Open
 
-- Phase 4 full-gate row 4.3 and phase 5 row 5.4 are open only for e2e (orchestrator run on the p5 commit; the phase 4 one is covered by the 15/15 on b34c1ee, cite run-log).
-- `progressView` is not yet called by any scene; UIScene computes it in phase 8 from the learner in the registry. Examples are shown as stored (prompt only newlines normalised).
-- `[human]` rows: 6.7, 9.6, 9.7, 9.8 (a)-(e). Row 8.5: "Zatwierdź"/"Anuluj" visible without scrolling at 1024x768.
-- DESIGN-GAPs 25-28 and follow-ups as planned for phase 9 (including the S-12 export privacy note).
-- Every `Trigger: S-08` follow-up is in scope (list in reviews/plan-review.md Grounding).
+- Row 6.1 and the e2e part of rows 4.3, 5.4, 6.5: orchestrator run of `npx playwright test` on `ebd0351` (expected 15 passed); if red, re-dispatch phase 6. Risk areas to read first: the welcome parent path and install hint suspension (`first-launch.spec.ts`), `narrator.spec.ts` (E1/E2 read, E3 silent).
+- Rows 6.6 [reviewer] and 6.7 [human] (iPad/Android install hint tap leak) are not mine.
+- No UI yet for the settings icon or panel (phase 7); nothing emits `GAME_EVENTS.parentStage` until then. `UIScene.create` still sets `this.input.enabled = true` on the scene plugin (per-scene flag, unrelated to the game switch).
+- `[human]` rows: 6.7, 9.6, 9.7, 9.8 (a)-(e). DESIGN-GAPs 25-28 and follow-ups as planned for phase 9.
 
 ## 6. Autonomous decisions
 
-1. `currentStep` takes `(stage, unlockedStep)` as the plan's intent says (the old private helper took the step list); it throws `RangeError` for a stage with no playable steps, like `skillBuckets` did, so the duplicate check there was removed.
-2. "Newer miss" = the latest `at` among the skill's first-try misses; examples are ordered by `at` descending, ties by history position (later first).
-3. `weakest[i].title` is the step title of the skill (decision 4); two skills of one step share a title.
+1. `main.ts` reads the suspender from the registry right after `new Game` (Phaser boots synchronously in a module script, `preBoot` has run) and passes `undefined` to the install hint if it were absent, rather than throwing.
+2. `applyParentStage(read)`: the live event reads (`autoReadFirst`), the wake path does not (plan).
+3. `Settings` type imported into `TaskScene` for the registry cast; the hook falls back to `{ autoRead: null }` when the registry has none.
 4. Commit message and stop-after-phase decided in place (contract rule 1); no AskUserQuestion.
