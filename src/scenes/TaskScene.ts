@@ -438,7 +438,7 @@ export class TaskScene extends Scene {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         const results = this.state.tasks.map((task, i) => ({ skillId: task.skillId, outcome: this.state.outcomes[i] }));
         const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
-        // The unlock card (phase 7) shows pendingUnlock; until then the step moves on quietly.
+        // The unlock card shows pendingUnlock after "Kolejna runda" (closeUnlock clears it).
         this.registry.set(REGISTRY_KEYS.learner, {
             ...learner,
             ...adaptation,

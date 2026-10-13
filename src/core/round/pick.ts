@@ -1,12 +1,9 @@
-// Skill choice and round building for the task scene. Only skills the scene
+// Skill choice for the task scene (the warm-up draws uniformly, rounds by bucket weights). Only skills the scene
 // can answer ('tiles' or 'keypad') and that have a registered generator are
 // played; 'select' and 'drag' wait for their own UI (S-13).
 // DESIGN-GAP: the kit has no multi-select view (docs/design-gaps.md row 7).
 import type { Rng } from '../rng';
-import type { RoundRules } from '../round';
-import { generateTask } from '../tasks/generateTask';
 import { getGenerator } from '../tasks/registry';
-import type { Task } from '../tasks/types';
 import type { SkillDef, StageDef, StepDef } from '../types';
 
 export const playable = (skill: SkillDef): boolean =>
@@ -24,9 +21,6 @@ export const pickSkills = (stage: StageDef, rng: Rng, count: number): SkillDef[]
     }
     return Array.from({ length: count }, () => rng.pick(pool));
 };
-
-export const buildRound = (stage: StageDef, rng: Rng, rules: RoundRules, tileCount: number): Task[] =>
-    pickSkills(stage, rng, rules.length).map((skill) => generateTask(skill, rng, { tileCount }));
 
 export interface Weights {
     readonly current: number;

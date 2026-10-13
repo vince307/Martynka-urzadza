@@ -1,8 +1,7 @@
-// Skill choice for a round: only skills the scene can answer (tiles/keypad)
-// with a registered generator; built rounds follow the rules and the stage.
+// Skill choice: only skills the scene can answer (tiles/keypad) with a registered generator are drawn.
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { buildRound, pickSkills } from '../src/core/round/pick';
+import { pickSkills } from '../src/core/round/pick';
 import { getGenerator } from '../src/core/tasks/registry';
 import type { StageDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -52,29 +51,5 @@ describe('pickSkills', () => {
     it('throws RangeError when nothing can be played', () => {
         const empty: StageDef = { id: 'E3', steps: [{ step: 1, title: 't', types: [], skills: [] }] };
         expect(() => pickSkills(empty, createRng(1), 5)).toThrow(RangeError);
-    });
-});
-
-describe('buildRound', () => {
-    it('builds rules.length tasks for every stage; tile tasks carry at most tileCount choices that include the answer', () => {
-        for (const id of availableStages()) {
-            const stage = stages[id] as StageDef;
-            const mode = new Map(stage.steps.flatMap((step) => step.skills.map((sk) => [sk.id, sk.answer] as const)));
-            for (let seed = 1; seed <= 30; seed += 1) {
-                const tasks = buildRound(stage, createRng(seed), balance.round, balance.tiles.count);
-                expect(tasks).toHaveLength(balance.round.length);
-                for (const t of tasks) {
-                    const where = `${t.skillId} seed=${seed}`;
-                    if (mode.get(t.skillId) === 'tiles') {
-                        expect(t.choices, where).toBeDefined();
-                        expect(t.choices!.length, where).toBeGreaterThanOrEqual(2);
-                        expect(t.choices!.length, where).toBeLessThanOrEqual(balance.tiles.count);
-                    }
-                    if (t.choices) {
-                        expect(t.choices, where).toContain(t.answer);
-                    }
-                }
-            }
-        }
     });
 });

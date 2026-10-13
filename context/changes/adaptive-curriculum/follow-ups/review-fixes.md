@@ -1,0 +1,42 @@
+# Follow-upy — adaptive-curriculum (S-07)
+
+Każdy wpis ma `Trigger:`; późniejsze slice'y szukają ich grepem.
+
+## Test-plan i test-stack
+
+- Ryzyko #13 (proposed), do `context/foundation/test-plan.md` przez `/10x-test-plan refresh`: „Adaptacja nie prowadzi
+  dziecka: runda losuje spoza odblokowanych kroków, druga próba podnosi opanowanie, krok nie odblokowuje się po opanowaniu
+  większości umiejętności albo karta „Nowa umiejętność!” blokuje przejście do następnej rundy. Wpływ: średni,
+  prawdopodobieństwo: średnie. Warstwa: testy jednostkowe `core/curriculum` i `core/mastery` (wiele ziaren) + jeden lokalny
+  e2e: dziecko gra poprawnie, aż hak pokaże `screen: 'unlock'`, „Dalej” startuje rundę, `unlockedStep` wzrósł.
+  Anty-wzorce: ustawianie opanowania z testu, stałe ziarno rng, asercja treści zadania.” Dopisać też #12 (pierwsze
+  uruchomienie; dziś tylko „#12 (proposed)” w nagłówku `tests/e2e/first-launch.spec.ts`).
+  Trigger: `/10x-test-plan refresh`, or before S-11
+- `test-stack.md` § E2E nie opisuje projektu `chromium-hook` ani portu 4397 (`playwright.config.ts`, `E2E_HOOK_PORT`).
+  Trigger: `/10x-e2e-setup` re-run
+
+## Treść i UI
+
+- ` = ?` po wyrażeniu w poleceniu (przeniesione z S-04). Trigger: S-16
+- Książka na karcie to placeholder z kodu (`docs/design-gaps.md` wiersz 22). Trigger: S-16
+
+## Zapis (S-11)
+
+- Zapis pełnego `SessionLearner` (opanowanie, `unlockedStep`, liczniki łagodzenia, historia) i podłoga
+  `max(zapisany, calendarStart)` na starcie sesji. Trigger: S-11
+- „Wcześniejszy zapis ucznia” z S-06 obejmuje teraz także postęp nauki: do S-11 każdy zimny start zeruje opanowanie, wraca
+  do podłogi kalendarza, a karta „Nowa umiejętność!” może się powtórzyć dla kroku odblokowanego wczoraj.
+  Trigger: before S-11, or any deploy used for daily play
+
+## Historia (S-08)
+
+- Historia nie trzyma treści zadania ani złej odpowiedzi; „przykłady błędów” w ekranie rodzica wymagają decyzji, jakie pole
+  dodać (np. `taskType` + `skillId` zamiast promptu). Trigger: S-08
+
+## Kalibracja (S-17)
+
+- Wagi 60/30/10 i łagodzenie 20/50/30, `minStartSteps`, próg `unlockAt` 4 i `unlockShare` 0.5 oraz długość łagodzenia
+  (`weakRounds`, `rounds`) — sprawdzić w playteście z dzieckiem. Trigger: S-17
+- Formuła podłogi kalendarza (plan-review F1): dziś postęp liczony na indeksie grywalnych kroków z `ceil`; E3 w październiku
+  stoi na kroku 6 („Liczby 21–30”), E6 w lutym na kroku 4, a wg kolejności podręcznika klasa jest wcześniej (~1 miesiąc).
+  Alternatywa: indeks wszystkich kroków podręcznika zaokrąglony w dół do grywalnego kroku. Trigger: S-17
