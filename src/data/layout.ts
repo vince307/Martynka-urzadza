@@ -107,6 +107,7 @@ export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
     toRoom: 'to-room',   // "Do pokoju" was tapped (summary or HUD switch); the task scene switches to the room scene
+    parentStage: 'parent-stage',   // the parent confirmed another stage (core changed the learner in the registry); the task scene opens a fresh round of it
 } as const;
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
@@ -117,6 +118,8 @@ export const REGISTRY_KEYS = {
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
     learner: 'learner',       // the session's SessionLearner (core/placement: placement + adaptation state, S-07), absent until the child has said the age
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
+    settings: 'settings',     // the session's Settings (core/types: parent's auto-reading choice), set before the scenes start (main.ts)
+    inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
 } as const;
 
 /**

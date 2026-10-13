@@ -13,9 +13,15 @@ const instructionFor = (platform: Platform): string =>
 /**
  * "Add to home screen" hint (FR-001): shown on every launch from a browser tab
  * on iPad or Android until the game runs from its icon. "Play in the browser"
- * dismisses it for this launch only (decision: no local flag).
+ * dismisses it for this launch only (decision: no local flag). While it is open the game gets no touch
+ * (`suspend` holds the game's input switch), so a tap on the button cannot reach a tile underneath.
  */
-export const mountInstallHint = (parent: HTMLElement, platform: Platform, standalone: boolean): void => {
+export const mountInstallHint = (
+    parent: HTMLElement,
+    platform: Platform,
+    standalone: boolean,
+    suspend?: () => () => void,
+): void => {
     if (!shouldShowInstallHint(platform, standalone)) {
         return;
     }
@@ -39,8 +45,10 @@ export const mountInstallHint = (parent: HTMLElement, platform: Platform, standa
         createText('p', pl.install.afterInstall, 'overlay-muted'),
         actions,
     ]);
+    const release = suspend?.();
     const dismiss = (): void => {
         overlay.remove();
+        release?.();
         onPromptAvailable = null;
     };
 
