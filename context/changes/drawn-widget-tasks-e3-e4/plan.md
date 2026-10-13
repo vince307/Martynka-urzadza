@@ -1005,8 +1005,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — PENDING
-- [x] 3.2 Deliberate break: remis w DATA / zła składnia `read` / parser przyjmuje `build` 150 → czerwone; przywrócone; meta-check — PENDING
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — d481d3c
+- [x] 3.2 Deliberate break: remis w DATA / zła składnia `read` / parser przyjmuje `build` 150 → czerwone; przywrócone; meta-check — d481d3c
 - [ ] 3.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
