@@ -39,16 +39,34 @@ export const e2eStars = (search: string): number | null => {
     return stars <= E2E_MAX_STARS ? stars : null;
 };
 
-/** `?e2eSave=unreadable` makes the e2e build start with an in-memory store holding an unreadable save; anything else is null. */
-export const e2eSave = (search: string): 'unreadable' | null =>
-    new URLSearchParams(search).get('e2eSave') === 'unreadable' ? 'unreadable' : null;
+export type E2ESaveSeam = 'unreadable' | 'unavailable' | 'hang' | 'writefail';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'unavailable', 'hang', 'writefail'];
 
-/** In-memory store for the e2e seam: reads a save from a future version, remembers writes. Never touches IndexedDB. */
-export const e2eSaveStore = (): SaveStore => {
-    let value: unknown = { version: 99, profileId: 'default', stars: 7 };
+/** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
+export const E2E_LOAD_TIMEOUT_MS = 300;
+
+/**
+ * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
+ * future version), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
+ * writes reject). Anything else is null.
+ */
+export const e2eSave = (search: string): E2ESaveSeam | null => {
+    const value = new URLSearchParams(search).get('e2eSave');
+    return value !== null && E2E_SAVE_SEAMS.includes(value) ? (value as E2ESaveSeam) : null;
+};
+
+/** In-memory store for the e2e seam; remembers writes where they succeed. Never touches IndexedDB. */
+export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
+    let value: unknown = seam === 'unreadable' ? { version: 99, profileId: 'default', stars: 7 } : undefined;
     return {
-        read: () => Promise.resolve(value),
+        read: () =>
+            seam === 'unavailable'
+                ? Promise.reject(new DOMException('e2e', 'UnknownError'))
+                : seam === 'hang'
+                  ? new Promise<unknown>(() => undefined)
+                  : Promise.resolve(value),
         write: (next) => {
+            if (seam === 'writefail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
             value = next;
             return Promise.resolve();
         },

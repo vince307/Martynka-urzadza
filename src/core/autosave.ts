@@ -11,7 +11,7 @@ export type LoadOutcome =
     | { kind: 'fresh' }
     | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null }
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version'; raw: unknown }
-    | { kind: 'unavailable' };
+    | { kind: 'unavailable'; error: string };
 
 export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
 
@@ -58,13 +58,34 @@ export interface Autosaver {
     status(): AutosaveStatus;
 }
 
-/** Reads the store once. Never rejects: a failed read is `unavailable`. Never writes. */
-export async function loadSave(store: SaveStore): Promise<LoadOutcome> {
+/**
+ * Reads the store once. Never rejects: a failed or too slow read is `unavailable` with the error name. Never writes.
+ * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody,
+ * and a late success is dropped (it is never written).
+ */
+export async function loadSave(
+    store: SaveStore,
+    limit?: { timers: AutosaverOptions['timers']; timeoutMs: number },
+): Promise<LoadOutcome> {
     let raw: unknown;
     try {
-        raw = await store.read();
-    } catch {
-        return { kind: 'unavailable' };
+        const read = store.read();
+        if (limit === undefined) {
+            raw = await read;
+        } else {
+            read.catch(() => undefined);
+            let timer: unknown;
+            const timeout = new Promise<never>((_, reject) => {
+                timer = limit.timers.setTimeout(() => reject(Object.assign(new Error('read timed out'), { name: 'timeout' })), limit.timeoutMs);
+            });
+            try {
+                raw = await Promise.race([read, timeout]);
+            } finally {
+                limit.timers.clearTimeout(timer);
+            }
+        }
+    } catch (e) {
+        return { kind: 'unavailable', error: errorName(e) };
     }
     if (raw === undefined) return { kind: 'fresh' };
     const result = decodeSave(raw);

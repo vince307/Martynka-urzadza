@@ -110,9 +110,74 @@ describe('loadSave', () => {
 
         const broken = makeStore(fixture('save-v1.json'));
         broken.state.readFails = true;
-        expect(await loadSave(broken.store)).toEqual({ kind: 'unavailable' });
+        expect(await loadSave(broken.store)).toEqual({ kind: 'unavailable', error: 'Error' });
 
         for (const s of [fresh, v1, f, broken]) expect(s.state.writes).toHaveLength(0);
+    });
+});
+
+describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
+    const limitOf = (clock: ReturnType<typeof makeClock>) => ({ timers: clock.timers, timeoutMs: 5000 });
+    const never = (): SaveStore => ({ read: () => new Promise<unknown>(() => undefined), write: () => Promise.resolve() });
+
+    it('names the error of a rejected read and falls back to Error for a thrown string', async () => {
+        const named: SaveStore = { read: () => Promise.reject(Object.assign(new Error('x'), { name: 'UnknownError' })), write: () => Promise.resolve() };
+        expect(await loadSave(named)).toEqual({ kind: 'unavailable', error: 'UnknownError' });
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a non-Error rejection is the case under test
+        const text: SaveStore = { read: () => Promise.reject('boom'), write: () => Promise.resolve() };
+        expect(await loadSave(text)).toEqual({ kind: 'unavailable', error: 'Error' });
+    });
+
+    it('without a limit keeps the other outcomes', async () => {
+        expect(await loadSave(makeStore().store)).toEqual({ kind: 'fresh' });
+        expect((await loadSave(makeStore(fixture('save-v1.json')).store)).kind).toBe('loaded');
+    });
+
+    it('a read that never answers becomes unavailable (timeout) exactly at the limit', async () => {
+        const clock = makeClock();
+        let outcome: LoadOutcome | undefined;
+        void loadSave(never(), limitOf(clock)).then((o) => (outcome = o));
+        clock.advance(4999);
+        await settle();
+        expect(outcome).toBeUndefined();
+        clock.advance(1);
+        await settle();
+        expect(outcome).toEqual({ kind: 'unavailable', error: 'timeout' });
+    });
+
+    it('a read faster than the limit returns its result and leaves no timer', async () => {
+        const clock = makeClock();
+        const f = makeStore(fixture('save-v1.json'));
+        const out = await loadSave(f.store, limitOf(clock));
+        expect(out.kind).toBe('loaded');
+        expect(clock.pending()).toBe(0);
+    });
+
+    it('a read that rejects after the limit stays a timeout and raises no unhandled rejection', async () => {
+        const clock = makeClock();
+        let fail!: (e: unknown) => void;
+        const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), write: () => Promise.resolve() };
+        const pending = loadSave(store, limitOf(clock));
+        clock.advance(5000);
+        expect(await pending).toEqual({ kind: 'unavailable', error: 'timeout' });
+        fail(new Error('late'));
+        await Promise.resolve();
+        await Promise.resolve();
+        await settle();
+        expect(rejections).toEqual([]);
+    });
+
+    it('a read that resolves after the limit does not change the outcome and nothing is written', async () => {
+        const clock = makeClock();
+        const f = makeStore(fixture('save-v1.json'));
+        let resolve!: (v: unknown) => void;
+        const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), write: (v) => f.store.write(v) };
+        const pending = loadSave(store, limitOf(clock));
+        clock.advance(5000);
+        expect(await pending).toEqual({ kind: 'unavailable', error: 'timeout' });
+        resolve(fixture('save-v1.json'));
+        await settle();
+        expect(f.state.writes).toHaveLength(0);
     });
 });
 

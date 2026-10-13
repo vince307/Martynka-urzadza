@@ -22,7 +22,7 @@ import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
 import { emptyRoomState } from './core/rooms';
 import { FIRST_ROOM } from './data/rooms';
-import { e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
+import { E2E_LOAD_TIMEOUT_MS, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -120,9 +120,17 @@ const freshSession = (stars: number): SessionSave => ({
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    // The e2e build may start with an in-memory store holding an unreadable save (?e2eSave=unreadable); never IndexedDB.
-    const store = __E2E_HOOK__ && e2eSave(window.location.search) === 'unreadable' ? e2eSaveStore() : createIdbSaveStore();
-    const outcome = await loadSave(store);
+    // The e2e build may start with an in-memory store (?e2eSave=unreadable|unavailable|hang|writefail); never IndexedDB.
+    const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
+    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
+    const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
+    const outcome = await loadSave(store, {
+        timers,
+        timeoutMs: __E2E_HOOK__ && seam === 'hang' ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
+    });
+    if (outcome.kind === 'unavailable') {
+        console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
+    }
     if (outcome.kind === 'unreadable') {
         // The old save stays untouched. The parent may keep a copy (behind the adult check); the game starts only on "Graj dalej".
         const raw = outcome.raw;
@@ -172,11 +180,12 @@ const start = async (): Promise<void> => {
             settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
             learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
         }),
-        timers: { setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: (id) => window.clearTimeout(id as number) },
+        timers,
         delayMs: balance.save.debounceMs,
         load: outcome.kind,
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),
+        loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
     });
