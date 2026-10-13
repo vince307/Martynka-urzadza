@@ -657,7 +657,7 @@ przyszłego builda, który go zna.
 
 - [x] 4.4 [reviewer] Odczyt nauczyciela `pl.saveUnavailable` — d455c40 (impl-review: reviews/impl-review.md)
 - [ ] 4.5 [human] Urządzenie: iPad Safari prywatnie / zablokowane dane stron, Android bez pamięci witryny — karta tylko przy faktycznie niedostępnym magazynie
-- [ ] 4.6 [visual] Zrzuty karty „zapis niedostępny” i karty nieczytelnego zapisu — 1440×900 i 1024×768
+- [x] 4.6 [visual] Zrzuty karty „zapis niedostępny” i karty nieczytelnego zapisu — 1440×900 i 1024×768 — 8af55af (visual: reviews/visual-review.md)
 
 ### Phase 5: Sekcja „Zapis gry” w panelu rodzica, luki projektu, follow-upy i seam sweep
 
@@ -673,7 +673,7 @@ przyszłego builda, który go zna.
 
 - [x] 5.6 [reviewer] Odczyt nauczyciela sekcji zapisu w `pl.settings` — d455c40 (impl-review: reviews/impl-review.md)
 - [x] 5.7 [reviewer] Seam sweep: martwe pola, komentarze, duplikaty; DESIGN-GAP 43 i 45; follow-upy z `Trigger:` — d455c40 (impl-review: reviews/impl-review.md)
-- [ ] 5.8 [visual] Zrzuty panelu: „działa” (z godziną), „nie udały się”, „wyłączony” — 1440×900 i 1024×768
+- [x] 5.8 [visual] Zrzuty panelu: „działa” (z godziną), „nie udały się”, „wyłączony” — 1440×900 i 1024×768 — 8af55af (visual: reviews/visual-review.md)
 - [ ] 5.9 [human] Forma sygnału dla rodzica (rewizja DESIGN-GAP 43): sekcja w panelu za bramką + karta przed grą; brak wskaźnika dla dziecka
 - [ ] 5.10 [human] Akceptacja tekstów `pl.saveUnavailable` i sekcji „Zapis gry”
 
