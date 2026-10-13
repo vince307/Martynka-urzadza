@@ -1,5 +1,9 @@
 # Handoff — `first-furniture-purchase` (slice S-09)
 
+Final pre-merge state written by the ship step: archived to `context/archive/2026-10-13-first-furniture-purchase/`,
+roadmap S-09 done, Backlog Handoff refreshed (S-09 done, S-10 ready for `/10x-plan`, S-11 triggers restated). Open
+[human] rows 7.6–7.10 are a post-run checklist (listed in the PR under „Dla właściciela produktu”), not a blocker.
+
 Written by the visual-gate step (autonomous run 2026-10-13-s09-s11). All [visual] rows are captured and ticked; F1
 ("Wybieram" over the task button) and the thin floor/walls thumbnails are fixed in `9096a52` (layout data + one line in
 `VariantPanel.show`), so production code changed after impl-review — the e2e suite was re-run green on it. Only the
@@ -11,8 +15,8 @@ five [human] rows remain; the next agent must not tick them.
 |---|---|
 | Branch | `feat/first-furniture-purchase`, cut from `main` at `bb969f7` |
 | Commits | 26 before this step's docs commit (`77c94d4`..`9096a52`), then `docs(first-furniture-purchase): bramka wizualna` |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s09-s11/run-log.md (ship step pushes after this archive commit) |
+| `change.md` status | `archived` (ship step, `/10x-archive`) |
 | `## Progress` rows remaining | 5 (`grep -c '^- \[ \]' plan.md`): [human] 7.6–7.10 |
 | Working tree | clean after the docs commit |
 
@@ -42,7 +46,7 @@ five [human] rows remain; the next agent must not tick them.
 
 ## 4. Next command
 
-`/10x-archive first-furniture-purchase then ship`
+none — shipped
 
 ## 5. Open
 
@@ -59,3 +63,4 @@ five [human] rows remain; the next agent must not tick them.
 - **Caption collision left as a follow-up (V1)**: it is placeholder text; a proper fix needs a caption anchor in room data or art. Would change: S-10 touching `RoomView`.
 - **Kit room frame compared but not committed**: the repo is public and `designs/` is gitignored; earlier gates did the same.
 - **Worked example missing**: `context/archive/2026-10-13-parent-settings-progress/` has no visual review or screenshots (ARTIFACT GAP, minor); used `context/archive/2026-10-13-adaptive-curriculum/` as the model.
+- **Archived with 5 open [human] rows (ship step)**: `/10x-archive` warned "5 Progress items still pending (0 automated, 5 manual)" and "20 Progress rows missing SHA suffix" (docs/verification rows; every existing SHA is an ancestor of HEAD, no repoint). Chosen: Continue archiving (Recommended for manual-only). Rejected: resume implementation. Why: [human] rows are owner decisions and the device check, a post-run checklist listed in the PR. Would change: an automated row still open.
