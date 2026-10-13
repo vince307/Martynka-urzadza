@@ -763,10 +763,10 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 2042dc8
 - [ ] 4.2 `save-restart.spec.ts` zielony (orkiestrator, `e2e-request-p4.md`); pełne e2e `<baseline gałęzi e2e> + 0`
 - [ ] 4.3 Deliberate break: `onExport` bez `session.run` → `dialogSessions` czerwony; patch `e2e-break-p4.patch` (pobranie bez dialogu) → FR-021 czerwony, unit zielone; meta-check
-- [x] 4.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 4.4 `npm run build` drukuje `e2e hook: absent (` — 2042dc8
 
 #### Manual
 
