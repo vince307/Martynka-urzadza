@@ -890,10 +890,10 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 5.1 `tests/progress.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: kandydaci z `ok === false` / brak filtra etapu → czerwone; przywrócone; meta-check
-- [ ] 5.3 `const currentStepOf` usunięte (jedno źródło `currentStep`)
-- [ ] 5.4 Pełna bramka lokalna zielona
+- [x] 5.1 `tests/progress.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 6238cb6 (RED: expected [] to deeply equal [ 'E3.1.word_20' ] / expected +0 to be 1; unit 924 + 23 = 947)
+- [x] 5.2 Deliberate break: kandydaci z `ok === false` / brak filtra etapu → czerwone; przywrócone; meta-check — 6238cb6 (ok filter: second-try test red; other-stage candidates: 'ignores history of another stage' red; restored)
+- [x] 5.3 `const currentStepOf` usunięte (jedno źródło `currentStep`) — 6238cb6
+- [x] 5.4 Pełna bramka lokalna zielona — 6238cb6 (e2e: orchestrator gate)
 
 ### Phase 6: Sklejka w scenach — wstrzymanie wejścia, auto-czytanie, zmiana etapu, przykłady, hak
 
