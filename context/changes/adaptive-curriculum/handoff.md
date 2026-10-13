@@ -1,82 +1,78 @@
 # Handoff — `adaptive-curriculum` (slice S-07)
 
-Written by `/10x-impl-review adaptive-curriculum` (full plan, phases 1–9). Verdict APPROVED, `MERGE: CLEAR`; three
-warnings fixed in `88e898c`, which touches scene code (`TaskScene.startNextRound`), so **e2e must be re-run on
-`88e898c` before the visual gate** — this session could not launch Chromium.
+Written by the visual gate (autonomous run 2026-10-12-s04-s08). `VISUAL: PASS`, no code changed in this step (docs and
+screenshots only), so the e2e re-run on `88e898c` the impl-review asked for still applies unchanged — this session
+could not launch Chromium either.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
-| Commits | phases `8fd7bd0` … `7d03dc7` (p9), handoff `ea069c4`; review fix `88e898c`; this docs commit after it |
+| Commits | phases `8fd7bd0` … `7d03dc7` (p9), review fix `88e898c`, impl-review `94ae4de`; this step adds one docs commit `docs(adaptive-curriculum): bramka wizualna` (no `fix` commit) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 7 (`grep -c '^- \[ \]' plan.md`): 7.6 [visual]; 8.5–8.10 [human] |
-| Working tree | clean after the commit (scratch scripts live outside the repo) |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 8.5–8.10 [human] |
+| Working tree | clean after the commit (capture scratch lives outside the repo) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/adaptive-curriculum/reviews/impl-review.md` | review report (F1–F8), ends with the MERGE line |
-| `context/changes/adaptive-curriculum/reviews/teacher-read.md` | teacher read of the 48 child step names and `pl.unlock` (rows 6.5, 7.5) |
-| `context/changes/adaptive-curriculum/follow-ups/review-fixes.md` | + section "Impl-review": `pendingUnlock` without stage (Trigger S-08/S-11), `Adaptation` keys (S-11), `playableSteps`/`firstPlayableSteps` (next change) |
-| `context/changes/adaptive-curriculum/plan.md` | rows 5.5, 6.5, 7.5, 8.4 ticked with evidence |
-| `context/changes/adaptive-curriculum/change.md` | `status: impl_reviewed` |
-| `src/scenes/TaskScene.ts` (88e898c) | `startNextRound`: no drawable card → `closeUnlock()`; DESIGN-GAP rows 23, 24 commented |
-| `src/core/curriculum.ts`, `src/core/placement.ts` (88e898c) | `STAGE_ORDER` exported once; private `currentStepOf` shared by `skillBuckets` and `unlockReady` |
-| `src/data/curriculum/E4.ts` (88e898c) | step 2 `childName` „Działania do 100” |
-| `src/data/layout.ts`, `src/data/pl.ts`, `src/ui/widgets/UnlockCard.ts`, `docs/design-gaps.md` (88e898c) | DESIGN-GAP row numbers, row 22 wording |
-| `tests/e2e/adaptive.spec.ts`, `tests/e2e/support/welcome.ts` (88e898c) | header comments only |
+| `context/changes/adaptive-curriculum/screenshots/*.png` | 12 frames: 6 states × desktop 1440×773 / tablet 1024×768 (summary pending, card long/short, round after „Dalej”, for E4 and E1) |
+| `context/changes/adaptive-curriculum/screenshots/README.md` | capture method (one iframe resized in place), table state · desktop · tablet · how reached |
+| `context/changes/adaptive-curriculum/reviews/visual-review.md` | verdict per state vs `unlock.png`, hand-checked step (E4 2→4, E1 4→5), touch target, ends with the VISUAL line |
+| `context/changes/adaptive-curriculum/plan.md` | row 7.6 [visual] ticked with evidence |
+| `context/changes/adaptive-curriculum/follow-ups/review-fixes.md` | + section „Bramka wizualna”: first tap after a resize sometimes lost in the extension tab (Trigger: first device playtest S-17 or a `Scale` config change) |
+| `context/changes/adaptive-curriculum/handoff.md` | this file |
 
 ## 3. Verification
 
 | Command | Result (observed in this step) |
 |---|---|
-| `npm run lint` / `npm run typecheck` | OK / OK (before and after 88e898c) |
-| `npm test` | 881 passed = main baseline 767 + 114 (unchanged by 88e898c) |
-| `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK |
-| `npm run sample -- E1` … `E6` | `Naruszenia: 0` × 6 |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `grep -rl "__martynkaE2E\|e2eMonth" dist/` empty |
-| `npx playwright test` | NOT run successfully: `browserType.launch: Target page, context or browser has been closed` for every test (sandbox); evidence = orchestrator 15/15 on `7d03dc7` (baseline 14 + 1). Re-run needed on `88e898c`. Ports 4397/4398 checked free afterwards |
-| Domain script on real `stages` | 21 600 rounds (ages × months × stages × normal/easing × 30 seeds): all 5 tasks, no duplicate prompt; 30 second tries → mastery 0, then 12 first tries → 4; E4 September floor 2 → unlocks 4 after round 3; 2 weak rounds → `easedRounds` 2, weights 20/50/30 |
-| Break 1: `recordRound` treats `'second'` as `'first'` | 3 red (mastery.test.ts ×2, curriculumEnd warm-up); restored |
-| Break 2: `unlockReady` `>` instead of `>=` | 5 red in curriculumEnd.test.ts; restored. Meta-check: expectations come from ZADANIA §1 / decision 3, not from `balance` |
+| Visual capture (Claude in Chrome, dev server 4399) | 6 states at 1440×773 and 1024×768, build id `94ae4de` in every frame; own tab closed; server stopped (4399 free) |
+| Hand check | E4 age 8 October: position 1, progress 0, k = max(2, 0) = 2 of [1,2,4,5,6,8] → start 2; 1 skill, ceil(0.5·1) = 1 at mastery 4 → card after round 5 (ADD_SUB first tries 10 after round 4, 15 after round 5); next playable step 4 „Dopełnianie do dziesiątki” ✓. E1 age 6: progress 0.3, k = max(2, ceil(2.4)) = 3 of [2,3,4,5,6,7,9,11] → start 4 → card names 5 „Działania do 9” ✓ |
+| Touch target | „Dalej” at 1024×768 = 240×57.6 CSS px (≥ 48) |
+| Local gate | not re-run: no source file changed in this step (inherited from `94ae4de`: lint, typecheck, unit 881 = baseline 767 + 114, deploy/ops scripts, sample E1–E6 0 violations, build `e2e hook: absent` — inherited, unverified here) |
+| `npx playwright test` | tried once as one plain command: Chromium did not launch (`SIGTRAP`, sandbox) — 5 failed at launch, 10 did not run; ports 4397/4398/4399 free afterwards. Still needed from the orchestrator on `88e898c`+ (expect 15 = baseline 14 + 1) |
+| Deliberate break | none: no test or code written in this step |
 
 ## 4. Next command
 
-visual gate (orchestrator), then /10x-archive adaptive-curriculum and ship
+/10x-archive adaptive-curriculum, then ship (no hosted db push)
 
 ## 5. Open
 
-- E2E re-run on `88e898c` (orchestrator): `npx playwright test`, expect 15 passed (main baseline 14 + 1).
-- Row 7.6 [visual]: summary with pending card, card with the longest and shortest name, round after „Dalej” at
-  1440×900 and 1024×768 vs `designs/martynka-maths-A-v1/screenshots/unlock.png`.
+- E2E re-run (orchestrator) on the branch head: `npx playwright test`, expect 15 passed (main baseline 14 + 1).
 - Rows 8.5–8.10 [human] (maintainer checklist): cold start resets mastery until S-11; calendar floor (rule D);
   „większość” = `≥ ceil(0.5 · n)`; unlock during easing; easing = weights 20/50/30; no automatic stage advance.
-- Follow-ups in `follow-ups/review-fixes.md`: `SessionLearner.pendingUnlock` without stage (Trigger S-08 or S-11),
-  `recordRound`/`endRound` result keys (S-11), `playableSteps` vs `firstPlayableSteps` (next change), plus the earlier
-  ones (risk #13/#12 test-plan refresh, test-stack `chromium-hook`, S-11 save, S-16 book art and ` = ?`, S-17 calibration).
-- DESIGN-GAP rows 22–24 in `docs/design-gaps.md`, each with a code comment.
+- Visual observation (follow-up „Bramka wizualna”): first tap after an iframe resize/reload sometimes ignored in the
+  extension tab, with flight stars frozen — likely the throttled frame loop; check a rotate-and-back on a tablet
+  (`TaskScene`, `Scale.FIT` in `src/main.ts` `createGame`).
+- DESIGN-GAP rows 22–24 in `docs/design-gaps.md` (book art, narration of the card, card only after „Kolejna runda”) —
+  frames show the documented behaviour; no new gap row.
+- Earlier follow-ups in `follow-ups/review-fixes.md` unchanged (`SessionLearner.pendingUnlock` without stage — S-08/S-11;
+  `Adaptation` keys — S-11; `playableSteps`/`firstPlayableSteps` — next change; calibration — S-17).
 
 ## 6. Autonomous decisions
 
-1. Skill questions decided in place: implement in this context, proposed commit message, stop after phase 8.
-2. `buildRound` removed with its test (unit 882 -> 881); the plan allowed "- tests of the removed `buildRound`".
-3. Deliberate break for 8.2 used `RULE_FILES` in the env file instead of a profile path, then restored.
-4. Follow-ups written in Polish like the rest of `context/changes`; design-gap rows in English like the existing table.
-5. AGENTS.md: dropped the "(sync, then bootstrap ...)" aside to stay under 400 words; it remains in CLAUDE.md.
-6. Phase 9: Chromium unavailable in the agent session; the orchestrator's green and break runs were used as evidence (rows ticked citing them). Spec reviewed, not rewritten. Commit message uses the orchestrator-specified title.
-7. Impl-review triage, no AskUserQuestion: the skill's "how to proceed" = triage now. Chosen: fix the three cheap
-   warnings (F1 stuck card fallback, F2 duplicated helpers, F3 comments) in one `fix(...)` commit; defer F5, F6, F8 as
-   follow-ups with triggers; accept F7. Rejected: fixing `pendingUnlock` to `{ stage, step }` now (changes the
-   `SessionLearner` shape S-08/S-11 will touch anyway). Would change: a stage switch landing before S-08.
-8. Teacher read: changed only E4.2 („Działania z małą liczbą” → „Działania do 100”); kept E3.8 „Przekraczanie
-   dziesiątki”, E5.2, E5.6 because no clearly better name fits 28 characters. Would change: the maintainer's or a
-   teacher's own read in the visual gate.
-9. E2E: a single plain `npx playwright test` failed at browser launch (sandbox); no `dangerouslyDisableSandbox`. The
-   fix commit changes scene code, so the MERGE line makes the orchestrator's e2e re-run on `88e898c` explicit. Would
-   change: an e2e red on `88e898c` → BLOCKED until fixed.
-10. The F1 fix falls back to "clear and play on" instead of throwing: no fail states for the child (CLAUDE.md working
-    rules). Would change: a decision that missing data must fail loudly in development builds.
+1. Capture method: one game per run in a same-origin iframe, captured at 1024×768 and then resized in place to the
+   1440×773 viewport, instead of two separate playthroughs per size. Why: the states need 5–7 rounds of play each and the
+   game keeps no save before S-11; `Scale.FIT` re-fits on resize, so both frames show the same state. Rejected: replaying
+   in the main tab at 1440 (doubles ~60 taps per name). Would change: a layout bug that appears only on a fresh load at
+   one size (then capture that size from a fresh load).
+2. Stages: E4 (parent override, age 8; current step 2 has 1 playable skill) for the long name and E1 (child path, age 6;
+   no warm-up for E1) for the short name. Rejected: E5 step 3→4 („Mnożenie przez 0, 1, 5, 10”, 26 characters) — 2 skills
+   with no faster path, only 1 character longer. The 28-character names are not a next step of any October start.
+   Would change: a name longer than about 40 characters being added (then wrap is worth seeing).
+3. Answers came from reading the task on the screen (no scene read), DOM parent dialog clicked through `click()` on its
+   buttons after reading the problem text. Would change: nothing — the profile allows reading the dialog like an adult.
+4. Kit frames not copied into the repo (`designs/` is read-only and gitignored; the repo is public); the review names
+   the kit paths instead, as the S-06 gate did. Would change: the maintainer asking for `kit-*` copies in the change dir.
+5. Card fill gradient flattened to `#fff7de`, plain notebook background and HUD star counter on the card accepted as
+   placeholder choices already recorded in code (`PLACEHOLDER_COLORS.unlockCard`) and in earlier gates; no new gap row.
+   Would change: S-16 art landing without a gradient-capable card.
+6. The lost first tap after a resize logged as a follow-up rather than fixed: it was not reproducible on demand (2 of 5
+   resizes worked first time) and matches the known throttled-loop artefact. Would change: a device repro.
+7. E2E tried once (one plain command, sandboxed); no `dangerouslyDisableSandbox`. Since no code changed, the gate stays
+   with the orchestrator's re-run. Would change: a fix commit in this step (none was needed).

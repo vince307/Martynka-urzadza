@@ -53,3 +53,11 @@ Każdy wpis ma `Trigger:`; późniejsze slice'y szukają ich grepem.
   samego `LearnerState`) wybrać klucze `Adaptation` jawnie. Trigger: S-11
 - `firstPlayableSteps` (`core/round/pick.ts`) i `playableSteps` (`core/curriculum.ts`) filtrują kroki tym samym
   predykatem; jedno źródło przy następnej zmianie któregoś z nich. Trigger: next change to `pick.ts` or `curriculum.ts`
+
+## Bramka wizualna (2026-10-13)
+
+- W Chrome sterowanym przez rozszerzenie pierwsze stuknięcie po zmianie rozmiaru iframe (1024 ↔ 1440) albo po jego
+  przeładowaniu czasem przepadało (3 z 5 razy; drugie zawsze działało), a gwiazdki lotu zostawały w połowie drogi.
+  Najpewniej artefakt przyciętej pętli klatek w karcie bez fokusu (ta sama uwaga co O2 w bramkach S-05/S-06), nie błąd
+  `TaskScene`. Sprawdzić na tablecie: obrót do pionu (nakładka „Obróć tablet”) i z powrotem, potem jedno stuknięcie
+  w „Kolejna runda”/„Dalej” musi zadziałać. Trigger: first device playtest (S-17) or any `Scale` config change

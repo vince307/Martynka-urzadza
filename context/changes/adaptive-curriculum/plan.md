@@ -809,7 +809,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 #### Manual
 
 - [x] 7.5 [reviewer] Odczyt nauczyciela `pl.unlock` — impl-review: tytuł z kitu, „Dalej”, zdanie lektora OK (reviews/teacher-read.md)
-- [ ] 7.6 [visual] Zrzuty: podsumowanie z oczekującą kartą, karta (najdłuższa i najkrótsza nazwa), runda po „Dalej” przy 1440×900 i 1024×768 vs `unlock.png`
+- [x] 7.6 [visual] Zrzuty: podsumowanie z oczekującą kartą, karta (najdłuższa i najkrótsza nazwa), runda po „Dalej” przy 1440×900 i 1024×768 vs `unlock.png` — bramka wizualna: 12 klatek (E4 krok 2→4 „Dopełnianie do dziesiątki”, 25 znaków (najdłuższa nazwa w ogóle, 28 znaków, nieosiągalna w kilku rundach); E1 krok 4→5 „Działania do 9”, 14 znaków), reviews/visual-review.md, VISUAL: PASS
 
 ### Phase 8: Seam sweep, luki projektu, follow-upy i dokumentacja
 
