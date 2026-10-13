@@ -782,7 +782,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Manual
 
-- [ ] 5.5 [reviewer] `endRound` raz na rundę (także przez „Do pokoju”), brak liczb i tekstu w `TaskScene`
+- [x] 5.5 [reviewer] `endRound` raz na rundę (także przez „Do pokoju”), brak liczb i tekstu w `TaskScene` — impl-review: `advance` woła `finishRound` tylko przy przejściu `!wasFinished && finished`; `wake` tylko `render()`; bez liczb balansu i tekstu (reviews/impl-review.md)
 
 ### Phase 6: Nazwy kroków dla dziecka
 
@@ -795,7 +795,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Odczyt nauczyciela 48 nazw kroków (`reviews/teacher-read.md`)
+- [x] 6.5 [reviewer] Odczyt nauczyciela 48 nazw kroków (`reviews/teacher-read.md`) — impl-review: 47/48 OK, E4.2 poprawione na „Działania do 100” w 88e898c (reviews/teacher-read.md)
 
 ### Phase 7: Karta „Nowa umiejętność!”
 
@@ -808,7 +808,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Odczyt nauczyciela `pl.unlock`
+- [x] 7.5 [reviewer] Odczyt nauczyciela `pl.unlock` — impl-review: tytuł z kitu, „Dalej”, zdanie lektora OK (reviews/teacher-read.md)
 - [ ] 7.6 [visual] Zrzuty: podsumowanie z oczekującą kartą, karta (najdłuższa i najkrótsza nazwa), runda po „Dalej” przy 1440×900 i 1024×768 vs `unlock.png`
 
 ### Phase 8: Seam sweep, luki projektu, follow-upy i dokumentacja
@@ -821,7 +821,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Manual
 
-- [ ] 8.4 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:`
+- [x] 8.4 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze; DESIGN-GAP w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:` — impl-review: duplikaty (kolejność etapów, bieżący krok) i komentarze DESIGN-GAP 22–24 poprawione w 88e898c; reszta jako follow-upy z `Trigger:`
 - [ ] 8.5 [human] Do S-11 zimny start zeruje opanowanie i wraca do podłogi kalendarza; karta może się powtórzyć; „early save” obejmuje postęp nauki
 - [ ] 8.6 [human] Reguła D (podłoga kalendarza): E3 w październiku tylko kroki 1, 2, 6; cały etap od stycznia; ścieżka rodzica do niższego etapu odblokowuje cały etap
 - [ ] 8.7 [human] „Większość” = `≥ ceil(0.5 · n)` wbrew dosłownemu `> 0.5` z FR-014

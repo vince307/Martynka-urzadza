@@ -40,3 +40,16 @@ Każdy wpis ma `Trigger:`; późniejsze slice'y szukają ich grepem.
 - Formuła podłogi kalendarza (plan-review F1): dziś postęp liczony na indeksie grywalnych kroków z `ceil`; E3 w październiku
   stoi na kroku 6 („Liczby 21–30”), E6 w lutym na kroku 4, a wg kolejności podręcznika klasa jest wcześniej (~1 miesiąc).
   Alternatywa: indeks wszystkich kroków podręcznika zaokrąglony w dół do grywalnego kroku. Trigger: S-17
+
+## Impl-review (2026-10-13)
+
+- `SessionLearner.pendingUnlock` to goły numer kroku bez etapu: `TaskScene.unlockView` szuka go w bieżącym `this.stage`.
+  Dziś etap nie zmienia się między końcem rundy a kartą (rozgrzewka nie odblokowuje, `WelcomeScene.start` zeruje), ale
+  zmiana etapu przez rodzica albo wczytany zapis mogą to rozjechać (karta z nazwą innego kroku; brak nazwy obsługuje już
+  `TaskScene.startNextRound`, który wtedy czyści oczekiwanie i gra dalej). Zapisać `{ stage, step }` albo czyścić
+  `pendingUnlock` przy każdej zmianie etapu. Trigger: S-08 (zmiana etapu przez rodzica) or S-11
+- `endRound`/`recordRound` zwracają `{ ...adaptation, … }`, a `TaskScene.finishRound` podaje cały `SessionLearner`, więc
+  wynik typu `Adaptation` niesie też pola placementu. Działa, bo scena rozkłada go z powrotem na ucznia; przy S-11 (zapis
+  samego `LearnerState`) wybrać klucze `Adaptation` jawnie. Trigger: S-11
+- `firstPlayableSteps` (`core/round/pick.ts`) i `playableSteps` (`core/curriculum.ts`) filtrują kroki tym samym
+  predykatem; jedno źródło przy następnej zmianie któregoś z nich. Trigger: next change to `pick.ts` or `curriculum.ts`
