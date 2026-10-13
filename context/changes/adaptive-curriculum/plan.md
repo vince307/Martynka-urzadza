@@ -261,9 +261,12 @@ poleceń dla rundy i rozgrzewki (follow-upy S-05 i S-06).
 **File**: `src/core/curriculum.ts`, `src/core/round/unique.ts` (nowy), `src/core/round/warmup.ts`, `src/core/round/pick.ts`
 
 **Intent**: `skillBuckets(stage, previous, unlockedStep)` → `current` = grywalne umiejętności kroku `unlockedStep`
-(gdy krok niegrywalny — najbliższy niższy grywalny), `earlier` = grywalne kroków < bieżącego, `previous` = grywalne całego
+(gdy krok niegrywalny — najbliższy niższy grywalny; gdy żadnego niższego nie ma — pierwszy grywalny krok etapu),
+`earlier` = grywalne kroków < bieżącego, `previous` = grywalne całego
 poprzedniego etapu (`[]` dla E1). `pickRoundSkills(buckets, weights, rng, count)` — koszyk proporcjonalnie do wagi wśród
-niepustych (`rng.next()`), potem `rng.pick` w koszyku. `distinctTasks(skills, rng, generate, retries)` — dla każdej
+niepustych (`rng.next()`), potem `rng.pick` w koszyku; wszystkie koszyki puste → `RangeError` jak w `pickSkills`
+(nieosiągalne: `current` nigdy nie jest pusty). Runda zawsze ma `count` zadań: `distinctTasks` po limicie przyjmuje
+duplikat, nie skraca rundy. `distinctTasks(skills, rng, generate, retries)` — dla każdej
 pozycji zadanie tej samej umiejętności, losowane ponownie do `retries` razy, gdy `prompt` już padł; po limicie duplikat
 zostaje. `buildAdaptiveRound(stage, previous, adaptation, weights, rng, rules, tileCount)` w `curriculum.ts`;
 `buildWarmup` przechodzi przez `distinctTasks` (sygnatura + `retries`). `buildRound`/`pickSkills` zostają (rozgrzewka,
@@ -484,6 +487,10 @@ rysowany w kodzie (DESIGN-GAP: sztuka S-16). `TaskScene.startNextRound`: przy `l
 podsumowanie i pokazuje kartę z `childName` kroku (z `getStage(stage).steps`), ustawia narrację karty (`pl.unlock.spoken`)
 i czyta ją, gdy `autoRead` (stuknięcie było gestem); „Dalej” → `pendingUnlock: null` w rejestrze → nowa runda.
 „Do pokoju” z podsumowania nie zmienia `pendingUnlock`, więc karta pojawia się po powrocie i „Kolejna runda”.
+Stan „karta otwarta” należy do `render()` (plan-review F3): dziś `render()` pokazuje `SummaryPanel` zawsze, gdy
+`currentSummary()` daje wynik, a `startNextRound` i `wake` wołają `render()` — gałąź karty idzie przed gałęzią
+podsumowania (karta widoczna → podsumowanie i warstwa zadania ukryte, `roomSwitch` false), inaczej podsumowanie wraca
+nad kartę.
 `TaskSnapshot.unlock: { step: number; name: string } | null`; `targets.unlockNext`. Komentarze DESIGN-GAP (lektor na
 karcie; karta po „Do pokoju”).
 
@@ -493,7 +500,8 @@ karcie; karta po „Do pokoju”).
 
 **File**: `src/testing/e2eHook.ts`
 
-**Intent**: `screen: 'unlock'`, gdy `round.unlock !== null` (przed `summary`); `targets.unlockNext` (`null` w pokoju).
+**Intent**: `screen: 'unlock'`, gdy `round.unlock !== null`; kolejność rozstrzygania `room` → `unlock` → `summary` →
+`task`; `targets.unlockNext` (`null` w pokoju).
 
 ### Success Criteria:
 
@@ -538,7 +546,8 @@ Luki projektu, follow-upy, `CLAUDE.md`, przegląd szwów i wiersze decyzji.
 (`Trigger: S-16`, przeniesione z S-04); S-11: zapis pełnego `SessionLearner` i podłoga `max(zapisany, calendarStart)` na
 starcie sesji; „wcześniejszy zapis ucznia” z S-06 obejmuje teraz także opanowanie (`Trigger: before S-11, or any deploy
 used for daily play`); S-08: historia nie trzyma treści zadania ani złej odpowiedzi („przykłady błędów” — S-08 decyduje o
-polu); S-17: kalibracja wag, `minStartSteps`, łagodzenia i progu w playteście.
+polu); S-17: kalibracja wag, `minStartSteps`, łagodzenia i progu w playteście, oraz formuły podłogi (indeks grywalnych kroków vs
+wszystkich kroków podręcznika zaokrąglony w dół — plan-review F1: E3 październik krok 6, E6 luty krok 4).
 
 #### 3. Dokumentacja i seam sweep
 
@@ -561,7 +570,7 @@ nieużywane (z testami w `tests/pick.test.ts`); nieaktualne komentarze (`pick.ts
 
 - [reviewer] Seam sweep: brak duplikatów, nieaktualnych komentarzy i martwych kluczy z faz 1–7; każdy DESIGN-GAP ma komentarz w kodzie i wiersz w `docs/design-gaps.md`; follow-upy z `Trigger:`
 - [human] Do S-11 każdy zimny start zeruje opanowanie i wraca do podłogi kalendarza (oprócz powitania i gwiazdek); dziecko może drugi raz zobaczyć „Nowa umiejętność!” dla kroku odblokowanego wczoraj; follow-up „wcześniejszy zapis ucznia” dotyczy teraz także postępu nauki
-- [human] Reguła D (podłoga kalendarza, brak dosłownego tekstu PRD; kotwica: Success Criteria „zgodne z tym, co jest aktualnie w szkole”). Co dziecko widzi na produkcji do S-11: E3 w październiku gra tylko kroki 1, 2, 6 (+10% E2); cały etap od stycznia; ścieżka rodzica do etapu niższego niż kalendarzowy odblokowuje cały etap
+- [human] Reguła D (podłoga kalendarza, brak dosłownego tekstu PRD; kotwica: Success Criteria „zgodne z tym, co jest aktualnie w szkole”). Co dziecko widzi na produkcji do S-11: E3 w październiku gra tylko kroki 1, 2, 6 (+10% E2); cały etap od stycznia; ścieżka rodzica do etapu niższego niż kalendarzowy odblokowuje cały etap. Uwaga (plan-review F1): przy E3 październik i E6 luty podłoga wyprzedza kolejność podręcznika o ~1 miesiąc (Known risks)
 - [human] „Większość” = `≥ ceil(0.5 · n)` (krok z 2 umiejętnościami odblokowuje 1 z 2), wbrew dosłownej większości `> 0.5` z PRD FR-014 — zgodnie z „jedna trudna umiejętność nie blokuje kroku”
 - [human] Odblokowanie działa także w trakcie łagodzenia (PRD milczy; `change.md` decyzja 4 mówiła „nie”)
 - [human] Łagodzenie = wagi 20/50/30 przez 2 rundy zamiast dosłownego PRD Business Logic „mniejszy zakres, tryb z obrazkami” (zakresy chronią parsery i teacher read; tryb z obrazkami to S-14)
@@ -596,15 +605,17 @@ miesiąca — zachowanie bez zmian).
 
 **File**: `tests/e2e/adaptive.spec.ts` (nowy), `playwright.config.ts`
 
-**Intent**: `ROUND_SPEC` obejmuje `adaptive`. Test 1 „#13 (proposed) mastering the current step shows „Nowa
+**Intent**: `ROUND_SPEC` obejmuje `adaptive`. Jeden test „#13 (proposed) mastering the current step shows „Nowa
 umiejętność!” after „Kolejna runda”, and „Dalej” starts a round on the unlocked step”: start jak w Overview; pętla ≤ 12 rund
 (5 zadań poprawnie za pierwszym razem, „Dalej”) — na każdym podsumowaniu przed kartą `learner.unlockedStep.E4 === 2` albo
 `pendingUnlock` ustawione; po „Kolejna runda” przy `pendingUnlock` → `screen === 'unlock'`, `unlock.step === 4`,
 `learner.unlockedStep.E4 === 4`; „Dalej” (`targets.unlockNext`) → `screen === 'task'`, `index === 0`, `pendingUnlock`
-`null`; następna runda do końca → „Kolejna runda” → `screen === 'task'` (karta nie wraca). Test 2 „#13 (proposed) the card
-waits through „Do pokoju””: to samo do podsumowania z `pendingUnlock` → „Do pokoju” → pokój → powrót → podsumowanie →
-„Kolejna runda” → `screen === 'unlock'`. `test.setTimeout` dopasowany do ~6 rund; stuknięcia `page.touchscreen.tap`;
-żadnego zapisu stanu z testu, żadnego stałego ziarna, żadnej asercji treści zadania.
+`null`; następna runda do końca → „Kolejna runda” → `screen === 'task'` (karta nie wraca). W tym samym teście (plan-review
+F2: jeden przebieg zamiast dwóch pełnych dojść do karty) czekanie przez pokój: na pierwszym podsumowaniu z `pendingUnlock`
+→ „Do pokoju” → pokój → powrót → podsumowanie → „Kolejna runda” → `screen === 'unlock'` (tytuł testu wymienia oba
+zachowania: „… and the card waits through „Do pokoju””). `test.setTimeout(180_000)` — pod górną granicę pętli (12 rund,
+nie oczekiwane ~4), bo istniejące specy mają 60 s na ~1–2 rundy; zmierzony czas w handoff §3. Stuknięcia
+`page.touchscreen.tap`; żadnego zapisu stanu z testu, żadnego stałego ziarna, żadnej asercji treści zadania.
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; `npx playwright test tests/e2e/adaptive.spec.ts`.
 
@@ -612,9 +623,9 @@ waits through „Do pokoju””: to samo do podsumowania z `pendingUnlock` → 
 
 #### Automated Verification:
 
-- `npx playwright test tests/e2e/adaptive.spec.ts` zielony (2 passed); pełne `npx playwright test`: `<baseline gałęzi e2e> + 2` passed
-- Deliberate break (patch tylko na kodzie produkcyjnym, REGUŁA): `src/scenes/TaskScene.ts` `startNextRound` ignoruje `pendingUnlock` (zawsze nowa runda, karta nigdy) → oba testy czerwone na oczekiwaniu `screen === 'unlock'`; przywrócone; meta-check: unit (`curriculumEnd.test.ts`) zielone przy tej przerwie, więc spec dowodzi sklejki sceny — cytat czerwieni w handoff §3. Gdy Chromium nie startuje w sesji: patch w `context/runs/2026-10-12-s04-s08/e2e-break-s07-p9.patch` + `e2e-request-s07-p9.md` (protokół `prompt-phase.md`)
-- Druga przerwa (patch, REGUŁA): `TaskScene` „Dalej” karty nie czyści `pendingUnlock` → test 1 czerwony na „karta nie wraca” (karta pokazuje się ponownie); przywrócone; meta-check: dowodzi, że karta nie blokuje kolejnych rund
+- `npx playwright test tests/e2e/adaptive.spec.ts` zielony (1 passed); pełne `npx playwright test`: `<baseline gałęzi e2e> + 1` passed
+- Deliberate break (patch tylko na kodzie produkcyjnym, REGUŁA): `src/scenes/TaskScene.ts` `startNextRound` ignoruje `pendingUnlock` (zawsze nowa runda, karta nigdy) → test czerwony na oczekiwaniu `screen === 'unlock'`; przywrócone; meta-check: unit (`curriculumEnd.test.ts`) zielone przy tej przerwie, więc spec dowodzi sklejki sceny — cytat czerwieni w handoff §3. Gdy Chromium nie startuje w sesji: patch w `context/runs/2026-10-12-s04-s08/e2e-break-s07-p9.patch` + `e2e-request-s07-p9.md` (protokół `prompt-phase.md`)
+- Druga przerwa (patch, REGUŁA): `TaskScene` „Dalej” karty nie czyści `pendingUnlock` → test czerwony na „karta nie wraca” (karta pokazuje się ponownie); przywrócone; meta-check: dowodzi, że karta nie blokuje kolejnych rund
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite po przebiegu
 
 ---
@@ -657,7 +668,16 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 - **Podłoga kalendarza bez tekstu źródłowego** (wiersz `[human]` 8.6): do S-11 każdy zimny start wraca do kalendarza;
   dziecko szybsze od klasy co dzień od nowa zdobywa te same kroki (karta może się powtórzyć).
 - **Rozkład w e2e**: test #13 zależy od losowania (60% bieżący koszyk); ≤ 12 rund daje ~60 zadań wobec potrzebnych 12 z
-  jednej umiejętności — prawdopodobieństwo porażki pomijalne, ale czas testu ~1–2 min.
+  jednej umiejętności — prawdopodobieństwo porażki pomijalne; oczekiwane ~4 rundy, najgorszy przypadek 12 rund mieści się w
+  `test.setTimeout(180_000)` (plan-review F2). Jeśli zmierzona runda E4 na klawiaturze przekracza ~12 s, faza 9 podnosi limit
+  i zapisuje pomiar w handoff §3.
+- **Podłoga kalendarza wyprzedza podręcznik tam, gdzie niegrywalne kroki są skupione** (plan-review F1): formuła liczy postęp
+  na indeksie *grywalnych* kroków z `ceil` i `minStartSteps`, więc E3 w październiku stoi na kroku 6 („Liczby 21–30”),
+  choć wg kolejności podręcznika (11 kroków, ~30% półrocza) klasa jest w okolicy kroków 3–4 (zegar, waga — niegrywalne);
+  E6 w lutym startuje od kroku 4 (6 · 12), podręcznik jest przy krokach 1–2. E1 i E5 zgadzają się z podręcznikiem z
+  dokładnością do kroku. Łagodzenie (20/50/30) i 40% z wcześniejszych kroków/poprzedniego etapu tłumią skutek; alternatywa
+  (postęp na indeksie wszystkich kroków podręcznika, zaokrąglony w dół do grywalnego kroku) zostaje do kalibracji S-17
+  (follow-up w fazie 8) i jest widoczna w wierszu `[human]` 8.6.
 - **Miesiąc w e2e tylko przez `?e2eMonth`**: `page.clock` zamroziłby tweeny Phasera 4; parametr istnieje tylko w buildzie
   e2e (`grep -rl e2eMonth dist/` pusty).
 - **Chromium w sesji agenta** (`MachPortRendezvous`): fazy z e2e w bramce oddają e2e orkiestratorowi (`prompt-phase.md`);
@@ -705,7 +725,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 10. **`unlockedStep` dla wszystkich 6 etapów przy starcie nauki**, żeby korekta rozgrzewki i S-08 nie liczyły podłogi drugi raz.
     Odrzucone: wpis tylko dla bieżącego etapu (`Partial` i doliczanie w scenie). Zmieniłoby: S-11, jeśli zapis ma trzymać
     tylko etapy grane.
-11. **Fazy e2e po seam sweep; jedna faza z dwoma testami i dwiema przerwami-regułami** (decyzja orkiestratora: #13 jako
+11. **Fazy e2e po seam sweep; jedna faza z jednym testem (plan-review F2: czekanie przez „Do pokoju” wplecione w ten sam przebieg) i dwiema przerwami-regułami** (decyzja orkiestratora: #13 jako
     „proposed, test-plan refresh pending”, miesiąc tylko `?e2eMonth`). Spec przez ścieżkę rodzica (E4 we wrześniu, krok 2 z
     jedną umiejętnością) — najkrótsza droga do karty przez produkt (~4 rundy). Odrzucone: ustawianie opanowania z testu,
     stałe ziarno, nadpisanie balansu w buildzie e2e. Nowy spec korzysta ze wspólnego `support/hook.ts`; migracja starych
@@ -813,7 +833,7 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 #### Automated
 
-- [ ] 9.1 `npx playwright test tests/e2e/adaptive.spec.ts` zielony (2 passed); pełne e2e `<baseline gałęzi e2e> + 2`
-- [ ] 9.2 Deliberate break: `TaskScene.startNextRound` ignoruje `pendingUnlock` → oba testy czerwone; przywrócone; meta-check (unit zielone)
-- [ ] 9.3 Druga przerwa: „Dalej” karty nie czyści `pendingUnlock` → test 1 czerwony; przywrócone; meta-check
+- [ ] 9.1 `npx playwright test tests/e2e/adaptive.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1`
+- [ ] 9.2 Deliberate break: `TaskScene.startNextRound` ignoruje `pendingUnlock` → test czerwony; przywrócone; meta-check (unit zielone)
+- [ ] 9.3 Druga przerwa: „Dalej” karty nie czyści `pendingUnlock` → test czerwony; przywrócone; meta-check
 - [ ] 9.4 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
