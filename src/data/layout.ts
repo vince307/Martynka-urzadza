@@ -11,6 +11,9 @@ export const MIN_TOUCH_TARGET = 96;
 /** Palette for code-drawn placeholders, taken from the approved art pack style guide. */
 export const PLACEHOLDER_COLORS = {
     ivory: 0xfff5df,
+    oak: 0xc99b66,         // style guide: frames and furniture
+    terracotta: 0xc98460,  // style guide: small painted accents
+    paleLeaf: 0xe3f0d9,    // style guide: pale leaf (same value as tile; named for room furniture)
     turquoise: 0x54beb4,
     deepTeal: 0x245c59,
     butter: 0xf1ce6b,
@@ -204,7 +207,11 @@ export const WELCOME_LAYOUT = {
 export const ROOM_LAYOUT = {
     panel: { left: 180, top: 204, width: 1560, height: 840, radius: 40 },
     caption: { x: 960, y: 520 },
-    resume: { left: 720, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md row 12)
+    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md row 12)
+    area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal, phase 5 may tune it)
+    wallBottom: 520,                                            // wall and floor meet here
+    tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
+    taskButton: { left: 900, top: 880, width: 720, height: 128 }, // current renovation task button
 } as const;
 
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
