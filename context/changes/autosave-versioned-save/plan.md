@@ -777,9 +777,9 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 1.1 `save.test.ts` czerwony przed implementacją (asercja na stubie), zielony po; unit baseline + N
-- [ ] 1.2 Deliberate break spread ucznia / akceptacja `version > 1` / brak sprawdzenia `currentRoom` → czerwone; przywrócone; meta-check
-- [ ] 1.3 `npm run lint` (granice `core`), `npm run typecheck` bez `rngSeed`; pełna bramka lokalna zielona
+- [x] 1.1 `save.test.ts` czerwony przed implementacją (asercja na stubie), zielony po; unit baseline + N
+- [x] 1.2 Deliberate break spread ucznia / akceptacja `version > 1` / brak sprawdzenia `currentRoom` → czerwone; przywrócone; meta-check
+- [x] 1.3 `npm run lint` (granice `core`), `npm run typecheck` bez `rngSeed`; pełna bramka lokalna zielona
 
 ### Phase 2: Harmonogram autozapisu, wczytanie i podłoga kalendarza
 
