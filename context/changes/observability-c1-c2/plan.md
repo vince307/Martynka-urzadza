@@ -618,8 +618,8 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 #### Automated
 
-- [ ] 1.1 Nowe testy (rzucający `onRelease`, sesja) czerwone przed (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: `enabled` poza `finally` / `run` bez `end()` przy wyjątku → czerwone; przywrócone; meta-check
+- [x] 1.1 Nowe testy (rzucający `onRelease`, sesja) czerwone przed (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [x] 1.2 Deliberate break: `enabled` poza `finally` / `run` bez `end()` przy wyjątku → czerwone; przywrócone; meta-check
 - [ ] 1.3 Pełna bramka lokalna zielona
 
 ### Phase 2: Opanowanie bez kary za błąd (H-7, decyzja opiekuna)
