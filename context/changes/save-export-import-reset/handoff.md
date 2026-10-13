@@ -40,7 +40,7 @@ Written by the `/10x-tdd phase 3` step of run `2026-10-13-s12-s14`. Phase 3 is c
 
 ## 4. Next command
 
-`/10x-tdd save-export-import-reset phase 4`
+`/10x-implement save-export-import-reset phase 4`
 
 
 ## 5. Open
