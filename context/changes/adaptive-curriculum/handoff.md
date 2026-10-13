@@ -10,10 +10,10 @@ plan.md § Critical Implementation Details), and "większość" is `≥ ceil(0.5
 | | |
 |---|---|
 | Branch | `feat/adaptive-curriculum`, cut from `main` at `fd68216` |
-| Commits | 3 on top of `fd68216` (change identity; research; this step's `docs(adaptive-curriculum): plan`) |
+| Commits | 4 on top of `fd68216` (change identity; research; `docs(adaptive-curriculum): plan`; handoff fixes) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 44 (all; 13 of them `[human]`/`[reviewer]`/`[visual]`) |
+| `## Progress` rows remaining | 44 (all; 11 of them `[human]`/`[reviewer]`/`[visual]`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
