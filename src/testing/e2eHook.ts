@@ -48,7 +48,8 @@ export const installE2EHook = (game: Game): void => {
             },
             get targets() {
                 if (onWelcome()) {
-                    return Object.freeze({ ages: welcome().targets().ages });
+                    const { ages, parent } = welcome().targets();
+                    return Object.freeze({ ages, parent });
                 }
                 const round = task().targets();
                 return Object.freeze({

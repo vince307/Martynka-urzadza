@@ -5,6 +5,31 @@ export const pl = {
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
     },
+    // DESIGN-GAP (docs/design-gaps.md): the kit has no parent entry, adult gate or stage panel; the texts are ours.
+    parent: {
+        entry: 'Rodzic',
+        gateTitle: 'Pytanie dla rodzica',
+        gatePrompt: (a: number, b: number) => `Ile to jest ${a} · ${b}?`,
+        gateWrong: 'To nie ta liczba. Spróbuj z nowym działaniem.',
+        gateAnswer: 'Wpisana liczba',
+        deleteKey: 'Usuń',
+        okKey: 'OK',
+        cancel: 'Anuluj',
+        panelTitle: 'Ustawienia startowe',
+        ageHeading: 'Wiek dziecka',
+        stageHeading: 'Etap nauki',
+        proposal: 'propozycja',
+        confirm: 'Zatwierdź',
+        ageOption: (age: number, openEnded: boolean) => (openEnded ? `${age}+` : String(age)),
+    },
+    stages: {
+        E1: 'Klasa 1, I półrocze',
+        E2: 'Klasa 1, II półrocze',
+        E3: 'Klasa 2, I półrocze',
+        E4: 'Klasa 2, II półrocze',
+        E5: 'Klasa 3, I półrocze',
+        E6: 'Klasa 3, II półrocze',
+    },
     overlay: {
         rotate: 'Obróć tablet',
         rotateHint: 'Gra działa w poziomie.',

@@ -167,6 +167,8 @@ export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
     question: { x: 960, y: 290 },
     ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
+    // DESIGN-GAP (docs/design-gaps.md): the kit has no parent entry; secondary page button in the bottom-right corner.
+    parent: { left: 1596, top: 922, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
 /** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
@@ -185,6 +187,7 @@ export const HUD_TOUCH_TARGETS = {
 /** Interactive rectangle of the welcome screen, checked against MIN_TOUCH_TARGET. */
 export const WELCOME_TOUCH_TARGETS = {
     age: { width: WELCOME_LAYOUT.ages.width, height: WELCOME_LAYOUT.ages.height },
+    parent: { width: WELCOME_LAYOUT.parent.width, height: WELCOME_LAYOUT.parent.height },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */

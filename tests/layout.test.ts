@@ -70,6 +70,17 @@ describe('task screen layout constants', () => {
         expect(WELCOME_LAYOUT.question.y + FONT_SIZES.summaryTitle).toBeLessThan(top);   // the question sits above the buttons
     });
 
+    it('keeps the welcome parent button a touch target, inside the screen and clear of the age buttons', () => {
+        const { left, top, width, height } = WELCOME_LAYOUT.parent;
+        expect(WELCOME_TOUCH_TARGETS.parent).toEqual({ width, height });
+        expect(WELCOME_TOUCH_TARGETS.parent.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(WELCOME_TOUCH_TARGETS.parent.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(left + width).toBeLessThanOrEqual(GAME_WIDTH);
+        expect(top + height).toBeLessThanOrEqual(GAME_HEIGHT);
+        const ages = WELCOME_LAYOUT.ages;
+        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + ages.shadow);
+    });
+
     it('uses the kit tile height of 136 px, not smaller', () => {
         expect(TASK_LAYOUT.tiles.height).toBeGreaterThanOrEqual(136);
     });
