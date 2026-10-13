@@ -764,8 +764,8 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 #### Automated
 
 - [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 2042dc8
-- [ ] 4.2 `save-restart.spec.ts` zielony (orkiestrator, `e2e-request-p4.md`); pełne e2e `<baseline gałęzi e2e> + 0`
-- [ ] 4.3 Deliberate break: `onExport` bez `session.run` → `dialogSessions` czerwony; patch `e2e-break-p4.patch` (pobranie bez dialogu) → FR-021 czerwony, unit zielone; meta-check
+- [x] 4.2 `save-restart.spec.ts` zielony (orkiestrator, `e2e-request-p4.md`); pełne e2e `<baseline gałęzi e2e> + 0` — 2042dc8 (e2e by the orchestrator on 618d02b)
+- [x] 4.3 Deliberate break: `onExport` bez `session.run` → `dialogSessions` czerwony; patch `e2e-break-p4.patch` (pobranie bez dialogu) → FR-021 czerwony, unit zielone; meta-check — 2042dc8 (e2e by the orchestrator on 618d02b)
 - [x] 4.4 `npm run build` drukuje `e2e hook: absent (` — 2042dc8
 
 #### Manual
@@ -778,8 +778,8 @@ migracji, więc przyszły v2 przyjmie plik v1. Pola `replace`/`persistence` są 
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: `onImport` bez `session.run` / brak tekstu `future` → czerwone; przywrócone; meta-check (przepływ w e2e fazy 7)
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (+10)
+- [x] 5.2 Deliberate break: `onImport` bez `session.run` / brak tekstu `future` → czerwone; przywrócone; meta-check (przepływ w e2e fazy 7)
 - [ ] 5.3 E2E (orkiestrator) `<baseline gałęzi e2e> + 0`; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual

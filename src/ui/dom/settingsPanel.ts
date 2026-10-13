@@ -24,6 +24,7 @@ export interface SettingsPanelOptions {
     onCancel: () => void;
     /** "Zapisz kopię": the panel closes and the caller opens the export dialog. Absent = no button (no saver). */
     onExport?: () => void;
+    onImport?: () => void;
     /** Subscribes to "a Polish voice is available" (called at once and on changes); returns the unsubscribe. Absent = no narrator: the line stays visible. */
     watchVoice?: (callback: (available: boolean) => void) => () => void;
     parent?: HTMLElement;
@@ -37,7 +38,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, onConfirm, onCancel, onExport, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, onConfirm, onCancel, onExport, onImport, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -100,7 +101,14 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(onExport ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    if (onImport) {
+        saveActions.append(createButton(pl.saveTransfer.importButton, () => {
+            close();
+            onImport();
+        }));
+    }
+
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(onExport || onImport ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

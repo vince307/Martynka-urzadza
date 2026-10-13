@@ -13,7 +13,10 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { saveHealthView } from '../core/saveHealth';
-import { exportFileText } from '../core/saveFile';
+import { decodeSave, type SessionSave } from '../core/save';
+import { exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
+import { ROOMS } from '../data/rooms';
+import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
@@ -146,6 +149,7 @@ export class UIScene extends Scene {
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
                     ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
+                    ...(saver ? { onImport: () => session.run(() => this.openImport(saver, session)) } : {}),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
                 });
                 }),
@@ -159,6 +163,24 @@ export class UIScene extends Scene {
                 text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
                 fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
             }),
+            onClose: () => session.run(() => this.closeSettings()),
+        });
+    }
+
+    /** Import step: replaces the panel in the same input session; "Teraz" is read from the saver, `apply` is the saver's replace. */
+    private openImport(saver: Autosaver, session: InputSession): void {
+        const summarize = (s: SessionSave): SaveSummary => saveSummary(s, ROOMS);
+        const decoded = decodeSave(saver.current());
+        if (decoded.kind !== 'ok') {
+            this.closeSettings();
+            return;
+        }
+        this.closeDialog = openSaveImportDialog({
+            current: summarize(decoded.session),
+            summarize,
+            roomName: (id) => ROOMS[id]?.name ?? id,
+            maxBytes: balance.save.importMaxBytes,
+            apply: (state) => saver.replace(state),
             onClose: () => session.run(() => this.closeSettings()),
         });
     }
