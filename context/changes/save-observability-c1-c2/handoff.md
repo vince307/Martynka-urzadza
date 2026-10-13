@@ -1,16 +1,17 @@
 # Handoff — `save-observability-c1-c2` (slice fix, non-roadmap)
 
-Written by the `new` step. The change identity exists; every in-scope audit claim was checked against the code at
-`4698110`. The next agent must not tighten `validateSave` with the shipped `ROOMS` for H-R3 (decision 6: repair at load).
+Written by the `research` step. `research.md` answers every open question from change.md with file + symbol evidence;
+`change.md` status is `preparing`. The next agent must not forget that the timed-out `store.read()` promise needs its own
+`.catch`, otherwise a late rejection reaches the error boundary's `unhandledrejection` listener and shows the fatal card.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-observability-c1-c2`, cut from `main` at `4698110` |
-| Commits | 1 on the branch (this step: `docs(save-observability-c1-c2): change identity (autonomous run)`) |
+| Commits | 2 on the branch (identity; this step: `docs(save-observability-c1-c2): research`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by the research skill's `metadata-guard.mjs mark-researched`) |
 | Progress rows remaining | n/a (no plan.md yet) |
 | Working tree | clean after the commit |
 
@@ -18,7 +19,8 @@ Written by the `new` step. The change identity exists; every in-scope audit clai
 
 | Path | What it is |
 |---|---|
-| `context/changes/save-observability-c1-c2/change.md` | identity: sources, audit claim / repo now / correction table, design binding, no migration, triggered follow-ups, 8 autonomous decisions |
+| `context/changes/save-observability-c1-c2/research.md` | research: status fields, panel line, unavailable card, load timeout, room repair, e2e seams, Polish copy, M-R5/M-S2 verdict |
+| `context/changes/save-observability-c1-c2/change.md` | status `new` → `preparing` (metadata only) |
 | `context/changes/save-observability-c1-c2/handoff.md` | this file |
 
 ## 3. Verification
@@ -26,21 +28,25 @@ Written by the `new` step. The change identity exists; every in-scope audit clai
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/save-observability-c1-c2` |
-| code reading (`src/core/autosave.ts` `loadSave`/`createAutosaver`/`attempt`/`block`, `src/main.ts` `start`, `src/scenes/RoomScene.ts` `room`/`roomState`/`dispatch`, `src/scenes/TaskScene.ts` `nextRoomTaskCost`, `src/core/save.ts` `validateSave`, `src/testing/e2eHook.ts` `save`/`e2eSave`, `vite/e2eHookGuard.mjs` `E2E_HOOK_MARKERS`) | C-1, C-2, M-S4, M-S5, M-R6, H-R3 confirmed; H-R3 fix direction corrected |
+| code reading at `1e17ccf` (`src/core/autosave.ts`, `src/main.ts` `start`, `src/core/save.ts`, `src/ui/dom/saveFailedCard.ts`, `settingsPanel.ts`, `progressView.ts`, `src/scenes/UIScene.ts` `openSettings`, `RoomScene.ts`, `src/storage/idb.ts`, `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs`, `src/core/errorSignal.ts`, `tests/autosave.test.ts`, `tests/e2e/save-restart.spec.ts`, `context/foundation/test-plan.md` "Never `page.clock`") | all claims in research.md anchored |
 | lint / typecheck / unit / build / e2e | not run — docs-only step, no code changed (baseline in the contract: unit 1142, e2e 29) |
 
 ## 4. Next command
 
-`/10x-research save-observability-c1-c2`
+`/10x-plan save-observability-c1-c2`
 
 ## 5. Open
 
-- Research questions (change.md decision 8): form and placement of the `unavailable` card (DOM before the game, like `src/ui/dom/saveFailedCard.ts` `mountSaveFailedCard`); injected clock for `createAutosaver`; where the unknown-`currentRoom` repair plugs in (`src/main.ts` `start` vs `src/core/save.ts` `toSession`); whether M-R5 (`tests/roomsData.test.ts` over `ROOMS`) and M-S2 (`src/storage/idb.ts` `requestPersistence` result) are cheap enough to include; whether Safari private mode makes `unavailable` routine.
-- DESIGN-GAP: row 43 in `docs/design-gaps.md` to be rewritten (save-health line in the parent panel + `unavailable` signal); possible new row after 44 for the `unavailable` card.
-- Triggered follow-ups: F3 `?e2eSave=unavailable` seam + spec (in scope); F4 `tests/e2eHookGuard.test.ts` explicit cases (conditional); S-12 "show the save state to the parent" (partly closed here). Out-of-scope audit findings (M-S1, M-S2, M-S3, M-R4, M-R5, L-*) go to `follow-ups/review-fixes.md` later.
-- Every new Polish string in `src/data/pl.ts` needs a `[reviewer]` teacher-read row in the plan.
+- Plan decisions listed in research.md "Open Questions": first-`blockedBy`-wins, `balance.save.loadTimeoutMs` (5000 ms suggested) with a hook-build-only short override for `?e2eSave=hang`, optional clock time in the panel line, M-R5 included (test loop over `ROOMS`), M-S2 deferred.
+- Routine-ness of `unavailable` on target tablets is an inference (modern private modes keep IndexedDB), not verified on a device → a `[human]` device-check row in the plan.
+- DESIGN-GAP: row 43 in `docs/design-gaps.md` to be rewritten; new row 45 for the unavailable card if its copy differs from row 42.
+- Every new string in `src/data/pl.ts` (`pl.saveUnavailable`, `pl.settings` save lines) needs a `[reviewer]` teacher-read row.
+- Follow-ups for the plan to write in `follow-ups/review-fixes.md`: M-S1, M-S2, M-S3, M-R4, L-*; F4 (`tests/e2eHookGuard.test.ts`) optional — no guard change needed.
 
 ## 6. Autonomous decisions
 
-See `change.md` `## Autonomous decisions` (1–8) for full chosen / rejected / why / what would change. Summary:
-scope C-1, C-2, H-R3, M-R6, M-S5 + M-S4 + follow-up F3 (reversal: research shows M-R5/M-S2 trivial); signal = settings-panel save-health line + a pre-game card for `unavailable` (reversal: `unavailable` routine on target tablets → panel line only); status fields live in `AutosaveStatus`, not `SaveState`, `SAVE_VERSION` stays 1 (reversal: none short of a format change); H-R3 = load-time repair with known ids as a parameter, not stricter `validateSave` (reversal: a second room shipped first); no scene reaction to a failed `flush('now')` (reversal: maintainer wants purchases blocked without a save). Next step `/10x-research` is fixed by the run prompt, overriding the skill's default `/10x-plan`.
+- Research questions taken from change.md decision 8 + the run prompt; no question asked (contract rule 1).
+- Recommended parametrising `mountSaveFailedCard` (copy group + optional `onExport`) over a second card; rejected: a duplicate card. Would change if the unavailable card needs a different layout.
+- Recommended a snapshot of `saver.status()` at panel open over a subscription; rejected: a `watchVoice`-style channel (the autosaver has no events and the panel is modal). Would change if the panel became non-modal.
+- Recommended the room repair in `src/main.ts` `start` (loaded branch) with known ids as a parameter, not in `decodeSave`/`toSession`; rejected: data-aware decoding (`decodeSave` is the future S-12 import validator). Would change if core were allowed to import `src/data/rooms.ts`.
+- Recommended M-R5 in scope (test-only, a few lines), M-S2 out (needs an async channel from `requestPersistence`). Would change if the plan finds the phase over size.
