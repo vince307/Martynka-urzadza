@@ -20,7 +20,8 @@ describe('e2e hook guard', () => {
     });
 
     it('requires the marker in the e2e build', () => {
-        expect(checkE2EHook(leaky, true)).toEqual({ ok: true, message: 'e2e hook: present (3 chunks checked)' });
+        const full = [...clean, { fileName: '_app/index-e.js', code: E2E_HOOK_MARKERS.map((m) => `x("${m}")`).join(';') }];
+        expect(checkE2EHook(full, true)).toEqual({ ok: true, message: 'e2e hook: present (3 chunks checked)' });
         expect(checkE2EHook(clean, true).ok).toBe(false);
     });
 
@@ -43,7 +44,7 @@ describe('e2e hook guard', () => {
 
     it('lists every marker with the hook marker first', () => {
         expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure']);
-        expect(E2E_REQUIRED_MARKERS).toEqual([E2E_HOOK_MARKER]);
+        expect(E2E_REQUIRED_MARKERS).toEqual(E2E_HOOK_MARKERS);
     });
 
     it.each(E2E_HOOK_MARKERS.map((m) => [m] as const))('fails a production chunk holding only %s and names it', (marker) => {
@@ -62,8 +63,10 @@ describe('e2e hook guard', () => {
         expect(checkE2EHook(full, true, required)).toEqual({ ok: true, message: 'e2e hook: present (4 chunks checked)' });
     });
 
-    it('does not require the other markers in the e2e build by default', () => {
-        expect(checkE2EHook(leaky, true).ok).toBe(true);
+    it('requires every marker in the e2e build by default (a hook with only the first one is a dropped hook)', () => {
+        const result = checkE2EHook(leaky, true);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain('e2eMonth');
     });
 
     it('every marker appears literally in the hook source', () => {

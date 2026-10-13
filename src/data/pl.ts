@@ -48,6 +48,12 @@ export const pl = {
         rotate: 'Obróć tablet',
         rotateHint: 'Gra działa w poziomie.',
     },
+    errorCard: {
+        title: 'Ups! Gra się zatrzymała.',
+        body: 'Dotknij przycisku, a gra uruchomi się od nowa.',
+        restart: 'Zacznij od nowa',
+        build: (id: string) => `Wersja ${id}`,
+    },
     install: {
         title: 'Zainstaluj grę na tablecie',
         ipad: 'Stuknij Udostępnij (kwadrat ze strzałką), potem „Do ekranu początkowego”.',

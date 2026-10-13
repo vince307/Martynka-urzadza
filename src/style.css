@@ -95,6 +95,12 @@ canvas {
     cursor: pointer;
 }
 
+/* Error card (DESIGN-GAP 29): shown over the canvas and the parent dialogs, under the rotate hint. */
+.overlay-error {
+    display: flex;
+    z-index: 18;
+}
+
 /* The rotate overlay sits above everything and shows only in portrait. */
 .overlay-rotate {
     z-index: 20;

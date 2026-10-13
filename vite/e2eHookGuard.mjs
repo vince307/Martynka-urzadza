@@ -4,8 +4,8 @@
 // the e2e project would fail with a confusing error).
 export const E2E_HOOK_MARKER = '__martynkaE2E';
 export const E2E_HOOK_MARKERS = [E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure'];
-// Markers that must be in the e2e build. e2eFail and e2e-forced-failure join once something calls them.
-export const E2E_REQUIRED_MARKERS = [E2E_HOOK_MARKER];
+// Markers that must be in the e2e build: every one has a caller there, so a missing one means the hook was dropped.
+export const E2E_REQUIRED_MARKERS = [...E2E_HOOK_MARKERS];
 
 /**
  * @param {{ fileName: string; code: string }[]} chunks

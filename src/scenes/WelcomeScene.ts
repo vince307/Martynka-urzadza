@@ -7,7 +7,7 @@ import { balance } from '../data/balance';
 import { GAME_HEIGHT, PLACEHOLDER_FRAME, REGISTRY_KEYS, SCENE_KEYS, WELCOME_LAYOUT } from '../data/layout';
 import { pl } from '../data/pl';
 import { placementData } from '../data/placement';
-import type { InputSuspender } from '../core/inputSuspend';
+import { openInputSession, type InputSession, type InputSuspender } from '../core/inputSuspend';
 import { openParentGate } from '../ui/dom/parentGate';
 import { openStagePanel } from '../ui/dom/stagePanel';
 import { AgeButton } from '../ui/widgets/AgeButton';
@@ -25,7 +25,7 @@ export class WelcomeScene extends Scene {
     private chosen = false;
     private parentButton: PageButton | undefined;
     private closeDialog: (() => void) | undefined;
-    private releaseInput: (() => void) | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
+    private session: InputSession | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
 
     constructor() {
         super(SCENE_KEYS.welcome);
@@ -36,7 +36,7 @@ export class WelcomeScene extends Scene {
         this.buttons = [];
         this.chosen = false;
         this.closeDialog = undefined;
-        this.releaseInput = undefined;
+        this.session = undefined;
         this.events.once('shutdown', () => {
             this.closeDialog?.();
             this.resumeInput();
@@ -72,21 +72,28 @@ export class WelcomeScene extends Scene {
             return;
         }
         const month = this.sessionMonth();
+        const suspender = this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
+        if (!suspender || this.session) {
+            return;
+        }
         const resume = (): void => {
             this.closeDialog = undefined;
             this.resumeInput();
         };
-        this.releaseInput = (this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender).suspend();
+        // Every dialog callback runs in the session: a throw ends the hold (touch never stays dead) and goes on to the error boundary.
+        const session = openInputSession(suspender);
+        this.session = session;
         this.closeDialog = openParentGate({
             rng: createRng(Math.floor(Math.random() * 2 ** 32)),
-            onCancel: resume,
-            onPass: () => {
-                this.closeDialog = openStagePanel({
-                    month,
-                    onCancel: resume,
-                    onConfirm: (learner) => this.start(learner),
-                });
-            },
+            onCancel: () => session.run(resume),
+            onPass: () =>
+                session.run(() => {
+                    this.closeDialog = openStagePanel({
+                        month,
+                        onCancel: () => session.run(resume),
+                        onConfirm: (learner) => session.run(() => this.start(learner)),
+                    });
+                }),
         });
     }
 
@@ -104,8 +111,8 @@ export class WelcomeScene extends Scene {
     }
 
     private resumeInput(): void {
-        this.releaseInput?.();
-        this.releaseInput = undefined;
+        this.session?.end();
+        this.session = undefined;
     }
 
     private sessionMonth(): number {
