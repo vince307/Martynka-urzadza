@@ -15,6 +15,8 @@ export interface Snapshot {
     starsEarned: number;
     bonusEarned: number;
     starsTotal: number;
+    /** The star balance of the registry (the one source; equals starsTotal). */
+    stars: number;
     counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;

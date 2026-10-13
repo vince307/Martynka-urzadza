@@ -12,6 +12,8 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
+import { emptyRoomState } from './core/rooms';
+import { FIRST_ROOM } from './data/rooms';
 import { e2eFail, e2eMonth, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
@@ -37,6 +39,10 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.narrator, narrator);
                 booting.registry.set(REGISTRY_KEYS.month, month);
                 booting.registry.set(REGISTRY_KEYS.settings, initialSettings());
+                // Session state until the save arrives (S-11 replaces these values with the saved ones).
+                booting.registry.set(REGISTRY_KEYS.stars, 0);
+                booting.registry.set(REGISTRY_KEYS.rooms, { [FIRST_ROOM]: emptyRoomState() });
+                booting.registry.set(REGISTRY_KEYS.currentRoom, FIRST_ROOM);
                 if (__E2E_HOOK__) {
                     booting.registry.set(REGISTRY_KEYS.forcedFailure, forcedFailure);   // e2e build only; never set in production
                 }

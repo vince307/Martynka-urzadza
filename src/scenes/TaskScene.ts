@@ -1,7 +1,9 @@
 import { Scene, type GameObjects } from 'phaser';
 import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
-import type { Settings, StageDef, StageId } from '../core/types';
+import { nextTaskCost } from '../core/rooms';
+import { earn } from '../core/stars';
+import type { RoomState, Settings, StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
@@ -25,7 +27,9 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
@@ -53,6 +57,7 @@ export interface TaskSnapshot {
     readonly starsEarned: number;
     readonly bonusEarned: number;
     readonly starsTotal: number;
+    readonly stars: number;   // the registry balance (the same value as starsTotal)
     readonly finished: boolean;
     readonly summary: SummaryView | null;
     readonly narration: string | null;
@@ -93,7 +98,7 @@ export class TaskScene extends Scene {
     private rng!: Rng;
     private narrator: Narrator | undefined;
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
-    private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
+    private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
     constructor() {
         super(SCENE_KEYS.task);
@@ -110,7 +115,7 @@ export class TaskScene extends Scene {
         // A restarted scene keeps its fields: start from a clean slate.
         this.promptTexts = [];
         this.shownIndex = -1;
-        this.sessionStars = 0;
+        this.flyingStars = [];
         this.unlockShown = false;
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
         if (!learner) {
@@ -127,7 +132,6 @@ export class TaskScene extends Scene {
         this.registry.set(REGISTRY_KEYS.roomSwitch, false);
         this.rng = createRng(Date.now() >>> 0);
         this.state = this.freshRound();
-        this.registry.set(REGISTRY_KEYS.stars, 0);
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
         this.dots = new ProgressDots(this);
@@ -147,6 +151,7 @@ export class TaskScene extends Scene {
                 return;
             }
             this.narrator?.cancel();
+            this.endFlyingStars();
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.registry.set(REGISTRY_KEYS.roomSwitch, false);
             this.scene.switch(SCENE_KEYS.room);
@@ -210,10 +215,8 @@ export class TaskScene extends Scene {
         this.stage = stage;
         this.warmup = false;
         this.unlockShown = false;
-        this.sessionStars += this.state.starsEarned;
         this.state = this.freshRound();
         this.shownIndex = -1;
-        this.registry.set(REGISTRY_KEYS.stars, this.sessionStars);
         this.render();
         if (read) {
             this.autoReadFirst();
@@ -455,9 +458,8 @@ export class TaskScene extends Scene {
         this.beginRound();
     }
 
-    /** The finished round's stars join the session and a fresh round starts. */
+    /** A fresh round starts; the finished round's stars are already on the balance (syncStars). */
     private beginRound(): void {
-        this.sessionStars += this.state.starsEarned;
         this.state = this.freshRound();
         this.shownIndex = -1;
         this.render();
@@ -538,9 +540,10 @@ export class TaskScene extends Scene {
 
     /** The counter shows the new total at once; the star flies after it without blocking input. */
     private syncStars(before: number, from: { x: number; y: number } | null): void {
-        const total = this.sessionStars + this.state.starsEarned;
-        this.registry.set(REGISTRY_KEYS.stars, total);
-        if (this.state.starsEarned > before && from) {
+        // The only write of the balance in this scene: the round's new stars (a delta) join it.
+        const balanceNow = (this.registry.get(REGISTRY_KEYS.stars) as number | undefined) ?? 0;
+        this.registry.set(REGISTRY_KEYS.stars, earn(balanceNow, this.state.starsEarned - before));
+        if (this.state.starsEarned > before && from && !prefersReducedMotion()) {
             this.flyStar(from);
         }
     }
@@ -554,23 +557,49 @@ export class TaskScene extends Scene {
         return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
     }
 
+    private starBalance(): number {
+        return (this.registry.get(REGISTRY_KEYS.stars) as number | undefined) ?? 0;
+    }
+
+    /** Stars in flight end at once (their tweens would stand still while the scene sleeps). */
+    private endFlyingStars(): void {
+        this.flyingStars.forEach((star) => {
+            this.tweens.killTweensOf(star);
+            star.destroy();
+        });
+        this.flyingStars = [];
+    }
+
     private flyStar(from: { x: number; y: number }): void {
         const to = starCounterTarget();
         // Start above the tapped tile or key so the star never hides the answer.
         const star = this.add.graphics({ x: from.x, y: from.y - ANIMATION.starStartLift });
         drawStar(star, 0, 0, TASK_LAYOUT.starCounter.starRadius, PLACEHOLDER_COLORS.butter);
+        this.flyingStars.push(star);
         this.tweens.chain({
             targets: star,
             tweens: [
                 { scale: ANIMATION.starPopScale, duration: ANIMATION.starPopMs },
                 { x: to.x, y: to.y, scale: 1, duration: ANIMATION.starFlightMs - ANIMATION.starPopMs, ease: 'Sine.easeInOut' },
             ],
-            onComplete: () => star.destroy(),
+            onComplete: () => {
+                this.flyingStars = this.flyingStars.filter((flying) => flying !== star);
+                star.destroy();
+            },
         });
     }
 
+    /** Cost of the next renovation task of the current room, or null when none is left. */
+    private nextRoomTaskCost(): number | null {
+        const roomId = (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
+        const room = ROOMS[roomId];
+        const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
+        const state = rooms?.[roomId];
+        return room && state ? nextTaskCost(room, state) : null;
+    }
+
     private currentSummary(): SummaryView | null {
-        return summaryView(this.state, { starsTotal: this.sessionStars + this.state.starsEarned, nextRoomTaskCost: null });
+        return summaryView(this.state, { starsTotal: this.starBalance(), nextRoomTaskCost: this.nextRoomTaskCost() });
     }
 
     /** Read-only copy of the round for the e2e hook; nothing here can change the scene. */
@@ -590,7 +619,8 @@ export class TaskScene extends Scene {
             outcomes: Object.freeze([...this.state.outcomes]),
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
-            starsTotal: this.sessionStars + this.state.starsEarned,
+            starsTotal: this.starBalance(),
+            stars: this.starBalance(),
             finished: this.state.finished,
             summary: frozenSummary,
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,

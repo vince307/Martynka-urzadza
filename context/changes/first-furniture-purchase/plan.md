@@ -701,17 +701,17 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 - [x] 3.1 `variantPanel.test.ts` czerwony przed implementacją (asercja), zielony po; unit baseline + N — 94873fd
 - [x] 3.2 Deliberate break `confirm` bez zamknięcia / `open` bez opłacalności → czerwone; przywrócone; meta-check — 94873fd
-- [x] 3.3 Pełna bramka lokalna zielona — 94873fd (e2e: orchestrator gate)
+- [x] 3.3 Pełna bramka lokalna zielona — 94873fd (e2e: orchestrator run on 2e7d539)
 
 ### Phase 4: Jedno saldo w rejestrze, koszt w podsumowaniu, gwiazdka w locie i „ogranicz ruch”
 
 #### Automated
 
-- [ ] 4.1 `sessionStars` usunięte; `REGISTRY_KEYS.stars` pisane w `TaskScene` tylko w `syncStars`
-- [ ] 4.2 `summary.test.ts` bez zmian zielony, `motion.test.ts` zielony; unit baseline + N
-- [ ] 4.3 `npx playwright test` zielony, baseline e2e + 0 (asercje `starsTotal` bez zmian)
-- [ ] 4.4 Deliberate break `syncStars` bez delty → `task-round.spec.ts` czerwony; przywrócone; meta-check
-- [ ] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
+- [x] 4.1 `sessionStars` usunięte; `REGISTRY_KEYS.stars` pisane w `TaskScene` tylko w `syncStars`
+- [x] 4.2 `summary.test.ts` bez zmian zielony, `motion.test.ts` zielony; unit baseline + N
+- [ ] 4.3 `npx playwright test` zielony, baseline e2e + 0 (asercje `starsTotal` bez zmian) (orchestrator gate)
+- [ ] 4.4 Deliberate break `syncStars` bez delty → `task-round.spec.ts` czerwony; przywrócone; meta-check (orchestrator gate)
+- [x] 4.5 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona
 
 #### Manual
 
