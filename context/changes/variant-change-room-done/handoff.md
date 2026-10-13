@@ -1,61 +1,53 @@
 # Handoff — `variant-change-room-done` (slice S-10)
 
-Written by `/10x-tdd` phase 3 (committed 41c4c7b): the `?e2eStars=N` seam (hook build only, guard marker) is done and green. The next agent (phase 4, room hold -> free variant change, Driver: impl) can start a hook-build session with `?e2eStars=N` for the balance.
+Written by `/10x-implement` phase 4 (committed 8baf606): a hold on a furnished slot opens the free variant-change panel; green except e2e (orchestrator gate). Phase 5 (room-done card, room list, "Zmień wygląd" mode) is next.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/variant-change-room-done`, cut from `main` at `36ead3c` |
-| Commits | identity, research, plan, plan review, `20808c9` (phase 1), handoff p1, `9c79ea2` (phase 2), handoff p2, `41c4c7b` (phase 3) |
+| Commits | ..., `41c4c7b` (phase 3), handoff p3, `8baf606` (phase 4) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 35 (phases 1-3 rows ticked; 2.4 [reviewer], 3.5 [human] left) |
+| `## Progress` rows remaining | 30 (4.1-4.5 ticked; 4.6, 4.7 [visual] left) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/types.ts` | `RoomListEntry` |
-| `src/core/rooms.ts` | `roomsListView`, `RoomListItem` |
-| `src/data/rooms.ts` | `ROOM_ORDER`, `captionAnchor`, `SlotPlaceholder.caption` (floor, walls anchors) |
-| `src/data/balance.ts` | `roomHold` 600 ms / 40 px |
-| `src/data/layout.ts` | `ROOM_LAYOUT.slot.captionCharWidth` |
-| `src/data/pl.ts` | `pl.room.done`, `pl.room.change` |
-| `tests/rooms.test.ts`, `tests/roomsData.test.ts` | new cases |
-| `src/testing/e2eHook.ts` | `e2eStars`, `E2E_MAX_STARS` (500) |
-| `src/main.ts` | `startStars` into `createGame` (registry `stars`) |
-| `vite/e2eHookGuard.mjs` | `'e2eStars'` marker |
-| `tests/e2eStars.test.ts`, `tests/e2eHookGuard.test.ts` | parser + marker list |
-| `plan.md` | Progress 2.3 e2e cited, 3.1-3.4 ticked |
+| `src/scenes/RoomScene.ts` | `holdZone`, `feed`, `update` (suspender cancel), `resetGesture`, `dispatch` writes only `rooms` on `changed`, `slotTargets`, snapshot `hold`/`heldSlot`; F5 casts gone |
+| `src/ui/widgets/RoomView.ts` | `highlight(slotId)` outline layer, `slotBox`, caption at `captionAnchor` (V1) |
+| `src/data/pl.ts` | `roomText.task/slot` typed lookups (F5; used by RoomView, RoomTaskButton, RoomScene) |
+| `src/data/layout.ts` | `ROOM_LAYOUT.slot.holdOutline` 10, DESIGN-GAP comment (row 37 is written in phase 6) |
+| `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | `targets.slots`, snapshot `hold`/`heldSlot`/panel `mode` types |
+| `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` | deferred break A: `dispatch` writes `stars = step.stars - 1` on `changed`; `git apply --check` passes on 8baf606 |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm test` | 1074 passed (branch baseline 1071, +3: 2 `e2eStars`, 1 guard marker case) |
+| `npm test` | 1074 passed (baseline 1074, +0; no new unit tests, the scene seam is e2e-only) |
 | `npm run lint`, `npm run typecheck`, deploy tests, `sample` E1-E6 | clean / exit 0 |
-| `npm run build` | "e2e hook: absent (2 chunks checked)"; `E2E_HOOK=1 npm run build` -> "e2e hook: present" (dist rebuilt as production afterwards) |
-| RED (stub returning -1; marker list not yet extended) | "expected -1 to be 96"; "expected -1 to be null"; guard list "expected [ '__martynkaE2E', 'e2eMonth', …(2) ] to deeply equal […(3) ]" |
-| Break: `e2eStars(...)` in `main.ts` without `__E2E_HOOK__` | `npm run build` red: "e2e hook leaked into the production bundle (e2eStars in _app/index-WNNTJ-5e.js)"; restored, build green |
-| Meta-check | break is on the real production bundle, so it proves the guard marker survives minification (the string is the query key), not just the unit test |
-| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate; baseline 24 |
+| `grep "as Record<string, string>" src/scenes/RoomScene.ts` | empty; `snapshot` uses `this.room()` |
+| `npm run build` | "e2e hook: absent (2 chunks checked)" |
+| `tests/layout.test.ts` | green, unchanged |
+| `npx playwright test` | e2e: not runnable in this session (MachPort) — orchestrator gate; expected 24 passed (+0) |
+| Deliberate break | deferred by plan: patch `e2e-break-s10-p4.patch`. Meta-check: no existing spec performs a change, so any break of this seam stays green in phases 4; row 7.2 in phase 7 must apply the patch and see test 1 red on `stars === S` after "Wybieram" in the change panel. Patch is production code only. |
 
-Request for orchestrator (e2e check of the seam in the hook build): `npx playwright test` must stay 24 passed (seam is inert without the query). The seam itself is exercised by phase 7 specs.
+Request for orchestrator: `npx playwright test` on 8baf606 must stay 24 passed (`room-purchase.spec.ts` untouched).
 
 ## 4. Next command
 
-`/10x-implement variant-change-room-done phase 4`
+`/10x-implement variant-change-room-done phase 5`
 
 ## 5. Open
 
-
-- `[human]` rows: 3.5 (`?e2eStars` seam), 6.6 (hold 600 ms / 40 px), 6.7 (UX of mode/card/list), 6.8 ("Zmień wygląd" vs literal "poprawki", "Wkrótce"), 6.9 (device check).
-- Phase 4 break deferred: patch `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` (`RoomScene.dispatch` writes stars on `changed`) proved by phase-7 row 7.2.
-- Phase 5 `ROOM_DONE_LAYOUT`: do not copy `UNLOCK_LAYOUT.button` (overlaps `ROOM_LAYOUT.choose`).
-- DESIGN-GAP rows 37–41 and follow-ups as listed in plan phase 6.
-
+- Phase 7 must use `context/runs/2026-10-13-s09-s11/e2e-break-s10-p4.patch` (break A, row 7.2).
+- `[human]`/`[visual]` rows: 3.5, 4.6, 4.7, 6.6-6.9. `[reviewer]` 2.4.
+- Phase 5 `ROOM_DONE_LAYOUT`: do not copy `UNLOCK_LAYOUT.button` (overlaps `ROOM_LAYOUT.choose`). `RoomScene.feed` passes `mode: 'normal'` to `roomGesture`: phase 5 must pass `'change'` while the "Zmień wygląd" mode is on, and disable `holdZone` while the card is shown.
+- DESIGN-GAP rows 37-41 go into `docs/design-gaps.md` in phase 6 (code comment for 37 exists).
 
 ## 6. Autonomous decisions
 
@@ -68,3 +60,5 @@ Request for orchestrator (e2e check of the seam in the hook build): `npx playwri
 6. `Box` is `{left, top, right, bottom}` and `roomGesture` returns `held` only while the press is `holding`. Would change: phase 4 scene needs another shape.
 7. Phase 2: caption anchors floor (300, 820) and walls (300, 240), `captionCharWidth` 20 (conservative estimate). Strings teacher-read: gender/accusative fine ("Stuknij mebel"), no numerals, short sentences. `RoomView` must use `captionAnchor` in phase 4. Would change: visual gate shows overlap.
 8. Phase 3: F6 taken: `e2eStars` is read next to `e2eFail` in `main.ts` and passed into `createGame` as `startStars` (like `month`). Cap 500 (`E2E_MAX_STARS`), 1-3 digit decimals only. Would change: nothing.
+9. Phase 4: the hold zone is one `Zone` over `ROOM_LAYOUT.area` created before the buttons; its input is disabled while a panel is open (set in `redraw`). `feed` ignores events while the panel is open. Hold outline is a separate graphics at depth 1 so `render` does not clear it. F5 solved with `roomText` in `pl.ts` (one cast in data, none in scenes). Would change: visual gate shows layering problems.
+10. Phase 4 e2e not runnable (MachPort): orchestrator gate; break deferred to phase 7 as the plan says.
