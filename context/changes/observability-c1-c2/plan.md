@@ -658,7 +658,7 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 - [x] 4.5 [reviewer] Odczyt nauczyciela `pl.errorCard` (tytuł, zdanie, przycisk, wersja) — impl-review a2472cf
 - [x] 4.6 [reviewer] Callbacki okien w `session.run`, zwolnienie raz, wyjątek nie połykany, handler awarii nie rzuca, `e2eFail` tylko pod `__E2E_HOOK__` — impl-review a2472cf
-- [ ] 4.7 [visual] Zrzuty karty po awarii w klatce (`step`) i startu (`boot`) — 1440×900 i 1024×768
+- [x] 4.7 [visual] Zrzuty karty po awarii w klatce (`step`) i startu (`boot`) — 1440×900 i 1024×768 — 9219e25 (orchestrator visual gate 2026-10-13, Playwright fallback: spokojna karta z wersją po awarii w klatce i przy starcie, w obu rozmiarach, bez defektu)
 - [ ] 4.8 [human] Odstępstwo od PRD „niczego stracić”: do S-11 restart z karty kończy sesję; karta na każdą awarię
 
 ### Phase 5: Linia „brak polskiego głosu” w panelu, luki projektu, follow-upy i seam sweep
@@ -675,7 +675,7 @@ Brak (profil § 4: brak bazy, format zapisu dopiero S-11). Usunięcie `MasteryRu
 
 - [x] 5.6 [reviewer] Odczyt nauczyciela `pl.settings.noVoice` — impl-review a2472cf
 - [x] 5.7 [reviewer] Seam sweep: martwe pola, komentarze, duplikaty; DESIGN-GAP 29–30 w kodzie i w `docs/design-gaps.md`; follow-upy z `Trigger:` — impl-review a2472cf
-- [ ] 5.8 [visual] Zrzuty panelu bez polskiego głosu i z polskim głosem — 1440×900 i 1024×768
+- [x] 5.8 [visual] Zrzuty panelu bez polskiego głosu i z polskim głosem — 1440×900 i 1024×768 — 9219e25 (orchestrator visual gate 2026-10-13, Playwright fallback: linia o braku głosu pod przełącznikiem tylko bez polskiego głosu, „Zatwierdź”/„Anuluj” widoczne bez przewijania w obu rozmiarach)
 - [ ] 5.9 [human] Przełącznik czytania aktywny bez głosu (PRD milczy; FR-009 ukrywa tylko przycisk HUD)
 
 ### Phase 6: Karta zamiast zamrożonego ekranu — e2e (#15 proposed)
