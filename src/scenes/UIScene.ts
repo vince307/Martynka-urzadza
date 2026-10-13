@@ -20,7 +20,7 @@ import { StarCounter } from '../ui/widgets/StarCounter';
 
 /**
  * Overlay above the task and room scenes: the star counter, the speaker and the "Do pokoju" switch.
- * It reads the registry keys the task scene keeps up to date (stars, narration, roomSwitch) and decides no text itself.
+ * It reads the registry keys the scenes keep up to date (stars: the task scene adds, the room subtracts; narration, roomSwitch) and decides no text itself.
  * The parent's gear (bottom right, outside the notebook) opens the adult gate after a long press (core/longPress,
  * driven here with the loop clock) and then the settings panel; the scene only routes pointer events and applies
  * what core returns.

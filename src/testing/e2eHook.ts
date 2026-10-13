@@ -74,7 +74,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), counterText: ui().counterText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), counterText: ui().counterText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {
@@ -89,6 +89,10 @@ export const installE2EHook = (game: Game): void => {
                     toRoom: inRoom() ? null : round.toRoom,
                     unlockNext: inRoom() ? null : round.unlockNext,
                     resume: inRoom() ? room().resumeTarget() : null,
+                    taskButton: inRoom() ? room().taskButtonTarget() : null,
+                    thumbs: inRoom() ? room().thumbTargets() : [],
+                    choose: inRoom() ? room().chooseTarget() : null,
+                    close: inRoom() ? room().closeTarget() : null,
                     speaker: ui().speakerTarget(),
                     roomSwitch: ui().roomSwitchTarget(),
                     settingsIcon: ui().settingsTarget(),

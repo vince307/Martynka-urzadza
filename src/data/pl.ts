@@ -112,10 +112,41 @@ export const pl = {
         next: 'Dalej',
         spoken: (name: string) => `Nowa umiejętność! ${name}.`,
     },
-    // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the placeholder caption is ours.
+    // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
     room: {
-        caption: 'Tu powstanie pokój',
         resume: 'Wróć do notesu',   // kit room-return view
+        choose: 'Wybieram',
+        close: 'Zamknij',
+        // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
+        name: 'Salon',
+        // Imperative with the accusative, keyed by RoomTaskDef.label.
+        tasks: {
+            fixFloor: 'Napraw podłogę',
+            paintWalls: 'Pomaluj ściany',
+            hangCurtains: 'Powieś zasłony',
+            addSofa: 'Wstaw kanapę',
+            layRug: 'Połóż dywan',
+            placeTable: 'Postaw stolik',
+            placeLamp: 'Postaw lampę',
+            hangShelf: 'Powieś półkę',
+            placePlant: 'Postaw kwiatek',
+            hangPicture: 'Powieś obraz',
+        },
+        // Nominative captions of the placeholders, keyed by SlotDef.id.
+        slots: {
+            floor: 'podłoga',
+            walls: 'ściany',
+            curtains: 'zasłony',
+            sofa: 'kanapa',
+            rug: 'dywan',
+            table: 'stolik',
+            lamp: 'lampa',
+            shelf: 'półka',
+            plant: 'kwiatek',
+            picture: 'obraz',
+        },
+        // Digits only, so no numeral agreement is needed.
+        short: (have: number, need: number) => `masz ${have}/${need}`,
     },
     tasks: {
         missing: 'Jaka liczba pasuje w okienku?',

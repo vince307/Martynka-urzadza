@@ -15,8 +15,12 @@ export interface Snapshot {
     starsEarned: number;
     bonusEarned: number;
     starsTotal: number;
+    /** The star balance of the registry (the one source; equals starsTotal). */
+    stars: number;
     counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    /** What the open room shows (room screen only). */
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; taskId: string; preview: 0 | 1 | 2 | null } } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -50,6 +54,10 @@ export interface Targets {
     toRoom: Point | null;
     unlockNext: Point | null;
     resume: Point | null;
+    taskButton?: Point | null;
+    thumbs?: Point[];
+    choose?: Point | null;
+    close?: Point | null;
     roomSwitch: Point | null;
     speaker: Point | null;
     ages?: (Point & { age: number })[];
@@ -134,7 +142,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };

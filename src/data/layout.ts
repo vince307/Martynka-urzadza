@@ -11,6 +11,9 @@ export const MIN_TOUCH_TARGET = 96;
 /** Palette for code-drawn placeholders, taken from the approved art pack style guide. */
 export const PLACEHOLDER_COLORS = {
     ivory: 0xfff5df,
+    oak: 0xc99b66,         // style guide: frames and furniture
+    terracotta: 0xc98460,  // style guide: small painted accents
+    paleLeaf: 0xe3f0d9,    // style guide: pale leaf (same value as tile; named for room furniture)
     turquoise: 0x54beb4,
     deepTeal: 0x245c59,
     butter: 0xf1ce6b,
@@ -112,7 +115,9 @@ export const GAME_EVENTS = {
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
 export const REGISTRY_KEYS = {
-    stars: 'stars',
+    stars: 'stars',           // the child's star balance, the one source: the task scene adds, a room purchase subtracts
+    rooms: 'rooms',           // Record<string, RoomState> (shape of SaveState.rooms): the renovation progress per room
+    currentRoom: 'currentRoom', // id of the room the child decorates
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
@@ -200,11 +205,25 @@ export const WELCOME_LAYOUT = {
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
-/** Room scene placeholder (S-09 brings the real room): a floor panel with a caption and the way back to the notebook. */
+/** Room scene (S-09): the salon drawn in code over `area`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
-    panel: { left: 180, top: 204, width: 1560, height: 840, radius: 40 },
-    caption: { x: 960, y: 520 },
-    resume: { left: 720, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md row 12)
+    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
+    area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal)
+    wallBottom: 520,                                            // wall and floor meet here
+    tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
+    // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail
+    // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md): the kit has no panel.
+    // minAspect: a thumbnail is at least this high relative to its width, so the wide floor and walls read as a swatch, not a thin strip.
+    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, minAspect: 0.5 },
+    // "Wybieram" ends where the task button begins: after a purchase the next task's button appears at once, so the second tap
+    // of a double tap must not land on it (impl-review F1). "Zamknij" may share its place (it would re-open the same panel).
+    choose: { left: 1100, top: 792, width: 480, height: 100, radius: 32, border: 5 },
+    close: { left: 1100, top: 908, width: 480, height: 96, radius: 32, border: 5 },
+    // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
+    // Top aligned with `resume`, below "Wybieram".
+    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    // Slot captions and the dashed outline of an empty slot. DESIGN-GAP (docs/design-gaps.md): the kit has no slots.
+    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22 },
 } as const;
 
 /** Interactive rectangles of the HUD overlay, checked against MIN_TOUCH_TARGET. */
@@ -226,8 +245,16 @@ export const TASK_TOUCH_TARGETS = {
     key: { width: TASK_LAYOUT.keypad.keyWidth, height: TASK_LAYOUT.keypad.keyHeight },
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
-    resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
     unlockNext: { width: UNLOCK_LAYOUT.button.width, height: UNLOCK_LAYOUT.button.height },
+} as const;
+
+/** Interactive rectangles of the room scene, checked against MIN_TOUCH_TARGET. */
+export const ROOM_TOUCH_TARGETS = {
+    resume: { width: ROOM_LAYOUT.resume.width, height: ROOM_LAYOUT.resume.height },
+    taskButton: { width: ROOM_LAYOUT.taskButton.width, height: ROOM_LAYOUT.taskButton.height },
+    thumb: { width: ROOM_LAYOUT.thumbs.size, height: ROOM_LAYOUT.thumbs.size },
+    choose: { width: ROOM_LAYOUT.choose.width, height: ROOM_LAYOUT.choose.height },
+    close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
 } as const;
 
 /** Animation durations in milliseconds. */
@@ -238,6 +265,10 @@ export const ANIMATION = {
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
+    purchasePopMs: 260,    // the new furniture grows to purchasePopScale and back (yoyo), S-09
+    purchasePopScale: 1.08,
+    purchaseParticles: 14,
+    purchaseParticleMs: 700,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 
