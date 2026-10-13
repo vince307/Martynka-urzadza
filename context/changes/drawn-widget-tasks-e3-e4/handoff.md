@@ -1,6 +1,6 @@
 # Handoff — `drawn-widget-tasks-e3-e4` (slice S-13)
 
-Written by `/10x-implement` phase 7 (commit 8f73f98): the `select` mode (E1.6, E3.7) is playable, e2e helpers answer it, the `?e2eSkills` seam exists in the hook build only.
+Written by `/10x-tdd` phase 8 (commit 1f5ab33): the pure drag reducer `stepBlockDrag`, `matValue` and the tray/mat geometry `dragLayout` exist and are tested; no scene uses them yet.
 The ordering rule stays: no answer mode enters `playable` (`src/core/round/pick.ts`) before `tests/e2e/support/hook.ts` `answerRight`/`answerWrong` can answer it (`drag` phase 9).
 
 ## 1. State
@@ -8,53 +8,48 @@ The ordering rule stays: no answer mode enters `playable` (`src/core/round/pick.
 | | |
 |---|---|
 | Branch | `feat/drawn-widget-tasks-e3-e4`, cut from `main` at `b57433c` |
-| Commits | docs/plan commits + p1 `42a0bee` + p2 `43002aa` + p3 `d481d3c` + p4 `bd16d47` + p5 `9b7da6e` + p6 `7824b24` + p7 `8f73f98` + this handoff commit |
+| Commits | docs/plan commits + p1 `42a0bee` + p2 `43002aa` + p3 `d481d3c` + p4 `bd16d47` + p5 `9b7da6e` + p6 `7824b24` + p7 `8f73f98` + p8 `1f5ab33` + this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (open: 1.5, 2.5, 3.4 [reviewer]; 4.4 [visual], 4.5 [reviewer], 4.6 [human]; 5.3 [reviewer]; 6.7 [reviewer], 6.8 [visual], 6.9 [human]; 7.1 and 7.2 (e2e part, orchestrator), 7.5 [reviewer], 7.6 [visual]; phases 8-11) |
+| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (open: 1.5, 2.5, 3.4, 4.5, 5.3, 6.7, 7.5, 8.4 [reviewer]; 4.4, 6.8, 7.6 [visual]; 4.6, 6.9 [human]; 8.3 (e2e part, orchestrator); phases 9-11) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/round/select.ts`, `tests/select.test.ts` | `toggleSelected(selected, value, choices)` (result in tile order; the plan's two-argument signature got `choices` for that), `selectionAnswer`; tests also cover `taskKey` |
-| `src/core/round/unique.ts` | exported `taskKey`: prompt + drawing, plus the tiles for `select` tasks (all select tasks share one prompt, so the old key made rounds with two of them "duplicates" and broke the uniqueness tests); `curriculumPick`/`warmup` tests use it |
-| `src/ui/widgets/SelectTiles.ts`, `src/data/layout.ts` (`TASK_LAYOUT.select`, `PLACEHOLDER_COLORS.selected/selectedBorder`) | six 200 px tiles at y 600, check mark drawn in code, "OK" is an `ActionButton` (`pl.round.okKey`) at y 800; solution lines stop above the row; `FeedbackBar.update` takes `'select'` |
-| `src/scenes/TaskScene.ts` | `select` branch in `render`/`hideTaskLayer`/`drawPrompt`/`answerSpot` (star flies from OK), cleared after a wrong set; `throw` stays for `drag` only; snapshot `selected`, `choices` for select; targets `selectTiles`, `selectOk`; forced round in `freshRound` under `if (__E2E_HOOK__)` |
-| `src/testing/e2eHook.ts`, `src/main.ts`, `vite/e2eHookGuard.mjs`, `tests/e2eHookGuard.test.ts`, `tests/e2eSkills.test.ts` | `e2eSkills(search)`, `forcedSkills(stage, ids, length)` (null unless every id is a playable skill of the stage), marker `e2eSkills`, registry key `REGISTRY_KEYS.forcedSkills = 'forcedSkills'` |
-| `src/core/round/pick.ts`, `tests/pick.test.ts`, oracles in `tests/warmup.test.ts`, `tests/curriculumPick.test.ts` | `playable` accepts `select`; pick test now "never returns drag" + E1.6/E3.7 are in the pool |
-| `tests/e2e/support/hook.ts`, `tests/e2e/parent-settings.spec.ts` | `Snapshot.selected`, `Targets.selectTiles/selectOk`; `answerRight`/`answerWrong` for `select` (wrong = one marked tile outside the answer set, any tile order; return type widened); the parent-settings spec answers a `select` first task right instead of missing it (a set has no example in the preview, core keeps only number/string as `given`) |
-| `docs/design-gaps.md` | row 54 (multi-select screen, revision of row 7) |
-| `context/changes/drawn-widget-tasks-e3-e4/e2e-request-p7.md` | commands for the orchestrator |
+| `src/core/blockDrag.ts`, `tests/blockDrag.test.ts` | `BlockKind`, `Mat`, `stepBlockDrag(state, event, geo, rules)` (rules = `balance.blockDrag`, passed in), `matValue`, `emptyMat`, `initialBlockDrag`; events `down/move/up` (all with `pointerId`, x, y), `cancel`, `reset`; `BlockDragGeo` = `trayAt(x,y)`, `matBlockAt(x,y,mat)`, `onMat(x,y)` |
+| `src/core/round/dragLayout.ts`, `tests/dragLayout.test.ts` | `dragLayout(spec, kinds)` -> `{ tray (Partial per kind), mat, ok, matBlock(kind,i) }`, `dragGeometry(layout, kinds)` builds the reducer's geo, `interiorPoint(rect)`, `insideRect` |
+| `src/data/balance.ts`, `src/data/layout.ts` | `balance.blockDrag = { startDistance: 12, maxPerKind: 9 }`; `TASK_LAYOUT.drag` (tray x1240 y380 440x300, mat x236 y380 944x460, OK x1240 y724 440x96, 3x3 cells per kind) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm test` | 1427 passed (branch baseline 1412, +15) (observed) |
-| lint / typecheck / build | OK / OK / OK, `e2e hook: absent (2 chunks checked)`; `grep -rl e2eSkills dist` empty; E2E_HOOK build `present`, marker in `dist-e2e` (ignored dir) (observed); deploy tests OK |
+| `npm test` | 1466 passed (branch baseline 1427, +39) (observed) |
+| lint / typecheck / build | OK / OK / OK, `e2e hook: absent (2 chunks checked)`; deploy tests OK (observed) |
 | `npm run sample -- E1..E6` | 0 violations each (observed) |
-| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium: MachPortRendezvousServer Permission denied, 3 plain tries); 7.1/7.2 e2e part left unticked; see `e2e-request-p7.md` (expected 37 + 0, plus a one-off `task-round` with `e2eSkills: 'E3.7.select_even_30'`) |
-| Deliberate break 1 | `toggleSelected` only adds -> `tests/select.test.ts` "unmarks a marked tile" red (`expected [ 20, 8 ] to deeply equal [ 8 ]`); restored |
-| Deliberate break 2 | unguarded `e2eSkills(window.location.search)` in `main.ts` -> `npm run build` fails "e2e hook leaked into the production bundle (e2eSkills in ...)"; restored. Meta-check of the key name: renaming the registry key value to `'e2eSkills'` did NOT leak either (the key is used only inside `__E2E_HOOK__` branches, terser drops it), so the distinct name `forcedSkills` is defence in depth, not what keeps the guard honest; the guard test `lists every marker` and the `it.each` over markers pin the list |
-| Teacher read | `npm run sample -- E1 --count 6` (E1.6) and `-- E3 --count 6` (E3.7): prompt "Zaznacz wszystkie liczby parzyste.", hint "Liczby parzyste kończą się na 0, 2, 4, 6 albo 8." states the rule, not the set; 2-4 even among six distinct tiles, odd distractors; no text changed in this phase. `answerWrong` marks one non-answer tile and OK, independent of tile order |
+| e2e | `e2e: not runnable in this session — orchestrator gate` (plain `npx playwright test --config=...` ran, Chromium did not start: 16 did not run); no scene or data change in this phase, expected 37 + 0; 8.3 e2e part left unticked |
+| RED | before the reducer body: `AssertionError: expected { hundred: +0, ten: +0, one: +0 } to deeply equal { hundred: +0, ten: 1, one: +0 }` (drop over the mat), 9 of 22 failing by assertion on a no-op stub (`balance.blockDrag` was also absent: `expected undefined to deeply equal { startDistance: 12, maxPerKind: 9 }`) |
+| Deliberate break 1 | `cancel` handled as `up` -> "a cancelled touch does not put the block down" and "... does not take a mat block off either" red; restored |
+| Deliberate break 2 | no `maxPerKind` cap -> "keeps 9 when a 10th ten is dropped" and "keeps 9 when the tray is tapped a 10th time" red; restored |
+| Deliberate break 3 | the drag threshold removed (always "not a tap" path disabled) -> tap tests ("a tap on a tray block adds one", "a move under 12 px is still a tap", "a tap on a mat block removes it", "builds 23") red; restored. Meta-check: the expectations come from the plan/research (12 px, 9, tap = +1/-1), written out in the test, not read from `balance`, except one test that pins `balance.blockDrag` to the plan's numbers |
 
 ## 4. Next command
 
-`/10x-tdd drawn-widget-tasks-e3-e4 phase 8`
+`/10x-implement drawn-widget-tasks-e3-e4 phase 9`
 
 ## 5. Open
 
-- [reviewer] 7.5 (teacher read recorded above); [visual] 7.6 and 4.4, 6.8 need screenshots (select before/two marked/after a wrong set/in solution steps/retype, 1440x900 and 1024x768; the OK button at y 800 sits 16 px above the bar - check it); [human] 4.6, 6.9; rows 1.5, 2.5, 3.4, 4.5, 5.3, 6.7 [reviewer].
-- Orchestrator: e2e for 7.1/7.2 (`e2e-request-p7.md`).
-- `TaskScene.render` still throws for `drag` (removed in phase 9); `playable` still excludes it.
-- ARTIFACT GAP: none. DESIGN-GAP 54 added.
+- [reviewer] 8.4 (`blockDrag.ts` has no Phaser or globals, raw events, numbers in `balance.ts`); earlier [reviewer]/[visual]/[human] rows as in §1.
+- Orchestrator: e2e for 8.3 (no browser-visible change: expect 37 passed).
+- Phase 9 must wire: scene pointerdown/move/up on the whole scene, `pointerupoutside` and `wasCanceled` -> `cancel`, `inputSuspend` switch and sleep/wake -> `reset`, new task -> `initialBlockDrag()`; `BaseTenBlocks`' own `BlockKind` equals the core one (re-export or import in phase 9).
+- `TaskScene.render` still throws for `drag`; `playable` still excludes it.
+- ARTIFACT GAP: none.
 
 ## 6. Autonomous decisions
 
-1. `toggleSelected` takes `choices` as a third argument so the result is in tile order (plan listed two arguments). Rejected: keeping tap order and sorting at the call site (the widget would then repaint from an order that differs from the tiles).
-2. New `taskKey` in `unique.ts` includes the tiles only for `select` tasks. Rejected: including `choices` for all modes (random distractors would make equal prompts "different"); changing the test keys only (the round builder would still keep duplicate select tasks).
-3. OK button reuses `ActionButton` (bar-sized, 96 px) instead of a new keypad-like widget; layout numbers in `TASK_LAYOUT.select` (tiles 200 px wide so six fit the 1560 px notebook; the 254 px single-answer width would not).
-4. A first task of mode `select` in `parent-settings.spec.ts` is answered right (not missed) because core keeps no example for a set; this keeps the spec deterministic. Reverses if `MistakeExample.given` ever accepts arrays (needs a save version).
-5. 7.1 and 7.2 left open for the e2e part; 7.3 and 7.4 ticked from observed output. The break named in the plan (marker removed + registry key named `e2eSkills`) was run as the build leak test above because the plan's premise (a leak) does not occur; recorded honestly in §3.
+1. `dragLayout` takes the spec as its first argument (`dragLayout(spec, kinds)`, the plan wrote `dragLayout(kinds)`): core cannot import `src/data`, same injection as `pictureLayout`. `tray` is `Partial<Record<BlockKind, Rect>>` (only the task's kinds have a tray block). Rejected: importing `TASK_LAYOUT` in core (ESLint boundary).
+2. `stepBlockDrag` takes `rules` (`balance.blockDrag`) as a fourth argument, like `longPress`; `matBlockAt` also gets `mat` so only blocks that are on the mat answer a touch.
+3. Mixed phase: the data numbers (`TASK_LAYOUT.drag`, `balance.blockDrag`) were added inline; the phase keeps `Driver: tdd`. The geometry tests were written together with `dragLayout` (they passed at first run, no separate RED); the RED/GREEN cycle was done on the reducer, which carries the behaviour.
+4. A drag that started and ended over the mat from the mat keeps the block (no re-position on the mat: cells are fixed by count).

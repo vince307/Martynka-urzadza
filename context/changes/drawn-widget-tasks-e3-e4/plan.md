@@ -1073,8 +1073,8 @@ wczytany w marcu `floorToCalendar` podnosi do 3 (oczekiwany skutek reguły D). S
 
 #### Automated
 
-- [x] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — p8 commit (unit 1427 + 39 = 1466)
-- [x] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check — p8 commit
+- [x] 8.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 1f5ab33 (unit 1427 + 39 = 1466)
+- [x] 8.2 Deliberate break: `cancel` jak `up` / brak `maxPerKind` / `up` bez progu jako upuszczenie → czerwone; przywrócone; meta-check — 1f5ab33
 - [ ] 8.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
