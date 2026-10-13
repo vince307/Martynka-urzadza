@@ -1,7 +1,7 @@
 ---
 change_id: autosave-versioned-save
 title: Autozapis w IndexedDB i wersjonowany zapis z migracjami (stan po restarcie i aktualizacji identyczny)
-status: implementing
+status: implemented
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null

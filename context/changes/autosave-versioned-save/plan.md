@@ -849,9 +849,9 @@ zapisu, karta z eksportem.
 
 #### Automated
 
-- [ ] 7.1 `save-restart.spec.ts` zielony (3 passed); pełne `npx playwright test` baseline e2e + 3
-- [ ] 7.2 Deliberate break A: `bought` bez `flush('now')` → test 2 czerwony; przywrócone; meta-check
-- [ ] 7.3 Deliberate break B (patch fazy 4): start zawsze świeży → test 1 czerwony; przywrócone; meta-check
-- [ ] 7.4 Deliberate break C: autozapis po `unreadable` niezablokowany → test 3 czerwony; przywrócone; meta-check
-- [ ] 7.5 Deliberate break D: `?e2eStars` nadpisuje saldo przy `loaded` → test 2 czerwony; przywrócone; meta-check
-- [ ] 7.6 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite
+- [x] 7.1 `save-restart.spec.ts` zielony (3 passed); pełne `npx playwright test` baseline e2e + 3 — a403b21 (orchestrator e2e run, round 2, see handoff §3)
+- [x] 7.2 Deliberate break A: `bought` bez `flush('now')` → test 2 czerwony; przywrócone; meta-check — a403b21 (orchestrator e2e run, round 2, see handoff §3)
+- [x] 7.3 Deliberate break B (patch fazy 4): start zawsze świeży → test 1 czerwony; przywrócone; meta-check — a403b21 (orchestrator e2e run, round 2, see handoff §3)
+- [x] 7.4 Deliberate break C: autozapis po `unreadable` niezablokowany → test 3 czerwony; przywrócone; meta-check — a403b21 (orchestrator e2e run, round 2, see handoff §3)
+- [x] 7.5 Deliberate break D: `?e2eStars` nadpisuje saldo przy `loaded` → test 2 czerwony; przywrócone; meta-check — a403b21 (orchestrator e2e run, round 2, see handoff §3)
+- [x] 7.6 `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery zabite — a403b21 (orchestrator e2e run, round 2, see handoff §3)
