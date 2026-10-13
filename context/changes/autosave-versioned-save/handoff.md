@@ -66,6 +66,6 @@ Written by `/10x-implement autosave-versioned-save phase 4` of run 2026-10-13-s0
 - Phase 4: Chromium could not launch (MachPort); e2e is the orchestrator gate. Rows 4.3/4.5 cite it; 3.4 now cites the orchestrator run on bffbb30.
 - Phase 4: rotate overlay, speech unlock, contextmenu and service worker stay synchronous at module level; only the hook and the install hint (need the game) are inside `start()`.
 - Phase 4: `registry.get(saver)` typed `Pick<Autosaver,'flush'>` in scenes; no scene knows the store.
-- Phase 4: no 1 s ... change to `error-boundary.spec.ts` (step 5 only if red; orchestrator run decides).
+- Phase 4: no change to `error-boundary.spec.ts` (step 5 only if red; orchestrator run decides).
 - Phase 2's row 2.3 now cites the orchestrator e2e run on 75eaa08 (26 passed).
 - E2E: not run (MachPort); orchestrator gate for 43af7ea, no game wiring changed.
