@@ -744,15 +744,15 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 - [x] 1.1 `tests/mastery.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 8fd7bd0
 - [x] 1.2 Deliberate break: `'second'` jak `'first'` / seria nie zerowana → czerwony; przywrócone; meta-check (reguła z ZADANIA, liczby z `balance`) — 8fd7bd0
 - [x] 1.3 `grep -rn "from '../data" src/core/` pusty (F5) — 8fd7bd0
-- [ ] 1.4 Pełna bramka lokalna zielona
+- [x] 1.4 Pełna bramka lokalna zielona — e2e 14/14 on 8fd7bd0 (orchestrator, run-log line "S-07 p1 tdd")
 
 ### Phase 2: Podłoga kalendarza i start nauki
 
 #### Automated
 
-- [ ] 2.1 `tests/curriculumStart.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `semStart` E4 = 0 / `behind` `<=` → czerwony; przywrócone; meta-check (wyrocznia z planu)
-- [ ] 2.3 Pełna bramka lokalna zielona
+- [x] 2.1 `tests/curriculumStart.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 1c384c5
+- [x] 2.2 Deliberate break: `semStart` E4 = 0 / `behind` `<=` → czerwony; przywrócone; meta-check (wyrocznia z planu) — 1c384c5
+- [x] 2.3 Pełna bramka lokalna zielona — 1c384c5 (e2e: orchestrator gate)
 
 ### Phase 3: Wybór umiejętności wg wag i unikalne polecenia
 
