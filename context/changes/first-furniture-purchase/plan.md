@@ -736,7 +736,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 - [x] 6.1 `layout.test.ts`: miniatury, „Wybieram”, „Zamknij” ≥ 96 px, w tacy, rozłączne; taca poza zębatką; unit baseline + N — d8ca40e
 - [x] 6.2 Deliberate break miniatura 80×80 → czerwony; przywrócone; meta-check — d8ca40e
-- [x] 6.3 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — d8ca40e (e2e: orchestrator gate)
+- [x] 6.3 `npx playwright test` zielony, baseline e2e + 0; `e2e hook: absent`; pełna bramka lokalna zielona — d8ca40e (e2e: orchestrator run on ba2552c, 23 passed)
 
 #### Manual
 
@@ -748,10 +748,10 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Automated
 
-- [x] 7.1 `validate-rule-files.sh` PASS
-- [x] 7.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check
-- [x] 7.3 `grep "comes with S-09|S-09 brings" src/` pusty
-- [x] 7.4 Pełna bramka lokalna zielona; unit baseline + 0
+- [x] 7.1 `validate-rule-files.sh` PASS — 6358079
+- [x] 7.2 Deliberate break nieistniejąca ścieżka w `CLAUDE.md` → FAIL; przywrócone; meta-check — 6358079
+- [x] 7.3 `grep "comes with S-09|S-09 brings" src/` pusty — 6358079
+- [x] 7.4 Pełna bramka lokalna zielona; unit baseline + 0 — 6358079 (e2e: orchestrator gate)
 
 #### Manual
 
