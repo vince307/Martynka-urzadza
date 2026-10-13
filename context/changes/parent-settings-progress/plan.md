@@ -941,10 +941,10 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [x] 9.1 `validate-rule-files.sh` PASS
-- [x] 9.2 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [x] 9.3 Komentarz „a parent switch comes with S-08” usunięty z `src/`
-- [x] 9.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 9.1 `validate-rule-files.sh` PASS — e3f57e7
+- [x] 9.2 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; meta-check — e3f57e7
+- [x] 9.3 Komentarz „a parent switch comes with S-08” usunięty z `src/` — e3f57e7
+- [x] 9.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — e3f57e7 (948 + 0; e2e: orchestrator gate)
 
 #### Manual
 
