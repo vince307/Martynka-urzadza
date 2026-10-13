@@ -4,6 +4,8 @@ import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
 import { createAutosaver, loadSave, type Autosaver } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
+import { repairCurrentRoom } from './core/rooms';
+import { FIRST_ROOM, ROOMS } from './data/rooms';
 import type { SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings } from './core/types';
@@ -21,13 +23,13 @@ import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
 import { emptyRoomState } from './core/rooms';
-import { FIRST_ROOM } from './data/rooms';
-import { e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
+import { E2E_LOAD_TIMEOUT_MS, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
 import { exportRawSave } from './ui/dom/saveExport';
+import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
@@ -120,21 +122,34 @@ const freshSession = (stars: number): SessionSave => ({
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    // The e2e build may start with an in-memory store holding an unreadable save (?e2eSave=unreadable); never IndexedDB.
-    const store = __E2E_HOOK__ && e2eSave(window.location.search) === 'unreadable' ? e2eSaveStore() : createIdbSaveStore();
-    const outcome = await loadSave(store);
-    if (outcome.kind === 'unreadable') {
-        // The old save stays untouched. The parent may keep a copy (behind the adult check); the game starts only on "Graj dalej".
-        const raw = outcome.raw;
+    // The e2e build may start with an in-memory store (?e2eSave=unreadable|unavailable|hang|writefail); never IndexedDB.
+    const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
+    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
+    const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
+    const outcome = await loadSave(store, {
+        timers,
+        timeoutMs: __E2E_HOOK__ && seam === 'hang' ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
+    });
+    if (outcome.kind === 'unavailable') {
+        console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
+    }
+    if (outcome.kind === 'unreadable' || outcome.kind === 'unavailable') {
+        // Either way the game starts only on "Graj dalej", in a fresh session with the saver blocked. Only an
+        // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
+        const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                onExport: () => {
-                    openParentGate({
-                        rng: createRng(Math.floor(Math.random() * 0x100000000)),
-                        onPass: () => void exportRawSave(raw),
-                        onCancel: () => undefined,
-                    });
-                },
+                copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
+                onExport:
+                    raw === null
+                        ? undefined
+                        : () => {
+                              openParentGate({
+                                  rng: createRng(Math.floor(Math.random() * 0x100000000)),
+                                  onPass: () => void exportRawSave(raw),
+                                  onCancel: () => undefined,
+                              });
+                          },
                 onContinue: () => {
                     card.remove();
                     resolve();
@@ -151,7 +166,11 @@ const start = async (): Promise<void> => {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
-        session = { ...outcome.session, learner };
+        const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
+        session = repaired.session;
+        if (repaired.repairedFrom !== null) {
+            console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${FIRST_ROOM}`);
+        }
     } else {
         // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
@@ -162,7 +181,7 @@ const start = async (): Promise<void> => {
     }
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, session);
     booted.game = game;
-    // DESIGN-GAP 43 (docs/design-gaps.md): the kit does not say the child or a parent sees that the game saves; nothing is shown.
+    // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({
         store,
         snapshot: () => ({
@@ -172,10 +191,12 @@ const start = async (): Promise<void> => {
             settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
             learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
         }),
-        timers: { setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: (id) => window.clearTimeout(id as number) },
+        timers,
         delayMs: balance.save.debounceMs,
         load: outcome.kind,
-        blocked: outcome.kind === 'unreadable' || outcome.kind === 'unavailable',
+        blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
+        now: () => Date.now(),
+        loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
     });

@@ -6,7 +6,7 @@
 // here: the saved state is read through the read-only hook (snapshot.save + the game state). Runs in the chromium-hook project.
 import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
-import { passWelcome, gateProblem, typeIntoGate } from './support/welcome';
+import { openSettings, passWelcome, gateProblem, typeIntoGate } from './support/welcome';
 import { answerRight, answerWrong, fromHook, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
 
@@ -141,4 +141,69 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     const save = (await snapshot(page)).save!;
     expect(save.writes).toBe(0);
     expect(save.skipped).toBeGreaterThanOrEqual(1);
+});
+
+// Risk #2, the variant "the save silently does not work" (audit C-1, M-S4, C-2). The card, the load limit and the panel
+// section exist only in the rendered page with the real `start`. The hook installs only after "Graj dalej", so these
+// specs start with page.goto, never openWelcome. A new browser context is a fresh device; IndexedDB is never touched.
+test('#2 C-1 a save the browser will not give shows the card, plays without writing and says so in the parent panel', async ({ page }) => {
+    await silenceSpeech(page);
+    await page.goto('/?e2eSave=unavailable');
+    const card = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
+    await expect(card).toBeVisible();
+    // There is no stored copy to keep: no export button.
+    await expect(card.getByRole('button', { name: pl.saveFailed.export })).toHaveCount(0);
+    await card.getByRole('button', { name: pl.saveUnavailable.continue }).tap();
+    await expect(card).toBeHidden();
+    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await screenIs(page, 'welcome');
+
+    // Age 6 = E1, no warm-up: the first change of the learner asks for a save, which the block skips.
+    let age: { x: number; y: number } | undefined;
+    await expect.poll(async () => {
+        age = (await targets(page)).ages?.[0];
+        return age !== undefined;
+    }).toBe(true);
+    await tapScene(page, age!);
+    await screenIs(page, 'task');
+    await expect.poll(async () => (await snapshot(page)).save?.skipped ?? 0).toBeGreaterThan(0);
+    const save = (await snapshot(page)).save!;
+    expect(save).toMatchObject({ load: 'unavailable', blocked: true, blockedBy: 'unavailable', lastError: 'UnknownError', writes: 0 });
+
+    const panel = await openSettings(page);
+    const section = panel.locator('section.parent-save');
+    await expect(section).toHaveAttribute('data-state', 'off');
+    await expect(section.getByText(pl.settings.saveOff.unavailable)).toBeVisible();
+});
+
+test('#2 M-S4 a read that never answers ends in the same card after the load timeout', async ({ page }) => {
+    await silenceSpeech(page);
+    await page.goto('/?e2eSave=hang');
+    const card = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
+    await expect(card).toBeVisible();
+    await card.getByRole('button', { name: pl.saveUnavailable.continue }).tap();
+    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ load: 'unavailable', blockedBy: 'unavailable', lastError: 'timeout' });
+});
+
+test('#2 C-2 failed writes show in the parent panel', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eSave: 'writefail' });
+    await expect.poll(async () => (await snapshot(page)).save?.consecutiveFailures ?? 0).toBeGreaterThanOrEqual(1);
+    expect((await snapshot(page)).save?.lastError).toBe('QuotaExceededError');
+    const panel = await openSettings(page);
+    const section = panel.locator('section.parent-save');
+    await expect(section).toHaveAttribute('data-state', 'failing');
+    await expect(section.getByText(pl.settings.saveFailing)).toBeVisible();
+});
+
+test('#2 C-2 the parent panel says the game saves after a normal write', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page);
+    await expect.poll(async () => (await snapshot(page)).save?.writes ?? 0).toBeGreaterThanOrEqual(1);
+    const panel = await openSettings(page);
+    const section = panel.locator('section.parent-save');
+    await expect(section).toHaveAttribute('data-state', 'ok');
+    await expect(section.getByText(pl.settings.saveOk)).toBeVisible();
+    await expect(section.getByText(pl.settings.saveLast(''), { exact: false })).toBeVisible();
 });

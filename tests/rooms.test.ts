@@ -2,7 +2,10 @@
 // AC: stars are spent once, only on confirm, never below 0; a refused purchase
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
-import { currentTask, emptyRoomState, nextTaskCost, purchase, roomDone, roomsListView, taskButtonView } from '../src/core/rooms';
+import { readFileSync } from 'node:fs';
+import { currentTask, emptyRoomState, nextTaskCost, purchase, repairCurrentRoom, roomDone, roomsListView, taskButtonView } from '../src/core/rooms';
+import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
+import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
 
 const room: RoomDef = {
@@ -120,5 +123,63 @@ describe('roomsListView (FR-019: unlocking is data, not scene logic)', () => {
         expect(view[0]).toMatchObject({ done: false, unlocked: true });
         expect(view[1]?.unlocked).toBe(false);
         expect(view[2]?.unlocked).toBe(false);
+    });
+});
+
+describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
+    const known = ['salon'];
+    const done = (n: number): RoomState => ({ tasksDone: n, chosen: { floor: 1 } });
+    const session = (currentRoom: string, rooms: Record<string, RoomState>): SessionSave => ({
+        stars: 7,
+        rooms,
+        currentRoom,
+        settings: { autoRead: true },
+        learner: null,
+    });
+
+    it('keeps a known room: the same session object, nothing repaired', () => {
+        const input = session('salon', { salon: done(2) });
+        const out = repairCurrentRoom(input, known, 'salon');
+        expect(out.session).toBe(input);
+        expect(out.repairedFrom).toBeNull();
+    });
+
+    it('moves an unknown current room to the first room and leaves every other room untouched', () => {
+        const kitchen = done(3);
+        const salon = done(4);
+        const input = session('kuchnia', { kuchnia: kitchen, salon });
+        const out = repairCurrentRoom(input, known, 'salon');
+        expect(out.repairedFrom).toBe('kuchnia');
+        expect(out.session.currentRoom).toBe('salon');
+        expect(out.session.rooms.kuchnia).toBe(kitchen);
+        expect(out.session.rooms.salon).toBe(salon);
+        expect(out.session.stars).toBe(7);
+    });
+
+    it('adds an empty first room only when it is missing', () => {
+        const kitchen = done(3);
+        const out = repairCurrentRoom(session('kuchnia', { kuchnia: kitchen }), known, 'salon');
+        expect(out.session.rooms.salon).toEqual(emptyRoomState());
+        expect(out.session.rooms.kuchnia).toBe(kitchen);
+        expect(Object.keys(out.session.rooms).sort()).toEqual(['kuchnia', 'salon']);
+    });
+
+    it('never mutates its input and yields a session that passes validateSave', () => {
+        const input = session('kuchnia', { kuchnia: done(1) });
+        const before = structuredClone(input);
+        const out = repairCurrentRoom(input, known, 'salon');
+        expect(input).toEqual(before);
+        expect(validateSave(JSON.parse(JSON.stringify(encodeSave(out.session))))).toBe(true);
+    });
+
+    it.each(['save-v1.json', 'save-v1-fresh.json'])('repairs the frozen fixture %s (currentRoom outside ROOMS)', (name) => {
+        const raw: unknown = JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+        const decoded = decodeSave(raw);
+        if (decoded.kind !== 'ok') throw new Error('fixture must decode');
+        const living = decoded.session.rooms.living;
+        const out = repairCurrentRoom(decoded.session, Object.keys(ROOMS), FIRST_ROOM);
+        expect(out.repairedFrom).toBe('living');
+        expect(out.session.currentRoom).toBe('salon');
+        expect(out.session.rooms.living).toBe(living);
     });
 });

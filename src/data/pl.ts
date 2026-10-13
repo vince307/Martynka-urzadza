@@ -35,6 +35,16 @@ export const pl = {
         weakestHeading: 'Do poćwiczenia',
         mastery: (value: number, max: number) => `opanowanie ${value} z ${max}`,
         example: (prompt: string, given: string, answer: string) => `${prompt} — odpowiedź dziecka: ${given}, poprawna: ${answer}`,
+        // Save health (audit C-2); parent only, no numbers, so no numeral agreement is needed.
+        saveHeading: 'Zapis gry',
+        saveOk: 'Postępy zapisują się na tym urządzeniu.',
+        saveLast: (time: string) => `Ostatni zapis: ${time}`,
+        saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
+        saveOff: {
+            unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
+            unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
+            fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
+        },
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
@@ -63,6 +73,13 @@ export const pl = {
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
         fileName: 'martynka-zapis.txt',
+    },
+    // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
+    saveUnavailable: {
+        title: 'Gra nie może teraz zapisywać postępów',
+        body: 'Przeglądarka nie udostępniła zapisu gry. Można grać dalej. Jeśli to się powtarza, sprawdź, czy przeglądarka nie blokuje danych stron.',
+        continue: 'Graj dalej',
+        note: 'Tym razem gra nie zapisze postępów.',
     },
     install: {
         title: 'Zainstaluj grę na tablecie',

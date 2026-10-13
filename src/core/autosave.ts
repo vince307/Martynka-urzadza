@@ -11,18 +11,31 @@ export type LoadOutcome =
     | { kind: 'fresh' }
     | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null }
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version'; raw: unknown }
-    | { kind: 'unavailable' };
+    | { kind: 'unavailable'; error: string };
+
+export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
+
+/** Only the name of a thrown value, never its message or stack. */
+export function errorName(e: unknown): string {
+    const name = typeof e === 'object' && e !== null ? (e as { name?: unknown }).name : undefined;
+    return typeof name === 'string' && name !== '' ? name : 'Error';
+}
 
 export type WriteReason = 'change' | 'now' | 'hidden';
 
 export interface AutosaveStatus {
     load: LoadOutcome['kind'];
     blocked: boolean;
+    blockedBy: BlockReason | null;
     dirty: boolean;
     writes: number;
     failures: number;
+    consecutiveFailures: number;
     skipped: number;
     lastReason: WriteReason | null;
+    /** Name of the last write or read error (never a message); stays after a later success. */
+    lastError: string | null;
+    lastWriteAt: number | null;
 }
 
 export interface AutosaverOptions {
@@ -31,7 +44,9 @@ export interface AutosaverOptions {
     timers: { setTimeout: (fn: () => void, ms: number) => unknown; clearTimeout: (id: unknown) => void };
     delayMs: number;
     load: LoadOutcome['kind'];
-    blocked: boolean;
+    blockedBy: BlockReason | null;
+    now: () => number;
+    loadError?: string;
     log: (...args: unknown[]) => void;
     onFirstWrite?: () => void;
 }
@@ -39,17 +54,38 @@ export interface AutosaverOptions {
 export interface Autosaver {
     markDirty(): void;
     flush(reason: 'now' | 'hidden'): Promise<void>;
-    block(reason: string): void;
+    block(reason: BlockReason): void;
     status(): AutosaveStatus;
 }
 
-/** Reads the store once. Never rejects: a failed read is `unavailable`. Never writes. */
-export async function loadSave(store: SaveStore): Promise<LoadOutcome> {
+/**
+ * Reads the store once. Never rejects: a failed or too slow read is `unavailable` with the error name. Never writes.
+ * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody,
+ * and a late success is dropped (it is never written).
+ */
+export async function loadSave(
+    store: SaveStore,
+    limit?: { timers: AutosaverOptions['timers']; timeoutMs: number },
+): Promise<LoadOutcome> {
     let raw: unknown;
     try {
-        raw = await store.read();
-    } catch {
-        return { kind: 'unavailable' };
+        const read = store.read();
+        if (limit === undefined) {
+            raw = await read;
+        } else {
+            read.catch(() => undefined);
+            let timer: unknown;
+            const timeout = new Promise<never>((_, reject) => {
+                timer = limit.timers.setTimeout(() => reject(Object.assign(new Error('read timed out'), { name: 'timeout' })), limit.timeoutMs);
+            });
+            try {
+                raw = await Promise.race([read, timeout]);
+            } finally {
+                limit.timers.clearTimeout(timer);
+            }
+        }
+    } catch (e) {
+        return { kind: 'unavailable', error: errorName(e) };
     }
     if (raw === undefined) return { kind: 'fresh' };
     const result = decodeSave(raw);
@@ -59,7 +95,10 @@ export async function loadSave(store: SaveStore): Promise<LoadOutcome> {
 
 export function createAutosaver(options: AutosaverOptions): Autosaver {
     const { store, snapshot, timers, delayMs, log } = options;
-    let blocked = options.blocked;
+    let blockedBy: BlockReason | null = options.blockedBy;
+    let lastError: string | null = options.loadError ?? null;
+    let lastWriteAt: number | null = null;
+    let consecutiveFailures = 0;
     let dirty = false;
     let timer: unknown = null;
     let inflight: Promise<void> | null = null;
@@ -79,10 +118,12 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     const attempt = async (reason: WriteReason): Promise<boolean> => {
         try {
             const encoded = encodeSave(snapshot());
-            if (!validateSave(encoded)) throw new Error('autosave: encoded state does not validate');
+            if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
             dirty = false;
             await store.write(encoded);
             writes++;
+            lastWriteAt = options.now();
+            consecutiveFailures = 0;
             lastReason = reason;
             if (!firstDone) {
                 firstDone = true;
@@ -95,6 +136,8 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             return true;
         } catch (e) {
             failures++;
+            consecutiveFailures++;
+            lastError = errorName(e);
             dirty = true;
             log('autosave: write failed', e);
             return false;
@@ -102,7 +145,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     };
 
     const save = (reason: WriteReason): Promise<void> => {
-        if (blocked) {
+        if (blockedBy !== null) {
             skipped++;
             return Promise.resolve();
         }
@@ -117,7 +160,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             while (next !== null) {
                 rerun = null;
                 const ok = await attempt(next);
-                next = ok && dirty && !blocked ? (rerun ?? null) : null;
+                next = ok && dirty && blockedBy === null ? (rerun ?? null) : null;
             }
         })();
         inflight = run.finally(() => {
@@ -129,7 +172,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     return {
         markDirty: () => {
             dirty = true;
-            if (blocked) {
+            if (blockedBy !== null) {
                 skipped++;
                 return;
             }
@@ -140,10 +183,22 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             }, delayMs);
         },
         flush: (reason) => save(reason),
-        block: () => {
-            blocked = true;
+        block: (reason) => {
+            blockedBy ??= reason;
             cancelTimer();
         },
-        status: () => ({ load: options.load, blocked, dirty, writes, failures, skipped, lastReason }),
+        status: () => ({
+            load: options.load,
+            blocked: blockedBy !== null,
+            blockedBy,
+            dirty,
+            writes,
+            failures,
+            consecutiveFailures,
+            skipped,
+            lastReason,
+            lastError,
+            lastWriteAt,
+        }),
     };
 }

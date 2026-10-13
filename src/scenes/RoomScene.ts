@@ -151,8 +151,8 @@ export class RoomScene extends Scene {
         if (this.panel.kind === 'open' || this.card) {
             return;
         }
-        const room = this.room();
-        const slot = event.type === 'down' ? slotAt(room, SALON_PLACEHOLDERS, this.roomState().chosen, { x: event.x, y: event.y }) : null;
+        const { room, state } = this.resolve();
+        const slot = event.type === 'down' ? slotAt(room, SALON_PLACEHOLDERS, state.chosen, { x: event.x, y: event.y }) : null;
         const result = roomGesture(this.gesture, event, { mode: this.mode, slot, rules: balance.roomHold });
         this.gesture = result.state;
         this.view.highlight(result.held);
@@ -167,27 +167,22 @@ export class RoomScene extends Scene {
         this.view.highlight(null);
     }
 
-    private roomId(): string {
-        return (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
-    }
-
-    private roomState(): RoomState {
+    /** Room and its state from ONE id, so an unknown id can never pair one room with another room's state. */
+    private resolve(): { room: RoomDef; state: RoomState } {
+        const id = (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
+        const room = ROOMS[id] ?? ROOMS[FIRST_ROOM];
         const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
-        return rooms?.[this.roomId()] ?? emptyRoomState();
+        return { room, state: rooms?.[room.id] ?? emptyRoomState() };
     }
 
     private stars(): number {
         return (this.registry.get(REGISTRY_KEYS.stars) as number | undefined) ?? 0;
     }
 
-    private room(): RoomDef {
-        return ROOMS[this.roomId()] ?? ROOMS[FIRST_ROOM];
-    }
-
     /** One tap = one reducer step. The registry is written only when the reducer says something was bought. */
     private dispatch(event: PanelEvent): void {
-        const room = this.room();
-        const step = stepPanel(this.panel, event, { room, state: this.roomState(), stars: this.stars() });
+        const { room, state } = this.resolve();
+        const step = stepPanel(this.panel, event, { room, state, stars: this.stars() });
         this.panel = step.panel;
         if (this.panel.kind === 'open') {
             this.resetGesture();
@@ -245,8 +240,7 @@ export class RoomScene extends Scene {
     }
 
     private redraw(): void {
-        const room = this.room();
-        const state = this.roomState();
+        const { room, state } = this.resolve();
         const task = currentTask(room, state);
         const open = this.panel.kind === 'open';
         const blocked = open || this.card;
@@ -301,7 +295,7 @@ export class RoomScene extends Scene {
         if (prefersReducedMotion()) {
             return;
         }
-        const room = this.room();
+        const { room } = this.resolve();
         const at = this.view.slotCenter(room, bought.slot);
         const size = SALON_PLACEHOLDERS[bought.slot];
         if (!at || !size) {
@@ -372,8 +366,8 @@ export class RoomScene extends Scene {
     /** A point where a hold lands on each furnished slot, for the e2e hook. */
     slotTargets(): Record<string, { x: number; y: number }> {
         const out: Record<string, { x: number; y: number }> = {};
-        const room = this.room();
-        const { chosen } = this.roomState();
+        const { room, state } = this.resolve();
+        const { chosen } = state;
         for (const slot of room.slots) {
             const at = holdPoint(room, SALON_PLACEHOLDERS, chosen, slot.id);
             if (at) {
@@ -385,8 +379,7 @@ export class RoomScene extends Scene {
 
     /** Read-only copy of what the room shows, for the e2e hook. */
     snapshot(): RoomSnapshot {
-        const room = this.room();
-        const state = this.roomState();
+        const { room, state } = this.resolve();
         const task = currentTask(room, state);
         const view = taskButtonView(room, state, this.stars());
         return {

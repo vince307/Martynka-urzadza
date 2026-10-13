@@ -1,5 +1,6 @@
 // Room purchase logic (S-09), pure: no Phaser, no registry. The scene passes
 // the balance in and writes the result back (plan "State sequencing").
+import type { SessionSave } from './save';
 import type { RoomDef, RoomListEntry, RoomState, RoomTaskDef } from './types';
 
 type Variant = 0 | 1 | 2;
@@ -82,4 +83,21 @@ export function roomsListView(
             || (afterRoom !== undefined && roomDone(afterRoom, states[after] ?? emptyRoomState()));
         return { kind: id === null ? 'teaser' : 'room', id, nameKey: id, done, unlocked };
     });
+}
+
+/**
+ * A save may name a room this build does not know (a renamed or removed room). The game then starts in the first
+ * room; every other room's saved state is carried over unchanged, so a later build that knows it again finds it intact.
+ * Pure: writes nothing, never mutates its input.
+ */
+export function repairCurrentRoom(
+    session: SessionSave,
+    knownIds: readonly string[],
+    firstRoom: string,
+): { session: SessionSave; repairedFrom: string | null } {
+    if (knownIds.includes(session.currentRoom)) return { session, repairedFrom: null };
+    const rooms = Object.prototype.hasOwnProperty.call(session.rooms, firstRoom)
+        ? { ...session.rooms }
+        : { ...session.rooms, [firstRoom]: emptyRoomState() };
+    return { session: { ...session, currentRoom: firstRoom, rooms }, repairedFrom: session.currentRoom };
 }

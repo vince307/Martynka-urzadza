@@ -308,6 +308,16 @@ canvas {
     box-shadow: 0 -8px 8px -8px var(--parent-border);
 }
 
+/* Parent "Zapis gry" section (save-observability-c1-c2, DESIGN-GAP 43): between the reading choice and the progress preview. */
+.parent-save {
+    width: 100%;
+    text-align: left;
+}
+
+.parent-save h2 {
+    margin-bottom: 8px;
+}
+
 /* Parent progress preview (S-08): inside the dialog's scroll, under the choices; long word-problem prompts wrap. */
 .parent-progress {
     width: 100%;
