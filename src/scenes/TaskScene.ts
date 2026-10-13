@@ -41,6 +41,7 @@ import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
 import { textStyle } from '../ui/widgets/textStyle';
 import { drawStar, starCounterTarget } from '../ui/widgets/StarCounter';
+import type { Autosaver } from '../core/autosave';
 
 type Point = { x: number; y: number };
 
@@ -520,6 +521,8 @@ export class TaskScene extends Scene {
         if (this.warmup) {
             this.finishWarmup();
         }
+        // The end of a round is saved at once, after the last registry write (the warm-up sets the learner a second time).
+        void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
     }
 
     /**

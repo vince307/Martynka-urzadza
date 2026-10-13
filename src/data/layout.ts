@@ -125,8 +125,18 @@ export const REGISTRY_KEYS = {
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
     settings: 'settings',     // the session's Settings (core/types: parent's auto-reading choice), set before the scenes start (main.ts)
     inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
+    saver: 'saver',           // the game's autosave ({ flush, status }, core/autosave), set in main.ts before the scenes run
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
+
+/** The registry keys that make up the save (S-11): the autosave listens to these and the snapshot reads exactly these. */
+export const SAVE_KEYS = [
+    REGISTRY_KEYS.stars,
+    REGISTRY_KEYS.rooms,
+    REGISTRY_KEYS.currentRoom,
+    REGISTRY_KEYS.learner,
+    REGISTRY_KEYS.settings,
+] as const;
 
 /**
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,

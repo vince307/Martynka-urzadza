@@ -1,7 +1,15 @@
 import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
-import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS } from './data/layout';
+import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
+import { createAutosaver, loadSave, type Autosaver } from './core/autosave';
+import { floorToCalendar } from './core/curriculum';
+import type { SessionSave } from './core/save';
+import type { SessionLearner } from './core/placement';
+import type { Settings } from './core/types';
+import { stages } from './data/curriculum';
+import { placementData } from './data/placement';
+import { createIdbSaveStore, requestPersistence } from './storage/idb';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { initialSettings } from './core/placement';
 import { mountInstallHint } from './pwa/installHint';
@@ -22,7 +30,7 @@ import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } fro
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, startStars: number): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, start: SessionSave): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -38,12 +46,14 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
             preBoot: (booting) => {
                 booting.registry.set(REGISTRY_KEYS.narrator, narrator);
                 booting.registry.set(REGISTRY_KEYS.month, month);
-                booting.registry.set(REGISTRY_KEYS.settings, initialSettings());
-                // Session state until the save arrives (S-11 replaces these values with the saved ones).
-                // startStars is 0 in production; the e2e build may seed it with ?e2eStars=N (a seam, not a save).
-                booting.registry.set(REGISTRY_KEYS.stars, startStars);
-                booting.registry.set(REGISTRY_KEYS.rooms, { [FIRST_ROOM]: emptyRoomState() });
-                booting.registry.set(REGISTRY_KEYS.currentRoom, FIRST_ROOM);
+                // Session state: the saved one, or the fresh one (start is built in start() from the load outcome).
+                booting.registry.set(REGISTRY_KEYS.settings, start.settings);
+                booting.registry.set(REGISTRY_KEYS.stars, start.stars);
+                booting.registry.set(REGISTRY_KEYS.rooms, start.rooms);
+                booting.registry.set(REGISTRY_KEYS.currentRoom, start.currentRoom);
+                if (start.learner) {
+                    booting.registry.set(REGISTRY_KEYS.learner, start.learner);   // absent until the welcome when there is none
+                }
                 if (__E2E_HOOK__) {
                     booting.registry.set(REGISTRY_KEYS.forcedFailure, forcedFailure);   // e2e build only; never set in production
                 }
@@ -78,7 +88,7 @@ const narrator = createNarrator(
 const month = (__E2E_HOOK__ ? e2eMonth(window.location.search) : null) ?? new Date().getMonth();
 // The error boundary goes up before the game exists (the game starts inside a font promise). When the game breaks
 // the child sees a calm card; every step is guarded on its own so the handler itself can never throw.
-const booted: { game?: Game } = {};   // filled once the game exists; the boundary reads it lazily
+const booted: { game?: Game; saver?: Autosaver } = {};   // filled once the game exists; the boundary reads it lazily
 installErrorBoundary(window, () => {
     const attempt = (step: () => void): void => {
         try {
@@ -91,10 +101,80 @@ installErrorBoundary(window, () => {
     // The hold is never released: the card is final, a restart reloads the page.
     attempt(() => (booted.game?.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspend());
     attempt(() => booted.game?.loop.sleep());
+    // The state at the moment of an exception is uncertain: never save it (a bad save would bring the card back at every start).
+    attempt(() => booted.saver?.block('fatal'));
 });
-const startStars = (__E2E_HOOK__ ? e2eStars(window.location.search) : null) ?? 0;
-const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, startStars);
-booted.game = game;
+const freshSession = (stars: number): SessionSave => ({
+    stars,
+    rooms: { [FIRST_ROOM]: emptyRoomState() },
+    currentRoom: FIRST_ROOM,
+    settings: initialSettings(),
+    learner: null,
+});
+
+// The game starts only after the save is read: the first frame already shows the saved state, and nothing is
+// written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
+const start = async (): Promise<void> => {
+    const store = createIdbSaveStore();
+    const outcome = await loadSave(store);
+    let session: SessionSave;
+    if (outcome.kind === 'loaded') {
+        const learner = outcome.session.learner
+            ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
+            : null;
+        session = { ...outcome.session, learner };
+    } else {
+        // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.
+        const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
+        session = freshSession(seeded ?? 0);
+        if (outcome.kind === 'unreadable') {
+            console.warn(`Save unreadable (${outcome.reason}); playing without saving this session`);
+        }
+    }
+    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, session);
+    booted.game = game;
+    const saver = createAutosaver({
+        store,
+        snapshot: () => ({
+            stars: (game.registry.get(REGISTRY_KEYS.stars) as number | undefined) ?? 0,
+            rooms: game.registry.get(REGISTRY_KEYS.rooms) as SessionSave['rooms'],
+            currentRoom: game.registry.get(REGISTRY_KEYS.currentRoom) as string,
+            settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
+            learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
+        }),
+        timers: { setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: (id) => window.clearTimeout(id as number) },
+        delayMs: balance.save.debounceMs,
+        load: outcome.kind,
+        blocked: outcome.kind === 'unreadable' || outcome.kind === 'unavailable',
+        log: (...args) => console.error(...args),
+        onFirstWrite: requestPersistence,
+    });
+    booted.saver = saver;
+    game.registry.set(REGISTRY_KEYS.saver, saver);
+    // The general events, not changedata-<key>: the first set of a key (the learner at the welcome) emits only setdata.
+    const saveKeys: readonly string[] = SAVE_KEYS;
+    const onChange = (_parent: unknown, key: string): void => {
+        if (saveKeys.includes(key)) {
+            saver.markDirty();
+        }
+    };
+    game.registry.events.on('changedata', onChange);
+    game.registry.events.on('setdata', onChange);
+    // A hidden page must not keep talking, and it is the last sure signal before the system may kill the app.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            narrator.cancel();
+            void saver.flush('hidden');
+        }
+    });
+    window.addEventListener('pagehide', () => void saver.flush('hidden'));
+    if (__E2E_HOOK__) {
+        installE2EHook(game);   // e2e build only: stripped from production, checked by vite/e2eHookGuard.mjs
+    }
+    const suspender = game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
+    mountInstallHint(document.body, detectPlatform(navigator), isStandalone(window), suspender ? () => suspender.suspend() : undefined);
+};
+
 // Speech needs a user gesture: the first tap or touch after a Polish voice is known unlocks it
 // for the session (voices may load after the first tap, so the listeners stay until then).
 const container = document.getElementById('game-container');
@@ -107,18 +187,9 @@ const unlockSpeech = (): void => {
 };
 container?.addEventListener('pointerup', unlockSpeech);
 container?.addEventListener('touchend', unlockSpeech);
-// A hidden page must not keep talking.
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-        narrator.cancel();
-    }
-});
-if (__E2E_HOOK__) {
-    installE2EHook(game);   // e2e build only: stripped from production, checked by vite/e2eHookGuard.mjs
-}
 mountRotateOverlay(document.body);
 // Android would open a context menu on a long press; the parent's long press must not.
 container?.addEventListener('contextmenu', (event) => event.preventDefault());
-const suspender = game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
-mountInstallHint(document.body, detectPlatform(navigator), isStandalone(window), suspender ? () => suspender.suspend() : undefined);
 registerServiceWorker();
+
+void start();   // a rejected start is a real startup failure: the error boundary shows the card

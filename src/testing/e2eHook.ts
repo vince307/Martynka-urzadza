@@ -1,4 +1,5 @@
 import type { Game } from 'phaser';
+import type { Autosaver, AutosaveStatus } from '../core/autosave';
 import type { SessionLearner } from '../core/placement';
 import type { Settings } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -72,6 +73,10 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.settings) as Settings | undefined;
         return deepFreeze(structuredClone(value ?? { autoRead: null }));
     };
+    const save = (): Readonly<AutosaveStatus> | null => {
+        const saver = game.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
+        return saver ? deepFreeze({ ...saver.status() }) : null;
+    };
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
@@ -81,12 +86,12 @@ export const installE2EHook = (game: Game): void => {
             get snapshot() {
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), counterText: ui().counterText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), counterText: ui().counterText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {
