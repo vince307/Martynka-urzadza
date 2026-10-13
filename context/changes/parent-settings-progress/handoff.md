@@ -1,30 +1,27 @@
 # Handoff — `parent-settings-progress` (slice S-08)
 
-Written by the `plan` step (autonomous run 2026-10-12-s04-s08). `plan.md` has 11 phases: e2e helper de-dup (impl),
-four tdd logic phases, three impl glue/UI phases, the seam sweep, and two e2e phases for #14 (proposed). The next agent
-must check two things against the code. First, `TaskScene.applyParentStage` adds the open round's stars to
-`sessionStars` before `freshRound()`. Second, the stage change is triggered by `GAME_EVENTS.parentStage` plus the `wake`
-check, not by `changedata-learner` (that would fire inside `finishWarmup`).
+Written by the `plan-review` step (autonomous run 2026-10-12-s04-s08). Verdict PROCEED; plan.md fixed in place (1 critical,
+3 warnings). The next agent must not miss F1: the suspender's `onRelease` must reset Phaser's touch pointers, otherwise the
+whole game ignores touch after a hold-opened dialog (the `touchend` is dropped while `game.input.enabled` is false).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
-| Commits | `db487d2` (change identity), `965c602` (research), and one docs commit from this step: `docs(parent-settings-progress): plan` |
+| Commits | `db487d2` (identity), `965c602` (research), `d355ca0` (plan), plus this step's `docs(parent-settings-progress): plan review` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 53 (all) |
+| `change.md` status | `plan_reviewed` |
+| `## Progress` rows remaining | 54 (all; phase 10 gained row 10.4, old 10.4 → 10.5) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/parent-settings-progress/plan.md` | Full plan: 11 phases, each with `Driver:`/`Driver why:` lines; 13 autonomous decisions; Known risks; `## Progress` |
-| `context/changes/parent-settings-progress/plan-brief.md` | Two-page brief with the key-decisions table |
-| `context/changes/parent-settings-progress/change.md` | Frontmatter status `preparing` → `planned` |
-| `context/foundation/roadmap.md` | S-08 `proposed` → `planning`, in At a glance and in the `### S-08` block |
+| `context/changes/parent-settings-progress/reviews/plan-review.md` | Review report: focus points (a)–(f) answered from code, findings F1–F7, `VERDICT: PROCEED` |
+| `context/changes/parent-settings-progress/plan.md` | Fixes F1–F4 + F5/F6 text: suspender `onRelease` pointer reset (Critical details, phases 2, 6, 10 + row 10.4), same-stage guard and emit-only-on-change (Critical details, phases 6–7, row 6.6), phase 8 height budget + sticky actions (row 8.5), phase 10 assertion order, phase 1 assertion inventory, Known risks (privacy, 1024×768) |
+| `context/changes/parent-settings-progress/change.md` | status `planned` → `plan_reviewed` |
 | `context/changes/parent-settings-progress/handoff.md` | This file |
 
 ## 3. Verification
@@ -33,55 +30,35 @@ check, not by `changedata-learner` (that would fire inside `finishWarmup`).
 |---|---|
 | `git branch --show-current` | `feat/parent-settings-progress` |
 | Local gate | Not run: docs-only step, no source file changed |
-| `grep -c '^- \[ \]' plan.md` | 53 |
-| `grep -nE '^Driver:' plan.md` | 11 lines: impl, tdd ×4, impl ×4, e2e ×2. The e2e phases (10, 11) come after the seam sweep (phase 9) |
-| Success Criteria ↔ Progress | Checked by hand: one Progress row per criterion in every phase. The Chromium fallback for phases 10–11 is a note, not a criterion |
-| Code claims re-read in this step | `TaskScene` (`create`, `beginRound`, `finishRound`, `finishWarmup`, `onWake`, `toRoom`), `UIScene.create`, `round.ts` `answer`, `mastery.ts` `recordRound`, `curriculum.ts` `currentStepOf` (private), `placement.ts`, `types.ts` `Settings`, `dialog.ts`, `stagePanel.ts`, `parentGate.ts`, `installHint.ts`, `main.ts`, `e2eHook.ts`, `layout.ts` `HUD_LAYOUT`/`REGISTRY_KEYS`, `playwright.config.ts` `ROUND_SPEC`, `support/{hook,welcome}.ts` exports |
+| `grep -c '^- \[ \]' plan.md` | 54 |
+| `grep -c '^Driver:' plan.md` | 11 (impl, tdd ×4, impl ×4, e2e ×2; e2e after seam sweep phase 9) |
+| Phaser 4.2.1 source read | `Game` constructor creates `InputManager`, `boot()` calls `preBoot` (focus a ✓); `TouchManager.startListeners` drops events when `manager.enabled` false; `InputManager.onTouchStart` needs a non-active pointer, `activePointers` default 1 (F1); `InputPlugin.update` TOUCH_END/TOUCH_CANCEL = up then out; `InputPlugin.resetPointers`/`Pointer.reset` exist |
+| Code read | `TaskScene` (`create`, `beginRound`, `finishRound`, `finishWarmup`, `syncStars`, `toRoom`, `onWake`), `UIScene.create`, `style.css` `.overlay-parent`/`.parent-dialog`/`.parent-choices-stages`, `layout.ts` `HUD_LAYOUT`/`ROOM_LAYOUT`, `e2eHook.ts` learner freeze, all e2e helper copies vs `support/hook.ts`/`welcome.ts` |
 | Deliberate break | None: no test or code in this step |
 
 ## 4. Next command
 
-/10x-plan-review parent-settings-progress
+/10x-implement parent-settings-progress phase 1
 
 ## 5. Open
 
-- `[human]` rows (post-run checklist):
-  - 6.7: the install hint no longer leaks taps (iPad/Android).
-  - 9.6: settings stay session-only until S-11. After a cold start the parent sees the welcome again, the default auto-read and an empty progress view.
-  - 9.7: the feel of the 2 s hold on iPad/Android.
-  - 9.8: the PRD deviations, (a) to (e).
-- The reviewer should check these in plan-review:
-  - Is `REGISTRY_KEYS.inputSuspender` set in `preBoot` from `booting.input` valid in Phaser 4.2.1? The `InputManager` must exist at `preBoot`. If it does not, the counter is created lazily on first use.
-  - Is the progress panel readable at 1024×768?
-- DESIGN-GAPs 25–28 are planned for phase 9 (`docs/design-gaps.md`): the icon and its spot, the parent panel, the progress view with its empty state, and the hold without feedback.
-- Follow-ups planned for phase 9 (`follow-ups/review-fixes.md`): risk #14 for the test plan; for S-11, saving `Settings`, the history `example` field and `pendingUnlock` as `{ stage, step }`; the early save for daily play; S-12 adds export/import/reset to the same panel; S-17 calibrates `holdMs`/`moveTolerance`.
-- Every follow-up whose `Trigger:` names S-08 is in scope:
-  - the `autoRead` switch: phases 3, 6 and 7;
-  - the stage change behind the gate: phases 3, 6 and 7;
-  - the e2e helpers: phase 1;
-  - `pendingUnlock`, cleared on a stage change: phase 3;
-  - the history example: phase 4;
-  - the install-hint leak, an adjacent trigger: phase 6.
+- `[human]` rows (post-run checklist): 6.7 install hint no longer leaks taps; 9.6 session-only settings until S-11; 9.7 feel
+  of the 2 s hold on iPad/Android; 9.8 PRD deviations (a)–(e).
+- Implementers of phases 2/6/10: `createInputSuspender(target, onRelease?)` contract (plan.md Critical Implementation
+  Details „Wstrzymanie wejścia”); phase 10 proves it with the third break (row 10.4).
+- Phase 8: the visual gate must show „Zatwierdź”/„Anuluj” without scrolling at 1024×768 (row 8.5).
+- DESIGN-GAPs 25–28 and follow-ups as planned for phase 9 (now including the S-12 export privacy note).
+- Every `Trigger: S-08` follow-up is in scope (list in reviews/plan-review.md § Grounding).
 
 ## 6. Autonomous decisions
 
-1. **Every open question from research was decided as research and the orchestrator recommended.** The detail is in plan.md § Autonomous decisions 1–13. The choices were:
-   - `autoRead: boolean | null`;
-   - the skill named by the step title plus mistake examples;
-   - the history filtered to the current stage;
-   - a 30 px tolerance and 2000 ms, both in `balance.parentSettings`;
-   - the install-hint fix on the global counter.
-   - Rejected: the alternatives listed there.
-   - What would change it: the maintainer's `[human]` 9.8 review.
-2. **The panel applies changes on „Zatwierdź”/„Anuluj” rather than as instant toggles** (plan decision 10).
-   - Why: the parent can look at the progress view without side effects.
-   - What would change it: a playtest showing that parents forget to confirm.
-3. **The stage-change trigger is a game event plus a `wake` check, not a registry `changedata` listener.**
-   - Why: `finishWarmup` writes the learner's new stage before it sets `this.stage`, so a registry listener would fire in the middle of the warm-up.
-   - What would change it: `finishWarmup` reordered and covered by a test.
-4. **Phase 1 (e2e helper de-dup) comes first, as impl** (orchestrator guidance).
-   - Proof: the 15 specs stay green with no assertion changed.
-   - The orchestrator runs the specs if Chromium does not launch in the agent session.
-5. **No AskUserQuestion; complexity rated HIGH.**
-   - The skill's interview rounds and phase-structure approval were decided in place, following the research and the orchestrator guidance (contract rule 1).
-   - The clipboard copy was skipped (unattended session).
+1. **F1 fixed with a release callback in the core suspender, not by opening the gate on finger lift.** Rejected: firing on
+   `up` after 2 s (plan decision 6 already rejected it as less legible) and calling `resetPointers` from each scene (four
+   call sites). Why: one mechanism already owns "input off/on". What would change it: a widget that needs a pointer held
+   across a dialog.
+2. **F2 fixed with one scroller and sticky actions, not a two-column panel.** Rejected: two columns at 1024 px — the
+   half-width stage grid would then be ~210 px per button, too narrow for „Klasa 1, II półrocze”. What would change it: the
+   visual gate still showing clipped content.
+3. **Verdict PROCEED, no product decision overturned.** All PRD deviations are already named in `[human]` row 9.8. What would
+   change it: the maintainer rejecting a 9.8 item.
+4. **No AskUserQuestion; triage decided in place** (contract rule 1): every finding with one obvious fix was applied.

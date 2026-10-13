@@ -124,7 +124,9 @@ przy `now − since ≥ holdMs` → `fired` i wynik `fire: true` **dokładnie ra
 `up`/`cancel`/`reset` (→ `idle`). Zdarzenia innego `id` niż trzymany są ignorowane. Czas zawsze argumentem (`time.now`
 z `UIScene.update`), nigdy `pointer.downTime`/`getDuration()` (mieszają `event.timeStamp` z zegarem pętli).
 
-**Kolejność zmiany etapu w `TaskScene` (faza 6).** `narrator.cancel()` → `tweens.killTweensOf(cameras.main)` i
+**Kolejność zmiany etapu w `TaskScene` (faza 6).** Strażnik na wejściu (plan-review F3): `learner.stage ===
+this.stage.id` → nic (zatwierdzenie samego auto-czytania albo tego samego etapu nie przerywa rundy); `UIScene` emituje
+`GAME_EVENTS.parentStage` tylko, gdy `changeStageByParent` zwrócił inny obiekt. Dalej: `narrator.cancel()` → `tweens.killTweensOf(cameras.main)` i
 `cameras.main.scrollX = 0` → `this.stage = getStage(learner.stage)`, `this.warmup = false`, `this.unlockShown = false` →
 `sessionStars += state.starsEarned` → `state = freshRound()`, `shownIndex = -1` → `syncStars`-owy zapis licznika bez
 lotu → `render()` → `autoReadFirst()` tylko gdy scena nie śpi. Dodanie gwiazdek **przed** `freshRound()`; po ukończonej
@@ -135,8 +137,15 @@ zapisuje ucznia z nowym etapem przed `this.stage = stage`, więc słuchacz rejes
 
 **Wstrzymanie wejścia.** Czysty licznik w `core` (`createInputSuspender(target: { enabled: boolean })` →
 `suspend(): () => void`, `resume` idempotentne, `target.enabled` wraca do `true` dopiero przy zerowym liczniku);
-jedna instancja na grę w rejestrze (`REGISTRY_KEYS.inputSuspender`, ustawiana w `preBoot` z `booting.input`). Każde
+jedna instancja na grę w rejestrze (`REGISTRY_KEYS.inputSuspender`, ustawiana w `preBoot` z `booting.input` —
+`Game` tworzy `InputManager` w konstruktorze, `preBoot` biegnie później w `boot()`, sprawdzone w plan-review). Każde
 wstrzymanie resetuje maszynę przytrzymania (podniesienie palca nad dialogiem jest gubione przez wyłączony manager).
+**Zgubione `touchend` blokuje dotyk (plan-review F1):** bramka otwiera się, gdy palec jeszcze leży; `touchend` przy
+`manager.enabled === false` nie dociera do `InputManager.onTouchEnd`, więc jedyny wskaźnik dotyku (`pointers[1]`,
+`input.activePointers` = 1) zostaje `active` i każde następne `touchstart` nie znajduje wolnego wskaźnika — cała gra
+głucha po zamknięciu panelu. Dlatego licznik przyjmuje `onRelease` wołane dokładnie raz przy powrocie do zera (przed
+`target.enabled = true`), a `main.ts` podaje `() => game.input.pointers.forEach((p) => p.reset())` (to samo, co
+`InputPlugin.resetPointers`, ale bez sceny).
 `WelcomeScene.openParent` przechodzi na ten sam licznik (jeden mechanizm), `start()` zwalnia swoje wstrzymanie.
 
 ## Phase 1: Wspólne helpery e2e bez zmiany asercji
@@ -163,7 +172,12 @@ Kopie helperów z trzech speców przenoszone do `tests/e2e/support/hook.ts`, kro
 `hook.ts` (kopie znikają) i eksportuje `openWelcome(page, month?)`, `gateProblem`, `typeIntoGate`, `openGate(page,
 month?)`; `passWelcomeAsParent` na nich.
 
-**Contract**: zachowanie każdego helpera identyczne z kopią, którą zastępuje; `cleanTask`, `playTask`, `playRound`
+**Contract**: zachowanie każdego helpera identyczne z kopią, którą zastępuje (plan-review: kopie porównane — identyczne poza
+formą zapisu; przenoszone asercje to wyłącznie asercje wewnątrz helperów: `expect(box).not.toBeNull()` w `tapScene`/`toPage`,
+`expect.poll(...).toBe(true)` w `fromHook`, `expect.poll(phase)` w `phaseIs`, `expect(next).not.toBeNull()` w `tapNext`,
+`expect.poll(screen)` w `screenIs`, w krokach bramki `toBeVisible()` polecenia i dialogu, `expect(factors).not.toBeNull()`,
+`expect(parent).toBeDefined()` i `expect.poll(screen).toBe('welcome')`; żadna asercja w treści `test(...)` się nie zmienia);
+nagłówek `support/hook.ts` („Older specs keep their own copies…”) zaktualizowany; `cleanTask`, `playTask`, `playRound`
 i atrapy mowy `narrator.spec.ts` zostają lokalne; `answer(page, right)` w narratorze jako jednolinijkowy wrapper.
 
 #### 2. Specy
@@ -213,8 +227,9 @@ ustawia `target.enabled = false`, ostatnie `resume` przywraca `true`; podwójne 
 zmniejsza licznika drugi raz; `suspended()` do odczytu.
 
 **Contract**: `longPress(state: LongPressState, event: LongPressEvent, rules: LongPressRules): { state: LongPressState; fire: boolean }`;
-`createInputSuspender(target: { enabled: boolean }): { suspend(): () => void; suspended(): boolean }`. Bez importów
-z Phasera i DOM (reguła granic ESLint).
+`createInputSuspender(target: { enabled: boolean }, onRelease?: () => void): { suspend(): () => void; suspended(): boolean }`
+— `onRelease` wołane dokładnie raz przy każdym powrocie licznika do zera, przed `target.enabled = true` (plan-review
+F1). Bez importów z Phasera i DOM (reguła granic ESLint).
 
 #### 3. Testy
 
@@ -223,7 +238,8 @@ z Phasera i DOM (reguła granic ESLint).
 **Intent**: krótkie stuknięcie (down → up) nie odpala; tick 1999 ms nie, 2000 ms tak, kolejne ticki nie (jedno `fire`);
 ruch 30 px zostaje, 31 px kasuje (także po przekątnej: 22 + 22); `cancel` i `reset` kasują; drugi `down` innego `id`
 kasuje; `up` innego `id` ignorowany; `fired` → `up` → `idle` → nowy gest działa. Licznik: dwa `suspend`, jedno `resume`
-→ nadal `false`; drugie → `true`; podwójny `resume` tego samego uchwytu nie przywraca przedwcześnie.
+→ nadal `false`; drugie → `true`; podwójny `resume` tego samego uchwytu nie przywraca przedwcześnie; `onRelease`
+wołane raz przy zejściu do zera (nie przy pośrednim `resume`, nie przy podwójnym `resume`) i przed włączeniem `target`.
 
 ### Success Criteria:
 
@@ -402,7 +418,8 @@ miejscu, przykłady do historii, ustawienia sesji w rejestrze i hak tylko do odc
 **File**: `src/data/layout.ts`, `src/main.ts`, `src/pwa/installHint.ts`
 
 **Intent**: `REGISTRY_KEYS.settings` i `REGISTRY_KEYS.inputSuspender`; `GAME_EVENTS.parentStage`. `preBoot`: licznik
-z `booting.input` i `initialSettings()` do rejestru. `mountInstallHint(parent, platform, standalone, suspend?)` —
+z `booting.input` z `onRelease` resetującym wskaźniki (`booting.input.pointers.forEach((p) => p.reset())`, plan-review
+F1) i `initialSettings()` do rejestru. `mountInstallHint(parent, platform, standalone, suspend?)` —
 wstrzymuje wejście na czas nakładki, zwalnia w `dismiss` (zamyka follow-up S-06 o przecieku stuknięć). `contextmenu`
 → `preventDefault` na `#game-container` (Android: długie przytrzymanie nie otwiera menu).
 
@@ -445,7 +462,7 @@ powitaniu. Nic, co ujawnia odpowiedź bramki.
 
 #### Manual Verification:
 
-- [reviewer] `applyParentStage`: gwiazdki dodane przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb balansu i tekstu w scenach
+- [reviewer] `applyParentStage`: strażnik „ten sam etap → nic” (plan-review F3), gwiazdki dodane przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb balansu i tekstu w scenach
 - [human] iPad/Android w przeglądarce: stuknięcie w „Graj w przeglądarce” podpowiedzi instalacji nie trafia w kafelek pod spodem (wcześniej przeciekało)
 
 ---
@@ -480,7 +497,7 @@ ponownie użyta z `pl.parent`. Teksty bez liczebników.
 `pointerout` → `cancel`; `pointerup` (z `wasCanceled` → `cancel`) → `up`; `update(time)` → `tick` tylko w `holding`;
 `sleep`/`shutdown` i każde wstrzymanie wejścia → `reset`. Żadnej informacji zwrotnej w trakcie. `fire` → `UIScene.openSettings()`:
 `narrator.cancel()`, wstrzymanie wejścia, `openParentGate` → `openSettingsPanel`; „Zatwierdź” → `changeStageByParent`
-i ustawienia do rejestru, `GAME_EVENTS.parentStage`, zwolnienie; „Anuluj”/Escape → zwolnienie. `settingsTarget()` dla haka.
+i ustawienia do rejestru, `GAME_EVENTS.parentStage` tylko przy zmienionym etapie (plan-review F3), zwolnienie; „Anuluj”/Escape → zwolnienie. `settingsTarget()` dla haka.
 
 **Contract**: `UIScene` nie decyduje o etapie ani o auto-czytaniu — woła `core` i zapisuje rejestr.
 
@@ -546,7 +563,14 @@ tu po kilku rundach.”). Liczby w szablonach bez rzeczowników (bez odmiany).
 **Intent**: `createProgressView(view: ProgressView): HTMLElement` — nagłówek, akapit kroku, lista (`ul`, `aria-labelledby`
 nagłówka „Do poćwiczenia”) z pozycjami: tytuł kroku, opanowanie, podlista przykładów (`white-space: normal`), albo akapit
 stanu pustego. Panel dostaje `progress: ProgressView` (UIScene liczy `progressView` dla bieżącego etapu ucznia z
-`balance`). Panel przewijany w pionie, gdy nie mieści się przy 1024×768 (`max-height` + `overflow-y: auto` na treści).
+`balance`). **Budżet 1024×768 (plan-review F2):** czcionka dialogu `clamp(20px, 2.4vw, 32px)` ≈ 24,6 px; część bez
+podglądu (tytuł ~56, nagłówek + siatka etapów 3 × 64 + 2 × 12 ≈ 260, auto-czytanie ≈ 110, akcje 64, odstępy 16, ramka
+i padding 56) ≈ 640 px — mieści się; trzy pozycje podglądu z dwoma przykładami długich poleceń słownych (≈ 45 znaków
+w wierszu przy 720 px) to ~800 px więcej, więc całość ~1400 px. Zostaje jedno przewijanie — istniejące
+`overflow-y: auto` na `.overlay-parent` (bez drugiego, zagnieżdżonego przewijania na treści, które na dotyku łapie
+gest); `.parent-actions` panelu ustawień dostaje `position: sticky; bottom: 0` z tłem `--parent-paper`, żeby
+„Zatwierdź”/„Anuluj” były widoczne bez przewijania (S-06 miało właśnie ten błąd: „Zatwierdź” pod krawędzią 768 px);
+przykłady `font-size: 0.8em`. Podgląd idzie pod etapami i auto-czytaniem (rodzic widzi decyzje bez przewijania).
 
 **Contract**: komponent tylko renderuje `ProgressView`; żadnych obliczeń poza `pl`.
 
@@ -561,7 +585,7 @@ stanu pustego. Panel dostaje `progress: ProgressView` (UIScene liczy `progressVi
 #### Manual Verification:
 
 - [reviewer] Odczyt nauczyciela `pl.settings.progressHeading`, `currentStep`, `weakestHeading`, `mastery`, `example`, `empty` — z przykładami realnych poleceń (BONDS z `\n`, WORD ~100 znaków, COMPARE z „<”) w `npm run sample -- E3 --count 6`
-- [visual] Zrzuty panelu: stan pusty (zaraz po powitaniu), 1 słaba umiejętność, 3 słabe z przykładem długiego polecenia słownego — przy 1440×900 i 1024×768 (przewijanie zamiast ucięcia)
+- [visual] Zrzuty panelu: stan pusty (zaraz po powitaniu), 1 słaba umiejętność, 3 słabe z przykładem długiego polecenia słownego — przy 1440×900 i 1024×768 (przewijanie zamiast ucięcia; „Zatwierdź” i „Anuluj” widoczne bez przewijania w każdym stanie)
 
 ---
 
@@ -591,7 +615,7 @@ Luki projektu, follow-upy, `CLAUDE.md`, przegląd szwów i wiersze decyzji `[hum
 **Intent**: z `Trigger:` — ryzyko #14 do test-planu (brzmienie z research § 6, `Trigger: /10x-test-plan refresh`);
 S-11: zapis `Settings` (`autoRead: boolean | null`) i historii z `example`, `pendingUnlock` jako `{ stage, step }`, jeśli
 karta ma przetrwać sesję; „wcześniejszy zapis ucznia przed codzienną grą” obejmuje teraz ustawienia rodzica i podgląd
-(`Trigger: before S-11, or any deploy used for daily play`); S-12: eksport/import/reset w tym samym panelu;
+(`Trigger: before S-11, or any deploy used for daily play`); S-12: eksport/import/reset w tym samym panelu (eksport niesie przykłady błędów — notka prywatności, plan-review F6);
 S-17: kalibracja `holdMs`/`moveTolerance` na tablecie.
 
 #### 3. Dokumentacja i seam sweep
@@ -647,11 +671,13 @@ dopuszczalne czekanie stałym czasem to sam czas trzymania palca (to jest gest, 
 
 **Intent**: test „#14 (proposed) only a 2-second hold on the settings icon opens the adult gate, and taps under the
 dialog never reach the round”: `silenceSpeech`, `passWelcome` (E3, rodzic) → `screen === 'task'`; `tapScene` na ikonie,
-`holdTouch` 1500 ms i `holdTouch` 2300 ms z dryfem 60 px → po każdym brak `getByRole('dialog', { name: 'Pytanie dla
-rodzica' })` (sprawdzone po upływie progu, `expect(...).toHaveCount(0)`) i `snapshot.inputEnabled === true`;
+`holdTouch` 1500 ms, potem `holdTouch` 2300 ms z dryfem 60 px → brak `getByRole('dialog', { name: 'Pytanie dla
+rodzica' })` (`expect(...).toHaveCount(0)`) i `snapshot.inputEnabled === true`; asercja negatywna stoi **po** drugim
+przytrzymaniu, więc od początku krótkiego minęło > 2000 ms bez dodatkowego `waitForTimeout` (plan-review F4);
 `holdTouch` 2300 ms bez dryfu → dialog bramki widoczny, odczyt bramki pusty (podniesienie palca niczego nie wcisnęło),
 `inputEnabled === false`; `tapScene` w kafelek/klawisz rundy przez dialog → po „Anuluj” `snapshot.phase === 'first'`,
-`index` bez zmian, `inputEnabled === true`; następne stuknięcie odpowiedzi działa (runda żyje).
+`index` bez zmian, `inputEnabled === true`; następne stuknięcie odpowiedzi działa (runda żyje — to jest dowód
+resetu wskaźników po zgubionym `touchend`, plan-review F1).
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; `npx playwright test tests/e2e/parent-settings.spec.ts`;
 żadnego zapisu stanu z testu, żadnej asercji treści zadania.
@@ -666,6 +692,7 @@ rodzica' })` (sprawdzone po upływie progu, `expect(...).toHaveCount(0)`) i `sna
 - `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (1 passed); pełne `npx playwright test`: `<baseline gałęzi e2e> + 1` passed
 - Deliberate break (patch tylko na kodzie produkcyjnym, REGUŁA): `src/core/longPress.ts` odpala przy `down` (próg pominięty) → test czerwony na braku dialogu po krótkim stuknięciu; przywrócone; meta-check: unit `tests/longPress.test.ts` też czerwony — e2e dowodzi, że scena faktycznie używa maszyny (break w scenie: `UIScene` woła `openSettings` na `pointerdown` → e2e czerwony, unit zielony — ten wariant jest dowodem sklejki)
 - Druga przerwa (patch, REGUŁA): `UIScene.openSettings` nie wstrzymuje wejścia → test czerwony na `phase`/`index` po stuknięciu przez dialog albo na `inputEnabled`; przywrócone; meta-check: unit zielone (szew sceny)
+- Trzecia przerwa (patch, REGUŁA): `main.ts` tworzy licznik bez `onRelease` (wskaźniki nie resetowane) → test czerwony na „następne stuknięcie odpowiedzi działa” po „Anuluj”; przywrócone; meta-check: unit `inputSuspend.test.ts` zielony (szew `main.ts`)
 - `npm run build` drukuje `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite po przebiegu
 
 ---
@@ -755,8 +782,13 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
   zablokowany przez canvas); e2e fazy 10 sprawdza pusty odczyt bramki po przytrzymaniu.
 - **Chromium w sesji agenta** (`MachPortRendezvous`): fazy z e2e oddają e2e orkiestratorowi (`prompt-phase.md`); fazy
   10–11 piszą `e2e-request-s08-p10.md` / `-p11.md` z patchami przerw.
-- **Panel przy 1024×768**: etapy (6 przycisków), auto-czytanie, podgląd z 3 pozycjami i długimi poleceniami słownymi może
-  nie zmieścić się bez przewijania — faza 8 dodaje przewijanie treści, bramka wizualna sprawdza.
+- **Panel przy 1024×768**: etapy (6 przycisków), auto-czytanie, podgląd z 3 pozycjami i długimi poleceniami słownymi ≈
+  1400 px — nie zmieści się; faza 8: jedno przewijanie nakładki + przyklejone akcje (budżet w fazie 8, plan-review F2),
+  bramka wizualna sprawdza, że „Zatwierdź” jest widoczne bez przewijania.
+- **Prywatność przykładów błędów** (plan-review F6): `MistakeExample` żyje tylko w pamięci sesji (rejestr); nie trafia do
+  `console.*` (w `src/` nie ma dziś żadnego wywołania — seam sweep fazy 9 to sprawdza: `grep -rn "console\." src/` bez
+  nowych trafień); w haku jest tylko w buildzie e2e (`learner` w `snapshot`), produkcja `e2e hook: absent`. S-11/S-12 zapiszą
+  i wyeksportują przykłady — follow-up fazy 9 to odnotowuje (plik eksportu zawiera polecenia i odpowiedzi dziecka).
 - **Nowe polskie napisy** widzi rodzic (nie dziecko), ale błąd językowy obniża zaufanie — teacher read w fazach 7–8.
 
 ## References
@@ -875,7 +907,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Manual
 
-- [ ] 6.6 [reviewer] `applyParentStage`: gwiazdki przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb i tekstu w scenach
+- [ ] 6.6 [reviewer] `applyParentStage`: strażnik tego samego etapu, gwiazdki przed `freshRound`, brak `scene.restart`, strażnik `isSleeping`, `onWake` bez auto-czytania; brak liczb i tekstu w scenach
 - [ ] 6.7 [human] iPad/Android w przeglądarce: „Graj w przeglądarce” podpowiedzi instalacji nie trafia w kafelek pod spodem
 
 ### Phase 7: Ikona ustawień z przytrzymaniem i panel rodzica (etap, auto-czytanie)
@@ -903,7 +935,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 #### Manual
 
 - [ ] 8.4 [reviewer] Odczyt nauczyciela napisów podglądu (`progressHeading`, `currentStep`, `weakestHeading`, `mastery`, `example`, `empty`) z realnymi poleceniami
-- [ ] 8.5 [visual] Zrzuty podglądu: pusty, 1 pozycja, 3 pozycje z długim poleceniem — 1440×900 i 1024×768
+- [ ] 8.5 [visual] Zrzuty podglądu: pusty, 1 pozycja, 3 pozycje z długim poleceniem — 1440×900 i 1024×768; „Zatwierdź”/„Anuluj” widoczne bez przewijania
 
 ### Phase 9: Seam sweep, luki projektu, follow-upy i dokumentacja
 
@@ -928,7 +960,8 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 - [ ] 10.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1`
 - [ ] 10.2 Deliberate break: `UIScene` otwiera ustawienia na `pointerdown` (albo maszyna odpala przy `down`) → test czerwony; przywrócone; meta-check (unit zielone przy wariancie sceny)
 - [ ] 10.3 Druga przerwa: `UIScene.openSettings` bez wstrzymania wejścia → test czerwony; przywrócone; meta-check
-- [ ] 10.4 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 10.4 Trzecia przerwa: licznik bez `onRelease` (wskaźniki nie resetowane) → test czerwony na stuknięciu po „Anuluj”; przywrócone; meta-check
+- [ ] 10.5 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
 ### Phase 11: Zmiana etapu, auto-czytanie i podgląd przez dotyk — e2e (#14, proposed)
 
