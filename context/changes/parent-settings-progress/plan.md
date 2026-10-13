@@ -957,11 +957,11 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1`
-- [ ] 10.2 Deliberate break: `UIScene` otwiera ustawienia na `pointerdown` (albo maszyna odpala przy `down`) → test czerwony; przywrócone; meta-check (unit zielone przy wariancie sceny)
-- [ ] 10.3 Druga przerwa: `UIScene.openSettings` bez wstrzymania wejścia → test czerwony; przywrócone; meta-check
-- [ ] 10.4 Trzecia przerwa: licznik bez `onRelease` (wskaźniki nie resetowane) → test czerwony na stuknięciu po „Anuluj”; przywrócone; meta-check
-- [ ] 10.5 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 10.1 `npx playwright test tests/e2e/parent-settings.spec.ts` zielony (1 passed); pełne e2e `<baseline gałęzi e2e> + 1` — 2678e44 (orchestrator run 2026-10-13 (run-log/e2e-request-s08-p10): spec 1/1, suite 16/16)
+- [x] 10.2 Deliberate break: `UIScene` otwiera ustawienia na `pointerdown` (albo maszyna odpala przy `down`) → test czerwony; przywrócone; meta-check (unit zielone przy wariancie sceny) — 2678e44 (break a red at spec:33 toHaveCount(0), Received 1; core test also red)
+- [x] 10.3 Druga przerwa: `UIScene.openSettings` bez wstrzymania wejścia → test czerwony; przywrócone; meta-check — 2678e44 (break b red at spec:45 inputEnabled Received true; unit green)
+- [x] 10.4 Trzecia przerwa: licznik bez `onRelease` (wskaźniki nie resetowane) → test czerwony na stuknięciu po „Anuluj”; przywrócone; meta-check — 2678e44 (break c red via spec:63 phase Expected done, Received second: pointer reset lost; unit green)
+- [x] 10.5 Build `e2e hook: absent`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 2678e44 (lint, typecheck, 948 unit, build e2e hook: absent; playwright by orchestrator; no servers left)
 
 ### Phase 11: Zmiana etapu, auto-czytanie i podgląd przez dotyk — e2e (#14, proposed)
 

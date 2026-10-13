@@ -1,50 +1,50 @@
 # Handoff — `parent-settings-progress` (slice S-08)
 
-Written by the phase 10 step (`/10x-e2e` phase 10, autonomous run 2026-10-12-s04-s08). Chromium cannot launch in this session, so the spec is written but NOT committed; the orchestrator runs it with the break patches and re-dispatches a finishing agent.
+Written by the phase 10 finishing step (`/10x-e2e` phase 10, autonomous run 2026-10-12-s04-s08).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/parent-settings-progress`, cut from `main` at `bfbd18a` |
-| Commits | p1-p9 as before (last `e3f57e7`, handoff `9bc0bc4`), plus this handoff commit |
+| Commits | p1-p9 as before, phase 10 e2e commit `2678e44`, plus this handoff commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` (status moves at the last phase) |
-| `## Progress` rows remaining | phase 10 rows (unticked, awaiting e2e), phase 11, and the earlier open rows |
-| Working tree | dirty on purpose: `playwright.config.ts`, `tests/e2e/support/hook.ts`, `tests/e2e/parent-settings.spec.ts` (uncommitted phase 10 work) |
+| `## Progress` rows remaining | phase 11 and the earlier open rows |
+| Working tree | clean |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/parent-settings.spec.ts` | new, 1 test "#14 (proposed) only a 2-second hold …" (uncommitted) |
-| `tests/e2e/support/hook.ts` | `holdTouch(page, point, ms, drift)`, `Snapshot.inputEnabled`, `Targets.settingsIcon` (uncommitted) |
-| `playwright.config.ts` | `ROUND_SPEC` includes `parent-settings` (uncommitted) |
-| `context/runs/2026-10-12-s04-s08/e2e-request-s08-p10.md` | green-run and break commands, expectations |
-| `context/runs/2026-10-12-s04-s08/e2e-break-s08-p10{,b,c}.patch` | longPress fires on down; input not suspended; suspender without onRelease |
+| `tests/e2e/parent-settings.spec.ts` | 1 test "#14 (proposed) only a 2-second hold …" |
+| `tests/e2e/support/hook.ts` | `holdTouch(page, point, ms, drift)`, `Snapshot.inputEnabled`, `Targets.settingsIcon` |
+| `playwright.config.ts` | only `ROUND_SPEC` extended with `parent-settings` |
+| `context/runs/2026-10-12-s04-s08/e2e-request-s08-p10.md` | orchestrator green runs and recorded reds |
 
 ## 3. Verification
 
-| Command | Result (observed in this step) |
+| Command | Result |
 |---|---|
-| `npx playwright test tests/e2e/parent-settings.spec.ts` | 3 tries, all `MachPortRendezvous Permission denied`: e2e not runnable in this session (MachPort) — orchestrator gate |
-| `npm run lint` / `npm run typecheck` | both clean |
-| `git apply --check` of the 3 patches | OK on the clean tree |
+| `npx playwright test tests/e2e/parent-settings.spec.ts` | 1 passed (orchestrator run 2026-10-13) |
+| `npx playwright test` | 16 passed = baseline 15 + 1 (orchestrator) |
+| Break a (longPress fires on down) | red at spec:33 `toHaveCount(0)`, Expected 0, Received 1; reverted |
+| Break b (openSettings does not suspend input) | red at spec:45 `inputEnabled` toBe(false), Received true; reverted |
+| Break c (suspender without onRelease) | red at hook.ts:117 via spec:63, phase Expected "done", Received "second"; reverted |
+| `npm run lint`, `typecheck`, `npm test`, `npm run build` | clean; 60 files / 948 tests; `e2e hook: absent` (this step) |
 
 ## 4. Next command
 
-/10x-e2e parent-settings-progress phase 10
-
-(The finishing step of phase 10 comes first: the orchestrator records the outputs in the request file and re-dispatches it to commit; after the commit the next is `/10x-e2e parent-settings-progress phase 11`.)
+/10x-e2e parent-settings-progress phase 11
 
 ## 5. Open
 
-- Orchestrator: green run, three breaks (red then restored), then re-dispatch to commit `test(parent-settings-progress): … (p10)` and tick the phase 10 rows.
-- Risk: break p10c may stay green if CDP touch does not leave a stuck pointer; the request file says what to report.
 - Rows 9.5 [reviewer], 9.6-9.8 [human], 8.4, 8.5, 7.5, 7.6, 6.6, 6.7 as before.
+- Review note: `holdTouch` uses `page.waitForTimeout(ms)` for the hold; it is the gesture itself (documented in its comment), not a synchronisation wait.
 
 ## 6. Autonomous decisions
 
 1. Drift of the "wandering" hold is 40 scene px instead of the plan's 60, so it stays inside the icon and proves the tolerance rule, not `pointerout`.
 2. Break 10.1 is the core break (`longPress` fires on `down`); the scene-seam variant from the plan is covered by p10b/p10c instead.
-3. Spec not committed per the Chromium-unavailable protocol; handoff committed by path only.
+3. Spec was left uncommitted in the first step (Chromium unavailable); committed unchanged by the finishing step with the orchestrator's evidence.
+4. `waitForTimeout` inside `holdTouch` accepted as the gesture duration (review, no change).
