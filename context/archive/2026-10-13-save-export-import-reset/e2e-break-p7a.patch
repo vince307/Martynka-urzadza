@@ -1,0 +1,12 @@
+diff --git a/src/core/saveFile.ts b/src/core/saveFile.ts
+index 422feba..2b3a2ff 100644
+--- a/src/core/saveFile.ts
++++ b/src/core/saveFile.ts
+@@ -54,6 +54,7 @@ export function parseImport(fileText: string, maxBytes: number): ImportResult {
+     } else {
+         return { kind: 'rejected', reason: 'not-ours', problem: null };
+     }
++    if (isRecord(value) && typeof value.version === 'number') return { kind: 'ok', session: value as unknown as SessionSave, file };
+     const decoded = decodeSave(value);
+     if (decoded.kind === 'ok') return { kind: 'ok', session: decoded.session, file };
+     return { kind: 'rejected', reason: decoded.reason, problem: decoded.reason === 'corrupt' ? saveProblem(value) : null };

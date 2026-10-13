@@ -1,5 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
+import { countNoun } from '../core/text/plural';
+
 export const pl = {
     title: 'Martynka urządza',
     welcome: {
@@ -39,6 +41,15 @@ export const pl = {
         saveHeading: 'Zapis gry',
         saveOk: 'Postępy zapisują się na tym urządzeniu.',
         saveLast: (time: string) => `Ostatni zapis: ${time}`,
+        // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
+        saveNotYet: 'Gra jeszcze niczego nie zapisała. Zapis nastąpi po pierwszej zmianie.',
+        saveEarlier: (count: number, error: string) => `Wcześniej: ${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} (${error}).`,
+        savePersist: {
+            granted: 'Przeglądarka nie usunie zapisu sama.',
+            denied: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+            unsupported: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+            error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
+        },
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
@@ -73,6 +84,53 @@ export const pl = {
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
         fileName: 'martynka-zapis.txt',
+        // DESIGN-GAP 51: the kit has no line for the reason of a failed read; a code and the build, for the parent to quote.
+        detail: (reason: string, build: string) => `Kod: ${reason} · Wersja ${build}`,
+    },
+    // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
+    saveTransfer: {
+        exportButton: 'Zapisz kopię',
+        exportTitle: 'Kopia zapisu',
+        exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
+        privacy: 'Plik zawiera postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.',
+        saveFile: 'Zapisz plik',
+        close: 'Zamknij',
+        exportOutcome: {
+            shared: 'Kopia została przekazana wybranej aplikacji.',
+            downloaded: 'Plik został pobrany na to urządzenie.',
+            cancelled: 'Anulowano. Kopia nie powstała.',
+            failed: 'Nie udało się zapisać pliku. Spróbuj jeszcze raz.',
+        },
+        fileName: (date: string) => `martynka-zapis-${date}.txt`,
+        // DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; texts are ours. Every refusal says the current save is untouched.
+        importButton: 'Wczytaj z pliku',
+        importTitle: 'Wczytaj zapis z pliku',
+        importBody: 'Wczytanie zastąpi obecne postępy na tym urządzeniu.',
+        importPrivacy: 'Wybierz kopię zapisu z tej gry. Plik nie jest nigdzie wysyłany.',
+        choose: 'Wybierz plik',
+        chooseOther: 'Wybierz inny plik',
+        now: 'Teraz',
+        fromFile: 'Z pliku',
+        stars: (n: number) => countNoun(n, ['gwiazdka', 'gwiazdki', 'gwiazdek']),
+        noStage: 'przed wyborem etapu',
+        // Room names are lower case in data (they sit inside sentences); a summary line starts with a capital.
+        room: (name: string, done: number, total: number) => `${name.charAt(0).toUpperCase()}${name.slice(1)}: ${done} z ${total}`,
+        load: 'Wczytaj',
+        rejected: {
+            'too-big': 'Ten plik jest za duży, to nie jest zapis tej gry. Obecne postępy zostały bez zmian.',
+            'not-json': 'To nie jest plik zapisu tej gry. Obecne postępy zostały bez zmian.',
+            'not-ours': 'To nie jest plik zapisu tej gry. Obecne postępy zostały bez zmian.',
+            corrupt: 'Plik zapisu jest uszkodzony. Obecne postępy zostały bez zmian.',
+            future: 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę i spróbuj ponownie. Obecne postępy zostały bez zmian.',
+            'unknown-version': 'Nie można rozpoznać wersji tego zapisu. Obecne postępy zostały bez zmian.',
+        },
+        applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
+        // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.
+        resetButton: 'Zacznij od nowa',
+        resetTitle: 'Zacząć grę od nowa?',
+        resetBody: 'Znikną wszystkie postępy z tego urządzenia:',
+        resetHint: 'Jeśli chcesz je zachować, najpierw zapisz kopię.',
+        resetConfirm: 'Zacznij od nowa',
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
     saveUnavailable: {

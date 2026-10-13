@@ -1,0 +1,13 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index a27cc2a..93622ab 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -222,7 +222,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+             return { ok: false, error: lastError };
+         }
+         replacing = false;
+-        replaced = true;
++        replaced = false;
+         writes++;
+         lastWriteAt = options.now();
+         consecutiveFailures = 0;

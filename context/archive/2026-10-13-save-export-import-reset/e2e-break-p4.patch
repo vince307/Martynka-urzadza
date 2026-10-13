@@ -1,0 +1,32 @@
+diff --git a/src/main.ts b/src/main.ts
+index 6bbe749..ea01ae1 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -28,7 +28,7 @@ import { createRng } from './core/rng';
+ import { openParentGate } from './ui/dom/parentGate';
+ import { exportFileText } from './core/saveFile';
+ import { openSaveExportDialog } from './ui/dom/saveExportDialog';
+-import { RAW_FILE_NAME } from './ui/dom/saveExport';
++import { RAW_FILE_NAME, saveFileToDevice } from './ui/dom/saveExport';
+ import { pl } from './data/pl';
+ import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
+ import { mountRotateOverlay } from './ui/dom/rotateOverlay';
+@@ -141,14 +141,10 @@ const start = async (): Promise<void> => {
+                         : () => {
+                               openParentGate({
+                                   rng: createRng(Math.floor(Math.random() * 0x100000000)),
+-                                  onPass: () =>
+-                                      openSaveExportDialog({
+-                                          file: (now) => ({
+-                                              text: exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: reason ?? 'unknown', raw }),
+-                                              fileName: RAW_FILE_NAME,
+-                                          }),
+-                                          onClose: () => undefined,
+-                                      }),
++                                  onPass: () => {
++                                      const now = new Date();
++                                      void saveFileToDevice(exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: reason ?? 'unknown', raw }), RAW_FILE_NAME);
++                                  },
+                                   onCancel: () => undefined,
+                               });
+                           },
