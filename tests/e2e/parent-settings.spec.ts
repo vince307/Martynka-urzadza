@@ -5,7 +5,7 @@
 // (touch gesture, DOM dialog over the canvas), so this runs in the chromium-hook project (window.__martynkaE2E).
 // The finger is held with raw CDP touch events (holdTouch); the hold time is the gesture, not a wait.
 import { test, expect, type Page } from '@playwright/test';
-import { gateProblem, passWelcome, passWelcomeAsParent, typeIntoGate } from './support/welcome';
+import { openSettings, passWelcome, passWelcomeAsParent } from './support/welcome';
 import { answerRight, answerWrong, holdTouch, phaseIs, playTaskRight, readHook, screenIs, silenceSpeech, snapshot, tapNext, tapScene, tapTarget, targets } from './support/hook';
 
 const HOLD_MS = 2000; // balance.parentSettings.holdMs: the spec holds clearly under and over it
@@ -70,17 +70,6 @@ test('#14 (proposed) only a 2-second hold on the settings icon opens the adult g
     await answerRight(page);
     await phaseIs(page, 'done');
 });
-
-/** Holds the gear, passes the adult gate with the product read from the dialog; the settings panel is open afterwards. */
-const openSettings = async (page: Page) => {
-    const icon = (await targets(page)).settingsIcon;
-    expect(icon).toBeDefined();
-    await holdTouch(page, icon!, HOLD_MS + 300);
-    await typeIntoGate(page, (await gateProblem(page)).product);
-    const panel = page.getByRole('dialog', { name: 'Ustawienia rodzica' });
-    await expect(panel).toBeVisible();
-    return panel;
-};
 
 test('#14 (proposed) a parent stage change replaces the open round with the new stage at once and keeps the stars, and the auto-read choice survives the next stage change', async ({ page }) => {
     await silenceSpeech(page);
