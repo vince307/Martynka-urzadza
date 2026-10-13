@@ -69,6 +69,9 @@ export const FONT_SIZES = {
     ageDigit: 112,          // kit .age-button
     unlockTitle: 66,        // kit .unlock-card h2
     unlockName: 48,         // kit .unlock-name
+    clockDigit: 28,         // kit reference/clock.svg digits
+    rulerDigit: 30,         // kit reference/ruler.svg digits
+    rulerUnit: 26,          // kit reference/ruler.svg "cm"
 } as const;
 
 /**
@@ -94,6 +97,9 @@ export const FONT_WEIGHTS = {
     ageDigit: 750,          // kit .age-button
     unlockTitle: 800,       // kit .unlock-card h2
     unlockName: 750,        // kit .unlock-name
+    clockDigit: 700,        // kit reference/clock.svg
+    rulerDigit: 700,        // kit reference/ruler.svg
+    rulerUnit: 700,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -157,6 +163,17 @@ export const TASK_LAYOUT = {
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
+    // Drawing area of a task with a picture (S-13). DESIGN-GAP (docs/design-gaps.md rows 52 and 57): the kit has pictures only above the tiles
+    // and no solution beside a picture. A pictured task moves its prompt up to promptY so two lines (tiles) or three (keypad) end above the picture.
+    // `tiles`/`keypad` are the picture rectangles without the solution; `*Solution` are the picture and the solution lines side by side (tiles)
+    // or one above the other (keypad). All rectangles are x, y, width, height in scene pixels.
+    picture: {
+        promptY: 232,
+        tiles: { x: 661, y: 396, width: 600, height: 294 },
+        tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
+        keypad: { x: 236, y: 470, width: 768, height: 378 },
+        keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
+    },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;

@@ -13,7 +13,8 @@ import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
-import type { AnswerMode } from '../core/tasks/visual';
+import { pictureLayout } from '../core/round/pictureLayout';
+import type { AnswerMode, TaskVisual } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
@@ -37,6 +38,7 @@ import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
 import { SummaryPanel } from '../ui/widgets/SummaryPanel';
+import { TaskPicture } from '../ui/widgets/TaskPicture';
 import { UnlockCard } from '../ui/widgets/UnlockCard';
 import { ProgressDots } from '../ui/widgets/ProgressDots';
 import { SolutionSteps } from '../ui/widgets/SolutionSteps';
@@ -54,6 +56,7 @@ export interface TaskSnapshot {
     readonly solutionStep: number;
     readonly input: AnswerMode;
     readonly answer: unknown;
+    readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
     readonly choices: readonly (number | string)[];
     readonly outcomes: RoundState['outcomes'];
     readonly starsEarned: number;
@@ -73,6 +76,7 @@ export interface TaskTargets {
     readonly keys: readonly (Point & { key: string })[];
     readonly next: Point | null;
     readonly step: Point | null;
+    readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
     readonly nextRound: Point | null;
     readonly toRoom: Point | null;
     readonly unlockNext: Point | null;
@@ -90,6 +94,7 @@ export class TaskScene extends Scene {
     private keypad!: Keypad;
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
+    private picture!: TaskPicture;
     private summary!: SummaryPanel;
     private unlockCard!: UnlockCard;
     private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
@@ -136,6 +141,7 @@ export class TaskScene extends Scene {
         this.state = this.freshRound();
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
+        this.picture = new TaskPicture(this);
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
@@ -274,6 +280,10 @@ export class TaskScene extends Scene {
             }
         }
         const task = this.state.tasks[this.state.index];
+        // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
+        const solutionShown = view.bar.kind === 'solution';
+        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown);
+        this.picture.render(view.visual, layout.picture);
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles');
         this.keypad.setVisible(view.input === 'keypad');
@@ -287,9 +297,15 @@ export class TaskScene extends Scene {
         this.bar.update(view.bar, view.input);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
-            const centerX = (view.input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression).x;
-            const maxWidth = TASK_LAYOUT.barSpan[view.input].width;   // same width as the bar under them
-            this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth);
+            // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
+            const lines = view.visual ? layout.lines : null;
+            if (lines) {
+                this.steps.show(view.bar, lines.x + lines.width / 2, lines.y, lines.width, lines.y + lines.height);
+            } else {
+                const centerX = (view.input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression).x;
+                const maxWidth = TASK_LAYOUT.barSpan[view.input].width;   // same width as the bar under them
+                this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth);
+            }
         } else {
             this.steps.hide();
         }
@@ -304,6 +320,7 @@ export class TaskScene extends Scene {
         this.keypad.setActive(false);
         this.bar.update({ kind: 'none' }, input);
         this.steps.hide();
+        this.picture.hide();
         this.promptTexts.forEach((t) => t.setVisible(false));
         this.promptBoxes.forEach((g) => g.setVisible(false));
     }
@@ -342,8 +359,10 @@ export class TaskScene extends Scene {
         this.promptBoxes = [];
         const task = this.state.tasks[this.state.index];
         const color = TEXT_COLOR;
-        const { prompt } = TASK_LAYOUT;
-        const sentence = input === 'tiles' ? prompt : TASK_LAYOUT.promptBeside;
+        // A pictured task moves its prompt up so the drawing has room under it (DESIGN-GAP 52).
+        const promptY = task.visual ? TASK_LAYOUT.picture.promptY : undefined;
+        const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
+        const sentence = input === 'tiles' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
         const expression = input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
@@ -622,7 +641,8 @@ export class TaskScene extends Scene {
             phase: this.state.phase,
             solutionStep: this.state.solutionStep,
             input: view.input,
-            answer: task.answer,
+            answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
+            visual: task.visual ? structuredClone(task.visual) : null,
             choices: Object.freeze([...(view.input === 'tiles' ? view.choices : [])]),
             outcomes: Object.freeze([...this.state.outcomes]),
             starsEarned: this.state.starsEarned,
@@ -645,6 +665,7 @@ export class TaskScene extends Scene {
             keys: this.keypad.targets(),
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
+            picture: this.picture.bounds(),
             nextRound: this.summary.targets().nextRound,
             toRoom: this.summary.targets().toRoom,
             unlockNext: this.unlockCard.target(),

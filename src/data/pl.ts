@@ -343,6 +343,7 @@ export const pl = {
         lengthAnswerHint: (len: number, unit: 'cm' | 'mm') => `Odcinek ma ${len} ${unit}.`,
         lengthConvert: (m: number, cm: number) => (cm === 0 ? `${m} m to ile centymetrów?` : `${m} m ${cm} cm to ile centymetrów?`),
         lengthMetreHint: '1 m = 100 cm',
+        rulerUnitLabel: 'cm',   // printed at the end of the drawn ruler (its digits count centimetres, also on the millimetre ruler)
         lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
         // PLACE_VALUE and DATA (S-13). The blocks and the bar chart are drawings; the texts only name them.
         placeValueRead: 'Jaka to liczba?',
