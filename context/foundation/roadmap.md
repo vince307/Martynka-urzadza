@@ -57,7 +57,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-09  | first-furniture-purchase    | M4   | dziecko wydaje gwiazdki na zadanie remontowe i wybiera jeden z 3 wariantów        | S-08                 | FR-016, FR-017, US-02           | done |
 | S-10  | variant-change-room-done    | M4   | dziecko zmienia wariant za darmo, widzi „Pokój gotowy!” i robi poprawki           | S-09                 | FR-018, FR-019                  | done |
 | S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | done     |
-| S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | proposed |
+| S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | planning |
 | S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | proposed |
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | proposed |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | proposed |
@@ -281,7 +281,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** zamyka etap M5 (test: zamknij i otwórz, stan identyczny); import to jedyne miejsce, gdzie da się nadpisać tygodnie postępu, stąd podsumowanie przed nadpisaniem.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-13: Zadania z widżetami rysowanymi w kodzie dla E3–E4
 
