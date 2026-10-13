@@ -18,12 +18,14 @@ export const E4: StageDef = {
         {
             step: 1,
             title: 'Dziesiątki do 100, D i J, porównywanie do 100; złote i grosze; pół kilograma',
+            childName: 'Porównywanie liczb do 100',
             types: ['PLACE_VALUE', 'COMPARE_NUM', 'MONEY_COUNT', 'MONEY_CHANGE', 'MASS'],
             skills: [skill('E4.1.compare_num_100', 1, 'COMPARE_NUM', { max: 100 }, 'tiles')],
         },
         {
             step: 2,
             title: '36 + 2, 47 − 5, 47 + 3, 50 − 3',
+            childName: 'Działania z małą liczbą',
             types: ['ADD_SUB'],
             skills: [skill('E4.2.add_sub_100_units', 2, 'ADD_SUB', { max: 100, shapes: ['DU+U', 'DU-U', 'DT-U'], bridge: 'none' })],
         },
@@ -31,6 +33,7 @@ export const E4: StageDef = {
         {
             step: 4,
             title: 'Dopełnianie do pełnej dziesiątki, 80 − 7, 38 + 7, 45 − 7, najbliższa dziesiątka',
+            childName: 'Dopełnianie do dziesiątki',
             types: ['COMPLEMENT', 'ADD_SUB', 'ROUNDING'],
             skills: [
                 skill('E4.4.complement_next_ten', 4, 'COMPLEMENT', { max: 100 }),
@@ -42,12 +45,14 @@ export const E4: StageDef = {
         {
             step: 5,
             title: 'Pełne dziesiątki (52 + 20, 72 − 50), dwie dwucyfrowe bez przekroczenia (35 + 34, 37 − 12), km',
+            childName: 'Działania dwucyfrowe',
             types: ['ADD_SUB'],
             skills: [skill('E4.5.add_sub_100_tens', 5, 'ADD_SUB', { max: 100, shapes: ['DU+DT', 'DU-DT', 'DU+DU', 'DU-DU'], bridge: 'none' })],
         },
         {
             step: 6,
             title: 'Mnożenie i dzielenie do 50, nazwy (czynnik, iloczyn, dzielna…), ·5, ·10 do 100',
+            childName: 'Mnożenie i dzielenie do 50',
             types: ['MULT', 'DIV', 'MISSING'],
             skills: [
                 skill('E4.6.mult_50', 6, 'MULT', { maxProduct: 50, maxFactor: 10 }),
@@ -66,6 +71,7 @@ export const E4: StageDef = {
         {
             step: 8,
             title: 'Setki do 1000, liczby trzycyfrowe, 530 + 400, 224 + 60, 553 − 50',
+            childName: 'Liczby trzycyfrowe',
             types: ['PLACE_VALUE', 'ADD_SUB'],
             skills: [skill('E4.8.add_sub_1000_hundreds', 8, 'ADD_SUB', { max: 1000, shapes: ['HT+H', 'HTU+DT', 'HTU-DT'], bridge: 'none' })],
         },

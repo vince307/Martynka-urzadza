@@ -77,7 +77,7 @@ const violations: Violation[] = [];
 let errors = 0;
 
 for (const step of stage!.steps) {
-    console.log(`\n${stage!.id}.${step.step} ${step.title}`);
+    console.log(`\n${stage!.id}.${step.step} ${step.title}${step.childName ? `  [dziecko: ${step.childName}]` : ''}`);
     if (step.skills.length === 0) {
         console.log(`  (brak generatora: ${step.types.join(', ')})`);
         continue;

@@ -20,6 +20,7 @@ export const E3: StageDef = {
         {
             step: 1,
             title: 'Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”',
+            childName: 'Zadania tekstowe do 20',
             types: ['WORD', 'COMPARE_DIFF'],
             skills: [
                 skill('E3.1.word_20', 1, 'WORD', { max: 20, kinds: ['sum', 'left', 'start', 'twoSteps', 'moreBy'] }),
@@ -29,6 +30,7 @@ export const E3: StageDef = {
         {
             step: 2,
             title: '+ i − do 20 z przekroczeniem, działania z okienkiem',
+            childName: 'Działania do 20 z okienkiem',
             types: ['ADD_SUB', 'MISSING'],
             skills: [
                 addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten' }),
@@ -41,12 +43,14 @@ export const E3: StageDef = {
         {
             step: 6,
             title: 'Liczby 21–30, + i − do 30 bez przekroczenia',
+            childName: 'Działania do 30',
             types: ['PLACE_VALUE', 'ADD_SUB'],
             skills: [addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' })],
         },
         {
             step: 7,
             title: 'Siatka kwadratowa i kodowanie, parzyste/nieparzyste, liczby słowami',
+            childName: 'Parzyste i liczby słowami',
             types: ['GRID', 'EVEN_ODD', 'NUMBER_WORDS'],
             skills: [
                 skill('E3.7.even_odd_30', 7, 'EVEN_ODD', { max: 30, variant: 'single' }, 'tiles'),
@@ -57,12 +61,14 @@ export const E3: StageDef = {
         {
             step: 8,
             title: '+ i − do 30 z przekroczeniem, dwie dwucyfrowe',
+            childName: 'Przekraczanie dziesiątki',
             types: ['ADD_SUB'],
             skills: [addSub('E3.8.add_sub_30_bridge', 8, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'any' })],
         },
         {
             step: 9,
             title: 'Mnożenie jako „n razy po m”, mnożenie do 30, ·0 i ·1',
+            childName: 'Mnożenie do 30',
             types: ['MULT_GROUPS', 'MULT'],
             skills: [
                 skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true }),
@@ -72,6 +78,7 @@ export const E3: StageDef = {
         {
             step: 10,
             title: 'Dzielenie: po równo i „po ile”, dzielenie do 30, połowa',
+            childName: 'Dzielenie do 30',
             types: ['DIV', 'HALF'],
             skills: [
                 skill('E3.10.div_30', 10, 'DIV', { maxDividend: 30, maxQuotient: 10 }),
@@ -82,6 +89,7 @@ export const E3: StageDef = {
         {
             step: 11,
             title: 'Zegar 24-godzinny, cyfry rzymskie I–XII, kwartały, termometr',
+            childName: 'Cyfry rzymskie i kwartały',
             types: ['CLOCK', 'ROMAN', 'CALENDAR', 'TEMPERATURE'],
             skills: [
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),

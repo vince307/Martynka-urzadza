@@ -18,6 +18,7 @@ export interface SkillDef {
 export interface StepDef {
     step: number;             // 1-based order within the stage (ZADANIA.md, section 3)
     title: string;            // author-facing step name (Polish), not shown to the child
+    childName?: string;       // short nominative name shown to the child on the "Nowa umiejętność!" card; set on playable steps only
     types: string[];          // task types the catalogue lists for this step
     skills: SkillDef[];       // skills with parameters; empty until a generator exists
 }
