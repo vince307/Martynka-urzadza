@@ -126,8 +126,11 @@ test('#14 (proposed) the progress view shows the empty state, then the skill mis
     let given: number | string = '';
     for (let round = 0; round < 3; round++) {
         await phaseIs(page, 'first');
-        given = await answerWrong(page);
-        await phaseIs(page, 'second');
+        // A marked set has no example in the preview (core/round keeps only a number or a word as the given answer): that task is not missed.
+        if ((await snapshot(page)).input !== 'select') {
+            given = (await answerWrong(page)) as number | string;
+            await phaseIs(page, 'second');
+        }
         await answerRight(page);
         await tapNext(page);
         for (let i = 1; i < ROUND_LENGTH; i++) {

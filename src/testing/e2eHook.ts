@@ -1,7 +1,8 @@
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { SessionLearner } from '../core/placement';
-import type { Settings } from '../core/types';
+import { playable } from '../core/round/pick';
+import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
@@ -37,6 +38,29 @@ export const e2eStars = (search: string): number | null => {
     }
     const stars = Number(raw);
     return stars <= E2E_MAX_STARS ? stars : null;
+};
+
+/** `?e2eSkills=id,id` lists the skill ids that fill every round in the e2e build (a seam, not a save); absent or empty is null. */
+export const e2eSkills = (search: string): string[] | null => {
+    const raw = new URLSearchParams(search).get('e2eSkills');
+    const ids = (raw ?? '').split(',').map((id) => id.trim()).filter((id) => /^E\d\.\d+\.\w+$/.test(id));
+    return ids.length > 0 ? ids : null;
+};
+
+/**
+ * The skills of a forced round: the ids repeated to `length`. Null (an ordinary round) when no list is set or when
+ * any id is not a playable skill of the stage, so an id of a mode that cannot be answered yet never reaches the scene.
+ */
+export const forcedSkills = (stage: StageDef, ids: readonly string[] | null | undefined, length: number): SkillDef[] | null => {
+    if (!ids || ids.length === 0) {
+        return null;
+    }
+    const all = stage.steps.flatMap((step) => step.skills);
+    const found = ids.map((id) => all.find((skill) => skill.id === id));
+    if (found.some((skill) => skill === undefined || !playable(skill))) {
+        return null;
+    }
+    return Array.from({ length }, (_, i) => found[i % found.length] as SkillDef);
 };
 
 export type E2ESaveSeam = 'unreadable' | 'unavailable' | 'hang' | 'writefail';

@@ -20,6 +20,8 @@ export const PLACEHOLDER_COLORS = {
     blockHundred: 0xd9edd3, // kit reference/base-ten.svg flat
     blockTen: 0xa6ddd2,     // kit reference/base-ten.svg rod
     tile: 0xe3f0d9,        // answer tile and keypad key
+    selected: 0xd7ebc1,    // kit .answer.selected: a marked tile of the multi-select mode
+    selectedBorder: 0x547e3d, // kit .answer.selected outline and check mark
     correct: 0xe5f2d4,     // correct answer feedback
     hint: 0xfff0b9,        // hint and solution bar
     dotDone: 0xa6cf7f,     // finished progress dot
@@ -141,6 +143,7 @@ export const REGISTRY_KEYS = {
     settings: 'settings',     // the session's Settings (core/types: parent's auto-reading choice), set before the scenes start (main.ts)
     inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
     saver: 'saver',           // the game's autosave (the Autosaver of core/autosave: flush, status, current, replace), set in main.ts before the scenes run
+    forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -170,6 +173,8 @@ export const TASK_LAYOUT = {
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
     keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
+    // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
+    select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     // Drawing area of a task with a picture (S-13). DESIGN-GAP (docs/design-gaps.md rows 52 and 57): the kit has pictures only above the tiles

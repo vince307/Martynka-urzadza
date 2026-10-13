@@ -1,13 +1,14 @@
 // Skill choice for the task scene (the warm-up draws uniformly, rounds by bucket weights). Only skills the scene
-// can answer ('tiles' or 'keypad') and that have a registered generator are
-// played; 'select' and 'drag' wait for their own UI (S-13).
-// DESIGN-GAP: the kit has no multi-select view (docs/design-gaps.md row 7).
+// can answer ('tiles', 'keypad' or 'select') and that have a registered generator are
+// played; 'drag' waits for its own UI (S-13 phase 9). The e2e helpers (tests/e2e/support/hook.ts) must be able to answer a mode
+// before it is listed here.
+// DESIGN-GAP: the kit has no multi-select view (docs/design-gaps.md rows 7 and 54).
 import type { Rng } from '../rng';
 import { getGenerator } from '../tasks/registry';
 import type { SkillDef, StageDef, StepDef } from '../types';
 
 export const playable = (skill: SkillDef): boolean =>
-    (skill.answer === 'tiles' || skill.answer === 'keypad') && getGenerator(skill.type) !== undefined;
+    (skill.answer === 'tiles' || skill.answer === 'keypad' || skill.answer === 'select') && getGenerator(skill.type) !== undefined;
 
 /** The first `n` steps that have at least one playable skill, in curriculum order. */
 export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>

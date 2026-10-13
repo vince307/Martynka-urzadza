@@ -11,6 +11,8 @@ export interface Snapshot {
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
     input: 'tiles' | 'keypad' | 'select' | 'drag';
     answer: unknown;
+    /** The tiles marked in the 'select' mode. */
+    selected?: (number | string)[];
     outcomes: (string | null)[];
     starsEarned: number;
     bonusEarned: number;
@@ -50,6 +52,8 @@ export interface Snapshot {
 export interface Targets {
     tiles: (Point & { value: number | string })[];
     keys: (Point & { key: string })[];
+    selectTiles?: (Point & { value: number | string })[];
+    selectOk?: Point | null;
     next: Point | null;
     step: Point | null;
     nextRound: Point | null;
@@ -147,7 +151,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
@@ -160,14 +164,25 @@ export const tapNumber = async (page: Page, value: number): Promise<void> => {
     await tapScene(page, keys.find((k) => k.key === 'ok')!);
 };
 
-/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. Returns the value given. */
-export const answerWrong = async (page: Page): Promise<number | string> => {
+/**
+ * An answer the task certainly rejects: another tile, answer + 1 on the keypad, or one marked tile that is not in the
+ * answer set (select; never depends on the tile order). Returns the value given.
+ */
+export const answerWrong = async (page: Page): Promise<number | string | (number | string)[]> => {
     const state = await snapshot(page);
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
         const tile = tiles.find((t) => t.value !== state.answer)!;
         await tapScene(page, tile);
         return tile.value;
+    }
+    if (state.input === 'select') {
+        const { selectTiles, selectOk } = await targets(page);
+        const right = state.answer as number[];
+        const tile = selectTiles!.find((t) => !right.includes(t.value as number))!;
+        await tapScene(page, tile);
+        await tapScene(page, selectOk!);
+        return [tile.value];
     }
     const given = (state.answer as number) + 1;
     await tapNumber(page, given);
@@ -179,6 +194,12 @@ export const answerRight = async (page: Page): Promise<void> => {
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
         await tapScene(page, tiles.find((t) => t.value === state.answer)!);
+    } else if (state.input === 'select') {
+        const { selectTiles, selectOk } = await targets(page);
+        for (const value of state.answer as number[]) {
+            await tapScene(page, selectTiles!.find((t) => t.value === value)!);
+        }
+        await tapScene(page, selectOk!);
     } else {
         await tapNumber(page, state.answer as number);
     }

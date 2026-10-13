@@ -25,8 +25,8 @@ export class FeedbackBar {
         this.update({ kind: 'none' }, 'tiles');
     }
 
-    update(bar: RoundView['bar'], input: 'tiles' | 'keypad'): void {
-        const span = TASK_LAYOUT.barSpan[input === 'tiles' ? 'tiles' : 'keypad'];
+    update(bar: RoundView['bar'], input: 'tiles' | 'keypad' | 'select'): void {
+        const span = TASK_LAYOUT.barSpan[input === 'keypad' ? 'keypad' : 'tiles'];
         const { height, bottom, radius, padding, hintBorder } = TASK_LAYOUT.bar;
         const top = bottom - height;
         const centerY = top + height / 2;

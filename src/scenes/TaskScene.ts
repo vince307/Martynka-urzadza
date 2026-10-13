@@ -14,6 +14,8 @@ import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { pictureLayout } from '../core/round/pictureLayout';
+import { distinctTasks } from '../core/round/unique';
+import { generateTask } from '../core/tasks/generateTask';
 import type { AnswerMode, TaskVisual } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
@@ -30,11 +32,12 @@ import {
 } from '../data/layout';
 import { pl } from '../data/pl';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
-import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
 import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
+import { SelectTiles } from '../ui/widgets/SelectTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
 import { SummaryPanel } from '../ui/widgets/SummaryPanel';
@@ -58,6 +61,7 @@ export interface TaskSnapshot {
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
     readonly choices: readonly (number | string)[];
+    readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
     readonly outcomes: RoundState['outcomes'];
     readonly starsEarned: number;
     readonly bonusEarned: number;
@@ -74,6 +78,8 @@ export interface TaskSnapshot {
 export interface TaskTargets {
     readonly tiles: readonly (Point & { value: number | string })[];
     readonly keys: readonly (Point & { key: string })[];
+    readonly selectTiles: readonly (Point & { value: number | string })[];
+    readonly selectOk: Point | null;
     readonly next: Point | null;
     readonly step: Point | null;
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
@@ -91,6 +97,7 @@ export class TaskScene extends Scene {
     private state!: RoundState;
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
+    private select!: SelectTiles;
     private keypad!: Keypad;
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
@@ -144,6 +151,7 @@ export class TaskScene extends Scene {
         this.picture = new TaskPicture(this);
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
+        this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
@@ -243,8 +251,8 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
-        if (view.input === 'select' || view.input === 'drag') {
-            // Unreachable until phases 7 and 9 of S-13: `playable` never lets these modes into a round.
+        if (view.input === 'drag') {
+            // Unreachable until phase 9 of S-13: `playable` never lets this mode into a round.
             throw new Error(`Unsupported input mode ${view.input}`);
         }
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
@@ -278,6 +286,9 @@ export class TaskScene extends Scene {
             if (view.input === 'tiles') {
                 this.tiles.setChoices(view.choices);
             }
+            if (view.input === 'select') {
+                this.select.setChoices(view.choices);
+            }
         }
         const task = this.state.tasks[this.state.index];
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
@@ -287,13 +298,17 @@ export class TaskScene extends Scene {
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles');
         this.keypad.setVisible(view.input === 'keypad');
+        this.select.setVisible(view.input === 'select');
+        this.select.setActive(view.input === 'select' && view.inputActive);
         this.tiles.setActive(view.input === 'tiles' && view.inputActive);
         this.keypad.setActive(view.input === 'keypad' && view.inputActive);
         if (finishedTask) {
             this.tiles.markCorrect(view.input === 'tiles' ? (task.answer as number | string) : null);
             this.keypad.markCorrect();
+            this.select.markCorrect(view.input === 'select' ? (task.answer as number[]) : []);
         }
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
+        this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
         this.bar.update(view.bar, view.input);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
@@ -302,9 +317,12 @@ export class TaskScene extends Scene {
             if (lines) {
                 this.steps.show(view.bar, lines.x + lines.width / 2, lines.y, lines.width, lines.y + lines.height);
             } else {
-                const centerX = (view.input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression).x;
-                const maxWidth = TASK_LAYOUT.barSpan[view.input].width;   // same width as the bar under them
-                this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth);
+                const beside = view.input === 'keypad';
+                const centerX = (beside ? TASK_LAYOUT.expression : TASK_LAYOUT.expressionWide).x;
+                const maxWidth = TASK_LAYOUT.barSpan[beside ? 'keypad' : 'tiles'].width;   // same width as the bar under them
+                // The select tiles sit higher than the single-answer tiles: the lines stop above them.
+                const limit = view.input === 'select' ? TASK_LAYOUT.select.top - TASK_LAYOUT.solution.bottomGap : undefined;
+                this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth, limit);
             }
         } else {
             this.steps.hide();
@@ -312,9 +330,11 @@ export class TaskScene extends Scene {
     }
 
     /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
-    private hideTaskLayer(input: 'tiles' | 'keypad'): void {
+    private hideTaskLayer(input: 'tiles' | 'keypad' | 'select'): void {
         this.dots.update([]);
         this.tiles.setVisible(false);
+        this.select.setVisible(false);
+        this.select.setActive(false);
         this.keypad.setVisible(false);
         this.tiles.setActive(false);
         this.keypad.setActive(false);
@@ -352,7 +372,7 @@ export class TaskScene extends Scene {
         );
     }
 
-    private drawPrompt(input: 'tiles' | 'keypad'): void {
+    private drawPrompt(input: 'tiles' | 'keypad' | 'select'): void {
         this.promptTexts.forEach((t) => t.destroy());
         this.promptTexts = [];
         this.promptBoxes.forEach((g) => g.destroy());
@@ -362,8 +382,8 @@ export class TaskScene extends Scene {
         // A pictured task moves its prompt up so the drawing has room under it (DESIGN-GAP 52).
         const promptY = task.visual ? TASK_LAYOUT.picture.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
-        const sentence = input === 'tiles' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
-        const expression = input === 'tiles' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
+        const sentence = input !== 'keypad' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
+        const expression = input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
@@ -443,6 +463,7 @@ export class TaskScene extends Scene {
         this.syncStars(before, this.answerSpot(value));
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
+            this.select.clear();   // a wrong set is cleared too
             this.shake();
         }
         this.render();
@@ -515,6 +536,14 @@ export class TaskScene extends Scene {
             return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries), rules);
         }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        if (__E2E_HOOK__) {
+            // e2e build only: ?e2eSkills=<ids> fills every ordinary round with those skills (ids that cannot be played are ignored).
+            const forced = forcedSkills(this.stage, this.registry.get(REGISTRY_KEYS.forcedSkills) as readonly string[] | null | undefined, balance.round.length);
+            if (forced) {
+                const tasks = distinctTasks(forced, this.rng, (skill) => generateTask(skill, this.rng, { tileCount: balance.tiles.count }), balance.round.uniqueRetries);
+                return startRound(tasks, balance.round);
+            }
+        }
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,
@@ -581,6 +610,9 @@ export class TaskScene extends Scene {
         if (view.input === 'tiles') {
             return this.tiles.targets().find((t) => t.value === value) ?? null;
         }
+        if (view.input === 'select') {
+            return this.select.okTarget();
+        }
         return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
     }
 
@@ -643,7 +675,8 @@ export class TaskScene extends Scene {
             input: view.input,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
-            choices: Object.freeze([...(view.input === 'tiles' ? view.choices : [])]),
+            choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
+            selected: Object.freeze([...this.select.selected()]),
             outcomes: Object.freeze([...this.state.outcomes]),
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
@@ -663,6 +696,8 @@ export class TaskScene extends Scene {
         return Object.freeze({
             tiles: this.tiles.targets(),
             keys: this.keypad.targets(),
+            selectTiles: this.select.targets(),
+            selectOk: this.select.okTarget(),
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
             picture: this.picture.bounds(),

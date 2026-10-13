@@ -8,9 +8,8 @@ import { describe, expect, it } from 'vitest';
 import { buildAdaptiveRound, calendarStart, playableSteps, skillBuckets, startLearning } from '../src/core/curriculum';
 import { createRng } from '../src/core/rng';
 import { pickRoundSkills, type Weights } from '../src/core/round/pick';
-import { distinctTasks } from '../src/core/round/unique';
+import { distinctTasks, taskKey } from '../src/core/round/unique';
 import { getGenerator } from '../src/core/tasks/registry';
-import { visualKey } from '../src/core/tasks/visual';
 import type { Task } from '../src/core/tasks/types';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -28,7 +27,7 @@ const stage = (id: StageId): StageDef => {
 const previousOf = (id: StageId): StageDef | undefined => (id === 'E1' ? undefined : stage(ALL[ALL.indexOf(id) - 1]));
 
 // Independent oracle of "playable" (what the task scene can answer and a generator exists for).
-const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad') && getGenerator(s.type) !== undefined;
+const isPlayable = (s: SkillDef): boolean => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select') && getGenerator(s.type) !== undefined;
 const playableOf = (st: StageDef, pred: (step: number) => boolean): SkillDef[] =>
     st.steps.filter((step) => pred(step.step)).flatMap((step) => step.skills.filter(isPlayable));
 const ids = (skills: readonly SkillDef[]): string[] => skills.map((s) => s.id);
@@ -155,7 +154,7 @@ describe('buildAdaptiveRound', () => {
                     expect(tasks, where).toHaveLength(rules.length);
                     for (const t of tasks) expect(allowed.has(t.skillId), `${where} ${t.skillId}`).toBe(true);
                     // A task is told apart by its prompt and its drawing ("Jaka to liczba?" differs by the blocks).
-                    const keys = tasks.map((t) => `${t.prompt}|${visualKey(t.visual)}`);
+                    const keys = tasks.map((t) => taskKey(t));
                     expect(new Set(keys).size, `${where} ${JSON.stringify(keys)}`).toBe(keys.length);
                 }
             }
