@@ -22,7 +22,7 @@ export const pl = {
         confirm: 'Zatwierdź',
         ageOption: (age: number, openEnded: boolean) => (openEnded ? `${age}+` : String(age)),
     },
-    // DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no settings view; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
+    // DESIGN-GAP (docs/design-gaps.md rows 26-27): the kit has no settings view or progress preview; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
     settings: {
         title: 'Ustawienia rodzica',
         autoReadHeading: 'Czytanie poleceń na głos',

@@ -7,15 +7,15 @@
 - Implement milestones M0–M8 (@Martynka-urzadza.md section 11) in order.
 - `src/core/` must not import Phaser or browser globals (lint-enforced). Write its logic with vitest tests first, then the scene.
 - Scenes have no balance numbers or player-facing text; both live in `src/data/` (`balance.ts`, `pl.ts`, `wordTemplates.ts`, `rooms.ts`), which imports only `src/core/text/*` and types (lint-enforced).
-- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never reference `docs/zrodla/` (gitignored) in committed files.
+- Never copy textbook tasks; generate original ones per @docs/ZADANIA.md. Never cite gitignored `docs/zrodla/`.
 - No energy, timers, ads, purchases, accounts or fail states; wrong answers never cost stars.
 - Polish numerals must agree (1 jabłko, 2 jabłka, 5 jabłek). Code, comments: English.
-- Phaser 4 differs from v3; check its docs.
+- Phaser 4 differs from v3.
 - `designs/` is read-only art; `.claude/` is local.
 
 ## Project structure
 
-`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Welcome, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration, `curriculum.ts` and `mastery.ts` for adaptive difficulty), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/` (dialogs). `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
+`src/main.ts` (game config, 1920×1080 `Scale.FIT`), `src/scenes/` (Boot, Welcome, Task, Room, UI), `src/ui/` (round widgets, `narrator.ts`), `src/data/` (strings, balance, layout, curriculum, templates), `src/core/` (rng, text, tasks, round, narration, `curriculum.ts` and `mastery.ts` for adaptive difficulty, `longPress.ts`, `inputSuspend.ts` and `progress.ts` for parent settings), `src/testing/` (e2e-build hook), `src/pwa/`, `src/ui/dom/` (dialogs). `public/` is served at the root (loader paths `assets/...`); hashed bundles go to `_app/`. `context/` holds 10x documents; never hand-write files there.
 
 ## Commands
 

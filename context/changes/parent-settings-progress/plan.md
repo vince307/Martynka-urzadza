@@ -928,7 +928,7 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 8.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent`
+- [x] 8.1 `npx playwright test` zielony (`<baseline gałęzi e2e> + 0`); build `e2e hook: absent` — 0d1d820 (orchestrator: e2e 15/15 on 0d1d820, build `e2e hook: absent`, run-log line "S-08 p8 impl")
 - [x] 8.2 Deliberate break: panel z pustą historią → unit zielone; zapis w handoff §3, dowód w e2e fazy 11; meta-check — 0d1d820
 - [x] 8.3 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0` — 0d1d820 (948 + 0; e2e: orchestrator gate)
 
@@ -941,10 +941,10 @@ Brak: bez bazy danych (profil § 4). `Settings.autoRead` staje się `boolean | n
 
 #### Automated
 
-- [ ] 9.1 `validate-rule-files.sh` PASS
-- [ ] 9.2 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
-- [ ] 9.3 Komentarz „a parent switch comes with S-08” usunięty z `src/`
-- [ ] 9.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
+- [x] 9.1 `validate-rule-files.sh` PASS
+- [x] 9.2 Deliberate break: `CLAUDE.md` wskazuje nieistniejący plik → FAIL; przywrócone; meta-check
+- [x] 9.3 Komentarz „a parent switch comes with S-08” usunięty z `src/`
+- [x] 9.4 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + 0`
 
 #### Manual
 

@@ -25,7 +25,7 @@ export interface SettingsPanelOptions {
  * Parent's settings (US-03): stage, automatic reading and the progress preview, applied together by "Zatwierdź" and dropped by
  * "Anuluj" / Escape. The reading choice stays null until the parent taps On or Off. One overlay scroll,
  * the two actions stick to the bottom of it (plan review F2). Returns the function that closes the panel.
- * DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no settings view; built from the S-06 dialog parts.
+ * DESIGN-GAP (docs/design-gaps.md row 26): the kit has no settings view; built from the S-06 dialog parts.
  */
 export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, onConfirm, onCancel, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
