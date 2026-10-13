@@ -54,6 +54,12 @@ describe('e2e hook guard', () => {
         expect(result.message).toContain('_app/index-d.js');
     });
 
+    it.each(['unreadable', 'unavailable', 'hang', 'writefail'] as const)('fails a production chunk holding the ?e2eSave=%s seam (S-11 F4)', (seam) => {
+        const result = checkE2EHook([...clean, { fileName: '_app/index-s.js', code: `new URLSearchParams(location.search).get("e2eSave")==="${seam}"` }], false);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain('_app/index-s.js');
+    });
+
     it('fails the e2e build when a required marker is missing, with an injected list', () => {
         const required = [E2E_HOOK_MARKER, 'e2e-forced-failure'];
         const result = checkE2EHook(leaky, true, required);
