@@ -1,6 +1,6 @@
 // Mastery 0..5 per skill, counted from the first try only (docs/ZADANIA.md section 1, "Adaptacja trudności").
 import type { Outcome } from './round';
-import type { Adaptation } from './types';
+import type { Adaptation, MistakeExample } from './types';
 
 export interface MasteryRules {
     readonly max: number;
@@ -14,13 +14,14 @@ export interface MasteryRules {
 export interface SkillResult {
     readonly skillId: string;
     readonly outcome: Outcome | null;
+    readonly example?: MistakeExample;
 }
 
 export function recordRound(adaptation: Adaptation, results: readonly SkillResult[], at: number, rules: MasteryRules): Adaptation {
     const mastery = { ...adaptation.mastery };
     const streak = { ...adaptation.streak };
     const added: Adaptation['history'] = [];
-    for (const { skillId, outcome } of results) {
+    for (const { skillId, outcome, example } of results) {
         if (outcome === null) continue;
         if (outcome === 'first') {
             const run = (streak[skillId] ?? 0) + 1;
@@ -34,7 +35,7 @@ export function recordRound(adaptation: Adaptation, results: readonly SkillResul
             mastery[skillId] = Math.max(0, (mastery[skillId] ?? 0) - rules.loss);
             streak[skillId] = 0;
         }
-        added.push({ skillId, ok: outcome !== 'retype', firstTry: outcome === 'first', at });
+        added.push({ skillId, ok: outcome !== 'retype', firstTry: outcome === 'first', at, ...(outcome !== 'first' && example ? { example } : {}) });
     }
     const history = [...adaptation.history, ...added].slice(-rules.historyLength);
     return { ...adaptation, mastery, streak, history };

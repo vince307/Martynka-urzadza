@@ -94,6 +94,40 @@ describe('recordRound history', () => {
     });
 });
 
+describe('recordRound mistake examples', () => {
+    const example = { prompt: '7 + 5', given: 11, answer: 12 };
+
+    it('stores the example of a second-try or retyped miss in the entry', () => {
+        const a = recordRound(empty(), [
+            { skillId: 'S', outcome: 'second', example }, { skillId: 'S', outcome: 'retype', example },
+        ], 3, RULES);
+        expect(a.history).toEqual([
+            { skillId: 'S', ok: true, firstTry: false, at: 3, example },
+            { skillId: 'S', ok: false, firstTry: false, at: 3, example },
+        ]);
+    });
+
+    it('never stores an example on a first-try entry', () => {
+        const a = recordRound(empty(), [{ skillId: 'S', outcome: 'first', example }], 3, RULES);
+        expect(a.history).toEqual([{ skillId: 'S', ok: true, firstTry: true, at: 3 }]);
+        expect('example' in a.history[0]).toBe(false);
+    });
+
+    it('trimming the history drops the example with its entry and keeps 200', () => {
+        let a = recordRound(empty(), [{ skillId: 'S', outcome: 'second', example }], 0, RULES);
+        for (let i = 1; i <= 40; i++) a = run(a, Array<Outcome>(5).fill('first'), 'S', i);
+        expect(a.history).toHaveLength(200);
+        expect(a.history.some((h) => h.example !== undefined)).toBe(false);
+    });
+
+    it('keeps mastery and streak the same with or without an example', () => {
+        const plain = recordRound(empty(), [{ skillId: 'S', outcome: 'second' }], 1, RULES);
+        const withExample = recordRound(empty(), [{ skillId: 'S', outcome: 'second', example }], 1, RULES);
+        expect(withExample.mastery).toEqual(plain.mastery);
+        expect(withExample.streak).toEqual(plain.streak);
+    });
+});
+
 describe('recordRound purity', () => {
     it('does not mutate a frozen input', () => {
         const frozen: Adaptation = Object.freeze({

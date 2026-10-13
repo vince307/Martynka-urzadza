@@ -2,7 +2,7 @@ import { Scene, type GameObjects } from 'phaser';
 import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import type { StageDef, StageId } from '../core/types';
-import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
+import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
@@ -448,7 +448,7 @@ export class TaskScene extends Scene {
      */
     private finishRound(): void {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
-        const results = this.state.tasks.map((task, i) => ({ skillId: task.skillId, outcome: this.state.outcomes[i] }));
+        const results = roundResults(this.state);
         const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
         // The unlock card shows pendingUnlock after "Kolejna runda" (closeUnlock clears it).
         this.registry.set(REGISTRY_KEYS.learner, {

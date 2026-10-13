@@ -3,7 +3,7 @@
 // mistake, 0 for a retyped result, stars never decrease. Expected values come
 // from the PRD, not from the implementation.
 import { describe, expect, it } from 'vitest';
-import { answer, next, nextSolutionStep, startRound, type RoundRules, type RoundState } from '../src/core/round';
+import { answer, next, nextSolutionStep, roundResults, startRound, type RoundRules, type RoundState } from '../src/core/round';
 import { createRng } from '../src/core/rng';
 import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
@@ -216,5 +216,77 @@ describe('round properties (random action sequences)', () => {
                 }
             }
         }
+    });
+});
+
+describe('first wrong try (S-08, parent preview)', () => {
+    const real = (): Task[] => {
+        const skill = E3.steps.flatMap((st) => st.skills)[0];
+        const rng = createRng(7);
+        return Array.from({ length: 5 }, () => generateTask(skill, rng, { tileCount: 4 }));
+    };
+
+    it('starts with nothing captured', () => {
+        expect(startRound(tasks(), RULES).firstWrong).toEqual([null, null, null, null, null]);
+    });
+
+    it('keeps a wrong number from the first try', () => {
+        const s = answer(startRound(tasks(), RULES), 99);
+        expect(s.phase).toBe('second');
+        expect(s.firstWrong[0]).toBe(99);
+        expect(s.firstWrong.slice(1)).toEqual([null, null, null, null]);
+    });
+
+    it('keeps a wrong tile text from the first try', () => {
+        const s = answer(startRound([task(0, { answer: '<', choices: ['<', '>', '='] })], RULES), '>');
+        expect(s.firstWrong[0]).toBe('>');
+    });
+
+    it('a second wrong answer does not overwrite the first', () => {
+        const s = answer(answer(startRound(tasks(), RULES), 99), 77);
+        expect(s.phase).toBe('solution');
+        expect(s.firstWrong[0]).toBe(99);
+    });
+
+    it('a correct first try captures nothing', () => {
+        const s = answer(startRound(tasks(), RULES), 1);
+        expect(s.firstWrong[0]).toBeNull();
+    });
+
+    it('ignores input that is neither a number nor a text', () => {
+        const s = answer(startRound(tasks(), RULES), [1, 2]);
+        expect(s.phase).toBe('second');
+        expect(s.firstWrong[0]).toBeNull();
+    });
+
+    it('is tracked per task', () => {
+        let s = answer(startRound(tasks(), RULES), 98);
+        s = next(answer(s, s.tasks[0].answer));
+        s = next(answer(s, 97));
+        expect(s.firstWrong).toEqual([98, 97, null, null, null]);
+    });
+
+    it('roundResults gives an example for a second-try solve, with the first wrong value', () => {
+        const ts = real();
+        let s = startRound(ts, RULES);
+        s = answer(s, WRONG);
+        s = next(answer(s, ts[0].answer));
+        const r = roundResults(s);
+        expect(r).toHaveLength(5);
+        expect(r[0]).toEqual({ skillId: ts[0].skillId, outcome: 'second', example: { prompt: ts[0].prompt, given: WRONG, answer: ts[0].answer } });
+    });
+
+    it('roundResults gives an example for a retyped task', () => {
+        const ts = real();
+        const r = roundResults(failTask(startRound(ts, RULES)));
+        expect(r[0].outcome).toBe('retype');
+        expect(r[0].example).toEqual({ prompt: ts[0].prompt, given: WRONG, answer: ts[0].answer });
+    });
+
+    it('roundResults has no example for a first-try solve or an unplayed task', () => {
+        const s = solveFirst(startRound(tasks(), RULES));
+        const r = roundResults(s);
+        expect(r[0]).toEqual({ skillId: 'T.0', outcome: 'first' });
+        expect(r[1]).toEqual({ skillId: 'T.1', outcome: null });
     });
 });

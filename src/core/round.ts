@@ -3,6 +3,7 @@
 // done. Stars follow PRD FR-007: 1 per task solved on the first or second try,
 // a bonus for a round without a mistake, and they never decrease.
 import { solutionSteps } from './round/hints';
+import type { SkillResult } from './mastery';
 import type { Task } from './tasks/types';
 
 export type RoundPhase = 'first' | 'second' | 'solution' | 'retype' | 'done';
@@ -22,6 +23,8 @@ export interface RoundState {
     readonly phase: RoundPhase;
     readonly solutionStep: number;
     readonly outcomes: readonly (Outcome | null)[];
+    /** The first wrong value per task (number or tile text), kept for the parent's mistake examples; null when none. */
+    readonly firstWrong: readonly (number | string | null)[];
     readonly starsEarned: number;
     readonly bonusEarned: number;
     readonly finished: boolean;
@@ -36,6 +39,7 @@ export const startRound = (tasks: readonly Task[], rules: RoundRules): RoundStat
         phase: 'first',
         solutionStep: 0,
         outcomes: played.map(() => null),
+        firstWrong: played.map(() => null),
         starsEarned: 0,
         bonusEarned: 0,
         finished: played.length === 0,
@@ -50,6 +54,11 @@ const settle = (state: RoundState, outcome: Outcome): RoundState => {
     return { ...state, phase: 'done', outcomes, starsEarned: state.starsEarned + paid };
 };
 
+const captureFirstWrong = (state: RoundState, input: unknown): RoundState['firstWrong'] =>
+    typeof input === 'number' || typeof input === 'string'
+        ? state.firstWrong.map((w, i) => (i === state.index ? input : w))
+        : state.firstWrong;
+
 /** A child's answer: in `first`, `second` and `retype` only; any other phase returns the same state. */
 export const answer = (state: RoundState, input: unknown): RoundState => {
     if (state.finished) {
@@ -58,7 +67,7 @@ export const answer = (state: RoundState, input: unknown): RoundState => {
     const correct = isCorrect(state.tasks[state.index], input);
     switch (state.phase) {
         case 'first':
-            return correct ? settle(state, 'first') : { ...state, phase: 'second' };
+            return correct ? settle(state, 'first') : { ...state, phase: 'second', firstWrong: captureFirstWrong(state, input) };
         case 'second':
             return correct ? settle(state, 'second') : { ...state, phase: 'solution', solutionStep: 0 };
         case 'retype':
@@ -91,3 +100,13 @@ export const next = (state: RoundState): RoundState => {
     const bonus = clean ? state.rules.cleanRoundBonus : 0;
     return { ...state, finished: true, bonusEarned: bonus, starsEarned: state.starsEarned + bonus };
 };
+
+/** Per-task results of a round for `recordRound`; a miss carries its first wrong try as the parent's example. */
+export const roundResults = (state: RoundState): SkillResult[] =>
+    state.tasks.map((task, i): SkillResult => {
+        const outcome = state.outcomes[i];
+        const given = state.firstWrong[i];
+        return outcome !== null && outcome !== 'first' && given !== null
+            ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given, answer: task.answer } }
+            : { skillId: task.skillId, outcome };
+    });
