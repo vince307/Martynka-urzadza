@@ -9,7 +9,7 @@ export const createOverlay = (className: string, children: HTMLElement[]): HTMLD
     return overlay;
 };
 
-export const createText = (tag: 'h1' | 'p', text: string, className?: string): HTMLElement => {
+export const createText = (tag: 'h1' | 'h2' | 'p', text: string, className?: string): HTMLElement => {
     const element = document.createElement(tag);
     element.textContent = text;
     if (className) {

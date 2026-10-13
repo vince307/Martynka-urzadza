@@ -7,6 +7,7 @@ import { balance } from '../data/balance';
 import { GAME_HEIGHT, PLACEHOLDER_FRAME, REGISTRY_KEYS, SCENE_KEYS, WELCOME_LAYOUT } from '../data/layout';
 import { pl } from '../data/pl';
 import { placementData } from '../data/placement';
+import type { InputSuspender } from '../core/inputSuspend';
 import { openParentGate } from '../ui/dom/parentGate';
 import { openStagePanel } from '../ui/dom/stagePanel';
 import { AgeButton } from '../ui/widgets/AgeButton';
@@ -24,6 +25,7 @@ export class WelcomeScene extends Scene {
     private chosen = false;
     private parentButton: PageButton | undefined;
     private closeDialog: (() => void) | undefined;
+    private releaseInput: (() => void) | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
 
     constructor() {
         super(SCENE_KEYS.welcome);
@@ -34,7 +36,11 @@ export class WelcomeScene extends Scene {
         this.buttons = [];
         this.chosen = false;
         this.closeDialog = undefined;
-        this.events.once('shutdown', () => this.closeDialog?.());
+        this.releaseInput = undefined;
+        this.events.once('shutdown', () => {
+            this.closeDialog?.();
+            this.resumeInput();
+        });
         drawNotebook(this);
         this.add.text(WELCOME_LAYOUT.brand.x, WELCOME_LAYOUT.brand.y, pl.title, textStyle('brand')).setOrigin(0.5, 0);
         this.add.text(WELCOME_LAYOUT.question.x, WELCOME_LAYOUT.question.y, pl.welcome.question, textStyle('summaryTitle')).setOrigin(0.5, 0);
@@ -68,9 +74,9 @@ export class WelcomeScene extends Scene {
         const month = this.sessionMonth();
         const resume = (): void => {
             this.closeDialog = undefined;
-            this.input.enabled = true;
+            this.resumeInput();
         };
-        this.input.enabled = false;
+        this.releaseInput = (this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender).suspend();
         this.closeDialog = openParentGate({
             rng: createRng(Math.floor(Math.random() * 2 ** 32)),
             onCancel: resume,
@@ -92,9 +98,14 @@ export class WelcomeScene extends Scene {
         };
         this.chosen = true;
         this.closeDialog = undefined;
-        this.input.enabled = true;
+        this.resumeInput();
         this.registry.set(REGISTRY_KEYS.learner, learner);
         this.scene.start(SCENE_KEYS.task);
+    }
+
+    private resumeInput(): void {
+        this.releaseInput?.();
+        this.releaseInput = undefined;
     }
 
     private sessionMonth(): number {

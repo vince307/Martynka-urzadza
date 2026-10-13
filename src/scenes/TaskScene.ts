@@ -1,12 +1,12 @@
 import { Scene, type GameObjects } from 'phaser';
 import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
-import type { StageDef, StageId } from '../core/types';
-import { answer, next, nextSolutionStep, startRound, type RoundState } from '../core/round';
+import type { Settings, StageDef, StageId } from '../core/types';
+import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
-import { defaultAutoRead } from '../core/narration/voice';
+import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
@@ -91,7 +91,6 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
-    private autoRead = false;   // session default by stage (FR-009); a parent switch comes with S-08
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private sessionStars = 0;   // stars of finished rounds; the open round adds state.starsEarned
 
@@ -116,7 +115,6 @@ export class TaskScene extends Scene {
         this.stage = stage;
         this.warmup = learner.warmupPending && previousStage(stage.id) !== null;
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
-        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
         this.registry.set(REGISTRY_KEYS.narration, null);
         this.registry.set(REGISTRY_KEYS.roomSwitch, false);
         this.rng = createRng(Date.now() >>> 0);
@@ -147,10 +145,26 @@ export class TaskScene extends Scene {
         };
         this.game.events.on(GAME_EVENTS.toRoom, toRoom);
         // Back from the room: redraw the same state (summary), re-arm its buttons, no auto-reading.
-        const onWake = (): void => this.render();
+        // A stage change made from the room (the parent panel) waits here: the round is replaced when the scene wakes.
+        const onWake = (): void => {
+            const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+            if (learner.stage !== this.stage.id) {
+                this.applyParentStage(false);
+            } else {
+                this.render();
+            }
+        };
         this.events.on('wake', onWake);
+        // The parent confirmed another stage over the task screen; a sleeping scene (room open) waits for its wake.
+        const onParentStage = (): void => {
+            if (!this.sys.isSleeping()) {
+                this.applyParentStage(true);
+            }
+        };
+        this.game.events.on(GAME_EVENTS.parentStage, onParentStage);
         this.events.once('shutdown', () => {
             this.game.events.off(GAME_EVENTS.toRoom, toRoom);
+            this.game.events.off(GAME_EVENTS.parentStage, onParentStage);
             this.events.off('wake', onWake);
         });
 
@@ -159,6 +173,43 @@ export class TaskScene extends Scene {
         this.add
             .text(PLACEHOLDER_FRAME.margin, GAME_HEIGHT - PLACEHOLDER_FRAME.margin, __BUILD_ID__, textStyle('caption'))
             .setOrigin(0, 1);
+    }
+
+    /** Automatic reading in effect now: the parent's choice, else the stage default (FR-009); read at the moment of use. */
+    private get autoRead(): boolean {
+        const settings = this.registry.get(REGISTRY_KEYS.settings) as Settings;
+        return effectiveAutoRead(settings, this.stage.id, balance.narrator.autoReadStages);
+    }
+
+    /**
+     * The parent moved the child to another stage (core/placement changeStageByParent wrote it into the learner).
+     * The open round, whatever its phase, gives way to a fresh round of the new stage; its stars stay on the counter.
+     * No scene restart: the stars and the session state survive. Same stage: nothing (a confirmed auto-reading choice
+     * must not break the round).
+     */
+    private applyParentStage(read: boolean): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+        const stage = getStage(learner.stage);
+        if (!stage) {
+            throw new Error(`Unknown stage ${learner.stage}`);
+        }
+        if (stage.id === this.stage.id) {
+            return;
+        }
+        this.narrator?.cancel();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.scrollX = 0;
+        this.stage = stage;
+        this.warmup = false;
+        this.unlockShown = false;
+        this.sessionStars += this.state.starsEarned;
+        this.state = this.freshRound();
+        this.shownIndex = -1;
+        this.registry.set(REGISTRY_KEYS.stars, this.sessionStars);
+        this.render();
+        if (read) {
+            this.autoReadFirst();
+        }
     }
 
     /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
@@ -448,7 +499,7 @@ export class TaskScene extends Scene {
      */
     private finishRound(): void {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
-        const results = this.state.tasks.map((task, i) => ({ skillId: task.skillId, outcome: this.state.outcomes[i] }));
+        const results = roundResults(this.state);
         const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
         // The unlock card shows pendingUnlock after "Kolejna runda" (closeUnlock clears it).
         this.registry.set(REGISTRY_KEYS.learner, {
@@ -474,7 +525,6 @@ export class TaskScene extends Scene {
         }
         this.registry.set(REGISTRY_KEYS.learner, { ...learner, stage: stageId, warmupPending: false } satisfies SessionLearner);
         this.stage = stage;
-        this.autoRead = defaultAutoRead(stage.id, balance.narrator.autoReadStages);
         this.warmup = false;
     }
 

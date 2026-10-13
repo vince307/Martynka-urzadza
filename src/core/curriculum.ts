@@ -58,7 +58,9 @@ export const startLearning = (
 };
 
 /** The playable step at `unlockedStep`, or the nearest lower one; below the first playable step, the first. */
-const currentStepOf = (steps: readonly number[], unlockedStep: number): number => {
+export const currentStep = (stage: StageDef, unlockedStep: number): number => {
+    const steps = playableSteps(stage);
+    if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
     const below = steps.filter((n) => n <= unlockedStep);
     return below.length > 0 ? below[below.length - 1] : steps[0];
 };
@@ -69,14 +71,12 @@ const currentStepOf = (steps: readonly number[], unlockedStep: number): number =
  * `previous` all playable skills of the previous stage (empty for E1).
  */
 export const skillBuckets = (stage: StageDef, previous: StageDef | undefined, unlockedStep: number): SkillBuckets => {
-    const steps = playableSteps(stage);
-    if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
-    const currentStep = currentStepOf(steps, unlockedStep);
+    const current = currentStep(stage, unlockedStep);
     const skillsOf = (pick: (step: number) => boolean): SkillDef[] =>
         stage.steps.filter((s) => pick(s.step)).flatMap((s) => s.skills.filter(playable));
     return {
-        current: skillsOf((n) => n === currentStep),
-        earlier: skillsOf((n) => n < currentStep),
+        current: skillsOf((n) => n === current),
+        earlier: skillsOf((n) => n < current),
         previous: previous ? previous.steps.flatMap((s) => s.skills.filter(playable)) : [],
     };
 };
@@ -114,7 +114,7 @@ export type RoundResult = SkillResult;
 export const unlockReady = (stage: StageDef, adaptation: Adaptation, rules: CurriculumRules & Pick<MasteryRules, 'unlockAt'>): number | null => {
     const steps = playableSteps(stage);
     if (steps.length === 0) return null;
-    const current = currentStepOf(steps, adaptation.unlockedStep[stage.id] ?? 1);
+    const current = currentStep(stage, adaptation.unlockedStep[stage.id] ?? 1);
     const next = steps.find((n) => n > current);
     if (next === undefined) return null;
     const skills = stage.steps.filter((s) => s.step === current).flatMap((s) => s.skills.filter(playable));

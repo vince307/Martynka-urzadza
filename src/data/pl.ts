@@ -22,6 +22,20 @@ export const pl = {
         confirm: 'Zatwierdź',
         ageOption: (age: number, openEnded: boolean) => (openEnded ? `${age}+` : String(age)),
     },
+    // DESIGN-GAP (docs/design-gaps.md rows 26-27): the kit has no settings view or progress preview; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
+    settings: {
+        title: 'Ustawienia rodzica',
+        autoReadHeading: 'Czytanie poleceń na głos',
+        autoReadOn: 'Włączone',
+        autoReadOff: 'Wyłączone',
+        // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
+        progressHeading: 'Postępy',
+        currentStep: (index: number, total: number, title: string) => `Krok ${index} z ${total}: ${title}`,
+        weakestHeading: 'Do poćwiczenia',
+        mastery: (value: number, max: number) => `opanowanie ${value} z ${max}`,
+        example: (prompt: string, given: string, answer: string) => `${prompt} — odpowiedź dziecka: ${given}, poprawna: ${answer}`,
+        empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
+    },
     stages: {
         E1: 'Klasa 1, I półrocze',
         E2: 'Klasa 1, II półrocze',

@@ -107,6 +107,7 @@ export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
     toRoom: 'to-room',   // "Do pokoju" was tapped (summary or HUD switch); the task scene switches to the room scene
+    parentStage: 'parent-stage',   // the parent confirmed another stage (core changed the learner in the registry); the task scene opens a fresh round of it
 } as const;
 
 /** Keys of the game registry shared by scenes (the UI overlay listens to `changedata-<key>`). */
@@ -117,6 +118,8 @@ export const REGISTRY_KEYS = {
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
     learner: 'learner',       // the session's SessionLearner (core/placement: placement + adaptation state, S-07), absent until the child has said the age
     month: 'month',           // calendar month of the session, 0-11, set once before the scenes start (main.ts)
+    settings: 'settings',     // the session's Settings (core/types: parent's auto-reading choice), set before the scenes start (main.ts)
+    inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
 } as const;
 
 /**
@@ -151,6 +154,9 @@ export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
     roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
+    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
+    // DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
 } as const;
 
 /**
@@ -204,6 +210,7 @@ export const ROOM_LAYOUT = {
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
     roomSwitch: { width: HUD_LAYOUT.roomSwitch.width, height: HUD_LAYOUT.roomSwitch.height },
+    settings: { width: HUD_LAYOUT.settings.width, height: HUD_LAYOUT.settings.height },
 } as const;
 
 /** Interactive rectangle of the welcome screen, checked against MIN_TOUCH_TARGET. */

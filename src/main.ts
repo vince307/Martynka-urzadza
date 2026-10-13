@@ -2,6 +2,8 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS } from './data/layout';
+import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
+import { initialSettings } from './core/placement';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
@@ -32,6 +34,13 @@ const createGame = (parent: string, narrator: Narrator, month: number): Game =>
             preBoot: (booting) => {
                 booting.registry.set(REGISTRY_KEYS.narrator, narrator);
                 booting.registry.set(REGISTRY_KEYS.month, month);
+                booting.registry.set(REGISTRY_KEYS.settings, initialSettings());
+                // One input switch for the whole game. A touchend lost while input was off would leave the only
+                // touch pointer active (every later touch finds no free pointer), so the release resets them all.
+                booting.registry.set(
+                    REGISTRY_KEYS.inputSuspender,
+                    createInputSuspender(booting.input, () => booting.input.pointers.forEach((pointer) => pointer.reset())),
+                );
             },
         },
     });
@@ -78,5 +87,8 @@ if (__E2E_HOOK__) {
     installE2EHook(game);   // e2e build only: stripped from production, checked by vite/e2eHookGuard.mjs
 }
 mountRotateOverlay(document.body);
-mountInstallHint(document.body, detectPlatform(navigator), isStandalone(window));
+// Android would open a context menu on a long press; the parent's long press must not.
+container?.addEventListener('contextmenu', (event) => event.preventDefault());
+const suspender = game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
+mountInstallHint(document.body, detectPlatform(navigator), isStandalone(window), suspender ? () => suspender.suspend() : undefined);
 registerServiceWorker();

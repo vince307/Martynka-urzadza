@@ -7,22 +7,8 @@
 // helper's parent path: age 10, stage E3 chosen instead of the proposal) has automatic reading off, so "Dalej" is silent too.
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
+import { answerRight, answerWrong, phaseIs, snapshot, tapNext, tapScene, targets, toPage } from './support/hook';
 
-interface Point { x: number; y: number }
-interface Snapshot {
-    phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad';
-    answer: unknown;
-    screen: 'welcome' | 'task' | 'summary' | 'room';
-    narration: string | null;
-    speakerVisible: boolean;
-}
-interface Targets {
-    tiles: (Point & { value: number | string })[];
-    keys: (Point & { key: string })[];
-    next: Point | null;
-    speaker: Point | null;
-}
 interface Spoken { text: string; lang: string; rate: number }
 interface FakeVoice { lang: string; localService: boolean }
 
@@ -73,59 +59,8 @@ const frames = (page: Page, n: number): Promise<void> =>
         n,
     );
 
-type Hook = { snapshot: Snapshot; targets: Targets };
-const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K]> => {
-    let value: Hook[K] | null = null;
-    await expect
-        .poll(async () => {
-            value = await page.evaluate((k) => {
-                try {
-                    return ((window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k]) ?? null;
-                } catch {
-                    return null;
-                }
-            }, key) as Hook[K] | null;
-            return value !== null;
-        })
-        .toBe(true);
-    return value as unknown as Hook[K];
-};
-const snapshot = (page: Page): Promise<Snapshot> => fromHook(page, 'snapshot');
-const targets = (page: Page): Promise<Targets> => fromHook(page, 'targets');
-
-/** Maps a point of the 1920x1080 scene space onto the page as the browser draws the canvas. */
-const toPage = async (page: Page, point: Point): Promise<Point> => {
-    const box = await page.locator('#game-container canvas').boundingBox();
-    expect(box).not.toBeNull();
-    return { x: box!.x + (point.x / 1920) * box!.width, y: box!.y + (point.y / 1080) * box!.height };
-};
-const tapScene = async (page: Page, point: Point): Promise<void> => {
-    const at = await toPage(page, point);
-    await page.touchscreen.tap(at.x, at.y);
-};
-const phaseIs = async (page: Page, phase: Snapshot['phase']): Promise<void> => {
-    await expect.poll(async () => (await snapshot(page)).phase).toBe(phase);
-};
-const tapNumber = async (page: Page, value: number): Promise<void> => {
-    const { keys } = await targets(page);
-    for (const digit of String(value)) await tapScene(page, keys.find((k) => k.key === digit)!);
-    await tapScene(page, keys.find((k) => k.key === 'ok')!);
-};
-const answer = async (page: Page, right: boolean): Promise<void> => {
-    const state = await snapshot(page);
-    if (state.input === 'tiles') {
-        const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => (t.value === state.answer) === right)!);
-    } else {
-        await tapNumber(page, (state.answer as number) + (right ? 0 : 1));
-    }
-};
-const tapNext = async (page: Page): Promise<void> => {
-    await phaseIs(page, 'done');
-    const { next } = await targets(page);
-    expect(next).not.toBeNull();
-    await tapScene(page, next!);
-};
+/** The answer the test wants: the right one, or one the task certainly rejects. */
+const answer = (page: Page, right: boolean): Promise<void> => (right ? answerRight(page) : answerWrong(page).then(() => undefined));
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);

@@ -2,12 +2,15 @@
 // ("Wybor poziomu na starcie"), typed out below row by row; it is never read from src/data/placement.ts.
 import { describe, expect, it } from 'vitest';
 import {
+    changeStageByParent,
+    initialSettings,
     needsPlacement,
     placeByChild,
     placeByParent,
     previousStage,
     proposeStage,
     type PlacedLearner,
+    type SessionLearner,
 } from '../src/core/placement';
 import { placementData } from '../src/data/placement';
 import type { StageId } from '../src/core/types';
@@ -131,5 +134,67 @@ describe('needsPlacement', () => {
         const learner: PlacedLearner = { age: 8, stage: 'E3', stageOverriddenByParent: false, warmupPending: false };
         expect(needsPlacement(null)).toBe(true);
         expect(needsPlacement(learner)).toBe(false);
+    });
+});
+
+describe('initialSettings', () => {
+    it('has no parent choice for auto-read yet', () => {
+        expect(initialSettings()).toEqual({ autoRead: null });
+    });
+});
+
+describe('changeStageByParent', () => {
+    const history = [{ skillId: 'E3.s1.a', ok: false, firstTry: false, at: 7 }];
+    const unlockedStep = { E1: 0, E2: 0, E3: 3, E4: 0, E5: 0, E6: 0 };
+    const mastery = { 'E3.s1.a': 2 };
+    const streak = { 'E3.s1.a': 1 };
+    const learner: SessionLearner = {
+        age: 8,
+        stage: 'E3',
+        stageOverriddenByParent: false,
+        warmupPending: true,
+        pendingUnlock: 4,
+        weakStreak: 1,
+        easedRounds: 2,
+        unlockedStep,
+        mastery,
+        streak,
+        history,
+    };
+
+    it('moves to the new stage, marks the parent override and drops transient adaptation state', () => {
+        const next = changeStageByParent(learner, 'E4');
+        expect(next.stage).toBe('E4');
+        expect(next.stageOverriddenByParent).toBe(true);
+        expect(next.warmupPending).toBe(false);
+        expect(next.pendingUnlock).toBeNull();
+        expect(next.weakStreak).toBe(0);
+        expect(next.easedRounds).toBe(0);
+    });
+
+    it('keeps age, unlocks, mastery, streak and history', () => {
+        const next = changeStageByParent(learner, 'E4');
+        expect(next.age).toBe(8);
+        expect(next.unlockedStep).toBe(unlockedStep);
+        expect(next.mastery).toBe(mastery);
+        expect(next.streak).toBe(streak);
+        expect(next.history).toBe(history);
+    });
+
+    it('works for a move down as well and always marks the override', () => {
+        const next = changeStageByParent(learner, 'E1');
+        expect(next.stage).toBe('E1');
+        expect(next.stageOverriddenByParent).toBe(true);
+    });
+
+    it('returns the same object for the same stage, so the scene does not interrupt the round', () => {
+        expect(changeStageByParent(learner, 'E3')).toBe(learner);
+    });
+
+    it('does not mutate a frozen input', () => {
+        const frozen = Object.freeze({ ...learner });
+        expect(() => changeStageByParent(frozen, 'E5')).not.toThrow();
+        expect(frozen.stage).toBe('E3');
+        expect(frozen.pendingUnlock).toBe(4);
     });
 });

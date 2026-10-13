@@ -54,6 +54,13 @@ export interface RoomDef {
 
 // --- saved state ---
 
+/** A mistake the parent can read in the progress preview: the first wrong try of a task. Raw JSON-safe values, formatted on display. */
+export interface MistakeExample {
+    prompt: string;
+    given: number | string;
+    answer: number | string | number[];
+}
+
 export interface LearnerState {
     age: number;
     stage: StageId;
@@ -61,7 +68,7 @@ export interface LearnerState {
     unlockedStep: Record<StageId, number>;  // highest unlocked step per stage
     mastery: Record<string, number>;        // skillId -> 0..5
     streak: Record<string, number>;         // consecutive correct answers
-    history: { skillId: string; ok: boolean; firstTry: boolean; at: number }[]; // last ~200
+    history: { skillId: string; ok: boolean; firstTry: boolean; at: number; example?: MistakeExample }[]; // last ~200; example only for a miss on the first try
     weakStreak: number;                     // consecutive rounds with fewer than 3 first-try answers
     easedRounds: number;                    // rounds still to be drawn with the easing weights
 }
@@ -75,7 +82,7 @@ export interface RoomState {
 }
 
 export interface Settings {
-    autoRead: boolean;                      // read prompts aloud automatically (parent setting)
+    autoRead: boolean | null;               // parent's choice for reading prompts aloud; null = no choice yet, the stage default applies (FR-009)
 }
 
 export interface SaveState {
