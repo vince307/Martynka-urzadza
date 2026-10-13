@@ -693,7 +693,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Teacher read: etykiety zadań, podpisy slotów, „Salon”, „masz X/Y”
+- [x] 2.5 [reviewer] Teacher read: etykiety zadań, podpisy slotów, „Salon”, „masz X/Y” — impl-review (PASS)
 
 ### Phase 3: Panel wariantów jako czysty reduktor (ryzyko #16)
 
@@ -740,7 +740,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Manual
 
-- [ ] 6.4 [reviewer] Teacher read: „Wybieram”, „Zamknij” i napisy `pl.room` w kontekście pokoju
+- [x] 6.4 [reviewer] Teacher read: „Wybieram”, „Zamknij” i napisy `pl.room` w kontekście pokoju — impl-review (PASS)
 - [ ] 6.5 [visual] Panel bez podglądu, podgląd 1/2/3, salon po zakupie, klatka animacji — 1440×900 i 1024×768
 - [ ] 6.6 [visual] Reduced motion: zakup bez animacji, lot gwiazdki wyłączony
 
@@ -755,7 +755,7 @@ rejestrze mają kształt `SaveState` — wersja 1 zapisu przyjmie je bez migracj
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:`
+- [x] 7.5 [reviewer] Seam sweep: duplikaty, komentarze, martwe klucze, DESIGN-GAP w kodzie i w `docs/design-gaps.md`, follow-upy z `Trigger:` — 4f63d28 (impl-review)
 - [ ] 7.6 [human] Lista slotów, etykiety i krzywa kosztów salonu do akceptacji autora
 - [ ] 7.7 [human] Odstępstwo od FR-017: animacja bez dźwięku do S-16
 - [ ] 7.8 [human] Saldo i salon sesyjne do S-11

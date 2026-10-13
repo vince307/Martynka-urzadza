@@ -1,7 +1,7 @@
 ---
 change_id: first-furniture-purchase
 title: Pierwszy mebel za gwiazdki — salon, zadanie remontowe i wybór 1 z 3 wariantów
-status: implemented
+status: impl_reviewed
 created: 2026-10-13
 updated: 2026-10-13
 archived_at: null
