@@ -779,15 +779,15 @@ zapisu, karta z eksportem.
 
 - [x] 1.1 `save.test.ts` czerwony przed implementacją (asercja na stubie), zielony po; unit baseline + N — 7cf32a4
 - [x] 1.2 Deliberate break spread ucznia / akceptacja `version > 1` / brak sprawdzenia `currentRoom` → czerwone; przywrócone; meta-check — 7cf32a4
-- [x] 1.3 `npm run lint` (granice `core`), `npm run typecheck` bez `rngSeed`; pełna bramka lokalna zielona — 7cf32a4
+- [x] 1.3 `npm run lint` (granice `core`), `npm run typecheck` bez `rngSeed`; pełna bramka lokalna zielona — 7cf32a4 (e2e: orchestrator run on 7149039, 26 passed)
 
 ### Phase 2: Harmonogram autozapisu, wczytanie i podłoga kalendarza
 
 #### Automated
 
-- [ ] 2.1 `autosave.test.ts` i nowe przypadki `curriculumStart.test.ts` czerwone przed implementacją, zielone po; unit baseline + N
-- [ ] 2.2 Deliberate break ignorowane `blocked` / `flush` bez anulowania timera / `write` bez `catch` → czerwone; przywrócone; meta-check
-- [ ] 2.3 `npm run lint` (granice `core`); pełna bramka lokalna zielona
+- [x] 2.1 `autosave.test.ts` i nowe przypadki `curriculumStart.test.ts` czerwone przed implementacją, zielone po; unit baseline + N — 76f6df1 (e2e: orchestrator gate)
+- [x] 2.2 Deliberate break ignorowane `blocked` / `flush` bez anulowania timera / `write` bez `catch` → czerwone; przywrócone; meta-check — 76f6df1 (e2e: orchestrator gate)
+- [x] 2.3 `npm run lint` (granice `core`); pełna bramka lokalna zielona — 76f6df1 (e2e: orchestrator gate)
 
 ### Phase 3: Adapter IndexedDB, zależności i granica modułu magazynu
 

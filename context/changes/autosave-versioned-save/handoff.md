@@ -1,18 +1,18 @@
 # Handoff — `autosave-versioned-save` (slice S-11)
 
-Written by `/10x-tdd autosave-versioned-save phase 1` of run 2026-10-13-s09-s11. Phase 1 (format v1, decoder, fixtures) is
-committed at 7cf32a4; nothing writes to IndexedDB yet. The next agent must keep `src/core/save.ts` pure and must not edit
-`tests/fixtures/save-v1*.json` (frozen).
+Written by `/10x-tdd autosave-versioned-save phase 2` of run 2026-10-13-s09-s11. Phase 2 (autosave state machine, load, calendar
+floor) is committed at 76f6df1; still nothing is wired to the game or IndexedDB. `src/core/autosave.ts` must stay pure (clocks,
+store and log injected). Do not edit `tests/fixtures/save-v1*.json` (frozen).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/autosave-versioned-save`, cut from `main` at `f67b9f4` |
-| Commits | docs x4, `7cf32a4` test p1, then this handoff commit |
+| Commits | docs x4, `7cf32a4` test p1, `7149039` handoff p1, `76f6df1` test p2, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (unchanged; the status flip is left to the orchestrator or a later phase) |
-| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`); 1.1-1.3 done |
+| `change.md` status | `implementing` |
+| `## Progress` rows remaining | 33 (`grep -c '^- \[ \]' plan.md`); 1.1-1.3 and 2.1-2.3 done |
 | Roadmap | S-11 `planning` (unchanged) |
 | Working tree | clean after the commit |
 
@@ -20,32 +20,31 @@ committed at 7cf32a4; nothing writes to IndexedDB yet. The next agent must keep 
 
 | Path | What it is |
 |---|---|
-| `src/core/save.ts` | `SAVE_VERSION`, `DEFAULT_PROFILE`, `SessionSave`, `DecodeResult`, `encodeSave`, `decodeSave` (migration chain, injectable), `validateSave`, `rawExportText` |
-| `src/core/types.ts` | `SaveState` replaced by `SaveV1` (+ alias `SaveState`), `SavedLearner`; `rngSeed` gone |
-| `src/core/rng.ts` | header comment no longer promises `rngSeed` in the save |
-| `tests/save.test.ts` | 34 tests |
-| `tests/fixtures/save-v1.json`, `save-v1-fresh.json` | frozen hand-written v1 saves |
-| `context/changes/autosave-versioned-save/plan.md` | Progress 1.1-1.3 ticked with 7cf32a4 |
+| `src/core/autosave.ts` | `SaveStore`, `LoadOutcome`, `WriteReason`, `AutosaveStatus`, `loadSave` (never rejects, never writes), `createAutosaver` (`markDirty`, `flush`, `block`, `status`) |
+| `src/core/curriculum.ts` | `floorToCalendar(learner, stages, month, data, rules)` |
+| `src/data/balance.ts` | `save.debounceMs: 500` |
+| `tests/autosave.test.ts` | 12 tests (load outcomes, debounce, flush, onFirstWrite, block, failures, seeded property) |
+| `tests/curriculumStart.test.ts` | +3 floor tests, +1 `balance.save` pin |
+| `context/changes/autosave-versioned-save/plan.md`, `change.md` | Progress 1.3 e2e citation, 2.1-2.3 ticked; status `implementing` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stubs returning constants) `npx vitest run tests/save.test.ts` | 16 of 34 failed; first: `AssertionError: expected { kind: 'unreadable', …(1) } to deeply equal { Object (kind, migratedFrom, ...) }` (fixture decode) |
-| GREEN | 34/34 |
-| Deliberate break 1: `encodeSave` spreads the learner (`{...session.learner}`) | red: 4 tests (round trip, fresh round trip, session-only field, pending unlock stage); restored |
-| Deliberate break 2: `from > SAVE_VERSION` -> `from > 99` | red: "a save from a future version is left alone"; restored |
-| Deliberate break 3: no `currentRoom in rooms` check | red: "a v1 save with current room outside the rooms is corrupt"; restored |
-| Meta-check | expectations are hand-written fixtures and literals, not encoder output (the fixture test compares to a literal); break 1 reds on round-trip too because the saved stage-bound `pendingUnlock` shape differs, which is the intended protection |
+| RED (stubs: fresh / no-op saver / learner unchanged) `npx vitest run tests/autosave.test.ts tests/curriculumStart.test.ts` | autosave 11 of 12 failed, first: `AssertionError: expected 'fresh' to be 'loaded'`; floor: `expected 1 to be 6`, `expected undefined to be 3` |
+| GREEN | 28/28 in those two files |
+| Break A: drop the `blocked` check in `save` | red: both "nothing is ever written" tests and "block() ... cancels it"; restored |
+| Break B: `save` does not cancel the timer | red: "flush writes now, cancels the timer ..."; restored |
+| Break C: `attempt` rethrows instead of catching | red: onFirstWrite, rejected write, snapshot throws, property (unhandled rejection / failures); restored |
+| Meta-check | expectations come from FR-020/FR-021 and the plan's rules (hand-written literals, fixtures), not from the saver output; break A reds on `writes`, not on a timeout |
 | `npm run lint`, `npm run typecheck` | OK |
-| `npm test` | 1113 passed (baseline 1079, +34) |
-| deploy tests, `npm run sample -- E1..E6` | run, no violations printed |
-| `npm run build` | OK, e2e hook absent |
-| `npx playwright test` | not runnable in this session (MachPort Permission denied) — orchestrator gate |
+| `npm test` | 1129 passed (baseline 1079, +50 over main incl. phase 1) |
+| deploy tests, `npm run sample -- E1..E6`, `npm run build` | OK, e2e hook absent |
+| `npx playwright test` | not runnable in this session (MachPort) — orchestrator gate; no game wiring changed |
 
 ## 4. Next command
 
-`/10x-tdd autosave-versioned-save phase 2` (`Driver: tdd`)
+`/10x-tdd autosave-versioned-save phase 3` (`Driver: tdd`)
 
 ## 5. Open
 
@@ -67,22 +66,11 @@ committed at 7cf32a4; nothing writes to IndexedDB yet. The next agent must keep 
 
 ## 6. Autonomous decisions
 
-- Triage done in place (no AskUserQuestion): F1 fixed with the single recommended fix (generic `changedata` + `setdata`
-  filtered by `SAVE_KEYS`) — rejected alternative: `preBoot` always sets `learner: null`, because scenes cast it as
-  `SessionLearner | undefined` and a `null` would reach them; would change if Phaser adds per-key `setdata-<key>` events.
-- F1 test 3 assertion: poll `skipped + writes ≥ 1`, then `writes === 0` and `skipped ≥ 1`, so break C reds on `writes`
-  rather than on a timeout; would change if the autosaver stops counting skipped attempts.
-- F2 `--save-exact` against the repo's caret style: the storage library of a one-way format must not drift; would change
-  if the maintainer prefers carets with lockfile-only pinning.
-- F4/F5 recorded as Known risks instead of new phases (no change to v1 scope); F6 accepted (settings share the
-  `SAVE_KEYS` path proven by tests 1–2).
-- Product decisions in plan.md `## Autonomous decisions` 1–14 checked against PRD FR-020/FR-021/US-04: none clearly
-  wrong; each PRD/plan deviation already has a `[human]` row (6.6–6.9, 5.7, 5.8). Verdict PROCEED, not RETHINK.
-- Phase 1: `unlockedStep` validation requires whole numbers per present key but does not require all six stages (chosen so a
-  save is never unreadable only for a missing stage key); reversal: require `STAGE_ORDER` keys if the game starts reading a
-  missing stage as a crash.
-- Phase 1: `pendingUnlock` is encoded as `{ stage: learner.stage, step }` and decoded to `null` when the stage differs, per plan.
-- Phase 1: fresh fixture has `rooms: { living: … }` because `currentRoom` must be a key of `rooms`; reversal: if the game ever
-  saves with empty `rooms`, relax that rule via a migration, not silently.
-- Phase 1 test builds the session with `endRound(...)` (real core), `Outcome` 'second' stands for a hint-assisted answer.
-- E2E: not run (Chromium MachPort denied); orchestrator gate for 7cf32a4, no e2e-relevant code changed.
+- Phase 2: `flush`/`markDirty` while blocked only count `skipped`; `block()` is permanent for the session (plan). Reversal: a
+  "retry load" flow would need an `unblock`, deliberately absent.
+- Phase 2: a write that fails never schedules its own retry (plan); the next `markDirty` or `flush` retries. A change during a
+  write coalesces into exactly one more write (`rerun` loop inside the single in-flight promise).
+- Phase 2: `dirty` is cleared when the snapshot is taken and restored on failure, so a change made during the write stays dirty.
+- Phase 2: break C is "rethrow instead of catch" (the same effect as a write without `catch`).
+- Phase 2: the first commit left plan.md/change.md out by a shell slip; they are committed with this handoff.
+- E2E: not run (Chromium MachPort denied); orchestrator gate for 76f6df1, no e2e-relevant code changed.
