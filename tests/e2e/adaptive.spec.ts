@@ -9,7 +9,7 @@
 import { test, expect } from '@playwright/test';
 import { E4 } from '../../src/data/curriculum/E4';
 import { passWelcomeAsParent } from './support/welcome';
-import { playRoundRight, screenIs, snapshot, tapTarget } from './support/hook';
+import { playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 
 const SEPTEMBER = 8;
 const ROUND_LENGTH = 5;
@@ -19,10 +19,7 @@ const START_STEP = 2;
 test.setTimeout(180_000);
 
 test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-        const silent = { getVoices: () => [], speak: () => undefined, cancel: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined };
-        Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
-    });
+    await silenceSpeech(page);
 });
 
 test('#13 (proposed, test-plan refresh pending) mastering the current step shows "Nowa umiejętność!" after "Kolejna runda", the card waits through "Do pokoju", and "Dalej" starts a round on the unlocked step', async ({ page }) => {

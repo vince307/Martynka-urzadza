@@ -7,93 +7,12 @@
 // page.touchscreen.tap. The warm-up rule itself (4 first-try answers of 6) is proved by the unit
 // tests; this proves that the scenes apply it.
 import { test, expect, type Page } from '@playwright/test';
-import { passWelcomeAsChild } from './support/welcome';
-
-interface Point { x: number; y: number }
-interface Snapshot {
-    index: number;
-    phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad';
-    answer: unknown;
-    outcomes: (string | null)[];
-    screen: 'welcome' | 'task' | 'summary' | 'room';
-    summary: { earned: number; bonus: number; stars: boolean[] } | null;
-    warmup: boolean;
-    learner: { stage: string; warmupPending?: boolean; stageOverriddenByParent?: boolean } | null;
-}
-interface Targets {
-    tiles: (Point & { value: number | string })[];
-    keys: (Point & { key: string })[];
-    next: Point | null;
-    nextRound: Point | null;
-    ages?: (Point & { age: number })[];
-    parent?: Point;
-}
+import { gateProblem, openGate, passWelcomeAsChild, typeIntoGate } from './support/welcome';
+import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapNext, tapScene, targets } from './support/hook';
 
 const OCTOBER = 9;
 const WARMUP_LENGTH = 6;
 const ROUND_LENGTH = 5;
-
-interface Hook { snapshot: Snapshot; targets: Targets }
-const readHook = <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K] | null> =>
-    page.evaluate((k) => {
-        try {
-            const value = (window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k];
-            return (value as Hook[keyof Hook] | undefined) ?? null;
-        } catch {
-            return null;
-        }
-    }, key) as Promise<Hook[K] | null>;
-const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K]> => {
-    let value: Hook[K] | null = null;
-    await expect
-        .poll(async () => {
-            value = await readHook(page, key);
-            return value !== null;
-        })
-        .toBe(true);
-    return value as unknown as Hook[K];
-};
-const snapshot = (page: Page): Promise<Snapshot> => fromHook(page, 'snapshot');
-const targets = (page: Page): Promise<Targets> => fromHook(page, 'targets');
-
-const tapScene = async (page: Page, point: Point): Promise<void> => {
-    const box = await page.locator('#game-container canvas').boundingBox();
-    expect(box).not.toBeNull();
-    await page.touchscreen.tap(box!.x + (point.x / 1920) * box!.width, box!.y + (point.y / 1080) * box!.height);
-};
-
-const tapNumber = async (page: Page, value: number): Promise<void> => {
-    const { keys } = await targets(page);
-    for (const digit of String(value)) {
-        await tapScene(page, keys.find((k) => k.key === digit)!);
-    }
-    await tapScene(page, keys.find((k) => k.key === 'ok')!);
-};
-
-const answerWrong = async (page: Page): Promise<void> => {
-    const state = await snapshot(page);
-    if (state.input === 'tiles') {
-        const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => t.value !== state.answer)!);
-    } else {
-        await tapNumber(page, (state.answer as number) + 1);
-    }
-};
-
-const answerRight = async (page: Page): Promise<void> => {
-    const state = await snapshot(page);
-    if (state.input === 'tiles') {
-        const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => t.value === state.answer)!);
-    } else {
-        await tapNumber(page, state.answer as number);
-    }
-};
-
-const phaseIs = async (page: Page, phase: Snapshot['phase']): Promise<void> => {
-    await expect.poll(async () => (await snapshot(page)).phase).toBe(phase);
-};
 
 /** Plays the open task: right on the first try, or (firstTryWrong) one wrong tap and then the right one. Then "Dalej". */
 const playTask = async (page: Page, firstTryWrong: boolean): Promise<void> => {
@@ -104,10 +23,7 @@ const playTask = async (page: Page, firstTryWrong: boolean): Promise<void> => {
         await phaseIs(page, 'second');
     }
     await answerRight(page);
-    await phaseIs(page, 'done');
-    const { next } = await targets(page);
-    expect(next).not.toBeNull();
-    await tapScene(page, next!);
+    await tapNext(page);
     await expect.poll(async () => {
         const now = await snapshot(page);
         return now.screen === 'summary' || now.index === before + 1;
@@ -119,7 +35,7 @@ const playRound = async (page: Page, length: number, wrongFirst: number): Promis
     for (let i = 0; i < length; i++) {
         await playTask(page, i < wrongFirst);
     }
-    await expect.poll(async () => (await snapshot(page)).screen).toBe('summary');
+    await screenIs(page, 'summary');
 };
 
 // One canvas at a time (see task-round.spec.ts).
@@ -127,10 +43,7 @@ test.describe.configure({ mode: 'serial' });
 test.setTimeout(90_000);
 
 test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-        const silent = { getVoices: () => [], speak: () => undefined, cancel: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined };
-        Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
-    });
+    await silenceSpeech(page);
 });
 
 test('#12 (proposed) age 8 in October warms up on E3 with 6 tasks, a clean warm-up keeps E3, and the next round has 5 tasks', async ({ page }) => {
@@ -196,43 +109,16 @@ test('#12 (proposed) age 6 starts on E1 with no warm-up and a round of 5 tasks',
 // The parent path (risk #12, proposed): the gate and the panel are DOM dialogs above the canvas. Like
 // an adult, the test reads the problem from the dialog text; the hook never exposes the answer.
 const PARENT_AGE = 8;
-const gateProblem = async (page: Page): Promise<{ text: string; product: number }> => {
-    const prompt = page.getByRole('dialog', { name: 'Pytanie dla rodzica' }).getByText(/Ile to jest/);
-    await expect(prompt).toBeVisible();
-    const text = (await prompt.textContent()) ?? '';
-    const factors = /(\d+)\s*·\s*(\d+)/.exec(text);
-    expect(factors).not.toBeNull();
-    return { text, product: Number(factors![1]) * Number(factors![2]) };
-};
-
-const typeIntoGate = async (page: Page, value: number): Promise<void> => {
-    const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
-    for (const digit of String(value)) {
-        await gate.getByRole('button', { name: digit, exact: true }).tap();
-    }
-    await gate.getByRole('button', { name: 'OK', exact: true }).tap();
-};
-
-/** Opens the welcome screen (month pinned to October) and taps "Rodzic": the gate is open afterwards. */
-const openGate = async (page: Page): Promise<void> => {
-    await page.goto(`/?e2eMonth=${OCTOBER}`);
-    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
-    await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
-    const { parent } = await fromHook(page, 'targets');
-    expect(parent).toBeDefined();
-    await tapScene(page, parent!);
-    await expect(page.getByRole('dialog', { name: 'Pytanie dla rodzica' })).toBeVisible();
-};
 
 /** Gate passed with the right product; the stage panel is open afterwards. */
 const openPanel = async (page: Page): Promise<void> => {
-    await openGate(page);
+    await openGate(page, OCTOBER);
     await typeIntoGate(page, (await gateProblem(page)).product);
     await expect(page.getByRole('dialog', { name: 'Ustawienia startowe' })).toBeVisible();
 };
 
 test('#12 (proposed) a wrong gate answer gives a calm message and a new problem without a lockout; the right one opens the panel and an overridden stage starts a plain round', async ({ page }) => {
-    await openGate(page);
+    await openGate(page, OCTOBER);
     const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
     // A wrong answer twice in a row: no lockout, the gate stays usable.
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -274,7 +160,7 @@ test('#12 (proposed) a parent who confirms the proposal gets the proposed stage 
 });
 
 test('#12 (proposed) with the gate open a tap under the overlay on an age button does nothing; after "Anuluj" the same tap works', async ({ page }) => {
-    await openGate(page);
+    await openGate(page, OCTOBER);
     const { ages } = await targets(page);
     const age = ages?.find((a) => a.age === PARENT_AGE);
     expect(age).toBeDefined();

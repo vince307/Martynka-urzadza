@@ -1,31 +1,49 @@
 // Hook helpers for the specs that drive a round (read-only window.__martynkaE2E of the e2e build).
 // Every tap is a page.touchscreen.tap at a scene point from the hook's targets (1920x1080 space).
-// Older specs keep their own copies until they migrate (follow-up).
+// Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
+// (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
 import { expect, type Page } from '@playwright/test';
 
 export interface Point { x: number; y: number }
 export interface Snapshot {
     index: number;
+    solutionStep: number;
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
     input: 'tiles' | 'keypad';
     answer: unknown;
     outcomes: (string | null)[];
+    starsEarned: number;
+    bonusEarned: number;
+    starsTotal: number;
+    counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
+    finished: boolean;
+    warmup: boolean;
+    narration: string | null;
+    speakerVisible: boolean;
     unlock: { step: number; name: string } | null;
     learner: {
         stage: string;
         unlockedStep: Record<string, number>;
         pendingUnlock: number | null;
+        warmupPending?: boolean;
+        stageOverriddenByParent?: boolean;
     } | null;
 }
 export interface Targets {
     tiles: (Point & { value: number | string })[];
     keys: (Point & { key: string })[];
     next: Point | null;
+    step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;
     unlockNext: Point | null;
     resume: Point | null;
+    roomSwitch: Point | null;
+    speaker: Point | null;
+    ages?: (Point & { age: number })[];
+    parent?: Point;
 }
 interface Hook { snapshot: Snapshot; targets: Targets }
 
@@ -52,28 +70,57 @@ export const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promis
 export const snapshot = (page: Page): Promise<Snapshot> => fromHook(page, 'snapshot');
 export const targets = (page: Page): Promise<Targets> => fromHook(page, 'targets');
 
-export const tapScene = async (page: Page, point: Point): Promise<void> => {
+/** Maps a point of the 1920x1080 scene space onto the page as the browser draws the canvas. */
+export const toPage = async (page: Page, point: Point): Promise<Point> => {
     const box = await page.locator('#game-container canvas').boundingBox();
     expect(box).not.toBeNull();
-    await page.touchscreen.tap(box!.x + (point.x / 1920) * box!.width, box!.y + (point.y / 1080) * box!.height);
+    return { x: box!.x + (point.x / 1920) * box!.width, y: box!.y + (point.y / 1080) * box!.height };
+};
+
+export const tapScene = async (page: Page, point: Point): Promise<void> => {
+    const at = await toPage(page, point);
+    await page.touchscreen.tap(at.x, at.y);
 };
 
 export const screenIs = async (page: Page, screen: Snapshot['screen']): Promise<void> => {
     await expect.poll(async () => (await snapshot(page)).screen).toBe(screen);
 };
 
+export const phaseIs = async (page: Page, phase: Snapshot['phase']): Promise<void> => {
+    await expect.poll(async () => (await snapshot(page)).phase).toBe(phase);
+};
+
+/** After a settled task: "Dalej" moves on (or finishes the round after the last task). Checks once, no polling (see tapTarget). */
+export const tapNext = async (page: Page): Promise<void> => {
+    await phaseIs(page, 'done');
+    const { next } = await targets(page);
+    expect(next).not.toBeNull();
+    await tapScene(page, next!);
+};
+
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'ages' | 'parent'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
 
-const tapNumber = async (page: Page, value: number): Promise<void> => {
+export const tapNumber = async (page: Page, value: number): Promise<void> => {
     const { keys } = await targets(page);
     for (const digit of String(value)) {
         await tapScene(page, keys.find((k) => k.key === digit)!);
     }
     await tapScene(page, keys.find((k) => k.key === 'ok')!);
+};
+
+/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. */
+export const answerWrong = async (page: Page): Promise<void> => {
+    const state = await snapshot(page);
+    if (state.input === 'tiles') {
+        const { tiles } = await targets(page);
+        await tapScene(page, tiles.find((t) => t.value !== state.answer)!);
+    } else {
+        await tapNumber(page, (state.answer as number) + 1);
+    }
 };
 
 export const answerRight = async (page: Page): Promise<void> => {
@@ -105,4 +152,12 @@ export const playRoundRight = async (page: Page, length: number): Promise<void> 
         await playTaskRight(page);
     }
     await screenIs(page, 'summary');
+};
+
+/** A device without any voice: hides the narrator button whatever voices the machine running the test has. Call before the page loads. */
+export const silenceSpeech = async (page: Page): Promise<void> => {
+    await page.addInitScript(() => {
+        const silent = { getVoices: () => [], speak: () => undefined, cancel: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined };
+        Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
+    });
 };

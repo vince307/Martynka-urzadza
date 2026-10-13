@@ -9,112 +9,9 @@
 // "Wróć do notesu". The star total is read from the text the HUD counter draws.
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
-
-interface Point { x: number; y: number }
-interface Snapshot {
-    index: number;
-    solutionStep: number;
-    phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad';
-    answer: unknown;
-    outcomes: (string | null)[];
-    starsEarned: number;
-    bonusEarned: number;
-    starsTotal: number;
-    counterText: string;
-    screen: 'welcome' | 'task' | 'summary' | 'room';
-    summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
-    finished: boolean;
-}
-interface Targets {
-    tiles: (Point & { value: number | string })[];
-    keys: (Point & { key: string })[];
-    next: Point | null;
-    step: Point | null;
-    nextRound: Point | null;
-    toRoom: Point | null;
-    resume: Point | null;
-    roomSwitch: Point | null;
-}
+import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapNext, tapScene, targets } from './support/hook';
 
 const ROUND_LENGTH = 5;
-
-interface Hook { snapshot: Snapshot; targets: Targets }
-/** Reads the hook once; null while the scene is not ready (the hook throws or has no round yet). */
-const readHook = <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K] | null> =>
-    page.evaluate((k) => {
-        try {
-            const value = (window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k];
-            return (value as Hook[keyof Hook] | undefined) ?? null;
-        } catch {
-            return null;
-        }
-    }, key) as Promise<Hook[K] | null>;
-/** Waits until the round is ready (tasks exist), then returns the value: never reads a half-built scene. */
-const fromHook = async <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K]> => {
-    let value: Hook[K] | null = null;
-    await expect
-        .poll(async () => {
-            value = await readHook(page, key);
-            return value !== null;
-        })
-        .toBe(true);
-    return value as unknown as Hook[K];
-};
-const snapshot = (page: Page): Promise<Snapshot> => fromHook(page, 'snapshot');
-const targets = (page: Page): Promise<Targets> => fromHook(page, 'targets');
-
-/** Taps a point of the 1920x1080 scene space: maps it onto the canvas as the browser draws it. */
-const tapScene = async (page: Page, point: Point): Promise<void> => {
-    const box = await page.locator('#game-container canvas').boundingBox();
-    expect(box).not.toBeNull();
-    await page.touchscreen.tap(box!.x + (point.x / 1920) * box!.width, box!.y + (point.y / 1080) * box!.height);
-};
-
-const tapNumber = async (page: Page, value: number): Promise<void> => {
-    const { keys } = await targets(page);
-    for (const digit of String(value)) {
-        await tapScene(page, keys.find((k) => k.key === digit)!);
-    }
-    await tapScene(page, keys.find((k) => k.key === 'ok')!);
-};
-
-/** An answer the task certainly rejects: another tile, or answer + 1 on the keypad. */
-const answerWrong = async (page: Page): Promise<void> => {
-    const state = await snapshot(page);
-    if (state.input === 'tiles') {
-        const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => t.value !== state.answer)!);
-    } else {
-        await tapNumber(page, (state.answer as number) + 1);
-    }
-};
-
-const answerRight = async (page: Page): Promise<void> => {
-    const state = await snapshot(page);
-    if (state.input === 'tiles') {
-        const { tiles } = await targets(page);
-        await tapScene(page, tiles.find((t) => t.value === state.answer)!);
-    } else {
-        await tapNumber(page, state.answer as number);
-    }
-};
-
-const phaseIs = async (page: Page, phase: Snapshot['phase']): Promise<void> => {
-    await expect.poll(async () => (await snapshot(page)).phase).toBe(phase);
-};
-
-/** After a settled task: "Dalej" moves on (or finishes the round after the fifth task). */
-const tapNext = async (page: Page): Promise<void> => {
-    await phaseIs(page, 'done');
-    const { next } = await targets(page);
-    expect(next).not.toBeNull();
-    await tapScene(page, next!);
-};
-
-const screenIs = async (page: Page, screen: Snapshot['screen']): Promise<void> => {
-    await expect.poll(async () => (await snapshot(page)).screen).toBe(screen);
-};
 
 /** Plays the open task correctly on the first try and moves on. */
 const cleanTask = async (page: Page): Promise<void> => {
@@ -135,10 +32,7 @@ test.setTimeout(60_000);
 test.beforeEach(async ({ page }) => {
     // The narrator button is not under test here: a device without any voice keeps it hidden,
     // whatever voices the machine running the test happens to have.
-    await page.addInitScript(() => {
-        const silent = { getVoices: () => [], speak: () => undefined, cancel: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined };
-        Object.defineProperty(window, 'speechSynthesis', { value: silent, configurable: true });
-    });
+    await silenceSpeech(page);
     await passWelcome(page);
     await expect.poll(async () => (await snapshot(page)).phase).toBe('first');
 });

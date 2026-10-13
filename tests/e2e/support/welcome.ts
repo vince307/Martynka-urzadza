@@ -10,38 +10,45 @@
 // The strings are what the parent reads (src/data/pl.ts); a change there is a change here, on purpose.
 // passWelcomeAsChild is the child path (tap an age): with the warm-up it plays 6 tasks first.
 import { expect, type Page } from '@playwright/test';
+import { fromHook, readHook, tapScene } from './hook';
 
 const PARENT_AGE = '10+';
 const STAGE_LABEL = 'Klasa 2, I półrocze';
 const STAGE = 'E3';
 
-interface WelcomeHook {
-    snapshot: { screen: string; stage?: string; learner: { stage: string; warmupPending?: boolean } | null };
-    targets: { ages?: { age: number; x: number; y: number }[]; parent?: { x: number; y: number } };
-}
-
-/** Reads the hook once; null while the game has no state to show (the hook throws then). */
-const readHook = <K extends keyof WelcomeHook>(page: Page, key: K): Promise<WelcomeHook[K] | null> =>
-    page.evaluate((k) => {
-        try {
-            const value = (window as unknown as { __martynkaE2E?: Record<string, unknown> }).__martynkaE2E?.[k];
-            return (value as WelcomeHook[keyof WelcomeHook] | undefined) ?? null;
-        } catch {
-            return null;
-        }
-    }, key) as Promise<WelcomeHook[K] | null>;
-
-const tapScene = async (page: Page, point: { x: number; y: number }): Promise<void> => {
-    const box = await page.locator('#game-container canvas').boundingBox();
-    expect(box).not.toBeNull();
-    await page.touchscreen.tap(box!.x + (point.x / 1920) * box!.width, box!.y + (point.y / 1080) * box!.height);
-};
-
-const openWelcome = async (page: Page, search: string): Promise<void> => {
-    await page.goto(`/${search}`);
+/** Loads the game (the month may be pinned by ?e2eMonth, the e2e build only) and waits for the welcome screen. */
+export const openWelcome = async (page: Page, month?: number): Promise<void> => {
+    await page.goto(month === undefined ? '/' : `/?e2eMonth=${month}`);
     // A stale server without the hook would fail every test with an unreadable error.
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
+};
+
+/** Reads the adult gate's problem from the dialog text like an adult would; the hook never exposes the answer. */
+export const gateProblem = async (page: Page): Promise<{ text: string; product: number }> => {
+    const prompt = page.getByRole('dialog', { name: 'Pytanie dla rodzica' }).getByText(/Ile to jest/);
+    await expect(prompt).toBeVisible();
+    const text = (await prompt.textContent()) ?? '';
+    const factors = /(\d+)\s*·\s*(\d+)/.exec(text);
+    expect(factors).not.toBeNull();
+    return { text, product: Number(factors![1]) * Number(factors![2]) };
+};
+
+export const typeIntoGate = async (page: Page, value: number): Promise<void> => {
+    const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
+    for (const digit of String(value)) {
+        await gate.getByRole('button', { name: digit, exact: true }).tap();
+    }
+    await gate.getByRole('button', { name: 'OK', exact: true }).tap();
+};
+
+/** Opens the welcome screen and taps "Rodzic": the gate is open afterwards. */
+export const openGate = async (page: Page, month?: number): Promise<void> => {
+    await openWelcome(page, month);
+    const { parent } = await fromHook(page, 'targets');
+    expect(parent).toBeDefined();
+    await tapScene(page, parent!);
+    await expect(page.getByRole('dialog', { name: 'Pytanie dla rodzica' })).toBeVisible();
 };
 
 export interface ParentChoice {
@@ -57,26 +64,9 @@ export interface ParentChoice {
 
 /** Parent path: gate, then the chosen age and stage; lands on the first task of a normal (no warm-up) round. The stage must differ from the proposal, or the warm-up would follow. */
 export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Promise<void> => {
-    await openWelcome(page, choice.month === undefined ? '' : `?e2eMonth=${choice.month}`);
-    let parent: { x: number; y: number } | undefined;
-    await expect
-        .poll(async () => {
-            parent = (await readHook(page, 'targets'))?.parent;
-            return parent !== undefined;
-        })
-        .toBe(true);
-    await tapScene(page, parent!);
-
-    // The gate: "Ile to jest A · B?" is read from the dialog, the product is computed here.
-    const gate = page.getByRole('dialog');
-    await expect(gate).toBeVisible();
-    const problem = /(\d+)\s*·\s*(\d+)/.exec((await gate.textContent()) ?? '');
-    expect(problem).not.toBeNull();
-    const product = String(Number(problem![1]) * Number(problem![2]));
-    for (const digit of product) {
-        await gate.getByRole('button', { name: digit, exact: true }).tap();
-    }
-    await gate.getByRole('button', { name: 'OK', exact: true }).tap();
+    await openGate(page, choice.month);
+    // The gate: the product is computed here from the visible problem.
+    await typeIntoGate(page, (await gateProblem(page)).product);
 
     // The panel: replaces the gate dialog once the gate has closed.
     const panel = page.getByRole('dialog', { name: 'Ustawienia startowe' });
@@ -97,7 +87,7 @@ export const passWelcome = (page: Page): Promise<void> =>
 
 /** Child path: taps `age` with the month pinned by ?e2eMonth (the e2e build only); the warm-up follows when the stage has a previous one. */
 export const passWelcomeAsChild = async (page: Page, age: number, month: number): Promise<void> => {
-    await openWelcome(page, `?e2eMonth=${month}`);
+    await openWelcome(page, month);
     let button: { x: number; y: number } | undefined;
     await expect
         .poll(async () => {
