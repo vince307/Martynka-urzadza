@@ -154,6 +154,9 @@ export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
     roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
+    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
+    // DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no settings icon; the gear is drawn in code.
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
 } as const;
 
 /**
@@ -207,6 +210,7 @@ export const ROOM_LAYOUT = {
 export const HUD_TOUCH_TARGETS = {
     speaker: { width: HUD_LAYOUT.speaker.width, height: HUD_LAYOUT.speaker.height },
     roomSwitch: { width: HUD_LAYOUT.roomSwitch.width, height: HUD_LAYOUT.roomSwitch.height },
+    settings: { width: HUD_LAYOUT.settings.width, height: HUD_LAYOUT.settings.height },
 } as const;
 
 /** Interactive rectangle of the welcome screen, checked against MIN_TOUCH_TARGET. */

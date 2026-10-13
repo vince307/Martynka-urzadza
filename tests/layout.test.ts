@@ -37,6 +37,24 @@ describe('task screen layout constants', () => {
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(dotsLeft);
     });
 
+    it('keeps the parent settings icon a touch target in the bottom right, outside the notebook and the room panel and clear of the other HUD controls', () => {
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        expect(HUD_TOUCH_TARGETS.settings).toEqual({ width: settings.width, height: settings.height });
+        expect(settings.left).toBeGreaterThanOrEqual(0);
+        expect(settings.top).toBeGreaterThanOrEqual(0);
+        expect(settings.left + settings.width).toBeLessThanOrEqual(GAME_WIDTH);
+        expect(settings.top + settings.height).toBeLessThanOrEqual(GAME_HEIGHT);
+        // A child's tap on the notebook or the room must never land on the gear.
+        const { notebook } = TASK_LAYOUT;
+        expect(settings.left).toBeGreaterThanOrEqual(notebook.left + notebook.width);
+        expect(settings.left).toBeGreaterThanOrEqual(ROOM_LAYOUT.panel.left + ROOM_LAYOUT.panel.width);
+        // Below the star counter, the speaker and "Do pokoju" (all in the top band).
+        const counter = TASK_LAYOUT.starCounter;
+        expect(settings.top).toBeGreaterThanOrEqual(counter.top + counter.height);
+        expect(settings.top).toBeGreaterThanOrEqual(speaker.top + speaker.height);
+        expect(settings.top).toBeGreaterThanOrEqual(roomSwitch.top + roomSwitch.height);
+    });
+
     it('keeps the summary page buttons touch targets, side by side without overlap, inside the notebook', () => {
         const { width, height, left, gap, top } = SUMMARY_LAYOUT.buttons;
         expect(TASK_TOUCH_TARGETS.pageButton).toEqual({ width, height });

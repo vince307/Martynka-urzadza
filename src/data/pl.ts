@@ -22,6 +22,13 @@ export const pl = {
         confirm: 'Zatwierdź',
         ageOption: (age: number, openEnded: boolean) => (openEnded ? `${age}+` : String(age)),
     },
+    // DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no settings view; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
+    settings: {
+        title: 'Ustawienia rodzica',
+        autoReadHeading: 'Czytanie poleceń na głos',
+        autoReadOn: 'Włączone',
+        autoReadOff: 'Wyłączone',
+    },
     stages: {
         E1: 'Klasa 1, I półrocze',
         E2: 'Klasa 1, II półrocze',

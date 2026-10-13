@@ -268,3 +268,13 @@ canvas {
     font-size: 0.75em;
     font-weight: 400;
 }
+
+/* Parent settings (S-08): the overlay is the one scroll; "Zatwierdź" / "Anuluj" stay in view at the bottom of it. */
+.parent-actions-sticky {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding-block: 12px;
+    background: var(--parent-paper);
+    box-shadow: 0 -8px 8px -8px var(--parent-border);
+}

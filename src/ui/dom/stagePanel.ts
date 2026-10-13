@@ -3,6 +3,7 @@ import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { placementData } from '../../data/placement';
 import { openDialog } from './dialog';
+import { createStageChoices } from './stageChoices';
 import { createButton, createText } from './overlay';
 
 export interface StagePanelOptions {
@@ -12,8 +13,6 @@ export interface StagePanelOptions {
     onCancel: () => void;
     parent?: HTMLElement;
 }
-
-const STAGES = Object.keys(pl.stages) as StageId[];
 
 /**
  * Parent's start settings: child's age (marks the proposed stage), stage, "Zatwierdź". The result
@@ -36,16 +35,10 @@ export const openStagePanel = ({ month, onConfirm, onCancel, parent = document.b
         });
         return { value, button };
     });
-    const stageButtons = STAGES.map((id) => {
-        const button = createButton(pl.stages[id], () => {
-            stage = id;
-            stageChosenByParent = true;
-            refresh();
-        });
-        const tag = document.createElement('span');
-        tag.className = 'parent-tag';
-        button.append(tag);
-        return { id, button, tag };
+    const stageChoices = createStageChoices('parent-panel', (id) => {
+        stage = id;
+        stageChosenByParent = true;
+        refresh();
     });
     const confirm = createButton(pl.parent.confirm, () => {
         if (age === null || stage === null) {
@@ -60,22 +53,18 @@ export const openStagePanel = ({ month, onConfirm, onCancel, parent = document.b
         for (const { value, button } of ageButtons) {
             button.setAttribute('aria-pressed', String(value === age));
         }
-        for (const { id, button, tag } of stageButtons) {
-            button.setAttribute('aria-pressed', String(id === stage));
-            tag.textContent = id === proposed ? `(${pl.parent.proposal})` : '';
-        }
+        stageChoices.show(stage, proposed);
         confirm.disabled = age === null || stage === null;
     };
 
-    const group = (key: 'age' | 'stage', heading: string, className: string, buttons: HTMLButtonElement[]): HTMLElement[] => {
+    const ageGroup = (): HTMLElement[] => {
         const row = document.createElement('div');
-        row.className = className;
+        row.className = 'parent-choices';
         row.setAttribute('role', 'group');
-        row.append(...buttons);
-        const title = createText('p', heading);
-        const id = `parent-panel-${key}`; // an IDREF: no spaces (aria-labelledby is a space-separated list)
-        title.id = id;
-        row.setAttribute('aria-labelledby', id);
+        row.append(...ageButtons.map((a) => a.button));
+        const title = createText('p', pl.parent.ageHeading);
+        title.id = 'parent-panel-age'; // an IDREF: no spaces (aria-labelledby is a space-separated list)
+        row.setAttribute('aria-labelledby', title.id);
         return [title, row];
     };
     const cancel = (): void => {
@@ -90,8 +79,8 @@ export const openStagePanel = ({ month, onConfirm, onCancel, parent = document.b
         parent,
         createText('h1', pl.parent.panelTitle),
         [
-            ...group('age', pl.parent.ageHeading, 'parent-choices', ageButtons.map((a) => a.button)),
-            ...group('stage', pl.parent.stageHeading, 'parent-choices parent-choices-stages', stageButtons.map((s) => s.button)),
+            ...ageGroup(),
+            ...stageChoices.elements,
             actions,
         ],
         cancel,

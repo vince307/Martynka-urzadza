@@ -78,6 +78,7 @@ export const installE2EHook = (game: Game): void => {
                     resume: inRoom() ? room().resumeTarget() : null,
                     speaker: ui().speakerTarget(),
                     roomSwitch: ui().roomSwitchTarget(),
+                    settingsIcon: ui().settingsTarget(),
                 });
             },
         }),
