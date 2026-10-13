@@ -752,16 +752,16 @@ Brak: bez bazy danych (profil § 4). `LearnerState` dostaje `weakStreak` i `ease
 
 - [x] 2.1 `tests/curriculumStart.test.ts` czerwony przed, zielony po; unit `<baseline gałęzi> + N` — 1c384c5
 - [x] 2.2 Deliberate break: `semStart` E4 = 0 / `behind` `<=` → czerwony; przywrócone; meta-check (wyrocznia z planu) — 1c384c5
-- [x] 2.3 Pełna bramka lokalna zielona — 1c384c5 (e2e: orchestrator gate)
+- [x] 2.3 Pełna bramka lokalna zielona — 1c384c5 (e2e 14/14 on 1c384c5, orchestrator)
 
 ### Phase 3: Wybór umiejętności wg wag i unikalne polecenia
 
 #### Automated
 
-- [ ] 3.1 `tests/curriculumPick.test.ts` czerwony przed, zielony po; `tests/warmup.test.ts` z unikalnością zielony; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: `earlier` z krokami > bieżącego / brak ponownego losowania → czerwony; przywrócone; meta-check (prawdziwe `stages`, rozkład z próby)
-- [ ] 3.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0`
-- [ ] 3.4 Pełna bramka lokalna zielona
+- [x] 3.1 `tests/curriculumPick.test.ts` czerwony przed, zielony po; `tests/warmup.test.ts` z unikalnością zielony; unit `<baseline gałęzi> + N` — ee93ff9
+- [x] 3.2 Deliberate break: `earlier` z krokami > bieżącego / brak ponownego losowania → czerwony; przywrócone; meta-check (prawdziwe `stages`, rozkład z próby) — ee93ff9
+- [x] 3.3 `npm run sample -- E1` … `-- E6` `Naruszenia: 0` — ee93ff9
+- [x] 3.4 Pełna bramka lokalna zielona — ee93ff9 (e2e: orchestrator gate)
 
 ### Phase 4: Koniec rundy — odblokowanie kroku i łagodzenie
 
