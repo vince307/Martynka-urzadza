@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { dragGeometry, dragKinds, dragLayout, insideRect, interiorPoint, type Rect } from '../src/core/round/dragLayout';
 import type { BlockKind } from '../src/core/blockDrag';
+import { balance } from '../src/data/balance';
 import { TASK_LAYOUT } from '../src/data/layout';
 
 const spec = TASK_LAYOUT.drag;
@@ -88,5 +89,11 @@ describe('dragKinds', () => {
         expect(dragKinds(99)).toEqual(['ten', 'one']);
         expect(dragKinds(100)).toEqual(['hundred', 'ten', 'one']);
         expect(dragKinds(256)).toEqual(['hundred', 'ten', 'one']);
+    });
+});
+
+describe('drag mat capacity', () => {
+    it('the mat grid holds exactly the reducer cap (layout and balance agree; impl-review)', () => {
+        expect(TASK_LAYOUT.drag.maxPerKind).toBe(balance.blockDrag.maxPerKind);
     });
 });

@@ -124,7 +124,7 @@ export const generateClock: Generator = (skill, rng): Task => {
         choices: timeChoices(answer, likely, fallback, rng),
         hint: [
             pl.tasks.clockHandsHint,
-            pl.tasks.clockShortHandHint(hour),
+            pl.tasks.clockShortHandHint(hour, minute, wrap12(hour + 1)),
             pl.tasks.clockLongHandHint(minute === 0 ? 12 : minute / 5, minute),
             pl.tasks.clockAnswerHint(answer),
         ],

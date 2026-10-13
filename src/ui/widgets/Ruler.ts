@@ -101,6 +101,11 @@ export class Ruler {
         }
     }
 
+    /** True while the drawing is on screen (the e2e hook reads it, not the rectangle). */
+    shown(): boolean {
+        return this.graphics.visible;
+    }
+
     bounds(): Rect {
         return this.area;
     }

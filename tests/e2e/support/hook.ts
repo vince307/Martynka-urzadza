@@ -2,7 +2,7 @@
 // Every tap is a page.touchscreen.tap at a scene point from the hook's targets (1920x1080 space).
 // Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
 // (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
-import { expect, type Page } from '@playwright/test';
+import { expect, type CDPSession, type Page } from '@playwright/test';
 
 export interface Point { x: number; y: number }
 export type BlockKind = 'hundred' | 'ten' | 'one';
@@ -158,33 +158,46 @@ export const cancelTouch = async (page: Page, from: Point, to: Point, steps = 8)
 };
 
 const dragGesture = async (page: Page, from: Point, to: Point, steps: number, end: 'touchEnd' | 'touchCancel'): Promise<void> => {
-    const start = await toPage(page, from);
-    const stop = await toPage(page, to);
     const cdp = await page.context().newCDPSession(page);
     try {
-        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
-        for (let step = 1; step <= steps; step++) {
-            const at = { x: start.x + ((stop.x - start.x) * step) / steps, y: start.y + ((stop.y - start.y) * step) / steps };
-            await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
-        }
-        await cdp.send('Input.dispatchTouchEvent', { type: end, touchPoints: [] });
+        await dragOn(cdp, page, from, to, steps, end);
     } finally {
         await cdp.detach();
     }
 };
+
+/** One drag on an open CDP session (a build of many blocks reuses one session instead of opening one per block). */
+const dragOn = async (cdp: CDPSession, page: Page, from: Point, to: Point, steps: number, end: 'touchEnd' | 'touchCancel'): Promise<void> => {
+    const start = await toPage(page, from);
+    const stop = await toPage(page, to);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+    for (let step = 1; step <= steps; step++) {
+        const at = { x: start.x + ((stop.x - start.x) * step) / steps, y: start.y + ((stop.y - start.y) * step) / steps };
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: end, touchPoints: [] });
+};
+
+/** Touch-move points per block in a build: enough to pass `startDistance`, few enough that a round of builds stays fast. */
+const BUILD_STEPS = 3;
 
 /** Builds `value` on the mat of a 'drag' task: each block dragged from its tray to the mat, the hook's mat count polled after each. */
 export const buildOnMat = async (page: Page, value: number): Promise<void> => {
     const { drag } = await targets(page);
     expect(drag?.mat).toBeTruthy();
     const counts: Record<BlockKind, number> = { hundred: Math.floor(value / 100), ten: Math.floor(value / 10) % 10, one: value % 10 };
-    for (const kind of ['hundred', 'ten', 'one'] as const) {
-        for (let i = 1; i <= counts[kind]; i++) {
-            const from = drag!.tray[kind];
-            expect(from, `tray block ${kind}`).toBeTruthy();
-            await dragTouch(page, from!, drag!.mat!);
-            await expect.poll(async () => (await snapshot(page)).mat?.[kind]).toBe(i);
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        for (const kind of ['hundred', 'ten', 'one'] as const) {
+            for (let i = 1; i <= counts[kind]; i++) {
+                const from = drag!.tray[kind];
+                expect(from, `tray block ${kind}`).toBeTruthy();
+                await dragOn(cdp, page, from!, drag!.mat!, BUILD_STEPS, 'touchEnd');
+                await expect.poll(async () => (await snapshot(page)).mat?.[kind]).toBe(i);
+            }
         }
+    } finally {
+        await cdp.detach();
     }
 };
 

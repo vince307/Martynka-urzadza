@@ -105,6 +105,22 @@ describe('generateClock', () => {
         expect(hours.size).toBe(11);
     });
 
+    it('read: past the full hour the short-hand step says the hand is between the hour and the next one (3.40 is not "at 3")', () => {
+        let between = 0;
+        forEachDraw(generateClock, SKILLS.read5, {}, (task, where) => {
+            if (task.visual?.kind !== 'clock') return;
+            const { hour, minute } = task.visual;
+            const next = hour === 12 ? 1 : hour + 1;
+            if (minute === 0) {
+                expect(task.hint[1], where).toBe(`Krótka wskazówka jest przy ${hour}.`);
+            } else {
+                between += 1;
+                expect(task.hint[1], where).toBe(`Krótka wskazówka jest między ${hour} a ${next}, więc godzina to ${hour}.`);
+            }
+        });
+        expect(between).toBeGreaterThan(0);
+    });
+
     it('speak names the drawing without the time', () => {
         const task = generateClock(SKILLS.readHalf, createRng(5));
         expect(task.speak).toMatch(/zegar/i);

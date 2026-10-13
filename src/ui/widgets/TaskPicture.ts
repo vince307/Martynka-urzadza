@@ -13,6 +13,7 @@ export class TaskPicture {
     private readonly blocks: BaseTenBlocks;
     private readonly chart: BarChart;
     private area: Rect | null = null;
+    private drawn: { shown(): boolean } | null = null;
 
     constructor(scene: Scene) {
         this.clock = new ClockFace(scene);
@@ -28,6 +29,7 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
+        this.drawn = { clock: this.clock, ruler: this.ruler, blocks: this.blocks, bars: this.chart }[visual.kind];
         switch (visual.kind) {
             case 'clock':
                 this.clock.render(visual.hour, visual.minute, rect);
@@ -46,14 +48,15 @@ export class TaskPicture {
 
     hide(): void {
         this.area = null;
+        this.drawn = null;
         this.clock.setVisible(false);
         this.ruler.setVisible(false);
         this.blocks.setVisible(false);
         this.chart.setVisible(false);
     }
 
-    /** The rectangle the picture was drawn in, null while hidden (e2e hook). */
+    /** The rectangle the picture was drawn in, null while hidden or while its widget is not on screen (e2e hook). */
     bounds(): Rect | null {
-        return this.area ? { ...this.area } : null;
+        return this.area && this.drawn?.shown() ? { ...this.area } : null;
     }
 }

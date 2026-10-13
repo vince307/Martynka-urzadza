@@ -20,7 +20,7 @@ export interface BlocksLayout {
 
 const KINDS: readonly BlockKind[] = ['hundred', 'ten', 'one'];
 
-/** The size of one block of `kind` at `scale` (the cell size of the mat in phase 9 comes from here). */
+/** The size of one block of `kind` at `scale`. */
 export const blockSize = (kind: BlockKind, scale = 1): { width: number; height: number } => ({
     width: TASK_LAYOUT.blocks[kind].width * scale,
     height: TASK_LAYOUT.blocks[kind].height * scale,
@@ -137,6 +137,11 @@ export class BaseTenBlocks {
         if (!visible) {
             this.graphics.clear();
         }
+    }
+
+    /** True while the drawing is on screen (the e2e hook reads it, not the rectangle). */
+    shown(): boolean {
+        return this.graphics.visible;
     }
 
     bounds(): Rect {

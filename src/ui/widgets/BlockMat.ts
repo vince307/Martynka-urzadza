@@ -122,7 +122,7 @@ export class BlockMat {
 
         // The mat: a pale field with a dashed outline.
         g.fillStyle(PLACEHOLDER_COLORS.field, 1);
-        g.fillRoundedRect(layout.mat.x, layout.mat.y, layout.mat.width, layout.mat.height, 28);
+        g.fillRoundedRect(layout.mat.x, layout.mat.y, layout.mat.width, layout.mat.height, TASK_LAYOUT.drag.radius);
         this.dashedRect(g, layout.mat, teal);
 
         // Blocks on the mat, one cell each; a block lifted from the mat is drawn under the finger instead.
@@ -142,9 +142,9 @@ export class BlockMat {
                 const r = layout.tray[kind];
                 if (!r) continue;
                 g.fillStyle(PLACEHOLDER_COLORS.tile, 1);
-                g.fillRoundedRect(r.x, r.y, r.width, r.height, 28);
+                g.fillRoundedRect(r.x, r.y, r.width, r.height, TASK_LAYOUT.drag.radius);
                 g.lineStyle(blocks.border, PLACEHOLDER_COLORS.tileBorder, 1);
-                g.strokeRoundedRect(r.x, r.y, r.width, r.height, 28);
+                g.strokeRoundedRect(r.x, r.y, r.width, r.height, TASK_LAYOUT.drag.radius);
                 const area: Rect = { x: r.x, y: r.y, width: r.width, height: r.height - drag.labelHeight };
                 drawBlock(g, this.fitted(kind, area, drag.trayScale), drag.trayScale);
             }
@@ -170,7 +170,7 @@ export class BlockMat {
     private cellScale(layout: DragLayout): number {
         const kind = this.kinds[0] ?? 'ten';
         const cell = layout.matBlock(kind, 0);
-        return Math.min(...(['hundred', 'ten', 'one'] as const).filter((k) => this.kinds.includes(k)).map((k) => Math.min(cell.width / TASK_LAYOUT.blocks[k].width, cell.height / TASK_LAYOUT.blocks[k].height)), 1.5);
+        return Math.min(...(['hundred', 'ten', 'one'] as const).filter((k) => this.kinds.includes(k)).map((k) => Math.min(cell.width / TASK_LAYOUT.blocks[k].width, cell.height / TASK_LAYOUT.blocks[k].height)), TASK_LAYOUT.blocks.maxScale);
     }
 
     /** The rectangle of a block of `kind` at `scale`, centred in `area` (a zero-size area is a point). */

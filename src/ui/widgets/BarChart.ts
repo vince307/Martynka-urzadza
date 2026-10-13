@@ -40,7 +40,7 @@ export class BarChart {
         for (let v = 0; v <= scaleMax; v += step) {
             g.lineStyle(c.gridWidth * s, PLACEHOLDER_COLORS.tileBorder, 1);
             g.lineBetween(plotLeft, yOf(v), plotRight, yOf(v));
-            this.texts.push(this.scene.add.text(plotLeft - 12 * s, yOf(v), String(v), textStyle('chartAxis')).setOrigin(1, 0.5).setScale(s));
+            this.texts.push(this.scene.add.text(plotLeft - c.axisLabelGap * s, yOf(v), String(v), textStyle('chartAxis')).setOrigin(1, 0.5).setScale(s));
         }
         bars.forEach((bar, i) => {
             const x = plotLeft + (c.barGap + i * (c.barWidth + c.barGap)) * s;
@@ -49,9 +49,13 @@ export class BarChart {
             g.fillRect(x, yOf(bar.value), c.barWidth * s, baseY - yOf(bar.value));
             g.lineStyle(c.border * s, teal, 1);
             g.strokeRect(x, yOf(bar.value), c.barWidth * s, baseY - yOf(bar.value));
-            this.texts.push(
-                this.scene.add.text(x + (c.barWidth * s) / 2, baseY + c.labelDrop * s, bar.label, textStyle('chartLabel')).setOrigin(0.5, 0).setScale(s),
-            );
+            const label = this.scene.add.text(x + (c.barWidth * s) / 2, baseY + c.labelDrop * s, bar.label, textStyle('chartLabel')).setOrigin(0.5, 0).setScale(s);
+            // A long label ("Truskawka") shrinks to its column so neighbouring labels never overlap.
+            const room = (c.barWidth + c.barGap / 2) * s;
+            if (label.displayWidth > room) {
+                label.setScale((s * room) / label.displayWidth);
+            }
+            this.texts.push(label);
         });
         g.lineStyle(c.border * s, teal, 1);
         g.lineBetween(plotLeft, yOf(0), plotRight, yOf(0));
@@ -64,6 +68,11 @@ export class BarChart {
         if (!visible) {
             this.graphics.clear();
         }
+    }
+
+    /** True while the drawing is on screen (the e2e hook reads it, not the rectangle). */
+    shown(): boolean {
+        return this.graphics.visible;
     }
 
     bounds(): Rect {

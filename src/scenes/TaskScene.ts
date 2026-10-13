@@ -177,7 +177,8 @@ export class TaskScene extends Scene {
         this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
         this.input.on('pointermove', (p: Raw) => this.feedDrag({ type: 'move', pointerId: p.id, x: p.x, y: p.y }));
         this.input.on('pointerup', (p: Raw) => this.feedDrag(lift(p)));
-        this.input.on('pointerupoutside', (p: Raw) => this.feedDrag(lift(p)));
+        // A finger lifted outside the canvas (the letterbox) is not a drop: like a system cancel it leaves the mat as it was.
+        this.input.on('pointerupoutside', () => this.feedDrag({ type: 'cancel' }));
         const onSleep = (): void => this.feedDrag({ type: 'reset' });
         this.events.on('sleep', onSleep);
         this.bar = new FeedbackBar(this, () => this.advance());

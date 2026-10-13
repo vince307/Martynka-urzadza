@@ -327,10 +327,12 @@ export const pl = {
         // After "za" the object is in the accusative: "za 1 godzinę", "za 2 godziny".
         clockLater: (n: number) => `Zegar pokazuje godzinę. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
         clockLaterSpeak: (n: number) => `Popatrz na zegar. Która godzina będzie za ${n === 1 ? '1 godzinę' : countNoun(n, nouns.godzina)}?`,
-        clockH24: 'Zegar pokazuje godzinę po południu. Jak zapisać ją w zapisie 24-godzinnym?',
-        clockH24Speak: 'Popatrz na zegar. Jest po południu. Jak zapisać tę godzinę w zapisie 24-godzinnym?',
+        clockH24: 'Zegar pokazuje godzinę po południu. Która to godzina w zapisie 24-godzinnym?',
+        clockH24Speak: 'Popatrz na zegar. Jest po południu. Która to godzina w zapisie 24-godzinnym?',
         clockHandsHint: 'Najpierw spójrz na krótką wskazówkę: pokazuje godzinę. Potem na długą: pokazuje minuty.',
-        clockShortHandHint: (hour: number) => `Krótka wskazówka jest przy ${hour}.`,
+        // Past the full hour the short hand has left the number (at 3.40 it is nearer 4): name both numbers it is between.
+        clockShortHandHint: (hour: number, minute: number, next: number) =>
+            minute === 0 ? `Krótka wskazówka jest przy ${hour}.` : `Krótka wskazówka jest między ${hour} a ${next}, więc godzina to ${hour}.`,
         clockLongHandHint: (marker: number, minute: number) =>
             minute === 0 ? 'Długa wskazówka jest na 12, więc jest pełna godzina.' : `Długa wskazówka jest na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
         clockAnswerHint: (time: string) => `Na zegarze jest ${time}.`,
@@ -341,7 +343,7 @@ export const pl = {
         lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),
         lengthRulerSpeak: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Popatrz na linijkę. Ile centymetrów ma odcinek?' : 'Popatrz na linijkę. Ile milimetrów ma odcinek?'),
         lengthReadMarksHint: 'Sprawdź, gdzie odcinek się zaczyna i gdzie się kończy.',
-        lengthFromZeroHint: (to: number, len: number, unit: 'cm' | 'mm') => `Odcinek zaczyna się w 0 i kończy na ${to}. Ma ${len} ${unit}.`,
+        lengthFromZeroHint: (to: number, len: number, unit: 'cm' | 'mm') => `Odcinek zaczyna się na 0 i kończy na ${to}. Ma ${len} ${unit}.`,
         lengthAnswerHint: (len: number, unit: 'cm' | 'mm') => `Odcinek ma ${len} ${unit}.`,
         lengthConvert: (m: number, cm: number) => (cm === 0 ? `${m} m to ile centymetrów?` : `${m} m ${cm} cm to ile centymetrów?`),
         lengthMetreHint: '1 m = 100 cm',

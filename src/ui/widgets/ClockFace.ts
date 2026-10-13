@@ -73,6 +73,7 @@ export class ClockFace {
         g.fillCircle(cx, cy, DIAL.hub.radius * s);
         g.lineStyle(DIAL.hub.border * s, TEAL, 1);
         g.strokeCircle(cx, cy, DIAL.hub.radius * s);
+        this.setVisible(true);
     }
 
     setVisible(visible: boolean): void {
@@ -81,6 +82,11 @@ export class ClockFace {
         if (!visible) {
             this.graphics.clear();
         }
+    }
+
+    /** True while the drawing is on screen (the e2e hook reads it, not the rectangle). */
+    shown(): boolean {
+        return this.graphics.visible;
     }
 
     /** The rectangle the dial was drawn in, for the e2e hook. */

@@ -195,7 +195,7 @@ export const TASK_LAYOUT = {
         mat: { x: 236, y: 380, width: 944, height: 460 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         cellInset: 8, columns: 3, maxPerKind: 9,
-        labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.3,
+        labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.3, radius: 28,
         solutionLines: { x: 1240, y: 380, width: 440, height: 440 },   // the solution steps take the tray's place
     },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
@@ -205,7 +205,7 @@ export const TASK_LAYOUT = {
         gap: 12, groupGap: 40, rowGap: 24, border: 4, line: 2, cells: 10, maxScale: 1.5,
     },
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
-    chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
+    chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;

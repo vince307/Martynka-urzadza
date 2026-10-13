@@ -26,8 +26,9 @@ describe('generateLength ruler', () => {
                 expect(len, where).toBeGreaterThanOrEqual(p.minMm);
                 expect(len, where).toBeLessThanOrEqual(p.maxMm);
                 expect(v.toMm, where).toBeLessThanOrEqual(p.lengthCm * 10);
+                // A shifted start is a whole centimetre on both rulers: only one end is read to the millimetre (impl-review).
+                expect(v.fromMm % 10, where).toBe(0);
                 if (p.unit === 'cm') {
-                    expect(v.fromMm % 10, where).toBe(0);
                     expect(v.toMm % 10, where).toBe(0);
                 }
                 if (v.fromMm > 0) shifted += 1;

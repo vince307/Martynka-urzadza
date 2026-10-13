@@ -20,7 +20,8 @@ export interface PictureSpec {
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
  * `lines: null` means the lines keep their place for a task without a drawing (under the prompt).
- * The modes without an area of their own (`select`, `drag`) share the tiles area until phases 7 and 9 give them one.
+ * `select` and `drag` tasks carry no drawing today and fall back to the tiles area; that area overlaps the select tiles
+ * (`TASK_LAYOUT.select.top`), so a pictured select or drag task needs its own area first.
  */
 export const pictureLayout = (
     spec: PictureSpec,

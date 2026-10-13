@@ -68,8 +68,10 @@ export const generateLength: Generator = (skill, rng): Task => {
     const grid = p.unit === 'cm' ? 10 : 1;
     const lenMm = rng.int(p.minMm / grid, p.maxMm / grid) * grid;
     const room = p.lengthCm * 10 - lenMm;
-    const shifted = room >= grid && rng.chance(p.startShift);
-    const fromMm = shifted ? rng.int(1, room / grid) * grid : 0;
+    // A segment that does not start at 0 starts on a whole centimetre, also on the millimetre ruler: one end read to the
+    // millimetre is enough for grade 2 (teacher read, S-13 impl-review).
+    const shifted = room >= 10 && rng.chance(p.startShift);
+    const fromMm = shifted ? rng.int(1, Math.floor(room / 10)) * 10 : 0;
     const toMm = fromMm + lenMm;
     const [from, to, len] = [fromMm / grid, toMm / grid, lenMm / grid];
     const hint = shifted
