@@ -574,9 +574,9 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (szew `corrupt`, strażnik) — SHAPLACE
-- [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `corrupt` tylko pod `e2eSave` — SHAPLACE
-- [x] 3.3 Deliberate break: szew `corrupt` z `version: 99` → test „corrupt decodes as corrupt” czerwony; przywrócone; meta-check — SHAPLACE
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (szew `corrupt`, strażnik) — 5de4d76
+- [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `corrupt` tylko pod `e2eSave` — 5de4d76
+- [x] 3.3 Deliberate break: szew `corrupt` z `version: 99` → test „corrupt decodes as corrupt” czerwony; przywrócone; meta-check — 5de4d76
 - [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test „warns” na `corrupt`, FR-021 zielony)
 
 #### Manual
