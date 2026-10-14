@@ -930,9 +930,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check
-- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — eacf9e0
+- [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check — eacf9e0
+- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka — eacf9e0
 - [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
