@@ -886,9 +886,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 #### Automated
 
 - [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z liniami `visual:` dla E2.6, E2.7, E3.9
-- [ ] 5.3 Deliberate break: `TaskPicture` bez gałęzi `arrows` → typecheck czerwony; przywrócone; meta-check
-- [ ] 5.4 `tests/fixtures/` bez zmian; `e2e hook: absent (`; `art-tasks.spec` nadal wymusza `mult_groups_result`/`expr`
+- [x] 5.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z liniami `visual:` dla E2.6, E2.7, E3.9
+- [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `arrows` → typecheck czerwony; przywrócone; meta-check
+- [x] 5.4 `tests/fixtures/` bez zmian; `e2e hook: absent (`; `art-tasks.spec` nadal wymusza `mult_groups_result`/`expr`
 - [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

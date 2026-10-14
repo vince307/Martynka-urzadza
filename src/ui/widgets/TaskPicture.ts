@@ -1,5 +1,6 @@
 import type { Scene } from 'phaser';
 import type { TaskVisual } from '../../core/tasks/visual';
+import { ArrowGraph } from './ArrowGraph';
 import { BalanceScale } from './BalanceScale';
 import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
@@ -11,6 +12,7 @@ import { CoordGrid } from './CoordGrid';
 import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
 import { NumberCells } from './NumberCells';
+import { NumberLine } from './NumberLine';
 import { Ruler } from './Ruler';
 import { Thermometer } from './Thermometer';
 
@@ -28,6 +30,8 @@ export class TaskPicture {
     private readonly cells: NumberCells;
     private readonly coord: CoordGrid;
     private readonly figure: FigureGrid;
+    private readonly line: NumberLine;
+    private readonly arrows: ArrowGraph;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -44,6 +48,8 @@ export class TaskPicture {
         this.cells = new NumberCells(scene);
         this.coord = new CoordGrid(scene);
         this.figure = new FigureGrid(scene);
+        this.line = new NumberLine(scene);
+        this.arrows = new ArrowGraph(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -66,6 +72,8 @@ export class TaskPicture {
             cells: this.cells,
             grid: this.coord,
             figure: this.figure,
+            numberLine: this.line,
+            arrows: this.arrows,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -105,9 +113,13 @@ export class TaskPicture {
             case 'figure':
                 this.figure.render(visual, rect);
                 break;
-            case 'column':
             case 'numberLine':
+                this.line.render(visual, rect);
+                break;
             case 'arrows':
+                this.arrows.render(visual, rect);
+                break;
+            case 'column':
                 throw new Error(`no widget for the ${visual.kind} drawing yet`);
             default: {
                 const unreachable: never = visual;
@@ -131,6 +143,8 @@ export class TaskPicture {
         this.cells.setVisible(false);
         this.coord.setVisible(false);
         this.figure.setVisible(false);
+        this.line.setVisible(false);
+        this.arrows.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

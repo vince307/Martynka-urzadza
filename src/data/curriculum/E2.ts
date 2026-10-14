@@ -68,9 +68,13 @@ export const E2: StageDef = {
         {
             step: 6,
             title: 'Sprawdzanie odejmowania dodawaniem, grafy +n / −n',
-            childName: 'Sprawdzanie odejmowania',
+            childName: 'Sprawdzanie i grafy',
             types: ['FACT_FAMILY', 'ARROW_TABLE'],
-            skills: [skill('E2.6.fact_check_sub_20', 6, 'FACT_FAMILY', { max: 20, variants: ['checkSub'] })],
+            skills: [
+                skill('E2.6.fact_check_sub_20', 6, 'FACT_FAMILY', { max: 20, variants: ['checkSub'] }),
+                skill('E2.6.arrow_graph_20', 6, 'ARROW_TABLE', { variants: ['graphOut', 'graphIn'], max: 20, n: [1, 9] }),
+                skill('E2.6.arrow_table_20', 6, 'ARROW_TABLE', { variants: ['table'], max: 20, n: [1, 6] }),
+            ],
         },
         {
             step: 7,
@@ -78,7 +82,7 @@ export const E2: StageDef = {
             childName: 'Dziesiątki do 100',
             types: ['SEQUENCE', 'COMPARE_NUM', 'ADD_SUB'],
             skills: [
-                skill('E2.7.sequence_tens_100', 7, 'SEQUENCE', { max: 100, steps: [10], start: 'multiple' }),
+                skill('E2.7.sequence_tens_100', 7, 'SEQUENCE', { max: 100, steps: [10], start: 'multiple', line: true }),
                 skill('E2.7.compare_num_100', 7, 'COMPARE_NUM', { max: 100 }, 'tiles'),
                 addSub('E2.7.add_sub_tens_100', 7, { max: 100, shapes: ['DT+DT', 'DT-DT'], bridge: 'none' }),
             ],

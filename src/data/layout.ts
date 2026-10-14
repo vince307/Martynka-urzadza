@@ -95,6 +95,9 @@ export const FONT_SIZES = {
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
     cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
+    lineLabel: 28,          // kit reference/number-line.svg: numbers under the ticks
+    lineJump: 30,           // kit number-line.svg has no arc label; DESIGN-GAP (S-14b): the "+k" over an arc
+    arrowRule: 40,          // DESIGN-GAP (S-14b): the rule "+5" on an arrow of a graph or table
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
@@ -134,6 +137,9 @@ export const FONT_WEIGHTS = {
     chartAxis: 650,
     thermoLabel: 700,       // kit reference/thermometer-face.js
     cellValue: 750,
+    lineLabel: 700,         // kit reference/number-line.svg
+    lineJump: 750,
+    arrowRule: 750,
     gridLabel: 700,
     sideLabel: 700,
     artLabel: 650,
@@ -282,6 +288,18 @@ export const TASK_LAYOUT = {
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
     // Number cells (DESIGN-GAP row 73), own units: a magic square (3 x 3) or a pyramid (1, 2, 3 cells, each row shifted half a cell), `cell` wide and tall; the empty cell is dashed.
     cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
+    // Number line (kit reference/number-line.svg, own units: axis 4, ticks 2 x 24 high, arcs 5, dots r 9). Ticks are `gap` apart (`denseGap` from `denseFrom` ticks, so
+    // 0..30 stays readable beside the keypad); arcs rise at most `arcMax`, an arc narrower than `minLabelSpan` has no label. DESIGN-GAP (S-14b): 0..100 with a box,
+    // jumps longer than 1 and the dashed box on a tick are not in the kit.
+    numberLine: {
+        gap: 58, denseGap: 30, denseFrom: 12, pad: 40, axis: 4, tick: 24, arc: 5, head: 12, dot: 9, border: 4,
+        arcZone: 120, arcMax: 84, arcLift: 14, minLabelSpan: 36, labelDrop: 42, box: { width: 52, height: 46, dash: 9 }, maxScale: 1.4,
+    },
+    // Arrow graph and table (DESIGN-GAP, S-14b, rows added in phase 9): circles of `disc` (graph) or square tiles of `tile` (table) with the rule on an arrow.
+    arrows: {
+        disc: 120, arrow: 270, rule: 56, border: 4, head: 16, line: 5, dash: 14,
+        tile: 96, tileGap: 16, ruleColumn: 170, rowGap: 96, maxScale: 1.5,
+    },
     // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
     coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },
     // Figure with labelled sides (DESIGN-GAP rows 75, 76): outline `line` px, lattice `grid` px, labels `labelPad` px off the edge, a point per corner `dot`;
