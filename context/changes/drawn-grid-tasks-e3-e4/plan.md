@@ -972,9 +972,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 10.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 73–77 w `docs/design-gaps.md`
+- [x] 10.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — e1d50d0
+- [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — e1d50d0
+- [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 73–77 w `docs/design-gaps.md` — e1d50d0
 - [ ] 10.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
