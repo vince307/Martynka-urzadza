@@ -1,6 +1,7 @@
 // Drawing descriptions carried by a task (S-13): numbers and labels only, no colours or pixels.
 // The scene decides how to draw them; core only validates and keys them.
 import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
+import { balance } from '../../data/balance';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
@@ -24,7 +25,11 @@ export type TaskVisual =
     // A square grid with labelled columns (A..) and rows (1..) and items on distinct cells (col, row are zero-based).
     | { kind: 'grid'; columns: number; rows: number; items: readonly { item: GridItemId; col: number; row: number }[] }
     // A polygon in lattice units; sides[i] labels the edge from vertex i to i+1 (null = no label).
-    | { kind: 'figure'; lattice: boolean; vertices: readonly (readonly [number, number])[]; sides: readonly (number | null)[] };
+    | { kind: 'figure'; lattice: boolean; vertices: readonly (readonly [number, number])[]; sides: readonly (number | null)[] }
+    // A written column (S-14b): operands right-aligned, the result has exactly `columns` digits.
+    | { kind: 'column'; op: '+' | '−'; a: number; b: number; columns: number }
+    // A number line (S-14b): ticks every `tick` from `from` to `to`; `labels` are the numbers written under ticks, `box` the empty box, `jumps` arcs between ticks.
+    | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] };
 
 /** `tall` drawings are narrower than high and need the room beside the keypad solution; the rest are wide. */
 export type VisualShape = 'wide' | 'tall';
@@ -61,6 +66,10 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return `grid:${v.columns}x${v.rows}:${v.items.map((i) => `${i.item}@${i.col},${i.row}`).join(';')}`;
         case 'figure':
             return `figure:${v.lattice ? 'lattice' : 'free'}:${v.vertices.map(([x, y]) => `${x},${y}`).join(';')}:${v.sides.map((x) => x ?? '_').join(',')}`;
+        case 'column':
+            return `column:${v.op}:${v.a}:${v.b}:${v.columns}`;
+        case 'numberLine':
+            return `line:${v.from}:${v.to}:${v.tick}:${v.labels.join(',')}:${v.box ?? '_'}:${v.jumps.map((j) => `${j.from}>${j.to}`).join(',')}`;
     }
 };
 
@@ -164,6 +173,29 @@ export const validateVisual = (v: TaskVisual): string[] => {
             }
             break;
         }
+        case 'column': {
+            const wider = Math.max(v.a, v.b);
+            if (!isInt(v.a) || !isInt(v.b) || v.a < 0 || v.b < 0) out.push('column operands must be whole numbers from 0');
+            if (v.columns !== String(wider).length) out.push(`${v.columns} columns for the ${String(wider).length}-digit ${wider}`);
+            const result = v.op === '+' ? v.a + v.b : v.a - v.b;
+            if (result < 0) out.push(`negative column result ${result}`);
+            else if (String(result).length !== v.columns) out.push(`column result ${result} does not have ${v.columns} digits`);
+            break;
+        }
+        case 'numberLine': {
+            if (!isInt(v.from) || !isInt(v.to) || !isInt(v.tick) || v.tick < 1 || v.from >= v.to) {
+                out.push(`number line from ${v.from} to ${v.to} every ${v.tick} is not a rising whole-number scale`);
+                break;
+            }
+            if ((v.to - v.from) % v.tick !== 0) out.push(`number line ${v.from}..${v.to} is not a whole number of ticks of ${v.tick}`);
+            const ticks = Math.floor((v.to - v.from) / v.tick) + 1;
+            if (ticks > balance.numberLine.maxTicks) out.push(`${ticks} ticks, at most ${balance.numberLine.maxTicks}`);
+            const onTick = (n: number): boolean => isInt(n) && n >= v.from && n <= v.to && (n - v.from) % v.tick === 0;
+            for (const n of v.labels) if (!onTick(n)) out.push(`label ${n} is not on a tick in the range`);
+            if (v.box !== null && !onTick(v.box)) out.push(`box ${v.box} is not on a tick in the range`);
+            for (const j of v.jumps) if (!onTick(j.from) || !onTick(j.to)) out.push(`jump ${j.from}>${j.to} does not start and end on a tick`);
+            break;
+        }
         default: {
             const unreachable: never = v;
             out.push(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -208,5 +240,9 @@ export const describeVisual = (v: TaskVisual): string => {
             return `[grid ${v.columns}×${v.rows} ${v.items.map((i) => `${GRID_ITEMS.find((g) => g.id === i.item)?.noun ?? i.item} ${String.fromCharCode(65 + i.col)}${i.row + 1}`).join(', ')}]`;
         case 'figure':
             return v.lattice ? `[figure lattice ${v.vertices.length} vertices]` : `[figure ${v.sides.map((x) => (x === null ? '?' : `${x} cm`)).join(' ')}]`;
+        case 'column':
+            return `[column ${v.a} ${v.op} ${v.b}]`;
+        case 'numberLine':
+            return `[line ${v.from}–${v.to}/${v.tick}${v.labels.length ? ` labels ${v.labels.join(' ')}` : ''}${v.box !== null ? ` box ${v.box}` : ''}${v.jumps.length ? ` jumps ${v.jumps.map((j) => `${j.from}>${j.to}`).join(' ')}` : ''}]`;
     }
 };

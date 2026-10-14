@@ -35,6 +35,7 @@ import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateTemperature, parseTemperatureParams } from './generators/temperature';
 import { generateWord, parseWordParams } from './generators/word';
+import { generateWritten, parseWrittenParams } from './generators/written';
 import type { Generator } from './types';
 
 export type ParamsParser = (params: Record<string, unknown>) => unknown;
@@ -75,6 +76,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     TEMPERATURE: generateTemperature,
     COUNT: generateCount,
     MULT_GROUPS: generateMultGroups,
+    WRITTEN: generateWritten,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -113,6 +115,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     TEMPERATURE: parseTemperatureParams,
     COUNT: parseCountParams,
     MULT_GROUPS: parseMultGroupsParams,
+    WRITTEN: parseWrittenParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

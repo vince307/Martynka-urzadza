@@ -3,12 +3,25 @@
 import { reachableTimes } from '../clockSet';
 import { balance } from '../../data/balance';
 import { dragMode } from '../tasks/dragMode';
+import { digitBoxCount, startDigitBoxes, stepDigitBoxes } from './digitBoxes';
+import type { KeypadKey } from './keypad';
 import type { Task } from '../tasks/types';
 
 export const canonicalInput = (task: Task): number | string | number[] => {
     const mode = task.input;
-    // Phase 1 has no digits skill and no column drawing yet; phase 2 builds the number from `digitBoxCount(task)` digits.
-    if (mode === 'digits') throw new Error(`digits needs a column drawing (skill ${task.skillId})`);
+    if (mode === 'digits') {
+        const count = digitBoxCount(task);
+        const n = task.answer;
+        if (typeof n !== 'number' || !Number.isInteger(n) || n < 0 || String(n).length !== count) {
+            throw new Error(`digits answer ${String(n)} does not fill ${count} boxes (skill ${task.skillId})`);
+        }
+        // Typed the way the child does: from the ones up, then OK.
+        let boxes = startDigitBoxes(count);
+        for (const d of String(n).split('').reverse()) boxes = stepDigitBoxes(boxes, d as KeypadKey).state;
+        const { submit } = stepDigitBoxes(boxes, 'ok');
+        if (submit !== n) throw new Error(`digits answer ${n} not produced by the boxes (skill ${task.skillId})`);
+        return submit;
+    }
     if (mode === 'select') {
         if (!Array.isArray(task.answer)) throw new Error(`select answer is not a list (skill ${task.skillId})`);
         const choices = task.choices ?? [];

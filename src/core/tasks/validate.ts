@@ -86,9 +86,18 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
     }
 
-    if (task.input === 'digits') {
-        // Phase 2 adds the `column` drawing and relaxes this to "digits needs a column drawing"; until then no digits task is valid.
+    if (task.input === 'digits' && task.visual?.kind !== 'column') {
         add('mode', 'digits needs a column drawing');
+    }
+
+    // A number line never gives the answer away: no label equals a numeric answer, and the empty box can only be the answer itself.
+    if (task.visual?.kind === 'numberLine' && typeof task.answer === 'number') {
+        if (task.visual.labels.includes(task.answer)) {
+            add('visual', `number line labels give the answer ${task.answer}`);
+        }
+        if (task.visual.box !== null && task.visual.box !== task.answer) {
+            add('visual', `number line box ${task.visual.box} is not the answer ${task.answer}`);
+        }
     }
 
     if (task.input === 'drag') {

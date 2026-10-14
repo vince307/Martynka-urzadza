@@ -247,3 +247,33 @@ describe('grid-task visuals (S-13b)', () => {
         }
     });
 });
+
+describe('column and numberLine drawings (S-14b)', () => {
+    const column = (op: '+' | '−', a: number, b: number, columns: number): TaskVisual => ({ kind: 'column', op, a, b, columns });
+    const line = (over: Partial<Extract<TaskVisual, { kind: 'numberLine' }>> = {}): TaskVisual => ({
+        kind: 'numberLine', from: 0, to: 100, tick: 10, labels: [30, 40, 60], box: 50, jumps: [], ...over,
+    });
+    it('keys and describes a column and a number line', () => {
+        expect(visualKey(column('+', 38, 27, 2))).not.toBe(visualKey(column('+', 38, 28, 2)));
+        expect(visualKey(line())).not.toBe(visualKey(line({ box: 40 })));
+        expect(describeVisual(column('+', 38, 27, 2))).toBe('[column 38 + 27]');
+        expect(describeVisual(line())).toBe('[line 0–100/10 labels 30 40 60 box 50]');
+        expect(visualShape(column('+', 38, 27, 2))).toBe('wide');
+        expect(visualShape(line())).toBe('wide');
+    });
+    it('accepts good columns and rejects a result with the wrong digit count or a negative result', () => {
+        expect(validateVisual(column('+', 38, 27, 2))).toEqual([]);
+        expect(validateVisual(column('+', 68, 47, 2)).join()).toMatch(/digits/);       // 115 has three digits
+        expect(validateVisual(column('−', 27, 38, 2)).join()).toMatch(/negative/);
+        expect(validateVisual(column('−', 65, 62, 2)).join()).toMatch(/digits/);       // 3 has one digit
+        expect(validateVisual(column('+', 38, 27, 3)).join()).toMatch(/columns/);
+    });
+    it('accepts a good number line and rejects off-tick, out-of-range and too many ticks', () => {
+        expect(validateVisual(line())).toEqual([]);
+        expect(validateVisual(line({ labels: [35] })).join()).toMatch(/tick/);
+        expect(validateVisual(line({ box: 110 })).join()).toMatch(/tick|range/);
+        expect(validateVisual(line({ from: 0, to: 40, tick: 1, labels: [], box: null })).join()).toMatch(/ticks/);   // 41 ticks
+        expect(validateVisual(line({ jumps: [{ from: 0, to: 15 }] })).join()).toMatch(/tick/);
+        expect(validateVisual(line({ from: 50, to: 50 })).join()).toMatch(/from/);
+    });
+});

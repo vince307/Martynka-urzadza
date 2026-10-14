@@ -1,4 +1,5 @@
 // Digit boxes of a written column (S-14b): pure, the answer is typed one digit per box, from the ones.
+import type { Task } from '../tasks/types';
 import type { KeypadKey } from './keypad';
 
 /** `digits[0]` is the ones box; the boxes fill right to left. */
@@ -19,4 +20,12 @@ export const stepDigitBoxes = (s: DigitBoxes, key: KeypadKey): { state: DigitBox
         return { state: s, submit: null };
     }
     return { state: { count: s.count, digits: [...s.digits, Number(key)] }, submit: null };
+};
+
+/** One box per column of the task's written column; any other drawing has no boxes. */
+export const digitBoxCount = (task: Task): number => {
+    if (task.visual?.kind !== 'column') {
+        throw new Error(`digits needs a column drawing (skill ${task.skillId})`);
+    }
+    return task.visual.columns;
 };

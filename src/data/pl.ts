@@ -536,6 +536,17 @@ export const pl = {
             `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
         perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
         sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
+        writtenAddPrompt: (a: number, b: number) => `Dodaj w słupku: ${a} + ${b}`,
+        writtenSubPrompt: (a: number, b: number) => `Odejmij w słupku: ${a} − ${b}`,
+        writtenColumnNames: ['Jedności', 'Dziesiątki', 'Setki'] as readonly string[],
+        writtenBorrowFrom: ['dziesiątkę', 'setkę'] as readonly string[],   // accusative: the unit borrowed from the next column
+        writtenAddLine: (name: string, terms: string, total: number, carry: boolean) =>
+            carry ? `${name}: ${terms} = ${total}. Piszę ${total - 10}, 1 dalej.` : `${name}: ${terms} = ${total}.`,
+        writtenSubLine: (name: string, a: number, b: number) => `${name}: ${a} − ${b} = ${a - b}.`,
+        writtenSubLineReduced: (name: string, was: number, now: number, b: number) => `${name}: było ${was}, po pożyczce ${now}. ${now} − ${b} = ${now - b}.`,
+        writtenSubBorrowLine: (name: string, a: number, b: number, unit: string) => `${name}: ${a} − ${b} nie da się. Pożyczam ${unit}: ${a + 10} − ${b} = ${a + 10 - b}.`,
+        writtenSubBorrowLineReduced: (name: string, was: number, now: number, b: number, unit: string) =>
+            `${name}: było ${was}, po pożyczce ${now}. ${now} − ${b} nie da się. Pożyczam ${unit}: ${now + 10} − ${b} = ${now + 10 - b}.`,
         perimeterHint: 'Obwód to suma długości wszystkich boków.',
         perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
         perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków.',

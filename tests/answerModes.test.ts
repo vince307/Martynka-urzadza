@@ -28,6 +28,22 @@ describe('answer modes', () => {
     it('canonicalInput throws for a digits task (no column drawing yet)', () => {
         expect(() => canonicalInput({ skillId: 'T.1', prompt: 'p', answer: 65, hint: ['h'], input: 'digits' })).toThrow(/digits needs a column drawing/);
     });
+    it('canonicalInput types a column answer into the boxes from the ones; a digit count off the boxes throws', () => {
+        const base = { skillId: 'T.1', prompt: 'p', hint: ['h'], input: 'digits' as const, visual: { kind: 'column', op: '+', a: 38, b: 27, columns: 2 } as const };
+        expect(canonicalInput({ ...base, answer: 65 })).toBe(65);
+        expect(() => canonicalInput({ ...base, answer: 165 })).toThrow(/digits/);
+        expect(() => canonicalInput({ ...base, answer: 5 })).toThrow(/digits/);
+        expect(() => canonicalInput({ ...base, answer: 'x' })).toThrow(/digits/);
+    });
+    it('the validator accepts digits with a column drawing and flags a number line that leaks its answer', () => {
+        const column = { kind: 'column', op: '+', a: 38, b: 27, columns: 2 } as const;
+        expect(validateTask({ skillId: 'T.1', prompt: 'p', answer: 65, hint: ['h'], input: 'digits', visual: column }, {})).toEqual([]);
+        const line = (labels: number[], box: number | null) => ({ kind: 'numberLine', from: 0, to: 100, tick: 10, labels, box, jumps: [] }) as const;
+        const task = (labels: number[], box: number | null) => ({ skillId: 'T.1', prompt: 'p', answer: 50, hint: ['h'], input: 'keypad' as const, visual: line(labels, box) });
+        expect(validateTask(task([30, 40, 60], 50), {})).toEqual([]);
+        expect(validateTask(task([30, 50, 60], null), {}).map((v) => v.rule)).toContain('visual');
+        expect(validateTask(task([30, 40], 60), {}).map((v) => v.rule)).toContain('visual');
+    });
     it('the validator reports a digits task as a mode violation until a column drawing exists', () => {
         const problems = validateTask({ skillId: 'T.1', prompt: 'p', answer: 65, hint: ['h'], input: 'digits' }, {});
         expect(problems.map((v) => v.rule)).toContain('mode');

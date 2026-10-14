@@ -105,6 +105,9 @@ export class TaskPicture {
             case 'figure':
                 this.figure.render(visual, rect);
                 break;
+            case 'column':
+            case 'numberLine':
+                throw new Error(`no widget for the ${visual.kind} drawing yet`);
             default: {
                 const unreachable: never = visual;
                 throw new Error(`unknown visual ${JSON.stringify(unreachable)}`);
