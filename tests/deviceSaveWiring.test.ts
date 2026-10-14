@@ -39,4 +39,19 @@ describe('device save wiring (S12-01)', () => {
             expect(callsOf(body)).not.toContain('decodeSave');
         });
     }
+
+    for (const name of ['openImport', 'openReset']) {
+        it(`${name} hands the dialog's force flag on to saver.replace (SIR-02)`, () => {
+            const replaceCalls: ts.CallExpression[] = [];
+            const visit = (node: ts.Node): void => {
+                if (ts.isCallExpression(node) && node.expression.getText(source) === 'saver.replace') replaceCalls.push(node);
+                ts.forEachChild(node, visit);
+            };
+            visit(method(name));
+            expect(replaceCalls).toHaveLength(1);
+            const [state, options] = replaceCalls[0].arguments;
+            expect(state?.getText(source)).toBe('state');
+            expect(options?.getText(source).replace(/\s/g, '')).toBe('{force}');
+        });
+    }
 });

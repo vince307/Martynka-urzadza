@@ -1,3 +1,4 @@
+import type { ReplaceResult } from '../../core/autosave';
 import type { SaveSummary } from '../../core/saveFile';
 import { pl } from '../../data/pl';
 import { createText } from './overlay';
@@ -17,4 +18,14 @@ export const createSummaryList = (title: string, summary: SaveSummary, roomName:
     ];
     box.append(createText('h2', title), ...lines.map((line) => createText('p', line)));
     return box;
+};
+
+/**
+ * The line after a failed replace. The "delete the site data" advice destroys the save, so it appears only when a forced
+ * write failed in the store (or threw); a refusal (`Busy`, `Blocked`, `InvalidSave`) gets the plain line.
+ */
+export const failureText = (result: ReplaceResult | null, forced: boolean, plain: string): string => {
+    if (!forced) return plain;
+    const refused = result !== null && !result.ok && ['Busy', 'Blocked', 'InvalidSave'].includes(result.error);
+    return refused ? plain : pl.saveTransfer.siteDataAdvice;
 };

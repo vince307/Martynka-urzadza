@@ -577,7 +577,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 - [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (szew `corrupt`, strażnik) — 5de4d76
 - [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `corrupt` tylko pod `e2eSave` — 5de4d76
 - [x] 3.3 Deliberate break: szew `corrupt` z `version: 99` → test „corrupt decodes as corrupt” czerwony; przywrócone; meta-check — 5de4d76
-- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test „warns” na `corrupt`, FR-021 zielony)
+- [x] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test „warns” na `corrupt`, FR-021 zielony) — orchestrator note: 51 passed + adaptive.spec #13 load flake (passed alone); save-transfer-blocked and save-restart green on 5de4d76
 
 #### Manual
 
@@ -589,9 +589,9 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (okablowanie `force`)
-- [ ] 4.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona)
-- [ ] 4.3 Deliberate break: `UIScene` bez `force` → test okablowania czerwony; przywrócone; meta-check
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (okablowanie `force`)
+- [x] 4.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona)
+- [x] 4.3 Deliberate break: `UIScene` bez `force` → test okablowania czerwony; przywrócone; meta-check
 - [ ] 4.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test `unavailable` zielony)
 
 #### Manual

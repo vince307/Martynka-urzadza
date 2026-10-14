@@ -183,7 +183,7 @@ export class UIScene extends Scene {
             summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
-            apply: (state) => saver.replace(state),
+            apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });
     }
@@ -199,7 +199,7 @@ export class UIScene extends Scene {
             device,
             roomName: (id) => ROOMS[id]?.name ?? id,
             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
-            apply: (state) => saver.replace(state),
+            apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });
     }

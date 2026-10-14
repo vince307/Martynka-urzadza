@@ -5,7 +5,7 @@ import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
-import { blockedText, createSummaryList } from './saveSummaryView';
+import { blockedText, createSummaryList, failureText } from './saveSummaryView';
 
 export interface SaveImportDialogOptions {
     /** What the device save is: a summary ("Teraz"), unreadable, or not readable at all (S12-01). Never a fresh session. */
@@ -15,7 +15,7 @@ export interface SaveImportDialogOptions {
     roomName: (id: string) => string;
     maxBytes: number;
     /** Replaces the save; called only after the summary step and the "Wczytaj" tap. */
-    apply: (state: SaveState) => Promise<ReplaceResult>;
+    apply: (state: SaveState, force: boolean) => Promise<ReplaceResult>;
     /** Called after the dialog has closed itself (Cancel, Escape or Close). */
     onClose: () => void;
     reload?: () => void;
@@ -44,7 +44,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         handle = openDialog(parent, createText('h1', title), body, finish);
     };
 
-    const stepTwo = (session: SessionSave): void => {
+    const stepTwo = (session: SessionSave, forced: boolean): void => {
         const message = createText('p', '', 'overlay-muted');
         message.setAttribute('role', 'status');
         message.hidden = true;
@@ -53,19 +53,19 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
             busy = true;
             load.disabled = true;
             cancel.disabled = true;
-            void apply(encodeSave(session)).then(
+            void apply(encodeSave(session), forced).then(
                 (result) => {
                     if (result.ok) {
                         reload();
                         return;
                     }
-                    failed();
+                    failed(result);
                 },
-                () => failed(),
+                () => failed(null),
             );
-            const failed = (): void => {
+            const failed = (result: ReplaceResult | null): void => {
                 busy = false;
-                message.textContent = pl.saveTransfer.applyFailed;
+                message.textContent = failureText(result, forced, pl.saveTransfer.applyFailed);
                 message.hidden = false;
                 load.hidden = true;
                 cancel.disabled = false;
@@ -79,7 +79,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         actions.className = 'parent-actions';
         actions.append(load, cancel);
         show(pl.saveTransfer.importTitle, [
-            device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', pl.saveTransfer.deviceUnreadable, 'overlay-muted'),
+            device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', unreadableLine(forced), 'overlay-muted'),
             createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName),
             message,
             actions,
@@ -88,16 +88,20 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         cancel.focus();
     };
 
-    const blockedStep = (cause: Parameters<typeof blockedText>[0]): void => {
+    const unreadableLine = (forced: boolean): string => (forced ? pl.saveTransfer.forcedWarning : pl.saveTransfer.deviceUnreadable);
+
+    const blockedStep = (cause: Parameters<typeof blockedText>[0], forceable: boolean): void => {
         const cancel = createButton(pl.saveTransfer.close, finish);
         const actions = document.createElement('div');
         actions.className = 'parent-actions';
+        // The overwrite path is a plain button, never the primary style and never focused; "Zamknij" holds the focus.
+        if (forceable) actions.append(createButton(pl.saveTransfer.force, () => stepOne(undefined, true)));
         actions.append(cancel);
         show(pl.saveTransfer.importTitle, [createText('p', blockedText(cause)), actions]);
         cancel.focus();
     };
 
-    const stepOne = (rejection?: ImportRejection): void => {
+    const stepOne = (rejection?: ImportRejection, forced = false): void => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.txt,.json,text/plain,application/json';
@@ -108,7 +112,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         message.hidden = !rejection;
         const refuse = (reason: ImportRejection, problem: string | null): void => {
             console.warn('import refused:', reason, problem ?? '');
-            stepOne(reason);
+            stepOne(reason, forced);
         };
         input.addEventListener('change', () => {
             const file = input.files?.[0];
@@ -120,7 +124,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
             file.text().then(
                 (text) => {
                     const result = parseImport(text, maxBytes);
-                    if (result.kind === 'ok') stepTwo(result.session);
+                    if (result.kind === 'ok') stepTwo(result.session, forced);
                     else refuse(result.reason, result.problem);
                 },
                 () => refuse('not-json', null),
@@ -134,7 +138,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         actions.append(choose, cancel);
         show(pl.saveTransfer.importTitle, [
             createText('p', pl.saveTransfer.importBody),
-            ...(device.kind === 'unreadable' ? [createText('p', pl.saveTransfer.deviceUnreadable, 'overlay-muted')] : []),
+            ...(device.kind !== 'summary' ? [createText('p', unreadableLine(forced), 'overlay-muted')] : []),
             createText('p', pl.saveTransfer.importPrivacy, 'overlay-muted'),
             message,
             input,
@@ -142,7 +146,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         ]);
     };
 
-    if (device.kind === 'blocked') blockedStep(device.cause);
+    if (device.kind === 'blocked') blockedStep(device.cause, device.forceable);
     else stepOne();
     return close;
 };
