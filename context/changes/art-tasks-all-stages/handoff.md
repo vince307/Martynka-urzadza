@@ -1,64 +1,55 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the `/10x-implement` step for phase 9 (commit `cda16d1`): the last impl phase. Docs (design gaps 59-66, follow-ups, CLAUDE.md, profile § 10), the seam sweep of phases 1-8 and four content fixes from the orchestrator's teacher read. Phase 10 (e2e) is next; the e2e of this phase was NOT run here (Chromium cannot start).
+Written by the phase 10 (e2e) finishing step (commit `79da1a7`): all implement and e2e phases are done and the change is `implemented`. Next is the review; the open rows are reviewer, visual and human rows that are not an agent's to tick.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | p1 `46aff1d`, p2 `d4f4470` + `ab0dc05`, p3 `b6a947d`, p4 `ba4e0da`, p5 `89e5ea0`, p6 `44c4f19`, p7 `5cdf740`, p8 `fe8e025`, p9 `cda16d1`, this handoff commit |
+| Commits | p1 `46aff1d`, p2 `d4f4470` + `ab0dc05`, p3 `b6a947d`, p4 `ba4e0da`, p5 `89e5ea0`, p6 `44c4f19`, p7 `5cdf740`, p8 `fe8e025`, p9 `cda16d1`, p10 `79da1a7`, handoff commits |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (the implement epilogue is for the last impl/e2e phase, phase 10) |
-| `## Progress` rows | 8.6 e2e ticked from the orchestrator note; 9.2-9.4 ticked; 9.1 open for the e2e part (orchestrator) |
+| `change.md` status | `implemented` |
+| `## Progress` rows open | 20 (`grep -c '^- \[ \]' plan.md`): reviewer, visual and human rows |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `docs/design-gaps.md` | rows 59-66 (money table, scale in balance only, jugs, MULT_GROUPS frames, keypad without minus/comma, thermometer scale -30..+30 in E3-E5, tall drawing beside the keypad, stand-in box); each has a `DESIGN-GAP n` comment in the widget or generator |
-| `context/changes/art-tasks-all-stages/follow-ups/review-fixes.md` | follow-ups with `Trigger:` lines (S-14b/c/d, S-16, conditions) |
-| `CLAUDE.md` | Current state sentence for S-14, `npm run art` in Commands, "Not yet present" corrected |
-| `context/foundation/autonomous-run.md` | § 10 "Paths asserted on purpose although absent" = none; `updated: 2026-10-14`; `.env` does not mirror the list (checked) |
-| `src/data/curriculum/E3.ts`, `src/core/tasks/generators/temperature.ts`, `src/data/pl.ts` | E3.11 `temperature_read_30` now `low: 0` (0..30, step 5); `textChoices` takes the range and offers the opposite sign only when it is inside it; E4.7 hints "Dwa/Cztery takie dzbanki to razem jeden litr."; `temperatureChangeHint(degrees, warmer)` = "Ociepliło się o N stopni." / "Ochłodziło się o N stopni." |
-| `tests/temperature.test.ts`, `tests/capacity.test.ts` | new `negative temperatures wait for E6` (E3-E5 temperature skills from the data: no value below zero in drawing, tiles, hints, prompt), updated last-hint and howMany first-hint expectations |
-| `src/core/tasks/types.ts` | comment on `visual` lists all kinds |
+| `tests/e2e/art-tasks.spec.ts` | 4 serial tests (#11 a money, b balance scale, c thermometer beside the keypad in the solution, d mixed round of art tasks to the summary) |
+| `playwright.config.ts` | `art-tasks` added to `ROUND_SPEC` |
+| `context/changes/art-tasks-all-stages/e2e-break-p10{a,b,c,d}.patch`, `e2e-request-p10.md` | the four break patches (production code only) and the orchestrator request with its results |
+| `context/changes/art-tasks-all-stages/plan.md`, `change.md` | rows 6.3, 10.1-10.6 ticked; status `implemented` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `npm test` | 1847 passed (branch baseline 1844, +3: the E3-E5 temperature checks) (observed) |
 | `npm run lint`, `npm run typecheck` | clean (observed) |
-| `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK (observed) |
-| `npm run sample -- E1` ... `E6` | "Naruszenia: 0" each; `--count 6` re-read for E3.11, E4.7, E6.1 after the fixes |
-| `npm run build` | green, `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS (252 paths) |
-| RED (fix 1) | `E3.11.temperature_read_30 seed=1 draw=0 ...: expected -15 to be greater than or equal to 0` |
-| Deliberate break | `CLAUDE.md` pointed at `src/ui/widgets/ArtImg.ts`: validator `missing: 1`, FAIL; restored, PASS. Meta-check: the validator reads the path from the sentence, so it proves path checking, not wording |
-| e2e | not runnable in this session — orchestrator gate (plain `npx playwright test --config=...` once: chromium-hook tests failed at launch, 20 not run). Expected `42 passed + 0`; E3.11 data changed, so `adaptive`/`first-launch` are the ones to watch (E3 only as previous-stage pool of E4) |
-| Teacher read | E3.11: tiles "0/5/10/15/20/25/30 °C", always four, none negative, hints without "Poniżej zera"; E4.7: "Dwa takie dzbanki to razem jeden litr. / 2 · 2 = 4 / To razem 4 dzbanki."; E6.1: "Ociepliło się o 6 stopni.", "Ochłodziło się o 20 stopni." (numerals 4 stopnie, 26 stopni agree) |
-| Seam sweep | `add.image` only inside `ArtImage` (the five widgets use it); no placeholder left in `TaskPicture` (stand-in is in `ArtImage`, row 66); `TaskPicture.hide()` hides all nine widgets, `TaskScene.hideTaskLayer` calls `picture.hide()`; `measures.ts` is the source for generators, validator and `describeVisual`; `types.ts` comment updated; the `pictureLayout.ts` comment about `select`/`drag` is still accurate (no select or drag skill carries a drawing), left |
+| `npm test` | 1847 passed, 101 files (baseline 1847, +0) (observed); deploy and ops scripts OK, OK |
+| `npm run sample -- E1` ... `E6` | "Naruszenia: 0" each (observed) |
+| `npm run build` | green, `e2e hook: absent (2 chunks checked)` (observed) |
+| e2e (by the orchestrator, on `8bee547` + the uncommitted spec) | `art-tasks` 4 passed (35.2s); full suite 46 passed (42 + 4), 3.2m. First run had (c) RED at `phaseIs('done')` (got 'solution'); fixed in the spec before commit |
+| Break p10a (money url under `coins/`) | RED (a): `expect(art.every(loaded)).toBe(true)` received false; reverted |
+| Break p10b (thermometer face hidden) | RED (c): art poll `>= 1` received 0; reverted |
+| Break p10c (MoneyTable only the first item) | RED (a): art poll `>= 4` received 1; reverted |
+| Break p10d (TaskScene always `wide`) | RED (c): `expect(picture.height).toBeGreaterThan(picture.width)` 190 vs 768; reverted. Meta-check: breaks target the rule (texture loaded, items laid out, face shown, tall layout), not labels |
 
 ## 4. Next command
 
-`/10x-e2e art-tasks-all-stages phase 10` (phase 10, Driver: e2e)
+`/10x-impl-review art-tasks-all-stages`
 
 ## 5. Open
 
-- Row 9.1 e2e part and everything tagged `[reviewer]` 9.5, `[visual]` 9.6, `[human]` 9.7-9.9 (9.7 now also covers: E3.11 no longer reads negative temperatures, the letter of ZADANIA says -30..+30 for E3).
-- Earlier open: 6.3 (tall-layout break, phase 10), 7.6, 7.7, 1.5, 2.8, 2.9 `[human]`, 3.5, 4.5, 5.7, 5.8, 5.9, 6.6, 6.7, 8.7-8.9.
-- The e2e hook `art` seam is NOT in `src/testing/e2eHook.ts` yet (CLAUDE.md does not claim it); phase 10 adds it with the marker in `vite/e2eHookGuard.mjs`.
+- Rows tagged `[reviewer]` 9.5, `[visual]` 9.6, `[human]` 9.7-9.9 (9.7 also covers E3.11 no longer reading negative temperatures against the letter of ZADANIA), plus earlier open 7.6, 7.7, 1.5, 2.8, 2.9, 3.5, 4.5, 5.7-5.9, 6.6, 6.7, 8.7-8.9 (see `plan.md` Progress).
+- Follow-ups: `follow-ups/review-fixes.md`. Design gaps 59-66 in `docs/design-gaps.md`.
+- The e2e hook `Snapshot.art` seam already existed (TaskScene.snapshot), so no hook or guard change was needed in p10.
 - `ARTIFACT GAP: none`.
 
 ## 6. Autonomous decisions
 
-1. E3.11 `temperature_read_30` changed to `low: 0` (orchestrator fix 1), against the letter of ZADANIA (E3 "-30..+30 °C"): negative temperatures belong to E6.1. Rejected: keeping -30 and only filtering distractors (a negative answer would still appear in tiles and the hint "Poniżej zera"). The id keeps its name (`_30` is the top of the scale; mastery keyed by id, the skill is new in this slice). The thermometer frame still draws marks below zero (gap 64, follow-up). Would change: the maintainer wants negative readings in grade 3.
-2. `textChoices` got the range and `c ± 3·step` candidates so that 0 °C in 0..30 still gets four tiles.
-3. E5.5 `capacity_quarter_l`: kept as is. The orchestrator's premise (only 1 l and ½ l jugs drawn) does not hold: the params list all three jugs and the sample shows rows like `2 × ½ l, 8 × ¼ l` and `2 × 1 l, 4 × ¼ l`; `tests/capacity.test.ts` already requires more than 100 of 1000 draws with ¼ l jugs. No rename. Would change: a teacher read finding the ¼ l rows too rare.
-4. Hint wording: E4.7 "Dwa takie dzbanki to razem jeden litr." (and "Cztery takie ..."), consistent with E5.5 "Dwa dzbanki po pół litra to razem litr."; E6.1 last hint says what happened (warmer or colder) with the numeral agreeing.
-5. Design-gap rows 59-66 numbered after row 58; each carries a `DESIGN-GAP n` comment at the top of its file (widgets, `money.ts`, `pictureLayout.ts`).
-6. Profile § 10: the absent-paths row set to "none"; no other path needs asserting. `.env` has no copy of the list.
-7. 9.1 left unticked only for its e2e part; e2e is the orchestrator's (see §3).
+1. Committed the spec unchanged after the orchestrator's results (46 passed, four named REDs); the orchestrator's run counts as the e2e gate because Chromium cannot start in agent sessions. Would change: a red full suite on the orchestrator's next run.
+2. Row 6.3 ticked together with 10.5 (same break, p10d), as the request file states.
+3. `change.md` set to `implemented` here as the /10x-implement epilogue equivalent (last phase). Would change: impl-review finding drift that needs another phase.

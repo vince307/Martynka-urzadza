@@ -985,7 +985,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 - [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e osobno, 6.5) — 44c4f19
 - [x] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:` — 44c4f19
-- [ ] 6.3 Deliberate break: `TaskScene` zawsze `wide` → termometr w rozwiązaniu nie „obok” (jednorazowy hook `*.local` albo e2e 10.5); przywrócone
+- [x] 6.3 Deliberate break: `TaskScene` zawsze `wide` → termometr w rozwiązaniu nie „obok” (jednorazowy hook `*.local` albo e2e 10.5); przywrócone — 79da1a7 (e2e by the orchestrator: p10d RED (c) `picture.height > picture.width` 190 vs 768)
 - [x] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — 44c4f19
 - [x] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 44c4f19 (e2e 42 passed by the orchestrator on 0c43371)
 
@@ -1047,9 +1047,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 10.1 `art-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`; czasy zapisane
-- [ ] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): zły url folderu `money` → (a) czerwony na `loaded`; meta-check
-- [ ] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): twarz termometru niewidoczna → (c) czerwony; meta-check
-- [ ] 10.4 Deliberate break (patch `e2e-break-p10c.patch`): `MoneyTable` tylko pierwszy nominał → (a) czerwony
-- [ ] 10.5 Deliberate break (patch `e2e-break-p10d.patch`): zawsze `wide` → (c) czerwony na proporcji; przywrócone
-- [ ] 10.6 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 10.1 `art-tasks.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`; czasy zapisane — 79da1a7 (e2e by the orchestrator: art-tasks 4 passed 35.2s; full suite 46 passed 3.2m)
+- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): zły url folderu `money` → (a) czerwony na `loaded`; meta-check — 79da1a7 (e2e by the orchestrator: RED (a) `expect(art.every(loaded)).toBe(true)` received false)
+- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): twarz termometru niewidoczna → (c) czerwony; meta-check — 79da1a7 (e2e by the orchestrator: RED (c) art poll `>= 1` received 0)
+- [x] 10.4 Deliberate break (patch `e2e-break-p10c.patch`): `MoneyTable` tylko pierwszy nominał → (a) czerwony — 79da1a7 (e2e by the orchestrator: RED (a) art poll `>= 4` received 1)
+- [x] 10.5 Deliberate break (patch `e2e-break-p10d.patch`): zawsze `wide` → (c) czerwony na proporcji; przywrócone — 79da1a7 (e2e by the orchestrator: RED (c) `picture.height > picture.width` 190 vs 768)
+- [x] 10.6 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 79da1a7 (lint, typecheck, unit 1847, sample E1-E6 0 violations, build e2e hook: absent; e2e by the orchestrator: 46 passed)
