@@ -715,7 +715,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 3be41c7
 - [x] 1.2 Deliberate break: filtr `current` bez progu / CAPACITY `howMany` zablokowane / rng przy pustym zbiorze → czerwone; przywrócone; meta-check — 3be41c7
 - [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian — 3be41c7
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 3be41c7 (e2e: orchestrator note, 46 passed on 483eaf5)
 
 #### Manual
 
@@ -725,9 +725,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `replace` tylko `fatal` / `deviceSaveView` z `summary` przy `unreadable` → czerwone; przywrócone; meta-check
-- [ ] 2.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — b459bc8
+- [x] 2.2 Deliberate break: `replace` tylko `fatal` / `deviceSaveView` z `summary` przy `unreadable` → czerwone; przywrócone; meta-check — b459bc8
+- [x] 2.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1 — b459bc8
 - [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
