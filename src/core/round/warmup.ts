@@ -6,18 +6,18 @@ import type { Rng } from '../rng';
 import type { Outcome } from '../round';
 import { generateTask } from '../tasks/generateTask';
 import type { Task } from '../tasks/types';
-import type { StageDef, StageId } from '../types';
+import type { SkillDef, StageDef, StageId } from '../types';
 import { firstPlayableSteps, pickSkills } from './pick';
 import { distinctTasks } from './unique';
 
 export type WarmupRules = { length: number; previousCount: number; currentSteps: number };
 
 /** `previousCount` tasks of the previous stage first, then the rest from the first playable steps of `stage`. */
-export const buildWarmup = (stage: StageDef, previous: StageDef, rng: Rng, opts: WarmupRules, tileCount: number, retries: number): Task[] => {
+export const buildWarmup = (stage: StageDef, previous: StageDef, rng: Rng, opts: WarmupRules, tileCount: number, retries: number, blocked?: (s: SkillDef) => boolean): Task[] => {
     const early: StageDef = { ...stage, steps: firstPlayableSteps(stage, opts.currentSteps) };
     const skills = [
-        ...pickSkills(previous, rng, opts.previousCount),
-        ...pickSkills(early, rng, opts.length - opts.previousCount),
+        ...pickSkills(previous, rng, opts.previousCount, blocked),
+        ...pickSkills(early, rng, opts.length - opts.previousCount, blocked),
     ];
     return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), retries);
 };

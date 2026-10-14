@@ -13,9 +13,12 @@ export const playable = (skill: SkillDef): boolean =>
 export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>
     stage.steps.filter((step) => step.skills.some(playable)).slice(0, n);
 
-/** `count` skills drawn uniformly (with repeats) from the playable skills of the stage. */
-export const pickSkills = (stage: StageDef, rng: Rng, count: number): SkillDef[] => {
-    const pool = stage.steps.flatMap((step) => step.skills).filter(playable);
+/** `count` skills drawn uniformly (with repeats) from the playable skills of the stage, minus the `blocked` ones. */
+export const pickSkills = (stage: StageDef, rng: Rng, count: number, blocked?: (s: SkillDef) => boolean): SkillDef[] => {
+    const all = stage.steps.flatMap((step) => step.skills).filter(playable);
+    // A pool the filter would empty is played whole: a round never fails for a missing picture.
+    const kept = blocked ? all.filter((skill) => !blocked(skill)) : all;
+    const pool = kept.length > 0 ? kept : all;
     if (pool.length === 0) {
         throw new RangeError(`Stage ${stage.id} has no playable skills`);
     }
