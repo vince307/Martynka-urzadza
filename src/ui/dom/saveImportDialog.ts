@@ -5,7 +5,7 @@ import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
-import { createSummaryList } from './saveSummaryView';
+import { blockedText, createSummaryList } from './saveSummaryView';
 
 export interface SaveImportDialogOptions {
     /** What the device save is: a summary ("Teraz"), unreadable, or not readable at all (S12-01). Never a fresh session. */
@@ -88,12 +88,12 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         cancel.focus();
     };
 
-    const blockedStep = (): void => {
+    const blockedStep = (cause: Parameters<typeof blockedText>[0]): void => {
         const cancel = createButton(pl.saveTransfer.close, finish);
         const actions = document.createElement('div');
         actions.className = 'parent-actions';
         actions.append(cancel);
-        show(pl.saveTransfer.importTitle, [createText('p', pl.saveTransfer.deviceUnavailable), actions]);
+        show(pl.saveTransfer.importTitle, [createText('p', blockedText(cause)), actions]);
         cancel.focus();
     };
 
@@ -142,7 +142,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         ]);
     };
 
-    if (device.kind === 'blocked') blockedStep();
+    if (device.kind === 'blocked') blockedStep(device.cause);
     else stepOne();
     return close;
 };

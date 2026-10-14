@@ -14,7 +14,7 @@ import { pl } from '../../src/data/pl';
 test.setTimeout(60_000);
 
 /** Loads the game with the store switch, passes the card with "Graj dalej" and taps the first age (E1, no warm-up): a task is on screen. */
-async function playOnWithBlockedSave(page: Page, mode: 'unavailable' | 'unreadable', card: { title: string; continue: string }): Promise<void> {
+async function playOnWithBlockedSave(page: Page, mode: 'unavailable' | 'unreadable' | 'corrupt', card: { title: string; continue: string }): Promise<void> {
     await silenceSpeech(page);
     await page.goto(`/?e2eSave=${mode}`);
     const dialog = page.getByRole('alertdialog', { name: card.title });
@@ -67,7 +67,7 @@ test('#2 an unavailable save cannot be overwritten by import or reset', async ({
 });
 
 test('#2 an unreadable save warns instead of showing the fresh session', async ({ page }) => {
-    await playOnWithBlockedSave(page, 'unreadable', pl.saveFailed);
+    await playOnWithBlockedSave(page, 'corrupt', pl.saveFailed);
     expect((await snapshot(page)).save).toMatchObject({ load: 'unreadable', blocked: true });
 
     // Reset: a warning stands where the summary would be; a fresh session's "0 gwiazdek" is never offered as what will disappear.

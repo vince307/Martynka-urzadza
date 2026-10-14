@@ -563,7 +563,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 815af40
 - [x] 2.2 Deliberate break: `timeout` jako `unavailable` / `code` z `lastError` → czerwone; przywrócone; meta-check — 815af40
-- [ ] 2.3 Pełna bramka lokalna zielona; `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.3 Pełna bramka lokalna zielona; `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` (e2e: orchestrator note, 815af40: 52 passed)
 
 #### Manual
 
@@ -574,9 +574,9 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (szew `corrupt`, strażnik)
-- [ ] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `corrupt` tylko pod `e2eSave`
-- [ ] 3.3 Deliberate break: szew `corrupt` z `version: 99` → test „corrupt decodes as corrupt” czerwony; przywrócone; meta-check
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (szew `corrupt`, strażnik) — SHAPLACE
+- [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `corrupt` tylko pod `e2eSave` — SHAPLACE
+- [x] 3.3 Deliberate break: szew `corrupt` z `version: 99` → test „corrupt decodes as corrupt” czerwony; przywrócone; meta-check — SHAPLACE
 - [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test „warns” na `corrupt`, FR-021 zielony)
 
 #### Manual

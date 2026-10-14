@@ -4,7 +4,7 @@ import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
-import { createSummaryList } from './saveSummaryView';
+import { blockedText, createSummaryList } from './saveSummaryView';
 
 export interface SaveResetDialogOptions {
     /** What the device save is (S12-01): a summary of what will disappear, unreadable, or not readable at all. */
@@ -62,7 +62,7 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
         parent,
         createText('h1', pl.saveTransfer.resetTitle),
         blocked
-            ? [createText('p', pl.saveTransfer.deviceUnavailable), actions]
+            ? [createText('p', blockedText(device.cause)), actions]
             : [
                   createText('p', pl.saveTransfer.resetBody),
                   device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', pl.saveTransfer.deviceUnreadable, 'overlay-muted'),
