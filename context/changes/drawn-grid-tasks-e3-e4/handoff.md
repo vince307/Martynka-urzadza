@@ -1,67 +1,51 @@
 # Handoff — `drawn-grid-tasks-e3-e4` (slice S-13b)
 
-Written by the `/10x-plan-review` step of run `2026-10-14-save-s13b-s15-s14b`. Verdict PROCEED: plan.md patched for 1
-critical + 4 warnings, no product code changed. The next agent must not miss: phase 2 adds no-op `cells`/`grid`/`figure`
-cases to `TaskPicture` (exhaustive `never` switch) or its typecheck goes red, and `dragMode` lives in
-`src/core/tasks/dragMode.ts` (not `core/round`).
+Phase 1 (tdd) done and committed as c84ece8. The next agent must not miss: phase 4 must make `canonicalInput` handle the clock via `reachableTimes` (it throws "no reachable set" until then), and phase 2 must add no-op `cells`/`grid`/`figure` cases to `TaskPicture`.
 
 ## 1. State
 
 | | |
 |---|---|
-| Branch | `feat/drawn-grid-tasks-e3-e4`, cut from `main` at `9554e96` |
-| Commits | 4 on top of `9554e96` (identity, research, plan, this `docs(drawn-grid-tasks-e3-e4): plan review`) |
+| Branch | `feat/drawn-grid-tasks-e3-e4` |
+| Commits | c84ece8 (phase 1) on top of the plan-review commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| Progress rows remaining | 67 of 67 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (files below staged by explicit path) |
+| `change.md` status | `implementing` |
+| Progress rows remaining | phase 1 automated rows 1.1-1.4 ticked; 1.5 `[reviewer]` open; phases 2-12 open |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/drawn-grid-tasks-e3-e4/reviews/plan-review.md` | review report F1–F7, `VERDICT: PROCEED` |
-| `context/changes/drawn-grid-tasks-e3-e4/plan.md` | fixes: F1 phase 2 `TaskPicture` no-op cases; F2 clock visual `snap: 60 \| 5`; F3 `dragMode` in `src/core/tasks/dragMode.ts`; F4 phase 6 `figureLayout` (`src/core/round/figureLayout.ts` + test); F5 10.6 names threshold rises on live saves; Known risks + F6 |
-| `context/changes/drawn-grid-tasks-e3-e4/change.md` | status `planned → plan_reviewed` |
-| `context/changes/drawn-grid-tasks-e3-e4/handoff.md` | this file |
+| `src/core/tasks/dragMode.ts` | `dragMode(task)`: clock / blocks from the drawing, throws otherwise |
+| `src/core/round/canonicalInput.ts` | input the widget of the mode can produce (select reversed copy, blocks digits <= maxPerKind, clock throws until phase 4) |
+| `src/core/round.ts`, `src/core/tasks/validate.ts` (rule `mode`, list answers subset of choices), `src/core/tasks/generateTask.ts` (skill id + cause), `src/scenes/TaskScene.ts` (uses `dragMode`) | production changes |
+| `tests/solvableInMode.test.ts`, `tests/generateTask.test.ts` | new tests (per-skill solvability 20x50, dragMode, validator, select as set, skill id) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/drawn-grid-tasks-e3-e4` (observed) |
-| Grounding (grep/read in this step) | 7/7 paths, 9/9 symbols; `TaskPicture.show` ends with `const unreachable: never` (source of F1); no `core/tasks` → `core/round` import today (F3); no `select` skill has a `visual` (F6) |
-| Plan structure | 12 phases, each `Driver:` right (1–4 tdd, 5–10 impl, 11–12 e2e after seam sweep); 67 Progress rows = Success Criteria bullets; row count unchanged by the fixes |
-| lint / typecheck / unit / build / e2e | not run: docs-only step, no source changed (baseline main `9554e96`: unit 1927, e2e 57 — inherited, unverified) |
-| Deliberate break | n/a (docs step) |
+| RED | 6 assertion failures first, e.g. `expected 'second' to be 'done'` (select [3,1] vs [1,3]), `expected 'ADD_SUB params.max must be an integer…' to contain 'E9.9.bad_params'`, `expected [] to include 'mode'` |
+| lint / typecheck | OK / OK |
+| unit | baseline 1927 + 150 = 2077 passed; deploy and ops scripts OK; `sample` E1-E6 exit 0, E3/E4 output identical to before |
+| build | OK, `e2e hook: absent (2 chunks checked)` |
+| e2e | 57 passed (baseline 57 + 0), run in this session with the plain config-path command, 3.9 min; adaptive #13 passed (1.8 m) |
+| Deliberate breaks | isCorrect back to `===` -> "select answer is a set" red; dragMode clock -> blocks -> "picks the clock branch" red; generateTask without skill id -> "wraps a parser error" red; all restored. Meta-check: break 1 does not turn the per-skill test red because no current select skill lacks `check`; the explicit select-set test is the guard |
 
 ## 4. Next command
 
-`/10x-tdd drawn-grid-tasks-e3-e4` (phase 1, Driver: tdd)
+`/10x-tdd drawn-grid-tasks-e3-e4 phase 2`
 
 ## 5. Open
 
-- `[human]` rows: 8.7 (tablet gesture: 5-minute snap, hand grab by a child's finger), 10.6 (E4.3 "set" quarters only, hour
-  hand picked separately, GRID 5 × 4 vs kit 8 × 5, ranges where ZADANIA is silent, unlock-threshold rises on live saves).
-- `[visual]` 5.7, 6.7, 8.6, 9.6; `[reviewer]` teacher reads 2.5, 3.5, 4.4, 5.6, 6.6, 8.5, 9.5.
-- DESIGN-GAP rows 73–77 planned in `docs/design-gaps.md`.
-- Risks (plan `## Known risks`): `tests/e2e/adaptive.spec.ts` near 180 s (phase 8 measures); phase 4 heaviest core phase
-  (continuation rule); `select` picture area without a consumer (`pictureLayout`); E4 gesture precision.
-- Follow-ups to write in phase 10 (`follow-ups/review-fixes.md`): BONDS/CHOOSE_OP → `Trigger: S-14d`; clock "set" E5–E6 /
-  5-minute answers → `Trigger: S-14c or a tablet test`; S13-09 (`stepBlockDrag`) → `Trigger: next change to blockDrag`;
-  S13-05/06/11..14 carried.
+- `[reviewer]` 1.5 open; later `[human]`/`[visual]`/`[reviewer]` rows as in the plan-review handoff.
+- Known e2e load flake: adaptive.spec #13 under 6 workers (passed here).
 
 ## 6. Autonomous decisions
 
-1. **Verdict PROCEED, not RETHINK.** Why: approach (pure core reducers, string clock answer, v1 save, drivers) holds against
-   the code; all findings are local edits. Would change: a finding that the clock answer cannot stay a `formatTime` string.
-2. **F1 fixed with no-op `TaskPicture` cases in phase 2** (rejected: moving the visual kinds into phase 5/6 — would break
-   tdd ordering of generators in phases 2–3). Would change: `TaskPicture` losing its exhaustive switch.
-3. **F2 snap carried in the visual (`snap: 60 | 5`)** (rejected: deriving from skill id or `balance`). Would change: a third
-   snap value, then a per-skill param.
-4. **F3 `dragMode` moved to `src/core/tasks/`** (rejected: validator duplicating the kind check). Would change: nothing.
-5. **F6 select picture area kept** (cheap, closes S-13 follow-up). Would change: cost beyond one layout test → follow-up.
-6. **Product decisions not overturned** (E4.3 quarters, separate hour hand, 5 × 4 grid, ranges): none clearly wrong for a
-   grade 3–4 child; named in `[human]` 10.6/8.7. Would change: author's read of 10.6.
-7. **No sub-agent for codebase verification** (skill step 3): the risky claims were few and checked directly by grep/read.
-   Would change: nothing.
+1. TDD gate: phase clearly testable, implementation absent -> TDD. The `TaskScene` branch switch is inline glue (no test; the scene is canvas-only), phase stays `Driver: tdd`.
+2. `dragMode` violation rule named `mode` (new `ViolationRule`); rejected reusing `visual`. Would change: a consumer filtering rules by name.
+3. `TaskScene` now gives `[]` kinds to a non-blocks drag and to non-drag tasks (tray unused there); rejected leaving the old default. Would change: BlockMat needing kinds when hidden.
+4. `generateTask` attaches `cause` with `Object.assign` because the TS lib target lacks ErrorOptions.
+5. Select canonical input is a reversed copy so order-insensitivity is exercised.
