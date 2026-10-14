@@ -506,6 +506,14 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
         expect(t.state.writes).toEqual([]);
     });
 
+    it('refuses when unavailable (the device save may be healthy and unseen), writes nothing', async () => {
+        const t = setup({ blockedBy: 'unavailable', load: 'unavailable' });
+        const before = t.saver.status().replace;
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+        expect(t.saver.status().replace).toBe(before);
+    });
+
     it('works on an unreadable save (the way out)', async () => {
         const t = setup({ blockedBy: 'unreadable', load: 'unreadable' });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });

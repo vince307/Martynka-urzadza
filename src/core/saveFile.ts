@@ -1,6 +1,7 @@
 // The save file a parent exports and imports (S-12, test-plan risk #7). Pure: no Phaser, no browser globals, no data imports;
 // the build id and the rooms come in as parameters. A file is never trusted because it parses: every import goes through
 // decodeSave (migrations + strict validation), so the file can only ever become a save the game itself could have written.
+import type { BlockReason } from './autosave';
 import { decodeSave, saveProblem, type SessionSave } from './save';
 import type { RoomDef, SaveState, StageId } from './types';
 
@@ -68,4 +69,22 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
         list.push({ id, done: Math.min(state.tasksDone, def.tasks.length), total: def.tasks.length });
     }
     return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list };
+}
+
+/** What an import or reset dialog shows in the place of "Teraz" (S12-01); `blocked` and `unreadable` never carry the in-memory fresh session. */
+export type DeviceSaveView =
+    | { kind: 'summary'; summary: SaveSummary }
+    | { kind: 'unreadable' }
+    | { kind: 'blocked'; cause: 'unavailable' | 'fatal' }
+    | { kind: 'broken' };
+
+export function deviceSaveView(
+    blockedBy: BlockReason | null,
+    current: SaveState,
+    rooms: Readonly<Record<string, RoomDef>>,
+): DeviceSaveView {
+    if (blockedBy === 'unreadable') return { kind: 'unreadable' };
+    if (blockedBy !== null) return { kind: 'blocked', cause: blockedBy };
+    const decoded = decodeSave(current);
+    return decoded.kind === 'ok' ? { kind: 'summary', summary: saveSummary(decoded.session, rooms) } : { kind: 'broken' };
 }
