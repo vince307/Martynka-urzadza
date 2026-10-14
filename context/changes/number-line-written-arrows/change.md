@@ -1,7 +1,7 @@
 ---
 change_id: number-line-written-arrows
 title: Słupek pisemny z okienkami cyfr, grafy strzałkowe i oś liczbowa (rysunek i podpowiedź)
-status: planned
+status: plan_reviewed
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null

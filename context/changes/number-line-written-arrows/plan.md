@@ -140,7 +140,7 @@ interface DigitBoxes { readonly count: number; readonly digits: readonly number[
 startDigitBoxes(count: number): DigitBoxes
 stepDigitBoxes(s: DigitBoxes, key: KeypadKey): { state: DigitBoxes; submit: number | null }
 // digit: fills the next box leftwards (ignored when full); 'delete': clears the last filled; 'ok': submit only when full
-digitBoxCount(task: Task): number   // from visual.kind === 'column' (its `columns`); throws for any other drawing
+digitBoxCount(task: Task): number   // from visual.kind === 'column' (its `columns`); throws for any other drawing — PHASE 2 (the `column` kind does not exist before it)
 ```
 
 `active` = `digits.length` (indeks okienka od jedności); po złym zgłoszeniu scena woła `startDigitBoxes` (czyści wszystko —
@@ -210,14 +210,16 @@ zrzuty w fazie 8); walidator: `digits` wymaga rysunku `column` (do fazy 2: każd
 
 **Intent**: wpisywanie cyfr do okienek od jedności, kasowanie ostatniej, zgłoszenie tylko przy pełnych okienkach.
 
-**Contract**: `startDigitBoxes`, `stepDigitBoxes`, `digitBoxCount` (kontrakt wyżej); `KeypadKey` z `src/core/round/keypad.ts`.
+**Contract**: `startDigitBoxes`, `stepDigitBoxes` (kontrakt wyżej); `KeypadKey` z `src/core/round/keypad.ts`. `digitBoxCount` dopiero w fazie 2
+(plan-review F1: porównanie `visual.kind === 'column'` nie kompiluje się, dopóki rodzaju `column` nie ma w `TaskVisual`).
 
 #### 3. Kanoniczne wejście
 
 **File**: `src/core/round/canonicalInput.ts`
 
-**Intent**: gałąź `digits`: odpowiedź to liczba całkowita ≥ 0 o dokładnie `digitBoxCount(task)` cyfrach, złożona z cyfr przez
-reduktor (test przechodzi `stepDigitBoxes` po cyfrach od jedności), inaczej `throw` ze `skillId`; `switch` z `never`.
+**Intent**: `switch` z `never`; w fazie 1 `case 'digits'` rzuca ze `skillId` („digits needs a column drawing”) — żadna
+umiejętność `digits` jeszcze nie istnieje. Pełna gałąź (liczba całkowita ≥ 0 o dokładnie `digitBoxCount(task)` cyfrach, złożona
+przez reduktor od jedności) w fazie 2, razem z rodzajem `column` (plan-review F1).
 
 #### 4. Testy
 
@@ -226,7 +228,7 @@ reduktor (test przechodzi `stepDigitBoxes` po cyfrach od jedności), inaczej `th
 **Intent**: reduktor (kolejność od jedności, pełne okienka ignorują cyfry, `delete` na pustych, `ok` niepełne → `null`, 0 na
 początku liczby wielocyfrowej jako cyfra jedności dozwolone); `answerModes`: `ANSWER_MODES` ma 5 trybów, `playable` wpuszcza
 dokładnie `['tiles', 'keypad', 'drag', 'select']` (jawna lista „wpuszczonych”, faza 8 ją zmienia), każdy tryb ma układ
-`pictureLayout` różny od `tilesSolution` dla `digits`; `canonicalInput` dla `digits` z rysunkiem `column` testowym.
+`pictureLayout` różny od `tilesSolution` dla `digits`; `canonicalInput` dla `digits` w fazie 1 rzuca (przypadek ręczny).
 
 ### Success Criteria:
 
@@ -256,10 +258,13 @@ Słupek i oś jako dane; WRITTEN zarejestrowany, ale bez umiejętności w progra
 
 #### 1. Rodzaje rysunków
 
-**File**: `src/core/tasks/visual.ts`, `src/core/tasks/validate.ts`, `src/data/balance.ts` (`numberLine.maxTicks` 31)
+**File**: `src/core/tasks/visual.ts`, `src/core/tasks/validate.ts`, `src/data/balance.ts` (`numberLine.maxTicks` 31),
+`src/ui/widgets/TaskPicture.ts` (tylko jawne `case 'column'`/`case 'numberLine'`, które rzucają — `switch` w `render` ma gałąź
+`never`, więc bez nich typecheck fazy jest czerwony; plan-review F2), `src/core/round/digitBoxes.ts` (`digitBoxCount`),
+`src/core/round/canonicalInput.ts` (pełna gałąź `digits`)
 
 **Intent**: `column` i `numberLine` wg kontraktu (Critical Implementation Details), reguła przecieku osi w `validateTask`,
-mode-rule `digits` ↔ `column`.
+mode-rule `digits` ↔ `column`; `digitBoxCount` i gałąź `digits` w `canonicalInput` przeniesione z fazy 1 (plan-review F1).
 
 **Contract**: `validateVisual` z gałęzią wyczerpującą; `visualKey`, `describeVisual`, `visualShape`.
 
@@ -277,7 +282,7 @@ słupku). Podpowiedzi wg Critical Implementation Details. Parser odrzuca niewyko
 
 #### 3. Testy
 
-**File**: `tests/written.test.ts` (nowy), `tests/visual.test.ts`
+**File**: `tests/written.test.ts` (nowy), `tests/visual.test.ts`, `tests/digitBoxes.test.ts` (`digitBoxCount`), `tests/solvableInMode.test.ts` (ręczny przypadek `digits` z rysunkiem `column`)
 
 **Intent**: 1000 losowań na wariant (`tests/helpers.ts`): `validateTask` czyste, liczba cyfr wyniku, `required` zawsze z
 przeniesieniem, arytmetyka każdej linii kolumny liczona niezależnie od generatora (z `a`, `b`), ostatnia linia = pełne
@@ -312,7 +317,8 @@ Trzy rysunki-dane gotowe dla widżetów fazy 5; żadnych nowych umiejętności.
 
 #### 1. ARROW_TABLE
 
-**File**: `src/core/tasks/visual.ts` (`arrows`), `src/core/tasks/generators/arrowTable.ts` (nowy), `src/core/tasks/registry.ts`, `src/data/pl.ts`
+**File**: `src/core/tasks/visual.ts` (`arrows`), `src/core/tasks/generators/arrowTable.ts` (nowy), `src/core/tasks/registry.ts`, `src/data/pl.ts`,
+`src/ui/widgets/TaskPicture.ts` (jawne `case 'arrows'`, które rzuca do fazy 5 — plan-review F2)
 
 **Intent**: warianty `graph` (puste wyjście albo puste wejście — odwrotność łączy się ze „sprawdzaniem odejmowania” E2.6) i
 `table` (3–4 różne wejścia, jedna reguła, jedno puste wyjście); `op` `+`/`−`, `n` 2–10, wartości 0..`max` (E2: 20, z
@@ -437,8 +443,8 @@ etykietą „+k”/„−k”, złote kropki startu, okienko przerywane na kresc
 tabelka z wierszem wejść i wyjść, puste pole przerywane). Kolory z `PLACEHOLDER_COLORS`/palety, liczby z `TASK_LAYOUT`.
 DESIGN-GAP: oś 0–100 z okienkiem, skoki k > 1, graf/tabelka (wiersze 88+).
 
-**Contract**: kontrakt widżetu jak `NumberCells` (`render(visual, rect)`, `setVisible`, `shown`); `TaskPicture` z gałęzią
-wyczerpującą dla `numberLine` i `arrows` (a `column` w fazie 7 — do tego czasu `column` rzuca jawnie, bo `digits` niegrywalny).
+**Contract**: kontrakt widżetu jak `NumberCells` (`render(visual, rect)`, `setVisible`, `shown`); `TaskPicture`: rzucające
+`case 'numberLine'`/`case 'arrows'` z faz 2–3 zastąpione widżetami (a `column` w fazie 7 — do tego czasu rzuca jawnie, bo `digits` niegrywalny).
 
 #### 2. Dane
 
@@ -580,11 +586,14 @@ zakresie) — oba helpery jako `switch` z `never`.
 
 #### 2. Grywalność i dane
 
-**File**: `src/core/round/pick.ts`, `tests/answerModes.test.ts`, `src/data/curriculum/E5.ts`, `src/data/curriculum/E6.ts`, `tests/curriculum.test.ts`, `tests/contentInvariants.test.ts`
+**File**: `src/core/round/pick.ts`, `tests/answerModes.test.ts`, `src/data/curriculum/E5.ts`, `src/data/curriculum/E6.ts`, `tests/curriculum.test.ts`, `tests/contentInvariants.test.ts`,
+`tests/pick.test.ts` (lista trybów w asercji `toContain(skill.answer)` i filtr `eligible`), `tests/curriculumPick.test.ts` (niezależna wyrocznia `isPlayable`)
 
 **Intent**: `playable` wpuszcza `digits` (komentarz zaktualizowany); E5.2 + `E5.2.written_add_100` (`carry: 'any'`),
 `E5.2.written_sub_100`, `childName` „Dwucyfrowe, rzymskie i słupek”; E6.7 + `E6.7.written_add_1000`, `E6.7.written_sub_1000`
-(`carry: 'required'`), `childName` „Słupek i sprawdzanie działań”; `WRITTEN` z `LATER`; `KEYPAD_HINT_MAX` obejmuje `digits`.
+(`carry: 'required'`), `childName` „Słupek i sprawdzanie działań”; `WRITTEN` z `LATER`; `KEYPAD_HINT_MAX` obejmuje `digits`. Dwie ręczne listy czterech trybów w testach (`tests/pick.test.ts`,
+`isPlayable` w `tests/curriculumPick.test.ts`) dostają `digits` — inaczej `skillBuckets` E6 (`previous` = całe E5 z WRITTEN) i
+losowania E5/E6 w `pick.test` są czerwone (plan-review F3); wyrocznia zostaje jawną listą (niezależna od `playable`).
 
 #### 3. O5
 
@@ -766,6 +775,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
   (wąska opcja w `addSubJumps`) albo oś tylko dla skoku przez dziesiątkę.
 - **Spece grające E3 z błędem** zobaczą oś-podpowiedź (faza 6); hak trzyma `targets.picture` bez zmian, więc ryzyko niskie.
 - **Chromium w sesji agenta**: e2e uruchamia orkiestrator; fazy 10–11 protokół request-file.
+- **Minigra słowna wymusza `answer: 'tiles'`** (`drawTask` → `generateTask({ ...skill, answer: 'tiles' })`, bez `validateTask`):
+  skill ADD_SUB z `line: true` da tam `hintVisual` na zadaniu kafelkowym; jedyną zaporą jest zdjęcie pola w `drawTask` (faza 4,
+  test na prawdziwym `wordTask`) — zmieniłoby: nowa minigra wołająca `generateTask` bez tego filtra (plan-review F4).
 - **Notacja pożyczki** bez źródła w repo — `[human]` 8.8; zmieniłoby: inna szkolna notacja autora → tylko `columnMarks` i widżet.
 
 ## References
