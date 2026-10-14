@@ -1,0 +1,13 @@
+diff --git a/src/scenes/UIScene.ts b/src/scenes/UIScene.ts
+index 68be7e9..c69ef1c 100644
+--- a/src/scenes/UIScene.ts
++++ b/src/scenes/UIScene.ts
+@@ -147,7 +147,7 @@ export class UIScene extends Scene {
+                     autoRead: settings.autoRead,
+                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
+                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+-                    artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
++                    artHealth: undefined,
+                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
+                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
+                     onCancel: () => session.run(() => this.closeSettings()),
