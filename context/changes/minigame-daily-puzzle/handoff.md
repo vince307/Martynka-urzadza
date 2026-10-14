@@ -34,7 +34,7 @@ Written by the `/10x-tdd` phase 4 step (phase 3's e2e row 3.4 ticked from the or
 
 ## 4. Next command
 
- (Phase 5: Pula 15 zagadek LOGIC (E3-E4); `Driver: tdd`)
+`/10x-tdd minigame-daily-puzzle phase 5` (Phase 5: Pula 15 zagadek LOGIC (E3-E4); `Driver: tdd`)
 
 ## 5. Open
 
