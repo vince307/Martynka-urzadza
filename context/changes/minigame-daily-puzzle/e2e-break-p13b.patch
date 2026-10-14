@@ -1,0 +1,13 @@
+diff --git a/src/main.ts b/src/main.ts
+index 5f1c26e..ee7a383 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -203,7 +203,7 @@ const start = async (): Promise<void> => {
+             currentRoom: game.registry.get(REGISTRY_KEYS.currentRoom) as string,
+             settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
+             learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
+-            variants: (game.registry.get(REGISTRY_KEYS.variants) as VariantState | undefined) ?? session.variants,
++            variants: session.variants,
+         }),
+         timers,
+         delayMs: balance.save.debounceMs,

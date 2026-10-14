@@ -1,0 +1,13 @@
+diff --git a/src/core/variants.ts b/src/core/variants.ts
+index 383ebc1..0584159 100644
+--- a/src/core/variants.ts
++++ b/src/core/variants.ts
+@@ -54,7 +54,7 @@ export const afterRound = (
+ 
+ /** First unsolved puzzle of the cycle, drawn by the seed; a finished cycle starts over. Unknown done ids are ignored. */
+ export const pickPuzzle = <T extends { id: string }>(pool: readonly T[], done: readonly string[], rng: Rng): T => {
+-    const fresh = pool.filter((p) => !done.includes(p.id));
++    const fresh = pool.filter((p) => done.length >= 0);
+     return rng.pick(fresh.length > 0 ? fresh : pool);
+ };
+ 
