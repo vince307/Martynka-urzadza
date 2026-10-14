@@ -135,6 +135,10 @@ a niedostępny rodzaj spada na kolejnego kandydata. `afterRound(state, kind, tod
 jeden `registry.set(variants)`, potem `flush('now')`; **nie** woła `endRound`. Dla `'round'`: `endRound` jak dziś +
 `afterRound('round')`. Zmiana etapu przez rodzica w trakcie wariantu buduje nową rundę bez dotykania `variants` (wariant
 wraca, jeśli nowy etap go dopuszcza).
+**Pierwszeństwo (plan-review F6).** Wariant zastępuje wyłącznie rundę adaptacyjną: `warmupPending` (rozgrzewka) i
+`?e2eSkills` mają pierwszeństwo i `nextRoundKind` nie jest dla nich wołany (szew `e2eVariant` nie wyprzedza rozgrzewki);
+karta „Nowa umiejętność!” (`pendingUnlock`) pokazuje się jak dziś po „Kolejna runda”, a jej „Dalej” startuje to, co
+zwróci `freshRound` (także wariant).
 
 **Reguły gwiazdek (faza 7).** Zagadka: `{ ...balance.round, length: 1, starPerTask: balance.round.starPerTask *
 balance.variants.puzzleMultiplier, cleanRoundBonus: 0 }`; minigry: `{ ...balance.round, length: n, cleanRoundBonus: 0 }`.
@@ -220,13 +224,20 @@ nie jest nowszy zapis); `parseImport` mapuje go na odrzucenie z własnym powodem
 
 #### 2. Kopia przed pierwszym zapisem
 
-**File**: `src/core/autosave.ts` (`SaveStore.backup?`, `LoadOutcome.loaded.raw`, `createAutosaver` `attempt`),
-`src/storage/idb.ts` (`profile:default:backup-v1` przez istniejące `run`), `src/testing/e2eHook.ts` (magazyn w pamięci)
+**File**: `src/core/autosave.ts` (`SaveStore.backup` — **wymagane**, `LoadOutcome.loaded.raw`, `createAutosaver` `attempt`),
+`src/storage/idb.ts` (`profile:<profileId>:backup-v<migratedFrom>` przez istniejące `run`), `src/testing/e2eHook.ts` (magazyn
+w pamięci), fałszywe magazyny w `tests/autosave.test.ts`, `tests/saveFile.test.ts`, `tests/e2eSave.test.ts`
 
 **Intent**: gdy `migratedFrom !== null`, autosaver przed pierwszym zapisem woła `backup(raw)` raz; nieudana kopia blokuje ten
-zapis (status `blockedBy` nie zmienia się na stałe — kolejna próba ponawia kopię), kopia udana → zapis v2.
+zapis (status `blockedBy` nie zmienia się na stałe — kolejna próba ponawia kopię), kopia udana → zapis v2. `backup` jest
+polem wymaganym `SaveStore` (plan-review F3): opcjonalne pole pozwoliłoby magazynowi bez kopii po cichu nadpisać v1.
+Testy: (1) `tests/idbStore.test.ts` (fake-indexeddb) — po kopii klucz kopii czyta się głęboko równy surowemu v1, a klucz
+główny jest nietknięty, dopóki zapis v2 nie przejdzie; (2) `tests/autosave.test.ts` — rzucająca kopia: zero wywołań
+`write`, `consecutiveFailures` rośnie, `lastError` = nazwa błędu kopii, kolejna `flush` ponawia kopię przed zapisem.
+Kopia nie jest częścią ładowania: `loadSave` jej nie woła, więc nie może zepsuć startu.
 
-**Contract**: `backup(raw: unknown): Promise<void>`; klucz `${SAVE_KEY_PREFIX}default:backup-v1`; `idb.ts` zostaje jedynym importerem `idb-keyval`.
+**Contract**: `backup(raw: unknown): Promise<void>`; klucz `${SAVE_KEY_PREFIX}${profileId}:backup-v${migratedFrom}` (dziś
+`profile:default:backup-v1`); `idb.ts` zostaje jedynym importerem `idb-keyval`.
 
 #### 3. `migratedFrom` w statusie
 
@@ -284,12 +295,23 @@ głównej rady); `migration-failed` → „Nie udało się przenieść zapisu”
 
 #### 3. Szew `?e2eSave=v1`
 
-**File**: `src/testing/e2eHook.ts` (`E2E_SAVE_SEAMS`, `e2eSaveStore`), hak `save` (pole `migratedFrom`, `version`)
+**File**: `src/testing/e2eHook.ts` (`E2E_SAVE_SEAMS`, `e2eSaveStore`), hak `save` (pole `migratedFrom`, `store`)
 
 **Intent**: magazyn w pamięci wypełniony **zaimportowanym** `tests/fixtures/save-v1.json` (nie skopiowanym literałem), z
-`backup`; istniejący znacznik `e2eSave` pokrywa go.
+`backup`; istniejący znacznik `e2eSave` pokrywa go. Magazyn szwu prowadzi dziennik operacji i wersję ostatnio zapisanej
+wartości, a hak wystawia je jako `save.store` (plan-review F2): status autosavera i `saver.current()` (zawsze v2) nie
+mówią, co naprawdę leży w magazynie ani w jakiej kolejności poszły kopia i zapis.
 
-**Contract**: `E2ESaveSeam` + `'v1'`.
+**Contract**: `E2ESaveSeam` + `'v1'`; `save.store: { ops: readonly ('backup' | 'write')[]; writtenVersion: number | null } | null`
+(tylko magazyn szwu; `null` przy IndexedDB).
+
+#### 4. Istniejące specy karty zapisu
+
+**File**: `tests/e2e/save-restart.spec.ts` (`#2 FR-021 an unreadable save shows the parent card…`: tytuł karty i nazwa pliku
+surowej kopii), `tests/e2e/save-transfer-blocked.spec.ts` (`playOnWithBlockedSave(page, 'unreadable', pl.saveFailed)`)
+
+**Intent**: `?e2eSave=unreadable` to zapis `future` — po O1 jego karta ma teksty `pl.saveFuture`, a surowa kopia nazwę z datą
+(S12-14); oba specy dostają nowe klucze (plan-review F1), karta `corrupt` zostaje na `pl.saveFailed`.
 
 ### Success Criteria:
 
@@ -297,8 +319,8 @@ głównej rady); `migration-failed` → „Nie udało się przenieść zapisu”
 
 - Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (dobór tekstu karty, parser szwu `v1`)
 - Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check
-- `npm run build` drukuje `e2e hook: absent (`; `grep -c "save-v1" dist/_app/*.js` = 0
-- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0 (wartość z treści fixture, nie nazwa pliku — JSON jest wklejany bez nazwy)
+- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future`
 
 #### Manual Verification:
 
@@ -628,7 +650,9 @@ komentarze („two branches” w `freshRound`, `version: 1` w nagłówku `save.t
 progress after an update”; S13-06 → „the next save-format change or S-17”; dwie instancje / S12-15 → „a parent reporting
 lost progress or a second format change”; M-S1 część `deploy/` → „next change to deploy/”; S12-07/08/12/13 z triggerami;
 zakres kostek dla E3–E4, `everyRounds`, ekonomia gwiazdek → „S-17 playtest”; przycisk „Podpowiedź” na żądanie → „author asks
-for it”.
+for it”; kopia `backup-v1` bez drogi odczytu w aplikacji (eksport kopii za bramką rodzica) → „a parent report of lost
+progress after an update or the next format change (v3)”; trwale nieudana kopia blokuje każdy zapis po migracji (polityka
+ponowień / komunikat w „Zapis gry”) → „a parent report of progress not saved after an update” (plan-review F5).
 
 ### Success Criteria:
 
@@ -642,7 +666,7 @@ for it”.
 #### Manual Verification:
 
 - [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o „dwóch rodzajach rundy” i „v1 only”
-- [human] Decyzje wbrew dosłownemu PRD/ZADANIA/kitowi: wariant co 4. rundę (`everyRounds` 3); zagadka zastępuje rundę bez karty wyboru (FR-025 „może rozwiązać”); zagadki tylko E3–E4 (inne etapy dostają minigrę); Zakrywanka 0–12 dla każdego etapu; brak „Podpowiedź”/„Pokaż” na żądanie i brak gwiazdki za „Pokaż” (podgląd kitu); warianty nie liczą się do opanowania
+- [human] Decyzje wbrew dosłownemu PRD/ZADANIA/kitowi: wariant co 4. rundę (`everyRounds` 3); zagadka zastępuje rundę bez karty wyboru (FR-025 „może rozwiązać”); zagadki tylko E3–E4 (inne etapy dostają minigrę); Zakrywanka 0–12 dla każdego etapu; brak „Podpowiedź”/„Pokaż” na żądanie i brak gwiazdki za „Pokaż” (podgląd kitu); warianty nie liczą się do opanowania; ×2 także za drugą próbę zagadki (2 gwiazdki), bez premii za bezbłędność; `migration-failed` wymuszalny jak `corrupt`
 
 ---
 
@@ -661,9 +685,11 @@ Nowy `tests/e2e/save-migration.spec.ts` (projekt `chromium-hook`, `ROUND_SPEC` w
 
 **File**: `playwright.config.ts`, `tests/e2e/save-migration.spec.ts` (nowy)
 
-**Intent**: (a) „#10 a v1 save loads in the v2 build with the same stars, room and stage”: `?e2eSave=v1` → hak `save.migratedFrom
-=== 1`, licznik gwiazdek = fixture, etap = fixture; (b) „#2 after a round the migrated save is written as v2 with a v1
-backup first”: runda → hak `save.version === 2`, kopia zapisana przed zapisem (status magazynu w pamięci). Nowy kontekst =
+**Intent**: (a) „#10 a v1 save loads in the v2 build with the same stars, stage and mastery”: `?e2eSave=v1` → hak `save.migratedFrom
+=== 1`, licznik gwiazdek = fixture, etap i opanowanie = fixture (pokój fixture `living` jest nieznany — `repairCurrentRoom`
+przenosi `currentRoom` do salonu, więc spec nie porównuje bieżącego pokoju; plan-review F9); (b) „#2 after a round the
+migrated save is written as v2 with a v1 backup first”: runda → hak `save.store.writtenVersion === 2` i `save.store.ops`
+zaczyna się od `['backup', 'write']` (dziennik magazynu szwu z fazy 3, nie `saver.current()`). Nowy kontekst =
 nowe urządzenie; nigdy nie otwieramy IndexedDB z testu.
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; Chromium niedostępny → protokół request-file
@@ -743,7 +769,7 @@ przeładowanie z tym samym adresem → `variant.kind` ≠ `puzzle`; (c) „#11 t
 
 - `npx playwright test tests/e2e/daily-puzzle.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas pełnego zestawu zapisany
 - Deliberate break (patch `e2e-break-p13a.patch`): zagadka z `puzzleMultiplier` 1 → (a) czerwony
-- Deliberate break (patch `e2e-break-p13b.patch`): `variants` nie w `SAVE_KEYS` → (b) czerwony; meta-check: dowodzi zapisu, nie pamięci sesji (przeładowanie)
+- Deliberate break (patch `e2e-break-p13b.patch`): `snapshot` autosavera w `main.ts` zapisuje startowe `variants` zamiast tych z rejestru → (b) czerwony; meta-check: dowodzi zapisu, nie pamięci sesji (przeładowanie). Nie `variants` poza `SAVE_KEYS`: gwiazdki z ostatniej odpowiedzi i tak brudzą zapis, a `flush('now')` zapisuje cały `snapshot`, więc taki break mógłby zostać zielony (plan-review F4)
 - Deliberate break (patch `e2e-break-p13c.patch`): `pickPuzzle` ignoruje `puzzlesDone` → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
@@ -791,6 +817,14 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - **Faza 7 najcięższa w scenie** (`TaskScene` 865 linii): przy zbliżaniu się do limitu kontekstu agent kończy po gałęzi
   zagadki i szwach (`NEEDS_CONTINUATION`), tytuł HUD i specy dokańcza następna sesja w tej samej fazie.
 - **Litery Ó/Ł w kaflu 132 px** czcionką zadania — sprawdzane w zrzutach fazy 8 (gap 85).
+- **Kopia `backup-v1` bez drogi odczytu w aplikacji** (plan-review F5): chroni przed błędem migracji wykrytym po zapisie, ale
+  odzyskanie wymaga narzędzi przeglądarki albo wsparcia; trwale nieudana kopia (np. brak miejsca) blokuje każdy zapis po
+  migracji — postęp z tej sesji przepada, v1 zostaje. Oba jako follow-upy z triggerem (faza 10). Zmieniłoby: zgłoszenie rodzica.
+- **`migration-failed` wymuszalny jak `corrupt`** (plan-review F7): rodzic może po karcie z eksportem zaimportować/zresetować
+  nad zapisem v1, który poprawiony build umiałby przenieść. Dziś praktycznie nieosiągalne (`MIGRATIONS[1]` to rozszerzenie
+  rekordu, nie rzuca), więc zostaje decyzja 6 + wiersz `[human]` 10.6. Zmieniłoby: krok migracji, który może rzucić (v3).
+- **Kolejność faz zapisu**: faza 1 (format v2) bez fazy 2 (kopia) nadpisałaby v1 bez kopii — obie trafiają na `main` jednym
+  PR-em na końcu slice'a; gałąź nigdy nie jest wdrażana po fazie 1 samej.
 
 ## References
 
@@ -874,8 +908,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 - [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
 - [ ] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check
-- [ ] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "save-v1" dist/_app/*.js` = 0
-- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [ ] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0
+- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future`
 
 #### Manual
 
@@ -973,7 +1007,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 #### Manual
 
 - [ ] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o dwóch rodzajach rundy i „v1 only”
-- [ ] 10.6 [human] Decyzje wbrew dosłownemu PRD/ZADANIA/kitowi: wariant co 4. rundę, zagadka bez karty wyboru, zagadki tylko E3–E4, Zakrywanka 0–12 dla każdego etapu, brak „Podpowiedź”/„Pokaż” na żądanie i gwiazdki za „Pokaż”, warianty poza opanowaniem
+- [ ] 10.6 [human] Decyzje wbrew dosłownemu PRD/ZADANIA/kitowi: wariant co 4. rundę, zagadka bez karty wyboru, zagadki tylko E3–E4, Zakrywanka 0–12 dla każdego etapu, brak „Podpowiedź”/„Pokaż” na żądanie i gwiazdki za „Pokaż”, warianty poza opanowaniem, ×2 także za drugą próbę, `migration-failed` wymuszalny
 
 ### Phase 11: Zapis v1 wczytany przez build v2 — e2e (#2, #10)
 
@@ -1000,6 +1034,6 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 - [ ] 13.1 `npx playwright test tests/e2e/daily-puzzle.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas zapisany
 - [ ] 13.2 Deliberate break (patch `e2e-break-p13a.patch`): `puzzleMultiplier` 1 → (a) czerwony
-- [ ] 13.3 Deliberate break (patch `e2e-break-p13b.patch`): `variants` poza `SAVE_KEYS` → (b) czerwony; meta-check
+- [ ] 13.3 Deliberate break (patch `e2e-break-p13b.patch`): `snapshot` w `main.ts` zapisuje startowe `variants` → (b) czerwony; meta-check
 - [ ] 13.4 Deliberate break (patch `e2e-break-p13c.patch`): `pickPuzzle` ignoruje `puzzlesDone` → (c) czerwony; każdy czerwony osobno (`-g`)
 - [ ] 13.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
