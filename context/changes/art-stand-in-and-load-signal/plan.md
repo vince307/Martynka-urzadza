@@ -767,7 +767,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 - [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — d36b952
 - [x] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check — d36b952
 - [x] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian — d36b952
-- [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 46 passed (3.8m) on 280ff09
 
 #### Manual
 
@@ -778,9 +778,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona)
-- [ ] 6.3 `npm run build` drukuje `e2e hook: absent (`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — SHA6
+- [x] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona) — SHA6
+- [x] 6.3 `npm run build` drukuje `e2e hook: absent (` — SHA6
 - [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone)
 
 #### Manual

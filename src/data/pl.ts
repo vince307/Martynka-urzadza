@@ -137,6 +137,9 @@ export const pl = {
         resetBody: 'Znikną wszystkie postępy z tego urządzenia:',
         resetHint: 'Jeśli chcesz je zachować, najpierw zapisz kopię.',
         resetConfirm: 'Zacznij od nowa',
+        // DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read; for the adult, calm, no codes.
+        deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu, więc nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.',
+        deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
     saveUnavailable: {
