@@ -719,7 +719,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, globali i importu `taskArt.ts`; `playable` nietknięty, `unlockReady` bez zmiany zachowania
+- [x] 1.5 [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, globali i importu `taskArt.ts`; `playable` nietknięty, `unlockReady` bez zmiany zachowania — impl-review
 
 ### Phase 2: Stan zapisu na urządzeniu dla importu i resetu, odmowa `replace` przy `unavailable`
 
@@ -732,7 +732,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Żaden nowy stan w `SaveState`/`encodeSave`; `unreadable` nadal pozwala na import i reset
+- [x] 2.5 [reviewer] Żaden nowy stan w `SaveState`/`encodeSave`; `unreadable` nadal pozwala na import i reset — impl-review
 
 ### Phase 3: Sygnał wczytania w `BootScene`, szew `?e2eArt` i filtr w `TaskScene`
 
@@ -745,7 +745,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 3.5 [reviewer] `REGISTRY_KEYS.artHealth` poza `SAVE_KEYS`; `forcedSkills` omija filtr; brak rekordu = nic nie brakuje; `TaskScene` tylko argumenty w `freshRound`
+- [x] 3.5 [reviewer] `REGISTRY_KEYS.artHealth` poza `SAVE_KEYS`; `forcedSkills` omija filtr; brak rekordu = nic nie brakuje; `TaskScene` tylko argumenty w `freshRound` — impl-review
 
 ### Phase 4: Linia „Obrazki” w panelu rodzica
 
@@ -757,7 +757,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 4.4 [reviewer] Teacher read `pl.settings.art*` (1 / 2–4 / 5+ i 22–24), wiersz 67 i komentarz `DESIGN-GAP 67`
+- [x] 4.4 [reviewer] Teacher read `pl.settings.art*` (1 / 2–4 / 5+ i 22–24), wiersz 67 i komentarz `DESIGN-GAP 67` — impl-review
 - [ ] 4.5 [visual] Zrzuty panelu rodzica: „Obrazki” OK, z brakami (`?e2eArt=missing`, `?e2eArt=corrupt`) — 1920×1080 i ~400 px
 
 ### Phase 5: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
@@ -771,7 +771,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Teacher read 38 etykiet (kwoty `formatMoney`, „½ l”, „¼ l”, nazwy ikon w mianowniku)
+- [x] 5.5 [reviewer] Teacher read 38 etykiet (kwoty `formatMoney`, „½ l”, „¼ l”, nazwy ikon w mianowniku) — impl-review
 - [ ] 5.6 [visual] Zrzuty stand-inów (`?e2eArt=missing`): monety, banknoty, dzbanki, waga z odważnikami, ikony COUNT i MULT_GROUPS, termometr; każdy także w fazie rozwiązania przy klawiaturze — 1920×1080 i 1024×768
 
 ### Phase 6: Import i reset po nieudanym odczycie zapisu
@@ -785,7 +785,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Teacher read `pl.saveTransfer.deviceUnavailable`/`deviceUnreadable`, wiersz 68
+- [x] 6.5 [reviewer] Teacher read `pl.saveTransfer.deviceUnavailable`/`deviceUnreadable`, wiersz 68 — impl-review
 - [ ] 6.6 [visual] Zrzuty dialogów importu i resetu przy `?e2eSave=unavailable` i `?e2eSave=unreadable` oraz na zdrowym zapisie — 1920×1080 i ~400 px
 - [ ] 6.7 [human] Decyzja wbrew literze PRD FR-022: przy `unavailable` import i reset niedostępne do ponownego uruchomienia
 
@@ -800,8 +800,8 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Seam sweep: jedno źródło etykiet, jedna formuła progu, komentarze, gaps 66–68 i 48/49, follow-upy z `Trigger:`
-- [ ] 7.6 [reviewer] `CLAUDE.md` „Current state” ma zdanie o tej zmianie
+- [x] 7.5 [reviewer] Seam sweep: jedno źródło etykiet, jedna formuła progu, komentarze, gaps 66–68 i 48/49, follow-upy z `Trigger:` — impl-review
+- [x] 7.6 [reviewer] `CLAUDE.md` „Current state” ma zdanie o tej zmianie — impl-review
 - [ ] 7.7 [human] Decyzja: pomijanie umiejętności z wynikiem tylko na obrazku zmienia skład rundy (FR-013), z regułą progu kroku bieżącego
 
 ### Phase 8: Brakujący obrazek dotykiem — e2e (#11)
@@ -810,7 +810,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 - [x] 8.1 `art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4` — 0f1a43b (orkiestrator: 4 passed; pełne 50 passed = 46 + 4)
 - [x] 8.2 Deliberate break (patch `e2e-break-p8a.patch`): etykieta z klucza → (a)/(b) czerwone; meta-check — 0f1a43b (orkiestrator: (a) i (b) osobno ✘)
-- [x] 8.3 Deliberate break (patch `e2e-break-p8b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check
+- [x] 8.3 Deliberate break (patch `e2e-break-p8b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check — 0f1a43b (orkiestrator: (d) ✘ `Received: 0`, (c) ✘)
 - [x] 8.4 Deliberate break (patch `e2e-break-p8c.patch`): panel bez `artHealth` → (c) czerwony; przywrócone — 0f1a43b (orkiestrator: (c) ✘ `toBeVisible`)
 - [x] 8.5 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 0f1a43b
 

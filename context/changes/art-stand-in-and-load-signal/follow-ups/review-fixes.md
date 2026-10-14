@@ -12,6 +12,8 @@ Findings of the observability audit 2026-10-14 (S14-*, S12-*, S13-*) that this c
 - S13-01..S13-14: select and drag solvability, S13-07 generator errors without `skill.id`, and the rest. Trigger: the next select/drag skill or S-13b.
 - Raw copy of an unreadable save from inside the import/reset dialog (today only on the start card). Trigger: a parent who cannot reach the start card's copy.
 
+- Impl-review F1: the stand-in label in `ArtImage.show` only shrinks (fixed `ART_STAND_IN.padding` 8, no minimum scale); a weight on the scale in `TASK_LAYOUT.picture.keypadSolution` comes to about 5 CSS px on a 1024 px tablet by arithmetic. Measure weight and coin labels at 1024x768 in the main and solution phase; under ~10 CSS px, make the padding proportional for small boxes or let the label overflow by a set share. Trigger: visual gate of this change (row 5.6).
+
 ## Still open, repeated from the audit (this change touches only the `freshRound` arguments in `TaskScene`)
 
 - M-1, M-2, M-13, H-3, H-4. Trigger: next change to TaskScene / narrator.
