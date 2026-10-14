@@ -71,7 +71,8 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
     return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list };
 }
 
-/** What an import or reset dialog shows in the place of "Teraz" (S12-01); `blocked` and `unreadable` never carry the in-memory fresh session. */
+/** What an import or reset dialog shows in the place of "Teraz" (S12-01); `blocked` and `unreadable` never carry the in-memory fresh session;
+ * `blocked.forceable` is the same `replaceGate` answer the saver gives (SIR-02), and `future`/`timeout` are never forceable. */
 export type DeviceSaveView =
     | { kind: 'summary'; summary: SaveSummary }
     | { kind: 'unreadable' }

@@ -162,7 +162,10 @@ export class UIScene extends Scene {
 
     /** Export step: replaces the panel in the same input session; the file is built at the tap, from the saver's current state. */
     private openExport(saver: Autosaver, session: InputSession): void {
+        // A copy of a session the game never loaded is not the child's progress (SIR-04): say so above "Zapisz plik".
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         this.closeDialog = openSaveExportDialog({
+            ...(device.kind === 'summary' ? {} : { warning: pl.saveTransfer.exportNotDevice }),
             file: (now) => ({
                 text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
                 fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),

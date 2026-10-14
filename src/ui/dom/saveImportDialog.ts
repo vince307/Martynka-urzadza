@@ -26,7 +26,8 @@ export interface SaveImportDialogOptions {
  * Import in two steps (FR-022): pick a file, then compare "Teraz" and "Z pliku" and tap "Wczytaj". A file that
  * fails is refused with a calm line and the save is never touched; only the second step calls `apply`, and that step
  * opens with the focus on "Anuluj".
- * A device save that was not read (`blocked`) offers no file at all; an `unreadable` one shows a warning in the place of "Teraz".
+ * A device save that was not read (`blocked`) offers no file, only "Zamknij"; a refused read (`forceable`) adds "Zastąp mimo to", a second step with the
+ * file choice and the warning, and then replaces with `force`. An `unreadable` one shows a warning in the place of "Teraz".
  * DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; built from the S-06 dialog parts.
  * DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read.
  * Returns the function that closes the dialog.

@@ -103,6 +103,8 @@ export const pl = {
         exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
         privacy: 'Plik zawiera postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.',
         saveFile: 'Zapisz plik',
+        // DESIGN-GAP 72: shown in the export dialog when the game did not load the device save.
+        exportNotDevice: 'Gra nie wczytała zapisu z tego urządzenia, więc ta kopia zawiera tylko obecną grę, bez wcześniejszych postępów.',
         close: 'Zamknij',
         exportOutcome: {
             shared: 'Kopia została przekazana wybranej aplikacji.',

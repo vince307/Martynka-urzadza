@@ -2,7 +2,8 @@
 // that could not be read is never overwritten), FR-022 (import and reset warn before anything is overwritten).
 // The view rules (`deviceSaveView`) and the refusal of `replace` are unit-tested; this spec proves the seam in the real browser:
 // the settings panel behind the adult gate hands the dialogs the real autosaver's block, so a save the game could not read
-// is never shown as a fresh "Teraz" session and, when the browser would not give it at all, cannot be overwritten.
+// is never shown as a fresh "Teraz" session; a newer-version save is never overwritten, and a read the browser refused is
+// replaced only after the second step "Zastąp mimo to" (save-reason-and-recovery; the corrupt seam keeps the unreadable path).
 // The ?e2eSave switch (e2e build only) replaces the store with an in-memory one; IndexedDB is never opened here. The hook
 // installs only after "Graj dalej", so these tests start with page.goto, not openWelcome. Modelled on save-restart.spec.ts.
 // Runs in the chromium-hook project.

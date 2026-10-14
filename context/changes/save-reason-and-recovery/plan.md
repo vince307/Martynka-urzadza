@@ -592,7 +592,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 - [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (okablowanie `force`) — 5884958
 - [x] 4.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona) — 5884958
 - [x] 4.3 Deliberate break: `UIScene` bez `force` → test okablowania czerwony; przywrócone; meta-check — 5884958
-- [ ] 4.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test `unavailable` zielony)
+- [x] 4.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (test `unavailable` zielony) — orchestrator note: 52 passed on 5884958
 
 #### Manual
 
@@ -605,9 +605,9 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (`freshRoundWiring`, okablowanie `openExport`)
-- [ ] 5.2 Deliberate break: `freshRound` bez `missingIds` / bez `blocked` → `freshRoundWiring` czerwony; przywrócone; meta-check
-- [ ] 5.3 `validate-rule-files.sh` PASS; deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (`freshRoundWiring`, okablowanie `openExport`)
+- [x] 5.2 Deliberate break: `freshRound` bez `missingIds` / bez `blocked` → `freshRoundWiring` czerwony; przywrócone; meta-check
+- [x] 5.3 `validate-rule-files.sh` PASS; deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone
 - [ ] 5.4 `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

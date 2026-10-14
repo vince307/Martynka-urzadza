@@ -1,4 +1,4 @@
-// S12-01 wiring (plan art-stand-in-and-load-signal, phase 6): the import and reset steps of the settings flow must
+// S12-01 wiring (plan art-stand-in-and-load-signal, phase 6; SIR-02 and SIR-04 added by save-reason-and-recovery): the import and reset steps of the settings flow must
 // judge the device save with `deviceSaveView(saver.status(), …)` and hand that view to the dialog, so a
 // fresh in-memory session is never shown as "Teraz". The scene needs Phaser and the dialogs need a DOM, so this
 // reads the scene source as syntax (formatting does not matter).
@@ -54,4 +54,12 @@ describe('device save wiring (S12-01)', () => {
             expect(options?.getText(source).replace(/\s/g, '')).toBe('{force}');
         });
     }
+
+    it('openExport judges the device save from saver.status() and passes the warning on (SIR-04)', () => {
+        const body = method('openExport');
+        expect(callsOf(body)).toContain('deviceSaveView');
+        const text = body.getText(source);
+        expect(text).toContain('saver.status()');
+        expect(text).toContain('pl.saveTransfer.exportNotDevice');
+    });
 });
