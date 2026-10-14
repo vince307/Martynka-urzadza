@@ -753,7 +753,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 - [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `artMissing` dla 1, 2, 5, 22, 38) — 00e90b6
 - [x] 4.2 Deliberate break: `artMissing` w złej formie dla 2 → test tekstu czerwony; przywrócone — 00e90b6
-- [ ] 4.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 4.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 46 passed (3.5m) on 3484345
 
 #### Manual
 
@@ -764,9 +764,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check
-- [ ] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check
+- [x] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian
 - [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

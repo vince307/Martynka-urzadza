@@ -403,6 +403,8 @@ export const ART_STAND_IN = {
     border: PLACEHOLDER_COLORS.deepTeal,
     borderWidth: 3,
     radius: 16,
+    /** Space kept free between the stand-in text and the box edge, scene pixels. */
+    padding: 8,
 } as const;
 
 /** Inset of the build id in the screen corner, in scene pixels. */

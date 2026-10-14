@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COIN_IDS, ICONS, JUGS, NOTE_IDS, WEIGHTS } from '../src/data/measures';
+import { formatMoney } from '../src/core/text/measure';
+import { COIN_IDS, ICONS, JUGS, MONEY, NOTE_IDS, WEIGHTS } from '../src/data/measures';
 import { TASK_ART } from '../src/data/taskArt';
 
 const PUBLIC = join(__dirname, '..', 'public');
@@ -81,6 +82,26 @@ describe('task art table', () => {
             expect(art.key.endsWith(`/${art.id}`), art.key).toBe(true);
         }
         expect(new Set(TASK_ART.map((art) => art.id)).size).toBe(TASK_ART.length);
+    });
+
+    it('labels every stand-in in Polish from the data, never with the file id', () => {
+        const byId = new Map(TASK_ART.map((art) => [art.id, art.label]));
+        for (const { id, grosze } of MONEY) {
+            expect(byId.get(id), id).toBe(formatMoney(grosze));
+        }
+        for (const { id, label } of [...WEIGHTS, ...JUGS]) {
+            expect(byId.get(id), id).toBe(label);
+        }
+        for (const { id, noun } of ICONS) {
+            expect(byId.get(id), id).toBe(noun);
+        }
+        const empty = TASK_ART.filter((art) => art.label === '').map((art) => art.id);
+        expect(empty.sort()).toEqual(['balance-scale', 'thermometer-frame']);
+        for (const art of TASK_ART.filter((entry) => entry.label !== '')) {
+            expect(art.label, art.id).not.toBe(art.id);
+            expect(art.label, art.id).not.toContain('-');
+            expect(art.label, art.id).not.toMatch(/coin|note|weight|container/);
+        }
     });
 
     it('keeps the whole set under 1 MB', () => {
