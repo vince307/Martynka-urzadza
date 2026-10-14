@@ -48,7 +48,10 @@ export const E6: StageDef = {
             title: 'Setki do 1000, km, tona; budowa liczby trzycyfrowej; dopełnianie do setki i do 1000',
             childName: 'Dopełnianie do 100 i 1000',
             types: ['PLACE_VALUE', 'COMPLEMENT', 'MASS'],
-            skills: [skill('E6.5.complement_100_1000', 5, 'COMPLEMENT', { max: 1000, targets: [100, 1000] })],
+            skills: [
+                skill('E6.5.complement_100_1000', 5, 'COMPLEMENT', { max: 1000, targets: [100, 1000] }),
+                skill('E6.5.place_read_1000', 5, 'PLACE_VALUE', { variant: 'read', min: 100, max: 999 }),
+            ],
         },
         {
             step: 6,

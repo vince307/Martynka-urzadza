@@ -53,7 +53,16 @@ export const E5: StageDef = {
                 skill('E5.4.temperature_read_0_30', 4, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 2, answer: 'number' }),
             ],
         },
-        { step: 5, title: 'Litr, ½ l, ¼ l; kg, ½ kg, ¼ kg, dag', types: ['CAPACITY', 'MASS'], skills: [] },
+        {
+            step: 5,
+            title: 'Litr, ½ l, ¼ l; kg, ½ kg, ¼ kg, dag',
+            childName: 'Litry i kilogramy',
+            types: ['CAPACITY', 'MASS'],
+            skills: [
+                skill('E5.5.capacity_quarter_l', 5, 'CAPACITY', { jugs: ['container-1l', 'container-half-l', 'container-quarter-l'], variant: 'toLitres', maxLitres: 4 }),
+                skill('E5.5.mass_half_kg_e5', 5, 'MASS', { variant: 'half', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
+            ],
+        },
         {
             step: 6,
             title: '47 + 28 i 63 − 48 różnymi sposobami',
@@ -66,7 +75,10 @@ export const E5: StageDef = {
             title: 'Gram, brutto/netto/tara; mm, cm; „o ile starszy”; sensowna jednostka',
             childName: 'O ile więcej, o ile mniej',
             types: ['MASS', 'LENGTH', 'COMPARE_DIFF', 'UNIT_CHOICE'],
-            skills: [skill('E5.7.compare_diff_100', 7, 'COMPARE_DIFF', { max: 100 })],
+            skills: [
+                skill('E5.7.compare_diff_100', 7, 'COMPARE_DIFF', { max: 100 }),
+                skill('E5.7.length_ruler_mm', 7, 'LENGTH', { variant: 'ruler', unit: 'mm', lengthCm: 10, minMm: 11, maxMm: 95, startShift: 0.3 }),
+            ],
         },
         {
             step: 8,
