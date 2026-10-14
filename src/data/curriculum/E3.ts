@@ -130,7 +130,7 @@ export const E3: StageDef = {
                 skill('E3.11.clock_24h', 11, 'CLOCK', { variant: 'h24', minuteStep: 60 }, 'tiles'),
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E3.11.calendar', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
-                skill('E3.11.temperature_read_30', 11, 'TEMPERATURE', { variant: 'read', low: -30, high: 30, step: 5, answer: 'text' }, 'tiles'),
+                skill('E3.11.temperature_read_30', 11, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 5, answer: 'text' }, 'tiles'),
             ],
         },
     ],

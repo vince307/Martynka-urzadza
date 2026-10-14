@@ -1018,7 +1018,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 8.3 Puste tylko E1.1, E5.12, E6.2, E6.3, E6.11; każdy grywalny krok ma `childName` — fe8e025
 - [x] 8.4 Deliberate break: E2.2 `skills: []` / brak `childName` E1.10 → czerwone; przywrócone; meta-check — fe8e025
 - [x] 8.5 `tests/fixtures/` bez zmian; `e2e hook: absent (` — fe8e025
-- [ ] 8.6 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany
+- [x] 8.6 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany — fe8e025 (e2e 42 passed by the orchestrator on 040599f)
 
 #### Manual
 
@@ -1030,10 +1030,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 9.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [ ] 9.2 `validate-rule-files.sh` PASS
-- [ ] 9.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 9.4 `npm run build` drukuje `e2e hook: absent (`
+- [ ] 9.1 Pełna bramka lokalna zielona (bez e2e: Chromium nie startuje w sesji — orkiestrator); e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
+- [x] 9.2 `validate-rule-files.sh` PASS — PHASE9
+- [x] 9.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — PHASE9
+- [x] 9.4 `npm run build` drukuje `e2e hook: absent (` — PHASE9
 
 #### Manual
 

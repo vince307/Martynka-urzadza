@@ -1,3 +1,4 @@
+// DESIGN-GAP 64 (docs/design-gaps.md): the kit thermometer frame has one scale of −30…+30.
 import type { GameObjects, Scene } from 'phaser';
 import { formatScaleMark } from '../../core/text/measure';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';

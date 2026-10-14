@@ -1,3 +1,4 @@
+// DESIGN-GAP 62 (docs/design-gaps.md): the kit has no plate or box for MULT_GROUPS.
 import type { GameObjects, Scene } from 'phaser';
 import type { IconId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';

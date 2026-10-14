@@ -1,3 +1,4 @@
+// DESIGN-GAP 60 (docs/design-gaps.md): the kit scale has no tilt and no gram weights: beam and pans are separate pieces, there is no 1 g, 5 dag or tonne weight.
 import type { Scene } from 'phaser';
 import type { IconId, WeightId } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';

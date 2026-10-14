@@ -107,6 +107,7 @@ describe('generateCapacity howMany', () => {
                 answers.add(Number(task.answer));
                 expect(firstHint(task), where).toBe(task.hint[0]);
                 expect(task.hint[0], where).not.toMatch(/\d/);
+                expect(task.hint[0], where).toBe(per === 2 ? 'Dwa takie dzbanki to razem jeden litr.' : 'Cztery takie dzbanki to razem jeden litr.');
                 expect(task.hint, where).toContain(`${litres} · ${per} = ${String(task.answer)}`);
                 expect(task.hint[task.hint.length - 1], where).toBe(`To razem ${String(task.answer)} ${inflect(Number(task.answer), nouns.dzbanek)}.`);
             });

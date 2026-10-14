@@ -1,3 +1,4 @@
+// DESIGN-GAP 65 (docs/design-gaps.md): the thermometer is tall: beside the keypad, in the solution phase, it needs a column (rev. of rows 52 and 57).
 // Where a task's drawing and its solution lines go (S-13): pure rectangles in the 1920x1080 scene space.
 // The numbers come in as data (TASK_LAYOUT.picture); this file only decides which rectangle applies.
 import type { Rect } from '../geometry';

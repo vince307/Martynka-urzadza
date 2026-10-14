@@ -1,3 +1,4 @@
+// DESIGN-GAP 61 (docs/design-gaps.md): the kit has the 1 l, ½ l and ¼ l jugs only, no other vessel (a 1.5 l bottle, a glass).
 import type { Scene } from 'phaser';
 import type { JugId } from '../../data/measures';
 import { JUG_VISIBLE_RECT } from '../../data/measures';

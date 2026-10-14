@@ -1,3 +1,4 @@
+// DESIGN-GAP 66 (docs/design-gaps.md): the kit has no stand-in for a drawing that failed to load.
 import type { GameObjects, Scene } from 'phaser';
 import { ART_STAND_IN } from '../../data/layout';
 import { TASK_ART } from '../../data/taskArt';

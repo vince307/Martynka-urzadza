@@ -3,7 +3,7 @@ title: Autonomous run profile — Martynka urządza
 status: confirmed        # draft → confirmed (only `references/setup.md` § Prove flips it)
 skill_version: 6
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-10-14
 env: context/foundation/autonomous-run.env
 ---
 
@@ -154,7 +154,7 @@ The game renders into one Phaser canvas: assert visuals by screenshot, text chec
 |---|---|
 | Files `scripts/validate-rule-files.sh` checks | § 1 rule files + every `context/runs/*/agent-contract.md` |
 | Path roots it recognises | `\.claude|\.github|src|docs|context|tests|scripts|deploy|public|vite|designs` |
-| Paths asserted on purpose although absent | `public/assets` (art lands in M7, roadmap S-16) — named in CLAUDE.md's target architecture (`src/storage/idb.ts` exists since S-11, 2026-10-13) |
+| Paths asserted on purpose although absent | none (`public/assets` exists since S-14 phase 2, 2026-10-14; `src/storage/idb.ts` since S-11) |
 | Clean-tree allow-list (the maintainer's uncommitted entries) | none |
 | Human-checklist file (run close appends point 4 of the report; optional) | `docs/human-checklist.md` |
 

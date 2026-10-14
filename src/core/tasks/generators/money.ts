@@ -1,3 +1,4 @@
+// DESIGN-GAP 63 (docs/design-gaps.md): the keypad has no minus and no comma, so negative temperatures and "12 zł 50 gr" cannot be typed.
 // MONEY_COUNT and MONEY_CHANGE (ZADANIA.md, section 4): coins and notes lie on a table (a `money` drawing) and the child adds
 // them up, or says what is left after a purchase. Amounts are kept in grosze; the answer is whole złoty, grosze or a text tile in
 // the school notation ("3 zł 40 gr"). The drawing is what the story is about, so the oracle is the sum of its items.

@@ -7,12 +7,13 @@ import { visualKey } from '../src/core/tasks/visual';
 import { formatCelsius, spokenCelsius } from '../src/core/text/measure';
 import { inflect } from '../src/core/text/plural';
 import type { SkillDef } from '../src/core/types';
+import { stages } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 import { forEachDraw } from './helpers';
 
 const skill = (id: string, params: Record<string, unknown>, answer: SkillDef['answer']): SkillDef => ({ id, stage: 'E6', step: 1, type: 'TEMPERATURE', params, answer });
 
-const E3_READ = skill('E3.11.temperature_read_30', { variant: 'read', low: -30, high: 30, step: 5, answer: 'text' }, 'tiles');
+const E3_READ = skill('E3.11.temperature_read_30', { variant: 'read', low: 0, high: 30, step: 5, answer: 'text' }, 'tiles');
 const E5_READ = skill('E5.4.temperature_read_0_30', { variant: 'read', low: 0, high: 30, step: 2, answer: 'number' }, 'keypad');
 const E6_NEG = skill('E6.1.temperature_negative', { variant: 'read', low: -30, high: 30, step: 2, answer: 'text' }, 'tiles');
 const E6_DIFF = skill('E6.1.temperature_diff', { variant: 'diff', low: -20, high: 20, step: 2, answer: 'number' }, 'keypad');
@@ -55,7 +56,7 @@ describe('generateTemperature read', () => {
                     expect(task.tileRange, where).toEqual({ min: p.low, max: p.high });
                 }
             });
-            expect(seen.size, 'different temperatures').toBeGreaterThanOrEqual(12);
+            expect(seen.size, 'different temperatures').toBeGreaterThanOrEqual(Math.min(12, (p.high - p.low) / p.step + 1));
         });
     }
 
@@ -112,7 +113,7 @@ describe('generateTemperature diff', () => {
             expect(firstHint(task), where).toBe(task.hint[0]);
             expect(task.hint[0], where).toBe('Znajdź koniec słupka i najbliższą liczbę.');
             expect(task.hint, where).toContain(`Teraz jest ${formatCelsius(now)}.`);
-            expect(task.hint[task.hint.length - 1], where).toBe(`Zmiana to ${diff} ${inflect(diff, nouns.stopień)}.`);
+            expect(task.hint[task.hint.length - 1], where).toBe(`${now > morning ? 'Ociepliło się' : 'Ochłodziło się'} o ${diff} ${inflect(diff, nouns.stopień)}.`);
             if (Math.sign(now) * Math.sign(morning) < 0) {
                 expect(task.hint, where).toContain('Przejdź przez zero: policz osobno do zera i od zera.');
                 expect(task.hint, where).toContain(`${Math.abs(morning)} + ${Math.abs(now)} = ${diff}`);
@@ -148,6 +149,24 @@ describe('parseTemperatureParams', () => {
     ])('rejects %s', (_name, params) => {
         expect(() => parseTemperatureParams(params)).toThrow(TypeError);
     });
+});
+
+describe('negative temperatures wait for E6', () => {
+    const early = ['E3', 'E4', 'E5'].flatMap((id) => stages[id as 'E3']?.steps ?? []).flatMap((st) => st.skills).filter((sk) => sk.type === 'TEMPERATURE');
+    it('E3-E5 have temperature skills to check', () => {
+        expect(early.length).toBeGreaterThanOrEqual(2);
+    });
+    for (const s of early) {
+        it(`${s.id}: no tile, hint, prompt or drawing shows a value below zero`, () => {
+            forEachDraw(generateTemperature, s, {}, (task, where) => {
+                if (task.visual?.kind === 'thermometer') expect(task.visual.celsius, where).toBeGreaterThanOrEqual(0);
+                const texts = [task.prompt, ...task.hint, ...(task.choices ?? []).map(String)];
+                for (const t of texts) expect(t, where).not.toContain('−');
+                expect(task.hint, where).not.toContain('Poniżej zera liczymy w dół.');
+                expect(task.choices?.length ?? 4, where).toBe(4);
+            });
+        });
+    }
 });
 
 describe('task space of the planned skills', () => {

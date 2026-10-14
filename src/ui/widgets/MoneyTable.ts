@@ -1,3 +1,4 @@
+// DESIGN-GAP 59 (docs/design-gaps.md): the kit has coins and notes but no table layout and no relative scale.
 import type { Scene } from 'phaser';
 import type { MoneyId } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';

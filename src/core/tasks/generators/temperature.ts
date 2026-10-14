@@ -46,13 +46,14 @@ export const parseTemperatureParams = (params: Record<string, unknown>): Tempera
 };
 
 /** The right reading and three others as text tiles: the opposite sign first (the mistake a child makes), then the neighbours. */
-const textChoices = (c: number, step: number, rng: Rng): string[] => {
+const textChoices = (c: number, step: number, low: number, high: number, rng: Rng): string[] => {
     const chosen = new Set<number>([c]);
-    if (c !== 0) chosen.add(-c);
-    const others = rng.shuffle([c + step, c - step, -(c + step), -(c - step), c + 2 * step, c - 2 * step]);
+    // Below the stage that teaches negatives (low 0) no tile is negative either, so the opposite sign is offered only when the range has it.
+    if (c !== 0 && -c >= low && -c <= high) chosen.add(-c);
+    const others = rng.shuffle([c + step, c - step, -(c + step), -(c - step), c + 2 * step, c - 2 * step, c + 3 * step, c - 3 * step]);
     for (const v of others) {
         if (chosen.size >= 4) break;
-        if (v >= -RANGE && v <= RANGE) chosen.add(v);
+        if (v >= low && v <= high) chosen.add(v);
     }
     return rng.shuffle([...chosen].map(formatCelsius));
 };
@@ -66,7 +67,7 @@ export const generateTemperature: Generator = (skill, rng): Task => {
         const base = { skillId: skill.id, prompt: pl.tasks.temperatureReadPrompt(p.answer), visual: { kind: 'thermometer', celsius: c } as const, hint };
         return p.answer === 'number'
             ? { ...base, answer: c, tileRange: { min: p.low, max: p.high } }
-            : { ...base, answer: formatCelsius(c), choices: textChoices(c, p.step, rng) };
+            : { ...base, answer: formatCelsius(c), choices: textChoices(c, p.step, p.low, p.high, rng) };
     }
     const nonZero = values.filter((v) => v !== 0);
     const now = rng.pick(nonZero);
@@ -88,7 +89,7 @@ export const generateTemperature: Generator = (skill, rng): Task => {
             pl.tasks.temperatureNowHint(formatCelsius(now)),
             ...(across ? [pl.tasks.temperatureAcrossZeroHint] : []),
             across ? `${Math.abs(morning)} + ${Math.abs(now)} = ${diff}` : `${hi} ${MINUS} ${lo} = ${diff}`,
-            pl.tasks.temperatureChangeHint(countNoun(diff, nouns.stopień)),
+            pl.tasks.temperatureChangeHint(countNoun(diff, nouns.stopień), warmer),
         ],
     };
 };
