@@ -1,0 +1,26 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index 2eddd77..b436bd3 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -206,7 +206,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+     const replace = async (state: SaveState): Promise<ReplaceResult> => {
+         if (replacing || replaced) return { ok: false, error: 'Busy' };
+         // Unavailable: the device save may be healthy and was never read, so a replace would overwrite what nobody saw.
+-        if (blockedBy === 'fatal' || blockedBy === 'unavailable') return { ok: false, error: 'Blocked' };
++        if (blockedBy === 'fatal') return { ok: false, error: 'Blocked' };
+         if (!validateSave(state)) return { ok: false, error: 'InvalidSave' };
+         replacing = true;
+         cancelTimer();
+diff --git a/src/ui/dom/saveResetDialog.ts b/src/ui/dom/saveResetDialog.ts
+index c1fc2c1..6dc0c8a 100644
+--- a/src/ui/dom/saveResetDialog.ts
++++ b/src/ui/dom/saveResetDialog.ts
+@@ -56,7 +56,7 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
+     });
+     const actions = document.createElement('div');
+     actions.className = 'parent-actions';
+-    if (blocked) actions.append(cancel);
++    if (false as boolean) actions.append(cancel);
+     else actions.append(cancel, confirm);
+     const handle: DomDialog = openDialog(
+         parent,
