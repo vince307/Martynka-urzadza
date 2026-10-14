@@ -5,13 +5,15 @@ import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
-import type { RoomState, Settings, StageDef, StageId } from '../core/types';
+import type { RoomState, Settings, SkillDef, StageDef, StageId } from '../core/types';
 import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
+import type { ArtHealth } from '../core/artHealth';
+import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
@@ -582,10 +584,13 @@ export class TaskScene extends Scene {
     }
 
     private freshRound(): RoundState {
+        // Pictures that did not load (BootScene's record; none recorded = nothing missing): tasks that need them are not drawn.
+        const missingIds = (this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined)?.missingIds ?? new Set<string>();
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
         if (this.warmup && previous) {
             const rules = { ...balance.round, length: balance.warmup.length };
-            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries), rules);
+            const blocked = missingIds.size > 0 ? (skill: SkillDef): boolean => artBlocked(skill, missingIds) : undefined;
+            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries, blocked), rules);
         }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         if (__E2E_HOOK__) {
@@ -605,6 +610,7 @@ export class TaskScene extends Scene {
             this.rng,
             balance.round,
             balance.tiles.count,
+            { missingIds, unlockShare: balance.curriculum.unlockShare },
         );
         return startRound(tasks, balance.round);
     }

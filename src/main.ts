@@ -21,7 +21,7 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { E2E_LOAD_TIMEOUT_MS, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, installE2EHook } from './testing/e2eHook';
+import { E2E_LOAD_TIMEOUT_MS, e2eArt, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -36,7 +36,7 @@ import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } fro
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, start: SessionSave): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, forcedArt: string | null, start: SessionSave): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -63,6 +63,7 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 if (__E2E_HOOK__) {
                     booting.registry.set(REGISTRY_KEYS.forcedFailure, forcedFailure);   // e2e build only; never set in production
                     booting.registry.set(REGISTRY_KEYS.forcedSkills, forcedSkillIds);   // e2e build only (?e2eSkills)
+                    booting.registry.set(REGISTRY_KEYS.forcedArt, forcedArt);   // e2e build only (?e2eArt)
                 }
                 // One input switch for the whole game. A touchend lost while input was off would leave the only
                 // touch pointer active (every later touch finds no free pointer), so the release resets them all.
@@ -182,7 +183,7 @@ const start = async (): Promise<void> => {
             console.warn(`Save unreadable (${outcome.reason}); playing without saving this session`);
         }
     }
-    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, session);
+    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, session);
     booted.game = game;
     // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({

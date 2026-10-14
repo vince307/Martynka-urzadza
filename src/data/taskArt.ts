@@ -4,6 +4,8 @@
 import { COIN_IDS, ICONS, JUGS, NOTE_IDS, WEIGHTS } from './measures';
 
 export interface TaskArtEntry {
+    /** Art id from measures.ts (or `balance-scale` / `thermometer-frame`): what artHealth and the skill filter compare. */
+    id: string;
     key: string;
     url: string;
     width: number;
@@ -11,6 +13,7 @@ export interface TaskArtEntry {
 }
 
 const entry = (folder: string, id: string, width: number, height: number): TaskArtEntry => ({
+    id,
     key: `tasks/${folder}/${id}`,
     url: `assets/tasks/${folder}/${id}.webp`,
     width,

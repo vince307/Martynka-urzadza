@@ -1,5 +1,6 @@
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
+import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
@@ -61,6 +62,17 @@ export const forcedSkills = (stage: StageDef, ids: readonly string[] | null | un
         return null;
     }
     return Array.from({ length }, (_, i) => found[i % found.length] as SkillDef);
+};
+
+export type E2EArtSeam = 'missing' | 'corrupt';
+
+/**
+ * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=corrupt` points the coins at a file that is no image
+ * (200 and a decode failure, no load error). Anything else is null.
+ */
+export const e2eArt = (search: string): E2EArtSeam | null => {
+    const value = new URLSearchParams(search).get('e2eArt');
+    return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
 export type E2ESaveSeam = 'unreadable' | 'unavailable' | 'hang' | 'writefail';
@@ -135,6 +147,10 @@ export const installE2EHook = (game: Game): void => {
         const saver = game.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
         return saver ? deepFreeze({ ...saver.status() }) : null;
     };
+    const artHealthSnapshot = (): { total: number; missing: number } | null => {
+        const value = game.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined;
+        return value ? { total: value.total, missing: value.missing.length } : null;
+    };
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
@@ -144,12 +160,12 @@ export const installE2EHook = (game: Game): void => {
             get snapshot() {
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), counterText: ui().counterText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), counterText: ui().counterText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

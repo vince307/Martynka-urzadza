@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { artHealth } from '../core/artHealth';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import { TASK_ART } from '../data/taskArt';
@@ -16,16 +17,28 @@ export class BootScene extends Scene {
 
     preload(): void {
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
-        // A missing drawing is not fatal: ArtImage draws a stand-in, and the unit test keeps the table and files equal.
-        this.load.on('loaderror', (file: { key: string }) => {
-            console.warn(`Task art failed to load: ${file.key}`);
+        // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
+        // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
+        this.load.on('loaderror', (file: { key: string; type?: string }) => {
+            console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
         });
+        // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image.
+        const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
         for (const art of TASK_ART) {
-            this.load.image(art.key, art.url);
+            if (seam === 'missing') {
+                continue;
+            }
+            this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
         }
     }
 
     create(): void {
+        // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
+        const health = artHealth(TASK_ART, (key) => this.textures.exists(key));
+        this.registry.set(REGISTRY_KEYS.artHealth, health);
+        if (health.missing.length > 0) {
+            console.warn(`Task art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);
+        }
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only
         }

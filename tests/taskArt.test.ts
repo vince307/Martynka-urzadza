@@ -66,6 +66,23 @@ describe('task art table', () => {
         }
     });
 
+    it('carries the measures.ts id of every entry, unique, and the key ends with it', () => {
+        const known = new Set<string>([
+            ...COIN_IDS,
+            ...NOTE_IDS,
+            ...WEIGHTS.map(({ id }) => id),
+            ...JUGS.map(({ id }) => id),
+            ...ICONS.map(({ id }) => id),
+            'balance-scale',
+            'thermometer-frame',
+        ]);
+        for (const art of TASK_ART) {
+            expect(known.has(art.id), art.id).toBe(true);
+            expect(art.key.endsWith(`/${art.id}`), art.key).toBe(true);
+        }
+        expect(new Set(TASK_ART.map((art) => art.id)).size).toBe(TASK_ART.length);
+    });
+
     it('keeps the whole set under 1 MB', () => {
         const total = TASK_ART.reduce((sum, art) => sum + statSync(join(PUBLIC, art.url)).size, 0);
         expect(total).toBeLessThan(1_000_000);

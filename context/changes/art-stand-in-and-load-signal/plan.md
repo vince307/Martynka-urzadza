@@ -728,7 +728,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — b459bc8
 - [x] 2.2 Deliberate break: `replace` tylko `fatal` / `deviceSaveView` z `summary` przy `unreadable` → czerwone; przywrócone; meta-check — b459bc8
 - [x] 2.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1 — b459bc8
-- [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — b459bc8 (e2e: orchestrator note, 46 passed on 279989d)
 
 #### Manual
 
@@ -738,9 +738,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id`, jawne przypadki `e2eArt` w strażniku)
-- [ ] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt`
-- [ ] 3.3 Deliberate break: odczyt `e2eArt` poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id`, jawne przypadki `e2eArt` w strażniku) — PENDING_SHA
+- [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt` — PENDING_SHA
+- [x] 3.3 Deliberate break: odczyt `e2eArt` poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check — PENDING_SHA
 - [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
