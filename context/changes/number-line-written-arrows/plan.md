@@ -957,11 +957,11 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [x] 10.1 `npx playwright test tests/e2e/written-column.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3` — orchestrator: written-column 3 passed (32.1 s); full suite --workers=4 74 passed (5.2 min) = 71 + 3 — @SHA@
-- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): `stepDigitBoxes` wypełnia od lewej → (a) czerwony — orchestrator: `-g "ones-first"` red `toEqual` (box order differs); restored — @SHA@
-- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): scena nie czyści okienek po złej odpowiedzi → (b) czerwony; meta-check — orchestrator: `-g "cleared second try"` red `toEqual` (boxes not empty: -1/+4); restored — @SHA@
-- [x] 10.4 Deliberate break (patch `e2e-break-p10c.patch`): `digits` w rozwiązaniu bierze `keypadSolution` → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: `-g "solution keeps the column"` red `toBe` Expected 440, Received 768; restored — @SHA@
-- [x] 10.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, typecheck, unit 2429 OK; no server on 4397/4398 — @SHA@
+- [x] 10.1 `npx playwright test tests/e2e/written-column.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3` — orchestrator: written-column 3 passed (32.1 s); full suite --workers=4 74 passed (5.2 min) = 71 + 3 — 6426d8e
+- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): `stepDigitBoxes` wypełnia od lewej → (a) czerwony — orchestrator: `-g "ones-first"` red `toEqual` (box order differs); restored — 6426d8e
+- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): scena nie czyści okienek po złej odpowiedzi → (b) czerwony; meta-check — orchestrator: `-g "cleared second try"` red `toEqual` (boxes not empty: -1/+4); restored — 6426d8e
+- [x] 10.4 Deliberate break (patch `e2e-break-p10c.patch`): `digits` w rozwiązaniu bierze `keypadSolution` → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: `-g "solution keeps the column"` red `toBe` Expected 440, Received 768; restored — 6426d8e
+- [x] 10.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, typecheck, unit 2429 OK; no server on 4397/4398 — 6426d8e
 
 ### Phase 11: Oś, grafy i oś-podpowiedź dotykiem — e2e (#11)
 
