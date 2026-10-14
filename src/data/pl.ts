@@ -245,6 +245,20 @@ export const pl = {
         next: 'Dalej',
         spoken: (name: string) => `Nowa umiejętność! ${name}.`,
     },
+    // S-15 minigames (Zakrywanka = dice, Hasło z wyników = word). Titles and hints are ours (DESIGN-GAP row 82, see the S-15 plan).
+    minigames: {
+        diceTitle: 'Kostki · 0–12',
+        wordTitle: 'Ukryte słowo',
+        puzzleTitle: 'Zagadka dnia',
+        diceCover: 'Zakryj wynik',
+        diceAllCovered: 'Wszystkie pola zakryte!',
+        puzzleDone: 'Brawo! Jeszcze jedna gwiazdka.',
+        diceAddHint: 'Policz razem oczka obu kostek.',
+        diceSubHint: 'Odejmij oczka drugiej kostki.',
+        diceAddStepHint: (a: number, b: number) => `Zacznij od ${a} i dodaj ${b}.`,
+        diceSubStepHint: (a: number, b: number) => `Zacznij od ${a} i odejmij ${b}.`,
+        wordHint: 'Rozwiąż zadanie, a odsłoni się następna litera.',
+    },
     // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
     room: {
         resume: 'Wróć do notesu',   // kit room-return view
