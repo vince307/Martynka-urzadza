@@ -16,7 +16,7 @@ import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
-import { belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
+import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
 import { visualShape, type AnswerMode, type TaskVisual } from '../core/tasks/visual';
@@ -313,7 +313,7 @@ export class TaskScene extends Scene {
             this.drawPrompt(view.input);
             this.keypad.reset();
             if (view.input === 'tiles') {
-                this.tiles.setChoices(view.choices);
+                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
             }
             if (view.input === 'select') {
                 this.select.setChoices(view.choices);
@@ -352,7 +352,7 @@ export class TaskScene extends Scene {
         }
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
-        this.bar.update(view.bar, view.input);
+        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).

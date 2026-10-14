@@ -71,6 +71,13 @@ describe('scaleLayout', () => {
     }
 });
 
+describe('scaleLayout readability (visual gate S-14)', () => {
+    it('draws a weight at least 75 scene px tall in the keypad picture, so its "10 dag" label can be read on a tablet', () => {
+        const layout = scaleLayout(6, TASK_LAYOUT.picture.keypad, TASK_LAYOUT.scale);
+        for (const w of layout.weights) expect(w.height).toBeGreaterThanOrEqual(75);
+    });
+});
+
 const JUG_SPEC = { ...TASK_LAYOUT.jugs, imageSize: 512, visible: JUG_VISIBLE_RECT };
 
 describe('jugsLayout', () => {
@@ -137,6 +144,8 @@ describe('iconsLayout', () => {
         { name: 'two framed pairs', groups: [2, 2], framed: true },
         { name: 'three groups of three', groups: [3, 3, 3], framed: true },
         { name: 'five groups of six', groups: [6, 6, 6, 6, 6], framed: true },
+        { name: 'six groups of five', groups: [5, 5, 5, 5, 5, 5], framed: true },
+        { name: 'two groups of ten', groups: [10, 10], framed: true },
     ];
     for (const area of AREAS) {
         for (const shape of SHAPES) {
@@ -175,6 +184,13 @@ describe('iconsLayout', () => {
         expect(new Set(icons.slice(0, 10).map((r) => r.y)).size).toBe(1);
         expect(icons[10]?.y).toBeGreaterThan((icons[0]?.y ?? 0) + (icons[0]?.height ?? 0));
         expect(icons[10]?.x).toBeCloseTo(icons[0]?.x ?? 0);
+    });
+
+    it('shapes framed groups to use the height: 2 x 5 and 5 x 6 icons are big enough to count on a tablet (visual gate S-14)', () => {
+        const area = AREAS[0];
+        expect(iconsLayout([5, 5], true, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(70);
+        expect(iconsLayout([6, 6, 6, 6, 6], true, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(45);
+        expect(iconsLayout([4, 4, 4, 4], true, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(50);
     });
 
     it('never draws an icon above the cap', () => {

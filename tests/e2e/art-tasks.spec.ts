@@ -82,7 +82,7 @@ test('#11 a thermometer stays readable beside the keypad in the solution', async
     await answerWrong(page);
     await phaseIs(page, 'solution');
     await artLoaded(page, 1);
-    const beside = TASK_LAYOUT.picture.keypadBeside;
+    const beside = TASK_LAYOUT.picture.tall.keypad;
     await expect.poll(async () => (await targets(page)).picture).not.toBeNull();
     const picture = (await targets(page)).picture!;
     // Tall, in its own column, left of where the solution lines start.

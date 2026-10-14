@@ -188,25 +188,43 @@ export interface IconsLayout {
 
 /**
  * Icons of a counting or multiplication drawing in `area`. One group is a grid (rows of up to `maxPerRow`); `[10, k]` puts the ten in one row
- * and the rest left-aligned under it; framed groups stand side by side in a frame each (two rows of frames from four groups). The whole
- * picture fits `area`, never above `maxIcon`.
+ * and the rest left-aligned under it; framed groups stand in a frame each, shaped (1-3 rows of icons, frames per line) for the largest icon.
+ * The whole picture fits `area`, never above `maxIcon`.
  */
 export const iconsLayout = (groups: readonly number[], framed: boolean, area: Rect, spec: IconsLayoutSpec): IconsLayout => {
     const pad = framed ? spec.framePad : 0;
-    const blocks = groups.map((count) => {
-        const stacked = !framed && groups.length > 1;
-        const rows = stacked ? 1 : Math.ceil(count / spec.maxPerRow);
-        const cols = stacked ? count : Math.ceil(count / rows);
+    type Block = { count: number; cols: number; rows: number; width: number; height: number };
+    const block = (count: number, rows: number): Block => {
+        const cols = Math.ceil(count / rows);
         return { count, cols, rows, width: cols + (cols - 1) * spec.gap + 2 * pad, height: rows + (rows - 1) * spec.gap + 2 * pad };
-    });
-    const perLine = framed ? (blocks.length <= 3 ? blocks.length : Math.ceil(blocks.length / 2)) : 1;
-    const lines: (typeof blocks)[] = [];
-    for (let i = 0; i < blocks.length; i += perLine) lines.push(blocks.slice(i, i + perLine));
-    const lineWidth = (line: typeof blocks): number => line.reduce((sum, b) => sum + b.width, 0) + (line.length - 1) * spec.frameGap;
-    const lineHeight = (line: typeof blocks): number => Math.max(...line.map((b) => b.height));
-    const widthUnits = Math.max(...lines.map(lineWidth));
-    const heightUnits = lines.reduce((sum, line) => sum + lineHeight(line), 0) + (lines.length - 1) * spec.frameGap;
-    const icon = Math.min(area.width / widthUnits, area.height / heightUnits, spec.maxIcon);
+    };
+    const arrange = (blocks: Block[], perLine: number) => {
+        const lines: Block[][] = [];
+        for (let i = 0; i < blocks.length; i += perLine) lines.push(blocks.slice(i, i + perLine));
+        const lineWidth = (line: Block[]): number => line.reduce((sum, b) => sum + b.width, 0) + (line.length - 1) * spec.frameGap;
+        const lineHeight = (line: Block[]): number => Math.max(...line.map((b) => b.height));
+        const widthUnits = Math.max(...lines.map(lineWidth));
+        const heightUnits = lines.reduce((sum, line) => sum + lineHeight(line), 0) + (lines.length - 1) * spec.frameGap;
+        return { lines, lineWidth, lineHeight, widthUnits, heightUnits, icon: Math.min(area.width / widthUnits, area.height / heightUnits, spec.maxIcon) };
+    };
+    let best: ReturnType<typeof arrange>;
+    if (framed) {
+        // Visual gate S-14: every group in one row of icons left the icons small; the group shape (rows per frame, the same for every
+        // group) and the frames per line are the ones that give the largest icon (ties keep fewer rows and more frames per line).
+        best = arrange(groups.map((count) => block(count, 1)), groups.length <= 3 ? groups.length : Math.ceil(groups.length / 2));
+        const most = Math.max(...groups);
+        for (let rows = 1; rows <= Math.min(3, most); rows += 1) {
+            for (let perLine = groups.length; perLine >= 1; perLine -= 1) {
+                const candidate = arrange(groups.map((count) => block(count, Math.min(rows, count))), perLine);
+                if (candidate.icon > best.icon + 1e-9) best = candidate;
+            }
+        }
+    } else {
+        // One group is a grid of rows of up to maxPerRow; [10, k] keeps the ten in one row and the rest under it.
+        const stacked = groups.length > 1;
+        best = arrange(groups.map((count) => (stacked ? block(count, 1) : block(count, Math.ceil(count / spec.maxPerRow)))), 1);
+    }
+    const { lines, lineWidth, lineHeight, widthUnits, heightUnits, icon } = best;
     const left = area.x + (area.width - widthUnits * icon) / 2;
     let y = area.y + (area.height - heightUnits * icon) / 2;
     const icons: Rect[] = [];

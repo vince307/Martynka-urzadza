@@ -1,4 +1,4 @@
-// DESIGN-GAP 65 (docs/design-gaps.md): the thermometer is tall: beside the keypad, in the solution phase, it needs a column (rev. of rows 52 and 57).
+// DESIGN-GAP 65 (docs/design-gaps.md): the thermometer is tall: it takes a column on the left in every phase, the answers and the bar move right of it (rev. of rows 52 and 57).
 // Where a task's drawing and its solution lines go (S-13): pure rectangles in the 1920x1080 scene space.
 // The numbers come in as data (TASK_LAYOUT.picture); this file only decides which rectangle applies.
 import type { Rect } from '../geometry';
@@ -12,9 +12,25 @@ export interface PictureSpec {
     tilesSolution: { picture: PictureRect; lines: PictureRect };
     keypad: PictureRect;
     keypadSolution: { picture: PictureRect; lines: PictureRect };
-    /** A tall drawing (thermometer) beside the keypad solution: the drawing in a narrow column, the lines next to it. */
-    keypadBeside: { picture: PictureRect; lines: PictureRect };
+    /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
+    tall: { tiles: TallSpec; keypad: TallSpec };
 }
+
+/** A horizontal span (x, width) in scene pixels. */
+export interface Span {
+    x: number;
+    width: number;
+}
+
+export interface TallSpec {
+    picture: PictureRect;
+    lines: PictureRect;
+    bar: Span;
+    /** The row the answer tiles centre in (tiles mode only). */
+    answers?: Span;
+}
+
+const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => (input === 'keypad' ? spec.tall.keypad : spec.tall.tiles);
 
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
@@ -28,13 +44,26 @@ export const pictureLayout = (
     solution: boolean,
     shape: VisualShape,
 ): { picture: PictureRect; lines: PictureRect | null } => {
+    if (shape === 'tall') {
+        const tall = tallOf(spec, input);
+        return { picture: tall.picture, lines: solution ? tall.lines : null };
+    }
     if (input === 'keypad') {
-        if (solution && shape === 'tall') {
-            return spec.keypadBeside;
-        }
         return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
     }
     return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
+};
+
+/**
+ * Where the answers and the bar go beside a drawing: null keeps the default (the notebook's tiles row, `TASK_LAYOUT.barSpan`).
+ * A tall drawing moves the tiles row and the bar right of its column.
+ */
+export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape): { tiles: Span | null; bar: Span | null } => {
+    if (shape !== 'tall' || (input !== 'tiles' && input !== 'keypad')) {
+        return { tiles: null, bar: null };
+    }
+    const tall = tallOf(spec, input);
+    return { tiles: tall.answers ?? null, bar: tall.bar };
 };
 
 /**

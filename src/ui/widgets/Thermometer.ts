@@ -58,7 +58,10 @@ export class Thermometer {
             const text = major ? this.labels[label] : undefined;
             if (text) {
                 label += 1;
-                text.setText(formatScaleMark(mark.value)).setFontSize(fontSize).setPosition(x(t.label.x), yOf(mark.value)).setOrigin(0, 0.5).setVisible(true);
+                // Centred on x 301 as in the kit (textAlign 'center'); a label held at minLabelPx on a small thermometer is wider than the
+                // kit's, so it never starts closer than `label.gap` to the major tick (visual gate S-14).
+                text.setText(formatScaleMark(mark.value)).setFontSize(fontSize).setOrigin(0, 0.5);
+                text.setPosition(Math.max(x(t.label.x) - text.width / 2, x(t.tick.major + t.label.gap)), yOf(mark.value)).setVisible(true);
             }
         }
         this.unit.setText(CELSIUS).setFontSize(fontSize).setPosition(x(t.unit.x), y(t.unit.y)).setVisible(true);

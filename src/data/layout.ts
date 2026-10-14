@@ -194,8 +194,14 @@ export const TASK_LAYOUT = {
         tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
         keypad: { x: 236, y: 470, width: 768, height: 378 },
         keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
-        // A tall drawing (thermometer, S-14) beside the keypad solution: a narrow column, the lines to its right (visualShape 'tall').
-        keypadBeside: { picture: { x: 236, y: 470, width: 240, height: 378 }, lines: { x: 500, y: 470, width: 504, height: 378 } },
+        // A tall drawing (thermometer, S-14, visualShape 'tall'): one column on the left of the notebook in every phase, down to the bar's bottom.
+        // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
+        // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
+        // above the tiles (tiles) or beside the column (keypad). DESIGN-GAP 65 (docs/design-gaps.md).
+        tall: {
+            tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
+            keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
+        },
     },
     // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
     // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).
@@ -226,7 +232,7 @@ export const TASK_LAYOUT = {
     scale: {
         imageWidth: 512, imageHeight: 384,
         panLeft: { x: 90, y: 240 }, panRight: { x: 421, y: 240 },   // centre of a pan rim, the bottom of the things rests on y
-        itemSize: 104, weightSize: 52, weightGap: 2, perRow: 3, rowLift: 38,
+        itemSize: 104, weightSize: 84, weightGap: 2, perRow: 2, rowLift: 60,   // visual gate S-14: 52 px weights in rows of 3 left the "10 dag" label about 4 CSS px tall on a tablet
     },
     // Jugs in a row (S-14), in the units of the 512 x 512 drawing: only the shared visible rectangle (measures.ts) takes room, so the padding of the
     // image overlaps. Up to `maxPerRow` in a row, more in two. DESIGN-GAP (row added in S-14 phase 9): the kit shows single jugs only.
@@ -243,7 +249,7 @@ export const TASK_LAYOUT = {
         bulb: { x: 195, y: 1334, radius: 34 },
         unit: { x: 274, y: 222 },
         tick: { start: 220, major: 246, five: 239, minor: 231, majorWidth: 4, width: 2, minWidthPx: 1.5 },
-        label: { x: 301, drop: 17, size: 50 },
+        label: { x: 301, drop: 17, size: 50, gap: 13 },   // gap: kit '+30' at 50 px centred on 301 starts 13 units after the major tick end (246)
         minGapPx: 7, minLabelPx: 22,
     },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
