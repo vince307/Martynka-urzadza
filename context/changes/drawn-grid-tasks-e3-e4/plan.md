@@ -904,7 +904,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 5.2 `npm run sample -- E3 --count 6` bez naruszeń, z linią `visual:` — c01c12e
 - [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `cells` → typecheck czerwony; przywrócone; meta-check — c01c12e
 - [x] 5.4 `playableSteps` E3 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — c01c12e
-- [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — c01c12e (e2e: orchestrator note, full suite on c01c12e, 57 passed)
 
 #### Manual
 
@@ -915,10 +915,10 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E4 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 6.3 Deliberate break: podpisy boków pominięte → test rozmieszczenia podpisów czerwony; przywrócone; meta-check
-- [ ] 6.4 `playableSteps` E4 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @SHA@
+- [x] 6.2 `npm run sample -- E4 --count 6` bez naruszeń, z linią `visual:` — @SHA@
+- [x] 6.3 Deliberate break: podpisy boków pominięte → test rozmieszczenia podpisów czerwony; przywrócone; meta-check — @SHA@
+- [x] 6.4 `playableSteps` E4 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — @SHA@
 - [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

@@ -88,13 +88,15 @@ export const E4: StageDef = {
         {
             step: 7,
             title: 'Litry, pół litra; m i cm; mm; obwód kwadratu, prostokąta, trójkąta',
-            childName: 'Metry, centymetry, milimetry',
+            childName: 'Metry, litry i obwody',
             types: ['CAPACITY', 'LENGTH', 'PERIMETER'],
             skills: [
                 skill('E4.7.length_ruler_mm_10', 7, 'LENGTH', { variant: 'ruler', unit: 'mm', lengthCm: 10, minMm: 11, maxMm: 95, startShift: 0.3 }),
                 skill('E4.7.length_convert_m', 7, 'LENGTH', { variant: 'convert', maxM: 5, cmStep: 10 }),
                 skill('E4.7.capacity_half_l', 7, 'CAPACITY', { jugs: ['container-1l', 'container-half-l'], variant: 'toLitres', maxLitres: 6 }),
                 skill('E4.7.capacity_litres_half', 7, 'CAPACITY', { jugs: ['container-half-l'], variant: 'howMany', maxLitres: 10 }),
+                skill('E4.7.perimeter_rect', 7, 'PERIMETER', { variant: 'rect', max: 60 }),
+                skill('E4.7.perimeter_triangle', 7, 'PERIMETER', { variant: 'triangle', max: 60 }),
             ],
         },
         {

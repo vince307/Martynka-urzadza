@@ -493,6 +493,7 @@ export const pl = {
         perimeterSideRectPrompt: (perimeter: number, side: number) =>
             `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
         perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
+        sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
         perimeterHint: 'Obwód to suma długości wszystkich boków.',
         perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
         perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków, więc najpierw znajdź tę sumę.',

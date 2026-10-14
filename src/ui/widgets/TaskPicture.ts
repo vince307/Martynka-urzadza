@@ -5,6 +5,7 @@ import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
 import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
+import { FigureGrid } from './FigureGrid';
 import { IconGroups } from './IconGroups';
 import { CoordGrid } from './CoordGrid';
 import { Jugs } from './Jugs';
@@ -26,6 +27,7 @@ export class TaskPicture {
     private readonly icons: IconGroups;
     private readonly cells: NumberCells;
     private readonly coord: CoordGrid;
+    private readonly figure: FigureGrid;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -41,6 +43,7 @@ export class TaskPicture {
         this.icons = new IconGroups(scene);
         this.cells = new NumberCells(scene);
         this.coord = new CoordGrid(scene);
+        this.figure = new FigureGrid(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -62,6 +65,7 @@ export class TaskPicture {
             icons: this.icons,
             cells: this.cells,
             grid: this.coord,
+            figure: this.figure,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -99,8 +103,7 @@ export class TaskPicture {
                 this.coord.render(visual.columns, visual.rows, visual.items, rect);
                 break;
             case 'figure':
-                // widget in phase 6
-                this.drawn = null;
+                this.figure.render(visual, rect);
                 break;
             default: {
                 const unreachable: never = visual;
@@ -123,6 +126,7 @@ export class TaskPicture {
         this.icons.setVisible(false);
         this.cells.setVisible(false);
         this.coord.setVisible(false);
+        this.figure.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

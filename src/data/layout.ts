@@ -84,6 +84,7 @@ export const FONT_SIZES = {
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
     cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
+    sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
@@ -118,6 +119,7 @@ export const FONT_WEIGHTS = {
     thermoLabel: 700,       // kit reference/thermometer-face.js
     cellValue: 750,
     gridLabel: 700,
+    sideLabel: 700,
     artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
@@ -244,6 +246,9 @@ export const TASK_LAYOUT = {
     cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
     // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
     coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },
+    // Figure with labelled sides (DESIGN-GAP rows 75, 76): outline `line` px, lattice `grid` px, labels `labelPad` px off the edge, a point per corner `dot`;
+    // `maxCell` stops a small figure from growing huge; `fontSize` must match FONT_SIZES.sideLabel (a test pins it).
+    figure: { line: 4, grid: 2, labelPad: 10, fontSize: 30, maxCell: 64, minCell: 36, textWidth: 0.62, dot: 6 },
     chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
     // Money on a table (S-14), own units: notes in the upper row, coins in the lower one, largest first. Not a physical scale: a note is wider
     // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.
