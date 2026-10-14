@@ -90,9 +90,40 @@ describe('generateMultGroups expr', () => {
     });
 });
 
+const JUMPS = skill('E3.9.mult_groups_jumps', { variant: 'jumps', groups: [2, 5], size: [2, 6], max: 30 });
+
+describe('generateMultGroups jumps', () => {
+    it(`${JUMPS.id}: g arcs of length k from 0, the answer is the multiplication they show`, () => {
+        forEachDraw(generateMultGroups, JUMPS, {}, (task, where) => {
+            const v = task.visual;
+            if (v?.kind !== 'numberLine') throw new Error(`no number line ${where}`);
+            const g = v.jumps.length;
+            const k = v.jumps[0].to - v.jumps[0].from;
+            expect(g, where).toBeGreaterThanOrEqual(2);
+            v.jumps.forEach((j, i) => {
+                expect(j.from, where).toBe(i * k);
+                expect(j.to, where).toBe((i + 1) * k);
+            });
+            expect(v.from, where).toBe(0);
+            expect(v.to, where).toBe(g * k);
+            expect(v.tick, where).toBe(1);
+            expect(v.labels, where).toEqual(Array.from({ length: Math.floor((g * k) / 5) + 1 }, (_, i) => i * 5));
+            expect(v.box, where).toBeNull();
+            expect(task.answer, where).toBe(`${g} · ${k}`);
+            expect(task.prompt, where).toBe('Które działanie pokazują skoki?');
+            const choices = (task.choices ?? []).map(String);
+            expect(choices, where).toHaveLength(3);
+            expect(choices, where).toContain(`${g} · ${k}`);
+            if (g !== k) expect(choices, where).not.toContain(`${k} · ${g}`);
+            expect(firstHint(task), where).toBe(task.hint[0]);
+            expect(task.hint, where).toContain(`${g} · ${k} = ${g * k}`);
+        });
+    });
+});
+
 describe('parseMultGroupsParams', () => {
     it('accepts the planned parameter sets', () => {
-        for (const s of [RESULT, EXPR]) expect(() => parseMultGroupsParams(s.params), s.id).not.toThrow();
+        for (const s of [RESULT, EXPR, JUMPS]) expect(() => parseMultGroupsParams(s.params), s.id).not.toThrow();
     });
 
     const ok = { variant: 'result', groups: [2, 5], size: [2, 6], max: 30 };

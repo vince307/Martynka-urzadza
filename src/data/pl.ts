@@ -317,6 +317,13 @@ export const pl = {
             moreBy: 'Jest więcej, więc dodajemy.',
         },
         sequence: 'Uzupełnij ciąg:',
+        // ARROW_TABLE (S-14b): the rule line never states a result.
+        arrowGraph: 'Uzupełnij graf.',
+        arrowTable: 'Uzupełnij tabelkę.',
+        arrowRule: (plus: boolean, n: number) => (plus ? `Reguła strzałki: dodaj ${n} do liczby.` : `Reguła strzałki: odejmij ${n} od liczby.`),
+        arrowRuleBack: (plus: boolean, n: number) => (plus ? `Wracamy pod strzałkę: odejmij ${n} od liczby.` : `Wracamy pod strzałkę: dodaj ${n} do liczby.`),
+        multGroupsJumps: 'Które działanie pokazują skoki?',
+        multGroupsJumpsHint: 'Policz skoki i sprawdź, jak długi jest jeden skok.',
         sequenceHint: (step: number, up: boolean) =>
             `Każda następna liczba jest o ${step} ${up ? 'większa' : 'mniejsza'}.`,
         missingOpHint: (a: number, plus: boolean) =>
@@ -485,6 +492,7 @@ export const pl = {
         multGroupsResultHint: 'Policz, ile jest talerzyków i ile jest na jednym.',
         multGroupsExpr: 'Które działanie pokazuje obrazek?',
         multGroupsExprHint: 'Zobacz, ile jest grup i ile ikon w jednej grupie.',
+        multGroupsJumpsCountsHint: (jumps: number, length: number) => `Skoków: ${jumps}. Każdy ma długość ${length}.`,
         multGroupsCountsHint: (groups: number, size: number) => `Grup: ${groups}. W każdej po ${size}.`,
         multGroupsExprAnswerHint: (expr: string) => `Pasuje ${expr}.`,
         // PLACE_VALUE and DATA (S-13). The blocks and the bar chart are drawings; the texts only name them.

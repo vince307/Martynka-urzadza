@@ -10,7 +10,7 @@ import { TIMES } from '../symbols';
 import type { Generator, Task } from '../types';
 
 export interface MultGroupsParams {
-    variant: 'result' | 'expr';
+    variant: 'result' | 'expr' | 'jumps';
     groups: [number, number];      // the number of plates, min..max
     size: [number, number];        // icons on a plate, min..max
     max: number;                   // the most icons altogether
@@ -32,7 +32,7 @@ export const parseMultGroupsParams = (params: Record<string, unknown>): MultGrou
         throw new TypeError(`MULT_GROUPS ${why}`);
     };
     const { variant, max } = params;
-    if (variant !== 'result' && variant !== 'expr') fail(`params.variant must be result or expr, got ${String(variant)}`);
+    if (variant !== 'result' && variant !== 'expr' && variant !== 'jumps') fail(`params.variant must be result, expr or jumps, got ${String(variant)}`);
     const groups = pairOf('groups', params.groups, 2, MAX_GROUPS, fail);
     const size = pairOf('size', params.size, 2, 10, fail);
     if (!isInt(max) || max > MAX_ICONS || max < groups[0] * size[0]) fail(`needs an integer params.max between ${groups[0] * size[0]} and ${MAX_ICONS}`);
@@ -64,6 +64,27 @@ export const generateMultGroups: Generator = (skill, rng): Task => {
         for (let k = p.size[0]; k <= p.size[1]; k += 1) if (g * k <= p.max) pairs.push([g, k]);
     }
     const [g, k] = rng.pick(pairs);
+    if (p.variant === 'jumps') {
+        // g arcs of length k from 0 on a line with a tick at every whole number and a label at every 5.
+        const visual = {
+            kind: 'numberLine',
+            from: 0,
+            to: g * k,
+            tick: 1,
+            labels: Array.from({ length: Math.floor((g * k) / 5) + 1 }, (_, i) => i * 5),
+            box: null,
+            jumps: Array.from({ length: g }, (_, i) => ({ from: i * k, to: (i + 1) * k })),
+        } as const;
+        const eq = `${g} ${TIMES} ${k} = ${g * k}`;
+        return {
+            skillId: skill.id,
+            prompt: pl.tasks.multGroupsJumps,
+            visual,
+            answer: expression(g, k),
+            choices: exprChoices(g, k, rng),
+            hint: [pl.tasks.multGroupsJumpsHint, pl.tasks.multGroupsJumpsCountsHint(g, k), eq, pl.tasks.multGroupsExprAnswerHint(expression(g, k))],
+        };
+    }
     const icon = rng.pick(PLATE_ICONS.filter((id) => ICONS.some((i) => i.id === id)));
     const noun = ICONS.find((i) => i.id === icon)?.noun ?? icon;
     const forms = nouns[noun];

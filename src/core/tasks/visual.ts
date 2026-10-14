@@ -29,7 +29,10 @@ export type TaskVisual =
     // A written column (S-14b): operands right-aligned, the result has exactly `columns` digits.
     | { kind: 'column'; op: '+' | '−'; a: number; b: number; columns: number }
     // A number line (S-14b): ticks every `tick` from `from` to `to`; `labels` are the numbers written under ticks, `box` the empty box, `jumps` arcs between ticks.
-    | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] };
+    | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] }
+    // An arrow graph or table (S-14b): every input goes to its output by the rule "op n"; exactly one value is null (the empty field).
+    | { kind: 'arrows'; layout: 'graph'; op: '+' | '−'; n: number; input: number | null; output: number | null }
+    | { kind: 'arrows'; layout: 'table'; op: '+' | '−'; n: number; inputs: readonly number[]; outputs: readonly (number | null)[] };
 
 /** `tall` drawings are narrower than high and need the room beside the keypad solution; the rest are wide. */
 export type VisualShape = 'wide' | 'tall';
@@ -68,6 +71,10 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return `figure:${v.lattice ? 'lattice' : 'free'}:${v.vertices.map(([x, y]) => `${x},${y}`).join(';')}:${v.sides.map((x) => x ?? '_').join(',')}`;
         case 'column':
             return `column:${v.op}:${v.a}:${v.b}:${v.columns}`;
+        case 'arrows':
+            return v.layout === 'graph'
+                ? `arrows:graph:${v.op}:${v.n}:${v.input ?? '_'}:${v.output ?? '_'}`
+                : `arrows:table:${v.op}:${v.n}:${v.inputs.join(',')}:${v.outputs.map((x) => x ?? '_').join(',')}`;
         case 'numberLine':
             return `line:${v.from}:${v.to}:${v.tick}:${v.labels.join(',')}:${v.box ?? '_'}:${v.jumps.map((j) => `${j.from}>${j.to}`).join(',')}`;
     }
@@ -196,6 +203,31 @@ export const validateVisual = (v: TaskVisual): string[] => {
             for (const j of v.jumps) if (!onTick(j.from) || !onTick(j.to)) out.push(`jump ${j.from}>${j.to} does not start and end on a tick`);
             break;
         }
+        case 'arrows': {
+            const max = balance.arrows.maxValue;
+            const go = (x: number): number => (v.op === '+' ? x + v.n : x - v.n);
+            if (!isInt(v.n) || v.n < 1) out.push(`arrow rule step ${v.n} is not a positive whole number`);
+            const pairs: { input: number | null; output: number | null }[] =
+                v.layout === 'graph' ? [{ input: v.input, output: v.output }] : v.inputs.map((input, i) => ({ input, output: v.outputs[i] ?? null }));
+            if (v.layout === 'table') {
+                if (v.outputs.length !== v.inputs.length) out.push(`${v.outputs.length} outputs for ${v.inputs.length} inputs`);
+                if (v.inputs.length < balance.arrows.tableMin || v.inputs.length > balance.arrows.tableMax) {
+                    out.push(`${v.inputs.length} table rows, need ${balance.arrows.tableMin}..${balance.arrows.tableMax}`);
+                }
+                if (new Set(v.inputs).size !== v.inputs.length) out.push('duplicate table inputs');
+            }
+            const empty = pairs.reduce((n, p) => n + (p.input === null ? 1 : 0) + (p.output === null ? 1 : 0), 0);
+            if (empty !== 1) out.push(`arrows drawing needs exactly one empty field, got ${empty}`);
+            for (const p of pairs) {
+                // The empty field is derived from the other one of its pair.
+                const input = p.input ?? (p.output === null ? null : v.op === '+' ? p.output - v.n : p.output + v.n);
+                const output = p.output ?? (p.input === null ? null : go(p.input));
+                if (input === null || output === null) continue;
+                if (go(input) !== output) out.push(`arrow ${input} to ${output} is off the rule ${v.op}${v.n}`);
+                for (const x of [input, output]) if (!isInt(x) || x < 0 || x > max) out.push(`arrow value ${x} outside 0..${max}`);
+            }
+            break;
+        }
         default: {
             const unreachable: never = v;
             out.push(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -242,6 +274,10 @@ export const describeVisual = (v: TaskVisual): string => {
             return v.lattice ? `[figure lattice ${v.vertices.length} vertices]` : `[figure ${v.sides.map((x) => (x === null ? '?' : `${x} cm`)).join(' ')}]`;
         case 'column':
             return `[column ${v.a} ${v.op} ${v.b}]`;
+        case 'arrows':
+            return v.layout === 'graph'
+                ? `[arrows graph ${v.input ?? '□'} ${v.op === '+' ? '+' : '−'}${v.n} ${v.output ?? '□'}]`
+                : `[arrows table ${v.op === '+' ? '+' : '−'}${v.n}: ${v.inputs.map((x, i) => `${x}>${v.outputs[i] ?? '□'}`).join(' ')}]`;
         case 'numberLine':
             return `[line ${v.from}–${v.to}/${v.tick}${v.labels.length ? ` labels ${v.labels.join(' ')}` : ''}${v.box !== null ? ` box ${v.box}` : ''}${v.jumps.length ? ` jumps ${v.jumps.map((j) => `${j.from}>${j.to}`).join(' ')}` : ''}]`;
     }

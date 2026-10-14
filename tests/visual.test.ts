@@ -277,3 +277,38 @@ describe('column and numberLine drawings (S-14b)', () => {
         expect(validateVisual(line({ from: 50, to: 50 })).join()).toMatch(/from/);
     });
 });
+
+describe('arrows drawing (S-14b)', () => {
+    const graph = (over: Partial<Extract<TaskVisual, { kind: 'arrows'; layout: 'graph' }>> = {}): TaskVisual => ({
+        kind: 'arrows', layout: 'graph', op: '+', n: 5, input: 7, output: null, ...over,
+    });
+    const table = (outputs: (number | null)[], inputs = [3, 5, 8]): TaskVisual => ({ kind: 'arrows', layout: 'table', op: '−', n: 2, inputs, outputs });
+    it('keys and describes a graph and a table', () => {
+        expect(visualKey(graph())).not.toBe(visualKey(graph({ input: 8 })));
+        expect(visualKey(graph())).not.toBe('');
+        expect(visualKey(graph())).not.toBe(visualKey(table([1, 3, null])));
+        expect(describeVisual(graph())).toBe('[arrows graph 7 +5 □]');
+        expect(describeVisual(table([1, 3, null]))).toBe('[arrows table −2: 3>1 5>3 8>□]');
+        expect(visualShape(graph())).toBe('wide');
+    });
+    it('accepts one empty field that follows the rule', () => {
+        expect(validateVisual(graph())).toEqual([]);
+        expect(validateVisual(graph({ input: null, output: 12 }))).toEqual([]);
+        expect(validateVisual(table([1, 3, null]))).toEqual([]);
+    });
+    it.each([
+        ['no empty field in a graph', graph({ output: 12 })],
+        ['two empty fields in a graph', graph({ input: null })],
+        ['a graph off the rule', graph({ input: 7, output: 11, n: 5 })],
+        ['a value above 20', graph({ input: 18, output: null })],
+        ['a negative value', graph({ op: '−', input: 3, output: null })],
+        ['two empty outputs in a table', table([1, null, null])],
+        ['no empty output in a table', table([1, 3, 6])],
+        ['a table off the rule', table([1, 4, null])],
+        ['outputs of another length', table([1, null], [3, 5, 8])],
+        ['a rule of zero', graph({ n: 0, output: 7 })],
+        ['duplicate inputs', table([1, 1, null], [3, 3, 8])],
+    ])('rejects %s', (_name, v) => {
+        expect(validateVisual(v)).not.toEqual([]);
+    });
+});

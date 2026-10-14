@@ -107,6 +107,7 @@ export class TaskPicture {
                 break;
             case 'column':
             case 'numberLine':
+            case 'arrows':
                 throw new Error(`no widget for the ${visual.kind} drawing yet`);
             default: {
                 const unreachable: never = visual;

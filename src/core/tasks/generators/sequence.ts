@@ -1,5 +1,6 @@
 // SEQUENCE: a number sequence with one gap, "10, 20, □, 40" (ZADANIA.md,
 // section 4), going up or down by a constant step. All terms stay in [0, max].
+import { balance } from '../../../data/balance';
 import { pl } from '../../../data/pl';
 import { arithLine } from '../arith';
 import { BOX } from '../symbols';
@@ -11,10 +12,11 @@ export interface SequenceParams {
     length: number;
     start: 'multiple' | 'any';
     directions: ('up' | 'down')[];
+    line: boolean;                  // S-14b: draw the sequence on a number line (terms on ticks, the gap as the box)
 }
 
 export const parseSequenceParams = (params: Record<string, unknown>): SequenceParams => {
-    const { max, steps, length = 4, start = 'multiple', directions = ['up', 'down'] } = params;
+    const { max, steps, length = 4, start = 'multiple', directions = ['up', 'down'], line = false } = params;
     if (!Number.isInteger(max) || (max as number) < 2) {
         throw new TypeError(`SEQUENCE params.max must be an integer >= 2, got ${String(max)}`);
     }
@@ -30,6 +32,19 @@ export const parseSequenceParams = (params: Record<string, unknown>): SequencePa
     if (!Array.isArray(directions) || directions.length === 0 || !directions.every((d) => d === 'up' || d === 'down')) {
         throw new TypeError(`SEQUENCE params.directions must be a non-empty list of 'up' / 'down', got ${JSON.stringify(directions)}`);
     }
+    if (typeof line !== 'boolean') {
+        throw new TypeError(`SEQUENCE params.line must be true or false, got ${String(line)}`);
+    }
+    if (line) {
+        if (start !== 'multiple') {
+            throw new TypeError('SEQUENCE params.line needs start "multiple": the terms must sit on the ticks');
+        }
+        for (const s of steps as number[]) {
+            if (Math.floor((max as number) / s) + 1 > balance.numberLine.maxTicks) {
+                throw new TypeError(`SEQUENCE: a number line 0..${String(max)} every ${s} has more than ${balance.numberLine.maxTicks} ticks`);
+            }
+        }
+    }
     const min = Math.min(...(steps as number[]));
     if (((length as number) - 1) * min > (max as number)) {
         throw new TypeError(`SEQUENCE: ${String(length)} terms with step ${min} do not fit in 0..${String(max)}`);
@@ -40,6 +55,7 @@ export const parseSequenceParams = (params: Record<string, unknown>): SequencePa
         length: length as number,
         start,
         directions: directions as ('up' | 'down')[],
+        line,
     };
 };
 
@@ -65,5 +81,18 @@ export const generateSequence: Generator = (skill, rng): Task => {
         prompt: `${pl.tasks.sequence} ${shown}`,
         answer,
         hint: [pl.tasks.sequenceHint(step, dir === 'up'), line],
+        ...(p.line
+            ? {
+                  visual: {
+                      kind: 'numberLine',
+                      from: 0,
+                      to: Math.floor(p.max / step) * step,
+                      tick: step,
+                      labels: terms.filter((_, i) => i !== gap),
+                      box: answer,
+                      jumps: [],
+                  } as const,
+              }
+            : {}),
     };
 };

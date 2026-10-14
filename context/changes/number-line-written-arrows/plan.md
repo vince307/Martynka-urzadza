@@ -849,7 +849,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 - [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — f852b48
 - [x] 2.2 Klucze `generators`/`parsers` równe; `WRITTEN` nadal w `LATER` (bez umiejętności) — f852b48
 - [x] 2.3 Deliberate break: wynik E5 dopuszcza 100 / `required` bez przeniesienia / podpis osi = odpowiedź → czerwone; przywrócone; meta-check — f852b48
-- [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — f852b48 (e2e: orchestrator note, 71 passed on f852b48, --workers=4)
 
 #### Manual
 
@@ -859,9 +859,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Klucze `generators`/`parsers` równe; `sample` E2 i E3 bez zmian w wyjściu (dane jeszcze bez opcji)
-- [ ] 3.3 Deliberate break: tabelka z dwoma pustymi polami / brakujący wyraz podpisany na osi / `jumps` z k+1 → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 3.2 Klucze `generators`/`parsers` równe; `sample` E2 i E3 bez zmian w wyjściu (dane jeszcze bez opcji)
+- [x] 3.3 Deliberate break: tabelka z dwoma pustymi polami / brakujący wyraz podpisany na osi / `jumps` z k+1 → czerwone; przywrócone; meta-check
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
