@@ -1,26 +1,27 @@
 # Handoff — `drawn-grid-tasks-e3-e4` (slice S-13b)
 
-Written by the `/10x-new` step of run `2026-10-14-save-s13b-s15-s14b`. The change folder exists with `change.md`
-(identity, roadmap-claim corrections, scope proposal, design sources, triggered follow-ups, 6 autonomous decisions);
-no code changed. The next agent must not miss that the `drag` mode is wired only for base-ten blocks
-(`TaskScene.render` `dragKinds(… : 0)`): "set the clock" needs a branch, and audit findings S13-01…S13-04 are in scope.
+Written by the `/10x-research` step of run `2026-10-14-save-s13b-s15-s14b`. `research.md` answers the unknowns from
+`change.md`; no product code changed. The next agent must not miss: the clock-set answer is the existing string
+`formatTime(h, m)` (save stays v1), and the `drag` mode must branch by `task.visual.kind` in `TaskScene.render`
+before any clock-set skill becomes playable — otherwise the child gets the block tray and is stuck in `retype` (S13-04).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/drawn-grid-tasks-e3-e4`, cut from `main` at `9554e96` |
-| Commits | 1 on top of `9554e96` (`docs(drawn-grid-tasks-e3-e4): change identity (autonomous run)`) |
+| Commits | 2 on top of `9554e96` (`docs(drawn-grid-tasks-e3-e4): change identity (autonomous run)`, `docs(drawn-grid-tasks-e3-e4): research`) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | Progress rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the two files below were staged) |
+| Working tree | clean after the commit (only the three files below staged) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/drawn-grid-tasks-e3-e4/change.md` | change identity: Notes (outcome, PRD FR-023, ZADANIA § 3/§ 4 refs, contract rules), "Roadmap claims vs repo now" table, scope proposal (PUZZLE_GRID E3.5, GRID E3.7, PERIMETER E4.7/E5.12/E6.3, CLOCK "ustaw" E3.3/E3.11/E4.3), design sources and DESIGN-GAP list, migration (none, v1), triggered follow-ups, autonomous decisions 1–6 |
+| `context/changes/drawn-grid-tasks-e3-e4/research.md` | research: drag wiring and S13-04, clock-hand gesture (reducer, snap, grab rule, geometry), answer model and retype trap S13-01..07, hint/solution content per type, number ranges (ZADANIA § 2–4 + recommendations where silent), unlock thresholds on live saves, design sources and DESIGN-GAP list, open choices for the plan |
+| `context/changes/drawn-grid-tasks-e3-e4/change.md` | frontmatter only: `status: new → preparing`, `updated` |
 | `context/changes/drawn-grid-tasks-e3-e4/handoff.md` | this file |
 
 ## 3. Verification
@@ -28,31 +29,30 @@ no code changed. The next agent must not miss that the `drag` mode is wired only
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/drawn-grid-tasks-e3-e4` (observed) |
-| Docs-only step | no lint/typecheck/test/build run: no source file changed (baseline on main `9554e96`: inherited, unverified) |
-| Repo facts in `change.md` | observed in this step: curriculum steps listed via `node --import tsx` (E3.3, E3.11, E4.3 CLOCK `tiles`; E3.5 1 skill; E3.7 3; E4.7 4; E5.12/E6.3 `skills: []`), `TaskVisual` kinds in `src/core/tasks/visual.ts`, `isCorrect` in `src/core/round.ts`, `dragKinds` call in `src/scenes/TaskScene.ts`, `SAVE_VERSION = 1`, last design-gap row 72, kit `reference/square-grid.svg` / `clock.svg` / `helper-metadata.json` |
+| Docs-only step | no lint/typecheck/test/build run: no source file changed (baseline on main `9554e96` from the contract: inherited, unverified) |
+| Anchor check | symbols cited in `research.md` grepped in this step (`parseClockParams`, `faceDistractors`, `unlockView`, `calendarStart`/`floorToCalendar`/`unlockReady`, `captureFirstWrong`, `validLearner`/`validExample`, `screenBound`/`UNBOUNDED_TYPES`, `firstHint`/`leaksAnswer`, `dragKinds`, `pointerupoutside` in `TaskScene.create`, `TASK_LAYOUT.picture`/`drag`, `ClockFace` `DIAL`, `adaptive.spec` `setTimeout(180_000)`) — all present |
+| context7 Phaser 4 input | `/websites/phaser_io_phaser4` returned no input docs; checked `node_modules/phaser/types/phaser.d.ts` (4.2.1) instead — recorded as a low-impact gap |
 
 ## 4. Next command
 
-`/10x-research drawn-grid-tasks-e3-e4`
+`/10x-plan drawn-grid-tasks-e3-e4`
 
 ## 5. Open
 
-- Research questions (from `change.md`): angle gesture for clock hands (which hand under the finger, does the hour hand follow the minute hand, snap to full hours in E3 / 5 minutes in E4, ≥ 96 px targets); how to branch the `drag` mode (`TaskScene.render`, `src/core/round/dragLayout.ts` `dragKinds`, e2e hook `mat`, `tests/e2e/support/hook.ts` `buildOnMat`) by task kind; clock answer shape (number of minutes + `check` vs object); magic-square layout (no kit view); GRID answer mode (tiles "B3" vs tap a cell); whether a grid fits `TASK_LAYOUT.picture.keypadSolution` (190 px).
-- Unlock thresholds change on E3.3, E3.5, E3.7, E3.11, E4.3, E4.7; E5.12 and E6.3 become playable — the plan must list the numbers and the PR body must mention them.
-- DESIGN-GAPs to add from row 73 (`docs/design-gaps.md`): magic square / pyramid cells, grid coordinate labels and items on cells, side lengths on edges, clock hand handles + "OK", grid in the keypad solution phase.
-- Follow-ups in scope (see `change.md` § Triggered follow-ups): S13-01…S13-04 (`src/core/round.ts` `isCorrect`, `src/core/tasks/validate.ts` `validateTask`, `tests/generateTask.test.ts`, `TaskScene.render` `dragKinds`), S13-07 (`generateTask`), S13-08 (`pictureLayout` `belowPrompt`) if long grid prompts, `pointerupoutside` → `cancel` for the new reducer, `pictureLayout` select/drag picture area, `adaptive.spec` timing with `drag` in E4.
-- Out of scope, triggers to carry at archive: BONDS pairs + CHOOSE_OP picture → S-14d; S13-05/06/11…14; M-1, M-2, M-13, H-3, H-4 unless the round lifecycle is touched.
-- No `[human]` rows yet; the teacher read (`npm run sample -- E3|E4|E5|E6 --count 6`) is due in the implement phases.
+- Plan choices (research § Open Questions): E3.5 magic + pyramid (recommended, threshold 1 → 2); E3.7 two GRID skills (recommended, 2 → 3); clock-set as `visual.kind: 'clock'` + `set` flag (recommended) vs a new kind; keypad solution with a grid — scale into `TASK_LAYOUT.picture.keypadSolution` (190 px) or grow it (visual gate).
+- Unlock thresholds change (research § F table): E3.3 1 → 2, E3.11 2 → 3, E4.7 2 → 3, E3.5/E3.7 per choice, E4.3 stays 2; E5.12 and E6.3 become playable (need `childName`; `playableSteps`/`calendarStart` tests move). PR body must list them.
+- Tests to update: `tests/curriculumStart.test.ts`, `tests/curriculumPick.test.ts`, `tests/progress.test.ts`, `tests/artFilter.test.ts`, `tests/contentInvariants.test.ts`, `tests/e2e/drawn-tasks.spec.ts`, `tests/e2e/adaptive.spec.ts` (E4.3 clock-set branch in `answerRight`/`wrongAnswer`; 180 s limit).
+- In scope from follow-ups: S13-01..04, S13-07 (`src/core/round.ts` `isCorrect`, `src/core/tasks/validate.ts` `validateTask`, `tests/generateTask.test.ts`, `TaskScene.render` `dragKinds`, `generateTask`); S13-08 test for the longest new picture prompt (`pictureLayout` `belowPrompt`); `pictureLayout` select/drag rect; `cancel` unit test for the new reducer (`pointerupoutside` → cancel is already wired in `TaskScene.create`); S13-09 pattern not copied into the clock reducer.
+- DESIGN-GAP rows to add from 73 (`docs/design-gaps.md`): magic-square/pyramid cells; grid coordinate labels and items; side lengths on edges; clock-set handles, held state and "OK"; grid in the 190 px keypad solution rect.
+- New nouns needed in `src/data/nouns.ts` (none present): e.g. bok, pole, kratka, wskazówka, kwadrat, prostokąt, trójkąt, plus GRID item names.
+- Teacher read (`npm run sample -- E3|E4|E5|E6 --count 6`) is due in the implement phases. No `[human]` rows yet.
 
 ## 6. Autonomous decisions
 
-Full text in `change.md` § Autonomous decisions (each with the reversal condition). Summary:
-
-1. Next step `/10x-research` (fixed by the step prompt), not the skill's default `/10x-plan`. Would change: nothing in this run.
-2. PERIMETER also in E5.12 and E6.3 (roadmap Risk + S-14 decision 1), not E4.7 only. Would change: E6.3 composite figures needing a different figure model or the plan exceeding ~10 phases → E6.3 to a follow-up with `Trigger: S-14c`.
-3. Magic square as its own cell layout with a DESIGN-GAP, not forced into `square-grid.svg`. Would change: a kit view of number cells found in `designs/`, or a shared widget proving simpler.
-4. "Set the clock" in all E3–E4 CLOCK steps (E3.3, E3.11, E4.3). Would change: a 5-minute snap too fine for a child's finger → E4.3 quarters/halves only or E4 deferred.
-5. S13-01…S13-04 in scope (the first non-numeric `drag` answer makes the `retype` trap real). Would change: a numeric clock answer with `check` + a branch by `visual.kind` → S13-04 closed by the branch alone.
-6. Save format stays v1 (contract: v2 arrives in S-15). Would change: the plan requiring a stored `drag` mistake example → follow-up `Trigger: S-15 save format v2`.
-
-The skill's "copy next command to clipboard" step was skipped (non-interactive run).
+1. **Research scope taken from `change.md` without asking.** Rejected: an interview (contract rule 1). Would change: nothing in this run.
+2. **Clock answer = `formatTime` string, not `{h, m}` / minutes.** Rejected: object or minutes-since-12 (break `captureFirstWrong`, `validExample`, `solutionSteps`, would force save v2). Would change: a requirement to accept several hand positions as correct (then a `check` on the string set, still v1).
+3. **Hands: E3 hour hand only; E4 minute hand snapped to `minuteStep`, hour hand picks the nearest `h + m/60` position, drawn coupled.** Rejected: fully geared real clock (whole minute turns to change the hour — slow for a child). Would change: a tablet test showing children expect the gear behaviour, or the visual gate showing the decoupled hour pick confuses.
+4. **change.md decision 4 kept (E4.3 gets clock-set, 5-minute snap).** Evidence: in `TASK_LAYOUT.drag.mat` the 5-minute arc at the minute tip is ≈ 85 scene px with angle-only capture. Would change: the dial laid out smaller than ~1.2 scale (arc < ~65 px) or a tablet test with mis-snaps → E4.3 halves/quarters only.
+5. **change.md decision 2 kept (PERIMETER in E5.12 and E6.3).** Evidence: kit `helper-metadata.json` `grid.verticesL` is a lattice polygon — the same model covers E4 rectangles and E6 composite figures. Would change: the plan exceeding ~10 phases → E6.3 to a follow-up with `Trigger: S-14c`.
+6. **Ranges where ZADANIA is silent recommended, not invented as fact** (magic sum ≤ 30 in E3, grid 5 × 4, E4 sides 1–20 with perimeter ≤ 100, E6 1 cell = 1 cm). Would change: the author's teacher read or a ZADANIA update.
+7. **context7 gap accepted** (no Phaser 4 input docs; typings checked). Would change: an input regression in the visual gate on the device.
