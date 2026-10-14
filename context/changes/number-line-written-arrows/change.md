@@ -3,7 +3,7 @@ change_id: number-line-written-arrows
 title: Słupek pisemny z okienkami cyfr, grafy strzałkowe i oś liczbowa (rysunek i podpowiedź)
 status: implementing
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 archived_at: null
 ---
 

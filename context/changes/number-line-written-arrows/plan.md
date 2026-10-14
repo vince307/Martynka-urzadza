@@ -900,10 +900,10 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — SHA
-- [x] 6.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z linią `hint visual:` dla sześciu umiejętności — SHA
-- [x] 6.3 Deliberate break: `line: true` na umiejętności z `max: 100` → parser czerwony; przywrócone; meta-check — SHA
-- [x] 6.4 `e2e hook: absent (`; E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — SHA
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — ef09a12
+- [x] 6.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z linią `hint visual:` dla sześciu umiejętności — ef09a12
+- [x] 6.3 Deliberate break: `line: true` na umiejętności z `max: 100` → parser czerwony; przywrócone; meta-check — ef09a12
+- [x] 6.4 `e2e hook: absent (`; E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — ef09a12
 
 #### Manual
 
