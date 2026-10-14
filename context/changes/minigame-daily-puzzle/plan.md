@@ -1032,8 +1032,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 13.1 `npx playwright test tests/e2e/daily-puzzle.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas zapisany (3 passed, 26.2 s; pełny zestaw 71 passed, 5.9 min) — SHA
-- [x] 13.2 Deliberate break (patch `e2e-break-p13a.patch`): `puzzleMultiplier` 1 → (a) czerwony (red: Expected 2, Received 1) — SHA
-- [x] 13.3 Deliberate break (patch `e2e-break-p13b.patch`): `snapshot` w `main.ts` zapisuje startowe `variants` → (b) czerwony; meta-check (red: not.toBe "puzzle") — SHA
-- [x] 13.4 Deliberate break (patch `e2e-break-p13c.patch`): `pickPuzzle` ignoruje `puzzlesDone` → (c) czerwony; każdy czerwony osobno (`-g`) (e2e red 1 z 6; reguła dowiedziona testami jednostkowymi variants.test.ts + p13d czerwony deterministycznie) — SHA
-- [x] 13.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — SHA
+- [x] 13.1 `npx playwright test tests/e2e/daily-puzzle.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas zapisany (3 passed, 26.2 s; pełny zestaw 71 passed, 5.9 min) — f84223e
+- [x] 13.2 Deliberate break (patch `e2e-break-p13a.patch`): `puzzleMultiplier` 1 → (a) czerwony (red: Expected 2, Received 1) — f84223e
+- [x] 13.3 Deliberate break (patch `e2e-break-p13b.patch`): `snapshot` w `main.ts` zapisuje startowe `variants` → (b) czerwony; meta-check (red: not.toBe "puzzle") — f84223e
+- [x] 13.4 Deliberate break (patch `e2e-break-p13c.patch`): `pickPuzzle` ignoruje `puzzlesDone` → (c) czerwony; każdy czerwony osobno (`-g`) (e2e red 1 z 6; reguła dowiedziona testami jednostkowymi variants.test.ts + p13d czerwony deterministycznie) — f84223e
+- [x] 13.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — f84223e
