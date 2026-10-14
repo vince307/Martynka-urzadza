@@ -10,7 +10,7 @@ The `/10x-implement` phase 4 step of run `2026-10-14-save-s13b-s15-s14b` wrote t
 | Commits | 12 (+ this handoff); phase 3 = `5de4d76`, phase 4 = `5884958` |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 22 |
+| `## Progress` rows remaining | 24 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
