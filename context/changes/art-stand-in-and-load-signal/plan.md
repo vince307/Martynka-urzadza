@@ -106,7 +106,7 @@ Kolejność ma znaczenie dla bramki wizualnej: szew `?e2eArt` powstaje w fazie 3
 - **Reguła kroku bieżącego**: kubełek `current` jest filtrowany tylko, gdy po filtrze zostaje ≥ `ceil(unlockShare · n)`
   umiejętności (n = grywalne umiejętności kroku, ta sama formuła co `unlockReady`). Inaczej zostaje niefiltrowany — to
   gwarantuje, że brak obrazków nigdy nie zablokuje odblokowania kroku (E2.2: 1 z 3 grywalnych < 2 → niefiltrowany;
-  E5.5: 0 z 2 → niefiltrowany; E4.1 i E1.11 — wylicza test, nie plan).
+  E5.5 (n = 2, próg 1): brakuje tylko ½ l → zostaje 1 z 2 ≥ 1, więc umiejętność dzbanka jest pomijana, a krok się odblokuje wagą; brakuje obu → 0 < 1 → niefiltrowany; E4.1 i E1.11 — wylicza test, nie plan).
 - **Kolejność w `BootScene`**: rekord zdrowia liczony w `create` (po zakończeniu loadera, przed `delayedCall`), żeby
   `TaskScene` i `UIScene` miały go w rejestrze przy pierwszej rundzie.
 - **Szew `corrupt`**: URL istniejącego pliku, który nie jest obrazem (np. font `.ttf`), dla kilku kluczy — daje 200 i
@@ -151,7 +151,7 @@ narysować; filtr pul pomija takie umiejętności, nie blokując odblokowania kr
 `withoutArtBlocked(buckets: SkillBuckets, blocked: (s: SkillDef) => boolean, minCurrent: number): SkillBuckets` —
 `earlier`/`previous` filtrowane; `current` filtrowany tylko, gdy zostaje ≥ `minCurrent` (i > 0); gdy wszystkie trzy
 wyszłyby puste → oryginalne `buckets`. Pusty zbiór brakujących → wejście bez zmian.
-Testy (min.): E2.2 przy brakujących monetach i dzbankach → `current` niefiltrowany; E5.5 przy brakującym ½ l → niefiltrowany;
+Testy (min.): E2.2 przy brakujących monetach i dzbankach → `current` niefiltrowany; E5.5 przy brakującym ½ l → pomijana tylko umiejętność dzbanka (zostaje 1 z 2 ≥ progu 1), przy braku obu → niefiltrowany;
 krok z 5 umiejętnościami, 1 zablokowaną, próg 3 → filtrowany; wszystkie pule zablokowane → oryginał; MONEY_CHANGE i
 CAPACITY `howMany` nigdy zablokowane.
 
@@ -643,7 +643,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 - **Rzadki stan, trudny do zobaczenia**: realny brak obrazka na produkcji jest nieudowodniony (audyt § 8); szew `?e2eArt`
   dowodzi ścieżek, a nie częstości.
-- **Uczeń na kroku z samymi obrazkami (E5.5) przy trwałym braku**: dostaje zadania ze stand-inem (reguła progu), nie
+- **Uczeń na kroku z samymi obrazkami (E5.5) przy trwałym braku obu obrazków**: dostaje zadania ze stand-inem (reguła progu; przy braku samego ½ l pomijany jest dzbanek, a krok odblokowuje waga), nie
   pomija kroku — świadomie (decyzja 2).
 - **Chromium w sesji agenta**: fazy 8–9 w protokole request-file; zrzuty faz 4–6 mogą wymagać fallbacku Playwright z
   `visual-gate.md` (długie przytrzymanie dla panelu rodzica).
@@ -781,7 +781,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 - [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 4b7b9dd
 - [x] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona) — 4b7b9dd
 - [x] 6.3 `npm run build` drukuje `e2e hook: absent (` — 4b7b9dd
-- [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone)
+- [x] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone) — orchestrator note: 46 passed (3.6m) on 755b834
 
 #### Manual
 
@@ -793,10 +793,10 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [ ] 7.2 `validate-rule-files.sh` PASS
-- [ ] 7.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 7.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 7.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
+- [x] 7.2 `validate-rule-files.sh` PASS
+- [x] 7.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
+- [x] 7.4 `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
 
