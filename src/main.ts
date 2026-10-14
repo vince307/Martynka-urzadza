@@ -8,7 +8,7 @@ import { repairCurrentRoom } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
-import type { Settings } from './core/types';
+import type { Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
@@ -57,6 +57,7 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.stars, start.stars);
                 booting.registry.set(REGISTRY_KEYS.rooms, start.rooms);
                 booting.registry.set(REGISTRY_KEYS.currentRoom, start.currentRoom);
+                booting.registry.set(REGISTRY_KEYS.variants, start.variants);
                 if (start.learner) {
                     booting.registry.set(REGISTRY_KEYS.learner, start.learner);   // absent until the welcome when there is none
                 }
@@ -195,6 +196,7 @@ const start = async (): Promise<void> => {
             currentRoom: game.registry.get(REGISTRY_KEYS.currentRoom) as string,
             settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
             learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
+            variants: (game.registry.get(REGISTRY_KEYS.variants) as VariantState | undefined) ?? session.variants,
         }),
         timers,
         delayMs: balance.save.debounceMs,

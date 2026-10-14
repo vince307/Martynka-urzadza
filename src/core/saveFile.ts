@@ -2,7 +2,7 @@
 // the build id and the rooms come in as parameters. A file is never trusted because it parses: every import goes through
 // decodeSave (migrations + strict validation), so the file can only ever become a save the game itself could have written.
 import { isTimeoutError, replaceGate, type AutosaveStatus } from './autosave';
-import { decodeSave, saveProblem, type SessionSave } from './save';
+import { decodeSave, importProblem, type SessionSave } from './save';
 import type { RoomDef, SaveState, StageId } from './types';
 
 export const SAVE_FILE_APP = 'martynka-urzadza';
@@ -57,7 +57,7 @@ export function parseImport(fileText: string, maxBytes: number): ImportResult {
     }
     const decoded = decodeSave(value);
     if (decoded.kind === 'ok') return { kind: 'ok', session: decoded.session, file };
-    return { kind: 'rejected', reason: decoded.reason, problem: decoded.reason === 'corrupt' ? saveProblem(value) : null };
+    return { kind: 'rejected', reason: decoded.reason, problem: decoded.reason === 'corrupt' ? importProblem(value) : null };
 }
 
 /** What a parent compares before overwriting: stars, stage and the progress of every known room, in the order of `rooms`. */

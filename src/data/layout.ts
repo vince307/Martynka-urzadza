@@ -156,6 +156,7 @@ export const REGISTRY_KEYS = {
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
+    variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -166,6 +167,7 @@ export const SAVE_KEYS = [
     REGISTRY_KEYS.currentRoom,
     REGISTRY_KEYS.learner,
     REGISTRY_KEYS.settings,
+    REGISTRY_KEYS.variants,
 ] as const;
 
 /**

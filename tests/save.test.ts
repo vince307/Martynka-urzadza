@@ -7,7 +7,7 @@ import { endRound } from '../src/core/curriculum';
 import { placeByChild, type SessionLearner } from '../src/core/placement';
 import type { SkillResult } from '../src/core/mastery';
 import { purchase } from '../src/core/rooms';
-import { DEFAULT_PROFILE, SAVE_VERSION, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
+import { DEFAULT_PROFILE, MIGRATIONS, SAVE_VERSION, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
 import { startLearning } from '../src/core/curriculum';
 import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -17,6 +17,7 @@ import { placementData } from '../src/data/placement';
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const clone = <T>(v: T): T => structuredClone(v);
 const asRecord = (v: unknown): Record<string, unknown> => v as Record<string, unknown>;
+const START_VARIANTS = { roundsSince: 0, lastMinigame: null, puzzleDay: null, puzzlesDone: [] };
 
 const deepFreeze = <T extends object>(o: T): T => {
     for (const v of Object.values(o) as unknown[]) {
@@ -39,13 +40,14 @@ const room: RoomDef = {
     ],
 };
 
-describe('frozen v1 fixtures decode to the expected session state', () => {
+describe('frozen v1 fixtures migrate to the expected v2 session state', () => {
     it('a learner of E3 after some rounds, a furnished living room', () => {
         const result = decodeSave(fixture('save-v1.json'));
         expect(result).toEqual({
             kind: 'ok',
-            migratedFrom: null,
+            migratedFrom: 1,
             session: {
+                variants: START_VARIANTS,
                 stars: 7,
                 rooms: { living: { tasksDone: 3, chosen: { floor: 1, sofa: 0, lamp: 2 } } },
                 currentRoom: 'living',
@@ -73,9 +75,15 @@ describe('frozen v1 fixtures decode to the expected session state', () => {
     it('a fresh game: no learner, no stars, an untouched room', () => {
         expect(decodeSave(fixture('save-v1-fresh.json'))).toEqual({
             kind: 'ok',
-            migratedFrom: null,
-            session: { stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
+            migratedFrom: 1,
+            session: { variants: START_VARIANTS, stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
         });
+    });
+
+    it('the v1 fixtures keep their version 1 on disk (frozen, never edited)', () => {
+        expect(asRecord(fixture('save-v1.json')).version).toBe(1);
+        expect(asRecord(fixture('save-v1-fresh.json')).version).toBe(1);
+        expect('variants' in asRecord(fixture('save-v1.json'))).toBe(false);
     });
 
     it('a pending unlock saved for another stage than the learner is on decodes to null', () => {
@@ -110,6 +118,7 @@ describe('round trip of a session built with the real core functions', () => {
         currentRoom: 'living',
         settings: { autoRead: true },
         learner,
+        variants: { roundsSince: 2, lastMinigame: 'dice', puzzleDay: '2026-10-14', puzzlesDone: ['p1'] },
     };
 
     it('decodes to the same state after a structured clone (what IndexedDB does)', () => {
@@ -118,7 +127,7 @@ describe('round trip of a session built with the real core functions', () => {
     });
 
     it('a game without a learner round-trips and encodes the current version', () => {
-        const fresh: SessionSave = { stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null };
+        const fresh: SessionSave = { stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null, variants: START_VARIANTS };
         const encoded = encodeSave(fresh);
         expect(encoded.version).toBe(SAVE_VERSION);
         expect(encoded.profileId).toBe(DEFAULT_PROFILE);
@@ -144,7 +153,11 @@ describe('what is not a readable save is unreadable, never a thrown error', () =
     });
 
     it('a save from a future version is left alone', () => {
-        expect(decodeSave({ ...asRecord(fixture('save-v1.json')), version: 2 })).toEqual({ kind: 'unreadable', reason: 'future' });
+        expect(decodeSave({ ...asRecord(fixture('save-v2.json')), version: SAVE_VERSION + 1 })).toEqual({ kind: 'unreadable', reason: 'future' });
+    });
+
+    it('the current version is 2', () => {
+        expect(SAVE_VERSION).toBe(2);
     });
 
     it('version 0 has no migration step', () => {
@@ -162,16 +175,37 @@ describe('what is not a readable save is unreadable, never a thrown error', () =
         ['autoRead as text', (r) => { r.settings = { autoRead: 'tak' }; }],
         ['tasksDone fractional', (r) => { asRecord(asRecord(r.rooms).living).tasksDone = 0.5; }],
     ];
-    it.each(broken)('a v1 save with %s is corrupt', (_name, mutate) => {
-        const raw = asRecord(clone(fixture('save-v1.json')));
+    it.each(broken)('a v2 save with %s is corrupt', (_name, mutate) => {
+        const raw = asRecord(clone(fixture('save-v2.json')));
         mutate(raw);
         expect(validateSave(raw)).toBe(false);
         expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
     });
 
-    it('the fixtures themselves pass validation', () => {
-        expect(validateSave(fixture('save-v1.json'))).toBe(true);
-        expect(validateSave(fixture('save-v1-fresh.json'))).toBe(true);
+    const badVariants: [string, (v: Record<string, unknown>) => void][] = [
+        ['negative roundsSince', (v) => { v.roundsSince = -1; }],
+        ['fractional roundsSince', (v) => { v.roundsSince = 0.5; }],
+        ['unknown minigame', (v) => { v.lastMinigame = 'quiz'; }],
+        ['puzzleDay not a date', (v) => { v.puzzleDay = '14.10.2026'; }],
+        ['puzzlesDone with a number', (v) => { v.puzzlesDone = ['a', 3]; }],
+    ];
+    it.each(badVariants)('a v2 save with %s is corrupt', (_name, mutate) => {
+        const raw = asRecord(clone(fixture('save-v2.json')));
+        mutate(asRecord(raw.variants));
+        expect(validateSave(raw)).toBe(false);
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+    });
+
+    it('a v2 save without the variants block is corrupt', () => {
+        const raw = asRecord(clone(fixture('save-v2.json')));
+        delete raw.variants;
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+    });
+
+    it('the fixtures themselves pass validation (v1 files are migrated first, so only v2 validates directly)', () => {
+        expect(validateSave(fixture('save-v2.json'))).toBe(true);
+        expect(validateSave(fixture('save-v2-fresh.json'))).toBe(true);
+        expect(validateSave(fixture('save-v1.json'))).toBe(false);
     });
 });
 
@@ -183,23 +217,34 @@ describe('the migration chain', () => {
     };
 
     it('runs the steps from the saved version up and reports where it started', () => {
-        expect(decodeSave(v0, { 0: step0 })).toEqual({
+        expect(decodeSave(v0, { 0: step0, 1: MIGRATIONS[1] })).toEqual({
             kind: 'ok',
             migratedFrom: 0,
-            session: { stars: 4, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
+            session: { variants: START_VARIANTS, stars: 4, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
         });
     });
 
     it('a throwing step is a corrupt save, not an exception', () => {
-        expect(decodeSave(v0, { 0: () => { throw new Error('boom'); } })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(v0, { 0: () => { throw new Error('boom'); }, 1: MIGRATIONS[1] })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
     });
 
     it('a missing step is an unknown version', () => {
         expect(decodeSave(v0, {})).toEqual({ kind: 'unreadable', reason: 'unknown-version' });
+        expect(decodeSave(v0, { 0: step0 })).toEqual({ kind: 'unreadable', reason: 'unknown-version' });
+    });
+
+    it('a throwing v1 -> v2 step is unreadable (the caller then blocks writes, old bytes stay)', () => {
+        expect(decodeSave(fixture('save-v1.json'), { 1: () => { throw new Error('boom'); } }).kind).toBe('unreadable');
+    });
+
+    it('MIGRATIONS[1] adds the starting variants block and nothing else', () => {
+        const v1 = clone(fixture('save-v1.json'));
+        const out = asRecord(MIGRATIONS[1](v1));
+        expect(out).toEqual({ ...asRecord(v1), version: 2, variants: START_VARIANTS });
     });
 
     it('a step whose result is not valid v1 is corrupt', () => {
-        expect(decodeSave(v0, { 0: (raw) => ({ ...asRecord(step0(raw)), stars: -3 }) })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(v0, { 0: (raw) => ({ ...asRecord(step0(raw)), stars: -3 }), 1: MIGRATIONS[1] })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
     });
 });
 
@@ -217,18 +262,26 @@ describe('the decoder does not mutate its input', () => {
     });
 });
 
-describe('the v1 format did not change (save-observability-c1-c2)', () => {
-    for (const name of ['save-v1.json', 'save-v1-fresh.json']) {
-        it(`${name} decodes and encodes back to itself, without any health status keys`, () => {
+describe('the v2 format (S-15): frozen v2 fixtures decode and encode back to themselves', () => {
+    for (const name of ['save-v2.json', 'save-v2-fresh.json']) {
+        it(`${name} round-trips without any health status keys`, () => {
             const raw = fixture(name);
             const r = decodeSave(raw);
             if (r.kind !== 'ok') throw new Error('fixture');
+            expect(r.migratedFrom).toBeNull();
             const encoded = encodeSave(r.session);
-            expect(SAVE_VERSION).toBe(1);
+            expect(SAVE_VERSION).toBe(2);
             expect(encoded).toEqual(raw);
             for (const key of ['blockedBy', 'lastError', 'lastWriteAt', 'consecutiveFailures']) expect(key in asRecord(encoded)).toBe(false);
         });
     }
+
+    it('the v2 fixture keeps ids it does not know (a later build may retire a puzzle)', () => {
+        const raw = asRecord(clone(fixture('save-v2.json')));
+        asRecord(raw.variants).puzzlesDone = ['retired-puzzle'];
+        const r = decodeSave(raw);
+        expect(r.kind === 'ok' && r.session.variants.puzzlesDone).toEqual(['retired-puzzle']);
+    });
 });
 
 describe('freshSession (S-12): the one empty game, used by first launch and by reset', () => {

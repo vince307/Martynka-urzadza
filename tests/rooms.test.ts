@@ -135,6 +135,7 @@ describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
         currentRoom,
         settings: { autoRead: true },
         learner: null,
+        variants: { roundsSince: 0, lastMinigame: null, puzzleDay: null, puzzlesDone: [] },
     });
 
     it('keeps a known room: the same session object, nothing repaired', () => {

@@ -103,7 +103,7 @@ describe('loadSave', () => {
         expect(loaded.kind).toBe('loaded');
         if (loaded.kind === 'loaded') expect(loaded.session.stars).toBe(7);
 
-        const future = { version: 2, stars: 1 };
+        const future = { version: 3, stars: 1 };
         const f = makeStore(future);
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });

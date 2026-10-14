@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "profileId": "default",
+  "stars": 0,
+  "rooms": {
+    "living": {
+      "tasksDone": 0,
+      "chosen": {}
+    }
+  },
+  "currentRoom": "living",
+  "settings": {
+    "autoRead": null
+  },
+  "learner": null,
+  "variants": {
+    "roundsSince": 0,
+    "lastMinigame": null,
+    "puzzleDay": null,
+    "puzzlesDone": []
+  }
+}

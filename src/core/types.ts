@@ -111,5 +111,23 @@ export interface SaveV1 {
     learner: SavedLearner | null;
 }
 
+/** What the round variants (minigames, daily puzzle) keep between launches (S-15, save format v2). */
+export interface VariantState {
+    /** Completed ordinary rounds since the last finished variant (whole number >= 0). */
+    roundsSince: number;
+    /** The minigame played last, for alternation. */
+    lastMinigame: 'word' | 'dice' | null;
+    /** Local calendar day ('YYYY-MM-DD') of the last finished daily puzzle. */
+    puzzleDay: string | null;
+    /** Puzzle ids finished in the current rotation cycle; ids this build does not know are kept. */
+    puzzlesDone: string[];
+}
+
+/** Save format, version 2: version 1 plus the `variants` block. */
+export interface SaveV2 extends Omit<SaveV1, 'version'> {
+    version: 2;
+    variants: VariantState;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV1;
+export type SaveState = SaveV2;
