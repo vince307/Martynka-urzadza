@@ -65,6 +65,7 @@ export interface TaskSnapshot {
     readonly input: AnswerMode;
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
+    readonly art: readonly { readonly key: string; readonly loaded: boolean }[];   // the art images on screen now, read from the widget (S-14)
     readonly choices: readonly (number | string)[];
     readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
     readonly mat: Readonly<Mat>;   // the blocks on the mat of the 'drag' mode
@@ -729,6 +730,7 @@ export class TaskScene extends Scene {
             input: view.input,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
+            art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
             selected: Object.freeze([...this.select.selected()]),
             mat: Object.freeze({ ...this.dragState.mat }),

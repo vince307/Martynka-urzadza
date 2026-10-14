@@ -53,8 +53,20 @@ export class ArtImage {
         this.label.setVisible(false);
     }
 
-    /** What is drawn now: the texture key and whether the texture exists; null while hidden. */
+    /**
+     * What is on screen now, read from the game objects themselves (not from what `show` was asked): the key of a visible
+     * image whose texture is loaded, `loaded: false` for the visible stand-in box, null while nothing is shown.
+     */
     state(): { key: string; loaded: boolean } | null {
-        return this.current ? { ...this.current } : null;
+        if (!this.current) {
+            return null;
+        }
+        if (this.image.visible && this.image.texture.key === this.current.key && this.image.displayWidth > 0 && this.image.displayHeight > 0) {
+            return { key: this.image.texture.key, loaded: true };
+        }
+        if (this.box.visible && this.label.visible) {
+            return { key: this.current.key, loaded: false };
+        }
+        return null;
     }
 }

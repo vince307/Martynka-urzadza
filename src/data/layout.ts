@@ -213,6 +213,19 @@ export const TASK_LAYOUT = {
     },
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
     chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
+    // Money on a table (S-14), own units: notes in the upper row, coins in the lower one, largest first. Not a physical scale: a note is wider
+    // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.
+    money: {
+        noteWidth: 192, noteHeight: 128, gap: 24, rowGap: 20, coinPerMm: 4.8, maxScale: 1.4,
+        coinMm: { 'coin-01gr': 15.5, 'coin-02gr': 17.5, 'coin-05gr': 19.5, 'coin-10gr': 16.5, 'coin-20gr': 18.5, 'coin-50gr': 20.5, 'coin-1zl': 23, 'coin-2zl': 21.5, 'coin-5zl': 24 },
+    },
+    // Balance scale in balance (S-14), in the 512 x 384 units of the converted drawing: the item stands in the left pan, the weights in the
+    // right one (up to `perRow` side by side, further rows `rowLift` higher). DESIGN-GAP (row added in S-14 phase 9): the kit shows the scale without things on it.
+    scale: {
+        imageWidth: 512, imageHeight: 384,
+        panLeft: { x: 90, y: 240 }, panRight: { x: 421, y: 240 },   // centre of a pan rim, the bottom of the things rests on y
+        itemSize: 104, weightSize: 52, weightGap: 2, perRow: 3, rowLift: 38,
+    },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;

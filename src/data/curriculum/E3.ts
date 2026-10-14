@@ -57,6 +57,8 @@ export const E3: StageDef = {
                 skill('E3.4.data_least_10', 4, 'DATA', { variant: 'least', maxValue: 10, bars: 4 }, 'tiles'),
                 skill('E3.4.data_howmany_10', 4, 'DATA', { variant: 'howMany', maxValue: 10, bars: 3 }),
                 skill('E3.4.data_diff_10', 4, 'DATA', { variant: 'diff', maxValue: 10, bars: 3 }),
+                skill('E3.4.mass_kg_10', 4, 'MASS', { variant: 'read', unit: 'kg', weights: ['weight-1kg', 'weight-2kg', 'weight-5kg'], max: 10 }),
+                skill('E3.4.mass_dag_100', 4, 'MASS', { variant: 'read', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
             ],
         },
         {

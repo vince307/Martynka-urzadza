@@ -14,6 +14,8 @@ export interface Snapshot {
     answer: unknown;
     /** The drawing of the open task (a copy), null for a task without one. */
     visual?: { kind: string } | null;
+    /** The art images on screen now (S-14), read from the widget's own objects: texture key and whether the texture is loaded. */
+    art?: { key: string; loaded: boolean }[];
     /** The tiles marked in the 'select' mode. */
     selected?: (number | string)[];
     /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */

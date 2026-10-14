@@ -14,6 +14,10 @@ const skill = (id: string, step: number, type: string, params: SkillDef['params'
     answer,
 });
 
+// Art kit ids of the money and weights a first-grader meets (S-14).
+const ZL_10 = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl'];
+const KG = ['weight-1kg', 'weight-2kg', 'weight-5kg'];
+
 const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef => skill(id, step, 'ADD_SUB', params);
 
 export const E1: StageDef = {
@@ -98,7 +102,12 @@ export const E1: StageDef = {
             title: 'Zegar — pełne godziny; miesiące; kilogram; pieniądze do 10 zł',
             childName: 'Miesiące roku',
             types: ['CLOCK', 'CALENDAR', 'MASS', 'MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE'],
-            skills: [skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles')],
+            skills: [
+                skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles'),
+                skill('E1.11.money_count_10', 11, 'MONEY_COUNT', { variant: 'count', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.money_change_10', 11, 'MONEY_CHANGE', { variant: 'change', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.mass_kg_10', 11, 'MASS', { variant: 'read', unit: 'kg', weights: KG, max: 10 }, 'tiles'),
+            ],
         },
     ],
 };

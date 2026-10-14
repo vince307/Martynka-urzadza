@@ -12,6 +12,10 @@ const skill = (id: string, step: number, type: string, params: SkillDef['params'
     answer,
 });
 
+// Art kit ids of the money a second-grader counts (S-14): notes to 100 zł, and złoty with grosze coins for "3 zł 40 gr".
+const ZL_100 = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'note-20zl', 'note-50zl', 'note-100zl'];
+const ZL_GR = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'coin-10gr', 'coin-20gr', 'coin-50gr'];
+
 export const E4: StageDef = {
     id: 'E4',
     steps: [
@@ -25,6 +29,10 @@ export const E4: StageDef = {
                 skill('E4.1.place_read_100', 1, 'PLACE_VALUE', { variant: 'read', min: 20, max: 99 }),
                 skill('E4.1.place_decompose_100', 1, 'PLACE_VALUE', { variant: 'decompose', min: 21, max: 99 }),
                 skill('E4.1.place_build_100', 1, 'PLACE_VALUE', { variant: 'build', min: 21, max: 99 }, 'drag'),
+                skill('E4.1.money_count_100', 1, 'MONEY_COUNT', { variant: 'count', ids: ZL_100, max: 10000, maxItems: 6, answer: 'number-zl' }),
+                skill('E4.1.money_count_zl_gr', 1, 'MONEY_COUNT', { variant: 'count', ids: ZL_GR, max: 2000, maxItems: 6, answer: 'text' }, 'tiles'),
+                skill('E4.1.money_change_100', 1, 'MONEY_CHANGE', { variant: 'change', ids: ZL_100, max: 10000, maxItems: 6, answer: 'number-zl' }),
+                skill('E4.1.mass_half_kg', 1, 'MASS', { variant: 'half', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
             ],
         },
         {
