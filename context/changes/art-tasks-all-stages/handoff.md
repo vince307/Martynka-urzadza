@@ -1,59 +1,63 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the `/10x-implement` step for phase 2 (commit `d4f4470`): 38 WebP drawings in `public/assets/tasks/`, the texture table, loading in `BootScene`, `ArtImage` with a stand-in. The seed's offline assertion and its break are written but not proven (no Chromium); the orchestrator runs them from `e2e-request-p2.md`. Phase 3 is next.
+Written by the `/10x-tdd` step for phase 3 (commit `b6a947d`): generators MONEY_COUNT, MONEY_CHANGE and MASS with parsers, 60 new tests, not yet in the curriculum. Phase 2 closed first (commit `ab0dc05`, seed change). Phase 4 is next; do not add the new types to `src/data/curriculum/` before phases 5 and 8.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | `46aff1d` (phase 1), `d4f4470` (phase 2 code), this handoff commit |
+| Commits | `46aff1d` (p1), `d4f4470` (p2 code), `ab0dc05` (p2 seed), `b6a947d` (p3), this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; the implement epilogue is for the last phase) |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (open: 1.5 reviewer; 2.5, 2.6, 2.7 orchestrator e2e; 2.8 reviewer; 2.9 human) |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (open: 1.5, 2.8 reviewer; 2.9 human; 3.4 e2e part, 3.5 reviewer; later phases) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `scripts/make-task-art.mjs`, `package.json` `art` | kit PNG to WebP with `cwebp -resize W H -q 85 -alpha_q 100 -m 6`; fails clearly without `designs/` or `cwebp` |
-| `public/assets/tasks/{money,measuring,icons}/*.webp` | 15 + 11 + 12 files, 442 KB |
-| `src/data/taskArt.ts` | `TASK_ART` (key, url, size) built from `measures.ts` ids, `ART_KEYS` key helpers |
-| `src/scenes/BootScene.ts` | loads `TASK_ART`; `loaderror` is a `console.warn` |
-| `src/ui/widgets/ArtImage.ts`, `layout.ts` (`ART_STAND_IN`, font role `artLabel`) | one reusable image fitted into a rect, stand-in box with the id when the texture is missing, `state()` for the phase 5 hook `art` |
-| `tests/taskArt.test.ts` | table vs files (WebP header size), no stray files, ids covered, under 1 MB |
-| `e2e-request-p2.md` (updated p2 re-dispatch), `e2e-seed-p2.patch` (now ignores `blob:`/`data:` responses), `e2e-break-p2.patch` | seed assertion (`requestfailed` and every `TASK_ART` url in `servedBySw`) and the one-file `globIgnores` break |
+| `tests/e2e/seed.spec.ts` | (`ab0dc05`) seed asserts no `requestfailed` and every `TASK_ART` url served by the service worker |
+| `src/core/tasks/generators/money.ts` | `parseMoneyCountParams`, `parseMoneyChangeParams`, `generateMoneyCount`, `generateMoneyChange`; params `{variant, ids, max (grosze), maxItems 2..10, answer: number-zl\|number-gr\|text}` |
+| `src/core/tasks/generators/mass.ts` | `parseMassParams`, `generateMass`; params `{variant: read\|half\|convert, unit: kg\|dag, weights, max}` |
+| `src/core/tasks/registry.ts` | `MONEY_COUNT`, `MONEY_CHANGE`, `MASS` in `generators` and `parsers` |
+| `src/data/pl.ts` | `pl.tasks.money*` and `pl.tasks.mass*` strings |
+| `src/data/measures.ts` | `SCALE_ITEMS` masses extended (book 300-800 and 1000, cushion 600-900 and up, apple/pear/yarn/teapot/lamp) so `convert` has answers 10..90 |
+| `tests/money.test.ts`, `tests/mass.test.ts` | 1000-draw oracles from the drawing, parser rejections, task-space thresholds of the planned skills |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `npm test` | 1515 passed (branch baseline 1510, +5) (observed) |
+| Phase 2 closing | orchestrator e2e on `ab0dc05`: seed 1 passed; break (`note-500zl.webp` out of the precache) RED on `expect(failed…).toEqual([])` received `["/assets/tasks/money/note-500zl.webp" ×3]` (`seed.spec.ts:45`); full suite 42 passed. Rows 2.5-2.7 ticked |
+| RED (before the generators) | stubs returned an empty task; first assertions: `expected undefined to be 'money'` (money), `expected undefined to be 'scale'` (mass), `expected '' to be 'Ile złotych leży na stole?'` |
+| `npm test` | 1575 passed (branch baseline 1515, +60) (observed) |
 | `npm run lint`, `npm run typecheck` | clean (observed) |
 | `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK (observed) |
-| `npm run sample -- E1` … `E6` | exit 0 each (observed) |
-| `npm run build` | green, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` has 38 `assets/tasks/` entries (observed) |
-| `npm run art` twice | `shasum` of all 38 files identical (observed) |
-| Deliberate breaks | `balance-scale` width 512 to 500 in `TASK_ART` -> `AssertionError: ... expected { width: 512, height: 384 } to deeply equal { width: 500, height: 384 }`; `icons/key.webp` moved away -> `ENOENT` plus the stray/missing list test red; restored, 5 green. Meta-check: the test reads WebP headers and the directory from disk, not the table against itself |
-| e2e | not runnable in this session — orchestrator gate (`MachPortRendezvousServer ... Permission denied`, 1 plain try). Orchestrator: `e2e-request-p2.md` (green run, expect 42 + 0; break patch expects seed red on `note-500zl.webp`) |
+| `npm run sample -- E1` … `E6` | exit 0 each; output unchanged (the types are not in the curriculum yet) |
+| `npm run build` | green, `e2e hook: absent (2 chunks checked)` |
+| Deliberate breaks | CHANGE price up to the whole amount -> `expected 700 to be less than 700` (4 tests); parser accepting an unknown nominal -> `expected function to throw an error, but it didn't` (2); MASS weights of another option -> `expected 1 to be 2` (5). All restored, 60 green. Meta-check: the oracles sum the `visual` (coins, weights) and check the mass against `SCALE_ITEMS`, they do not compare the answer with itself |
+| e2e | not runnable in this session — orchestrator gate (`MachPortRendezvousServer ... Permission denied`, 2 plain tries, all specs "did not run"). Expected `42 passed + 0`; row 3.4 e2e part left unticked |
+| Teacher read | no curriculum entry yet, so `npm run sample` cannot show these types; read 6 draws per variant with a scratch script (money count zł/gr/text, change zł/text, mass kg/dag/half/convert): agreement, gender of verbs, accusative of the purchase, spoken amounts, first hint without a result. Changes made from the read: weights at most 2 pieces above the fewest (no five 10 dag for 50 dag), full stop after "250 gr to 2 zł 50 gr" |
 
 ## 4. Next command
 
-`/10x-tdd art-tasks-all-stages phase 3` (phase 3, Driver: tdd)
+`/10x-tdd art-tasks-all-stages phase 4` (phase 4, Driver: tdd)
 
 ## 5. Open
 
-- Rows 2.5, 2.6, 2.7: e2e by the orchestrator per `e2e-request-p2.md`; if green, commit the seed change as described there.
+- Row 3.4: e2e part by the orchestrator (`npx playwright test` expects 42 passed); row 3.5 `[reviewer]` (teacher read of `pl.tasks.money*`/`mass*` and 6 draws per variant, also `npm run sample` once phases 5 and 8 add data).
 - `[reviewer]` 1.5, 2.8; `[human]` 2.9.
+- Phase 5 must put planned skills only into steps already playable; E1.11 `mass_kg_10` etc. params are the ones measured in `tests/mass.test.ts` / `tests/money.test.ts` "task space of the planned skills" (change them there too).
 - `ARTIFACT GAP: none`.
 
 ## 6. Autonomous decisions
 
-0. Re-dispatch: the orchestrator's red (`blob:` responses counted as network) is fixed in `e2e-seed-p2.patch` by classifying on URL scheme before the pathname; blobs counted apart and required (>= 38). No other spec counts responses (grep). Chromium still dies (MachPortRendezvousServer, 1 plain try), so nothing is committed; both patches `git apply --check` in order.
-1. The seed.spec.ts change is NOT committed (plan: no commit without the orchestrator's result); it lives as `e2e-seed-p2.patch`. Would change: a Chromium-capable session.
-2. `cwebp` could read `designs/` and write `public/assets/` inside the sandbox; no unsandboxed command was used.
-3. `ArtImage` has no unit test (Phaser object); its table-size logic is covered indirectly by `taskArt.test.ts`, its behaviour by the phase 5 hook `art` and the e2e of phase 10.
-4. `ART_KEYS` helpers added next to `TASK_ART` so widgets never concatenate keys by hand.
-5. Stand-in label is the id tail (technical, not player text); font role `artLabel` 24 px added with a comment.
+1. Mixed phase handled as pure tdd; the strings in `pl.ts` and the `SCALE_ITEMS` table were written inline with the green step (data, not testable logic).
+2. `variant` stays in the params (plan contract) but each type has its own parser that requires its own variant (`MONEY_COUNT` = `count`, `MONEY_CHANGE` = `change`). Rejected: dropping the field (contradicts the plan). Would change: phase 5 data writer finding it redundant.
+3. MONEY_CHANGE states the amount in the prompt and the drawing shows the same amount (rejected: "she had what lies on the table", a two-step task too heavy for E1.11). Would change: teacher read wanting the count to be part of the task.
+4. `maxItems` 2..10 and the picture always has at least 2 items (a single coin is a reading, not a sum). Text answers need a złoty and a grosz nominal and always draw a mixed sum (`3 zł 40 gr`), distractors: units swapped (`40 zł 3 gr`), a forgotten or doubled coin.
+5. MASS: one unit per scale (kg weights read in kg, dag weights in dag, no "1 kg 20 dag"); `half`/`convert` only in dag. `SCALE_ITEMS` extended with believable masses; `speak` omitted (the prompt has no digits). No new nouns: the prompts use the 12 icon nouns, the abbreviations kg/dag/zł/gr, and "kilograma" without a numeral, so nothing needs agreement (plan listed `kilogram`, `dekagram`, `moneta` etc. for later phases).
+6. Amount answers in grosze stay in grosze even at 100 ("100 gr", not "1 zł") so the last hint contains the answer.
+7. e2e not run (Chromium cannot start in this session); nothing in this phase changes browser behaviour (generators are not in the curriculum).

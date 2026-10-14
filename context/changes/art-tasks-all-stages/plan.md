@@ -927,9 +927,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 2.2 Deliberate break: usunięty `.webp` / zła szerokość w `TASK_ART` → czerwony; przywrócone; meta-check — d4f4470
 - [x] 2.3 `npm run art` drugi raz: `public/assets` bez zmian — d4f4470 (SHA wszystkich 38 plików identyczne)
 - [x] 2.4 `npm run build`: `sw.js` wymienia 38 wpisów `assets/tasks/`; `e2e hook: absent (` — d4f4470
-- [ ] 2.5 E2E (orkiestrator): `seed.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 0`
-- [ ] 2.6 Deliberate break (patch `e2e-break-p2.patch`, `globIgnores` jednego `note-500zl.webp`): seed czerwony na tym pliku; przywrócone; meta-check
-- [ ] 2.7 Pełna bramka lokalna zielona
+- [x] 2.5 E2E (orkiestrator): `seed.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 0` — ab0dc05 (e2e by the orchestrator: seed 1 passed, break red, 42 passed)
+- [x] 2.6 Deliberate break (patch `e2e-break-p2.patch`, `globIgnores` jednego `note-500zl.webp`): seed czerwony na tym pliku; przywrócone; meta-check — ab0dc05 (e2e by the orchestrator: seed 1 passed, break red, 42 passed)
+- [x] 2.7 Pełna bramka lokalna zielona — ab0dc05 (e2e by the orchestrator: seed 1 passed, break red, 42 passed)
 
 #### Manual
 
@@ -940,9 +940,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 1000 losowań na generator bez naruszeń; wyrocznie z pól rysunku; klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności
-- [ ] 3.3 Deliberate break: reszta 0 / odważniki nie sumują się / nieznany nominał → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — b6a947d
+- [x] 3.2 1000 losowań na generator bez naruszeń; wyrocznie z pól rysunku; klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — b6a947d
+- [x] 3.3 Deliberate break: reszta 0 / odważniki nie sumują się / nieznany nominał → czerwone; przywrócone; meta-check — b6a947d
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
