@@ -793,10 +793,10 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [x] 7.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [x] 7.2 `validate-rule-files.sh` PASS
-- [x] 7.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [x] 7.4 `npm run build` drukuje `e2e hook: absent (`
+- [x] 7.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod — 33f0771
+- [x] 7.2 `validate-rule-files.sh` PASS — 33f0771
+- [x] 7.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — 33f0771
+- [x] 7.4 `npm run build` drukuje `e2e hook: absent (` — 33f0771
 
 #### Manual
 
