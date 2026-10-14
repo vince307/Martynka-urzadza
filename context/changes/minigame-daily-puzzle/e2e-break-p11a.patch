@@ -1,0 +1,13 @@
+diff --git a/src/core/save.ts b/src/core/save.ts
+index e61f207..d94fe05 100644
+--- a/src/core/save.ts
++++ b/src/core/save.ts
+@@ -32,7 +32,7 @@ const startingVariants = (): VariantState => ({ roundsSince: 0, lastMinigame: nu
+ /** Steps that lift a save of version N to version N+1. Reads and never mutates its input. */
+ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+     // v1 -> v2 (S-15): the variants block, at its starting values.
+-    1: (raw) => ({ ...(raw as Record<string, unknown>), version: 2, variants: startingVariants() }),
++    1: (raw) => ({ ...(raw as Record<string, unknown>), version: 2, stars: 0, variants: startingVariants() }),
+ };
+ 
+ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

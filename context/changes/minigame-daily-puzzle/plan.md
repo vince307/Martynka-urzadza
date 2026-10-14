@@ -1002,7 +1002,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 10.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 94bb48c
 - [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — 94bb48c
 - [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 79+ w `docs/design-gaps.md` — 94bb48c
-- [ ] 10.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 10.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 63 passed (5.0 min, `--workers=4`) on 94bb48c
 
 #### Manual
 
@@ -1013,10 +1013,10 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/save-migration.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`
-- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `MIGRATIONS[1]` zeruje gwiazdki → (a) czerwony; meta-check
-- [ ] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): autosaver pomija `backup` → (b) czerwony; każdy czerwony osobno (`-g`)
-- [ ] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/save-migration.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: save-migration 2 passed (27.3 s); full suite --workers=4 65 passed (4.8 min) = 63 + 2
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `MIGRATIONS[1]` zeruje gwiazdki → (a) czerwony; meta-check — orchestrator: break p11a (MIGRATIONS[1] zeroes stars), `-g "#10 a v1 save loads"` red `toBe` Expected 7, Received 0; restored; meta-check: the red names the stars the v1 save held
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): autosaver pomija `backup` → (b) czerwony; każdy czerwony osobno (`-g`) — orchestrator: break p11b (autosaver skips backup), `-g "#2 after a round"` red `toEqual` first op expected "backup", received "write"; restored
+- [x] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, tsc, unit 2322 green, ports 4397/4398 free; src/ has no diff
 
 ### Phase 12: Minigry dotykiem — e2e (#11)
 
