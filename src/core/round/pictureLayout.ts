@@ -1,5 +1,5 @@
 // DESIGN-GAP 65 (docs/design-gaps.md): the thermometer is tall: it takes a column on the left in every phase, the answers and the bar move right of it (rev. of rows 52 and 57).
-// Where a task's drawing and its solution lines go (S-13): pure rectangles in the 1920x1080 scene space.
+// Where a task's drawing and its solution lines go (S-13; S-14b adds the written column `digits` and the hint drawing under the expression): pure rectangles in the 1920x1080 scene space.
 // The numbers come in as data (TASK_LAYOUT.picture); this file only decides which rectangle applies.
 import type { Rect } from '../geometry';
 import type { AnswerMode, VisualShape } from '../tasks/visual';

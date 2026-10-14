@@ -11,7 +11,7 @@ const TEAL = PLACEHOLDER_COLORS.deepTeal;
 
 /**
  * An arrow graph (circle - arrow with its rule - circle) or a rule table (a row of inputs over a row of outputs, the rule on an arrow at the left);
- * the empty field is dashed with a "?". DESIGN-GAP (S-14b): the kit has neither.
+ * the empty field is dashed with a "?". DESIGN-GAP 89 (docs/design-gaps.md): the kit has neither.
  */
 export class ArrowGraph {
     private readonly graphics: GameObjects.Graphics;

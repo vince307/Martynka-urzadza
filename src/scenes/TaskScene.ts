@@ -438,7 +438,7 @@ export class TaskScene extends Scene {
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         const columnState = view.visual?.kind === 'column' ? { marks: columnMarks(view.visual, this.marksShown()), boxes: this.boxes, mode: this.state.phase === 'done' ? ('correct' as const) : view.inputActive ? ('active' as const) : ('locked' as const) } : undefined;
         this.picture.render(this.clockTask ? null : view.visual, pictureRect, columnState);   // a clock to set is drawn by ClockSet
-        // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP, phase 9).
+        // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP 92, docs/design-gaps.md).
         const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input) : null;
         this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';

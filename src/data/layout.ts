@@ -96,11 +96,11 @@ export const FONT_SIZES = {
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
     cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
     lineLabel: 28,          // kit reference/number-line.svg: numbers under the ticks
-    lineJump: 30,           // kit number-line.svg has no arc label; DESIGN-GAP (S-14b): the "+k" over an arc
-    arrowRule: 40,          // DESIGN-GAP (S-14b): the rule "+5" on an arrow of a graph or table
+    lineJump: 30,           // kit number-line.svg has no arc label; DESIGN-GAP 88: the "+k" over an arc
+    arrowRule: 40,          // DESIGN-GAP 89: the rule "+5" on an arrow of a graph or table
     columnDigit: 72,        // kit reference/written-addition.svg: digits of the written column
     columnSign: 64,         // kit reference/written-addition.svg: the + or − sign
-    columnMark: 34,         // DESIGN-GAP (S-14b): the small carry or borrow digit
+    columnMark: 34,         // DESIGN-GAP 91: the small carry or borrow digit
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
@@ -264,10 +264,10 @@ export const TASK_LAYOUT = {
             picture: { x: 661, y: 396, width: 600, height: 190 },
             solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
-        // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no written column; screenshots at the visual gate.
+        // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP 93 (docs/design-gaps.md): the kit has no layout for the column beside its solution lines; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
         digits: { picture: { x: 236, y: 340, width: 440, height: 508 }, lines: { x: 700, y: 340, width: 320, height: 508 } },
-        // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP (docs/design-gaps.md, phase 9): screenshots in phase 6.
+        // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
         hint: { keypad: { picture: { x: 236, y: 530, width: 768, height: 190 }, lines: { x: 236, y: 730, width: 768, height: 118 } } },
         minHeight: 120,
         tall: {
@@ -295,18 +295,18 @@ export const TASK_LAYOUT = {
     // Number cells (DESIGN-GAP row 73), own units: a magic square (3 x 3) or a pyramid (1, 2, 3 cells, each row shifted half a cell), `cell` wide and tall; the empty cell is dashed.
     cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
     // Number line (kit reference/number-line.svg, own units: axis 4, ticks 2 x 24 high, arcs 5, dots r 9). Ticks are `gap` apart (`denseGap` from `denseFrom` ticks, so
-    // 0..30 stays readable beside the keypad); arcs rise at most `arcMax`, an arc narrower than `minLabelSpan` has no label. DESIGN-GAP (S-14b): 0..100 with a box,
+    // 0..30 stays readable beside the keypad); arcs rise at most `arcMax`, an arc narrower than `minLabelSpan` has no label. DESIGN-GAP 88: 0..100 with a box,
     // jumps longer than 1 and the dashed box on a tick are not in the kit.
     numberLine: {
         gap: 58, denseGap: 30, denseFrom: 12, pad: 40, axis: 4, tick: 24, arc: 5, head: 12, dot: 9, border: 4,
         arcZone: 120, arcMax: 84, arcLift: 14, minLabelSpan: 36, labelDrop: 42, box: { width: 52, height: 46, dash: 9 }, maxScale: 1.4,
     },
-    // Arrow graph and table (DESIGN-GAP, S-14b, rows added in phase 9): circles of `disc` (graph) or square tiles of `tile` (table) with the rule on an arrow.
+    // Arrow graph and table (DESIGN-GAP 89): circles of `disc` (graph) or square tiles of `tile` (table) with the rule on an arrow.
     arrows: {
         disc: 120, arrow: 270, rule: 56, border: 4, head: 16, line: 5, dash: 14,
         tile: 96, tileGap: 16, ruleColumn: 170, rowGap: 96, maxScale: 1.5,
     },
-    // Written column (DESIGN-GAP, S-14b, rows added in phase 9), own units: digits in columns `colW` apart (kit written-addition.svg: 72 px digits, 82 px columns, 4 px rule),
+    // Written column (DESIGN-GAP 90, 91), own units: digits in columns `colW` apart (kit written-addition.svg: 72 px digits, 82 px columns, 4 px rule),
     // a `markRow` for carries and borrows above the first operand, the result boxes under the rule. The active box has a thicker border and the butter fill.
     written: {
         colW: 82, markRow: 60, row: 92, ruleGap: 12, rule: 4, maxScale: 1.3,

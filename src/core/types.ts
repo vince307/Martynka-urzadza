@@ -6,7 +6,7 @@
 
 export type StageId = 'E1' | 'E2' | 'E3' | 'E4' | 'E5' | 'E6';
 
-/** Every way a child can answer; the one source of the `SkillDef.answer` union. `digits` (a digit per box of a written column) is not playable before S-14b phase 8 (`playable`). */
+/** Every way a child can answer; the one source of the `SkillDef.answer` union. `digits` is a digit per box of a written column (S-14b); `playable` lists every mode the scene can answer. */
 export const ANSWER_MODES = ['tiles', 'keypad', 'drag', 'select', 'digits'] as const;
 
 export interface SkillDef {

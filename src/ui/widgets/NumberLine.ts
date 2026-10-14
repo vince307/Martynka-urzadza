@@ -9,7 +9,7 @@ type Line = Extract<TaskVisual, { kind: 'numberLine' }>;
 
 const TEAL = PLACEHOLDER_COLORS.deepTeal;
 
-/** A number line after the kit's reference/number-line.svg: axis with an arrowhead, ticks, labels, arcs for the jumps, gold start dots and a dashed box on a tick. */
+/** A number line after the kit's reference/number-line.svg: axis with an arrowhead, ticks, labels, arcs for the jumps, gold start dots and a dashed box on a tick. DESIGN-GAP 88 (docs/design-gaps.md): 0..100, a box and longer jumps are not in the kit. */
 export class NumberLine {
     private readonly graphics: GameObjects.Graphics;
     private texts: GameObjects.Text[] = [];

@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { dashedRect } from './dashed';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
 
@@ -53,7 +54,8 @@ export class NumberCells {
             if (value === null) {
                 g.fillStyle(PLACEHOLDER_COLORS.butter, 1);
                 g.fillRect(x, y, size, size);
-                this.dashedFrame(x, y, size, c.dash * s, c.border * s);
+                g.lineStyle(c.border * s, PLACEHOLDER_COLORS.deepTeal, 1);
+                dashedRect(g, x, y, size, size, c.dash * s);
             } else {
                 g.fillStyle(PLACEHOLDER_COLORS.tile, 1);
                 g.fillRect(x, y, size, size);
@@ -65,21 +67,6 @@ export class NumberCells {
             const text = this.scene.add.text(x + size / 2, y + size / 2, label, textStyle('cellValue', color)).setOrigin(0.5).setScale(s);
             this.texts.push(text);
         });
-    }
-
-    private dashedFrame(x: number, y: number, size: number, dash: number, width: number): void {
-        const g = this.graphics;
-        g.lineStyle(width, PLACEHOLDER_COLORS.deepTeal, 1);
-        const edge = (x0: number, y0: number, dx: number, dy: number): void => {
-            for (let d = 0; d < size; d += dash * 2) {
-                const e = Math.min(d + dash, size);
-                g.lineBetween(x0 + dx * d, y0 + dy * d, x0 + dx * e, y0 + dy * e);
-            }
-        };
-        edge(x, y, 1, 0);
-        edge(x, y + size, 1, 0);
-        edge(x, y, 0, 1);
-        edge(x + size, y, 0, 1);
     }
 
     setVisible(visible: boolean): void {

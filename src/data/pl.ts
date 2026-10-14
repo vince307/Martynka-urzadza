@@ -317,7 +317,7 @@ export const pl = {
             moreBy: 'Jest więcej, więc dodajemy.',
         },
         sequence: 'Uzupełnij ciąg:',
-        // ARROW_TABLE (S-14b): the rule line never states a result.
+        // ARROW_TABLE (S-14b, DESIGN-GAP 89: the kit has no arrow-graph copy, the texts are ours): the rule line never states a result.
         arrowGraph: 'Uzupełnij graf.',
         arrowTable: 'Uzupełnij tabelkę.',
         arrowRule: (plus: boolean, n: number) => (plus ? `Reguła strzałki: dodaj ${n} do liczby.` : `Reguła strzałki: odejmij ${n} od liczby.`),
@@ -544,6 +544,7 @@ export const pl = {
             `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
         perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
         sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
+        // WRITTEN (S-14b, DESIGN-GAP 90, 91): the kit has no copy for the column task; prompts and step lines are ours.
         writtenAddPrompt: (a: number, b: number) => `Dodaj w słupku: ${a} + ${b}`,
         writtenSubPrompt: (a: number, b: number) => `Odejmij w słupku: ${a} − ${b}`,
         writtenColumnNames: ['Jedności', 'Dziesiątki', 'Setki'] as readonly string[],

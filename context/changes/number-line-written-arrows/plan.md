@@ -927,11 +927,11 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje cztery umiejętności WRITTEN
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje cztery umiejętności WRITTEN — 295a5f4 (e2e part: orchestrator note, full suite on 295a5f4 with --workers=4: 71 passed)
 - [x] 8.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń, z linią `visual: [column …]` — 295a5f4
 - [x] 8.3 Deliberate break: `answerRight` bez gałęzi `digits` → typecheck czerwony; E6 `carry: 'any'` z wynikiem < 100 → czerwone; stary tekst O5 przy pustym `LONG_KEYPAD_HINTS` → inwariant czerwony; przywrócone; meta-check — 295a5f4
 - [x] 8.4 `tests/fixtures/` bez zmian; `e2e hook: absent (` — 295a5f4
-- [ ] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 295a5f4 (orchestrator note: 71 passed, 5.3 min, --workers=4)
 
 #### Manual
 
@@ -943,9 +943,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 9.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [ ] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 88+ w `docs/design-gaps.md`
+- [x] 9.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @@SHA@@
+- [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — @@SHA@@
+- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 88+ w `docs/design-gaps.md` — @@SHA@@
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
