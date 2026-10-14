@@ -922,7 +922,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 - [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 5a18b39
 - [x] 4.2 Deliberate break: `!==` → `>` / licznik zerowany przy starcie / `starPerTask` × 1 → czerwone; przywrócone; meta-check — 5a18b39
-- [ ] 4.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 4.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — e2e 63 passed on 5a18b39 (orchestrator note, --workers=4)
 
 #### Manual
 
@@ -932,9 +932,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `npm run sample -- E3 --variants` i `E4 --variants` bez naruszeń; `sample` E1–E6 bez flagi bez zmian w wyjściu
-- [ ] 5.3 Deliberate break: podpowiedź 1 z wynikiem / rzeczownik spoza słownika / `choices` bez odpowiedzi → czerwone; przywrócone; meta-check
+- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 5.2 `npm run sample -- E3 --variants` i `E4 --variants` bez naruszeń; `sample` E1–E6 bez flagi bez zmian w wyjściu
+- [x] 5.3 Deliberate break: podpowiedź 1 z wynikiem / rzeczownik spoza słownika / `choices` bez odpowiedzi → czerwone; przywrócone; meta-check
 - [ ] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

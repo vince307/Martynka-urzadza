@@ -15,12 +15,14 @@ import { balance } from '../src/data/balance';
 import { availableStages, getStage } from '../src/data/curriculum';
 import { nouns } from '../src/data/nouns';
 import { pl } from '../src/data/pl';
+import { puzzlePool, puzzleTask } from '../src/core/puzzles';
+import { PUZZLES } from '../src/data/puzzles';
 
 const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 3;
 
 const usage = (): never => {
-    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N] [--warmup]');
+    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N] [--warmup] [--variants]');
     console.error(`Etapy z danymi: ${availableStages().join(', ')}`);
     process.exit(2);
 };
@@ -29,6 +31,7 @@ const args = process.argv.slice(2);
 const options: Record<string, number> = { seed: DEFAULT_SEED, count: DEFAULT_COUNT };
 let stageId: string | undefined;
 let warmup = false;
+let variants = false;
 for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--seed' || arg === '--count') {
@@ -40,6 +43,8 @@ for (let i = 0; i < args.length; i += 1) {
         i += 1;
     } else if (arg === '--warmup') {
         warmup = true;
+    } else if (arg === '--variants') {
+        variants = true;
     } else if (arg.startsWith('--') || stageId !== undefined) {
         usage();
     } else {
@@ -50,6 +55,22 @@ const { seed, count } = options;
 const stage = stageId ? getStage(stageId) : undefined;
 if (!stage) {
     usage();
+}
+
+if (variants) {
+    // Prints the LOGIC puzzles of the stage (the daily puzzle pool); round variants join in S-15 phase 6.
+    const pool = puzzlePool(stage!.id, PUZZLES, balance.variants.puzzleStages);
+    console.log(`Zagadki ${stage!.id}: ${pool.length}`);
+    const puzzleViolations: Violation[] = [];
+    for (const def of pool) {
+        const task = puzzleTask(def);
+        const found = validateTask(task, { max: 100, nouns });
+        puzzleViolations.push(...found);
+        const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+        console.log(`  [${def.id}] ${task.prompt}  → ${String(task.answer)}${choices}   podpowiedź: ${task.hint.join(' | ')}${found.length > 0 ? '  ⚠' : ''}`);
+    }
+    console.log(`\nNaruszenia: ${puzzleViolations.length}`);
+    process.exit(puzzleViolations.length > 0 ? 1 : 0);
 }
 
 if (warmup) {
