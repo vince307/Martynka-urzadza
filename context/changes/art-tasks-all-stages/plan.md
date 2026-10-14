@@ -1031,9 +1031,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Automated
 
 - [ ] 9.1 Pełna bramka lokalna zielona (bez e2e: Chromium nie startuje w sesji — orkiestrator); e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [x] 9.2 `validate-rule-files.sh` PASS — PHASE9
-- [x] 9.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — PHASE9
-- [x] 9.4 `npm run build` drukuje `e2e hook: absent (` — PHASE9
+- [x] 9.2 `validate-rule-files.sh` PASS — cda16d1
+- [x] 9.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check — cda16d1
+- [x] 9.4 `npm run build` drukuje `e2e hook: absent (` — cda16d1
 
 #### Manual
 
