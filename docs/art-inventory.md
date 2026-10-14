@@ -1,7 +1,8 @@
 # Inwentarz grafiki (stan 2026-10-13)
 
 > **Decyzje autora (2026-10-13):** v1 zostaje przy jednym pokoju (salon); pozostałe lokacje (kuchnia, pracownia, ogród zimowy, pokój dziecięcy, biblioteka, taras) jako osobne slice'y po S-16. Autor zgadza się na publikację grafiki z paczek `designs/` w publicznym repozytorium (po konwersji do `public/assets/`).
-> **Od czasu inwentarza:** S-14 (PR #41) zintegrował z paczki A v1 pieniądze, przyrządy pomiarowe i 12 ikon (38 plików WebP, ok. 0,5 MB, `public/assets/tasks/`, `npm run art`). Decyzje nadal otwarte: sloty salonu (10 czy 6), model kosztów (5–15 czy płasko), formy mebli, minigry v1 (S-15).
+> **Od czasu inwentarza:** S-14 (PR #41) zintegrował z paczki A v1 pieniądze, przyrządy pomiarowe i 12 ikon (38 plików WebP, ok. 0,5 MB, `public/assets/tasks/`, `npm run art`). Decyzje nadal otwarte: sloty salonu (10 czy 6), model kosztów (5–15 czy płasko), formy mebli.
+> **Decyzja autora (2026-10-14):** minigry v1 (S-15) to Hasło z wyników i Zakrywanka; zagadka dnia ×2 gwiazdki; pulę zagadek LOGIC pisze agent.
 
 Przegląd paczek w `designs/` pod kątem roadmapy (S-13…S-17) i decyzji, które musi podjąć autor.
 Wszystkie liczby sprawdzone na plikach (rozmiary z nagłówków PNG, wagi z `du`, WebP z próbnej konwersji

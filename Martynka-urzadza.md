@@ -160,7 +160,7 @@ Typy `Task` i `TaskParams` generatorów: `ZADANIA.md`, sekcja 7.
 - Poprawna odpowiedź: gwiazdka leci do licznika, krótki dźwięk, następne zadanie.
 - Błędna: delikatne potrząśnięcie, podpowiedź (pierwszy krok z `hint`), druga próba. Druga pomyłka: pokazanie rozwiązania krok po kroku, potem dziecko jeszcze raz wpisuje wynik (bez gwiazdki) i przechodzi dalej.
 - Koniec rundy: podsumowanie (ile gwiazdek), przyciski „Kolejna runda” i „Do pokoju”. Gdy gwiazdek wystarcza na bieżące zadanie remontowe, „Do pokoju” jest wyróżnione.
-- Co kilka rund zamiast zwykłej rundy minigra (ZADANIA.md, sekcja 5) lub „zagadka dnia” za podwójne gwiazdki (mnożnik w `balance.ts`). W v1: 1–2 minigry i pula 10–15 zagadek dla E3–E4; reszta później.
+- Co kilka rund zamiast zwykłej rundy minigra (ZADANIA.md, sekcja 5) lub „zagadka dnia” za podwójne gwiazdki (mnożnik ×2 w `balance.ts`). W v1: Hasło z wyników i Zakrywanka oraz pula 10–15 zagadek dla E3–E4; reszta później.
 - Brak limitu czasu. Brak czerwonych krzyżyków i komunikatów „źle”.
 
 Wartości startowe (`balance.ts`): długość rundy 5; 1 gwiazdka za zadanie, +2 za rundę bez błędu, druga próba też daje 1 gwiazdkę (ale nie liczy się do opanowania umiejętności); koszt zadania remontowego 5–15 gwiazdek (czyli ok. 1–3 rundy na jeden mebel). Wagi losowania (60/30/10), długość serii i progi opanowania też są liczbami w `balance.ts`, nie stałymi w kodzie.
@@ -256,10 +256,11 @@ Fabuła i dialogi, energia i timery, konta i synchronizacja w chmurze, wydarzeni
 
 Rozstrzygnięte w sesji shape (2026-10-10, `context/foundation/shape-notes.md`): pierwszy pokój to salon; urządzenia: tablet z Androidem (Chrome), iPad (Safari), komputer; jeden profil w v1; bez osobnego raportu dla rodzica (podgląd w ustawieniach + eksport zapisu).
 
+Rozstrzygnięte przez autora 2026-10-14 (M6, S-15): minigry v1 to Hasło z wyników i Zakrywanka (wzór ekranów w paczce expansion, obie rysowane kodem); zagadka dnia daje ×2 gwiazdki (mnożnik w `balance.ts`); pulę 10–15 zagadek LOGIC dla E3–E4 pisze agent (oryginalne zagadki, bez przepisywania z podręczników), a autor czyta je jak nauczyciel przed wydaniem.
+
 Nadal otwarte:
 
 - Czy rozgrzewka koryguje etap w dół także wtedy, gdy rodzic ustawił go świadomie, czy jest wtedy pomijana (M3).
-- Które 1–2 minigry wchodzą do v1 i jaki mnożnik gwiazdek za zagadkę dnia (M6).
 - Dokładne kryterium „gotowe” dla M1 przy zawężeniu pełnej jakości treści do E3–E4 (roadmapa).
 
 ## 14. Zasady pracy dla agenta
