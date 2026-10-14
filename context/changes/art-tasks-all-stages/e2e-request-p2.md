@@ -31,3 +31,10 @@ Then tick plan rows 2.5-2.7.
 ## Verified without a browser
 
 Both patches `git apply --check` cleanly (seed patch, then break patch on top). `npm run build` has 38 `assets/tasks/*.webp` entries in `dist/sw.js`.
+
+## Orchestrator results (2026-10-14, on 1eccc62+ with e2e-seed-p2.patch applied)
+
+- Committed seed before the fix: RED — `expect(servedByNetwork).toEqual([])` received ~38 `http://localhost:4398/<uuid>` (blob: object URLs).
+- Seed with the patch: 1 passed (15.4s).
+- Break `e2e-break-p2.patch` (note-500zl.webp out of the precache): RED — `expect(failed.filter(/assets/|/_app/)).toEqual([])` received `["/assets/tasks/money/note-500zl.webp" ×3]` (seed.spec.ts:45). Reverted.
+- Full suite: 42 passed (3.3m).
