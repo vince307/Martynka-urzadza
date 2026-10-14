@@ -1002,7 +1002,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 7.2 `npm run sample -- E1/E3 --count 6` bez naruszeń, z linią `visual:` — 5cdf740
 - [x] 7.3 Deliberate break: `count_5` jako `keypad` → pin E1 czerwony; przywrócone; meta-check — 5cdf740
 - [x] 7.4 `playableSteps` bez zmian; `e2e hook: absent (` — 5cdf740
-- [ ] 7.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 7.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 5cdf740 (e2e 42 passed by the orchestrator on 01e31e3)
 
 #### Manual
 
@@ -1013,11 +1013,11 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 8.2 `npm run sample -- E1 … E6 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 8.3 Puste tylko E1.1, E5.12, E6.2, E6.3, E6.11; każdy grywalny krok ma `childName`
-- [ ] 8.4 Deliberate break: E2.2 `skills: []` / brak `childName` E1.10 → czerwone; przywrócone; meta-check
-- [ ] 8.5 `tests/fixtures/` bez zmian; `e2e hook: absent (`
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — fe8e025
+- [x] 8.2 `npm run sample -- E1 … E6 --count 6` bez naruszeń, z linią `visual:` — fe8e025
+- [x] 8.3 Puste tylko E1.1, E5.12, E6.2, E6.3, E6.11; każdy grywalny krok ma `childName` — fe8e025
+- [x] 8.4 Deliberate break: E2.2 `skills: []` / brak `childName` E1.10 → czerwone; przywrócone; meta-check — fe8e025
+- [x] 8.5 `tests/fixtures/` bez zmian; `e2e hook: absent (` — fe8e025
 - [ ] 8.6 E2E (orkiestrator): `first-launch` i `adaptive` zielone; pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany
 
 #### Manual
