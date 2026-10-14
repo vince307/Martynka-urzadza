@@ -983,10 +983,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e osobno, 6.5)
-- [x] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e osobno, 6.5) — 44c4f19
+- [x] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:` — 44c4f19
 - [ ] 6.3 Deliberate break: `TaskScene` zawsze `wide` → termometr w rozwiązaniu nie „obok” (jednorazowy hook `*.local` albo e2e 10.5); przywrócone
-- [x] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (`
+- [x] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — 44c4f19
 - [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

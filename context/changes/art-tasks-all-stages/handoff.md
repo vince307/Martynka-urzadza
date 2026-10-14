@@ -1,66 +1,69 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the `/10x-implement` step for phase 5 (commit `89e5ea0`): `MoneyTable` and `BalanceScale` on `ArtImage`, the e2e hook field `art`, money and mass skills in E1.11, E3.4 and E4.1. Phase 6 (impl) is next; the e2e of this phase (5.5) was NOT run (Chromium cannot start here), and the hook's `art` has no browser proof yet: phase 10 (or the orchestrator for 5.5) must assert it against the real page.
+Written by the `/10x-implement` step for phase 6 (commit `44c4f19`): `Jugs` and `Thermometer` widgets over `ArtImage`, their layout functions, skills in E3.11, E4.7, E5.4, E6.1. Phase 7 (impl) is next; the e2e of this phase (6.5) and the browser proof of the tall layout (6.3) were NOT run (Chromium cannot start here).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | `46aff1d` (p1), `d4f4470` + `ab0dc05` (p2), `b6a947d` (p3), `ba4e0da` (p4), `89e5ea0` (p5), this handoff commit |
+| Commits | `46aff1d` (p1), `d4f4470` + `ab0dc05` (p2), `b6a947d` (p3), `ba4e0da` (p4), `89e5ea0` (p5), `44c4f19` (p6), this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; the implement epilogue is for the last phase) |
-| `## Progress` rows remaining | 47 (`grep -c '^- \[ \]' plan.md`); open for this phase: 5.5 e2e (orchestrator), 5.7 and 5.8 reviewer, 5.9 visual |
+| `## Progress` rows remaining | 41 (`grep -c '^- \[ \]' plan.md`); open for this phase: 6.3 break (browser), 6.5 e2e (orchestrator), 6.6 reviewer, 6.7 visual |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/artLayout.ts` | pure `moneyLayout` (notes row above coins row, centred, scaled to fit, `maxScale`) and `scaleLayout` (scale image fitted, item on the left pan, up to 6 weights on the right pan in rows of 3, the second row higher) |
-| `src/ui/widgets/MoneyTable.ts`, `BalanceScale.ts` | widgets over a fixed pool of `ArtImage` (10 for money; scale + item + 6 weights, first weight row drawn last so it is on top); `render`, `setVisible`, `shown`, `art`, `bounds` |
-| `src/ui/widgets/ArtImage.ts` | `state()` now reads the game objects: a visible image with `texture.key` equal to the requested key and a non-zero display size gives `{key, loaded: true}`; the visible stand-in box and label give `loaded: false`; else null |
-| `src/ui/widgets/TaskPicture.ts` | dispatches `money` and `scale`; exhaustive `switch` (`never` default); `jugs`, `thermometer`, `icons` are explicit empty cases for phases 6-7; `art()` returns the drawing widget's on-screen images, `[]` when hidden |
-| `src/scenes/TaskScene.ts` | `TaskSnapshot.art` (frozen copy of `picture.art()`), hook build only reads it |
-| `tests/e2e/support/hook.ts` | `Snapshot.art?: { key: string; loaded: boolean }[]` |
-| `src/data/layout.ts` | `TASK_LAYOUT.money` (note 192x128, coin diameter = real mm x 4.8, gaps) and `TASK_LAYOUT.scale` (pan centres 90/421 x 240 in the 512x384 image, item 104, weights 52, perRow 3, rowLift 38); comments say `DESIGN-GAP (row added in S-14 phase 9)` |
-| `src/data/curriculum/E1.ts`, `E3.ts`, `E4.ts` | E1.11 `money_count_10`, `money_change_10`, `mass_kg_10` (tiles); E3.4 `mass_kg_10`, `mass_dag_100` (keypad); E4.1 `money_count_100` (keypad), `money_count_zl_gr` (tiles, text), `money_change_100` (keypad), `mass_half_kg` (keypad); `childName` untouched |
-| `tests/artLayout.test.ts` | 31 tests: money items inside 3 picture rectangles, apart, notes above coins, note wider than coin, 5 zł larger than 1 gr; scale with 1..6 weights inside the image, item left of centre, weights right, same-row weights apart |
-| `context/changes/art-tasks-all-stages/plan.md` | rows 4.4 (e2e part from the orchestrator note), 5.1-5.4, 5.6 ticked |
+| `src/ui/widgets/artLayout.ts` | new pure `jugsLayout` (rows of up to 5, two rows from 6; the image is placed so the shared visible rectangle lands on the jug cell), `thermometerLayout` (housing 512x1536 fitted, `scale` for face units), `thermometerMarks` (every ten major, every five medium, single degrees only when `pxPerDegree >= minGapPx`, else every second) |
+| `src/ui/widgets/Jugs.ts` | pool of 10 `ArtImage`; `render`, `setVisible`, `shown`, `art`, `bounds` |
+| `src/ui/widgets/Thermometer.ts` | `ArtImage` housing + Graphics face (tube, liquid, bulb, ticks) + 7 label texts + `°C` text, port of `reference/thermometer-face.js`; `shown()` needs the housing AND the visible face AND the unit label; `art()` is the housing's state |
+| `src/ui/widgets/TaskPicture.ts` | dispatches `jugs` and `thermometer`; only `icons` is still an empty case (phase 7) |
+| `src/data/layout.ts` | `TASK_LAYOUT.jugs` (gap, rowGap, maxPerRow 5, maxScale), `TASK_LAYOUT.thermometer` (face geometry in housing units, `minGapPx` 7, `minLabelPx` 22), font role `thermoLabel` (size and weight); `DESIGN-GAP (row added in S-14 phase 9)` comments |
+| `src/core/text/measure.ts` | `formatScaleMark` ("+10", "0", "−20") |
+| `src/core/tasks/generators/temperature.ts` | diff variant no longer draws a cold morning equal to minus the answer (spoken "minus osiem" vs answer 8 failed the speech test) |
+| `src/data/curriculum/E3.ts`, `E4.ts`, `E5.ts`, `E6.ts` | E3.11 `temperature_read_30` (tiles, text); E4.7 `capacity_half_l`, `capacity_litres_half` (keypad); E5.4 `temperature_read_0_30` (keypad); E6.1 `temperature_negative` (tiles), `temperature_diff` (keypad) |
+| `tests/artLayout.test.ts` | +19 tests: jugs inside 3 areas and apart for 1/2/5/6/10, one vs two rows, image/visible-rect offset; thermometer proportions in the narrow column, marks density, major/medium kinds |
+| `tests/contentInvariants.test.ts` | `SMALL_SPACES` entry for `E4.7.capacity_litres_half` (10 distinct tasks: 1..10 litres) |
+| `context/changes/art-tasks-all-stages/plan.md` | rows 5.5 (from the orchestrator note), 6.1, 6.2, 6.4 ticked |
+
+TaskScene needed no change in this phase: it already passes `visualShape(task.visual)` to `pictureLayout` (phase 1), so a thermometer with the keypad solution uses `keypadBeside`.
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `npm test` | 1707 passed (branch baseline 1649, +58: 27 invariants of the 9 new skills x 3, rest + 31 layout) (observed) |
-| `npm run lint`, `npm run typecheck` | clean (observed; the first lint run flagged 6 needless `!` in the new test, fixed with `eslint --fix`) |
+| `npm test` | 1745 passed (branch baseline 1707, +38: 19 layout, 3 skills x 6 invariants... rest from the 7 new skills) (observed) |
+| `npm run lint`, `npm run typecheck` | clean (observed) |
 | `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK (observed) |
-| `npm run sample -- E1` ... `E6` | exit 0 each (observed); E1.11, E3.4, E4.1 read: amounts, change, masses, "5 zł 50 gr" tiles, hints |
+| `npm run sample -- E1` ... `E6` | exit 0 each; `--count 6` read for E3.11, E4.7, E5.4, E6.1: "Naruszenia: 0" |
 | `npm run build` | green, `e2e hook: absent (2 chunks checked)` |
-| Deliberate break | removed `case 'money'` from `TaskPicture.render`: `npm run typecheck` red (`TS2322 ... kind: "money" ... not assignable to type 'never'`); restored, green. Meta-check: proves the dispatcher is exhaustive only, not that anything is drawn |
-| e2e | not runnable in this session — orchestrator gate (`playwright test` on `drawn-tasks.spec.ts`: `MachPortRendezvousServer ... Permission denied`, launch dies). Expected `42 passed + 0`; row 5.5 left unticked. A spec I wrote for the hook's `art` (E3.4.mass_dag_100: keys = scale + item + each weight, all `loaded`) was reverted unrun, since a spec is committed only after its break turned red |
-| Teacher read | read the `sample` output of E1.11, E3.4, E4.1 (6 draws each); no violation; agreement and hints fine |
+| Deliberate break | `jugsLayout` image placed at the jug cell without the visible-rect offset: `tests/artLayout.test.ts` red (`expected 674.48 to be close to 661`); restored, 51 green. Meta-check: proves the layout rule only, not what the scene draws |
+| Break 6.3 (TaskScene always `wide`) | NOT done: needs a browser; row left unticked. A temporary spec (E5.4 via `passWelcomeAsParent` stage E5, `e2eSkills`, two wrong answers, `targets().picture` taller than wide, `art` = thermometer-frame loaded) was written, could not launch Chromium, and was deleted (not committed) |
+| e2e | not runnable in this session — orchestrator gate (`MachPortRendezvousServer ... Permission denied`). Expected `42 passed + 0`; row 6.5 unticked |
+| Teacher read | read: "−5 °C" style tiles, opposite-sign distractor first, diff hints ("16 − 10 = 6", "6 + 14 = 20"), "Dwa dzbanki po pół litra to razem litr", "2 · 2 = 4"; no violation. The last hint line states the result by design |
 
 ## 4. Next command
 
-`/10x-implement art-tasks-all-stages phase 6` (phase 6, Driver: impl)
+`/10x-implement art-tasks-all-stages phase 7` (phase 7, Driver: impl)
 
 ## 5. Open
 
-- Row 5.5 (orchestrator): `npx playwright test` expects 42 passed. Rows 5.7, 5.8 `[reviewer]`, 5.9 `[visual]` (screens: coins E1.11 on tiles, notes E4.1 on the keypad, zł + gr tiles, scale kg on tiles, scale dag on the keypad, scale with a hint, scale with solution steps beside the keypad, money with solution steps beside tiles; 1440x900 and 1024x768). Earlier open: 1.5, 2.8, 3.5, 4.5 `[reviewer]`, 2.9 `[human]`.
-- Browser proof of the hook's `art` is missing: `ArtImage.state()` reads `image.visible`, `image.texture.key`, `displayWidth/Height` and the stand-in box/label visibility; the e2e of phase 10 should assert, for a scale task, keys `tasks/measuring/balance-scale`, `tasks/icons/<item>`, one `tasks/measuring/<weight>` per weight, all `loaded: true`, and `art` empty after the picture is hidden (summary, next task without a drawing). A break that hides the image (e.g. skip `setVisible(true)` in `ArtImage.show`) must turn it red.
-- Layout numbers (pan centres, item/weight sizes, coin diameters) were chosen by eye from the 512x384 scale image and the real coin sizes, not seen on a canvas: the visual gate (5.9) may need to tune `TASK_LAYOUT.scale` and `TASK_LAYOUT.money`. A small picture rectangle (keypad solution, 768x190) scales the scale image to about 0.49.
-- DESIGN-GAP comments are in `src/data/layout.ts` (`money`, `scale`); the rows in `docs/design-gaps.md` (from 59) are written in phase 9.
-- E4.1 banknotes 200/500 zł are loaded but no skill uses them (follow-up in phase 9, `Trigger: S-14c`).
-- Phase 6/7 widgets are plain cases in `TaskPicture` (`jugs`, `thermometer`, `icons`); replace the empty cases and add the widgets to the `widgets` map. Phase 6 also needs the `tall` shape in the scene (already in `pictureLayout`) and the task space of E5.5 `capacity_half_l_e5` (see the phase 4 handoff, now in git history: only 5 tasks, the most frequent about 20 %).
+- Row 6.5 (orchestrator): `npx playwright test` expects 42 passed. Row 6.3 needs a browser: phase 10 (row 10.5) or the orchestrator can run the temporary spec described above; the break (TaskScene passes `'wide'`) must turn `picture.height > picture.width` red in the solution phase. Rows 6.6 `[reviewer]`, 6.7 `[visual]` (screens in plan row 6.7). Earlier open: 1.5, 2.8, 2.9 `[human]`, 3.5, 4.5, 5.7, 5.8, 5.9.
+- Readability risk for the visual gate: the thermometer is height-bound (1:3), so in a 378 px column it is 126 px wide and in the tiles area (294 px) 98 px wide; label size is floored by `minLabelPx` 22 and ticks by `minGapPx` 7 (every second degree below that). `TASK_LAYOUT.jugs` (gap 40, maxScale 0.8) and the thermometer numbers were chosen by eye, never seen on a canvas.
+- Browser proof of `art` for jugs/thermometer: phase 10 should assert jugs keys `tasks/measuring/container-*` (one per jug, all `loaded`), thermometer keys `[tasks/measuring/thermometer-frame]`, `art` empty after hide.
+- DESIGN-GAP rows (from 59) are written in phase 9 for money, scale, jugs, thermometer small sizes; E4.1 banknotes 200/500 zł follow-up `Trigger: S-14c`.
+- Phase 7 widget `IconGroups` replaces the last empty `icons` case in `TaskPicture`.
 - `ARTIFACT GAP: none`.
 
 ## 6. Autonomous decisions
 
-1. `ArtImage` is one image, so widgets own a fixed pool created in the constructor (money 10, scale 8); fixed creation order gives the draw order. Rejected: creating images per render (leaks game objects, and unused pool members would break the `art()` length check of plan-review F6).
-2. `art()` is derived from the objects' real state (visible image with the loaded texture, or the visible stand-in), not from the last `show` call; `TaskPicture.art()` returns `[]` unless the drawing widget reports `shown()`. Would change: nothing; this is the S-13 F1 lesson.
-3. Layout functions are pure in `src/ui/widgets/artLayout.ts` with a unit test, so the geometry has proof without a browser; the scene-visible proof stays e2e/visual.
-4. Weights above 3 go to a second row behind the first (higher, partly hidden), so same-row weights never touch but rows overlap; the test checks only same-row pairs. Would change: visual gate preferring a spaced pyramid.
-5. E1.11 kept `childName` "Miesiące roku" (phase 8 owns `childName`); E4.1 text tiles use ids with złoty and grosze coins only (`ZL_GR`), money keypad skills use `ZL_100` (notes to 100 zł, plan-review F4).
-6. e2e not run (Chromium cannot start); orchestrator note applied to row 4.4. The hook-art spec was not committed (no red break could be proven).
+1. The scene part of the phase ("render passes the shape") was already done in phase 1, so no `TaskScene` edit; the break 6.3 therefore has nothing new to prove in unit tests and stays a browser break. Would change: nothing.
+2. `Thermometer.shown()` requires housing, face and unit label together (S-13 F1 lesson); `art()` reports only the housing image (the one art texture).
+3. Changed the E6.1 `diff` generator (phase 4 file) to avoid a negative morning whose magnitude equals the answer, because the existing speech test (`speech does not give away the answer`) failed on it. Rejected: loosening the shared test. Would change: a teacher preferring the coincidence to stay.
+4. `E4.7.capacity_litres_half` gets a `SMALL_SPACES` entry (10 distinct), as the plan foresaw; top share stays about 10 %, below the 15 % cap.
+5. The degree label `°C` is a unit symbol drawn in the widget, not a Polish sentence; kept out of `pl.ts`. Would change: a reviewer insisting on `pl.ts` for every drawn string.
+6. e2e not run (Chromium cannot start); the orchestrator note applied to row 5.5.
