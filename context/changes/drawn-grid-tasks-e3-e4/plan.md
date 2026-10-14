@@ -996,8 +996,8 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 12.1 `npx playwright test tests/e2e/clock-set.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czasy zapisane — orchestrator: clock-set 3 passed (29.1 s, serial); full 63 passed (4.2 min) = 60 + 3; adaptive.spec 1.5 min, no timeout change — SHA
-- [x] 12.2 Deliberate break (patch `e2e-break-p12a.patch`): zdarzenia zegara do `stepBlockDrag` → (a) czerwony — orchestrator: red `toBe` Expected 1, Received 11, restored — SHA
-- [x] 12.3 Deliberate break (patch `e2e-break-p12b.patch`): `snapMinutes` 60 dla E4 → (b) czerwony; meta-check — orchestrator: red `toBe` Expected 15, Received 0; hour-hand test stayed green (meta-check), restored — SHA
-- [x] 12.4 Deliberate break (patch `e2e-break-p12c.patch`): `pointerupoutside` bez `cancel` → (c) czerwony; każdy czerwony osobno (`-g`) — orchestrator: red `toMatchObject` (pose differs); deviation: cancelled pointer read as normal up, not `pointerupoutside` (CDP touchCancel reaches Phaser as pointerup with wasCanceled), restored — SHA
-- [x] 12.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, typecheck, 2222 tests, build `e2e hook: absent (2 chunks checked)`, ports 4397/4398 free — SHA
+- [x] 12.1 `npx playwright test tests/e2e/clock-set.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czasy zapisane — orchestrator: clock-set 3 passed (29.1 s, serial); full 63 passed (4.2 min) = 60 + 3; adaptive.spec 1.5 min, no timeout change — 4c320dd
+- [x] 12.2 Deliberate break (patch `e2e-break-p12a.patch`): zdarzenia zegara do `stepBlockDrag` → (a) czerwony — orchestrator: red `toBe` Expected 1, Received 11, restored — 4c320dd
+- [x] 12.3 Deliberate break (patch `e2e-break-p12b.patch`): `snapMinutes` 60 dla E4 → (b) czerwony; meta-check — orchestrator: red `toBe` Expected 15, Received 0; hour-hand test stayed green (meta-check), restored — 4c320dd
+- [x] 12.4 Deliberate break (patch `e2e-break-p12c.patch`): `pointerupoutside` bez `cancel` → (c) czerwony; każdy czerwony osobno (`-g`) — orchestrator: red `toMatchObject` (pose differs); deviation: cancelled pointer read as normal up, not `pointerupoutside` (CDP touchCancel reaches Phaser as pointerup with wasCanceled), restored — 4c320dd
+- [x] 12.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, typecheck, 2222 tests, build `e2e hook: absent (2 chunks checked)`, ports 4397/4398 free — 4c320dd
