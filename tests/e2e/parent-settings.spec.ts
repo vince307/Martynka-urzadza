@@ -13,6 +13,10 @@ const DRIFT = 40; // scene px: over the 30 px tolerance, still inside the 96 px 
 const OCTOBER = 9;
 const ROUND_LENGTH = 5;
 const E3 = { age: '10+', stageLabel: 'Klasa 2, I półrocze', stage: 'E3', month: OCTOBER };
+// Every round of this spec is pinned (?e2eSkills, e2e build only) to one keypad skill of E3 with a numeric answer: a random
+// round could open on a drag task (blocks, clock hands) whose touch helper flaked under load, and none of these claims is
+// about the task mix. A pinned round is never a variant (S-15). The id is not in E4, so an E4 round stays adaptive.
+const PINNED_SKILL = 'E3.2.add_sub_20_bridge';
 
 // One canvas at a time (see task-round.spec.ts).
 test.describe.configure({ mode: 'serial' });
@@ -30,7 +34,7 @@ const frames = (page: Page, n: number): Promise<void> =>
 
 test('#14 (proposed) only a 2-second hold on the settings icon opens the adult gate, and taps under the dialog never reach the round', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page);
+    await passWelcome(page, { e2eSkills: PINNED_SKILL });
     await phaseIs(page, 'first');
     const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
     const icon = (await targets(page)).settingsIcon;
@@ -73,7 +77,7 @@ test('#14 (proposed) only a 2-second hold on the settings icon opens the adult g
 
 test('#14 (proposed) a parent stage change replaces the open round with the new stage at once and keeps the stars, and the auto-read choice survives the next stage change', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcomeAsParent(page, E3);
+    await passWelcomeAsParent(page, { ...E3, query: { e2eSkills: PINNED_SKILL } });
     await phaseIs(page, 'first');
     await answerRight(page);
     await phaseIs(page, 'done');
@@ -110,8 +114,8 @@ test('#14 (proposed) a parent stage change replaces the open round with the new 
 
 test('#14 (proposed) the progress view shows the empty state, then the skill missed on the first try with its example', async ({ page }) => {
     await silenceSpeech(page);
-    // e2eVariant=off: up to 3 rounds here and the schedule would make a 4th one the daily puzzle (S-15).
-    await passWelcomeAsParent(page, { ...E3, query: { e2eVariant: 'off' } });
+    // e2eVariant=off: a second guard next to the pinned skill (up to 3 rounds; a 4th could be a variant, S-15).
+    await passWelcomeAsParent(page, { ...E3, query: { e2eSkills: PINNED_SKILL, e2eVariant: 'off' } });
     await phaseIs(page, 'first');
     const empty = 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.';
 
@@ -123,7 +127,7 @@ test('#14 (proposed) the progress view shows the empty state, then the skill mis
     await expect.poll(async () => (await snapshot(page)).inputEnabled).toBe(true);
 
     // A round with one first-try miss on its first task (put right on the second try), the rest right.
-    // About 1 task in 10 comes from the previous stage, which the preview of E3 leaves out: then one more round.
+    // The loop allows up to 3 rounds; with the pinned skill the first one already records the E3 miss.
     let given: number | string = '';
     for (let round = 0; round < 3; round++) {
         await phaseIs(page, 'first');
@@ -149,6 +153,10 @@ test('#14 (proposed) the progress view shows the empty state, then the skill mis
         }
         await screenIs(page, 'task');
     }
+
+    // The pin took effect (an id the stage cannot play would fall back to a random round): the miss is on the pinned skill.
+    const played = (await readHook(page, 'snapshot'))?.learner?.history ?? [];
+    expect(played.filter((h) => !h.firstTry).map((h) => h.skillId)).toEqual([PINNED_SKILL]);
 
     // The preview: exactly one skill to practise, with the value the test gave as the child's answer.
     panel = await openSettings(page);

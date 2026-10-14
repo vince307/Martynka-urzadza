@@ -108,7 +108,7 @@ export const E2E_LOAD_TIMEOUT_MS = 300;
 
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
- * future version), `corrupt` (a current-version save that fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
+ * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
  * writes reject), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {

@@ -773,16 +773,18 @@ export class TaskScene extends Scene {
                 return { kind, state: startRound(built.tasks, variantRules(kind, built.tasks.length, balance)), word: built.word };
             }
         }
-        if (kind === 'dice') {
+        // A word round that cannot be drawn falls to the dice board when it is on (plan phase 6), so the due variant is not
+        // replaced by an ordinary round that would keep the counter due and pick the word round again.
+        if (kind === 'dice' || (kind === 'word' && balance.variants.minigames.includes('dice'))) {
             const board = diceBoard(this.rng, balance.variants.dice, {
                 addHint: pl.minigames.diceAddHint,
                 subHint: pl.minigames.diceSubHint,
                 addStepHint: pl.minigames.diceAddStepHint,
                 subStepHint: pl.minigames.diceSubStepHint,
             });
-            return { kind, state: startRound(board.map((t) => t.task), variantRules(kind, board.length, balance)), dice: board };
+            return { kind: 'dice', state: startRound(board.map((t) => t.task), variantRules('dice', board.length, balance)), dice: board };
         }
-        // A variant that cannot be built (a word round without a fitting word) is an ordinary round.
+        // A variant that cannot be built (a word round without a fitting word, dice off) is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,

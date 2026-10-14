@@ -251,14 +251,11 @@ export const pl = {
         wordTitle: 'Ukryte słowo',
         puzzleTitle: 'Zagadka dnia',
         puzzleBadge: '×2',   // DESIGN-GAP 79: the kit has no daily-puzzle screen; the badge sits next to a star drawn in code (the font has no ★)
-        diceCover: 'Zakryj wynik',
         diceAllCovered: 'Wszystkie pola zakryte!',
-        puzzleDone: 'Brawo! Jeszcze jedna gwiazdka.',
         diceAddHint: 'Policz razem oczka obu kostek.',
         diceSubHint: 'Odejmij oczka drugiej kostki.',
         diceAddStepHint: (a: number, b: number) => `Zacznij od ${a} i dodaj ${b}.`,
         diceSubStepHint: (a: number, b: number) => `Zacznij od ${a} i odejmij ${b}.`,
-        wordHint: 'Rozwiąż zadanie, a odsłoni się następna litera.',
         hiddenLetter: '·',   // a letter not uncovered yet (kit)
     },
     // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
