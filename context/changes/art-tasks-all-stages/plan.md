@@ -913,7 +913,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 46aff1d (1482 → 1510, +28)
 - [x] 1.2 Deliberate break: zakres termometru / `formatMoney` / `leaksAnswer` tylko czas / `pictureLayout` bez `tall` → czerwone; przywrócone; meta-check — 46aff1d
 - [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian — 46aff1d
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 46aff1d (e2e 42 passed by the orchestrator on 759fde1)
 
 #### Manual
 
@@ -923,10 +923,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 2.1 `tests/taskArt.test.ts` zielony; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: usunięty `.webp` / zła szerokość w `TASK_ART` → czerwony; przywrócone; meta-check
-- [ ] 2.3 `npm run art` drugi raz: `public/assets` bez zmian
-- [ ] 2.4 `npm run build`: `sw.js` wymienia 38 wpisów `assets/tasks/`; `e2e hook: absent (`
+- [x] 2.1 `tests/taskArt.test.ts` zielony; unit `<baseline gałęzi> + N` — d4f4470 (1510 → 1515, +5)
+- [x] 2.2 Deliberate break: usunięty `.webp` / zła szerokość w `TASK_ART` → czerwony; przywrócone; meta-check — d4f4470
+- [x] 2.3 `npm run art` drugi raz: `public/assets` bez zmian — d4f4470 (SHA wszystkich 38 plików identyczne)
+- [x] 2.4 `npm run build`: `sw.js` wymienia 38 wpisów `assets/tasks/`; `e2e hook: absent (` — d4f4470
 - [ ] 2.5 E2E (orkiestrator): `seed.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 0`
 - [ ] 2.6 Deliberate break (patch `e2e-break-p2.patch`, `globIgnores` jednego `note-500zl.webp`): seed czerwony na tym pliku; przywrócone; meta-check
 - [ ] 2.7 Pełna bramka lokalna zielona
