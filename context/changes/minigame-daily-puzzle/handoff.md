@@ -1,58 +1,58 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the `/10x-tdd` phase 1 step (autonomous run 2026-10-14-save-s13b-s15-s14b). Save format v2 is built and committed
-(`b0ad4ba`); phases 2-13 are untouched. Phase 2 (`backup-v1`, `migration-failed`) MUST ship in the same PR: phase 1 alone
-overwrites a child's v1 save with v2 without a backup copy.
+Written by the `/10x-tdd` phase 2 step (autonomous run 2026-10-14-save-s13b-s15-s14b). The `backup-v1` copy and the `migration-failed` reason are built and committed; phases 3-13 are untouched. The e2e half of gate row 2.4 is NOT run (Chromium cannot start in this session): the orchestrator must run the full suite (expect baseline 63).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | 4 docs + `b0ad4ba` (phase 1) + this handoff commit |
+| Commits | 4 docs + phase 1 `b0ad4ba` + handoff p1 + phase 2 commit + this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 64 (`grep -c '^- \[ \]' plan.md`); phase 1 rows 1.1-1.4 ticked, 1.5 [reviewer] and 1.6 [human] open |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; phase 2: 2.1-2.3 ticked, 2.4 open (e2e), 2.5 [reviewer] open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/types.ts` | `VariantState`, `SaveV2`, `SaveState = SaveV2` (`SaveV1` stays as migration input) |
-| `src/core/save.ts` | `SAVE_VERSION = 2`, exported `MIGRATIONS[1]`, `validVariants`, `importProblem` (names the problem after migration), `variants` in `SessionSave`/`encodeSave`/`toSession`/`freshSession` |
-| `src/core/saveFile.ts` | `parseImport` uses `importProblem` (a corrupt v1 file still names its field) |
-| `src/data/layout.ts`, `src/main.ts` | `REGISTRY_KEYS.variants` in `SAVE_KEYS`; registry seeded at preBoot, snapshot reads it |
-| `tests/fixtures/save-v2.json`, `save-v2-fresh.json` | new frozen v2 fixtures (v1 fixtures untouched) |
-| `tests/save.test.ts`, `saveFile.test.ts`, `saveKeys.test.ts`, `autosave.test.ts`, `rooms.test.ts` | new/updated tests (see §6 for the updated ones) |
+| `src/core/save.ts` | `DecodeResult` has `{ reason: 'migration-failed', step }`; `decodeSave` separates a throwing step (migration-failed) from a failing validation (corrupt) |
+| `src/core/autosave.ts` | `SaveStore.backup(raw, from)` required; `LoadOutcome.loaded.raw`; `AutosaverOptions.migrated`; backup before the first write in `attempt`; `AutosaveStatus.migratedFrom` |
+| `src/storage/idb.ts` | `backup` writes key `profile:<id>:backup-v<from>`; still the only idb-keyval importer |
+| `src/testing/e2eHook.ts`, `src/main.ts` | in-memory store gets a no-op `backup`; `main.ts` passes `migrated` from the loaded outcome |
+| `src/core/saveFile.ts`, `src/data/pl.ts` | `ImportRejection` + `pl.saveTransfer.rejected['migration-failed']` (own calm text; phase 3 may reword) |
+| `tests/autosave.test.ts`, `idbStore.test.ts`, `save.test.ts`, `saveFile.test.ts`, `saveHealth.test.ts`, `saveTransferCopy.test.ts` | new tests (describe "backup before the first write after a migration", "IndexedDB backup copy") and updated fakes |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (first run, before production code) | `AssertionError: expected { kind: 'ok', …(2) } to deeply equal { kind: 'ok', migratedFrom: 1, …(1) }` (v1 fixture migrates); 32 tests red in save/saveFile |
+| RED (first run) | 7 red: `AssertionError: expected [ 'write', 'write' ] to deeply equal [ 'backup', 'write', 'write' ]`; `expected { kind: 'unreadable', …(1) } to deeply equal { kind: 'unreadable', …(2) }` (migration-failed); `main.backup is not a function` (idb) |
 | `npm run lint` / `npm run typecheck` | OK / OK |
-| `npm test` + deploy scripts + `sample` E1-E6 | unit 2239 passed (baseline 2224, +15); sample no violations; deploy scripts OK |
-| `npm run build` | OK, `e2e hook: absent` |
-| `npx playwright test --config=...` | 63 passed (baseline 63, +0), run in this session |
-| `git diff --stat main -- tests/fixtures/save-v1*` | empty (byte-identical) |
-| Deliberate break A: `MIGRATIONS[1]` without `variants` | 60 red; restored. Meta: red because the frozen v1 fixture's migrated output fails validation (reads the file, not a literal) |
-| Break B: `encodeSave` writes `version: 1` | 26 red; restored |
-| Break C: `saveProblem` ignores `variants` | 6 red (bad-variants cases, missing block); restored |
+| `npm test` + deploy scripts + `sample` E1-E6 | unit 2251 passed (baseline 2239, +12); sample no violations |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --config=...` | e2e: not runnable in this session — orchestrator gate (MachPortRendezvous Permission denied, 2 tries); expected 63 (+0) |
+| `git diff --stat main -- tests/fixtures/save-v1*` | empty |
+| Break A: copy after the write | 2 red (order test, retry test); restored. Meta: the order test records store calls in sequence, not just counts |
+| Break B: copy failure swallowed (`.catch(() => undefined)`) | 1 red (failing-copy test: write happened); restored |
+| Break C: migration-failed reported as `future` | 2 red (save.test step test, loadSave test); restored |
 
 ## 4. Next command
 
-`/10x-tdd minigame-daily-puzzle phase 2` (Phase 2: Bezpieczeństwo migracji; `Driver: tdd`)
+`/10x-implement minigame-daily-puzzle phase 3` (Phase 3: Teksty zapisu i szew `?e2eSave=v1`; `Driver: impl`)
 
 ## 5. Open
 
-- 1.5 [reviewer], 1.6 [human] (one-way door: a rollback to a v1 build shows the "newer version" card) stay open.
-- `saveProblem` now checks `version === 2` only; v1 files are checked via `importProblem` (migrate then validate). Phase 2's backup must copy the raw v1 value BEFORE the first v2 write.
-- `src/main.ts` snapshot falls back to `session.variants` if the registry key is missing.
-- `tests/e2e/save-transfer.spec.ts` still builds a v1 `playableSave` and imports it (valid: migrated); phase 3/11 may switch it.
+- 2.4 e2e half (orchestrator), 2.5 [reviewer]; also phase 1 rows 1.5 [reviewer], 1.6 [human].
+- `replace` does not copy (tested); an import of a v1 file writes v2 without a backup by design (the file is the backup).
+- A load that is `migration-failed` blocks writes (`blockedBy: unreadable`, old bytes untouched) and is replaceable like `corrupt`; phase 3 owns the texts for it.
+- Backup copy overwrites an existing `backup-v1` key (only reachable after a re-migration of a v1 value).
 
 ## 6. Autonomous decisions
 
-1. **Existing tests changed, not weakened.** `save.test.ts` "v1 format did not change" became the same round-trip check on the v2 fixtures; "future" now uses `SAVE_VERSION + 1`; the migration-chain tests pass `MIGRATIONS[1]` as step 1; `saveFile`/`saveKeys`/`autosave`/`rooms` tests that used a v1 object as the current save use v2 (v1 import coverage kept and extended). Would change: a reviewer reading any of these as lost coverage.
-2. **Added `importProblem`** (not in plan) so import of a corrupt v1 file keeps naming the broken field (`saveProblem` on the raw v1 would say `version`). Rejected: making `saveProblem` accept v1.
-3. **`MIGRATIONS` exported** for the chain tests. Rejected: re-declaring the step in tests (would not read the real one).
+1. **`backup(raw, from)` has two arguments** (plan contract: `backup(raw)`): the key needs the version, and the store cannot know it. Rejected: a backup key fixed to `v1` (breaks at v3). Would change: plan-review preferring the version in a wrapper object.
+2. **Backup is run inside `attempt`** (retry path = the normal write path), flag `backedUp` set only after success; `dirty` stays true on failure. Rejected: a separate pre-write step with its own status.
+3. **`migration-failed` text added to `pl.ts` now** only because the `ImportRejection` record is exhaustive; wording is phase 3's.
+4. **Existing test changed**: "a throwing step is a corrupt save" became migration-failed (the plan's new behaviour); a new test keeps "validation failure after a step = corrupt".
+5. `LoadOutcome.unreadable` does not carry `step` (only `DecodeResult` does); nothing consumes it yet.
