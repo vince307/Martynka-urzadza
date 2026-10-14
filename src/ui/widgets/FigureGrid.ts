@@ -2,6 +2,7 @@ import { Math as PhaserMath, type GameObjects, type Scene } from 'phaser';
 import { figureLayout, type FigureInput } from '../../core/round/figureLayout';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
+import { drawLattice } from './lattice';
 import { textStyle } from './textStyle';
 
 /**
@@ -33,12 +34,7 @@ export class FigureGrid {
         if (out.lattice) {
             const l = out.lattice;
             g.lineStyle(look.grid, PLACEHOLDER_COLORS.tileBorder, 1);
-            for (let x = 0; x <= Math.round(l.width / out.cell); x++) {
-                g.lineBetween(l.x + x * out.cell, l.y, l.x + x * out.cell, l.y + l.height);
-            }
-            for (let y = 0; y <= Math.round(l.height / out.cell); y++) {
-                g.lineBetween(l.x, l.y + y * out.cell, l.x + l.width, l.y + y * out.cell);
-            }
+            drawLattice(g, l.x, l.y, Math.round(l.width / out.cell), Math.round(l.height / out.cell), out.cell, true);
         }
         g.lineStyle(look.line, PLACEHOLDER_COLORS.deepTeal, 1);
         g.strokePoints(

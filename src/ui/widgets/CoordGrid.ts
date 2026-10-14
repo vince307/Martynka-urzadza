@@ -2,6 +2,7 @@ import { Math as PhaserMath, type GameObjects, type Scene } from 'phaser';
 import type { GridItemId } from '../../data/gridItems';
 import { CHART_COLORS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
+import { drawLattice } from './lattice';
 import { textStyle } from './textStyle';
 
 const ITEM_COLOR: Record<GridItemId, number> = {
@@ -51,12 +52,7 @@ export class CoordGrid {
         g.fillStyle(PLACEHOLDER_COLORS.field, 1);
         g.fillRect(left, top, columns * cell, rows * cell);
         g.lineStyle(c.line * s, PLACEHOLDER_COLORS.tileBorder, 1);
-        for (let i = 1; i < columns; i++) {
-            g.lineBetween(left + i * cell, top, left + i * cell, top + rows * cell);
-        }
-        for (let j = 1; j < rows; j++) {
-            g.lineBetween(left, top + j * cell, left + columns * cell, top + j * cell);
-        }
+        drawLattice(g, left, top, columns, rows, cell, false);
         g.lineStyle(c.border * s, PLACEHOLDER_COLORS.deepTeal, 1);
         g.strokeRect(left, top, columns * cell, rows * cell);
         for (let i = 0; i < columns; i++) {

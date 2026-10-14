@@ -961,7 +961,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 9.1 Pełna bramka lokalna zielona (bez e2e, patrz 9.4); unit `<baseline gałęzi> + N` — 486b501
 - [x] 9.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń — 486b501
 - [x] 9.3 Deliberate break: E6.3 bez `childName` → test czerwony; przywrócone; meta-check — 486b501
-- [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (orchestrator note: 57 passed on 486b501, 4.0 min)
 
 #### Manual
 
@@ -972,9 +972,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 10.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [ ] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 73–77 w `docs/design-gaps.md`
+- [x] 10.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
+- [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 73–77 w `docs/design-gaps.md`
 - [ ] 10.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

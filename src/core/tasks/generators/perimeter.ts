@@ -105,6 +105,7 @@ const sideRect = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => 
 
 // The keypad-solution strip is 190 px high (layout `keypadSolution.picture`): 5 rows leave a cell of at least 36 px (`figure.minCell`).
 // A taller lattice needs a taller rectangle, so the figure is drawn again instead (phase 9 decision).
+// DESIGN-GAP (docs/design-gaps.md row 78): a lattice taller than 5 rows leaves a cell under 36 px in the keypad-solution strip.
 const COMPOSITE_MAX_ROWS = 5;
 
 type Shape = 'L' | 'U' | 'stairs';
