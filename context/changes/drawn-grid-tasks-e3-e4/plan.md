@@ -915,10 +915,10 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @SHA@
-- [x] 6.2 `npm run sample -- E4 --count 6` bez naruszeń, z linią `visual:` — @SHA@
-- [x] 6.3 Deliberate break: podpisy boków pominięte → test rozmieszczenia podpisów czerwony; przywrócone; meta-check — @SHA@
-- [x] 6.4 `playableSteps` E4 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — @SHA@
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — ab1fa91
+- [x] 6.2 `npm run sample -- E4 --count 6` bez naruszeń, z linią `visual:` — ab1fa91
+- [x] 6.3 Deliberate break: podpisy boków pominięte → test rozmieszczenia podpisów czerwony; przywrócone; meta-check — ab1fa91
+- [x] 6.4 `playableSteps` E4 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — ab1fa91
 - [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
