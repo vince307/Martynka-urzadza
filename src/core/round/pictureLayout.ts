@@ -12,6 +12,12 @@ export interface PictureSpec {
     tilesSolution: { picture: PictureRect; lines: PictureRect };
     keypad: PictureRect;
     keypadSolution: { picture: PictureRect; lines: PictureRect };
+    /** A pictured `select` task: the drawing sits above the tiles (STUB). */
+    select: { picture: PictureRect; solution: { picture: PictureRect; lines: PictureRect } };
+    /** A clock to set (`drag`): the drawing takes the mat, the solution lines the tray's place. */
+    drag: { picture: PictureRect; lines: PictureRect };
+    /** Smallest height a drawing keeps under a long prompt. */
+    minHeight: number;
     /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
     tall: { tiles: TallSpec; keypad: TallSpec };
 }
@@ -35,8 +41,7 @@ const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => (input === 'k
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
  * `lines: null` means the lines keep their place for a task without a drawing (under the prompt).
- * `select` and `drag` tasks carry no drawing today and fall back to the tiles area; that area overlaps the select tiles
- * (`TASK_LAYOUT.select.top`), so a pictured select or drag task needs its own area first.
+ * A pictured `select` task keeps its drawing above the select tiles; a `drag` drawing (the clock to set) takes the mat.
  */
 export const pictureLayout = (
     spec: PictureSpec,
@@ -47,6 +52,12 @@ export const pictureLayout = (
     if (shape === 'tall') {
         const tall = tallOf(spec, input);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
+    }
+    if (input === 'drag') {
+        return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };
+    }
+    if (input === 'select') {
+        return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
     }
     if (input === 'keypad') {
         return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
@@ -68,11 +79,12 @@ export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualS
 
 /**
  * The drawing rectangle kept under the prompt: its top moves down to `promptBottom + gap` when a long prompt ends below it,
- * its bottom stays (the drawing then scales down into what is left). Height never goes below 0.
+ * its bottom stays (the drawing then scales down into what is left). Height never goes below `minHeight` (the drawing may then overlap the prompt's last line rather than vanish).
  */
-export const belowPrompt = (rect: PictureRect, promptBottom: number, gap: number): PictureRect => {
-    const top = Math.max(rect.y, promptBottom + gap);
-    return { x: rect.x, y: top, width: rect.width, height: Math.max(0, rect.y + rect.height - top) };
+export const belowPrompt = (rect: PictureRect, promptBottom: number, gap: number, minHeight: number): PictureRect => {
+    const bottom = rect.y + rect.height;
+    const top = Math.min(Math.max(rect.y, promptBottom + gap), bottom - minHeight);
+    return { x: rect.x, y: top, width: rect.width, height: bottom - top };
 };
 
 /** The largest size from `max` down to `min` in `step`s for which `fits(size)` holds; `min` when none does. */
@@ -90,3 +102,26 @@ export const clockHandAngles = (hour: number, minute: number): { hour: number; m
     hour: (((hour % 12) + minute / 60) * 30) % 360,
     minute: minute * 6,
 });
+
+export interface DialSpec { outer: number; border: number; hourLength: number; minuteLength: number }
+export interface ClockSetLayout {
+    centre: { x: number; y: number };
+    scale: number;
+    hourLength: number;
+    minuteLength: number;
+    ok: Rect;
+    lines: Rect;
+}
+
+/** Where the dial of a clock to set sits (same scale rule as the ClockFace widget) and what shares the screen with it. */
+export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect }, dial: DialSpec): ClockSetLayout => {
+    const scale = Math.min(drag.mat.width, drag.mat.height) / (2 * dial.outer + dial.border);
+    return {
+        centre: { x: drag.mat.x + drag.mat.width / 2, y: drag.mat.y + drag.mat.height / 2 },
+        scale,
+        hourLength: dial.hourLength * scale,
+        minuteLength: dial.minuteLength * scale,
+        ok: drag.ok,
+        lines: drag.solutionLines,
+    };
+};

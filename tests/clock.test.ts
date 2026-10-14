@@ -3,9 +3,13 @@ import { createRng } from '../src/core/rng';
 import { generateClock, parseClockParams } from '../src/core/tasks/generators/clock';
 import { formatTime } from '../src/core/text/time';
 import type { SkillDef } from '../src/core/types';
+import { clockHandAngles } from '../src/core/round/pictureLayout';
+import { reachableTimes } from '../src/core/clockSet';
 import { forEachDraw } from './helpers';
 
 const clockSkill = (id: string, params: Record<string, unknown>): SkillDef => ({ id, stage: 'E3', step: 3, type: 'CLOCK', params, answer: 'tiles' });
+
+const setSkill = (id: string, params: Record<string, unknown>): SkillDef => ({ ...clockSkill(id, params), answer: 'drag' });
 
 // The oracle works from the drawing (visual), never from task.answer.
 const SKILLS = {
@@ -15,6 +19,10 @@ const SKILLS = {
     read5: clockSkill('E4.3.clock_read_5', { variant: 'read', minuteStep: 5 }),
     later: clockSkill('E3.3.clock_later_full', { variant: 'later', minuteStep: 60, maxShift: 3 }),
     h24: clockSkill('E3.11.clock_24h', { variant: 'h24', minuteStep: 60 }),
+    setFull: setSkill('E3.3.clock_set_full', { variant: 'set', minuteStep: 60 }),
+    setH24: setSkill('E3.11.clock_set_24h', { variant: 'set', minuteStep: 60, h24: true }),
+    setQuarter: setSkill('E4.3.clock_set_quarter', { variant: 'set', minuteStep: 15 }),
+    setHalf: setSkill('E4.3.clock_set_half', { variant: 'set', minuteStep: 30 }),
 };
 
 describe('generateClock', () => {
@@ -128,6 +136,77 @@ describe('generateClock', () => {
     });
 });
 
+/** The time the prompt asks for ("Ustaw zegar na 15.00."), read from the text only. */
+const askedTime = (prompt: string): { hour: number; minute: number } => {
+    const m = /(\d{1,2})\.(\d{2})/.exec(prompt);
+    if (!m) throw new Error(`no time in "${prompt}"`);
+    return { hour: Number(m[1]), minute: Number(m[2]) };
+};
+const apartBy = (a: number, b: number): number => Math.min(Math.abs(a - b) % 360, 360 - (Math.abs(a - b) % 360));
+
+describe('generateClock: set (the child turns the hands)', () => {
+    for (const [name, skill] of Object.entries(SKILLS)) {
+        if (!name.startsWith('set')) continue;
+        const step = skill.params.minuteStep as number;
+        const snap = step === 60 ? 60 : 5;
+        it(`${skill.id}: 1000 draws ask for a time the hands can reach, start elsewhere with clear hands`, () => {
+            const asked = new Set<string>();
+            forEachDraw(generateClock, skill, {}, (task, where) => {
+                expect(task.input, where).toBe('drag');
+                expect(task.choices, where).toBeUndefined();
+                if (task.visual?.kind !== 'clock') throw new Error(`no clock ${where}`);
+                const { hour, minute, set, snap: drawnSnap } = task.visual;
+                expect(set, where).toBe(true);
+                expect(drawnSnap, where).toBe(snap);
+                // The oracle: the asked time is read from the prompt, the 24-hour form folded onto the dial.
+                const want = askedTime(task.prompt);
+                if (skill.params.h24) {
+                    expect(want.hour, where).toBeGreaterThanOrEqual(13);
+                    expect(want.hour, where).toBeLessThanOrEqual(23);
+                }
+                expect(want.minute % step, where).toBe(0);
+                const onDial = formatTime(skill.params.h24 ? want.hour - 12 : want.hour, want.minute);
+                expect(task.answer, where).toBe(onDial);
+                expect(reachableTimes(snap), where).toContain(task.answer);
+                asked.add(onDial);
+                // The hands start somewhere else and apart, so the start is neither the answer nor an overlap.
+                expect(formatTime(hour, minute), where).not.toBe(onDial);
+                expect(hour, where).toBeGreaterThanOrEqual(1);
+                expect(hour, where).toBeLessThanOrEqual(12);
+                expect(minute % snap, where).toBe(0);
+                const angles = clockHandAngles(hour, minute);
+                expect(apartBy(angles.hour, angles.minute), where).toBeGreaterThanOrEqual(30);
+                // Hints teach the hands without stating the answer first.
+                expect(task.hint.length, where).toBeGreaterThanOrEqual(3);
+                expect(task.hint[0], where).not.toContain(String(task.answer));
+                expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
+                expect(task.prompt, where).toMatch(/^Ustaw zegar na /);
+            });
+            expect(asked.size, 'variety of asked times').toBeGreaterThanOrEqual(step === 60 ? 11 : 12 * (60 / step) - 4);
+        });
+    }
+
+    it('the spoken prompt asks for the same time and does not read the start pose', () => {
+        const task = generateClock(SKILLS.setQuarter, createRng(8));
+        expect(task.speak).toMatch(/^Ustaw zegar/);
+        expect(task.speak).toContain(String(askedTime(task.prompt).hour));
+        if (task.visual?.kind === 'clock') {
+            expect(task.speak ?? '').not.toContain(formatTime(task.visual.hour, task.visual.minute));
+        }
+    });
+
+    it.each([
+        ['set with h24 and a quarter step', { variant: 'set', minuteStep: 15, h24: true }],
+        ['set with minuteStep 5', { variant: 'set', minuteStep: 5 }],
+    ])('rejects %s', (_name, params) => {
+        expect(() => parseClockParams(params)).toThrow(/CLOCK/);
+    });
+
+    it('accepts set with h24 on full hours', () => {
+        expect(parseClockParams({ variant: 'set', minuteStep: 60, h24: true }).h24).toBe(true);
+    });
+});
+
 describe('parseClockParams', () => {
     it('accepts the planned parameter sets', () => {
         for (const skill of Object.values(SKILLS)) {
@@ -136,7 +215,7 @@ describe('parseClockParams', () => {
     });
 
     it.each([
-        ['unknown variant', { variant: 'set', minuteStep: 60 }],
+        ['unknown variant', { variant: 'turn', minuteStep: 60 }],
         ['minuteStep outside the list', { variant: 'read', minuteStep: 10 }],
         ['later without maxShift', { variant: 'later', minuteStep: 60 }],
         ['later with maxShift 0', { variant: 'later', minuteStep: 60, maxShift: 0 }],

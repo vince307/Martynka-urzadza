@@ -35,6 +35,35 @@ describe('visualKey', () => {
     });
 });
 
+describe('a clock to set (S-13b)', () => {
+    const set = (hour: number, minute: number, snap: 60 | 5): TaskVisual => ({ kind: 'clock', hour, minute, set: true, snap });
+
+    it('has its own key: the same hands to read are not the same drawing as hands to set', () => {
+        expect(visualKey(set(9, 0, 60))).not.toBe(visualKey(clock(9, 0)));
+        expect(visualKey(set(9, 0, 60))).not.toBe(visualKey(set(9, 0, 5)));
+        expect(visualKey(set(9, 0, 60))).toBe(visualKey(set(9, 0, 60)));
+    });
+
+    it('is described by its start pose', () => {
+        expect(describeVisual(set(9, 0, 60))).toBe('[clock set from 9.00]');
+        expect(describeVisual(set(4, 15, 5))).toBe('[clock set from 4.15]');
+    });
+
+    it('accepts hands on the snap and refuses the rest', () => {
+        expect(validateVisual(set(9, 0, 60))).toEqual([]);
+        expect(validateVisual(set(4, 15, 5))).toEqual([]);
+        expect(validateVisual(set(4, 15, 60))).not.toEqual([]);
+        expect(validateVisual(set(4, 14, 5))).not.toEqual([]);
+        expect(validateVisual(set(0, 0, 60))).not.toEqual([]);
+        expect(validateVisual(set(13, 0, 60))).not.toEqual([]);
+        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true })).not.toEqual([]);
+    });
+
+    it('is wide', () => {
+        expect(visualShape(set(9, 0, 60))).toBe('wide');
+    });
+});
+
 describe('validateVisual', () => {
     it('accepts good drawings', () => {
         expect(validateVisual(clock(23, 59))).toEqual([]);

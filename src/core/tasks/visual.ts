@@ -9,7 +9,8 @@ import type { SkillDef } from '../types';
 export type AnswerMode = SkillDef['answer'];
 
 export type TaskVisual =
-    | { kind: 'clock'; hour: number; minute: number }
+    // `set`: the child turns the hands; hour/minute are the start pose and `snap` (60 or 5 minutes) the only source of the snapping.
+    | { kind: 'clock'; hour: number; minute: number; set?: true; snap?: 60 | 5 }
     | { kind: 'ruler'; unit: 'cm' | 'mm'; lengthCm: number; fromMm: number; toMm: number }
     | { kind: 'blocks'; hundreds: number; tens: number; ones: number }
     | { kind: 'bars'; bars: readonly { label: string; value: number }[]; scaleMax: number }
@@ -37,7 +38,7 @@ export const visualKey = (v: TaskVisual | undefined): string => {
     }
     switch (v.kind) {
         case 'clock':
-            return `clock:${v.hour}:${v.minute}`;
+            return v.set ? `clock:${v.hour}:${v.minute}:set:${v.snap ?? ''}` : `clock:${v.hour}:${v.minute}`;
         case 'ruler':
             return `ruler:${v.unit}:${v.lengthCm}:${v.fromMm}:${v.toMm}`;
         case 'blocks':
@@ -72,6 +73,13 @@ export const validateVisual = (v: TaskVisual): string[] => {
         case 'clock':
             if (!isInt(v.hour) || v.hour < 0 || v.hour > 23) out.push(`clock hour ${v.hour} outside 0..23`);
             if (!isInt(v.minute) || v.minute < 0 || v.minute > 59) out.push(`clock minute ${v.minute} outside 0..59`);
+            if (v.set) {
+                if (v.snap !== 60 && v.snap !== 5) out.push(`clock to set needs snap 60 or 5, got ${String(v.snap)}`);
+                if (v.hour < 1 || v.hour > 12) out.push(`clock to set starts on hour ${v.hour}, need 1..12`);
+                if (v.snap && v.minute % v.snap !== 0 && !(v.snap === 60 && v.minute === 0)) out.push(`clock to set starts on minute ${v.minute}, off the snap ${v.snap}`);
+            } else if (v.snap !== undefined) {
+                out.push('clock snap without set');
+            }
             break;
         case 'ruler':
             if (!isInt(v.fromMm) || !isInt(v.toMm) || v.fromMm < 0 || v.fromMm >= v.toMm || v.toMm > v.lengthCm * 10) {
@@ -168,7 +176,7 @@ export const validateVisual = (v: TaskVisual): string[] => {
 export const describeVisual = (v: TaskVisual): string => {
     switch (v.kind) {
         case 'clock':
-            return `[clock ${formatTime(v.hour, v.minute)}]`;
+            return v.set ? `[clock set from ${formatTime(v.hour, v.minute)}]` : `[clock ${formatTime(v.hour, v.minute)}]`;
         case 'ruler': {
             const [from, to, unit] = v.unit === 'cm' ? [v.fromMm / 10, v.toMm / 10, 'cm'] : [v.fromMm, v.toMm, 'mm'];
             return `[ruler 0–${v.lengthCm} cm, ${from}–${to} ${unit}]`;

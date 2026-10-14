@@ -88,3 +88,23 @@ describe('generateTask names the skill in a generator failure', () => {
         expect((caught as Error & { cause?: unknown }).cause).toBeInstanceOf(Error);
     });
 });
+
+describe('canonicalInput of a clock to set (S-13b)', () => {
+    const clockSet = (answer: string, snap: 60 | 5, hour = 9, minute = 0): Task =>
+        ({ ...base, input: 'drag', answer, visual: { kind: 'clock', hour, minute, set: true, snap } });
+
+    it('is the answer when the hands can show it', () => {
+        expect(canonicalInput(clockSet('3.00', 60))).toBe('3.00');
+        expect(canonicalInput(clockSet('4.15', 5, 9, 5))).toBe('4.15');
+    });
+
+    it('throws when the hands cannot show the answer (the retype trap)', () => {
+        expect(() => canonicalInput(clockSet('4.15', 60))).toThrow(/reachable/);
+        expect(() => canonicalInput(clockSet('0.00', 60))).toThrow(/reachable/);
+        expect(() => canonicalInput(clockSet('4.14', 5, 9, 5))).toThrow(/reachable/);
+    });
+
+    it('throws for a clock drag task without a snap', () => {
+        expect(() => canonicalInput({ ...base, input: 'drag', answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0 } })).toThrow(/snap/);
+    });
+});

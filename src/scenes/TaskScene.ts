@@ -334,7 +334,7 @@ export class TaskScene extends Scene {
         const solutionShown = view.bar.kind === 'solution';
         const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
-        const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap) : layout.picture;
+        const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         this.picture.render(view.visual, pictureRect);
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles');

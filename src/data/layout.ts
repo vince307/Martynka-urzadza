@@ -166,6 +166,10 @@ export const SAVE_KEYS = [
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
  * task-keypad.png). Touch targets are listed in TASK_TOUCH_TARGETS.
  */
+// The drag mode's mat and solution lines are also the drawing area of a clock to set (picture.drag below).
+const DRAG_MAT = { x: 236, y: 380, width: 944, height: 460 } as const;
+const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as const;
+
 export const TASK_LAYOUT = {
     notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
@@ -181,6 +185,8 @@ export const TASK_LAYOUT = {
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
+    // The clock to set (S-13b): the dial in the unit of the drawn clock face (ClockFace DIAL), scaled to fit the mat. DESIGN-GAP (row written in phase 10, docs/design-gaps.md).
+    clockSet: { dial: { outer: 150, border: 4, hourLength: 78, minuteLength: 106 } },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     // Drawing area of a task with a picture (S-13). DESIGN-GAP (docs/design-gaps.md rows 52 and 57): the kit has pictures only above the tiles
@@ -200,6 +206,14 @@ export const TASK_LAYOUT = {
         // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
         // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
         // above the tiles (tiles) or beside the column (keypad). DESIGN-GAP 65 (docs/design-gaps.md).
+        // S-13b: a pictured `select` task keeps its drawing above the tiles (`select.top` 600); a clock to set (`drag`) takes the mat and its solution
+        // lines the tray's place. `minHeight`: a long prompt may push the drawing down, never to nothing (audit S13-08).
+        select: {
+            picture: { x: 661, y: 396, width: 600, height: 190 },
+            solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
+        },
+        drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
+        minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
             keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
@@ -209,11 +223,11 @@ export const TASK_LAYOUT = {
     // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).
     drag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        mat: { x: 236, y: 380, width: 944, height: 460 },
+        mat: DRAG_MAT,
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         cellInset: 8, columns: 3, maxPerKind: 9,
         labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.2, radius: 28,   // trayScale 1.3 put the 10 rod on the tray tile border (visual gate S-13)
-        solutionLines: { x: 1240, y: 380, width: 440, height: 440 },   // the solution steps take the tray's place
+        solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.

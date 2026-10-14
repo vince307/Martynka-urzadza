@@ -360,6 +360,17 @@ export const pl = {
         clockAnswerHint: (time: string) => `Na zegarze jest ${time}.`,
         clockLaterAnswerHint: (time: string) => `Będzie ${time}.`,
         clockLaterNowHint: (time: string) => `Teraz jest ${time}.`,
+        // Clock to set (S-13b): the child turns the hands; the prompt names the time, the hints teach which hand is which.
+        clockSet: (time: string) => `Ustaw zegar na ${time}.`,
+        clockSetSpeak: (hour: number, minute: number) =>
+            minute === 0 ? `Ustaw zegar na godzinę ${hour}.` : `Ustaw zegar na godzinę ${hour} i ${countNoun(minute, nouns.minuta)}.`,
+        clockSetHandsHint: 'Krótka wskazówka pokazuje godzinę, długa pokazuje minuty. Przeciągnij je palcem.',
+        clockSetH24Hint: 'Po południu od godziny w zapisie 24-godzinnym odejmij 12.',
+        clockSetShortHint: (hour: number, minute: number, next: number) =>
+            minute === 0 ? `Krótką wskazówkę ustaw na ${hour}.` : `Krótką wskazówkę ustaw między ${hour} a ${next}.`,
+        clockSetLongHint: (marker: number, minute: number) =>
+            minute === 0 ? 'Długą wskazówkę ustaw na 12.' : `Długą wskazówkę ustaw na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
+        clockSetAnswerHint: (time: string) => `Zegar pokazuje ${time}.`,
         clockH24Hint: 'Po południu do godziny z zegara dodaj 12.',
         clockH24AnswerHint: (time: string) => `Zapis 24-godzinny: ${time}.`,
         lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),

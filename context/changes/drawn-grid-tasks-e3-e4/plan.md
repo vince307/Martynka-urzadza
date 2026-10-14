@@ -878,7 +878,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 3cb42cc
 - [x] 3.2 1000 losowań na wariant bez naruszeń; klucze `generators`/`parsers` równe; progi inwariantów zmierzone — 3cb42cc
 - [x] 3.3 Deliberate break: dystraktor z polem szukanego przedmiotu / `composite` liczy pole / `sideRect` z nieparzystym obwodem → czerwone; przywrócone; meta-check — 3cb42cc
-- [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 3cb42cc (e2e: orchestrator note, full suite on 3cb42cc, 57 passed)
 
 #### Manual
 
@@ -888,8 +888,8 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: godzina 0 dla 12 / `cancel` zostawia nową pozę / `select` z rysunkiem w prostokącie kafelków → czerwone; przywrócone; meta-check
+- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 4.2 Deliberate break: godzina 0 dla 12 / `cancel` zostawia nową pozę / `select` z rysunkiem w prostokącie kafelków → czerwone; przywrócone; meta-check
 - [ ] 4.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
