@@ -43,6 +43,10 @@ export const PLACEHOLDER_COLORS = {
     ageButton: 0xeaf6df,        // kit .age-button gradient (#f8fff0 to #dceecf), flattened to its middle
     ageButtonBorder: 0xabc49b,  // kit .age-button border
     unlockCard: 0xfff7de,       // kit .unlock-card gradient (#fffef4 to #fff0c8), flattened to its middle
+    letterHidden: 0xfffdf4,     // kit .letter
+    letterHiddenBorder: 0xd2be87,
+    letterRevealed: 0xe8f3d7,   // kit .letter.revealed
+    letterRevealedBorder: 0x90b672,
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
     ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
@@ -86,6 +90,8 @@ export const FONT_SIZES = {
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
+    letter: 88,             // kit .letter (S-15 word minigame)
+    doneWord: 92,           // kit .success-card .final-word
 } as const;
 
 /**
@@ -121,6 +127,8 @@ export const FONT_WEIGHTS = {
     gridLabel: 700,
     sideLabel: 700,
     artLabel: 650,
+    letter: 750,            // kit .letter
+    doneWord: 750,          // kit .final-word
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -339,6 +347,22 @@ export const UNLOCK_LAYOUT = {
     art: { centerX: 960, top: 461, size: 200 },
     name: { x: 960, y: 675, maxWidth: 1100 },
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
+} as const;
+
+/**
+ * Minigame screens (S-15; kit expansion pack word-*.png, success-card): the word's letter boxes above the task, and the done card
+ * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md, due in phase 10): the kit shows no letter row together with a task prompt
+ * longer than one equation, so a sentence prompt starts at `promptY` and an expression is centred on `expressionY`, under the letters.
+ */
+export const MINIGAME_LAYOUT = {
+    letters: { top: 232, width: 132, height: 138, gap: 24, radius: 28, border: 5, centerX: 960 },
+    expressionY: 540,   // kit .word-equation sits under the letters; no "Oblicz:" line in a word round
+    promptY: 420,       // a sentence prompt of a word round starts here
+    card: { left: 440, top: 330, width: 1040, height: 540, border: 8, radius: 46 },
+    title: { x: 960, y: 356 },
+    line: { x: 960, y: 462 },
+    earned: { centerX: 960, centerY: 650, starSize: 84, gap: 24, scale: 0.7 },   // the summary's "+N" text at 0.7 of its size
+    buttons: { left: 618, top: 728, width: 400, height: 108, gap: 24, radius: 30, border: 5 },
 } as const;
 
 /**

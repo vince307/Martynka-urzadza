@@ -80,3 +80,22 @@ export const buildWordRound = (
 /** One entry per letter: the letter when uncovered, null while hidden. */
 export const revealed = (word: string, completed: number): (string | null)[] =>
     Array.from(word).map((letter, i) => (i < completed ? letter : null));
+
+/** Whether a word round can be built for the stage: the pools of `buildWordRound`, without drawing anything. */
+export const wordAvailable = (stage: StageDef, previous: StageDef | undefined, adaptation: Adaptation, words: readonly string[]): boolean => {
+    if (words.length === 0) return false;
+    const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
+    return skillsOf(stage, (step) => step <= unlocked).length > 0
+        || stage.steps.some((st) => st.skills.some(eligible))
+        || (previous !== undefined && skillsOf(previous, () => true).length > 0);
+};
+
+/** How many letters are uncovered: one per finished task (a task settled by the solution and retyping counts too). */
+export const lettersUncovered = (outcomes: readonly (string | null)[]): number => outcomes.filter((o) => o !== null).length;
+
+/** Left edges of the `count` letter boxes, `width` wide and `gap` apart, centred on `centerX`. */
+export const letterRow = (count: number, box: { width: number; gap: number }, centerX: number): number[] => {
+    const total = count * box.width + Math.max(0, count - 1) * box.gap;
+    const left = centerX - total / 2;
+    return Array.from({ length: count }, (_, i) => left + i * (box.width + box.gap));
+};

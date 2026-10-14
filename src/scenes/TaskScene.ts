@@ -15,6 +15,7 @@ import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { localDay } from '../core/day';
+import { buildWordRound, lettersUncovered, revealed, wordAvailable } from '../core/minigames/word';
 import { puzzleTask, puzzlePool } from '../core/puzzles';
 import { afterRound, nextRoundKind, pickPuzzle, variantRules, variantTitle, type RoundKind, type VariantKind } from '../core/variants';
 import type { ArtHealth } from '../core/artHealth';
@@ -35,6 +36,7 @@ import {
     FONT_SIZES,
     GAME_EVENTS,
     GAME_HEIGHT,
+    MINIGAME_LAYOUT,
     PLACEHOLDER_COLORS,
     PLACEHOLDER_FRAME,
     REGISTRY_KEYS,
@@ -43,6 +45,7 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import { MINIGAME_WORDS } from '../data/minigames';
 import { PUZZLES } from '../data/puzzles';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
@@ -55,6 +58,8 @@ import { ClockSet, type ClockSetTargets } from '../ui/widgets/ClockSet';
 import { SelectTiles } from '../ui/widgets/SelectTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
+import { LetterTiles } from '../ui/widgets/LetterTiles';
+import { MinigameDoneCard } from '../ui/widgets/MinigameDoneCard';
 import { SummaryPanel } from '../ui/widgets/SummaryPanel';
 import { TaskPicture } from '../ui/widgets/TaskPicture';
 import { UnlockCard } from '../ui/widgets/UnlockCard';
@@ -92,7 +97,7 @@ export interface TaskSnapshot {
     readonly autoRead: boolean;
     readonly warmup: boolean;
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
-    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
+    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
 }
 
@@ -108,6 +113,8 @@ export interface TaskTargets {
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
     readonly nextRound: Point | null;
     readonly toRoom: Point | null;
+    readonly doneNext: Point | null;   // "Kolejna runda" of a minigame's done card
+    readonly doneRoom: Point | null;
     readonly unlockNext: Point | null;
 }
 
@@ -136,6 +143,8 @@ export class TaskScene extends Scene {
     private steps!: SolutionSteps;
     private picture!: TaskPicture;
     private summary!: SummaryPanel;
+    private letters!: LetterTiles;
+    private doneCard!: MinigameDoneCard;
     private unlockCard!: UnlockCard;
     private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
     private promptTexts: GameObjects.Text[] = [];
@@ -146,6 +155,7 @@ export class TaskScene extends Scene {
     private narrator: Narrator | undefined;
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
     private puzzleId: string | null = null;
+    private word: string | null = null;   // the word of an open 'word' round
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
@@ -187,6 +197,7 @@ export class TaskScene extends Scene {
         this.rng = createRng(Date.now() >>> 0);
         this.kind = 'round';
         this.puzzleId = null;
+        this.word = null;
         this.applyRound(this.freshRound());
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
@@ -218,6 +229,8 @@ export class TaskScene extends Scene {
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.doneCard = new MinigameDoneCard(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.letters = new LetterTiles(this);
         this.unlockCard = new UnlockCard(this, () => this.closeUnlock());
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
@@ -326,6 +339,7 @@ export class TaskScene extends Scene {
             this.registry.set(REGISTRY_KEYS.narration, pl.unlock.spoken(unlock.name));
             this.hideTaskLayer(view.input);
             this.summary.hide();
+            this.doneCard.hide();
             this.unlockCard.show(unlock.name);
             return;
         }
@@ -335,10 +349,23 @@ export class TaskScene extends Scene {
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.narrator?.cancel();
             this.hideTaskLayer(view.input);
-            this.summary.show(summary);
+            if (this.kind === 'word' && this.word !== null) {
+                // The minigame ends on its own card with the uncovered word instead of the summary page.
+                this.summary.hide();
+                this.doneCard.show({ title: pl.round.correct, line: this.word, earned: summary.earned, roomHighlighted: summary.roomHighlighted });
+            } else {
+                this.doneCard.hide();
+                this.summary.show(summary);
+            }
             return;
         }
         this.summary.hide();
+        this.doneCard.hide();
+        if (this.kind === 'word' && this.word !== null) {
+            this.letters.show(revealed(this.word, lettersUncovered(this.state.outcomes)));
+        } else {
+            this.letters.hide();
+        }
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
         const task0 = this.state.tasks[this.state.index];
@@ -413,7 +440,8 @@ export class TaskScene extends Scene {
                 const centerX = (beside ? TASK_LAYOUT.expression : TASK_LAYOUT.expressionWide).x;
                 const maxWidth = TASK_LAYOUT.barSpan[beside ? 'keypad' : 'tiles'].width;   // same width as the bar under them
                 // The select tiles sit higher than the single-answer tiles: the lines stop above them.
-                const limit = view.input === 'select' ? TASK_LAYOUT.select.top - TASK_LAYOUT.solution.bottomGap : undefined;
+                // The answer tiles of a word round sit lower than the letters leave room for: the lines stop above them too.
+                const limit = view.input === 'select' || this.kind === 'word' ? (view.input === 'select' ? TASK_LAYOUT.select.top : TASK_LAYOUT.tiles.top) - TASK_LAYOUT.solution.bottomGap : undefined;
                 this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth, limit);
             }
         } else {
@@ -424,6 +452,7 @@ export class TaskScene extends Scene {
     /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
     private hideTaskLayer(input: AnswerMode): void {
         this.dots.update([]);
+        this.letters.hide();
         this.dragLive = false;
         this.blockMat.setVisible(false);
         this.clockSet.setVisible(false);
@@ -475,18 +504,22 @@ export class TaskScene extends Scene {
         const task = this.state.tasks[this.state.index];
         const color = TEXT_COLOR;
         // A pictured task moves its prompt up so the drawing has room under it (DESIGN-GAP 52).
-        const promptY = task.visual ? TASK_LAYOUT.picture.promptY : undefined;
+        // A word round has the letters above the task: a sentence starts lower and an expression stands alone under them (DESIGN-GAP 85).
+        const wordRound = this.kind === 'word';
+        const promptY = task.visual ? TASK_LAYOUT.picture.promptY : wordRound ? MINIGAME_LAYOUT.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
         const sentence = input !== 'keypad' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
-        const expression = input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
+        const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
-            this.promptTexts.push(
-                this.add
-                    .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
-                    .setOrigin(0.5),
-            );
+            if (!wordRound) {
+                this.promptTexts.push(
+                    this.add
+                        .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
+                        .setOrigin(0.5),
+                );
+            }
             this.drawExpression(task.prompt, expression, color);
         } else if (task.prompt.includes(BLANK)) {
             this.drawSentence(task.prompt, sentence, color);
@@ -633,10 +666,11 @@ export class TaskScene extends Scene {
     }
 
     /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
-    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string }): void {
+    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string }): void {
         this.state = round.state;
         this.kind = round.kind;
         this.puzzleId = round.puzzleId ?? null;
+        this.word = round.word ?? null;
     }
 
     /** The calendar day, as the scheduler sees it (main.ts owns the clock). */
@@ -654,13 +688,22 @@ export class TaskScene extends Scene {
             today: this.today(),
             hasPool: (stageId) => puzzlePool(stageId as StageId, PUZZLES, balance.variants.puzzleStages).length > 0,
             minigames: balance.variants.minigames,
-            wordAvailable: true,   // phase 8 narrows this with the stage's word pool
+            wordAvailable: wordAvailable(this.stage, this.previousStageDef(), this.learnerAdaptation(), MINIGAME_WORDS),
             rules: balance.variants,
             forced,
         });
     }
 
-    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string } {
+    private previousStageDef(): StageDef | undefined {
+        const id = previousStage(this.stage.id);
+        return id ? getStage(id) : undefined;
+    }
+
+    private learnerAdaptation(): SessionLearner {
+        return this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+    }
+
+    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string } {
         // Pictures that did not load (BootScene's record; none recorded = nothing missing): tasks that need them are not drawn.
         const missingIds = (this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined)?.missingIds ?? new Set<string>();
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
@@ -685,7 +728,13 @@ export class TaskScene extends Scene {
             const puzzle = pickPuzzle(pool, variants.puzzlesDone, this.rng);
             return { kind, state: startRound([puzzleTask(puzzle)], variantRules(kind, 1, balance)), puzzleId: puzzle.id };
         }
-        // word / dice: their screens arrive in later phases and balance.variants.minigames is empty until then, so this is an ordinary round.
+        if (kind === 'word') {
+            const built = buildWordRound(this.stage, this.previousStageDef(), learner, this.rng, { tiles: balance.variants.word.tiles, uniqueRetries: balance.round.uniqueRetries, words: MINIGAME_WORDS });
+            if (built) {
+                return { kind, state: startRound(built.tasks, variantRules(kind, built.tasks.length, balance)), word: built.word };
+            }
+        }
+        // dice: its screen arrives in phase 9 (balance.variants.minigames lists it only then); a word round that cannot be built is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,
@@ -861,7 +910,7 @@ export class TaskScene extends Scene {
             autoRead: this.autoRead,
             warmup: this.warmup,
             unlock: this.unlockView(),
-            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId }),
+            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()) }),
             today: this.today(),
         });
     }
@@ -880,6 +929,8 @@ export class TaskScene extends Scene {
             picture: this.picture.bounds(),
             nextRound: this.summary.targets().nextRound,
             toRoom: this.summary.targets().toRoom,
+            doneNext: this.doneCard.targets().nextRound,
+            doneRoom: this.doneCard.targets().toRoom,
             unlockNext: this.unlockCard.target(),
         });
     }

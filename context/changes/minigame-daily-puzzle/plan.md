@@ -962,7 +962,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — b3d448f
 - [x] 7.2 Deliberate break: znacznik `e2eDay` usunięty z listy / zagadka z `starPerTask` 1 → czerwone; przywrócone; meta-check — b3d448f
 - [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eDay`/`e2eVariant` nieobecne w `dist/` — b3d448f
-- [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; lista speców z `e2eVariant=off` w handoffie
+- [x] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; lista speców z `e2eVariant=off` w handoffie — orchestrator note: full suite on b3d448f, `--workers=4`, 63 passed (5.0 min)
 
 #### Manual
 
@@ -973,8 +973,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 8.2 Deliberate break: `letterRow` bez przerwy → test układu czerwony; przywrócone; meta-check
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 8.2 Deliberate break: `letterRow` bez przerwy → test układu czerwony; przywrócone; meta-check
 - [ ] 8.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

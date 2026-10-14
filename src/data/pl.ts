@@ -259,6 +259,7 @@ export const pl = {
         diceAddStepHint: (a: number, b: number) => `Zacznij od ${a} i dodaj ${b}.`,
         diceSubStepHint: (a: number, b: number) => `Zacznij od ${a} i odejmij ${b}.`,
         wordHint: 'Rozwiąż zadanie, a odsłoni się następna litera.',
+        hiddenLetter: '·',   // a letter not uncovered yet (kit)
     },
     // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
     room: {
