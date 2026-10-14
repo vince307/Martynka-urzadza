@@ -935,7 +935,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 9f87fea
 - [x] 5.2 `npm run sample -- E3 --variants` i `E4 --variants` bez naruszeń; `sample` E1–E6 bez flagi bez zmian w wyjściu — 9f87fea
 - [x] 5.3 Deliberate break: podpowiedź 1 z wynikiem / rzeczownik spoza słownika / `choices` bez odpowiedzi → czerwone; przywrócone; meta-check — 9f87fea
-- [ ] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — e2e 63 passed on 9f87fea (orchestrator note, --workers=4)
 
 #### Manual
 
@@ -946,9 +946,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 6.1 Nowe testy czerwone przed implementacją, zielone po; 1000 losowań bez naruszeń; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E1 --variants` … `E6 --variants` bez naruszeń
-- [ ] 6.3 Deliberate break: rzut w zakryte pole / ujemne odejmowanie / zadanie Hasła z rysunkiem → czerwone; przywrócone; meta-check
+- [x] 6.1 Nowe testy czerwone przed implementacją, zielone po; 1000 losowań bez naruszeń; unit `<baseline gałęzi> + N` — 15fde6b
+- [x] 6.2 `npm run sample -- E1 --variants` … `E6 --variants` bez naruszeń — 15fde6b
+- [x] 6.3 Deliberate break: rzut w zakryte pole / ujemne odejmowanie / zadanie Hasła z rysunkiem → czerwone; przywrócone; meta-check — 15fde6b
 - [ ] 6.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
