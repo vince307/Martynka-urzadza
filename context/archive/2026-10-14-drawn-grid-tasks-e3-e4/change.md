@@ -1,10 +1,10 @@
 ---
 change_id: drawn-grid-tasks-e3-e4
 title: Zadania na siatce (kwadrat magiczny, kodowanie pól, obwody) i „ustaw zegar” przeciąganiem wskazówek
-status: impl_reviewed
+status: archived
 created: 2026-10-14
 updated: 2026-10-14
-archived_at: null
+archived_at: 2026-10-14T16:33:04Z
 ---
 
 ## Notes
