@@ -1,17 +1,17 @@
 # Handoff — `save-reason-and-recovery` (slice fix, non-roadmap)
 
-The `/10x-plan` step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. `plan.md` (6 phases) and `plan-brief.md` exist, and `change.md` is now `planned`. No product code changed.
+The `/10x-plan-review` step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. Verdict PROCEED (0 critical, 2 warnings fixed in `plan.md`, 2 observations recorded); `change.md` is `plan_reviewed`. No product code changed.
 
-The next agent must not get this wrong: the e2e seam `?e2eSave=unreadable` is a `future` save (v99). Phase 3 adds the `?e2eSave=corrupt` seam. In the same phase it moves the spec test "#2 an unreadable save warns instead of showing the fresh session" to that seam, so the full e2e suite stays green.
+The next agent must not get this wrong: phase 1 is `tdd` and must stay invisible in the browser — `main.ts` starts passing `loadReason` only in phase 3, and `UIScene` keeps calling `saver.replace(state)` without `force` until phase 4; `tests/deviceSaveWiring.test.ts` (literal `saver.status().blockedBy`) changes in phase 1 together with the `deviceSaveView` signature.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-reason-and-recovery`, cut from `main` at `16a0abd` |
-| Commits | 3 (`docs(save-reason-and-recovery): change identity (autonomous run)`, `…: research`, `…: plan`) |
+| Commits | 4 (`…: change identity (autonomous run)`, `…: research`, `…: plan`, `docs(save-reason-and-recovery): plan review`) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `planned` |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 38 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
@@ -19,9 +19,9 @@ The next agent must not get this wrong: the e2e seam `?e2eSave=unreadable` is a 
 
 | Path | What it is |
 |---|---|
-| `context/changes/save-reason-and-recovery/plan.md` | Plan with 6 phases, `## Autonomous decisions` and `## Progress` |
-| `context/changes/save-reason-and-recovery/plan-brief.md` | Two-page brief |
-| `context/changes/save-reason-and-recovery/change.md` | `status: preparing → planned` (metadata-guard `mark-planned`) |
+| `context/changes/save-reason-and-recovery/reviews/plan-review.md` | Plan review (SOUND, F1–F4), ends with `VERDICT: PROCEED` |
+| `context/changes/save-reason-and-recovery/plan.md` | F1: new triggers for S12-03/S12-05/S12-11 (phase 5 §4); F2: `siteDataAdvice` scope (phase 4 Contract) and p6b expectation (phase 6); F3/F4 in `## Known risks`. Phases, drivers and Progress unchanged |
+| `context/changes/save-reason-and-recovery/change.md` | `status: planned → plan_reviewed` |
 | `context/changes/save-reason-and-recovery/handoff.md` | This file |
 
 ## 3. Verification
@@ -29,15 +29,15 @@ The next agent must not get this wrong: the e2e seam `?e2eSave=unreadable` is a 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/save-reason-and-recovery` |
-| Code reading at `8009d73` | Research claims re-confirmed for these symbols: `autosave.ts` (`replace`, `AutosaveStatus`), `saveFile.ts` `deviceSaveView`, `saveHealth.ts` `stateOf`, `main.ts` `start`, the import/reset/export dialogs, `UIScene` `openExport`/`openImport`/`openReset`, `e2eHook.ts` `e2eSaveStore`, `tests/deviceSaveWiring.test.ts` (literal `saver.status().blockedBy`), `save-transfer-blocked.spec.ts`, `save-restart.spec.ts` C-1/M-S4 |
-| `metadata-guard.mjs inspect` / `mark-planned` | `changed: true`, status `planned` |
-| Roadmap sync | No item with Change ID `save-reason-and-recovery`, so the roadmap was left untouched (non-roadmap change) |
-| Plan structure | 6 `## Phase N:` headings, each with a `Driver:` line and a `Driver why:` line. Success criteria map 1:1 to Progress rows: 38 rows, all `[ ]` |
-| lint / typecheck / tests / build / e2e | Not run. This was a docs-only step. The baseline in the contract (unit 1905, e2e 52) is inherited and unverified. |
+| `ls -l` of 18 planned paths | all exist |
+| Code reading (symbols) | `Autosaver.replace` (refuses `fatal`/`unavailable`, `Busy` first, failures counted), `AutosaveStatus.replace`, `saveHealth.ts` `stateOf`, `saveHealthView.ts` `pl.settings.saveOff[view.cause]`, `deviceSaveView` callers (only `UIScene.openImport`/`openReset`, `tests/saveFile.test.ts`), dialogs `blockedStep`/`stepOne`/`stepTwo` + `reload()` after ok, `e2eHook.ts` `E2E_SAVE_SEAMS`/`e2eSaveStore` (v99), `main.ts` `start` (`detail` only for `unreadable`), `TaskScene.freshRound` (`missingIds`, `blocked`) — all match the plan |
+| e2e seam audit | `?e2eSave=unreadable` used by `save-restart.spec.ts` FR-021 (card only, unaffected) and `save-transfer-blocked.spec.ts` "warns" (moved to `corrupt` in phase 3); `unavailable`/`hang` specs stay green per phase (see review "Checks") |
+| Progress↔Phase consistency | 6 phases, 38 rows, criteria map 1:1, one `## Progress` at the end |
+| lint / typecheck / tests / build / e2e | Not run: docs-only step. Contract baseline (unit 1905, e2e 52 at `16a0abd`) inherited, unverified |
 
 ## 4. Next command
 
-/10x-plan-review save-reason-and-recovery
+/10x-tdd save-reason-and-recovery phase 1
 
 ## 5. Open
 
@@ -55,6 +55,7 @@ The next agent must not get this wrong: the e2e seam `?e2eSave=unreadable` is a 
   - 5.8: N-7 iPad measurement of a cold IndexedDB `timeout`.
 - **DESIGN-GAP rows to add:** 69 ("Zapis gry" cause and code), 70 (lines per cause), 71 (way out of a permanent `unavailable`), 72 (export warning). Each gets a comment in the code.
 - **Follow-ups** go to `follow-ups/review-fixes.md` in phase 5 (list in plan phase 5 §4): S12-02, S12-03, S12-05, S12-07..09, S12-11..15, ASL-02..09, the `timeout` card body, the start counter. Each gets a new trigger.
+- **Plan-review fixes the implementers must follow:** F1 (phase 5 §4: S12-03, S12-05, S12-11 get the NEW triggers written there, not „the next change to …”); F2 (phase 4: `siteDataAdvice` only for a store error, `Busy`/`Blocked`/`InvalidSave` → `applyFailed`/`resetFailed`; phase 6 p6b expects `resetFailed` + no reload). F3/F4 in plan `## Known risks`.
 - **Watch for:**
   - Phase 1 changes the `deviceSaveView` signature, so `tests/deviceSaveWiring.test.ts` (literal `saver.status().blockedBy`) must change in the same phase.
   - `pl.saveTransfer.deviceUnavailable` stays the key for the `unavailable` cause. Its text changes in phase 4, and the specs reference the key.
@@ -88,3 +89,10 @@ The next agent must not get this wrong: the e2e seam `?e2eSave=unreadable` is a 
    - Every product question was answered from research recommendations or `change.md`.
    - No `plan-brief` deviation.
    - `lessons.md` is absent, so no lesson was applied.
+
+### Plan-review step
+
+10. **Triage done in place (no AskUserQuestion), verdict PROCEED.** F1 and F2 fixed in `plan.md` (single obvious fix each); F3, F4 accepted into `## Known risks`. Rejected: overturning the `future` refusal or the forced `unavailable` overwrite — both fit the contract's SIR-01/SIR-02 scope and the PRD guardrail, and `[human]` rows 3.7 and 4.7 already name them. What would change it: the maintainer rejecting either `[human]` decision.
+11. **S12-03/S12-05/S12-11 stay deferred, with new triggers** instead of being pulled into phases 1–2: each is unreachable or masked today (reload after replace; `off` while blocked; `broken` needs an invalid in-memory session). What would change it: a replace path without reload, or S-15 v2 routing a migration through `replace`.
+12. **`siteDataAdvice` limited to store errors.** Rejected: any non-ok forced result. Why: the advice destroys the save; `Busy`/`Blocked`/`InvalidSave` are not storage failures. What would change it: nothing short of a new `ReplaceResult` error kind.
+13. **Review without a sub-agent** (skill step 3): the risky claims were a handful of local symbols, checked directly. No `lessons.md` exists, so none applied.

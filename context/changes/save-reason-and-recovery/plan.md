@@ -300,7 +300,10 @@ porównanie; reset: lista „co zniknie”) z ostrzeżeniem zamiast „Teraz”;
 Porażka wymuszonego zapisu pokazuje `siteDataAdvice` zamiast `applyFailed`. Porażka zwykłego resetu pokazuje
 `resetFailed` (S12-06). `forceable === false` — jak w fazie 3.
 
-**Contract**: `apply: (state: SaveState, force: boolean) => Promise<ReplaceResult>` w obu dialogach. Nowe klucze (brzmienie do teacher read):
+**Contract**: `apply: (state: SaveState, force: boolean) => Promise<ReplaceResult>` w obu dialogach. `siteDataAdvice`
+tylko wtedy, gdy wymuszony `replace` zwrócił błąd zapisu magazynu (`error` spoza `'Busy' | 'Blocked' | 'InvalidSave'`) albo
+odrzucił obietnicę; `Busy`/`Blocked`/`InvalidSave` na ścieżce wymuszonej → zwykłe `applyFailed` (import) / `resetFailed`
+(reset), bo rada „usuń dane strony” niszczy zapis i nie może paść przy błędzie, który nie pochodzi z magazynu (plan-review F2). Nowe klucze (brzmienie do teacher read):
 `deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Jeśli to się powtarza przy każdym uruchomieniu, możesz go zastąpić. Postępy zapisane wcześniej na tym urządzeniu wtedy znikną.'`,
 `force: 'Zastąp mimo to'`, `forcedWarning: 'Zapisu z tego urządzenia nie udało się odczytać. Zostanie zastąpiony.'`,
 `siteDataAdvice: 'Nie udało się zapisać na tym urządzeniu. Ostatnie wyjście: usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.'`,
@@ -378,7 +381,9 @@ z 69–72; `REGISTRY_KEYS`/`SAVE_KEYS` nietknięte.
 
 **Intent**: Każdy z konkretnym `Trigger:` (zamyka SIR-07 dla tej listy; archiwum nieedytowane): S12-02 (`replace` bez
 limitu czasu; `Trigger: a parent report of an import/reset dialog stuck with disabled buttons, or S-15's v2 migration touching replace`),
-S12-03 i S12-11 (`Trigger: the next change to saveHealth.ts stateOf`), S12-05 (`Trigger: the next change to UIScene.openImport/openReset`),
+S12-03 (`stateOf` nie czyta `status.replace`; dziś niewidoczne, bo każdy udany `replace` kończy się `reload()` w tym samym dialogu — `Trigger: any replace path that does not reload the page right after apply (saveImportDialog/saveResetDialog), or S-15 moving the import out of the dialog`),
+S12-11 (porażki `replace` w `failures`; przy zablokowanym zapisie sekcja i tak pokazuje `off` — `Trigger: S-15 save format v2 writing a migrated save through replace, or a parent report of "failing" right after a failed import`),
+S12-05 (`broken` zamyka panel bez tekstu; osiągalne tylko, gdy `validateSave` odrzuca `saver.current()` w pamięci — `Trigger: a deviceSaveView 'broken' seen in any test, e2e run or parent report`). Uwaga (plan-review F1): ta zmiana sama zmienia `stateOf`, `replace` i `openImport`/`openReset`, więc stare triggery „the next change to …” są już spełnione i nie mogą zostać — stąd nowe warunki powyżej,
 S12-07..09, S12-12..15 (`Trigger: S-15 save format v2`), osobne ciało karty dla `timeout` i pomiar N-7 (`Trigger: the [human] iPad measurement of a cold IndexedDB open`),
 licznik startów `unavailable` (`Trigger: a report that the second confirmation was not enough, or N-7 showing permanent timeouts`),
 ASL-02..09 (`Trigger: the next change to artHealth.ts, artFilter.ts or ArtImage`), import z ekranu powitalnego (trigger
@@ -448,7 +453,7 @@ nowy kontekst = świeże urządzenie; nigdy IDB z testu. Spec w trybie serial �
 
 - `npx playwright test tests/e2e/save-transfer-blocked.spec.ts tests/e2e/save-restart.spec.ts` zielone; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
 - Deliberate break (patch `e2e-break-p6a.patch`): `replaceGate` przepuszcza `future` (bez zmiany testów jednostkowych w patchu) → (a) czerwony na `deviceFuture`/`resetConfirm`; meta-check: dowodzi powodu w przeglądarce, nie tylko w `core`
-- Deliberate break (patch `e2e-break-p6b.patch`): `UIScene` przekazuje `saver.replace(state)` bez `force` → (b) czerwony na `siteDataAdvice`/braku przeładowania; meta-check: dowodzi wyjścia SIR-02 na szwie „odczyt odrzuca, zapis działa”
+- Deliberate break (patch `e2e-break-p6b.patch`): `UIScene` przekazuje `saver.replace(state)` bez `force` → (b) czerwony na `resetFailed` i braku przeładowania (po F2 `Blocked` nie daje `siteDataAdvice`); meta-check: dowodzi wyjścia SIR-02 na szwie „odczyt odrzuca, zapis działa”
 - Deliberate break (patch `e2e-break-p6c.patch`): `openExport` bez `warning` → (d) czerwony; przywrócone
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
@@ -491,6 +496,11 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
   udokumentowane (research, Open Questions). `[human]` 4.8.
 - **`timeout` trwały na iPadzie**: wtedy rodzic nie ma wyjścia w aplikacji poza radą z karty; zależy od N-7. `[human]` 5.8.
 - **Chromium w sesji agenta**: faza 6 w protokole request-file; zrzuty faz 2–5 przez fallback Playwright.
+- **Trwały `timeout` bez nazwanej rady o danych strony** (plan-review F3): `deviceTimeout` każe uruchomić grę ponownie, a
+  rada „usuń dane tej strony” pada tylko po porażce wymuszonego zapisu przy `unavailable`. Świadome: przy `timeout` zapis
+  może być zdrowy, a rada go niszczy. Wraca z pomiarem N-7 (`[human]` 5.8) i follow-upem „licznik startów `unavailable`”.
+- **Test lockstep częściowo tautologiczny** (plan-review F4): `forceable` liczony z `replaceGate`, więc wartość testu leży
+  w tym, że `replace` naprawdę woła `replaceGate` (liczba zapisów magazynu), a nie w porównaniu dwóch reguł.
 
 ## References
 

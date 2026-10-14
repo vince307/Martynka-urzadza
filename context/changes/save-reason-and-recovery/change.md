@@ -1,7 +1,7 @@
 ---
 change_id: save-reason-and-recovery
 title: Powód nieudanego odczytu zapisu do końca ścieżki, wyjście z trwałego „unavailable” i uczciwa kopia
-status: planned
+status: plan_reviewed
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null
