@@ -758,7 +758,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 #### Manual
 
 - [x] 4.4 [reviewer] Teacher read `pl.settings.art*` (1 / 2–4 / 5+ i 22–24), wiersz 67 i komentarz `DESIGN-GAP 67` — impl-review
-- [ ] 4.5 [visual] Zrzuty panelu rodzica: „Obrazki” OK, z brakami (`?e2eArt=missing`, `?e2eArt=corrupt`) — 1920×1080 i ~400 px
+- [x] 4.5 [visual] Zrzuty panelu rodzica: „Obrazki” OK, z brakami (`?e2eArt=missing`, `?e2eArt=corrupt`) — 1920×1080 i ~400 px — visual gate (`screenshots/*-20-panel-art-*.png`)
 
 ### Phase 5: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
 
@@ -772,7 +772,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 #### Manual
 
 - [x] 5.5 [reviewer] Teacher read 38 etykiet (kwoty `formatMoney`, „½ l”, „¼ l”, nazwy ikon w mianowniku) — impl-review
-- [ ] 5.6 [visual] Zrzuty stand-inów (`?e2eArt=missing`): monety, banknoty, dzbanki, waga z odważnikami, ikony COUNT i MULT_GROUPS, termometr; każdy także w fazie rozwiązania przy klawiaturze — 1920×1080 i 1024×768
+- [x] 5.6 [visual] Zrzuty stand-inów (`?e2eArt=missing`): monety, banknoty, dzbanki, waga z odważnikami, ikony COUNT i MULT_GROUPS, termometr; każdy także w fazie rozwiązania przy klawiaturze — 1920×1080 i 1024×768 — visual gate, fix 8881888 (`screenshots/*-0*.png`, `*-10-*.png`)
 
 ### Phase 6: Import i reset po nieudanym odczycie zapisu
 
@@ -786,7 +786,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 #### Manual
 
 - [x] 6.5 [reviewer] Teacher read `pl.saveTransfer.deviceUnavailable`/`deviceUnreadable`, wiersz 68 — impl-review
-- [ ] 6.6 [visual] Zrzuty dialogów importu i resetu przy `?e2eSave=unavailable` i `?e2eSave=unreadable` oraz na zdrowym zapisie — 1920×1080 i ~400 px
+- [x] 6.6 [visual] Zrzuty dialogów importu i resetu przy `?e2eSave=unavailable` i `?e2eSave=unreadable` oraz na zdrowym zapisie — 1920×1080 i ~400 px — visual gate (`screenshots/*-3*.png`)
 - [ ] 6.7 [human] Decyzja wbrew literze PRD FR-022: przy `unavailable` import i reset niedostępne do ponownego uruchomienia
 
 ### Phase 7: Seam sweep, follow-upy i dokumentacja

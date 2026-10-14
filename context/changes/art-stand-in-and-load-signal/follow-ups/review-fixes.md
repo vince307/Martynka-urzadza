@@ -12,7 +12,7 @@ Findings of the observability audit 2026-10-14 (S14-*, S12-*, S13-*) that this c
 - S13-01..S13-14: select and drag solvability, S13-07 generator errors without `skill.id`, and the rest. Trigger: the next select/drag skill or S-13b.
 - Raw copy of an unreadable save from inside the import/reset dialog (today only on the start card). Trigger: a parent who cannot reach the start card's copy.
 
-- Impl-review F1: the stand-in label in `ArtImage.show` only shrinks (fixed `ART_STAND_IN.padding` 8, no minimum scale); a weight on the scale in `TASK_LAYOUT.picture.keypadSolution` comes to about 5 CSS px on a 1024 px tablet by arithmetic. Measure weight and coin labels at 1024x768 in the main and solution phase; under ~10 CSS px, make the padding proportional for small boxes or let the label overflow by a set share. Trigger: visual gate of this change (row 5.6).
+- Visual-gate O1 (rest of impl-review F1; F1 itself closed in 8881888): in the keypad solution phase (`TASK_LAYOUT.picture.keypadSolution`, 190 px) a stand-in weight label is about 7.5-9.5 CSS px on a 1024 px tablet (front row wrapped "50 / dag" about 9.5 px, back row about 7.5 px; before the fix about 5). The next solution line (`mass.ts` hint `${parts.join(' + ')} = ${mass}`) gives the values, and the real art is no larger there (S-14 visual gate O1). Fix together with the S-14 O1 layout (picture beside the lines for 4:3 drawings in the keypad solution). Trigger: next change to `pictureLayout` / `TASK_LAYOUT.picture.keypadSolution`, or a parent report of unreadable weights.
 
 ## Still open, repeated from the audit (this change touches only the `freshRound` arguments in `TaskScene`)
 
