@@ -914,10 +914,10 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: usunięty `case 'digits'` w `switch` sceny → typecheck czerwony; przywrócone; meta-check
-- [ ] 7.3 `tests/answerModes.test.ts` nadal: `playable` bez `digits`; `e2e hook: absent (`
-- [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — fd50454
+- [x] 7.2 Deliberate break: usunięty `case 'digits'` w `switch` sceny → typecheck czerwony; przywrócone; meta-check — fd50454
+- [x] 7.3 `tests/answerModes.test.ts` nadal: `playable` bez `digits`; `e2e hook: absent (` — fd50454
+- [x] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — fd50454 (e2e run in this session, --workers=4: 71 passed)
 
 #### Manual
 
