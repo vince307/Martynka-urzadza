@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 86c5f04..8e038b2 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -813,7 +813,7 @@ export class TaskScene extends Scene {
+     }
+ 
+     private clockRules(): { snapMinutes: 60 | 5; grabRadius: number; startDistance: number } {
+-        return { snapMinutes: this.clockSnap, grabRadius: balance.clockSet.grabRadius, startDistance: balance.clockSet.startDistance };
++        return { snapMinutes: 60, grabRadius: balance.clockSet.grabRadius, startDistance: balance.clockSet.startDistance };
+     }
+ 
+     /** One raw pointer event for the drag reducers (blocks or the clock to set); touches count only while a 'drag' task is open, a cancel or reset always does. */
