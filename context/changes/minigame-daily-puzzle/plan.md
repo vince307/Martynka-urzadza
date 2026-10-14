@@ -906,9 +906,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @@SHA@@
-- [x] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check — @@SHA@@
-- [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0 — @@SHA@@
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — cd5b705
+- [x] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check — cd5b705
+- [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0 — cd5b705
 - [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future`
 
 #### Manual

@@ -1,58 +1,54 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the `/10x-tdd` phase 2 step (autonomous run 2026-10-14-save-s13b-s15-s14b). The `backup-v1` copy and the `migration-failed` reason are built and committed; phases 3-13 are untouched. The e2e half of gate row 2.4 is NOT run (Chromium cannot start in this session): the orchestrator must run the full suite (expect baseline 63).
+Written by the `/10x-implement` phase 3 step (autonomous run 2026-10-14-save-s13b-s15-s14b). Save texts and the `?e2eSave=v1` seam are built and committed (`cd5b705`); phases 4-13 are untouched. The e2e run of phase 3 is NOT done (Chromium cannot start in this session): the orchestrator must run the full suite and watch the tests named in §3.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | 4 docs + phase 1 `b0ad4ba` + handoff p1 + phase 2 commit + this handoff commit |
+| Commits | 4 docs + phase 1 `b0ad4ba` + phase 2 `8ee3d18` + phase 3 `cd5b705` + handoffs |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; phase 2: 2.1-2.3 ticked, 2.4 open (e2e), 2.5 [reviewer] open |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; phase 3: 3.1-3.3 ticked, 3.4 open (e2e), 3.5 [reviewer], 3.6 [visual] open; 2.4 ticked citing the orchestrator note |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/save.ts` | `DecodeResult` has `{ reason: 'migration-failed', step }`; `decodeSave` separates a throwing step (migration-failed) from a failing validation (corrupt) |
-| `src/core/autosave.ts` | `SaveStore.backup(raw, from)` required; `LoadOutcome.loaded.raw`; `AutosaverOptions.migrated`; backup before the first write in `attempt`; `AutosaveStatus.migratedFrom` |
-| `src/storage/idb.ts` | `backup` writes key `profile:<id>:backup-v<from>`; still the only idb-keyval importer |
-| `src/testing/e2eHook.ts`, `src/main.ts` | in-memory store gets a no-op `backup`; `main.ts` passes `migrated` from the loaded outcome |
-| `src/core/saveFile.ts`, `src/data/pl.ts` | `ImportRejection` + `pl.saveTransfer.rejected['migration-failed']` (own calm text; phase 3 may reword) |
-| `tests/autosave.test.ts`, `idbStore.test.ts`, `save.test.ts`, `saveFile.test.ts`, `saveHealth.test.ts`, `saveTransferCopy.test.ts` | new tests (describe "backup before the first write after a migration", "IndexedDB backup copy") and updated fakes |
+| `src/core/saveHealth.ts` | `cardCopyFor(kind, reason)` -> `future` / `migrationFailed` / `failed` / `unavailable`; `SaveHealthView.migratedFrom`; cause `migration-failed` |
+| `src/data/pl.ts` | `saveFuture`, `saveMigrationFailed` cards (DESIGN-GAP 82 comment; gap row for `docs/design-gaps.md` still to add in phase 10), `saveFailed.fileName(date)` = `martynka-zapis-surowy-<date>.txt`, `saveTransfer.fileInfo`, `settings.saveMigrated`, `saveOff['migration-failed']` |
+| `src/main.ts` | picks the card copy by `cardCopyFor`; raw copy dated; `RAW_FILE_NAME` removed from `src/ui/dom/saveExport.ts` |
+| `src/ui/dom/saveImportDialog.ts`, `saveHealthView.ts` | file date + build line in the summary step; "Zapis przeniesiono z wersji N." |
+| `src/testing/e2eHook.ts` | `E2ESaveSeam` + `'v1'` (store filled from the imported `tests/fixtures/save-v1.json`); `save.store` = `{ ops: ('backup'|'write')[]; writtenVersion }` on the hook snapshot `save` (null with IndexedDB); `tests/e2e/support/hook.ts` type updated |
+| tests | `tests/saveHealth.test.ts` (cardCopyFor, migration lines), `tests/e2eSave.test.ts` (v1 seam), `tests/saveTransferCopy.test.ts` (names/info), e2e specs `save-restart.spec.ts`, `save-transfer-blocked.spec.ts` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (first run) | 7 red: `AssertionError: expected [ 'write', 'write' ] to deeply equal [ 'backup', 'write', 'write' ]`; `expected { kind: 'unreadable', …(1) } to deeply equal { kind: 'unreadable', …(2) }` (migration-failed); `main.backup is not a function` (idb) |
 | `npm run lint` / `npm run typecheck` | OK / OK |
-| `npm test` + deploy scripts + `sample` E1-E6 | unit 2251 passed (baseline 2239, +12); sample no violations |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --config=...` | e2e: not runnable in this session — orchestrator gate (MachPortRendezvous Permission denied, 2 tries); expected 63 (+0) |
-| `git diff --stat main -- tests/fixtures/save-v1*` | empty |
-| Break A: copy after the write | 2 red (order test, retry test); restored. Meta: the order test records store calls in sequence, not just counts |
-| Break B: copy failure swallowed (`.catch(() => undefined)`) | 1 red (failing-copy test: write happened); restored |
-| Break C: migration-failed reported as `future` | 2 red (save.test step test, loadSave test); restored |
+| `npm test` + deploy scripts + `sample` E1-E6 | unit 2255 passed (baseline 2251, +4); sample no violations |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `grep -c 1760000001000 dist/_app/*.js` = 0 in every chunk |
+| Break: `cardCopyFor('unreadable','future')` returns `failed` | `AssertionError: expected 'failed' to be 'future'` (1 red); restored. Meta: `main.ts` takes the card only through this function |
+| `npx playwright test --config=...` | e2e: not runnable in this session — orchestrator gate (MachPortRendezvous Permission denied); expected 63 (+0) |
+
+Tests the orchestrator must watch (changed strings): `save-restart.spec` "#2 FR-021 an unreadable save shows the parent card, exports the raw copy and is never written" (now `pl.saveFuture` card, filename regex `martynka-zapis-surowy-YYYY-MM-DD.txt`); `save-transfer-blocked.spec` "#2 SIR-01 a save from a newer version is never offered for overwrite" (`playOnWithBlockedSave(... pl.saveFuture)`). The `corrupt` and `unavailable` tests keep `pl.saveFailed` / `pl.saveUnavailable`. `?e2eSave=v1` is not used by a spec yet (phase 11).
 
 ## 4. Next command
 
-`/10x-implement minigame-daily-puzzle phase 3` (Phase 3: Teksty zapisu i szew `?e2eSave=v1`; `Driver: impl`)
+`/10x-tdd minigame-daily-puzzle phase 4` (Phase 4: Harmonogram wariantów i dzień kalendarzowy; `Driver: tdd`)
 
 ## 5. Open
 
-- 2.4 e2e half (orchestrator), 2.5 [reviewer]; also phase 1 rows 1.5 [reviewer], 1.6 [human].
-- `replace` does not copy (tested); an import of a v1 file writes v2 without a backup by design (the file is the backup).
-- A load that is `migration-failed` blocks writes (`blockedBy: unreadable`, old bytes untouched) and is replaceable like `corrupt`; phase 3 owns the texts for it.
-- Backup copy overwrites an existing `backup-v1` key (only reachable after a re-migration of a v1 value).
+- 3.4 e2e (orchestrator), 3.5 [reviewer], 3.6 [visual]; earlier 1.5, 1.6, 2.5.
+- Add a DESIGN-GAP 82 row to `docs/design-gaps.md` (future / migration-failed cards, file-info line) in phase 10.
+- No teacher read needed (no generator or curriculum data touched; only save texts, for the 3.5 reviewer).
 
 ## 6. Autonomous decisions
 
-1. **`backup(raw, from)` has two arguments** (plan contract: `backup(raw)`): the key needs the version, and the store cannot know it. Rejected: a backup key fixed to `v1` (breaks at v3). Would change: plan-review preferring the version in a wrapper object.
-2. **Backup is run inside `attempt`** (retry path = the normal write path), flag `backedUp` set only after success; `dirty` stays true on failure. Rejected: a separate pre-write step with its own status.
-3. **`migration-failed` text added to `pl.ts` now** only because the `ImportRejection` record is exhaustive; wording is phase 3's.
-4. **Existing test changed**: "a throwing step is a corrupt save" became migration-failed (the plan's new behaviour); a new test keeps "validation failure after a step = corrupt".
-5. `LoadOutcome.unreadable` does not carry `step` (only `DecodeResult` does); nothing consumes it yet.
+1. **Raw copy name `martynka-zapis-surowy-<date>.txt`**: "surowy" keeps it apart from the current save's `martynka-zapis-<date>.txt`. Would change: parent-facing naming wish.
+2. **Migrated line lives in `SaveHealthView.migratedFrom`** (view carries it; DOM only renders). `migration-failed` is its own cause with its own sentence.
+3. **Seam log on the hook as `save.store`** merged into the existing `save` snapshot (plan contract), via a module-level log set by `e2eSaveStore`.
+4. Exec mode: implemented in this context (no delegation); commit message taken as proposed.
