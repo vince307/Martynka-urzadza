@@ -321,7 +321,7 @@ export const pl = {
         arrowGraph: 'Uzupełnij graf.',
         arrowTable: 'Uzupełnij tabelkę.',
         arrowRule: (plus: boolean, n: number) => (plus ? `Reguła strzałki: dodaj ${n} do liczby.` : `Reguła strzałki: odejmij ${n} od liczby.`),
-        arrowRuleBack: (plus: boolean, n: number) => (plus ? `Wracamy pod strzałkę: odejmij ${n} od liczby.` : `Wracamy pod strzałkę: dodaj ${n} do liczby.`),
+        arrowRuleBack: (plus: boolean, n: number, from: number) => (plus ? `Idź pod prąd strzałki: od ${from} odejmij ${n}.` : `Idź pod prąd strzałki: do ${from} dodaj ${n}.`),
         multGroupsJumps: 'Które działanie pokazują skoki?',
         multGroupsJumpsHint: 'Policz skoki i sprawdź, jak długi jest jeden skok.',
         sequenceHint: (step: number, up: boolean) =>

@@ -64,6 +64,9 @@ export class Keypad {
 
     /** Key mode (the 'digits' task): every key is handed to `onKey`, the entry field is not drawn. */
     setKeyMode(on: boolean): void {
+        if (on === this.keyMode) {
+            return;   // render() calls this on every redraw; only a change of mode clears what was typed
+        }
         this.keyMode = on;
         this.buffer = '';
         this.paintField();

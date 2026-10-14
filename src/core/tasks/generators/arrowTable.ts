@@ -64,6 +64,6 @@ export const generateArrowTable: Generator = (skill, rng): Task => {
     const visual: TaskVisual = { kind: 'arrows', layout: 'graph', op, n, input: null, output: go(start) };
     return {
         skillId: skill.id, prompt: pl.tasks.arrowGraph, visual, answer: start,
-        hint: [pl.tasks.arrowRuleBack(plus, n), arithLine(go(start), n, plus ? '-' : '+')],
+        hint: [pl.tasks.arrowRuleBack(plus, n, go(start)), arithLine(go(start), n, plus ? '-' : '+')],
     };
 };

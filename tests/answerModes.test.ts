@@ -25,7 +25,7 @@ describe('answer modes', () => {
         expect(pictureLayout(TASK_LAYOUT.picture, 'digits', false, 'wide').picture).toEqual(TASK_LAYOUT.picture.digits.picture);
         expect(pictureLayout(TASK_LAYOUT.picture, 'digits', true, 'wide').lines).toEqual(TASK_LAYOUT.picture.digits.lines);
     });
-    it('canonicalInput throws for a digits task (no column drawing yet)', () => {
+    it('canonicalInput throws for a digits task without a column drawing', () => {
         expect(() => canonicalInput({ skillId: 'T.1', prompt: 'p', answer: 65, hint: ['h'], input: 'digits' })).toThrow(/digits needs a column drawing/);
     });
     it('canonicalInput types a column answer into the boxes from the ones; a digit count off the boxes throws', () => {
@@ -44,7 +44,7 @@ describe('answer modes', () => {
         expect(validateTask(task([30, 50, 60], null), {}).map((v) => v.rule)).toContain('visual');
         expect(validateTask(task([30, 40], 60), {}).map((v) => v.rule)).toContain('visual');
     });
-    it('the validator reports a digits task as a mode violation until a column drawing exists', () => {
+    it('the validator reports a digits task without a column drawing as a mode violation', () => {
         const problems = validateTask({ skillId: 'T.1', prompt: 'p', answer: 65, hint: ['h'], input: 'digits' }, {});
         expect(problems.map((v) => v.rule)).toContain('mode');
     });

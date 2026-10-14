@@ -47,5 +47,8 @@ export const canonicalInput = (task: Task): number | string | number[] => {
         if (digits.some((d) => d > balance.blockDrag.maxPerKind)) throw new Error(`blocks answer ${n} exceeds the mat (skill ${task.skillId})`);
         return n;
     }
-    return task.answer;
+    switch (mode) {
+        case 'tiles': case 'keypad': case undefined: return task.answer;   // undefined: hand-built tasks in tests (tiles or keypad)
+        default: { const _exhaustive: never = mode; return _exhaustive; }
+    }
 };
