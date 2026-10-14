@@ -1013,10 +1013,10 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 11.1 `npx playwright test tests/e2e/save-migration.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: save-migration 2 passed (27.3 s); full suite --workers=4 65 passed (4.8 min) = 63 + 2
-- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `MIGRATIONS[1]` zeruje gwiazdki → (a) czerwony; meta-check — orchestrator: break p11a (MIGRATIONS[1] zeroes stars), `-g "#10 a v1 save loads"` red `toBe` Expected 7, Received 0; restored; meta-check: the red names the stars the v1 save held
-- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): autosaver pomija `backup` → (b) czerwony; każdy czerwony osobno (`-g`) — orchestrator: break p11b (autosaver skips backup), `-g "#2 after a round"` red `toEqual` first op expected "backup", received "write"; restored
-- [x] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, tsc, unit 2322 green, ports 4397/4398 free; src/ has no diff
+- [x] 11.1 `npx playwright test tests/e2e/save-migration.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: save-migration 2 passed (27.3 s); full suite --workers=4 65 passed (4.8 min) = 63 + 2 — aac2e84
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `MIGRATIONS[1]` zeruje gwiazdki → (a) czerwony; meta-check — orchestrator: break p11a (MIGRATIONS[1] zeroes stars), `-g "#10 a v1 save loads"` red `toBe` Expected 7, Received 0; restored; meta-check: the red names the stars the v1 save held — aac2e84
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): autosaver pomija `backup` → (b) czerwony; każdy czerwony osobno (`-g`) — orchestrator: break p11b (autosaver skips backup), `-g "#2 after a round"` red `toEqual` first op expected "backup", received "write"; restored — aac2e84
+- [x] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, tsc, unit 2322 green, ports 4397/4398 free; src/ has no diff — aac2e84
 
 ### Phase 12: Minigry dotykiem — e2e (#11)
 
