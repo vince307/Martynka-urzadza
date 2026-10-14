@@ -180,6 +180,8 @@ describe('generateClock: set (the child turns the hands)', () => {
                 expect(task.hint.length, where).toBeGreaterThanOrEqual(3);
                 expect(task.hint[0], where).not.toContain(String(task.answer));
                 expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
+                // Visual gate: the dial beside the solution keeps the start pose, so no line may say the clock shows the answer now.
+                for (const h of task.hint) expect(h, where).not.toMatch(/Zegar pokazuje/);
                 expect(task.prompt, where).toMatch(/^Ustaw zegar na /);
                 // Teacher read (impl review): on a full-hour dial only the short hand moves, so no hint may ask
                 // the child to drag both hands or to set the long one.

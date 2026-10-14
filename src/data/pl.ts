@@ -373,7 +373,7 @@ export const pl = {
             minute === 0 ? `Krótką wskazówkę ustaw na ${hour}.` : `Krótką wskazówkę ustaw między ${hour} a ${next}.`,
         clockSetLongHint: (marker: number, minute: number) =>
             minute === 0 ? 'Długą wskazówkę ustaw na 12.' : `Długą wskazówkę ustaw na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
-        clockSetAnswerHint: (time: string) => `Zegar pokazuje ${time}.`,
+        clockSetAnswerHint: (time: string) => `Wtedy zegar pokaże ${time}.`,
         clockH24Hint: 'Po południu do godziny z zegara dodaj 12.',
         clockH24AnswerHint: (time: string) => `Zapis 24-godzinny: ${time}.`,
         lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),
@@ -470,7 +470,7 @@ export const pl = {
         // PUZZLE_GRID (S-13b): the magic square and the number pyramid are drawings; the texts name the rule.
         puzzleMagicPrompt: 'Jaka liczba pasuje do pustego pola w kwadracie magicznym?',
         puzzleMagicSpeak: 'Popatrz na kwadrat magiczny. Jaka liczba pasuje do pustego pola?',
-        puzzleMagicHint: 'Każdy wiersz, każda kolumna i każda przekątna dają taką samą sumę. Dodaj liczby w jednej pełnej linii.',
+        puzzleMagicHint: 'Wiersze, kolumny i przekątne mają równe sumy. Dodaj pełną linię.',
         puzzleMagicFullLine: (kind: 'row' | 'column' | 'diagonal', terms: string, sum: number) =>
             `${kind === 'row' ? 'Pełny wiersz' : kind === 'column' ? 'Pełna kolumna' : 'Pełna przekątna'}: ${terms} = ${sum}.`,
         puzzleMagicGapLine: (kind: 'row' | 'column' | 'diagonal', a: number, b: number) =>
@@ -501,7 +501,7 @@ export const pl = {
         sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
         perimeterHint: 'Obwód to suma długości wszystkich boków.',
         perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
-        perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków, więc najpierw znajdź tę sumę.',
+        perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków.',
         perimeterCompositeHint: 'Idź dookoła figury i dodaj długości wszystkich jej boków.',
         dataMostLeast: 'Porównaj wysokość słupków.',
         dataValuesHint: (pairs: string) => `Wysokości słupków: ${pairs}.`,

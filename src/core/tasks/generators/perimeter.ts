@@ -42,6 +42,22 @@ const rectangle = (a: number, b: number): Vertex[] => {
     return [[0, 0], [w, 0], [w, 4], [0, 4]];
 };
 
+const TRIANGLE_BASE = 6;
+const TRIANGLE_MIN_HEIGHT = 0.25; // of the base: a nearly flat triangle is raised so its labels stay apart
+
+/**
+ * Vertices of a triangle with sides `a` (base, the longest), `b` (from the base's right end to the apex) and `c` (back to the start),
+ * drawn to scale with the base `TRIANGLE_BASE` long. Raising a flat apex keeps the order of the sides: both slanted sides grow by the same
+ * squared height (visual gate S-13b: a 4 cm side was drawn longer than a 12 cm one).
+ */
+const triangleShape = ([a, b, c]: readonly [number, number, number]): Vertex[] => {
+    const k = TRIANGLE_BASE / a;
+    const x = (a * a + c * c - b * b) / (2 * a);
+    const y = Math.max(Math.sqrt(Math.max(0, c * c - x * x)), TRIANGLE_MIN_HEIGHT * a);
+    const round = (n: number): number => Math.round(n * k * 100) / 100;
+    return [[0, 0], [TRIANGLE_BASE, 0], [round(x), round(y)]];
+};
+
 const rect = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => {
     const half = Math.floor(p.max / 2);
     const square = rng.chance(0.3);
@@ -63,11 +79,14 @@ const triangle = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => 
     do {
         s = [rng.int(SIDE.min, top), rng.int(SIDE.min, top), rng.int(SIDE.min, top)];
     } while (sum(s) > p.max || s[0] + s[1] <= s[2] || s[0] + s[2] <= s[1] || s[1] + s[2] <= s[0]);
+    // The longest side becomes the base, so the apex stands over it and the labels go round in the drawn order.
+    const longest = s.indexOf(Math.max(...s));
+    s = [s[longest], s[(longest + 1) % 3], s[(longest + 2) % 3]];
     const total = sum(s);
     return {
         skillId: skill.id,
         prompt: pl.tasks.perimeterTrianglePrompt,
-        visual: { kind: 'figure', lattice: false, vertices: [[0, 0], [6, 0], [rng.int(1, 5), 4]], sides: s },
+        visual: { kind: 'figure', lattice: false, vertices: triangleShape(s), sides: s },
         answer: total,
         hint: [pl.tasks.perimeterHint, `${plus(s)} = ${total}`],
     };

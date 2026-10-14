@@ -87,6 +87,23 @@ describe('generatePerimeter', () => {
         });
     });
 
+    it('triangle: the drawing keeps the order of the labels, a longer side is never drawn shorter (visual gate S-13b)', () => {
+        const length = (f: Figure, i: number): number => {
+            const [x, y] = f.vertices[i];
+            const [nx, ny] = f.vertices[(i + 1) % 3];
+            return Math.hypot(nx - x, ny - y);
+        };
+        forEachDraw(generatePerimeter, skill('triangle', 30), { max: 30 }, (task, where) => {
+            const f = figureOf(task, where);
+            const sides = f.sides as number[];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (sides[i] > sides[j]) expect(length(f, i), `${where} side ${i} (${sides[i]} cm) vs ${j} (${sides[j]} cm)`).toBeGreaterThan(length(f, j));
+                }
+            }
+        });
+    });
+
     it('sideSquare: the answer is the side of a square whose perimeter is in the prompt, dividing by 4', () => {
         forEachDraw(generatePerimeter, skill('sideSquare', 40), { max: 40 }, (task, where) => {
             const [p] = cmIn(task.prompt);
