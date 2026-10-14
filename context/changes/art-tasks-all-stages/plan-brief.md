@@ -78,6 +78,7 @@ układ „obok” dla wysokich rysunków. Generatory czyste, test-first, dane po
 - Kafelki tekstowe w E6 mogą być za łatwe; zmiana: pytanie dzielone.
 - Rozgrzewka E2 dostaje zadania pieniężne (E2.2 jest drugim krokiem grywalnym).
 - Pełne e2e rośnie o 4 testy; `adaptive.spec` blisko 180 s (bez nowych `drag`).
+- Plan-review (2026-10-14): progi inwariantów treści (≥ 12 różnych zadań, najczęstsze ≤ 15 %) mierzone już w fazach 3–4; MASS `half`/`convert` jako „ile brakuje do …”; CAPACITY z mieszanym rzędem dzbanków; TEMPERATURE `low/high`, różnica co 2 °C; E4.1 pieniądze ≤ 100 zł (banknoty 200/500 zł bez umiejętności → follow-up); waga przy klawiaturze w 768×190 sprawdzana zrzutem.
 
 ## Success Criteria (Summary)
 

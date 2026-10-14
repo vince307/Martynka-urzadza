@@ -154,8 +154,8 @@ plus tylko w podziałce termometru, wg kitu); `spokenMoney`/`spokenCelsius` z li
 ich nie odmienia; pełne słowa jednostek w promptach tylko przy liczbach całkowitych („Ile kilogramów…?”, „5 litrów”).
 
 **Wyjątek ujemny** (faza 1): `ValidationContext.allowNegative?: boolean`; `validate.ts` eksportuje
-`NEGATIVE_TYPES = new Set(['TEMPERATURE'])`, a uprząż (`scripts/sample.ts`, `tests/contentInvariants.test.ts`, `tests/helpers.ts`)
-ustawia flagę z `skill.type`. Z flagą: ujemna odpowiedź liczbowa, ujemne `choices` i `NEGATIVE_NUMBER` w tekstach są
+`NEGATIVE_TYPES = new Set(['TEMPERATURE'])`, a `validationBounds(skill)` (`bounds.ts`) ustawia flagę z `skill.type` dla każdego
+wywołującego `validateTask` (lista w fazie 1 § 4). Z flagą: ujemna odpowiedź liczbowa, ujemne `choices` i `NEGATIVE_NUMBER` w tekstach są
 dozwolone; reszta reguł bez zmian.
 
 **Układ „obok”** (faza 1, użyty w fazie 6): `PictureSpec.keypadBeside: { picture: Rect; lines: Rect }` (≈ obrazek 236,470
@@ -168,7 +168,8 @@ dozwolone; reszta reguł bez zmian.
 `!scene.textures.exists(key)` rysuje zastępczy kształt w kodzie (prostokąt w kolorze `PLACEHOLDER_COLORS` z krótką etykietą
 id) — nigdy `__MISSING`. `state(): { key: string; loaded: boolean } | null` (null gdy ukryty; `loaded` = obraz widoczny z
 istniejącą teksturą). Każdy widżet z grafiką ma `shown()` (jego własne obiekty widoczne) i `art()` (lista `state()` swoich
-obrazów); `TaskPicture.art()` zwraca listę widżetu rysującego; `TaskSnapshot.art` w `src/testing/e2eHook.ts` (tylko build
+obrazów — tylko pokazanych, bez `null` i bez nieużytych obiektów puli, inaczej przerwa p10c nie zmieni długości listy;
+plan-review F6); `TaskPicture.art()` zwraca listę widżetu rysującego; `TaskSnapshot.art` w `src/testing/e2eHook.ts` (tylko build
 haka) i typ `Snapshot.art` w `tests/e2e/support/hook.ts`.
 
 **Ładowanie** (faza 2): `src/data/taskArt.ts` `TASK_ART: readonly { key: string; url: string; width: number; height: number }[]`
@@ -220,12 +221,17 @@ Dla wagi: `SCALE_ITEMS` z wiarygodnym zakresem masy na ikonę (np. `cushion` 1�
 
 #### 4. Walidator i podpowiedzi
 
-**File**: `src/core/tasks/validate.ts`, `src/core/round/hints.ts`, `tests/validate.test.ts`, `tests/hints.test.ts`,
-`tests/contentInvariants.test.ts`, `tests/helpers.ts`, `scripts/sample.ts`
+**File**: `src/core/tasks/validate.ts`, `src/core/tasks/bounds.ts`, `src/core/round/hints.ts`, `tests/validate.test.ts`,
+`tests/hints.test.ts`, `tests/contentInvariants.test.ts`, `tests/helpers.ts`, `tests/curriculum.test.ts`,
+`tests/generateTask.test.ts`, `tests/warmup.test.ts`, `scripts/sample.ts`
 
 **Intent**: `allowNegative` + `NEGATIVE_TYPES`; `lastNumber` zachowuje minus („Wynik: −5”); `leaksAnswer` dla każdej
 odpowiedzi tekstowej (pierwsza podpowiedź nie może zawierać tekstu odpowiedzi), inwariant „string answer in the last hint”
-poszerzony z `CLOCK` na każdą odpowiedź tekstową; uprząż ustawia flagę z typu umiejętności.
+poszerzony z `CLOCK` na każdą odpowiedź tekstową. Flaga z typu umiejętności w jednym miejscu: `validationBounds(skill)`
+w `src/core/tasks/bounds.ts` zwraca `{ max: boundOf(skill), allowNegative: NEGATIVE_TYPES.has(skill.type) }`, a **każde**
+wywołanie `validateTask` dla umiejętności z programu (`scripts/sample.ts` ×2, `tests/contentInvariants.test.ts`,
+`tests/helpers.ts`, `tests/curriculum.test.ts`, `tests/generateTask.test.ts`, `tests/warmup.test.ts` — rozgrzewka E6
+losuje E6.1) rozkłada ten wynik obok `nouns` (plan-review F3).
 
 #### 5. Wspólny prostokąt i układ „obok”
 
@@ -234,7 +240,8 @@ poszerzony z `CLOCK` na każdą odpowiedź tekstową; uprząż ustawia flagę z 
 
 **Intent**: jeden `Rect` (+ `insideRect`, `interiorPoint`) w `core`, `dragLayout`/`pictureLayout` i `ui/widgets/geometry.ts`
 go re-eksportują (zamyka follow-up „three Rect types”); `TASK_LAYOUT.picture.keypadBeside` i `pictureLayout(..., shape)`.
-Wywołanie w `TaskScene` przekazuje kształt z rysunku (dziś zawsze `wide` — zachowanie bez zmian do fazy 6).
+Oba wywołania w `TaskScene` (`render` i dopasowanie czcionki promptu — `const limit = pictureLayout(…, false)`) przekazują
+kształt z rysunku (dziś zawsze `wide` — zachowanie bez zmian do fazy 6; plan-review F7).
 
 **Contract**: `pictureLayout(spec: PictureSpec, input: AnswerMode, solution: boolean, shape: VisualShape)`; test: prostokąty
 „obok” w notesie (x 196–1724, y 220–976), rozłączne, obrazek węższy niż wysoki, linie ≥ 480 px szerokości, żaden nie
@@ -304,7 +311,8 @@ teksturę; suma rozmiarów < 1 MB; klucz = ścieżka bez rozszerzenia (plan § 1
 `context/changes/art-tasks-all-stages/e2e-break-p2.patch`
 
 **Intent**: spec zbiera `requestfailed` (oczekiwane `[]`) i po przeładowaniu offline czeka (`expect.poll`), aż `servedBySw`
-zawiera każdą ścieżkę `/` + `url` z `TASK_ART` (import z `src/data/taskArt.ts`). Patch przerwy: `globPatterns` bez `webp`.
+zawiera każdą ścieżkę `/` + `url` z `TASK_ART` (import z `src/data/taskArt.ts`). Patch przerwy: `globIgnores` z **jednym**
+plikiem (`**/tasks/money/note-500zl.webp`) — dowodzi asercji per obraz, nie tylko „żadnych obrazów” (plan-review F5).
 Chromium w sesji agenta zwykle nie startuje → spec bez commita do wyniku orkiestratora (profil § 8).
 
 ### Success Criteria:
@@ -316,7 +324,7 @@ Chromium w sesji agenta zwykle nie startuje → spec bez commita do wyniku orkie
 - `npm run art` drugi raz: `git status --porcelain public/assets` pusty (deterministyczny wynik)
 - `npm run build`: `dist/sw.js` wymienia `assets/tasks/` (38 wpisów), `e2e hook: absent (`
 - E2E (orkiestrator): `seed.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 0`
-- Deliberate break (patch `e2e-break-p2.patch`, `globPatterns` bez `webp`): seed czerwony na brakującym `/assets/tasks/…` w `servedBySw` albo na `requestfailed`; przywrócone; meta-check: przed zmianą tej fazy ten sam patch zostawiał seed zielony (luka z research § 1)
+- Deliberate break (patch `e2e-break-p2.patch`, `globIgnores` z jednym plikiem `note-500zl.webp`): seed czerwony na tym jednym `/assets/tasks/money/note-500zl.webp` (brak w `servedBySw` albo `requestfailed`); przywrócone; meta-check: przed zmianą tej fazy ten sam patch zostawiał seed zielony (luka z research § 1)
 - Pełna bramka lokalna zielona
 
 #### Manual Verification:
@@ -357,8 +365,10 @@ parser odrzuca nieznane id, `max` nieosiągalny z listy, `maxItems` > 10.
 `tests/mass.test.ts` (nowy)
 
 **Intent**: przedmiot z `SCALE_ITEMS` z zakresem pasującym do jednostki, odważniki z listy sumują się do jego masy (≤ 6 sztuk);
-„Waga jest w równowadze. Ile kilogramów waży poduszka?”; wariant `half` (E4.1, E5.5): odważniki dag sumują się do 50 dag →
-„Ile dekagramów to pół kilograma?” z rysunkiem; wariant `convert` (E2.8): „1 kg = 100 dag” z rysunkiem odważników dag.
+„Waga jest w równowadze. Ile kilogramów waży poduszka?”; wariant `half` (E4.1, E5.5): przedmiot zważony odważnikami dag
+(10–40 dag) → „Ile dekagramów brakuje do pół kilograma?” (50 − m); wariant `convert` (E2.8): przedmiot zważony odważnikami
+dag (10–90 dag) → „Ile dekagramów brakuje do 1 kilograma?” (100 − m; podpowiedź „1 kg = 100 dag”). Żaden wariant nie ma
+stałej odpowiedzi (plan-review F1: „pół kilograma = 50 dag” w każdym zadaniu to jedno zadanie, nie umiejętność).
 Rzeczowniki nowe z biernikiem w kontekście („waży 1 kilogram”).
 
 **Contract**: params `{ variant: 'read' | 'half' | 'convert'; unit: 'kg' | 'dag'; weights: WeightId[]; max: number }`; parser
@@ -369,7 +379,7 @@ odrzuca masę nieosiągalną z odważników i przedmiot bez zakresu w tej jednos
 #### Automated Verification:
 
 - Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- Każdy generator: 1000 losowań (20 ziaren × 50, `tests/helpers.ts`) bez naruszeń walidatora; suma nominałów/odważników = odpowiedź (wyrocznia z pól rysunku); klucze `generators` i `parsers` równe
+- Każdy generator: 1000 losowań (20 ziaren × 50, `tests/helpers.ts`) bez naruszeń walidatora; suma nominałów/odważników = odpowiedź (wyrocznia z pól rysunku); klucze `generators` i `parsers` równe; dla parametrów każdej umiejętności planowanej w fazach 5 i 8 test mierzy progi `tests/contentInvariants.test.ts` (≥ 12 różnych `prompt|visualKey|choices`, najczęstsze ≤ 15 %) — porażka tu, nie w fazie danych (plan-review F1)
 - Deliberate break: CHANGE dopuszcza resztę 0 / MASS bierze odważniki nie sumujące się do masy / parser przyjmuje nieznany nominał → czerwone; przywrócone; meta-check: wyrocznia liczy z `visual`, nie z `answer`
 - Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
@@ -394,23 +404,29 @@ Pozostałe generatory z grafiką; jeszcze nie w programie.
 
 **File**: `src/core/tasks/generators/capacity.ts` (nowy), registry, `pl.ts`, `nouns.ts`, `tests/capacity.test.ts`
 
-**Intent**: rząd `n` dzbanków jednego rodzaju; „Ile to litrów?” (1 l: n; ½ l: n parzyste → n/2; ¼ l: n podzielne przez 4 →
-n/4) albo „Ile dzbanków po pół litra napełni 3 litry?” (odwrotnie, rysunek pokazuje jeden dzbanek). Odpowiedź zawsze
-całkowita (klawiatura bez przecinka); ułamki tylko w prompcie jako „pół litra”/„ćwierć litra”.
+**Intent**: rząd ≤ 10 dzbanków; „Ile to litrów?” — rząd może mieszać rodzaje dozwolone w kroku (`jugs`: 1 l pojedynczo, ½ l
+parami, ¼ l czwórkami), więc suma zawsze całkowita, a przestrzeń zadań przekracza progi inwariantów (sam rząd jednego rodzaju
+daje ≤ 10 różnych zadań i ≥ 20 % najczęstszego — plan-review F1); albo „Ile dzbanków po pół litra napełni 3 litry?”
+(odwrotnie, rysunek pokazuje jeden dzbanek; litry 1..`maxLitres`). Odpowiedź zawsze całkowita (klawiatura bez przecinka);
+ułamki tylko w prompcie jako „pół litra”/„ćwierć litra”.
 
-**Contract**: params `{ jug: JugId; variant: 'toLitres' | 'howMany'; maxLitres: number }`; parser odrzuca `n` > 10.
+**Contract**: params `{ jugs: JugId[]; variant: 'toLitres' | 'howMany'; maxLitres: number }` (`howMany`: dokładnie jeden
+rodzaj); parser odrzuca rząd > 10 dzbanków i `maxLitres` nieosiągalne w ≤ 10 dzbankach (`toLitres`). Gdy krok ma z natury
+mniejszą przestrzeń (np. `howMany` ¼ l), wpis `SMALL_SPACES` z pomiarem — ale próg najczęstszego zadania (15 %) obowiązuje.
 
 #### 2. TEMPERATURE
 
 **File**: `src/core/tasks/generators/temperature.ts` (nowy), registry, `pl.ts`, `nouns.ts`, `tests/temperature.test.ts`
 
-**Intent**: `read`: termometr pokazuje `c` (wielokrotność `step`) → „Jaką temperaturę pokazuje termometr?”; odpowiedź
+**Intent**: `read`: termometr pokazuje `c` (wielokrotność `step` w `low..high`) → „Jaką temperaturę pokazuje termometr?”; odpowiedź
 liczba (keypad, tylko `min ≥ 0`) albo tekst `formatCelsius` z 3–4 kafelkami (dystraktory: przeciwny znak, ± `step`);
 `diff`: rano `a` (w tekście), teraz `b` na rysunku → „O ile stopni się ociepliło/ochłodziło?” → `|b − a|` liczba.
 Podpowiedzi: „Znajdź koniec słupka i najbliższą liczbę.”, „Poniżej zera liczymy w dół.” `speak` z `spokenCelsius`.
 
-**Contract**: params `{ variant: 'read' | 'diff'; min: number; max: number; step: number; answer: 'number' | 'text' }`;
-parser: `−30 ≤ min < max ≤ 30`, `answer 'number'` ⇒ `min ≥ 0`.
+**Contract**: params `{ variant: 'read' | 'diff'; low: number; high: number; step: number; answer: 'number' | 'text' }`
+(nie `min`/`max`: `boundOf` czyta `params.max` jako górną granicę odpowiedzi i liczb w tekstach, a różnica sięga
+`high − low`; plan-review F2); parser: `−30 ≤ low < high ≤ 30`, `answer 'number'` ⇒ `variant 'diff'` albo `low ≥ 0`;
+`step` ≥ 2 przy rysunku (decyzja 6).
 
 #### 3. COUNT i MULT_GROUPS
 
@@ -429,7 +445,7 @@ wariant `result` (kafelki liczbowe) i `expr` (kafelki tekstowe „3 · 4”; dys
 #### Automated Verification:
 
 - Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); wyrocznie z pól rysunku; klucze `generators`/`parsers` równe
+- 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); wyrocznie z pól rysunku; klucze `generators`/`parsers` równe; progi inwariantów (≥ 12 różnych, najczęstsze ≤ 15 %) zmierzone dla parametrów każdej umiejętności planowanej w fazach 6–8 (plan-review F1)
 - Deliberate break: TEMPERATURE `text` z łącznikiem zamiast U+2212 / CAPACITY ½ l z nieparzystym `n` / MULT_GROUPS `expr` z zamienionym iloczynem jako dystraktorem / COUNT 4 kafelki → czerwone; przywrócone; meta-check
 - Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
@@ -478,7 +494,7 @@ prostokąt układu); tylko build haka.
 |---|---|
 | E1.11 | `money_count_10` MONEY_COUNT `{count, [coin-1zl, coin-2zl, coin-5zl, note-10zl], 1000, 4, number-zl}` tiles; `money_change_10` `{change, …, 1000}` tiles; `mass_kg_10` MASS `{read, kg, [weight-1kg, weight-2kg, weight-5kg], 10}` tiles |
 | E3.4 | `mass_kg_dag` MASS `{read, kg|dag, …}` keypad (dwie umiejętności: `mass_kg_10`, `mass_dag_100`) |
-| E4.1 | `money_count_500` `{count, banknoty 10–500 zł + monety zł, 99900, 6, number-zl}` keypad; `money_count_zl_gr` `{count, monety zł + gr, 2000, 6, text}` tiles; `money_change_100` keypad; `mass_half_kg` MASS `{half, dag}` keypad |
+| E4.1 | `money_count_100` `{count, banknoty 10–100 zł + monety zł, 10000, 6, number-zl}` keypad (suma ≤ 100 zł: E4.1 to liczby do 100, trzycyfrowe dopiero E4.8 — plan-review F4; banknoty 200/500 zł ładowane, ale bez umiejętności → follow-up); `money_count_zl_gr` `{count, monety zł + gr, 2000, 6, text}` tiles; `money_change_100` keypad; `mass_half_kg` MASS `{half, dag}` keypad |
 
 E1 zostaje kafelkowe (pin `tests/generateTask.test.ts`).
 
@@ -535,10 +551,10 @@ wymaga widocznej ramki **i** twarzy (lekcja F1).
 
 | Krok | Umiejętności |
 |---|---|
-| E3.11 | `temperature_read_30` TEMPERATURE `{read, −30, 30, 5, text}` tiles |
-| E4.7 | `capacity_half_l` CAPACITY `{container-half-l, toLitres, 5}` keypad; `capacity_litres` `{container-1l, howMany, 10}` keypad |
-| E5.4 | `temperature_read_0_30` `{read, 0, 30, 2, number}` keypad |
-| E6.1 | `temperature_negative` `{read, −30, 30, 2, text}` tiles; `temperature_diff` `{diff, −20, 20, 1, number}` keypad |
+| E3.11 | `temperature_read_30` TEMPERATURE `{read, low −30, high 30, 5, text}` tiles |
+| E4.7 | `capacity_half_l` CAPACITY `{[container-1l, container-half-l], toLitres, 6}` keypad; `capacity_litres_half` `{[container-half-l], howMany, 10}` keypad (litry 1..10 → `SMALL_SPACES` `minDistinct: 10` z pomiarem) |
+| E5.4 | `temperature_read_0_30` `{read, low 0, high 30, 2, number}` keypad |
+| E6.1 | `temperature_negative` `{read, low −30, high 30, 2, text}` tiles; `temperature_diff` `{diff, low −20, high 20, 2, number}` keypad (krok 2 °C jak decyzja 6 — rysunek pokazuje `b`) |
 
 ### Success Criteria:
 
@@ -623,12 +639,12 @@ Jedyna faza zmieniająca kolejność kroków; pięć pustych kroków staje się 
 | E1.8 | „Centymetr i linijka” | `length_ruler_cm_10` LENGTH `{ruler, cm, 10, …}` tiles |
 | E1.10 | „Liczby 11 i 12” | `count_12` COUNT `{11, 12, true}` tiles; `place_read_12` PLACE_VALUE `{read, 11, 12}` tiles |
 | E1.11 | „Zegar, miesiące i pieniądze” (było „Miesiące roku”) | + `clock_read_full` CLOCK `{read, 60}` tiles |
-| E2.1 | (jest) | + `place_read_20` PLACE_VALUE `{read, 11, 20}` keypad |
-| E2.2 | „Pieniądze do 20 zł i litr” | `money_count_20` `{count, monety zł + note-10zl/20zl, 2000, 5, number-zl}` keypad; `money_change_20` keypad; `capacity_litres` `{container-1l, toLitres, 10}` keypad |
+| E2.1 | (jest) | + `place_read_20` PLACE_VALUE `{read, 11, 20}` keypad (10 liczb → wpis `SMALL_SPACES` `minDistinct: 10` z pomiarem; zmierzone w plan-review: 10 różnych, najczęstsze 11 %) |
+| E2.2 | „Pieniądze do 20 zł i litr” | `money_count_20` `{count, monety zł + note-10zl/20zl, 2000, 5, number-zl}` keypad; `money_change_20` keypad; `capacity_litres` `{[container-1l], toLitres, 10}` keypad (E2 zna tylko litr: 10 zadań → wpis `SMALL_SPACES` `minDistinct: 10` z pomiarem, najczęstsze ≈ 10 %) |
 | E2.8 | „Grosze, dekagramy, metr” | `money_count_gr` `{count, monety 1–50 gr, 100, 6, number-gr}` keypad; `mass_dag_100` MASS `{read, dag, …, 100}` keypad; `mass_convert` `{convert}` keypad; `length_convert_m` LENGTH `{convert, …}` keypad |
 | E2.9 | (jest) | + `place_read_99` `{read, 20, 99}` keypad |
 | E2.10 | (jest) | + `data_most_10` DATA tiles; `data_howmany_10` keypad; `clock_later_1h` CLOCK `{later, 60, maxShift 1}` tiles |
-| E5.5 | „Litry i kilogramy” | `capacity_quarter_l` `{container-quarter-l, toLitres, 3}` keypad; `capacity_half_l_e5` `{container-half-l, howMany, 5}` keypad; `mass_half_kg_e5` MASS `{half}` keypad |
+| E5.5 | „Litry i kilogramy” | `capacity_quarter_l` `{[container-1l, container-half-l, container-quarter-l], toLitres, 4}` keypad (¼ l czwórkami w rzędzie ≤ 10); `capacity_half_l_e5` `{container-half-l, howMany, 5}` keypad; `mass_half_kg_e5` MASS `{half}` keypad |
 | E5.7 | (jest) | + `length_ruler_mm` LENGTH `{ruler, mm, 10, …}` keypad |
 | E6.5 | (jest) | + `place_read_1000` PLACE_VALUE `{read, 100, 999}` keypad |
 
@@ -689,7 +705,8 @@ termometr „obok” klawiatury w fazie rozwiązania (rew. wierszy 52/57); zapas
 Follow-upy z `Trigger:`: MONEY_PAY + `Wallet` + uogólniony `blockDrag` (`Trigger: S-14d`), warianty tekstowe MASS/LENGTH,
 PLACE_VALUE ≥ 1000 (`Trigger: S-14c`), oś liczbowa jako podpowiedź (przeniesiony `Trigger: S-14b`), podświetlenie rysunku
 (`Trigger: S-16 or a teacher read asking for it`), diagram O2 (`Trigger: a teacher read or visual gate finding the chart
-unreadable beside the keypad`), atlas tekstur (`Trigger: S-16`), `check:deploy` dla assetów (`Trigger: a production report
+unreadable beside the keypad`), banknoty 200/500 zł bez umiejętności (`Trigger: S-14c or a money skill above 100 zł`),
+atlas tekstur (`Trigger: S-16`), `check:deploy` dla assetów (`Trigger: a production report
 of a missing task image`). Zamknięte: „three Rect types”, O2 dla termometru. `CLAUDE.md` Current state: zdanie o S-14
 (`public/assets/tasks/`, `npm run art`, `TASK_ART`, `ArtImage`, pięć widżetów, `measure.ts`, `allowNegative`, hak `art`);
 `npm run art` w Commands; „Not yet present” poprawione.
@@ -759,7 +776,9 @@ takes the keypad”: E3, `E3.4.mass_dag_100` → `art` = waga + przedmiot + każ
 ramkę `loaded`, `targets.picture` nie `null` → dwa razy `answerWrong` → faza `solution` → `targets.picture` węższy niż wysoki
 i na lewo od `TASK_LAYOUT.picture.keypadBeside.lines.x` → retype → gwiazdka. (d) „#11 a round of art tasks plays to the
 summary”: E3, `?e2eSkills=E3.4.mass_kg_10,E3.9.mult_groups_result,E3.9.mult_groups_expr,E3.11.temperature_read_30,E3.4.mass_dag_100`
-→ `playRoundRight(page, 5)` → podsumowanie (ujemne kafelki tekstowe, kafelki „3 · 4”, ikony w ramkach).
+→ przed każdym zadaniem `snapshot.visual.kind` ∈ {`scale`, `icons`, `thermometer`} i każde `art` `loaded` (`forcedSkills`
+po cichu wraca do rundy adaptacyjnej, gdy jedno id nie jest grywalne — plan-review F6) → `playRoundRight(page, 5)` →
+podsumowanie (ujemne kafelki tekstowe, kafelki „3 · 4”, ikony w ramkach).
 
 **Contract**: zasady `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; punkty z haka (wnętrza kształtów);
 `expect.poll` na migawce, bez czekania na czas, bez `page.clock`.
@@ -823,6 +842,13 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
   ~4 testy; faza 10 zapisuje czasy.
 - **Tekstury na iPadzie**: WebP od iOS 14; ostrość przy DPR 2 tylko `[human]`. Zmieniłoby: pełna rozdzielczość banknotów/termometru (nadal WebP).
 - **Chromium w sesji agenta**: fazy 2, 5–8, 10 mogą wymagać protokołu request-file.
+- **Waga i pieniądze przy klawiaturze w fazie rozwiązania** dostają `keypadSolution.picture` 768×190 (waga ≈ 253×190,
+  napisy odważników małe); „obok” tylko dla termometru (decyzja 8). Zrzuty 5.9 to sprawdzają; zmieniłoby: nieczytelne
+  odważniki na zrzucie → kształt `tall`/„obok” także dla `scale` (jedna linia w `visualShape`) (plan-review F8).
+- **Banknoty 200 zł i 500 zł** są w `TASK_ART` i precache, ale żadna umiejętność S-14 ich nie losuje (E4.1 ≤ 100 zł,
+  plan-review F4) — follow-up w fazie 9 (`Trigger: S-14c or a money skill above 100 zł`).
+- **`requestfailed` w seedzie** (#8): asercja `[]` może złapać niezwiązane żądanie offline; wtedy filtr do `/assets/` i `/_app/`
+  zamiast osłabiania asercji.
 - **Kafelki tekstowe w E6**: przy krokach co 2 °C zgadywanie z 3–4 kafelków bywa łatwe — research decyzja 2; zmieniłoby: pytanie dzielone („ile stopni poniżej zera?”).
 
 ## References
@@ -871,6 +897,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
     także przed nią, bo ścieżka istnieje.
 15. **Roadmapa w commicie planu: S-14 → `planning`; nowe S-14b, S-14c, S-14d (`proposed`); S-13b poszerzony o PERIMETER
     E5.12/E6.3.** Brak `AskUserQuestion` (kontrakt reguła 1): złożoność HIGH, pytania rozstrzygnięte z research/change.md.
+16. **Plan-review (2026-10-14) wprowadził poprawki F1–F7** (`reviews/plan-review.md`): progi inwariantów mierzone w fazach
+    tdd, MASS `half`/`convert` jako „ile brakuje do …”, CAPACITY z mieszanym rzędem, TEMPERATURE `low/high` i krok 2 °C dla
+    różnicy, `validationBounds` dla wszystkich wywołań walidatora, E4.1 ≤ 100 zł, seed z przerwą jednego pliku, spec (d) z
+    asercją rodzajów. Zmieniłoby: teacher read uznający „ile brakuje” za zbyt trudne dla E2.8 → wariant tekstowy w S-14c.
 
 ## Progress
 
@@ -898,7 +928,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [ ] 2.3 `npm run art` drugi raz: `public/assets` bez zmian
 - [ ] 2.4 `npm run build`: `sw.js` wymienia 38 wpisów `assets/tasks/`; `e2e hook: absent (`
 - [ ] 2.5 E2E (orkiestrator): `seed.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 0`
-- [ ] 2.6 Deliberate break (patch `e2e-break-p2.patch`, `globPatterns` bez `webp`): seed czerwony; przywrócone; meta-check
+- [ ] 2.6 Deliberate break (patch `e2e-break-p2.patch`, `globIgnores` jednego `note-500zl.webp`): seed czerwony na tym pliku; przywrócone; meta-check
 - [ ] 2.7 Pełna bramka lokalna zielona
 
 #### Manual
@@ -911,7 +941,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Automated
 
 - [ ] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 1000 losowań na generator bez naruszeń; wyrocznie z pól rysunku; klucze `generators`/`parsers` równe
+- [ ] 3.2 1000 losowań na generator bez naruszeń; wyrocznie z pól rysunku; klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności
 - [ ] 3.3 Deliberate break: reszta 0 / odważniki nie sumują się / nieznany nominał → czerwone; przywrócone; meta-check
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
@@ -924,7 +954,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Automated
 
 - [ ] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe
+- [ ] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności
 - [ ] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check
 - [ ] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
