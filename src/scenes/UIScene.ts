@@ -12,6 +12,7 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
+import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { saveHealthView } from '../core/saveHealth';
 import { decodeSave, encodeSave, freshSession, type SessionSave } from '../core/save';
 import { exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
@@ -146,6 +147,7 @@ export class UIScene extends Scene {
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+                    artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),

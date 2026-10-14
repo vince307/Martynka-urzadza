@@ -741,7 +741,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 - [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id`, jawne przypadki `e2eArt` w strażniku) — d3fa403
 - [x] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt` — d3fa403
 - [x] 3.3 Deliberate break: odczyt `e2eArt` poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check — d3fa403
-- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 46 passed (3.7m) on 8c6090d
 
 #### Manual
 
@@ -751,8 +751,8 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `artMissing` dla 1, 2, 5, 22, 38)
-- [ ] 4.2 Deliberate break: `artMissing` w złej formie dla 2 → test tekstu czerwony; przywrócone
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `artMissing` dla 1, 2, 5, 22, 38) — SHA
+- [x] 4.2 Deliberate break: `artMissing` w złej formie dla 2 → test tekstu czerwony; przywrócone — SHA
 - [ ] 4.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

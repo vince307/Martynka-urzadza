@@ -1,6 +1,6 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
-import { countNoun, pluralCategory } from '../core/text/plural';
+import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
 export const pl = {
@@ -57,6 +57,11 @@ export const pl = {
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
+        // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
+        artHeading: 'Obrazki',
+        artOk: 'Wszystkie obrazki zadań są wczytane.',
+        artMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {

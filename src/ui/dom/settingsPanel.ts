@@ -1,3 +1,4 @@
+import type { ArtHealthView } from '../../core/artHealth';
 import type { SaveHealthView } from '../../core/saveHealth';
 import type { ProgressView } from '../../core/progress';
 import type { StageId } from '../../core/types';
@@ -5,6 +6,7 @@ import { pl } from '../../data/pl';
 import { openDialog } from './dialog';
 import { createButton, createText } from './overlay';
 import { createProgressView } from './progressView';
+import { createArtHealthView } from './artHealthView';
 import { createSaveHealthView } from './saveHealthView';
 import { createStageChoices } from './stageChoices';
 
@@ -19,6 +21,7 @@ export interface SettingsPanelOptions {
     progress: ProgressView;
     /** Snapshot of the autosaver's health taken when the panel opens; absent = no saver, no section. */
     saveHealth?: SaveHealthView;
+    artHealth?: ArtHealthView;
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null }) => void;
     onCancel: () => void;
@@ -39,7 +42,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, artHealth, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -116,7 +119,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

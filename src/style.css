@@ -309,12 +309,14 @@ canvas {
 }
 
 /* Parent "Zapis gry" section (save-observability-c1-c2, DESIGN-GAP 43): between the reading choice and the progress preview. */
-.parent-save {
+.parent-save,
+.parent-art {
     width: 100%;
     text-align: left;
 }
 
-.parent-save h2 {
+.parent-save h2,
+.parent-art h2 {
     margin-bottom: 8px;
 }
 
