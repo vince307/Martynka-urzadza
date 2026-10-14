@@ -1,0 +1,38 @@
+diff --git a/tests/e2e/seed.spec.ts b/tests/e2e/seed.spec.ts
+index cd1ed49..44de9e8 100644
+--- a/tests/e2e/seed.spec.ts
++++ b/tests/e2e/seed.spec.ts
+@@ -3,6 +3,7 @@
+ // Every later e2e test copies this pattern: wait for state (never for time), assert on what
+ // the child would see, name the test after the risk.
+ import { test, expect } from '@playwright/test';
++import { TASK_ART } from '../../src/data/taskArt';
+ 
+ test('the game boots offline from the service worker cache', async ({ page, context }) => {
+     // Setup: the first, online launch installs the service worker and precaches the build.
+@@ -18,6 +19,10 @@ test('the game boots offline from the service worker cache', async ({ page, cont
+     await context.setOffline(true);
+     const servedBySw: string[] = [];
+     const servedByNetwork: string[] = [];
++    const failed: string[] = [];
++    page.on('requestfailed', (request) => {
++        failed.push(new URL(request.url()).pathname);
++    });
+     page.on('response', (response) => {
+         (response.fromServiceWorker() ? servedBySw : servedByNetwork).push(new URL(response.url()).pathname);
+     });
+@@ -29,9 +34,14 @@ test('the game boots offline from the service worker cache', async ({ page, cont
+     await expect(container).toHaveAttribute('data-build', buildId!);
+     await expect(container.locator('canvas')).toBeVisible();
+     expect(servedByNetwork).toEqual([]);
++    expect(failed).toEqual([]);
+     expect(servedBySw).toContain('/');
+     expect(servedBySw.filter((path) => path.startsWith('/_app/') && path.endsWith('.js')).length).toBeGreaterThanOrEqual(2);
+ 
++    // The task drawings (S-14) are loaded at start, so each one must come from the worker's cache too: one file
++    // missing from the precache fails this by name, not just "some images".
++    await expect.poll(() => TASK_ART.filter((art) => !servedBySw.includes(`/${art.url}`)).map((art) => art.url)).toEqual([]);
++
+     // Cleanup: back online, so nothing leaks into the next test (each test gets a fresh context anyway).
+     await context.setOffline(false);
+ });

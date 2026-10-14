@@ -81,6 +81,7 @@ export const FONT_SIZES = {
     rulerUnit: 26,          // kit reference/ruler.svg "cm"
     chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
+    artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
 /**
@@ -111,6 +112,7 @@ export const FONT_WEIGHTS = {
     rulerUnit: 700,
     chartLabel: 700,
     chartAxis: 650,
+    artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -352,6 +354,14 @@ export const ANIMATION = {
     purchaseParticles: 14,
     purchaseParticleMs: 700,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
+} as const;
+
+/** Stand-in for a drawing whose texture is missing (S-14): a plain rounded box with the id, so the task stays playable. */
+export const ART_STAND_IN = {
+    fill: PLACEHOLDER_COLORS.tile,
+    border: PLACEHOLDER_COLORS.deepTeal,
+    borderWidth: 3,
+    radius: 16,
 } as const;
 
 /** Inset of the build id in the screen corner, in scene pixels. */

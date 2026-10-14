@@ -21,7 +21,8 @@
     "test:watch": "vitest",
     "sample": "node --import tsx scripts/sample.ts",
     "check:deploy": "node --import tsx scripts/check-deploy.ts",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "art": "node scripts/make-task-art.mjs"
   },
   "dependencies": {
     "idb-keyval": "6.3.0",
