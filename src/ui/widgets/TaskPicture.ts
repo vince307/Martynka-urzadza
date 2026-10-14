@@ -5,9 +5,12 @@ import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
 import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
+import { FigureGrid } from './FigureGrid';
 import { IconGroups } from './IconGroups';
+import { CoordGrid } from './CoordGrid';
 import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
+import { NumberCells } from './NumberCells';
 import { Ruler } from './Ruler';
 import { Thermometer } from './Thermometer';
 
@@ -22,6 +25,9 @@ export class TaskPicture {
     private readonly jugs: Jugs;
     private readonly thermometer: Thermometer;
     private readonly icons: IconGroups;
+    private readonly cells: NumberCells;
+    private readonly coord: CoordGrid;
+    private readonly figure: FigureGrid;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -35,6 +41,9 @@ export class TaskPicture {
         this.jugs = new Jugs(scene);
         this.thermometer = new Thermometer(scene);
         this.icons = new IconGroups(scene);
+        this.cells = new NumberCells(scene);
+        this.coord = new CoordGrid(scene);
+        this.figure = new FigureGrid(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -54,6 +63,9 @@ export class TaskPicture {
             jugs: this.jugs,
             thermometer: this.thermometer,
             icons: this.icons,
+            cells: this.cells,
+            grid: this.coord,
+            figure: this.figure,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -84,6 +96,15 @@ export class TaskPicture {
             case 'icons':
                 this.icons.render(visual.icon, visual.groups, visual.framed, rect);
                 break;
+            case 'cells':
+                this.cells.render(visual.layout, visual.values, rect);
+                break;
+            case 'grid':
+                this.coord.render(visual.columns, visual.rows, visual.items, rect);
+                break;
+            case 'figure':
+                this.figure.render(visual, rect);
+                break;
             default: {
                 const unreachable: never = visual;
                 throw new Error(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -103,6 +124,9 @@ export class TaskPicture {
         this.jugs.setVisible(false);
         this.thermometer.setVisible(false);
         this.icons.setVisible(false);
+        this.cells.setVisible(false);
+        this.coord.setVisible(false);
+        this.figure.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

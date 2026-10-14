@@ -1,0 +1,13 @@
+diff --git a/src/core/tasks/generators/grid.ts b/src/core/tasks/generators/grid.ts
+index 9b83b93..ef5fe24 100644
+--- a/src/core/tasks/generators/grid.ts
++++ b/src/core/tasks/generators/grid.ts
+@@ -60,7 +60,7 @@ export const generateGrid: Generator = (skill, rng: Rng): Task => {
+         prompt: pl.tasks.gridWherePrompt(name),
+         visual,
+         answer: right,
+-        choices: rng.shuffle([right, ...wrong]),
++        choices: rng.shuffle(wrong),
+         hint: [pl.tasks.gridHint, pl.tasks.gridCellHint(right, asked.col, asked.row), pl.tasks.gridWhereAnswerHint(right)],
+     };
+ };

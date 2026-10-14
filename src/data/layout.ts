@@ -82,6 +82,9 @@ export const FONT_SIZES = {
     chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
+    cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
+    gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
+    sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
@@ -114,6 +117,9 @@ export const FONT_WEIGHTS = {
     chartLabel: 700,
     chartAxis: 650,
     thermoLabel: 700,       // kit reference/thermometer-face.js
+    cellValue: 750,
+    gridLabel: 700,
+    sideLabel: 700,
     artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
@@ -166,6 +172,10 @@ export const SAVE_KEYS = [
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
  * task-keypad.png). Touch targets are listed in TASK_TOUCH_TARGETS.
  */
+// The drag mode's mat and solution lines are also the drawing area of a clock to set (picture.drag below).
+const DRAG_MAT = { x: 236, y: 380, width: 944, height: 460 } as const;
+const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as const;
+
 export const TASK_LAYOUT = {
     notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
@@ -181,6 +191,17 @@ export const TASK_LAYOUT = {
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
+    // The clock to set (S-13b): the dial in the unit of the drawn clock face (ClockFace DIAL), scaled to fit the mat. DESIGN-GAP (docs/design-gaps.md row 77).
+    // The one source of the dial's geometry: ClockFace draws it, clockSetLayout and the e2e hook aim from it. `handle*`: the ring on a hand tip of a clock to set (radius = balance.clockSet.grabRadius, larger while held).
+    clockSet: {
+        dial: {
+            outer: 150, inner: 138, border: 4,
+            hourTick: { from: 118, to: 134, width: 4 }, minuteTick: { from: 128, to: 134, width: 2 },
+            digitRadius: 91, hourLength: 78, hourWidth: 10, minuteLength: 106, minuteWidth: 7,
+            hub: { radius: 10, border: 3 },
+        },
+        handleBorder: 5, heldGrow: 1.2,
+    },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     // Drawing area of a task with a picture (S-13). DESIGN-GAP (docs/design-gaps.md rows 52 and 57): the kit has pictures only above the tiles
@@ -200,6 +221,14 @@ export const TASK_LAYOUT = {
         // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
         // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
         // above the tiles (tiles) or beside the column (keypad). DESIGN-GAP 65 (docs/design-gaps.md).
+        // S-13b: a pictured `select` task keeps its drawing above the tiles (`select.top` 600); a clock to set (`drag`) takes the mat and its solution
+        // lines the tray's place. `minHeight`: a long prompt may push the drawing down, never to nothing (audit S13-08).
+        select: {
+            picture: { x: 661, y: 396, width: 600, height: 190 },
+            solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
+        },
+        drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
+        minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
             keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
@@ -209,11 +238,11 @@ export const TASK_LAYOUT = {
     // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).
     drag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        mat: { x: 236, y: 380, width: 944, height: 460 },
+        mat: DRAG_MAT,
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         cellInset: 8, columns: 3, maxPerKind: 9,
         labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.2, radius: 28,   // trayScale 1.3 put the 10 rod on the tray tile border (visual gate S-13)
-        solutionLines: { x: 1240, y: 380, width: 440, height: 440 },   // the solution steps take the tray's place
+        solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
@@ -222,6 +251,13 @@ export const TASK_LAYOUT = {
         gap: 12, groupGap: 40, rowGap: 24, border: 4, line: 2, cells: 10, maxScale: 1.5,
     },
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
+    // Number cells (DESIGN-GAP row 73), own units: a magic square (3 x 3) or a pyramid (1, 2, 3 cells, each row shifted half a cell), `cell` wide and tall; the empty cell is dashed.
+    cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
+    // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
+    coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },
+    // Figure with labelled sides (DESIGN-GAP rows 75, 76): outline `line` px, lattice `grid` px, labels `labelPad` px off the edge, a point per corner `dot`;
+    // `maxCell` stops a small figure from growing huge; `fontSize` must match FONT_SIZES.sideLabel (a test pins it).
+    figure: { line: 4, grid: 2, labelPad: 10, fontSize: 30, maxCell: 64, minCell: 36, textWidth: 0.62, dot: 6 },
     chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
     // Money on a table (S-14), own units: notes in the upper row, coins in the lower one, largest first. Not a physical scale: a note is wider
     // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.

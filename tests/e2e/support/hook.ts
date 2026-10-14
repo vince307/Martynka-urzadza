@@ -23,6 +23,8 @@ export interface Snapshot {
     /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */
     mat?: Record<BlockKind, number>;
     carrying?: boolean;
+    /** The hands of a clock to set ('drag' mode with a clock drawing), null for another task. */
+    clock?: { hour: number; minute: number; carrying: 'hour' | 'minute' | null } | null;
     outcomes: (string | null)[];
     starsEarned: number;
     bonusEarned: number;
@@ -66,6 +68,8 @@ export interface Targets {
     selectOk?: Point | null;
     /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
     drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
+    /** Hand tips (the minute tip is null on a full-hour clock), centre, "OK" and the grab radius of a clock to set; null for another task. */
+    clock?: { centre: Point; hourTip: Point; minuteTip: Point | null; ok: Point | null; radius: number } | null;
     next: Point | null;
     /** The rectangle of the drawing (null while hidden); a spec aims at its interior. */
     picture?: { x: number; y: number; width: number; height: number } | null;
@@ -205,6 +209,53 @@ export const buildOnMat = async (page: Page, value: number): Promise<void> => {
     }
 };
 
+/** "3.15" -> hour 3, minute 15 (the answer text of a clock task). */
+const parseTime = (text: string): { hour: number; minute: number } => {
+    const [hour, minute] = text.split('.').map(Number);
+    return { hour, minute };
+};
+
+/** The point at `degrees` clockwise from 12, `radius` from `centre`. */
+const onDial = (centre: Point, degrees: number, radius: number): Point => {
+    const rad = (degrees * Math.PI) / 180;
+    return { x: centre.x + Math.sin(rad) * radius, y: centre.y - Math.cos(rad) * radius };
+};
+
+/**
+ * Sets the hands of a 'drag' clock task to `time` ("3.15") and polls the hook for the result. The minute hand goes first (the hour
+ * hand's drift depends on the minutes), each hand with one finger drag from its tip (published by the hook) to the angle it must
+ * point at, at the tip's own distance from the centre. Does not press "OK".
+ */
+export const setClock = async (page: Page, time: string): Promise<void> => {
+    const want = parseTime(time);
+    const read = async (): Promise<NonNullable<Snapshot['clock']>> => {
+        const clock = (await snapshot(page)).clock;
+        expect(clock, 'a clock to set is open').toBeTruthy();
+        return clock!;
+    };
+    const dist = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y);
+    if ((await read()).minute !== want.minute) {
+        const { clock } = await targets(page);
+        expect(clock?.minuteTip, 'minute hand can be held').toBeTruthy();
+        await dragTouch(page, clock!.minuteTip!, onDial(clock!.centre, want.minute * 6, dist(clock!.centre, clock!.minuteTip!)), CLOCK_STEPS);
+        await expect.poll(async () => (await read()).minute).toBe(want.minute);
+    }
+    if ((await read()).hour !== want.hour) {
+        const { clock } = await targets(page);
+        await dragTouch(page, clock!.hourTip, onDial(clock!.centre, (want.hour % 12) * 30 + want.minute * 0.5, dist(clock!.centre, clock!.hourTip)), CLOCK_STEPS);
+        await expect.poll(async () => (await read()).hour).toBe(want.hour);
+    }
+};
+
+/** Taps "OK" of the clock to set once the hook has published it. */
+export const tapClockOk = async (page: Page): Promise<void> => {
+    await expect.poll(async () => (await targets(page)).clock?.ok ?? null).not.toBeNull();
+    await tapScene(page, (await targets(page)).clock!.ok!);
+};
+
+/** Touch-move points per hand: enough to pass `startDistance`, few enough to stay fast. */
+const CLOCK_STEPS = 4;
+
 export const screenIs = async (page: Page, screen: Snapshot['screen']): Promise<void> => {
     await expect.poll(async () => (await snapshot(page)).screen).toBe(screen);
 };
@@ -222,7 +273,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
@@ -255,6 +306,14 @@ export const answerWrong = async (page: Page): Promise<number | string | (number
         await tapScene(page, selectOk!);
         return [tile.value];
     }
+    if (state.input === 'drag' && state.clock) {
+        // The hour one later on the same minutes (12 wraps to 1): a time the task certainly rejects.
+        const right = parseTime(state.answer as string);
+        const given = `${(right.hour % 12) + 1}.${String(right.minute).padStart(2, '0')}`;
+        await setClock(page, given);
+        await tapClockOk(page);
+        return given;
+    }
     if (state.input === 'drag') {
         // Builds the answer + 1 (one cube more), or the answer - 1 when the ones are already 9 (a cube less, never a 10th cube).
         const { drag } = await targets(page);
@@ -280,6 +339,9 @@ export const answerRight = async (page: Page): Promise<void> => {
             await tapScene(page, selectTiles!.find((t) => t.value === value)!);
         }
         await tapScene(page, selectOk!);
+    } else if (state.input === 'drag' && state.clock) {
+        await setClock(page, state.answer as string);
+        await tapClockOk(page);
     } else if (state.input === 'drag') {
         const { drag } = await targets(page);
         await buildOnMat(page, state.answer as number);

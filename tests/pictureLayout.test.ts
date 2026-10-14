@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerSpans, belowPrompt, clockHandAngles, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
+import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { TASK_LAYOUT } from '../src/data/layout';
 
 const spec = TASK_LAYOUT.picture;
@@ -128,19 +128,20 @@ describe('clockHandAngles', () => {
 
 describe('belowPrompt (visual gate S-13: a five-line chart prompt beside the keypad ran over the chart)', () => {
     it('keeps the rectangle when the prompt ends above it', () => {
-        expect(belowPrompt(spec.keypad, spec.keypad.y - 40, 16)).toEqual(spec.keypad);
+        expect(belowPrompt(spec.keypad, spec.keypad.y - 40, 16, spec.minHeight)).toEqual(spec.keypad);
     });
 
     it('moves the top under a long prompt and keeps the bottom', () => {
-        const r = belowPrompt(spec.keypad, 600, 16);
+        const r = belowPrompt(spec.keypad, 600, 16, spec.minHeight);
         expect(r.y).toBe(616);
         expect(r.y + r.height).toBe(spec.keypad.y + spec.keypad.height);
         expect(r.x).toBe(spec.keypad.x);
         expect(r.width).toBe(spec.keypad.width);
     });
 
-    it('never gives a negative height', () => {
-        expect(belowPrompt(spec.keypad, 5000, 16).height).toBe(0);
+    it('never gives a drawing less than the minimum height, however long the prompt (audit S13-08)', () => {
+        expect(belowPrompt(spec.keypad, 5000, 16, spec.minHeight).height).toBe(spec.minHeight);
+        expect(belowPrompt(spec.keypad, 5000, 16, spec.minHeight).y + spec.minHeight).toBe(spec.keypad.y + spec.keypad.height);
     });
 });
 
@@ -152,5 +153,66 @@ describe('fitSize', () => {
 
     it('stops at the minimum when nothing fits', () => {
         expect(fitSize(64, 44, 4, () => false)).toBe(44);
+    });
+});
+
+describe('pictured select and drag tasks (S-13b, follow-up S-13)', () => {
+    const selectTop = TASK_LAYOUT.select.top;
+    for (const solution of [false, true]) {
+        it(`keeps a ${solution ? 'solved ' : ''}select drawing above the select tiles and inside the notebook`, () => {
+            const { picture, lines } = pictureLayout(spec, 'select', solution, 'wide');
+            expect(picture.y + picture.height).toBeLessThanOrEqual(selectTop);
+            expect(inside(picture, page)).toBe(true);
+            expect(picture.height).toBeGreaterThan(0);
+            if (solution) {
+                expect(lines).not.toBeNull();
+                expect(lines!.y + lines!.height).toBeLessThanOrEqual(selectTop);
+                expect(apart(picture, lines!)).toBe(true);
+            } else {
+                expect(lines).toBeNull();
+            }
+        });
+    }
+
+    it('puts the drawing of a drag task on the mat and its solution lines where the tray was', () => {
+        const first = pictureLayout(spec, 'drag', false, 'wide');
+        const solved = pictureLayout(spec, 'drag', true, 'wide');
+        expect(first.picture).toEqual(TASK_LAYOUT.drag.mat);
+        expect(first.lines).toBeNull();
+        expect(solved.picture).toEqual(TASK_LAYOUT.drag.mat);
+        expect(solved.lines).toEqual(TASK_LAYOUT.drag.solutionLines);
+    });
+});
+
+describe('clockSetLayout', () => {
+    const layout = clockSetLayout(TASK_LAYOUT.drag, TASK_LAYOUT.clockSet.dial);
+    const { dial } = TASK_LAYOUT.clockSet;
+    const mat = TASK_LAYOUT.drag.mat;
+
+    it('centres the dial on the mat and keeps the whole face inside it', () => {
+        const radius = dial.outer * layout.scale;
+        expect(layout.centre.x).toBe(mat.x + mat.width / 2);
+        expect(layout.centre.y).toBe(mat.y + mat.height / 2);
+        expect(layout.centre.x - radius).toBeGreaterThanOrEqual(mat.x);
+        expect(layout.centre.x + radius).toBeLessThanOrEqual(mat.x + mat.width);
+        expect(layout.centre.y - radius).toBeGreaterThanOrEqual(mat.y);
+        expect(layout.centre.y + radius).toBeLessThanOrEqual(mat.y + mat.height);
+    });
+
+    it('scales the hands with the dial', () => {
+        expect(layout.hourLength).toBeCloseTo(dial.hourLength * layout.scale, 6);
+        expect(layout.minuteLength).toBeCloseTo(dial.minuteLength * layout.scale, 6);
+    });
+
+    it('leaves five minutes at least 80 scene pixels of arc at the tip of the minute hand (a finger can tell them apart)', () => {
+        expect((2 * Math.PI * layout.minuteLength) / 12).toBeGreaterThanOrEqual(80);
+    });
+
+    it('keeps "OK" and the solution lines (which replace it) off the dial', () => {
+        const face: PictureRect = { x: layout.centre.x - dial.outer * layout.scale, y: layout.centre.y - dial.outer * layout.scale, width: 2 * dial.outer * layout.scale, height: 2 * dial.outer * layout.scale };
+        expect(layout.ok).toEqual(TASK_LAYOUT.drag.ok);
+        expect(layout.lines).toEqual(TASK_LAYOUT.drag.solutionLines);
+        expect(apart(face, layout.ok)).toBe(true);
+        expect(apart(face, layout.lines)).toBe(true);
     });
 });

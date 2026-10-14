@@ -32,7 +32,13 @@ export const E6: StageDef = {
             ],
         },
         { step: 2, title: 'Ile minut do pełnej godziny, czas trwania programu', types: ['CLOCK_ELAPSED'], skills: [] },
-        { step: 3, title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych', types: ['MASS', 'LENGTH', 'PERIMETER'], skills: [] },
+        {
+            step: 3,
+            title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych',
+            childName: 'Obwody figur na kratkach',
+            types: ['MASS', 'LENGTH', 'PERIMETER'],
+            skills: [skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 })],
+        },
         {
             step: 4,
             title: 'Mnożenie dwucyfrowej przez jednocyfrową (6 · 12), dzielenie typu 96 : 6; tuzin i mendel',

@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/NumberCells.ts b/src/ui/widgets/NumberCells.ts
+index 200ef2b..af5c814 100644
+--- a/src/ui/widgets/NumberCells.ts
++++ b/src/ui/widgets/NumberCells.ts
+@@ -44,7 +44,7 @@ export class NumberCells {
+         const left = rect.x + (rect.width - cols * c.cell * s) / 2;
+         const top = rect.y + (rect.height - 3 * c.cell * s) / 2;
+         const g = this.graphics;
+-        g.clear().setVisible(true);
++        g.clear();
+         spots.forEach((spot, i) => {
+             const x = left + spot.x * c.cell * s;
+             const y = top + spot.y * c.cell * s;

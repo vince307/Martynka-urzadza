@@ -1,21 +1,11 @@
 import type { GameObjects, Scene } from 'phaser';
 import { clockHandAngles } from '../../core/round/pictureLayout';
-import { PLACEHOLDER_COLORS } from '../../data/layout';
+import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
 
-/** Dial geometry of the kit's reference/clock.svg in its own units (outer radius 150); everything is scaled from there. */
-const DIAL = {
-    outer: 150,
-    inner: 138,
-    border: 4,
-    hourTick: { from: 118, to: 134, width: 4 },
-    minuteTick: { from: 128, to: 134, width: 2 },
-    digitRadius: 91,
-    hourHand: { length: 78, width: 10 },
-    minuteHand: { length: 106, width: 7 },
-    hub: { radius: 10, border: 3 },
-} as const;
+/** Dial geometry of the kit's reference/clock.svg in its own units (outer radius 150), the one source in TASK_LAYOUT.clockSet; everything is scaled from there. */
+const DIAL = TASK_LAYOUT.clockSet.dial;
 
 const TEAL = PLACEHOLDER_COLORS.deepTeal;
 
@@ -67,8 +57,8 @@ export class ClockFace {
             g.lineStyle(spec.width * s, color, 1);
             g.lineBetween(cx, cy, tip.x, tip.y);
         };
-        hand(angles.hour, DIAL.hourHand, TEAL);
-        hand(angles.minute, DIAL.minuteHand, PLACEHOLDER_COLORS.turquoise);
+        hand(angles.hour, { length: DIAL.hourLength, width: DIAL.hourWidth }, TEAL);
+        hand(angles.minute, { length: DIAL.minuteLength, width: DIAL.minuteWidth }, PLACEHOLDER_COLORS.turquoise);
         g.fillStyle(PLACEHOLDER_COLORS.butter, 1);
         g.fillCircle(cx, cy, DIAL.hub.radius * s);
         g.lineStyle(DIAL.hub.border * s, TEAL, 1);

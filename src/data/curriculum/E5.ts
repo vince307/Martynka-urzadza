@@ -111,6 +111,15 @@ export const E5: StageDef = {
             types: ['ORDER_OPS', 'CALENDAR'],
             skills: [skill('E5.11.calendar_days', 11, 'CALENDAR', { variants: ['monthDays', 'quarter'] }, 'tiles')],
         },
-        { step: 12, title: 'Odcinki w mm/cm/m, skala; obwody, także odwrotne (bok z obwodu)', types: ['LENGTH', 'PERIMETER'], skills: [] },
+        {
+            step: 12,
+            title: 'Odcinki w mm/cm/m, skala; obwody, także odwrotne (bok z obwodu)',
+            childName: 'Obwody i boki',
+            types: ['LENGTH', 'PERIMETER'],
+            skills: [
+                skill('E5.12.perimeter_side_square', 12, 'PERIMETER', { variant: 'sideSquare', max: 40 }),
+                skill('E5.12.perimeter_side_rect', 12, 'PERIMETER', { variant: 'sideRect', max: 60 }),
+            ],
+        },
     ],
 };

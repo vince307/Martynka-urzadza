@@ -35,6 +35,35 @@ describe('visualKey', () => {
     });
 });
 
+describe('a clock to set (S-13b)', () => {
+    const set = (hour: number, minute: number, snap: 60 | 5): TaskVisual => ({ kind: 'clock', hour, minute, set: true, snap });
+
+    it('has its own key: the same hands to read are not the same drawing as hands to set', () => {
+        expect(visualKey(set(9, 0, 60))).not.toBe(visualKey(clock(9, 0)));
+        expect(visualKey(set(9, 0, 60))).not.toBe(visualKey(set(9, 0, 5)));
+        expect(visualKey(set(9, 0, 60))).toBe(visualKey(set(9, 0, 60)));
+    });
+
+    it('is described by its start pose', () => {
+        expect(describeVisual(set(9, 0, 60))).toBe('[clock set from 9.00]');
+        expect(describeVisual(set(4, 15, 5))).toBe('[clock set from 4.15]');
+    });
+
+    it('accepts hands on the snap and refuses the rest', () => {
+        expect(validateVisual(set(9, 0, 60))).toEqual([]);
+        expect(validateVisual(set(4, 15, 5))).toEqual([]);
+        expect(validateVisual(set(4, 15, 60))).not.toEqual([]);
+        expect(validateVisual(set(4, 14, 5))).not.toEqual([]);
+        expect(validateVisual(set(0, 0, 60))).not.toEqual([]);
+        expect(validateVisual(set(13, 0, 60))).not.toEqual([]);
+        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true })).not.toEqual([]);
+    });
+
+    it('is wide', () => {
+        expect(visualShape(set(9, 0, 60))).toBe('wide');
+    });
+});
+
 describe('validateVisual', () => {
     it('accepts good drawings', () => {
         expect(validateVisual(clock(23, 59))).toEqual([]);
@@ -156,6 +185,65 @@ describe('art visuals (S-14)', () => {
         expect(visualShape(thermo(3))).toBe('tall');
         for (const v of [money('coin-1zl'), scale('apple', ['weight-10dag']), jugs('container-1l'), icons([3]), clock(3, 0), ruler(0, 50), bars([1, 2])]) {
             expect(visualShape(v), v.kind).toBe('wide');
+        }
+    });
+});
+
+const cells = (layout: 'square3' | 'pyramid3', values: (number | null)[]): TaskVisual => ({ kind: 'cells', layout, values });
+const grid = (columns: number, rows: number, items: Extract<TaskVisual, { kind: 'grid' }>['items'][number][]): TaskVisual => ({ kind: 'grid', columns, rows, items });
+const figure = (lattice: boolean, vertices: [number, number][], sides: (number | null)[]): TaskVisual => ({ kind: 'figure', lattice, vertices, sides });
+const L_SHAPE: [number, number][] = [[0, 0], [3, 0], [3, 1], [1, 1], [1, 2], [0, 2]];
+const GRID_OK = grid(5, 4, [{ item: 'heart', col: 2, row: 1 }, { item: 'star', col: 1, row: 2 }]);
+
+describe('grid-task visuals (S-13b)', () => {
+    it('accepts good drawings', () => {
+        expect(validateVisual(cells('square3', [8, 1, 6, 3, 5, 7, 4, null, 2]))).toEqual([]);
+        expect(validateVisual(cells('pyramid3', [null, 5, 7, 2, 3, 4]))).toEqual([]);
+        expect(validateVisual(GRID_OK)).toEqual([]);
+        expect(validateVisual(figure(true, L_SHAPE, [3, 1, 2, 1, 1, 2]))).toEqual([]);
+        expect(validateVisual(figure(false, [[0, 0], [5, 0], [5, 3], [0, 3]], [5, 3, 5, null]))).toEqual([]);
+    });
+
+    it.each<[string, TaskVisual]>([
+        ['no empty cell', cells('square3', [8, 1, 6, 3, 5, 7, 4, 9, 2])],
+        ['two empty cells', cells('square3', [8, null, 6, 3, 5, 7, 4, null, 2])],
+        ['pyramid with 9 cells', cells('pyramid3', [1, 2, 3, 4, 5, 6, 7, 8, null])],
+        ['square with 6 cells', cells('square3', [null, 5, 7, 2, 3, 4])],
+        ['negative cell', cells('pyramid3', [null, 5, 7, 2, -3, 4])],
+        ['one grid item', grid(5, 4, [{ item: 'heart', col: 2, row: 1 }])],
+        ['six grid items', grid(6, 5, [0, 1, 2, 3, 4, 5].map((col) => ({ item: 'star' as const, col, row: 0 })))],
+        ['two items on one cell', grid(5, 4, [{ item: 'heart', col: 2, row: 1 }, { item: 'star', col: 2, row: 1 }])],
+        ['item outside the grid', grid(5, 4, [{ item: 'heart', col: 5, row: 1 }, { item: 'star', col: 1, row: 2 }])],
+        ['seven columns', grid(7, 4, GRID_OK.kind === 'grid' ? [...GRID_OK.items] : [])],
+        ['six rows', grid(5, 6, GRID_OK.kind === 'grid' ? [...GRID_OK.items] : [])],
+        ['unknown grid item', { kind: 'grid', columns: 5, rows: 4, items: [{ item: 'dog' as never, col: 0, row: 0 }, { item: 'star', col: 1, row: 2 }] }],
+        ['two vertices', figure(false, [[0, 0], [5, 0]], [5, 5])],
+        ['side labels do not match vertices', figure(true, L_SHAPE, [3, 1, 2])],
+        ['lattice figure with a slanted edge', figure(true, [[0, 0], [3, 0], [2, 2]], [3, null, null])],
+        ['lattice figure with a fractional vertex', figure(true, [[0, 0], [3, 0], [3, 1.5], [0, 1.5]], [3, null, 3, null])],
+    ])('reports %s', (_name, visual) => {
+        expect(validateVisual(visual).length).toBeGreaterThan(0);
+    });
+
+    it('allows a slanted edge in a figure that is not on the lattice', () => {
+        expect(validateVisual(figure(false, [[0, 0], [4, 0], [2, 3]], [4, 3, 3]))).toEqual([]);
+    });
+
+    it('keys differ by layout, empty cell, item place and side labels', () => {
+        expect(visualKey(cells('square3', [8, 1, 6, 3, 5, 7, 4, null, 2]))).not.toBe(visualKey(cells('square3', [8, 1, 6, 3, null, 7, 4, 9, 2])));
+        expect(visualKey(cells('pyramid3', [null, 5, 7, 2, 3, 4]))).not.toBe(visualKey(cells('pyramid3', [12, null, 7, 2, 3, 4])));
+        expect(visualKey(GRID_OK)).not.toBe(visualKey(grid(5, 4, [{ item: 'heart', col: 2, row: 2 }, { item: 'star', col: 1, row: 2 }])));
+        expect(visualKey(figure(true, L_SHAPE, [3, 1, 2, 1, 1, 2]))).not.toBe(visualKey(figure(true, L_SHAPE, [3, 1, 2, 1, 1, null])));
+        expect(visualKey(GRID_OK)).toBe(visualKey(grid(5, 4, [{ item: 'heart', col: 2, row: 1 }, { item: 'star', col: 1, row: 2 }])));
+    });
+
+    it('prints one line per drawing and is wide', () => {
+        expect(describeVisual(cells('square3', [8, 1, 6, 3, 5, 7, 4, null, 2]))).toBe('[cells square3 8 1 6 3 5 7 4 _ 2]');
+        expect(describeVisual(GRID_OK)).toBe('[grid 5×4 serce C2, gwiazdka B3]');
+        expect(describeVisual(figure(true, L_SHAPE, [3, 1, 2, 1, 1, 2]))).toBe('[figure lattice 6 vertices]');
+        expect(describeVisual(figure(false, [[0, 0], [3, 0], [3, 5], [0, 5]], [3, 5, 3, 5]))).toBe('[figure 3 cm 5 cm 3 cm 5 cm]');
+        for (const v of [cells('square3', [8, 1, 6, 3, 5, 7, 4, null, 2]), GRID_OK, figure(true, L_SHAPE, [3, 1, 2, 1, 1, 2])]) {
+            expect(visualShape(v)).toBe('wide');
         }
     });
 });

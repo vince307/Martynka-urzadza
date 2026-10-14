@@ -45,6 +45,7 @@ export const E3: StageDef = {
             skills: [
                 skill('E3.3.clock_read_full', 3, 'CLOCK', { variant: 'read', minuteStep: 60 }, 'tiles'),
                 skill('E3.3.clock_later_full', 3, 'CLOCK', { variant: 'later', minuteStep: 60, maxShift: 3 }, 'tiles'),
+                skill('E3.3.clock_set_full', 3, 'CLOCK', { variant: 'set', minuteStep: 60 }, 'drag'),
             ],
         },
         {
@@ -64,9 +65,13 @@ export const E3: StageDef = {
         {
             step: 5,
             title: 'Kwadrat magiczny, odcinki w cm',
-            childName: 'Mierzenie odcinków',
+            childName: 'Kwadrat magiczny i odcinki',
             types: ['PUZZLE_GRID', 'LENGTH'],
-            skills: [skill('E3.5.length_ruler_cm_15', 5, 'LENGTH', { variant: 'ruler', unit: 'cm', lengthCm: 15, minMm: 20, maxMm: 120, startShift: 0.4 })],
+            skills: [
+                skill('E3.5.length_ruler_cm_15', 5, 'LENGTH', { variant: 'ruler', unit: 'cm', lengthCm: 15, minMm: 20, maxMm: 120, startShift: 0.4 }),
+                skill('E3.5.magic_square_30', 5, 'PUZZLE_GRID', { variant: 'magic', max: 30 }),
+                skill('E3.5.pyramid_30', 5, 'PUZZLE_GRID', { variant: 'pyramid', max: 30 }),
+            ],
         },
         {
             step: 6,
@@ -83,12 +88,14 @@ export const E3: StageDef = {
         {
             step: 7,
             title: 'Siatka kwadratowa i kodowanie, parzyste/nieparzyste, liczby słowami',
-            childName: 'Parzyste i liczby słowami',
+            childName: 'Siatka i liczby słowami',
             types: ['GRID', 'EVEN_ODD', 'NUMBER_WORDS'],
             skills: [
                 skill('E3.7.even_odd_30', 7, 'EVEN_ODD', { max: 30, variant: 'single' }, 'tiles'),
                 skill('E3.7.select_even_30', 7, 'EVEN_ODD', { max: 30, variant: 'select' }, 'select'),
                 skill('E3.7.number_words_30', 7, 'NUMBER_WORDS', { max: 30, kind: 'any' }, 'tiles'),
+                skill('E3.7.grid_where', 7, 'GRID', { variant: 'where' }, 'tiles'),
+                skill('E3.7.grid_what', 7, 'GRID', { variant: 'what' }, 'tiles'),
             ],
         },
         {
@@ -128,6 +135,7 @@ export const E3: StageDef = {
             types: ['CLOCK', 'ROMAN', 'CALENDAR', 'TEMPERATURE'],
             skills: [
                 skill('E3.11.clock_24h', 11, 'CLOCK', { variant: 'h24', minuteStep: 60 }, 'tiles'),
+                skill('E3.11.clock_set_24h', 11, 'CLOCK', { variant: 'set', minuteStep: 60, h24: true }, 'drag'),
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E3.11.calendar', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
                 skill('E3.11.temperature_read_30', 11, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 5, answer: 'text' }, 'tiles'),

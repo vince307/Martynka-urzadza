@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
+import { firstHint } from '../src/core/round/hints';
 import { screenBound, UNBOUNDED_TYPES, validationBounds } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
@@ -25,7 +26,14 @@ const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = 
     'E1.8.length_ruler_cm_10': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: a segment of 1..10 cm from the zero of a 10 cm ruler (S-14)' },
     'E2.1.place_read_20': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: the numbers 11..20 (S-14)' },
     'E2.2.capacity_litres': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: 1..10 litres in 1 l jugs (S-14)' },
+    'E5.12.perimeter_side_square': { minDistinct: 9, measured: '9 distinct tasks / 9 prompts: a square side of 2..10 cm, so the division by 4 stays in the table (S-13b impl review)' },
 };
+// The first hint of a keypad task sits in the bar left of the keypad (36 px text, 662 px wide, 96 px tall, under "Spróbuj jeszcze raz"):
+// two wrapped lines keep the bar's text at full size, a third shrinks it below 12 CSS px on the 1024 tablet (visual gate S-13b).
+// 64 characters is the longest hint measured to wrap into two lines there.
+const KEYPAD_HINT_MAX = 64;
+// Keypad first hints longer than KEYPAD_HINT_MAX before the rule existed; each one is a follow-up, never a new entry.
+const LONG_KEYPAD_HINTS: ReadonlySet<string> = new Set(['E5.5.capacity_quarter_l']);
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n
 const MAX_ZERO_ONE_SHARE = 0.35;   // ·0 and ·1 when allowed
@@ -73,6 +81,10 @@ for (const stage of Object.values(stages)) {
 
                         const key = `${task.prompt}|${visualKey(task.visual)}|${(task.choices ?? []).join('/')}`;
                         seen.set(key, (seen.get(key) ?? 0) + 1);
+
+                        if (skill.answer === 'keypad' && !LONG_KEYPAD_HINTS.has(skill.id)) {
+                            expect((firstHint(task) ?? '').length, `${where} first hint fits two lines of the keypad bar`).toBeLessThanOrEqual(KEYPAD_HINT_MAX);
+                        }
 
                         const texts = [task.prompt, ...task.hint];
                         for (const line of task.hint) {

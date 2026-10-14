@@ -3,10 +3,11 @@
 // numeral agreement for nouns from a dictionary.
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
+import { dragMode } from './dragMode';
 import type { Task } from './types';
 import { validateVisual } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode';
 
 export interface Violation {
     skillId: string;
@@ -71,14 +72,25 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         if (new Set(task.choices).size !== task.choices.length) {
             add('choices', `duplicates in ${JSON.stringify(task.choices)}`);
         }
-        if (!Array.isArray(task.answer) && !task.choices.includes(task.answer)) {
-            add('choices', `answer ${String(task.answer)} not among ${JSON.stringify(task.choices)}`);
+        const answers: readonly (number | string)[] = Array.isArray(task.answer) ? task.answer : [task.answer];
+        for (const a of answers) {
+            if (!task.choices.includes(a)) {
+                add('choices', `answer ${String(a)} not among ${JSON.stringify(task.choices)}`);
+            }
         }
     }
 
     if (task.visual) {
         for (const problem of validateVisual(task.visual)) {
             add('visual', problem);
+        }
+    }
+
+    if (task.input === 'drag') {
+        try {
+            dragMode(task);
+        } catch (e) {
+            add('mode', e instanceof Error ? e.message : String(e));
         }
     }
 

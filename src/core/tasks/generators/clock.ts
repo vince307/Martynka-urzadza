@@ -4,24 +4,29 @@
 // in the school notation ("3.30", "15.00"); the face is a `clock` visual.
 import { pl } from '../../../data/pl';
 import type { Rng } from '../../rng';
+import { clockHandAngles } from '../../round/pictureLayout';
 import { formatTime } from '../../text/time';
 import { MINUS } from '../symbols';
+import type { SkillDef } from '../../types';
 import type { Generator, Task } from '../types';
 
-export type ClockVariant = 'read' | 'later' | 'h24';
+export type ClockVariant = 'read' | 'later' | 'h24' | 'set';
 export type MinuteStep = 60 | 30 | 15 | 5;
 
 export interface ClockParams {
     variant: ClockVariant;
     minuteStep: MinuteStep;
     maxShift?: number;   // later only: the largest number of hours added
+    h24?: boolean;       // set only: the asked time is written the 24-hour way ("15.00"), the hands show "3.00"
 }
 
-const VARIANTS: readonly ClockVariant[] = ['read', 'later', 'h24'];
+const VARIANTS: readonly ClockVariant[] = ['read', 'later', 'h24', 'set'];
 const STEPS: readonly number[] = [60, 30, 15, 5];
+/** Smallest angle between the hands of a start pose, so neither hides the other. */
+const SET_MIN_GAP = 30;
 
 export const parseClockParams = (params: Record<string, unknown>): ClockParams => {
-    const { variant, minuteStep, maxShift } = params;
+    const { variant, minuteStep, maxShift, h24 } = params;
     if (!VARIANTS.includes(variant as ClockVariant)) {
         throw new TypeError(`CLOCK params.variant must be one of ${VARIANTS.join(', ')}, got ${String(variant)}`);
     }
@@ -34,7 +39,14 @@ export const parseClockParams = (params: Record<string, unknown>): ClockParams =
     if (variant === 'h24' && minuteStep !== 60) {
         throw new TypeError('CLOCK h24 works on full hours only (minuteStep 60)');
     }
-    return { variant: variant as ClockVariant, minuteStep: minuteStep as MinuteStep, maxShift: variant === 'later' ? (maxShift as number) : undefined };
+    if (variant === 'set' && (minuteStep === 5 || (h24 === true && minuteStep !== 60))) {
+        throw new TypeError('CLOCK set takes minuteStep 60, 30 or 15 and h24 only with 60');
+    }
+    return {
+        variant: variant as ClockVariant, minuteStep: minuteStep as MinuteStep,
+        maxShift: variant === 'later' ? (maxShift as number) : undefined,
+        h24: variant === 'set' && h24 === true ? true : undefined,
+    };
 };
 
 /** Hours on a 12-hour dial are 1..12; 12 stands for 0. */
@@ -72,8 +84,60 @@ const faceDistractors = (hour: number, minute: number, step: MinuteStep): { like
     return { likely, fallback: [formatTime(wrap12(hour + 2), minute), formatTime(wrap12(hour - 2), minute), formatTime(wrap12(hour + 3), minute)] };
 };
 
+/** Angle between two hands, 0..180 degrees. */
+const handGap = (hour: number, minute: number): number => {
+    const a = clockHandAngles(hour, minute);
+    const d = Math.abs(a.hour - a.minute) % 360;
+    return d > 180 ? 360 - d : d;
+};
+
+/** A start pose for the hands to set: other hour (and other minute when minutes move), hands clearly apart. */
+const startPose = (answerHour: number, answerMinute: number, snap: 60 | 5, rng: Rng): { hour: number; minute: number } => {
+    const poses: { hour: number; minute: number }[] = [];
+    for (let hour = 1; hour <= 12; hour += 1) {
+        for (let minute = 0; minute < 60; minute += snap) {
+            if (hour !== answerHour && (snap === 60 || minute !== answerMinute) && handGap(hour, minute) >= SET_MIN_GAP) {
+                poses.push({ hour, minute });
+            }
+        }
+    }
+    return rng.pick(poses);
+};
+
+const generateClockSet = (skill: SkillDef, p: ClockParams, rng: Rng): Task => {
+    const snap = p.minuteStep === 60 ? 60 : 5;
+    const askedHour = p.h24 ? rng.int(13, 23) : rng.int(1, 12);
+    const minute = randomMinute(p.minuteStep, rng);
+    const hour = p.h24 ? askedHour - 12 : askedHour;
+    const answer = formatTime(hour, minute);
+    const asked = formatTime(askedHour, minute);
+    const start = startPose(hour, minute, snap, rng);
+    // On a full-hour dial (snap 60) the long hand cannot move, so the hints speak of the short hand only.
+    const hint: string[] = [snap === 60 ? pl.tasks.clockSetHourHandHint : pl.tasks.clockSetHandsHint];
+    if (p.h24) {
+        hint.push(pl.tasks.clockSetH24Hint, `${askedHour} ${MINUS} 12 = ${hour}`);
+    }
+    hint.push(
+        pl.tasks.clockSetShortHint(hour, minute, wrap12(hour + 1)),
+        snap === 60 ? pl.tasks.clockSetLongStaysHint : pl.tasks.clockSetLongHint(minute === 0 ? 12 : minute / 5, minute),
+        pl.tasks.clockSetAnswerHint(answer),
+    );
+    return {
+        skillId: skill.id,
+        prompt: pl.tasks.clockSet(asked),
+        speak: pl.tasks.clockSetSpeak(askedHour, minute),
+        visual: { kind: 'clock', hour: start.hour, minute: start.minute, set: true, snap },
+        input: 'drag',
+        answer,
+        hint,
+    };
+};
+
 export const generateClock: Generator = (skill, rng): Task => {
     const p = parseClockParams(skill.params);
+    if (p.variant === 'set') {
+        return generateClockSet(skill, p, rng);
+    }
     if (p.variant === 'h24') {
         const hour = rng.int(13, 23);
         const answer = formatTime(hour, 0);

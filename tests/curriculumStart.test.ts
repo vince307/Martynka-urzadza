@@ -34,13 +34,17 @@ const SPRING = [1, 2, 3, 4, 5];
 //      ceil(9.0) 9, then 10 for the month after; the k-th playable step is k + 1: 3, 4, 6, 8, 10, 11.
 //   E2 (n = 10: steps 1..10): ceil(1.0) 1 -> floor of 2, 3, 5, 7, 9, 10 and every step is playable, so the step equals k.
 //   E5 (n = 11: steps 1..11, step 12 stays empty): ceil(1.1) 2, ceil(3.3) 4, ceil(5.5) 6, ceil(7.7) 8, ceil(9.9) 10, 11.
+// S-13b (E5.12 and E6.3 became playable) rows recomputed by hand from rule D, same progress values:
+//   E5 (n = 12: steps 1..12): ceil(1.2) 2, ceil(3.6) 4, ceil(6.0) 6, ceil(8.4) 9, ceil(10.8) 11, then 12 for the month after.
+//   E6 (n = 9: steps 1, 3..10): k = ceil(0.9) 1 -> floor of 2, ceil(2.7) 3, ceil(4.5) 5, ceil(6.3) 7, ceil(8.1) 9, 9; the k-th playable
+//      step is 3, 4, 6, 8, 10, 10 (the playable list is 1, 3, 4, 5, 6, 7, 8, 9, 10).
 const ORACLE: { id: StageId; age: number; months: number[]; after: number; expected: number[] }[] = [
     { id: 'E1', age: 6, months: AUTUMN, after: 1, expected: [3, 4, 6, 8, 10, 11] },
     { id: 'E2', age: 7, months: SPRING, after: 6, expected: [2, 3, 5, 7, 9, 10] },
     { id: 'E3', age: 8, months: AUTUMN, after: 1, expected: [2, 4, 6, 8, 10, 11] },
     { id: 'E4', age: 8, months: SPRING, after: 6, expected: [2, 3, 4, 6, 8, 8] },
-    { id: 'E5', age: 9, months: AUTUMN, after: 1, expected: [2, 4, 6, 8, 10, 11] },
-    { id: 'E6', age: 10, months: SPRING, after: 6, expected: [4, 5, 6, 8, 10, 10] },
+    { id: 'E5', age: 9, months: AUTUMN, after: 1, expected: [2, 4, 6, 9, 11, 12] },
+    { id: 'E6', age: 10, months: SPRING, after: 6, expected: [3, 4, 6, 8, 10, 10] },
 ];
 
 describe('playableSteps', () => {
@@ -49,8 +53,8 @@ describe('playableSteps', () => {
         expect(playableSteps(stage('E2'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         expect(playableSteps(stage('E3'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect(playableSteps(stage('E4'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-        expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-        expect(playableSteps(stage('E6'))).toEqual([1, 4, 5, 6, 7, 8, 9, 10]);
+        expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        expect(playableSteps(stage('E6'))).toEqual([1, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 });
 

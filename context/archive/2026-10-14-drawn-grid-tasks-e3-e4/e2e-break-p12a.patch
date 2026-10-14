@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 86c5f04..b442445 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -821,7 +821,7 @@ export class TaskScene extends Scene {
+         if (!this.dragLive && event.type !== 'cancel' && event.type !== 'reset') {
+             return;
+         }
+-        if (this.clockTask) {
++        if (this.clockTask && (event.type as string) === 'never') {
+             const before = this.clockState;
+             this.clockState = stepClockSet(before, event, this.clockGeo, this.clockRules());
+             if (this.clockState !== before) {

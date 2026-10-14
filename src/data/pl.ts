@@ -360,6 +360,20 @@ export const pl = {
         clockAnswerHint: (time: string) => `Na zegarze jest ${time}.`,
         clockLaterAnswerHint: (time: string) => `Będzie ${time}.`,
         clockLaterNowHint: (time: string) => `Teraz jest ${time}.`,
+        // Clock to set (S-13b): the child turns the hands; the prompt names the time, the hints teach which hand is which.
+        clockSet: (time: string) => `Ustaw zegar na ${time}.`,
+        clockSetSpeak: (hour: number, minute: number) =>
+            minute === 0 ? `Ustaw zegar na godzinę ${hour}.` : `Ustaw zegar na godzinę ${hour} i ${countNoun(minute, nouns.minuta)}.`,
+        clockSetHandsHint: 'Krótka wskazówka pokazuje godzinę, długa pokazuje minuty. Przeciągnij je palcem.',
+        // Full hours (E3): only the short hand moves, the long one stays on 12 (impl review teacher read).
+        clockSetHourHandHint: 'Krótka wskazówka pokazuje godzinę. Przeciągnij ją palcem.',
+        clockSetLongStaysHint: 'Długa wskazówka zostaje na 12, bo to pełna godzina.',
+        clockSetH24Hint: 'Po południu od godziny w zapisie 24-godzinnym odejmij 12.',
+        clockSetShortHint: (hour: number, minute: number, next: number) =>
+            minute === 0 ? `Krótką wskazówkę ustaw na ${hour}.` : `Krótką wskazówkę ustaw między ${hour} a ${next}.`,
+        clockSetLongHint: (marker: number, minute: number) =>
+            minute === 0 ? 'Długą wskazówkę ustaw na 12.' : `Długą wskazówkę ustaw na ${marker}, czyli ${countNoun(minute, nouns.minuta)} po pełnej godzinie.`,
+        clockSetAnswerHint: (time: string) => `Wtedy zegar pokaże ${time}.`,
         clockH24Hint: 'Po południu do godziny z zegara dodaj 12.',
         clockH24AnswerHint: (time: string) => `Zapis 24-godzinny: ${time}.`,
         lengthRuler: (unit: 'cm' | 'mm') => (unit === 'cm' ? 'Ile centymetrów ma ten odcinek?' : 'Ile milimetrów ma ten odcinek?'),
@@ -453,6 +467,42 @@ export const pl = {
         placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
         placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
             `Liczba ${n} to ${[t > 0 ? countNoun(t, nouns.dziesiątka) : '', o > 0 ? countNoun(o, nouns.jedność) : ''].filter((x) => x !== '').join(' i ')}.`,
+        // PUZZLE_GRID (S-13b): the magic square and the number pyramid are drawings; the texts name the rule.
+        puzzleMagicPrompt: 'Jaka liczba pasuje do pustego pola w kwadracie magicznym?',
+        puzzleMagicSpeak: 'Popatrz na kwadrat magiczny. Jaka liczba pasuje do pustego pola?',
+        puzzleMagicHint: 'Wiersze, kolumny i przekątne mają równe sumy. Dodaj pełną linię.',
+        puzzleMagicFullLine: (kind: 'row' | 'column' | 'diagonal', terms: string, sum: number) =>
+            `${kind === 'row' ? 'Pełny wiersz' : kind === 'column' ? 'Pełna kolumna' : 'Pełna przekątna'}: ${terms} = ${sum}.`,
+        puzzleMagicGapLine: (kind: 'row' | 'column' | 'diagonal', a: number, b: number) =>
+            `${kind === 'row' ? 'W wierszu' : kind === 'column' ? 'W kolumnie' : 'Na przekątnej'} z pustym polem są ${a} i ${b}.`,
+        puzzlePyramidPrompt: 'Jaka liczba pasuje do pustej cegły w piramidzie?',
+        puzzlePyramidSpeak: 'Popatrz na piramidę. Jaka liczba pasuje do pustej cegły?',
+        puzzlePyramidHint: 'Liczba w cegle to suma dwóch cegieł pod nią.',
+        puzzlePyramidBaseHint: 'Cegła nad dwiema cegłami jest ich sumą, więc odejmij znaną cegłę od tej nad nimi.',
+        // GRID (S-13b): columns are letters, rows are numbers; the item names are nominative nouns from the dictionary.
+        gridWherePrompt: (noun: string) => `Na którym polu leży ${noun}?`,
+        gridWhatPrompt: (cell: string) => `Co leży na polu ${cell}?`,
+        // The narrator says the column letter by its Polish name: a bare "D" or "C" would be read as a Roman numeral or a stray letter.
+        gridWhatSpeak: (col: number, row: number) =>
+            `Co leży na polu ${['a', 'be', 'ce', 'de', 'e', 'ef'][col] ?? ''} ${row + 1}?`,
+        gridHint: 'Najpierw litera kolumny, potem numer wiersza.',
+        gridCellHint: (cell: string, col: number, row: number) =>
+            `Pole ${cell}: kolumna ${String.fromCharCode(65 + col)}, wiersz ${row + 1}.`,
+        gridWhereAnswerHint: (cell: string) => `To pole ${cell}.`,
+        gridWhatAnswerHint: (cell: string, noun: string) => `Na polu ${cell} leży ${noun}.`,
+        // PERIMETER (S-13b): the figures carry the lengths; the texts name the rule. Lengths are in centimetres.
+        perimeterRectPrompt: 'Oblicz obwód prostokąta w centymetrach.',
+        perimeterSquarePrompt: 'Oblicz obwód kwadratu w centymetrach.',
+        perimeterTrianglePrompt: 'Oblicz obwód trójkąta w centymetrach.',
+        perimeterSideSquarePrompt: (perimeter: number) => `Obwód kwadratu wynosi ${perimeter} cm. Ile centymetrów ma jeden bok?`,
+        perimeterSideRectPrompt: (perimeter: number, side: number) =>
+            `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
+        perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
+        sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
+        perimeterHint: 'Obwód to suma długości wszystkich boków.',
+        perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
+        perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków.',
+        perimeterCompositeHint: 'Idź dookoła figury i dodaj długości wszystkich jej boków.',
         dataMostLeast: 'Porównaj wysokość słupków.',
         dataValuesHint: (pairs: string) => `Wysokości słupków: ${pairs}.`,
         dataMostAnswerHint: (label: string) => `Najwyższy jest słupek „${label}”.`,

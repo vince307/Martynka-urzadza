@@ -46,7 +46,15 @@ export const startRound = (tasks: readonly Task[], rules: RoundRules): RoundStat
     };
 };
 
-const isCorrect = (task: Task, input: unknown): boolean => (task.check ? task.check(input) : input === task.answer);
+const sameSet = (a: readonly unknown[], b: readonly unknown[]): boolean =>
+    a.length === b.length && a.every((x) => b.includes(x)) && b.every((x) => a.includes(x));
+
+/** `check` wins; two lists are the same set in any order (a `select` answer), everything else is strict equality. */
+const isCorrect = (task: Task, input: unknown): boolean => {
+    if (task.check) return task.check(input);
+    if (Array.isArray(task.answer) && Array.isArray(input)) return sameSet(task.answer, input);
+    return input === task.answer;
+};
 
 const settle = (state: RoundState, outcome: Outcome): RoundState => {
     const outcomes = state.outcomes.map((o, i) => (i === state.index ? outcome : o));
