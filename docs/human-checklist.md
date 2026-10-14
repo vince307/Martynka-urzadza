@@ -107,3 +107,29 @@ Wysłane i wdrożone: `save-observability-c1-c2` (#36, merge d13d9a3, Deploy 384
 - [ ] 5.10 — Teksty: `pl.saveUnavailable`, `pl.settings.save*`; O1: „Ostatnie próby zapisu się nie udały” także po jednej nieudanej próbie.
 - [ ] Limit odczytu 5000 ms (`balance.save.loadTimeoutMs`); pierwszy powód blokady zapisu wygrywa; panel pokazuje stan z chwili otwarcia.
 - [ ] Nowe szwy tylko w buildzie e2e: `?e2eSave=unavailable|hang|writefail` (strażnik buildu sprawdza każdy).
+
+## Bieg 2026-10-13-s12-s14 (S-12, S-13, S-14)
+
+Wysłane i wdrożone: S-12 `save-export-import-reset` (#39, merge b57433c, Deploy 38462360681), S-13 `drawn-widget-tasks-e3-e4` (#40, merge bb00d7f, Deploy 38484353431), S-14 `art-tasks-all-stages` (#41, merge 1812347, Deploy 38502129327). Rodzic eksportuje, importuje i resetuje zapis; dziecko rozwiązuje zadania z zegarem, linijką, klockami, wykresem (zaznaczanie i przeciąganie), z pieniędzmi, wagą, dzbankami, termometrem i ikonami. Pierwsza grafika w grze: 38 plików WebP z paczki A v1. Format zapisu bez zmian (v1). Main po biegu: 1865 testów jednostkowych, 46 e2e (było 1176 / 33).
+
+### Do zrobienia
+
+- [ ] P0 — Przejrzyj audyt po biegu, PR #42 (nie scalony): 1 CRITICAL — S14-01: gdy obrazek się nie wczyta, zastępcza ramka pokazuje angielski identyfikator pliku (`coin-05gr`), a kwota jest tylko na obrazku, więc zadania nie da się rozwiązać, nikt się nie dowie, a pomyłki liczą się jako słabość dziecka (`src/ui/widgets/ArtImage.ts` `show`). Dalej HIGH: nieudane / niezdekodowane obrazki tylko `console.warn` albo nic (`BootScene.preload`); import/reset po `unavailable` pokazuje „Teraz: 0 gwiazdek” i nadpisuje niewidziany zapis (`autosave.ts` `replace`, `UIScene.openImport`); odpowiedź-tablica bez `check` zostawia dziecko w `retype` (`round.ts` `isCorrect`, ukryte). Źródło: `context/audits/observability/2026-10-14_0445-eksport-import-reset-widzety-obrazki.md` na gałęzi PR #42.
+- [ ] P0 — Sprawdź na tablecie: podgląd postępów w panelu rodzica pokazał „Krok 8 z 8” dla E3 po jednej rundzie (bramka wizualna S-12; nie kod S-12) — czy to błąd widoku, czy startu z kalendarza.
+- [ ] P1 — iPad i Android, S-12: eksport przez udostępnianie / pobranie (4.7), import z wyborem pliku (5.6), wynik `persist()` w „Zapis gry” (6.10).
+- [ ] P1 — iPad i Android, S-13: przeciąganie i zaznaczanie palcem (9.8); klocki na macie są małe (~10 px kostka na 1024 px — O3); wykres trudny do odczytu w fazie rozwiązania obok klawiatury (O2).
+- [ ] P1 — iPad i Android, S-14: ostrość WebP i działanie w Safari (9.9); liczby na podziałce termometru wyglądają na drobne na 1024 px.
+- [ ] P2 — Follow-upy: `context/archive/2026-10-13-save-export-import-reset/follow-ups/review-fixes.md` (F1 import/reset nad nieczytelnym zapisem, N-7), `context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md` (O1–O3, czas `adaptive.spec` blisko limitu 180 s), `context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`.
+- [ ] P2 — Grafika i roadmapa: przeczytaj `docs/art-inventory.md` (ten PR) i zdecyduj: sloty salonu (10 czy 6), model kosztów, formy mebli, minigry do S-15; potem podział S-16 (salon + ikony vs dźwięki) i krok przygotowania grafiki.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] S-12 6.8 — eksport to plik `.txt` z kopertą JSON (aplikacja, build, powód), nie „plik JSON” z FR-022: udostępnianie w Chrome na Androidzie odrzuca `.json`.
+- [ ] S-12 6.9 — teksty eksportu/importu/resetu (m.in. „Anulowano. Kopia nie powstała.”); import tylko z panelu rodzica, nie z ekranu powitalnego; podmiana zapisu = `replace` + przeładowanie strony.
+- [ ] S-13 4.6 — godziny zapisywane „15.00” (katalog zadań), nie „3:30” (kit).
+- [ ] S-13 6.9 / 10.6 — zakres: bez osi liczbowej, słupka pisemnego i grafów (→ S-14b); kratka, kwadrat magiczny, obwód, „ustaw zegar” → S-13b; zegar 1–12, budowanie liczby do 99.
+- [ ] S-13 10.7 — teksty i nazwy kroków dla dziecka (`childName`).
+- [ ] S-14 2.9 — WebP (połowa rozdzielczości) w `public/assets/tasks/`, nie PNG z planu § 10.
+- [ ] S-14 8.9 — S-14 zawężony; S-14b (oś, słupek, strzałki), S-14c (miary i czas tekstowo), S-14d (figury E1, tryb obrazkowy, płacenie przeciąganiem) jako nowe pozycje roadmapy.
+- [ ] S-14 9.7 — płacenie przeciąganiem monet odłożone (S-14d); waga tylko w równowadze; ujemne °C i „zł + gr” jako kafelki; temperatury co 5 °C (E3) i 2 °C (E5–E6); w E3–E5 bez temperatur ujemnych (odstępstwo od ZADANIA −30..+30, luka 64).
+- [ ] S-14 9.8 — teksty i masy przedmiotów (`SCALE_ITEMS`, np. „filiżanka 50 dag”), polecenie `mass_convert` bez nazwy przedmiotu.
