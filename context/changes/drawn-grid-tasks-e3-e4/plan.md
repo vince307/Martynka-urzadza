@@ -140,16 +140,18 @@ zielony. E2E po fazie zwykle uruchamia orkiestrator (protokół request-file, pr
 wszystkich trzech. Rodzaje nie mają grafiki rastrowej (`artFilter` ich nie dotyczy — test).
 
 **Zegar (faza 4; zależą fazy 7–8).** Wizualizacja: istniejący `{ kind: 'clock', hour, minute }` z flagą `set: true`
-(stan początkowy wskazówek ≠ odpowiedź, wskazówki się nie nakładają). Reduktor `src/core/clockSet.ts`:
+i polem `snap: 60 | 5` (60 dla `minuteStep` 60, inaczej 5 — jedyne źródło przyciągania dla sceny, `canonicalInput` i haka;
+plan-review F2) (stan początkowy wskazówek ≠ odpowiedź, wskazówki się nie nakładają). Reduktor `src/core/clockSet.ts`:
 `stepClockSet(state, event, geo, rules)`, zdarzenia jak `BlockDragEvent` (`down/move/up/cancel/reset`, `pointerId`),
-`geo` = środek, skala, długości wskazówek (z `TASK_LAYOUT`/`DIAL`, nie z widżetu), `rules` = `snapMinutes` (60 albo 5),
-`grabRadius` (≥ 48 px sceny) z `balance.clockSet`. Kąt = `atan2(dx, -dy)` zgodnie z ruchem zegara od 12; liczy się kąt,
+`geo` = środek, skala, długości wskazówek (z `TASK_LAYOUT`/`DIAL`, nie z widżetu), `rules` = `snapMinutes` (60 albo 5, z
+`visual.snap` zadania), `grabRadius` (≥ 48 px sceny) z `balance.clockSet`. Kąt = `atan2(dx, -dy)` zgodnie z ruchem zegara od 12; liczy się kąt,
 nie promień. Chwytanie: wskazówka bliższa kątowo, remis rozstrzyga promień (dalej niż połowa między końcami → minutowa);
 przy `snapMinutes` 60 minutowa jest nieruchoma na 12. Godzina = najbliższa z 12 pozycji do `θ_godz − m · 0,5°` → 1..12;
 godzinowa zawsze rysowana w `clockHandAngles(h, m)`. `down` podczas przenoszenia = nowy chwyt (nie wzór S13-09).
 `cancel`/`reset` przywracają pozę sprzed chwytu. Wynik `clockValue(state) = formatTime(h, m)`.
 
-**Wybór gałęzi `drag` (faza 1).** `dragMode(task): 'blocks' | 'clock'` w `src/core/round/` — `visual.kind === 'clock'` →
+**Wybór gałęzi `drag` (faza 1).** `dragMode(task): 'blocks' | 'clock'` w `src/core/tasks/dragMode.ts` (nie w `src/core/round/`: woła go też
+`validateTask`, a `core/round` importuje z `core/tasks`, nie odwrotnie; plan-review F3) — `visual.kind === 'clock'` →
 `clock`, brak rysunku lub `blocks` → `blocks`, inny rodzaj → `throw` z `skill`/typem. `TaskScene.render` używa go zamiast
 `typeof task0.answer`; `dragKinds` dostaje liczbę tylko z gałęzi klocków.
 
@@ -184,11 +186,12 @@ Zabezpieczenie przed pułapką `retype` zanim pojawi się pierwszy `drag` z odpo
 
 **Intent**: tablicowa odpowiedź musi być ⊆ `choices`; tryb `drag` bez znanej gałęzi = naruszenie (S13-03).
 
-**Contract**: nowe kody naruszeń w `validateTask`; bez zmian dla odpowiedzi liczbowych/tekstowych.
+**Contract**: nowe kody naruszeń w `validateTask` (gałąź `drag` przez `dragMode` z `src/core/tasks/dragMode.ts`); bez zmian dla
+odpowiedzi liczbowych/tekstowych.
 
 #### 3. Gałąź `drag` i kanoniczne wejście
 
-**File**: `src/core/round/dragMode.ts` (nowy), `src/core/round/canonicalInput.ts` (nowy), `src/scenes/TaskScene.ts`
+**File**: `src/core/tasks/dragMode.ts` (nowy), `src/core/round/canonicalInput.ts` (nowy), `src/scenes/TaskScene.ts`
 
 **Intent**: `dragMode` (kontrakt w Critical Implementation Details) zastępuje `typeof task0.answer` w `TaskScene.render`;
 `canonicalInput` daje wejście, którym widżet trybu potrafi odpowiedzieć (S13-04).
@@ -243,7 +246,9 @@ Model dla faz 3, 5, 6, 9 i pierwszy generator; żadna umiejętność w danych.
 
 **Intent**: rodzaje `cells`, `grid`, `figure` wg kontraktu; id przedmiotów kratki z rzeczownikami słownika.
 
-**Contract**: jak w Critical Implementation Details; reguły `validateVisual`: liczba pól wg układu, dokładnie jedno `null`,
+**Contract**: jak w Critical Implementation Details; `src/ui/widgets/TaskPicture.ts` dostaje tymczasowe `case 'cells' | 'grid' |
+'figure'` bez rysunku (`this.drawn = null`, komentarz „widget in phase 5/6”), bo jego `switch` kończy się `const unreachable:
+never` — bez tego typecheck fazy 2 jest czerwony (plan-review F1); fazy 5–6 zastępują te gałęzie widżetami. Reguły `validateVisual`: liczba pól wg układu, dokładnie jedno `null`,
 pola kratki w zakresie i różne, wielokąt zamknięty ≥ 3 wierzchołki, `sides.length === vertices.length`, `lattice` ⇒
 wierzchołki całkowite i krawędzie poziome/pionowe.
 
@@ -363,7 +368,7 @@ Cała logika zegara do ustawiania w `core`; scena i dane w fazach 7–8.
 **File**: `src/core/tasks/generators/clock.ts`, `src/core/tasks/visual.ts`, `src/core/narration/spoken.ts`
 
 **Intent**: `variant: 'set'` z `minuteStep` (60, 30, 15 — odpowiedzi) i `h24?: boolean` (polecenie „Ustaw zegar na 15.00.”,
-odpowiedź „3.00”); `visual: { kind: 'clock', hour, minute, set: true }` z pozą startową ≠ odpowiedź; hint[0] uczy wskazówek
+odpowiedź „3.00”); `visual: { kind: 'clock', hour, minute, set: true, snap }` (`snap` 60 przy `minuteStep` 60, inaczej 5) z pozą startową ≠ odpowiedź; hint[0] uczy wskazówek
 bez napisu odpowiedzi (np. `clockHandsHint`), potem „Krótką wskazówkę ustaw na 4.”, „Długą wskazówkę ustaw na 6.”;
 `describeVisual` `[clock set from 9.00]`; czytane polecenie nie czyta pozy startowej.
 
@@ -467,7 +472,10 @@ Obwody w E4.7 (próg 2 → 3).
 **File**: `src/ui/widgets/FigureGrid.ts` (nowy), `src/ui/widgets/TaskPicture.ts`
 
 **Intent**: wielokąt 4 px teal, kratka 2 px (`lattice`), podpisy boków przy środkach krawędzi na zewnątrz figury, czcionka
-≥ 24 px sceny; w `keypadSolution.picture` skala z komórką ≥ 36 px. `DESIGN-GAP` → wiersze 75 (podpisy boków), 76 (siatka w
+≥ 24 px sceny; w `keypadSolution.picture` skala z komórką ≥ 36 px. Rozmieszczenie podpisów i skala to czysta funkcja
+`figureLayout(visual, rect)` w `src/core/round/figureLayout.ts` (nowy) z testem `tests/figureLayout.test.ts` (podpis na zewnątrz
+wielokąta przy środku krawędzi, komórka ≥ 36 px w 768 × 190, nic poza prostokątem) — na nim stoi deliberate break 6.3
+(plan-review F4); widżet tylko rysuje jej wynik. `DESIGN-GAP` → wiersze 75 (podpisy boków), 76 (siatka w
 768 × 190).
 
 #### 2. Dane
@@ -670,7 +678,7 @@ tablet test`; S13-09 → `next change to blockDrag`; S13-05/06/11…14 przeniesi
 #### Manual Verification:
 
 - [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o klockach jako jedynym `drag`
-- [human] Decyzje wbrew dosłownemu tekstowi ZADANIA: E4.3 „ustaw” tylko kwadranse (odczyt co 5 min zostaje), wskazówka godzinowa wybierana osobno (nie przekładnia), kratka 5 × 4 zamiast 8 × 5 kitu, zakresy tam, gdzie ZADANIA milczy (kwadrat ≤ 30, boki 2–20 cm, obwód E6 ≤ 40)
+- [human] Decyzje wbrew dosłownemu tekstowi ZADANIA: E4.3 „ustaw” tylko kwadranse (odczyt co 5 min zostaje), wskazówka godzinowa wybierana osobno (nie przekładnia), kratka 5 × 4 zamiast 8 × 5 kitu, zakresy tam, gdzie ZADANIA milczy (kwadrat ≤ 30, boki 2–20 cm, obwód E6 ≤ 40); wyższe progi odblokowania dla dzieci zapisanych na E3.3, E3.5, E3.7, E3.11, E4.7 (tabela progów — wolniej, nic nie ginie) i E6.1 → E6.3 zamiast E6.4
 
 ---
 
@@ -786,6 +794,11 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - **Chromium w sesji agenta**: fazy 1–10 e2e uruchamia orkiestrator; 11–12 protokół request-file.
 - **Podpisy boków w 768 × 190**: komórka ≥ 36 px, czcionka ≥ 24 px; zrzut 6.x to sprawdza; zmieniłoby: nieczytelne → kształt
   `tall` (układ „obok”) dla `figure`.
+- **Obszar `select` z rysunkiem (faza 4)** nie ma dziś konsumenta (żadna umiejętność `select` nie ma `visual`); zamyka
+  follow-up S-13 tanio, ale dowód to tylko test układu (plan-review F6). Zmieniłoby: koszt > 1 test → follow-up `Trigger: the first
+  pictured select skill`.
+- **Faza 4 najcięższa z `core`** (reduktor + wariant `set` + układ + `canonicalInput`); przy zbliżaniu się do limitu kontekstu
+  agent kończy po reduktorze i wariancie (`NEEDS_CONTINUATION`), układ w tej samej fazie dokańcza następna sesja (plan-review F6).
 - **Faza 11 break (b)**: hak nie widzi pozycji przedmiotów w pikselach — dowód poprawności rysunku kratki tylko w zrzutach.
 
 ## References
@@ -967,7 +980,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Manual
 
 - [ ] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o klockach jako jedynym `drag`
-- [ ] 10.6 [human] Decyzje wbrew dosłownemu ZADANIA/kitowi: E4.3 „ustaw” tylko kwadranse, godzinowa osobno, kratka 5 × 4, zakresy tam, gdzie ZADANIA milczy
+- [ ] 10.6 [human] Decyzje wbrew dosłownemu ZADANIA/kitowi: E4.3 „ustaw” tylko kwadranse, godzinowa osobno, kratka 5 × 4, zakresy tam, gdzie ZADANIA milczy; wyższe progi odblokowania na żywych zapisach
 
 ### Phase 11: Zadania siatki dotykiem — e2e (#11)
 
