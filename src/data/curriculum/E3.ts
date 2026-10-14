@@ -45,6 +45,7 @@ export const E3: StageDef = {
             skills: [
                 skill('E3.3.clock_read_full', 3, 'CLOCK', { variant: 'read', minuteStep: 60 }, 'tiles'),
                 skill('E3.3.clock_later_full', 3, 'CLOCK', { variant: 'later', minuteStep: 60, maxShift: 3 }, 'tiles'),
+                skill('E3.3.clock_set_full', 3, 'CLOCK', { variant: 'set', minuteStep: 60 }, 'drag'),
             ],
         },
         {
@@ -134,6 +135,7 @@ export const E3: StageDef = {
             types: ['CLOCK', 'ROMAN', 'CALENDAR', 'TEMPERATURE'],
             skills: [
                 skill('E3.11.clock_24h', 11, 'CLOCK', { variant: 'h24', minuteStep: 60 }, 'tiles'),
+                skill('E3.11.clock_set_24h', 11, 'CLOCK', { variant: 'set', minuteStep: 60, h24: true }, 'drag'),
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E3.11.calendar', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
                 skill('E3.11.temperature_read_30', 11, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 5, answer: 'text' }, 'tiles'),

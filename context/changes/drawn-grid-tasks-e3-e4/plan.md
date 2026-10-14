@@ -933,7 +933,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — eacf9e0
 - [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check — eacf9e0
 - [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka — eacf9e0
-- [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 57 passed on eacf9e0
 
 #### Manual
 
@@ -943,9 +943,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje nowe umiejętności
-- [ ] 8.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń
-- [ ] 8.3 Deliberate break: `minuteStep` 7 → parser czerwony; generator dający 0.15 → rozwiązywalność czerwona; przywrócone; meta-check
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje nowe umiejętności — SHA
+- [x] 8.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń — SHA
+- [x] 8.3 Deliberate break: `minuteStep` 7 → parser czerwony; generator dający 0.15 → rozwiązywalność czerwona; przywrócone; meta-check — SHA
 - [ ] 8.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany (≤ limit)
 
 #### Manual

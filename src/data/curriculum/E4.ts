@@ -51,6 +51,7 @@ export const E4: StageDef = {
                 skill('E4.3.clock_read_half', 3, 'CLOCK', { variant: 'read', minuteStep: 30 }, 'tiles'),
                 skill('E4.3.clock_read_quarter', 3, 'CLOCK', { variant: 'read', minuteStep: 15 }, 'tiles'),
                 skill('E4.3.clock_read_5', 3, 'CLOCK', { variant: 'read', minuteStep: 5 }, 'tiles'),
+                skill('E4.3.clock_set_quarter', 3, 'CLOCK', { variant: 'set', minuteStep: 15 }, 'drag'),
             ],
         },
         {
