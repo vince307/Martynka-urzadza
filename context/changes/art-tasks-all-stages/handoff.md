@@ -1,69 +1,59 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the `/10x-implement` step for phase 6 (commit `44c4f19`): `Jugs` and `Thermometer` widgets over `ArtImage`, their layout functions, skills in E3.11, E4.7, E5.4, E6.1. Phase 7 (impl) is next; the e2e of this phase (6.5) and the browser proof of the tall layout (6.3) were NOT run (Chromium cannot start here).
+Written by the `/10x-implement` step for phase 7 (commit `5cdf740`): `IconGroups` widget over `ArtImage`, `iconsLayout`, COUNT skills in E1.2 and E1.4, MULT_GROUPS in E3.9. Phase 8 (impl) is next; the e2e of this phase (7.5) was NOT run (Chromium cannot start here) and the tall-layout browser break (6.3) is still open for phase 10.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | `46aff1d` (p1), `d4f4470` + `ab0dc05` (p2), `b6a947d` (p3), `ba4e0da` (p4), `89e5ea0` (p5), `44c4f19` (p6), this handoff commit |
+| Commits | `46aff1d` (p1), `d4f4470` + `ab0dc05` (p2), `b6a947d` (p3), `ba4e0da` (p4), `89e5ea0` (p5), `44c4f19` (p6), `5cdf740` (p7), this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; the implement epilogue is for the last phase) |
-| `## Progress` rows remaining | 43 (`grep -c '^- \[ \]' plan.md`); open for this phase: 6.3 break (browser), 6.5 e2e (orchestrator), 6.6 reviewer, 6.7 visual |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; open for this phase: 7.5 e2e (orchestrator), 7.6 reviewer, 7.7 visual; row 6.5 ticked from the orchestrator note |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/artLayout.ts` | new pure `jugsLayout` (rows of up to 5, two rows from 6; the image is placed so the shared visible rectangle lands on the jug cell), `thermometerLayout` (housing 512x1536 fitted, `scale` for face units), `thermometerMarks` (every ten major, every five medium, single degrees only when `pxPerDegree >= minGapPx`, else every second) |
-| `src/ui/widgets/Jugs.ts` | pool of 10 `ArtImage`; `render`, `setVisible`, `shown`, `art`, `bounds` |
-| `src/ui/widgets/Thermometer.ts` | `ArtImage` housing + Graphics face (tube, liquid, bulb, ticks) + 7 label texts + `°C` text, port of `reference/thermometer-face.js`; `shown()` needs the housing AND the visible face AND the unit label; `art()` is the housing's state |
-| `src/ui/widgets/TaskPicture.ts` | dispatches `jugs` and `thermometer`; only `icons` is still an empty case (phase 7) |
-| `src/data/layout.ts` | `TASK_LAYOUT.jugs` (gap, rowGap, maxPerRow 5, maxScale), `TASK_LAYOUT.thermometer` (face geometry in housing units, `minGapPx` 7, `minLabelPx` 22), font role `thermoLabel` (size and weight); `DESIGN-GAP (row added in S-14 phase 9)` comments |
-| `src/core/text/measure.ts` | `formatScaleMark` ("+10", "0", "−20") |
-| `src/core/tasks/generators/temperature.ts` | diff variant no longer draws a cold morning equal to minus the answer (spoken "minus osiem" vs answer 8 failed the speech test) |
-| `src/data/curriculum/E3.ts`, `E4.ts`, `E5.ts`, `E6.ts` | E3.11 `temperature_read_30` (tiles, text); E4.7 `capacity_half_l`, `capacity_litres_half` (keypad); E5.4 `temperature_read_0_30` (keypad); E6.1 `temperature_negative` (tiles), `temperature_diff` (keypad) |
-| `tests/artLayout.test.ts` | +19 tests: jugs inside 3 areas and apart for 1/2/5/6/10, one vs two rows, image/visible-rect offset; thermometer proportions in the narrow column, marks density, major/medium kinds |
-| `tests/contentInvariants.test.ts` | `SMALL_SPACES` entry for `E4.7.capacity_litres_half` (10 distinct tasks: 1..10 litres) |
-| `context/changes/art-tasks-all-stages/plan.md` | rows 5.5 (from the orchestrator note), 6.1, 6.2, 6.4 ticked |
-
-TaskScene needed no change in this phase: it already passes `visualShape(task.visual)` to `pictureLayout` (phase 1), so a thermometer with the keypad solution uses `keypadBeside`.
+| `src/ui/widgets/artLayout.ts` | new pure `iconsLayout(groups, framed, area, spec)` returning `icons`, `frames`, `icon` (side in px): one group = grid with rows of up to `maxPerRow` 6; `[10, k]` = the ten in one row, the rest left-aligned under it; framed groups side by side (two lines of frames from four groups); fits the area, capped at `maxIcon` |
+| `src/ui/widgets/IconGroups.ts` | Graphics for the frames (created first, so drawn under the icons) + pool of 30 `ArtImage`; `render(icon, groups, framed, rect)`, `setVisible`, `shown`, `art`, `bounds` |
+| `src/ui/widgets/TaskPicture.ts` | the `icons` case now dispatches to `IconGroups`; every visual kind has a widget |
+| `src/data/layout.ts` | `TASK_LAYOUT.icons` (gap 0.12, maxPerRow 6, framePad 0.2, frameGap 0.35, maxIcon 150, radius, border); DESIGN-GAP comment (row in phase 9: the kit has no plates) |
+| `src/data/curriculum/E1.ts`, `E3.ts` | `E1.2.count_5` (1..5), `E1.4.count_7` (4..7), `E3.9.mult_groups_result`, `E3.9.mult_groups_expr` (2-5 groups of 2-6, max 30), all tiles |
+| `tests/artLayout.test.ts` | +25 tests for `iconsLayout` (7 shapes x 3 areas inside and apart, icons inside their frame, >= 96 px for 1/5/7 icons in 294 px tall areas, ten in a row, cap) |
+| `context/changes/art-tasks-all-stages/plan.md` | rows 6.5, 7.1-7.4 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `npm test` | 1745 passed (branch baseline 1707, +38: 19 layout tests, 19 from the 7 new skills' invariants and the generator tests) (observed) |
-| `npm run lint`, `npm run typecheck` | clean (observed) |
+| `npm test` | 1782 passed (branch baseline 1745, +37: 25 layout tests, 12 from the 4 new skills' invariants and generator tests) (observed) |
+| `npm run lint`, `npm run typecheck` | clean (observed; one `eslint --fix` for unnecessary assertions in the new test) |
 | `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK (observed) |
-| `npm run sample -- E1` ... `E6` | exit 0 each; `--count 6` read for E3.11, E4.7, E5.4, E6.1: "Naruszenia: 0" |
+| `npm run sample -- E1` ... `E6` | "Naruszenia: 0" each; `--count 6` read for E1.2, E1.4, E3.9 |
 | `npm run build` | green, `e2e hook: absent (2 chunks checked)` |
-| Deliberate break | `jugsLayout` image placed at the jug cell without the visible-rect offset: `tests/artLayout.test.ts` red (`expected 674.48 to be close to 661`); restored, 51 green. Meta-check: proves the layout rule only, not what the scene draws |
-| Break 6.3 (TaskScene always `wide`) | NOT done: needs a browser; row left unticked. A temporary spec (E5.4 via `passWelcomeAsParent` stage E5, `e2eSkills`, two wrong answers, `targets().picture` taller than wide, `art` = thermometer-frame loaded) was written, could not launch Chromium, and was deleted (not committed) |
-| e2e | not runnable in this session — orchestrator gate (`MachPortRendezvousServer ... Permission denied`). Expected `42 passed + 0`; row 6.5 unticked |
-| Teacher read | read: "−5 °C" style tiles, opposite-sign distractor first, diff hints ("16 − 10 = 6", "6 + 14 = 20"), "Dwa dzbanki po pół litra to razem litr", "2 · 2 = 4"; no violation. The last hint line states the result by design |
+| Deliberate break | `E1.2.count_5` answer `'tiles'` -> `'keypad'`: `tests/generateTask.test.ts` red (`expected [ 'E1.2.count_5' ] to deeply equal []`, "E1 has no keypad skill"); restored. Meta-check: the pin covers the new skill by listing it |
+| e2e | not runnable in this session — orchestrator gate (`MachPortRendezvousServer ... Permission denied`, plain `npx playwright test --config=...` tried). Expected `42 passed + 0`; row 7.5 unticked |
+| Teacher read | "Ile jest gruszek/jabłek/lamp/kluczy/książek/rogalików?", hints "Na obrazku: 3 gruszki / 5 gruszek", "Na 4 talerzykach leży po 4 gruszki", expression distractors (sum, wrong product, swapped factors not offered): no violation |
 
 ## 4. Next command
 
-`/10x-implement art-tasks-all-stages phase 7` (phase 7, Driver: impl)
+`/10x-implement art-tasks-all-stages phase 8` (phase 8, Driver: impl)
 
 ## 5. Open
 
-- Row 6.5 (orchestrator): `npx playwright test` expects 42 passed. Row 6.3 needs a browser: phase 10 (row 10.5) or the orchestrator can run the temporary spec described above; the break (TaskScene passes `'wide'`) must turn `picture.height > picture.width` red in the solution phase. Rows 6.6 `[reviewer]`, 6.7 `[visual]` (screens in plan row 6.7). Earlier open: 1.5, 2.8, 2.9 `[human]`, 3.5, 4.5, 5.7, 5.8, 5.9.
-- Readability risk for the visual gate: the thermometer is height-bound (1:3), so in a 378 px column it is 126 px wide and in the tiles area (294 px) 98 px wide; label size is floored by `minLabelPx` 22 and ticks by `minGapPx` 7 (every second degree below that). `TASK_LAYOUT.jugs` (gap 40, maxScale 0.8) and the thermometer numbers were chosen by eye, never seen on a canvas.
-- Browser proof of `art` for jugs/thermometer: phase 10 should assert jugs keys `tasks/measuring/container-*` (one per jug, all `loaded`), thermometer keys `[tasks/measuring/thermometer-frame]`, `art` empty after hide.
-- DESIGN-GAP rows (from 59) are written in phase 9 for money, scale, jugs, thermometer small sizes; E4.1 banknotes 200/500 zł follow-up `Trigger: S-14c`.
-- Phase 7 widget `IconGroups` replaces the last empty `icons` case in `TaskPicture`.
+- Row 7.5 (orchestrator): `npx playwright test` expects 42 passed. Rows 7.6 `[reviewer]`, 7.7 `[visual]`. Row 6.3 (TaskScene tall-layout break) stays open for phase 10 (row 10.5) or the orchestrator. Earlier open: 1.5, 2.8, 2.9 `[human]`, 3.5, 4.5, 5.7, 5.8, 5.9, 6.6, 6.7.
+- Readability for the visual gate: a ten in one row in a 600 px wide area is about 55 px per icon (plan wanted >= 96 px only up to 12 icons, but a ten in one row cannot do that in the narrow areas); 12 icons in 6+6 rows give about 91 px at 600 px width. Frames have a fill and border from `PLACEHOLDER_COLORS`, never seen on a canvas.
+- Browser proof of `art` for icons: phase 10 should assert keys `tasks/icons/<id>` one per icon, all `loaded`, `art` empty after hide.
+- DESIGN-GAP rows (from 59) are written in phase 9 for money, scale, jugs, thermometer small sizes, icons without plates; E4.1 banknotes 200/500 zl follow-up `Trigger: S-14c`.
 - `ARTIFACT GAP: none`.
 
 ## 6. Autonomous decisions
 
-1. The scene part of the phase ("render passes the shape") was already done in phase 1, so no `TaskScene` edit; the break 6.3 therefore has nothing new to prove in unit tests and stays a browser break. Would change: nothing.
-2. `Thermometer.shown()` requires housing, face and unit label together (S-13 F1 lesson); `art()` reports only the housing image (the one art texture).
-3. Changed the E6.1 `diff` generator (phase 4 file) to avoid a negative morning whose magnitude equals the answer, because the existing speech test (`speech does not give away the answer`) failed on it. Rejected: loosening the shared test. Would change: a teacher preferring the coincidence to stay.
-4. `E4.7.capacity_litres_half` gets a `SMALL_SPACES` entry (10 distinct), as the plan foresaw; top share stays about 10 %, below the 15 % cap.
-5. The degree label `°C` is a unit symbol drawn in the widget, not a Polish sentence; kept out of `pl.ts`. Would change: a reviewer insisting on `pl.ts` for every drawn string.
-6. e2e not run (Chromium cannot start); the orchestrator note applied to row 5.5.
+1. The ten of `[10, k]` stays in one row as the plan says, accepting small icons in narrow areas; the 96 px test covers 1/5/7 icons in areas 294 px tall only. Rejected: two rows of five for the ten (changes the "ten in a row" teaching picture). Would change: the visual gate finding the ten unreadable.
+2. Frames are one Graphics object created before the icon pool, so they sit under the icons without depth values.
+3. Framed groups are laid in one line up to three groups, two lines from four; unframed multi-group drawings stack one group per row left-aligned.
+4. e2e not run (Chromium cannot start); the orchestrator note applied to row 6.5.

@@ -987,7 +987,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:` — 44c4f19
 - [ ] 6.3 Deliberate break: `TaskScene` zawsze `wide` → termometr w rozwiązaniu nie „obok” (jednorazowy hook `*.local` albo e2e 10.5); przywrócone
 - [x] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — 44c4f19
-- [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 44c4f19 (e2e 42 passed by the orchestrator on 0c43371)
 
 #### Manual
 
@@ -998,10 +998,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 7.2 `npm run sample -- E1/E3 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 7.3 Deliberate break: `count_5` jako `keypad` → pin E1 czerwony; przywrócone; meta-check
-- [ ] 7.4 `playableSteps` bez zmian; `e2e hook: absent (`
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 5cdf740
+- [x] 7.2 `npm run sample -- E1/E3 --count 6` bez naruszeń, z linią `visual:` — 5cdf740
+- [x] 7.3 Deliberate break: `count_5` jako `keypad` → pin E1 czerwony; przywrócone; meta-check — 5cdf740
+- [x] 7.4 `playableSteps` bez zmian; `e2e hook: absent (` — 5cdf740
 - [ ] 7.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
