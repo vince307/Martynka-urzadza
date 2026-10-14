@@ -164,3 +164,65 @@ export const thermometerMarks = (min: number, max: number, pxPerDegree: number, 
     }
     return out;
 };
+
+export interface IconsLayoutSpec {
+    /** Gap of two icons in a group, in icon sizes. */
+    gap: number;
+    /** Most icons in a row of a group; more go to further rows. */
+    maxPerRow: number;
+    /** Padding between a group frame and its icons, in icon sizes. */
+    framePad: number;
+    /** Gap between two group frames (or the rows of frames), in icon sizes. */
+    frameGap: number;
+    /** The largest icon on screen, in scene pixels. */
+    maxIcon: number;
+}
+
+export interface IconsLayout {
+    icons: Rect[];
+    /** One rectangle per group when `framed`, else empty. */
+    frames: Rect[];
+    /** The side of one icon in scene pixels. */
+    icon: number;
+}
+
+/**
+ * Icons of a counting or multiplication drawing in `area`. One group is a grid (rows of up to `maxPerRow`); `[10, k]` puts the ten in one row
+ * and the rest left-aligned under it; framed groups stand side by side in a frame each (two rows of frames from four groups). The whole
+ * picture fits `area`, never above `maxIcon`.
+ */
+export const iconsLayout = (groups: readonly number[], framed: boolean, area: Rect, spec: IconsLayoutSpec): IconsLayout => {
+    const pad = framed ? spec.framePad : 0;
+    const blocks = groups.map((count) => {
+        const stacked = !framed && groups.length > 1;
+        const rows = stacked ? 1 : Math.ceil(count / spec.maxPerRow);
+        const cols = stacked ? count : Math.ceil(count / rows);
+        return { count, cols, rows, width: cols + (cols - 1) * spec.gap + 2 * pad, height: rows + (rows - 1) * spec.gap + 2 * pad };
+    });
+    const perLine = framed ? (blocks.length <= 3 ? blocks.length : Math.ceil(blocks.length / 2)) : 1;
+    const lines: (typeof blocks)[] = [];
+    for (let i = 0; i < blocks.length; i += perLine) lines.push(blocks.slice(i, i + perLine));
+    const lineWidth = (line: typeof blocks): number => line.reduce((sum, b) => sum + b.width, 0) + (line.length - 1) * spec.frameGap;
+    const lineHeight = (line: typeof blocks): number => Math.max(...line.map((b) => b.height));
+    const widthUnits = Math.max(...lines.map(lineWidth));
+    const heightUnits = lines.reduce((sum, line) => sum + lineHeight(line), 0) + (lines.length - 1) * spec.frameGap;
+    const icon = Math.min(area.width / widthUnits, area.height / heightUnits, spec.maxIcon);
+    const left = area.x + (area.width - widthUnits * icon) / 2;
+    let y = area.y + (area.height - heightUnits * icon) / 2;
+    const icons: Rect[] = [];
+    const frames: Rect[] = [];
+    for (const line of lines) {
+        let x = framed ? area.x + (area.width - lineWidth(line) * icon) / 2 : left;
+        for (const b of line) {
+            if (framed) frames.push({ x, y, width: b.width * icon, height: b.height * icon });
+            for (let i = 0; i < b.count; i += 1) {
+                const row = Math.floor(i / b.cols);
+                const col = i - row * b.cols;
+                icons.push({ x: x + (pad + col * (1 + spec.gap)) * icon, y: y + (pad + row * (1 + spec.gap)) * icon, width: icon, height: icon });
+            }
+            x += (b.width + spec.frameGap) * icon;
+        }
+        y += (lineHeight(line) + spec.frameGap) * icon;
+    }
+    return { icons, frames, icon };
+};

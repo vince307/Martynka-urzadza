@@ -29,7 +29,10 @@ export const E1: StageDef = {
             title: 'Liczby 1–5: liczenie, „który z kolei”, znaki <, >, =',
             childName: 'Porównywanie liczb do 5',
             types: ['COUNT', 'ORDINAL', 'COMPARE_NUM'],
-            skills: [skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles')],
+            skills: [
+                skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles'),
+                skill('E1.2.count_5', 2, 'COUNT', { min: 1, max: 5, tens: false }, 'tiles'),
+            ],
         },
         {
             step: 3,
@@ -50,6 +53,7 @@ export const E1: StageDef = {
             types: ['COUNT', 'BONDS', 'CALENDAR'],
             skills: [
                 skill('E1.4.bonds_6_7', 4, 'BONDS', { totals: [6, 7] }),
+                skill('E1.4.count_7', 4, 'COUNT', { min: 4, max: 7, tens: false }, 'tiles'),
                 skill('E1.4.calendar_weekdays', 4, 'CALENDAR', { variants: ['nextWeekday', 'prevWeekday'] }, 'tiles'),
             ],
         },

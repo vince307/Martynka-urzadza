@@ -105,6 +105,8 @@ export const E3: StageDef = {
             types: ['MULT_GROUPS', 'MULT'],
             skills: [
                 skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true }),
+                skill('E3.9.mult_groups_result', 9, 'MULT_GROUPS', { variant: 'result', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
+                skill('E3.9.mult_groups_expr', 9, 'MULT_GROUPS', { variant: 'expr', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
                 skill('E3.9.word_groups_30', 9, 'WORD', { max: 30, kinds: ['groups'], maxFactor: 6 }),
             ],
         },

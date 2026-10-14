@@ -5,6 +5,7 @@ import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
 import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
+import { IconGroups } from './IconGroups';
 import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
 import { Ruler } from './Ruler';
@@ -20,6 +21,7 @@ export class TaskPicture {
     private readonly scale: BalanceScale;
     private readonly jugs: Jugs;
     private readonly thermometer: Thermometer;
+    private readonly icons: IconGroups;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -32,6 +34,7 @@ export class TaskPicture {
         this.scale = new BalanceScale(scene);
         this.jugs = new Jugs(scene);
         this.thermometer = new Thermometer(scene);
+        this.icons = new IconGroups(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -41,7 +44,6 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
-        // Icons get their widget in S-14 phase 7.
         const widgets: Partial<Record<TaskVisual['kind'], { shown(): boolean; art?(): { key: string; loaded: boolean }[] }>> = {
             clock: this.clock,
             ruler: this.ruler,
@@ -51,6 +53,7 @@ export class TaskPicture {
             scale: this.scale,
             jugs: this.jugs,
             thermometer: this.thermometer,
+            icons: this.icons,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -79,6 +82,7 @@ export class TaskPicture {
                 this.thermometer.render(visual.celsius, rect);
                 break;
             case 'icons':
+                this.icons.render(visual.icon, visual.groups, visual.framed, rect);
                 break;
             default: {
                 const unreachable: never = visual;
@@ -98,6 +102,7 @@ export class TaskPicture {
         this.scale.setVisible(false);
         this.jugs.setVisible(false);
         this.thermometer.setVisible(false);
+        this.icons.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { MoneyId } from '../src/data/measures';
 import { TASK_LAYOUT } from '../src/data/layout';
 import type { Rect } from '../src/ui/widgets/geometry';
-import { jugsLayout, moneyLayout, scaleLayout, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
+import { iconsLayout, jugsLayout, moneyLayout, scaleLayout, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
 import { JUG_VISIBLE_RECT, THERMOMETER } from '../src/data/measures';
 
 const AREAS: Rect[] = [
@@ -125,5 +125,59 @@ describe('thermometerLayout and thermometerMarks', () => {
         const marks = thermometerMarks(-30, 30, 8, 7);
         expect(marks.filter((m) => m.kind === 'major').map((m) => m.value)).toEqual([-30, -20, -10, 0, 10, 20, 30]);
         expect(marks.find((m) => m.value === 15)?.kind).toBe('five');
+    });
+});
+
+describe('iconsLayout', () => {
+    const SHAPES: { name: string; groups: number[]; framed: boolean }[] = [
+        { name: 'one icon', groups: [1], framed: false },
+        { name: 'seven icons', groups: [7], framed: false },
+        { name: 'a ten and two', groups: [10, 2], framed: false },
+        { name: 'a ten and ten', groups: [10, 10], framed: false },
+        { name: 'two framed pairs', groups: [2, 2], framed: true },
+        { name: 'three groups of three', groups: [3, 3, 3], framed: true },
+        { name: 'five groups of six', groups: [6, 6, 6, 6, 6], framed: true },
+    ];
+    for (const area of AREAS) {
+        for (const shape of SHAPES) {
+            it(`${shape.name} stay inside ${area.width}x${area.height} and apart`, () => {
+                const layout = iconsLayout(shape.groups, shape.framed, area, TASK_LAYOUT.icons);
+                const total = shape.groups.reduce((a, b) => a + b, 0);
+                expect(layout.icons).toHaveLength(total);
+                expect(layout.frames).toHaveLength(shape.framed ? shape.groups.length : 0);
+                layout.icons.forEach((icon, i) => {
+                    expect(inside(icon, area)).toBe(true);
+                    layout.icons.slice(i + 1).forEach((other) => expect(overlap(icon, other)).toBe(false));
+                });
+                layout.frames.forEach((frame, i) => {
+                    expect(inside(frame, area)).toBe(true);
+                    layout.frames.slice(i + 1).forEach((other) => expect(overlap(frame, other)).toBe(false));
+                });
+            });
+        }
+    }
+
+    it('keeps every icon in the frame of its group', () => {
+        const layout = iconsLayout([4, 4, 4], true, AREAS[0], TASK_LAYOUT.icons);
+        layout.icons.forEach((icon, i) => expect(inside(icon, layout.frames[Math.floor(i / 4)])).toBe(true));
+    });
+
+    it('draws one to seven icons at 96 px or more where the area is 294 px tall', () => {
+        for (const area of AREAS.filter((a) => a.height >= 294)) {
+            for (const n of [1, 5, 7]) {
+                expect(iconsLayout([n], false, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(96);
+            }
+        }
+    });
+
+    it('puts a ten in one row and the rest under it, left-aligned', () => {
+        const { icons } = iconsLayout([10, 3], false, AREAS[0], TASK_LAYOUT.icons);
+        expect(new Set(icons.slice(0, 10).map((r) => r.y)).size).toBe(1);
+        expect(icons[10]?.y).toBeGreaterThan((icons[0]?.y ?? 0) + (icons[0]?.height ?? 0));
+        expect(icons[10]?.x).toBeCloseTo(icons[0]?.x ?? 0);
+    });
+
+    it('never draws an icon above the cap', () => {
+        expect(iconsLayout([1], false, AREAS[0], TASK_LAYOUT.icons).icon).toBeLessThanOrEqual(TASK_LAYOUT.icons.maxIcon);
     });
 });
