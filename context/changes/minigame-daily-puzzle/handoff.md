@@ -1,54 +1,59 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the `/10x-tdd` phase 6 step. The minigame rounds exist in `core` (`15fde6b`); phases 7-13 are untouched. The e2e run of phase 6 is NOT done (Chromium dies at launch in this session): the orchestrator must run the full suite (expected 63, +0). Do not enable `balance.variants.minigames` before phases 8/9.
+Written by the `/10x-implement` phase 7 step. The daily puzzle is live in `TaskScene` (E3-E4 only; minigames still off, `balance.variants.minigames: []`). The e2e run of phase 7 is NOT done (Chromium dies at launch in this session): the orchestrator must run the full suite (expected 63, +0).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | 4 docs + phases 1-6 (`b0ad4ba`, `8ee3d18`, `cd5b705`, `5a18b39`, `9f87fea`, `15fde6b`) + handoffs |
+| Commits | 4 docs + phases 1-7 (`b0ad4ba`, `8ee3d18`, `cd5b705`, `5a18b39`, `9f87fea`, `15fde6b`, `b3d448f`) + handoffs |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; phase 6: 6.1-6.3 ticked, 6.4 open (e2e), 6.5 [reviewer] open; 5.4 ticked from the orchestrator note |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; phase 7: 7.1-7.3 ticked, 7.4 open (e2e), 7.5 [reviewer], 7.6 [visual] open; 6.4 ticked from the orchestrator note |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/minigames/dice.ts` | `diceBoard(rng, rules, text)` -> 13 `DiceThrow {a,b,op,target,task}` (targets 0..12 shuffled, once each; 0-1 only differences, 6-12 only sums, 2-5 either), `coveredAfter(board, completed)` |
-| `src/core/minigames/word.ts` | `buildWordRound(stage, previous, adaptation, rng, {tiles, uniqueRetries, words})` -> `{word, tasks}` or null (pools: unlocked steps, first step with arithmetic, previous stage); `revealed(word, completed)` |
-| `src/data/minigames.ts` | `MINIGAME_WORDS` (KANAPA, DYWAN, STOLIK, LAMPA, PÓŁKA, OBRAZ) |
-| `src/data/pl.ts` | `pl.minigames` (HUD titles, dice hints, `puzzleDone`, `wordHint`) |
-| `scripts/sample.ts` | `--variants` also prints one dice board and `--count` word rounds, validated |
-| `tests/dice.test.ts`, `tests/wordRound.test.ts` | 4 + 13 tests |
+| `src/scenes/TaskScene.ts` | `freshRound()` -> `{kind, state, puzzleId?}` (no side effects), `applyRound` (the only place a built round becomes the open one), `nextKind` (calls `nextRoundKind`), `finishVariant`/`countRound` (one `registry.set(variants)` via `afterRound`, then `flush('now')`; no `endRound`); snapshot gains `variant`, `today` |
+| `src/core/variants.ts` | `variantTitle(kind, words)` -> `HudTitleView {text, badge}` |
+| `src/ui/widgets/HudTitle.ts`, `UIScene.titleText()`, `HUD_LAYOUT.title` | HUD title: name + star drawn in code + badge `×2` (the font has no ★ glyph), between the progress dots and the speaker; registry `REGISTRY_KEYS.hudTitle` (runtime, not saved); hook snapshot `hudTitle` |
+| `src/main.ts` | `REGISTRY_KEYS.today` = `() => pinnedDay ?? localDay(new Date())`; `REGISTRY_KEYS.forcedVariant` (hook build only) |
+| `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs` | `e2eDay(search)` (`YYYY-MM-DD`, real dates only), `e2eVariant(search)` (`off|word|dice|puzzle`); markers `e2eDay`, `e2eVariant` |
+| `tests/e2eVariant.test.ts`, `tests/variants.test.ts` (`variantTitle`), `tests/e2eHookGuard.test.ts` | +8 unit tests |
+| `tests/e2e/{adaptive,room-purchase,parent-settings,save-transfer}.spec.ts` | `e2eVariant=off` added (see §3) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| lint / typecheck / build | OK / OK / OK (`e2e hook: absent`) |
-| unit + deploy scripts + sample E1-E6 (+ `--variants` E1-E6) | 2304 passed (branch baseline 2287, +17); deploy scripts OK; every sample exit 0 |
-| RED | stubs returning empty: `AssertionError: seed 0: expected +0 to be 13`, `expected [ -1 ] to deeply equal []`, `expected [ 'KANAPA', … ] to include ''` |
-| Breaks | subtrahend `rng.int(1, 6)` instead of `1..6-target` -> `expected 10 to be less than or equal to 6`; targets drawn with repeats instead of a shuffle -> coverage red; word: `LENGTH` added to the types AND the drawing guard removed -> 4 red; the drawing guard alone removed with `LENGTH` allowed -> 2 red (first attempt with `CLOCK` stayed green: its answers are strings, so the number-answer guard caught it - a wrong break, replaced by `LENGTH`); all restored |
-| Teacher read (own) | `sample -- E1/E3/E5 --variants`: hints "Policz razem oczka obu kostek." / "Odejmij oczka drugiej kostki." then "Zacznij od 6 i dodaj 6." never ends with the result; prompts `6 − 4` with the true minus; word tasks stay in the stage (E1 to 10, E3 to 20, E5 `48 : 8`, `95 − 30`), 3 tiles, answer among them, no repeated prompt; words with Ó/Ł (PÓŁKA) handled letter by letter |
-| e2e | not runnable in this session - orchestrator gate (Chromium MachPortRendezvous Permission denied, 3 plain tries); expected 63 (+0), no UI touched |
+| lint / typecheck / build | OK / OK / OK (`e2e hook: absent (2 chunks checked)`; `e2eDay`/`e2eVariant` count in `dist/_app/*.js` = 0) |
+| unit + deploy scripts + sample E1-E6 | 2312 passed (branch baseline 2304, +8); deploy scripts OK; every sample exit 0 |
+| Breaks | `'e2eDay'` removed from `E2E_HOOK_MARKERS` -> `lists every marker…` red (`expected [ …(7) ] to deeply equal [ …(8) ]`); `puzzleMultiplier` dropped in `variantRules` -> `the daily puzzle: one task, double stars, no bonus` red (`starPerTask: 1` vs 2); both restored, green again. Meta-check: the first break is caught by the list test only (the `it.each` per-marker test reads the list, so it follows it) — it proves the list, the leak guard itself was already covered; the scene wiring is not unit-covered, it is the orchestrator's e2e + visual gate |
+| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium MachPortRendezvous Permission denied, 3 plain tries incl. seed spec). Expected 63 (+0) |
+| Teacher read | no change to `src/data/` content or generators (one `pl.minigames.puzzleBadge` string `×2`) |
+
+**Specs the orchestrator must watch** (the hook build now runs the real schedule: E3/E4 learner, 4th ordinary round = the daily puzzle, once per day):
+- Got `e2eVariant=off`: `adaptive.spec` (E4, up to `MAX_ROUNDS`), `room-purchase.spec` (up to `MAX_ROUNDS`), `parent-settings.spec` test "#14 the progress view shows the empty state…" (up to 3 rounds + reload-free), `save-transfer.spec` (all five `passWelcome` calls: rounds + reload/import share one counter).
+- Counted and left WITHOUT the seam (at most 1-2 ordinary rounds per context, counter never reaches 3): `task-round`, `first-launch` (warm-up is not counted), `narrator`, `save-restart` (1 round, reload), `room-change` (stars seeded), `save-transfer-blocked`, `error-boundary`, `parent-settings` other tests (`passWelcome` + at most a few tasks), and every `?e2eSkills` spec (`clock-set`, `art-tasks`, `art-stand-in`, `grid-tasks`, `drawn-tasks`: a forced-skills round never asks the schedule). If any of these goes red with a puzzle on screen, add `e2eVariant=off` there.
+- `save-restart` "#2 #10 a reload comes back…" plays 1 round then reloads; the counter is saved, so it is the one to re-check if a 4th round ever appears.
 
 ## 4. Next command
 
-`/10x-implement minigame-daily-puzzle phase 7` (Phase 7: Wariant rundy w `TaskScene`, zagadka dnia x2, tytuł HUD i szwy e2e).
+`/10x-implement minigame-daily-puzzle phase 8` (Phase 8: Hasło z wyników na ekranie).
 
 ## 5. Open
 
-- 6.4 e2e part (orchestrator), 6.5 [reviewer]; 5.5 [reviewer], 5.6 [human]; 4.4 [reviewer]; 3.4 e2e, 3.5 [reviewer], 3.6 [visual]; earlier 1.5, 1.6, 2.5.
-- DESIGN-GAP 82 row in `docs/design-gaps.md` still due in phase 10 (the new `pl.minigames` texts are ours).
-- Phase 7 builds `variantRules(kind, n, balance)` (`src/core/variants.ts`); dice rules there: length 13, bonus 0.
+- 7.4 e2e (orchestrator), 7.5 [reviewer], 7.6 [visual: puzzle with tiles, with keypad, hint after a miss, solution steps, summary with 2 stars, HUD title — `?e2eVariant=puzzle`, E4, 1440x900 and 1024x768; ready to capture on the hook build]; 6.4 closed, 6.5 [reviewer]; 5.5 [reviewer], 5.6 [human]; 4.4 [reviewer]; 3.4 e2e, 3.5 [reviewer], 3.6 [visual]; earlier 1.5, 1.6, 2.5.
+- DESIGN-GAP rows 79-82 (puzzle screen/badge/title) are named in code comments only; the rows in `docs/design-gaps.md` are still due in phase 10.
+- `wordAvailable: true` in `TaskScene.nextKind` is a placeholder until phase 8 narrows it per stage; harmless while `minigames` is empty.
 
 ## 6. Autonomous decisions
 
-1. Dice tasks keep `skillId: 'DICE'` and a keypad-less shape (no `input`, no `choices`): the screen in phase 9 decides the answer mode. Would change: phase 9 wants tiles -> add `choices` in `makeThrow`.
-2. `DiceThrow` is its own type (a, b, op, target, task); `Task.visual` was not extended, so no exhaustive `TaskVisual` switch changed. Would change: the e2e hook needs the dice as a visual.
-3. `core` gets hint texts and words as parameters (`DiceText`, `WordRules.words`), tests pass `pl`/`MINIGAME_WORDS`.
-4. Word pool fallback follows the plan: unlocked steps, then the first step of the stage with arithmetic, then the previous stage; `ADD_SUB`/`MULT`/`DIV` keypad skills are drawn as 3 tiles (skill copy with `answer: 'tiles'`), tasks with a drawing or a non-number answer are redrawn.
-5. Mixed phase: none; the `sample.ts` flag and `pl.minigames` texts were inline scaffolding.
+1. HUD title position: right of the progress dots (x 1118-1470, y 96) with a star drawn in code, because the dots occupy the centre and "Do pokoju" the left; long names shrink to fit. Would change: the visual gate wants it elsewhere -> `HUD_LAYOUT.title`.
+2. The title is a registry value (`hudTitle`) set from `TaskScene.render()` and cleared when going to the room, so the HUD scene stays display-only. Would change: a second scene needs titles -> move to a core view.
+3. Warm-up and `?e2eSkills` rounds bypass the schedule entirely; the warm-up does not count as an ordinary round (`roundsSince` unchanged), as the plan says.
+4. `e2eVariant=off` added to the multi-round tests only; the per-spec count is in §3.
+5. Mixed phase: none (impl).

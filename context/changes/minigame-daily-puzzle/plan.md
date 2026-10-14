@@ -959,9 +959,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 7.2 Deliberate break: znacznik `e2eDay` usunięty z listy / zagadka z `starPerTask` 1 → czerwone; przywrócone; meta-check
-- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eDay`/`e2eVariant` nieobecne w `dist/`
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — b3d448f
+- [x] 7.2 Deliberate break: znacznik `e2eDay` usunięty z listy / zagadka z `starPerTask` 1 → czerwone; przywrócone; meta-check — b3d448f
+- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eDay`/`e2eVariant` nieobecne w `dist/` — b3d448f
 - [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; lista speców z `e2eVariant=off` w handoffie
 
 #### Manual
