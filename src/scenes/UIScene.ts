@@ -173,7 +173,7 @@ export class UIScene extends Scene {
 
     /** Import step: replaces the panel in the same input session; the device save is judged by `deviceSaveView`, `apply` is the saver's replace. */
     private openImport(saver: Autosaver, session: InputSession): void {
-        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         if (device.kind === 'broken') {
             this.closeSettings();
             return;
@@ -190,7 +190,7 @@ export class UIScene extends Scene {
 
     /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
     private openReset(saver: Autosaver, session: InputSession): void {
-        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         if (device.kind === 'broken') {
             this.closeSettings();
             return;

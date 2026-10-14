@@ -1,5 +1,5 @@
 // S12-01 wiring (plan art-stand-in-and-load-signal, phase 6): the import and reset steps of the settings flow must
-// judge the device save with `deviceSaveView(saver.status().blockedBy, …)` and hand that view to the dialog, so a
+// judge the device save with `deviceSaveView(saver.status(), …)` and hand that view to the dialog, so a
 // fresh in-memory session is never shown as "Teraz". The scene needs Phaser and the dialogs need a DOM, so this
 // reads the scene source as syntax (formatting does not matter).
 import { readFileSync } from 'node:fs';
@@ -35,7 +35,7 @@ describe('device save wiring (S12-01)', () => {
             const body = method(name);
             const view = callsOf(body).includes('deviceSaveView');
             expect(view).toBe(true);
-            expect(body.getText(source)).toContain('saver.status().blockedBy');
+            expect(body.getText(source)).toContain('saver.status()');
             expect(callsOf(body)).not.toContain('decodeSave');
         });
     }
