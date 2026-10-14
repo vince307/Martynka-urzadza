@@ -1,27 +1,29 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the `/10x-research` step (autonomous run 2026-10-14-save-s13b-s15-s14b). Research is complete and
-`change.md` is `preparing`; nothing is planned or built. The next agent must not reopen the author's decisions
-(Hasło + Zakrywanka, ×2 in `balance.ts`, agent-written original LOGIC puzzles, save v2 approved). It must also keep the
-kit's dice answer as a tap on the 0–12 board, not answer tiles, and keep variant rounds out of `endRound`.
+Written by the `/10x-plan` step (autonomous run 2026-10-14-save-s13b-s15-s14b). `plan.md` (13 phases, drivers tagged) and
+`plan-brief.md` exist, `change.md` is `planned`, roadmap S-15 is `planning`; nothing is built. The next agent must not
+reorder the save phases: save v2 (phases 1–2) lands before any feature writes `variants`, and `balance.variants.minigames`
+stays empty until the phase that builds that minigame's screen (8: `word`, 9: `dice`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | 2 on the branch: `docs(minigame-daily-puzzle): change identity (autonomous run)` (`a0890f8`), `docs(minigame-daily-puzzle): research` (this step) |
+| Commits | 3 on the branch: `a0890f8` (identity), `adbb9a6` (research), `docs(minigame-daily-puzzle): plan` (this step) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below were staged) |
+| `change.md` status | `planned` (`metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 68 (`grep -c '^- \[ \]' plan.md`), none done |
+| Working tree | clean after the commit (five files staged by explicit path) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/minigame-daily-puzzle/research.md` | Research: save v2 shape and the `1 → 2` step, verdicts on the triggered follow-ups, how round variants plug into `TaskScene.freshRound`/`finishRound`, the day seam, Hasło/Zakrywanka mechanics, the 15 original LOGIC puzzles with a teacher read, kit copy/layout, gap rows 79–86, open questions for the plan |
-| `context/changes/minigame-daily-puzzle/change.md` | Frontmatter only: `status: new → preparing`, `updated` |
+| `context/changes/minigame-daily-puzzle/plan.md` | Plan: 13 phases with `Driver:` lines, Critical Implementation Details (v2 contract, schedule, scene ordering, star rules), Autonomous decisions, `## Progress` |
+| `context/changes/minigame-daily-puzzle/plan-brief.md` | Two-page brief with the key decisions table |
+| `context/changes/minigame-daily-puzzle/change.md` | Frontmatter only: `status: preparing → planned` |
+| `context/foundation/roadmap.md` | S-15 `proposed → planning` (at-a-glance row and item body) |
 | `context/changes/minigame-daily-puzzle/handoff.md` | This file |
 
 ## 3. Verification
@@ -29,58 +31,54 @@ kit's dice answer as a tap on the 0–12 board, not answer tiles, and keep varia
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/minigame-daily-puzzle` (observed) |
-| Puzzle check: the 15 table rows of `research.md` § 5 turned into `Task`s and run through `validateTask` (`max: 100`, `nouns` + the five new nouns), `firstHint`, `solutionSteps` (throwaway `node --import tsx` script in the session temp dir, not committed) | 15/15 `ok`, first hint shown, solution closed in 2 lines (observed) |
-| Key worker claims spot-checked by reading the source | `decodeSave` catch → `corrupt` and `from > SAVE_VERSION` → `future`; `replaceGate`/`deviceSaveView` key on `loadReason === 'future'`; `TaskScene` `Date.now()` calls and `main.ts` `month`; `SUMMARY_LAYOUT.stars` size 98 gap 26; kit `manifest.json` `miniGames`, `preview.js` copy; `pl.room.slots` captions; last gap row 78 |
-| Local gate (lint, typecheck, unit, build, e2e) | Not run — docs-only step, no product code changed. Baseline on main per the contract (inherited, unverified): `lint OK; typecheck OK; unit OK Tests 2224 passed; build OK; e2e OK 63 passed`. |
+| Success-criteria bullets per phase vs Progress rows (awk count, phases 1–13) | 1:1 for every phase (6/5/6/4/6/5/6/5/5/6/4/5/5) (observed) |
+| `grep -c '^Driver: ' plan.md` | 13 (one per phase) (observed) |
+| `metadata-guard.mjs mark-planned` | `changed: true`; frontmatter `status: planned` (observed) |
+| Local gate (lint, typecheck, unit, build, e2e) | Not run: docs-only step, no product code changed. Baseline per contract (inherited, unverified): `lint OK; typecheck OK; unit OK Tests 2224 passed; build OK; e2e OK 63 passed`. |
 
 No deliberate break: nothing testable changed.
 
 ## 4. Next command
 
-`/10x-plan minigame-daily-puzzle`
+`/10x-plan-review minigame-daily-puzzle`
 
 ## 5. Open
 
-- Plan decisions with a recommendation in `research.md` § Open Questions: `balance.variants.everyRounds` (3), the Hasło
-  task source (learner's ADD_SUB/MULT/DIV expression skills, 3 tiles), a puzzle announcement card (gap 81), the kit's
-  on-demand "Podpowiedź"/"Pokaż" (left out, gap 83), dice range 0–12 for every stage.
-- Save v2 (in scope per research § 1): `VariantState` block, `MIGRATIONS[1]`, `save-v2.json` + `save-v2-fresh.json`
-  frozen, v1 fixtures untouched, `backup-v1` before the first post-migration write (`createAutosaver` `attempt`),
-  L-S1 `migration-failed` reason, `?e2eSave=v1` substitute for the two-build e2e, O1 `future` card copy, S12-09,
-  S12-14. Tests that change on purpose: the `future` case and "the v1 format did not change" in `tests/save.test.ts`.
-- Out with new triggers (to record at archive): S13-06 ("next save-format change or S-17"), real two-build e2e ("v3 or
-  a parent report of lost progress after an update"), two instances / S12-15, M-S1 deploy part, S12-07/08/12/13.
-  S12-02/03/11 stay untriggered as long as the migrated save is written by the normal autosave.
-- TaskScene ordering follow-ups M-1, M-2, M-13 are triggered: build-then-commit for the variant branch, the variant
-  end (`afterRound`) committed after it succeeds, the variant comes back after a parent stage change.
-- DESIGN-GAP rows 79–86 to add in `docs/design-gaps.md` (list in research § 6).
-- e2e seams for the plan: `?e2eDay=YYYY-MM-DD` (marker `e2eDay`) and `?e2eVariant=word|dice|puzzle` (marker), both in
-  `vite/e2eHookGuard.mjs` and absent from `dist/`; request-file protocol for Chromium.
-- `[human]` row for the plan: the author reads all 15 puzzles (research § 5) as a teacher before release.
-- Roadmap Open Question 2 is answered (plan § 13): mark it resolved at archive time.
+- Phase drivers: 1 tdd (save v2), 2 tdd (migration safety), 3 impl (save copy, `?e2eSave=v1`), 4 tdd (schedule + day),
+  5 tdd (15 puzzles), 6 tdd (dice/word core), 7 impl (scene variant + daily puzzle + HUD title + seams), 8 impl (Hasło),
+  9 impl (Zakrywanka), 10 impl (seam sweep, gaps 79+, follow-ups, `CLAUDE.md`), 11–13 e2e (request-file protocol).
+- `[human]` rows (post-run checklist): 1.6 save-format one-way door (v1 build after rollback shows the `future` card);
+  5.6 the author reads all 15 puzzles; 8.5 Hasło letter-per-answer instead of ZADANIA's ascending sort, salon words
+  instead of the kit list; 9.5 board tiles under a child's finger on a 1024 tablet; 10.6 other decisions against
+  PRD/ZADANIA/kit (every 4th round, puzzle without an opt-in card, puzzles E3–E4 only, dice 0–12 for all stages, no
+  on-demand hint/"Pokaż", variants outside mastery).
+- Existing e2e specs: phase 7 adds `e2eVariant=off` to every `chromium-hook` spec that can reach a 4th ordinary round in
+  one browser context (candidates `adaptive`, `room-purchase`, `parent-settings`, `save-transfer`; the implementer counts
+  and lists them in its handoff).
+- New e2e seams: `?e2eDay=YYYY-MM-DD`, `?e2eVariant=off|word|dice|puzzle` (markers `e2eDay`, `e2eVariant` in
+  `vite/e2eHookGuard.mjs`), `?e2eSave=v1` (covered by the existing `e2eSave` marker).
+- DESIGN-GAP rows 79–86 (research § 6) are written in phase 10; phases 7–9 add the `DESIGN-GAP` comments.
+- Follow-ups with triggers are written in phase 10 to `context/changes/minigame-daily-puzzle/follow-ups/review-fixes.md`
+  (two-build e2e, S13-06, two instances / S12-15, M-S1 deploy part, S12-07/08/12/13, dice range/`everyRounds`/economy
+  → S-17, on-demand hint).
+- Roadmap Open Question 2 is answered (plan § 13 of `Martynka-urzadza.md`): mark it resolved at archive time.
 
 ## 6. Autonomous decisions
 
-1. **Variant rounds skip `endRound` entirely** — rejected: reuse `'warmup'` (it still records mastery and history), or
-   count Hasło first tries. Why: dice and puzzles are not stage skills; a 13-throw board distorts the 5-task easing rule.
-   Would change if the author wants Hasło to feed mastery (then pass its results to `recordRound` only).
-2. **Variant state updates when a variant finishes, not when it starts** — rejected: update at start. Why: a reload or a
-   parent stage change mid-variant then simply brings it back; nothing is lost or paid twice. Would change if
-   playtest shows children reloading to dodge a variant (no evidence; there is no penalty to dodge).
-3. **Day = local `YYYY-MM-DD` from an injected `today()` made in `main.ts`; puzzle available when `puzzleDay !==
-   today`** — rejected: compare with `>` (a clock moved back would lock the puzzle), UTC dates, a day fixed at boot.
-   Would change if the author wants a strict "one per real day" (then store the last date and compare with `>`).
-4. **Hasło words from `pl.room.slots` (KANAPA, DYWAN, STOLIK, LAMPA, PÓŁKA, OBRAZ), not the kit's list** — rejected:
-   the kit's SOFA/OKNO/FOTEL (not the game's words or slots). Would change if the author prefers the kit list in the
-   `[human]` read.
-5. **Dice answer = tap on the kit's 13-field board (new `CoverBoard`), 13 throws, each to an uncovered field** —
-   rejected: 3 answer tiles (`change.md` scope table guessed tiles; the kit shows the board as the input). Would change
-   if the visual gate finds the 160 px board tiles too small on a 1024 tablet.
-6. **15 puzzles (9 E3, 6 E4), text-only, keypad by default and tiles where the classic error is instructive** —
-   rejected: drawings with `scale`/`jugs` visuals (they cannot show two loaded pans or a pour). Would change if the
-   author's read asks for pictures (then a new visual kind and gap rows).
-7. **Real two-build e2e left out; `?e2eSave=v1` substitute in** — rejected: a third same-origin Playwright server now.
-   Why: cost vs. the unit-tested migration path; the seam proves a v2 build loads a frozen v1 save through the browser.
-   Would change if the maintainer wants risk #10 fully closed in this slice.
-8. **No questions asked; scope from `change.md` and the step prompt** — the step prompt fixes `/10x-plan` as the next
-   command and forbids AskUserQuestion.
+1. **No AskUserQuestion; complexity HIGH; 0 questions.** Why: contract rule 1 and every question has a research
+   recommendation or an author decision. Would change: nothing in this run.
+2. **13 phases, ≤ 2 new UI components each** (7: `HudTitle`; 8: `LetterTiles`, `MinigameDoneCard`; 9: `Dice`,
+   `CoverBoard`). Rejected: one scene phase for all variants. Why: each phase is a fresh agent and must stay green.
+   Would change: plan-review finds a phase too large → split it.
+3. **Minigames switched on by `balance.variants.minigames` phase by phase.** Rejected: schedule live with stubs. Why: no
+   phase may draw a variant whose screen does not exist. Would change: nothing.
+4. **Hook build behaves like production; `e2eVariant=off` only in multi-round specs.** Rejected: default `off` in the hook
+   build. Why: specs keep exercising the real schedule where it matters. Would change: more than 4 specs need the seam.
+5. **`everyRounds` 3, puzzle replaces a round without an opt-in card, ×2 for first and second try, variants skip
+   `endRound`, Hasło letter per finished task, dice board 0–12 for every stage** (plan § Autonomous decisions 2–17).
+   Each decision against the literal PRD/ZADANIA/kit text has a `[human]` row (8.5, 10.6). Would change: the author's read.
+6. **`backup-v1` failure blocks the first write; `migration-failed` behaves like `corrupt` (forceable, exportable).**
+   Rejected: best-effort backup; treating it like `future`. Why: FR-021 and the backup is only useful if it exists.
+   Would change: a device where the backup cannot be written repeatedly (then a follow-up on retry policy).
+7. **`?e2eSave=v1` substitute for the two-build e2e; real two-build e2e is a follow-up.** Would change: the maintainer wants risk #10 fully closed now.
+8. **Roadmap edit committed with the plan** (step prompt), not left in the tree as the skill's default says.
