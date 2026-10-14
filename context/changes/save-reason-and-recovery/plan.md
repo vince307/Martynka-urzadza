@@ -561,8 +561,8 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — SHA
-- [x] 2.2 Deliberate break: `timeout` jako `unavailable` / `code` z `lastError` → czerwone; przywrócone; meta-check — SHA
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 815af40
+- [x] 2.2 Deliberate break: `timeout` jako `unavailable` / `code` z `lastError` → czerwone; przywrócone; meta-check — 815af40
 - [ ] 2.3 Pełna bramka lokalna zielona; `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
