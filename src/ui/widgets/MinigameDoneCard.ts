@@ -39,7 +39,9 @@ export class MinigameDoneCard {
         this.card.lineStyle(card.border, PLACEHOLDER_COLORS.unlockBorder, 1);
         this.card.strokeRoundedRect(card.left, card.top, card.width, card.height, card.radius);
         this.title.setText(view.title).setVisible(true);
-        this.line.setText(view.line).setVisible(true);
+        // A long line ("Wszystkie pola zakryte!") steps down to stay inside the card.
+        this.line.setScale(1).setText(view.line).setVisible(true);
+        this.line.setScale(Math.min(1, (card.width - 2 * card.border - 80) / this.line.width));
         this.earned.setText(pl.summary.earned(view.earned)).setVisible(true).setScale(earned.scale);
         const groupWidth = earned.starSize + earned.gap + this.earned.width * earned.scale;
         const left = earned.centerX - groupWidth / 2;

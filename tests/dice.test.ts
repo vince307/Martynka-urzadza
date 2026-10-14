@@ -1,13 +1,14 @@
 // Origin: S-15 phase 6. "Zakrywanka" board: 13 throws, results 0..12 once each, subtraction never negative,
 // the whole board runs through the real round reducer.
 import { describe, expect, it } from 'vitest';
-import { coveredAfter, diceBoard } from '../src/core/minigames/dice';
+import { coverBoardCells, coveredAfter, diceBoard } from '../src/core/minigames/dice';
 import { createRng } from '../src/core/rng';
 import { answer, next, startRound } from '../src/core/round';
 import { firstHint } from '../src/core/round/hints';
 import { validateTask } from '../src/core/tasks/validate';
 import { balance } from '../src/data/balance';
 import { nouns } from '../src/data/nouns';
+import { MINIGAME_LAYOUT } from '../src/data/layout';
 import { pl } from '../src/data/pl';
 import { SEEDS } from './helpers';
 
@@ -81,5 +82,37 @@ describe('diceBoard', () => {
         expect(state.finished).toBe(true);
         expect(state.starsEarned).toBe(13);
         expect(coveredAfter(board, 13)).toEqual(range(13));
+    });
+});
+
+describe('coverBoardCells', () => {
+    const cells = coverBoardCells(MINIGAME_LAYOUT.board, 13);
+    const overlap = (a: (typeof cells)[number], b: (typeof cells)[number]): boolean =>
+        a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+    it('has 13 fields 0..12 in two rows: seven, then six starting at the second column', () => {
+        expect(cells.map((c) => c.value)).toEqual(range(13));
+        const firstRow = cells.filter((c) => c.y === cells[0].y);
+        expect(firstRow).toHaveLength(7);
+        const second = cells.filter((c) => c.y !== cells[0].y);
+        expect(second).toHaveLength(6);
+        expect(second[0].x).toBe(cells[1].x);
+        expect(second[5].x).toBe(cells[6].x);
+    });
+
+    it('keeps the fields apart, so a tap in the middle of one hits only that field', () => {
+        for (const a of cells) {
+            for (const b of cells.filter((c) => c.value > a.value)) {
+                expect(overlap(a, b), `${a.value} and ${b.value}`).toBe(false);
+            }
+        }
+    });
+
+    it('offers every board throw the tile mode with the 13 fields as its choices', () => {
+        const board = diceBoard(createRng(3), rules, text);
+        for (const t of board) {
+            expect(t.task.input).toBe('tiles');
+            expect(t.task.choices).toEqual(range(13));
+        }
     });
 });

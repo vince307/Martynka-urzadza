@@ -47,6 +47,14 @@ export const PLACEHOLDER_COLORS = {
     letterHiddenBorder: 0xd2be87,
     letterRevealed: 0xe8f3d7,   // kit .letter.revealed
     letterRevealedBorder: 0x90b672,
+    result: 0xf0f8e6,           // kit .result gradient (#fbfff5 to #e4f0d5), flattened to its middle
+    resultBorder: 0xbdd5ae,     // kit .result border
+    resultShadow: 0xdde8d1,     // kit .result box-shadow, flattened
+    resultCovered: 0xd2eabb,    // kit .result.covered
+    resultCoveredBorder: 0x547e3d,
+    dieFace: 0xfffdf4,          // DESIGN-GAP 86: the kit shows the dice as pictures; ours are drawn in code
+    dieBorder: 0xb4cba7,
+    diePip: 0x245c59,
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
     ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
@@ -91,6 +99,8 @@ export const FONT_SIZES = {
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
     letter: 88,             // kit .letter (S-15 word minigame)
+    result: 80,             // kit .result (S-15 dice minigame)
+    diceSign: 96,           // kit .dice-expression
     doneWord: 92,           // kit .success-card .final-word
 } as const;
 
@@ -128,6 +138,8 @@ export const FONT_WEIGHTS = {
     sideLabel: 700,
     artLabel: 650,
     letter: 750,            // kit .letter
+    result: 750,            // kit .result
+    diceSign: 750,          // kit .dice-expression
     doneWord: 750,          // kit .final-word
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
@@ -359,6 +371,11 @@ export const MINIGAME_LAYOUT = {
     expressionY: 540,   // kit .word-equation sits under the letters; no "Oblicz:" line in a word round
     promptY: 420,       // a sentence prompt of a word round starts here
     card: { left: 440, top: 330, width: 1040, height: 540, border: 8, radius: 46 },
+    // Zakrywanka (kit .dice-expression, .result-grid, .result): two dice and the sign centred on x 960, then 13 fields in two rows.
+    // DESIGN-GAP 86 (docs/design-gaps.md, due in phase 10): the dice faces, the "?" for the missing result and the lines of the
+    // solution above the dice (the kit has none) are ours.
+    dice: { top: 346, size: 150, gap: 38, centerX: 960, pip: 15, radius: 30, border: 5, solutionTop: 232, solutionLimit: 336 },
+    board: { left: 361, top: 568, columns: 7, width: 160, height: 136, gap: 20, radius: 28, border: 5, shadow: 7, checkSize: 32 },
     title: { x: 960, y: 356 },
     line: { x: 960, y: 462 },
     earned: { centerX: 960, centerY: 650, starSize: 84, gap: 24, scale: 0.7 },   // the summary's "+N" text at 0.7 of its size

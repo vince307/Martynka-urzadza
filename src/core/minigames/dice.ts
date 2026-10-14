@@ -23,6 +23,7 @@ export interface DiceThrow {
 }
 
 const FACES = 6;
+const MAX_RESULT = 12;
 const MINUS = '−';
 
 const makeThrow = (target: number, rng: Rng, text: DiceText): DiceThrow => {
@@ -41,6 +42,8 @@ const makeThrow = (target: number, rng: Rng, text: DiceText): DiceThrow => {
         skillId: 'DICE',
         prompt: `${a} ${subtract ? MINUS : '+'} ${b}`,
         answer: target,
+        input: 'tiles',   // the answer is a tap on a field of the board, which is the tile row of this screen
+        choices: Array.from({ length: MAX_RESULT + 1 }, (_, i) => i),
         hint: subtract ? [text.subHint, text.subStepHint(a, b)] : [text.addHint, text.addStepHint(a, b)],
     };
     return { a, b, op: subtract ? '-' : '+', target, task };
@@ -55,3 +58,31 @@ export const diceBoard = (rng: Rng, rules: DiceRules, text: DiceText): DiceThrow
 /** Fields covered after the first `completed` throws were finished (solved or shown), sorted. */
 export const coveredAfter = (board: readonly DiceThrow[], completed: number): number[] =>
     board.slice(0, Math.max(0, completed)).map((t) => t.target).sort((x, y) => x - y);
+
+export interface CoverCell {
+    value: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+export interface CoverGrid {
+    left: number;
+    top: number;
+    columns: number;
+    width: number;
+    height: number;
+    gap: number;
+}
+
+/**
+ * Rectangles of the board fields 0..`count - 1`: the first row is full, the second row starts at the second column (kit
+ * .result-grid, the 8th field has grid-column 2). Pure geometry; the scene draws it and taps it.
+ */
+export const coverBoardCells = (grid: CoverGrid, count: number): CoverCell[] =>
+    Array.from({ length: count }, (_, value) => {
+        const row = Math.floor(value / grid.columns);
+        const column = row === 0 ? value : (value % grid.columns) + 1;
+        return { value, x: grid.left + column * (grid.width + grid.gap), y: grid.top + row * (grid.height + grid.gap), width: grid.width, height: grid.height };
+    });

@@ -15,6 +15,7 @@ import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { localDay } from '../core/day';
+import { coveredAfter, diceBoard, type DiceThrow } from '../core/minigames/dice';
 import { buildWordRound, lettersUncovered, revealed, wordAvailable } from '../core/minigames/word';
 import { puzzleTask, puzzlePool } from '../core/puzzles';
 import { afterRound, nextRoundKind, pickPuzzle, variantRules, variantTitle, type RoundKind, type VariantKind } from '../core/variants';
@@ -53,6 +54,8 @@ import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
+import { CoverBoard } from '../ui/widgets/CoverBoard';
+import { Dice } from '../ui/widgets/Dice';
 import { BlockMat, type BlockMatTargets } from '../ui/widgets/BlockMat';
 import { ClockSet, type ClockSetTargets } from '../ui/widgets/ClockSet';
 import { SelectTiles } from '../ui/widgets/SelectTiles';
@@ -97,7 +100,7 @@ export interface TaskSnapshot {
     readonly autoRead: boolean;
     readonly warmup: boolean;
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
-    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
+    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
 }
 
@@ -144,6 +147,8 @@ export class TaskScene extends Scene {
     private picture!: TaskPicture;
     private summary!: SummaryPanel;
     private letters!: LetterTiles;
+    private diceView!: Dice;
+    private board!: CoverBoard;
     private doneCard!: MinigameDoneCard;
     private unlockCard!: UnlockCard;
     private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
@@ -156,6 +161,7 @@ export class TaskScene extends Scene {
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
     private puzzleId: string | null = null;
     private word: string | null = null;   // the word of an open 'word' round
+    private dice: DiceThrow[] | null = null;   // the throws of an open 'dice' round, in task order
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
@@ -198,6 +204,7 @@ export class TaskScene extends Scene {
         this.kind = 'round';
         this.puzzleId = null;
         this.word = null;
+        this.dice = null;
         this.applyRound(this.freshRound());
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
@@ -231,6 +238,8 @@ export class TaskScene extends Scene {
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.doneCard = new MinigameDoneCard(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
         this.letters = new LetterTiles(this);
+        this.diceView = new Dice(this);
+        this.board = new CoverBoard(this, balance.variants.dice.max + 1, (value) => this.submit(value));
         this.unlockCard = new UnlockCard(this, () => this.closeUnlock());
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
@@ -353,6 +362,9 @@ export class TaskScene extends Scene {
                 // The minigame ends on its own card with the uncovered word instead of the summary page.
                 this.summary.hide();
                 this.doneCard.show({ title: pl.round.correct, line: this.word, earned: summary.earned, roomHighlighted: summary.roomHighlighted });
+            } else if (this.kind === 'dice' && this.dice !== null) {
+                this.summary.hide();
+                this.doneCard.show({ title: pl.round.correct, line: pl.minigames.diceAllCovered, earned: summary.earned, roomHighlighted: summary.roomHighlighted });
             } else {
                 this.doneCard.hide();
                 this.summary.show(summary);
@@ -366,6 +378,13 @@ export class TaskScene extends Scene {
         } else {
             this.letters.hide();
         }
+        const diceRound = this.kind === 'dice' && this.dice !== null;
+        if (diceRound && this.dice) {
+            this.board.show(this.coveredNow(), this.state.phase === 'retype' ? (this.state.tasks[this.state.index].answer as number) : null);
+        } else {
+            this.diceView.hide();
+            this.board.hide();
+        }
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
         this.dots.update(view.dots);
         const task0 = this.state.tasks[this.state.index];
@@ -373,7 +392,11 @@ export class TaskScene extends Scene {
             this.shownIndex = this.state.index;
             this.drawPrompt(view.input);
             this.keypad.reset();
-            if (view.input === 'tiles') {
+            if (diceRound && this.dice) {
+                const thrown = this.dice[this.state.index];
+                this.diceView.show({ a: thrown.a, b: thrown.b, op: thrown.op });
+            }
+            if (view.input === 'tiles' && !diceRound) {
                 this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
             }
             if (view.input === 'select') {
@@ -401,7 +424,7 @@ export class TaskScene extends Scene {
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         this.picture.render(this.clockTask ? null : view.visual, pictureRect);   // a clock to set is drawn by ClockSet
         const finishedTask = this.state.phase === 'done';
-        this.tiles.setVisible(view.input === 'tiles');
+        this.tiles.setVisible(view.input === 'tiles' && !diceRound);
         this.keypad.setVisible(view.input === 'keypad');
         this.select.setVisible(view.input === 'select');
         this.dragLive = view.input === 'drag' && view.inputActive;
@@ -419,21 +442,26 @@ export class TaskScene extends Scene {
             this.blockMat.render(this.dragState, this.dragLive, view.bar.kind !== 'solution');
         }
         this.select.setActive(view.input === 'select' && view.inputActive);
-        this.tiles.setActive(view.input === 'tiles' && view.inputActive);
+        this.tiles.setActive(view.input === 'tiles' && !diceRound && view.inputActive);
+        this.board.setActive(diceRound && view.inputActive);
         this.keypad.setActive(view.input === 'keypad' && view.inputActive);
         if (finishedTask) {
-            this.tiles.markCorrect(view.input === 'tiles' ? (task.answer as number | string) : null);
+            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
             this.keypad.markCorrect();
             this.select.markCorrect(view.input === 'select' ? (task.answer as number[]) : []);
         }
-        this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
+        this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
         this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
             const lines = view.input === 'drag' ? TASK_LAYOUT.drag.solutionLines : view.visual ? layout.lines : null;
-            if (lines) {
+            if (diceRound) {
+                // Above the dice: the board below them keeps its place (DESIGN-GAP 86).
+                const above = MINIGAME_LAYOUT.dice;
+                this.steps.show(view.bar, above.centerX, above.solutionTop, TASK_LAYOUT.prompt.maxWidth, above.solutionLimit);
+            } else if (lines) {
                 this.steps.show(view.bar, lines.x + lines.width / 2, lines.y, lines.width, lines.y + lines.height);
             } else {
                 const beside = view.input === 'keypad';
@@ -453,6 +481,8 @@ export class TaskScene extends Scene {
     private hideTaskLayer(input: AnswerMode): void {
         this.dots.update([]);
         this.letters.hide();
+        this.diceView.hide();
+        this.board.hide();
         this.dragLive = false;
         this.blockMat.setVisible(false);
         this.clockSet.setVisible(false);
@@ -501,6 +531,9 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.promptBoxes.forEach((g) => g.destroy());
         this.promptBoxes = [];
+        if (this.kind === 'dice') {
+            return;   // the dice are drawn by Dice; there is no prompt text
+        }
         const task = this.state.tasks[this.state.index];
         const color = TEXT_COLOR;
         // A pictured task moves its prompt up so the drawing has room under it (DESIGN-GAP 52).
@@ -666,11 +699,17 @@ export class TaskScene extends Scene {
     }
 
     /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
-    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string }): void {
+    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] }): void {
         this.state = round.state;
         this.kind = round.kind;
         this.puzzleId = round.puzzleId ?? null;
         this.word = round.word ?? null;
+        this.dice = round.dice ?? null;
+    }
+
+    /** The results covered so far: one per finished throw (a throw settled by the solution and retyping counts too). */
+    private coveredNow(): number[] {
+        return this.dice ? coveredAfter(this.dice, lettersUncovered(this.state.outcomes)) : [];
     }
 
     /** The calendar day, as the scheduler sees it (main.ts owns the clock). */
@@ -703,7 +742,7 @@ export class TaskScene extends Scene {
         return this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
     }
 
-    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string } {
+    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] } {
         // Pictures that did not load (BootScene's record; none recorded = nothing missing): tasks that need them are not drawn.
         const missingIds = (this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined)?.missingIds ?? new Set<string>();
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
@@ -734,7 +773,16 @@ export class TaskScene extends Scene {
                 return { kind, state: startRound(built.tasks, variantRules(kind, built.tasks.length, balance)), word: built.word };
             }
         }
-        // dice: its screen arrives in phase 9 (balance.variants.minigames lists it only then); a word round that cannot be built is an ordinary round.
+        if (kind === 'dice') {
+            const board = diceBoard(this.rng, balance.variants.dice, {
+                addHint: pl.minigames.diceAddHint,
+                subHint: pl.minigames.diceSubHint,
+                addStepHint: pl.minigames.diceAddStepHint,
+                subStepHint: pl.minigames.diceSubStepHint,
+            });
+            return { kind, state: startRound(board.map((t) => t.task), variantRules(kind, board.length, balance)), dice: board };
+        }
+        // A word round that cannot be built is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,
@@ -822,6 +870,9 @@ export class TaskScene extends Scene {
     /** Where the answer was given: the tapped tile, or the OK key of the keypad. */
     private answerSpot(value: unknown): { x: number; y: number } | null {
         const view = roundView(this.state, pl.round.resultLine);
+        if (this.kind === 'dice') {
+            return this.board.targets().find((t) => t.value === value) ?? null;
+        }
         if (view.input === 'tiles') {
             return this.tiles.targets().find((t) => t.value === value) ?? null;
         }
@@ -910,7 +961,7 @@ export class TaskScene extends Scene {
             autoRead: this.autoRead,
             warmup: this.warmup,
             unlock: this.unlockView(),
-            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()) }),
+            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()), covered: this.dice === null ? null : Object.freeze(this.board.coveredValues()) }),
             today: this.today(),
         });
     }
@@ -918,7 +969,7 @@ export class TaskScene extends Scene {
     /** Centres of the tappable things in 1920x1080 scene space, for the e2e hook. */
     targets(): TaskTargets {
         return Object.freeze({
-            tiles: this.tiles.targets(),
+            tiles: this.kind === 'dice' ? this.board.targets() : this.tiles.targets(),   // a dice round answers on the board's fields
             keys: this.keypad.targets(),
             selectTiles: this.select.targets(),
             selectOk: this.select.okTarget(),

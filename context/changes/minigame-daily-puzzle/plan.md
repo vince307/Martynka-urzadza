@@ -975,7 +975,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 - [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 5acd621
 - [x] 8.2 Deliberate break: `letterRow` bez przerwy → test układu czerwony; przywrócone; meta-check — 5acd621
-- [ ] 8.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 8.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: full suite on 5acd621, `--workers=4`, 63 passed (5.1 min)
 
 #### Manual
 
@@ -986,8 +986,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 9.2 Deliberate break: drugi rząd od kolumny 1 → test układu czerwony; przywrócone; meta-check
+- [x] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e part: orchestrator, see 9.3)
+- [x] 9.2 Deliberate break: drugi rząd od kolumny 1 → test układu czerwony; przywrócone; meta-check
 - [ ] 9.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
