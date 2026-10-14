@@ -23,7 +23,7 @@ Written by the `/10x-implement` step for phase 2 (commit `d4f4470`): 38 WebP dra
 | `src/scenes/BootScene.ts` | loads `TASK_ART`; `loaderror` is a `console.warn` |
 | `src/ui/widgets/ArtImage.ts`, `layout.ts` (`ART_STAND_IN`, font role `artLabel`) | one reusable image fitted into a rect, stand-in box with the id when the texture is missing, `state()` for the phase 5 hook `art` |
 | `tests/taskArt.test.ts` | table vs files (WebP header size), no stray files, ids covered, under 1 MB |
-| `e2e-request-p2.md`, `e2e-seed-p2.patch`, `e2e-break-p2.patch` | seed assertion (`requestfailed` and every `TASK_ART` url in `servedBySw`) and the one-file `globIgnores` break |
+| `e2e-request-p2.md` (updated p2 re-dispatch), `e2e-seed-p2.patch` (now ignores `blob:`/`data:` responses), `e2e-break-p2.patch` | seed assertion (`requestfailed` and every `TASK_ART` url in `servedBySw`) and the one-file `globIgnores` break |
 
 ## 3. Verification
 
@@ -51,6 +51,7 @@ Written by the `/10x-implement` step for phase 2 (commit `d4f4470`): 38 WebP dra
 
 ## 6. Autonomous decisions
 
+0. Re-dispatch: the orchestrator's red (`blob:` responses counted as network) is fixed in `e2e-seed-p2.patch` by classifying on URL scheme before the pathname; blobs counted apart and required (>= 38). No other spec counts responses (grep). Chromium still dies (MachPortRendezvousServer, 1 plain try), so nothing is committed; both patches `git apply --check` in order.
 1. The seed.spec.ts change is NOT committed (plan: no commit without the orchestrator's result); it lives as `e2e-seed-p2.patch`. Would change: a Chromium-capable session.
 2. `cwebp` could read `designs/` and write `public/assets/` inside the sandbox; no unsandboxed command was used.
 3. `ArtImage` has no unit test (Phaser object); its table-size logic is covered indirectly by `taskArt.test.ts`, its behaviour by the phase 5 hook `art` and the e2e of phase 10.
