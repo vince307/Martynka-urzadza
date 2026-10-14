@@ -999,9 +999,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 10.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 79+ w `docs/design-gaps.md`
+- [x] 10.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 94bb48c
+- [x] 10.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — 94bb48c
+- [x] 10.3 Komentarze `DESIGN-GAP` ↔ wiersze 79+ w `docs/design-gaps.md` — 94bb48c
 - [ ] 10.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
