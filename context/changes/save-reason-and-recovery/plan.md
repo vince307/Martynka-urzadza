@@ -548,9 +548,9 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [x] 1.2 Deliberate break: `replaceGate` przepuszcza `future` / `timeout` z `lastError` → czerwone; przywrócone; meta-check
-- [x] 1.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1; `tests/saveKeys.test.ts` zielony
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 974cd90
+- [x] 1.2 Deliberate break: `replaceGate` przepuszcza `future` / `timeout` z `lastError` → czerwone; przywrócone; meta-check — 974cd90
+- [x] 1.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1; `tests/saveKeys.test.ts` zielony — 974cd90
 - [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
