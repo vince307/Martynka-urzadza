@@ -192,7 +192,16 @@ export const TASK_LAYOUT = {
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
     // The clock to set (S-13b): the dial in the unit of the drawn clock face (ClockFace DIAL), scaled to fit the mat. DESIGN-GAP (row written in phase 10, docs/design-gaps.md).
-    clockSet: { dial: { outer: 150, border: 4, hourLength: 78, minuteLength: 106 } },
+    // The one source of the dial's geometry: ClockFace draws it, clockSetLayout and the e2e hook aim from it. `handle*`: the ring on a hand tip of a clock to set (radius = balance.clockSet.grabRadius, larger while held).
+    clockSet: {
+        dial: {
+            outer: 150, inner: 138, border: 4,
+            hourTick: { from: 118, to: 134, width: 4 }, minuteTick: { from: 128, to: 134, width: 2 },
+            digitRadius: 91, hourLength: 78, hourWidth: 10, minuteLength: 106, minuteWidth: 7,
+            hub: { radius: 10, border: 3 },
+        },
+        handleBorder: 5, heldGrow: 1.2,
+    },
     barSpan: { tiles: { x: 355, width: 1270 }, keypad: { x: 310, width: 710 } },   // under tiles / left of the keypad
     solution: { lineGap: 8, topGap: 16, minScale: 0.6, bottomGap: 12 },
     // Drawing area of a task with a picture (S-13). DESIGN-GAP (docs/design-gaps.md rows 52 and 57): the kit has pictures only above the tiles

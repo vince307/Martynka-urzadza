@@ -180,3 +180,23 @@ describe('reachableTimes', () => {
         expect(times).not.toContain('3.14');
     });
 });
+
+describe('clock handles (S-13b phase 7)', () => {
+    it('a handle is at least 96 px across and every tip pose stays inside the mat', () => {
+        expect(balance.clockSet.grabRadius * 2 * TASK_LAYOUT.clockSet.heldGrow).toBeGreaterThanOrEqual(96);
+        expect(balance.clockSet.grabRadius * 2).toBeGreaterThanOrEqual(96);
+        for (const minute of [0, 15, 30, 45]) {
+            for (const hour of [12, 3, 6, 9]) {
+                const angles = clockHandAngles(hour, minute);
+                for (const [angle, length] of [[angles.hour, layout.hourLength], [angles.minute, layout.minuteLength]] as const) {
+                    const x = layout.centre.x + Math.sin((angle * Math.PI) / 180) * length;
+                    const y = layout.centre.y - Math.cos((angle * Math.PI) / 180) * length;
+                    expect(x - balance.clockSet.grabRadius).toBeGreaterThanOrEqual(TASK_LAYOUT.drag.mat.x);
+                    expect(x + balance.clockSet.grabRadius).toBeLessThanOrEqual(TASK_LAYOUT.drag.mat.x + TASK_LAYOUT.drag.mat.width);
+                    expect(y - balance.clockSet.grabRadius).toBeGreaterThanOrEqual(TASK_LAYOUT.drag.mat.y);
+                    expect(y + balance.clockSet.grabRadius).toBeLessThanOrEqual(TASK_LAYOUT.drag.mat.y + TASK_LAYOUT.drag.mat.height);
+                }
+            }
+        }
+    });
+});

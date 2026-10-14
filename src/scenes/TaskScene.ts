@@ -1,4 +1,6 @@
 import { Scene, type GameObjects } from 'phaser';
+import { initialClockSet, stepClockSet, type ClockSetEvent, type ClockSetGeo, type ClockSetState } from '../core/clockSet';
+import { clockSetLayout } from '../core/round/pictureLayout';
 import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
 import type { InputSuspender } from '../core/inputSuspend';
 import { previousStage, type SessionLearner } from '../core/placement';
@@ -45,6 +47,7 @@ import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { BlockMat, type BlockMatTargets } from '../ui/widgets/BlockMat';
+import { ClockSet, type ClockSetTargets } from '../ui/widgets/ClockSet';
 import { SelectTiles } from '../ui/widgets/SelectTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
@@ -73,6 +76,7 @@ export interface TaskSnapshot {
     readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
     readonly mat: Readonly<Mat>;   // the blocks on the mat of the 'drag' mode
     readonly carrying: boolean;    // a block is under a finger ('drag' mode)
+    readonly clock: { readonly hour: number; readonly minute: number; readonly carrying: 'hour' | 'minute' | null } | null;   // the hands of a clock to set (S-13b)
     readonly outcomes: RoundState['outcomes'];
     readonly starsEarned: number;
     readonly bonusEarned: number;
@@ -92,6 +96,7 @@ export interface TaskTargets {
     readonly selectTiles: readonly (Point & { value: number | string })[];
     readonly selectOk: Point | null;
     readonly drag: BlockMatTargets;
+    readonly clock: ClockSetTargets | null;   // the hand tips, centre and "OK" of a clock to set
     readonly next: Point | null;
     readonly step: Point | null;
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
@@ -113,6 +118,12 @@ export class TaskScene extends Scene {
     private blockMat!: BlockMat;
     private dragState: BlockDragState = initialBlockDrag();
     private dragGeo = dragGeometry(dragLayout(TASK_LAYOUT.drag, []), []);
+    private clockSet!: ClockSet;
+    private clockState: ClockSetState = initialClockSet({ hour: 12, minute: 0 });
+    private clockStart = { hour: 12, minute: 0 };
+    private clockSnap: 60 | 5 = 60;
+    private clockGeo: ClockSetGeo = this.makeClockGeo();
+    private clockTask = false;   // the open 'drag' task is a clock to set (core/tasks/dragMode), not a block build
     private dragLive = false;   // the 'drag' task is open and takes the child's touches
     private keypad!: Keypad;
     private bar!: FeedbackBar;
@@ -140,7 +151,7 @@ export class TaskScene extends Scene {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only
         }
         // A dialog over the canvas swallows the lift of the finger: a block in the air must not survive it.
-        if (this.dragState.carrying && (this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspended()) {
+        if ((this.dragState.carrying || this.clockState.carrying) && (this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspended()) {
             this.feedDrag({ type: 'reset' });
         }
     }
@@ -174,6 +185,9 @@ export class TaskScene extends Scene {
         this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
         this.blockMat = new BlockMat(this, (value) => this.submit(value));
+        this.clockSet = new ClockSet(this, (value) => this.submit(value));
+        this.clockState = initialClockSet(this.clockStart);
+        this.clockTask = false;
         this.dragState = initialBlockDrag();
         this.dragLive = false;
         // The whole scene feeds the block-drag reducer with raw pointer events (core/blockDrag decides); it acts only while a 'drag' task takes touches.
@@ -323,6 +337,12 @@ export class TaskScene extends Scene {
             }
             // A new task starts with an empty mat and nothing in the air.
             this.dragState = initialBlockDrag();
+            this.clockTask = view.input === 'drag' && dragMode(task0) === 'clock';
+            if (this.clockTask && task0.visual?.kind === 'clock') {
+                this.clockStart = { hour: task0.visual.hour, minute: task0.visual.minute };
+                this.clockSnap = task0.visual.snap ?? 60;
+                this.clockState = initialClockSet(this.clockStart);
+            }
             // Only the blocks branch of 'drag' has a tray; the branch comes from the drawing (core/tasks/dragMode), not from the answer's type.
             const kinds = view.input === 'drag' && dragMode(task0) === 'blocks' ? dragKinds(typeof task0.answer === 'number' ? task0.answer : 0) : [];
             const layout = dragLayout(TASK_LAYOUT.drag, kinds);
@@ -335,7 +355,7 @@ export class TaskScene extends Scene {
         const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
-        this.picture.render(view.visual, pictureRect);
+        this.picture.render(this.clockTask ? null : view.visual, pictureRect);   // a clock to set is drawn by ClockSet
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles');
         this.keypad.setVisible(view.input === 'keypad');
@@ -344,8 +364,16 @@ export class TaskScene extends Scene {
         if (!this.dragLive && this.dragState.carrying) {
             this.dragState = { mat: this.dragState.mat, carrying: null };
         }
-        this.blockMat.setVisible(view.input === 'drag');
-        this.blockMat.render(this.dragState, this.dragLive, view.bar.kind !== 'solution');
+        if (!this.dragLive && this.clockState.carrying) {
+            this.clockState = stepClockSet(this.clockState, { type: 'cancel' }, this.clockGeo, this.clockRules());
+        }
+        this.blockMat.setVisible(view.input === 'drag' && !this.clockTask);
+        this.clockSet.setVisible(view.input === 'drag' && this.clockTask);
+        if (this.clockTask) {
+            this.clockSet.render(this.clockState, this.clockSnap, this.dragLive, view.bar.kind !== 'solution');
+        } else {
+            this.blockMat.render(this.dragState, this.dragLive, view.bar.kind !== 'solution');
+        }
         this.select.setActive(view.input === 'select' && view.inputActive);
         this.tiles.setActive(view.input === 'tiles' && view.inputActive);
         this.keypad.setActive(view.input === 'keypad' && view.inputActive);
@@ -381,6 +409,7 @@ export class TaskScene extends Scene {
         this.dots.update([]);
         this.dragLive = false;
         this.blockMat.setVisible(false);
+        this.clockSet.setVisible(false);
         this.tiles.setVisible(false);
         this.select.setVisible(false);
         this.select.setActive(false);
@@ -520,6 +549,7 @@ export class TaskScene extends Scene {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
             this.select.clear();   // a wrong set is cleared too
             this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
+            this.clockState = initialClockSet(this.clockStart);   // and a wrong time: the hands go back to the start
             this.shake();
         }
         this.render();
@@ -674,7 +704,7 @@ export class TaskScene extends Scene {
             return this.select.okTarget();
         }
         if (view.input === 'drag') {
-            return this.blockMat.okTarget();
+            return this.clockTask ? this.clockSet.targets()?.ok ?? null : this.blockMat.okTarget();
         }
         return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
     }
@@ -743,6 +773,7 @@ export class TaskScene extends Scene {
             selected: Object.freeze([...this.select.selected()]),
             mat: Object.freeze({ ...this.dragState.mat }),
             carrying: this.dragState.carrying !== null,
+            clock: this.clockTask ? Object.freeze({ hour: this.clockState.hour, minute: this.clockState.minute, carrying: this.clockState.carrying }) : null,
             outcomes: Object.freeze([...this.state.outcomes]),
             starsEarned: this.state.starsEarned,
             bonusEarned: this.state.bonusEarned,
@@ -765,6 +796,7 @@ export class TaskScene extends Scene {
             selectTiles: this.select.targets(),
             selectOk: this.select.okTarget(),
             drag: this.blockMat.targets(),
+            clock: this.clockTask ? this.clockSet.targets() : null,
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
             picture: this.picture.bounds(),
@@ -774,9 +806,27 @@ export class TaskScene extends Scene {
         });
     }
 
-    /** One raw pointer event for the block-drag reducer; touches count only while a 'drag' task is open, a cancel or reset always does. */
-    private feedDrag(event: BlockDragEvent): void {
+    /** The reducer geometry of the dial, from the same layout the widget draws (core/round/pictureLayout). */
+    private makeClockGeo(): ClockSetGeo {
+        const layout = clockSetLayout(TASK_LAYOUT.drag, TASK_LAYOUT.clockSet.dial);
+        return { centre: layout.centre, hourLength: layout.hourLength, minuteLength: layout.minuteLength };
+    }
+
+    private clockRules(): { snapMinutes: 60 | 5; grabRadius: number; startDistance: number } {
+        return { snapMinutes: this.clockSnap, grabRadius: balance.clockSet.grabRadius, startDistance: balance.clockSet.startDistance };
+    }
+
+    /** One raw pointer event for the drag reducers (blocks or the clock to set); touches count only while a 'drag' task is open, a cancel or reset always does. */
+    private feedDrag(event: BlockDragEvent & ClockSetEvent): void {
         if (!this.dragLive && event.type !== 'cancel' && event.type !== 'reset') {
+            return;
+        }
+        if (this.clockTask) {
+            const before = this.clockState;
+            this.clockState = stepClockSet(before, event, this.clockGeo, this.clockRules());
+            if (this.clockState !== before) {
+                this.clockSet.render(this.clockState, this.clockSnap, this.dragLive, this.state.phase !== 'solution');
+            }
             return;
         }
         const before = this.dragState;

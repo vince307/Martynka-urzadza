@@ -919,7 +919,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 6.2 `npm run sample -- E4 --count 6` bez naruszeń, z linią `visual:` — ab1fa91
 - [x] 6.3 Deliberate break: podpisy boków pominięte → test rozmieszczenia podpisów czerwony; przywrócone; meta-check — ab1fa91
 - [x] 6.4 `playableSteps` E4 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — ab1fa91
-- [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — ab1fa91 (e2e: orchestrator note, full suite on ab1fa91, 57 passed)
 
 #### Manual
 
@@ -930,9 +930,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check
-- [ ] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check
+- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka
 - [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
