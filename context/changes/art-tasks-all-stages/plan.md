@@ -917,7 +917,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `visual.ts`, `measure.ts`, `geometry.ts` bez Phasera i globali; tylko id i liczby; wartości z `manifest.json`
+- [x] 1.5 [reviewer] `visual.ts`, `measure.ts`, `geometry.ts` bez Phasera i globali; tylko id i liczby; wartości z `manifest.json` — impl-review (lint boundary + `tests/measures.test.ts` pins manifest values)
 
 ### Phase 2: Pipeline WebP, tabela tekstur, ładowanie w `BootScene` i precache offline (#8)
 
@@ -933,7 +933,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 2.8 [reviewer] Pliki tylko w `public/assets/tasks/`, nazwy wg plan § 10, nic z `designs/` w git; `ArtImage` bez tekstów gracza
+- [x] 2.8 [reviewer] Pliki tylko w `public/assets/tasks/`, nazwy wg plan § 10, nic z `designs/` w git; `ArtImage` bez tekstów gracza — impl-review (38 files under `public/assets/tasks/`, 0 new under `designs/`; stand-in label shows the id: gap 66)
 - [ ] 2.9 [human] Decyzja wbrew planowi § 10: WebP zamiast PNG, luźne pliki zamiast atlasu, folder `tasks/measuring/`
 
 ### Phase 3: Generatory MONEY_COUNT, MONEY_CHANGE i MASS
@@ -947,7 +947,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Odczyt nauczyciela szablonów `money*`/`mass*` i 6 losowań na wariant
+- [x] 3.5 [reviewer] Odczyt nauczyciela szablonów `money*`/`mass*` i 6 losowań na wariant — impl-review (defect F1 prices fixed)
 
 ### Phase 4: Generatory CAPACITY, TEMPERATURE, COUNT i MULT_GROUPS
 
@@ -960,7 +960,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Odczyt nauczyciela szablonów `capacity*`/`temperature*`/`count*`/`multGroups*` i 6 losowań na wariant
+- [x] 4.5 [reviewer] Odczyt nauczyciela szablonów `capacity*`/`temperature*`/`count*`/`multGroups*` i 6 losowań na wariant — impl-review
 
 ### Phase 5: `MoneyTable` i `BalanceScale`, hak `art`, umiejętności w E1.11, E3.4, E4.1
 
@@ -975,8 +975,8 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 5.7 [reviewer] Odczyt nauczyciela `sample` E1.11, E3.4, E4.1 `--count 6`
-- [ ] 5.8 [reviewer] Widżety bez tekstów gracza i liczb balansu; `hideTaskLayer` chowa oba
+- [x] 5.7 [reviewer] Odczyt nauczyciela `sample` E1.11, E3.4, E4.1 `--count 6` — impl-review (F1 fixed)
+- [x] 5.8 [reviewer] Widżety bez tekstów gracza i liczb balansu; `hideTaskLayer` chowa oba — impl-review (limits moved to `ART_LIMITS`, F4)
 - [ ] 5.9 [visual] Zrzuty: monety E1.11, banknoty E4.1 (klawiatura), zł + gr na kafelkach, waga kg (kafelki), waga dag (klawiatura), waga z podpowiedzią, waga z krokami obok klawiatury, pieniądze z krokami obok kafelków — 1440×900 i 1024×768
 
 ### Phase 6: `Jugs` i `Thermometer`, układ „obok” w scenie, umiejętności w E3.11, E4.7, E5.4, E6.1
@@ -991,7 +991,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 6.6 [reviewer] Odczyt nauczyciela `sample` E3.11, E4.7, E5.4, E6.1
+- [x] 6.6 [reviewer] Odczyt nauczyciela `sample` E3.11, E4.7, E5.4, E6.1 — impl-review (thermometer with tiles readability → follow-up F3)
 - [ ] 6.7 [visual] Zrzuty: termometr dodatni (klawiatura), ujemny z kafelkami tekstowymi, z podpowiedzią, z krokami w układzie „obok”, różnica temperatur, dzbanki ½ l, dzbanki z krokami — 1440×900 i 1024×768
 
 ### Phase 7: `IconGroups`, umiejętności COUNT w E1.2, E1.4 i MULT_GROUPS w E3.9
@@ -1006,7 +1006,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 7.6 [reviewer] Odczyt nauczyciela `sample` E1.2, E1.4, E3.9
+- [x] 7.6 [reviewer] Odczyt nauczyciela `sample` E1.2, E1.4, E3.9 — impl-review
 - [ ] 7.7 [visual] Zrzuty: liczenie 1–5, 6–7, grupy w ramkach z kafelkami liczb i „3 · 4”, grupy z podpowiedzią — 1440×900 i 1024×768
 
 ### Phase 8: Nowe kroki grywalne E1.8, E1.10, E2.2, E2.8, E5.5, dane widżetów S-13 i testy przypięte do kolejności
@@ -1022,7 +1022,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 8.7 [reviewer] Odczyt nauczyciela `sample` `--count 6` E1.8, E1.10, E1.11, E2.1, E2.2, E2.8, E2.9, E2.10, E5.5, E5.7, E6.5 i `childName`
+- [x] 8.7 [reviewer] Odczyt nauczyciela `sample` `--count 6` E1.8, E1.10, E1.11, E2.1, E2.2, E2.8, E2.9, E2.10, E5.5, E5.7, E6.5 i `childName` — impl-review
 - [ ] 8.8 [visual] Zrzuty: linijka E1.8, 11–12 w dziesiątce + reszta, klocki E1.10, pieniądze E2.2, grosze E2.8, waga dag E2.8, dzbanki ¼ l, karta „Nowa umiejętność!” z nowym `childName` — 1440×900 i 1024×768
 - [ ] 8.9 [human] Decyzja wbrew literze roadmapy S-14: zakres zawężony, reszta w S-14b/S-14c/S-14d/S-13b
 
@@ -1037,7 +1037,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Manual
 
-- [ ] 9.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii, `ArtImage` w każdym widżecie; DESIGN-GAP od 59; follow-upy z `Trigger:`
+- [x] 9.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii, `ArtImage` w każdym widżecie; DESIGN-GAP od 59; follow-upy z `Trigger:` — impl-review (O1 duplication → follow-up)
 - [ ] 9.6 [visual] Zrzut podsumowania rundy po zadaniu z grafiką — 1440×900 i 1024×768
 - [ ] 9.7 [human] Decyzje wbrew ZADANIA: MONEY_PAY odłożony; MASS tylko w równowadze; ujemne i zł + gr kafelkami; temperatury co 5/2 °C
 - [ ] 9.8 [human] Akceptacja tekstów nowych zadań i `childName` E1.8, E1.10, E1.11, E2.2, E2.8, E5.5
