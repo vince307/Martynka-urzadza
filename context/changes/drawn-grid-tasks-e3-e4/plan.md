@@ -986,11 +986,11 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 11.1 `npx playwright test tests/e2e/grid-tasks.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3` — orchestrator: grid-tasks 3 passed (28.5 s), full 60 passed (4.2 min) = 57 + 3
-- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `NumberCells.show` nie rysuje → (a) czerwony; meta-check — orchestrator: red `not.toBeNull` Received null, restored
-- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `grid` `choices` bez odpowiedzi → (b) czerwony; meta-check — orchestrator: red `toContain` Expected "B4" Received ["B3","A4"], restored
-- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): figura w rozwiązaniu w prostokącie kafelków → (c) czerwony; przywrócone — orchestrator: red `toBeLessThanOrEqual` Expected <= 668 Received 690, restored
-- [x] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/grid-tasks.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3` — orchestrator: grid-tasks 3 passed (28.5 s), full 60 passed (4.2 min) = 57 + 3 — 718f9cc
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `NumberCells.show` nie rysuje → (a) czerwony; meta-check — orchestrator: red `not.toBeNull` Received null, restored — 718f9cc
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `grid` `choices` bez odpowiedzi → (b) czerwony; meta-check — orchestrator: red `toContain` Expected "B4" Received ["B3","A4"], restored — 718f9cc
+- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): figura w rozwiązaniu w prostokącie kafelków → (c) czerwony; przywrócone — orchestrator: red `toBeLessThanOrEqual` Expected <= 668 Received 690, restored — 718f9cc
+- [x] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 718f9cc
 
 ### Phase 12: Zegar ustawiany dotykiem — e2e (#11)
 
