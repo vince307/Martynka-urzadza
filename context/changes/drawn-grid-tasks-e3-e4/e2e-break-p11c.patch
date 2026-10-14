@@ -1,0 +1,13 @@
+diff --git a/src/core/round/pictureLayout.ts b/src/core/round/pictureLayout.ts
+index 575f420..9d06b33 100644
+--- a/src/core/round/pictureLayout.ts
++++ b/src/core/round/pictureLayout.ts
+@@ -60,7 +60,7 @@ export const pictureLayout = (
+         return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
+     }
+     if (input === 'keypad') {
+-        return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
++        return solution ? spec.tilesSolution : { picture: spec.keypad, lines: null };
+     }
+     return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
+ };
