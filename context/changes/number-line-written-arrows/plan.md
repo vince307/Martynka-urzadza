@@ -930,7 +930,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 - [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje cztery umiejętności WRITTEN
 - [x] 8.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń, z linią `visual: [column …]` — 295a5f4
 - [x] 8.3 Deliberate break: `answerRight` bez gałęzi `digits` → typecheck czerwony; E6 `carry: 'any'` z wynikiem < 100 → czerwone; stary tekst O5 przy pustym `LONG_KEYPAD_HINTS` → inwariant czerwony; przywrócone; meta-check — 295a5f4
-- [x] 8.4 `tests/fixtures/` bez zmian; `e2e hook: absent (` — 295a5f4 — 295a5f4
+- [x] 8.4 `tests/fixtures/` bez zmian; `e2e hook: absent (` — 295a5f4
 - [ ] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
