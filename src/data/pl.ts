@@ -349,6 +349,71 @@ export const pl = {
         lengthMetreHint: '1 m = 100 cm',
         rulerUnitLabel: 'cm',   // printed at the end of the drawn ruler (its digits count centimetres, also on the millimetre ruler)
         lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
+        // MONEY_COUNT, MONEY_CHANGE and MASS (S-14). Amounts are written with the short signs (zł, gr, kg, dag) by the caller; the
+        // spoken forms come from core/text/measure.ts. A purchase is one thing in the accusative, so no numeral has to agree with it.
+        moneyCountPrompt: (mode: 'number-zl' | 'number-gr' | 'text') =>
+            mode === 'number-zl' ? 'Ile złotych leży na stole?' : mode === 'number-gr' ? 'Ile groszy leży na stole?' : 'Ile pieniędzy leży na stole?',
+        moneyCountSpeak: (mode: 'number-zl' | 'number-gr' | 'text') =>
+            `Popatrz na pieniądze. ${mode === 'number-zl' ? 'Ile złotych leży na stole?' : mode === 'number-gr' ? 'Ile groszy leży na stole?' : 'Ile pieniędzy leży na stole?'}`,
+        moneyCountHint: 'Dodawaj po kolei: najpierw największe nominały.',
+        moneyCountTextHint: 'Dodaj osobno złote i osobno grosze.',
+        moneyZlotyLine: (parts: readonly number[], sum: number) => (parts.length > 1 ? `Złote: ${parts.join(' + ')} = ${sum}` : `Złote: ${sum}`),
+        moneyGroszeLine: (parts: readonly number[], sum: number) => (parts.length > 1 ? `Grosze: ${parts.join(' + ')} = ${sum}` : `Grosze: ${sum}`),
+        moneyGroszeToZloty: (grosze: number, text: string) => `${grosze} gr to ${text}.`,
+        moneyCountAnswerHint: (amount: string) => `Na stole leży ${amount}.`,
+        moneyChangeQuestion: (mode: 'number-zl' | 'number-gr' | 'text') =>
+            mode === 'number-zl' ? 'Ile złotych zostało?' : mode === 'number-gr' ? 'Ile groszy zostało?' : 'Ile pieniędzy zostało?',
+        moneyChange: (name: string, feminine: boolean, had: string, thing: string, price: string, question: string) =>
+            `${name} ${feminine ? 'miała' : 'miał'} ${had}. ${feminine ? 'Kupiła' : 'Kupił'} ${thing} za ${price}. ${question}`,
+        moneyChangeHint: 'Od kwoty na początku odejmij cenę.',
+        moneyChangeGroszeHint: 'Złotówka to 100 groszy.',
+        moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
+        moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
+        massPrompt: (unit: 'kg' | 'dag', noun: string) => `Waga jest w równowadze. Ile ${unit === 'kg' ? 'kilogramów' : 'dekagramów'} waży ${noun}?`,
+        massHalfPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do pół kilograma?',
+        massKiloPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do kilograma?',
+        massReadHint: 'Dodaj masy wszystkich odważników z prawej szalki.',
+        massReadOneHint: 'Odczytaj masę odważnika z prawej szalki.',
+        massAnswerHint: (noun: string, n: number, unit: 'kg' | 'dag') => `${noun.charAt(0).toUpperCase()}${noun.slice(1)} waży ${n} ${unit}.`,
+        massHalfFactHint: 'Pół kilograma to 50 dag.',
+        massKiloFactHint: '1 kg = 100 dag',
+        massWeighsHint: (n: number) => `Odważnik waży ${n} dag.`,
+        massMissingAnswerHint: (n: number) => `Brakuje ${n} dag.`,
+        // CAPACITY, TEMPERATURE, COUNT and MULT_GROUPS (S-14). Litres and degrees agree with the number through nouns.litr / nouns.stopień
+        // (the callers use countNoun); the tiles and the keypad carry the digits, so the prompts hold none except the story's own.
+        capacityLitresPrompt: 'Ile litrów wody jest w dzbankach?',
+        capacityLitresSpeak: 'Popatrz na dzbanki. Ile litrów wody jest w dzbankach?',
+        capacityOneLitreFact: 'Każdy duży dzbanek mieści litr.',
+        capacityHalfFact: 'Dwa dzbanki po pół litra to razem litr.',
+        capacityQuarterFact: 'Cztery dzbanki po ćwierć litra to razem litr.',
+        capacityQuarterAlso: 'Cztery dzbanki po ćwierć litra też.',
+        capacityLitresAnswerHint: (litres: string) => `To razem ${litres}.`,
+        capacityHowMany: (jug: 'half' | 'quarter', litres: string) =>
+            `Ile dzbanków po ${jug === 'half' ? 'pół' : 'ćwierć'} litra potrzeba, żeby nalać ${litres} wody?`,
+        capacityHowManySpeak: (jug: 'half' | 'quarter', litres: string) =>
+            `Popatrz na dzbanek. Ile dzbanków po ${jug === 'half' ? 'pół' : 'ćwierć'} litra potrzeba, żeby nalać ${litres} wody?`,
+        capacityLitreFitsHalf: 'Dwa takie dzbanki to razem jeden litr.',
+        capacityLitreFitsQuarter: 'Cztery takie dzbanki to razem jeden litr.',
+        capacityHowManyAnswerHint: (jugs: string) => `To razem ${jugs}.`,
+        temperatureReadPrompt: (mode: 'number' | 'text') => (mode === 'number' ? 'Ile stopni pokazuje termometr?' : 'Jaką temperaturę pokazuje termometr?'),
+        temperatureFindHint: 'Znajdź koniec słupka i najbliższą liczbę.',
+        temperatureBelowZeroHint: 'Poniżej zera liczymy w dół.',
+        temperatureShowsHint: (celsius: string) => `Termometr pokazuje ${celsius}.`,
+        temperatureDiff: (morning: string, warmer: boolean) =>
+            `Rano było ${morning}. Popatrz na termometr: tyle jest teraz. O ile stopni się ${warmer ? 'ociepliło' : 'ochłodziło'}?`,
+        temperatureNowHint: (celsius: string) => `Teraz jest ${celsius}.`,
+        temperatureAcrossZeroHint: 'Przejdź przez zero: policz osobno do zera i od zera.',
+        temperatureChangeHint: (degrees: string, warmer: boolean) => `${warmer ? 'Ociepliło' : 'Ochłodziło'} się o ${degrees}.`,
+        countPrompt: (many: string) => `Ile jest ${many}?`,
+        countPointHint: 'Pokazuj palcem każdy przedmiot i licz po kolei.',
+        countTenHint: 'Pierwszy rząd to dziesięć. Policz, ile jest pod nim.',
+        countAnswerHint: (what: string) => `Na obrazku: ${what}.`,
+        multGroupsResult: (groups: number, size: number, each: string, many: string) => `Na ${groups} talerzykach leży po ${size} ${each}. Ile ${many} jest razem?`,
+        multGroupsResultHint: 'Policz, ile jest talerzyków i ile jest na jednym.',
+        multGroupsExpr: 'Które działanie pokazuje obrazek?',
+        multGroupsExprHint: 'Zobacz, ile jest grup i ile ikon w jednej grupie.',
+        multGroupsCountsHint: (groups: number, size: number) => `Grup: ${groups}. W każdej po ${size}.`,
+        multGroupsExprAnswerHint: (expr: string) => `Pasuje ${expr}.`,
         // PLACE_VALUE and DATA (S-13). The blocks and the bar chart are drawings; the texts only name them.
         placeValueRead: 'Jaka to liczba?',
         placeValueReadSpeak: 'Popatrz na klocki. Jaka to liczba?',

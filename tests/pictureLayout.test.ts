@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { belowPrompt, clockHandAngles, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
+import { answerSpans, belowPrompt, clockHandAngles, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { TASK_LAYOUT } from '../src/data/layout';
 
 const spec = TASK_LAYOUT.picture;
@@ -19,7 +19,7 @@ describe('pictureLayout', () => {
     for (const input of ['tiles', 'keypad'] as const) {
         for (const solution of [false, true]) {
             it(`keeps the ${input} picture ${solution ? 'with' : 'without'} solution inside the notebook and off the answers`, () => {
-                const { picture, lines } = pictureLayout(spec, input, solution);
+                const { picture, lines } = pictureLayout(spec, input, solution, 'wide');
                 expect(inside(picture, page)).toBe(true);
                 if (input === 'tiles') {
                     expect(apart(picture, tileRowRect(4))).toBe(true);
@@ -37,8 +37,8 @@ describe('pictureLayout', () => {
 
     it('shows the solution lines next to the picture, not over it', () => {
         for (const input of ['tiles', 'keypad'] as const) {
-            expect(pictureLayout(spec, input, false).lines).toBeNull();
-            const { picture, lines } = pictureLayout(spec, input, true);
+            expect(pictureLayout(spec, input, false, 'wide').lines).toBeNull();
+            const { picture, lines } = pictureLayout(spec, input, true, 'wide');
             expect(lines).not.toBeNull();
             expect(apart(picture, lines as PictureRect)).toBe(true);
         }
@@ -48,6 +48,67 @@ describe('pictureLayout', () => {
         expect(spec.promptY).toBeGreaterThanOrEqual(notebook.top + notebook.border);
         expect(spec.tiles.y).toBeGreaterThan(spec.promptY + 2 * 77);
         expect(spec.keypad.y).toBeGreaterThan(spec.promptY + 3 * 77);
+    });
+});
+
+describe('pictureLayout of a tall drawing (S-14, visual gate F3)', () => {
+    const barTop = bar.bottom - bar.height;
+    const tilesRight = (n: number): PictureRect => {
+        const area = answerSpans(spec, 'tiles', 'tall').tiles!;
+        const total = n * tiles.width + (n - 1) * tiles.gap;
+        return { x: area.x + (area.width - total) / 2, y: tiles.top, width: total, height: tiles.height };
+    };
+
+    for (const input of ['tiles', 'keypad'] as const) {
+        it(`keeps a tall drawing in one ${input} column in every phase: same rectangle, lines only in the solution`, () => {
+            const first = pictureLayout(spec, input, false, 'tall');
+            const solved = pictureLayout(spec, input, true, 'tall');
+            expect(first.lines).toBeNull();
+            expect(solved.picture).toEqual(first.picture);
+            expect(solved.lines).not.toBeNull();
+            expect(apart(first.picture, solved.lines!)).toBe(true);
+            expect(inside(first.picture, page)).toBe(true);
+            expect(inside(solved.lines!, page)).toBe(true);
+            expect(first.picture.height).toBeGreaterThan(2 * first.picture.width);
+            expect(first.picture.y + first.picture.height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        });
+    }
+
+    it('gives the thermometer at least 1.4 times the height of the wide picture, so a degree is readable (F3)', () => {
+        expect(pictureLayout(spec, 'tiles', false, 'tall').picture.height).toBeGreaterThanOrEqual(1.4 * spec.keypad.height);
+        expect(pictureLayout(spec, 'keypad', false, 'tall').picture.height).toBeGreaterThanOrEqual(1.4 * spec.keypad.height);
+    });
+
+    it('moves the tiles, the bar and the lines right of the tiles column, clear of each other', () => {
+        const { picture, lines } = pictureLayout(spec, 'tiles', true, 'tall');
+        const spans = answerSpans(spec, 'tiles', 'tall');
+        for (const n of [3, 4]) {
+            expect(apart(picture, tilesRight(n))).toBe(true);
+            expect(inside(tilesRight(n), page)).toBe(true);
+            expect(apart(lines!, tilesRight(n))).toBe(true);
+        }
+        expect(spans.bar!.x).toBeGreaterThanOrEqual(picture.x + picture.width);
+        expect(spans.bar!.x + spans.bar!.width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        expect(lines!.y + lines!.height).toBeLessThanOrEqual(tiles.top);
+    });
+
+    it('keeps the keypad column, the lines and the bar left of the keypad, the bar right of the column', () => {
+        const { picture, lines } = pictureLayout(spec, 'keypad', true, 'tall');
+        const spans = answerSpans(spec, 'keypad', 'tall');
+        expect(spans.tiles).toBeNull();
+        expect(apart(picture, keypadRect)).toBe(true);
+        expect(apart(lines!, keypadRect)).toBe(true);
+        expect(lines!.width).toBeGreaterThanOrEqual(480);
+        expect(lines!.y + lines!.height).toBeLessThanOrEqual(barTop);
+        expect(spans.bar!.x).toBeGreaterThanOrEqual(picture.x + picture.width);
+        expect(spans.bar!.x + spans.bar!.width).toBeLessThanOrEqual(keypad.left);
+    });
+
+    it('leaves the answers and the bar of a wide drawing where they were', () => {
+        for (const input of ['tiles', 'keypad', 'select', 'drag'] as const) {
+            expect(answerSpans(spec, input, 'wide')).toEqual({ tiles: null, bar: null });
+        }
+        expect(pictureLayout(spec, 'keypad', true, 'wide').picture).toEqual(spec.keypadSolution.picture);
     });
 });
 

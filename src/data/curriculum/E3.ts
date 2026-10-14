@@ -57,6 +57,8 @@ export const E3: StageDef = {
                 skill('E3.4.data_least_10', 4, 'DATA', { variant: 'least', maxValue: 10, bars: 4 }, 'tiles'),
                 skill('E3.4.data_howmany_10', 4, 'DATA', { variant: 'howMany', maxValue: 10, bars: 3 }),
                 skill('E3.4.data_diff_10', 4, 'DATA', { variant: 'diff', maxValue: 10, bars: 3 }),
+                skill('E3.4.mass_kg_10', 4, 'MASS', { variant: 'read', unit: 'kg', weights: ['weight-1kg', 'weight-2kg', 'weight-5kg'], max: 10 }),
+                skill('E3.4.mass_dag_100', 4, 'MASS', { variant: 'read', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
             ],
         },
         {
@@ -103,6 +105,8 @@ export const E3: StageDef = {
             types: ['MULT_GROUPS', 'MULT'],
             skills: [
                 skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true }),
+                skill('E3.9.mult_groups_result', 9, 'MULT_GROUPS', { variant: 'result', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
+                skill('E3.9.mult_groups_expr', 9, 'MULT_GROUPS', { variant: 'expr', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
                 skill('E3.9.word_groups_30', 9, 'WORD', { max: 30, kinds: ['groups'], maxFactor: 6 }),
             ],
         },
@@ -126,6 +130,7 @@ export const E3: StageDef = {
                 skill('E3.11.clock_24h', 11, 'CLOCK', { variant: 'h24', minuteStep: 60 }, 'tiles'),
                 skill('E3.11.roman_12', 11, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E3.11.calendar', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
+                skill('E3.11.temperature_read_30', 11, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 5, answer: 'text' }, 'tiles'),
             ],
         },
     ],

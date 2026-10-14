@@ -28,18 +28,19 @@ export interface Context {
     accusative: string;     // singular accusative for "ma 1 naklejkę" (equals nominative for masculine/neuter)
     place: string;          // "w kawiarni", "na półce"
     portable: boolean;      // fits boxes and plates (groups / share / each templates)
+    price?: readonly [number, number];   // a believable shop price in grosze, min..max (MONEY_CHANGE); none = never bought
 }
 
 export const contexts: readonly Context[] = [
-    { noun: nouns.rogalik, accusative: 'rogalik', place: 'w kawiarni', portable: true },
-    { noun: nouns.ciastko, accusative: 'ciastko', place: 'na talerzu', portable: true },
-    { noun: nouns.filiżanka, accusative: 'filiżankę', place: 'na półce', portable: false },
-    { noun: nouns.kwiatek, accusative: 'kwiatek', place: 'w ogrodzie', portable: false },
-    { noun: nouns.poduszka, accusative: 'poduszkę', place: 'na kanapie', portable: false },
-    { noun: nouns.książka, accusative: 'książkę', place: 'na półce', portable: false },
-    { noun: nouns.klocek, accusative: 'klocek', place: 'w pudełku', portable: true },
-    { noun: nouns.kredka, accusative: 'kredkę', place: 'w piórniku', portable: true },
-    { noun: nouns.naklejka, accusative: 'naklejkę', place: 'w albumie', portable: true },
+    { noun: nouns.rogalik, accusative: 'rogalik', place: 'w kawiarni', portable: true, price: [100, 600] },
+    { noun: nouns.ciastko, accusative: 'ciastko', place: 'na talerzu', portable: true, price: [50, 800] },
+    { noun: nouns.filiżanka, accusative: 'filiżankę', place: 'na półce', portable: false, price: [500, 4000] },
+    { noun: nouns.kwiatek, accusative: 'kwiatek', place: 'w ogrodzie', portable: false, price: [300, 3000] },
+    { noun: nouns.poduszka, accusative: 'poduszkę', place: 'na kanapie', portable: false, price: [2000, 10000] },
+    { noun: nouns.książka, accusative: 'książkę', place: 'na półce', portable: false, price: [1000, 6000] },
+    { noun: nouns.klocek, accusative: 'klocek', place: 'w pudełku', portable: true, price: [100, 2000] },
+    { noun: nouns.kredka, accusative: 'kredkę', place: 'w piórniku', portable: true, price: [50, 500] },
+    { noun: nouns.naklejka, accusative: 'naklejkę', place: 'w albumie', portable: true, price: [1, 500] },
     { noun: nouns.złoty, accusative: 'złoty', place: 'w skarbonce', portable: false },
 ];
 

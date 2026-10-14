@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/Thermometer.ts b/src/ui/widgets/Thermometer.ts
+index bd28453..e0be2ce 100644
+--- a/src/ui/widgets/Thermometer.ts
++++ b/src/ui/widgets/Thermometer.ts
+@@ -41,7 +41,7 @@ export class Thermometer {
+         const y = (u: number): number => frame.y + u * s;
+         const yOf = (value: number): number => y(THERMOMETER.yForMinus30 - (value - THERMOMETER.min) * THERMOMETER.pixelsPerDegree);
+         const g = this.face;
+-        g.clear().setVisible(true);
++        g.clear().setVisible(false);
+         g.fillStyle(INK, t.tube.fillAlpha).fillRoundedRect(x(t.tube.x), y(t.tube.y), t.tube.width * s, t.tube.height * s, t.tube.radius * s);
+         g.lineStyle(t.tube.border * s, INK, 1).strokeRoundedRect(x(t.tube.x), y(t.tube.y), t.tube.width * s, t.tube.height * s, t.tube.radius * s);
+         g.fillStyle(LIQUID, 1).fillRoundedRect(x(t.liquid.x), yOf(celsius), t.liquid.width * s, (y(t.liquid.bottom) - yOf(celsius)), t.liquid.radius * s);

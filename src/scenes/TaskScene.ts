@@ -16,10 +16,10 @@ import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
-import { belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
+import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
-import type { AnswerMode, TaskVisual } from '../core/tasks/visual';
+import { visualShape, type AnswerMode, type TaskVisual } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
 import {
@@ -65,6 +65,7 @@ export interface TaskSnapshot {
     readonly input: AnswerMode;
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
+    readonly art: readonly { readonly key: string; readonly loaded: boolean }[];   // the art images on screen now, read from the widget (S-14)
     readonly choices: readonly (number | string)[];
     readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
     readonly mat: Readonly<Mat>;   // the blocks on the mat of the 'drag' mode
@@ -312,7 +313,7 @@ export class TaskScene extends Scene {
             this.drawPrompt(view.input);
             this.keypad.reset();
             if (view.input === 'tiles') {
-                this.tiles.setChoices(view.choices);
+                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
             }
             if (view.input === 'select') {
                 this.select.setChoices(view.choices);
@@ -327,7 +328,7 @@ export class TaskScene extends Scene {
         const task = this.state.tasks[this.state.index];
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
         const solutionShown = view.bar.kind === 'solution';
-        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown);
+        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap) : layout.picture;
         this.picture.render(view.visual, pictureRect);
@@ -351,7 +352,7 @@ export class TaskScene extends Scene {
         }
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
-        this.bar.update(view.bar, view.input);
+        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
@@ -450,7 +451,7 @@ export class TaskScene extends Scene {
             if (task.visual) {
                 // A pictured task's prompt ends above its drawing: a long one steps its font down (visual gate S-13).
                 const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
-                const limit = pictureLayout(TASK_LAYOUT.picture, input, false).picture.y - promptGap;
+                const limit = pictureLayout(TASK_LAYOUT.picture, input, false, visualShape(task.visual)).picture.y - promptGap;
                 const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
                 text.setFontSize(size);
             }
@@ -729,6 +730,7 @@ export class TaskScene extends Scene {
             input: view.input,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
+            art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
             selected: Object.freeze([...this.select.selected()]),
             mat: Object.freeze({ ...this.dragState.mat }),

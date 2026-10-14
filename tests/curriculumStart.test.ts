@@ -1,7 +1,9 @@
 // Origin: S-07 phase 2. Rule D (plan, Critical Implementation Details): the school-calendar floor of the first
 // unlocked step. The table below is the plan's stage x month oracle, computed independently of the implementation
 // (36 cells verified in the plan review); it is typed here, never read from the code under test.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { decodeSave } from '../src/core/save';
 import { balance } from '../src/data/balance';
 import { placementData } from '../src/data/placement';
 import { stages } from '../src/data/curriculum';
@@ -27,22 +29,27 @@ const SPRING = [1, 2, 3, 4, 5];
 // k = min(n, max(2, ceil(progress * n))) and every step is playable, so the step equals k.
 //   E3 (n = 11): ceil(1.1) 2, ceil(3.3) 4, ceil(5.5) 6, ceil(7.7) 8, ceil(9.9) 10; the month after is behind -> 11.
 //   E4 (n = 8):  ceil(0.8) 1 -> floor of 2, ceil(2.4) 3, ceil(4.0) 4, ceil(5.6) 6, ceil(7.2) 8; July is still E4 -> progress 1 -> 8.
+// S-14 (E1.8, E1.10, E2.2, E2.8 and E5.5 became playable) rows recomputed by hand from rule D, same progress values:
+//   E1 (n = 10: steps 2..11, step 1 stays empty): k = ceil(1.0) 1 -> floor of 2, ceil(3.0) 3, ceil(5.0) 5, ceil(7.0) 7,
+//      ceil(9.0) 9, then 10 for the month after; the k-th playable step is k + 1: 3, 4, 6, 8, 10, 11.
+//   E2 (n = 10: steps 1..10): ceil(1.0) 1 -> floor of 2, 3, 5, 7, 9, 10 and every step is playable, so the step equals k.
+//   E5 (n = 11: steps 1..11, step 12 stays empty): ceil(1.1) 2, ceil(3.3) 4, ceil(5.5) 6, ceil(7.7) 8, ceil(9.9) 10, 11.
 const ORACLE: { id: StageId; age: number; months: number[]; after: number; expected: number[] }[] = [
-    { id: 'E1', age: 6, months: AUTUMN, after: 1, expected: [3, 4, 5, 7, 11, 11] },
-    { id: 'E2', age: 7, months: SPRING, after: 6, expected: [3, 4, 5, 7, 10, 10] },
+    { id: 'E1', age: 6, months: AUTUMN, after: 1, expected: [3, 4, 6, 8, 10, 11] },
+    { id: 'E2', age: 7, months: SPRING, after: 6, expected: [2, 3, 5, 7, 9, 10] },
     { id: 'E3', age: 8, months: AUTUMN, after: 1, expected: [2, 4, 6, 8, 10, 11] },
     { id: 'E4', age: 8, months: SPRING, after: 6, expected: [2, 3, 4, 6, 8, 8] },
-    { id: 'E5', age: 9, months: AUTUMN, after: 1, expected: [2, 3, 6, 8, 10, 11] },
+    { id: 'E5', age: 9, months: AUTUMN, after: 1, expected: [2, 4, 6, 8, 10, 11] },
     { id: 'E6', age: 10, months: SPRING, after: 6, expected: [4, 5, 6, 8, 10, 10] },
 ];
 
 describe('playableSteps', () => {
     it('lists the steps with at least one playable skill, in order, for every real stage', () => {
-        expect(playableSteps(stage('E1'))).toEqual([2, 3, 4, 5, 6, 7, 9, 11]);
-        expect(playableSteps(stage('E2'))).toEqual([1, 3, 4, 5, 6, 7, 9, 10]);
+        expect(playableSteps(stage('E1'))).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+        expect(playableSteps(stage('E2'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         expect(playableSteps(stage('E3'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect(playableSteps(stage('E4'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-        expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 6, 7, 8, 9, 10, 11]);
+        expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect(playableSteps(stage('E6'))).toEqual([1, 4, 5, 6, 7, 8, 9, 10]);
     });
 });
@@ -136,5 +143,27 @@ describe('floorToCalendar (loaded learner, S-11)', () => {
     it('returns the same object when nothing changes', () => {
         const learner = base({ ...calendar });
         expect(floorToCalendar(learner, stages, 9, placementData, RULES)).toBe(learner);
+    });
+
+    // S-14 made E1.8, E1.10, E2.2, E2.8 and E5.5 playable, which moved calendar starts. A learner saved before that
+    // (the frozen v1 fixture: age 8, E3, unlockedStep E1 5, E2 6, E3 3, E4 2, E5 2, E6 2) still decodes, and the
+    // floor only raises steps. Expected values by hand from rule D for November (month 10, an 8-year-old is in E3):
+    // E1 and E2 are behind the calendar stage -> their last playable step (E1 11, E2 10); E3 n = 11, progress 0.5 ->
+    // ceil(5.5) = 6; E4..E6 are ahead of the calendar and only checked against the floor (never below save or start).
+    it('loads a learner saved before S-14 (frozen fixture) and only raises its steps', () => {
+        const raw = JSON.parse(readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8')) as unknown;
+        const decoded = decodeSave(raw);
+        if (decoded.kind !== 'ok' || !decoded.session.learner) throw new Error('fixture did not decode');
+        const saved = decoded.session.learner;
+        const out = floorToCalendar(saved, stages, 10, placementData, RULES);
+        expect(out.unlockedStep.E1).toBe(11);
+        expect(out.unlockedStep.E2).toBe(10);
+        expect(out.unlockedStep.E3).toBe(6);
+        for (const id of ALL) {
+            expect(out.unlockedStep[id]).toBeGreaterThanOrEqual(saved.unlockedStep[id]);
+            expect(out.unlockedStep[id]).toBeGreaterThanOrEqual(calendarStart(stage(id), 8, 10, placementData, RULES));
+        }
+        expect(out.mastery).toEqual(saved.mastery);
+        expect(out.pendingUnlock).toEqual(saved.pendingUnlock);
     });
 });

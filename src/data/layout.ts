@@ -81,6 +81,8 @@ export const FONT_SIZES = {
     rulerUnit: 26,          // kit reference/ruler.svg "cm"
     chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
+    thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
+    artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
 /**
@@ -111,6 +113,8 @@ export const FONT_WEIGHTS = {
     rulerUnit: 700,
     chartLabel: 700,
     chartAxis: 650,
+    thermoLabel: 700,       // kit reference/thermometer-face.js
+    artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -190,6 +194,14 @@ export const TASK_LAYOUT = {
         tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
         keypad: { x: 236, y: 470, width: 768, height: 378 },
         keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
+        // A tall drawing (thermometer, S-14, visualShape 'tall'): one column on the left of the notebook in every phase, down to the bar's bottom.
+        // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
+        // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
+        // above the tiles (tiles) or beside the column (keypad). DESIGN-GAP 65 (docs/design-gaps.md).
+        tall: {
+            tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
+            keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
+        },
     },
     // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
     // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).
@@ -209,6 +221,37 @@ export const TASK_LAYOUT = {
     },
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
     chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
+    // Money on a table (S-14), own units: notes in the upper row, coins in the lower one, largest first. Not a physical scale: a note is wider
+    // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.
+    money: {
+        noteWidth: 192, noteHeight: 128, gap: 24, rowGap: 20, coinPerMm: 4.8, maxScale: 1.4,
+        coinMm: { 'coin-01gr': 15.5, 'coin-02gr': 17.5, 'coin-05gr': 19.5, 'coin-10gr': 16.5, 'coin-20gr': 18.5, 'coin-50gr': 20.5, 'coin-1zl': 23, 'coin-2zl': 21.5, 'coin-5zl': 24 },
+    },
+    // Balance scale in balance (S-14), in the 512 x 384 units of the converted drawing: the item stands in the left pan, the weights in the
+    // right one (up to `perRow` side by side, further rows `rowLift` higher). DESIGN-GAP (row added in S-14 phase 9): the kit shows the scale without things on it.
+    scale: {
+        imageWidth: 512, imageHeight: 384,
+        panLeft: { x: 90, y: 240 }, panRight: { x: 421, y: 240 },   // centre of a pan rim, the bottom of the things rests on y
+        itemSize: 104, weightSize: 84, weightGap: 2, perRow: 2, rowLift: 60,   // visual gate S-14: 52 px weights in rows of 3 left the "10 dag" label about 4 CSS px tall on a tablet
+    },
+    // Jugs in a row (S-14), in the units of the 512 x 512 drawing: only the shared visible rectangle (measures.ts) takes room, so the padding of the
+    // image overlaps. Up to `maxPerRow` in a row, more in two. DESIGN-GAP (row added in S-14 phase 9): the kit shows single jugs only.
+    jugs: { gap: 40, rowGap: 24, maxPerRow: 5, maxScale: 0.8 },
+    // Counting icons and groups of icons (S-14), in icon sizes except `maxIcon`: rows of up to `maxPerRow`, a ten in one row, groups in a rounded
+    // frame each (`radius`, `border` in scene pixels). DESIGN-GAP (row added in S-14 phase 9): the kit has no plates, so a frame is drawn in code.
+    icons: { gap: 0.12, maxPerRow: 6, framePad: 0.2, frameGap: 0.35, maxIcon: 150, radius: 20, border: 4 },
+    // Thermometer face painted over the housing (kit reference/thermometer-face.js), in the 512 x 1536 units of the housing; tick lengths are the
+    // x of the tick end. `minGapPx` is the smallest distance of two single-degree ticks on screen, `minLabelPx` the smallest label size, so a
+    // small thermometer (a tall drawing in a 378 px column) stays readable. DESIGN-GAP (row added in S-14 phase 9): the kit has no small version.
+    thermometer: {
+        tube: { x: 178, y: 286, width: 34, height: 1040, radius: 17, border: 4, fillAlpha: 0.125 },
+        liquid: { x: 184, width: 22, bottom: 1322, radius: 11 },
+        bulb: { x: 195, y: 1334, radius: 34 },
+        unit: { x: 274, y: 222 },
+        tick: { start: 220, major: 246, five: 239, minor: 231, majorWidth: 4, width: 2, minWidthPx: 1.5 },
+        label: { x: 301, drop: 17, size: 50, gap: 13 },   // gap: kit '+30' at 50 px centred on 301 starts 13 units after the major tick end (246)
+        minGapPx: 7, minLabelPx: 22,
+    },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
 } as const;
@@ -350,6 +393,14 @@ export const ANIMATION = {
     purchaseParticles: 14,
     purchaseParticleMs: 700,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
+} as const;
+
+/** Stand-in for a drawing whose texture is missing (S-14): a plain rounded box with the id, so the task stays playable. */
+export const ART_STAND_IN = {
+    fill: PLACEHOLDER_COLORS.tile,
+    border: PLACEHOLDER_COLORS.deepTeal,
+    borderWidth: 3,
+    radius: 16,
 } as const;
 
 /** Inset of the build id in the screen corner, in scene pixels. */

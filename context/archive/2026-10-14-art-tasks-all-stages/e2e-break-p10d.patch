@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 127e276..1b7fee7 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -328,7 +328,7 @@ export class TaskScene extends Scene {
+         const task = this.state.tasks[this.state.index];
+         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
+         const solutionShown = view.bar.kind === 'solution';
+-        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
++        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, 'wide');
+         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
+         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap) : layout.picture;
+         this.picture.render(view.visual, pictureRect);

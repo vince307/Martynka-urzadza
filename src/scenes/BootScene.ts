@@ -1,11 +1,12 @@
 import { Scene } from 'phaser';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { TASK_ART } from '../data/taskArt';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 
 /**
- * Loads the task screen font from public/fonts (precached, so it also works
- * offline) and hands over: to the welcome screen while `needsPlacement` says the
+ * Loads the task screen font from public/fonts and the task drawings from public/assets/tasks (precached, so
+ * they also work offline) and hands over: to the welcome screen while `needsPlacement` says the
  * session has no learner, otherwise to the task scene. Nothing is drawn here.
  */
 export class BootScene extends Scene {
@@ -15,6 +16,13 @@ export class BootScene extends Scene {
 
     preload(): void {
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
+        // A missing drawing is not fatal: ArtImage draws a stand-in, and the unit test keeps the table and files equal.
+        this.load.on('loaderror', (file: { key: string }) => {
+            console.warn(`Task art failed to load: ${file.key}`);
+        });
+        for (const art of TASK_ART) {
+            this.load.image(art.key, art.url);
+        }
     }
 
     create(): void {

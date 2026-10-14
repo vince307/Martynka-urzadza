@@ -1,6 +1,8 @@
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Task } from '../src/core/tasks/types';
-import { validateTask } from '../src/core/tasks/validate';
+import { validationBounds } from '../src/core/tasks/bounds';
+import { NEGATIVE_TYPES, validateTask } from '../src/core/tasks/validate';
 import { nouns } from '../src/data/nouns';
 
 const base: Task = { skillId: 's', prompt: '7 + 6', answer: 13, hint: ['7 + 3 = 10', '10 + 3 = 13'] };
@@ -79,5 +81,54 @@ describe('validateTask drawing', () => {
     it('accepts a good drawing and a task without one', () => {
         expect(validateTask({ ...base, visual: { kind: 'clock', hour: 3, minute: 0 } })).toEqual([]);
         expect(validateTask(base)).toEqual([]);
+    });
+});
+
+describe('negative numbers allowed for temperatures (S-14)', () => {
+    const cold: Task = {
+        skillId: 'E6.1.temperature_x',
+        prompt: 'Termometr pokazuje -5 °C. Ile stopni będzie, gdy ociepli się o 8?',
+        answer: 3,
+        hint: ['-5 + 8 = 3'],
+    };
+    const below: Task = { ...cold, answer: -4, choices: [-4, 4, -9, 9], hint: ['Zacznij od -5, idź w górę o 1', 'Wynik: \u22124'] };
+
+    it('is off by default: a minus answer, minus choices and minus texts are all violations', () => {
+        expect(validateTask(below).map((x) => x.rule)).toEqual(expect.arrayContaining(['negative']));
+        expect(validateTask(cold).map((x) => x.rule)).toContain('negative');
+    });
+
+    it('with allowNegative a negative answer, choices and texts pass, the other rules still apply', () => {
+        expect(validateTask(below, { allowNegative: true })).toEqual([]);
+        expect(validateTask(cold, { allowNegative: true })).toEqual([]);
+        expect(validateTask({ ...below, choices: [4, 4, -9, -4] }, { allowNegative: true }).map((x) => x.rule)).toEqual(['choices']);
+        expect(validateTask({ ...below, answer: 7 }, { allowNegative: true }).map((x) => x.rule)).toEqual(['choices']);
+        expect(validateTask({ ...below, hint: [] }, { allowNegative: true }).map((x) => x.rule)).toEqual(['hint']);
+        expect(validateTask({ ...cold, answer: 40 }, { allowNegative: true, max: 30 }).map((x) => x.rule)).toEqual(['range']);
+    });
+
+    it('validationBounds sets the flag from the skill type in one place', () => {
+        expect(NEGATIVE_TYPES.has('TEMPERATURE')).toBe(true);
+        expect(NEGATIVE_TYPES.has('ADD_SUB')).toBe(false);
+        expect(validationBounds({ type: 'TEMPERATURE', params: { low: -20, high: 20 } })).toEqual({ max: 40, allowNegative: true });
+        expect(validationBounds({ type: 'ADD_SUB', params: { max: 20 } })).toEqual({ max: 20, allowNegative: false });
+    });
+
+    // Impl-review S-14: params of the art types are not on-screen units, so the bound is read per type (screenBound).
+    it('bounds the art types in the units the child sees', () => {
+        expect(validationBounds({ type: 'MONEY_CHANGE', params: { max: 10000, answer: 'number-zl' } }).max).toBe(100);
+        expect(validationBounds({ type: 'MONEY_COUNT', params: { max: 100, answer: 'number-gr' } }).max).toBe(100);
+        expect(validationBounds({ type: 'MONEY_COUNT', params: { max: 2000, answer: 'text' } }).max).toBe(2000);
+        expect(validationBounds({ type: 'CAPACITY', params: { jugs: ['container-half-l'], maxLitres: 10 } }).max).toBe(20);
+        expect(validationBounds({ type: 'CAPACITY', params: { jugs: ['container-1l'], maxLitres: 10 } }).max).toBe(10);
+        expect(validationBounds({ type: 'TEMPERATURE', params: { low: 0, high: 30 } }).max).toBe(30);
+    });
+});
+
+describe('call sites validate programme skills through validationBounds (S-14)', () => {
+    it('no test or script passes boundOf(skill) straight to validateTask', () => {
+        const files = [...readdirSync('tests').filter((f) => f.endsWith('.ts')).map((f) => `tests/${f}`), 'scripts/sample.ts'];
+        const offenders = files.filter((f) => /validateTask\([^;]*\bboundOf\(/.test(readFileSync(f, 'utf8')));
+        expect(offenders).toEqual([]);
     });
 });

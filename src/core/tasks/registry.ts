@@ -4,6 +4,7 @@
 import { generateAddSub, parseAddSubParams } from './generators/addSub';
 import { generateBonds, parseBondsParams } from './generators/bonds';
 import { generateCalendar, parseCalendarParams } from './generators/calendar';
+import { generateCapacity, parseCapacityParams } from './generators/capacity';
 import { generateChain, parseChainParams } from './generators/chain';
 import { generateClock, parseClockParams } from './generators/clock';
 import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
@@ -11,20 +12,25 @@ import { generateCompareDiff, parseCompareDiffParams } from './generators/compar
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
 import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
+import { generateCount, parseCountParams } from './generators/count';
 import { generateData, parseDataParams } from './generators/data';
 import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
 import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
 import { generateHalf, parseHalfParams } from './generators/half';
 import { generateLength, parseLengthParams } from './generators/length';
+import { generateMass, parseMassParams } from './generators/mass';
+import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
+import { generateMultGroups, parseMultGroupsParams } from './generators/multGroups';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
+import { generateTemperature, parseTemperatureParams } from './generators/temperature';
 import { generateWord, parseWordParams } from './generators/word';
 import type { Generator } from './types';
 
@@ -56,6 +62,13 @@ export const generators: Readonly<Record<string, Generator>> = {
     LENGTH: generateLength,
     PLACE_VALUE: generatePlaceValue,
     DATA: generateData,
+    MONEY_COUNT: generateMoneyCount,
+    MONEY_CHANGE: generateMoneyChange,
+    MASS: generateMass,
+    CAPACITY: generateCapacity,
+    TEMPERATURE: generateTemperature,
+    COUNT: generateCount,
+    MULT_GROUPS: generateMultGroups,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -84,6 +97,13 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     LENGTH: parseLengthParams,
     PLACE_VALUE: parsePlaceValueParams,
     DATA: parseDataParams,
+    MONEY_COUNT: parseMoneyCountParams,
+    MONEY_CHANGE: parseMoneyChangeParams,
+    MASS: parseMassParams,
+    CAPACITY: parseCapacityParams,
+    TEMPERATURE: parseTemperatureParams,
+    COUNT: parseCountParams,
+    MULT_GROUPS: parseMultGroupsParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

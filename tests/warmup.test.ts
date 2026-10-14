@@ -9,7 +9,7 @@ import { previousStage } from '../src/core/placement';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask } from '../src/core/tasks/validate';
 import { taskKey } from '../src/core/round/unique';
-import { boundOf } from '../src/core/tasks/bounds';
+import { validationBounds } from '../src/core/tasks/bounds';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
 import { getStage } from '../src/data/curriculum';
@@ -59,7 +59,7 @@ describe('buildWarmup', () => {
                     const pool = i < rules.previousCount ? fromPrevious : fromCurrent;
                     expect(pool.has(task.skillId), `${where} task ${i} ${task.skillId}`).toBe(true);
                     const skill = [...stage.steps, ...previous.steps].flatMap((s) => s.skills).find((s) => s.id === task.skillId) as SkillDef;
-                    expect(validateTask(task, { max: boundOf(skill), nouns }), `${where} task ${i} "${task.prompt}"`).toEqual([]);
+                    expect(validateTask(task, { ...validationBounds(skill), nouns }), `${where} task ${i} "${task.prompt}"`).toEqual([]);
                 });
             }
         });

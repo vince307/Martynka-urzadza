@@ -27,12 +27,13 @@ export class AnswerTiles {
         private readonly onPick: (value: Choice) => void,
     ) {}
 
-    setChoices(choices: readonly Choice[]): void {
+    /** `row` moves the row's centre span (a tall drawing beside the tiles); by default the tiles centre in the notebook. */
+    setChoices(choices: readonly Choice[], row?: { x: number; width: number }): void {
         this.destroyTiles();
         this.correctValue = null;
         this.hintValue = null;
         const { notebook, tiles } = TASK_LAYOUT;
-        const area: Rect = { x: notebook.left, y: tiles.top, width: notebook.width, height: tiles.height };
+        const area: Rect = { x: row?.x ?? notebook.left, y: tiles.top, width: row?.width ?? notebook.width, height: tiles.height };
         this.tiles = tileRow(choices.length, area, tiles).map((rect, i) => {
             const value = choices[i];
             const graphics = this.scene.add.graphics();

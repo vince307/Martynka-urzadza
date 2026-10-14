@@ -1,10 +1,15 @@
 import type { Scene } from 'phaser';
 import type { TaskVisual } from '../../core/tasks/visual';
+import { BalanceScale } from './BalanceScale';
 import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
 import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
+import { IconGroups } from './IconGroups';
+import { Jugs } from './Jugs';
+import { MoneyTable } from './MoneyTable';
 import { Ruler } from './Ruler';
+import { Thermometer } from './Thermometer';
 
 /** The drawing of a task: picks the widget of its kind and draws it in the given rectangle. */
 export class TaskPicture {
@@ -12,14 +17,24 @@ export class TaskPicture {
     private readonly ruler: Ruler;
     private readonly blocks: BaseTenBlocks;
     private readonly chart: BarChart;
+    private readonly money: MoneyTable;
+    private readonly scale: BalanceScale;
+    private readonly jugs: Jugs;
+    private readonly thermometer: Thermometer;
+    private readonly icons: IconGroups;
     private area: Rect | null = null;
-    private drawn: { shown(): boolean } | null = null;
+    private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
     constructor(scene: Scene) {
         this.clock = new ClockFace(scene);
         this.ruler = new Ruler(scene);
         this.blocks = new BaseTenBlocks(scene);
         this.chart = new BarChart(scene);
+        this.money = new MoneyTable(scene);
+        this.scale = new BalanceScale(scene);
+        this.jugs = new Jugs(scene);
+        this.thermometer = new Thermometer(scene);
+        this.icons = new IconGroups(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -29,7 +44,18 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
-        this.drawn = { clock: this.clock, ruler: this.ruler, blocks: this.blocks, bars: this.chart }[visual.kind];
+        const widgets: Partial<Record<TaskVisual['kind'], { shown(): boolean; art?(): { key: string; loaded: boolean }[] }>> = {
+            clock: this.clock,
+            ruler: this.ruler,
+            blocks: this.blocks,
+            bars: this.chart,
+            money: this.money,
+            scale: this.scale,
+            jugs: this.jugs,
+            thermometer: this.thermometer,
+            icons: this.icons,
+        };
+        this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
             case 'clock':
                 this.clock.render(visual.hour, visual.minute, rect);
@@ -43,6 +69,25 @@ export class TaskPicture {
             case 'bars':
                 this.chart.render(visual.bars, visual.scaleMax, rect);
                 break;
+            case 'money':
+                this.money.render(visual.items, rect);
+                break;
+            case 'scale':
+                this.scale.render(visual.item, visual.weights, rect);
+                break;
+            case 'jugs':
+                this.jugs.render(visual.jugs, rect);
+                break;
+            case 'thermometer':
+                this.thermometer.render(visual.celsius, rect);
+                break;
+            case 'icons':
+                this.icons.render(visual.icon, visual.groups, visual.framed, rect);
+                break;
+            default: {
+                const unreachable: never = visual;
+                throw new Error(`unknown visual ${JSON.stringify(unreachable)}`);
+            }
         }
     }
 
@@ -53,6 +98,16 @@ export class TaskPicture {
         this.ruler.setVisible(false);
         this.blocks.setVisible(false);
         this.chart.setVisible(false);
+        this.money.setVisible(false);
+        this.scale.setVisible(false);
+        this.jugs.setVisible(false);
+        this.thermometer.setVisible(false);
+        this.icons.setVisible(false);
+    }
+
+    /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */
+    art(): { key: string; loaded: boolean }[] {
+        return this.drawn?.shown() ? (this.drawn.art?.() ?? []) : [];
     }
 
     /** The rectangle the picture was drawn in, null while hidden or while its widget is not on screen (e2e hook). */

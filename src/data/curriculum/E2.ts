@@ -13,6 +13,11 @@ const skill = (id: string, step: number, type: string, params: SkillDef['params'
     answer,
 });
 
+// Art kit ids of the money and weights a first-grader meets in the second semester (S-14).
+const ZL_20 = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'note-20zl'];
+const GR_COINS = ['coin-01gr', 'coin-02gr', 'coin-05gr', 'coin-10gr', 'coin-20gr', 'coin-50gr'];
+const DAG = ['weight-10dag', 'weight-20dag', 'weight-50dag'];
+
 const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef => skill(id, step, 'ADD_SUB', params);
 
 export const E2: StageDef = {
@@ -23,9 +28,22 @@ export const E2: StageDef = {
             title: 'Liczby 13–20, budowa 10 + n, + i − bez przekroczenia',
             childName: 'Działania do 20',
             types: ['PLACE_VALUE', 'ADD_SUB'],
-            skills: [addSub('E2.1.add_sub_20_units', 1, { max: 20, shapes: ['DU+U', 'DU-U'], bridge: 'none' })],
+            skills: [
+                addSub('E2.1.add_sub_20_units', 1, { max: 20, shapes: ['DU+U', 'DU-U'], bridge: 'none' }),
+                skill('E2.1.place_read_20', 1, 'PLACE_VALUE', { variant: 'read', min: 11, max: 20 }),
+            ],
         },
-        { step: 2, title: 'Pieniądze do 20 zł, litr', types: ['MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE', 'CAPACITY'], skills: [] },
+        {
+            step: 2,
+            title: 'Pieniądze do 20 zł, litr',
+            childName: 'Pieniądze do 20 zł i litr',
+            types: ['MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE', 'CAPACITY'],
+            skills: [
+                skill('E2.2.money_count_20', 2, 'MONEY_COUNT', { variant: 'count', ids: ZL_20, max: 2000, maxItems: 5, answer: 'number-zl' }),
+                skill('E2.2.money_change_20', 2, 'MONEY_CHANGE', { variant: 'change', ids: ZL_20, max: 2000, maxItems: 5, answer: 'number-zl' }),
+                skill('E2.2.capacity_litres', 2, 'CAPACITY', { jugs: ['container-1l'], variant: 'toLitres', maxLitres: 10 }),
+            ],
+        },
         {
             step: 3,
             title: 'Dodawanie z przekroczeniem: 9 + n → 8 + n → 7 + n → 6 + n',
@@ -65,20 +83,39 @@ export const E2: StageDef = {
                 addSub('E2.7.add_sub_tens_100', 7, { max: 100, shapes: ['DT+DT', 'DT-DT'], bridge: 'none' }),
             ],
         },
-        { step: 8, title: 'Grosze, dekagram, metr', types: ['MONEY_COUNT', 'MASS', 'LENGTH'], skills: [] },
+        {
+            step: 8,
+            title: 'Grosze, dekagram, metr',
+            childName: 'Grosze, dekagramy, metr',
+            types: ['MONEY_COUNT', 'MASS', 'LENGTH'],
+            skills: [
+                skill('E2.8.money_count_gr', 8, 'MONEY_COUNT', { variant: 'count', ids: GR_COINS, max: 100, maxItems: 6, answer: 'number-gr' }),
+                skill('E2.8.mass_dag_100', 8, 'MASS', { variant: 'read', unit: 'dag', weights: DAG, max: 100 }),
+                skill('E2.8.mass_convert', 8, 'MASS', { variant: 'convert', unit: 'dag', weights: DAG, max: 100 }),
+                skill('E2.8.length_convert_m', 8, 'LENGTH', { variant: 'convert', maxM: 2, cmStep: 10 }),
+            ],
+        },
         {
             step: 9,
             title: 'Liczby dwucyfrowe: D i J, 30 + 4, 76 − 6, porównywanie',
             childName: 'Działania na liczbach do 99',
             types: ['PLACE_VALUE', 'ADD_SUB'],
-            skills: [addSub('E2.9.add_sub_99', 9, { max: 99, shapes: ['DT+U', 'DU-U'], bridge: 'none' })],
+            skills: [
+                addSub('E2.9.add_sub_99', 9, { max: 99, shapes: ['DT+U', 'DU-U'], bridge: 'none' }),
+                skill('E2.9.place_read_99', 9, 'PLACE_VALUE', { variant: 'read', min: 20, max: 99 }),
+            ],
         },
         {
             step: 10,
             title: 'Diagram słupkowy, kalendarz miesiąca, zegar ± 1 godzina',
             childName: 'Dni tygodnia i miesiące',
             types: ['DATA', 'CALENDAR', 'CLOCK'],
-            skills: [skill('E2.10.calendar_20', 10, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'nextWeekday', 'prevWeekday'] }, 'tiles')],
+            skills: [
+                skill('E2.10.calendar_20', 10, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'nextWeekday', 'prevWeekday'] }, 'tiles'),
+                skill('E2.10.data_most_10', 10, 'DATA', { variant: 'most', maxValue: 10, bars: 4 }, 'tiles'),
+                skill('E2.10.data_howmany_10', 10, 'DATA', { variant: 'howMany', maxValue: 10, bars: 3 }),
+                skill('E2.10.clock_later_1h', 10, 'CLOCK', { variant: 'later', minuteStep: 60, maxShift: 1 }, 'tiles'),
+            ],
         },
     ],
 };

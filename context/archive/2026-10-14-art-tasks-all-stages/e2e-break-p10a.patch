@@ -1,0 +1,13 @@
+diff --git a/src/data/taskArt.ts b/src/data/taskArt.ts
+index 6e6e23c..bc0bd80 100644
+--- a/src/data/taskArt.ts
++++ b/src/data/taskArt.ts
+@@ -12,7 +12,7 @@ export interface TaskArtEntry {
+ 
+ const entry = (folder: string, id: string, width: number, height: number): TaskArtEntry => ({
+     key: `tasks/${folder}/${id}`,
+-    url: `assets/tasks/${folder}/${id}.webp`,
++    url: `assets/tasks/${folder === "money" ? "coins" : folder}/${id}.webp`,
+     width,
+     height,
+ });

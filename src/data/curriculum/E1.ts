@@ -14,6 +14,10 @@ const skill = (id: string, step: number, type: string, params: SkillDef['params'
     answer,
 });
 
+// Art kit ids of the money and weights a first-grader meets (S-14).
+const ZL_10 = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl'];
+const KG = ['weight-1kg', 'weight-2kg', 'weight-5kg'];
+
 const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef => skill(id, step, 'ADD_SUB', params);
 
 export const E1: StageDef = {
@@ -25,7 +29,10 @@ export const E1: StageDef = {
             title: 'Liczby 1–5: liczenie, „który z kolei”, znaki <, >, =',
             childName: 'Porównywanie liczb do 5',
             types: ['COUNT', 'ORDINAL', 'COMPARE_NUM'],
-            skills: [skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles')],
+            skills: [
+                skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles'),
+                skill('E1.2.count_5', 2, 'COUNT', { min: 1, max: 5, tens: false }, 'tiles'),
+            ],
         },
         {
             step: 3,
@@ -46,6 +53,7 @@ export const E1: StageDef = {
             types: ['COUNT', 'BONDS', 'CALENDAR'],
             skills: [
                 skill('E1.4.bonds_6_7', 4, 'BONDS', { totals: [6, 7] }),
+                skill('E1.4.count_7', 4, 'COUNT', { min: 4, max: 7, tens: false }, 'tiles'),
                 skill('E1.4.calendar_weekdays', 4, 'CALENDAR', { variants: ['nextWeekday', 'prevWeekday'] }, 'tiles'),
             ],
         },
@@ -81,7 +89,13 @@ export const E1: StageDef = {
                 skill('E1.7.compare_expr_10', 7, 'COMPARE_EXPR', { max: 10, ops: ['+', '-'] }, 'tiles'),
             ],
         },
-        { step: 8, title: 'Centymetr, linijka do 10 cm', types: ['LENGTH'], skills: [] },
+        {
+            step: 8,
+            title: 'Centymetr, linijka do 10 cm',
+            childName: 'Centymetr i linijka',
+            types: ['LENGTH'],
+            skills: [skill('E1.8.length_ruler_cm_10', 8, 'LENGTH', { variant: 'ruler', unit: 'cm', lengthCm: 10, minMm: 10, maxMm: 100, startShift: 0 })],
+        },
         {
             step: 9,
             title: 'Działania do 10 mieszane, brakujący znak + / −, nierówności',
@@ -92,13 +106,27 @@ export const E1: StageDef = {
                 skill('E1.9.missing_op_10', 9, 'MISSING_OP', { max: 10, ops: ['+', '-'] }, 'tiles'),
             ],
         },
-        { step: 10, title: 'Liczby 11 i 12', types: ['COUNT', 'PLACE_VALUE'], skills: [] },
+        {
+            step: 10,
+            title: 'Liczby 11 i 12',
+            childName: 'Liczby 11 i 12',
+            types: ['COUNT', 'PLACE_VALUE'],
+            skills: [
+                skill('E1.10.count_12', 10, 'COUNT', { min: 11, max: 12, tens: true }),
+            ],
+        },
         {
             step: 11,
             title: 'Zegar — pełne godziny; miesiące; kilogram; pieniądze do 10 zł',
-            childName: 'Miesiące roku',
+            childName: 'Zegar, miesiące i pieniądze',
             types: ['CLOCK', 'CALENDAR', 'MASS', 'MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE'],
-            skills: [skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles')],
+            skills: [
+                skill('E1.11.clock_read_full', 11, 'CLOCK', { variant: 'read', minuteStep: 60 }),
+                skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles'),
+                skill('E1.11.money_count_10', 11, 'MONEY_COUNT', { variant: 'count', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.money_change_10', 11, 'MONEY_CHANGE', { variant: 'change', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.mass_kg_10', 11, 'MASS', { variant: 'read', unit: 'kg', weights: KG, max: 10 }, 'tiles'),
+            ],
         },
     ],
 };

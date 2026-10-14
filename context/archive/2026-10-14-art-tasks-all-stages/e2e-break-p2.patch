@@ -1,0 +1,12 @@
+diff --git a/vite/config.shared.mjs b/vite/config.shared.mjs
+index 6b87e07..0037659 100644
+--- a/vite/config.shared.mjs
++++ b/vite/config.shared.mjs
+@@ -52,6 +52,7 @@ const pwaOptions = {
+         // Everything must be precached (no lazy loading): fail loudly, not at
+         // the default 2 MiB, when a future asset grows.
+         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
++        globIgnores: ['**/tasks/money/note-500zl.webp'],
+         skipWaiting: true,
+         clientsClaim: true,
+         cleanupOutdatedCaches: true,

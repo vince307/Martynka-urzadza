@@ -2,6 +2,7 @@
 // replays failures by seed, with the mechanical validator on every task.
 import { expect } from 'vitest';
 import { createRng } from '../src/core/rng';
+import { validationBounds } from '../src/core/tasks/bounds';
 import type { Generator, Task } from '../src/core/tasks/types';
 import { validateTask, type ValidationContext } from '../src/core/tasks/validate';
 import type { SkillDef } from '../src/core/types';
@@ -22,7 +23,7 @@ export const forEachDraw = (
             const task = generate(skill, rng);
             const where = `${skill.id} seed=${seed} draw=${i} prompt="${task.prompt}"`;
             expect(task.skillId, where).toBe(skill.id);
-            expect(validateTask(task, { nouns, ...ctx }), where).toEqual([]);
+            expect(validateTask(task, { nouns, allowNegative: validationBounds(skill).allowNegative, ...ctx }), where).toEqual([]);
             check(task, where);
         }
     }

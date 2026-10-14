@@ -200,5 +200,6 @@ describe('narrationOf', () => {
                 expect(line, where).not.toMatch(/[−·□<>=+]|\u00A0/u);
             }
         });
-    });
+        // Walks every phase of every skill of every stage: ~6 s on the CI runner since S-14 added the art skills.
+    }, 30_000);
 });

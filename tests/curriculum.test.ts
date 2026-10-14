@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
 import { getGenerator } from '../src/core/tasks/registry';
-import { boundOf } from '../src/core/tasks/bounds';
+import { validationBounds } from '../src/core/tasks/bounds';
 import { validateTask } from '../src/core/tasks/validate';
 import { playable } from '../src/core/round/pick';
 import { stages } from '../src/data/curriculum';
@@ -34,7 +34,6 @@ describe('curriculum E1–E6', () => {
                 it(`${skill.id}: 200 draws without violations`, () => {
                     const generate = getGenerator(skill.type);
                     expect(generate, skill.type).toBeDefined();
-                    const max = boundOf(skill);
                     for (let seed = 1; seed <= 4; seed += 1) {
                         const rng = createRng(777 + seed);
                         for (let i = 0; i < 50; i += 1) {
@@ -46,7 +45,7 @@ describe('curriculum E1–E6', () => {
                                 expect(task.choices.length, where).toBeGreaterThanOrEqual(2);
                                 expect(task.choices.length, where).toBeLessThanOrEqual(6);
                             }
-                            expect(validateTask(task, { max, nouns }), where).toEqual([]);
+                            expect(validateTask(task, { ...validationBounds(skill), nouns }), where).toEqual([]);
                         }
                     }
                 });

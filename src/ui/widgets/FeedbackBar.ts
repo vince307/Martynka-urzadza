@@ -26,8 +26,9 @@ export class FeedbackBar {
         this.update({ kind: 'none' }, 'tiles');
     }
 
-    update(bar: RoundView['bar'], input: AnswerMode): void {
-        const span = TASK_LAYOUT.barSpan[input === 'keypad' ? 'keypad' : 'tiles'];
+    /** `at` moves the bar's span (a tall drawing beside it); by default the bar spans under the tiles or left of the keypad. */
+    update(bar: RoundView['bar'], input: AnswerMode, at?: { x: number; width: number }): void {
+        const span = at ?? TASK_LAYOUT.barSpan[input === 'keypad' ? 'keypad' : 'tiles'];
         const { height, bottom, radius, padding, hintBorder } = TASK_LAYOUT.bar;
         const top = bottom - height;
         const centerY = top + height / 2;

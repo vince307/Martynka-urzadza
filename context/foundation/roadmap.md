@@ -3,7 +3,7 @@ project: "Martynka urządza"
 version: 1
 status: draft
 created: 2026-10-11
-updated: 2026-10-13
+updated: 2026-10-14
 prd_version: 1
 main_goal: market-feedback
 top_blocker: external
@@ -60,7 +60,10 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | done     |
 | S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | done     |
 | S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | proposed |
-| S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | proposed |
+| S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | done |
+| S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | proposed |
+| S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | proposed |
+| S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | proposed |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | proposed |
 | S-16  | final-art-sound             | M7   | dziecko widzi docelową grafikę salonu i ekranów E3–E4, animacje, słyszy dźwięki   | S-14, S-15           | FR-026                          | blocked  |
 | S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
@@ -75,7 +78,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | B      | Zadania i gwiazdki (M1–M2)   | `F-03` → `S-02` → `S-03` → `S-04` → `S-05`     | Joins Stream A at `S-01`. Inwestycja w `core/` (generatory, runda); E3–E4 najpierw (market-feedback). |
 | C      | Etap i adaptacja (M3)        | `S-06` → `S-07` → `S-08`                       | Joins Stream B at `S-05`. `S-06` ∥ `S-07`; `S-08` je spina.           |
 | D      | Pokój i zapis (M4–M5)        | `S-09` → `S-10` → `S-11` → `S-12`              | Joins Stream C at `S-08`. Zawiera gwiazdę przewodnią `S-09`.          |
-| E      | Rysunki, grafika, testy (M6–M8) | `S-13` → `S-13b` → `S-14` → `S-15` → `S-16` → `S-17`  | Joins Stream D at `S-12`. `S-13` ∥ `S-15`; `S-16` zablokowany grafiką mebli. |
+| E      | Rysunki, grafika, testy (M6–M8) | `S-13` → `S-13b` → `S-14` → `S-14b` / `S-14c` / `S-14d` → `S-15` → `S-16` → `S-17`  | Joins Stream D at `S-12`. `S-13` ∥ `S-15`; `S-16` zablokowany grafiką mebli. |
 
 ## Baseline
 
@@ -305,7 +308,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-15
 - **Blockers:** —
 - **Unknowns:** gest kątowy wskazówek na tablecie (przyciąganie do 5 minut).
-- **Risk:** wydzielone z S-13 (plan `context/changes/drawn-widget-tasks-e3-e4/plan.md`, decyzja autonomiczna 1): PUZZLE_GRID, GRID i PERIMETER dzielą jeden widżet siatki (`square-grid.svg`), „ustaw zegar” to drugi typ `drag`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania tych kroków.
+- **Risk:** wydzielone z S-13 (plan `context/changes/drawn-widget-tasks-e3-e4/plan.md`, decyzja autonomiczna 1): PUZZLE_GRID, GRID i PERIMETER dzielą jeden widżet siatki (`square-grid.svg`), „ustaw zegar” to drugi typ `drag`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania tych kroków. Plan S-14 (decyzja autonomiczna 1) dokłada PERIMETER w E5.12 (bok z obwodu) i E6.3 (figury złożone) — ten sam widżet siatki.
 - **Status:** proposed
 
 ### S-14: Zadania z grafiką i pełny zestaw typów dla wszystkich etapów
@@ -317,7 +320,43 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-15
 - **Blockers:** —
 - **Unknowns:** —
-- **Risk:** zamyka kryterium M6 („każdy etap ma pełny zestaw typów”); monety, waga, naczynia i termometr są już w paczce A v1, więc nie zależy od nowej grafiki.
+- **Risk:** zamyka kryterium M6 („każdy etap ma pełny zestaw typów”); monety, waga, naczynia i termometr są już w paczce A v1, więc nie zależy od nowej grafiki. Plan (`context/changes/art-tasks-all-stages/plan.md`, decyzje autonomiczne 1–2) zawęża S-14 do grafiki paczki A (MONEY_COUNT, MONEY_CHANGE, MASS w równowadze, CAPACITY, TEMPERATURE, COUNT, MULT_GROUPS) i danych widżetów S-13 w E1/E2/E5/E6; reszta typów → S-14b, S-14c, S-14d, PERIMETER E5.12/E6.3 → S-13b; MONEY_PAY → S-14d.
+- **Status:** done
+
+### S-14b: Słupek pisemny, grafy i oś liczbowa
+
+- **Outcome:** dziecko dodaje i odejmuje pisemnie w słupku z okienkami cyfr i przeniesieniem (WRITTEN, E5.2, E6.7), uzupełnia grafy i tabelki strzałkowe (ARROW_TABLE, E2.6) i widzi oś liczbową jako rysunek SEQUENCE/MULT_GROUPS i podpowiedź ADD_SUB.
+- **Change ID:** number-line-written-arrows
+- **PRD refs:** FR-023 (grupa 2, E2, E5–E6)
+- **Prerequisites:** S-14
+- **Parallel with:** S-14c, S-15
+- **Blockers:** —
+- **Unknowns:** nowy tryb wejścia „cyfra w okienku” (pierwszy od S-13) — helpery e2e przed `playable`.
+- **Risk:** wydzielone z S-14 (plan S-14, decyzja autonomiczna 1); ref. kitu `reference/written-addition.svg`, `reference/number-line.svg`.
+- **Status:** proposed
+
+### S-14c: Typy tekstowe: czas, jednostki, ceny, kolejność działań, runda powtórkowa
+
+- **Outcome:** dziecko rozwiązuje zadania tekstowe CLOCK_ELAPSED (E5.3, E5.8, E6.2), TIME_UNITS (E6.1), UNIT_CHOICE (E5.7), PRICE i TIMES_MORE (E5.10), ORDER_OPS (E5.11), INEQUALITY (E1.9), tekstowe warianty MASS (gramy, brutto/netto/tara, tona: E5.7, E6.3, E6.5) i LENGTH (skala E5.12, wyrażenia dwumianowe E6.3), PLACE_VALUE ≥ 1000 (E6.9, E6.10) oraz rundę powtórkową z całego roku (MIX, E6.11).
+- **Change ID:** text-measure-time-types
+- **PRD refs:** FR-023 (E1, E5–E6)
+- **Prerequisites:** S-14
+- **Parallel with:** S-14b, S-15
+- **Blockers:** —
+- **Unknowns:** MIX to funkcja programu (runda z całego roku), nie generator — kształt w planie slice'a.
+- **Risk:** wydzielone z S-14 (plan S-14, decyzja autonomiczna 1); bez widżetów, więc tani w e2e; dużo treści do odczytu nauczyciela.
+- **Status:** proposed
+
+### S-14d: E1 z obrazkami: figury, szlaczki, „który z kolei”, pary i płacenie monetami
+
+- **Outcome:** 6-latek rozwiązuje E1.1 (SHAPES, PATTERN, COMPARE_QTY, SPATIAL, SYMMETRY), ORDINAL (E1.2), BONDS z parami i CHOOSE_OP z obrazkiem oraz MONEY_PAY (przeciąganie monet do portfela, „najmniej monet”, E1.11, E2.2); „tryb z obrazkami” dla 6-latków (design-gaps wiersz 21).
+- **Change ID:** e1-shapes-picture-mode
+- **PRD refs:** FR-023 (E1–E2)
+- **Prerequisites:** S-14
+- **Parallel with:** S-15
+- **Blockers:** —
+- **Unknowns:** uogólnienie `blockDrag` na nominały i układ portfela (follow-up S-14 `Trigger: S-14d`).
+- **Risk:** MONEY_PAY to drugi wariant `drag` — dotyka helperów e2e używanych przez każdy spec (`answerRight`); E1.1 jest dziś pusty.
 - **Status:** proposed
 
 ### S-15: Minigra i zagadka dnia
@@ -381,9 +420,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-12       | save-export-import-reset    | M5: eksport, import, reset                              | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-save-export-import-reset/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. Eksport kopii (`.txt` z kopertą JSON: aplikacja, build, powód) dopiero po potwierdzeniu, import po walidacji i podsumowaniu „Teraz / Z pliku” (gwiazdki, etap, pokój), reset z potwierdzeniem; format zapisu nadal v1 (bez migracji). Zamknięte: follow-upy S-11/S-08 `Trigger: S-12` oraz audyt 2026-10-13_1751 M-S3, L-S2, N-8, M-S2 (N-7 poza zakresem). Otwarte wiersze [human] 4.7, 5.6, 6.8 (`.txt` wbrew literze FR-022), 6.9, 6.10 — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-13-save-export-import-reset/follow-ups/review-fixes.md`): import/reset nad nieczytelnym zapisem (F1, `Trigger: first save-format change (v2) or the first deploy rollback across a save version, or the next change to saveImportDialog.ts / saveResetDialog.ts`), dwie karty jednego originu i L-S1 (`Trigger: first save-format change (v2)`), N-7 (pomiar iPada), import z ekranu powitalnego. Do sprawdzenia: podgląd postępów pokazał „Krok 8 z 8” dla E3 po jednej rundzie (nie kod S-12) |
 | S-13       | drawn-widget-tasks-e3-e4    | M6: widżety rysowane w kodzie dla E3–E4                 | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. `Task.visual` + `Task.input`; CLOCK (tarcza), LENGTH (linijka), PLACE_VALUE odczyt i budowa (klocki, pierwszy tryb `drag` na macie), DATA (diagram słupkowy), tryb `select` (EVEN_ODD); nowe kroki grywalne E3.3–E3.6, E4.1, E4.3, E4.7, E4.8; format zapisu nadal v1. Zawężenie: siatka, obwód, kwadrat magiczny, „ustaw zegar” → S-13b; oś liczbowa, słupek pisemny, grafy → S-14. Otwarte wiersze [human] 4.6 („15.00” vs kit „3:30”), 6.9, 9.8 (tablet, małe klocki na macie O3), 10.6, 10.7 — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): O1 klocki jedności w dwóch rzędach, O2 diagram nieczytelny w fazie rozwiązania obok klawiatury, czas e2e (adaptive.spec blisko limitu 180 s, `Trigger: a timeout of adaptive.spec, or the next change adding drag skills to E4`) |
 | S-13b      | drawn-grid-tasks-e3-e4      | M6: siatka, kwadrat magiczny, obwód, „ustaw zegar”      | yes                   | S-13 done (Prerequisites spełnione). Z S-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): PUZZLE_GRID, GRID, PERIMETER i „ustaw zegar” (przeciąganie wskazówek, CLOCK jest tylko do odczytu) `Trigger: S-13b`; BONDS z parami i CHOOSE_OP z obrazkiem `Trigger: S-13b or S-14`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania |
-| S-14       | art-tasks-all-stages        | M6: zadania z grafiką, pełny zestaw typów               | yes                   | S-13 done (Prerequisites spełnione). Z S-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): oś liczbowa jako podpowiedź ADD_SUB `Trigger: S-14`; podświetlenie rysunku przy podpowiedzi, BONDS z parami / CHOOSE_OP z obrazkiem, wymiana 10 jedności na dziesiątkę i setki na macie `Trigger: S-14 or …`; O2 diagram w fazie rozwiązania obok klawiatury (gdy S-14 doda więcej rysunków przy klawiaturze). Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): „tryb z obrazkami” dla 6-latków pominięty (design-gaps wiersz 21) |
-| S-15       | minigame-daily-puzzle       | M6: minigra i zagadka dnia                              | yes                   | ∥ S-13. S-12 done (Prerequisites spełnione); przed planem rozstrzygnąć Open Roadmap Question 2 (które minigry, mnożnik zagadki dnia) |
-| S-16       | final-art-sound             | M7: docelowa grafika i dźwięk                           | no                    | Zablokowane grafiką mebli. Z S-07 (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`): książka na karcie „Nowa umiejętność!” to placeholder z kodu (DESIGN-GAP 22), ` = ?` po wyrażeniu w poleceniu |
+| S-14       | art-tasks-all-stages        | M6: zadania z grafiką, pełny zestaw typów               | no                    | Done — zarchiwizowane 2026-10-14 (`context/archive/2026-10-14-art-tasks-all-stages/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. Pierwsza grafika w grze: 38 plików WebP z paczki A v1 w `public/assets/tasks/` (precache); MONEY_COUNT, MONEY_CHANGE, MASS w równowadze, CAPACITY, TEMPERATURE, COUNT, MULT_GROUPS oraz widżety S-13 w E1/E2/E5/E6; format zapisu nadal v1. Zawężenie: reszta typów → S-14b/S-14c/S-14d, PERIMETER E5.12/E6.3 → S-13b, MONEY_PAY → S-14d. Otwarte wiersze [human] 2.9 (WebP, luźne pliki), 8.9 (zawężenie), 9.7 (odstępstwa od ZADANIA, m.in. temperatury E3 ≥ 0), 9.8 (teksty, masy `SCALE_ITEMS`), 9.9 (tablet: ostrość, termometr) — lista kontrolna po runie. Follow-upy: `context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`. Wcześniej: S-13 done (Prerequisites spełnione). Z S-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): oś liczbowa jako podpowiedź ADD_SUB `Trigger: S-14`; podświetlenie rysunku przy podpowiedzi, BONDS z parami / CHOOSE_OP z obrazkiem, wymiana 10 jedności na dziesiątkę i setki na macie `Trigger: S-14 or …`; O2 diagram w fazie rozwiązania obok klawiatury (gdy S-14 doda więcej rysunków przy klawiaturze). Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): „tryb z obrazkami” dla 6-latków pominięty (design-gaps wiersz 21) |
+| S-14b      | number-line-written-arrows  | M6: słupek pisemny, grafy, oś liczbowa                  | yes                   | S-14 done (Prerequisites spełnione). Z S-14 (`context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`): oś liczbowa jako podpowiedź `Trigger: S-14b`; E1.10 `place_read_12` i E5.5 `capacity_half_l_e5` (wycięte w fazie 8) `Trigger: S-14b`; wspólny `ArtPool`/`fitRect` i `bounds()` ukrytych widżetów `Trigger: S-14b or the next widget built on ArtImage` |
+| S-14c      | text-measure-time-types     | M6: typy tekstowe, warianty miar, runda powtórkowa      | yes                   | S-14 done (Prerequisites spełnione). Z S-14 (`context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`): warianty tekstowe MASS i LENGTH (gramy, tona, kwintal) i PLACE_VALUE od 1000 `Trigger: S-14c`; banknoty 200 i 500 zł są w `TASK_ART`, ale nieużywane `Trigger: S-14c or a money skill above 100 zł` |
+| S-14d      | e1-shapes-picture-mode      | M6: figury E1, pary, MONEY_PAY, tryb z obrazkami        | yes                   | S-14 done (Prerequisites spełnione). Z S-14 (`context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`): MONEY_PAY + `Wallet` + uogólniony `blockDrag` `Trigger: S-14d`; O4 `E1.2.count_5` losuje 1 ikonę (rozważyć min 2) `Trigger: [human] 9.8 or a teacher read of E1.2` |
+| S-15       | minigame-daily-puzzle       | M6: minigra i zagadka dnia                              | yes                   | ∥ S-13. S-12 done (Prerequisites spełnione); S-14 done (bez follow-upów dla S-15); przed planem rozstrzygnąć Open Roadmap Question 2 (które minigry, mnożnik zagadki dnia) |
+| S-16       | final-art-sound             | M7: docelowa grafika i dźwięk                           | no                    | Zablokowane grafiką mebli (S-14 done, S-15 jeszcze nie). Z S-14 (`context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`): atlas tekstur zamiast luźnych WebP, termometr E3–E5 z ramą 0…+30 (design-gaps 64), podświetlenie rysunku przy podpowiedzi, jednostki w podpowiedziach czytane przez lektora, O3 kafelki obok termometru `Trigger: S-16`. Z S-07 (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`): książka na karcie „Nowa umiejętność!” to placeholder z kodu (DESIGN-GAP 22), ` = ?` po wyrażeniu w poleceniu |
 | S-17       | playtest-balance            | M8: balans po testach z córką                           | no                    | Po S-16. Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): bonus czystej rundy (+2) w rozgrzewce 6 zadań, mowa na ścieżce rodzica przed pierwszym stuknięciem w canvas (iPad), bramka 13–19 × 13–19 na klawiaturze cyfr DOM; z S-07 (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`): wagi 60/30/10, łagodzenie 20/50/30, `minStartSteps`, `unlockAt` 4 / `unlockShare` 0.5, formuła podłogi kalendarza (E3 w październiku ~1 miesiąc przed podręcznikiem), pierwsze stuknięcie po obrocie tabletu |
 
 ## Open Roadmap Questions
@@ -433,3 +475,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-11: po zamknięciu gry (lub rozładowaniu tabletu) i ponownym otwarciu gwiazdki, salon i postęp nauki są dokładnie takie same; zapis następuje sam po każdej zmianie i przy ukryciu karty, natychmiast po zapłacie za mebel i końcu rundy; zapis ze starszej wersji gry jest przenoszony do nowej, a nieudane przeniesienie zostawia stary zapis i oferuje eksport.** — Archived 2026-10-13 → `context/archive/2026-10-13-autosave-versioned-save/`. Lesson: —.
 - **S-12: rodzic w ustawieniach eksportuje zapis do pliku, importuje go po walidacji i podsumowaniu (gwiazdki, etap, postęp pokoju) i resetuje grę z potwierdzeniem.** — Archived 2026-10-13 → `context/archive/2026-10-13-save-export-import-reset/`. Lesson: —.
 - **S-13: dziecko rozwiązuje w rundzie zadania typów grupy 2 dla E3–E4 z zegarem, linijką, osią liczbową, klockami dziesiątkowymi, słupkiem pisemnym, grafami i figurami rysowanymi w kodzie, z odpowiedzią dotykiem (w tym przeciąganiem i zaznaczaniem).** — Archived 2026-10-13 → `context/archive/2026-10-13-drawn-widget-tasks-e3-e4/`. Lesson: —.
+- **S-14: dziecko rozwiązuje zadania z monetami i banknotami, wagą, naczyniami i termometrem (grafika z paczki A v1) oraz typy grup 2–3 dla E1–E2 i E5–E6; każdy etap ma pełny zestaw typów z ZADANIA.md.** — Archived 2026-10-14 → `context/archive/2026-10-14-art-tasks-all-stages/`. Lesson: —.
