@@ -833,9 +833,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: usunięty `case 'digits'` w `pictureLayout` → typecheck czerwony; reduktor od lewej → czerwony; `playable` wpuszcza `digits` → czerwony; przywrócone; meta-check
-- [ ] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — cfea708
+- [x] 1.2 Deliberate break: usunięty `case 'digits'` w `pictureLayout` → typecheck czerwony; reduktor od lewej → czerwony; `playable` wpuszcza `digits` → czerwony; przywrócone; meta-check — cfea708
+- [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian — cfea708
 - [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
