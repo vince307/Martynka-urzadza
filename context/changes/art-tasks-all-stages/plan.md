@@ -953,9 +953,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — PHASE4SHA
-- [x] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — PHASE4SHA
-- [x] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check — PHASE4SHA
+- [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ba4e0da
+- [x] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — ba4e0da
+- [x] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check — ba4e0da
 - [ ] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
