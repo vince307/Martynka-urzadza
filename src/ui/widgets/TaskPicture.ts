@@ -84,6 +84,12 @@ export class TaskPicture {
             case 'icons':
                 this.icons.render(visual.icon, visual.groups, visual.framed, rect);
                 break;
+            case 'cells':
+            case 'grid':
+            case 'figure':
+                // widget in phase 5/6
+                this.drawn = null;
+                break;
             default: {
                 const unreachable: never = visual;
                 throw new Error(`unknown visual ${JSON.stringify(unreachable)}`);

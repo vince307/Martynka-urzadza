@@ -453,6 +453,16 @@ export const pl = {
         placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
         placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
             `Liczba ${n} to ${[t > 0 ? countNoun(t, nouns.dziesiątka) : '', o > 0 ? countNoun(o, nouns.jedność) : ''].filter((x) => x !== '').join(' i ')}.`,
+        // PUZZLE_GRID (S-13b): the magic square and the number pyramid are drawings; the texts name the rule.
+        puzzleMagicPrompt: 'Jaka liczba pasuje do pustego pola w kwadracie magicznym?',
+        puzzleMagicSpeak: 'Popatrz na kwadrat magiczny. Jaka liczba pasuje do pustego pola?',
+        puzzleMagicHint: 'Każdy wiersz, każda kolumna i każda przekątna dają taką samą sumę. Dodaj liczby w jednej pełnej linii.',
+        puzzleMagicFullLine: (kind: 'row' | 'column' | 'diagonal', terms: string, sum: number) =>
+            `${kind === 'row' ? 'Pełny wiersz' : kind === 'column' ? 'Pełna kolumna' : 'Pełna przekątna'}: ${terms} = ${sum}.`,
+        puzzlePyramidPrompt: 'Jaka liczba pasuje do pustej cegły w piramidzie?',
+        puzzlePyramidSpeak: 'Popatrz na piramidę. Jaka liczba pasuje do pustej cegły?',
+        puzzlePyramidHint: 'Liczba w cegle to suma dwóch cegieł pod nią.',
+        puzzlePyramidBaseHint: 'Cegła nad dwiema cegłami jest ich sumą, więc odejmij znaną cegłę od tej nad nimi.',
         dataMostLeast: 'Porównaj wysokość słupków.',
         dataValuesHint: (pairs: string) => `Wysokości słupków: ${pairs}.`,
         dataMostAnswerHint: (label: string) => `Najwyższy jest słupek „${label}”.`,

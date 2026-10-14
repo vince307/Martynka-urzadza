@@ -27,6 +27,7 @@ import { generateMult, parseMultParams } from './generators/mult';
 import { generateMultGroups, parseMultGroupsParams } from './generators/multGroups';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
+import { generatePuzzleGrid, parsePuzzleGridParams } from './generators/puzzleGrid';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
@@ -61,6 +62,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     CLOCK: generateClock,
     LENGTH: generateLength,
     PLACE_VALUE: generatePlaceValue,
+    PUZZLE_GRID: generatePuzzleGrid,
     DATA: generateData,
     MONEY_COUNT: generateMoneyCount,
     MONEY_CHANGE: generateMoneyChange,
@@ -96,6 +98,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     CLOCK: parseClockParams,
     LENGTH: parseLengthParams,
     PLACE_VALUE: parsePlaceValueParams,
+    PUZZLE_GRID: parsePuzzleGridParams,
     DATA: parseDataParams,
     MONEY_COUNT: parseMoneyCountParams,
     MONEY_CHANGE: parseMoneyChangeParams,

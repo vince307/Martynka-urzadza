@@ -1,5 +1,6 @@
 // Drawing descriptions carried by a task (S-13): numbers and labels only, no colours or pixels.
 // The scene decides how to draw them; core only validates and keys them.
+import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
@@ -16,7 +17,13 @@ export type TaskVisual =
     | { kind: 'scale'; item: IconId; weights: readonly WeightId[] }
     | { kind: 'jugs'; jugs: readonly JugId[] }
     | { kind: 'thermometer'; celsius: number }
-    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean };
+    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean }
+    // Number cells (S-13b): row-major 3x3 magic square, or a pyramid as [top, middle x2, base x3]; exactly one cell is null (the empty one).
+    | { kind: 'cells'; layout: 'square3' | 'pyramid3'; values: readonly (number | null)[] }
+    // A square grid with labelled columns (A..) and rows (1..) and items on distinct cells (col, row are zero-based).
+    | { kind: 'grid'; columns: number; rows: number; items: readonly { item: GridItemId; col: number; row: number }[] }
+    // A polygon in lattice units; sides[i] labels the edge from vertex i to i+1 (null = no label).
+    | { kind: 'figure'; lattice: boolean; vertices: readonly (readonly [number, number])[]; sides: readonly (number | null)[] };
 
 /** `tall` drawings are narrower than high and need the room beside the keypad solution; the rest are wide. */
 export type VisualShape = 'wide' | 'tall';
@@ -47,6 +54,12 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return `thermometer:${v.celsius}`;
         case 'icons':
             return `icons:${v.icon}:${v.framed ? 'framed' : 'plain'}:${v.groups.join(',')}`;
+        case 'cells':
+            return `cells:${v.layout}:${v.values.map((x) => x ?? '_').join(',')}`;
+        case 'grid':
+            return `grid:${v.columns}x${v.rows}:${v.items.map((i) => `${i.item}@${i.col},${i.row}`).join(';')}`;
+        case 'figure':
+            return `figure:${v.lattice ? 'lattice' : 'free'}:${v.vertices.map(([x, y]) => `${x},${y}`).join(';')}:${v.sides.map((x) => x ?? '_').join(',')}`;
     }
 };
 
@@ -105,6 +118,44 @@ export const validateVisual = (v: TaskVisual): string[] => {
             if (v.framed && (v.groups.length < 2 || v.groups.some((g) => g !== v.groups[0]))) out.push('framed icons need 2 or more equal groups');
             break;
         }
+        case 'cells': {
+            const want = v.layout === 'square3' ? 9 : 6;
+            if (v.values.length !== want) out.push(`${v.layout} needs ${want} cells, got ${v.values.length}`);
+            const empty = v.values.filter((x) => x === null).length;
+            if (empty !== 1) out.push(`cells drawing needs exactly one empty cell, got ${empty}`);
+            if (v.values.some((x) => x !== null && (!isInt(x) || x < 0))) out.push('cell values must be whole numbers from 0');
+            break;
+        }
+        case 'grid': {
+            if (!isInt(v.columns) || v.columns < 2 || v.columns > GRID_LIMITS.columns) out.push(`${v.columns} columns, need 2..${GRID_LIMITS.columns}`);
+            if (!isInt(v.rows) || v.rows < 2 || v.rows > GRID_LIMITS.rows) out.push(`${v.rows} rows, need 2..${GRID_LIMITS.rows}`);
+            if (v.items.length < GRID_LIMITS.minItems || v.items.length > GRID_LIMITS.maxItems) {
+                out.push(`${v.items.length} grid items, need ${GRID_LIMITS.minItems}..${GRID_LIMITS.maxItems}`);
+            }
+            const seen = new Set<string>();
+            for (const it of v.items) {
+                if (!GRID_ITEMS.some((g) => g.id === it.item)) out.push(`unknown grid item ${it.item}`);
+                if (!isInt(it.col) || !isInt(it.row) || it.col < 0 || it.col >= v.columns || it.row < 0 || it.row >= v.rows) {
+                    out.push(`grid item at ${it.col},${it.row} outside the grid`);
+                }
+                const at = `${it.col},${it.row}`;
+                if (seen.has(at)) out.push(`two grid items on cell ${at}`);
+                seen.add(at);
+            }
+            break;
+        }
+        case 'figure': {
+            if (v.vertices.length < 3) out.push(`figure has ${v.vertices.length} vertices, need 3 or more`);
+            if (v.sides.length !== v.vertices.length) out.push(`${v.sides.length} side labels for ${v.vertices.length} vertices`);
+            if (v.lattice) {
+                if (v.vertices.some(([x, y]) => !isInt(x) || !isInt(y))) out.push('lattice figure needs whole-number vertices');
+                v.vertices.forEach(([x, y], i) => {
+                    const [nx, ny] = v.vertices[(i + 1) % v.vertices.length] ?? [x, y];
+                    if (x !== nx && y !== ny) out.push(`lattice edge ${i} is not horizontal or vertical`);
+                });
+            }
+            break;
+        }
         default: {
             const unreachable: never = v;
             out.push(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -143,5 +194,11 @@ export const describeVisual = (v: TaskVisual): string => {
             return `[thermometer ${formatCelsius(v.celsius)}]`;
         case 'icons':
             return `[icons ${v.icon} ${v.groups.join('+')}${v.framed ? ' framed' : ''}]`;
+        case 'cells':
+            return `[cells ${v.layout} ${v.values.map((x) => x ?? '_').join(' ')}]`;
+        case 'grid':
+            return `[grid ${v.columns}×${v.rows} ${v.items.map((i) => `${GRID_ITEMS.find((g) => g.id === i.item)?.noun ?? i.item} ${String.fromCharCode(65 + i.col)}${i.row + 1}`).join(', ')}]`;
+        case 'figure':
+            return v.lattice ? `[figure lattice ${v.vertices.length} vertices]` : `[figure ${v.sides.map((x) => (x === null ? '?' : `${x} cm`)).join(' ')}]`;
     }
 };
