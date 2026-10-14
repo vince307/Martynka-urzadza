@@ -27,10 +27,13 @@ const eligible = (skill: SkillDef): boolean =>
 const skillsOf = (stage: StageDef, take: (step: number) => boolean): SkillDef[] =>
     stage.steps.filter((st) => take(st.step)).flatMap((st) => st.skills.filter(eligible));
 
-/** A task of the skill as three answer tiles; null when it comes with a drawing or no number answer. */
+/** A task of the skill as three answer tiles; null when it comes with a drawing or no number answer. The hint drawing is dropped: the word round has its own layout (DESIGN-GAP 85). */
 const drawTask = (skill: SkillDef, rng: Rng, tiles: number): Task | null => {
     const task = generateTask({ ...skill, answer: 'tiles' }, rng, { tileCount: tiles });
-    return task.visual === undefined && typeof task.answer === 'number' && task.choices !== undefined ? task : null;
+    if (task.visual !== undefined || typeof task.answer !== 'number' || task.choices === undefined) return null;
+    const plain = { ...task };
+    delete plain.hintVisual;
+    return plain;
 };
 
 const drawRound = (pool: readonly SkillDef[], count: number, rng: Rng, rules: WordRules): Task[] | null => {

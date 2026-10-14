@@ -255,6 +255,8 @@ export const TASK_LAYOUT = {
         // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no written column; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
         digits: { picture: { x: 236, y: 340, width: 440, height: 508 }, lines: { x: 700, y: 340, width: 320, height: 508 } },
+        // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP (docs/design-gaps.md, phase 9): screenshots in phase 6.
+        hint: { keypad: { picture: { x: 236, y: 530, width: 768, height: 190 }, lines: { x: 236, y: 730, width: 768, height: 118 } } },
         minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },

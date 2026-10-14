@@ -6,6 +6,7 @@ import { drawToken, formatShape, parseShape, tokenValues, type Shape } from '../
 import { applyOp as apply, arithLine as line, opSign as sign, SAME_SHARE } from '../arith';
 import { MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
+import type { TaskVisual } from '../visual';
 
 export type AddSubOp = '+' | '-';
 export type Bridge = 'none' | 'ten' | 'any';
@@ -14,17 +15,23 @@ export interface AddSubParams {
     max: number;                  // upper bound for operands and the result
     ops: readonly AddSubOp[];
     bridge: Bridge;               // crossing a ten: never / always / unconstrained
+    line?: true;                  // a number line explains the hint (S-14b); needs max <= 30
     shapes?: readonly Shape[];    // number shapes from the catalogue ("DU+U"); ops follow from them
 }
 
 const MAX_ATTEMPTS = 1000;
+const MAX_LINE = 30;   // the hint line spans at most 30 units (balance.numberLine.maxTicks - 1)
 export { MINUS };
 
 const isOp = (value: unknown): value is AddSubOp => value === '+' || value === '-';
 const isBridge = (value: unknown): value is Bridge => value === 'none' || value === 'ten' || value === 'any';
 
 export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams => {
-    const { max, ops, bridge, shapes } = params;
+    const { max, ops, bridge, shapes, line: withLine } = params;
+    if (withLine !== undefined && (withLine !== true || (max as number) > MAX_LINE)) {
+        throw new TypeError(`ADD_SUB params.line must be true and needs max <= ${MAX_LINE}, got line ${JSON.stringify(withLine)} max ${String(max)}`);
+    }
+    const lineOpt = withLine === true ? { line: true as const } : {};
     if (!Number.isInteger(max) || (max as number) < 2) {
         throw new TypeError(`ADD_SUB params.max must be an integer >= 2, got ${String(max)}`);
     }
@@ -48,12 +55,12 @@ export const parseAddSubParams = (params: Record<string, unknown>): AddSubParams
         if (ops !== undefined && (!Array.isArray(ops) || !ops.every(isOp) || ops.some((o) => !shapeOps.includes(o)))) {
             throw new TypeError(`ADD_SUB params.ops ${JSON.stringify(ops)} must match the ops of shapes ${JSON.stringify(shapes)}`);
         }
-        return { max: max as number, ops: shapeOps, bridge, shapes: parsed };
+        return { max: max as number, ops: shapeOps, bridge, shapes: parsed, ...lineOpt };
     }
     if (!Array.isArray(ops) || ops.length === 0 || !ops.every(isOp)) {
         throw new TypeError(`ADD_SUB params.ops must be a non-empty list of '+' / '-', got ${JSON.stringify(ops)}`);
     }
-    return { max: max as number, ops, bridge };
+    return { max: max as number, ops, bridge, ...lineOpt };
 };
 
 /**
@@ -124,32 +131,65 @@ export const shapeFeasible = (shape: Shape, max: number, bridge: Bridge): boolea
  * units; when the units cross a ten, go to the ten first (7 + 6 → 7 + 3 = 10,
  * 10 + 3 = 13; 13 − 6 → 13 − 3 = 10, 10 − 3 = 7). Never produces a "+ 0" step.
  */
+export interface Jump { from: number; to: number }
+
+/**
+ * The jumps of the school method on a number line: whole tens of b first, then the units; when the units cross a ten the
+ * first jump lands on it (7 + 6 → 7→10, 10→13). One source for the hint lines and the hint drawing.
+ */
+export const addSubJumps = (a: number, op: AddSubOp, b: number): Jump[] => {
+    const jumps: Jump[] = [];
+    const tens = b - (b % 10);
+    const units = b % 10;
+    const move = (from: number, by: number): number => (op === '+' ? from + by : from - by);
+    let current = a;
+    const jump = (by: number): void => {
+        const to = move(current, by);
+        jumps.push({ from: current, to });
+        current = to;
+    };
+    if (tens > 0) jump(tens);
+    if (units > 0) {
+        if (crossesTen(current, units, op)) {
+            const toTen = op === '+' ? 10 - (current % 10) : current % 10;
+            jump(toTen);
+            jump(units - toTen);
+        } else {
+            jump(units);
+        }
+    }
+    return jumps.length > 0 ? jumps : [{ from: a, to: move(a, b) }];
+};
+
+const hintOfJumps = (jumps: readonly Jump[], op: AddSubOp): string[] =>
+    jumps.map((j) => line(j.from, Math.abs(j.to - j.from), op));
+
+/**
+ * Hint steps in the order taught at school (see addSubJumps). Never produces a "+ 0" step.
+ */
 export const addSubHint = (a: number, b: number, op: AddSubOp): string[] => {
     if (op === '-' && a >= 20 && a % 10 === 0 && b >= 1 && b <= 9) {
         // DT − U (70 − 9 = 60 + (10 − 9)): break one ten, subtract from it, add the
         // other tens; "20 − 7" by analogy with "10 − 7" (impl-review S-03).
         return [line(10, b, '-'), line(a - 10, 10 - b, '+')];
     }
-    const steps: string[] = [];
-    const tens = b - (b % 10);
-    const units = b % 10;
-    let current = a;
-    if (tens > 0) {
-        steps.push(line(current, tens, op));
-        current = apply(current, tens, op);
-    }
-    if (units > 0) {
-        if (crossesTen(current, units, op)) {
-            const toTen = op === '+' ? 10 - (current % 10) : current % 10;
-            const rest = units - toTen;
-            steps.push(line(current, toTen, op));
-            current = apply(current, toTen, op);
-            steps.push(line(current, rest, op));
-        } else {
-            steps.push(line(current, units, op));
-        }
-    }
-    return steps.length > 0 ? steps : [line(a, b, op)];
+    return hintOfJumps(addSubJumps(a, op, b), op);
+};
+
+const isFive = (n: number): boolean => n % 5 === 0;
+
+/**
+ * The hint drawing: a line from the full ten under the lower end to the full ten over the higher one, a tick per unit.
+ * Labels: the start, the landings between, every multiple of five; never the result, which gets the box.
+ */
+const hintLine = (jumps: readonly Jump[], result: number): TaskVisual => {
+    const points = jumps.flatMap((j) => [j.from, j.to]);
+    const from = Math.floor(Math.min(...points) / 10) * 10;
+    const to = Math.ceil(Math.max(...points) / 10) * 10;
+    const labels = new Set<number>([jumps[0].from, ...jumps.slice(0, -1).map((j) => j.to)]);
+    for (let n = from; n <= to; n += 1) if (isFive(n)) labels.add(n);
+    labels.delete(result);
+    return { kind: 'numberLine', from, to, tick: 1, labels: [...labels].sort((x, y) => x - y), box: result, jumps: jumps.map((j) => ({ ...j })) };
 };
 
 /**
@@ -195,10 +235,16 @@ const drawOperands = (p: AddSubParams, rng: Rng): [number, number, AddSubOp] => 
 export const generateAddSub: Generator = (skill, rng): Task => {
     const params = parseAddSubParams(skill.params);
     const [a, b, op] = drawOperands(params, rng);
+    const answer = apply(a, b, op);
+    if (params.line) {
+        // The hint lines and the drawing share one list of jumps (no special case of "20 − 7" here: the drawing must match the lines).
+        const jumps = addSubJumps(a, op, b);
+        return { skillId: skill.id, prompt: `${a} ${sign(op)} ${b}`, answer, hint: hintOfJumps(jumps, op), hintVisual: hintLine(jumps, answer) };
+    }
     return {
         skillId: skill.id,
         prompt: `${a} ${sign(op)} ${b}`,
-        answer: apply(a, b, op),
+        answer,
         hint: addSubHint(a, b, op),
     };
 };

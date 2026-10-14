@@ -9,6 +9,7 @@ export interface Task {
     prompt: string;                      // player-facing text (Polish) or a bare expression
     speak?: string;                      // text for the narrator, when it differs from prompt
     visual?: TaskVisual;                 // drawing description (clock, ruler, blocks, bars, money, scale, jugs, thermometer, icons)
+    hintVisual?: TaskVisual;             // number line that explains the hint steps (S-14b); shown from the second mistake, never gives the answer away
     input?: AnswerMode;                  // how the child answers; stamped by generateTask from the skill
     answer: number | string | number[];
     choices?: (number | string)[];       // for tile answers

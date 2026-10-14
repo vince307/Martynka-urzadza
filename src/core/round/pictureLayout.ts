@@ -18,6 +18,8 @@ export interface PictureSpec {
     drag: { picture: PictureRect; lines: PictureRect };
     /** A written column (`digits`): the column stays in one place in every phase, the solution lines beside it. */
     digits: { picture: PictureRect; lines: PictureRect };
+    /** The hint drawing (a number line under the expression, keypad only): the drawing and the solution lines under it. */
+    hint: { keypad: { picture: PictureRect; lines: PictureRect } };
     /** Smallest height a drawing keeps under a long prompt. */
     minHeight: number;
     /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
@@ -135,4 +137,13 @@ export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect 
         ok: drag.ok,
         lines: drag.solutionLines,
     };
+};
+
+/** The hint number line and the solution lines under it; only the keypad task has room for them. */
+export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode): { picture: PictureRect; lines: PictureRect } => {
+    switch (input) {
+        case 'keypad': return spec.hint.keypad;
+        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode`);
+        default: { const _exhaustive: never = input; return _exhaustive; }
+    }
 };

@@ -91,12 +91,23 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
     }
 
     // A number line never gives the answer away: no label equals a numeric answer, and the empty box can only be the answer itself.
-    if (task.visual?.kind === 'numberLine' && typeof task.answer === 'number') {
-        if (task.visual.labels.includes(task.answer)) {
-            add('visual', `number line labels give the answer ${task.answer}`);
+    // This holds for the hint drawing too; a hint drawing belongs to the keypad only (it needs the room beside the solution lines).
+    for (const [where, drawing] of [['visual', task.visual], ['hintVisual', task.hintVisual]] as const) {
+        if (drawing?.kind === 'numberLine' && typeof task.answer === 'number') {
+            if (drawing.labels.includes(task.answer)) {
+                add('visual', `${where} number line labels give the answer ${task.answer}`);
+            }
+            if (drawing.box !== null && drawing.box !== task.answer) {
+                add('visual', `${where} number line box ${drawing.box} is not the answer ${task.answer}`);
+            }
         }
-        if (task.visual.box !== null && task.visual.box !== task.answer) {
-            add('visual', `number line box ${task.visual.box} is not the answer ${task.answer}`);
+    }
+    if (task.hintVisual) {
+        for (const problem of validateVisual(task.hintVisual)) {
+            add('visual', `hintVisual ${problem}`);
+        }
+        if (task.input !== undefined && task.input !== 'keypad') {
+            add('mode', `a hint drawing needs the keypad, got ${task.input}`);
         }
     }
 

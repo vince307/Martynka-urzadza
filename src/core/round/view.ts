@@ -9,6 +9,7 @@ export interface RoundView {
     dots: { status: 'done' | 'current' | 'todo'; outcome: Outcome | null }[];
     input: AnswerMode;
     visual: TaskVisual | null;
+    hintPicture: TaskVisual | null;
     choices: (number | string)[];
     bar:
         | { kind: 'none' }
@@ -55,6 +56,7 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
         })),
         input: task.input ?? (task.choices ? 'tiles' : 'keypad'),   // the fallback serves hand-built tasks in tests
         visual: task.visual ?? null,
+        hintPicture: ['second', 'solution', 'retype'].includes(state.phase) && !state.finished ? (task.hintVisual ?? null) : null,
         choices: task.choices ? [...task.choices] : [],
         bar: barOf(state, task, answerLine),
         inputActive: !state.finished && ['first', 'second', 'retype'].includes(state.phase),
