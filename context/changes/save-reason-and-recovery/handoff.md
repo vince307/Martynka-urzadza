@@ -7,7 +7,7 @@ The visual-gate step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. The
 | | |
 |---|---|
 | Branch | `feat/save-reason-and-recovery`, cut from `main` at `16a0abd` |
-| Commits | 22 commits `ef8f950`..HEAD. This step added the docs commit `docs(save-reason-and-recovery): bramka wizualna` and no fix commit |
+| Commits | 22 commits `16a0abd`..HEAD (exclusive of the base). This step added `docs(save-reason-and-recovery): bramka wizualna` plus this count correction, and no fix commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
 | `## Progress` rows remaining | 4, all `[human]`: 3.7, 4.7, 4.8, 5.8 |
