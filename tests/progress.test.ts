@@ -47,12 +47,12 @@ describe('currentStep and the step line', () => {
         expect(view.step.title).toBe('Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”');
     });
 
-    it('an unplayable unlocked step (E5 step 12) counts as the nearest lower playable one (11 = 11th of 11)', () => {
-        const E5 = stages.E5 as StageDef;
-        expect(currentStep(E5, 12)).toBe(11);
-        const view = progressView(E5, { ...learner([], {}, 12), unlockedStep: { E5: 12 } as Adaptation['unlockedStep'] }, RULES);
-        expect(view.step.index).toBe(11);
-        expect(view.step.total).toBe(11);
+    it('an unplayable unlocked step (E6 step 2) counts as the nearest lower playable one (1 = 1st of 9)', () => {
+        const E6 = stages.E6 as StageDef;
+        expect(currentStep(E6, 2)).toBe(1);
+        const view = progressView(E6, { ...learner([], {}, 2), unlockedStep: { E6: 2 } as Adaptation['unlockedStep'] }, RULES);
+        expect(view.step.index).toBe(1);
+        expect(view.step.total).toBe(9);
     });
 
     it('below the first playable step it is the first', () => {

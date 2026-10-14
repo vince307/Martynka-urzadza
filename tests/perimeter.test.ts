@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { firstHint } from '../src/core/round/hints';
+import { figureLayout } from '../src/core/round/figureLayout';
+import { TASK_LAYOUT } from '../src/data/layout';
 import { generatePerimeter, parsePerimeterParams } from '../src/core/tasks/generators/perimeter';
 import { generators, parsers } from '../src/core/tasks/registry';
 import type { SkillDef } from '../src/core/types';
@@ -133,6 +135,17 @@ describe('generatePerimeter', () => {
             expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
         });
         expect([...corners].sort(), 'L, U and staircase shapes both appear').toEqual([6, 8]);
+    });
+
+    it('composite: at most 5 rows, so the lattice keeps a 36 px cell in the 768 x 190 keypad-solution strip (phase 9)', () => {
+        const rows = new Set<number>();
+        forEachDraw(generatePerimeter, skill('composite', 60), { max: 60 }, (task, where) => {
+            const f = figureOf(task, where);
+            const out = figureLayout(f, TASK_LAYOUT.picture.keypadSolution.picture, TASK_LAYOUT.figure);
+            expect(out.cell, `${where} cell`).toBeGreaterThanOrEqual(TASK_LAYOUT.figure.minCell);
+            rows.add(Math.max(...f.vertices.map((v) => v[1])));
+        });
+        expect(Math.max(...rows)).toBe(5);
     });
 
     it('rejects unknown variants, max outside 12..100, and is registered under PERIMETER', () => {

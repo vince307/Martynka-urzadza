@@ -48,10 +48,10 @@ describe('skillBuckets', () => {
     });
 
     it('an unplayable unlocked step falls back to the nearest lower playable step', () => {
-        // E5 step 12 has no playable skill (lengths and perimeters wait for a later change): unlocked step 12 plays step 11.
-        const b = skillBuckets(stage('E5'), previousOf('E5'), 12);
-        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([11]));
-        expect(new Set(b.earlier.map((s) => s.step))).toEqual(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+        // E6 step 2 has no playable skill (clock durations wait for a later change): unlocked step 2 plays step 1.
+        const b = skillBuckets(stage('E6'), previousOf('E6'), 2);
+        expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([1]));
+        expect(b.earlier).toEqual([]);
     });
 
     it('an unplayable step below every playable one falls back to the first playable step', () => {

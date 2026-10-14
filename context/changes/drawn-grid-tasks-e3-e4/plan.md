@@ -946,7 +946,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 - [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje nowe umiejętności — d9b83f2
 - [x] 8.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń — d9b83f2
 - [x] 8.3 Deliberate break: `minuteStep` 7 → parser czerwony; generator dający 0.15 → rozwiązywalność czerwona; przywrócone; meta-check — d9b83f2
-- [ ] 8.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany (≤ limit)
+- [x] 8.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany (≤ limit) — orchestrator note: 57 passed on d9b83f2, 4.0 min, adaptive.spec within its limit
 
 #### Manual
 
@@ -958,9 +958,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 9.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń
-- [ ] 9.3 Deliberate break: E6.3 bez `childName` → test czerwony; przywrócone; meta-check
+- [x] 9.1 Pełna bramka lokalna zielona (bez e2e, patrz 9.4); unit `<baseline gałęzi> + N`
+- [x] 9.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń
+- [x] 9.3 Deliberate break: E6.3 bez `childName` → test czerwony; przywrócone; meta-check
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
