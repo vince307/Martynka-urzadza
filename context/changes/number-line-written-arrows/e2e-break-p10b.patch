@@ -1,0 +1,12 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 05a4a4d..ef2baa0 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -690,7 +690,6 @@ export class TaskScene extends Scene {
+         this.syncStars(before, this.answerSpot(value));
+         if (this.state.phase !== 'done') {
+             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
+-            this.boxes = startDigitBoxes(this.boxes.count);   // and wrong digits: every box is emptied, so the right ones are not given away
+             this.select.clear();   // a wrong set is cleared too
+             this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
+             this.clockState = initialClockSet(this.clockStart);   // and a wrong time: the hands go back to the start
