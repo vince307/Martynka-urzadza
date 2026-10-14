@@ -15,6 +15,12 @@ import { NumberCells } from './NumberCells';
 import { NumberLine } from './NumberLine';
 import { Ruler } from './Ruler';
 import { Thermometer } from './Thermometer';
+import { WrittenColumn, type ColumnMode } from './WrittenColumn';
+import type { DigitBoxes } from '../../core/round/digitBoxes';
+import type { ColumnMarks } from '../../core/tasks/written';
+
+/** What a written column needs besides its numbers: the signs of the method, the result boxes and their look. */
+export interface ColumnState { marks: ColumnMarks; boxes: DigitBoxes; mode: ColumnMode }
 
 /** The drawing of a task: picks the widget of its kind and draws it in the given rectangle. */
 export class TaskPicture {
@@ -32,6 +38,7 @@ export class TaskPicture {
     private readonly figure: FigureGrid;
     private readonly line: NumberLine;
     private readonly arrows: ArrowGraph;
+    private readonly column: WrittenColumn;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -50,10 +57,11 @@ export class TaskPicture {
         this.figure = new FigureGrid(scene);
         this.line = new NumberLine(scene);
         this.arrows = new ArrowGraph(scene);
+        this.column = new WrittenColumn(scene);
     }
 
-    /** Draws `visual` in `rect`; null hides the picture. */
-    render(visual: TaskVisual | null, rect: Rect): void {
+    /** Draws `visual` in `rect`; null hides the picture. A written column also needs its `column` state. */
+    render(visual: TaskVisual | null, rect: Rect, column?: ColumnState): void {
         this.hide();
         if (!visual) {
             return;
@@ -74,6 +82,7 @@ export class TaskPicture {
             figure: this.figure,
             numberLine: this.line,
             arrows: this.arrows,
+            column: this.column,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -120,7 +129,11 @@ export class TaskPicture {
                 this.arrows.render(visual, rect);
                 break;
             case 'column':
-                throw new Error(`no widget for the ${visual.kind} drawing yet`);
+                if (!column) {
+                    throw new Error('a written column is drawn with its boxes');
+                }
+                this.column.render(visual, rect, column.marks, column.boxes, column.mode);
+                break;
             default: {
                 const unreachable: never = visual;
                 throw new Error(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -145,6 +158,7 @@ export class TaskPicture {
         this.figure.setVisible(false);
         this.line.setVisible(false);
         this.arrows.setVisible(false);
+        this.column.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

@@ -49,3 +49,16 @@ describe('answer modes', () => {
         expect(problems.map((v) => v.rule)).toContain('mode');
     });
 });
+
+describe('written column layout (S-14b)', () => {
+    it('the column area keeps the digits at least at their drawn size for three columns', () => {
+        const { digits } = TASK_LAYOUT.picture;
+        const W = TASK_LAYOUT.written;
+        const widthUnits = 4 * W.colW;
+        const heightUnits = W.markRow + 2 * W.row + W.ruleGap + W.box.height;
+        expect(Math.min(digits.picture.width / widthUnits, digits.picture.height / heightUnits)).toBeGreaterThanOrEqual(1);
+    });
+    it('the result boxes are touch-sized squares of the digit', () => {
+        expect(TASK_LAYOUT.written.box.width).toBeGreaterThanOrEqual(TASK_LAYOUT.written.colW * 0.8);
+    });
+});

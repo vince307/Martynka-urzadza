@@ -98,6 +98,9 @@ export const FONT_SIZES = {
     lineLabel: 28,          // kit reference/number-line.svg: numbers under the ticks
     lineJump: 30,           // kit number-line.svg has no arc label; DESIGN-GAP (S-14b): the "+k" over an arc
     arrowRule: 40,          // DESIGN-GAP (S-14b): the rule "+5" on an arrow of a graph or table
+    columnDigit: 72,        // kit reference/written-addition.svg: digits of the written column
+    columnSign: 64,         // kit reference/written-addition.svg: the + or − sign
+    columnMark: 34,         // DESIGN-GAP (S-14b): the small carry or borrow digit
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
@@ -140,6 +143,9 @@ export const FONT_WEIGHTS = {
     lineLabel: 700,         // kit reference/number-line.svg
     lineJump: 750,
     arrowRule: 750,
+    columnDigit: 700,       // kit reference/written-addition.svg
+    columnSign: 700,
+    columnMark: 750,
     gridLabel: 700,
     sideLabel: 700,
     artLabel: 650,
@@ -299,6 +305,13 @@ export const TASK_LAYOUT = {
     arrows: {
         disc: 120, arrow: 270, rule: 56, border: 4, head: 16, line: 5, dash: 14,
         tile: 96, tileGap: 16, ruleColumn: 170, rowGap: 96, maxScale: 1.5,
+    },
+    // Written column (DESIGN-GAP, S-14b, rows added in phase 9), own units: digits in columns `colW` apart (kit written-addition.svg: 72 px digits, 82 px columns, 4 px rule),
+    // a `markRow` for carries and borrows above the first operand, the result boxes under the rule. The active box has a thicker border and the butter fill.
+    written: {
+        colW: 82, markRow: 60, row: 92, ruleGap: 12, rule: 4, maxScale: 1.3,
+        box: { width: 70, height: 92, radius: 14, border: 4, activeBorder: 8 },
+        carry: { radius: 22, border: 3 }, strike: 5, lendDrop: 6,
     },
     // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
     coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },

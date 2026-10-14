@@ -24,6 +24,9 @@ import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
+import { digitBoxCount, startDigitBoxes, stepDigitBoxes, type DigitBoxes } from '../core/round/digitBoxes';
+import type { KeypadKey } from '../core/round/keypad';
+import { columnMarks } from '../core/tasks/written';
 import { dragMode } from '../core/tasks/dragMode';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, hintPictureLayout, pictureLayout } from '../core/round/pictureLayout';
@@ -84,6 +87,7 @@ export interface TaskSnapshot {
     readonly input: AnswerMode;
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
+    readonly digits: { readonly count: number; readonly filled: readonly number[] } | null;   // the result boxes of a written column ('digits' mode), from the ones; null in any other mode
     readonly hintVisual: TaskVisual['kind'] | null;   // the kind of the hint drawing on screen now (S-14b), else null
     readonly art: readonly { readonly key: string; readonly loaded: boolean }[];   // the art images on screen now, read from the widget (S-14)
     readonly choices: readonly (number | string)[];
@@ -145,6 +149,7 @@ export class TaskScene extends Scene {
     private clockTask = false;   // the open 'drag' task is a clock to set (core/tasks/dragMode), not a block build
     private dragLive = false;   // the 'drag' task is open and takes the child's touches
     private keypad!: Keypad;
+    private boxes: DigitBoxes = startDigitBoxes(0);   // the result boxes of the open 'digits' task
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
     private picture!: TaskPicture;
@@ -219,7 +224,7 @@ export class TaskScene extends Scene {
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.select = new SelectTiles(this, (value) => this.submit(value));
-        this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
+        this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value), (key) => this.pressBoxKey(key));
         this.blockMat = new BlockMat(this, (value) => this.submit(value));
         // "OK" under a second finger while a hand is still held is ignored: the held pose is not settled yet, and
         // ending the task would cancel the grab and draw the hands back to the pose before it (impl review).
@@ -400,6 +405,7 @@ export class TaskScene extends Scene {
             this.shownIndex = this.state.index;
             this.drawPrompt(view.input);
             this.keypad.reset();
+            this.boxes = view.input === 'digits' ? startDigitBoxes(digitBoxCount(task0)) : startDigitBoxes(0);
             if (diceRound && this.dice) {
                 const thrown = this.dice[this.state.index];
                 this.diceView.show({ a: thrown.a, b: thrown.b, op: thrown.op });
@@ -430,14 +436,17 @@ export class TaskScene extends Scene {
         const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
-        this.picture.render(this.clockTask ? null : view.visual, pictureRect);   // a clock to set is drawn by ClockSet
+        const columnState = view.visual?.kind === 'column' ? { marks: columnMarks(view.visual, this.marksShown()), boxes: this.boxes, mode: this.state.phase === 'done' ? ('correct' as const) : view.inputActive ? ('active' as const) : ('locked' as const) } : undefined;
+        this.picture.render(this.clockTask ? null : view.visual, pictureRect, columnState);   // a clock to set is drawn by ClockSet
         // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP, phase 9).
         const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input) : null;
         this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';
-        this.tiles.setVisible(view.input === 'tiles' && !diceRound);
-        this.keypad.setVisible(view.input === 'keypad');
-        this.select.setVisible(view.input === 'select');
+        const shows = this.widgetsOf(view.input);
+        this.tiles.setVisible(shows.tiles && !diceRound);
+        this.keypad.setKeyMode(view.input === 'digits');
+        this.keypad.setVisible(shows.keypad);
+        this.select.setVisible(shows.select);
         this.dragLive = view.input === 'drag' && view.inputActive;
         if (!this.dragLive && this.dragState.carrying) {
             this.dragState = { mat: this.dragState.mat, carrying: null };
@@ -455,7 +464,7 @@ export class TaskScene extends Scene {
         this.select.setActive(view.input === 'select' && view.inputActive);
         this.tiles.setActive(view.input === 'tiles' && !diceRound && view.inputActive);
         this.board.setActive(diceRound && view.inputActive);
-        this.keypad.setActive(view.input === 'keypad' && view.inputActive);
+        this.keypad.setActive(shows.keypad && view.inputActive);
         if (finishedTask) {
             this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
             this.keypad.markCorrect();
@@ -584,8 +593,9 @@ export class TaskScene extends Scene {
         const wordRound = this.kind === 'word';
         const promptY = task.visual ? TASK_LAYOUT.picture.promptY : wordRound ? MINIGAME_LAYOUT.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
-        const sentence = input !== 'keypad' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
-        const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
+        const beside = this.widgetsOf(input).keypad;   // the keypad sits right of the prompt
+        const sentence = !beside ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
+        const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : !beside ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
@@ -680,6 +690,7 @@ export class TaskScene extends Scene {
         this.syncStars(before, this.answerSpot(value));
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
+            this.boxes = startDigitBoxes(this.boxes.count);   // and wrong digits: every box is emptied, so the right ones are not given away
             this.select.clear();   // a wrong set is cleared too
             this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
             this.clockState = initialClockSet(this.clockStart);   // and a wrong time: the hands go back to the start
@@ -925,16 +936,46 @@ export class TaskScene extends Scene {
         if (this.kind === 'dice') {
             return this.board.targets().find((t) => t.value === value) ?? null;
         }
-        if (view.input === 'tiles') {
-            return this.tiles.targets().find((t) => t.value === value) ?? null;
+        switch (view.input) {
+            case 'tiles': return this.tiles.targets().find((t) => t.value === value) ?? null;
+            case 'select': return this.select.okTarget();
+            case 'drag': return this.clockTask ? this.clockSet.targets()?.ok ?? null : this.blockMat.okTarget();
+            case 'keypad': case 'digits': return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
+            default: { const unreachable: never = view.input; return unreachable; }
         }
-        if (view.input === 'select') {
-            return this.select.okTarget();
+    }
+
+    /** Which input widgets an answer mode shows; the one place that maps a mode to its widgets (the switch is exhaustive). */
+    private widgetsOf(input: AnswerMode): { tiles: boolean; keypad: boolean; select: boolean } {
+        switch (input) {
+            case 'tiles': return { tiles: true, keypad: false, select: false };
+            case 'keypad': case 'digits': return { tiles: false, keypad: true, select: false };
+            case 'select': return { tiles: false, keypad: false, select: true };
+            case 'drag': return { tiles: false, keypad: false, select: false };
+            default: { const unreachable: never = input; return unreachable; }
         }
-        if (view.input === 'drag') {
-            return this.clockTask ? this.clockSet.targets()?.ok ?? null : this.blockMat.okTarget();
+    }
+
+    /** The signs of a written column's method: none on the first try, the first carry or borrow in the hint, all of them once the solution is shown. */
+    private marksShown(): 'none' | 'first' | 'all' {
+        switch (this.state.phase) {
+            case 'first': return 'none';
+            case 'second': return 'first';
+            case 'solution': case 'retype': return 'all';
+            case 'done': return this.state.outcomes[this.state.index] === 'first' ? 'none' : 'all';
+            default: { const unreachable: never = this.state.phase; return unreachable; }
         }
-        return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
+    }
+
+    /** A key of the keypad in key mode: core fills the boxes; a full row sent with "OK" is the answer. */
+    private pressBoxKey(key: KeypadKey): void {
+        const result = stepDigitBoxes(this.boxes, key);
+        this.boxes = result.state;
+        if (result.submit !== null) {
+            this.submit(result.submit);
+        } else {
+            this.render();
+        }
     }
 
     private starBalance(): number {
@@ -994,6 +1035,7 @@ export class TaskScene extends Scene {
             phase: this.state.phase,
             solutionStep: this.state.solutionStep,
             input: view.input,
+            digits: view.input === 'digits' ? Object.freeze({ count: this.boxes.count, filled: Object.freeze([...this.boxes.digits]) }) : null,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
