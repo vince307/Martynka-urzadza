@@ -764,9 +764,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check
-- [x] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — d36b952
+- [x] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check — d36b952
+- [x] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian — d36b952
 - [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
