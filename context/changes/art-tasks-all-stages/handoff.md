@@ -1,9 +1,9 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the visual-gate step: every art task type was screenshotted in a real round at 1440×900 and 1024×768, four
-readability discrepancies (incl. follow-up F3, the thermometer beside the tiles) were fixed in `f4f0c82`, the full local gate
-is green after the fix, and the review ends `VISUAL: PASS`. Next is archive then ship; the `[human]` rows stay open for the
-maintainer and must not be ticked by an agent.
+Written by the ship step (final pre-merge state). Earlier: the visual gate screenshotted every art task type at 1440×900
+and 1024×768, fixed four readability discrepancies in `f4f0c82` and ended `VISUAL: PASS`. This step archives the change
+(`chore(archive): close art-tasks-all-stages`, roadmap S-14 → done, Backlog Handoff refreshed), then pushes, opens the PR,
+watches CI, merges and watches the Deploy run. The `[human]` rows stay open for the maintainer (post-run checklist).
 
 ## 1. State
 
@@ -11,8 +11,8 @@ maintainer and must not be ticked by an agent.
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
 | Commits | p1 `46aff1d` … p10 `79da1a7`, review `79e92ee` + `0c5b25e`, then this step: `f4f0c82` `fix(art-tasks-all-stages): czytelność grafiki z bramki wizualnej` + `docs(art-tasks-all-stages): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-13-s12-s14/run-log.md |
+| `change.md` status | `archived` (stamped by `/10x-archive` in the ship step; folder moved to `context/archive/2026-10-14-art-tasks-all-stages/`) |
 | `## Progress` rows open | 5 (`grep -c '^- \[ \]' plan.md`), all `[human]`: 2.9, 8.9, 9.7, 9.8, 9.9 |
 | Working tree | clean after the two commits (`tests/e2e/visual.local/` moved out to the session scratchpad; `dist-e2e/`, `test-results/` are gitignored) |
 
@@ -52,7 +52,7 @@ Servers: 4399 started by this step (background preview) and stopped; Playwright 
 
 ## 4. Next command
 
-/10x-archive art-tasks-all-stages then ship (no hosted db push — none exists)
+none — shipped
 
 ## 5. Open
 
@@ -69,3 +69,6 @@ Servers: 4399 started by this step (background preview) and stopped; Playwright 
 4. Ran Chromium myself (plain `npx playwright test`) instead of the request-file protocol; a piped variant failed once on the sandbox MachPort and was re-run as a plain command.
 5. Kit frames compared, not copied into the change folder (`designs/` is gitignored and must not be staged), as in the S-13 gate.
 6. `[visual]` 8.8 ticked although "klocki E1.10" was not captured: the skill (`E1.10.place_read_12`) was cut in phase 8 (follow-up S-14b), so no such state exists; the unlock card shows E1.11 only. Would change: the maintainer wanting each new `childName` card captured.
+7. Ship step: archived despite 5 open `[human]` Progress rows (0 automated, 5 manual — the skill's recommended option);
+   they are the maintainer's post-run checklist, not a blocker. Rejected: holding the PR until the tablet check (9.9).
+   Would change: the maintainer asking for a tablet check before the merge.
