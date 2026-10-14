@@ -862,9 +862,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 2.2 1000 losowań na wariant bez naruszeń; klucze `generators`/`parsers` równe; progi inwariantów zmierzone
-- [x] 2.3 Deliberate break: dwa puste pola / przekątna z inną sumą / `figure` z krawędzią ukośną przy `lattice` → czerwone; przywrócone; meta-check
+- [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 2166514
+- [x] 2.2 1000 losowań na wariant bez naruszeń; klucze `generators`/`parsers` równe; progi inwariantów zmierzone — 2166514
+- [x] 2.3 Deliberate break: dwa puste pola / przekątna z inną sumą / `figure` z krawędzią ukośną przy `lattice` → czerwone; przywrócone; meta-check — 2166514
 - [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
