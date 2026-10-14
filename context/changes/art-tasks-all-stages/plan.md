@@ -910,9 +910,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: zakres termometru / `formatMoney` / `leaksAnswer` tylko czas / `pictureLayout` bez `tall` → czerwone; przywrócone; meta-check
-- [ ] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 46aff1d (1482 → 1510, +28)
+- [x] 1.2 Deliberate break: zakres termometru / `formatMoney` / `leaksAnswer` tylko czas / `pictureLayout` bez `tall` → czerwone; przywrócone; meta-check — 46aff1d
+- [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian — 46aff1d
 - [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
