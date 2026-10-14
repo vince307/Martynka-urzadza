@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { afterRound, nextRoundKind, pickPuzzle, variantRules, type ScheduleContext } from '../src/core/variants';
+import { afterRound, nextRoundKind, pickPuzzle, variantRules, variantTitle, type ScheduleContext } from '../src/core/variants';
 import type { VariantState } from '../src/core/types';
 import { balance } from '../src/data/balance';
 
@@ -95,5 +95,17 @@ describe('variantRules', () => {
     });
     it('a minigame: n tasks, one star each, no bonus', () => {
         expect(variantRules('dice', 13, balance)).toEqual({ length: 13, starPerTask: 1, cleanRoundBonus: 0 });
+    });
+});
+
+describe('variantTitle', () => {
+    const words = { diceTitle: 'D', wordTitle: 'W', puzzleTitle: 'P', puzzleBadge: 'x2' };
+    it('names each variant and badges only the doubled-stars puzzle', () => {
+        expect(variantTitle('puzzle', words)).toEqual({ text: 'P', badge: 'x2' });
+        expect(variantTitle('dice', words)).toEqual({ text: 'D', badge: null });
+        expect(variantTitle('word', words)).toEqual({ text: 'W', badge: null });
+    });
+    it('has no title for an ordinary round', () => {
+        expect(variantTitle('round', words)).toBeNull();
     });
 });

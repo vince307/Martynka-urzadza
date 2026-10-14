@@ -949,7 +949,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 6.1 Nowe testy czerwone przed implementacją, zielone po; 1000 losowań bez naruszeń; unit `<baseline gałęzi> + N` — 15fde6b
 - [x] 6.2 `npm run sample -- E1 --variants` … `E6 --variants` bez naruszeń — 15fde6b
 - [x] 6.3 Deliberate break: rzut w zakryte pole / ujemne odejmowanie / zadanie Hasła z rysunkiem → czerwone; przywrócone; meta-check — 15fde6b
-- [ ] 6.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 6.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` (e2e: orchestrator note, 63 passed on 15fde6b, --workers=4)
 
 #### Manual
 
@@ -959,9 +959,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Deliberate break: znacznik `e2eDay` usunięty z listy / zagadka z `starPerTask` 1 → czerwone; przywrócone; meta-check
-- [ ] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eDay`/`e2eVariant` nieobecne w `dist/`
+- [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 7.2 Deliberate break: znacznik `e2eDay` usunięty z listy / zagadka z `starPerTask` 1 → czerwone; przywrócone; meta-check
+- [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `e2eDay`/`e2eVariant` nieobecne w `dist/`
 - [ ] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; lista speców z `e2eVariant=off` w handoffie
 
 #### Manual

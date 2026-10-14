@@ -61,7 +61,8 @@ const finishRound = async (page: Page): Promise<void> => {
 
 test('#16 a confirmed choice deducts its cost exactly once; opening, cancelling, previewing or a tap while short deducts nothing', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page);
+    // e2eVariant=off: this spec plays up to MAX_ROUNDS ordinary rounds; the 4th would be the daily puzzle (S-15) and pay differently.
+    await passWelcome(page, { e2eVariant: 'off' });
     await phaseIs(page, 'first');
 
     // A task solved by the retype pays 0 stars: the child is in the salon with an empty purse.

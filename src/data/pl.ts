@@ -250,6 +250,7 @@ export const pl = {
         diceTitle: 'Kostki · 0–12',
         wordTitle: 'Ukryte słowo',
         puzzleTitle: 'Zagadka dnia',
+        puzzleBadge: '×2',   // DESIGN-GAP 79: the kit has no daily-puzzle screen; the badge sits next to a star drawn in code (the font has no ★)
         diceCover: 'Zakryj wynik',
         diceAllCovered: 'Wszystkie pola zakryte!',
         puzzleDone: 'Brawo! Jeszcze jedna gwiazdka.',

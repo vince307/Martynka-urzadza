@@ -110,7 +110,8 @@ test('#14 (proposed) a parent stage change replaces the open round with the new 
 
 test('#14 (proposed) the progress view shows the empty state, then the skill missed on the first try with its example', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcomeAsParent(page, E3);
+    // e2eVariant=off: up to 3 rounds here and the schedule would make a 4th one the daily puzzle (S-15).
+    await passWelcomeAsParent(page, { ...E3, query: { e2eVariant: 'off' } });
     await phaseIs(page, 'first');
     const empty = 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.';
 

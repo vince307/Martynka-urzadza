@@ -68,3 +68,19 @@ export const variantRules = (
     starPerTask: kind === 'puzzle' ? base.round.starPerTask * base.variants.puzzleMultiplier : base.round.starPerTask,
     cleanRoundBonus: 0,
 });
+
+/** What the HUD title shows for a round of `kind`: the name and, for the daily puzzle, the doubled-stars badge. An ordinary round has none. */
+export interface HudTitleView {
+    text: string;
+    badge: string | null;
+}
+
+export const variantTitle = (
+    kind: RoundKind,
+    words: { diceTitle: string; wordTitle: string; puzzleTitle: string; puzzleBadge: string },
+): HudTitleView | null => {
+    if (kind === 'puzzle') return { text: words.puzzleTitle, badge: words.puzzleBadge };
+    if (kind === 'dice') return { text: words.diceTitle, badge: null };
+    if (kind === 'word') return { text: words.wordTitle, badge: null };
+    return null;
+};

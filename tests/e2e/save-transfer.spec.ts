@@ -76,9 +76,10 @@ async function reloadedBy(page: Page, act: () => Promise<void>): Promise<void> {
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
 }
 
+// e2eVariant=off on every start: rounds before and after a reload or an import share one variant counter (S-15), and the 4th ordinary round would be the daily puzzle.
 test('#7 a file that is not a save of this game is rejected and the save is unchanged', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page, { e2eMonth: '10' });
+    await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
     await playRoundAndSettle(page);
     const before = await snapshot(page);
     expect(before.stars).toBeGreaterThan(0);
@@ -108,7 +109,7 @@ test('#7 a file that is not a save of this game is rejected and the save is unch
 
 test('#7 #2 a valid file replaces the save only after the summary and survives the reload', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page, { e2eMonth: '10' });
+    await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
     expect((await snapshot(page)).learner?.stage).toBe('E3');
     expect((await snapshot(page)).stars).toBe(0);
 
@@ -137,7 +138,7 @@ test('#7 #2 a valid file replaces the save only after the summary and survives t
 
 test('#2 #10 an export from the panel round-trips through import on another device', async ({ page, browser }) => {
     await silenceSpeech(page);
-    await passWelcome(page, { e2eMonth: '10' });
+    await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
     await playRoundAndSettle(page);
     const source = await snapshot(page);
     expect(source.stars).toBeGreaterThan(0);
@@ -162,7 +163,7 @@ test('#2 #10 an export from the panel round-trips through import on another devi
     try {
         const second = await other.newPage();
         await silenceSpeech(second);
-        await passWelcome(second, { e2eMonth: '10' });
+        await passWelcome(second, { e2eMonth: '10', e2eVariant: 'off' });
         expect((await snapshot(second)).stars).toBe(0);
         await openImport(second);
         const dialog = second.getByRole('dialog', { name: pl.saveTransfer.importTitle });
@@ -182,7 +183,7 @@ test('#2 #10 an export from the panel round-trips through import on another devi
 
 test('#2 reset asks first and ends on the welcome screen', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page, { e2eMonth: '10' });
+    await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
     await playRoundAndSettle(page);
     const before = await snapshot(page);
     expect(before.stars).toBeGreaterThan(0);

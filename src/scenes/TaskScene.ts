@@ -7,13 +7,16 @@ import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
-import type { RoomState, Settings, SkillDef, StageDef, StageId } from '../core/types';
+import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
 import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
+import { localDay } from '../core/day';
+import { puzzleTask, puzzlePool } from '../core/puzzles';
+import { afterRound, nextRoundKind, pickPuzzle, variantRules, variantTitle, type RoundKind, type VariantKind } from '../core/variants';
 import type { ArtHealth } from '../core/artHealth';
 import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
@@ -40,6 +43,7 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import { PUZZLES } from '../data/puzzles';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
 import { prefersReducedMotion } from '../ui/motion';
@@ -88,6 +92,8 @@ export interface TaskSnapshot {
     readonly autoRead: boolean;
     readonly warmup: boolean;
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
+    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
+    readonly today: string;   // the calendar day the scheduler sees
 }
 
 export interface TaskTargets {
@@ -138,6 +144,8 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
+    private puzzleId: string | null = null;
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
@@ -175,8 +183,11 @@ export class TaskScene extends Scene {
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.registry.set(REGISTRY_KEYS.narration, null);
         this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+        this.registry.set(REGISTRY_KEYS.hudTitle, null);
         this.rng = createRng(Date.now() >>> 0);
-        this.state = this.freshRound();
+        this.kind = 'round';
+        this.puzzleId = null;
+        this.applyRound(this.freshRound());
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
         this.picture = new TaskPicture(this);
@@ -222,6 +233,7 @@ export class TaskScene extends Scene {
             this.endFlyingStars();
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+            this.registry.set(REGISTRY_KEYS.hudTitle, null);   // render() puts it back on wake
             this.scene.switch(SCENE_KEYS.room);
         };
         this.game.events.on(GAME_EVENTS.toRoom, toRoom);
@@ -284,7 +296,7 @@ export class TaskScene extends Scene {
         this.stage = stage;
         this.warmup = false;
         this.unlockShown = false;
-        this.state = this.freshRound();
+        this.applyRound(this.freshRound());
         this.shownIndex = -1;
         this.render();
         if (read) {
@@ -304,6 +316,7 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        this.registry.set(REGISTRY_KEYS.hudTitle, variantTitle(this.kind, pl.minigames));
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         const unlock = this.unlockView();
@@ -596,7 +609,7 @@ export class TaskScene extends Scene {
 
     /** A fresh round starts; the finished round's stars are already on the balance (syncStars). */
     private beginRound(): void {
-        this.state = this.freshRound();
+        this.applyRound(this.freshRound());
         this.shownIndex = -1;
         this.render();
         this.autoReadFirst();
@@ -619,14 +632,42 @@ export class TaskScene extends Scene {
         }
     }
 
-    private freshRound(): RoundState {
+    /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
+    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string }): void {
+        this.state = round.state;
+        this.kind = round.kind;
+        this.puzzleId = round.puzzleId ?? null;
+    }
+
+    /** The calendar day, as the scheduler sees it (main.ts owns the clock). */
+    private today(): string {
+        const read = this.registry.get(REGISTRY_KEYS.today) as (() => string) | undefined;
+        return read ? read() : localDay(new Date());
+    }
+
+    /** The kind of the next round: a variant replaces only an adaptive round (the warm-up and ?e2eSkills come first). Pure: the counter changes in finishRound. */
+    private nextKind(): RoundKind {
+        const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+        const forced = __E2E_HOOK__ ? ((this.registry.get(REGISTRY_KEYS.forcedVariant) as VariantKind | 'off' | null | undefined) ?? undefined) : undefined;
+        return nextRoundKind(variants, {
+            stageId: this.stage.id,
+            today: this.today(),
+            hasPool: (stageId) => puzzlePool(stageId as StageId, PUZZLES, balance.variants.puzzleStages).length > 0,
+            minigames: balance.variants.minigames,
+            wordAvailable: true,   // phase 8 narrows this with the stage's word pool
+            rules: balance.variants,
+            forced,
+        });
+    }
+
+    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string } {
         // Pictures that did not load (BootScene's record; none recorded = nothing missing): tasks that need them are not drawn.
         const missingIds = (this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined)?.missingIds ?? new Set<string>();
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
         if (this.warmup && previous) {
             const rules = { ...balance.round, length: balance.warmup.length };
             const blocked = missingIds.size > 0 ? (skill: SkillDef): boolean => artBlocked(skill, missingIds) : undefined;
-            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries, blocked), rules);
+            return { kind: 'round', state: startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries, blocked), rules) };
         }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         if (__E2E_HOOK__) {
@@ -634,9 +675,17 @@ export class TaskScene extends Scene {
             const forced = forcedSkills(this.stage, this.registry.get(REGISTRY_KEYS.forcedSkills) as readonly string[] | null | undefined, balance.round.length);
             if (forced) {
                 const tasks = distinctTasks(forced, this.rng, (skill) => generateTask(skill, this.rng, { tileCount: balance.tiles.count }), balance.round.uniqueRetries);
-                return startRound(tasks, balance.round);
+                return { kind: 'round', state: startRound(tasks, balance.round) };
             }
         }
+        const kind = this.nextKind();
+        if (kind === 'puzzle') {
+            const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+            const pool = puzzlePool(this.stage.id, PUZZLES, balance.variants.puzzleStages);
+            const puzzle = pickPuzzle(pool, variants.puzzlesDone, this.rng);
+            return { kind, state: startRound([puzzleTask(puzzle)], variantRules(kind, 1, balance)), puzzleId: puzzle.id };
+        }
+        // word / dice: their screens arrive in later phases and balance.variants.minigames is empty until then, so this is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,
@@ -648,7 +697,7 @@ export class TaskScene extends Scene {
             balance.tiles.count,
             { missingIds, unlockShare: balance.curriculum.unlockShare },
         );
-        return startRound(tasks, balance.round);
+        return { kind: 'round', state: startRound(tasks, balance.round) };
     }
 
     /**
@@ -656,6 +705,10 @@ export class TaskScene extends Scene {
      * and, after an ordinary round, unlocks a step and the easing counters; the warm-up then settles the stage.
      */
     private finishRound(): void {
+        if (this.kind !== 'round') {
+            this.finishVariant(this.kind);
+            return;
+        }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         const results = roundResults(this.state);
         const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
@@ -667,9 +720,28 @@ export class TaskScene extends Scene {
         } satisfies SessionLearner);
         if (this.warmup) {
             this.finishWarmup();
+        } else {
+            this.countRound('round');   // the warm-up is not an ordinary round for the schedule
         }
         // The end of a round is saved at once, after the last registry write (the warm-up sets the learner a second time).
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+    }
+
+    /**
+     * A variant ends: the schedule moves on (counter back to 0, today's puzzle recorded) and nothing else changes.
+     * No endRound: the variant never touches mastery, unlocks or the easing counters. One registry write, then the save.
+     */
+    private finishVariant(kind: VariantKind): void {
+        this.countRound(kind);
+        void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+    }
+
+    /** The pure schedule step (core/variants afterRound) and its single registry write. */
+    private countRound(kind: RoundKind): void {
+        const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+        const poolIds = puzzlePool(this.stage.id, PUZZLES, balance.variants.puzzleStages).map((p) => p.id);
+        const puzzle = kind === 'puzzle' && this.puzzleId !== null ? { id: this.puzzleId, poolIds } : undefined;
+        this.registry.set(REGISTRY_KEYS.variants, afterRound(variants, kind, this.today(), puzzle));
     }
 
     /**
@@ -789,6 +861,8 @@ export class TaskScene extends Scene {
             autoRead: this.autoRead,
             warmup: this.warmup,
             unlock: this.unlockView(),
+            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId }),
+            today: this.today(),
         });
     }
 

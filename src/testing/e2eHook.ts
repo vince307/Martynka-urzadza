@@ -65,6 +65,30 @@ export const forcedSkills = (stage: StageDef, ids: readonly string[] | null | un
     return Array.from({ length }, (_, i) => found[i % found.length] as SkillDef);
 };
 
+/** `?e2eDay=YYYY-MM-DD` pins the calendar day of the session in the e2e build (a seam, not a clock); a date that does not exist is null. */
+export const e2eDay = (search: string): string | null => {
+    const raw = new URLSearchParams(search).get('e2eDay');
+    const match = raw === null ? null : /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (!match) {
+        return null;
+    }
+    const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? raw : null;
+};
+
+export type E2EVariantSeam = 'off' | 'word' | 'dice' | 'puzzle';
+const E2E_VARIANT_SEAMS: readonly string[] = ['off', 'word', 'dice', 'puzzle'];
+
+/**
+ * `?e2eVariant=off|word|dice|puzzle` in the e2e build: `off` never schedules a variant, the others make every ordinary
+ * round a variant of that kind (the day rule and availability still apply). Anything else is null (the real schedule).
+ */
+export const e2eVariant = (search: string): E2EVariantSeam | null => {
+    const value = new URLSearchParams(search).get('e2eVariant');
+    return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
+};
+
 export type E2EArtSeam = 'missing' | 'corrupt';
 
 /**
@@ -190,7 +214,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), counterText: ui().counterText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {
