@@ -862,7 +862,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 - [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
 - [x] 3.2 Klucze `generators`/`parsers` równe; `sample` E2 i E3 bez zmian w wyjściu (dane jeszcze bez opcji)
 - [x] 3.3 Deliberate break: tabelka z dwoma pustymi polami / brakujący wyraz podpisany na osi / `jumps` z k+1 → czerwone; przywrócone; meta-check
-- [x] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — a7e3025 (e2e: orchestrator note, 71 passed with --workers=4)
 
 #### Manual
 
@@ -872,10 +872,10 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 4.2 `npm run sample -- E1` … `E6` bez zmian w wyjściu (żadna umiejętność nie ma jeszcze `line`)
-- [x] 4.3 Deliberate break: `hintPicture` w fazie `first` / wynik w `labels` / `drawTask` przepuszcza `hintVisual` → czerwone; przywrócone; meta-check
-- [x] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 88f71d7
+- [x] 4.2 `npm run sample -- E1` … `E6` bez zmian w wyjściu (żadna umiejętność nie ma jeszcze `line`) — 88f71d7
+- [x] 4.3 Deliberate break: `hintPicture` w fazie `first` / wynik w `labels` / `drawTask` przepuszcza `hintVisual` → czerwone; przywrócone; meta-check — 88f71d7
+- [x] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 88f71d7
 
 #### Manual
 
