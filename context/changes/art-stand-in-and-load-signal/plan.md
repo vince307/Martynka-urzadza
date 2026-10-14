@@ -778,9 +778,9 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — SHA6
-- [x] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona) — SHA6
-- [x] 6.3 `npm run build` drukuje `e2e hook: absent (` — SHA6
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 4b7b9dd
+- [x] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona) — 4b7b9dd
+- [x] 6.3 `npm run build` drukuje `e2e hook: absent (` — 4b7b9dd
 - [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone)
 
 #### Manual
