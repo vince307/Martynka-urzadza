@@ -69,9 +69,13 @@ export const E6: StageDef = {
         {
             step: 7,
             title: 'Pisemne dodawanie i odejmowanie trzycyfrowych z przekroczeniem, sprawdzanie',
-            childName: 'Sprawdzanie działań',
+            childName: 'Słupek i sprawdzanie działań',
             types: ['WRITTEN', 'FACT_FAMILY'],
-            skills: [skill('E6.7.fact_check_1000', 7, 'FACT_FAMILY', { max: 1000, variants: ['checkAdd', 'checkSub'] })],
+            skills: [
+                skill('E6.7.fact_check_1000', 7, 'FACT_FAMILY', { max: 1000, variants: ['checkAdd', 'checkSub'] }),
+                skill('E6.7.written_add_1000', 7, 'WRITTEN', { op: '+', digits: 3, carry: 'required' }, 'digits'),
+                skill('E6.7.written_sub_1000', 7, 'WRITTEN', { op: '−', digits: 3, carry: 'required' }, 'digits'),
+            ],
         },
         {
             step: 8,

@@ -25,11 +25,13 @@ export const E5: StageDef = {
         {
             step: 2,
             title: 'Rzymskie I–XII; 27 + 20; 23 + 42, 65 − 42; pisemne dodawanie i odejmowanie w słupku',
-            childName: 'Dwucyfrowe i cyfry rzymskie',
+            childName: 'Dwucyfrowe, rzymskie, słupek',
             types: ['ROMAN', 'ADD_SUB', 'WRITTEN'],
             skills: [
                 skill('E5.2.roman_12', 2, 'ROMAN', { max: 12 }, 'tiles'),
                 skill('E5.2.add_sub_100_two_digit', 2, 'ADD_SUB', { max: 100, shapes: ['DU+DT', 'DU+DU', 'DU-DU'], bridge: 'none' }),
+                skill('E5.2.written_add_100', 2, 'WRITTEN', { op: '+', digits: 2, carry: 'any' }, 'digits'),
+                skill('E5.2.written_sub_100', 2, 'WRITTEN', { op: '−', digits: 2, carry: 'any' }, 'digits'),
             ],
         },
         {

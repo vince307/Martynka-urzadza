@@ -12,9 +12,9 @@ describe('answer modes', () => {
     it('lists five modes, digits among them', () => {
         expect([...ANSWER_MODES].sort()).toEqual(['digits', 'drag', 'keypad', 'select', 'tiles']);
     });
-    it('lets exactly tiles, keypad, drag and select into a round until phase 8', () => {
-        // An explicit oracle, not derived from `playable`; phase 8 adds 'digits' here.
-        expect(ANSWER_MODES.filter((m) => playable(skill(m)))).toEqual(['tiles', 'keypad', 'drag', 'select']);
+    it('lets every answer mode into a round (the e2e helpers answer digits since S-14b phase 8)', () => {
+        // An explicit oracle, not derived from `playable`.
+        expect(ANSWER_MODES.filter((m) => playable(skill(m)))).toEqual(['tiles', 'keypad', 'drag', 'select', 'digits']);
     });
     it('gives digits its own layout, not the tiles one', () => {
         for (const solution of [false, true]) {

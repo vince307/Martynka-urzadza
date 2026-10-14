@@ -464,9 +464,9 @@ export const pl = {
         capacityLitresPrompt: 'Ile litrów wody jest w dzbankach?',
         capacityLitresSpeak: 'Popatrz na dzbanki. Ile litrów wody jest w dzbankach?',
         capacityOneLitreFact: 'Każdy duży dzbanek mieści litr.',
-        capacityHalfFact: 'Dwa dzbanki po pół litra to razem litr.',
+        capacityHalfFact: 'Dwa dzbanki po pół litra to litr.',
         capacityQuarterFact: 'Cztery dzbanki po ćwierć litra to razem litr.',
-        capacityQuarterAlso: 'Cztery dzbanki po ćwierć litra też.',
+        capacityQuarterAlso: 'Cztery po ćwierć litra też.',
         capacityLitresAnswerHint: (litres: string) => `To razem ${litres}.`,
         capacityHowMany: (jug: 'half' | 'quarter', litres: string) =>
             `Ile dzbanków po ${jug === 'half' ? 'pół' : 'ćwierć'} litra potrzeba, żeby nalać ${litres} wody?`,

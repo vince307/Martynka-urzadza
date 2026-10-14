@@ -15,7 +15,7 @@ describe('pickSkills', () => {
             const stage = getStage(id) as StageDef;
             for (let seed = 1; seed <= 1000; seed += 1) {
                 for (const skill of pickSkills(stage, createRng(seed), balance.round.length)) {
-                    expect(['tiles', 'keypad', 'select', 'drag'], `${skill.id} seed=${seed}`).toContain(skill.answer);
+                    expect(['tiles', 'keypad', 'select', 'drag', 'digits'], `${skill.id} seed=${seed}`).toContain(skill.answer);
                     expect(getGenerator(skill.type), skill.id).toBeDefined();
                 }
             }
@@ -26,6 +26,7 @@ describe('pickSkills', () => {
         const base = { id: 'x', stage: 'E1' as const, step: 1, type: 'EVEN_ODD', params: { max: 10 } };
         expect(playable({ ...base, answer: 'select' } satisfies SkillDef)).toBe(true);
         expect(playable({ ...base, answer: 'drag' } satisfies SkillDef)).toBe(true);
+        expect(playable({ ...base, answer: 'digits' } satisfies SkillDef)).toBe(true);
     });
 
     it("the 'drag' skills E3.6 and E4.1 are in the pool of their stage", () => {
@@ -65,7 +66,7 @@ describe('pickSkills', () => {
         for (let i = 0; i < 200; i += 1) {
             pickSkills(stages.E3 as StageDef, rng, 5).forEach((s) => seen.add(s.id));
         }
-        const eligible = allSkills(stages.E3 as StageDef).filter((s) => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag') && getGenerator(s.type));
+        const eligible = allSkills(stages.E3 as StageDef).filter((s) => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag' || s.answer === 'digits') && getGenerator(s.type));
         expect(seen.size).toBe(eligible.length);
     });
 
