@@ -1,10 +1,10 @@
 ---
 change_id: art-tasks-all-stages
 title: Zadania z grafiką paczki A (monety, waga, dzbanki, termometr, ikony) i widżety S-13 w E1–E2, E5–E6
-status: impl_reviewed
+status: archived
 created: 2026-10-14
 updated: 2026-10-14
-archived_at: null
+archived_at: 2026-10-14T02:33:01Z
 ---
 
 ## Notes
