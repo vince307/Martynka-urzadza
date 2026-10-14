@@ -13,7 +13,7 @@ describe('pl.saveTransfer import copy', () => {
     });
 
     it('has a calm text for every rejection reason, each leaving the save untouched', () => {
-        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version'];
+        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version', 'migration-failed'];
         for (const reason of reasons) {
             expect(pl.saveTransfer.rejected[reason]).toMatch(/Obecne postępy zostały bez zmian\.$/);
         }

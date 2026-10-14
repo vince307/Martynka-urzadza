@@ -893,9 +893,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: kopia po zapisie / zignorowana porażka kopii / `migration-failed` jako `future` → czerwone; przywrócone; meta-check
-- [ ] 2.3 `npm run lint` — `idb-keyval` importowany tylko w `src/storage/idb.ts`
+- [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 2.2 Deliberate break: kopia po zapisie / zignorowana porażka kopii / `migration-failed` jako `future` → czerwone; przywrócone; meta-check
+- [x] 2.3 `npm run lint` — `idb-keyval` importowany tylko w `src/storage/idb.ts`
 - [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

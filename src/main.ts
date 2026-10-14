@@ -203,6 +203,7 @@ const start = async (): Promise<void> => {
         load: outcome.kind,
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),
+        migrated: outcome.kind === 'loaded' && outcome.migratedFrom !== null ? { from: outcome.migratedFrom, raw: outcome.raw } : undefined,
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         log: (...args) => console.error(...args),

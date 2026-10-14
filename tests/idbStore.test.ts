@@ -57,3 +57,23 @@ describe('IndexedDB save store', () => {
         await expect(requestPersistence(nav(() => Promise.reject(new Error('x'))))).resolves.toBe('error');
     });
 });
+
+describe('IndexedDB backup copy (S-15 phase 2)', () => {
+    it('writes the raw v1 under backup-v1 and leaves the main key alone', async () => {
+        const dbName = `bk-${++counter}`;
+        const main = freshStore(undefined, dbName);
+        await main.write(fixture);
+        const raw = { ...fixture, stars: 123 };
+        await main.backup(raw, 1);
+        expect(await main.read()).toEqual(fixture);
+        // The copy lives under the key `profile:default:backup-v1`: a store whose profile id is `default:backup-v1` reads it.
+        expect(await freshStore('default:backup-v1', dbName).read()).toEqual(raw);
+    });
+
+    it('a copy of another version goes to its own key', async () => {
+        const dbName = `bk-${++counter}`;
+        await freshStore(undefined, dbName).backup({ a: 1 }, 2);
+        expect(await freshStore('default:backup-v2', dbName).read()).toEqual({ a: 1 });
+        expect(await freshStore('default:backup-v1', dbName).read()).toBeUndefined();
+    });
+});

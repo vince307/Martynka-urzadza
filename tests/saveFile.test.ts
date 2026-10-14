@@ -180,7 +180,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
         expect(deviceSaveView(st(null), { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
     });
 
-    it.each(['corrupt', 'unknown-version'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
+    it.each(['corrupt', 'unknown-version', 'migration-failed'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
         expect(deviceSaveView(st('unreadable', reason), v2(), rooms)).toEqual({ kind: 'unreadable' });
     });
 
@@ -200,14 +200,14 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
     });
 
     it('forceable agrees with Autosaver.replace({ force: true }) for every combination (lockstep)', async () => {
-        const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
+        const reasons = [null, 'corrupt', 'future', 'unknown-version', 'migration-failed'] as const;
         const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
         for (const blockedBy of ['unreadable', 'unavailable', 'fatal'] as const)
             for (const loadReason of reasons)
                 for (const loadError of errors) {
                     const writes: SaveState[] = [];
                     const saver = createAutosaver({
-                        store: { read: () => Promise.resolve(undefined), write: (v) => (writes.push(v), Promise.resolve()) },
+                        store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: (v) => (writes.push(v), Promise.resolve()) },
                         snapshot: () => decoded(),
                         timers: { setTimeout: () => 0, clearTimeout: () => undefined },
                         delayMs: 500,

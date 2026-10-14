@@ -11,7 +11,7 @@ export type ExportInput =
     | { kind: 'save'; build: string; exportedAt: string; save: SaveState }
     | { kind: 'raw'; build: string; exportedAt: string; reason: string; raw: unknown };
 
-export type ImportRejection = 'too-big' | 'not-json' | 'not-ours' | 'corrupt' | 'future' | 'unknown-version';
+export type ImportRejection = 'too-big' | 'not-json' | 'not-ours' | 'corrupt' | 'future' | 'unknown-version' | 'migration-failed';
 
 export type ImportResult =
     | { kind: 'ok'; session: SessionSave; file: { build: string | null; exportedAt: string | null } }

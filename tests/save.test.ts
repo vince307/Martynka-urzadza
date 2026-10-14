@@ -224,8 +224,13 @@ describe('the migration chain', () => {
         });
     });
 
-    it('a throwing step is a corrupt save, not an exception', () => {
-        expect(decodeSave(v0, { 0: () => { throw new Error('boom'); }, 1: MIGRATIONS[1] })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+    it('a throwing step is a migration-failed save naming the step, not an exception or a corrupt one', () => {
+        expect(decodeSave(v0, { 0: () => { throw new Error('boom'); }, 1: MIGRATIONS[1] })).toEqual({ kind: 'unreadable', reason: 'migration-failed', step: 0 });
+        expect(decodeSave(fixture('save-v1.json'), { 1: () => { throw new Error('boom'); } })).toEqual({ kind: 'unreadable', reason: 'migration-failed', step: 1 });
+    });
+
+    it('a step whose output fails validation stays corrupt (the step ran)', () => {
+        expect(decodeSave(fixture('save-v1.json'), { 1: (raw) => ({ ...asRecord(raw), version: 2, variants: 'x' }) })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
     });
 
     it('a missing step is an unknown version', () => {

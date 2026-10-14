@@ -41,6 +41,7 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
     return {
         read: () => run((s) => get<unknown>(key, s)),
         write: (value: SaveState) => run((s) => set(key, value, s)),
+        backup: (raw: unknown, from: number) => run((s) => set(`${key}:backup-v${from}`, raw, s)),
     };
 }
 

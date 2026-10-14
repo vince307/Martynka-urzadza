@@ -134,6 +134,7 @@ export const pl = {
             corrupt: 'Plik zapisu jest uszkodzony. Obecne postępy zostały bez zmian.',
             future: 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę i spróbuj ponownie. Obecne postępy zostały bez zmian.',
             'unknown-version': 'Nie można rozpoznać wersji tego zapisu. Obecne postępy zostały bez zmian.',
+            'migration-failed': 'Nie udało się przenieść tego zapisu do obecnej wersji gry. Obecne postępy zostały bez zmian.',
         },
         applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
         // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.

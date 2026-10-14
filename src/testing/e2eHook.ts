@@ -102,6 +102,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 : seam === 'hang'
                   ? new Promise<unknown>(() => undefined)
                   : Promise.resolve(value),
+        backup: () => Promise.resolve(),
         write: (next) => {
             if (seam === 'writefail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
             value = next;

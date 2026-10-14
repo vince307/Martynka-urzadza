@@ -21,7 +21,9 @@ export interface SessionSave {
 
 export type DecodeResult =
     | { kind: 'ok'; session: SessionSave; migratedFrom: number | null }
-    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' };
+    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' }
+    // A migration step threw: the save may be healthy, so it is named apart from `corrupt`; `step` is the version it lifts from.
+    | { kind: 'unreadable'; reason: 'migration-failed'; step: number };
 
 type Migration = (raw: unknown) => unknown;
 
@@ -199,12 +201,16 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
     const from = raw.version;
     if (from > SAVE_VERSION) return { kind: 'unreadable', reason: 'future' };
     let current: unknown = raw;
-    try {
-        for (let v = from; v < SAVE_VERSION; v++) {
-            const step = Object.prototype.hasOwnProperty.call(migrations, v) ? migrations[v] : undefined;
-            if (!step) return { kind: 'unreadable', reason: 'unknown-version' };
+    for (let v = from; v < SAVE_VERSION; v++) {
+        const step = Object.prototype.hasOwnProperty.call(migrations, v) ? migrations[v] : undefined;
+        if (!step) return { kind: 'unreadable', reason: 'unknown-version' };
+        try {
             current = step(current);
+        } catch {
+            return { kind: 'unreadable', reason: 'migration-failed', step: v };
         }
+    }
+    try {
         if (!validateSave(current)) return { kind: 'unreadable', reason: 'corrupt' };
         return { kind: 'ok', session: toSession(current), migratedFrom: from < SAVE_VERSION ? from : null };
     } catch {

@@ -5,12 +5,14 @@ import type { SaveState } from './types';
 export interface SaveStore {
     read(): Promise<unknown>;
     write(value: SaveState): Promise<void>;
+    /** Keeps a copy of the raw save of version `from` under its own key; required, so a store can never skip it. Never touches the main key. */
+    backup(raw: unknown, from: number): Promise<void>;
 }
 
 export type LoadOutcome =
     | { kind: 'fresh' }
-    | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null }
-    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version'; raw: unknown }
+    | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; raw: unknown }
+    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown }
     | { kind: 'unavailable'; error: string };
 
 export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
@@ -41,6 +43,8 @@ export interface AutosaveStatus {
     /** Name of the last write or read error (never a message); stays after a later success. */
     lastError: string | null;
     lastWriteAt: number | null;
+    /** Runtime only (never saved): the version the loaded save was migrated from, or null. */
+    migratedFrom: number | null;
     /** Runtime only (never saved): why the load was unreadable; fixed at start. */
     loadReason: LoadReason | null;
     /** Runtime only (never saved): error name of the failed load; fixed at start (`lastError` moves on). */
@@ -59,6 +63,8 @@ export interface AutosaverOptions {
     load: LoadOutcome['kind'];
     blockedBy: BlockReason | null;
     now: () => number;
+    /** The raw value of a save that was migrated: copied once before the first write. */
+    migrated?: { from: number; raw: unknown };
     loadError?: string;
     loadReason?: LoadReason;
     log: (...args: unknown[]) => void;
@@ -126,7 +132,7 @@ export async function loadSave(
     }
     if (raw === undefined) return { kind: 'fresh' };
     const result = decodeSave(raw);
-    if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom };
+    if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
     return { kind: 'unreadable', reason: result.reason, raw };
 }
 
@@ -149,6 +155,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let replaced = false;
     let persistence: Persistence = 'unknown';
     // One predicate for every write path: a block, a replace in progress, or a replaced save (until the page reloads).
+    let backedUp = options.migrated === undefined;
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
     const cancelTimer = (): void => {
@@ -162,6 +169,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             const encoded = encodeSave(snapshot());
             if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
             dirty = false;
+            // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
+            if (!backedUp && options.migrated) {
+                await store.backup(options.migrated.raw, options.migrated.from);
+                backedUp = true;
+            }
             await store.write(encoded);
             writes++;
             lastWriteAt = options.now();
@@ -290,6 +302,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastError,
             lastWriteAt,
             persistence,
+            migratedFrom: options.migrated?.from ?? null,
             loadReason: options.loadReason ?? null,
             loadError: options.loadError ?? null,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
