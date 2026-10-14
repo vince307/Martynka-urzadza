@@ -885,11 +885,11 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 99cc307 (e2e: orchestrator run, 71 passed)
 - [x] 5.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z liniami `visual:` dla E2.6, E2.7, E3.9 — 99cc307
 - [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `arrows` → typecheck czerwony; przywrócone; meta-check — 99cc307
 - [x] 5.4 `tests/fixtures/` bez zmian; `e2e hook: absent (`; `art-tasks.spec` nadal wymusza `mult_groups_result`/`expr` — 99cc307
-- [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 99cc307 (orchestrator note: --workers=4, 71 passed)
 
 #### Manual
 
@@ -900,10 +900,10 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z linią `hint visual:` dla sześciu umiejętności
-- [ ] 6.3 Deliberate break: `line: true` na umiejętności z `max: 100` → parser czerwony; przywrócone; meta-check
-- [ ] 6.4 `e2e hook: absent (`; E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — SHA
+- [x] 6.2 `npm run sample -- E2 --count 6` i `E3 --count 6` bez naruszeń, z linią `hint visual:` dla sześciu umiejętności — SHA
+- [x] 6.3 Deliberate break: `line: true` na umiejętności z `max: 100` → parser czerwony; przywrócone; meta-check — SHA
+- [x] 6.4 `e2e hook: absent (`; E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — SHA
 
 #### Manual
 

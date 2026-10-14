@@ -26,7 +26,7 @@ import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
 import { dragMode } from '../core/tasks/dragMode';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
-import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
+import { answerSpans, belowPrompt, fitSize, hintPictureLayout, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
 import type { Task } from '../core/tasks/types';
@@ -84,6 +84,7 @@ export interface TaskSnapshot {
     readonly input: AnswerMode;
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
+    readonly hintVisual: TaskVisual['kind'] | null;   // the kind of the hint drawing on screen now (S-14b), else null
     readonly art: readonly { readonly key: string; readonly loaded: boolean }[];   // the art images on screen now, read from the widget (S-14)
     readonly choices: readonly (number | string)[];
     readonly selected: readonly (number | string)[];   // the tiles marked in the 'select' mode
@@ -115,6 +116,7 @@ export interface TaskTargets {
     readonly next: Point | null;
     readonly step: Point | null;
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
+    readonly hintPicture: { x: number; y: number; width: number; height: number } | null;   // the hint number line's rectangle (S-14b)
     readonly nextRound: Point | null;
     readonly toRoom: Point | null;
     readonly doneNext: Point | null;   // "Kolejna runda" of a minigame's done card
@@ -146,6 +148,7 @@ export class TaskScene extends Scene {
     private bar!: FeedbackBar;
     private steps!: SolutionSteps;
     private picture!: TaskPicture;
+    private hintPicture!: TaskPicture;   // the hint number line of an ADD_SUB task (S-14b), apart from the task's own drawing
     private summary!: SummaryPanel;
     private letters!: LetterTiles;
     private diceView!: Dice;
@@ -212,6 +215,7 @@ export class TaskScene extends Scene {
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
         this.picture = new TaskPicture(this);
+        this.hintPicture = new TaskPicture(this);
         this.dots = new ProgressDots(this);
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.select = new SelectTiles(this, (value) => this.submit(value));
@@ -427,6 +431,9 @@ export class TaskScene extends Scene {
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         this.picture.render(this.clockTask ? null : view.visual, pictureRect);   // a clock to set is drawn by ClockSet
+        // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP, phase 9).
+        const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input) : null;
+        this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';
         this.tiles.setVisible(view.input === 'tiles' && !diceRound);
         this.keypad.setVisible(view.input === 'keypad');
@@ -460,7 +467,7 @@ export class TaskScene extends Scene {
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
-            const lines = view.input === 'drag' ? TASK_LAYOUT.drag.solutionLines : view.visual ? layout.lines : null;
+            const lines = view.input === 'drag' ? TASK_LAYOUT.drag.solutionLines : view.visual ? layout.lines : hintLayout ? hintLayout.lines : null;
             if (diceRound) {
                 // Above the dice: the board below them keeps its place (DESIGN-GAP 86).
                 const above = MINIGAME_LAYOUT.dice;
@@ -528,6 +535,7 @@ export class TaskScene extends Scene {
         this.bar.update({ kind: 'none' }, input);
         this.steps.hide();
         this.picture.hide();
+        this.hintPicture.hide();
         this.promptTexts.forEach((t) => t.setVisible(false));
         this.promptBoxes.forEach((g) => g.setVisible(false));
     }
@@ -988,6 +996,7 @@ export class TaskScene extends Scene {
             input: view.input,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
+            hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
             selected: Object.freeze([...this.select.selected()]),
@@ -1022,6 +1031,7 @@ export class TaskScene extends Scene {
             next: this.bar.nextTarget(),
             step: this.steps.stepTarget(),
             picture: this.picture.bounds(),
+            hintPicture: this.hintPicture.bounds(),
             nextRound: this.summary.targets().nextRound,
             toRoom: this.summary.targets().toRoom,
             doneNext: this.doneCard.targets().nextRound,

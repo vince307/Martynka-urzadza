@@ -29,7 +29,7 @@ export const E2: StageDef = {
             childName: 'Działania do 20',
             types: ['PLACE_VALUE', 'ADD_SUB'],
             skills: [
-                addSub('E2.1.add_sub_20_units', 1, { max: 20, shapes: ['DU+U', 'DU-U'], bridge: 'none' }),
+                addSub('E2.1.add_sub_20_units', 1, { max: 20, shapes: ['DU+U', 'DU-U'], bridge: 'none', line: true }),
                 skill('E2.1.place_read_20', 1, 'PLACE_VALUE', { variant: 'read', min: 11, max: 20 }),
             ],
         },
@@ -49,7 +49,7 @@ export const E2: StageDef = {
             title: 'Dodawanie z przekroczeniem: 9 + n → 8 + n → 7 + n → 6 + n',
             childName: 'Dodawanie z przekroczeniem',
             types: ['ADD_SUB'],
-            skills: [addSub('E2.3.add_bridge_20', 3, { max: 20, ops: ['+'], bridge: 'ten' })],
+            skills: [addSub('E2.3.add_bridge_20', 3, { max: 20, ops: ['+'], bridge: 'ten', line: true })],
         },
         {
             step: 4,
@@ -63,7 +63,7 @@ export const E2: StageDef = {
             title: 'Odejmowanie z przekroczeniem: od 11–12 → 13–14 → 15–17 → 18',
             childName: 'Odejmowanie z przekroczeniem',
             types: ['ADD_SUB'],
-            skills: [addSub('E2.5.sub_bridge_20', 5, { max: 20, ops: ['-'], bridge: 'ten' })],
+            skills: [addSub('E2.5.sub_bridge_20', 5, { max: 20, ops: ['-'], bridge: 'ten', line: true })],
         },
         {
             step: 6,
