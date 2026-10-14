@@ -562,7 +562,7 @@ zielonych uruchomień i tabela przerw), patche `e2e-break-p7a.patch` … `e2e-br
 
 - `npx playwright test tests/e2e/art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
 - Deliberate break (patch `e2e-break-p7a.patch`): `ArtImage` bierze etykietę z klucza → (a)/(b) czerwone na `label`; meta-check: dowodzi źródła etykiety, nie widoczności pudełka
-- Deliberate break (patch `e2e-break-p7b.patch`): rekord zdrowia liczony tylko z `loaderror` (bez `textures.exists`) → (d) czerwony; meta-check: dowodzi S14-04, bo `corrupt` nie emituje `loaderror`
+- Deliberate break (patch `e2e-break-p7b.patch`): rekord zdrowia liczony tylko z `loaderror` (bez `textures.exists`) → (d) czerwony; meta-check — 0f1a43b (orkiestrator: (d) osobno ✘ `Expected: > 0, Received: 0` — dekodowanie nie emituje `loaderror`, S14-04 potwierdzone w przeglądarce; (c) też ✘): dowodzi S14-04, bo `corrupt` nie emituje `loaderror`
 - Deliberate break (patch `e2e-break-p7c.patch`): `UIScene.openSettings` nie przekazuje `artHealth` → (c) czerwony na tekście DOM; przywrócone
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
@@ -808,11 +808,11 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 8.1 `art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
-- [ ] 8.2 Deliberate break (patch `e2e-break-p7a.patch`): etykieta z klucza → (a)/(b) czerwone; meta-check
-- [ ] 8.3 Deliberate break (patch `e2e-break-p7b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check
-- [ ] 8.4 Deliberate break (patch `e2e-break-p7c.patch`): panel bez `artHealth` → (c) czerwony; przywrócone
-- [ ] 8.5 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 8.1 `art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4` — 0f1a43b (orkiestrator: 4 passed; pełne 50 passed = 46 + 4)
+- [x] 8.2 Deliberate break (patch `e2e-break-p8a.patch`): etykieta z klucza → (a)/(b) czerwone; meta-check — 0f1a43b (orkiestrator: (a) i (b) osobno ✘)
+- [x] 8.3 Deliberate break (patch `e2e-break-p8b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check
+- [x] 8.4 Deliberate break (patch `e2e-break-p8c.patch`): panel bez `artHealth` → (c) czerwony; przywrócone — 0f1a43b (orkiestrator: (c) ✘ `toBeVisible`)
+- [x] 8.5 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 0f1a43b
 
 ### Phase 9: Import i reset przy nieodczytanym zapisie — e2e (#2)
 
