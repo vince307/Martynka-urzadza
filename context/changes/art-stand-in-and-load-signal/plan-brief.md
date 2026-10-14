@@ -58,15 +58,16 @@ panelowi i dialogom. `ArtImage` bierze etykietę z `TASK_ART`.
 | --- | --- | --- |
 | 1. tdd — core zdrowia i filtra | `artHealth`, `artBlocked`, `withoutArtBlocked`, wpięcie w rundę/rozgrzewkę; limit spoken | Przesunięcie seedów, jeśli filtr zużyje rng |
 | 2. tdd — core zapisu | `replace` odmawia przy `unavailable`; `deviceSaveView` | Zablokowanie zamierzonej naprawy przy `unreadable` |
-| 3. impl — sygnał i panel | Rekord w `BootScene`, szew `?e2eArt`, filtr w `TaskScene`, sekcja „Obrazki” | Wyciek szwu do `dist/` |
-| 4. impl — stand-in | Polskie etykiety, dopasowanie tekstu w `ArtImage` | Czytelność w pudełku 84 px i obszarze 190 px |
-| 5. impl — dialogi | Import/reset renderują `deviceSaveView` | Regresja `save-transfer.spec` |
-| 6. impl — sweep | Komentarze, gaps, follow-upy, `CLAUDE.md` | Nieaktualne gaps 48/49/66 |
-| 7. e2e #11 | `art-stand-in.spec.ts` (+4), 3 przerwy | Chromium tylko u orkiestratora |
-| 8. e2e #2 | `save-transfer-blocked.spec.ts` (+2), 2 przerwy | Dojście do panelu po karcie `unavailable` |
+| 3. impl — sygnał i filtr | Rekord w `BootScene`, szew `?e2eArt`, filtr w `TaskScene` | Wyciek szwu do `dist/` |
+| 4. impl — linia panelu | Sekcja „Obrazki” (`artHealthView`) w panelu rodzica | Liczebnik w `artMissing` |
+| 5. impl — stand-in | Polskie etykiety, dopasowanie tekstu w `ArtImage` | Czytelność w pudełku 84 px i obszarze 190 px |
+| 6. impl — dialogi | Import/reset renderują `deviceSaveView` | Regresja `save-transfer.spec` |
+| 7. impl — sweep | Komentarze, gaps, follow-upy, `CLAUDE.md` | Nieaktualne gaps 48/49/66 |
+| 8. e2e #11 | `art-stand-in.spec.ts` (+4), 3 przerwy | Chromium tylko u orkiestratora |
+| 9. e2e #2 | `save-transfer-blocked.spec.ts` (+2), 2 przerwy | Dojście do panelu po karcie `unavailable` |
 
 **Prerequisites:** gałąź `feat/art-stand-in-and-load-signal`, research gotowy; e2e przez protokół request-file.
-**Estimated effort:** 8 faz, ~8 sesji agentów (2 × tdd, 4 × impl, 2 × e2e).
+**Estimated effort:** 9 faz, ~9 sesji agentów (2 × tdd, 5 × impl, 2 × e2e; plan-review F1 rozdzielił dawną fazę 3).
 
 ## Open Risks & Assumptions
 

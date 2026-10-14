@@ -78,25 +78,25 @@ S12-01) plus niestabilny limit czasu w `tests/spoken.test.ts`. Trzy skutki dla u
 
 - S14-05 (wyniki zadań ze stand-inem poza opanowaniem), S14-06 (`check:deploy` dla obrazków), S14-07 (`loader.timeout`),
   S14-08 w całości (URL/status/build w logu — bierzemy tylko rozgałęzienie po typie pliku, bo i tak przepisujemy handler),
-  S14-09, S14-10, S14-12 — follow-upy z `Trigger:` (faza 6).
+  S14-09, S14-10, S14-12 — follow-upy z `Trigger:` (faza 7).
 - S12-02..S12-15 (m.in. limit czasu `replace`, stany `replacing`/`replaced` w `saveHealthView`, walidacja eksportu
   S12-04 — także eksport świeżej sesji przy `unreadable` z panelu), wszystkie S13-* — follow-upy.
 - Przycisk kopii surowej w dialogach importu/resetu (trzymanie `raw` w runtime) — odsyłamy do „Zachowaj kopię” na karcie
   startowej, która wraca przy każdym uruchomieniu, dopóki zapis jest nieczytelny (decyzja 4).
 - Ponowny odczyt magazynu w dialogu (nowe asynchroniczne I/O bez limitu, S12-02).
-- Zmiana `playable`, numeracji kroków, `unlockReady`, `SAVE_VERSION`, fixtur zapisu, `deploy/`, `designs/`.
+- Zmiana `playable`, numeracji kroków, zachowania `unlockReady` (tylko wyciągnięcie `unlockThreshold`), `SAVE_VERSION`, fixtur zapisu, `deploy/`, `designs/`.
 - Liczba brakujących obrazków na karcie błędu (karta jest tylko dla awarii fatalnej; gra działa dalej).
 - Import z ekranu powitalnego (follow-up S-12, trigger nie wystrzelił).
 
 ## Implementation Approach
 
-Najpierw czysta logika w `core` test-first (fazy 1–2), potem sklejka w scenach i DOM po jednym obszarze na fazę (3–5),
-seam sweep i dokumentacja (6), na końcu e2e w protokole request-file (7–8). Każda faza jest samodzielnie zielona: nowe
+Najpierw czysta logika w `core` test-first (fazy 1–2), potem sklejka w scenach i DOM po jednym obszarze na fazę (3–6),
+seam sweep i dokumentacja (7), na końcu e2e w protokole request-file (8–9). Każda faza jest samodzielnie zielona: nowe
 parametry są opcjonalne z wartościami domyślnymi „nic nie brakuje” / „zapis odczytany”, więc fazy 1–2 nie zmieniają
-zachowania gry, a fazy 3–5 włączają je po kolei.
+zachowania gry, a fazy 3–6 włączają je po kolei.
 
-Kolejność ma znaczenie dla bramki wizualnej: szew `?e2eArt` powstaje w fazie 3, więc zrzuty stand-inu (faza 4) i linii
-„Obrazki” (faza 3) da się zrobić bez dotykania plików.
+Kolejność ma znaczenie dla bramki wizualnej: szew `?e2eArt` powstaje w fazie 3, więc zrzuty stand-inu (faza 5) i linii
+„Obrazki” (faza 4) da się zrobić bez dotykania plików.
 
 ## Critical Implementation Details
 
@@ -164,7 +164,9 @@ CAPACITY `howMany` nigdy zablokowane.
 identyczne jak dziś.
 
 **Contract**: `buildAdaptiveRound(…, tileCount, art?: { missingIds: ReadonlySet<string>; unlockShare: number })` —
-`minCurrent = ceil(unlockShare · |grywalne umiejętności kroku bieżącego|)` (ta sama formuła co `unlockReady`).
+`minCurrent = unlockThreshold(|grywalne umiejętności kroku bieżącego|, unlockShare)` — nowa eksportowana funkcja w
+`src/core/curriculum.ts` (`Math.ceil(share · n)`), której od tej fazy używa też `unlockReady` (refaktor bez zmiany
+zachowania, chroniony istniejącymi testami `unlockReady`; plan-review F2).
 `pickSkills(stage, rng, count, blocked?)` — pula filtrowana, a gdy pusta po filtrze → pula niefiltrowana (wyjątek
 `RangeError` tylko jak dziś, przy pustej puli bez filtra). `buildWarmup(…, retries, blocked?)` przekazuje dalej.
 Test seeda: ten sam seed bez `art` i z pustym `missingIds` daje identyczne zadania; z brakującymi monetami na E4 nie ma
@@ -190,7 +192,7 @@ MONEY_COUNT w 200 rundach poza krokiem bieżącym chronionym regułą.
 
 #### Manual Verification:
 
-- [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, bez globali, bez importu `src/data/taskArt.ts` (dane przez argumenty); `playable`, `unlockReady` nietknięte
+- [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, bez globali, bez importu `src/data/taskArt.ts` (dane przez argumenty); `playable` nietknięty, `unlockReady` bez zmiany zachowania (tylko `unlockThreshold`)
 
 ---
 
@@ -201,7 +203,7 @@ Driver why: odmowa w `createAutosaver.replace` i czysty `deviceSaveView` to logi
 
 ### Overview
 
-`core` decyduje, co dialogi pokażą jako „Teraz” i czy nadpisanie jest dozwolone; UI (faza 5) tylko to renderuje.
+`core` decyduje, co dialogi pokażą jako „Teraz” i czy nadpisanie jest dozwolone; UI (faza 6) tylko to renderuje.
 
 ### Changes Required:
 
@@ -242,15 +244,16 @@ z `replace`). Przy `blockedBy !== null` podsumowanie świeżej sesji **nigdy** n
 
 ---
 
-## Phase 3: Sygnał wczytania w `BootScene`, szew `?e2eArt`, filtr w `TaskScene` i linia „Obrazki” w panelu rodzica
+## Phase 3: Sygnał wczytania w `BootScene`, szew `?e2eArt` i filtr w `TaskScene`
 
 Driver: impl
-Driver why: sklejka scen, rejestru i DOM wokół czystej logiki z fazy 1 (jeden nowy komponent DOM `artHealthView`) — zachowanie widać w przeglądarce; dowód w bramce, strażniku haka, zrzutach i e2e fazy 7.
+Driver why: sklejka scen i rejestru wokół czystej logiki z fazy 1 (bez nowego komponentu) — zachowanie widać tylko w przeglądarce; dowód w bramce, strażniku haka i e2e fazy 8.
 
 ### Overview
 
-`BootScene` liczy rekord zdrowia z `textures.exists`, `TaskScene` przekazuje brakujące id do budowy rundy i rozgrzewki,
-`UIScene` przekazuje widok do panelu, który pokazuje sekcję „Obrazki”. Szew e2e wymusza brak lub uszkodzenie tekstur.
+`BootScene` liczy rekord zdrowia z `textures.exists`, `TaskScene` przekazuje brakujące id do budowy rundy i rozgrzewki.
+Szew e2e wymusza brak lub uszkodzenie tekstur. (Plan-review F1: linia „Obrazki” w panelu wydzielona do fazy 4, żeby
+każda faza mieściła się w jednej świeżej sesji agenta.)
 
 ### Changes Required:
 
@@ -279,7 +282,8 @@ albo `balance-scale`/`thermometer-frame`, unikalne.
 **File**: `src/testing/e2eHook.ts` (czytnik `e2eArt(search): 'missing' | 'corrupt' | null`, pole `artHealth` w migawce
 haka), `src/main.ts` (odczyt pod `__E2E_HOOK__`, przekazanie do `createGame` → rejestr, wzór `forcedSkills`),
 `src/scenes/BootScene.ts` `preload` (pod `__E2E_HOOK__`), `vite/e2eHookGuard.mjs` `E2E_HOOK_MARKERS` (+ `'e2eArt'`),
-`tests/e2eHookGuard.test.ts` (jeśli lista markerów jest tam przypięta)
+`tests/e2eHookGuard.test.ts` (dwa jawne przypadki `e2eArt` — chunk produkcyjny z markerem → `ok: false`, build hook bez
+markera → `ok: false` — wzór przypadków `e2eSave` zamkniętych w `2026-10-13-save-observability-c1-c2`)
 
 **Intent**: `missing` — żaden obraz `TASK_ART` nie jest kolejkowany (ścieżka `textures.exists`); `corrupt` — kilka
 kluczy (np. wszystkie monety) dostaje URL istniejącego pliku nie-obrazu (font) → 200 + `onProcessError` bez
@@ -297,7 +301,33 @@ i rozgrzewki (`blocked`); `forcedSkills` (e2e) bez zmian, czyli omija filtr. Bra
 
 **Contract**: bez nowych liczb w scenie (`unlockShare` z `balance.ts`).
 
-#### 5. Linia „Obrazki” w panelu rodzica
+### Success Criteria:
+
+#### Automated Verification:
+
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id` w `taskArt.test.ts`, jawne przypadki `e2eArt` w `tests/e2eHookGuard.test.ts`)
+- `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt`
+- Deliberate break: odczyt `e2eArt(window.location.search)` w `main.ts` przeniesiony poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check: strażnik widzi marker w chunku produkcyjnym, nie tylko w źródle
+- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`art-tasks.spec.ts` nadal `loaded === true` bez szwu)
+
+#### Manual Verification:
+
+- [reviewer] `REGISTRY_KEYS.artHealth` i klucz szwu poza `SAVE_KEYS`; `forcedSkills` omija filtr; brak rekordu w rejestrze = nic nie brakuje; zmiana w `TaskScene` ograniczona do argumentów wywołań w `freshRound`
+
+---
+
+## Phase 4: Linia „Obrazki” w panelu rodzica
+
+Driver: impl
+Driver why: nowy komponent DOM `artHealthView` i sklejka `UIScene.openSettings` → `openSettingsPanel` wokół czystego `artHealthView` z fazy 1 i rekordu z fazy 3 — wygląd widać tylko w DOM; dowód w teście tekstu, zrzutach i e2e fazy 8.
+
+### Overview
+
+`UIScene` przekazuje migawkę widoku zdrowia obrazków do panelu, który pokazuje sekcję „Obrazki” pod „Zapis gry”.
+
+### Changes Required:
+
+#### 1. Sekcja „Obrazki”
 
 **File**: `src/ui/dom/artHealthView.ts` (nowy, `createArtHealthView`), `src/ui/dom/settingsPanel.ts` (opcja
 `artHealth?: ArtHealthView`, element obok sekcji „Zapis gry”), `src/scenes/UIScene.ts` `openSettings` (migawka
@@ -315,11 +345,9 @@ parent line for task pictures that failed to load” → sekcja „Obrazki” po
 
 #### Automated Verification:
 
-- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id` w `taskArt.test.ts`, test tekstu `artMissing` dla 1, 2, 5, 22, 38)
-- `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt`
-- Deliberate break: odczyt `e2eArt(window.location.search)` w `main.ts` przeniesiony poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check: strażnik widzi marker w chunku produkcyjnym, nie tylko w źródle
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test tekstu `artMissing` dla 1, 2, 5, 22, 38)
 - Deliberate break: `artMissing` z rzeczownikiem w złej formie dla 2 → test tekstu czerwony; przywrócone
-- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`art-tasks.spec.ts` nadal `loaded === true` bez szwu)
+- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`parent-settings.spec.ts`, `save-restart.spec.ts` zielone)
 
 #### Manual Verification:
 
@@ -328,10 +356,10 @@ parent line for task pictures that failed to load” → sekcja „Obrazki” po
 
 ---
 
-## Phase 4: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
+## Phase 5: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
 
 Driver: impl
-Driver why: zmiana jednego istniejącego widżetu (`ArtImage`) i pola danych — tekst dopasowany do pudełka widać tylko na płótnie; dowód w teście tabeli etykiet, zrzutach z `?e2eArt=missing` i e2e fazy 7.
+Driver why: zmiana jednego istniejącego widżetu (`ArtImage`) i pola danych — tekst dopasowany do pudełka widać tylko na płótnie; dowód w teście tabeli etykiet, zrzutach z `?e2eArt=missing` i e2e fazy 8.
 
 ### Overview
 
@@ -382,14 +410,14 @@ pudełka; zadanie z wynikiem tylko na obrazku jest pomijane przy wyborze rundy, 
 #### Manual Verification:
 
 - [reviewer] Teacher read etykiet: wszystkie 38 (`formatMoney` dla 1, 2, 5, 10, 20, 50 gr i 1–500 zł; „½ l”, „¼ l”; nazwy ikon w mianowniku)
-- [visual] Zrzuty stand-inów z `?e2eArt=missing` i `?e2eSkills=…`: pieniądze (monety E1.11/E2.2, banknoty E4.1), dzbanki (E4.7 `toLitres`), waga z odważnikami dag (E3.4) i z ≥ 3 odważnikami, ikony COUNT i MULT_GROUPS, termometr; oraz każdy z nich w fazie rozwiązania przy klawiaturze (obszar 190 px) — 1920×1080 i 1024×768
+- [visual] Zrzuty stand-inów z `?e2eArt=missing` i `?e2eSkills=…`: pieniądze (monety E1.11/E2.2, banknoty E4.1), dzbanki (`toLitres`: E2.2 `capacity_litres`, E5.5 `capacity_quarter_l`; `howMany`: E4.7), waga z odważnikami dag (E3.4) i z ≥ 3 odważnikami, ikony COUNT i MULT_GROUPS, termometr; oraz każdy z nich w fazie rozwiązania przy klawiaturze (obszar 190 px) — 1920×1080 i 1024×768
 
 ---
 
-## Phase 5: Import i reset po nieudanym odczycie zapisu
+## Phase 6: Import i reset po nieudanym odczycie zapisu
 
 Driver: impl
-Driver why: dwa istniejące dialogi DOM i sklejka w `UIScene` renderują `deviceSaveView` z fazy 2 — zachowanie widać w DOM; dowód w testach dialogów (jsdom, jeśli są), zrzutach i e2e fazy 8.
+Driver why: dwa istniejące dialogi DOM i sklejka w `UIScene` renderują `deviceSaveView` z fazy 2 — zachowanie widać w DOM; dowód w testach dialogów (jsdom, jeśli są), zrzutach i e2e fazy 9.
 
 ### Overview
 
@@ -416,14 +444,15 @@ Komentarz `DESIGN-GAP 68` przy kluczach i w dialogach.
 
 **Contract**: opcja `device: DeviceSaveView` zastępuje `current` w obu dialogach. Nowe klucze (brzmienie po teacher read):
 `pl.saveTransfer.deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu, więc nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.'`,
-`pl.saveTransfer.deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i wybierz „Zachowaj kopię”.'`.
+`pl.saveTransfer.deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.'`
+(plan-review F3: rozróżnia przycisk karty startowej od eksportu z panelu, który przy `unreadable` zapisuje świeżą sesję).
 Wiersz 68: „The kit has no line for a device save that was not read” → linia zamiast „Teraz”, brak akcji przy `unavailable`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (testy dialogów, jeśli istnieje harness DOM; inaczej `deviceSaveView` z fazy 2 i e2e fazy 8)
+- Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (testy dialogów, jeśli istnieje harness DOM; inaczej `deviceSaveView` z fazy 2 i e2e fazy 9)
 - `tests/dialogSessions.test.ts` zielony bez zmiany liczby callbacków (albo z uzasadnioną zmianą liczby, jeśli dialog zyskał callback)
 - `npm run build` drukuje `e2e hook: absent (`
 - E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer.spec.ts`, `save-restart.spec.ts` zielone)
@@ -436,7 +465,7 @@ Wiersz 68: „The kit has no line for a device save that was not read” → lin
 
 ---
 
-## Phase 6: Seam sweep, follow-upy i dokumentacja
+## Phase 7: Seam sweep, follow-upy i dokumentacja
 
 Driver: impl
 Driver why: ostatnia faza `impl`/`tdd` — seam sweep całej zmiany, wiersze design-gaps, follow-upy z `Trigger:` i zdanie w `CLAUDE.md`; nic do prowadzenia failing testem.
@@ -449,10 +478,10 @@ Zamknięcie zmiany przed e2e.
 
 #### 1. Seam sweep
 
-**File**: pliki faz 1–5
+**File**: pliki faz 1–6
 
 **Intent**: brak drugiego źródła etykiet (żadnego `split('/').pop()` dla tekstu gracza); brak duplikatu formuły
-`ceil(unlockShare · n)` (jedna funkcja pomocnicza używana przez `unlockReady` i filtr); komentarze `ArtImage`,
+`ceil(unlockShare · n)` (`unlockThreshold` z fazy 1 używana przez `unlockReady` i filtr); komentarze `ArtImage`,
 `BootScene`, `UIScene.openImport/openReset`, `pick.ts` (nagłówek o filtrze) aktualne; `REGISTRY_KEYS.artHealth` poza
 `SAVE_KEYS`; nieaktualne wiersze design-gaps (66, 48/49) spójne z 67/68.
 
@@ -465,7 +494,10 @@ Zamknięcie zmiany przed e2e.
 (`Trigger: the next change to BootScene.preload`), S14-09/S14-10 (`Trigger: S-14b or the next widget built on ArtImage`),
 S12-02..S12-15 (S12-04 z dopiskiem o eksporcie świeżej sesji przy `unreadable`; `Trigger: the next change to the save
 panel or autosave.replace`), S13-* (`Trigger: the next select/drag skill or S-13b`), kopia surowa w dialogu
-(`Trigger: a parent who cannot reach the start card's copy`). Zamknięte w tej zmianie (z odnośnikiem do archiwum,
+(`Trigger: a parent who cannot reach the start card's copy`). Ponowione z uzasadnieniem (plan-review F6): audyt M-1, M-2, M-13, H-3, H-4
+(`Trigger: next change to TaskScene / narrator`) — ta zmiana dotyka w `TaskScene` tylko argumentów w `freshRound`, nie
+`beginRound`/`finishRound`/`applyParentStage` ani narratora (wzór `2026-10-13-drawn-widget-tasks-e3-e4`); odnotować jako
+nadal otwarte z tym samym triggerem. Zamknięte w tej zmianie (z odnośnikiem do archiwum,
 archiwum nieedytowane): „BootScene.preload loaderror” (`2026-10-14-art-tasks-all-stages`) i „Import or reset over an
 unreadable save (impl-review F1)” (`2026-10-13-save-export-import-reset`).
 
@@ -494,10 +526,10 @@ odblokowania, `deviceSaveView` i odmowa `replace` przy `unavailable`, szew `?e2e
 
 ---
 
-## Phase 7: Brakujący obrazek dotykiem — e2e (#11)
+## Phase 8: Brakujący obrazek dotykiem — e2e (#11)
 
 Driver: e2e
-Driver why: ryzyko #11 (runda grana prawdziwą ścieżką dotyku) przy brakującej lub niedekodowalnej teksturze istnieje tylko w renderowanej stronie: polska etykieta na płótnie, rekord z `textures.exists`, linia w DOM panelu; zbudowane w fazach 3–4, kontrakt `E2E=on`.
+Driver why: ryzyko #11 (runda grana prawdziwą ścieżką dotyku) przy brakującej lub niedekodowalnej teksturze istnieje tylko w renderowanej stronie: polska etykieta na płótnie, rekord z `textures.exists`, linia w DOM panelu; zbudowane w fazach 3–5, kontrakt `E2E=on`.
 
 ### Overview
 
@@ -536,10 +568,10 @@ zielonych uruchomień i tabela przerw), patche `e2e-break-p7a.patch` … `e2e-br
 
 ---
 
-## Phase 8: Import i reset przy nieodczytanym zapisie — e2e (#2)
+## Phase 9: Import i reset przy nieodczytanym zapisie — e2e (#2)
 
 Driver: e2e
-Driver why: ryzyko #2 (postęp nigdy nie ginie) przy imporcie/resecie po `unavailable`/`unreadable` istnieje tylko w przeglądarce z prawdziwym IDB i dialogami DOM; zbudowane w fazach 2 i 5, kontrakt `E2E=on`.
+Driver why: ryzyko #2 (postęp nigdy nie ginie) przy imporcie/resecie po `unavailable`/`unreadable` istnieje tylko w przeglądarce z prawdziwym IDB i dialogami DOM; zbudowane w fazach 2 i 6, kontrakt `E2E=on`.
 
 ### Overview
 
@@ -550,7 +582,10 @@ i `save-transfer.spec.ts` (dialogi).
 
 #### 1. Spec
 
-**File**: `tests/e2e/save-transfer-blocked.spec.ts` (nowy), `playwright.config.ts` (`ROUND_SPEC`, jeśli potrzebne)
+**File**: `tests/e2e/save-transfer-blocked.spec.ts` (nowy), `playwright.config.ts` (`ROUND_SPEC` — wymagane: projekt
+`chromium-hook` ma `testMatch: ROUND_SPEC`, a `chromium` go ignoruje; nazwa `save-transfer-blocked` nie pasuje do
+obecnego wzorca `save-transfer\.spec`). Pomocnicy: `openSettings` w `tests/e2e/support/welcome.ts`, przejście karty
+`unavailable` jak w `save-restart.spec.ts` (`page.goto('/?e2eSave=unavailable')`)
 
 **Intent**: (a) „#2 an unavailable save cannot be overwritten by import or reset”: `?e2eSave=unavailable` → karta → „Graj
 dalej” → panel rodzica → „Wczytaj z pliku”: linia `deviceUnavailable`, brak „Wybierz plik”, brak listy „Teraz”; „Zacznij od
@@ -558,14 +593,14 @@ nowa”: linia, brak przycisku potwierdzenia; hak `save` — `replace` nie zmien
 (b) „#2 an unreadable save warns instead of showing the fresh session”: `?e2eSave=unreadable` → reset: linia
 `deviceUnreadable`, brak „0 gwiazdek” w dialogu, przycisk „Zacznij od nowa” obecny; import krok 1 dostępny.
 
-**Contract**: jak faza 7; teksty z dialogu DOM, stan z haka tylko do odczytu; nigdy nie otwierać IDB z testu.
+**Contract**: jak faza 8; teksty z dialogu DOM, stan z haka tylko do odczytu; nigdy nie otwierać IDB z testu.
 Request-file: `e2e-request-p8.md`, patche `e2e-break-p8a.patch`, `e2e-break-p8b.patch`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- `npx playwright test tests/e2e/save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 7> + 2`
+- `npx playwright test tests/e2e/save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 8> + 2`
 - Deliberate break (patch `e2e-break-p8a.patch`): `UIScene.openImport/openReset` przekazują `deviceSaveView(null, …)` (ignorują `blockedBy`) → (a) i (b) czerwone na linii/„Teraz”; meta-check: dowodzi sklejki, nie tekstu
 - Deliberate break (patch `e2e-break-p8b.patch`): dialog resetu pokazuje potwierdzenie przy `unavailable` i `replace` odmawia tylko `fatal` → (a) czerwony na przycisku i na liczbie zapisów; przywrócone
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
@@ -590,7 +625,7 @@ Request-file: `e2e-request-p8.md`, patche `e2e-break-p8a.patch`, `e2e-break-p8b.
 
 ### Manual Testing Steps:
 
-1. Zrzuty stanów z faz 3–5 (bramka wizualna).
+1. Zrzuty stanów z faz 4–6 (bramka wizualna).
 2. Teacher read tekstów `pl.settings.art*`, `pl.saveTransfer.device*` i 38 etykiet.
 3. Tablet: stand-in czytelny na iPadzie przy DPR 2 (opcjonalnie przez `?e2eArt` na buildzie hook).
 
@@ -610,8 +645,12 @@ rundy są identyczne jak przed zmianą (ten sam seed).
   dowodzi ścieżek, a nie częstości.
 - **Uczeń na kroku z samymi obrazkami (E5.5) przy trwałym braku**: dostaje zadania ze stand-inem (reguła progu), nie
   pomija kroku — świadomie (decyzja 2).
-- **Chromium w sesji agenta**: fazy 7–8 w protokole request-file; zrzuty faz 3–5 mogą wymagać fallbacku Playwright z
+- **Chromium w sesji agenta**: fazy 8–9 w protokole request-file; zrzuty faz 4–6 mogą wymagać fallbacku Playwright z
   `visual-gate.md` (długie przytrzymanie dla panelu rodzica).
+- **Eksport przy `unreadable` (plan-review F3)**: „Zapisz kopię” w panelu eksportuje świeżą sesję (S12-04, follow-up);
+  rodzic może ją wziąć za kopię nieczytelnego zapisu i potem zresetować. Łagodzi to tekst `deviceUnreadable` (rozróżnia
+  oba przyciski) i to, że karta z „Zachowaj kopię” wraca przy każdym uruchomieniu (`writesOff` przy `unreadable`), ale
+  sam dialog eksportu nie ostrzega.
 - **Teksty**: `artMissing` brzmi formalnie; teacher read może skrócić — zmiana tylko w `pl.ts`.
 
 ## References
@@ -637,7 +676,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
    dziecko utknęłoby na E2.2/E5.5 — sprzeczne z FR-014 „jedna trudna umiejętność nie blokuje kroku” i „bez stanów porażki”);
    `unlockReady` liczony tylko po niezablokowanych (zależność odblokowania od stanu runtime, kroki odblokowane bez ćwiczenia).
    Zmieniłoby: decyzja opiekuna, że stand-in w kroku bieżącym jest gorszy niż zastój → filtr bez progu (zmiana `minCurrent` na 1).
-   Skład rundy przy brakach zmienia się wbrew literze FR-013 → `[human]` 6.7.
+   Skład rundy przy brakach zmienia się wbrew literze FR-013 → `[human]` 7.7.
 3. **Jedno źródło zdrowia: `textures.exists` dla każdego wpisu `TASK_ART` w `BootScene.create`; `loaderror` tylko log
    rozróżniony po typie (część S14-08).** Odrzucone: `totalFailed`/zdarzenia (ślepe na błąd dekodowania); liczba na karcie
    błędu (gra działa). Zmieniłoby: `loader.imageLoadType: 'HTMLImageElement'` (wtedy `loaderror` też łapie dekodowanie, ale `exists` dalej poprawne).
@@ -646,12 +685,12 @@ rundy są identyczne jak przed zmianą (ten sam seed).
    dozwolone; bez przycisku kopii surowej w dialogu i bez ponownego odczytu magazynu.** Odrzucone: kopia surowa w dialogu
    (trzymanie `raw`/`reason` w runtime, nowa ścieżka eksportu — follow-up); ponowny odczyt (S12-02, bez limitu czasu);
    ostrzeżenie + zgoda przy `unavailable` (nadpisanie niewidzianego, być może zdrowego zapisu). Wbrew literze FR-022
-   (rodzic importuje/resetuje) → `[human]` 5.7. Zmieniłoby: pomiar N-7 z częstym `timeout` na zdrowym IDB → ponowny odczyt
+   (rodzic importuje/resetuje) → `[human]` 6.7. Zmieniłoby: pomiar N-7 z częstym `timeout` na zdrowym IDB → ponowny odczyt
    z limitem czasu przed „Teraz”.
 5. **Etykiety stand-inu jako pole `label` w `TASK_ART` z danych pomiarowych, bez nowych kluczy `pl.ts`; pusta dla wagi i
    ramy termometru.** Odrzucone: pole `label` dopisane ręcznie w `MONEY` (duplikat `formatMoney`); tabela w `pl.ts`. Zmieniłoby:
    teacher read chcący napisu „waga”/„termometr” na pustych pudełkach → dwa klucze `pl.ts`.
-6. **Rekord `artHealth` i `id` w `TaskArtEntry` w fazie 3, etykiety w fazie 4**: szew i rekord muszą istnieć przed zrzutami
+6. **Rekord `artHealth` i `id` w `TaskArtEntry` w fazie 3 (linia panelu w fazie 4), etykiety w fazie 5**: szew i rekord muszą istnieć przed zrzutami
    stand-inu. Odrzucone: jedna faza „art” (≥ 2 obszary UI naraz + szew).
 7. **Limit czasu `30_000` na trzech testach `forEachTask` w fazie 1** (zmiana tylko testu, bez czerwonej fazy — stabilizuje
    bramkę każdej kolejnej fazy). Odrzucone: globalny `testTimeout`. Zmieniłoby: pomiar pokazujący inny wolny test.
@@ -659,8 +698,8 @@ rundy są identyczne jak przed zmianą (ten sam seed).
    pliku nie-obrazu (200 + `onProcessError`), nie przez zły URL (fallback `vite preview` niesprawdzony).
 9. **Zrzuty: stany na płótnie 1920×1080 i 1024×768 (profil § 9), dialogi DOM 1920×1080 i ~400 px (iframe 400×300
    poziomo, bo pion pokazuje „Obróć tablet”).** Krok runu prosi o ~400 px; profil nie zna telefonu. Zmieniłoby: profil § 9 z inną szerokością wąską.
-10. **Osiem faz: 2 × tdd (1, 2), 4 × impl (3–6; nowy komponent tylko `artHealthView` w fazie 3; `ArtImage` i dwa dialogi
-    zmieniane), 2 × e2e po seam sweep (7: #11, 8: #2).** Bez `AskUserQuestion` (kontrakt reguła 1): złożoność MEDIUM,
+10. **Dziewięć faz: 2 × tdd (1, 2), 5 × impl (3–7; nowy komponent tylko `artHealthView` w fazie 4; `ArtImage` i dwa dialogi
+    zmieniane), 2 × e2e po seam sweep (8: #11, 9: #2).** (Plan-review F1: dawna faza 3 rozdzielona na sygnał/szew/filtr i linię panelu.) Bez `AskUserQuestion` (kontrakt reguła 1): złożoność MEDIUM,
     pytania rozstrzygnięte z research i change.md; brak wpisu w roadmapie (zmiana spoza roadmapy, roadmapa nietknięta).
 11. **`deviceSaveView` jako czysta funkcja w `core`, dialogi dostają gotowy widok** (wzór `saveHealthView`), zamiast
     przekazywania `blockedBy` do DOM i decydowania tam. Zmieniłoby: brak.
@@ -680,7 +719,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, globali i importu `taskArt.ts`; `playable`, `unlockReady` nietknięte
+- [ ] 1.5 [reviewer] `artHealth.ts` i `artFilter.ts` bez Phasera, globali i importu `taskArt.ts`; `playable` nietknięty, `unlockReady` bez zmiany zachowania
 
 ### Phase 2: Stan zapisu na urządzeniu dla importu i resetu, odmowa `replace` przy `unavailable`
 
@@ -695,80 +734,91 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 - [ ] 2.5 [reviewer] Żaden nowy stan w `SaveState`/`encodeSave`; `unreadable` nadal pozwala na import i reset
 
-### Phase 3: Sygnał wczytania w `BootScene`, szew `?e2eArt`, filtr w `TaskScene` i linia „Obrazki” w panelu rodzica
+### Phase 3: Sygnał wczytania w `BootScene`, szew `?e2eArt` i filtr w `TaskScene`
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id`, test `artMissing` dla 1, 2, 5, 22, 38)
+- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `id`, jawne przypadki `e2eArt` w strażniku)
 - [ ] 3.2 `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `e2eArt`
 - [ ] 3.3 Deliberate break: odczyt `e2eArt` poza `__E2E_HOOK__` → `npm run build` pada „leaked”; przywrócone; meta-check
-- [ ] 3.4 Deliberate break: `artMissing` w złej formie dla 2 → test tekstu czerwony; przywrócone
-- [ ] 3.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
-- [ ] 3.6 [reviewer] Teacher read `pl.settings.art*` (1 / 2–4 / 5+ i 22–24), wiersz 67 i komentarz `DESIGN-GAP 67`
-- [ ] 3.7 [visual] Zrzuty panelu rodzica: „Obrazki” OK, z brakami (`?e2eArt=missing`, `?e2eArt=corrupt`) — 1920×1080 i ~400 px
+- [ ] 3.5 [reviewer] `REGISTRY_KEYS.artHealth` poza `SAVE_KEYS`; `forcedSkills` omija filtr; brak rekordu = nic nie brakuje; `TaskScene` tylko argumenty w `freshRound`
 
-### Phase 4: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
+### Phase 4: Linia „Obrazki” w panelu rodzica
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check
-- [ ] 4.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian
-- [ ] 4.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (test `artMissing` dla 1, 2, 5, 22, 38)
+- [ ] 4.2 Deliberate break: `artMissing` w złej formie dla 2 → test tekstu czerwony; przywrócone
+- [ ] 4.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Teacher read 38 etykiet (kwoty `formatMoney`, „½ l”, „¼ l”, nazwy ikon w mianowniku)
-- [ ] 4.6 [visual] Zrzuty stand-inów (`?e2eArt=missing`): monety, banknoty, dzbanki, waga z odważnikami, ikony COUNT i MULT_GROUPS, termometr; każdy także w fazie rozwiązania przy klawiaturze — 1920×1080 i 1024×768
+- [ ] 4.4 [reviewer] Teacher read `pl.settings.art*` (1 / 2–4 / 5+ i 22–24), wiersz 67 i komentarz `DESIGN-GAP 67`
+- [ ] 4.5 [visual] Zrzuty panelu rodzica: „Obrazki” OK, z brakami (`?e2eArt=missing`, `?e2eArt=corrupt`) — 1920×1080 i ~400 px
 
-### Phase 5: Import i reset po nieudanym odczycie zapisu
+### Phase 5: Polski stand-in z danych i dopasowanie tekstu w `ArtImage`
 
 #### Automated
 
 - [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona)
-- [ ] 5.3 `npm run build` drukuje `e2e hook: absent (`
-- [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone)
+- [ ] 5.2 Deliberate break: etykieta monety z klucza → `taskArt.test.ts` czerwony; przywrócone; meta-check
+- [ ] 5.3 `npm run sample -- E1 … E6 --count 6` bez naruszeń, wyjście bez zmian
+- [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Teacher read `pl.saveTransfer.deviceUnavailable`/`deviceUnreadable`, wiersz 68
-- [ ] 5.6 [visual] Zrzuty dialogów importu i resetu przy `?e2eSave=unavailable` i `?e2eSave=unreadable` oraz na zdrowym zapisie — 1920×1080 i ~400 px
-- [ ] 5.7 [human] Decyzja wbrew literze PRD FR-022: przy `unavailable` import i reset niedostępne do ponownego uruchomienia
+- [ ] 5.5 [reviewer] Teacher read 38 etykiet (kwoty `formatMoney`, „½ l”, „¼ l”, nazwy ikon w mianowniku)
+- [ ] 5.6 [visual] Zrzuty stand-inów (`?e2eArt=missing`): monety, banknoty, dzbanki, waga z odważnikami, ikony COUNT i MULT_GROUPS, termometr; każdy także w fazie rozwiązania przy klawiaturze — 1920×1080 i 1024×768
 
-### Phase 6: Seam sweep, follow-upy i dokumentacja
+### Phase 6: Import i reset po nieudanym odczycie zapisu
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
-- [ ] 6.2 `validate-rule-files.sh` PASS
-- [ ] 6.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
-- [ ] 6.4 `npm run build` drukuje `e2e hook: absent (`
+- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [ ] 6.2 `tests/dialogSessions.test.ts` zielony (liczba callbacków bez zmian albo uzasadniona)
+- [ ] 6.3 `npm run build` drukuje `e2e hook: absent (`
+- [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`save-transfer`, `save-restart` zielone)
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Seam sweep: jedno źródło etykiet, jedna formuła progu, komentarze, gaps 66–68 i 48/49, follow-upy z `Trigger:`
-- [ ] 6.6 [reviewer] `CLAUDE.md` „Current state” ma zdanie o tej zmianie
-- [ ] 6.7 [human] Decyzja: pomijanie umiejętności z wynikiem tylko na obrazku zmienia skład rundy (FR-013), z regułą progu kroku bieżącego
+- [ ] 6.5 [reviewer] Teacher read `pl.saveTransfer.deviceUnavailable`/`deviceUnreadable`, wiersz 68
+- [ ] 6.6 [visual] Zrzuty dialogów importu i resetu przy `?e2eSave=unavailable` i `?e2eSave=unreadable` oraz na zdrowym zapisie — 1920×1080 i ~400 px
+- [ ] 6.7 [human] Decyzja wbrew literze PRD FR-022: przy `unavailable` import i reset niedostępne do ponownego uruchomienia
 
-### Phase 7: Brakujący obrazek dotykiem — e2e (#11)
-
-#### Automated
-
-- [ ] 7.1 `art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
-- [ ] 7.2 Deliberate break (patch `e2e-break-p7a.patch`): etykieta z klucza → (a)/(b) czerwone; meta-check
-- [ ] 7.3 Deliberate break (patch `e2e-break-p7b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check
-- [ ] 7.4 Deliberate break (patch `e2e-break-p7c.patch`): panel bez `artHealth` → (c) czerwony; przywrócone
-- [ ] 7.5 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
-
-### Phase 8: Import i reset przy nieodczytanym zapisie — e2e (#2)
+### Phase 7: Seam sweep, follow-upy i dokumentacja
 
 #### Automated
 
-- [ ] 8.1 `save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 7> + 2`
-- [ ] 8.2 Deliberate break (patch `e2e-break-p8a.patch`): sklejka ignoruje `blockedBy` → (a)/(b) czerwone; meta-check
-- [ ] 8.3 Deliberate break (patch `e2e-break-p8b.patch`): potwierdzenie resetu przy `unavailable` i `replace` tylko `fatal` → (a) czerwony; przywrócone
-- [ ] 8.4 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 7.1 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`, jeśli sweep zmienił kod
+- [ ] 7.2 `validate-rule-files.sh` PASS
+- [ ] 7.3 Deliberate break: `CLAUDE.md` z nieistniejącą ścieżką → FAIL; przywrócone; meta-check
+- [ ] 7.4 `npm run build` drukuje `e2e hook: absent (`
+
+#### Manual
+
+- [ ] 7.5 [reviewer] Seam sweep: jedno źródło etykiet, jedna formuła progu, komentarze, gaps 66–68 i 48/49, follow-upy z `Trigger:`
+- [ ] 7.6 [reviewer] `CLAUDE.md` „Current state” ma zdanie o tej zmianie
+- [ ] 7.7 [human] Decyzja: pomijanie umiejętności z wynikiem tylko na obrazku zmienia skład rundy (FR-013), z regułą progu kroku bieżącego
+
+### Phase 8: Brakujący obrazek dotykiem — e2e (#11)
+
+#### Automated
+
+- [ ] 8.1 `art-stand-in.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e> + 4`
+- [ ] 8.2 Deliberate break (patch `e2e-break-p7a.patch`): etykieta z klucza → (a)/(b) czerwone; meta-check
+- [ ] 8.3 Deliberate break (patch `e2e-break-p7b.patch`): zdrowie tylko z `loaderror` → (d) czerwony; meta-check
+- [ ] 8.4 Deliberate break (patch `e2e-break-p7c.patch`): panel bez `artHealth` → (c) czerwony; przywrócone
+- [ ] 8.5 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+
+### Phase 9: Import i reset przy nieodczytanym zapisie — e2e (#2)
+
+#### Automated
+
+- [ ] 9.1 `save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 8> + 2`
+- [ ] 9.2 Deliberate break (patch `e2e-break-p8a.patch`): sklejka ignoruje `blockedBy` → (a)/(b) czerwone; meta-check
+- [ ] 9.3 Deliberate break (patch `e2e-break-p8b.patch`): potwierdzenie resetu przy `unavailable` i `replace` tylko `fatal` → (a) czerwony; przywrócone
+- [ ] 9.4 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
