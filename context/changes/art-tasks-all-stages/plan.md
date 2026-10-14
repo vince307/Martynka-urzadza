@@ -956,7 +956,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ba4e0da
 - [x] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — ba4e0da
 - [x] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check — ba4e0da
-- [ ] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — ba4e0da (e2e 42 passed by the orchestrator on 328bd03)
 
 #### Manual
 
@@ -966,12 +966,12 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `npm run sample -- E1/E3/E4 --count 6` bez naruszeń, z linią `visual:`
-- [ ] 5.3 Deliberate break: `TaskPicture` bez gałęzi `money` → typecheck czerwony; przywrócone; meta-check
-- [ ] 5.4 `playableSteps` E1/E3/E4 bez zmian; `tests/fixtures/` bez zmian
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 89e5ea0 (lint, typecheck, unit 1649 -> 1707 +58, deploy tests, sample E1-E6, build; e2e in 5.5)
+- [x] 5.2 `npm run sample -- E1/E3/E4 --count 6` bez naruszeń, z linią `visual:` — 89e5ea0 (E1, E3, E4 exit 0, `visual:` lines read)
+- [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `money` → typecheck czerwony; przywrócone; meta-check — 89e5ea0 (case 'money' removed: TS2322 not assignable to never)
+- [x] 5.4 `playableSteps` E1/E3/E4 bez zmian; `tests/fixtures/` bez zmian — 89e5ea0 (curriculumStart and fixtures untouched, green)
 - [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
-- [ ] 5.6 `npm run build` drukuje `e2e hook: absent (`
+- [x] 5.6 `npm run build` drukuje `e2e hook: absent (` — 89e5ea0
 
 #### Manual
 
