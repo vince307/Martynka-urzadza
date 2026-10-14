@@ -59,7 +59,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | done     |
 | S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | done     |
 | S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | done     |
-| S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | proposed |
+| S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | planning |
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | done |
 | S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | proposed |
 | S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | proposed |
@@ -309,7 +309,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** gest kątowy wskazówek na tablecie (przyciąganie do 5 minut).
 - **Risk:** wydzielone z S-13 (plan `context/changes/drawn-widget-tasks-e3-e4/plan.md`, decyzja autonomiczna 1): PUZZLE_GRID, GRID i PERIMETER dzielą jeden widżet siatki (`square-grid.svg`), „ustaw zegar” to drugi typ `drag`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania tych kroków. Plan S-14 (decyzja autonomiczna 1) dokłada PERIMETER w E5.12 (bok z obwodu) i E6.3 (figury złożone) — ten sam widżet siatki.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-14: Zadania z grafiką i pełny zestaw typów dla wszystkich etapów
 
