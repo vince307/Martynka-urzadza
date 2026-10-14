@@ -38,6 +38,8 @@ export interface Snapshot {
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
+    /** The open round is a variant (S-15): its kind, the letters uncovered so far (word; null = hidden) and the results covered (dice). Null for an ordinary round. */
+    variant?: { kind: 'word' | 'dice' | 'puzzle'; puzzleId: string | null; letters: (string | null)[] | null; covered: number[] | null } | null;
     narration: string | null;
     speakerVisible: boolean;
     unlock: { step: number; name: string } | null;
@@ -76,6 +78,9 @@ export interface Targets {
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;
+    /** "Kolejna runda" / "Do pokoju" of a minigame's done card. */
+    doneNext?: Point | null;
+    doneRoom?: Point | null;
     unlockNext: Point | null;
     resume: Point | null;
     taskButton?: Point | null;
