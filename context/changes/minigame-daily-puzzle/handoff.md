@@ -1,69 +1,58 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the `/10x-plan-review` step (autonomous run 2026-10-14-save-s13b-s15-s14b). Verdict PROCEED; findings triaged
-into `plan.md`; `change.md` is `plan_reviewed`; nothing is built. The next agent must not reorder the save phases (format v2
-in phase 1, `backup-v1` in phase 2, both ship in the one PR) and must make `SaveStore.backup` a REQUIRED method (plan-review F3).
+Written by the `/10x-tdd` phase 1 step (autonomous run 2026-10-14-save-s13b-s15-s14b). Save format v2 is built and committed
+(`b0ad4ba`); phases 2-13 are untouched. Phase 2 (`backup-v1`, `migration-failed`) MUST ship in the same PR: phase 1 alone
+overwrites a child's v1 save with v2 without a backup copy.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | 4 on the branch: `a0890f8` (identity), `adbb9a6` (research), `697a437` (plan), `docs(minigame-daily-puzzle): plan review` (this step) |
+| Commits | 4 docs + `b0ad4ba` (phase 1) + this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 68 (`grep -c '^- \[ \]' plan.md`), none done |
-| Working tree | clean after the commit (four files staged by explicit path) |
+| `change.md` status | `implementing` |
+| `## Progress` rows remaining | 64 (`grep -c '^- \[ \]' plan.md`); phase 1 rows 1.1-1.4 ticked, 1.5 [reviewer] and 1.6 [human] open |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/minigame-daily-puzzle/reviews/plan-review.md` | Review report: 1 CRITICAL, 7 WARNING, 2 OBSERVATION, save-safety walk, follow-up and seam coverage, `VERDICT: PROCEED` |
-| `context/changes/minigame-daily-puzzle/plan.md` | Triage applied: precedence rule (Critical details), Phase 2 § 2 (required `backup`, key, named tests), Phase 3 § 3–4 (seam store op log `save.store`, two existing specs), 3.3/3.4, Phase 11 intent, 13.3 break, Phase 10 follow-ups and 10.6, `## Known risks` (+3) |
-| `context/changes/minigame-daily-puzzle/change.md` | `status: planned → plan_reviewed` |
-| `context/changes/minigame-daily-puzzle/handoff.md` | This file |
+| `src/core/types.ts` | `VariantState`, `SaveV2`, `SaveState = SaveV2` (`SaveV1` stays as migration input) |
+| `src/core/save.ts` | `SAVE_VERSION = 2`, exported `MIGRATIONS[1]`, `validVariants`, `importProblem` (names the problem after migration), `variants` in `SessionSave`/`encodeSave`/`toSession`/`freshSession` |
+| `src/core/saveFile.ts` | `parseImport` uses `importProblem` (a corrupt v1 file still names its field) |
+| `src/data/layout.ts`, `src/main.ts` | `REGISTRY_KEYS.variants` in `SAVE_KEYS`; registry seeded at preBoot, snapshot reads it |
+| `tests/fixtures/save-v2.json`, `save-v2-fresh.json` | new frozen v2 fixtures (v1 fixtures untouched) |
+| `tests/save.test.ts`, `saveFile.test.ts`, `saveKeys.test.ts`, `autosave.test.ts`, `rooms.test.ts` | new/updated tests (see §6 for the updated ones) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/minigame-daily-puzzle` (observed) |
-| `grep -c '^- \[ \]' plan.md` / `grep -c '^Driver: ' plan.md` | 68 / 13 after the edits (observed; Progress rows edited in place, none added or removed) |
-| Save-path claims vs code | `decodeSave` (`from > SAVE_VERSION` only), `replaceGate`/`deviceSaveView` key on `loadReason`, `main.ts` blocks the autosaver on `unreadable`/`unavailable`, `loadSave` never writes — read in this step (observed) |
-| e2e specs reaching a 4th ordinary round | read all `tests/e2e/*.spec.ts`: `adaptive`, `room-purchase`, `parent-settings` (+ `save-transfer` harmless); plan list complete (observed) |
-| Local gate | Not run: docs-only step, no product code changed. Baseline per contract (inherited, unverified): `lint OK; typecheck OK; unit OK Tests 2224 passed; build OK; e2e OK 63 passed`. |
-
-No deliberate break: nothing testable changed.
+| RED (first run, before production code) | `AssertionError: expected { kind: 'ok', …(2) } to deeply equal { kind: 'ok', migratedFrom: 1, …(1) }` (v1 fixture migrates); 32 tests red in save/saveFile |
+| `npm run lint` / `npm run typecheck` | OK / OK |
+| `npm test` + deploy scripts + `sample` E1-E6 | unit 2239 passed (baseline 2224, +15); sample no violations; deploy scripts OK |
+| `npm run build` | OK, `e2e hook: absent` |
+| `npx playwright test --config=...` | 63 passed (baseline 63, +0), run in this session |
+| `git diff --stat main -- tests/fixtures/save-v1*` | empty (byte-identical) |
+| Deliberate break A: `MIGRATIONS[1]` without `variants` | 60 red; restored. Meta: red because the frozen v1 fixture's migrated output fails validation (reads the file, not a literal) |
+| Break B: `encodeSave` writes `version: 1` | 26 red; restored |
+| Break C: `saveProblem` ignores `variants` | 6 red (bad-variants cases, missing block); restored |
 
 ## 4. Next command
 
-`/10x-tdd minigame-daily-puzzle` (Phase 1: Zapis v2 — format, migracja 1 → 2, fixtures; `Driver: tdd`)
+`/10x-tdd minigame-daily-puzzle phase 2` (Phase 2: Bezpieczeństwo migracji; `Driver: tdd`)
 
 ## 5. Open
 
-- Phase drivers: 1 tdd, 2 tdd, 3 impl, 4 tdd, 5 tdd, 6 tdd, 7 impl, 8 impl, 9 impl, 10 impl, 11–13 e2e (request-file protocol).
-- Phase 3 must update `tests/e2e/save-restart.spec.ts` and `tests/e2e/save-transfer-blocked.spec.ts` (future card copy,
-  dated raw file name) and add `save.store` to the hook (`src/testing/e2eHook.ts` `e2eSaveStore`) for phase 11(b).
-- Phase 7 adds `e2eVariant=off` to `adaptive`, `room-purchase`, `parent-settings` (`save-transfer` optional, one round per test).
-- `[human]` rows (post-run checklist): 1.6 save-format one-way door; 5.6 author reads all 15 puzzles; 8.5 Hasło
-  letter-per-answer and salon words; 9.5 board tiles under a child's finger on a 1024 tablet; 10.6 decisions against
-  PRD/ZADANIA/kit (now incl. ×2 for the second try and forceable `migration-failed`).
-- Known risks added: `backup-v1` without an in-app read path / permanent backup failure (follow-ups in phase 10),
-  `migration-failed` forceable, phases 1–2 ship together.
-- DESIGN-GAP rows 79–86 written in phase 10; follow-ups to `context/changes/minigame-daily-puzzle/follow-ups/review-fixes.md` in phase 10.
+- 1.5 [reviewer], 1.6 [human] (one-way door: a rollback to a v1 build shows the "newer version" card) stay open.
+- `saveProblem` now checks `version === 2` only; v1 files are checked via `importProblem` (migrate then validate). Phase 2's backup must copy the raw v1 value BEFORE the first v2 write.
+- `src/main.ts` snapshot falls back to `session.variants` if the registry key is missing.
+- `tests/e2e/save-transfer.spec.ts` still builds a v1 `playableSave` and imports it (valid: migrated); phase 3/11 may switch it.
 
 ## 6. Autonomous decisions
 
-1. **No AskUserQuestion; triage done in place** (contract rule 1): every CRITICAL/obvious WARNING fixed in `plan.md`,
-   the rest in `## Known risks`. Would change: nothing in this run.
-2. **PROCEED, not RETHINK.** Why: migration on read, validation before use, writes blocked on unreadable loads and SIR-01
-   keyed on reason make the v1 → v2 door safe; the gaps were proof and completeness gaps. Would change: a path where a v1
-   save is written without a copy, which the required `backup` closes.
-3. **F7 kept (`migration-failed` forceable like `corrupt`)** instead of overturning decision 6. Rejected: never-forceable
-   like `future`. Why: FR-021 is met (export offered), the state is unreachable with a spreading migration, and a never-
-   forceable save leaves a parent no way out. Would change: a migration step that can throw (v3) or the author's read of 10.6.
-4. **Phase 7 not split.** Rejected: split into seams + scene (renumbers 11–13, Progress churn). Why: one new UI component,
-   Known-risks continuation note already present. Would change: the phase-7 agent returning NEEDS_CONTINUATION twice.
-5. **Phase 13 break (b) replaced** (snapshot in `main.ts`, not `SAVE_KEYS`). Why: `flush('now')` writes the whole snapshot
-   once stars dirtied the save, so the old break might stay green. Would change: nothing.
+1. **Existing tests changed, not weakened.** `save.test.ts` "v1 format did not change" became the same round-trip check on the v2 fixtures; "future" now uses `SAVE_VERSION + 1`; the migration-chain tests pass `MIGRATIONS[1]` as step 1; `saveFile`/`saveKeys`/`autosave`/`rooms` tests that used a v1 object as the current save use v2 (v1 import coverage kept and extended). Would change: a reviewer reading any of these as lost coverage.
+2. **Added `importProblem`** (not in plan) so import of a corrupt v1 file keeps naming the broken field (`saveProblem` on the raw v1 would say `version`). Rejected: making `saveProblem` accept v1.
+3. **`MIGRATIONS` exported** for the chain tests. Rejected: re-declaring the step in tests (would not read the real one).

@@ -879,10 +879,10 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 `git diff --exit-code tests/fixtures/save-v1.json tests/fixtures/save-v1-fresh.json` (fixtures v1 nietknięte); `save-v2*.json` w commicie fazy
-- [ ] 1.3 Deliberate break: `MIGRATIONS[1]` bez `variants` / `encodeSave` z `version: 1` / `saveProblem` przyjmuje brak `variants` → czerwone; przywrócone; meta-check
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — b0ad4ba
+- [x] 1.2 `git diff --exit-code tests/fixtures/save-v1.json tests/fixtures/save-v1-fresh.json` (fixtures v1 nietknięte); `save-v2*.json` w commicie fazy — b0ad4ba
+- [x] 1.3 Deliberate break: `MIGRATIONS[1]` bez `variants` / `encodeSave` z `version: 1` / `saveProblem` przyjmuje brak `variants` → czerwone; przywrócone; meta-check — b0ad4ba
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — b0ad4ba
 
 #### Manual
 
