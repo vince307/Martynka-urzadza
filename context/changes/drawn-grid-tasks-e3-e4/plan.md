@@ -909,7 +909,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Manual
 
 - [x] 5.6 [reviewer] Odczyt nauczyciela `sample` E3.5, E3.7 `--count 6` — impl review teacher read (F1)
-- [ ] 5.7 [visual] Zrzuty: kwadrat magiczny, piramida, kwadrat z podpowiedzią, kwadrat z krokami przy klawiaturze, kratka „gdzie”, kratka „co” z podpowiedzią — 1440×900 i 1024×768
+- [x] 5.7 [visual] Zrzuty: kwadrat magiczny, piramida, kwadrat z podpowiedzią, kwadrat z krokami przy klawiaturze, kratka „gdzie”, kratka „co” z podpowiedzią — 1440×900 i 1024×768
 
 ### Phase 6: Widżet `FigureGrid`, rysunek przy klawiaturze w rozwiązaniu, PERIMETER w E4.7
 
@@ -924,7 +924,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Manual
 
 - [x] 6.6 [reviewer] Odczyt nauczyciela `sample` E4.7 `--count 6` — impl review teacher read
-- [ ] 6.7 [visual] Zrzuty: prostokąt z bokami, trójkąt, obwód z podpowiedzią, obwód z krokami przy klawiaturze (768 × 190) — 1440×900 i 1024×768
+- [x] 6.7 [visual] Zrzuty: prostokąt z bokami, trójkąt, obwód z podpowiedzią, obwód z krokami przy klawiaturze (768 × 190) — 1440×900 i 1024×768
 
 ### Phase 7: Tarcza z uchwytami, gałąź zegara w `TaskScene`, hak `clock` i helpery e2e
 
@@ -951,7 +951,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Manual
 
 - [x] 8.5 [reviewer] Odczyt nauczyciela `sample` E3.3, E3.11, E4.3 `--count 6` — impl review teacher read (F2)
-- [ ] 8.6 [visual] Zrzuty: ustaw zegar E3, wskazówka trzymana, E4 kwadrans po ustawieniu, podpowiedź, kroki obok tarczy — 1440×900 i 1024×768
+- [x] 8.6 [visual] Zrzuty: ustaw zegar E3, wskazówka trzymana, E4 kwadrans po ustawieniu, podpowiedź, kroki obok tarczy — 1440×900 i 1024×768
 - [ ] 8.7 [human] Gest na tablecie: przyciąganie co 5 min i chwyt wskazówki palcem dziecka
 
 ### Phase 9: Nowe kroki grywalne E5.12 i E6.3 oraz testy przypięte do kolejności
@@ -966,7 +966,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Manual
 
 - [x] 9.5 [reviewer] Odczyt nauczyciela `sample` E5.12, E6.3 `--count 6` — impl review teacher read (F3)
-- [ ] 9.6 [visual] Zrzuty: bok kwadratu z obwodu, figura złożona (klawiatura i krok rozwiązania), karta „Nowa umiejętność!” E5.12 — 1440×900 i 1024×768
+- [x] 9.6 [visual] Zrzuty: bok kwadratu z obwodu, figura złożona (klawiatura i krok rozwiązania), karta „Nowa umiejętność!” E5.12 — 1440×900 i 1024×768
 
 ### Phase 10: Dokumentacja, luki projektu, follow-upy i seam sweep
 

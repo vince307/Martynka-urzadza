@@ -1,68 +1,88 @@
 # Handoff — `drawn-grid-tasks-e3-e4` (slice S-13b)
 
-The implementation review (`/10x-impl-review`) ran on all 12 phases, fixed 3 content warnings and the "OK while a hand is held" race in f6f5a62, and filed `reviews/impl-review.md` with `MERGE: CLEAR`. Next is the visual gate. The next agent must take screenshots of the fixed hints (magic-square gap line, E3 full-hour clock hints) from the current code, not from earlier phases.
+The visual gate captured every new view (29 states, 1440×900 and 1024×768), fixed three discrepancies in `7aa3485` and ended `reviews/visual-review.md` with `VISUAL: PASS`. Next is archive, then ship. Only the `[human]` rows 8.7 and 10.6 stay open; they never block shipping.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/drawn-grid-tasks-e3-e4`, cut from `main` at `9554e96` |
-| Commits | f6f5a62 (review fixes) on 518d0a9 (handoff p12) … 1c01e0c, plus this review-docs commit |
+| Commits | `7aa3485` (visual-gate fix) on `e48c9cb` (impl-review docs) … `1c01e0c`, plus this docs commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| Progress rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): `[visual]` 5.7, 6.7, 8.6, 9.6 and `[human]` 8.7, 10.6 |
-| Working tree | clean after the docs commit |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Progress rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): `[human]` 8.7 and 10.6 |
+| Working tree | clean after the docs commit; the throwaway spec was moved to the session scratchpad |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/drawn-grid-tasks-e3-e4/reviews/impl-review.md` | the review report: 0 critical, 6 warnings, 4 observations, ends in `MERGE: CLEAR` |
-| `src/core/tasks/generators/puzzleGrid.ts` | `magic`: adds a hint line that names the line holding the gap (F1) |
-| `src/core/tasks/generators/clock.ts` | `generateClockSet`: snap 60 (full hours) hints speak of the short hand only (F2) |
-| `src/data/pl.ts` | new strings `puzzleMagicGapLine`, `clockSetHourHandHint`, `clockSetLongStaysHint` |
-| `src/data/curriculum/E5.ts`, `src/data/curriculum/E6.ts` | `E5.12.perimeter_side_square` and `E6.3.perimeter_composite` now `max: 40`, matching the plan (F3) |
-| `src/scenes/TaskScene.ts` | `create`: the `ClockSet` "OK" is ignored while `clockState.carrying` (F4); stale comment on the drag reducers fixed |
-| `src/data/layout.ts` | `TASK_LAYOUT.clockSet` comment now points to design-gaps row 77 |
-| `tests/puzzleGrid.test.ts`, `tests/clock.test.ts`, `tests/perimeterSkills.test.ts`, `tests/contentInvariants.test.ts` | red-then-green checks for F1–F3; `SMALL_SPACES` entry for E5.12 side (9 forms) |
-| `context/changes/drawn-grid-tasks-e3-e4/plan.md` | `[reviewer]` rows 1.5, 2.5, 3.5, 4.4, 5.6, 6.6, 7.5, 8.5, 9.5, 10.5 ticked; row 7.2 annotated with the break that was actually run (F6) |
-| `context/changes/drawn-grid-tasks-e3-e4/follow-ups/review-fixes.md` | new section "From the implementation review", each item with a `Trigger:` line |
-| `context/changes/drawn-grid-tasks-e3-e4/change.md` | status `impl_reviewed` |
+| `src/core/tasks/generators/perimeter.ts` | `triangleShape`: the triangle is drawn to scale, with the longest side as the base and a flat apex raised to 0.25 of the base (V1) |
+| `src/data/pl.ts` | shorter `puzzleMagicHint` and `perimeterSideRectHint` (V2). `clockSetAnswerHint` now reads "Wtedy zegar pokaże …" (V3). |
+| `tests/perimeter.test.ts` | the triangle drawing keeps the order of the labels |
+| `tests/contentInvariants.test.ts` | `KEYPAD_HINT_MAX = 64` for the first hint of every keypad skill, with `LONG_KEYPAD_HINTS` listing `E5.5.capacity_quarter_l` |
+| `tests/clock.test.ts` | set skills: no hint line says "Zegar pokazuje" |
+| `context/changes/drawn-grid-tasks-e3-e4/screenshots/` | 70 PNG frames (`desktop-*`, `tablet-*`) and `README.md` (state, frames, how each was reached, values) |
+| `context/changes/drawn-grid-tasks-e3-e4/reviews/visual-review.md` | the gate report: V1–V3 fixed, states against the kit, hand-checks, O1–O6, ends `VISUAL: PASS` |
+| `context/changes/drawn-grid-tasks-e3-e4/plan.md` | `[visual]` rows 5.7, 6.7, 8.6, 9.6 ticked |
+| `context/changes/drawn-grid-tasks-e3-e4/follow-ups/review-fixes.md` | new section "From the visual gate", O1–O6, each with a `Trigger:` line |
+| `context/changes/drawn-grid-tasks-e3-e4/handoff.md` | this file |
 
 ## 3. Verification
 
-| command | result (observed in this step) |
+| command | result (observed in this step, on `7aa3485`) |
 |---|---|
-| lint / typecheck | OK / OK, both before and after the fixes |
-| unit gate (`npm test`, deploy tests, `sample` E1–E6) | before the fixes: 2222 = baseline 1927 + 295. After: 2223 = 1927 + 296 (+1 new E5.12 test; the other new checks are assertions inside existing tests) |
-| build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e, full `npx playwright test --config=…`, before the fixes | 63 passed (4.8 min) = baseline 57 + 6 |
-| e2e, full, after the fixes | 63 passed (4.3 min) = 57 + 6; ports 4397 and 4398 free afterwards |
-| Re-executed break, phase 1 (tdd) | removed the array branch of `isCorrect` (`src/core/round.ts`). `solvableInMode` "is right in any order when the task has no check" went red: `expected 'second' to be 'done'`. Restored; `git diff` empty. Meta-check: the cross-skill sweep stays green under this break because every `select` skill in the data has `check`. So the dedicated case, which runs through the round state machine, is the real guard. |
-| New RED → GREEN in this step | 5 tests were red before the content fixes and green after. Re-ran the hint break (`clockSetHandsHint` for snap 60): 2 red; restored. |
-| Teacher read | ran `sample` E3–E6 with `--count 6` and read E3.3, E3.5, E3.7, E3.11, E4.3, E4.7, E5.12 and E6.3, again after the fixes; details are in the impl-review "Teacher read" section |
-| Live saves / format | `unlockedStep` only rises. Higher thresholds slow the next unlock but never move a child back. E5 calendar floors rise by one in the last three months, under the existing S-11 floor rule (O3). `save.ts` and fixtures are untouched, so the format is v1. |
+| lint / typecheck | OK / OK |
+| `npm test` | 2224 passed = contract baseline 1927 + 297. The branch before this step had 2223, so +1: the new triangle test. The other new checks are assertions inside existing tests. |
+| deploy + ops tests, `sample` E1–E6 | OK, OK, `Naruszenia: 0` for every stage |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --config=<abs>` | 63 passed (baseline 57, +6) in 4.1 min; ports 4397, 4398 and 4399 free afterwards |
+| Visual capture | throwaway Playwright spec against the hook build on 4399; 24/24 capture tests passed on the fixed tree |
+| RED → GREEN | V1: the triangle order test was red on the old fixed shape (`side 1 (7 cm) vs 2 (2 cm): expected 5 to be greater than 5`). V2: the content invariant was red for `E3.5.magic_square_30` (102) and `E5.12.perimeter_side_rect` (76). V3: four set-clock tests were red on "Zegar pokazuje". All went green after the fix. |
+| Meta-check | The V2 invariant measures characters, not pixels. 64 characters is the longest first hint seen to wrap into 2 lines of the 662 px bar; the frames `tablet-02` and `tablet-20h` show the pixel result (3 lines, 12.8 CSS px). The V1 test compares the drawn edge lengths with the labels, so it does not depend on how the generator builds the shape. |
+| Teacher read | `sample` E3 / E4 / E5 `--count 6` for E3.5, E4.3, E4.7 and E5.12 after the fixes; recorded in `visual-review.md` |
 
 ## 4. Next command
 
-`visual gate`
+`/10x-archive drawn-grid-tasks-e3-e4` then ship
 
 ## 5. Open
 
-- `[visual]` rows 5.7, 6.7, 8.6 and 9.6 are screenshots per `plan.md`. They must show the new magic-square gap line and the E3 full-hour clock hints.
-- `[human]` row 8.7: the gesture on a tablet (5-minute snap, grabbing a hand with a child's finger).
-- `[human]` row 10.6: the author reads the decisions made against ZADANIA. The new ranges now match the plan (E5.12 side ≤ 10 cm, E6.3 ≤ 40). Also listed: E4.7 and E5.12 rectangles `max: 60`, and the O4 wording points.
-- Follow-ups are in `follow-ups/review-fixes.md`:
-  - F5: the `TaskScene.create` `pointerupoutside` listener is unproven.
-  - F4: no two-finger e2e case.
-  - O2: dial geometry and tokens (`ClockFace.render`, `ClockSet.tipOf`, `CoordGrid`, `NumberCells`, `TaskScene.feedDrag`).
-  - O4: the `perimeter.ts` `composite` loop and the content wording.
+- `[human]` 8.7: test the gesture on a tablet (5-minute snap, grabbing a hand with a child's finger). This also covers O2: a ring hides the numeral under the tip.
+- `[human]` 10.6: the author reads the decisions made against ZADANIA. Add three new wording points:
+  - "Wiersze, kolumny i przekątne mają równe sumy. Dodaj pełną linię."
+  - "Obwód to dwa razy suma dwóch sąsiednich boków."
+  - "Wtedy zegar pokaże …"
+- Follow-ups are in `follow-ups/review-fixes.md` under "From the visual gate":
+  - O1: grid size, in `CoordGrid`
+  - O2: rings, in `ClockSet`
+  - O3: the dial shows the start pose during the solution
+  - O4: the fill of the composite figure, in `FigureGrid`
+  - O5: `E5.5.capacity_quarter_l` hint length, `Trigger: S-14b`
+  - O6: the magic square in the 190 px solution strip
+- The impl-review follow-ups F4, F5, O2 and O4 are unchanged.
+- No new DESIGN-GAP rows. Rows 73–78 cover every state that has no kit frame.
 
 ## 6. Autonomous decisions
 
-1. **I fixed F1–F4 in this step instead of deferring them.** The prompt calls content fixes in hints cheap, and the OK guard is one line. The rejected option was deferring them as follow-ups. This would change if a fix had needed a new UI component or a change to the save format.
-2. **E5.12 square side: `max: 40`, with a small-space exemption of 9 distinct tasks.** The rejected options were keeping 80 (two-digit quotients belong to E6.4) and widening to sides 1..10 (a 1 cm square is a degenerate drawing). This would change if the author wants division beyond the table in E5.12; then raise `max` back and drop the exemption.
-3. **I kept E4.7 and E5.12 `sideRect` at `max: 60`, narrower than the plan's 100.** It is safer for grades 2–3, and the author reads it in 10.6. This would change if the author asks for larger perimeters.
-4. **F5 (`pointerupoutside`) is a WARNING follow-up, not a block.** The cancel rule itself is proven: the reducer has unit tests, and p12c covers `wasCanceled`. Only the second entry path is unproven. This would change if a tablet browser delivers drag-outside as `pointerupoutside` and the hands stick.
-5. **The subagent's "cancel test cannot fail" claim is an observation, not a WARNING.** Break p12c went red on that test, which shows the grab happened. The second half of the test, a drag that moves the hand, catches a broken grab. This would change if p12c were re-run and stayed green.
-6. **The phase 2 RED counts as real.** The assertions recompute the result from the drawing, and the later breaks discriminate. This would change if a test that asserts only on imports were found.
+1. **Playwright only, not Claude in Chrome.**
+   - Rejected: Chrome first.
+   - Why: every state needs taps, wrong answers or a held drag on the Phaser canvas, and Chrome cannot synthesise these (profile § 8). The S-13 and S-14 gates used the same route.
+   - What would change it: a state that is reachable without input, such as a static page.
+2. **V2 fixed by shortening the content, not by changing `FeedbackBar`.**
+   - Rejected: a taller bar, or a minimum scale with clipping. Both are shared widgets, and the change would alter every task's layout.
+   - Why: the kit `hint-keypad.png` keeps the bar at two lines. Only two new strings broke that.
+   - What would change it: several more long keypad hints. Then a layout change, such as a wrapping bar, beats editing content.
+3. **V3 fixed in the text ("Wtedy zegar pokaże …"), not by drawing the target pose at the last solution step.**
+   - Rejected: changing `ClockSet.render` in the solution phase. That is a new behaviour with no kit frame.
+   - Why: the text change removes the contradiction with no UI change. The pose idea is follow-up O3.
+   - What would change it: the author wants the dial to demonstrate the answer.
+4. **V1: the triangle is drawn to scale, with a raised apex for flat triangles.**
+   - Rejected: keeping the stylised shape and only ordering the labels. A stylised shape cannot match all three ratios.
+   - Rejected: an exact scale with no floor. Some flat triangles, such as 20/18/3, would leave the labels overlapping.
+   - Why: the drawing must never contradict the labels. The floor keeps the order of the sides (proven by the test).
+   - What would change it: the author prefers non-scaled sketches, as many textbooks use. Then revert, with labels sorted to fit.
+5. **`E5.5.capacity_quarter_l` is an exception to the new invariant, not fixed here.**
+   - Rejected: shortening an S-14 string in this slice.
+   - Why: it is outside S-13b scope and needs its own teacher read. The exception set is named, and the item is follow-up O5.
+   - What would change it: the orchestrator wants it fixed before ship. It is a one-line content change.

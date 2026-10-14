@@ -23,3 +23,12 @@ Each item has a `Trigger:` line; later slices grep for it.
 - O2: one dial geometry source (`ClockFace.render` recomputes `clockSetLayout`'s scale; hand-tip trig in `clockSet.grab`, `ClockSet.tipOf`, e2e `onDial`); one pointer event type for `blockDrag`/`clockSet` (`TaskScene.feedDrag` intersection); `TaskScene` `visual.snap ?? 60`; `clockHandAngles` moved out of `core/round/pictureLayout` (imported by `core/tasks/generators/clock.ts`); unused `figureLayout` `look.minCell`; `CoordGrid` heart colour/offsets and `NumberCells` `'#245c59'` into tokens. Trigger: next change to ClockFace, ClockSet or the grid widgets
 - O4: PERIMETER `composite` rejection loop has no cap (feasible, but ~1-3 % acceptance at parser minimum `max` 12); raise its minimum or add a draw test at the minimum. Trigger: next change to perimeter.ts
 - O4: spoken "Ustaw zegar na godzinę 1 i 45 minut" (`pl.tasks.clockSetSpeak`), `2 · a + 2 · b` step for rectangles (`perimeterHint`), 'kwadrat' as a grid item (`src/data/gridItems.ts`). Trigger: author read of the sample (row 10.6)
+
+## From the visual gate (reviews/visual-review.md)
+
+- O1: the coordinate grid uses a small part of the tiles picture area on the tablet (`CoordGrid.render`, `TASK_LAYOUT.coord`); letters 13.6 CSS px. Trigger: next change to CoordGrid or the tiles picture layout
+- O2: a handle ring covers the numeral under the tip and two rings overlap when the hands are close (`ClockSet`, design-gaps row 77). Trigger: tablet check of row 8.7
+- O3: in the solution of "ustaw zegar" the dial keeps the start pose; the last step could show the target pose (`ClockSet.render`, `TaskScene.render`). Trigger: author read (row 10.6) or next change to ClockSet
+- O4: composite figures are white on the lattice; the kit fills grid figures leaf/butter (`FigureGrid`). Trigger: next change to FigureGrid
+- O5: `E5.5.capacity_quarter_l` keypad first hint is 75 characters and shrinks the bar text to ~10 CSS px on the tablet; it is the one entry of `LONG_KEYPAD_HINTS` in `tests/contentInvariants.test.ts`. Trigger: S-14b or the next content change to CAPACITY
+- O6: the magic square in the 190 px keypad solution strip has ~9 px digits on the tablet (`TASK_LAYOUT.picture.keypadSolution`). Trigger: next change to pictureLayout / the solution layout beside the keypad
