@@ -896,7 +896,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 8ee3d18
 - [x] 2.2 Deliberate break: kopia po zapisie / zignorowana porażka kopii / `migration-failed` jako `future` → czerwone; przywrócone; meta-check — 8ee3d18
 - [x] 2.3 `npm run lint` — `idb-keyval` importowany tylko w `src/storage/idb.ts` — 8ee3d18
-- [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 8ee3d18 (e2e: orchestrator note, 63 passed on 8ee3d18)
 
 #### Manual
 
@@ -906,9 +906,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check
-- [ ] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @@SHA@@
+- [x] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check — @@SHA@@
+- [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0 — @@SHA@@
 - [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future`
 
 #### Manual

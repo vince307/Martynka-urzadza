@@ -1,5 +1,3 @@
-import { pl } from '../../data/pl';
-
 export type ExportOutcome = 'shared' | 'downloaded' | 'cancelled' | 'failed';
 
 const isAbort = (error: unknown): boolean => typeof error === 'object' && error !== null && (error as { name?: string }).name === 'AbortError';
@@ -36,6 +34,3 @@ export const saveFileToDevice = async (text: string, fileName: string, nav: Navi
         return 'failed';
     }
 };
-
-/** Name of the raw copy of an unreadable save (kept stable; the current save gets a dated name from pl.saveTransfer). */
-export const RAW_FILE_NAME = pl.saveFailed.fileName;

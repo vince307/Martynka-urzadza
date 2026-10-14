@@ -52,12 +52,15 @@ export const pl = {
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
+        // Shown when the save was moved to a newer format at the start; the old copy is kept on the device.
+        saveMigrated: (from: number) => `Zapis przeniesiono z wersji ${from}.`,
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
             // DESIGN-GAP 69: the kit has no line for the reason of a switched-off save.
             future: 'Zapis jest wyłączony: zapis na tym urządzeniu pochodzi z nowszej wersji gry. Zaktualizuj grę, a postępy wrócą.',
             timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie.',
+            'migration-failed': 'Zapis jest wyłączony: starego zapisu nie udało się przenieść do tej wersji gry. Został bez zmian.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
@@ -92,9 +95,26 @@ export const pl = {
         export: 'Zachowaj kopię',
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
-        fileName: 'martynka-zapis.txt',
+        // S12-14: the raw copy carries the date like the current save's file, with "surowy" so the two are never mixed up.
+        fileName: (date: string) => `martynka-zapis-surowy-${date}.txt`,
         // DESIGN-GAP 51: the kit has no line for the reason of a failed read; a code and the build, for the parent to quote.
         detail: (reason: string, build: string) => `Kod: ${reason} · Wersja ${build}`,
+    },
+    // DESIGN-GAP 82: the kit has no card for a save from a newer game version; calm, for the adult, the main advice is to update.
+    saveFuture: {
+        title: 'Ten zapis pochodzi z nowszej wersji gry',
+        body: 'Zapis na tablecie jest bezpieczny i nie został zmieniony. Zaktualizuj grę, a postępy wrócą.',
+        export: 'Zachowaj kopię',
+        continue: 'Graj dalej',
+        note: 'Tym razem gra nie zapisze postępów.',
+    },
+    // DESIGN-GAP 82: the same for a save that could not be moved to the current format; the old save stays as it was.
+    saveMigrationFailed: {
+        title: 'Nie udało się przenieść zapisu',
+        body: 'Zapis na tablecie został bez zmian. Rodzic może zachować jego kopię.',
+        export: 'Zachowaj kopię',
+        continue: 'Graj dalej',
+        note: 'Tym razem gra nie zapisze postępów.',
     },
     // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
     saveTransfer: {
@@ -127,6 +147,9 @@ export const pl = {
         // Room names are lower case in data (they sit inside sentences); a summary line starts with a capital.
         room: (name: string, done: number, total: number) => `${name.charAt(0).toUpperCase()}${name.slice(1)}: ${done} z ${total}`,
         load: 'Wczytaj',
+        // S12-09: what the file says about itself, shown in the summary step so the parent can tell an old copy from a new one.
+        fileInfo: (date: string | null, build: string | null) =>
+            date !== null && build !== null ? `Kopia z ${date}, wersja gry ${build}` : date !== null ? `Kopia z ${date}` : build !== null ? `Wersja gry ${build}` : '',
         rejected: {
             'too-big': 'Ten plik jest za duży, to nie jest zapis tej gry. Obecne postępy zostały bez zmian.',
             'not-json': 'To nie jest plik zapisu tej gry. Obecne postępy zostały bez zmian.',

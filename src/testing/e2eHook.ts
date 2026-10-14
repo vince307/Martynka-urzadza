@@ -1,3 +1,4 @@
+import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
@@ -75,8 +76,8 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'v1';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'v1'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -84,17 +85,33 @@ export const E2E_LOAD_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a current-version save that fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject). Anything else is null.
+ * writes reject), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
     return value !== null && E2E_SAVE_SEAMS.includes(value) ? (value as E2ESaveSeam) : null;
 };
 
-/** In-memory store for the e2e seam; remembers writes where they succeed. Never touches IndexedDB. */
+/** What the seam store holds, for the hook: the order of its operations and the version of the last written value. */
+export interface E2ESaveStoreLog {
+    ops: ('backup' | 'write')[];
+    writtenVersion: number | null;
+}
+
+let seamStoreLog: E2ESaveStoreLog | null = null;
+
+/** In-memory store for the e2e seam; remembers writes where they succeed and logs its operations. Never touches IndexedDB. */
 export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
     let value: unknown =
-        seam === 'unreadable' ? { version: 99, profileId: 'default', stars: 7 } : seam === 'corrupt' ? { version: 1, profileId: 'default', stars: 'many' } : undefined;
+        seam === 'unreadable'
+            ? { version: 99, profileId: 'default', stars: 7 }
+            : seam === 'corrupt'
+              ? { version: 1, profileId: 'default', stars: 'many' }
+              : seam === 'v1'
+                ? structuredClone(saveV1Fixture)
+                : undefined;
+    const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
+    seamStoreLog = log;
     return {
         read: () =>
             seam === 'unavailable'
@@ -102,9 +119,14 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 : seam === 'hang'
                   ? new Promise<unknown>(() => undefined)
                   : Promise.resolve(value),
-        backup: () => Promise.resolve(),
+        backup: () => {
+            log.ops.push('backup');
+            return Promise.resolve();
+        },
         write: (next) => {
             if (seam === 'writefail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
+            log.ops.push('write');
+            log.writtenVersion = next.version;
             value = next;
             return Promise.resolve();
         },
@@ -145,9 +167,10 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.settings) as Settings | undefined;
         return deepFreeze(structuredClone(value ?? { autoRead: null }));
     };
-    const save = (): Readonly<AutosaveStatus> | null => {
+    const storeSnapshot = (): E2ESaveStoreLog | null => (seamStoreLog ? { ops: [...seamStoreLog.ops], writtenVersion: seamStoreLog.writtenVersion } : null);
+    const save = (): Readonly<AutosaveStatus & { store: E2ESaveStoreLog | null }> | null => {
         const saver = game.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
-        return saver ? deepFreeze({ ...saver.status() }) : null;
+        return saver ? deepFreeze({ ...saver.status(), store: storeSnapshot() }) : null;
     };
     const artHealthSnapshot = (): { total: number; missing: number } | null => {
         const value = game.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined;

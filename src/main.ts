@@ -27,8 +27,8 @@ import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
 import { exportFileText } from './core/saveFile';
+import { cardCopyFor } from './core/saveHealth';
 import { openSaveExportDialog } from './ui/dom/saveExportDialog';
-import { RAW_FILE_NAME } from './ui/dom/saveExport';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
@@ -134,9 +134,10 @@ const start = async (): Promise<void> => {
         // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
         const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         const reason = outcome.kind === 'unreadable' ? outcome.reason : null;
+        const cardCopies = { future: pl.saveFuture, migrationFailed: pl.saveMigrationFailed, failed: pl.saveFailed, unavailable: pl.saveUnavailable };
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
+                copy: cardCopies[cardCopyFor(outcome.kind, reason)],
                 // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
                 detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:
@@ -149,7 +150,7 @@ const start = async (): Promise<void> => {
                                       openSaveExportDialog({
                                           file: (now) => ({
                                               text: exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: reason ?? 'unknown', raw }),
-                                              fileName: RAW_FILE_NAME,
+                                              fileName: pl.saveFailed.fileName(now.toISOString().slice(0, 10)),
                                           }),
                                           onClose: () => undefined,
                                       }),
