@@ -1,6 +1,6 @@
 # Handoff — `drawn-grid-tasks-e3-e4` (slice S-13b)
 
-The visual gate captured every new view (29 states, 1440×900 and 1024×768), fixed three discrepancies in `7aa3485` and ended `reviews/visual-review.md` with `VISUAL: PASS`. Next is archive, then ship. Only the `[human]` rows 8.7 and 10.6 stay open; they never block shipping.
+The visual gate passed (`VISUAL: PASS`, fixes in `7aa3485`). The ship step archived the change to `context/archive/2026-10-14-drawn-grid-tasks-e3-e4/`, closed roadmap S-13b (`done`) and pushed the branch for a PR. Only the `[human]` rows 8.7 and 10.6 stay open; they are a post-run checklist and never block shipping.
 
 ## 1. State
 
@@ -8,8 +8,8 @@ The visual gate captured every new view (29 states, 1440×900 and 1024×768), fi
 |---|---|
 | Branch | `feat/drawn-grid-tasks-e3-e4`, cut from `main` at `9554e96` |
 | Commits | `7aa3485` (visual-gate fix) on `e48c9cb` (impl-review docs) … `1c01e0c`, plus this docs commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-14-save-s13b-s15-s14b/run-log.md |
+| `change.md` status | `archived` (stamped by `/10x-archive` in the ship step) |
 | Progress rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): `[human]` 8.7 and 10.6 |
 | Working tree | clean after the docs commit; the throwaway spec was moved to the session scratchpad |
 
@@ -44,7 +44,7 @@ The visual gate captured every new view (29 states, 1440×900 and 1024×768), fi
 
 ## 4. Next command
 
-`/10x-archive drawn-grid-tasks-e3-e4` then ship
+none — shipped
 
 ## 5. Open
 
@@ -86,3 +86,7 @@ The visual gate captured every new view (29 states, 1440×900 and 1024×768), fi
    - Rejected: shortening an S-14 string in this slice.
    - Why: it is outside S-13b scope and needs its own teacher read. The exception set is named, and the item is follow-up O5.
    - What would change it: the orchestrator wants it fixed before ship. It is a one-line content change.
+6. **Archived with the `[human]` rows 8.7 and 10.6 open.**
+   - Rejected: "Resume implementation" or "Cancel" at the `/10x-archive` warning prompt.
+   - Why: the warning was `2 Progress items still pending (0 automated, 2 manual)`; the skill labels "Continue archiving" as Recommended for manual-only rows, and the step prompt makes open `[human]` rows a post-run checklist. Rows without a SHA are reviewer/visual/e2e-note rows (no diff of their own); every cited SHA is an ancestor of the branch head.
+   - What would change it: an open automated row, or a cited SHA missing from the branch history.
