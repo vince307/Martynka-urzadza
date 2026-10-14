@@ -20,3 +20,16 @@ Each item has a `Trigger:` line; later slices grep for it.
   Trigger: the visual gate of this change
 - **Mistake example of a `digits` task in the parent preview** is stored as a number only; a drawing (gap 58) is not kept.
   Trigger: a v3 save that records the example differently
+
+## From the implementation review (2026-10-15, `reviews/impl-review.md`)
+
+- **F4: hint-line ADD_SUB skills lose the S-03 "20 − 7" decomposition** (`src/core/tasks/generators/addSub.ts` `generateAddSub`, `line` branch): DT − U now has one line plus one jump back on the number line instead of "10 − 7 = 3 | 10 + 10 = …". Keep, or show the `addSubHint` text beside a one-jump line.
+  Trigger: the author's read ([human] 9.6) or the next change to `addSubJumps`
+- **F5: a validator rule "a tall drawing needs tiles or keypad"** (`src/core/tasks/validate.ts` `validateTask`), so `tallOf` in `src/core/round/pictureLayout.ts` can never throw at runtime; at the same time turn the mode rules into a `switch` with `never` (F6).
+  Trigger: the next tall drawing or the next change to the mode rules of `validateTask`
+- **F8: widget tokens**: text colour `'#245c59'` in `ArrowGraph`, `NumberLine`, `NumberCells` → a token in `src/data/layout.ts`; `WrittenColumn.render` offsets (`12 * s`, `22 * s`) → `TASK_LAYOUT.written`; `BlockMat`'s private `dashedRect` → `src/ui/widgets/dashed.ts` with a gap parameter.
+  Trigger: the next change to any of these widgets
+- **F9: cap `draw` in `src/core/tasks/generators/written.ts`** (no `MAX_ATTEMPTS` today; all current params are satisfiable).
+  Trigger: S-14c or the next change to WRITTEN
+- **F10: written column at the visual gate**: the hint phase draws the first carry/borrow column, which may differ from the ones line of the first hint (330 + 571); "OK" with empty boxes does nothing (`TaskScene.pressBoxKey`) — a nudge may help.
+  Trigger: the visual gate of this change

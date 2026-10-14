@@ -1,60 +1,61 @@
 # Handoff — `number-line-written-arrows` (slice S-14b)
 
-Phase 11 (e2e, the last phase) is committed (`4dc12e7`); all 11 phases are implemented and the change is `implemented`. Next is the impl-review; do not archive or ship before it, and the [reviewer], [visual] and [human] rows are still open.
+Written by the impl-review step: full-plan review of phases 1–11 done, verdict APPROVED after three WARNING fixes (`fix(...)` commit), `MERGE: CLEAR`. Next is the visual gate; the [visual] rows 5.7, 6.6, 8.7 and the [human] rows 8.8, 9.6 are still open — do not tick them from this review.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/number-line-written-arrows`, from `main` at `882cd93` |
-| Commits | plan commits + p1 `cfea708` .. p10 `6426d8e` + p11 `4dc12e7` + this handoff |
+| Commits | plan commits + p1 `cfea708` .. p11 `4dc12e7` + p11 handoff `252e2db` + review fix `fix(number-line-written-arrows): poprawki z przeglądu implementacji` + this docs commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implemented` |
-| `## Progress` | all automated rows ticked (phase 11 rows 11.1-11.5 with `4dc12e7`); open: 1.5, 2.5, 3.5, 4.5, 5.6, 6.5, 7.5, 8.6, 9.5 [reviewer]; 5.7, 6.6, 8.7 [visual]; 8.8, 9.6 [human] |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` | 5 rows open: 5.7, 6.6, 8.7 [visual]; 8.8, 9.6 [human]; all [reviewer] rows ticked by this review |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/number-line.spec.ts` | 3 tests: hint picture shows only after a miss, arrow graph takes the keypad, jumps take an expression tile |
-| `tests/e2e/support/hook.ts` | `hintPicture` added to the `Targets` type |
-| `playwright.config.ts` | `number-line` added to `ROUND_SPEC` (hook build, port 4397) |
-| `context/changes/number-line-written-arrows/e2e-break-p11{a,b,c}.patch` | deliberate-break patches |
-| `context/changes/number-line-written-arrows/e2e-request-p11.md` | request the orchestrator executed |
-| `context/changes/number-line-written-arrows/plan.md` | rows 11.1-11.5 ticked with shas |
-| `context/changes/number-line-written-arrows/change.md` | status `implemented` |
+| `src/core/round/canonicalInput.ts` | F1: final `switch` with `never` (no silent tiles/keypad fallback) |
+| `src/ui/widgets/Keypad.ts` | F2: `setKeyMode` returns early when the mode does not change (a redraw no longer clears a keypad task's buffer) |
+| `src/data/pl.ts`, `src/core/tasks/generators/arrowTable.ts` | F3: `pl.tasks.arrowRuleBack(plus, n, from)` "Idź pod prąd strzałki: od 3 odejmij 1." |
+| `tests/answerModes.test.ts` | F7: two stale test titles renamed |
+| `context/changes/number-line-written-arrows/reviews/impl-review.md` | review report, ends with `MERGE: CLEAR — …` |
+| `context/changes/number-line-written-arrows/follow-ups/review-fixes.md` | F4, F5, F8, F9, F10 with `Trigger:` lines |
+| `context/changes/number-line-written-arrows/plan.md` | [reviewer] rows 1.5–9.5 ticked with notes |
+| `context/changes/number-line-written-arrows/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
-Playwright was run by the orchestrator, not by this step (Chromium cannot start in the agent sandbox).
+Observed in this step. Baseline main `882cd93`: unit 2326, e2e 71.
 
 | Command | Result |
 |---|---|
-| `number-line.spec.ts` (orchestrator) | 3 passed (26.7 s), no spec fix needed |
-| p11a break (`hintPicture` in phase `first`), `-g "shows only after a miss"` (orchestrator) | red `toBeNull`, Received {"height":190,"width":768,"x":236,"y":530}; restored |
-| p11b break (`ArrowGraph.shown()` false), `-g "arrow graph takes the keypad"` (orchestrator) | red `not.toBeNull`, Received null; restored |
-| p11c break (right expression dropped from the jumps choices), `-g "jumps take an expression tile"` (orchestrator) | red `toContain`, Expected "2 · 2", Received ["2 · 3","3 · 2"]; restored |
-| Full e2e suite after restore, `--workers=4` (orchestrator) | 77 passed (5.3 min) = 74 + 3; `src/` has no diff |
-| lint, typecheck (this step) | OK |
-| `npm test` (this step) | 2429 passed (baseline 2429, +0) |
-| `npm run build` (this step) | OK, `e2e hook: absent (2 chunks checked)`; nothing listens on 4397/4398 |
-| Meta-check | each break goes red only in its own test via `-g`, and the failure message names the asserted property |
+| lint, typecheck (before and after fixes) | OK |
+| `npm test` (before and after fixes) | 2429 passed = 2326 + 103 |
+| deploy + ops shell tests, `sample` E1–E6 | OK, no violations |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts --workers=4` (after fixes) | 77 passed (5.2 min) = baseline 71 + 6 (written-column 3, number-line 3) |
+| Break: `stepDigitBoxes` fills from the left | `tests/digitBoxes.test.ts` 5 red + WRITTEN rows of `tests/solvableInMode.test.ts` red; restored (`git diff` empty) |
+| Break: sixth mode `'probe'` in `ANSWER_MODES` | `tsc` red at every `never` guard: `canonicalInput` (new), `pictureLayout` x4, `TaskScene` x2, `FeedbackBar`, e2e `hook.ts` x2; restored |
+| Meta-check | reducer break caught by an independent oracle (typed ones-first, read back); mode break proves the guard spans core, scene, bar and e2e helpers |
+| Teacher read `sample -- E2/E3/E5/E6 --count 6` | E2.1/3/5/6/7, E3.2/6/8/9, E5.2, E5.5, E6.7 read; F3 fixed and re-read; details in `reviews/impl-review.md` |
 
 ## 4. Next command
 
-`/10x-impl-review number-line-written-arrows`
+`visual gate`
 
 ## 5. Open
 
-- Visual gate: rows 5.7, 6.6, 8.7; written column at scale 1.3 (marks collide?), provisional layouts of gaps 92 and 93 (`docs/design-gaps.md`).
-- [human] 8.8 and 9.6: carry/borrow notation (gap 91) and decisions against the literal ZADANIA text; higher unlock thresholds for saves on E2.6, E3.9, E5.2, E6.7.
-- [reviewer] rows 1.5, 2.5, 3.5, 4.5, 5.6, 6.5, 7.5, 8.6, 9.5 wait for impl-review.
-- At archive: follow-ups already in `follow-ups/review-fixes.md`.
+- [visual] 5.7 (graph, table, E2.7 line, E3.9 jumps), 6.6 (ADD_SUB hint line phases), 8.7 (written column states, borrow marks at scale 1.3, F10) — `src/ui/widgets/{ArrowGraph,NumberLine,WrittenColumn}.ts`, `TASK_LAYOUT.picture.digits`/`hint` (gaps 92, 93).
+- [human] 8.8 carry/borrow notation (`WrittenColumn.render`, gap 91); 9.6 decisions against the literal ZADANIA text and higher unlock thresholds on live saves (E2.6, E3.9, E5.2, E6.7 — nothing moves back: `unlockedStep` only rises, save stays v2). Add F4 (DT − U decomposition dropped on hint-line skills) to the author's read.
+- Follow-ups: `follow-ups/review-fixes.md` (F4, F5, F8, F9, F10 plus the earlier ones).
 
 ## 6. Autonomous decisions
 
-1. Phase 11 rows ticked from the orchestrator evidence (verbatim in §3), plus the lint/typecheck/unit/build observed in this step.
-2. Row 11.5 "servers killed" checked with `lsof` on 4397/4398 (none listening).
-3. Commit message as specified by the orchestrator; no src change, so no teacher read.
-4. change.md set to `implemented` although [reviewer]/[visual]/[human] rows remain open; they belong to impl-review and the visual gate. Would change if the run profile requires all rows ticked before `implemented`.
+1. **F2 fixed in `Keypad.setKeyMode` (early return), not by moving the call into the new-task block of `TaskScene.render`.** Why: one-line, keeps the widget safe for any caller. Would change: the visual gate showing the entry field not hiding/showing on a digits↔keypad switch.
+2. **F3 wording "Idź pod prąd strzałki: od X odejmij n."** (orchestrator's suggestion) over "Cofnij się po strzałce". Why: names the direction and the number; never states the result. Would change: the author's read.
+3. **F4 accepted as OBSERVATION, not reverted.** Counting back on the number line is a taught method and the drawing must match the lines; the S-03 decomposition goes to the author. Would change: the author preferring the decomposition text.
+4. **Verdict APPROVED / `MERGE: CLEAR`** with zero CRITICAL; F5 (`tallOf` throw) judged unreachable: only `thermometer` is tall and every TEMPERATURE skill is tiles or keypad. Would change: a select/drag/digits skill with a thermometer.
+5. **First e2e run stopped mid-way and re-run once after the fixes** (F2 touches the keypad), so the recorded e2e result covers the reviewed code.

@@ -840,7 +840,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Żaden konsument trybu w `src/core/` nie kończy się cichym `return` kafelków/klawiatury; reduktor bez Phasera
+- [x] 1.5 [reviewer] Żaden konsument trybu w `src/core/` nie kończy się cichym `return` kafelków/klawiatury; reduktor bez Phasera — impl-review: core consumers exhaustive after F1 (`canonicalInput`); reducer pure
 
 ### Phase 2: Rysunki `column` i `numberLine`, generator WRITTEN
 
@@ -853,7 +853,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela szablonów WRITTEN (6 losowań na wariant z testu/`describeVisual`): linie kolumn, „1 dalej”, pożyczka, polecenia
+- [x] 2.5 [reviewer] Odczyt nauczyciela szablonów WRITTEN (6 losowań na wariant z testu/`describeVisual`): linie kolumn, „1 dalej”, pożyczka, polecenia — impl-review teacher read E5/E6 WRITTEN OK
 
 ### Phase 3: Rysunek `arrows`, generator ARROW_TABLE, oś w SEQUENCE i skoki MULT_GROUPS
 
@@ -866,7 +866,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Odczyt nauczyciela szablonów ARROW_TABLE, osi SEQUENCE i `jumps` (6 losowań na wariant)
+- [x] 3.5 [reviewer] Odczyt nauczyciela szablonów ARROW_TABLE, osi SEQUENCE i `jumps` (6 losowań na wariant) — impl-review teacher read OK after F3 (inverse-graph wording)
 
 ### Phase 4: Rysunek podpowiedzi `Task.hintVisual` i oś w ADD_SUB
 
@@ -879,7 +879,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Skoki osi i linie `addSubHint` pochodzą z jednej funkcji; brak parsowania tekstu podpowiedzi
+- [x] 4.5 [reviewer] Skoki osi i linie `addSubHint` pochodzą z jednej funkcji; brak parsowania tekstu podpowiedzi — impl-review: `hintOfJumps(addSubJumps)` feeds lines and `hintLine`; no text parsing (F4 recorded)
 
 ### Phase 5: Widżety `NumberLine` i `ArrowGraph`, dane E2.6, E2.7, E3.9
 
@@ -893,7 +893,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 5.6 [reviewer] Odczyt nauczyciela `sample` E2.6, E2.7, E3.9 `--count 6`
+- [x] 5.6 [reviewer] Odczyt nauczyciela `sample` E2.6, E2.7, E3.9 `--count 6` — impl-review teacher read E2.6/E2.7/E3.9 OK after F3
 - [ ] 5.7 [visual] Zrzuty: graf z pustym wyjściem, graf z pustym wejściem, tabelka, ciąg na osi E2.7, ciąg w fazie rozwiązania (oś w 768 × 190), skoki E3.9 z kafelkami, skoki z podpowiedzią — 1440×900 i 1024×768
 
 ### Phase 6: Oś-podpowiedź w `TaskScene`, dane ADD_SUB ≤ 30
@@ -907,7 +907,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Odczyt nauczyciela `sample` E2.1, E2.3, E2.5, E3.2, E3.6, E3.8 `--count 6` (`hint visual:` ↔ linie podpowiedzi)
+- [x] 6.5 [reviewer] Odczyt nauczyciela `sample` E2.1, E2.3, E2.5, E3.2, E3.6, E3.8 `--count 6` (`hint visual:` ↔ linie podpowiedzi) — impl-review teacher read OK; F4 follow-up on DT − U
 - [ ] 6.6 [visual] Zrzuty: ADD_SUB pierwsza próba (bez osi), podpowiedź z osią (dodawanie przez dziesiątkę), podpowiedź z osią (odejmowanie), krok 1 i ostatni krok rozwiązania z osią i liniami, retype — 1440×900 i 1024×768
 
 ### Phase 7: Widżet `WrittenColumn`, klawiatura klawiszy, gałąź `digits` w scenie
@@ -921,7 +921,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Scena tylko karmi reduktor; brak liczb balansu i tekstów gracza w `WrittenColumn`; żaden `if` po trybie w `TaskScene` bez gałęzi `never`
+- [x] 7.5 [reviewer] Scena tylko karmi reduktor; brak liczb balansu i tekstów gracza w `WrittenColumn`; żaden `if` po trybie w `TaskScene` bez gałęzi `never` — impl-review: scene feeds `stepDigitBoxes`; mode dispatch `widgetsOf`/`answerSpot` with `never`; layout literals in F8
 
 ### Phase 8: Helpery e2e `digits`, `playable` wpuszcza `digits`, dane WRITTEN, O5
 
@@ -935,7 +935,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 8.6 [reviewer] Odczyt nauczyciela `sample` E5.2, E6.7 i E5.5 `--count 6` (linie kolumn, „1 dalej”, pożyczka, skrócona podpowiedź O5)
+- [x] 8.6 [reviewer] Odczyt nauczyciela `sample` E5.2, E6.7 i E5.5 `--count 6` (linie kolumn, „1 dalej”, pożyczka, skrócona podpowiedź O5) — impl-review teacher read E5.2/E6.7/E5.5 OK; borrow across zero right
 - [ ] 8.7 [visual] Zrzuty: słupek E5 pusty, częściowo wypełniony (aktywne okienko), podpowiedź z przeniesieniem, kroki rozwiązania obok słupka, odejmowanie z pożyczką w rozwiązaniu, słupek E6 trzycyfrowy, retype, poprawna odpowiedź — 1440×900 i 1024×768
 - [ ] 8.8 [human] Notacja przeniesienia i pożyczki w słupku pochodzi z wiedzy ogólnej, nie z repo ani kitu — autor potwierdza albo podaje szkolny zapis
 
@@ -950,7 +950,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Manual
 
-- [ ] 9.5 [reviewer] Każdy follow-up ma `Trigger:`; brak komentarzy o czterech trybach; brak duplikatu rysowania okienka
+- [x] 9.5 [reviewer] Każdy follow-up ma `Trigger:`; brak komentarzy o czterech trybach; brak duplikatu rysowania okienka — impl-review: every follow-up has `Trigger:`; no four-mode comment; `dashed.ts` shared (BlockMat copy predates, F8)
 - [ ] 9.6 [human] Decyzje wbrew dosłownemu ZADANIA/PRD: ARROW_TABLE bez „·3” i łańcucha, WRITTEN bez „brakujących cyfr”, przeniesienie rysowane przez grę, oś-podpowiedź bez E1 i > 30, oś SEQUENCE tylko w E2.7, E5.2 z przeniesieniem; wyższe progi odblokowania na żywych zapisach (E2.6, E3.9, E5.2, E6.7)
 
 ### Phase 10: Słupek pisemny dotykiem — e2e (#11)
