@@ -977,7 +977,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 - [x] 5.7 [reviewer] Odczyt nauczyciela `sample` E1.11, E3.4, E4.1 `--count 6` — impl-review (F1 fixed)
 - [x] 5.8 [reviewer] Widżety bez tekstów gracza i liczb balansu; `hideTaskLayer` chowa oba — impl-review (limits moved to `ART_LIMITS`, F4)
-- [ ] 5.9 [visual] Zrzuty: monety E1.11, banknoty E4.1 (klawiatura), zł + gr na kafelkach, waga kg (kafelki), waga dag (klawiatura), waga z podpowiedzią, waga z krokami obok klawiatury, pieniądze z krokami obok kafelków — 1440×900 i 1024×768
+- [x] 5.9 [visual] Zrzuty: monety E1.11, banknoty E4.1 (klawiatura), zł + gr na kafelkach, waga kg (kafelki), waga dag (klawiatura), waga z podpowiedzią, waga z krokami obok klawiatury, pieniądze z krokami obok kafelków — 1440×900 i 1024×768 — bramka wizualna 2026-10-14, `reviews/visual-review.md`, `screenshots/`
 
 ### Phase 6: `Jugs` i `Thermometer`, układ „obok” w scenie, umiejętności w E3.11, E4.7, E5.4, E6.1
 
@@ -992,7 +992,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Manual
 
 - [x] 6.6 [reviewer] Odczyt nauczyciela `sample` E3.11, E4.7, E5.4, E6.1 — impl-review (thermometer with tiles readability → follow-up F3)
-- [ ] 6.7 [visual] Zrzuty: termometr dodatni (klawiatura), ujemny z kafelkami tekstowymi, z podpowiedzią, z krokami w układzie „obok”, różnica temperatur, dzbanki ½ l, dzbanki z krokami — 1440×900 i 1024×768
+- [x] 6.7 [visual] Zrzuty: termometr dodatni (klawiatura), ujemny z kafelkami tekstowymi, z podpowiedzią, z krokami w układzie „obok”, różnica temperatur, dzbanki ½ l, dzbanki z krokami — 1440×900 i 1024×768 — bramka wizualna 2026-10-14, `reviews/visual-review.md`, `screenshots/`
 
 ### Phase 7: `IconGroups`, umiejętności COUNT w E1.2, E1.4 i MULT_GROUPS w E3.9
 
@@ -1007,7 +1007,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Manual
 
 - [x] 7.6 [reviewer] Odczyt nauczyciela `sample` E1.2, E1.4, E3.9 — impl-review
-- [ ] 7.7 [visual] Zrzuty: liczenie 1–5, 6–7, grupy w ramkach z kafelkami liczb i „3 · 4”, grupy z podpowiedzią — 1440×900 i 1024×768
+- [x] 7.7 [visual] Zrzuty: liczenie 1–5, 6–7, grupy w ramkach z kafelkami liczb i „3 · 4”, grupy z podpowiedzią — 1440×900 i 1024×768 — bramka wizualna 2026-10-14, `reviews/visual-review.md`, `screenshots/`
 
 ### Phase 8: Nowe kroki grywalne E1.8, E1.10, E2.2, E2.8, E5.5, dane widżetów S-13 i testy przypięte do kolejności
 
@@ -1023,7 +1023,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Manual
 
 - [x] 8.7 [reviewer] Odczyt nauczyciela `sample` `--count 6` E1.8, E1.10, E1.11, E2.1, E2.2, E2.8, E2.9, E2.10, E5.5, E5.7, E6.5 i `childName` — impl-review
-- [ ] 8.8 [visual] Zrzuty: linijka E1.8, 11–12 w dziesiątce + reszta, klocki E1.10, pieniądze E2.2, grosze E2.8, waga dag E2.8, dzbanki ¼ l, karta „Nowa umiejętność!” z nowym `childName` — 1440×900 i 1024×768
+- [x] 8.8 [visual] Zrzuty: linijka E1.8, 11–12 w dziesiątce + reszta, klocki E1.10, pieniądze E2.2, grosze E2.8, waga dag E2.8, dzbanki ¼ l, karta „Nowa umiejętność!” z nowym `childName` — 1440×900 i 1024×768 — bramka wizualna 2026-10-14 (bez „klocki E1.10”: `place_read_12` wycięte w fazie 8; karta dla E1.11), `reviews/visual-review.md`
 - [ ] 8.9 [human] Decyzja wbrew literze roadmapy S-14: zakres zawężony, reszta w S-14b/S-14c/S-14d/S-13b
 
 ### Phase 9: Dokumentacja, luki projektu, follow-upy, zmiana profilu i seam sweep
@@ -1038,7 +1038,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 #### Manual
 
 - [x] 9.5 [reviewer] Seam sweep: martwy kod, komentarze, duplikaty geometrii, `ArtImage` w każdym widżecie; DESIGN-GAP od 59; follow-upy z `Trigger:` — impl-review (O1 duplication → follow-up)
-- [ ] 9.6 [visual] Zrzut podsumowania rundy po zadaniu z grafiką — 1440×900 i 1024×768
+- [x] 9.6 [visual] Zrzut podsumowania rundy po zadaniu z grafiką — 1440×900 i 1024×768 — bramka wizualna 2026-10-14, `reviews/visual-review.md`, `screenshots/`
 - [ ] 9.7 [human] Decyzje wbrew ZADANIA: MONEY_PAY odłożony; MASS tylko w równowadze; ujemne i zł + gr kafelkami; temperatury co 5/2 °C
 - [ ] 9.8 [human] Akceptacja tekstów nowych zadań i `childName` E1.8, E1.10, E1.11, E2.2, E2.8, E5.5
 - [ ] 9.9 [human] Tablet (iPad DPR 2, Android): ostrość grafiki, WebP w Safari, czytelność „12 zł 50 gr”

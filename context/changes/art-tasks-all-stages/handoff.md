@@ -1,69 +1,71 @@
 # Handoff — `art-tasks-all-stages` (slice S-14)
 
-Written by the impl-review step: the full-plan review is done (`reviews/impl-review.md`, `MERGE: CLEAR`), 5 warnings fixed in one fix commit, change `impl_reviewed`. Next is the visual gate; it must screenshot the thermometer with tiles (E3.11, E6.1), where the review found about 3 px per degree (follow-up F3), and decide from the picture.
+Written by the visual-gate step: every art task type was screenshotted in a real round at 1440×900 and 1024×768, four
+readability discrepancies (incl. follow-up F3, the thermometer beside the tiles) were fixed in `f4f0c82`, the full local gate
+is green after the fix, and the review ends `VISUAL: PASS`. Next is archive then ship; the `[human]` rows stay open for the
+maintainer and must not be ticked by an agent.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-tasks-all-stages`, cut from `main` at `bb00d7f` |
-| Commits | p1 `46aff1d` … p10 `79da1a7`, handoff commits, then this step: `fix(art-tasks-all-stages): poprawki z przeglądu implementacji` + `docs(art-tasks-all-stages): przegląd implementacji` |
+| Commits | p1 `46aff1d` … p10 `79da1a7`, review `79e92ee` + `0c5b25e`, then this step: `f4f0c82` `fix(art-tasks-all-stages): czytelność grafiki z bramki wizualnej` + `docs(art-tasks-all-stages): bramka wizualna` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows open | 10 (`grep -c '^- \[ \]' plan.md`): `[visual]` 5.9, 6.7, 7.7, 8.8, 9.6; `[human]` 2.9, 8.9, 9.7, 9.8, 9.9 |
-| Working tree | clean after the two commits |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| `## Progress` rows open | 5 (`grep -c '^- \[ \]' plan.md`), all `[human]`: 2.9, 8.9, 9.7, 9.8, 9.9 |
+| Working tree | clean after the two commits (`tests/e2e/visual.local/` moved out to the session scratchpad; `dist-e2e/`, `test-results/` are gitignored) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/art-tasks-all-stages/reviews/impl-review.md` | review report: 0 CRIT, 6 WARN (F1, F2, F4, F5, F6 fixed; F3 follow-up), 8 OBS, teacher read, `MERGE: CLEAR` |
-| `src/data/wordTemplates.ts` (`Context.price`, `contexts`), `src/core/tasks/generators/money.ts` (`generateMoneyChange`) | F1: the thing bought has a believable price |
-| `src/core/tasks/bounds.ts` (`screenBound`, `validationBounds`), `tests/contentInvariants.test.ts`, `tests/validate.test.ts` | F2: range check in the child's units for MONEY_*, CAPACITY, TEMPERATURE |
-| `src/data/measures.ts` (`ART_LIMITS`, `JUG_SOURCE_SIZE`), `src/core/tasks/visual.ts` (`validateVisual`), `src/core/text/measure.ts` (`CELSIUS`), `src/ui/widgets/{MoneyTable,BalanceScale,Jugs,IconGroups,Thermometer}.ts` | F4: one source for pool sizes, the jug image size, the degree unit and the label count |
-| `tests/e2e/art-tasks.spec.ts` (header comment) | F5: says what `targets.picture` proves |
-| `tests/curriculumStart.test.ts` (`loads a learner saved before S-14`) | F6: frozen v1 save loads and is only floored up |
-| `tests/money.test.ts` (`the thing bought has a believable price`) | F1 test, own oracle table |
-| `context/changes/art-tasks-all-stages/follow-ups/review-fixes.md` | 7 new follow-ups with `Trigger:` |
-| `context/changes/art-tasks-all-stages/plan.md`, `change.md` | `[reviewer]` rows 1.5, 2.8, 3.5, 4.5, 5.7, 5.8, 6.6, 7.6, 8.7, 9.5 ticked; status `impl_reviewed` |
+| `src/data/layout.ts` (`TASK_LAYOUT.picture.tall` replaces `keypadBeside`; `scale.weightSize/perRow/rowLift`; `thermometer.label.gap`) | V1/V3/V2 data: thermometer column per input mode with the tiles row and bar spans; weights 84 units in rows of 2; label gap |
+| `src/core/round/pictureLayout.ts` (`pictureLayout`, new `answerSpans`, `TallSpec`, `Span`) | V1: a tall drawing keeps one column in every phase; `answerSpans` moves the tiles row and the bar right of it |
+| `src/scenes/TaskScene.ts`, `src/ui/widgets/AnswerTiles.ts` (`setChoices(choices, row?)`), `src/ui/widgets/FeedbackBar.ts` (`update(bar, input, at?)`) | V1 wiring |
+| `src/ui/widgets/Thermometer.ts` (`render`) | V2: labels centred on x 301 as in kit `thermometer-face.js`, never on the ticks |
+| `src/ui/widgets/artLayout.ts` (`iconsLayout`) | V4: framed groups shaped (1–3 rows, frames per line) for the largest icon |
+| `tests/pictureLayout.test.ts`, `tests/artLayout.test.ts`, `tests/e2e/art-tasks.spec.ts` | tall-layout tests (5), weight readability (1), group shaping (1 + 2 new shapes × 3 areas); e2e reads `TASK_LAYOUT.picture.tall.keypad` |
+| `docs/design-gaps.md` row 65 | updated: thermometer column in every phase |
+| `context/changes/art-tasks-all-stages/screenshots/` | 58 PNG (29 states × desktop/tablet) + `README.md` (state · desktop · tablet · how reached, values per frame) |
+| `context/changes/art-tasks-all-stages/reviews/visual-review.md` | V1–V4 with fixes, per-row verdicts, hand-checks, O1–O4, gate, `VISUAL: PASS` |
+| `context/changes/art-tasks-all-stages/follow-ups/review-fixes.md` | F3 marked closed; section "Z bramki wizualnej" with O1–O4 and `Trigger:` lines |
+| `context/changes/art-tasks-all-stages/plan.md` | `[visual]` 5.9, 6.7, 7.7, 8.8, 9.6 ticked with notes |
 
 ## 3. Verification
 
 | Command | Result (observed in this step) |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` |
-| `npm run lint`, `npm run typecheck` | clean, before and after the fixes |
-| `npm test` | before: 1847 passed (baseline 1482 + 365); after: 1853 (1482 + 371; +6 from this step) |
-| deploy / ops scripts | OK, OK |
-| `npm run sample -- E1` … `E6` | `Naruszenia: 0` each, before and after |
+| capture: `npx playwright test --config=<scratchpad>/visual.local/playwright.visual.config.ts` against `npm run preview -- --outDir dist-e2e --port 4399 --strictPort` | 44 passed per capture; three captures (unfixed `0c5b25e`, after V1/V2, after V3/V4 and the label gap); only the last one's frames are kept |
+| `npm run lint`, `npm run typecheck` | clean |
+| `npm test` | 1865 passed (baseline 1482 + 383; branch before this step 1853, +12 from this step) |
+| `bash deploy/test-martynka-deploy.sh`, `bash deploy/ops/test-martynka-ops.sh` | OK, OK |
+| `npm run sample -- E1` … `E6` | `Naruszenia: 0` each (no content change) |
 | `npm run build` | green, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts` | before the fixes: 46 passed (3.6m) = baseline 42 + 4; after the fixes (fix commit `79e92ee`): 46 passed (3.5m) = baseline 42 + 4 |
-| `npm run art` again | `public/assets` unchanged (deterministic, 38 files, 442 240 B) |
-| `dist/sw.js` vs `TASK_ART` | the same 38 URLs |
-| `grep -rl e2eSkills dist/` | nothing |
-| `tests/fixtures/`, `src/core/save.ts` | unchanged since `bb00d7f` (format v1) |
-| Break: `MINUS` in `measure.ts` as a hyphen | 4 red (`measure`, 2 × `temperature` 1000-draw, `visual`); restored. Meta: oracle is the kit's U+2212, caught through the validator too |
-| Break: new price test vs pre-fix `money.ts` | 4 red; fixed code green. Meta: oracle typed in the test, not read from `wordTemplates` |
-| Break: older-save test expecting E1 99 | red `expected 11 to be 99`; restored |
+| `npx playwright test --config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts` | 46 passed (3.4m) = baseline 42 + 4 |
+| Break: tall branch only for keypad + solution, group shaping one row only | 5 red (4 `pictureLayout` tall, 1 `iconsLayout` shaping); restored → 103/103 in the two files. Meta: tests read the rectangles `TaskScene` uses, the frames are the pixel evidence |
+| Break (before the fix): weight readability test vs `weightSize` 52 | red `expected 51.19 to be ≥ 75`; green at 84 |
+| Hand-checks | coins 5+2 = 7, 5+1 = 6; notes 50+2+2 = 54; "2 zł 80 gr"; weights 50+20+20+10 = 100 dag; jugs 1+4×½+4×¼ = 4 l, 4+2×½ = 5 l; thermometer −24 °C measured on a 4× crop (4.9 px/°C); icons 5×6, 4×4, 10+1 (details in `reviews/visual-review.md`) |
 
-Servers: Playwright starts and stops 4397/4398 itself; `lsof -ti tcp:4397|4398 -sTCP:LISTEN` empty after each run.
+Servers: 4399 started by this step (background preview) and stopped; Playwright started and stopped 4397/4398; `lsof -ti tcp:4397|4398|4399 -sTCP:LISTEN` empty afterwards.
 
 ## 4. Next command
 
-visual gate (S-14: money table, balance scale, jugs, thermometer incl. beside-keypad solution, icon groups, negative °C (E6), zł+gr tiles, hint/solution beside a picture)
+/10x-archive art-tasks-all-stages then ship (no hosted db push — none exists)
 
 ## 5. Open
 
-- `[visual]` 5.9, 6.7, 7.7, 8.8, 9.6 — the visual gate; include the thermometer with tiles (E3.11 `temperature_read_30`, E6.1 `temperature_negative`) for follow-up F3 (`src/core/round/pictureLayout.ts` `pictureLayout`).
-- `[human]` 2.9 WebP/loose files/`tasks/measuring/`; 8.9 narrowed scope; 9.7 departures from ZADANIA (incl. E3.11 `low 0`); 9.8 text acceptance (incl. `SCALE_ITEMS` masses, O7); 9.9 tablet sharpness.
-- Follow-ups: `follow-ups/review-fixes.md` (earlier ones plus 7 from the review: thermometer with tiles, `ArtPool`/`fitRect`, hidden widgets' `bounds()`, `allowNegative` lower bound, spoken units in hints, `BootScene.preload` `loaderror`, `SCALE_ITEMS` masses).
-- Design gaps 59-66 in `docs/design-gaps.md` (none added here).
+- `[human]` checklist (plan `## Progress`): 2.9 WebP / loose files / `tasks/measuring/`; 8.9 narrowed scope (S-14b/c/d, S-13b); 9.7 departures from ZADANIA (incl. E3.11 `low 0`); 9.8 text acceptance (incl. `SCALE_ITEMS` masses); 9.9 tablet sharpness (iPad DPR 2, Android) — now also the readability of the thermometer column and the 84-unit weights on a real tablet.
+- Follow-ups: `follow-ups/review-fixes.md` — earlier ones, the impl-review ones (F3 now closed), and O1–O4 from this gate (`TASK_LAYOUT.picture.keypadSolution` small drawings in the keypad solution; `TASK_LAYOUT.picture.tall.keypad` 3.0 px/°C on the tablet; tiles beside the thermometer sit low; `E1.2.count_5` draws 1 icon).
+- Design gaps: row 65 updated (no new rows).
 - `ARTIFACT GAP: none`.
 
 ## 6. Autonomous decisions
 
-1. Triage without asking (contract rule 1): every cheap WARNING fixed (F1, F2, F4, F5, F6); F3 (layout of a tall picture with tiles) deferred to the visual gate, because the right layout depends on the screenshot. Would change: the visual gate finding the thermometer readable (close F3) or unreadable (a `tall` tiles layout in a new phase).
-2. F2 fixed with a separate `screenBound` for validation only; `boundOf` keeps sizing number tiles in `generateTask`, so nothing changes for the child at runtime. Rejected: changing `boundOf` (would move tile ranges). Would change: a type whose tile range should follow the screen bound.
-3. O4 accepted: the swapped "50 zł 5 gr" tile exceeds the skill's 20 zł but is the plan's intended misconception distractor and stays below 100 zł (the stage range). Would change: the maintainer's text acceptance (9.8) rejecting it.
-4. F1 price ranges are my teacher-read judgement (grosze, in `contexts`); they cover 1 gr…100 zł, so the fallback never fires. Would change: 9.8 text acceptance.
-5. Ran e2e myself (Chromium launched in this session) instead of the request-file protocol.
+1. F3 decided from the picture: **fix**. On the tablet the tiles thermometer had about 2.1 CSS px per degree (−8 vs −12 °C 9 px apart, column barely visible). Chosen: a tall column on the left in every phase with tiles/bar moved right (`answerSpans`). Rejected: a taller rectangle above the tiles only (+36 %, still ~2.9 px/°C); a scale cut to the task's range (needs a cropped kit housing, DESIGN-GAP 64, S-16). Would change: a tablet check (9.9) or teacher read finding 3–3.5 px/°C still too small → the cut scale.
+2. Fixed three discrepancies the step prompt did not name (V2 labels on the rim, V3 unreadable weights, V4 tiny group icons) because each makes a task hard to read for a 7–9-year-old; each is a data/layout change in the existing widgets with a test first. Rejected: recording them as observations (S-13 did that for O1–O3, but those stayed readable; these were not). Would change: the maintainer preferring the kit proportions (weights at pan size) over legibility.
+3. Kept the keypad prompt above the thermometer column (column from y 420) instead of beside it. Rejected: prompt right of the column (would wrap to 4–5 lines and shrink the font). Would change: O2 — a tablet check finding 3.0 px/°C too small.
+4. Ran Chromium myself (plain `npx playwright test`) instead of the request-file protocol; a piped variant failed once on the sandbox MachPort and was re-run as a plain command.
+5. Kit frames compared, not copied into the change folder (`designs/` is gitignored and must not be staged), as in the S-13 gate.
+6. `[visual]` 8.8 ticked although "klocki E1.10" was not captured: the skill (`E1.10.place_read_12`) was cut in phase 8 (follow-up S-14b), so no such state exists; the unlock card shows E1.11 only. Would change: the maintainer wanting each new `childName` card captured.
