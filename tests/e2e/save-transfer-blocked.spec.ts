@@ -35,7 +35,7 @@ async function playOnWithBlockedSave(page: Page, mode: 'unavailable' | 'unreadab
     await screenIs(page, 'task');
 }
 
-test('#2 an unavailable save cannot be overwritten by import or reset', async ({ page }) => {
+test('#2 an unavailable save is not overwritten by import or reset without a second confirmation', async ({ page }) => {
     await playOnWithBlockedSave(page, 'unavailable', pl.saveUnavailable);
     await expect.poll(async () => (await snapshot(page)).save?.skipped ?? 0).toBeGreaterThan(0);
     const before = (await snapshot(page)).save!;

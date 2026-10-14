@@ -76,6 +76,7 @@ describe('saveHealthView', () => {
 
     it('a timed-out read is cause timeout with code timeout, an other store error stays unavailable', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'unavailable', loadError: 'timeout', lastError: 'Other' }))).toMatchObject({ cause: 'timeout', code: 'timeout' });
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'unavailable', loadError: 'TimeoutError', lastError: 'Other' }))).toMatchObject({ cause: 'timeout', code: 'TimeoutError' });
         expect(saveHealthView(status({ blocked: true, blockedBy: 'unavailable', loadError: 'UnknownError', lastError: 'Other' }))).toMatchObject({ cause: 'unavailable', code: 'UnknownError' });
     });
 

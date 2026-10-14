@@ -1,5 +1,5 @@
 // What a parent sees about saving (audit C-2, M-S5, N-8, M-S2). Pure: words live in data/pl.ts.
-import type { AutosaveStatus, BlockReason, Persistence } from './autosave';
+import { isTimeoutError, type AutosaveStatus, type BlockReason, type Persistence } from './autosave';
 
 export type SaveHealthState =
     | { kind: 'off'; cause: BlockReason | 'future' | 'timeout'; code: string | null }
@@ -16,7 +16,7 @@ const offState = (status: AutosaveStatus, blockedBy: BlockReason): SaveHealthSta
         return { kind: 'off', cause: status.loadReason === 'future' ? 'future' : 'unreadable', code: status.loadReason };
     }
     if (blockedBy === 'unavailable') {
-        return { kind: 'off', cause: status.loadError === 'timeout' ? 'timeout' : 'unavailable', code: status.loadError };
+        return { kind: 'off', cause: isTimeoutError(status.loadError) ? 'timeout' : 'unavailable', code: status.loadError };
     }
     return { kind: 'off', cause: 'fatal', code: status.lastError };
 };

@@ -1,7 +1,7 @@
 // The save file a parent exports and imports (S-12, test-plan risk #7). Pure: no Phaser, no browser globals, no data imports;
 // the build id and the rooms come in as parameters. A file is never trusted because it parses: every import goes through
 // decodeSave (migrations + strict validation), so the file can only ever become a save the game itself could have written.
-import { replaceGate, type AutosaveStatus } from './autosave';
+import { isTimeoutError, replaceGate, type AutosaveStatus } from './autosave';
 import { decodeSave, saveProblem, type SessionSave } from './save';
 import type { RoomDef, SaveState, StageId } from './types';
 
@@ -87,7 +87,7 @@ export function deviceSaveView(
     const { blockedBy, loadReason, loadError } = status;
     if (blockedBy === 'unreadable' && loadReason !== 'future') return { kind: 'unreadable' };
     if (blockedBy !== null) {
-        const cause = blockedBy === 'unreadable' ? 'future' : blockedBy === 'unavailable' && loadError === 'timeout' ? 'timeout' : blockedBy;
+        const cause = blockedBy === 'unreadable' ? 'future' : blockedBy === 'unavailable' && isTimeoutError(loadError) ? 'timeout' : blockedBy;
         return { kind: 'blocked', cause, forceable: replaceGate(status, true) === 'ok' };
     }
     const decoded = decodeSave(current);

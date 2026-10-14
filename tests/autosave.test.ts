@@ -589,7 +589,7 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
 
     it('replaceGate covers every combination', () => {
         const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
-        const errors = [null, 'timeout', 'SecurityError'] as const;
+        const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
         const blocks = [null, 'unreadable', 'unavailable', 'fatal'] as const;
         for (const blockedBy of blocks)
             for (const loadReason of reasons)
@@ -598,7 +598,7 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
                         const expected =
                             blockedBy === 'fatal' ? 'Blocked'
                             : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : 'ok')
-                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || !force ? 'Blocked' : 'ok')
+                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force ? 'Blocked' : 'ok')
                             : 'ok';
                         expect(replaceGate({ blockedBy, loadReason, loadError }, force), JSON.stringify({ blockedBy, loadReason, loadError, force })).toBe(expected);
                     }

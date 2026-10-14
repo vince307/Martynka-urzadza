@@ -174,6 +174,8 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
 
     it('a timeout read is blocked, never forceable', () => {
         expect(deviceSaveView(st('unavailable', null, 'timeout'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
+        // IndexedDB's own DOMException for a transaction that ran out of time: the save may be healthy too (impl-review F1).
+        expect(deviceSaveView(st('unavailable', null, 'TimeoutError'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
     });
 
     it('a refused read is blocked and forceable; fatal is not', () => {
@@ -183,7 +185,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
 
     it('forceable agrees with Autosaver.replace({ force: true }) for every combination (lockstep)', async () => {
         const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
-        const errors = [null, 'timeout', 'SecurityError'] as const;
+        const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
         for (const blockedBy of ['unreadable', 'unavailable', 'fatal'] as const)
             for (const loadReason of reasons)
                 for (const loadError of errors) {

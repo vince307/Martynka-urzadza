@@ -66,6 +66,12 @@ export interface AutosaverOptions {
 }
 
 /**
+ * A load that ran out of time: our own read limit (`timeout`) or IndexedDB's `TimeoutError`. The save behind it may be
+ * healthy, so it is never forceable and the parent reads the slow-read sentence (impl-review F1).
+ */
+export const isTimeoutError = (name: string | null): boolean => name === 'timeout' || name === 'TimeoutError';
+
+/**
  * The one rule for overwriting the device save, shared by `replace` and the dialogs' `forceable` (plan decision 3).
  * `future` is a healthy save from a newer build and a `timeout` read may be a healthy slow one: neither is ever replaced.
  * A read the browser refused (`unavailable`) is replaced only on an explicit `force`.
@@ -74,7 +80,7 @@ export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReas
     const { blockedBy, loadReason, loadError } = status;
     if (blockedBy === 'fatal') return 'Blocked';
     if (blockedBy === 'unreadable') return loadReason === 'future' ? 'Blocked' : 'ok';
-    if (blockedBy === 'unavailable') return loadError !== 'timeout' && force ? 'ok' : 'Blocked';
+    if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force ? 'ok' : 'Blocked';
     return 'ok';
 }
 

@@ -22,10 +22,10 @@ export const createSummaryList = (title: string, summary: SaveSummary, roomName:
 
 /**
  * The line after a failed replace. The "delete the site data" advice destroys the save, so it appears only when a forced
- * write failed in the store (or threw); a refusal (`Busy`, `Blocked`, `InvalidSave`) gets the plain line.
+ * write failed in the store; a refusal (`Busy`, `Blocked`, `InvalidSave`) or a rejected promise gets the plain line, because
+ * `Autosaver.replace` catches every store error and returns it, so a rejection is never the store (impl-review F2).
  */
 export const failureText = (result: ReplaceResult | null, forced: boolean, plain: string): string => {
-    if (!forced) return plain;
-    const refused = result !== null && !result.ok && ['Busy', 'Blocked', 'InvalidSave'].includes(result.error);
-    return refused ? plain : pl.saveTransfer.siteDataAdvice;
+    if (!forced || result === null || result.ok) return plain;
+    return ['Busy', 'Blocked', 'InvalidSave'].includes(result.error) ? plain : pl.saveTransfer.siteDataAdvice;
 };
