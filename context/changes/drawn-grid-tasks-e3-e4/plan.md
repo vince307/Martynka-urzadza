@@ -900,10 +900,10 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [x] 5.2 `npm run sample -- E3 --count 6` bez naruszeń, z linią `visual:`
-- [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `cells` → typecheck czerwony; przywrócone; meta-check
-- [x] 5.4 `playableSteps` E3 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (`
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — c01c12e
+- [x] 5.2 `npm run sample -- E3 --count 6` bez naruszeń, z linią `visual:` — c01c12e
+- [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `cells` → typecheck czerwony; przywrócone; meta-check — c01c12e
+- [x] 5.4 `playableSteps` E3 bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (` — c01c12e
 - [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
