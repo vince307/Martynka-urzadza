@@ -856,7 +856,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `dragMode`/`canonicalInput` bez Phasera; `TaskScene.render` nie zgaduje gałęzi z typu odpowiedzi
+- [x] 1.5 [reviewer] `dragMode`/`canonicalInput` bez Phasera; `TaskScene.render` nie zgaduje gałęzi z typu odpowiedzi — impl review: `dragMode`/`canonicalInput` import no Phaser; `TaskScene.render` calls `dragMode` only for `drag`
 
 ### Phase 2: Model rysunków `cells`/`grid`/`figure` i generator PUZZLE_GRID
 
@@ -869,7 +869,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Odczyt nauczyciela szablonów PUZZLE_GRID i 6 losowań na wariant
+- [x] 2.5 [reviewer] Odczyt nauczyciela szablonów PUZZLE_GRID i 6 losowań na wariant — impl review teacher read; magic-square gap line added (F1)
 
 ### Phase 3: Generatory GRID i PERIMETER
 
@@ -882,7 +882,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Odczyt nauczyciela szablonów GRID/PERIMETER i 6 losowań na wariant
+- [x] 3.5 [reviewer] Odczyt nauczyciela szablonów GRID/PERIMETER i 6 losowań na wariant — impl review teacher read; E5.12/E6.3 ranges fixed (F3)
 
 ### Phase 4: Reduktor „ustaw zegar”, wariant CLOCK `set` i układ zegara
 
@@ -894,7 +894,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 4.4 [reviewer] Odczyt nauczyciela wariantu `set` (6 losowań na `minuteStep` i h24)
+- [x] 4.4 [reviewer] Odczyt nauczyciela wariantu `set` (6 losowań na `minuteStep` i h24) — impl review teacher read; full-hour hints fixed (F2)
 
 ### Phase 5: Widżety `NumberCells` i `CoordGrid`, umiejętności E3.5 i E3.7
 
@@ -908,7 +908,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 5.6 [reviewer] Odczyt nauczyciela `sample` E3.5, E3.7 `--count 6`
+- [x] 5.6 [reviewer] Odczyt nauczyciela `sample` E3.5, E3.7 `--count 6` — impl review teacher read (F1)
 - [ ] 5.7 [visual] Zrzuty: kwadrat magiczny, piramida, kwadrat z podpowiedzią, kwadrat z krokami przy klawiaturze, kratka „gdzie”, kratka „co” z podpowiedzią — 1440×900 i 1024×768
 
 ### Phase 6: Widżet `FigureGrid`, rysunek przy klawiaturze w rozwiązaniu, PERIMETER w E4.7
@@ -923,7 +923,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 6.6 [reviewer] Odczyt nauczyciela `sample` E4.7 `--count 6`
+- [x] 6.6 [reviewer] Odczyt nauczyciela `sample` E4.7 `--count 6` — impl review teacher read
 - [ ] 6.7 [visual] Zrzuty: prostokąt z bokami, trójkąt, obwód z podpowiedzią, obwód z krokami przy klawiaturze (768 × 190) — 1440×900 i 1024×768
 
 ### Phase 7: Tarcza z uchwytami, gałąź zegara w `TaskScene`, hak `clock` i helpery e2e
@@ -931,13 +931,13 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 #### Automated
 
 - [x] 7.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — eacf9e0
-- [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check — eacf9e0
+- [x] 7.2 Deliberate break: pole `clock` usunięte z migawki haka → typecheck `setClock` czerwony; przywrócone; meta-check — eacf9e0 (impl review F6: the actual break was `TASK_LAYOUT.clockSet.dial.hourLength` 78 → 300 → 2 red in `tests/clockSet.test.ts`; the planned hook break is impossible with the hand-written `Snapshot`; scene routing is proven by p12a/p12b)
 - [x] 7.3 `npm run build` drukuje `e2e hook: absent (`; `clock` tylko w buildzie haka — eacf9e0
 - [x] 7.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 57 passed on eacf9e0
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Scena tylko karmi reduktor; brak liczb balansu i tekstów gracza w `ClockSet`
+- [x] 7.5 [reviewer] Scena tylko karmi reduktor; brak liczb balansu i tekstów gracza w `ClockSet` — impl review: `ClockSet` uses `pl`, `balance`, `TASK_LAYOUT` only; scene feeds `stepClockSet`; OK ignored while a hand is held (F4)
 
 ### Phase 8: Umiejętności „ustaw zegar” w E3.3, E3.11, E4.3 i czas `adaptive.spec`
 
@@ -950,7 +950,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 8.5 [reviewer] Odczyt nauczyciela `sample` E3.3, E3.11, E4.3 `--count 6`
+- [x] 8.5 [reviewer] Odczyt nauczyciela `sample` E3.3, E3.11, E4.3 `--count 6` — impl review teacher read (F2)
 - [ ] 8.6 [visual] Zrzuty: ustaw zegar E3, wskazówka trzymana, E4 kwadrans po ustawieniu, podpowiedź, kroki obok tarczy — 1440×900 i 1024×768
 - [ ] 8.7 [human] Gest na tablecie: przyciąganie co 5 min i chwyt wskazówki palcem dziecka
 
@@ -965,7 +965,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 9.5 [reviewer] Odczyt nauczyciela `sample` E5.12, E6.3 `--count 6`
+- [x] 9.5 [reviewer] Odczyt nauczyciela `sample` E5.12, E6.3 `--count 6` — impl review teacher read (F3)
 - [ ] 9.6 [visual] Zrzuty: bok kwadratu z obwodu, figura złożona (klawiatura i krok rozwiązania), karta „Nowa umiejętność!” E5.12 — 1440×900 i 1024×768
 
 ### Phase 10: Dokumentacja, luki projektu, follow-upy i seam sweep
@@ -979,7 +979,7 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Manual
 
-- [ ] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o klockach jako jedynym `drag`
+- [x] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o klockach jako jedynym `drag` — impl review: every follow-up has `Trigger:`; stale block-only comment in `TaskScene.create` and row-77 comment in `layout.ts` fixed
 - [ ] 10.6 [human] Decyzje wbrew dosłownemu ZADANIA/kitowi: E4.3 „ustaw” tylko kwadranse, godzinowa osobno, kratka 5 × 4, zakresy tam, gdzie ZADANIA milczy; wyższe progi odblokowania na żywych zapisach
 
 ### Phase 11: Zadania siatki dotykiem — e2e (#11)
