@@ -909,7 +909,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 - [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — cd5b705
 - [x] 3.2 Deliberate break: `cardCopyFor('future')` zwraca ogólny tekst → test czerwony; przywrócone; meta-check — cd5b705
 - [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `grep -c "1760000001000" dist/_app/*.js` = 0 — cd5b705
-- [ ] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future`
+- [x] 3.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `save-restart.spec` i `save-transfer-blocked.spec` na tekstach karty `future` — orchestrator run on cd5b705: 63 passed (4.7 min)
 
 #### Manual
 
@@ -920,8 +920,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [ ] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `!==` → `>` / licznik zerowany przy starcie / `starPerTask` × 1 → czerwone; przywrócone; meta-check
+- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 5a18b39
+- [x] 4.2 Deliberate break: `!==` → `>` / licznik zerowany przy starcie / `starPerTask` × 1 → czerwone; przywrócone; meta-check — 5a18b39
 - [ ] 4.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
