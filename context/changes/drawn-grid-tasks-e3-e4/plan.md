@@ -888,8 +888,8 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 4.2 Deliberate break: godzina 0 dla 12 / `cancel` zostawia nową pozę / `select` z rysunkiem w prostokącie kafelków → czerwone; przywrócone; meta-check
+- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — e69e6e8
+- [x] 4.2 Deliberate break: godzina 0 dla 12 / `cancel` zostawia nową pozę / `select` z rysunkiem w prostokącie kafelków → czerwone; przywrócone; meta-check — e69e6e8
 - [ ] 4.3 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
