@@ -97,7 +97,7 @@ test('#2 an unreadable save warns instead of showing the fresh session', async (
 // save-reason-and-recovery (SIR-01, SIR-02, SIR-04): the reason a read failed decides what the dialogs offer.
 
 test('#2 SIR-01 a save from a newer version is never offered for overwrite', async ({ page }) => {
-    await playOnWithBlockedSave(page, 'unreadable', pl.saveFailed);
+    await playOnWithBlockedSave(page, 'unreadable', pl.saveFuture);
     expect((await snapshot(page)).save).toMatchObject({ load: 'unreadable', blocked: true, blockedBy: 'unreadable', writes: 0 });
 
     // Import: the newer-version line, no way to choose a file, no overwrite step.

@@ -7,13 +7,18 @@ import { previousStage, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
-import type { RoomState, Settings, SkillDef, StageDef, StageId } from '../core/types';
+import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
 import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
+import { localDay } from '../core/day';
+import { coveredAfter, diceBoard, type DiceThrow } from '../core/minigames/dice';
+import { buildWordRound, lettersUncovered, revealed, wordAvailable } from '../core/minigames/word';
+import { puzzleTask, puzzlePool } from '../core/puzzles';
+import { afterRound, nextRoundKind, pickPuzzle, variantRules, variantTitle, type RoundKind, type VariantKind } from '../core/variants';
 import type { ArtHealth } from '../core/artHealth';
 import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
@@ -24,6 +29,7 @@ import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
+import type { Task } from '../core/tasks/types';
 import { visualShape, type AnswerMode, type TaskVisual } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
@@ -32,6 +38,7 @@ import {
     FONT_SIZES,
     GAME_EVENTS,
     GAME_HEIGHT,
+    MINIGAME_LAYOUT,
     PLACEHOLDER_COLORS,
     PLACEHOLDER_FRAME,
     REGISTRY_KEYS,
@@ -40,17 +47,23 @@ import {
     TEXT_COLOR,
 } from '../data/layout';
 import { pl } from '../data/pl';
+import { MINIGAME_WORDS } from '../data/minigames';
+import { PUZZLES } from '../data/puzzles';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
 import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
+import { CoverBoard } from '../ui/widgets/CoverBoard';
+import { Dice } from '../ui/widgets/Dice';
 import { BlockMat, type BlockMatTargets } from '../ui/widgets/BlockMat';
 import { ClockSet, type ClockSetTargets } from '../ui/widgets/ClockSet';
 import { SelectTiles } from '../ui/widgets/SelectTiles';
 import { FeedbackBar } from '../ui/widgets/FeedbackBar';
 import { Keypad } from '../ui/widgets/Keypad';
+import { LetterTiles } from '../ui/widgets/LetterTiles';
+import { MinigameDoneCard } from '../ui/widgets/MinigameDoneCard';
 import { SummaryPanel } from '../ui/widgets/SummaryPanel';
 import { TaskPicture } from '../ui/widgets/TaskPicture';
 import { UnlockCard } from '../ui/widgets/UnlockCard';
@@ -88,6 +101,8 @@ export interface TaskSnapshot {
     readonly autoRead: boolean;
     readonly warmup: boolean;
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
+    readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
+    readonly today: string;   // the calendar day the scheduler sees
 }
 
 export interface TaskTargets {
@@ -102,6 +117,8 @@ export interface TaskTargets {
     readonly picture: { x: number; y: number; width: number; height: number } | null;   // the drawing's rectangle; the hook aims at its interior
     readonly nextRound: Point | null;
     readonly toRoom: Point | null;
+    readonly doneNext: Point | null;   // "Kolejna runda" of a minigame's done card
+    readonly doneRoom: Point | null;
     readonly unlockNext: Point | null;
 }
 
@@ -130,6 +147,10 @@ export class TaskScene extends Scene {
     private steps!: SolutionSteps;
     private picture!: TaskPicture;
     private summary!: SummaryPanel;
+    private letters!: LetterTiles;
+    private diceView!: Dice;
+    private board!: CoverBoard;
+    private doneCard!: MinigameDoneCard;
     private unlockCard!: UnlockCard;
     private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
     private promptTexts: GameObjects.Text[] = [];
@@ -138,6 +159,12 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
+    private promptBaseSize: number = FONT_SIZES.prompt;   // the size the prompt was drawn at (a long sentence is smaller), restored when the steps close
+    private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
+    private puzzleId: string | null = null;
+    private word: string | null = null;   // the word of an open 'word' round
+    private dice: DiceThrow[] | null = null;   // the throws of an open 'dice' round, in task order
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
@@ -175,8 +202,13 @@ export class TaskScene extends Scene {
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.registry.set(REGISTRY_KEYS.narration, null);
         this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+        this.registry.set(REGISTRY_KEYS.hudTitle, null);
         this.rng = createRng(Date.now() >>> 0);
-        this.state = this.freshRound();
+        this.kind = 'round';
+        this.puzzleId = null;
+        this.word = null;
+        this.dice = null;
+        this.applyRound(this.freshRound());
         this.scene.launch(SCENE_KEYS.ui);
         drawNotebook(this);
         this.picture = new TaskPicture(this);
@@ -207,6 +239,10 @@ export class TaskScene extends Scene {
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
         this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.doneCard = new MinigameDoneCard(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.letters = new LetterTiles(this);
+        this.diceView = new Dice(this);
+        this.board = new CoverBoard(this, balance.variants.dice.max + 1, (value) => this.submit(value));
         this.unlockCard = new UnlockCard(this, () => this.closeUnlock());
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
@@ -222,6 +258,7 @@ export class TaskScene extends Scene {
             this.endFlyingStars();
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.registry.set(REGISTRY_KEYS.roomSwitch, false);
+            this.registry.set(REGISTRY_KEYS.hudTitle, null);   // render() puts it back on wake
             this.scene.switch(SCENE_KEYS.room);
         };
         this.game.events.on(GAME_EVENTS.toRoom, toRoom);
@@ -284,7 +321,7 @@ export class TaskScene extends Scene {
         this.stage = stage;
         this.warmup = false;
         this.unlockShown = false;
-        this.state = this.freshRound();
+        this.applyRound(this.freshRound());
         this.shownIndex = -1;
         this.render();
         if (read) {
@@ -304,6 +341,7 @@ export class TaskScene extends Scene {
 
     private render(): void {
         const view = roundView(this.state, pl.round.resultLine);
+        this.registry.set(REGISTRY_KEYS.hudTitle, variantTitle(this.kind, pl.minigames));
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         const unlock = this.unlockView();
@@ -313,6 +351,7 @@ export class TaskScene extends Scene {
             this.registry.set(REGISTRY_KEYS.narration, pl.unlock.spoken(unlock.name));
             this.hideTaskLayer(view.input);
             this.summary.hide();
+            this.doneCard.hide();
             this.unlockCard.show(unlock.name);
             return;
         }
@@ -322,18 +361,46 @@ export class TaskScene extends Scene {
             this.registry.set(REGISTRY_KEYS.narration, null);
             this.narrator?.cancel();
             this.hideTaskLayer(view.input);
-            this.summary.show(summary);
+            if (this.kind === 'word' && this.word !== null) {
+                // The minigame ends on its own card with the uncovered word instead of the summary page.
+                this.summary.hide();
+                this.doneCard.show({ title: pl.round.correct, line: this.word, earned: summary.earned, roomHighlighted: summary.roomHighlighted });
+            } else if (this.kind === 'dice' && this.dice !== null) {
+                this.summary.hide();
+                this.doneCard.show({ title: pl.round.correct, line: pl.minigames.diceAllCovered, earned: summary.earned, roomHighlighted: summary.roomHighlighted });
+            } else {
+                this.doneCard.hide();
+                this.summary.show(summary);
+            }
             return;
         }
         this.summary.hide();
+        this.doneCard.hide();
+        if (this.kind === 'word' && this.word !== null) {
+            this.letters.show(revealed(this.word, lettersUncovered(this.state.outcomes)));
+        } else {
+            this.letters.hide();
+        }
+        const diceRound = this.kind === 'dice' && this.dice !== null;
+        if (diceRound && this.dice) {
+            this.board.show(this.coveredNow(), this.state.phase === 'retype' ? (this.state.tasks[this.state.index].answer as number) : null);
+        } else {
+            this.diceView.hide();
+            this.board.hide();
+        }
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
-        this.dots.update(view.dots);
+        // A variant has the HUD title in the dots' place (kit minigame screens): the letters or the board show its progress.
+        this.dots.update(this.kind === 'round' ? view.dots : []);
         const task0 = this.state.tasks[this.state.index];
         if (this.shownIndex !== this.state.index) {
             this.shownIndex = this.state.index;
             this.drawPrompt(view.input);
             this.keypad.reset();
-            if (view.input === 'tiles') {
+            if (diceRound && this.dice) {
+                const thrown = this.dice[this.state.index];
+                this.diceView.show({ a: thrown.a, b: thrown.b, op: thrown.op });
+            }
+            if (view.input === 'tiles' && !diceRound) {
                 this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
             }
             if (view.input === 'select') {
@@ -361,7 +428,7 @@ export class TaskScene extends Scene {
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         this.picture.render(this.clockTask ? null : view.visual, pictureRect);   // a clock to set is drawn by ClockSet
         const finishedTask = this.state.phase === 'done';
-        this.tiles.setVisible(view.input === 'tiles');
+        this.tiles.setVisible(view.input === 'tiles' && !diceRound);
         this.keypad.setVisible(view.input === 'keypad');
         this.select.setVisible(view.input === 'select');
         this.dragLive = view.input === 'drag' && view.inputActive;
@@ -379,38 +446,76 @@ export class TaskScene extends Scene {
             this.blockMat.render(this.dragState, this.dragLive, view.bar.kind !== 'solution');
         }
         this.select.setActive(view.input === 'select' && view.inputActive);
-        this.tiles.setActive(view.input === 'tiles' && view.inputActive);
+        this.tiles.setActive(view.input === 'tiles' && !diceRound && view.inputActive);
+        this.board.setActive(diceRound && view.inputActive);
         this.keypad.setActive(view.input === 'keypad' && view.inputActive);
         if (finishedTask) {
-            this.tiles.markCorrect(view.input === 'tiles' ? (task.answer as number | string) : null);
+            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
             this.keypad.markCorrect();
             this.select.markCorrect(view.input === 'select' ? (task.answer as number[]) : []);
         }
-        this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' ? (task.answer as number | string) : null);
+        this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
         this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
             const lines = view.input === 'drag' ? TASK_LAYOUT.drag.solutionLines : view.visual ? layout.lines : null;
-            if (lines) {
+            if (diceRound) {
+                // Above the dice: the board below them keeps its place (DESIGN-GAP 86).
+                const above = MINIGAME_LAYOUT.dice;
+                this.steps.show(view.bar, above.centerX, above.solutionTop, TASK_LAYOUT.prompt.maxWidth, above.solutionLimit);
+            } else if (lines) {
                 this.steps.show(view.bar, lines.x + lines.width / 2, lines.y, lines.width, lines.y + lines.height);
             } else {
                 const beside = view.input === 'keypad';
                 const centerX = (beside ? TASK_LAYOUT.expression : TASK_LAYOUT.expressionWide).x;
                 const maxWidth = TASK_LAYOUT.barSpan[beside ? 'keypad' : 'tiles'].width;   // same width as the bar under them
-                // The select tiles sit higher than the single-answer tiles: the lines stop above them.
-                const limit = view.input === 'select' ? TASK_LAYOUT.select.top - TASK_LAYOUT.solution.bottomGap : undefined;
-                this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth, limit);
+                // The lines stop above the answer tiles (select tiles sit higher than single-answer tiles); beside the keypad they stop above the bar zone.
+                const limit = view.input === 'select' || view.input === 'tiles' ? (view.input === 'select' ? TASK_LAYOUT.select.top : TASK_LAYOUT.tiles.top) - TASK_LAYOUT.solution.bottomGap : undefined;
+                const top = (): number => this.promptBottom() + TASK_LAYOUT.solution.topGap;
+                const bar = view.bar;
+                this.fitPromptToSteps(task, (): boolean => this.steps.fits(bar, top(), maxWidth, limit));
+                this.steps.show(view.bar, centerX, top(), maxWidth, limit);
             }
         } else {
             this.steps.hide();
+            this.fitPromptToSteps(task, null);
         }
+    }
+
+    /**
+     * A plain sentence prompt (no drawing, no expression, no "□") steps its font down from the size it was drawn at while
+     * the solution lines would not fit under it at their smallest scale (visual gate S-15: a daily puzzle of 5-9 lines),
+     * and gets that size back when the steps close. `fits` null restores it.
+     */
+    private fitPromptToSteps(task: Task, fits: (() => boolean) | null): void {
+        const [text] = this.promptTexts;
+        if (task.visual || isExpression(task.prompt) || this.promptTexts.length !== 1 || this.promptBoxes.length > 0 || !text) {
+            return;
+        }
+        if (fits === null) {
+            if (this.promptShrunk) {
+                text.setFontSize(this.promptBaseSize);
+                this.promptShrunk = false;
+            }
+            return;
+        }
+        const { promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
+        const size = fitSize(this.promptBaseSize, promptMinSize, promptSizeStep, (s) => {
+            text.setFontSize(s);
+            return fits();
+        });
+        text.setFontSize(size);
+        this.promptShrunk = size !== this.promptBaseSize;
     }
 
     /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
     private hideTaskLayer(input: AnswerMode): void {
         this.dots.update([]);
+        this.letters.hide();
+        this.diceView.hide();
+        this.board.hide();
         this.dragLive = false;
         this.blockMat.setVisible(false);
         this.clockSet.setVisible(false);
@@ -459,21 +564,30 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.promptBoxes.forEach((g) => g.destroy());
         this.promptBoxes = [];
+        this.promptShrunk = false;
+        this.promptBaseSize = FONT_SIZES.prompt;
+        if (this.kind === 'dice') {
+            return;   // the dice are drawn by Dice; there is no prompt text
+        }
         const task = this.state.tasks[this.state.index];
         const color = TEXT_COLOR;
         // A pictured task moves its prompt up so the drawing has room under it (DESIGN-GAP 52).
-        const promptY = task.visual ? TASK_LAYOUT.picture.promptY : undefined;
+        // A word round has the letters above the task: a sentence starts lower and an expression stands alone under them (DESIGN-GAP 85).
+        const wordRound = this.kind === 'word';
+        const promptY = task.visual ? TASK_LAYOUT.picture.promptY : wordRound ? MINIGAME_LAYOUT.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
         const sentence = input !== 'keypad' ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
-        const expression = input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
+        const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : input !== 'keypad' ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
-            this.promptTexts.push(
-                this.add
-                    .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
-                    .setOrigin(0.5),
-            );
+            if (!wordRound) {
+                this.promptTexts.push(
+                    this.add
+                        .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
+                        .setOrigin(0.5),
+                );
+            }
             this.drawExpression(task.prompt, expression, color);
         } else if (task.prompt.includes(BLANK)) {
             this.drawSentence(task.prompt, sentence, color);
@@ -485,12 +599,19 @@ export class TaskScene extends Scene {
                     wordWrap: { width: sentence.maxWidth },
                 })
                 .setOrigin(0.5, 0);
+            const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
             if (task.visual) {
                 // A pictured task's prompt ends above its drawing: a long one steps its font down (visual gate S-13).
-                const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
                 const limit = pictureLayout(TASK_LAYOUT.picture, input, false, visualShape(task.visual)).picture.y - promptGap;
                 const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
                 text.setFontSize(size);
+            } else if (input === 'keypad' || input === 'tiles') {
+                // A long sentence (a daily puzzle) ends above the hint bar beside the keypad or above the answer tiles (visual gate S-15).
+                const { bar, solution, tiles } = TASK_LAYOUT;
+                const limit = input === 'keypad' ? bar.bottom - bar.height - solution.bottomGap : tiles.top - solution.bottomGap;
+                const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
+                text.setFontSize(size);
+                this.promptBaseSize = size;
             }
             this.promptTexts.push(text);
         }
@@ -596,7 +717,7 @@ export class TaskScene extends Scene {
 
     /** A fresh round starts; the finished round's stars are already on the balance (syncStars). */
     private beginRound(): void {
-        this.state = this.freshRound();
+        this.applyRound(this.freshRound());
         this.shownIndex = -1;
         this.render();
         this.autoReadFirst();
@@ -619,14 +740,58 @@ export class TaskScene extends Scene {
         }
     }
 
-    private freshRound(): RoundState {
+    /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
+    private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] }): void {
+        this.state = round.state;
+        this.kind = round.kind;
+        this.puzzleId = round.puzzleId ?? null;
+        this.word = round.word ?? null;
+        this.dice = round.dice ?? null;
+    }
+
+    /** The results covered so far: one per finished throw (a throw settled by the solution and retyping counts too). */
+    private coveredNow(): number[] {
+        return this.dice ? coveredAfter(this.dice, lettersUncovered(this.state.outcomes)) : [];
+    }
+
+    /** The calendar day, as the scheduler sees it (main.ts owns the clock). */
+    private today(): string {
+        const read = this.registry.get(REGISTRY_KEYS.today) as (() => string) | undefined;
+        return read ? read() : localDay(new Date());
+    }
+
+    /** The kind of the next round: a variant replaces only an adaptive round (the warm-up and ?e2eSkills come first). Pure: the counter changes in finishRound. */
+    private nextKind(): RoundKind {
+        const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+        const forced = __E2E_HOOK__ ? ((this.registry.get(REGISTRY_KEYS.forcedVariant) as VariantKind | 'off' | null | undefined) ?? undefined) : undefined;
+        return nextRoundKind(variants, {
+            stageId: this.stage.id,
+            today: this.today(),
+            hasPool: (stageId) => puzzlePool(stageId as StageId, PUZZLES, balance.variants.puzzleStages).length > 0,
+            minigames: balance.variants.minigames,
+            wordAvailable: wordAvailable(this.stage, this.previousStageDef(), this.learnerAdaptation(), MINIGAME_WORDS),
+            rules: balance.variants,
+            forced,
+        });
+    }
+
+    private previousStageDef(): StageDef | undefined {
+        const id = previousStage(this.stage.id);
+        return id ? getStage(id) : undefined;
+    }
+
+    private learnerAdaptation(): SessionLearner {
+        return this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
+    }
+
+    private freshRound(): { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] } {
         // Pictures that did not load (BootScene's record; none recorded = nothing missing): tasks that need them are not drawn.
         const missingIds = (this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined)?.missingIds ?? new Set<string>();
         const previous = this.warmup ? getStage(previousStage(this.stage.id) ?? this.stage.id) : undefined;
         if (this.warmup && previous) {
             const rules = { ...balance.round, length: balance.warmup.length };
             const blocked = missingIds.size > 0 ? (skill: SkillDef): boolean => artBlocked(skill, missingIds) : undefined;
-            return startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries, blocked), rules);
+            return { kind: 'round', state: startRound(buildWarmup(this.stage, previous, this.rng, balance.warmup, balance.tiles.count, balance.round.uniqueRetries, blocked), rules) };
         }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         if (__E2E_HOOK__) {
@@ -634,9 +799,34 @@ export class TaskScene extends Scene {
             const forced = forcedSkills(this.stage, this.registry.get(REGISTRY_KEYS.forcedSkills) as readonly string[] | null | undefined, balance.round.length);
             if (forced) {
                 const tasks = distinctTasks(forced, this.rng, (skill) => generateTask(skill, this.rng, { tileCount: balance.tiles.count }), balance.round.uniqueRetries);
-                return startRound(tasks, balance.round);
+                return { kind: 'round', state: startRound(tasks, balance.round) };
             }
         }
+        const kind = this.nextKind();
+        if (kind === 'puzzle') {
+            const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+            const pool = puzzlePool(this.stage.id, PUZZLES, balance.variants.puzzleStages);
+            const puzzle = pickPuzzle(pool, variants.puzzlesDone, this.rng);
+            return { kind, state: startRound([puzzleTask(puzzle)], variantRules(kind, 1, balance)), puzzleId: puzzle.id };
+        }
+        if (kind === 'word') {
+            const built = buildWordRound(this.stage, this.previousStageDef(), learner, this.rng, { tiles: balance.variants.word.tiles, uniqueRetries: balance.round.uniqueRetries, words: MINIGAME_WORDS });
+            if (built) {
+                return { kind, state: startRound(built.tasks, variantRules(kind, built.tasks.length, balance)), word: built.word };
+            }
+        }
+        // A word round that cannot be drawn falls to the dice board when it is on (plan phase 6), so the due variant is not
+        // replaced by an ordinary round that would keep the counter due and pick the word round again.
+        if (kind === 'dice' || (kind === 'word' && balance.variants.minigames.includes('dice'))) {
+            const board = diceBoard(this.rng, balance.variants.dice, {
+                addHint: pl.minigames.diceAddHint,
+                subHint: pl.minigames.diceSubHint,
+                addStepHint: pl.minigames.diceAddStepHint,
+                subStepHint: pl.minigames.diceSubStepHint,
+            });
+            return { kind: 'dice', state: startRound(board.map((t) => t.task), variantRules('dice', board.length, balance)), dice: board };
+        }
+        // A variant that cannot be built (a word round without a fitting word, dice off) is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,
@@ -648,7 +838,7 @@ export class TaskScene extends Scene {
             balance.tiles.count,
             { missingIds, unlockShare: balance.curriculum.unlockShare },
         );
-        return startRound(tasks, balance.round);
+        return { kind: 'round', state: startRound(tasks, balance.round) };
     }
 
     /**
@@ -656,6 +846,10 @@ export class TaskScene extends Scene {
      * and, after an ordinary round, unlocks a step and the easing counters; the warm-up then settles the stage.
      */
     private finishRound(): void {
+        if (this.kind !== 'round') {
+            this.finishVariant(this.kind);
+            return;
+        }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         const results = roundResults(this.state);
         const { adaptation, unlocked } = endRound(learner, this.stage, results, Date.now(), this.warmup ? 'warmup' : 'round', balance);
@@ -667,9 +861,28 @@ export class TaskScene extends Scene {
         } satisfies SessionLearner);
         if (this.warmup) {
             this.finishWarmup();
+        } else {
+            this.countRound('round');   // the warm-up is not an ordinary round for the schedule
         }
         // The end of a round is saved at once, after the last registry write (the warm-up sets the learner a second time).
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+    }
+
+    /**
+     * A variant ends: the schedule moves on (counter back to 0, today's puzzle recorded) and nothing else changes.
+     * No endRound: the variant never touches mastery, unlocks or the easing counters. One registry write, then the save.
+     */
+    private finishVariant(kind: VariantKind): void {
+        this.countRound(kind);
+        void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+    }
+
+    /** The pure schedule step (core/variants afterRound) and its single registry write. */
+    private countRound(kind: RoundKind): void {
+        const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState;
+        const poolIds = puzzlePool(this.stage.id, PUZZLES, balance.variants.puzzleStages).map((p) => p.id);
+        const puzzle = kind === 'puzzle' && this.puzzleId !== null ? { id: this.puzzleId, poolIds } : undefined;
+        this.registry.set(REGISTRY_KEYS.variants, afterRound(variants, kind, this.today(), puzzle));
     }
 
     /**
@@ -701,6 +914,9 @@ export class TaskScene extends Scene {
     /** Where the answer was given: the tapped tile, or the OK key of the keypad. */
     private answerSpot(value: unknown): { x: number; y: number } | null {
         const view = roundView(this.state, pl.round.resultLine);
+        if (this.kind === 'dice') {
+            return this.board.targets().find((t) => t.value === value) ?? null;
+        }
         if (view.input === 'tiles') {
             return this.tiles.targets().find((t) => t.value === value) ?? null;
         }
@@ -789,13 +1005,15 @@ export class TaskScene extends Scene {
             autoRead: this.autoRead,
             warmup: this.warmup,
             unlock: this.unlockView(),
+            variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()), covered: this.dice === null ? null : Object.freeze(this.board.coveredValues()) }),
+            today: this.today(),
         });
     }
 
     /** Centres of the tappable things in 1920x1080 scene space, for the e2e hook. */
     targets(): TaskTargets {
         return Object.freeze({
-            tiles: this.tiles.targets(),
+            tiles: this.kind === 'dice' ? this.board.targets() : this.tiles.targets(),   // a dice round answers on the board's fields
             keys: this.keypad.targets(),
             selectTiles: this.select.targets(),
             selectOk: this.select.okTarget(),
@@ -806,6 +1024,8 @@ export class TaskScene extends Scene {
             picture: this.picture.bounds(),
             nextRound: this.summary.targets().nextRound,
             toRoom: this.summary.targets().toRoom,
+            doneNext: this.doneCard.targets().nextRound,
+            doneRoom: this.doneCard.targets().toRoom,
             unlockNext: this.unlockCard.target(),
         });
     }

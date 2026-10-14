@@ -38,13 +38,15 @@ export interface Snapshot {
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
+    /** The open round is a variant (S-15): its kind, the letters uncovered so far (word; null = hidden) and the results covered (dice). Null for an ordinary round. */
+    variant?: { kind: 'word' | 'dice' | 'puzzle'; puzzleId: string | null; letters: (string | null)[] | null; covered: number[] | null } | null;
     narration: string | null;
     speakerVisible: boolean;
     unlock: { step: number; name: string } | null;
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
     /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
-    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | null; lastError: string | null; lastWriteAt: number | null } | null;
+    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | null; lastError: string | null; lastWriteAt: number | null; migratedFrom: number | null; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */
@@ -76,6 +78,9 @@ export interface Targets {
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;
+    /** "Kolejna runda" / "Do pokoju" of a minigame's done card. */
+    doneNext?: Point | null;
+    doneRoom?: Point | null;
     unlockNext: Point | null;
     resume: Point | null;
     taskButton?: Point | null;

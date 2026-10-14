@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/CoverBoard.ts b/src/ui/widgets/CoverBoard.ts
+index 8022b4f..35d7908 100644
+--- a/src/ui/widgets/CoverBoard.ts
++++ b/src/ui/widgets/CoverBoard.ts
+@@ -26,7 +26,7 @@ export class CoverBoard {
+         this.fields = coverBoardCells(MINIGAME_LAYOUT.board, count).map((cell) => {
+             const graphics = scene.add.graphics();
+             const label = scene.add.text(cell.x + cell.width / 2, cell.y + cell.height / 2, String(cell.value), textStyle('result')).setOrigin(0.5);
+-            const zone = scene.add.zone(cell.x + cell.width / 2, cell.y + cell.height / 2, cell.width, cell.height).setInteractive();
++            const zone = scene.add.zone(cell.x + cell.width * 1.5, cell.y + cell.height / 2, cell.width, cell.height).setInteractive();
+             const field: Field = { cell, graphics, label, zone, pressed: false };
+             zone.on('pointerdown', () => this.press(field));
+             zone.on('pointerup', () => this.release(field));

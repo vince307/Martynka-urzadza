@@ -27,6 +27,8 @@ import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
 import { SpeakerButton } from '../ui/widgets/SpeakerButton';
 import { StarCounter } from '../ui/widgets/StarCounter';
+import { HudTitle } from '../ui/widgets/HudTitle';
+import type { HudTitleView } from '../core/variants';
 
 /**
  * Overlay above the task and room scenes: the star counter, the speaker and the "Do pokoju" switch.
@@ -46,6 +48,7 @@ export class UIScene extends Scene {
     private roomSwitch!: RoomSwitchButton;
     private narrator: Narrator | undefined;
     private settingsIcon!: SettingsIcon;
+    private title!: HudTitle;
     private hold: LongPressState = IDLE;
     private closeDialog: (() => void) | undefined;
     private session: InputSession | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
@@ -80,6 +83,11 @@ export class UIScene extends Scene {
         this.registry.events.on(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
         refreshSwitch();
 
+        this.title = new HudTitle(this);
+        const refreshTitle = (): void => this.title.set((this.registry.get(REGISTRY_KEYS.hudTitle) as HudTitleView | null | undefined) ?? null);
+        this.registry.events.on(`changedata-${REGISTRY_KEYS.hudTitle}`, refreshTitle);
+        refreshTitle();
+
         // A restarted scene keeps its fields: start from a clean slate.
         this.hold = IDLE;
         this.closeDialog = undefined;
@@ -96,6 +104,7 @@ export class UIScene extends Scene {
             this.closeDialog?.();
             this.closeSettings();
             this.registry.events.off(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
+            this.registry.events.off(`changedata-${REGISTRY_KEYS.hudTitle}`, refreshTitle);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.narration}`, refreshSpeaker);
             unsubscribe?.();
@@ -231,6 +240,11 @@ export class UIScene extends Scene {
     /** Centre of the settings gear, for the e2e hook. */
     settingsTarget(): { x: number; y: number } {
         return this.settingsIcon.target();
+    }
+
+    /** The variant title on screen (text and badge), for the e2e hook; null for an ordinary round. */
+    titleText(): string | null {
+        return this.title.text();
     }
 
     /** Shown counter text, for the e2e hook (what is drawn, not the registry value). */

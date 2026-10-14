@@ -45,7 +45,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         handle = openDialog(parent, createText('h1', title), body, finish);
     };
 
-    const stepTwo = (session: SessionSave, forced: boolean): void => {
+    const stepTwo = (session: SessionSave, forced: boolean, file: { build: string | null; exportedAt: string | null }): void => {
         const message = createText('p', '', 'overlay-muted');
         message.setAttribute('role', 'status');
         message.hidden = true;
@@ -82,11 +82,20 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         show(pl.saveTransfer.importTitle, [
             device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', unreadableLine(forced), 'overlay-muted'),
             createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName),
+            ...fileInfoLine(file),
             message,
             actions,
         ]);
         // "Wczytaj" overwrites the child's progress: the initial focus goes to the safe "Anuluj", never to the overwrite.
         cancel.focus();
+    };
+
+    // S12-09: the date and build the file says about itself; nothing when the file names neither (a hand-made one).
+    const fileInfoLine = (file: { build: string | null; exportedAt: string | null }): HTMLElement[] => {
+        const parsed = file.exportedAt === null ? Number.NaN : Date.parse(file.exportedAt);
+        const date = Number.isNaN(parsed) ? null : new Date(parsed).toLocaleDateString('pl-PL');
+        const text = pl.saveTransfer.fileInfo(date, file.build);
+        return text === '' ? [] : [createText('p', text, 'overlay-muted')];
     };
 
     const unreadableLine = (forced: boolean): string => (forced ? pl.saveTransfer.forcedWarning : pl.saveTransfer.deviceUnreadable);
@@ -125,7 +134,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
             file.text().then(
                 (text) => {
                     const result = parseImport(text, maxBytes);
-                    if (result.kind === 'ok') stepTwo(result.session, forced);
+                    if (result.kind === 'ok') stepTwo(result.session, forced, result.file);
                     else refuse(result.reason, result.problem);
                 },
                 () => refuse('not-json', null),

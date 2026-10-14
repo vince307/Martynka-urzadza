@@ -1,0 +1,13 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index 3d20b73..4243e49 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -170,7 +170,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+             if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
+             dirty = false;
+             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
+-            if (!backedUp && options.migrated) {
++            if (false && !backedUp && options.migrated) {
+                 await store.backup(options.migrated.raw, options.migrated.from);
+                 backedUp = true;
+             }

@@ -29,6 +29,7 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
         }
         if (view.earlierFailures !== null) section.append(createText('p', pl.settings.saveEarlier(view.earlierFailures.count, view.earlierFailures.error)));
     }
+    if (view.migratedFrom !== null) section.append(createText('p', pl.settings.saveMigrated(view.migratedFrom)));
     if (view.persistence !== 'unknown') section.append(createText('p', pl.settings.savePersist[view.persistence]));
     return section;
 };

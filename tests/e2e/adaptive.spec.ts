@@ -23,8 +23,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('#13 (proposed, test-plan refresh pending) mastering the current step shows "Nowa umiejętność!" after "Kolejna runda", the card waits through "Do pokoju", and "Dalej" starts a round on the unlocked step', async ({ page }) => {
+    // A fourth ordinary round would be the daily puzzle (S-15): this spec counts on ordinary rounds only, so the variant schedule is off.
     // Age 8 in September proposes E3; E4 is an override, so there is no warm-up.
-    await passWelcomeAsParent(page, { age: '8', stageLabel: 'Klasa 2, II półrocze', stage: 'E4', month: SEPTEMBER });
+    await passWelcomeAsParent(page, { age: '8', stageLabel: 'Klasa 2, II półrocze', stage: 'E4', month: SEPTEMBER, query: { e2eVariant: 'off' } });
     const start = await snapshot(page);
     expect(start.learner?.unlockedStep.E4).toBe(START_STEP);
     expect(start.learner?.pendingUnlock).toBeNull();

@@ -81,11 +81,18 @@ describe('roundView', () => {
     });
 
     it('done: a star for a solved task, none after retype', () => {
-        expect(view(answer(start(tile), 5)).bar).toEqual({ kind: 'correct', star: true });
-        expect(view(answer(wrong(start(tile)), 5)).bar).toEqual({ kind: 'correct', star: true });
+        expect(view(answer(start(tile), 5)).bar).toEqual({ kind: 'correct', stars: 1 });
+        expect(view(answer(wrong(start(tile)), 5)).bar).toEqual({ kind: 'correct', stars: 1 });
         let s = wrong(wrong(start(tile)));
         s = answer(nextSolutionStep(nextSolutionStep(s)), 5);
-        expect(view(s)).toMatchObject({ inputActive: false, bar: { kind: 'correct', star: false } });
+        expect(view(s)).toMatchObject({ inputActive: false, bar: { kind: 'correct', stars: 0 } });
+    });
+
+    // Visual gate S-15: the daily puzzle paid 2 stars while the bar said "+1 ★".
+    it('done: the bar names the stars the task paid, two for the daily puzzle', () => {
+        const puzzle = startRound([tile], { ...balance.round, length: 1, starPerTask: 2, cleanRoundBonus: 0 });
+        expect(view(answer(puzzle, 5)).bar).toEqual({ kind: 'correct', stars: 2 });
+        expect(view(answer(wrong(puzzle), 5)).bar).toEqual({ kind: 'correct', stars: 2 });
     });
 
     it('dots show outcomes of finished tasks and move the current marker', () => {

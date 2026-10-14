@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { decodeSave } from '../src/core/save';
+import { decodeSave, encodeSave } from '../src/core/save';
 import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'v1']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -35,6 +35,18 @@ describe('e2eSaveStore', () => {
         const store = e2eSaveStore('writefail');
         await expect(store.read()).resolves.toBeUndefined();
         await expect(store.write({} as never)).rejects.toMatchObject({ name: 'QuotaExceededError' });
+    });
+
+    it('v1 holds the frozen v1 fixture, decodes to v2 and logs backup before write', async () => {
+        const store = e2eSaveStore('v1');
+        const raw = await store.read();
+        expect(raw).toMatchObject({ version: 1, stars: 7 });
+        const decoded = decodeSave(raw);
+        expect(decoded).toMatchObject({ kind: 'ok', migratedFrom: 1 });
+        if (decoded.kind !== 'ok') return;
+        await store.backup(raw, 1);
+        await store.write(encodeSave(decoded.session));
+        expect(((await store.read()) as { version: number }).version).toBe(2);
     });
 
     it('hang never settles its read', async () => {

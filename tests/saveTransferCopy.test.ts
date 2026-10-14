@@ -13,7 +13,7 @@ describe('pl.saveTransfer import copy', () => {
     });
 
     it('has a calm text for every rejection reason, each leaving the save untouched', () => {
-        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version'];
+        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version', 'migration-failed'];
         for (const reason of reasons) {
             expect(pl.saveTransfer.rejected[reason]).toMatch(/Obecne postępy zostały bez zmian\.$/);
         }
@@ -30,5 +30,13 @@ describe('pl.saveTransfer import copy', () => {
         expect(pl.saveTransfer.resetTitle).toMatch(/\?$/);
         expect(pl.saveTransfer.resetHint).toContain('zapisz kopię');
         expect(pl.saveTransfer.resetConfirm).not.toBe(pl.parent.cancel);
+    });
+
+    it('names the raw copy with a date and the file info with date and build (S12-14, S12-09)', () => {
+        expect(pl.saveFailed.fileName('2026-10-14')).toBe('martynka-zapis-surowy-2026-10-14.txt');
+        expect(pl.saveTransfer.fileInfo('14.10.2026', 'abc1234')).toBe('Kopia z 14.10.2026, wersja gry abc1234');
+        expect(pl.saveTransfer.fileInfo(null, null)).toBe('');
+        expect(pl.saveTransfer.fileInfo('14.10.2026', null)).toBe('Kopia z 14.10.2026');
+        expect(pl.settings.saveMigrated(1)).toBe('Zapis przeniesiono z wersji 1.');
     });
 });

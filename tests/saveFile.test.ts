@@ -13,6 +13,7 @@ const fixture = (name: string): Record<string, unknown> =>
 const clone = <T>(v: T): T => structuredClone(v);
 const MAX = 1_000_000;
 const v1 = (): SaveState => fixture('save-v1.json') as unknown as SaveState;
+const v2 = (): SaveState => fixture('save-v2.json') as unknown as SaveState;
 const decoded = (): SessionSave => {
     const d = decodeSave(v1());
     if (d.kind !== 'ok') throw new Error('fixture must decode');
@@ -20,6 +21,19 @@ const decoded = (): SessionSave => {
 };
 const envelope = (save: unknown): string =>
     JSON.stringify({ app: SAVE_FILE_APP, kind: 'save', build: 'abc1234', exportedAt: '2026-10-13T10:00:00.000Z', save });
+
+describe('parseImport and the v1 -> v2 format change (S-15)', () => {
+    it('a file exported by a v1 build imports with the starting variants', () => {
+        const r = parseImport(envelope(v1()), MAX);
+        expect(r.kind === 'ok' && r.session.variants).toEqual({ roundsSince: 0, lastMinigame: null, puzzleDay: null, puzzlesDone: [] });
+    });
+
+    it('a v2 file imports with its variants', () => {
+        const v2 = fixture('save-v2.json');
+        const r = parseImport(envelope(v2), MAX);
+        expect(r.kind === 'ok' && r.session.variants.puzzlesDone).toEqual(['logic.e3.a', 'logic.e3.b']);
+    });
+});
 
 describe('parseImport accepts what the game saved', () => {
     it('an exported envelope gives the saved session and the file metadata', () => {
@@ -90,6 +104,7 @@ describe('parseImport rejects what is parsable but not a readable save', () => {
 describe('saveProblem agrees with validateSave', () => {
     const broken: [string, (r: Record<string, unknown>) => void, string][] = [
         ['version', (r) => { r.version = 3; }, 'version'],
+        ['variants', (r) => { r.variants = { roundsSince: -1 }; }, 'variants'],
         ['profileId', (r) => { r.profileId = 1; }, 'profileId'],
         ['stars', (r) => { r.stars = 1.5; }, 'stars'],
         ['rooms', (r) => { r.rooms = []; }, 'rooms'],
@@ -98,18 +113,19 @@ describe('saveProblem agrees with validateSave', () => {
         ['learner', (r) => { (r.learner as Record<string, unknown>).stage = 'E9'; }, 'learner'],
     ];
     it.each(broken)('names %s', (_n, mutate, key) => {
-        const r = clone(fixture('save-v1.json'));
+        const r = clone(fixture('save-v2.json'));
         mutate(r);
         expect(saveProblem(r)).toBe(key);
         expect(validateSave(r)).toBe(false);
     });
 
-    it.each([null, 'x', 7, [], {}, fixture('save-v1.json'), fixture('save-v1-fresh.json')])('same verdict: %j', (value) => {
+    it.each([null, 'x', 7, [], {}, fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
         expect(validateSave(value)).toBe(saveProblem(value) === null);
     });
 
     it('a valid save has no problem', () => {
-        expect(saveProblem(fixture('save-v1.json'))).toBeNull();
+        expect(saveProblem(fixture('save-v2.json'))).toBeNull();
+        expect(saveProblem(fixture('save-v2-fresh.json'))).toBeNull();
     });
 });
 
@@ -156,7 +172,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
     const st = (blockedBy: BlockReason | null, loadReason: AutosaveStatus['loadReason'] = null, loadError: string | null = null) => ({ blockedBy, loadReason, loadError });
 
     it('a healthy save gives the summary', () => {
-        const view = deviceSaveView(st(null), v1(), rooms);
+        const view = deviceSaveView(st(null), v2(), rooms);
         expect(view).toEqual({ kind: 'summary', summary: saveSummary(decoded(), rooms) });
     });
 
@@ -164,34 +180,34 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
         expect(deviceSaveView(st(null), { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
     });
 
-    it.each(['corrupt', 'unknown-version'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
-        expect(deviceSaveView(st('unreadable', reason), v1(), rooms)).toEqual({ kind: 'unreadable' });
+    it.each(['corrupt', 'unknown-version', 'migration-failed'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
+        expect(deviceSaveView(st('unreadable', reason), v2(), rooms)).toEqual({ kind: 'unreadable' });
     });
 
     it('a future save is blocked, never forceable', () => {
-        expect(deviceSaveView(st('unreadable', 'future'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'future', forceable: false });
+        expect(deviceSaveView(st('unreadable', 'future'), v2(), rooms)).toEqual({ kind: 'blocked', cause: 'future', forceable: false });
     });
 
     it('a timeout read is blocked, never forceable', () => {
-        expect(deviceSaveView(st('unavailable', null, 'timeout'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
+        expect(deviceSaveView(st('unavailable', null, 'timeout'), v2(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
         // IndexedDB's own DOMException for a transaction that ran out of time: the save may be healthy too (impl-review F1).
-        expect(deviceSaveView(st('unavailable', null, 'TimeoutError'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
+        expect(deviceSaveView(st('unavailable', null, 'TimeoutError'), v2(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
     });
 
     it('a refused read is blocked and forceable; fatal is not', () => {
-        expect(deviceSaveView(st('unavailable', null, 'SecurityError'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable', forceable: true });
-        expect(deviceSaveView(st('fatal'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'fatal', forceable: false });
+        expect(deviceSaveView(st('unavailable', null, 'SecurityError'), v2(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable', forceable: true });
+        expect(deviceSaveView(st('fatal'), v2(), rooms)).toEqual({ kind: 'blocked', cause: 'fatal', forceable: false });
     });
 
     it('forceable agrees with Autosaver.replace({ force: true }) for every combination (lockstep)', async () => {
-        const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
+        const reasons = [null, 'corrupt', 'future', 'unknown-version', 'migration-failed'] as const;
         const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
         for (const blockedBy of ['unreadable', 'unavailable', 'fatal'] as const)
             for (const loadReason of reasons)
                 for (const loadError of errors) {
                     const writes: SaveState[] = [];
                     const saver = createAutosaver({
-                        store: { read: () => Promise.resolve(undefined), write: (v) => (writes.push(v), Promise.resolve()) },
+                        store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: (v) => (writes.push(v), Promise.resolve()) },
                         snapshot: () => decoded(),
                         timers: { setTimeout: () => 0, clearTimeout: () => undefined },
                         delayMs: 500,
@@ -202,8 +218,8 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
                         ...(loadReason ? { loadReason } : {}),
                         ...(loadError ? { loadError } : {}),
                     });
-                    const view = deviceSaveView(saver.status(), v1(), rooms);
-                    await saver.replace(v1(), { force: true });
+                    const view = deviceSaveView(saver.status(), v2(), rooms);
+                    await saver.replace(v2(), { force: true });
                     const wrote = writes.length === 1;
                     const forceable = view.kind === 'blocked' && view.forceable;
                     const open = view.kind === 'unreadable';

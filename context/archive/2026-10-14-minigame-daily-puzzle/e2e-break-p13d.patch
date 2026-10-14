@@ -1,0 +1,13 @@
+diff --git a/src/core/variants.ts b/src/core/variants.ts
+index 383ebc1..e103b47 100644
+--- a/src/core/variants.ts
++++ b/src/core/variants.ts
+@@ -26,7 +26,7 @@ export const nextRoundKind = (state: VariantState, ctx: ScheduleContext): RoundK
+     if (ctx.forced === 'off') return 'round';
+     if (ctx.forced === undefined && state.roundsSince < ctx.rules.everyRounds) return 'round';
+     const wantsPuzzle = ctx.forced === undefined || ctx.forced === 'puzzle';
+-    if (wantsPuzzle && ctx.hasPool(ctx.stageId) && state.puzzleDay !== ctx.today) return 'puzzle';
++    if (wantsPuzzle && ctx.hasPool(ctx.stageId) && state.puzzleDay === null) return 'puzzle';
+     const forcedGame = ctx.forced === 'word' || ctx.forced === 'dice' ? ctx.forced : undefined;
+     return chooseMinigame(state, ctx, forcedGame) ?? chooseMinigame(state, ctx) ?? 'round';
+ };

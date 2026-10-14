@@ -43,6 +43,18 @@ export const PLACEHOLDER_COLORS = {
     ageButton: 0xeaf6df,        // kit .age-button gradient (#f8fff0 to #dceecf), flattened to its middle
     ageButtonBorder: 0xabc49b,  // kit .age-button border
     unlockCard: 0xfff7de,       // kit .unlock-card gradient (#fffef4 to #fff0c8), flattened to its middle
+    letterHidden: 0xfffdf4,     // kit .letter
+    letterHiddenBorder: 0xd2be87,
+    letterRevealed: 0xe8f3d7,   // kit .letter.revealed
+    letterRevealedBorder: 0x90b672,
+    result: 0xf0f8e6,           // kit .result gradient (#fbfff5 to #e4f0d5), flattened to its middle
+    resultBorder: 0xbdd5ae,     // kit .result border
+    resultShadow: 0xdde8d1,     // kit .result box-shadow, flattened
+    resultCovered: 0xd2eabb,    // kit .result.covered
+    resultCoveredBorder: 0x547e3d,
+    dieFace: 0xfffdf4,          // DESIGN-GAP 86: the kit shows the dice as pictures; ours are drawn in code
+    dieBorder: 0xb4cba7,
+    diePip: 0x245c59,
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
     ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
@@ -86,6 +98,10 @@ export const FONT_SIZES = {
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
+    letter: 88,             // kit .letter (S-15 word minigame)
+    result: 80,             // kit .result (S-15 dice minigame)
+    diceSign: 96,           // kit .dice-expression
+    doneWord: 92,           // kit .success-card .final-word
 } as const;
 
 /**
@@ -121,6 +137,10 @@ export const FONT_WEIGHTS = {
     gridLabel: 700,
     sideLabel: 700,
     artLabel: 650,
+    letter: 750,            // kit .letter
+    result: 750,            // kit .result
+    diceSign: 750,          // kit .dice-expression
+    doneWord: 750,          // kit .final-word
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -156,6 +176,10 @@ export const REGISTRY_KEYS = {
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
+    variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
+    today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)
+    forcedVariant: 'forcedVariant',     // e2e build only: 'off' | 'word' | 'dice' | 'puzzle' (main.ts, from the page address); the name is not an e2e marker on purpose
+    hudTitle: 'hudTitle',               // HudTitleView | null: the variant title in the HUD, set by the task scene; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -166,6 +190,7 @@ export const SAVE_KEYS = [
     REGISTRY_KEYS.currentRoom,
     REGISTRY_KEYS.learner,
     REGISTRY_KEYS.settings,
+    REGISTRY_KEYS.variants,
 ] as const;
 
 /**
@@ -303,6 +328,9 @@ export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
     roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
+    // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
+    // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
+    title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
     // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
     // DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
     settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
@@ -332,6 +360,27 @@ export const UNLOCK_LAYOUT = {
     art: { centerX: 960, top: 461, size: 200 },
     name: { x: 960, y: 675, maxWidth: 1100 },
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
+} as const;
+
+/**
+ * Minigame screens (S-15; kit expansion pack word-*.png, success-card): the word's letter boxes above the task, and the done card
+ * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md): the kit shows no letter row together with a task prompt
+ * longer than one equation, so a sentence prompt starts at `promptY` and an expression is centred on `expressionY`, under the letters.
+ */
+export const MINIGAME_LAYOUT = {
+    letters: { top: 232, width: 132, height: 138, gap: 24, radius: 28, border: 5, centerX: 960 },
+    expressionY: 540,   // kit .word-equation sits under the letters; no "Oblicz:" line in a word round
+    promptY: 420,       // a sentence prompt of a word round starts here
+    card: { left: 440, top: 330, width: 1040, height: 540, border: 8, radius: 46 },
+    // Zakrywanka (kit .dice-expression, .result-grid, .result): two dice and the sign centred on x 960, then 13 fields in two rows.
+    // DESIGN-GAP 86 (docs/design-gaps.md): the dice faces, the "?" for the missing result and the lines of the
+    // solution above the dice (the kit has none) are ours.
+    dice: { top: 346, size: 150, gap: 38, centerX: 960, pip: 15, radius: 30, border: 5, solutionTop: 232, solutionLimit: 336 },
+    board: { left: 361, top: 552, columns: 7, width: 160, height: 136, gap: 20, radius: 28, border: 5, shadow: 7, checkSize: 32 },
+    title: { x: 960, y: 356 },
+    line: { x: 960, y: 462 },
+    earned: { centerX: 960, centerY: 650, starSize: 84, gap: 24, scale: 0.7 },   // the summary's "+N" text at 0.7 of its size
+    buttons: { left: 548, top: 728, width: 400, height: 108, gap: 24, radius: 30, border: 5 },   // the pair centred on the card (x 960)
 } as const;
 
 /**

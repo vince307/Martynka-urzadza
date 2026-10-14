@@ -2,7 +2,7 @@
 // Oracle: audit C-2 / M-S5: a parent must see whether saving is off (and why), failing, or fine.
 import { describe, expect, it } from 'vitest';
 import type { AutosaveStatus } from '../src/core/autosave';
-import { saveHealthView } from '../src/core/saveHealth';
+import { cardCopyFor, saveHealthView } from '../src/core/saveHealth';
 
 const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     load: 'fresh',
@@ -16,6 +16,7 @@ const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     lastReason: null,
     lastError: null,
     lastWriteAt: null,
+    migratedFrom: null,
     loadReason: null,
     loadError: null,
     replace: 'idle',
@@ -83,5 +84,23 @@ describe('saveHealthView', () => {
     it('a fatal block carries lastError as code, or null', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal', lastError: 'TypeError' }))).toMatchObject({ cause: 'fatal', code: 'TypeError' });
         expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }))).toMatchObject({ cause: 'fatal', code: null });
+    });
+});
+
+describe('cardCopyFor', () => {
+    it('the load reason picks the card, a future save never gets the generic one (SIR-01 / O1)', () => {
+        expect(cardCopyFor('unreadable', 'future')).toBe('future');
+        expect(cardCopyFor('unreadable', 'migration-failed')).toBe('migrationFailed');
+        expect(cardCopyFor('unreadable', 'corrupt')).toBe('failed');
+        expect(cardCopyFor('unreadable', 'unknown-version')).toBe('failed');
+        expect(cardCopyFor('unavailable', null)).toBe('unavailable');
+    });
+});
+
+describe('saveHealthView migration lines', () => {
+    it('keeps migratedFrom from the status and names a failed migration as its own cause', () => {
+        expect(saveHealthView(status({ migratedFrom: 1 })).migratedFrom).toBe(1);
+        expect(saveHealthView(status()).migratedFrom).toBeNull();
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'unreadable', loadReason: 'migration-failed' }))).toMatchObject({ cause: 'migration-failed', code: 'migration-failed' });
     });
 });

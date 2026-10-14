@@ -12,15 +12,22 @@ import { getGenerator } from '../src/core/tasks/registry';
 import { describeVisual } from '../src/core/tasks/visual';
 import { validateTask, type Violation } from '../src/core/tasks/validate';
 import { balance } from '../src/data/balance';
-import { availableStages, getStage } from '../src/data/curriculum';
+import { availableStages, getStage, stages } from '../src/data/curriculum';
+import { startLearning } from '../src/core/curriculum';
+import { coveredAfter, diceBoard } from '../src/core/minigames/dice';
+import { buildWordRound } from '../src/core/minigames/word';
+import { MINIGAME_WORDS } from '../src/data/minigames';
+import { placementData } from '../src/data/placement';
 import { nouns } from '../src/data/nouns';
 import { pl } from '../src/data/pl';
+import { puzzlePool, puzzleTask } from '../src/core/puzzles';
+import { PUZZLES } from '../src/data/puzzles';
 
 const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 3;
 
 const usage = (): never => {
-    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N] [--warmup]');
+    console.error('Użycie: npm run sample -- <etap> [--seed N] [--count N] [--warmup] [--variants]');
     console.error(`Etapy z danymi: ${availableStages().join(', ')}`);
     process.exit(2);
 };
@@ -29,6 +36,7 @@ const args = process.argv.slice(2);
 const options: Record<string, number> = { seed: DEFAULT_SEED, count: DEFAULT_COUNT };
 let stageId: string | undefined;
 let warmup = false;
+let variants = false;
 for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--seed' || arg === '--count') {
@@ -40,6 +48,8 @@ for (let i = 0; i < args.length; i += 1) {
         i += 1;
     } else if (arg === '--warmup') {
         warmup = true;
+    } else if (arg === '--variants') {
+        variants = true;
     } else if (arg.startsWith('--') || stageId !== undefined) {
         usage();
     } else {
@@ -50,6 +60,53 @@ const { seed, count } = options;
 const stage = stageId ? getStage(stageId) : undefined;
 if (!stage) {
     usage();
+}
+
+if (variants) {
+    // Prints the LOGIC puzzles of the stage (the daily puzzle pool), one dice board and word rounds (S-15).
+    const pool = puzzlePool(stage!.id, PUZZLES, balance.variants.puzzleStages);
+    console.log(`Zagadki ${stage!.id}: ${pool.length}`);
+    const puzzleViolations: Violation[] = [];
+    for (const def of pool) {
+        const task = puzzleTask(def);
+        const found = validateTask(task, { max: 100, nouns });
+        puzzleViolations.push(...found);
+        const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
+        console.log(`  [${def.id}] ${task.prompt}  → ${String(task.answer)}${choices}   podpowiedź: ${task.hint.join(' | ')}${found.length > 0 ? '  ⚠' : ''}`);
+    }
+    const violations: Violation[] = [...puzzleViolations];
+    const diceText = {
+        addHint: pl.minigames.diceAddHint,
+        subHint: pl.minigames.diceSubHint,
+        addStepHint: pl.minigames.diceAddStepHint,
+        subStepHint: pl.minigames.diceSubStepHint,
+    };
+    const board = diceBoard(createRng(seed), balance.variants.dice, diceText);
+    console.log(`\nKostki (plansza ${board.length} rzutów, pola zakryte po 13: ${coveredAfter(board, board.length).length})`);
+    for (const t of board) {
+        const found = validateTask(t.task, { max: balance.variants.dice.max, nouns });
+        violations.push(...found);
+        console.log(`  [${t.target}] ${t.task.prompt}  podpowiedź: ${t.task.hint.join(' | ')}${found.length > 0 ? '  ⚠' : ''}`);
+    }
+    const previousId = previousStage(stage!.id);
+    const previousDef = previousId ? getStage(previousId) : undefined;
+    const learning = startLearning(stages, 8, 9, placementData, balance.curriculum);
+    const wordRules = { tiles: balance.variants.word.tiles, uniqueRetries: balance.round.uniqueRetries, words: MINIGAME_WORDS };
+    for (let i = 0; i < count; i += 1) {
+        const round = buildWordRound(stage!, previousDef, learning, createRng(seed + i), wordRules);
+        if (!round) {
+            console.log(`\nHasło ${i + 1}: brak zadań (harmonogram wybierze kostki)`);
+            continue;
+        }
+        console.log(`\nHasło ${i + 1}: ${round.word}`);
+        for (const task of round.tasks) {
+            const found = validateTask(task, { nouns });
+            violations.push(...found);
+            console.log(`  ${task.prompt}  → ${String(task.answer)}  [${(task.choices ?? []).join(' / ')}]${found.length > 0 ? '  ⚠' : ''}`);
+        }
+    }
+    console.log(`\nNaruszenia: ${violations.length}`);
+    process.exit(violations.length > 0 ? 1 : 0);
 }
 
 if (warmup) {

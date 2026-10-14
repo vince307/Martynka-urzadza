@@ -1,0 +1,13 @@
+diff --git a/src/core/variants.ts b/src/core/variants.ts
+index 383ebc1..dc7ca15 100644
+--- a/src/core/variants.ts
++++ b/src/core/variants.ts
+@@ -38,7 +38,7 @@ export const afterRound = (
+     today: string,
+     puzzle?: { id: string; poolIds: readonly string[] },
+ ): VariantState => {
+-    if (kind === 'round') return { ...state, puzzlesDone: [...state.puzzlesDone], roundsSince: state.roundsSince + 1 };
++    if (kind === 'round') return { ...state, puzzlesDone: [...state.puzzlesDone], roundsSince: state.roundsSince };
+     const next: VariantState = { ...state, puzzlesDone: [...state.puzzlesDone], roundsSince: 0 };
+     if (kind === 'puzzle') {
+         next.puzzleDay = today;

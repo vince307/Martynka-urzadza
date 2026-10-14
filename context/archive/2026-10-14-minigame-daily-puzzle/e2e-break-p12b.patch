@@ -1,0 +1,13 @@
+diff --git a/src/core/minigames/word.ts b/src/core/minigames/word.ts
+index 094b364..706b464 100644
+--- a/src/core/minigames/word.ts
++++ b/src/core/minigames/word.ts
+@@ -91,7 +91,7 @@ export const wordAvailable = (stage: StageDef, previous: StageDef | undefined, a
+ };
+ 
+ /** How many letters are uncovered: one per finished task (a task settled by the solution and retyping counts too). */
+-export const lettersUncovered = (outcomes: readonly (string | null)[]): number => outcomes.filter((o) => o !== null).length;
++export const lettersUncovered = (outcomes: readonly (string | null)[]): number => outcomes.filter((o) => o === 'first').length;
+ 
+ /** Left edges of the `count` letter boxes, `width` wide and `gap` apart, centred on `centerX`. */
+ export const letterRow = (count: number, box: { width: number; gap: number }, centerX: number): number[] => {

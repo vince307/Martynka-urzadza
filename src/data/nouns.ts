@@ -38,6 +38,11 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     kłębek: ['kłębek', 'kłębki', 'kłębków'],
     litr: ['litr', 'litry', 'litrów'],
     dzbanek: ['dzbanek', 'dzbanki', 'dzbanków'],
+    piętro: ['piętro', 'piętra', 'pięter'],
+    wagon: ['wagon', 'wagony', 'wagonów'],
+    osoba: ['osoba', 'osoby', 'osób'],
+    paczka: ['paczka', 'paczki', 'paczek'],
+    śliwka: ['śliwka', 'śliwki', 'śliwek'],
     stopień: ['stopień', 'stopnie', 'stopni'],
     talerzyk: ['talerzyk', 'talerzyki', 'talerzyków'],
 };

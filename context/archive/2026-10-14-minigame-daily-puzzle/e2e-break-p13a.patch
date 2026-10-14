@@ -1,0 +1,12 @@
+diff --git a/src/data/balance.ts b/src/data/balance.ts
+index 32323a5..46cfe5d 100644
+--- a/src/data/balance.ts
++++ b/src/data/balance.ts
+@@ -14,6 +14,6 @@ export const balance = {
+     save: { debounceMs: 500, loadTimeoutMs: 5000, importMaxBytes: 1_000_000 }, // PRD FR-020 "short delay" after a change before the autosave writes (plan section 8); a kill inside the window loses at most the last ~0.5 s, purchases and round ends are saved at once; loadTimeoutMs: a cold IndexedDB open on an older iPad, the page is blank while it reads, so longer reads look like a crash; importMaxBytes: the largest file the parent import reads (a v1 save with 200 history entries is tens of KB, so 1 MB is generous and still safe to parse in memory)
+     blockDrag: { startDistance: 12, maxPerKind: 9 }, // `drag` answer mode (S-13): a finger must travel 12 game px (about 6 CSS px at 1024 wide, above touch jitter) before a touch is a drag and not a tap; at most 9 blocks of a kind on the mat (a 10th ten is a hundred)
+     clockSet: { grabRadius: 56, startDistance: 12 }, // clock to set (S-13b): a hand is grabbed within 56 game px of its tip (a 112 px handle, above the 96 px touch target); a finger must travel 12 game px before the hand follows it
+-    variants: { everyRounds: 3, puzzleMultiplier: 2, puzzleStages: ['E3', 'E4'], minigames: ['word', 'dice'] as readonly ('word' | 'dice')[], dice: { throws: 13, max: 12 }, word: { tiles: 3 } }, // S-15: every 4th ordinary round is a variant (3 ordinary rounds between); the daily puzzle pays x2 stars per task (author decision 2026-10-14); puzzles exist for E3-E4 only; `minigames` lists the enabled minigames; dice: 13 throws, results 0..12; word: 3 answer tiles
++    variants: { everyRounds: 3, puzzleMultiplier: 1, puzzleStages: ['E3', 'E4'], minigames: ['word', 'dice'] as readonly ('word' | 'dice')[], dice: { throws: 13, max: 12 }, word: { tiles: 3 } }, // S-15: every 4th ordinary round is a variant (3 ordinary rounds between); the daily puzzle pays x2 stars per task (author decision 2026-10-14); puzzles exist for E3-E4 only; `minigames` lists the enabled minigames; dice: 13 throws, results 0..12; word: 3 answer tiles
+     tiles: { count: 4 },   // answer tiles per task, including the correct one (kit task-tiles.png shows 4)
+ } as const;

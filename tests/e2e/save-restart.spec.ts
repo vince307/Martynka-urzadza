@@ -105,13 +105,13 @@ test('#16 FR-020 a purchase is saved at once and ?e2eStars seeds only a fresh st
 test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy and is never written', async ({ page }) => {
     await silenceSpeech(page);
     await page.goto('/?e2eSave=unreadable');
-    const card = page.getByRole('alertdialog', { name: pl.saveFailed.title });
+    const card = page.getByRole('alertdialog', { name: pl.saveFuture.title });
     await expect(card).toBeVisible();
 
     // "Zachowaj kopię" sits behind the adult check; headless Chromium has no share sheet, so the copy is a download.
     // L-S2: the gate leads to a confirmation; nothing is downloaded until "Zapisz plik".
     await expect(card.getByText(/^Kod: future · Wersja /)).toBeVisible();
-    await card.getByRole('button', { name: pl.saveFailed.export }).tap();
+    await card.getByRole('button', { name: pl.saveFuture.export }).tap();
     await typeIntoGate(page, (await gateProblem(page)).product);
     const exportDialog = page.getByRole('dialog', { name: pl.saveTransfer.exportTitle });
     await expect(exportDialog).toBeVisible();
@@ -121,7 +121,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     await expect(exportDialog.getByText(pl.saveTransfer.exportOutcome.downloaded)).toBeVisible();
     await exportDialog.getByRole('button', { name: pl.saveTransfer.close }).tap();
     await expect(exportDialog).toBeHidden();
-    expect(download.suggestedFilename()).toBe(pl.saveFailed.fileName);
+    expect(download.suggestedFilename()).toMatch(/^martynka-zapis-surowy-\d{4}-\d{2}-\d{2}\.txt$/);
     const text = await readFile(await download.path(), 'utf8');
     expect(text).toContain('"version": 99');
     expect(text).toContain('"stars": 7');
@@ -130,7 +130,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     await expect(card).toBeVisible();
 
     // "Graj dalej": the game starts on the welcome screen with writes blocked.
-    await card.getByRole('button', { name: pl.saveFailed.continue }).tap();
+    await card.getByRole('button', { name: pl.saveFuture.continue }).tap();
     await expect(card).toBeHidden();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'welcome');
