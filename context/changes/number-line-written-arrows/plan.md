@@ -836,7 +836,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — cfea708
 - [x] 1.2 Deliberate break: usunięty `case 'digits'` w `pictureLayout` → typecheck czerwony; reduktor od lewej → czerwony; `playable` wpuszcza `digits` → czerwony; przywrócone; meta-check — cfea708
 - [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian — cfea708
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — cfea708 (e2e: orchestrator note, 71 passed on cfea708, --workers=4)
 
 #### Manual
 
@@ -846,9 +846,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Klucze `generators`/`parsers` równe; `WRITTEN` nadal w `LATER` (bez umiejętności)
-- [ ] 2.3 Deliberate break: wynik E5 dopuszcza 100 / `required` bez przeniesienia / podpis osi = odpowiedź → czerwone; przywrócone; meta-check
+- [x] 2.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — f852b48
+- [x] 2.2 Klucze `generators`/`parsers` równe; `WRITTEN` nadal w `LATER` (bez umiejętności) — f852b48
+- [x] 2.3 Deliberate break: wynik E5 dopuszcza 100 / `required` bez przeniesienia / podpis osi = odpowiedź → czerwone; przywrócone; meta-check — f852b48
 - [ ] 2.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
