@@ -463,6 +463,26 @@ export const pl = {
         puzzlePyramidSpeak: 'Popatrz na piramidę. Jaka liczba pasuje do pustej cegły?',
         puzzlePyramidHint: 'Liczba w cegle to suma dwóch cegieł pod nią.',
         puzzlePyramidBaseHint: 'Cegła nad dwiema cegłami jest ich sumą, więc odejmij znaną cegłę od tej nad nimi.',
+        // GRID (S-13b): columns are letters, rows are numbers; the item names are nominative nouns from the dictionary.
+        gridWherePrompt: (noun: string) => `Na którym polu leży ${noun}?`,
+        gridWhatPrompt: (cell: string) => `Co leży na polu ${cell}?`,
+        gridHint: 'Najpierw litera kolumny, potem numer wiersza.',
+        gridCellHint: (cell: string, col: number, row: number) =>
+            `Pole ${cell}: kolumna ${String.fromCharCode(65 + col)}, wiersz ${row + 1}.`,
+        gridWhereAnswerHint: (cell: string) => `To pole ${cell}.`,
+        gridWhatAnswerHint: (cell: string, noun: string) => `Na polu ${cell} leży ${noun}.`,
+        // PERIMETER (S-13b): the figures carry the lengths; the texts name the rule. Lengths are in centimetres.
+        perimeterRectPrompt: 'Oblicz obwód prostokąta w centymetrach.',
+        perimeterSquarePrompt: 'Oblicz obwód kwadratu w centymetrach.',
+        perimeterTrianglePrompt: 'Oblicz obwód trójkąta w centymetrach.',
+        perimeterSideSquarePrompt: (perimeter: number) => `Obwód kwadratu wynosi ${perimeter} cm. Ile centymetrów ma jeden bok?`,
+        perimeterSideRectPrompt: (perimeter: number, side: number) =>
+            `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
+        perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
+        perimeterHint: 'Obwód to suma długości wszystkich boków.',
+        perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
+        perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków, więc najpierw znajdź tę sumę.',
+        perimeterCompositeHint: 'Idź dookoła figury i dodaj długości wszystkich jej boków.',
         dataMostLeast: 'Porównaj wysokość słupków.',
         dataValuesHint: (pairs: string) => `Wysokości słupków: ${pairs}.`,
         dataMostAnswerHint: (label: string) => `Najwyższy jest słupek „${label}”.`,

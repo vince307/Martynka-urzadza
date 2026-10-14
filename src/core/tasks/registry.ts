@@ -18,6 +18,7 @@ import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
 import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
 import { generateHalf, parseHalfParams } from './generators/half';
+import { generateGrid, parseGridParams } from './generators/grid';
 import { generateLength, parseLengthParams } from './generators/length';
 import { generateMass, parseMassParams } from './generators/mass';
 import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
@@ -26,6 +27,7 @@ import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
 import { generateMultGroups, parseMultGroupsParams } from './generators/multGroups';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
+import { generatePerimeter, parsePerimeterParams } from './generators/perimeter';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
 import { generatePuzzleGrid, parsePuzzleGridParams } from './generators/puzzleGrid';
 import { generateRoman, parseRomanParams } from './generators/roman';
@@ -63,6 +65,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     LENGTH: generateLength,
     PLACE_VALUE: generatePlaceValue,
     PUZZLE_GRID: generatePuzzleGrid,
+    GRID: generateGrid,
+    PERIMETER: generatePerimeter,
     DATA: generateData,
     MONEY_COUNT: generateMoneyCount,
     MONEY_CHANGE: generateMoneyChange,
@@ -99,6 +103,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     LENGTH: parseLengthParams,
     PLACE_VALUE: parsePlaceValueParams,
     PUZZLE_GRID: parsePuzzleGridParams,
+    GRID: parseGridParams,
+    PERIMETER: parsePerimeterParams,
     DATA: parseDataParams,
     MONEY_COUNT: parseMoneyCountParams,
     MONEY_CHANGE: parseMoneyChangeParams,
