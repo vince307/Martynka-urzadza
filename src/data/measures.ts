@@ -63,6 +63,9 @@ export const ICONS = [
     { id: 'key', noun: 'klucz' },
     { id: 'yarn', noun: 'kłębek' },
 ] as const;
+/** The icons that can lie on a plate (a MULT_GROUPS group is drawn in a frame that stands for a plate). */
+export const PLATE_ICONS: readonly IconId[] = ['apple', 'pear', 'croissant'];
+
 export type IconId = (typeof ICONS)[number]['id'];
 
 /** Believable masses (grams) of the icons that can lie on a scale, each buildable from at most 6 of `WEIGHTS`. */

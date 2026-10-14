@@ -943,7 +943,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — b6a947d
 - [x] 3.2 1000 losowań na generator bez naruszeń; wyrocznie z pól rysunku; klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — b6a947d
 - [x] 3.3 Deliberate break: reszta 0 / odważniki nie sumują się / nieznany nominał → czerwone; przywrócone; meta-check — b6a947d
-- [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — b6a947d (e2e 42 passed by the orchestrator on bb9ca57)
 
 #### Manual
 
@@ -953,9 +953,9 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności
-- [ ] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check
+- [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — PHASE4SHA
+- [x] 4.2 1000 losowań na wariant bez naruszeń (TEMPERATURE z `allowNegative`); klucze `generators`/`parsers` równe; progi inwariantów dla parametrów planowanych umiejętności — PHASE4SHA
+- [x] 4.3 Deliberate break: łącznik zamiast U+2212 / ½ l z nieparzystym `n` / zamieniony iloczyn jako dystraktor / COUNT 4 kafelki → czerwone; przywrócone; meta-check — PHASE4SHA
 - [ ] 4.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
