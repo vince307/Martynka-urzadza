@@ -932,9 +932,9 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 5.2 `npm run sample -- E3 --variants` i `E4 --variants` bez naruszeń; `sample` E1–E6 bez flagi bez zmian w wyjściu
-- [x] 5.3 Deliberate break: podpowiedź 1 z wynikiem / rzeczownik spoza słownika / `choices` bez odpowiedzi → czerwone; przywrócone; meta-check
+- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 9f87fea
+- [x] 5.2 `npm run sample -- E3 --variants` i `E4 --variants` bez naruszeń; `sample` E1–E6 bez flagi bez zmian w wyjściu — 9f87fea
+- [x] 5.3 Deliberate break: podpowiedź 1 z wynikiem / rzeczownik spoza słownika / `choices` bez odpowiedzi → czerwone; przywrócone; meta-check — 9f87fea
 - [ ] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
