@@ -986,8 +986,8 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e part: orchestrator, see 9.3)
-- [x] 9.2 Deliberate break: drugi rząd od kolumny 1 → test układu czerwony; przywrócone; meta-check
+- [x] 9.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e part: orchestrator, see 9.3) — 120a26f
+- [x] 9.2 Deliberate break: drugi rząd od kolumny 1 → test układu czerwony; przywrócone; meta-check — 120a26f
 - [ ] 9.3 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
