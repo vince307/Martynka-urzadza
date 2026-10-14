@@ -7,6 +7,8 @@ import type { Task } from '../tasks/types';
 
 export const canonicalInput = (task: Task): number | string | number[] => {
     const mode = task.input;
+    // Phase 1 has no digits skill and no column drawing yet; phase 2 builds the number from `digitBoxCount(task)` digits.
+    if (mode === 'digits') throw new Error(`digits needs a column drawing (skill ${task.skillId})`);
     if (mode === 'select') {
         if (!Array.isArray(task.answer)) throw new Error(`select answer is not a list (skill ${task.skillId})`);
         const choices = task.choices ?? [];

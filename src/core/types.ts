@@ -6,13 +6,16 @@
 
 export type StageId = 'E1' | 'E2' | 'E3' | 'E4' | 'E5' | 'E6';
 
+/** Every way a child can answer; the one source of the `SkillDef.answer` union. `digits` (a digit per box of a written column) is not playable before S-14b phase 8 (`playable`). */
+export const ANSWER_MODES = ['tiles', 'keypad', 'drag', 'select', 'digits'] as const;
+
 export interface SkillDef {
     id: string;               // e.g. "E2.3.add_bridge_9"
     stage: StageId;
     step: number;             // curriculum step within the stage (ZADANIA.md, section 3)
     type: string;             // task type (ZADANIA.md, section 4), e.g. "ADD_SUB"
     params: Record<string, unknown>;
-    answer: 'tiles' | 'keypad' | 'drag' | 'select';
+    answer: (typeof ANSWER_MODES)[number];
 }
 
 export interface StepDef {

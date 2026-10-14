@@ -252,7 +252,9 @@ export const TASK_LAYOUT = {
             picture: { x: 661, y: 396, width: 600, height: 190 },
             solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
+        // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP (docs/design-gaps.md, phase 9): the kit has no written column; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
+        digits: { picture: { x: 236, y: 340, width: 440, height: 508 }, lines: { x: 700, y: 340, width: 320, height: 508 } },
         minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },

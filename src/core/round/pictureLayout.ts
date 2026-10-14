@@ -16,6 +16,8 @@ export interface PictureSpec {
     select: { picture: PictureRect; solution: { picture: PictureRect; lines: PictureRect } };
     /** A clock to set (`drag`): the drawing takes the mat, the solution lines the tray's place. */
     drag: { picture: PictureRect; lines: PictureRect };
+    /** A written column (`digits`): the column stays in one place in every phase, the solution lines beside it. */
+    digits: { picture: PictureRect; lines: PictureRect };
     /** Smallest height a drawing keeps under a long prompt. */
     minHeight: number;
     /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
@@ -36,7 +38,14 @@ export interface TallSpec {
     answers?: Span;
 }
 
-const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => (input === 'keypad' ? spec.tall.keypad : spec.tall.tiles);
+const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => {
+    switch (input) {
+        case 'keypad': return spec.tall.keypad;
+        case 'tiles': return spec.tall.tiles;
+        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode`);
+        default: { const _exhaustive: never = input; return _exhaustive; }
+    }
+};
 
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
@@ -53,16 +62,14 @@ export const pictureLayout = (
         const tall = tallOf(spec, input);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
     }
-    if (input === 'drag') {
-        return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };
+    switch (input) {
+        case 'drag': return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };
+        case 'select': return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
+        case 'keypad': return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
+        case 'tiles': return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
+        case 'digits': return { picture: spec.digits.picture, lines: solution ? spec.digits.lines : null };
+        default: { const _exhaustive: never = input; return _exhaustive; }
     }
-    if (input === 'select') {
-        return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
-    }
-    if (input === 'keypad') {
-        return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
-    }
-    return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
 };
 
 /**
@@ -70,11 +77,15 @@ export const pictureLayout = (
  * A tall drawing moves the tiles row and the bar right of its column.
  */
 export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape): { tiles: Span | null; bar: Span | null } => {
-    if (shape !== 'tall' || (input !== 'tiles' && input !== 'keypad')) {
-        return { tiles: null, bar: null };
+    switch (input) {
+        case 'tiles': case 'keypad': {
+            if (shape !== 'tall') return { tiles: null, bar: null };
+            const tall = tallOf(spec, input);
+            return { tiles: tall.answers ?? null, bar: tall.bar };
+        }
+        case 'drag': case 'select': case 'digits': return { tiles: null, bar: null };
+        default: { const _exhaustive: never = input; return _exhaustive; }
     }
-    const tall = tallOf(spec, input);
-    return { tiles: tall.answers ?? null, bar: tall.bar };
 };
 
 /**

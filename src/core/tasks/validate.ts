@@ -86,6 +86,11 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
     }
 
+    if (task.input === 'digits') {
+        // Phase 2 adds the `column` drawing and relaxes this to "digits needs a column drawing"; until then no digits task is valid.
+        add('mode', 'digits needs a column drawing');
+    }
+
     if (task.input === 'drag') {
         try {
             dragMode(task);
