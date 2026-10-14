@@ -1,53 +1,53 @@
 # Handoff — `art-stand-in-and-load-signal` (slice fix, non-roadmap)
 
-Written by the `/10x-plan-review` step of run `2026-10-14-fix-art-stand-in`. Verdict PROCEED; `plan.md` now has 9 phases
-(old Phase 3 split into 3 signal/seam/filter and 4 "Obrazki" panel line; later phases renumbered 5–9). The next agent must
-add `unlockThreshold(n, share)` in `src/core/curriculum.ts` and use it in both `unlockReady` (behaviour unchanged) and the
-filter, and must not let the filter consume rng when nothing is missing.
+Written by the `/10x-tdd` phase 1 step of run `2026-10-14-fix-art-stand-in`. Phase 1 is committed (`3be41c7`); the e2e part of its gate row 1.4 is open for the orchestrator. The next agent must keep `artBlocked`/`withoutArtBlocked`/`artHealth` pure (no Phaser, no `taskArt.ts` import) and pass `art` to `buildAdaptiveRound` only from `TaskScene.freshRound` in phase 3.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/art-stand-in-and-load-signal`, cut from `main` at `1812347` |
-| Commits | 4 on the branch after this step (`a2baebb`, `d79fe64`, `e6fb56a` plan, + `docs(art-stand-in-and-load-signal): plan review`) |
+| Commits | plan commits + `3be41c7` (phase 1) + this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 49 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (four change files staged by path) |
+| `change.md` status | `implementing` is not yet set (left as `plan_reviewed`; orchestrator/next phase may bump) |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (1.1-1.3 ticked, 1.4 and 1.5 open) |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/art-stand-in-and-load-signal/reviews/plan-review.md` | Review report: 0 critical, 3 warnings, 6 observations, step-prompt judgments, `VERDICT: PROCEED` |
-| `context/changes/art-stand-in-and-load-signal/plan.md` | Triage applied: Phase 3 split (F1), `unlockThreshold` helper (F2), `deviceUnreadable` copy + known risk (F3), E4.7 screenshot row (F4), `ROUND_SPEC` required + helpers named in Phase 9 (F5), triggered follow-ups and explicit `e2eArt` guard cases (F6) |
-| `context/changes/art-stand-in-and-load-signal/plan-brief.md` | Phases table and effort updated to 9 phases |
-| `context/changes/art-stand-in-and-load-signal/change.md` | `status: plan_reviewed` |
-| `context/changes/art-stand-in-and-load-signal/handoff.md` | This file |
+| `src/core/artHealth.ts` | `artHealth`, `artHealthView`, types `ArtHealth`, `ArtHealthView` |
+| `src/core/round/artFilter.ts` | `artBlocked`, `withoutArtBlocked` |
+| `src/core/curriculum.ts` | `unlockThreshold` (used by `unlockReady`), optional `art` argument of `buildAdaptiveRound` |
+| `src/core/round/pick.ts`, `src/core/round/warmup.ts` | optional `blocked` predicate in `pickSkills` / `buildWarmup` (falls back to the whole pool when it would be empty) |
+| `tests/artHealth.test.ts`, `tests/artFilter.test.ts` | 15 new tests |
+| `tests/spoken.test.ts` | 30 s limit on three `forEachTask` walks (comment as in `cd42b4a`) |
+| `context/changes/art-stand-in-and-load-signal/plan.md` | rows 1.1-1.3 ticked with sha |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| python check: Success Criteria bullets per phase vs `## Progress` rows, row numbering, no checkboxes in phase bodies | one-to-one for all 9 phases; numbering 1..k per phase; 0 checkboxes outside Progress |
-| `grep -c '^Driver: ' plan.md` | 9 (one per phase) |
-| code checks (grep/read) | `unlockReady` formula, `skillBuckets`, `pickRoundSkills`, `writesOff`, `main.ts` card per launch, `forcedSkills`, `playwright.config.ts` `ROUND_SPEC`/`chromium-hook`, skill ids — all as the plan states (details in the review's Grounding) |
-| lint / typecheck / unit / build / e2e | not run: review step, no product code changed; baseline per contract (`1812347`: unit 1865 incl. 1 flaky, e2e 46) inherited, unverified |
-
-No deliberate break (no test written in this step).
+| RED (before implementation, stubs returning neutral values) | `AssertionError: expected false to be true` (artBlocked MONEY_COUNT), `expected +0 to be 3` (unlockThreshold), `expected +0 to be 38` (artHealth total), `expected 49 to be +0` (MONEY_COUNT drawn with coins missing): 9 failed, 6 passed |
+| `npm run lint` / `npm run typecheck` | OK |
+| `npm test` | 1880 passed (baseline 1865 incl. 1 flaky, delta +15); spoken timeout did not recur |
+| deploy and ops shell tests | OK |
+| `npm run sample -- E1..E6` | exit 0; output byte-identical to the pre-change output (stash comparison) |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test` | e2e: not runnable in this session (Chromium MachPortRendezvous Permission denied) - orchestrator gate; row 1.4 left unticked |
+| Deliberate breaks | (a) current filtered without threshold: 2 red; (b) CAPACITY `howMany` blocked: red only after the test was fixed to use real `E4.7.capacity_litres_half` (first version skipped silently - meta-check caught it); (c) rng consumed when `art` given: 1 red (seed test); restored. Removing the `missing.size > 0` guard stays green: equivalent mutant (`artBlocked` returns false on an empty set and no rng is used), so no behaviour to protect |
 
 ## 4. Next command
 
-`/10x-tdd art-stand-in-and-load-signal phase 1`
+`/10x-tdd art-stand-in-and-load-signal phase 2`
 
 ## 5. Open
 
-- Phases: 1 tdd (core `artHealth`, `artFilter`, `unlockThreshold`, round/warm-up wiring, spoken timeouts), 2 tdd (`replace` refuses `unavailable`, `deviceSaveView`), 3 impl (`TaskArtEntry.id`, `BootScene` record, `?e2eArt` seam + marker + explicit guard cases, `TaskScene.freshRound` filter), 4 impl ("Obrazki" `artHealthView` in the panel), 5 impl (`TASK_ART.label`, `ArtImage` fit), 6 impl (import/reset dialogs), 7 impl (seam sweep, follow-ups, `CLAUDE.md`), 8 e2e #11 (`art-stand-in.spec.ts`, +4), 9 e2e #2 (`save-transfer-blocked.spec.ts`, +2, must be added to `ROUND_SPEC`). E2E phases use the request-file protocol.
-- Human checklist: `[human]` 6.7 decision against PRD FR-022 (no import/reset under `unavailable`); `[human]` 7.7 decision on FR-013 (round composition changes when art is missing, with the current-step threshold rule). `[visual]` 4.5, 5.6, 6.6; `[reviewer]` teacher reads 4.4, 5.5, 6.5.
-- Known risk added (F3): under `unreadable`, the panel's "Zapisz kopię" exports the fresh session (S12-04 follow-up); mitigated only by the `deviceUnreadable` copy in `src/data/pl.ts` `pl.saveTransfer`.
-- DESIGN-GAPs planned: revise 66 (phase 5), new 67 "Obrazki" (phase 4), new 68 device save not read (phase 6) with a pointer from 48/49.
-- Follow-ups to write in phase 7 (`follow-ups/review-fixes.md`): as planned, plus re-recording audit M-1/M-2/M-13/H-3/H-4 (`Trigger: next change to TaskScene / narrator`) as still open with the justification that only `TaskScene.freshRound` arguments change.
+- Row 1.4 e2e (`baseline + 0`) for the orchestrator; row 1.5 `[reviewer]`.
+- Plan deviation: the plan says E5.5 with the half-litre jug missing leaves `current` unfiltered. With the specified rule (`current` filtered when at least `unlockThreshold` remains) E5.5 has 2 playable skills, threshold 1, so the jug skill IS dropped and `mass_half_kg` stays. Implemented per the rule; the test asserts that. Phase 7 / the FR-013 human decision (row 7.7) should know.
+- `buildAdaptiveRound` `art` is wired but no caller passes it yet (phase 3); `pickSkills`/`buildWarmup` `blocked` likewise.
+- `change.md` status was not touched by this step.
 
 ## 6. Autonomous decisions
 
