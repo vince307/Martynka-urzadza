@@ -10,7 +10,7 @@ Written by the `/10x-implement` step for phase 6 (commit `44c4f19`): `Jugs` and 
 | Commits | `46aff1d` (p1), `d4f4470` + `ab0dc05` (p2), `b6a947d` (p3), `ba4e0da` (p4), `89e5ea0` (p5), `44c4f19` (p6), this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; the implement epilogue is for the last phase) |
-| `## Progress` rows remaining | 41 (`grep -c '^- \[ \]' plan.md`); open for this phase: 6.3 break (browser), 6.5 e2e (orchestrator), 6.6 reviewer, 6.7 visual |
+| `## Progress` rows remaining | 43 (`grep -c '^- \[ \]' plan.md`); open for this phase: 6.3 break (browser), 6.5 e2e (orchestrator), 6.6 reviewer, 6.7 visual |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
@@ -36,7 +36,7 @@ TaskScene needed no change in this phase: it already passes `visualShape(task.vi
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/art-tasks-all-stages` (observed) |
-| `npm test` | 1745 passed (branch baseline 1707, +38: 19 layout, 3 skills x 6 invariants... rest from the 7 new skills) (observed) |
+| `npm test` | 1745 passed (branch baseline 1707, +38: 19 layout tests, 19 from the 7 new skills' invariants and the generator tests) (observed) |
 | `npm run lint`, `npm run typecheck` | clean (observed) |
 | `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK (observed) |
 | `npm run sample -- E1` ... `E6` | exit 0 each; `--count 6` read for E3.11, E4.7, E5.4, E6.1: "Naruszenia: 0" |
