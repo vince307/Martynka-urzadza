@@ -782,7 +782,7 @@ export class TaskScene extends Scene {
             });
             return { kind, state: startRound(board.map((t) => t.task), variantRules(kind, board.length, balance)), dice: board };
         }
-        // A word round that cannot be built is an ordinary round.
+        // A variant that cannot be built (a word round without a fitting word) is an ordinary round.
         const previousId = previousStage(this.stage.id);
         const tasks = buildAdaptiveRound(
             this.stage,

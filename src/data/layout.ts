@@ -363,7 +363,7 @@ export const UNLOCK_LAYOUT = {
 
 /**
  * Minigame screens (S-15; kit expansion pack word-*.png, success-card): the word's letter boxes above the task, and the done card
- * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md, due in phase 10): the kit shows no letter row together with a task prompt
+ * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md): the kit shows no letter row together with a task prompt
  * longer than one equation, so a sentence prompt starts at `promptY` and an expression is centred on `expressionY`, under the letters.
  */
 export const MINIGAME_LAYOUT = {
@@ -372,7 +372,7 @@ export const MINIGAME_LAYOUT = {
     promptY: 420,       // a sentence prompt of a word round starts here
     card: { left: 440, top: 330, width: 1040, height: 540, border: 8, radius: 46 },
     // Zakrywanka (kit .dice-expression, .result-grid, .result): two dice and the sign centred on x 960, then 13 fields in two rows.
-    // DESIGN-GAP 86 (docs/design-gaps.md, due in phase 10): the dice faces, the "?" for the missing result and the lines of the
+    // DESIGN-GAP 86 (docs/design-gaps.md): the dice faces, the "?" for the missing result and the lines of the
     // solution above the dice (the kit has none) are ours.
     dice: { top: 346, size: 150, gap: 38, centerX: 960, pip: 15, radius: 30, border: 5, solutionTop: 232, solutionLimit: 336 },
     board: { left: 361, top: 568, columns: 7, width: 160, height: 136, gap: 20, radius: 28, border: 5, shadow: 7, checkSize: 32 },

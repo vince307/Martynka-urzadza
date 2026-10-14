@@ -1,6 +1,6 @@
 // Save format and decoder (S-11, test-plan risks #2 and #10). Pure: no Phaser, no browser, no data imports.
 // The save is ONE object under one key, so an interrupted write leaves the previous save whole.
-// Version 1 is a one-way door: it ships to children's devices. A change to the shape adds a version, a migration step
+// Every version is a one-way door once it ships to children's devices. A change to the shape adds a version, a migration step
 // in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
 import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
 import { emptyRoomState } from './rooms';

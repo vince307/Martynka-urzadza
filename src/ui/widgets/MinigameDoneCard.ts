@@ -8,7 +8,7 @@ import { textStyle } from './textStyle';
 /**
  * The card at the end of a minigame (kit .success-card): "Brawo!", one line (the uncovered word), the stars earned,
  * "Kolejna runda" and "Do pokoju". Shared by both minigames; it draws what it is given and decides nothing.
- * DESIGN-GAP 85 (docs/design-gaps.md, due in phase 10): the kit card has no star line; ours reuses the summary's "star +N".
+ * DESIGN-GAP 82 (docs/design-gaps.md): the kit card has no star line; ours reuses the summary's "star +N".
  */
 export class MinigameDoneCard {
     private readonly card: GameObjects.Graphics;

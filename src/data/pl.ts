@@ -100,7 +100,7 @@ export const pl = {
         // DESIGN-GAP 51: the kit has no line for the reason of a failed read; a code and the build, for the parent to quote.
         detail: (reason: string, build: string) => `Kod: ${reason} · Wersja ${build}`,
     },
-    // DESIGN-GAP 82: the kit has no card for a save from a newer game version; calm, for the adult, the main advice is to update.
+    // DESIGN-GAP 87: the kit has no card for a save from a newer game version; calm, for the adult, the main advice is to update.
     saveFuture: {
         title: 'Ten zapis pochodzi z nowszej wersji gry',
         body: 'Zapis na tablecie jest bezpieczny i nie został zmieniony. Zaktualizuj grę, a postępy wrócą.',
@@ -108,7 +108,7 @@ export const pl = {
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
     },
-    // DESIGN-GAP 82: the same for a save that could not be moved to the current format; the old save stays as it was.
+    // DESIGN-GAP 87: the same for a save that could not be moved to the current format; the old save stays as it was.
     saveMigrationFailed: {
         title: 'Nie udało się przenieść zapisu',
         body: 'Zapis na tablecie został bez zmian. Rodzic może zachować jego kopię.',
@@ -245,7 +245,7 @@ export const pl = {
         next: 'Dalej',
         spoken: (name: string) => `Nowa umiejętność! ${name}.`,
     },
-    // S-15 minigames (Zakrywanka = dice, Hasło z wyników = word). Titles and hints are ours (DESIGN-GAP row 82, see the S-15 plan).
+    // S-15 minigames (Zakrywanka = dice, Hasło z wyników = word). Titles and hints are ours (DESIGN-GAP rows 79, 81, 82).
     minigames: {
         diceTitle: 'Kostki · 0–12',
         wordTitle: 'Ukryte słowo',
