@@ -6,7 +6,7 @@ import { previousStage } from '../src/core/placement';
 import { spokenTask } from '../src/core/narration/spoken';
 import { buildWarmup } from '../src/core/round/warmup';
 import { createRng, seedFromString } from '../src/core/rng';
-import { boundOf } from '../src/core/tasks/bounds';
+import { validationBounds } from '../src/core/tasks/bounds';
 import { generateTask } from '../src/core/tasks/generateTask';
 import { getGenerator } from '../src/core/tasks/registry';
 import { describeVisual } from '../src/core/tasks/visual';
@@ -64,7 +64,7 @@ if (warmup) {
     const warmupViolations: Violation[] = [];
     tasks.forEach((task, i) => {
         const skill = [...stage!.steps, ...previousDef.steps].flatMap((s) => s.skills).find((s) => s.id === task.skillId);
-        const found = validateTask(task, { max: skill ? boundOf(skill) : undefined, nouns });
+        const found = validateTask(task, { ...(skill ? validationBounds(skill) : {}), nouns });
         warmupViolations.push(...found);
         const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);
         const choices = task.choices ? `  [${task.choices.join(' / ')}]` : '';
@@ -97,8 +97,7 @@ for (const step of stage!.steps) {
             try {
                 // Seed per skill and draw: adding a skill elsewhere never reshuffles this one.
                 const task = generateTask(skill, createRng(seedFromString(`${seed}:${skill.id}:${i}`)), { tileCount: balance.tiles.count });
-                const max = boundOf(skill);
-                const found = validateTask(task, { max, nouns });
+                const found = validateTask(task, { ...validationBounds(skill), nouns });
                 violations.push(...found);
                 const flag = found.length > 0 ? '  ⚠' : '';
                 const answer = Array.isArray(task.answer) ? task.answer.join(', ') : String(task.answer);

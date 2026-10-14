@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { boundOf, UNBOUNDED_TYPES } from '../src/core/tasks/bounds';
+import { boundOf, UNBOUNDED_TYPES, validationBounds } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
 import { validateTask } from '../src/core/tasks/validate';
@@ -31,6 +31,12 @@ const BINARY_PROMPT = new RegExp(`^${NUM} ([+−·:]) ${NUM}$`);
 
 const evaluate = (a: number, op: string, b: number): number => (op === '+' ? a + b : op === '−' ? a - b : op === '·' ? a * b : a / b);
 
+/**
+ * Types whose text answer is a sign, a word or a numeral written another way ("<", "parzysta", "VIII"): the hints teach the method and
+ * `solutionSteps` closes the solution with the answer line. Every other text answer (a time, an amount) must be stated in the last hint.
+ */
+const ANSWER_LINE_TYPES: ReadonlySet<string> = new Set(['COMPARE_NUM', 'EVEN_ODD', 'NUMBER_WORDS', 'ROMAN']);
+
 describe('registry', () => {
     it('has a parser for every generator', () => {
         expect(Object.keys(parsers).sort()).toEqual(Object.keys(generators).sort());
@@ -59,7 +65,7 @@ for (const stage of Object.values(stages)) {
                         const task = generate!(skill, createRng(910_000 + i));
                         const where = `${skill.id} draw=${i} "${task.prompt}"`;
 
-                        expect(validateTask(task, { max, nouns }), where).toEqual([]);
+                        expect(validateTask(task, { ...validationBounds(skill), nouns }), where).toEqual([]);
 
                         const key = `${task.prompt}|${visualKey(task.visual)}|${(task.choices ?? []).join('/')}`;
                         seen.set(key, (seen.get(key) ?? 0) + 1);
@@ -78,8 +84,8 @@ for (const stage of Object.values(stages)) {
                         if (last && typeof task.answer === 'number') {
                             expect([1, 3, 4].map((i) => parseNumber(last[i])), `${where} last hint`).toContain(task.answer);
                         }
-                        // A text answer ("3.30") must be stated in the last hint just like a number.
-                        if (typeof task.answer === 'string' && skill.type === 'CLOCK') {
+                        // A text answer ("3.30", "3 zł 40 gr") must be stated in the last hint just like a number.
+                        if (typeof task.answer === 'string' && !ANSWER_LINE_TYPES.has(skill.type)) {
                             expect(task.hint[task.hint.length - 1], `${where} last hint`).toContain(task.answer);
                         }
                         if (bounded && max !== undefined) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { boundOf } from '../src/core/tasks/bounds';
+import { boundOf, validationBounds } from '../src/core/tasks/bounds';
 import { generateTask } from '../src/core/tasks/generateTask';
 import { getGenerator } from '../src/core/tasks/registry';
 import { validateTask } from '../src/core/tasks/validate';
@@ -76,7 +76,7 @@ describe('generateTask over the real curriculum data', () => {
                 } else {
                     expect(tiles, where).toEqual(raw.choices);
                 }
-                expect(validateTask(task, { nouns, max: boundOf(skill) }), where).toEqual([]);
+                expect(validateTask(task, { nouns, ...validationBounds(skill) }), where).toEqual([]);
             }
         });
     }

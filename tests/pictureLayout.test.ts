@@ -19,7 +19,7 @@ describe('pictureLayout', () => {
     for (const input of ['tiles', 'keypad'] as const) {
         for (const solution of [false, true]) {
             it(`keeps the ${input} picture ${solution ? 'with' : 'without'} solution inside the notebook and off the answers`, () => {
-                const { picture, lines } = pictureLayout(spec, input, solution);
+                const { picture, lines } = pictureLayout(spec, input, solution, 'wide');
                 expect(inside(picture, page)).toBe(true);
                 if (input === 'tiles') {
                     expect(apart(picture, tileRowRect(4))).toBe(true);
@@ -37,8 +37,8 @@ describe('pictureLayout', () => {
 
     it('shows the solution lines next to the picture, not over it', () => {
         for (const input of ['tiles', 'keypad'] as const) {
-            expect(pictureLayout(spec, input, false).lines).toBeNull();
-            const { picture, lines } = pictureLayout(spec, input, true);
+            expect(pictureLayout(spec, input, false, 'wide').lines).toBeNull();
+            const { picture, lines } = pictureLayout(spec, input, true, 'wide');
             expect(lines).not.toBeNull();
             expect(apart(picture, lines as PictureRect)).toBe(true);
         }
@@ -48,6 +48,34 @@ describe('pictureLayout', () => {
         expect(spec.promptY).toBeGreaterThanOrEqual(notebook.top + notebook.border);
         expect(spec.tiles.y).toBeGreaterThan(spec.promptY + 2 * 77);
         expect(spec.keypad.y).toBeGreaterThan(spec.promptY + 3 * 77);
+    });
+});
+
+describe('pictureLayout of a tall drawing (S-14)', () => {
+    it('puts a tall drawing beside the keypad solution lines: narrow column left, lines right, clear of the keypad', () => {
+        const { picture, lines } = pictureLayout(spec, 'keypad', true, 'tall');
+        expect(lines).not.toBeNull();
+        expect(picture).toEqual(spec.keypadBeside.picture);
+        expect(lines).toEqual(spec.keypadBeside.lines);
+        expect(picture.width).toBeLessThan(picture.height);
+        expect(lines!.width).toBeGreaterThanOrEqual(480);
+        expect(apart(picture, lines!)).toBe(true);
+        expect(apart(picture, keypadRect)).toBe(true);
+        expect(apart(lines!, keypadRect)).toBe(true);
+        expect(inside(picture, page)).toBe(true);
+        expect(inside(lines!, page)).toBe(true);
+        expect(picture.y + picture.height).toBeLessThanOrEqual(bar.bottom - bar.height);
+        expect(lines!.x + lines!.width).toBeLessThan(keypad.left);
+    });
+
+    it('every other combination is the same as for a wide drawing', () => {
+        for (const input of ['tiles', 'keypad'] as const) {
+            for (const solution of [false, true]) {
+                if (input === 'keypad' && solution) continue;
+                expect(pictureLayout(spec, input, solution, 'tall')).toEqual(pictureLayout(spec, input, solution, 'wide'));
+            }
+        }
+        expect(pictureLayout(spec, 'keypad', true, 'wide').picture).toEqual(spec.keypadSolution.picture);
     });
 });
 

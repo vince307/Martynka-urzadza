@@ -122,9 +122,26 @@ describe('firstHint', () => {
         expect(firstHint({ ...base, answer: '1.00', hint: ['Teraz jest 11.00', 'Będzie 1.00'] })).toBe('Teraz jest 11.00');
     });
 
-    it('string answers are never judged as leaks', () => {
+    it('symbol answers are not judged as leaks (a comparison sign inside the expression)', () => {
         expect(firstHint({ skillId: 'E3.1.compare_num_x', prompt: 'p', answer: '<', hint: ['3 < 5', 'x'] })).toBe('3 < 5');
         expect(firstHint({ skillId: 'E3.1.compare_num_x', prompt: 'p', answer: '<', hint: ['3 < 5'] })).toBeNull();
+    });
+
+    it('every text answer stated as a whole token in the first line blocks the hint (S-14 amounts)', () => {
+        const base = { skillId: 'E4.1.money_count_x', prompt: 'p', answer: '3 zł 40 gr' };
+        expect(firstHint({ ...base, hint: ['Razem: 3 zł 40 gr', 'x'] })).toBeNull();
+        expect(firstHint({ ...base, hint: ['3 zł + 40 gr', 'Razem: 3 zł 40 gr'] })).toBe('3 zł + 40 gr');
+        // a longer amount that merely contains the answer's characters is no leak
+        expect(firstHint({ ...base, answer: '3 zł', hint: ['To jest 13 zł', 'Razem: 3 zł'] })).toBe('To jest 13 zł');
+        expect(firstHint({ ...base, answer: '40 gr', hint: ['To jest 140 gr', 'Razem: 40 gr'] })).toBe('To jest 140 gr');
+    });
+
+    it('a negative numeric answer keeps its minus: "Wynik: −5" leaks -5, "−5 + 8" does not', () => {
+        const cold = { skillId: 'E6.1.temperature_x', prompt: 'p', answer: -5 };
+        expect(firstHint({ ...cold, hint: ['Wynik: \u22125', 'x'] })).toBeNull();
+        expect(firstHint({ ...cold, hint: ['Wynik: 5', 'x'] })).toBe('Wynik: 5');
+        expect(firstHint({ ...cold, answer: 3, hint: ['\u22125 + 8 = 3', 'x'] })).toBeNull();
+        expect(firstHint({ ...cold, answer: 3, hint: ['\u22125 + 8', '3'] })).toBe('\u22125 + 8');
     });
 });
 
@@ -162,5 +179,8 @@ describe('solutionSteps', () => {
         expect(solutionSteps(open, answerLine)).toEqual(['7 + 6', 'Wynik: 13']);
         const text: Task = { skillId: 's', prompt: 'p', answer: '<', hint: ['3 < 5'] };
         expect(solutionSteps(text, answerLine)).toEqual(['3 < 5']);
+        const negative: Task = { skillId: 's', prompt: 'p', answer: -5, hint: ['\u22122 \u2212 3'] };
+        expect(solutionSteps(negative, answerLine)).toEqual(['\u22122 \u2212 3', 'Wynik: -5']);
+        expect(solutionSteps({ ...negative, hint: ['Wynik: \u22125'] }, answerLine)).toEqual(['Wynik: \u22125']);
     });
 });

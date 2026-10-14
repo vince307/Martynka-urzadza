@@ -28,4 +28,8 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     godzina: ['godzina', 'godziny', 'godzin'],
     minuta: ['minuta', 'minuty', 'minut'],
     setka: ['setka', 'setki', 'setek'],
+    lampa: ['lampa', 'lampy', 'lamp'],
+    czajniczek: ['czajniczek', 'czajniczki', 'czajniczków'],
+    klucz: ['klucz', 'klucze', 'kluczy'],
+    kłębek: ['kłębek', 'kłębki', 'kłębków'],
 };

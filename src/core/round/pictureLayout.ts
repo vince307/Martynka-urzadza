@@ -1,13 +1,9 @@
 // Where a task's drawing and its solution lines go (S-13): pure rectangles in the 1920x1080 scene space.
 // The numbers come in as data (TASK_LAYOUT.picture); this file only decides which rectangle applies.
-import type { AnswerMode } from '../tasks/visual';
+import type { Rect } from '../geometry';
+import type { AnswerMode, VisualShape } from '../tasks/visual';
 
-export interface PictureRect {
-    x: number;       // left
-    y: number;       // top
-    width: number;
-    height: number;
-}
+export type PictureRect = Rect;
 
 export interface PictureSpec {
     promptY: number;
@@ -15,6 +11,8 @@ export interface PictureSpec {
     tilesSolution: { picture: PictureRect; lines: PictureRect };
     keypad: PictureRect;
     keypadSolution: { picture: PictureRect; lines: PictureRect };
+    /** A tall drawing (thermometer) beside the keypad solution: the drawing in a narrow column, the lines next to it. */
+    keypadBeside: { picture: PictureRect; lines: PictureRect };
 }
 
 /**
@@ -27,8 +25,12 @@ export const pictureLayout = (
     spec: PictureSpec,
     input: AnswerMode,
     solution: boolean,
+    shape: VisualShape,
 ): { picture: PictureRect; lines: PictureRect | null } => {
     if (input === 'keypad') {
+        if (solution && shape === 'tall') {
+            return spec.keypadBeside;
+        }
         return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
     }
     return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };

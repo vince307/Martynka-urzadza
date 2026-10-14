@@ -29,7 +29,9 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
-        this.drawn = { clock: this.clock, ruler: this.ruler, blocks: this.blocks, bars: this.chart }[visual.kind];
+        // Art kinds (money, scale, jugs, thermometer, icons) get their widgets in S-14 phases 5-7.
+        const widgets: Partial<Record<TaskVisual['kind'], { shown(): boolean }>> = { clock: this.clock, ruler: this.ruler, blocks: this.blocks, bars: this.chart };
+        this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
             case 'clock':
                 this.clock.render(visual.hour, visual.minute, rect);
@@ -42,6 +44,8 @@ export class TaskPicture {
                 break;
             case 'bars':
                 this.chart.render(visual.bars, visual.scaleMax, rect);
+                break;
+            default:
                 break;
         }
     }

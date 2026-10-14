@@ -1,13 +1,9 @@
 // Touch-target rectangles of the task screen in the 1920x1080 scene space.
 // Pure functions (no Phaser) so the same rectangles feed the widgets and the tests.
+import type { Rect } from '../../core/geometry';
 import type { KeypadKey } from '../../core/round/keypad';
 
-export interface Rect {
-    x: number;       // left
-    y: number;       // top
-    width: number;
-    height: number;
-}
+export type { Rect };
 
 export interface TileSpec {
     width: number;

@@ -190,6 +190,8 @@ export const TASK_LAYOUT = {
         tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
         keypad: { x: 236, y: 470, width: 768, height: 378 },
         keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
+        // A tall drawing (thermometer, S-14) beside the keypad solution: a narrow column, the lines to its right (visualShape 'tall').
+        keypadBeside: { picture: { x: 236, y: 470, width: 240, height: 378 }, lines: { x: 500, y: 470, width: 504, height: 378 } },
     },
     // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
     // "OK" sits under the tray, above the bar. Mat blocks lie in a 3 x 3 grid per kind (9 = balance.blockDrag.maxPerKind).

@@ -1,8 +1,9 @@
 // Geometry of the `drag` answer mode (S-13 phase 8): pure rectangles in the 1920x1080 scene space, from numbers in
 // TASK_LAYOUT.drag (injected, like pictureLayout). The same rectangles draw the tray and the mat and answer a touch.
 import type { BlockDragGeo, BlockKind, Mat } from '../blockDrag';
+import { insideRect, interiorPoint, type Rect } from '../geometry';
 
-export interface Rect { x: number; y: number; width: number; height: number }
+export { insideRect, interiorPoint, type Rect };
 
 export interface DragSpec {
     tray: Rect & { gap: number };
@@ -47,12 +48,6 @@ export const dragLayout = (spec: DragSpec, kinds: readonly BlockKind[]): DragLay
     };
     return { tray, mat: spec.mat, ok: spec.ok, matBlock };
 };
-
-export const insideRect = (r: Rect, x: number, y: number): boolean =>
-    x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height;
-
-/** Centre of a rectangle: a touch there lands inside by half the rectangle on every side (hold-point idea of roomHit). */
-export const interiorPoint = (r: Rect): { x: number; y: number } => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
 
 /** Hit tests for the reducer. Mat blocks are found by their cells, so only blocks that are on the mat answer a touch. */
 export const dragGeometry = (layout: DragLayout, kinds: readonly BlockKind[]): BlockDragGeo => ({

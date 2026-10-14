@@ -17,6 +17,8 @@ export interface Violation {
 export interface ValidationContext {
     /** Upper bound for a numeric answer (typically params.max). */
     max?: number;
+    /** Negative numbers are the content (a temperature below zero): the answer, tile choices and texts may carry a minus. */
+    allowNegative?: boolean;
     /** Nouns whose agreement with a preceding number is checked. */
     nouns?: Readonly<Record<string, PluralForms>>;
 }
@@ -36,6 +38,9 @@ const NUMBER_WORD = new RegExp(`(${NUMBER_SOURCE})\\s+(\\p{L}+)`, 'gu');
  */
 const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o|za) 1 (\p{L}+)/gu;
 
+/** Task types whose answers and texts may be negative. */
+export const NEGATIVE_TYPES: ReadonlySet<string> = new Set(['TEMPERATURE']);
+
 const texts = (task: Task): string[] => [task.prompt, ...(task.speak ? [task.speak] : []), ...task.hint];
 
 export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation[] => {
@@ -45,20 +50,20 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
     };
 
     if (typeof task.answer === 'number') {
-        if (task.answer < 0) {
+        if (task.answer < 0 && !ctx.allowNegative) {
             add('negative', `answer ${task.answer}`);
         }
-        if (ctx.max !== undefined && (task.answer < 0 || task.answer > ctx.max)) {
-            add('range', `answer ${task.answer} outside 0..${ctx.max}`);
+        if (ctx.max !== undefined && ((task.answer < 0 && !ctx.allowNegative) || task.answer > ctx.max)) {
+            add('range', `answer ${task.answer} outside ${ctx.allowNegative ? '…' : '0'}..${ctx.max}`);
         }
     }
 
     for (const text of texts(task)) {
-        if (NEGATIVE_NUMBER.test(text)) {
+        if (!ctx.allowNegative && NEGATIVE_NUMBER.test(text)) {
             add('negative', `"${text}"`);
         }
     }
-    if (task.choices?.some((c) => typeof c === 'number' && c < 0)) {
+    if (!ctx.allowNegative && task.choices?.some((c) => typeof c === 'number' && c < 0)) {
         add('negative', `choices ${JSON.stringify(task.choices)}`);
     }
 
