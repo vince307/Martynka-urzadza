@@ -8,8 +8,8 @@ The visual-gate step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. The
 |---|---|
 | Branch | `feat/save-reason-and-recovery`, cut from `main` at `16a0abd` |
 | Commits | 22 commits `16a0abd`..HEAD (exclusive of the base). This step added `docs(save-reason-and-recovery): bramka wizualna` plus this count correction, and no fix commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-14-save-s13b-s15-s14b/run-log.md |
+| `change.md` status | `archived` (stamped by `/10x-archive` in the ship step) |
 | `## Progress` rows remaining | 4, all `[human]`: 3.7, 4.7, 4.8, 5.8 |
 | Working tree | clean after the docs commit |
 
@@ -41,7 +41,7 @@ The visual-gate step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. The
 
 ## 4. Next command
 
-`/10x-archive save-reason-and-recovery` then ship
+none — shipped
 
 ## 5. Open
 
@@ -63,3 +63,4 @@ The visual-gate step of run `2026-10-14-save-s13b-s15-s14b` wrote this file. The
 3. **Full e2e suite not re-run.** Why: the step changed only docs, and the capture spec exercised the same seams in the browser. Would change if any source file had changed (then the full suite runs before the commit).
 4. **Viewports 1440×900 / 1024×768** (profile § 9 and the step prompt), not the 1920/400 set of the previous gate. Would change if the profile's widths change.
 5. **No `AskUserQuestion`.** Every choice was made in place, following the step prompt and the contract.
+6. **Archive despite open rows (ship step).** Chosen: `Continue archiving (Recommended)` — the warnings were 4 pending `[human]` rows (0 automated) and 14 `[reviewer]`/`[visual]` rows without a SHA suffix (rows with no commit of their own); every cited SHA is an ancestor of HEAD and a `--merge` keeps it. Rejected: resume implementation. Why: the `[human]` rows are a post-run checklist for the maintainer (PR section „Dla właściciela produktu”). Non-roadmap change: no roadmap row to close; `## Backlog Handoff` does not name it. Would change if an automated row were still open.
