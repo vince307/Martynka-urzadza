@@ -191,7 +191,7 @@ export const TASK_LAYOUT = {
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
-    // The clock to set (S-13b): the dial in the unit of the drawn clock face (ClockFace DIAL), scaled to fit the mat. DESIGN-GAP (row written in phase 10, docs/design-gaps.md).
+    // The clock to set (S-13b): the dial in the unit of the drawn clock face (ClockFace DIAL), scaled to fit the mat. DESIGN-GAP (docs/design-gaps.md row 77).
     // The one source of the dial's geometry: ClockFace draws it, clockSetLayout and the e2e hook aim from it. `handle*`: the ring on a hand tip of a clock to set (radius = balance.clockSet.grabRadius, larger while held).
     clockSet: {
         dial: {

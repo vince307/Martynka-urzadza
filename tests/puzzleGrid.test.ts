@@ -45,6 +45,13 @@ describe('generatePuzzleGrid', () => {
                 expect(firstHint(task), where).not.toBeNull();
                 expect(task.hint[0], where).not.toMatch(/\d/);
                 expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
+                // Teacher read (impl review): the numbers subtracted come from the line that holds the gap, so a
+                // hint must name that line and its two numbers before the subtractions use them.
+                const gapLine = task.hint.findIndex((h) => /z pustym polem/.test(h));
+                expect(gapLine, `${where} names the line with the gap`).toBeGreaterThan(0);
+                const subtracted = task.hint.slice(gapLine + 1).map((h) => /− (\d+) =/.exec(h)?.[1]).filter((x) => x !== undefined);
+                expect(subtracted, where).toHaveLength(2);
+                for (const n of subtracted) expect(task.hint[gapLine], where).toMatch(new RegExp(`\\b${n}\\b`));
             });
             expect(empties.size, 'empty cell varies').toBe(9);
             if (max >= 30) expect(sums.size, 'totals vary').toBeGreaterThan(2);

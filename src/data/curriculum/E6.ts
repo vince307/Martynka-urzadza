@@ -37,7 +37,7 @@ export const E6: StageDef = {
             title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych',
             childName: 'Obwody figur na kratkach',
             types: ['MASS', 'LENGTH', 'PERIMETER'],
-            skills: [skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 60 })],
+            skills: [skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 })],
         },
         {
             step: 4,

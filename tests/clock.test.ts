@@ -181,6 +181,12 @@ describe('generateClock: set (the child turns the hands)', () => {
                 expect(task.hint[0], where).not.toContain(String(task.answer));
                 expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
                 expect(task.prompt, where).toMatch(/^Ustaw zegar na /);
+                // Teacher read (impl review): on a full-hour dial only the short hand moves, so no hint may ask
+                // the child to drag both hands or to set the long one.
+                if (snap === 60) {
+                    for (const h of task.hint) expect(h, where).not.toMatch(/Przeciągnij je|Długą wskazówkę ustaw/);
+                    expect(task.hint.some((h) => /Długa wskazówka zostaje na 12/.test(h)), where).toBe(true);
+                }
             });
             expect(asked.size, 'variety of asked times').toBeGreaterThanOrEqual(step === 60 ? 11 : 12 * (60 / step) - 4);
         });

@@ -185,12 +185,16 @@ export class TaskScene extends Scene {
         this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value));
         this.blockMat = new BlockMat(this, (value) => this.submit(value));
-        this.clockSet = new ClockSet(this, (value) => this.submit(value));
+        // "OK" under a second finger while a hand is still held is ignored: the held pose is not settled yet, and
+        // ending the task would cancel the grab and draw the hands back to the pose before it (impl review).
+        this.clockSet = new ClockSet(this, (value) => {
+            if (this.clockState.carrying === null) this.submit(value);
+        });
         this.clockState = initialClockSet(this.clockStart);
         this.clockTask = false;
         this.dragState = initialBlockDrag();
         this.dragLive = false;
-        // The whole scene feeds the block-drag reducer with raw pointer events (core/blockDrag decides); it acts only while a 'drag' task takes touches.
+        // The whole scene feeds raw pointer events to the drag reducer of the task (core/blockDrag or core/clockSet, chosen by dragMode); it acts only while a 'drag' task takes touches.
         type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
         const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
         this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));

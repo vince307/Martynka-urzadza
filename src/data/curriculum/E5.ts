@@ -117,7 +117,7 @@ export const E5: StageDef = {
             childName: 'Obwody i boki',
             types: ['LENGTH', 'PERIMETER'],
             skills: [
-                skill('E5.12.perimeter_side_square', 12, 'PERIMETER', { variant: 'sideSquare', max: 80 }),
+                skill('E5.12.perimeter_side_square', 12, 'PERIMETER', { variant: 'sideSquare', max: 40 }),
                 skill('E5.12.perimeter_side_rect', 12, 'PERIMETER', { variant: 'sideRect', max: 60 }),
             ],
         },

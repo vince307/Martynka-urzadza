@@ -365,6 +365,9 @@ export const pl = {
         clockSetSpeak: (hour: number, minute: number) =>
             minute === 0 ? `Ustaw zegar na godzinę ${hour}.` : `Ustaw zegar na godzinę ${hour} i ${countNoun(minute, nouns.minuta)}.`,
         clockSetHandsHint: 'Krótka wskazówka pokazuje godzinę, długa pokazuje minuty. Przeciągnij je palcem.',
+        // Full hours (E3): only the short hand moves, the long one stays on 12 (impl review teacher read).
+        clockSetHourHandHint: 'Krótka wskazówka pokazuje godzinę. Przeciągnij ją palcem.',
+        clockSetLongStaysHint: 'Długa wskazówka zostaje na 12, bo to pełna godzina.',
         clockSetH24Hint: 'Po południu od godziny w zapisie 24-godzinnym odejmij 12.',
         clockSetShortHint: (hour: number, minute: number, next: number) =>
             minute === 0 ? `Krótką wskazówkę ustaw na ${hour}.` : `Krótką wskazówkę ustaw między ${hour} a ${next}.`,
@@ -470,6 +473,8 @@ export const pl = {
         puzzleMagicHint: 'Każdy wiersz, każda kolumna i każda przekątna dają taką samą sumę. Dodaj liczby w jednej pełnej linii.',
         puzzleMagicFullLine: (kind: 'row' | 'column' | 'diagonal', terms: string, sum: number) =>
             `${kind === 'row' ? 'Pełny wiersz' : kind === 'column' ? 'Pełna kolumna' : 'Pełna przekątna'}: ${terms} = ${sum}.`,
+        puzzleMagicGapLine: (kind: 'row' | 'column' | 'diagonal', a: number, b: number) =>
+            `${kind === 'row' ? 'W wierszu' : kind === 'column' ? 'W kolumnie' : 'Na przekątnej'} z pustym polem są ${a} i ${b}.`,
         puzzlePyramidPrompt: 'Jaka liczba pasuje do pustej cegły w piramidzie?',
         puzzlePyramidSpeak: 'Popatrz na piramidę. Jaka liczba pasuje do pustej cegły?',
         puzzlePyramidHint: 'Liczba w cegle to suma dwóch cegieł pod nią.',

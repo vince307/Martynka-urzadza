@@ -112,11 +112,16 @@ const generateClockSet = (skill: SkillDef, p: ClockParams, rng: Rng): Task => {
     const answer = formatTime(hour, minute);
     const asked = formatTime(askedHour, minute);
     const start = startPose(hour, minute, snap, rng);
-    const hint: string[] = [pl.tasks.clockSetHandsHint];
+    // On a full-hour dial (snap 60) the long hand cannot move, so the hints speak of the short hand only.
+    const hint: string[] = [snap === 60 ? pl.tasks.clockSetHourHandHint : pl.tasks.clockSetHandsHint];
     if (p.h24) {
         hint.push(pl.tasks.clockSetH24Hint, `${askedHour} ${MINUS} 12 = ${hour}`);
     }
-    hint.push(pl.tasks.clockSetShortHint(hour, minute, wrap12(hour + 1)), pl.tasks.clockSetLongHint(minute === 0 ? 12 : minute / 5, minute), pl.tasks.clockSetAnswerHint(answer));
+    hint.push(
+        pl.tasks.clockSetShortHint(hour, minute, wrap12(hour + 1)),
+        snap === 60 ? pl.tasks.clockSetLongStaysHint : pl.tasks.clockSetLongHint(minute === 0 ? 12 : minute / 5, minute),
+        pl.tasks.clockSetAnswerHint(answer),
+    );
     return {
         skillId: skill.id,
         prompt: pl.tasks.clockSet(asked),

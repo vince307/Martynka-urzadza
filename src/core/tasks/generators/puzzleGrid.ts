@@ -65,6 +65,7 @@ const magic = (skill: { id: string }, p: PuzzleGridParams, rng: Rng): Task => {
         hint: [
             pl.tasks.puzzleMagicHint,
             pl.tasks.puzzleMagicFullLine(full.kind, full.cells.map((c) => grid[c]).join(' + '), total),
+            pl.tasks.puzzleMagicGapLine(through.kind, a, b),
             `${total} ${MINUS} ${a} = ${total - a}`,
             `${total - a} ${MINUS} ${b} = ${answer}`,
         ],

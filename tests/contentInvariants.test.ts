@@ -25,6 +25,7 @@ const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = 
     'E1.8.length_ruler_cm_10': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: a segment of 1..10 cm from the zero of a 10 cm ruler (S-14)' },
     'E2.1.place_read_20': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: the numbers 11..20 (S-14)' },
     'E2.2.capacity_litres': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: 1..10 litres in 1 l jugs (S-14)' },
+    'E5.12.perimeter_side_square': { minDistinct: 9, measured: '9 distinct tasks / 9 prompts: a square side of 2..10 cm, so the division by 4 stays in the table (S-13b impl review)' },
 };
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n

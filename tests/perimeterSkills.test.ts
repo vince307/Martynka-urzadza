@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { unlockThreshold } from '../src/core/curriculum';
 import { balance } from '../src/data/balance';
 import { E4 } from '../src/data/curriculum/E4';
+import { generatePerimeter } from '../src/core/tasks/generators/perimeter';
+import { forEachDraw } from './helpers';
 
 describe('E4.7 with the perimeter skills', () => {
     const step = E4.steps.find((s) => s.step === 7)!;
@@ -24,6 +26,14 @@ describe('S-13b new playable perimeter steps', () => {
             ['E5.12.perimeter_side_rect', 'keypad'],
         ]);
         expect(unlockThreshold(step.skills.length, balance.curriculum.unlockShare)).toBe(1);
+    });
+
+    it('E5.12 side of a square divides by 4 inside the multiplication table (two-digit quotients wait for E6.4)', async () => {
+        const { E5 } = await import('../src/data/curriculum/E5');
+        const square = E5.steps.find((s) => s.step === 12)!.skills.find((s) => s.id === 'E5.12.perimeter_side_square')!;
+        forEachDraw(generatePerimeter, square, {}, (task, where) => {
+            expect(task.answer as number, where).toBeLessThanOrEqual(10);
+        });
     });
 
     it('E6.3 has one composite skill on the keypad and every new playable step has a short childName', async () => {
