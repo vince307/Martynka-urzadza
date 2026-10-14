@@ -67,15 +67,15 @@ export type IconId = (typeof ICONS)[number]['id'];
 
 /** Believable masses (grams) of the icons that can lie on a scale, each buildable from at most 6 of `WEIGHTS`. */
 export const SCALE_ITEMS: readonly { icon: IconId; grams: readonly number[] }[] = [
-    { icon: 'apple', grams: [100, 200] },
-    { icon: 'pear', grams: [100, 200] },
+    { icon: 'apple', grams: [100, 200, 300] },
+    { icon: 'pear', grams: [100, 200, 300] },
     { icon: 'croissant', grams: [100] },
-    { icon: 'yarn', grams: [100, 200] },
-    { icon: 'cup', grams: [200, 500] },
-    { icon: 'book', grams: [500, 1000] },
-    { icon: 'cushion', grams: [1000, 2000] },
-    { icon: 'teapot', grams: [1000, 2000] },
-    { icon: 'lamp', grams: [2000, 5000] },
+    { icon: 'yarn', grams: [100, 200, 300, 400] },
+    { icon: 'cup', grams: [200, 300, 500] },
+    { icon: 'book', grams: [300, 400, 500, 600, 700, 800, 1000] },
+    { icon: 'cushion', grams: [600, 800, 900, 1000, 2000, 3000] },
+    { icon: 'teapot', grams: [500, 1000, 2000] },
+    { icon: 'lamp', grams: [2000, 3000, 5000] },
 ];
 
 /** Thermometer housing (512 x 1536 image) and its scale: -30 sits at yForMinus30, each degree is pixelsPerDegree higher. */

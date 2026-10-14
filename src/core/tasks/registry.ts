@@ -17,6 +17,8 @@ import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
 import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
 import { generateHalf, parseHalfParams } from './generators/half';
 import { generateLength, parseLengthParams } from './generators/length';
+import { generateMass, parseMassParams } from './generators/mass';
+import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
@@ -56,6 +58,9 @@ export const generators: Readonly<Record<string, Generator>> = {
     LENGTH: generateLength,
     PLACE_VALUE: generatePlaceValue,
     DATA: generateData,
+    MONEY_COUNT: generateMoneyCount,
+    MONEY_CHANGE: generateMoneyChange,
+    MASS: generateMass,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -84,6 +89,9 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     LENGTH: parseLengthParams,
     PLACE_VALUE: parsePlaceValueParams,
     DATA: parseDataParams,
+    MONEY_COUNT: parseMoneyCountParams,
+    MONEY_CHANGE: parseMoneyChangeParams,
+    MASS: parseMassParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);
