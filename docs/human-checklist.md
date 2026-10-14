@@ -133,3 +133,21 @@ Wysłane i wdrożone: S-12 `save-export-import-reset` (#39, merge b57433c, Deplo
 - [ ] S-14 8.9 — S-14 zawężony; S-14b (oś, słupek, strzałki), S-14c (miary i czas tekstowo), S-14d (figury E1, tryb obrazkowy, płacenie przeciąganiem) jako nowe pozycje roadmapy.
 - [ ] S-14 9.7 — płacenie przeciąganiem monet odłożone (S-14d); waga tylko w równowadze; ujemne °C i „zł + gr” jako kafelki; temperatury co 5 °C (E3) i 2 °C (E5–E6); w E3–E5 bez temperatur ujemnych (odstępstwo od ZADANIA −30..+30, luka 64).
 - [ ] S-14 9.8 — teksty i masy przedmiotów (`SCALE_ITEMS`, np. „filiżanka 50 dag”), polecenie `mass_convert` bez nazwy przedmiotu.
+
+## Bieg 2026-10-14-fix-art-stand-in (poprawka po audycie #42)
+
+Wysłane i wdrożone: `art-stand-in-and-load-signal` (#44, merge 8dc174a, Deploy 38539423195). Zamyka ustalenia audytu #42: S14-01 (CRITICAL), S14-02, S14-03, S14-04, S14-11, S12-01, oraz niestabilny limit czasu w `tests/spoken.test.ts`. Gdy obrazek się nie wczyta albo nie zdekoduje, ramka pokazuje polską wartość („5 gr”, „20 zł”, „10 dag”, „½ l”, „jabłko”). Zadania, w których wynik jest tylko na obrazku, są pomijane przy losowaniu rundy, z progiem, który nie blokuje odblokowania kroku. Panel rodzica ma linię „Obrazki: N z 38 obrazków nie wczytało się”. Import i reset przy nieodczytanym zapisie nie pokazują już „Teraz: 0 gwiazdek”. Format zapisu bez zmian (v1). Main po biegu: 1905 testów jednostkowych, 52 e2e (było 1865 / 46).
+
+### Do zrobienia
+
+- [ ] P0 — Przejrzyj audyt po biegu, PR #45 (nie scalony): 0 CRITICAL (wszystkie 6 celowanych ustaleń zamknięte). Najważniejsze HIGH: SIR-01 — poprawny zapis z nowszej wersji gry (`future`) jest traktowany jak nieczytelny, więc import lub reset mógłby go nadpisać (ukryte do formatu v2; `src/core/saveFile.ts` `deviceSaveView`); SIR-02 — gdy zapisu nie da się odczytać nigdy, rada „uruchom ponownie” się powtarza i rodzic nie ma wyjścia w grze (`autosave.ts` `replace`, `saveImportDialog.ts` `blockedStep`); SIR-03 — panel nie pokazuje `lastError` ani przyczyny limitu czasu (N-7). MEDIUM ASL-01: żaden test nie sprawdza, że `TaskScene.freshRound` przekazuje listę brakujących obrazków do budowy rundy. Źródło: raport `context/audits/observability/2026-10-14_1110-obrazki-zastepcze-import-reset-zablokowanego-zapisu.md` na gałęzi PR #45.
+- [ ] P1 — iPad i Android: czy WebKit dekoduje WebP (jeśli nie, linia „Obrazki” w panelu to pokaże); czytelność ramek zastępczych (napisy ok. 12 px na 1024 px; odważniki w fazie rozwiązania poniżej 12 px — follow-up O1). Ramki zobaczysz w buildzie e2e z `?e2eArt=missing`, na produkcji tylko przy realnej awarii.
+- [ ] P2 — Follow-upy: `context/archive/2026-10-14-art-stand-in-and-load-signal/follow-ups/review-fixes.md` (S14-05..S14-10, S12-02..S12-15, S13-*, O1, kopia surowego zapisu w dialogu).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] 6.7 — wbrew literze PRD FR-022: gdy zapis na urządzeniu jest `unavailable` (nie dało się go odczytać, także limit czasu), import i reset są niedostępne do ponownego uruchomienia gry; dialog pokazuje tylko wyjaśnienie i „Zamknij”. Przy `unreadable` import i reset działają, z ostrzeżeniem zamiast „Teraz” i wskazaniem „Zachowaj kopię” na karcie startowej.
+- [ ] 7.7 — FR-013: gdy brakuje obrazka, umiejętności z wynikiem tylko na obrazku (MONEY_COUNT, MASS, CAPACITY w litrach) wypadają z rundy; krok bieżący jest filtrowany tylko, gdy zostaje co najmniej tyle umiejętności, ile trzeba do odblokowania (E5.5: przy braku samego dzbanka ½ l wypada umiejętność z dzbankiem, zostaje waga). Zadania z polską etykietą (reszta pieniędzy, ikony, termometr) zostają w rundzie.
+- [ ] Napisy zastępcze mają ok. 12–13 px na tablecie 1024 px nawet w dużych ramkach monet (mogłyby rosnąć do rozmiaru ramki) — zostawione, bo to tylko awaryjny widok.
+- [ ] Przy `unreadable` „Zapisz kopię” w panelu nadal eksportuje bieżącą (świeżą) grę; tekst w dialogach to wyjaśnia, pełna poprawka to follow-up S12-04.
+- [ ] Nowy szew tylko w buildzie e2e: `?e2eArt=missing|corrupt` (strażnik buildu sprawdza znacznik `e2eArt`).
