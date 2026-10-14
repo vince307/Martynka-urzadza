@@ -41,6 +41,7 @@ export const generateGrid: Generator = (skill, rng: Rng): Task => {
         return {
             skillId: skill.id,
             prompt: pl.tasks.gridWhatPrompt(right),
+            speak: pl.tasks.gridWhatSpeak(asked.col, asked.row),
             visual,
             answer: name,
             choices: rng.shuffle(items.map((i) => nounOf(i.item))),

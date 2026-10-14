@@ -82,6 +82,8 @@ export const FONT_SIZES = {
     chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
+    cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
+    gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
@@ -114,6 +116,8 @@ export const FONT_WEIGHTS = {
     chartLabel: 700,
     chartAxis: 650,
     thermoLabel: 700,       // kit reference/thermometer-face.js
+    cellValue: 750,
+    gridLabel: 700,
     artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
@@ -236,6 +240,10 @@ export const TASK_LAYOUT = {
         gap: 12, groupGap: 40, rowGap: 24, border: 4, line: 2, cells: 10, maxScale: 1.5,
     },
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
+    // Number cells (DESIGN-GAP row 73), own units: a magic square (3 x 3) or a pyramid (1, 2, 3 cells, each row shifted half a cell), `cell` wide and tall; the empty cell is dashed.
+    cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
+    // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
+    coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },
     chart: { barWidth: 90, barGap: 36, plotHeight: 300, axisInset: 56, labelDrop: 14, labelHeight: 44, axisLabelGap: 12, gridWidth: 2, border: 4, radius: 8, maxScale: 1.2 },
     // Money on a table (S-14), own units: notes in the upper row, coins in the lower one, largest first. Not a physical scale: a note is wider
     // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.

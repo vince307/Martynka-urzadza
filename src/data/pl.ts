@@ -477,6 +477,9 @@ export const pl = {
         // GRID (S-13b): columns are letters, rows are numbers; the item names are nominative nouns from the dictionary.
         gridWherePrompt: (noun: string) => `Na którym polu leży ${noun}?`,
         gridWhatPrompt: (cell: string) => `Co leży na polu ${cell}?`,
+        // The narrator says the column letter by its Polish name: a bare "D" or "C" would be read as a Roman numeral or a stray letter.
+        gridWhatSpeak: (col: number, row: number) =>
+            `Co leży na polu ${['a', 'be', 'ce', 'de', 'e', 'ef'][col] ?? ''} ${row + 1}?`,
         gridHint: 'Najpierw litera kolumny, potem numer wiersza.',
         gridCellHint: (cell: string, col: number, row: number) =>
             `Pole ${cell}: kolumna ${String.fromCharCode(65 + col)}, wiersz ${row + 1}.`,
