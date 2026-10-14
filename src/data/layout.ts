@@ -328,8 +328,9 @@ export const HUD_LAYOUT = {
     speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
     roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
-    // Title of a round variant (S-15), between the progress dots and the speaker: name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
-    title: { left: 1118, right: 1470, y: 96, starRadius: 18, gap: 12 },
+    // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
+    // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
+    title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
     // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
     // DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
     settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
@@ -375,11 +376,11 @@ export const MINIGAME_LAYOUT = {
     // DESIGN-GAP 86 (docs/design-gaps.md): the dice faces, the "?" for the missing result and the lines of the
     // solution above the dice (the kit has none) are ours.
     dice: { top: 346, size: 150, gap: 38, centerX: 960, pip: 15, radius: 30, border: 5, solutionTop: 232, solutionLimit: 336 },
-    board: { left: 361, top: 568, columns: 7, width: 160, height: 136, gap: 20, radius: 28, border: 5, shadow: 7, checkSize: 32 },
+    board: { left: 361, top: 552, columns: 7, width: 160, height: 136, gap: 20, radius: 28, border: 5, shadow: 7, checkSize: 32 },
     title: { x: 960, y: 356 },
     line: { x: 960, y: 462 },
     earned: { centerX: 960, centerY: 650, starSize: 84, gap: 24, scale: 0.7 },   // the summary's "+N" text at 0.7 of its size
-    buttons: { left: 618, top: 728, width: 400, height: 108, gap: 24, radius: 30, border: 5 },
+    buttons: { left: 548, top: 728, width: 400, height: 108, gap: 24, radius: 30, border: 5 },   // the pair centred on the card (x 960)
 } as const;
 
 /**

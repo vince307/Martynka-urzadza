@@ -221,7 +221,7 @@ export const pl = {
     round: {
         calculate: 'Oblicz',
         correct: 'Brawo!',
-        correctStar: 'Brawo! +1 ★',
+        correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',
         tryAgain: 'Spróbuj jeszcze raz',
         nextStep: 'Następny krok',

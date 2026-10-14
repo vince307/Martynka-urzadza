@@ -15,7 +15,7 @@ export interface RoundView {
         | { kind: 'hint'; line: string | null }       // null: just "try again"
         | { kind: 'solution'; lines: string[]; button: 'next' | 'gotIt' }
         | { kind: 'retype'; line: string }
-        | { kind: 'correct'; star: boolean };
+        | { kind: 'correct'; stars: number };            // the stars this task paid (0 after a retype; 2 for the daily puzzle)
     inputActive: boolean;
     switchVisible: boolean;                           // between tasks only: solved, before "Dalej" (FR-011)
 }
@@ -41,7 +41,7 @@ const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => st
         case 'retype':
             return { kind: 'retype', line: solutionSteps(task, answerLine).at(-1) ?? '' };
         case 'done':
-            return { kind: 'correct', star: state.outcomes[state.index] !== 'retype' };
+            return { kind: 'correct', stars: state.outcomes[state.index] === 'retype' ? 0 : state.rules.starPerTask };
     }
 };
 

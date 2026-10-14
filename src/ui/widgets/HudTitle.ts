@@ -6,7 +6,8 @@ import { textStyle } from './textStyle';
 
 /**
  * Title of a round variant in the HUD: its name and, for the daily puzzle, a star drawn in code and the badge
- * ("Zagadka dnia ★ ×2"). Hidden for an ordinary round. Display only: no input.
+ * ("Zagadka dnia ★ ×2"), centred where the progress dots of an ordinary round are (the task scene hides them in a variant).
+ * Hidden for an ordinary round. Display only: no input.
  * DESIGN-GAP (docs/design-gaps.md rows 79 and 80): the kit has no daily-puzzle screen and no mark for doubled stars.
  */
 export class HudTitle {
@@ -25,7 +26,7 @@ export class HudTitle {
     }
 
     set(view: HudTitleView | null): void {
-        const { left, right, y, starRadius, gap } = HUD_LAYOUT.title;
+        const { centerX, maxWidth, y, starRadius, gap } = HUD_LAYOUT.title;
         this.shown = view ? (view.badge ? `${view.text} ${view.badge}` : view.text) : null;
         this.name.setVisible(view !== null);
         this.badge.setVisible(view?.badge != null);
@@ -37,7 +38,8 @@ export class HudTitle {
         this.badge.setText(view.badge ?? '').setScale(1);
         const starWidth = view.badge ? 2 * starRadius + 2 * gap : 0;
         const natural = this.name.width + starWidth + (view.badge ? this.badge.width : 0);
-        const scale = Math.min(1, (right - left) / natural);   // long names shrink to the free room between the dots and the speaker
+        const scale = Math.min(1, maxWidth / natural);   // a long name shrinks to the room between "Do pokoju" and the speaker
+        const left = centerX - (natural * scale) / 2;
         this.name.setScale(scale).setPosition(left, y);
         let x = left + this.name.width * scale;
         if (view.badge) {

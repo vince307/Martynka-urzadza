@@ -8,7 +8,7 @@ import { firstHint } from '../src/core/round/hints';
 import { validateTask } from '../src/core/tasks/validate';
 import { balance } from '../src/data/balance';
 import { nouns } from '../src/data/nouns';
-import { MINIGAME_LAYOUT } from '../src/data/layout';
+import { MINIGAME_LAYOUT, TASK_LAYOUT } from '../src/data/layout';
 import { pl } from '../src/data/pl';
 import { SEEDS } from './helpers';
 
@@ -106,6 +106,13 @@ describe('coverBoardCells', () => {
                 expect(overlap(a, b), `${a.value} and ${b.value}`).toBe(false);
             }
         }
+    });
+
+    // Visual gate S-15: the second row and its shadow touched the hint bar and "Już wiem" under the board.
+    it('ends the board, shadow included, a gap above the bar zone', () => {
+        const { board } = MINIGAME_LAYOUT;
+        const lowest = Math.max(...cells.map((c) => c.y + c.height)) + board.shadow;
+        expect(lowest).toBeLessThanOrEqual(TASK_LAYOUT.bar.bottom - TASK_LAYOUT.bar.height - TASK_LAYOUT.solution.bottomGap);
     });
 
     it('offers every board throw the tile mode with the 13 fields as its choices', () => {

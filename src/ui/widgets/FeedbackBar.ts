@@ -75,7 +75,7 @@ export class FeedbackBar {
             case 'retype':
                 return bar.line;
             case 'correct':
-                return bar.star ? pl.round.correctStar : pl.round.correct;
+                return bar.stars > 0 ? pl.round.correctStar(bar.stars) : pl.round.correct;
             default:
                 return '';
         }

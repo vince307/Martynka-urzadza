@@ -4,7 +4,7 @@ import { startLearning } from '../src/core/curriculum';
 import { letterRow, lettersUncovered, wordAvailable } from '../src/core/minigames/word';
 import { balance } from '../src/data/balance';
 import { stages } from '../src/data/curriculum';
-import { MINIGAME_LAYOUT, TASK_LAYOUT } from '../src/data/layout';
+import { HUD_LAYOUT, MINIGAME_LAYOUT, TASK_LAYOUT } from '../src/data/layout';
 import { MINIGAME_WORDS } from '../src/data/minigames';
 import { placementData } from '../src/data/placement';
 
@@ -53,11 +53,26 @@ describe('wordAvailable', () => {
     });
 });
 
+// Visual gate S-15: six letters or 13 throws drew their progress dots under the title "Ukryte słowo" / "Kostki · 0-12".
+describe('HUD title of a variant', () => {
+    it('takes the place of the progress dots, centred like the kit title, between "Do pokoju" and the speaker', () => {
+        const { title, roomSwitch, speaker } = HUD_LAYOUT;
+        expect(title.centerX).toBe(TASK_LAYOUT.dots.centerX);
+        expect(title.centerX - title.maxWidth / 2).toBeGreaterThan(roomSwitch.left + roomSwitch.width);
+        expect(title.centerX + title.maxWidth / 2).toBeLessThan(speaker.left);
+    });
+});
+
 describe('done card', () => {
     it('keeps both buttons inside the card, a gap apart, at touch size', () => {
         expect(buttons.left).toBeGreaterThanOrEqual(card.left);
         expect(buttons.left + 2 * buttons.width + buttons.gap).toBeLessThanOrEqual(card.left + card.width);
         expect(buttons.top + buttons.height).toBeLessThanOrEqual(card.top + card.height);
         expect(buttons.height).toBeGreaterThanOrEqual(96);
+    });
+
+    // Visual gate S-15: the pair sat 70 px right of the card's centre (kit .success-card centres it).
+    it('centres the pair of buttons on the card', () => {
+        expect(buttons.left + (2 * buttons.width + buttons.gap) / 2).toBe(card.left + card.width / 2);
     });
 });

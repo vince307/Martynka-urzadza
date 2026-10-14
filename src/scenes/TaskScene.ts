@@ -29,6 +29,7 @@ import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
 import { generateTask } from '../core/tasks/generateTask';
+import type { Task } from '../core/tasks/types';
 import { visualShape, type AnswerMode, type TaskVisual } from '../core/tasks/visual';
 import { getStage } from '../data/curriculum';
 import { balance } from '../data/balance';
@@ -158,6 +159,8 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
+    private promptBaseSize: number = FONT_SIZES.prompt;   // the size the prompt was drawn at (a long sentence is smaller), restored when the steps close
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
     private puzzleId: string | null = null;
     private word: string | null = null;   // the word of an open 'word' round
@@ -386,7 +389,8 @@ export class TaskScene extends Scene {
             this.board.hide();
         }
         this.registry.set(REGISTRY_KEYS.narration, this.currentNarration());
-        this.dots.update(view.dots);
+        // A variant has the HUD title in the dots' place (kit minigame screens): the letters or the board show its progress.
+        this.dots.update(this.kind === 'round' ? view.dots : []);
         const task0 = this.state.tasks[this.state.index];
         if (this.shownIndex !== this.state.index) {
             this.shownIndex = this.state.index;
@@ -467,14 +471,43 @@ export class TaskScene extends Scene {
                 const beside = view.input === 'keypad';
                 const centerX = (beside ? TASK_LAYOUT.expression : TASK_LAYOUT.expressionWide).x;
                 const maxWidth = TASK_LAYOUT.barSpan[beside ? 'keypad' : 'tiles'].width;   // same width as the bar under them
-                // The select tiles sit higher than the single-answer tiles: the lines stop above them.
-                // The answer tiles of a word round sit lower than the letters leave room for: the lines stop above them too.
-                const limit = view.input === 'select' || this.kind === 'word' ? (view.input === 'select' ? TASK_LAYOUT.select.top : TASK_LAYOUT.tiles.top) - TASK_LAYOUT.solution.bottomGap : undefined;
-                this.steps.show(view.bar, centerX, this.promptBottom() + TASK_LAYOUT.solution.topGap, maxWidth, limit);
+                // The lines stop above the answer tiles (select tiles sit higher than single-answer tiles); beside the keypad they stop above the bar zone.
+                const limit = view.input === 'select' || view.input === 'tiles' ? (view.input === 'select' ? TASK_LAYOUT.select.top : TASK_LAYOUT.tiles.top) - TASK_LAYOUT.solution.bottomGap : undefined;
+                const top = (): number => this.promptBottom() + TASK_LAYOUT.solution.topGap;
+                const bar = view.bar;
+                this.fitPromptToSteps(task, (): boolean => this.steps.fits(bar, top(), maxWidth, limit));
+                this.steps.show(view.bar, centerX, top(), maxWidth, limit);
             }
         } else {
             this.steps.hide();
+            this.fitPromptToSteps(task, null);
         }
+    }
+
+    /**
+     * A plain sentence prompt (no drawing, no expression, no "□") steps its font down from the size it was drawn at while
+     * the solution lines would not fit under it at their smallest scale (visual gate S-15: a daily puzzle of 5-9 lines),
+     * and gets that size back when the steps close. `fits` null restores it.
+     */
+    private fitPromptToSteps(task: Task, fits: (() => boolean) | null): void {
+        const [text] = this.promptTexts;
+        if (task.visual || isExpression(task.prompt) || this.promptTexts.length !== 1 || this.promptBoxes.length > 0 || !text) {
+            return;
+        }
+        if (fits === null) {
+            if (this.promptShrunk) {
+                text.setFontSize(this.promptBaseSize);
+                this.promptShrunk = false;
+            }
+            return;
+        }
+        const { promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
+        const size = fitSize(this.promptBaseSize, promptMinSize, promptSizeStep, (s) => {
+            text.setFontSize(s);
+            return fits();
+        });
+        text.setFontSize(size);
+        this.promptShrunk = size !== this.promptBaseSize;
     }
 
     /** Hides everything of the task layer (dots, answers, bar, steps, prompt) for a page drawn over the notebook. */
@@ -531,6 +564,8 @@ export class TaskScene extends Scene {
         this.promptTexts = [];
         this.promptBoxes.forEach((g) => g.destroy());
         this.promptBoxes = [];
+        this.promptShrunk = false;
+        this.promptBaseSize = FONT_SIZES.prompt;
         if (this.kind === 'dice') {
             return;   // the dice are drawn by Dice; there is no prompt text
         }
@@ -564,12 +599,19 @@ export class TaskScene extends Scene {
                     wordWrap: { width: sentence.maxWidth },
                 })
                 .setOrigin(0.5, 0);
+            const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
             if (task.visual) {
                 // A pictured task's prompt ends above its drawing: a long one steps its font down (visual gate S-13).
-                const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
                 const limit = pictureLayout(TASK_LAYOUT.picture, input, false, visualShape(task.visual)).picture.y - promptGap;
                 const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
                 text.setFontSize(size);
+            } else if (input === 'keypad' || input === 'tiles') {
+                // A long sentence (a daily puzzle) ends above the hint bar beside the keypad or above the answer tiles (visual gate S-15).
+                const { bar, solution, tiles } = TASK_LAYOUT;
+                const limit = input === 'keypad' ? bar.bottom - bar.height - solution.bottomGap : tiles.top - solution.bottomGap;
+                const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
+                text.setFontSize(size);
+                this.promptBaseSize = size;
             }
             this.promptTexts.push(text);
         }
