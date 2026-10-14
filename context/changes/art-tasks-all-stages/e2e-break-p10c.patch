@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/MoneyTable.ts b/src/ui/widgets/MoneyTable.ts
+index e30d1d5..1177de1 100644
+--- a/src/ui/widgets/MoneyTable.ts
++++ b/src/ui/widgets/MoneyTable.ts
+@@ -21,7 +21,7 @@ export class MoneyTable {
+     render(items: readonly MoneyId[], rect: Rect): void {
+         this.setVisible(false);
+         this.area = rect;
+-        moneyLayout(items, rect, TASK_LAYOUT.money).forEach((placed, i) => this.images[i]?.show(ART_KEYS.money(placed.id), placed.rect));
++        moneyLayout(items.slice(0, 1), rect, TASK_LAYOUT.money).forEach((placed, i) => this.images[i]?.show(ART_KEYS.money(placed.id), placed.rect));
+     }
+ 
+     setVisible(visible: boolean): void {
