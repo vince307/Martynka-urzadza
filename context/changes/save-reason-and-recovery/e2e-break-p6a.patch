@@ -1,13 +1,13 @@
 diff --git a/src/core/autosave.ts b/src/core/autosave.ts
-index 71d0bea..a21890f 100644
+index 96803a8..427b296 100644
 --- a/src/core/autosave.ts
 +++ b/src/core/autosave.ts
-@@ -73,7 +73,7 @@ export interface AutosaverOptions {
+@@ -79,7 +79,7 @@ export const isTimeoutError = (name: string | null): boolean => name === 'timeou
  export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'>, force: boolean): 'ok' | 'Blocked' {
      const { blockedBy, loadReason, loadError } = status;
      if (blockedBy === 'fatal') return 'Blocked';
 -    if (blockedBy === 'unreadable') return loadReason === 'future' ? 'Blocked' : 'ok';
 +    if (blockedBy === 'unreadable') return 'ok';
-     if (blockedBy === 'unavailable') return loadError !== 'timeout' && force ? 'ok' : 'Blocked';
+     if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force ? 'ok' : 'Blocked';
      return 'ok';
  }

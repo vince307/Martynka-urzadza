@@ -20,5 +20,9 @@ Each item has a `Trigger:`; a later slice greps for it. This list closes SIR-07 
   Trigger: the next change to artHealth.ts, artFilter.ts or ArtImage
 - Import from the welcome screen.
   Trigger: unchanged from the S-12 archive (a parent who needs to restore before the first round)
+- Escape closes the import/reset dialog while `replace` is writing (impl-review O2; `saveImportDialog.ts` / `saveResetDialog.ts` `busy`, `finish`).
+  Trigger: the next change to saveImportDialog.ts or saveResetDialog.ts, or S-15 moving the import out of the dialog
+- `tests/deviceSaveWiring.test.ts` openExport case checks text only, not that `saver.status()` is the `deviceSaveView` argument and the warning the `warning` option (impl-review O4); design-gap rows 43, 45, 49 revised only through rows 69/71.
+  Trigger: the next change to UIScene.openExport or to docs/design-gaps.md rows 43-51
 
 Closed here (see the archive): S12-04, S12-06, S12-10, and "Import or reset over an unreadable save (impl-review F1)" for the `future` part.
