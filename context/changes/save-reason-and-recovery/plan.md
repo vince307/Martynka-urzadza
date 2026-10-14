@@ -576,7 +576,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 #### Manual
 
 - [x] 2.4 [reviewer] Teacher read `saveOff.future`/`saveOff.timeout`, wiersz 69 — impl-review 02b8f42 (reviews/impl-review.md)
-- [ ] 2.5 [visual] Zrzuty „Zapis gry” i karty przy `?e2eSave=unavailable` i `?e2eSave=hang` — 1440 i 1024
+- [x] 2.5 [visual] Zrzuty „Zapis gry” i karty przy `?e2eSave=unavailable` i `?e2eSave=hang` — 1440 i 1024
 
 ### Phase 3: Zapis z nowszej wersji nienadpisywalny w aplikacji; szew `?e2eSave=corrupt`
 
@@ -590,7 +590,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 #### Manual
 
 - [x] 3.5 [reviewer] Teacher read `deviceFuture`/`deviceTimeout`/`deviceFatal`, wiersz 70; jedna mapa przyczyna → tekst — impl-review 02b8f42 (reviews/impl-review.md)
-- [ ] 3.6 [visual] Zrzuty dialogów importu i resetu przy `unreadable` (`future`), `corrupt`, `hang`; „Zapis gry” przy `unreadable` — 1440 i 1024
+- [x] 3.6 [visual] Zrzuty dialogów importu i resetu przy `unreadable` (`future`), `corrupt`, `hang`; „Zapis gry” przy `unreadable` — 1440 i 1024
 - [ ] 3.7 [human] Decyzja tam, gdzie PRD milczy: zapis z nowszej wersji gry nie może zostać nadpisany importem ani resetem
 
 ### Phase 4: Drugie potwierdzenie przy trwałym `unavailable` i rada o danych strony
@@ -605,7 +605,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 #### Manual
 
 - [x] 4.5 [reviewer] Teacher read `deviceUnavailable`, `force`, `forcedWarning`, `siteDataAdvice`, `resetFailed`; wiersz 71; fokus nigdy na nadpisaniu — impl-review 02b8f42 (reviews/impl-review.md)
-- [ ] 4.6 [visual] Zrzuty przy `?e2eSave=unavailable`: import i reset w kroku zablokowanym i po „Zastąp mimo to” — 1440 i 1024
+- [x] 4.6 [visual] Zrzuty przy `?e2eSave=unavailable`: import i reset w kroku zablokowanym i po „Zastąp mimo to” — 1440 i 1024
 - [ ] 4.7 [human] Decyzja: po drugim potwierdzeniu rodzic może nadpisać nieodczytany zapis przy trwałym `unavailable` (odwraca część 6.7 poprzedniej zmiany)
 - [ ] 4.8 [human] Rada `siteDataAdvice` sprawdzona na iPadzie (Safari i ikona) i Androidzie (Chrome)
 
@@ -622,7 +622,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 - [x] 5.5 [reviewer] Teacher read `exportNotDevice`, wiersz 72 — impl-review 02b8f42 (reviews/impl-review.md)
 - [x] 5.6 [reviewer] Seam sweep: jedna reguła `replaceGate`, jedna mapa tekstów, komentarze, gaps 42–51 i 68–72, follow-upy z `Trigger:`, zdanie w `CLAUDE.md` — impl-review 02b8f42 (reviews/impl-review.md)
-- [ ] 5.7 [visual] Zrzuty dialogu eksportu z ostrzeżeniem (`unavailable`, `corrupt`) i bez (zdrowy zapis) — 1440 i 1024
+- [x] 5.7 [visual] Zrzuty dialogu eksportu z ostrzeżeniem (`unavailable`, `corrupt`) i bez (zdrowy zapis) — 1440 i 1024
 - [ ] 5.8 [human] Pomiar N-7 na iPadzie: czy `timeout` zdarza się przy zdrowym zapisie po długiej przerwie
 
 ### Phase 6: Przyczyny odczytu w przeglądarce — e2e (#2)
