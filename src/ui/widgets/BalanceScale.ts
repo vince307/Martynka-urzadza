@@ -3,11 +3,12 @@ import type { Scene } from 'phaser';
 import type { IconId, WeightId } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
+import { ART_LIMITS } from '../../data/measures';
 import { ArtImage } from './ArtImage';
 import { scaleLayout } from './artLayout';
 import type { Rect } from './geometry';
 
-const MAX_WEIGHTS = 6;
+const MAX_WEIGHTS = ART_LIMITS.weights;   // one pooled image per piece validateVisual allows
 
 /** A balance scale in balance: the item in the left pan, the weights in the right one (S-14). */
 export class BalanceScale {

@@ -1,7 +1,9 @@
 // Risk #11 for the tasks drawn with raster art (S-14): money, balance scale, thermometer, icon groups. ?e2eSkills (e2e build
 // only) forces the task type; the hook reports what the widgets themselves show (texture key and whether it is loaded, read from
 // the game objects, never a layout rectangle that a hidden or stand-in image would also satisfy). The thermometer's "beside the
-// keypad" layout is read from the drawing's interior rectangle against the solution lines' x. No clock, only polls on the snapshot.
+// keypad" check reads targets.picture: the rectangle the scene gave the drawing, reported only while the thermometer is shown()
+// (frame and face visible). Its proportions prove that TaskScene picked the tall layout (break p10d), not the frame's own pixels
+// (those are the visual gate's). No clock, only polls on the snapshot.
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcomeAsParent } from './support/welcome';
 import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapNext, tapScene, targets, type Snapshot } from './support/hook';

@@ -1,7 +1,9 @@
 // Origin: S-07 phase 2. Rule D (plan, Critical Implementation Details): the school-calendar floor of the first
 // unlocked step. The table below is the plan's stage x month oracle, computed independently of the implementation
 // (36 cells verified in the plan review); it is typed here, never read from the code under test.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { decodeSave } from '../src/core/save';
 import { balance } from '../src/data/balance';
 import { placementData } from '../src/data/placement';
 import { stages } from '../src/data/curriculum';
@@ -141,5 +143,27 @@ describe('floorToCalendar (loaded learner, S-11)', () => {
     it('returns the same object when nothing changes', () => {
         const learner = base({ ...calendar });
         expect(floorToCalendar(learner, stages, 9, placementData, RULES)).toBe(learner);
+    });
+
+    // S-14 made E1.8, E1.10, E2.2, E2.8 and E5.5 playable, which moved calendar starts. A learner saved before that
+    // (the frozen v1 fixture: age 8, E3, unlockedStep E1 5, E2 6, E3 3, E4 2, E5 2, E6 2) still decodes, and the
+    // floor only raises steps. Expected values by hand from rule D for November (month 10, an 8-year-old is in E3):
+    // E1 and E2 are behind the calendar stage -> their last playable step (E1 11, E2 10); E3 n = 11, progress 0.5 ->
+    // ceil(5.5) = 6; E4..E6 are ahead of the calendar and only checked against the floor (never below save or start).
+    it('loads a learner saved before S-14 (frozen fixture) and only raises its steps', () => {
+        const raw = JSON.parse(readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8')) as unknown;
+        const decoded = decodeSave(raw);
+        if (decoded.kind !== 'ok' || !decoded.session.learner) throw new Error('fixture did not decode');
+        const saved = decoded.session.learner;
+        const out = floorToCalendar(saved, stages, 10, placementData, RULES);
+        expect(out.unlockedStep.E1).toBe(11);
+        expect(out.unlockedStep.E2).toBe(10);
+        expect(out.unlockedStep.E3).toBe(6);
+        for (const id of ALL) {
+            expect(out.unlockedStep[id]).toBeGreaterThanOrEqual(saved.unlockedStep[id]);
+            expect(out.unlockedStep[id]).toBeGreaterThanOrEqual(calendarStart(stage(id), 8, 10, placementData, RULES));
+        }
+        expect(out.mastery).toEqual(saved.mastery);
+        expect(out.pendingUnlock).toEqual(saved.pendingUnlock);
     });
 });

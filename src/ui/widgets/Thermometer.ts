@@ -1,6 +1,6 @@
 // DESIGN-GAP 64 (docs/design-gaps.md): the kit thermometer frame has one scale of −30…+30.
 import type { GameObjects, Scene } from 'phaser';
-import { formatScaleMark } from '../../core/text/measure';
+import { CELSIUS, formatScaleMark } from '../../core/text/measure';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { THERMOMETER } from '../../data/measures';
 import { ART_KEYS } from '../../data/taskArt';
@@ -11,7 +11,7 @@ import { textStyle } from './textStyle';
 
 const INK = PLACEHOLDER_COLORS.deepTeal;
 const LIQUID = PLACEHOLDER_COLORS.turquoise;
-const LABELS = 7;   // -30, -20 ... +30
+const LABELS = (THERMOMETER.max - THERMOMETER.min) / 10 + 1;   // a label every 10 degrees: -30, -20 ... +30
 
 /**
  * A thermometer: the kit's housing image with the tube, the liquid, the ticks and the labels painted over it in code
@@ -61,7 +61,7 @@ export class Thermometer {
                 text.setText(formatScaleMark(mark.value)).setFontSize(fontSize).setPosition(x(t.label.x), yOf(mark.value)).setOrigin(0, 0.5).setVisible(true);
             }
         }
-        this.unit.setText('°C').setFontSize(fontSize).setPosition(x(t.unit.x), y(t.unit.y)).setVisible(true);
+        this.unit.setText(CELSIUS).setFontSize(fontSize).setPosition(x(t.unit.x), y(t.unit.y)).setVisible(true);
     }
 
     setVisible(visible: boolean): void {

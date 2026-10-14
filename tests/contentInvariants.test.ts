@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
-import { boundOf, UNBOUNDED_TYPES, validationBounds } from '../src/core/tasks/bounds';
+import { screenBound, UNBOUNDED_TYPES, validationBounds } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
 import { validateTask } from '../src/core/tasks/validate';
@@ -58,7 +58,7 @@ for (const stage of Object.values(stages)) {
                     expect(generate, `generator for ${skill.type}`).toBeDefined();
                     expect(() => parse!(skill.params), `${skill.id} params`).not.toThrow();
 
-                    const max = boundOf(skill);
+                    const max = screenBound(skill);
                     const bounded = !UNBOUNDED_TYPES.includes(skill.type);
                     const seen = new Map<string, number>();
                     let degenerate = 0;

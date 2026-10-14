@@ -3,11 +3,12 @@ import type { GameObjects, Scene } from 'phaser';
 import type { IconId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
+import { ART_LIMITS } from '../../data/measures';
 import { ArtImage } from './ArtImage';
 import { iconsLayout } from './artLayout';
 import type { Rect } from './geometry';
 
-const MAX_ICONS = 30;
+const MAX_ICONS = ART_LIMITS.icons;   // one pooled image per piece validateVisual allows
 
 /** Icons of the art kit in one or more groups, each group optionally in a frame drawn in code (S-14). */
 export class IconGroups {

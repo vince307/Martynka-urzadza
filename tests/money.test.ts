@@ -161,6 +161,28 @@ describe('generateMoneyChange', () => {
         });
     });
 
+    // Impl-review S-14: a teacher read found "Kupił rogalik za 13 zł" and "poduszkę za 3 zł". The oracle is a range a
+    // shop would believe, typed here (grosze), not read from wordTemplates.
+    const BELIEVABLE: Record<string, [number, number]> = {
+        naklejkę: [1, 500], kredkę: [50, 500], rogalik: [100, 600], ciastko: [50, 800], klocek: [100, 2000],
+        kwiatek: [300, 3000], filiżankę: [500, 4000], książkę: [1000, 6000], poduszkę: [2000, 10000],
+    };
+    for (const s of [CHANGE_ZL_10, CHANGE_ZL_100, CHANGE_GR, CHANGE_TEXT]) {
+        it(`${s.id}: the thing bought has a believable price`, () => {
+            forEachDraw(generateMoneyChange, s, {}, (task, where) => {
+                const match = /Kupił(?:a)? (\p{L}+) za (.+?)\. /u.exec(task.prompt);
+                expect(match, where).not.toBeNull();
+                const [, thing, priceText] = match as RegExpExecArray;
+                const zl = Number(/(\d+) zł/.exec(priceText)?.[1] ?? 0);
+                const gr = Number(/(\d+) gr/.exec(priceText)?.[1] ?? 0);
+                const range = BELIEVABLE[thing];
+                expect(range, `${where} ${thing}`).toBeDefined();
+                const price = zl * 100 + gr;
+                expect(price >= range[0] && price <= range[1], `${where} ${thing} za ${priceText}`).toBe(true);
+            });
+        });
+    }
+
     it('speaks the amounts in words', () => {
         forEachDraw(generateMoneyChange, CHANGE_ZL_10, {}, (task, where) => {
             expect(task.speak, where).toMatch(/^\p{L}+ miał(a)? .*(złot|złotych|złote)/u);

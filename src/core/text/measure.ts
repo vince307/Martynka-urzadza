@@ -31,10 +31,13 @@ export const formatMoney = (grosze: number): string => {
     return zl === 0 ? `${gr} gr` : `${zl} zł ${gr} gr`;
 };
 
+/** The degree unit, on the tiles and under the thermometer scale. */
+export const CELSIUS = '°C';
+
 /** "−5 °C" with the real minus sign, no plus sign. */
 export const formatCelsius = (celsius: number): string => {
     wholeDegrees(celsius);
-    return `${celsius < 0 ? MINUS : ''}${Math.abs(celsius)} °C`;
+    return `${celsius < 0 ? MINUS : ''}${Math.abs(celsius)} ${CELSIUS}`;
 };
 
 /** "trzy złote czterdzieści groszy" */

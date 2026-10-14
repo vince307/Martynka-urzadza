@@ -110,9 +110,18 @@ describe('negative numbers allowed for temperatures (S-14)', () => {
     it('validationBounds sets the flag from the skill type in one place', () => {
         expect(NEGATIVE_TYPES.has('TEMPERATURE')).toBe(true);
         expect(NEGATIVE_TYPES.has('ADD_SUB')).toBe(false);
-        expect(validationBounds({ type: 'TEMPERATURE', params: { max: 30 } })).toEqual({ max: 30, allowNegative: true });
+        expect(validationBounds({ type: 'TEMPERATURE', params: { low: -20, high: 20 } })).toEqual({ max: 40, allowNegative: true });
         expect(validationBounds({ type: 'ADD_SUB', params: { max: 20 } })).toEqual({ max: 20, allowNegative: false });
-        expect(validationBounds({ type: 'MONEY_COUNT', params: {} })).toEqual({ max: undefined, allowNegative: false });
+    });
+
+    // Impl-review S-14: params of the art types are not on-screen units, so the bound is read per type (screenBound).
+    it('bounds the art types in the units the child sees', () => {
+        expect(validationBounds({ type: 'MONEY_CHANGE', params: { max: 10000, answer: 'number-zl' } }).max).toBe(100);
+        expect(validationBounds({ type: 'MONEY_COUNT', params: { max: 100, answer: 'number-gr' } }).max).toBe(100);
+        expect(validationBounds({ type: 'MONEY_COUNT', params: { max: 2000, answer: 'text' } }).max).toBe(2000);
+        expect(validationBounds({ type: 'CAPACITY', params: { jugs: ['container-half-l'], maxLitres: 10 } }).max).toBe(20);
+        expect(validationBounds({ type: 'CAPACITY', params: { jugs: ['container-1l'], maxLitres: 10 } }).max).toBe(10);
+        expect(validationBounds({ type: 'TEMPERATURE', params: { low: 0, high: 30 } }).max).toBe(30);
     });
 });
 

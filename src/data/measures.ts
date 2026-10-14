@@ -45,8 +45,14 @@ export const JUGS: readonly { id: JugId; ml: number; label: string }[] = [
     { id: 'container-quarter-l', ml: 250, label: '¼ l' },
 ];
 
+/** The kit jug images are square, JUG_SOURCE_SIZE px a side; JUG_VISIBLE_RECT is given in that space. */
+export const JUG_SOURCE_SIZE = 512;
+
 /** The part of a jug image that holds the liquid scale, the same for all three jugs: x, y, width, height in the 512 x 512 image. */
 export const JUG_VISIBLE_RECT = { x: 32, y: 78, width: 448, height: 356 } as const;
+
+/** How many pieces one drawing may hold: validateVisual enforces it and each widget pools exactly that many images. */
+export const ART_LIMITS = { moneyItems: 10, weights: 6, jugs: 10, icons: 30 } as const;
 
 /** The 12 icons of the kit with the dictionary noun (src/data/nouns.ts) a prompt uses; the dictionary wins over the kit label. */
 export const ICONS = [

@@ -1,6 +1,6 @@
 // Drawing descriptions carried by a task (S-13): numbers and labels only, no colours or pixels.
 // The scene decides how to draw them; core only validates and keys them.
-import { ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
+import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
 import type { SkillDef } from '../types';
@@ -80,16 +80,16 @@ export const validateVisual = (v: TaskVisual): string[] => {
             break;
         }
         case 'money':
-            if (v.items.length < 1 || v.items.length > 10) out.push(`${v.items.length} money items, need 1..10`);
+            if (v.items.length < 1 || v.items.length > ART_LIMITS.moneyItems) out.push(`${v.items.length} money items, need 1..${ART_LIMITS.moneyItems}`);
             for (const id of v.items) if (!MONEY.some((m) => m.id === id)) out.push(`unknown money id ${id}`);
             break;
         case 'scale':
             if (!ICONS.some((i) => i.id === v.item)) out.push(`unknown scale item ${v.item}`);
-            if (v.weights.length < 1 || v.weights.length > 6) out.push(`${v.weights.length} weights, need 1..6`);
+            if (v.weights.length < 1 || v.weights.length > ART_LIMITS.weights) out.push(`${v.weights.length} weights, need 1..${ART_LIMITS.weights}`);
             for (const id of v.weights) if (!WEIGHTS.some((w) => w.id === id)) out.push(`unknown weight id ${id}`);
             break;
         case 'jugs':
-            if (v.jugs.length < 1 || v.jugs.length > 10) out.push(`${v.jugs.length} jugs, need 1..10`);
+            if (v.jugs.length < 1 || v.jugs.length > ART_LIMITS.jugs) out.push(`${v.jugs.length} jugs, need 1..${ART_LIMITS.jugs}`);
             for (const id of v.jugs) if (!JUGS.some((j) => j.id === id)) out.push(`unknown jug id ${id}`);
             break;
         case 'thermometer':
@@ -101,7 +101,7 @@ export const validateVisual = (v: TaskVisual): string[] => {
             if (!ICONS.some((i) => i.id === v.icon)) out.push(`unknown icon ${v.icon}`);
             if (v.groups.length < 1) out.push('icons drawing has no group');
             if (v.groups.some((g) => !isInt(g) || g < 1)) out.push('icon group sizes must be positive whole numbers');
-            if (v.groups.reduce((a, b) => a + b, 0) > 30) out.push('more than 30 icons');
+            if (v.groups.reduce((a, b) => a + b, 0) > ART_LIMITS.icons) out.push(`more than ${ART_LIMITS.icons} icons`);
             if (v.framed && (v.groups.length < 2 || v.groups.some((g) => g !== v.groups[0]))) out.push('framed icons need 2 or more equal groups');
             break;
         }

@@ -159,7 +159,9 @@ export const generateMoneyChange: Generator = (skill, rng): Task => {
     const change = had - price;
     const person = rng.pick(people);
     const feminine = person.gender === 'f';
-    const thing = rng.pick(contexts.filter((c) => c.noun[0] !== 'złoty')).accusative;
+    // A thing whose believable price holds this price (no croissant for 13 zł); the ranges in wordTemplates cover 1 gr..100 zł.
+    const priced = contexts.filter((c) => c.price !== undefined && c.price[0] <= price && price <= c.price[1]);
+    const thing = rng.pick(priced.length > 0 ? priced : contexts.filter((c) => c.price !== undefined)).accusative;
     const question = pl.tasks.moneyChangeQuestion(p.answer);
     const base = {
         skillId: skill.id,

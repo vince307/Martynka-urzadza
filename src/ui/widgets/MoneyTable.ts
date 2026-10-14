@@ -3,11 +3,12 @@ import type { Scene } from 'phaser';
 import type { MoneyId } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
+import { ART_LIMITS } from '../../data/measures';
 import { ArtImage } from './ArtImage';
 import { moneyLayout } from './artLayout';
 import type { Rect } from './geometry';
 
-const MAX_ITEMS = 10;
+const MAX_ITEMS = ART_LIMITS.moneyItems;   // one pooled image per piece validateVisual allows
 
 /** Coins and notes lying on a table: notes above, coins below, each one the kit's drawing (S-14). */
 export class MoneyTable {
