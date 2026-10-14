@@ -55,6 +55,9 @@ export const pl = {
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
+            // DESIGN-GAP 69: the kit has no line for the reason of a switched-off save.
+            future: 'Zapis jest wyłączony: zapis na tym urządzeniu pochodzi z nowszej wersji gry. Zaktualizuj grę, a postępy wrócą.',
+            timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).

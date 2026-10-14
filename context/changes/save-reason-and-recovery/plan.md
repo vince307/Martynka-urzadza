@@ -551,7 +551,7 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 974cd90
 - [x] 1.2 Deliberate break: `replaceGate` przepuszcza `future` / `timeout` z `lastError` → czerwone; przywrócone; meta-check — 974cd90
 - [x] 1.3 `tests/fixtures/save-v1*.json` bez zmian; `SAVE_VERSION` 1; `tests/saveKeys.test.ts` zielony — 974cd90
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — orchestrator note: full e2e on 974cd90, 52 passed (4.0 min)
 
 #### Manual
 
@@ -561,8 +561,8 @@ Brak. `SAVE_VERSION` 1, fixtury nietknięte; `loadReason`/`loadError` tylko w st
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: `timeout` jako `unavailable` / `code` z `lastError` → czerwone; przywrócone; meta-check
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — SHA
+- [x] 2.2 Deliberate break: `timeout` jako `unavailable` / `code` z `lastError` → czerwone; przywrócone; meta-check — SHA
 - [ ] 2.3 Pełna bramka lokalna zielona; `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

@@ -136,7 +136,8 @@ const start = async (): Promise<void> => {
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
                 copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
-                detail: reason === null ? undefined : pl.saveFailed.detail(reason, __BUILD_ID__),
+                // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
+                detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:
                     raw === null
                         ? undefined
