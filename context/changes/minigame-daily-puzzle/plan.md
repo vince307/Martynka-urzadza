@@ -914,7 +914,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 #### Manual
 
 - [x] 3.5 [reviewer] Odczyt nowych tekstów zapisu (krótkie, bez straszenia, bez żargonu) — impl-review 2026-10-14 (reviews/impl-review.md)
-- [ ] 3.6 [visual] Zrzuty: karta `future`, karta `migration-failed`, krok importu z datą i buildem, „Zapis gry” z „przeniesiono z wersji 1” — 1440×900 i 1024×768
+- [x] 3.6 [visual] Zrzuty: karta `future`, karta `migration-failed`, krok importu z datą i buildem, „Zapis gry” z „przeniesiono z wersji 1” — 1440×900 i 1024×768 — visual gate 2026-10-14, fixes b04a5ca (reviews/visual-review.md, screenshots/); migration-failed card on a throwaway build
 
 ### Phase 4: Harmonogram wariantów i dzień kalendarzowy
 
@@ -967,7 +967,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 #### Manual
 
 - [x] 7.5 [reviewer] `finishRound` bez `endRound` dla wariantu; `freshRound` bez zatwierdzeń; brak liczb i tekstów w scenie — impl-review 2026-10-14 (reviews/impl-review.md)
-- [ ] 7.6 [visual] Zrzuty: zagadka z kafelkami, z klawiaturą, podpowiedź, kroki rozwiązania, podsumowanie z 2 gwiazdkami, tytuł HUD — 1440×900 i 1024×768
+- [x] 7.6 [visual] Zrzuty: zagadka z kafelkami, z klawiaturą, podpowiedź, kroki rozwiązania, podsumowanie z 2 gwiazdkami, tytuł HUD — 1440×900 i 1024×768 — visual gate 2026-10-14, fixes b04a5ca (reviews/visual-review.md, screenshots/)
 
 ### Phase 8: Hasło z wyników na ekranie
 
@@ -979,7 +979,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 8.4 [visual] Zrzuty: Hasło na starcie, pierwsza litera, podpowiedź, druga próba, kroki rozwiązania, karta ukończenia, KANAPA i PÓŁKA — 1440×900 i 1024×768
+- [x] 8.4 [visual] Zrzuty: Hasło na starcie, pierwsza litera, podpowiedź, druga próba, kroki rozwiązania, karta ukończenia, KANAPA i PÓŁKA — 1440×900 i 1024×768 — visual gate 2026-10-14, fixes b04a5ca (reviews/visual-review.md, screenshots/); PÓŁKA only in an intermediate capture
 - [ ] 8.5 [human] Hasło odsłania literę po każdym działaniu (kit) zamiast „ułożenia wyników rosnąco” (ZADANIA § 5); słowa z podpisów salonu zamiast listy kitu
 
 ### Phase 9: Zakrywanka na ekranie
@@ -992,7 +992,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 9.4 [visual] Zrzuty: kostki na starcie, druga próba, kroki rozwiązania, pole zakryte, karta „Wszystkie pola zakryte!” — 1440×900 i 1024×768
+- [x] 9.4 [visual] Zrzuty: kostki na starcie, druga próba, kroki rozwiązania, pole zakryte, karta „Wszystkie pola zakryte!” — 1440×900 i 1024×768 — visual gate 2026-10-14, fixes b04a5ca (reviews/visual-review.md, screenshots/)
 - [ ] 9.5 [human] Stukanie palcem dziecka w pola 160 × 136 na tablecie 1024
 
 ### Phase 10: Seam sweep, luki projektu, follow-upy i dokumentacja

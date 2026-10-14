@@ -39,3 +39,14 @@ Each item has a `Trigger:`; a later slice greps for it.
   Trigger: the next change to a minigame widget or to `src/core/minigames/`
 - F8: `src/testing/e2eHook.ts` imports `tests/fixtures/save-v1.json` (src importing from tests). Rollup drops it from `dist/` with the `__E2E_HOOK__` branch (checked: `1760000001000` absent from `dist/_app/*.js`), but no marker in `vite/e2eHookGuard.mjs` names the fixture.
   Trigger: the next change to `vite/e2eHookGuard.mjs` or to the v1 fixtures' use in src
+
+## From the visual gate (2026-10-14)
+
+- O1: a unit wraps away from its number ("5 / kg.") in solution lines and prompts; keep them together (a non-breaking space in `src/data/puzzles.ts` or in the wrap of `SolutionSteps`/`TaskScene.drawPrompt`).
+  Trigger: the next change to `src/data/puzzles.ts` or `src/ui/widgets/SolutionSteps.ts`
+- O2: HUD title "Kostki · 0-12" uses a hyphen where the kit has an en dash (`pl.minigames.diceTitle`).
+  Trigger: the next change to `pl.minigames`
+- O3: the puzzle summary shows one star and "+2"; nothing on the summary says the stars were doubled (gap 80).
+  Trigger: the S-17 playtest or the author asks for it
+- O4: the long-prompt fit (`TaskScene.drawPrompt`, `fitPromptToSteps`) has no unit test (Phaser text metrics); it is proven by the visual-gate frames p09–p11 only.
+  Trigger: the next change to `TaskScene.drawPrompt` or `SolutionSteps`
