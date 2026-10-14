@@ -943,9 +943,9 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [x] 9.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — @@SHA@@
-- [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — @@SHA@@
-- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 88+ w `docs/design-gaps.md` — @@SHA@@
+- [x] 9.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 5554cc8
+- [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — 5554cc8
+- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 88+ w `docs/design-gaps.md` — 5554cc8
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
