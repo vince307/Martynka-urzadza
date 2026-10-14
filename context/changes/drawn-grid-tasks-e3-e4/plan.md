@@ -943,9 +943,9 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje nowe umiejętności — SHA
-- [x] 8.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń — SHA
-- [x] 8.3 Deliberate break: `minuteStep` 7 → parser czerwony; generator dający 0.15 → rozwiązywalność czerwona; przywrócone; meta-check — SHA
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; rozwiązywalność obejmuje nowe umiejętności — d9b83f2
+- [x] 8.2 `npm run sample -- E3 --count 6` i `E4 --count 6` bez naruszeń — d9b83f2
+- [x] 8.3 Deliberate break: `minuteStep` 7 → parser czerwony; generator dający 0.15 → rozwiązywalność czerwona; przywrócone; meta-check — d9b83f2
 - [ ] 8.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`; czas `adaptive.spec` zapisany (≤ limit)
 
 #### Manual
