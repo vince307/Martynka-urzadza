@@ -54,9 +54,7 @@ describe('generateTask over the real curriculum data', () => {
                 const raw = getGenerator(skill.type)!(skill, rng());
                 const task = generateTask(skill, rng(), { tileCount: TILE_COUNT });
                 expect(task.prompt, where).toBe(raw.prompt);
-                if (Array.isArray(task.answer)) {
-                    continue; // 'select' style answers are not tile taps
-                }
+                expect(Array.isArray(task.answer), where).toBe(false); // a tile skill never has a list answer
                 const tiles = task.choices;
                 expect(tiles, where).toBeDefined();
                 expect(tiles!.length, where).toBeGreaterThanOrEqual(2);

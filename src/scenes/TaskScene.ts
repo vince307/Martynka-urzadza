@@ -17,6 +17,7 @@ import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
 import { roundView } from '../core/round/view';
+import { dragMode } from '../core/tasks/dragMode';
 import { dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, pictureLayout } from '../core/round/pictureLayout';
 import { distinctTasks } from '../core/round/unique';
@@ -322,7 +323,8 @@ export class TaskScene extends Scene {
             }
             // A new task starts with an empty mat and nothing in the air.
             this.dragState = initialBlockDrag();
-            const kinds = dragKinds(typeof task0.answer === 'number' ? task0.answer : 0);
+            // Only the blocks branch of 'drag' has a tray; the branch comes from the drawing (core/tasks/dragMode), not from the answer's type.
+            const kinds = view.input === 'drag' && dragMode(task0) === 'blocks' ? dragKinds(typeof task0.answer === 'number' ? task0.answer : 0) : [];
             const layout = dragLayout(TASK_LAYOUT.drag, kinds);
             this.dragGeo = dragGeometry(layout, kinds);
             this.blockMat.setLayout(layout, kinds);

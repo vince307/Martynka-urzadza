@@ -849,10 +849,10 @@ cofany); uczeń na E5.11 odblokuje E5.12; uczeń na E6.1 odblokuje E6.3 zamiast 
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: `isCorrect` wraca do `===` / `dragMode` zwraca `blocks` dla zegara / `generateTask` bez `skill.id` → czerwone; przywrócone; meta-check
-- [ ] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
+- [x] 1.2 Deliberate break: `isCorrect` wraca do `===` / `dragMode` zwraca `blocks` dla zegara / `generateTask` bez `skill.id` → czerwone; przywrócone; meta-check
+- [x] 1.3 `npm run sample -- E1` … `E6` bez zmian w wyjściu; `tests/fixtures/` bez zmian
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
