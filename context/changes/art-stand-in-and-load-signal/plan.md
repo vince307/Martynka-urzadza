@@ -818,7 +818,7 @@ rundy są identyczne jak przed zmianą (ten sam seed).
 
 #### Automated
 
-- [ ] 9.1 `save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 8> + 2`
-- [ ] 9.2 Deliberate break (patch `e2e-break-p8a.patch`): sklejka ignoruje `blockedBy` → (a)/(b) czerwone; meta-check
-- [ ] 9.3 Deliberate break (patch `e2e-break-p8b.patch`): potwierdzenie resetu przy `unavailable` i `replace` tylko `fatal` → (a) czerwony; przywrócone
-- [ ] 9.4 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 9.1 `save-transfer-blocked.spec.ts` zielony; pełne `npx playwright test`: `<baseline gałęzi e2e po fazie 8> + 2` — bdc45d8 (orkiestrator: 2 passed; pełne 52 = 50 + 2)
+- [x] 9.2 Deliberate break (patch `e2e-break-p9a.patch`): sklejka ignoruje `blockedBy` → (a)/(b) czerwone; meta-check — bdc45d8 (orkiestrator: (a) ✘, (b) ✘ `toBeVisible`, każdy osobno)
+- [x] 9.3 Deliberate break (patch `e2e-break-p9b.patch`): potwierdzenie resetu przy `unavailable` i `replace` tylko `fatal` → (a) czerwony; przywrócone — bdc45d8 (orkiestrator: (a) ✘ `toHaveCount`, (b) ✓ zgodnie z oczekiwaniem; połowa `replace` chroniona testem jednostkowym `autosave.test.ts`)
+- [x] 9.4 `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — bdc45d8 (lint, typecheck, unit 1899, deploy/ops, sample E1–E6, build `e2e hook: absent (2 chunks checked)`)

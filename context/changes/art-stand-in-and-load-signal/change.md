@@ -1,7 +1,7 @@
 ---
 change_id: art-stand-in-and-load-signal
 title: Czytelny polski stand-in obrazka, sygnał nieudanego wczytania dla rodzica i import/reset po nieudanym odczycie
-status: plan_reviewed
+status: implemented
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null
