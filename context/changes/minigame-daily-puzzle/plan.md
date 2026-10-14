@@ -1022,11 +1022,11 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Automated
 
-- [x] 12.1 `npx playwright test tests/e2e/minigames.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas zapisany — spec 3 passed (37.2 s, orchestrator, after the `startE1` age fix); full suite 64 passed + 1 flaky failure (parent-settings #14, clock-set task under load), parent-settings ×4 16/16; list = 68 tests
-- [x] 12.2 Deliberate break (patch `e2e-break-p12a.patch`): `afterRound` nie liczy zwykłych rund → (a) czerwony — p12a red (`toBe` "word" vs undefined), restored (orchestrator)
-- [x] 12.3 Deliberate break (patch `e2e-break-p12b.patch`): litera tylko przy pierwszej próbie → (b) czerwony; meta-check — p12b red (`toBe` 1 vs 0), restored; meta-check: the letter count proves reveal on every try (orchestrator)
-- [x] 12.4 Deliberate break (patch `e2e-break-p12c.patch`): `CoverBoard` przesunięty względem celów haka → (c) czerwony; każdy czerwony osobno (`-g`) — p12c red (`toEqual` covered list), restored; each break run alone with `-g` (orchestrator)
-- [x] 12.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build prints `e2e hook: absent (2 chunks checked)`; lint, tsc, unit green; ports 4397/4398 free
+- [x] 12.1 `npx playwright test tests/e2e/minigames.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas zapisany — spec 3 passed (37.2 s, orchestrator, after the `startE1` age fix); full suite 64 passed + 1 flaky failure (parent-settings #14, clock-set task under load), parent-settings ×4 16/16; list = 68 tests — a87aef0
+- [x] 12.2 Deliberate break (patch `e2e-break-p12a.patch`): `afterRound` nie liczy zwykłych rund → (a) czerwony — p12a red (`toBe` "word" vs undefined), restored (orchestrator) — a87aef0
+- [x] 12.3 Deliberate break (patch `e2e-break-p12b.patch`): litera tylko przy pierwszej próbie → (b) czerwony; meta-check — p12b red (`toBe` 1 vs 0), restored; meta-check: the letter count proves reveal on every try (orchestrator) — a87aef0
+- [x] 12.4 Deliberate break (patch `e2e-break-p12c.patch`): `CoverBoard` przesunięty względem celów haka → (c) czerwony; każdy czerwony osobno (`-g`) — p12c red (`toEqual` covered list), restored; each break run alone with `-g` (orchestrator) — a87aef0
+- [x] 12.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build prints `e2e hook: absent (2 chunks checked)`; lint, tsc, unit green; ports 4397/4398 free — a87aef0
 
 ### Phase 13: Zagadka dnia ×2 raz dziennie, przeżywa restart — e2e (#11, #2)
 
