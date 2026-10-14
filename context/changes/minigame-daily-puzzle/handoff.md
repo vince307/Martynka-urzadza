@@ -1,15 +1,15 @@
 # Handoff — `minigame-daily-puzzle` (slice S-15)
 
-Written by the visual-gate step: `VISUAL: PASS` (reviews/visual-review.md), five visual discrepancies fixed in `b04a5ca`, every [visual] row ticked; `change.md` stays `impl_reviewed`. Next is archive then ship; the save format v2 is a one-way door, so the [human] row 1.6 must be accepted before the merge.
+Written by the archive + ship step (final pre-merge state, so the archived copy is not stale). Earlier: the visual-gate step (`VISUAL: PASS`, reviews/visual-review.md, fixes `b04a5ca`). The change is archived (`chore(archive): close minigame-daily-puzzle`) and shipped under profile § 5; the maintainer accepted the one-way save format v2 at Step 0 of the run (2026-10-14), which answers the gate of [human] row 1.6 (the row itself stays open for the post-run checklist).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/minigame-daily-puzzle`, cut from `main` at `1441161` |
-| Commits | docs + phases 1-13 + handoffs, review fix `06ba5cf`, impl-review docs `ac3ad5c`, visual fix `b04a5ca`, this docs commit (`docs(minigame-daily-puzzle): bramka wizualna`) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Commits | docs + phases 1-13 + handoffs, review fix `06ba5cf`, impl-review docs `ac3ad5c`, visual fix `b04a5ca`, visual-gate docs `7cdf3c6`, this archive commit (`chore(archive): close minigame-daily-puzzle`) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-14-save-s13b-s15-s14b/run-log.md |
+| `change.md` status | `archived` (folder `context/archive/2026-10-14-minigame-daily-puzzle/`); roadmap S-15 `done`, Backlog Handoff refreshed |
 | `## Progress` rows remaining | 5 (`grep -c '^- \[ \]' plan.md`), all [human]: 1.6, 5.6, 8.5, 9.5, 10.6 |
 | Working tree | clean after this commit |
 
@@ -41,7 +41,7 @@ Written by the visual-gate step: `VISUAL: PASS` (reviews/visual-review.md), five
 
 ## 4. Next command
 
-`/10x-archive minigame-daily-puzzle` then ship
+none — shipped
 
 ## 5. Open
 
@@ -57,3 +57,6 @@ Written by the visual-gate step: `VISUAL: PASS` (reviews/visual-review.md), five
 3. V4 fixed generally (any plain sentence prompt beside the keypad or above tiles is fitted; solution lines of every tiles task stop above the tiles), not only for puzzles. Rejected: shortening puzzle texts (content change needing the author's read). Why: the same overlap would hit any long word problem. Would change: a regression in an ordinary round's layout.
 4. `migration-failed` card captured on a throwaway build with a throwing migration. Rejected: leaving it NOT-CAPTURED (the row asks for it) or adding a seam (scope). Would change: a new e2e seam for a failing migration (follow-up trigger v3).
 5. V5 board moved up 16 px instead of shrinking the fields. Why: the 160×136 field size is the [human] 9.5 subject. Would change: the author's finger test.
+6. Archive with 5 open [human] rows (1.6, 5.6, 8.5, 9.5, 10.6). Chosen: Continue archiving (0 automated pending, manual only; the skill recommends it). Why: [human] rows are the post-run checklist (docs/human-checklist.md), listed in the PR section „Dla właściciela produktu”. Would change: an automated row left open.
+7. Ship despite row 1.6 "accept before the merge" and follow-up F1 `Trigger: the author's read of row 10.6, before the merge`. Chosen: merge. Why: the maintainer chose FULL SHIP and explicitly approved save format v2 with the v1→v2 migration at Step 0 (2026-10-14); F1 (E5-E6 get the E3-E4 puzzle pool) is a content-scope question that harms nothing and is surfaced in the PR for the author. Would change: the maintainer withholding v2 approval, or the author rejecting F1 (then a follow-up change restricts `puzzlePool`).
+8. Roadmap: S-15 `done`; S-16 Backlog row now says it is blocked only by the furniture art; S-16/S-17 rows carry the S-15 triggers that name them (S-17 playtest: dice range, `everyRounds`, F5, O3, puzzle pools; save v3 items listed in the S-15 row).
