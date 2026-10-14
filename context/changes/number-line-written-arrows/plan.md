@@ -967,8 +967,8 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/number-line.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas pełnego zestawu zapisany
-- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `hintPicture` także w fazie `first` → (a) czerwony
-- [ ] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `ArrowGraph.render` nic nie rysuje → (b) czerwony; meta-check
-- [ ] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): `jumps` bez odpowiedzi w `choices` → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone
-- [ ] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/number-line.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`; czas pełnego zestawu zapisany — orchestrator: number-line 3 passed (26.7 s); full suite --workers=4 77 passed (5.3 min) = 74 + 3 — SHA
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `hintPicture` także w fazie `first` → (a) czerwony — orchestrator: `-g "shows only after a miss"` red `toBeNull` Received {"height":190,"width":768,"x":236,"y":530}; restored — SHA
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `ArrowGraph.render` nic nie rysuje → (b) czerwony; meta-check — orchestrator (break was ArrowGraph.shown() false): `-g "arrow graph takes the keypad"` red `not.toBeNull` Received null; restored — SHA
+- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): `jumps` bez odpowiedzi w `choices` → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator (break was right expression dropped from jumps choices): `-g "jumps take an expression tile"` red `toContain` Expected "2 · 2", Received ["2 · 3","3 · 2"]; restored — SHA
+- [x] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`, lint, typecheck, unit 2429 OK; no server on 4397/4398 — SHA

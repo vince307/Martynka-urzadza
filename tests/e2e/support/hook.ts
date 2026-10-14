@@ -78,6 +78,8 @@ export interface Targets {
     next: Point | null;
     /** The rectangle of the drawing (null while hidden); a spec aims at its interior. */
     picture?: { x: number; y: number; width: number; height: number } | null;
+    /** The rectangle of the hint number line of an ADD_SUB task (null while hidden): it shows only after a miss. */
+    hintPicture?: { x: number; y: number; width: number; height: number } | null;
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;

@@ -1,0 +1,13 @@
+diff --git a/src/core/tasks/generators/multGroups.ts b/src/core/tasks/generators/multGroups.ts
+index 41a4c18..f517bae 100644
+--- a/src/core/tasks/generators/multGroups.ts
++++ b/src/core/tasks/generators/multGroups.ts
+@@ -81,7 +81,7 @@ export const generateMultGroups: Generator = (skill, rng): Task => {
+             prompt: pl.tasks.multGroupsJumps,
+             visual,
+             answer: expression(g, k),
+-            choices: exprChoices(g, k, rng),
++            choices: exprChoices(g, k, rng).filter((c) => c !== expression(g, k)),
+             hint: [pl.tasks.multGroupsJumpsHint, pl.tasks.multGroupsJumpsCountsHint(g, k), eq, pl.tasks.multGroupsExprAnswerHint(expression(g, k))],
+         };
+     }
