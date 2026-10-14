@@ -24,5 +24,18 @@ Each item has a `Trigger:`; a later slice greps for it.
   Trigger: the S-17 playtest
 - An on-demand "Podpowiedź" / "Pokaż" button in the round (gap 83).
   Trigger: the author asks for it
-- Puzzle pools for stages other than E3-E4 (they get a minigame), and a choice card before the daily puzzle (gaps 79-81).
+- Puzzle pools of their own for stages other than E3-E4 (E1-E2 get a minigame; E5-E6 get the E3-E4 pool, see the impl-review F1 entry below), and a choice card before the daily puzzle (gaps 79-81).
   Trigger: the author asks for it or the S-17 playtest shows children skipping the puzzle
+
+## From the implementation review (2026-10-14)
+
+- F1: E5-E6 learners get the daily puzzle from the whole E3-E4 pool (`puzzlePool` in `src/core/puzzles.ts` takes every puzzle stage up to the learner's, and `tests/puzzles.test.ts` asserts it for E6), while plan decision 10 and row 10.6 say "zagadki tylko E3-E4, inne etapy dostają minigrę". The puzzles are in range for E5-E6, so this is a wording mismatch, not a content bug; the author decides at row 10.6 (keep, or make `puzzlePool` return [] outside `balance.variants.puzzleStages`).
+  Trigger: the author's read of row 10.6, before the merge
+- F5: `puzzleDay` is the day the puzzle ENDS (`TaskScene` `countRound` reads `today()` at the finish): a puzzle started before midnight and finished after it uses up the next day's puzzle. Record the start day with `puzzleId` if it matters.
+  Trigger: the S-17 playtest or a parent report of a missing daily puzzle
+- F6: `CoverBoard` draws `balance.variants.dice.max + 1` fields while `diceBoard` (`src/core/minigames/dice.ts`) makes `min(throws, max + 1)` throws, and `MAX_RESULT = 12` there repeats `balance.variants.dice.max`: tuning `throws` below 13 would leave fields that can never be covered while the card still says "Wszystkie pola zakryte!". Size the board from the board length, or assert `throws === max + 1`.
+  Trigger: any change to `balance.variants.dice`
+- F7: widget geometry in code (`src/ui/widgets/Dice.ts` `SIGN_WIDTH`, the shadow and pip ratios; `CoverBoard` `paint` offsets) instead of `MINIGAME_LAYOUT`; `MINUS` defined again in `dice.ts` and `Dice.ts` next to `src/core/tasks/symbols.ts`; `LetterTiles.show` destroys and re-creates its Text objects on every render; `lettersUncovered` (word.ts) also counts covered dice fields.
+  Trigger: the next change to a minigame widget or to `src/core/minigames/`
+- F8: `src/testing/e2eHook.ts` imports `tests/fixtures/save-v1.json` (src importing from tests). Rollup drops it from `dist/` with the `__E2E_HOOK__` branch (checked: `1760000001000` absent from `dist/_app/*.js`), but no marker in `vite/e2eHookGuard.mjs` names the fixture.
+  Trigger: the next change to `vite/e2eHookGuard.mjs` or to the v1 fixtures' use in src

@@ -886,7 +886,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `core/save.ts` bez Phasera i globali przeglądarki; strażnicy SIR-01 nadal kluczują na `reason`
+- [x] 1.5 [reviewer] `core/save.ts` bez Phasera i globali przeglądarki; strażnicy SIR-01 nadal kluczują na `reason` — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 1.6 [human] Drzwi jednokierunkowe formatu zapisu v2: wycofanie do buildu v1 pokazuje kartę „zapis z nowszej wersji” — akceptacja przed scaleniem
 
 ### Phase 2: Bezpieczeństwo migracji — `migration-failed`, kopia `backup-v1`, `migratedFrom` w statusie
@@ -900,7 +900,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Brak drogi nadpisania zapisu v1 bez kopii; `replace` poza migracją
+- [x] 2.5 [reviewer] Brak drogi nadpisania zapisu v1 bez kopii; `replace` poza migracją — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 3: Teksty zapisu i szew `?e2eSave=v1`
 
@@ -913,7 +913,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Odczyt nowych tekstów zapisu (krótkie, bez straszenia, bez żargonu)
+- [x] 3.5 [reviewer] Odczyt nowych tekstów zapisu (krótkie, bez straszenia, bez żargonu) — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 3.6 [visual] Zrzuty: karta `future`, karta `migration-failed`, krok importu z datą i buildem, „Zapis gry” z „przeniesiono z wersji 1” — 1440×900 i 1024×768
 
 ### Phase 4: Harmonogram wariantów i dzień kalendarzowy
@@ -926,7 +926,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 4.4 [reviewer] `variants.ts` i `day.ts` bez Phasera i globali przeglądarki; liczby tylko z `balance.ts`
+- [x] 4.4 [reviewer] `variants.ts` i `day.ts` bez Phasera i globali przeglądarki; liczby tylko z `balance.ts` — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 5: Pula 15 zagadek LOGIC (E3–E4)
 
@@ -939,7 +939,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Odczyt nauczyciela wszystkich 15 zagadek
+- [x] 5.5 [reviewer] Odczyt nauczyciela wszystkich 15 zagadek — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 5.6 [human] Autor czyta wszystkie 15 zagadek przed wydaniem
 
 ### Phase 6: Rundy minigier w `core` — rzuty Zakrywanki i zadania Hasła
@@ -953,7 +953,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 6.5 [reviewer] Odczyt nauczyciela `sample -- E1/E3/E5 --variants`
+- [x] 6.5 [reviewer] Odczyt nauczyciela `sample -- E1/E3/E5 --variants` — impl-review 2026-10-14 (reviews/impl-review.md)
 
 ### Phase 7: Wariant rundy w `TaskScene`, zagadka dnia ×2, tytuł HUD i szwy e2e
 
@@ -966,7 +966,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 7.5 [reviewer] `finishRound` bez `endRound` dla wariantu; `freshRound` bez zatwierdzeń; brak liczb i tekstów w scenie
+- [x] 7.5 [reviewer] `finishRound` bez `endRound` dla wariantu; `freshRound` bez zatwierdzeń; brak liczb i tekstów w scenie — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 7.6 [visual] Zrzuty: zagadka z kafelkami, z klawiaturą, podpowiedź, kroki rozwiązania, podsumowanie z 2 gwiazdkami, tytuł HUD — 1440×900 i 1024×768
 
 ### Phase 8: Hasło z wyników na ekranie
@@ -1006,7 +1006,7 @@ nowych speców; `adaptive.spec` z `e2eVariant=off` nie wydłuża się.
 
 #### Manual
 
-- [ ] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o dwóch rodzajach rundy i „v1 only”
+- [x] 10.5 [reviewer] Każdy follow-up ma `Trigger:`; brak martwych komentarzy o dwóch rodzajach rundy i „v1 only” — impl-review 2026-10-14 (reviews/impl-review.md)
 - [ ] 10.6 [human] Decyzje wbrew dosłownemu PRD/ZADANIA/kitowi: wariant co 4. rundę, zagadka bez karty wyboru, zagadki tylko E3–E4, Zakrywanka 0–12 dla każdego etapu, brak „Podpowiedź”/„Pokaż” na żądanie i gwiazdki za „Pokaż”, warianty poza opanowaniem, ×2 także za drugą próbę, `migration-failed` wymuszalny
 
 ### Phase 11: Zapis v1 wczytany przez build v2 — e2e (#2, #10)
