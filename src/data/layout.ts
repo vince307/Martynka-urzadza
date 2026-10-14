@@ -81,6 +81,7 @@ export const FONT_SIZES = {
     rulerUnit: 26,          // kit reference/ruler.svg "cm"
     chartLabel: 30,         // DESIGN-GAP row 53: bar labels under the columns
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
+    thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
 } as const;
 
@@ -112,6 +113,7 @@ export const FONT_WEIGHTS = {
     rulerUnit: 700,
     chartLabel: 700,
     chartAxis: 650,
+    thermoLabel: 700,       // kit reference/thermometer-face.js
     artLabel: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
@@ -225,6 +227,21 @@ export const TASK_LAYOUT = {
         imageWidth: 512, imageHeight: 384,
         panLeft: { x: 90, y: 240 }, panRight: { x: 421, y: 240 },   // centre of a pan rim, the bottom of the things rests on y
         itemSize: 104, weightSize: 52, weightGap: 2, perRow: 3, rowLift: 38,
+    },
+    // Jugs in a row (S-14), in the units of the 512 x 512 drawing: only the shared visible rectangle (measures.ts) takes room, so the padding of the
+    // image overlaps. Up to `maxPerRow` in a row, more in two. DESIGN-GAP (row added in S-14 phase 9): the kit shows single jugs only.
+    jugs: { gap: 40, rowGap: 24, maxPerRow: 5, maxScale: 0.8 },
+    // Thermometer face painted over the housing (kit reference/thermometer-face.js), in the 512 x 1536 units of the housing; tick lengths are the
+    // x of the tick end. `minGapPx` is the smallest distance of two single-degree ticks on screen, `minLabelPx` the smallest label size, so a
+    // small thermometer (a tall drawing in a 378 px column) stays readable. DESIGN-GAP (row added in S-14 phase 9): the kit has no small version.
+    thermometer: {
+        tube: { x: 178, y: 286, width: 34, height: 1040, radius: 17, border: 4, fillAlpha: 0.125 },
+        liquid: { x: 184, width: 22, bottom: 1322, radius: 11 },
+        bulb: { x: 195, y: 1334, radius: 34 },
+        unit: { x: 274, y: 222 },
+        tick: { start: 220, major: 246, five: 239, minor: 231, majorWidth: 4, width: 2, minWidthPx: 1.5 },
+        label: { x: 301, drop: 17, size: 50 },
+        minGapPx: 7, minLabelPx: 22,
     },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
     starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },

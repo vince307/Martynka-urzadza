@@ -58,3 +58,6 @@ export const spokenCelsius = (celsius: number): string => {
     const n = Math.abs(celsius);
     return `${celsius < 0 ? 'minus ' : ''}${numberToWords(n)} ${inflect(n, STOPIEN)}`;
 };
+
+/** A label on the thermometer scale: "+10", "0", "−20" (a plus on warm marks, the real minus sign). */
+export const formatScaleMark = (celsius: number): string => (celsius > 0 ? `+${celsius}` : celsius < 0 ? `${MINUS}${-celsius}` : '0');

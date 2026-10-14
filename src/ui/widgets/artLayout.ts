@@ -92,3 +92,75 @@ export const scaleLayout = (weightCount: number, area: Rect, spec: ScaleLayoutSp
         weights,
     };
 };
+
+export interface JugsLayoutSpec {
+    imageSize: number;
+    visible: { x: number; y: number; width: number; height: number };
+    gap: number;
+    rowGap: number;
+    maxPerRow: number;
+    maxScale: number;
+}
+
+export interface JugsLayout {
+    /** The square image rectangle of each jug. */
+    images: Rect[];
+    /** The part of each image that holds the jug (the shared visible rectangle), which is what must stay apart and inside the area. */
+    jugs: Rect[];
+}
+
+/** Jugs in a row (two rows from `maxPerRow` + 1 jugs), each row centred; the visible part of every jug fits `area`. */
+export const jugsLayout = (count: number, area: Rect, spec: JugsLayoutSpec): JugsLayout => {
+    const rows = Math.ceil(count / spec.maxPerRow);
+    const perRow = Math.ceil(count / rows);
+    const v = spec.visible;
+    const widthUnits = perRow * v.width + (perRow - 1) * spec.gap;
+    const heightUnits = rows * v.height + (rows - 1) * spec.rowGap;
+    const s = Math.min(area.width / widthUnits, area.height / heightUnits, spec.maxScale);
+    const top = area.y + (area.height - heightUnits * s) / 2;
+    const images: Rect[] = [];
+    const jugs: Rect[] = [];
+    for (let i = 0; i < count; i += 1) {
+        const row = Math.floor(i / perRow);
+        const inRow = Math.min(perRow, count - row * perRow);
+        const col = i - row * perRow;
+        const rowWidth = (inRow * v.width + (inRow - 1) * spec.gap) * s;
+        const x = area.x + (area.width - rowWidth) / 2 + col * (v.width + spec.gap) * s;
+        const y = top + row * (v.height + spec.rowGap) * s;
+        jugs.push({ x, y, width: v.width * s, height: v.height * s });
+        images.push({ x: x - v.x * s, y: y - v.y * s, width: spec.imageSize * s, height: spec.imageSize * s });
+    }
+    return { images, jugs };
+};
+
+export interface ThermometerLayoutSpec {
+    frameWidth: number;
+    frameHeight: number;
+}
+
+/** The thermometer housing fitted in `area` with its proportions kept; `scale` maps the 512 x 1536 face units to the screen. */
+export const thermometerLayout = (area: Rect, spec: ThermometerLayoutSpec): { frame: Rect; scale: number } => {
+    const scale = Math.min(area.width / spec.frameWidth, area.height / spec.frameHeight);
+    const width = spec.frameWidth * scale;
+    const height = spec.frameHeight * scale;
+    return { frame: { x: area.x + (area.width - width) / 2, y: area.y + (area.height - height) / 2, width, height }, scale };
+};
+
+export interface ThermometerMark {
+    value: number;
+    kind: 'major' | 'five' | 'minor';
+}
+
+/**
+ * The marks of the scale: every ten is major, every five a medium one, and a single degree gets a mark only when two marks
+ * are at least `minGapPx` apart on screen (otherwise every second degree, a multiple of five always stays).
+ */
+export const thermometerMarks = (min: number, max: number, pxPerDegree: number, minGapPx: number): ThermometerMark[] => {
+    const every = pxPerDegree >= minGapPx ? 1 : 2;
+    const out: ThermometerMark[] = [];
+    for (let value = min; value <= max; value += 1) {
+        const kind = value % 10 === 0 ? 'major' : value % 5 === 0 ? 'five' : 'minor';
+        if (kind !== 'minor' || value % every === 0) out.push({ value, kind });
+    }
+    return out;
+};

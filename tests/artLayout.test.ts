@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { MoneyId } from '../src/data/measures';
 import { TASK_LAYOUT } from '../src/data/layout';
 import type { Rect } from '../src/ui/widgets/geometry';
-import { moneyLayout, scaleLayout } from '../src/ui/widgets/artLayout';
+import { jugsLayout, moneyLayout, scaleLayout, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
+import { JUG_VISIBLE_RECT, THERMOMETER } from '../src/data/measures';
 
 const AREAS: Rect[] = [
     { x: 661, y: 396, width: 600, height: 294 },
@@ -68,4 +69,61 @@ describe('scaleLayout', () => {
             });
         }
     }
+});
+
+const JUG_SPEC = { ...TASK_LAYOUT.jugs, imageSize: 512, visible: JUG_VISIBLE_RECT };
+
+describe('jugsLayout', () => {
+    for (const area of AREAS) {
+        for (const count of [1, 2, 5, 6, 10]) {
+            it(`keeps ${count} jugs inside ${area.width}x${area.height} and apart`, () => {
+                const { jugs, images } = jugsLayout(count, area, JUG_SPEC);
+                expect(jugs).toHaveLength(count);
+                expect(images).toHaveLength(count);
+                for (const jug of jugs) expect(inside(jug, area)).toBe(true);
+                for (let i = 0; i < count; i += 1) for (let j = i + 1; j < count; j += 1) expect(overlap(jugs[i], jugs[j])).toBe(false);
+            });
+        }
+    }
+
+    it('puts six jugs in two rows and five in one', () => {
+        const ys = (n: number): number => new Set(jugsLayout(n, AREAS[0], JUG_SPEC).jugs.map((r) => Math.round(r.y))).size;
+        expect(ys(5)).toBe(1);
+        expect(ys(6)).toBe(2);
+    });
+
+    it('places the image so its visible rectangle lands on the jug rectangle', () => {
+        const { jugs, images } = jugsLayout(3, AREAS[0], JUG_SPEC);
+        const s = (images[0]).width / 512;
+        expect((images[0]).x + JUG_VISIBLE_RECT.x * s).toBeCloseTo((jugs[0]).x);
+        expect((images[0]).y + JUG_VISIBLE_RECT.y * s).toBeCloseTo((jugs[0]).y);
+    });
+});
+
+describe('thermometerLayout and thermometerMarks', () => {
+    const spec = { frameWidth: THERMOMETER.frame.width, frameHeight: THERMOMETER.frame.height };
+    it('keeps the 1:3 proportions inside the narrow column and the wide areas', () => {
+        for (const area of [...AREAS, { x: 236, y: 470, width: 240, height: 378 }]) {
+            const { frame } = thermometerLayout(area, spec);
+            expect(inside(frame, area)).toBe(true);
+            expect(frame.height / frame.width).toBeCloseTo(3);
+        }
+    });
+
+    it('marks every degree when they are far enough apart, otherwise every second one and every multiple of five', () => {
+        const all = thermometerMarks(-30, 30, 8, 7).map((m) => m.value);
+        expect(all).toHaveLength(61);
+        const some = thermometerMarks(-30, 30, 4, 7).map((m) => m.value);
+        expect(some).toContain(5);
+        expect(some).toContain(-5);
+        expect(some).toContain(4);
+        expect(some).not.toContain(3);
+        expect(some).not.toContain(-1);
+    });
+
+    it('calls every multiple of ten major and of five medium', () => {
+        const marks = thermometerMarks(-30, 30, 8, 7);
+        expect(marks.filter((m) => m.kind === 'major').map((m) => m.value)).toEqual([-30, -20, -10, 0, 10, 20, 30]);
+        expect(marks.find((m) => m.value === 15)?.kind).toBe('five');
+    });
 });

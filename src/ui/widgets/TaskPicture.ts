@@ -5,8 +5,10 @@ import { BarChart } from './BarChart';
 import { BaseTenBlocks } from './BaseTenBlocks';
 import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
+import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
 import { Ruler } from './Ruler';
+import { Thermometer } from './Thermometer';
 
 /** The drawing of a task: picks the widget of its kind and draws it in the given rectangle. */
 export class TaskPicture {
@@ -16,6 +18,8 @@ export class TaskPicture {
     private readonly chart: BarChart;
     private readonly money: MoneyTable;
     private readonly scale: BalanceScale;
+    private readonly jugs: Jugs;
+    private readonly thermometer: Thermometer;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
 
@@ -26,6 +30,8 @@ export class TaskPicture {
         this.chart = new BarChart(scene);
         this.money = new MoneyTable(scene);
         this.scale = new BalanceScale(scene);
+        this.jugs = new Jugs(scene);
+        this.thermometer = new Thermometer(scene);
     }
 
     /** Draws `visual` in `rect`; null hides the picture. */
@@ -35,7 +41,7 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
-        // Jugs, thermometer and icons get their widgets in S-14 phases 6-7.
+        // Icons get their widget in S-14 phase 7.
         const widgets: Partial<Record<TaskVisual['kind'], { shown(): boolean; art?(): { key: string; loaded: boolean }[] }>> = {
             clock: this.clock,
             ruler: this.ruler,
@@ -43,6 +49,8 @@ export class TaskPicture {
             bars: this.chart,
             money: this.money,
             scale: this.scale,
+            jugs: this.jugs,
+            thermometer: this.thermometer,
         };
         this.drawn = widgets[visual.kind] ?? null;
         switch (visual.kind) {
@@ -65,7 +73,11 @@ export class TaskPicture {
                 this.scale.render(visual.item, visual.weights, rect);
                 break;
             case 'jugs':
+                this.jugs.render(visual.jugs, rect);
+                break;
             case 'thermometer':
+                this.thermometer.render(visual.celsius, rect);
+                break;
             case 'icons':
                 break;
             default: {
@@ -84,6 +96,8 @@ export class TaskPicture {
         this.chart.setVisible(false);
         this.money.setVisible(false);
         this.scale.setVisible(false);
+        this.jugs.setVisible(false);
+        this.thermometer.setVisible(false);
     }
 
     /** The art images on screen now (texture key and whether loaded), from the widget's own objects; [] while hidden or for a drawing without art. */

@@ -970,7 +970,7 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 - [x] 5.2 `npm run sample -- E1/E3/E4 --count 6` bez naruszeń, z linią `visual:` — 89e5ea0 (E1, E3, E4 exit 0, `visual:` lines read)
 - [x] 5.3 Deliberate break: `TaskPicture` bez gałęzi `money` → typecheck czerwony; przywrócone; meta-check — 89e5ea0 (case 'money' removed: TS2322 not assignable to never)
 - [x] 5.4 `playableSteps` E1/E3/E4 bez zmian; `tests/fixtures/` bez zmian — 89e5ea0 (curriculumStart and fixtures untouched, green)
-- [ ] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 5.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — 89e5ea0 (e2e 42 passed by the orchestrator on 6186935)
 - [x] 5.6 `npm run build` drukuje `e2e hook: absent (` — 89e5ea0
 
 #### Manual
@@ -983,10 +983,10 @@ z dołożonymi umiejętnościami odblokowują się wolniej (`ceil(0.5·n)`) — 
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:`
+- [x] 6.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (e2e osobno, 6.5)
+- [x] 6.2 `npm run sample -- E3/E4/E5/E6 --count 6` bez naruszeń, z linią `visual:`
 - [ ] 6.3 Deliberate break: `TaskScene` zawsze `wide` → termometr w rozwiązaniu nie „obok” (jednorazowy hook `*.local` albo e2e 10.5); przywrócone
-- [ ] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (`
+- [x] 6.4 `playableSteps` bez zmian; `tests/fixtures/` bez zmian; `e2e hook: absent (`
 - [ ] 6.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

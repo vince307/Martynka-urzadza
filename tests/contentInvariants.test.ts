@@ -21,6 +21,7 @@ const MIN_DISTINCT = 12;           // distinct (prompt + choices) pairs per 1000
 const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = {
     'E1.7.complement_10': { minDistinct: 9, measured: '9 distinct tasks / 9 prompts: the complement to 10 of 1..9 has exactly 9 forms' },
     'E1.6.even_odd_single_10': { minDistinct: 11, measured: '11 distinct tasks / 11 prompts: the numbers 0..10' },
+    'E4.7.capacity_litres_half': { minDistinct: 10, measured: '10 distinct tasks / 10 prompts: 1..10 litres in half-litre jugs (S-14)' },
 };
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n

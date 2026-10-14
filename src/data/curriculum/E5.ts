@@ -50,6 +50,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.4.mult_0_1_5_10', 4, 'MULT', { maxProduct: 100, factors: [0, 1, 5, 10], allowZeroOne: true }),
                 skill('E5.4.div_50', 4, 'DIV', { maxDividend: 50 }),
+                skill('E5.4.temperature_read_0_30', 4, 'TEMPERATURE', { variant: 'read', low: 0, high: 30, step: 2, answer: 'number' }),
             ],
         },
         { step: 5, title: 'Litr, ½ l, ¼ l; kg, ½ kg, ¼ kg, dag', types: ['CAPACITY', 'MASS'], skills: [] },

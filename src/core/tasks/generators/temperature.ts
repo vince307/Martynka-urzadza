@@ -70,7 +70,8 @@ export const generateTemperature: Generator = (skill, rng): Task => {
     }
     const nonZero = values.filter((v) => v !== 0);
     const now = rng.pick(nonZero);
-    const morning = rng.pick(nonZero.filter((v) => v !== now));
+    // A cold morning that is exactly the answer (-8 then -16) would say "minus eight" and ask for "eight": left out, the sentence never hands over the number.
+    const morning = rng.pick(nonZero.filter((v) => v !== now && !(v < 0 && Math.abs(now - v) === -v)));
     const warmer = now > morning;
     const diff = Math.abs(now - morning);
     const across = Math.sign(now) !== Math.sign(morning);

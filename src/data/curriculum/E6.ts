@@ -25,7 +25,11 @@ export const E6: StageDef = {
             title: 'Temperatury ujemne, różnice temperatur; dekada; sekundy',
             childName: 'Kalendarz i czas',
             types: ['TEMPERATURE', 'CALENDAR', 'TIME_UNITS'],
-            skills: [skill('E6.1.calendar_time', 1, 'CALENDAR', { variants: ['timeFacts', 'monthDays', 'quarter'] }, 'tiles')],
+            skills: [
+                skill('E6.1.calendar_time', 1, 'CALENDAR', { variants: ['timeFacts', 'monthDays', 'quarter'] }, 'tiles'),
+                skill('E6.1.temperature_negative', 1, 'TEMPERATURE', { variant: 'read', low: -30, high: 30, step: 2, answer: 'text' }, 'tiles'),
+                skill('E6.1.temperature_diff', 1, 'TEMPERATURE', { variant: 'diff', low: -20, high: 20, step: 2, answer: 'number' }),
+            ],
         },
         { step: 2, title: 'Ile minut do pełnej godziny, czas trwania programu', types: ['CLOCK_ELAPSED'], skills: [] },
         { step: 3, title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych', types: ['MASS', 'LENGTH', 'PERIMETER'], skills: [] },
