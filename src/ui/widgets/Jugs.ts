@@ -25,7 +25,9 @@ export class Jugs {
         const layout = jugsLayout(jugs.length, rect, { ...TASK_LAYOUT.jugs, imageSize: JUG_SOURCE_SIZE, visible: JUG_VISIBLE_RECT });
         jugs.forEach((id, i) => {
             const spot = layout.images[i];
-            if (spot) this.images[i]?.show(ART_KEYS.measuring(id), spot);
+            // A missing jug is a box over the jug's own visible part, not over the image's transparent margin (visual gate:
+            // full-image boxes overlapped the next row and the solution line under them).
+            if (spot) this.images[i]?.show(ART_KEYS.measuring(id), spot, layout.jugs[i]);
         });
     }
 

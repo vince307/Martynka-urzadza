@@ -148,6 +148,8 @@ export const REGISTRY_KEYS = {
     inputSuspender: 'inputSuspender',   // the game's one InputSuspender (core/inputSuspend): every overlay over the canvas holds it while open
     saver: 'saver',           // the game's autosave (the Autosaver of core/autosave: flush, status, current, replace), set in main.ts before the scenes run
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
+    artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
+    forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -395,12 +397,17 @@ export const ANIMATION = {
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 
-/** Stand-in for a drawing whose texture is missing (S-14): a plain rounded box with the id, so the task stays playable. */
+/** Stand-in for a drawing whose texture is missing (S-14): a plain rounded box with the Polish value (`TASK_ART` label), so the task stays playable. */
 export const ART_STAND_IN = {
     fill: PLACEHOLDER_COLORS.tile,
     border: PLACEHOLDER_COLORS.deepTeal,
     borderWidth: 3,
     radius: 16,
+    /** Space kept free between the stand-in text and the box edge, scene pixels... */
+    padding: 8,
+    /** ...but at most this share of the box's shorter side (visual gate, impl-review F1: a "10 dag" weight on a 1024 px tablet came to
+     *  about 10 CSS px with the full padding; the labels are wrapped at their space and kept at 12 CSS px or more in the keypad picture). */
+    paddingShare: 0.03,
 } as const;
 
 /** Inset of the build id in the screen corner, in scene pixels. */

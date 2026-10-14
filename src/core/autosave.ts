@@ -205,7 +205,8 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
 
     const replace = async (state: SaveState): Promise<ReplaceResult> => {
         if (replacing || replaced) return { ok: false, error: 'Busy' };
-        if (blockedBy === 'fatal') return { ok: false, error: 'Blocked' };
+        // Unavailable: the device save may be healthy and was never read, so a replace would overwrite what nobody saw.
+        if (blockedBy === 'fatal' || blockedBy === 'unavailable') return { ok: false, error: 'Blocked' };
         if (!validateSave(state)) return { ok: false, error: 'InvalidSave' };
         replacing = true;
         cancelTimer();

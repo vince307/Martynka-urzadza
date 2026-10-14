@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { decodeSave, saveProblem, validateSave, type SessionSave } from '../src/core/save';
-import { SAVE_FILE_APP, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
+import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
 import type { RoomDef, SaveState } from '../src/core/types';
 
 const fixture = (name: string): Record<string, unknown> =>
@@ -146,5 +146,26 @@ describe('exportFileText', () => {
         cyc.self = cyc;
         const text = exportFileText({ kind: 'raw', build: 'b', exportedAt: 'x', reason: 'corrupt', raw: cyc });
         expect(JSON.parse(text)).toMatchObject({ app: SAVE_FILE_APP, kind: 'raw', raw: '[object Object]' });
+    });
+});
+
+describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory session as the device save', () => {
+    const rooms = { living: ((): RoomDef => ({ id: 'living', tasks: new Array(10).fill(null) }) as unknown as RoomDef)() };
+
+    it('a healthy save gives the summary', () => {
+        const view = deviceSaveView(null, v1(), rooms);
+        expect(view).toEqual({ kind: 'summary', summary: saveSummary(decoded(), rooms) });
+    });
+
+    it('a healthy but undecodable state is broken', () => {
+        expect(deviceSaveView(null, { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
+    });
+
+    it('an unreadable save is named, never summarised (overwriting stays allowed)', () => {
+        expect(deviceSaveView('unreadable', v1(), rooms)).toEqual({ kind: 'unreadable' });
+    });
+
+    it.each(['unavailable', 'fatal'] as const)('%s is blocked, never summarised', (cause) => {
+        expect(deviceSaveView(cause, v1(), rooms)).toEqual({ kind: 'blocked', cause });
     });
 });

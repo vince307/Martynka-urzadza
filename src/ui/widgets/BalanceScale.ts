@@ -33,7 +33,7 @@ export class BalanceScale {
         weights.forEach((id, i) => {
             const spot = layout.weights[i];
             // The first row is drawn last (on top of the row behind it).
-            if (spot) this.weights[MAX_WEIGHTS - 1 - i]?.show(ART_KEYS.measuring(id), spot);
+            if (spot) this.weights[MAX_WEIGHTS - 1 - i]?.show(ART_KEYS.measuring(id), spot, layout.uncovered[i]);
         });
     }
 

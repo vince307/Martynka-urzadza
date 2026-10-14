@@ -43,7 +43,7 @@ describe('e2e hook guard', () => {
     });
 
     it('lists every marker with the hook marker first', () => {
-        expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills']);
+        expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills', 'e2eArt']);
         expect(E2E_REQUIRED_MARKERS).toEqual(E2E_HOOK_MARKERS);
     });
 
@@ -58,6 +58,19 @@ describe('e2e hook guard', () => {
         const result = checkE2EHook([...clean, { fileName: '_app/index-s.js', code: `new URLSearchParams(location.search).get("e2eSave")==="${seam}"` }], false);
         expect(result.ok).toBe(false);
         expect(result.message).toContain('_app/index-s.js');
+    });
+
+    it.each(['missing', 'corrupt'] as const)('fails a production chunk holding the ?e2eArt=%s seam', (seam) => {
+        const result = checkE2EHook([...clean, { fileName: '_app/index-a.js', code: `new URLSearchParams(location.search).get("e2eArt")==="${seam}"` }], false);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain('_app/index-a.js');
+    });
+
+    it('fails the e2e build when e2eArt is missing from it (the seam was dropped)', () => {
+        const withoutArt = [...leaky, ...E2E_HOOK_MARKERS.filter((m) => m !== 'e2eArt').map((m, i) => ({ fileName: `_app/m${i}.js`, code: `x("${m}")` }))];
+        const result = checkE2EHook(withoutArt, true);
+        expect(result.ok).toBe(false);
+        expect(result.message).toContain('e2eArt');
     });
 
     it('fails the e2e build when a required marker is missing, with an injected list', () => {

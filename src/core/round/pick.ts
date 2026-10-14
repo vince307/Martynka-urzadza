@@ -1,6 +1,7 @@
 // Skill choice for the task scene (the warm-up draws uniformly, rounds by bucket weights). Only skills the scene
 // can answer ('tiles', 'keypad', 'select' or 'drag') and that have a registered generator are played.
 // The e2e helpers (tests/e2e/support/hook.ts) must be able to answer a mode before it is listed here.
+// A caller may pass `blocked` (skills whose picture is missing, `artFilter.ts`); the skills list itself is never changed.
 // DESIGN-GAP: the kit has no multi-select view or block tray (docs/design-gaps.md rows 54 and 55; row 7 is closed by them).
 import type { Rng } from '../rng';
 import { getGenerator } from '../tasks/registry';
@@ -13,9 +14,12 @@ export const playable = (skill: SkillDef): boolean =>
 export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>
     stage.steps.filter((step) => step.skills.some(playable)).slice(0, n);
 
-/** `count` skills drawn uniformly (with repeats) from the playable skills of the stage. */
-export const pickSkills = (stage: StageDef, rng: Rng, count: number): SkillDef[] => {
-    const pool = stage.steps.flatMap((step) => step.skills).filter(playable);
+/** `count` skills drawn uniformly (with repeats) from the playable skills of the stage, minus the `blocked` ones. */
+export const pickSkills = (stage: StageDef, rng: Rng, count: number, blocked?: (s: SkillDef) => boolean): SkillDef[] => {
+    const all = stage.steps.flatMap((step) => step.skills).filter(playable);
+    // A pool the filter would empty is played whole: a round never fails for a missing picture.
+    const kept = blocked ? all.filter((skill) => !blocked(skill)) : all;
+    const pool = kept.length > 0 ? kept : all;
     if (pool.length === 0) {
         throw new RangeError(`Stage ${stage.id} has no playable skills`);
     }

@@ -12,9 +12,10 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
+import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { saveHealthView } from '../core/saveHealth';
-import { decodeSave, encodeSave, freshSession, type SessionSave } from '../core/save';
-import { exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
+import { encodeSave, freshSession, type SessionSave } from '../core/save';
+import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
@@ -146,6 +147,7 @@ export class UIScene extends Scene {
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+                    artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
@@ -169,17 +171,16 @@ export class UIScene extends Scene {
         });
     }
 
-    /** Import step: replaces the panel in the same input session; "Teraz" is read from the saver, `apply` is the saver's replace. */
+    /** Import step: replaces the panel in the same input session; the device save is judged by `deviceSaveView`, `apply` is the saver's replace. */
     private openImport(saver: Autosaver, session: InputSession): void {
-        const summarize = (s: SessionSave): SaveSummary => saveSummary(s, ROOMS);
-        const decoded = decodeSave(saver.current());
-        if (decoded.kind !== 'ok') {
+        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        if (device.kind === 'broken') {
             this.closeSettings();
             return;
         }
         this.closeDialog = openSaveImportDialog({
-            current: summarize(decoded.session),
-            summarize,
+            device,
+            summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
             apply: (state) => saver.replace(state),
@@ -189,13 +190,13 @@ export class UIScene extends Scene {
 
     /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
     private openReset(saver: Autosaver, session: InputSession): void {
-        const decoded = decodeSave(saver.current());
-        if (decoded.kind !== 'ok') {
+        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        if (device.kind === 'broken') {
             this.closeSettings();
             return;
         }
         this.closeDialog = openSaveResetDialog({
-            current: saveSummary(decoded.session, ROOMS),
+            device,
             roomName: (id) => ROOMS[id]?.name ?? id,
             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
             apply: (state) => saver.replace(state),

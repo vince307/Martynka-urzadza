@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/ArtImage.ts b/src/ui/widgets/ArtImage.ts
+index ce3c437..e84749a 100644
+--- a/src/ui/widgets/ArtImage.ts
++++ b/src/ui/widgets/ArtImage.ts
+@@ -44,7 +44,7 @@ export class ArtImage {
+         const stand = ART_STAND_IN;
+         this.box.setVisible(true).fillStyle(stand.fill, 1).fillRoundedRect(cx - width / 2, cy - height / 2, width, height, stand.radius);
+         this.box.lineStyle(stand.borderWidth, stand.border, 1).strokeRoundedRect(cx - width / 2, cy - height / 2, width, height, stand.radius);
+-        const text = size?.label ?? '';
++        const text = key.split('/').pop() ?? '';
+         this.current.label = text;
+         this.label.setText(text).setScale(1).setPosition(cx, cy).setVisible(text !== '');
+         const room = Math.min((width - 2 * stand.padding) / this.label.width, (height - 2 * stand.padding) / this.label.height);

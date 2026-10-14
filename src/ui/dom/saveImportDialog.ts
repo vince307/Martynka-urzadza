@@ -1,4 +1,4 @@
-import { parseImport, type ImportRejection, type SaveSummary } from '../../core/saveFile';
+import { parseImport, type DeviceSaveView, type ImportRejection, type SaveSummary } from '../../core/saveFile';
 import { encodeSave, type SessionSave } from '../../core/save';
 import type { ReplaceResult } from '../../core/autosave';
 import type { SaveState } from '../../core/types';
@@ -8,8 +8,8 @@ import { createButton, createText } from './overlay';
 import { createSummaryList } from './saveSummaryView';
 
 export interface SaveImportDialogOptions {
-    /** The summary of the save on this device ("Teraz"). */
-    current: SaveSummary;
+    /** What the device save is: a summary ("Teraz"), unreadable, or not readable at all (S12-01). Never a fresh session. */
+    device: Exclude<DeviceSaveView, { kind: 'broken' }>;
     /** Builds the summary of the file's save ("Z pliku"); the caller owns the room data. */
     summarize: (session: SessionSave) => SaveSummary;
     roomName: (id: string) => string;
@@ -26,10 +26,12 @@ export interface SaveImportDialogOptions {
  * Import in two steps (FR-022): pick a file, then compare "Teraz" and "Z pliku" and tap "Wczytaj". A file that
  * fails is refused with a calm line and the save is never touched; only the second step calls `apply`, and that step
  * opens with the focus on "Anuluj".
+ * A device save that was not read (`blocked`) offers no file at all; an `unreadable` one shows a warning in the place of "Teraz".
  * DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; built from the S-06 dialog parts.
+ * DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read.
  * Returns the function that closes the dialog.
  */
-export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, apply, onClose, reload = () => window.location.reload(), parent = document.body }: SaveImportDialogOptions): (() => void) => {
+export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, apply, onClose, reload = () => window.location.reload(), parent = document.body }: SaveImportDialogOptions): (() => void) => {
     let handle: DomDialog | undefined;
     let busy = false;
     const close = (): void => handle?.close();
@@ -77,12 +79,21 @@ export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, a
         actions.className = 'parent-actions';
         actions.append(load, cancel);
         show(pl.saveTransfer.importTitle, [
-            createSummaryList(pl.saveTransfer.now, current, roomName),
+            device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', pl.saveTransfer.deviceUnreadable, 'overlay-muted'),
             createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName),
             message,
             actions,
         ]);
         // "Wczytaj" overwrites the child's progress: the initial focus goes to the safe "Anuluj", never to the overwrite.
+        cancel.focus();
+    };
+
+    const blockedStep = (): void => {
+        const cancel = createButton(pl.saveTransfer.close, finish);
+        const actions = document.createElement('div');
+        actions.className = 'parent-actions';
+        actions.append(cancel);
+        show(pl.saveTransfer.importTitle, [createText('p', pl.saveTransfer.deviceUnavailable), actions]);
         cancel.focus();
     };
 
@@ -121,9 +132,17 @@ export const openSaveImportDialog = ({ current, summarize, roomName, maxBytes, a
         const actions = document.createElement('div');
         actions.className = 'parent-actions';
         actions.append(choose, cancel);
-        show(pl.saveTransfer.importTitle, [createText('p', pl.saveTransfer.importBody), createText('p', pl.saveTransfer.importPrivacy, 'overlay-muted'), message, input, actions]);
+        show(pl.saveTransfer.importTitle, [
+            createText('p', pl.saveTransfer.importBody),
+            ...(device.kind === 'unreadable' ? [createText('p', pl.saveTransfer.deviceUnreadable, 'overlay-muted')] : []),
+            createText('p', pl.saveTransfer.importPrivacy, 'overlay-muted'),
+            message,
+            input,
+            actions,
+        ]);
     };
 
-    stepOne();
+    if (device.kind === 'blocked') blockedStep();
+    else stepOne();
     return close;
 };

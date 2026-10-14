@@ -4,6 +4,7 @@
 // For a loaded save the same call gives the floor, and the session takes max(saved step, calendarStart) per stage (floorToCalendar, S-11).
 import { proposeStage, STAGE_ORDER, type PlacementData, type SessionLearner } from './placement';
 import type { Rng } from './rng';
+import { artBlocked, withoutArtBlocked } from './round/artFilter';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
 import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
@@ -104,7 +105,10 @@ export const skillBuckets = (stage: StageDef, previous: StageDef | undefined, un
     };
 };
 
-/** A round of `rules.length` tasks drawn by weight from the buckets of the learner's unlocked step, prompts distinct. */
+/**
+ * A round of `rules.length` tasks drawn by weight from the buckets of the learner's unlocked step, prompts distinct.
+ * `art` (pictures that failed to load) drops skills whose answer is only in a missing picture, see `withoutArtBlocked`.
+ */
 export const buildAdaptiveRound = (
     stage: StageDef,
     previous: StageDef | undefined,
@@ -113,9 +117,17 @@ export const buildAdaptiveRound = (
     rng: Rng,
     rules: { readonly length: number; readonly uniqueRetries: number },
     tileCount: number,
+    art?: { readonly missingIds: ReadonlySet<string>; readonly unlockShare: number },
 ): Task[] => {
     const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
-    const skills = pickRoundSkills(skillBuckets(stage, previous, unlocked), weights, rng, rules.length);
+    const buckets = skillBuckets(stage, previous, unlocked);
+    const missing = art?.missingIds;
+    // Nothing missing: the buckets and the rng use stay exactly as without the argument.
+    const pools =
+        art && missing && missing.size > 0
+            ? withoutArtBlocked(buckets, (skill) => artBlocked(skill, missing), unlockThreshold(buckets.current.length, art.unlockShare))
+            : buckets;
+    const skills = pickRoundSkills(pools, weights, rng, rules.length);
     return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);
 };
 
@@ -142,7 +154,12 @@ export const unlockReady = (stage: StageDef, adaptation: Adaptation, rules: Curr
     if (next === undefined) return null;
     const skills = stage.steps.filter((s) => s.step === current).flatMap((s) => s.skills.filter(playable));
     const mastered = skills.filter((k) => (adaptation.mastery[k.id] ?? 0) >= rules.unlockAt).length;
-    return mastered >= Math.ceil(rules.unlockShare * skills.length) ? next : null;
+    return mastered >= unlockThreshold(skills.length, rules.unlockShare) ? next : null;
+};
+
+/** How many playable skills of a step must reach the unlock mastery: ceil(share * n). */
+export const unlockThreshold = (n: number, share: number): number => {
+    return Math.ceil(share * n);
 };
 
 /**

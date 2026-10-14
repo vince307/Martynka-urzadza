@@ -1,6 +1,6 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
-import { countNoun, pluralCategory } from '../core/text/plural';
+import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
 export const pl = {
@@ -57,6 +57,11 @@ export const pl = {
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
+        // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
+        artHeading: 'Obrazki',
+        artOk: 'Wszystkie obrazki zadań są wczytane.',
+        artMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
@@ -132,6 +137,9 @@ export const pl = {
         resetBody: 'Znikną wszystkie postępy z tego urządzenia:',
         resetHint: 'Jeśli chcesz je zachować, najpierw zapisz kopię.',
         resetConfirm: 'Zacznij od nowa',
+        // DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read; for the adult, calm, no codes.
+        deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu, więc nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.',
+        deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.
     saveUnavailable: {

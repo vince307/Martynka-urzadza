@@ -1,0 +1,28 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index d0a8a8f..15fe154 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -15,11 +15,14 @@ export class BootScene extends Scene {
+         super(SCENE_KEYS.boot);
+     }
+ 
++    private readonly failedKeys = new Set<string>();
++
+     preload(): void {
+         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
+         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
+         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
+         this.load.on('loaderror', (file: { key: string; type?: string }) => {
++            this.failedKeys.add(file.key);
+             console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
+         });
+         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image.
+@@ -34,7 +37,7 @@ export class BootScene extends Scene {
+ 
+     create(): void {
+         // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
+-        const health = artHealth(TASK_ART, (key) => this.textures.exists(key));
++        const health = artHealth(TASK_ART, (key) => !this.failedKeys.has(key));
+         this.registry.set(REGISTRY_KEYS.artHealth, health);
+         if (health.missing.length > 0) {
+             console.warn(`Task art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);

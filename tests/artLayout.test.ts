@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { MoneyId } from '../src/data/measures';
 import { TASK_LAYOUT } from '../src/data/layout';
 import type { Rect } from '../src/ui/widgets/geometry';
-import { iconsLayout, jugsLayout, moneyLayout, scaleLayout, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
+import { iconsLayout, jugsLayout, moneyLayout, scaleLayout, standInLabelFit, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
+import { ART_STAND_IN, FONT_SIZES } from '../src/data/layout';
 import { JUG_VISIBLE_RECT, THERMOMETER } from '../src/data/measures';
 
 const AREAS: Rect[] = [
@@ -72,6 +73,14 @@ describe('scaleLayout', () => {
 });
 
 describe('scaleLayout readability (visual gate S-14)', () => {
+    it('gives every weight the part no row in front of it covers (stand-in boxes and labels, visual gate F1)', () => {
+        const layout = scaleLayout(6, TASK_LAYOUT.picture.keypad, TASK_LAYOUT.scale);
+        expect(layout.uncovered).toHaveLength(6);
+        layout.uncovered.forEach((part, i) => expect(inside(part, layout.weights[i])).toBe(true));
+        for (let i = 0; i < 6; i += 1) for (let j = i + 1; j < 6; j += 1) expect(overlap(layout.uncovered[i], layout.uncovered[j])).toBe(false);
+        expect(layout.uncovered[0]).toEqual(layout.weights[0]);
+    });
+
     it('draws a weight at least 75 scene px tall in the keypad picture, so its "10 dag" label can be read on a tablet', () => {
         const layout = scaleLayout(6, TASK_LAYOUT.picture.keypad, TASK_LAYOUT.scale);
         for (const w of layout.weights) expect(w.height).toBeGreaterThanOrEqual(75);
@@ -195,5 +204,41 @@ describe('iconsLayout', () => {
 
     it('never draws an icon above the cap', () => {
         expect(iconsLayout([1], false, AREAS[0], TASK_LAYOUT.icons).icon).toBeLessThanOrEqual(TASK_LAYOUT.icons.maxIcon);
+    });
+});
+
+// Visual gate of art-stand-in-and-load-signal (impl-review F1): a weight label "10 dag" measured at 24 px is about 80 x 30 scene px on one
+// line and 42 x 60 on two; the weight spot in the keypad picture is about 83 px. On one line it shrank to about 10 CSS px on a tablet.
+describe('standInLabelFit (visual gate, impl-review F1)', () => {
+    const oneLine = { width: 80, height: 30 };
+    const twoLines = { width: 42, height: 60 };
+
+    it('wraps "10 dag" onto two lines in a weight of the keypad picture and keeps the full size', () => {
+        const weight = scaleLayout(4, TASK_LAYOUT.picture.keypad, TASK_LAYOUT.scale).weights[0];
+        const fit = standInLabelFit(weight, oneLine, twoLines, ART_STAND_IN);
+        expect(fit.lines).toBe(2);
+        expect(fit.scale).toBe(1);
+    });
+
+    it('keeps the label of a back-row weight, in its uncovered part, at 12 CSS px or more on a 1024 px tablet', () => {
+        const layout = scaleLayout(4, TASK_LAYOUT.picture.keypad, TASK_LAYOUT.scale);
+        const back = layout.uncovered[2];
+        const fit = standInLabelFit(back, { width: 84, height: 30 }, { width: 42, height: 60 }, ART_STAND_IN);
+        expect(FONT_SIZES.artLabel * fit.scale * (1024 / 1920)).toBeGreaterThanOrEqual(11.9);
+    });
+
+    it('keeps one line when it fits at the full size', () => {
+        expect(standInLabelFit({ width: 200, height: 100 }, oneLine, twoLines, { padding: 8, paddingShare: 1 })).toEqual({ lines: 1, scale: 1 });
+    });
+
+    it('narrows the padding of a small box to a share of its shorter side', () => {
+        expect(standInLabelFit({ width: 100, height: 50 }, { width: 100, height: 20 }, null, { padding: 8, paddingShare: 0.04 }).scale).toBeCloseTo(96 / 100);
+    });
+
+    it('takes the larger of the two shrinks and never grows the text', () => {
+        const fit = standInLabelFit({ width: 50, height: 50 }, oneLine, twoLines, { padding: 8, paddingShare: 1 });
+        expect(fit.lines).toBe(2);
+        expect(fit.scale).toBeCloseTo(34 / 60);
+        expect(standInLabelFit({ width: 50, height: 50 }, oneLine, null, { padding: 8, paddingShare: 1 })).toEqual({ lines: 1, scale: 34 / 80 });
     });
 });

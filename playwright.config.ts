@@ -10,7 +10,7 @@ const baseURL = `http://localhost:${PORT}`;
 // 4397 is not protected (autonomous-run.md § 3); E2E_HOOK_PORT overrides it.
 const HOOK_PORT = Number(process.env.E2E_HOOK_PORT ?? 4397);
 const hookURL = `http://localhost:${HOOK_PORT}`;
-const ROUND_SPEC = /(task-round|room-purchase|room-change|save-restart|save-transfer|narrator|first-launch|adaptive|parent-settings|error-boundary|drawn-tasks|art-tasks)\.spec\.ts/;
+const ROUND_SPEC = /(task-round|room-purchase|room-change|save-restart|save-transfer|narrator|first-launch|adaptive|parent-settings|error-boundary|drawn-tasks|art-tasks|art-stand-in|save-transfer-blocked)\.spec\.ts/;
 
 export default defineConfig({
     testDir: './tests/e2e',

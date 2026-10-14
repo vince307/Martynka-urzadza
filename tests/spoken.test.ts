@@ -123,13 +123,15 @@ describe('speech over every skill of every stage', () => {
             expect(spoken, where).not.toContain(NBSP);
             expect(spoken, where).not.toMatch(/\d\s*:\s*[\d□]/u);
         });
-    });
+        // Walks every phase of every skill of every stage: ~5 s under full-suite load since S-14 added the art skills.
+    }, 30_000);
 
     it('never speaks a standalone Roman numeral token', () => {
         forEachTask((task, where) => {
             expect(command(task), where).not.toMatch(/(?<![\p{L}])[IVXLCDM]+(?![\p{L}])/u);
         });
-    });
+        // Same walk as above: same limit.
+    }, 30_000);
 
     it('speech does not give away the answer: a form of the answer absent from the visible prompt is absent from the speech', () => {
         forEachTask((task, where) => {
@@ -144,7 +146,8 @@ describe('speech over every skill of every stage', () => {
                 expect(containsRun(spoken, form), `${where} answer ${JSON.stringify(task.answer)} form ${form.join(' ')}`).toBe(false);
             }
         });
-    });
+        // Same walk as above: same limit.
+    }, 30_000);
 });
 
 describe('narrationOf', () => {
