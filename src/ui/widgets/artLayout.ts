@@ -65,6 +65,8 @@ export interface ScaleLayout {
     scale: Rect;
     item: Rect;
     weights: Rect[];
+    /** The part of each weight that no row in front of it covers (the whole weight in the front row): where a stand-in box and its label go. */
+    uncovered: Rect[];
 }
 
 /** The scale image fitted in `area`; the item stands on the left pan, `weightCount` weights on the right one (rows of `perRow`, rising). */
@@ -78,18 +80,23 @@ export const scaleLayout = (weightCount: number, area: Rect, spec: ScaleLayoutSp
         return { x: p.x - (size * s) / 2, y: p.y - size * s, width: size * s, height: size * s };
     };
     const weights: Rect[] = [];
+    const uncovered: Rect[] = [];
     for (let i = 0; i < weightCount; i += 1) {
         const row = Math.floor(i / spec.perRow);
         const inRow = Math.min(spec.perRow, weightCount - row * spec.perRow);
         const col = i - row * spec.perRow;
         const rowWidth = inRow * spec.weightSize + (inRow - 1) * spec.weightGap;
         const centreX = spec.panRight.x - rowWidth / 2 + spec.weightSize / 2 + col * (spec.weightSize + spec.weightGap);
-        weights.push(sq(centreX, spec.panRight.y - row * spec.rowLift, spec.weightSize));
+        const weight = sq(centreX, spec.panRight.y - row * spec.rowLift, spec.weightSize);
+        weights.push(weight);
+        // A row stands `rowLift` above the one in front of it, which hides its lower part.
+        uncovered.push(row === 0 ? weight : { ...weight, height: Math.min(spec.weightSize, spec.rowLift) * s });
     }
     return {
         scale: { x: left, y: top, width: spec.imageWidth * s, height: spec.imageHeight * s },
         item: sq(spec.panLeft.x, spec.panLeft.y, spec.itemSize),
         weights,
+        uncovered,
     };
 };
 
@@ -243,4 +250,33 @@ export const iconsLayout = (groups: readonly number[], framed: boolean, area: Re
         y += (lineHeight(line) + spec.frameGap) * icon;
     }
     return { icons, frames, icon };
+};
+
+export interface StandInLabelFit {
+    /** 1 = the label on one line, 2 = broken at its space ("10" over "dag"). */
+    lines: 1 | 2;
+    /** Scale of the label text, at most 1 (the text never grows). */
+    scale: number;
+}
+
+/**
+ * How the label of a stand-in box fits the box (visual gate, impl-review F1): one line, or two when the label has a space and two
+ * lines keep it larger. `oneLine`/`twoLines` are the label's size at scale 1; `padding` stays free on every side, narrowed to
+ * `paddingShare` of the box's shorter side in a small box (a weight beside the keypad), where every pixel goes to the text.
+ */
+export const standInLabelFit = (
+    box: { width: number; height: number },
+    oneLine: { width: number; height: number },
+    twoLines: { width: number; height: number } | null,
+    spacing: { padding: number; paddingShare: number },
+): StandInLabelFit => {
+    const padding = Math.min(spacing.padding, spacing.paddingShare * Math.min(box.width, box.height));
+    const room = (text: { width: number; height: number }): number =>
+        Math.min(1, (box.width - 2 * padding) / text.width, (box.height - 2 * padding) / text.height);
+    const one = room(oneLine);
+    if (one >= 1 || !twoLines) {
+        return { lines: 1, scale: Math.max(0, one) };
+    }
+    const two = room(twoLines);
+    return two > one ? { lines: 2, scale: Math.max(0, two) } : { lines: 1, scale: Math.max(0, one) };
 };
