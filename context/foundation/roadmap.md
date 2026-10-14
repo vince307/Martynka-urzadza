@@ -61,7 +61,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | done     |
 | S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | done |
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | done |
-| S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | proposed |
+| S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | planning |
 | S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | proposed |
 | S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | proposed |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | done |
@@ -333,7 +333,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** nowy tryb wejścia „cyfra w okienku” (pierwszy od S-13) — helpery e2e przed `playable`.
 - **Risk:** wydzielone z S-14 (plan S-14, decyzja autonomiczna 1); ref. kitu `reference/written-addition.svg`, `reference/number-line.svg`.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-14c: Typy tekstowe: czas, jednostki, ceny, kolejność działań, runda powtórkowa
 

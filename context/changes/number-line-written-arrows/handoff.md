@@ -1,28 +1,29 @@
 # Handoff — `number-line-written-arrows` (slice S-14b)
 
-Written by the `/10x-research` step: `research.md` answers the change's unknowns (new `digits` answer mode, WRITTEN,
-ARROW_TABLE, number line as drawing and as ADD_SUB hint picture, unlock thresholds, S-15 rounds). No code yet. The
-next agent must not miss two traps: an ADD_SUB task with a new `hintVisual` field still passes the word minigame's
-`drawTask` filter (it checks `task.visual` only), and no consumer of the answer mode is exhaustive, so `digits`
-falls silently into tiles/keypad branches unless every consumer gets an explicit branch.
+Written by the `/10x-plan` step: `plan.md` (11 phases, `## Progress` 62 rows) and `plan-brief.md` exist; no code yet. The
+next agent must not miss the ordering rule: `digits` enters the `AnswerMode` union in phase 1 but `playable` admits it only
+in phase 8, together with the e2e helpers, and every mode consumer becomes a `switch` with a `never` branch (core in
+phase 1, `TaskScene`/`FeedbackBar` in phase 7, `tests/e2e/support/hook.ts` in phase 8).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/number-line-written-arrows`, cut from `main` at `882cd93` (after S-15) |
-| Commits | 2 on top of `882cd93`: `docs(number-line-written-arrows): change identity (autonomous run)`, `docs(number-line-written-arrows): research` |
+| Commits | 3 on top of `882cd93`: change identity, research, `docs(number-line-written-arrows): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below staged) |
+| `change.md` status | `planned` (`metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 62 (`grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the commit (only the five files below staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/number-line-written-arrows/research.md` | Research: Summary 1–9, findings A–F (answer-mode chain, WRITTEN, ARROW_TABLE, number line + hint picture, design/copy, unlock/save), code references, historical context, open questions with recommendations |
-| `context/changes/number-line-written-arrows/change.md` | Frontmatter only: `status: new → preparing`, `updated` 2026-10-14 (body untouched) |
+| `context/changes/number-line-written-arrows/plan.md` | Implementation plan: phases 1–4 tdd (mode guard + `digitBoxes` reducer; `column`/`numberLine` + WRITTEN; `arrows` + ARROW_TABLE + SEQUENCE line + MULT_GROUPS `jumps`; `Task.hintVisual` for ADD_SUB), 5–9 impl (`NumberLine`+`ArrowGraph` with E2.6/E2.7/E3.9 data; hint line in `TaskScene` with six ADD_SUB skills; `WrittenColumn` + `Keypad.onKey` + scene `digits` branch; e2e helpers + `playable` admits `digits` + WRITTEN data + O5; seam sweep), 10–11 e2e (#11 `written-column.spec.ts`, `number-line.spec.ts`); unlock-threshold table; `## Autonomous decisions` 1–12 |
+| `context/changes/number-line-written-arrows/plan-brief.md` | Two-page brief |
+| `context/changes/number-line-written-arrows/change.md` | Frontmatter `status: planned` (body untouched) |
+| `context/foundation/roadmap.md` | S-14b status `proposed` → `planning` (At a glance row and item body) |
 | `context/changes/number-line-written-arrows/handoff.md` | This file |
 
 ## 3. Verification
@@ -30,56 +31,52 @@ falls silently into tiles/keypad branches unless every consumer gets an explicit
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/number-line-written-arrows` (observed) |
-| Decisive anchors re-read in the main context | `isCorrect` (`src/core/round.ts`), `MistakeExample` (`src/core/types.ts`), `TASK_LAYOUT.picture`/`.keypad` (`src/data/layout.ts`), E3.9 skills (`src/data/curriculum/E3.ts`), `unlockThreshold` + `balance.curriculum.unlockShare`, `drawTask` (`src/core/minigames/word.ts`), `addSubHint`, `firstHint`, `skill`/`addSub` helpers in `E1.ts`–`E6.ts`, `capacityHalfFact`/`capacityQuarterAlso` (`src/data/pl.ts`) — all observed |
-| `metadata-guard.mjs inspect` / `mark-researched` | `changed: true` |
-| Gate (lint, typecheck, unit, build, e2e) | not run — docs-only step, no code changed; baseline on main inherited from the contract (`882cd93`: unit 2326, e2e 71), unverified here |
+| Plan structure check (python over `plan.md`) | 11 phases, each with `Driver:` + `Driver why:` as the first lines; Success Criteria ↔ Progress rows 1:1 (5,5,5,5,7,6,5,8,6,5,5) |
+| Anchors re-read in this step | `playable` (`src/core/round/pick.ts`), `canonicalInput`, `pictureLayout`/`answerSpans`, `roundView`, `ARITHMETIC_LINE`/`KEYPAD_HINT_MAX`/`LONG_KEYPAD_HINTS` (`tests/contentInvariants.test.ts`), `tests/solvableInMode.test.ts` (iterates all skills with a generator, not only playable), `TASK_LAYOUT.picture`, `E2E_HOOK_MARKERS`, `ROUND_SPEC`, E2.6/E2.7/E3.9/E5.2/E6.7 skills — observed |
+| `metadata-guard.mjs inspect` / `mark-planned` | `changed: true` |
+| Gate (lint, typecheck, unit, build, e2e) | not run — docs-only step; baseline on main inherited from the contract (`882cd93`: unit 2326, e2e 71), unverified here |
 
 No deliberate break: nothing testable changed.
 
 ## 4. Next command
 
-`/10x-plan number-line-written-arrows`
+`/10x-plan-review number-line-written-arrows`
 
 ## 5. Open
 
-- Corrections to `change.md` the plan must carry: E3.9 has **4** skills (`mult_30`, `mult_groups_result`,
-  `mult_groups_expr`, `word_groups_30`), so +1 jumps skill moves its threshold 2 → 3 (not 1 → 2). Thresholds with the
-  recommended skills: E2.6 1 → 2 (3 skills), E5.2 1 → 2 (4), E6.7 1 → 2 (3), E2.7 unchanged; they take effect when
-  `src/core/round/pick.ts` `playable` admits the mode/generator. Save stays v2.
-- Open choices (research § Open Questions): E5.2 carry allowed vs no-carry; MULT_GROUPS jumps answer (expression
-  tiles recommended); hint-picture rectangles in `TASK_LAYOUT`; borrowing notation; `Keypad` raw-key callback.
-- Word round: `src/core/minigames/word.ts` `drawTask` must drop the new hint-picture field (or the plan lays it out).
-- Leak rule for every number line (answer tick never labelled) needs a validator rule in `src/core/tasks/visual.ts`
-  `validateVisual` and an invariant in `tests/contentInvariants.test.ts`.
-- DESIGN-GAPs to add from row 88 in `docs/design-gaps.md` (digit boxes/active box, borrowing, arrow graph/table,
-  line in hint phase, 0–100 line with boxed tick, k > 1 jumps) — not yet written.
-- Follow-ups to move at archive: E1.10 `place_read_12` → `Trigger: S-14d`, E5.5 `capacity_half_l_e5` →
-  `Trigger: S-14c`, `ArtPool`/S14-09/S14-10 → `Trigger: the next widget built on ArtImage`; new one for WRITTEN
-  "missing digits". O5 (`LONG_KEYPAD_HINTS`, `capacityHalfFact`/`capacityQuarterAlso`) is in scope.
-- `CLAUDE.md` still says save v1 in the S-11 paragraph (code is v2) — stale doc, not this slice's scope unless the
-  plan touches CLAUDE.md anyway.
+- `[human]` rows (post-run checklist): **8.8** carry/borrow notation in the column comes from general knowledge, not a repo
+  source (`columnMarks` in `src/core/tasks/written.ts`, widget `WrittenColumn`); **9.6** decisions against ZADANIA/PRD literal
+  text (ARROW_TABLE without "·3"/chain, WRITTEN without "missing digits", carry drawn by the game, hint line without E1 and
+  > 30, SEQUENCE line only in E2.7, E5.2 with carry) and higher unlock thresholds on live saves (E2.6 1→2, E3.9 2→3, E5.2 1→2,
+  E6.7 1→2).
+- `[visual]` rows 5.7, 6.6, 8.7 (1440×900 and 1024×768); `[reviewer]` teacher reads 2.5, 3.5, 5.6, 6.5, 8.6.
+- Provisional layout numbers to confirm at the visual gate: `TASK_LAYOUT.picture.digits` (column 440 × 508 + lines beside),
+  `TASK_LAYOUT.picture.hint.keypad` (line 768 × 190 under the expression, lines 768 × 118).
+- Phase 6 must check existing e2e specs playing E3 rounds with a miss (`task-round`, `adaptive`, `narrator`) — the hook keeps
+  `targets.picture` for `task.visual` and adds `targets.hintPicture`.
+- DESIGN-GAP rows from 88 (`docs/design-gaps.md`) added by phases 1, 5, 6, 7; swept in phase 9.
+- Follow-ups (phase 9, `context/changes/number-line-written-arrows/follow-ups/review-fixes.md`): WRITTEN "missing digits" →
+  `S-14c or the next change to WRITTEN`; ARROW_TABLE ·n/chain/multi-blank → `S-14c or a multi-number reducer`; E1/tiles hint
+  line and > 30 → `S-14d (E1 picture mode) or a layout band above the tiles`; `place_read_12` → `S-14d`; `capacity_half_l_e5` →
+  `S-14c`; `ArtPool`/S14-09/S14-10 → `the next widget built on ArtImage`; O6/O2 kept for other drawings.
 
 ## 6. Autonomous decisions
 
-1. **Research question derived from `change.md`, no interview** (the skill's clarification step). Rejected: asking.
-   Why: the step prompt and contract forbid `AskUserQuestion`; change.md defines the scope. Would change: nothing in
-   this run.
-2. **Three parallel workers (sonnet) by area, decisive anchors re-read locally.** Rejected: one sequential pass.
-   Why: the skill defaults to delegation for multi-area research. Would change: a worker contradicted by the source
-   (one was: ADD_SUB/SEQUENCE answer mode in E2/E3 is `keypad`, corrected in research.md).
-3. **Recommend `digits` as a new `AnswerMode` submitting a number** (keeps change.md decision 2). Rejected: an array
-   answer (not captured by `captureFirstWrong`, compared as an unordered set by `isCorrect`, would push a save
-   change); a focused `keypad`. Would change: a teacher read requiring the carry digit to be typed into its own box
-   (still a number answer, more boxes).
-4. **Box count = columns of the wider operand, result constrained to that digit count.** Rejected: boxes = answer
-   length (leaks a carry into a new column). Would change: the plan allowing results like 100 in E5 with an extra,
-   always-present box.
-5. **ARROW_TABLE stays `keypad` with one blank** (keeps change.md decision 7). Would change: a multi-number reducer
-   becoming available.
-6. **Hint picture as `Task.hintVisual {hint, solution}` with jumps from `addSubHint`, landing never labelled.**
-   Rejected: putting the line into `task.visual` (word-round filter, pre-first-try hint). Would change: the visual gate
-   finding no room under the expression beside the keypad.
-7. **School-method description (carry above the next column; borrowing by crossing out) given from general domain
-   knowledge, flagged for the teacher read**, because `docs/zrodla/` may not be read and ZADANIA only says "przeniesienie
-   zaznaczane małą cyfrą". Would change: the teacher read or the author describing a different notation.
-8. **Commit message**: the proposed `docs(number-line-written-arrows): research` (contract rule 1).
+1. **No `AskUserQuestion`; complexity HIGH, every open question answered from research/change.md** (contract rule 1). Rejected:
+   asking. Would change: nothing in this run.
+2. **`digits` mode with a number answer, boxes = columns of the wider operand, result constrained** (research Summary 1, 3).
+   Rejected: array answer, focused `keypad`, boxes = answer length. Would change: a teacher read requiring 100 as an E5 result.
+3. **Exhaustiveness guard = `ANSWER_MODES` + `never` switches in core/UI/e2e helpers + `tests/answerModes.test.ts`** (step
+   prompt). Rejected: a test over modes alone (cannot see scene branches). Would change: nothing.
+4. **Single `Task.hintVisual` drawing (not a hint/solution pair), landing never labelled; only keypad ADD_SUB ≤ 30 (no E1).**
+   Rejected: research's `{hint, solution}` pair (identical once the landing stays unlabelled); E1 tiles (no free band between
+   `expressionWide` and the tiles). Would change: S-14d E1 picture mode or a screenshot showing room above the tiles.
+5. **Carry/borrow drawn by the game; E5.2 carry allowed, E6.7 required; ARROW_TABLE one blank, `+`/`−`, ≤ 20; MULT_GROUPS `jumps`
+   answered by expression tiles** (research recommendations). Against ZADANIA literal text → `[human]` 9.6; notation →
+   `[human]` 8.8. Would change: the teacher read or the author.
+6. **11 phases** from the ≤ 2-new-UI-components rule (`NumberLine`+`ArrowGraph`, hint line reuses `NumberLine`, `WrittenColumn`
+   alone with the keypad/scene work); `playable` flip isolated in phase 8 with the helpers. Would change: a phase over budget →
+   split phase 8 (data vs helpers) keeping helpers ≤ `playable`.
+7. **Plan language Polish with English identifiers**, like the archived S-13b plan (format example). Would change: nothing.
+8. **Roadmap status edit committed with the plan** (step prompt), and `plan-brief.md` written (skill Step 4.5).
+9. **Commit message**: `docs(number-line-written-arrows): plan` (step prompt).
