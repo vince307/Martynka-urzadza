@@ -1,7 +1,7 @@
 ---
 change_id: minigame-daily-puzzle
 title: Minigry (Hasło z wyników, Zakrywanka) i zagadka dnia za podwójne gwiazdki
-status: new
+status: preparing
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null
