@@ -1,6 +1,6 @@
 # Handoff — `art-stand-in-and-load-signal` (slice fix, non-roadmap)
 
-Written by the visual-gate step of run `2026-10-14-fix-art-stand-in`. The gate passed (`VISUAL: PASS`) after one fix commit
+Written by the visual-gate step of run `2026-10-14-fix-art-stand-in`; §1 and §4 finalised by the ship step (pre-merge state). The gate passed (`VISUAL: PASS`) after one fix commit
 (`8881888`: stand-in labels wrap and keep ≥ 12 CSS px in the keypad picture; jug and back-row weight boxes no longer overlap).
 Next is archive, then ship. The two [human] rows (6.7, 7.7) stay open for the maintainer and do not block shipping.
 
@@ -10,8 +10,8 @@ Next is archive, then ship. The two [human] rows (6.7, 7.7) stay open for the ma
 |---|---|
 | Branch | `feat/art-stand-in-and-load-signal`, cut from `main` at `1812347` |
 | Commits | plan commits + p1 `3be41c7` … p9 `bdc45d8` + epilogue `92f1a76` + review `e5c2e91` + fix `8881888` + this visual-gate docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged by this step) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-14-fix-art-stand-in/run-log.md |
+| `change.md` status | `archived` (ship step, `/10x-archive`) |
 | `## Progress` rows remaining | 2: 6.7, 7.7 `[human]` |
 | Working tree | clean after the docs commit (`dist-e2e/` and the moved-out `tests/e2e/visual.local/` are gitignored / absent) |
 
@@ -50,7 +50,7 @@ All observed in this step on `8881888`.
 
 ## 4. Next command
 
-`/10x-archive art-stand-in-and-load-signal` then ship
+none — shipped
 
 ## 5. Open
 
@@ -68,3 +68,5 @@ All observed in this step on `8881888`.
 4. **V2 (jug boxes) fixed in this step.** Why: the boxes covered the solution line, which is a real defect visible on every two-row jug task with missing art. The fix reuses `jugsLayout().jugs` (already proven apart and inside).
 5. **400×300 viewport instead of the iframe trick** for the panel and the dialogs. Why: Playwright sets the viewport directly; the result is the same CSS width. Would change: nothing (the iframe trick exists for Chrome windows that cannot go narrow).
 6. **e2e run directly** (Chromium launched in this session) instead of the request-file protocol.
+7. **Ship step: archived despite the two open `[human]` rows (6.7, 7.7).** Chosen: `Continue archiving` (the skill's recommended option for manual-only pending rows). Rejected: resume implementation. Why: both rows are maintainer decisions on already-shipped behaviour (FR-022, FR-013), a post-run checklist listed in the PR's "Dla właściciela produktu" section, not unfinished work. Would change: the maintainer rejecting either decision before the merge.
+8. **Ship step: no roadmap edit.** The change is non-roadmap (source: observability audit, PR #42); `/10x-archive` found no item with this Change ID and left `roadmap.md` untouched. Progress rows without a SHA suffix (`[reviewer]`, `[visual]`, orchestrator e2e notes) were left as they are (soft warning only).
