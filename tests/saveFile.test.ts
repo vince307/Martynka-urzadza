@@ -3,6 +3,7 @@
 // ("JSON.parse succeeded" is not a valid file); frozen fixtures tests/fixtures/save-v1*.json are the valid inputs.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
 import { decodeSave, saveProblem, validateSave, type SessionSave } from '../src/core/save';
 import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
 import type { RoomDef, SaveState } from '../src/core/types';
@@ -152,20 +153,61 @@ describe('exportFileText', () => {
 describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory session as the device save', () => {
     const rooms = { living: ((): RoomDef => ({ id: 'living', tasks: new Array(10).fill(null) }) as unknown as RoomDef)() };
 
+    const st = (blockedBy: BlockReason | null, loadReason: AutosaveStatus['loadReason'] = null, loadError: string | null = null) => ({ blockedBy, loadReason, loadError });
+
     it('a healthy save gives the summary', () => {
-        const view = deviceSaveView(null, v1(), rooms);
+        const view = deviceSaveView(st(null), v1(), rooms);
         expect(view).toEqual({ kind: 'summary', summary: saveSummary(decoded(), rooms) });
     });
 
     it('a healthy but undecodable state is broken', () => {
-        expect(deviceSaveView(null, { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
+        expect(deviceSaveView(st(null), { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
     });
 
-    it('an unreadable save is named, never summarised (overwriting stays allowed)', () => {
-        expect(deviceSaveView('unreadable', v1(), rooms)).toEqual({ kind: 'unreadable' });
+    it.each(['corrupt', 'unknown-version'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
+        expect(deviceSaveView(st('unreadable', reason), v1(), rooms)).toEqual({ kind: 'unreadable' });
     });
 
-    it.each(['unavailable', 'fatal'] as const)('%s is blocked, never summarised', (cause) => {
-        expect(deviceSaveView(cause, v1(), rooms)).toEqual({ kind: 'blocked', cause });
+    it('a future save is blocked, never forceable', () => {
+        expect(deviceSaveView(st('unreadable', 'future'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'future', forceable: false });
+    });
+
+    it('a timeout read is blocked, never forceable', () => {
+        expect(deviceSaveView(st('unavailable', null, 'timeout'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
+        // IndexedDB's own DOMException for a transaction that ran out of time: the save may be healthy too (impl-review F1).
+        expect(deviceSaveView(st('unavailable', null, 'TimeoutError'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
+    });
+
+    it('a refused read is blocked and forceable; fatal is not', () => {
+        expect(deviceSaveView(st('unavailable', null, 'SecurityError'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable', forceable: true });
+        expect(deviceSaveView(st('fatal'), v1(), rooms)).toEqual({ kind: 'blocked', cause: 'fatal', forceable: false });
+    });
+
+    it('forceable agrees with Autosaver.replace({ force: true }) for every combination (lockstep)', async () => {
+        const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
+        const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
+        for (const blockedBy of ['unreadable', 'unavailable', 'fatal'] as const)
+            for (const loadReason of reasons)
+                for (const loadError of errors) {
+                    const writes: SaveState[] = [];
+                    const saver = createAutosaver({
+                        store: { read: () => Promise.resolve(undefined), write: (v) => (writes.push(v), Promise.resolve()) },
+                        snapshot: () => decoded(),
+                        timers: { setTimeout: () => 0, clearTimeout: () => undefined },
+                        delayMs: 500,
+                        load: 'fresh',
+                        blockedBy,
+                        now: () => 0,
+                        log: () => undefined,
+                        ...(loadReason ? { loadReason } : {}),
+                        ...(loadError ? { loadError } : {}),
+                    });
+                    const view = deviceSaveView(saver.status(), v1(), rooms);
+                    await saver.replace(v1(), { force: true });
+                    const wrote = writes.length === 1;
+                    const forceable = view.kind === 'blocked' && view.forceable;
+                    const open = view.kind === 'unreadable';
+                    expect(wrote, JSON.stringify({ blockedBy, loadReason, loadError })).toBe(forceable || open);
+                }
     });
 });

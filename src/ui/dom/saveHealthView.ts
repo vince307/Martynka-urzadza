@@ -20,6 +20,8 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
                 ? pl.settings.saveNotYet
                 : pl.settings.saveOk;
     section.append(createText('h2', pl.settings.saveHeading), createText('p', sentence));
+    // DESIGN-GAP 69: the code the parent can quote, same format as on the start card.
+    if (view.kind === 'off' && view.code !== null) section.append(createText('p', pl.saveFailed.detail(view.code, __BUILD_ID__), 'overlay-muted'));
     if (view.kind === 'ok') {
         if (view.lastWriteAt !== null) {
             const time = new Date(view.lastWriteAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });

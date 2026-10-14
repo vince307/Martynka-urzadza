@@ -55,6 +55,9 @@ export const pl = {
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
+            // DESIGN-GAP 69: the kit has no line for the reason of a switched-off save.
+            future: 'Zapis jest wyłączony: zapis na tym urządzeniu pochodzi z nowszej wersji gry. Zaktualizuj grę, a postępy wrócą.',
+            timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
@@ -100,6 +103,8 @@ export const pl = {
         exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
         privacy: 'Plik zawiera postępy dziecka i przykłady jego błędów. Nie wysyłaj go obcym osobom.',
         saveFile: 'Zapisz plik',
+        // DESIGN-GAP 72: shown in the export dialog when the game did not load the device save.
+        exportNotDevice: 'Gra nie wczytała zapisu z tego urządzenia, więc ta kopia zawiera tylko obecną grę, bez wcześniejszych postępów.',
         close: 'Zamknij',
         exportOutcome: {
             shared: 'Kopia została przekazana wybranej aplikacji.',
@@ -138,7 +143,16 @@ export const pl = {
         resetHint: 'Jeśli chcesz je zachować, najpierw zapisz kopię.',
         resetConfirm: 'Zacznij od nowa',
         // DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read; for the adult, calm, no codes.
-        deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu, więc nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.',
+        // DESIGN-GAP 71 (docs/design-gaps.md): the kit has no way out of a save the browser never gives; second confirmation and a last-resort advice, texts are ours.
+        deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Jeśli to się powtarza przy każdym uruchomieniu, możesz go zastąpić. Postępy zapisane wcześniej na tym urządzeniu wtedy znikną.',
+        force: 'Zastąp mimo to',
+        forcedWarning: 'Zapisu z tego urządzenia nie udało się odczytać. Zostanie zastąpiony.',
+        siteDataAdvice: 'Nie udało się zapisać na tym urządzeniu. Ostatnie wyjście: usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.',
+        resetFailed: 'Nie udało się zacząć od nowa. Obecne postępy zostały bez zmian.',
+        // DESIGN-GAP 70 (docs/design-gaps.md): the kit has no line per reason a device save cannot be replaced (newer version, slow read).
+        deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
+        deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.',
+        deviceFatal: 'Gra się zatrzymała, więc nie może teraz zastąpić zapisu. Uruchom grę ponownie.',
         deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },
     // DESIGN-GAP 45: the kit has no copy for a browser that gives no storage; calm, for the adult, no blame, no jargon.

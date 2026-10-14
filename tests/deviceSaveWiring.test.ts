@@ -1,5 +1,5 @@
-// S12-01 wiring (plan art-stand-in-and-load-signal, phase 6): the import and reset steps of the settings flow must
-// judge the device save with `deviceSaveView(saver.status().blockedBy, …)` and hand that view to the dialog, so a
+// S12-01 wiring (plan art-stand-in-and-load-signal, phase 6; SIR-02 and SIR-04 added by save-reason-and-recovery): the import and reset steps of the settings flow must
+// judge the device save with `deviceSaveView(saver.status(), …)` and hand that view to the dialog, so a
 // fresh in-memory session is never shown as "Teraz". The scene needs Phaser and the dialogs need a DOM, so this
 // reads the scene source as syntax (formatting does not matter).
 import { readFileSync } from 'node:fs';
@@ -35,8 +35,31 @@ describe('device save wiring (S12-01)', () => {
             const body = method(name);
             const view = callsOf(body).includes('deviceSaveView');
             expect(view).toBe(true);
-            expect(body.getText(source)).toContain('saver.status().blockedBy');
+            expect(body.getText(source)).toContain('saver.status()');
             expect(callsOf(body)).not.toContain('decodeSave');
         });
     }
+
+    for (const name of ['openImport', 'openReset']) {
+        it(`${name} hands the dialog's force flag on to saver.replace (SIR-02)`, () => {
+            const replaceCalls: ts.CallExpression[] = [];
+            const visit = (node: ts.Node): void => {
+                if (ts.isCallExpression(node) && node.expression.getText(source) === 'saver.replace') replaceCalls.push(node);
+                ts.forEachChild(node, visit);
+            };
+            visit(method(name));
+            expect(replaceCalls).toHaveLength(1);
+            const [state, options] = replaceCalls[0].arguments;
+            expect(state?.getText(source)).toBe('state');
+            expect(options?.getText(source).replace(/\s/g, '')).toBe('{force}');
+        });
+    }
+
+    it('openExport judges the device save from saver.status() and passes the warning on (SIR-04)', () => {
+        const body = method('openExport');
+        expect(callsOf(body)).toContain('deviceSaveView');
+        const text = body.getText(source);
+        expect(text).toContain('saver.status()');
+        expect(text).toContain('pl.saveTransfer.exportNotDevice');
+    });
 });

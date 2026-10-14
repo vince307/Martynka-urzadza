@@ -162,7 +162,10 @@ export class UIScene extends Scene {
 
     /** Export step: replaces the panel in the same input session; the file is built at the tap, from the saver's current state. */
     private openExport(saver: Autosaver, session: InputSession): void {
+        // A copy of a session the game never loaded is not the child's progress (SIR-04): say so above "Zapisz plik".
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         this.closeDialog = openSaveExportDialog({
+            ...(device.kind === 'summary' ? {} : { warning: pl.saveTransfer.exportNotDevice }),
             file: (now) => ({
                 text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
                 fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
@@ -173,7 +176,7 @@ export class UIScene extends Scene {
 
     /** Import step: replaces the panel in the same input session; the device save is judged by `deviceSaveView`, `apply` is the saver's replace. */
     private openImport(saver: Autosaver, session: InputSession): void {
-        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         if (device.kind === 'broken') {
             this.closeSettings();
             return;
@@ -183,14 +186,14 @@ export class UIScene extends Scene {
             summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
-            apply: (state) => saver.replace(state),
+            apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });
     }
 
     /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
     private openReset(saver: Autosaver, session: InputSession): void {
-        const device = deviceSaveView(saver.status().blockedBy, saver.current(), ROOMS);
+        const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         if (device.kind === 'broken') {
             this.closeSettings();
             return;
@@ -199,7 +202,7 @@ export class UIScene extends Scene {
             device,
             roomName: (id) => ROOMS[id]?.name ?? id,
             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
-            apply: (state) => saver.replace(state),
+            apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });
     }

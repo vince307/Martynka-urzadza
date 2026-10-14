@@ -8,6 +8,8 @@ export interface SaveExportDialogOptions {
     file: (now: Date) => { text: string; fileName: string };
     /** Called after the dialog has closed itself (Cancel, Escape or Close). */
     onClose: () => void;
+    /** A muted line above "Zapisz plik" when the copy is not the device's saved progress (SIR-04). */
+    warning?: string;
     now?: () => Date;
     parent?: HTMLElement;
 }
@@ -18,7 +20,7 @@ export interface SaveExportDialogOptions {
  * cancelled or failed one lets the parent try again. Returns the function that closes the dialog.
  * DESIGN-GAP 47 (docs/design-gaps.md): the kit has no export confirmation; built from the S-06 dialog parts.
  */
-export const openSaveExportDialog = ({ file, onClose, now = () => new Date(), parent = document.body }: SaveExportDialogOptions): (() => void) => {
+export const openSaveExportDialog = ({ file, onClose, warning, now = () => new Date(), parent = document.body }: SaveExportDialogOptions): (() => void) => {
     const result = createText('p', '', 'overlay-muted');
     result.setAttribute('role', 'status');
     result.hidden = true;
@@ -53,7 +55,7 @@ export const openSaveExportDialog = ({ file, onClose, now = () => new Date(), pa
     const handle = openDialog(
         parent,
         createText('h1', pl.saveTransfer.exportTitle),
-        [createText('p', pl.saveTransfer.exportBody), createText('p', pl.saveTransfer.privacy, 'overlay-muted'), result, actions],
+        [createText('p', pl.saveTransfer.exportBody), ...(warning ? [createText('p', warning, 'overlay-muted')] : []), createText('p', pl.saveTransfer.privacy, 'overlay-muted'), result, actions],
         finish,
     );
     return close;

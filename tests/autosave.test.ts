@@ -3,7 +3,7 @@
 // Implementation Details (never write what was not read, never write what cannot be read, never an unhandled rejection).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createAutosaver, errorName, loadSave, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { createAutosaver, errorName, loadSave, replaceGate, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 
@@ -541,5 +541,66 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
     it('current() is the encoded snapshot', () => {
         const t = setup();
         expect(t.saver.current()).toEqual(encodeSave(session(1)));
+    });
+});
+
+describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01, SIR-02, SIR-05', () => {
+    it('a future save is never replaced, even with force; the store is untouched and the refusal is logged', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'future' });
+        expect(await t.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+        expect(t.saver.status().replace).toBe('idle');
+        expect(t.logs.length).toBe(2);
+    });
+
+    it.each(['corrupt', 'unknown-version'] as const)('a %s save is still replaced (the way out)', async (loadReason) => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
+    });
+
+    it('unavailable needs force: without it nothing is written, with it the write happens and is logged', async () => {
+        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+        expect(await t.saver.replace(encodeSave(session(6)), { force: true })).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([6]);
+        expect(t.logs.length).toBe(2);
+    });
+
+    it('a timeout read is never replaced, and a failed forced write does not unlock it (loadError, not lastError)', async () => {
+        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'timeout' });
+        expect(await t.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+
+        const u = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+        u.state.fail = true;
+        expect(await u.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Error' });
+        expect(u.saver.status().lastError).toBe('Error');
+        expect(u.saver.status().loadError).toBe('SecurityError');
+        expect(u.saver.status().loadReason).toBeNull();
+    });
+
+    it('the status keeps loadReason and loadError from the start', () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'future' });
+        expect(t.saver.status()).toMatchObject({ loadReason: 'future', loadError: null });
+    });
+
+    it('replaceGate covers every combination', () => {
+        const reasons = [null, 'corrupt', 'future', 'unknown-version'] as const;
+        const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
+        const blocks = [null, 'unreadable', 'unavailable', 'fatal'] as const;
+        for (const blockedBy of blocks)
+            for (const loadReason of reasons)
+                for (const loadError of errors)
+                    for (const force of [false, true]) {
+                        const expected =
+                            blockedBy === 'fatal' ? 'Blocked'
+                            : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : 'ok')
+                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force ? 'Blocked' : 'ok')
+                            : 'ok';
+                        expect(replaceGate({ blockedBy, loadReason, loadError }, force), JSON.stringify({ blockedBy, loadReason, loadError, force })).toBe(expected);
+                    }
     });
 });

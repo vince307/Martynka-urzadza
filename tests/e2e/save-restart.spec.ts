@@ -163,6 +163,7 @@ test('#2 C-1 a save the browser will not give shows the card, plays without writ
     await expect(card).toBeVisible();
     // There is no stored copy to keep: no export button.
     await expect(card.getByRole('button', { name: pl.saveFailed.export })).toHaveCount(0);
+    await expect(card.getByText(/^Kod: UnknownError · Wersja /)).toBeVisible();
     await card.getByRole('button', { name: pl.saveUnavailable.continue }).tap();
     await expect(card).toBeHidden();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
@@ -184,6 +185,7 @@ test('#2 C-1 a save the browser will not give shows the card, plays without writ
     const section = panel.locator('section.parent-save');
     await expect(section).toHaveAttribute('data-state', 'off');
     await expect(section.getByText(pl.settings.saveOff.unavailable)).toBeVisible();
+    await expect(section.getByText(/^Kod: UnknownError · Wersja /)).toBeVisible();
 });
 
 test('#2 M-S4 a read that never answers ends in the same card after the load timeout', async ({ page }) => {
@@ -193,7 +195,17 @@ test('#2 M-S4 a read that never answers ends in the same card after the load tim
     await expect(card).toBeVisible();
     await card.getByRole('button', { name: pl.saveUnavailable.continue }).tap();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await screenIs(page, 'welcome');
+    let age: { x: number; y: number } | undefined;
+    await expect.poll(async () => {
+        age = (await targets(page)).ages?.[0];
+        return age !== undefined;
+    }).toBe(true);
+    await tapScene(page, age!);
+    await screenIs(page, 'task');
     await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ load: 'unavailable', blockedBy: 'unavailable', lastError: 'timeout' });
+    const panel = await openSettings(page);
+    await expect(panel.locator('section.parent-save').getByText(pl.settings.saveOff.timeout)).toBeVisible();
 });
 
 test('#2 C-2 failed writes show in the parent panel', async ({ page }) => {

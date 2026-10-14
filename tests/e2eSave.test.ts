@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { decodeSave } from '../src/core/save';
 import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'unavailable', 'hang', 'writefail']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -19,6 +20,11 @@ describe('e2eSave', () => {
 describe('e2eSaveStore', () => {
     it('unreadable holds a save from a future version', async () => {
         await expect(e2eSaveStore('unreadable').read()).resolves.toMatchObject({ version: 99 });
+    });
+
+    it('corrupt decodes as corrupt', async () => {
+        const store = e2eSaveStore('corrupt');
+        expect(decodeSave(await store.read())).toEqual({ kind: 'unreadable', reason: 'corrupt' });
     });
 
     it('unavailable rejects the read with an UnknownError', async () => {

@@ -117,7 +117,7 @@ installErrorBoundary(window, () => {
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    // The e2e build may start with an in-memory store (?e2eSave=unreadable|unavailable|hang|writefail); never IndexedDB.
+    // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail); never IndexedDB.
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
     const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
@@ -136,7 +136,8 @@ const start = async (): Promise<void> => {
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
                 copy: raw === null ? pl.saveUnavailable : pl.saveFailed,
-                detail: reason === null ? undefined : pl.saveFailed.detail(reason, __BUILD_ID__),
+                // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
+                detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:
                     raw === null
                         ? undefined
@@ -201,6 +202,7 @@ const start = async (): Promise<void> => {
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
+        loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
     });

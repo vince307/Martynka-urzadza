@@ -1,0 +1,13 @@
+diff --git a/src/scenes/UIScene.ts b/src/scenes/UIScene.ts
+index e1b5b07..3e29d38 100644
+--- a/src/scenes/UIScene.ts
++++ b/src/scenes/UIScene.ts
+@@ -202,7 +202,7 @@ export class UIScene extends Scene {
+             device,
+             roomName: (id) => ROOMS[id]?.name ?? id,
+             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
+-            apply: (state, force) => saver.replace(state, { force }),
++            apply: (state) => saver.replace(state),
+             onClose: () => session.run(() => this.closeSettings()),
+         });
+     }

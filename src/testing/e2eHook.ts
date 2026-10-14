@@ -75,15 +75,15 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'unavailable' | 'hang' | 'writefail';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'unavailable', 'hang', 'writefail'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
 
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
- * future version), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
+ * future version), `corrupt` (a current-version save that fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
  * writes reject). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
@@ -93,7 +93,8 @@ export const e2eSave = (search: string): E2ESaveSeam | null => {
 
 /** In-memory store for the e2e seam; remembers writes where they succeed. Never touches IndexedDB. */
 export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
-    let value: unknown = seam === 'unreadable' ? { version: 99, profileId: 'default', stars: 7 } : undefined;
+    let value: unknown =
+        seam === 'unreadable' ? { version: 99, profileId: 'default', stars: 7 } : seam === 'corrupt' ? { version: 1, profileId: 'default', stars: 'many' } : undefined;
     return {
         read: () =>
             seam === 'unavailable'
