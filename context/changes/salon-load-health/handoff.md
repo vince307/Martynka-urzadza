@@ -1,61 +1,61 @@
 # Handoff — `salon-load-health` (slice fix salon-load-health, non-roadmap)
 
-Written by `/10x-tdd salon-load-health phase 1`: save format v3 with the old salon in `MIGRATIONS[2]` is done and committed (826150c). The one thing not to get wrong in phase 2: `remapLegacySalon`/`LEGACY_SALON` are still live in `main.ts`/`UIScene` (a no-op on v3), and `tests/legacySalonMigration.test.ts` pins `LEGACY_SALON_V2` to `LEGACY_SALON`, so deleting the data must turn that pin into a literal (frozen) check.
+Written by `/10x-tdd salon-load-health phase 2`: the autosaver writes a migrated save at start, the copy policy is version-neutral, and the old remap is gone (commits 6922792 = only the `tests/salonRemap.test.ts` deletion, 5009efd = everything else). The one thing not to get wrong: e2e was NOT runnable in this session (Chromium dies on MachPortRendezvous), so row 2.4 is open for the orchestrator, who must also confirm the edited SV2-01 spec.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-load-health`, cut from `main` at `7f831c5` |
-| Commits | identity, research, plan, plan review, `826150c` (p1) + this handoff |
+| Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2) + this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; phase 5 closes it) |
-| `## Progress` rows remaining | 22 |
+| `## Progress` rows remaining | 19 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/migrations/legacySalon.ts` | new: `LIFT_V2_SALON` (total, M-2 marker = old-only keys), frozen `LEGACY_SALON_V2`, `SALON_V3_TARGET` |
-| `src/core/save.ts` | `SAVE_VERSION` 3, `MIGRATIONS[2]`, `saveProblem`/`encodeSave` use the constant |
-| `src/core/types.ts` | `SaveV3`, `SaveState = SaveV3` |
-| `src/testing/e2eHook.ts` | `legacy-salon` seam returns the frozen v2 fixture (no `legacySalonSession`) |
-| `tests/legacySalonMigration.test.ts` | new, 27 cases (rule B literals 1..10, M-2, totality, idempotence, table pins) |
-| `tests/fixtures/save-v3.json`, `save-v2-legacy-salon.json` | new fixtures (legacy one generated from `encodeSave(legacySalonSession())` while `SAVE_VERSION` was 2); no frozen fixture changed |
-| `tests/save.test.ts`, `saveFile.test.ts`, `e2eSave.test.ts`, `autosave.test.ts` | version 3 asserts, v2 fixtures decode with `migratedFrom 2`, `saveProblem` cases on v3 (plan-review F2), seam test, future = version 4 |
-| `tests/e2e/{salon-art,save-migration,save-backup-health}.spec.ts` | `writtenVersion` 3 and titles |
-| `context/changes/salon-load-health/plan.md` | Progress 1.1-1.4 ticked |
+| `src/core/autosave.ts` | `WriteReason` + `'migration'`, `AutosaveStatus.migrationWrittenAt`, start arm when `migrated` and not blocked, copy given up only after the save is written (F3/F4), logs with `SAVE_VERSION` and the real `from` |
+| `src/main.ts`, `src/scenes/UIScene.ts` | no remap; `Save migrated from v<N>` log; `markDirty()` after a room repair; import preview `saveSummary(s, ROOMS)` |
+| `src/core/rooms.ts`, `src/core/types.ts`, `src/data/rooms.ts` | `remapLegacySalon`, `LegacyRoomLayout`, `LEGACY_SALON` removed |
+| `tests/autosave.test.ts` | new describe "write at start after a migration (audit M-3)", 9 cases |
+| `tests/legacySalonMigration.test.ts`, `tests/roomsData.test.ts` | pins now against the frozen literal `LEGACY_SALON_V2` |
+| `tests/saveHealth.test.ts` | status helper has `migrationWrittenAt` |
+| `tests/salonRemap.test.ts` | deleted (cases live in `legacySalonMigration.test.ts`) |
+| `tests/e2e/save-backup-health.spec.ts` | SV2-01: `backup` is `pending` or `failed` right after start (plan-review F1) |
+| `plan.md` | Progress 2.1-2.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (first run, step stubbed to identity) | `AssertionError: expected [ '1' ] to deeply equal [ '1', '2' ]` (MIGRATIONS registered), plus 16 more assertion failures; 50 failed in the whole suite before the implementation |
+| RED (first run, before `autosave.ts` changed) | 8 failed; first: `a migrated start writes without a change`, `expected [] to deeply equal [ 'backup', 'write' ]`-style op assertions, plus `migrationWrittenAt` missing and the F3/F4 cases |
 | `npm run lint` / `npm run typecheck` | pass / pass |
-| `npm test` | 2972 passed (baseline 2939, +33: 27 new file, +1 seam, +5 save.test v3 cases) |
+| `npm test` | 2919 passed (p1 baseline 2972; +9 new autosave cases, -62 removed with `salonRemap.test.ts`, whose cases `legacySalonMigration.test.ts` already covers) |
 | deploy + ops shell tests, `sample` E1-E6 | pass |
 | `npm run build` | pass, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --workers=4` | 98 passed (baseline 98, +0) |
-| `git diff --exit-code main -- tests/fixtures/` | clean; only 2 new untracked-then-added files |
-| Deliberate break 1 (marker = any key not in target slots) | red: M-2 `armchair-2` test only; restored |
-| Deliberate break 2 (no shape guard) | red: `rooms: null`, `chosen: null`, `salon: null` throw TypeError; restored |
-| Deliberate break 3 (target cost 7 -> 8) | red: v3 target pin; restored |
-| Meta-check | cases run on raw v2 bytes through `decodeSave`, so the chain (not a direct call with a validated session) is what is proved |
+| `npx playwright test` | e2e: not runnable in this session — orchestrator gate (baseline 98, expect +0) |
+| fixtures | no frozen v1/v2 fixture changed (only p1's 2 new files differ from main); grep `remapLegacySalon|LEGACY_SALON\b|LegacyRoomLayout` in `src/` only hits `LEGACY_SALON_V2` in the migration module |
+| Break 1 (arming at start disabled) | red: 5 tests (start write, failed copy, hidden flush, F4 log, F3); restored |
+| Break 2 (F3 undone: `skipBackup` before the write) | red: the owed-copy test; restored |
+| Meta-check | the cases count fake-store operations (`ops`, `backups`, `value`), not just the status field |
 
 ## 4. Next command
 
-`/10x-tdd salon-load-health phase 2` (phase 2, `Driver: tdd`)
+`/10x-implement salon-load-health phase 3` (phase 3, `Driver: impl`)
 
 ## 5. Open
 
-- [human] 1.6 (v3 one-way door, rollback shows the `future` card); [reviewer] 1.5 (`save.ts` imports only `./migrations/legacySalon`, no `src/data`); 3.5 and 2.6 as in the earlier handoff.
-- Phase 2 e2e: SV2-01 in `tests/e2e/save-backup-health.spec.ts` must accept `backup` `pending|failed`; `tests/autosave.test.ts` `migrated` cases will see the start write.
-- The orchestrator ran no e2e for p1; the 98 above are mine from this session.
+- Row 2.4 e2e (orchestrator, `--workers=4`, expect 98 + 0); [reviewer] 2.5; [visual] 2.6 (`?e2eSave=legacy-salon`, "przeniesiono z wersji 2" at 1440 and 1024); earlier [human] 1.6, [reviewer] 1.5.
+- Commit 6922792 holds only the deletion (a wrong path in `git add` aborted the staging); no amend per contract.
+- Unproven without a browser: SV2-01 still gets exactly three `backup` ops then `write` (the start attempt counts as the first try); other e2e specs that read `writes` after load were grepped and do not assert counts.
 
 ## 6. Autonomous decisions
 
-1. **Mixed-phase split**: tests/step/fixtures TDD'd; the `e2eHook.ts` seam swap and the e2e spec version edits were inline scaffolding. Driver stays `tdd`.
-2. **Step is total by returning the input with `version: 3`** for any shape it does not recognise (also a non-record `raw` is returned as is). Rejected: throwing (would be `migration-failed`). Would change: a product wish to name malformed salons apart from `corrupt`.
-3. **Unrecognised extra salon fields are kept** (`...salon`); old values for dropped keys vanish with the old list. Would change: a v4 field in the room.
-4. **`future` test uses version 4**, and `save-v3.json` is `save-v2.json` with the version changed (same content, living room).
+1. **Mixed phase**: autosaver logic TDD'd; `main.ts`/`UIScene` wiring and deletions inline. Driver stays `tdd`.
+2. **Start write carries reason `migration` only for the debounced timer**; a `markDirty` re-arm keeps it until the first migrated write succeeds (`migrationWrittenAt === null`). Rejected: a separate flag in `main.ts` (second decision point). Would change: a need to tell the first write apart from a later one.
+3. **`replace` counts a failed copy in `backupFails` and leaves it `failed`; `skipped` only after its write succeeds.** Same deferral in `attempt`. Would change: a product wish to show "skipped" on a failed write.
+4. **`migrationWrittenAt` is also set by a successful `replace`** of a migrated save (the save on the device is then the current version). Would change: if import should not count as the migration write.
+5. **Repaired room → `markDirty()` in `main.ts`** (plan item), not a start arm in the saver.
