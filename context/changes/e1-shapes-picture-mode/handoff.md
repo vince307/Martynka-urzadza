@@ -1,57 +1,54 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by `/10x-tdd` phase 5 of run `2026-10-15-fix-s14c-s14d`. Phase 5 is committed and green except e2e (not runnable here). Picture mode is a pure draw filter; no save field, save stays v2.
+Written by `/10x-tdd` phase 6 of run `2026-10-15-fix-s14c-s14d`. Phase 6 is committed and green except e2e (not runnable here). No coin task is reachable; nothing in the scene changed.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode` |
-| Commits | phases 1-4 `a230f1a`, `b9b16d5`, `670e988`, `c6c6600`; phase 5 `d29760e`, then this handoff commit |
+| Commits | phases 1-5 `a230f1a`, `b9b16d5`, `670e988`, `c6c6600`, `d29760e`; phase 6 `a992ecf`, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| Progress | 4.5 ticked citing the orchestrator note (86 passed on `c6c6600`); 5.1-5.3 ticked with `d29760e`; 5.4 e2e (orchestrator), 5.5 `[reviewer]`, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 open |
+| Progress | 5.4 ticked citing the orchestrator note (86 passed on `d29760e`); 6.1-6.3 ticked with `a992ecf`; 6.4 e2e (orchestrator), 6.5 `[reviewer]`, 5.5, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/pictureMode.ts` (new) | `pictureMode(learner, month, rules = balance.pictureMode)`: stage E1 and (`easedRounds > 0` or age 6 in an autumn month) |
-| `src/data/pictureSkills.ts` (new) | `hasPicture(skill)`: static table by type (plus CHOOSE_OP all-`picture` kinds, LENGTH `ruler`, MASS not `text`) |
-| `src/core/round/pictureFilter.ts` (new) | `withPictures(buckets, hasPicture, minCurrent)`: `earlier`/`previous` keep picture skills, `current` only if >= threshold, a bucket that would empty stays whole |
-| `src/core/curriculum.ts` | `buildAdaptiveRound(..., art?, options?: { picture?: boolean })`, applied after the art filter, threshold `unlockThreshold(n, balance.curriculum.unlockShare)` |
-| `src/scenes/TaskScene.ts` | `freshRound` passes `picture: month !== undefined && pictureMode(learner, month)` (month from `REGISTRY_KEYS.month`); warm-up unchanged |
-| `src/data/balance.ts` | `pictureMode: { age: 6, months: placementData.monthBands.autumn }` |
-| `docs/design-gaps.md` | row 21 updated, new row 103 |
-| `tests/pictureMode.test.ts` (new) | 7 tests: mode table (5 ages x 12 months x eased x E1/E2), `hasPicture` vs 100 generated tasks per E1/E2 skill, >= 90% pictures in `earlier`, off = no option, E1.2 current filtered, E1.3 current whole |
+| `src/core/trayDrag.ts` (new) | generic `stepTrayDrag<K>` (`Counts`, `Carrying`, `TrayDragState/Event/Geo/Rules`; `maxPerKind`, `maxTotal`); S13-09 explained in its comment |
+| `src/core/blockDrag.ts` | thin instance: same public names (`BlockKind`, `Mat`, `emptyMat`, `matValue`, `initialBlockDrag`, `stepBlockDrag`, `BlockDragGeo` with `matBlockAt`), types are aliases of the generic ones |
+| `src/core/coins.ts` (new) | `walletCoins`, `walletValue`, `fewestCoins` (dynamic programming, not greedy) |
+| `src/core/round/dragLayout.ts` | `CoinSpec`, `CoinLayout`, `coinLayout(spec, kinds)`: 1-3 kinds in one row, 4 in 2 x 2, more throws; `coin(i)` cell of the i-th wallet coin |
+| `src/data/layout.ts`, `balance.ts` | `TASK_LAYOUT.coinDrag` (tray 440 x 300, wallet = block mat, 5 x 2 cells), `balance.coinDrag { startDistance 12, maxTotal 10 }` |
+| `tests/trayDrag.test.ts`, `coins.test.ts`, `coinLayout.test.ts` (new); `tests/blockDrag.test.ts` | 36 new tests; old blockDrag cases untouched, two cases appended (S13-09, balance.coinDrag) |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | 2763 passed (branch baseline 2756, +7); deploy and ops test scripts OK |
-| `npm run sample -- E1` ... `E6` | exit 0 x6 (no content change this phase) |
+| `npm test` | 2799 passed (branch baseline 2763, +36); deploy and ops test scripts OK |
+| `npm run sample -- E1` ... `E6` | exit 0 x6 (no content change) |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `tests/fixtures/` untouched |
-| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium MachPortRendezvous Permission denied on `first-launch.spec.ts`, plain `--workers=4`); expected 86 + 0. 4.5 ticked from the orchestrator note (86 passed on `c6c6600`, 5.8 min) |
-| RED | stubs first (all return false / ignore the option); `AssertionError: E1 age=6 month=0 eased=0: expected false to be true`, `E1.1.shapes_pick: expected false to be true`, `expected 0 to be greater than or equal to 0.9` |
-| Breaks | `pictureMode` without the month condition -> `E1 age=6 month=1 eased=0: expected true to be false`; filter ignoring the threshold -> `E1.3.add_sub_5: expected false to be true`; COUNT dropped from the table -> `E1.2.count_5: expected false to be true`. All restored. Meta-check: the table test's oracle is the drawn tasks, not the table |
-| Unpinned E1 e2e specs that may draw a different mix (plan Known risk F7) | only `tests/e2e/first-launch.spec.ts` "age 6 starts on E1" (age 6, month pinned October, so picture mode is on; `answerRight` already handles tile faces and drawings). `minigames.spec.ts` starts E1 at age 10+ (mode off); `passWelcome` starts on E3; `parent-settings.spec.ts:175/188` use the E3 default |
+| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium dies with SIGTRAP / kill EPERM on `drawn-tasks.spec.ts`, plain `--workers=4`); expected 86 + 0; the orchestrator must run `drawn-tasks.spec` (block drag by touch, cancelled touch) and `adaptive.spec` |
+| RED | stubs first (reducer returns state, coins return [], layout empty); `AssertionError: expected { pointerId: 1, kind: 'ten', …(6) } to match object { kind: 'one', from: 'tray', …(3) }` (S13-09 on blocks), plus 31 failing new tests |
+| Breaks | old S13-09 (`down` of the same finger returns state) -> 3 red (blockDrag + 2 trayDrag); `fewestCoins` greedy -> `expected [ 200 ] to deeply equal []` (tray 2/5/10 zl); all four kinds in one row -> "3 kinds sit in one row, 4 kinds in a 2 x 2 grid" red (the 96 px test stays green: four tiles of 98 px still fit a row, so the 96 px criterion alone does not catch it). Restored. Meta-check: the `fewestCoins` oracle is an exhaustive search inside the test; the first greedy break fell back to the DP and stayed green, so it was redone as a pure greedy |
 
 ## 4. Next command
 
-`/10x-tdd e1-shapes-picture-mode phase 6` (Phase 6, `Driver: tdd`)
+`/10x-tdd e1-shapes-picture-mode phase 7` (Phase 7, `Driver: tdd`)
 
 ## 5. Open
 
-- 5.4 e2e (orchestrator, `--workers=4`, expect 86); 5.5 `[reviewer]` (no field in `Settings`/`SavedLearner`, `variants.ts` and easing weights untouched, row 21/103 honest); the earlier manual rows 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 stay open.
-- Watch `first-launch.spec.ts` age-6 test first when the orchestrator runs e2e.
+- 6.4 e2e (orchestrator, `--workers=4`, expect 86; `drawn-tasks.spec` and `adaptive.spec` first); 6.5 `[reviewer]` (`blockDrag.ts` thin instance, S13-09 comment); 5.5 `[reviewer]`; manual rows 4.6, 4.7, 3.5, 1.5, 2.7, 2.8.
+- `TaskScene` still imports `stepBlockDrag` unchanged; the coin wallet scene, `trayDrag` instance for coins and the geometry hit tests (`coinGeometry`) arrive in phases 7-8.
 
 ## 6. Autonomous decisions
 
-1. `pictureMode` takes the rules as a third argument defaulting to `balance.pictureMode`; the autumn months come from the placement table so the two cannot drift. Would change: a different band for picture mode than for placement.
-2. `buildAdaptiveRound` imports `balance` and `hasPicture` directly (core may import data), threshold uses `balance.curriculum.unlockShare`; the plan's `{ picture: boolean }` option kept.
-3. Month missing in the registry means mode off (scenes never call Date).
-4. No teacher read: no `src/data/` content or generator changed (only the new table and balance number).
-5. Commit message and next-phase prompts decided in place, stopped after phase 5.
+1. S13-09 applies to the SAME finger only. The plan says "same or another pointerId", but the existing test "a second finger cancels the carry and changes nothing" must stay unchanged and would fail if a second finger started a new carry; a second finger still cancels. Would change: the maintainer wants a second finger to take over the grab (then that old test is rewritten).
+2. Generic geometry hook is named `matAt`; `BlockDragGeo` keeps `matBlockAt` and is adapted in `stepBlockDrag`.
+3. `coinLayout(spec, kinds)` takes the spec first (injected, like `dragLayout`), a deviation from the plan's `coinLayout(kinds, wallet)`; wallet cells are positional (`coin(i)`) since counts live in the reducer state. `fewestCoins` returns [] when the target cannot be reached.
+4. Wallet tile sizes: 3 kinds 136 x 136, 4 kinds 212 x 142, wallet cells 172 x 214 (all >= 96). Provisional, screenshots at the visual gate (phase 8).
+5. No teacher read: no content or generator changed. Commit message and next-phase prompts decided in place, stopped after phase 6.

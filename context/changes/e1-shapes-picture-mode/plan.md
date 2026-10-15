@@ -897,7 +897,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — d29760e
 - [x] 5.2 Deliberate break: `pictureMode` bez warunku miesiąca / filtr zjada cały `current` / wpis tabeli fałszywy dla COUNT → czerwone; przywrócone; meta-check — d29760e
 - [x] 5.3 `tests/fixtures/` bez zmian (zapis v2); pełna bramka lokalna zielona — d29760e
-- [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 86 passed on d29760e (`--workers=4`, 5.7 min)
 
 #### Manual
 
@@ -907,9 +907,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 6.1 Nowe testy czerwone przed implementacją, zielone po; `tests/blockDrag.test.ts` (stare przypadki) zielony bez edycji asercji; unit `<baseline gałęzi> + N`
-- [ ] 6.2 Deliberate break: stare S13-09 / `fewestCoins` pierwsza kombinacja / taca 4 rodzajów w jednym rzędzie → czerwone; przywrócone; meta-check
-- [ ] 6.3 Pełna bramka lokalna zielona
+- [x] 6.1 Nowe testy czerwone przed implementacją, zielone po; `tests/blockDrag.test.ts` (stare przypadki) zielony bez edycji asercji; unit `<baseline gałęzi> + N` — a992ecf
+- [x] 6.2 Deliberate break: stare S13-09 / `fewestCoins` pierwsza kombinacja / taca 4 rodzajów w jednym rzędzie → czerwone; przywrócone; meta-check — a992ecf
+- [x] 6.3 Pełna bramka lokalna zielona — a992ecf
 - [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `drawn-tasks.spec` (klocki na wspólnym reduktorze)
 
 #### Manual
