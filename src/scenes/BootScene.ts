@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Loader, Scene } from 'phaser';
 import { artHealth } from '../core/artHealth';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
@@ -29,13 +29,21 @@ export class BootScene extends Scene {
                 console.warn('Loading bar failed', error);
             }
         });
+        // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,
+        // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).
+        const limitMs = this.load.xhr.timeout;
+        this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
+            if (typeof limitMs === 'number' && limitMs > 0) {
+                file.xhrSettings.timeout = limitMs;
+            }
+        });
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
         this.load.on('loaderror', (file: { key: string; type?: string }) => {
             console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
         });
-        // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image.
+        // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
         for (const art of TASK_ART) {
             if (seam === 'missing') {

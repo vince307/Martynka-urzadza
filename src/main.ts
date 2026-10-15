@@ -5,8 +5,8 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { remapLegacySalon, repairCurrentRoom } from './core/rooms';
-import { FIRST_ROOM, LEGACY_SALON, ROOMS, SALON } from './data/rooms';
+import { repairCurrentRoom } from './core/rooms';
+import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings, VariantState } from './core/types';
@@ -22,7 +22,7 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { E2E_LOAD_TIMEOUT_MS, E2E_SLOWER_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
+import { E2E_LOADER_TIMEOUT_MS, E2E_LOAD_TIMEOUT_MS, E2E_SLOWER_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -48,6 +48,9 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
             width: GAME_WIDTH,
             height: GAME_HEIGHT,
         },
+        loader: __E2E_HOOK__ && forcedArt === 'stall'
+            ? { timeout: E2E_LOADER_TIMEOUT_MS, maxRetries: 0 }   // e2e build only (?e2eArt=stall)
+            : { timeout: balance.loader.timeoutMs, maxRetries: balance.loader.maxRetries },
         scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
         callbacks: {
             preBoot: (booting) => {
@@ -203,18 +206,19 @@ const start = async (): Promise<void> => {
         return;
     }
     let session: SessionSave;
+    let roomRepaired = false;
     if (outcome.kind === 'loaded') {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
-        // After the room repair, before the game: a salon saved under the old task list is carried to the current one.
-        const remapped = remapLegacySalon(repaired.session, LEGACY_SALON, SALON);
-        session = remapped.session;
-        if (remapped.remappedFrom !== null) {
-            console.warn(`Salon save from the old task list (${remapped.remappedFrom} done) carried to the current one`);
+        // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already v3.
+        session = repaired.session;
+        if (outcome.migratedFrom !== null) {
+            console.warn(`Save migrated from v${outcome.migratedFrom}`);
         }
         if (repaired.repairedFrom !== null) {
+            roomRepaired = true;
             console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${FIRST_ROOM}`);
         }
     } else {
@@ -256,6 +260,8 @@ const start = async (): Promise<void> => {
     });
     booted.saver = saver;
     game.registry.set(REGISTRY_KEYS.saver, saver);
+    // A repaired current room is written too (a migrated save is written by the autosaver itself).
+    if (roomRepaired) saver.markDirty();
     // The general events, not changedata-<key>: the first set of a key (the learner at the welcome) emits only setdata.
     const saveKeys: readonly string[] = SAVE_KEYS;
     const onChange = (_parent: unknown, key: string): void => {

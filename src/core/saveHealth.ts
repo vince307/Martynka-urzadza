@@ -7,7 +7,7 @@ export type SaveHealthState =
     | { kind: 'notYet' }
     | { kind: 'ok'; lastWriteAt: number | null; earlierFailures: { count: number; error: string } | null };
 
-// The save moved from an older format, told as a fact: only after a v2 write in this session, with the fate of the old copy.
+// The save moved from an older format, told as a fact: only after a write of the new version in this session, with the fate of the old copy.
 export type SaveMigration = { from: number; copy: 'kept' | 'lost'; code: string | null };
 
 export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null };

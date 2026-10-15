@@ -91,6 +91,7 @@ Repo → Settings → Secrets and variables → Actions.
 
 - **Deploy**: zmiany trafiają na `main` wyłącznie przez pull request zmergowany na GitHubie (bez lokalnego merge i push na `main`); merge jest pushem na `main`, więc uruchamia workflow „Deploy”. Ręcznie: Actions → Deploy → Run workflow → `deploy`.
 - **Rollback**: Actions → Deploy → Run workflow → `rollback` (przełącza na poprzednie wydanie i powtarza health check). Z własnej maszyny: `ssh -i ~/.ssh/martynka_deploy martynka@<host> rollback`.
+  Uwaga: rollback do wydania sprzed formatu zapisu v3 pokazuje urządzeniom, które już wczytały v3, kartę „Ten zapis pochodzi z nowszej wersji gry” (`pl.saveFuture`): postęp jest bezpieczny i nie jest nadpisywany, gra działa bez zapisu do czasu powrotu nowszego wydania.
 - **Status**: `ssh -i ~/.ssh/martynka_deploy martynka@<host> status` (bieżące, poprzednie, lista wydań). Serwer trzyma 5 ostatnich wydań.
 
 - **Smoke po deployu** (plan testów, etap 2): po `switch` workflow uruchamia `npm run check:deploy -- https://martynka-urzadza.pl <sha7>` (`scripts/check-deploy.ts`): strona i `index.html` z `no-cache`, manifest z nazwą gry, `Content-Type: application/manifest+json` i `no-cache`, `sw.js` z `no-cache` i niepustym precache, każdy bundle z `index.html` obecny w precache i serwowany z `immutable`, SHA builda w bundlu wejściowym, `www` → apex. Przy rollbacku to samo bez SHA. Z własnej maszyny: `npm run check:deploy -- https://martynka-urzadza.pl $(git rev-parse --short origin/main)`; z sesji agenta dodatkowo `NODE_USE_ENV_PROXY=1` (sandbox).

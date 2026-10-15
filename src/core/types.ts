@@ -68,16 +68,6 @@ export interface RoomDef {
     tasks: RoomTaskDef[];     // completed in order
 }
 
-/**
- * The frozen task list of a room as it was before its renovation list changed (S-16a). `renames` maps an old slot id to
- * its new one when the id changed; ids not listed keep their name. Used only to remap saves, never to draw.
- */
-export interface LegacyRoomLayout {
-    roomId: string;
-    tasks: { slot: string; cost: number }[];
-    renames: Record<string, string>;
-}
-
 /** One entry of the room list shown on the "Pokój gotowy!" card: a room, or a teaser for a room that does not exist yet. */
 export type RoomListEntry =
     | { room: string; unlockAfter?: string }
@@ -155,5 +145,10 @@ export interface SaveV2 extends Omit<SaveV1, 'version'> {
     variants: VariantState;
 }
 
+/** Save format, version 3: the shape of version 2 (the change is data: the old 10-task salon is carried over to the 7-task one). */
+export interface SaveV3 extends Omit<SaveV2, 'version'> {
+    version: 3;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV2;
+export type SaveState = SaveV3;

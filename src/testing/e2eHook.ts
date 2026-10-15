@@ -1,9 +1,10 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
+import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
-import { encodeSave, freshSession, type SessionSave } from '../core/save';
+import { encodeSave, freshSession } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -91,16 +92,19 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall';
 
 /**
  * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=corrupt` points the coins at a file that is no image
- * (200 and a decode failure, no load error). Anything else is null.
+ * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' ? value : null;
 };
+
+/** The loader limit under `?e2eArt=stall`, so a run does not wait the real 12 s (no retry). */
+export const E2E_LOADER_TIMEOUT_MS = 2000;
 
 export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'legacy-salon';
 const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon'];
@@ -108,7 +112,7 @@ const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
 
-/** Under `?e2eSave=slow` the read answers (a v2 save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
+/** Under `?e2eSave=slow` the read answers (a current-version save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
 export const E2E_SLOW_READ_MS = 2500;
 
 /** The second (longer) read limit under `?e2eSave=hang|slow`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
@@ -120,18 +124,12 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
     return value !== null && E2E_SAVE_SEAMS.includes(value) ? (value as E2ESaveSeam) : null;
 };
-
-/** `?e2eSave=legacy-salon`: a v2 save from before S-16a, the salon with 4 of the old 10 tasks done (floor, walls, curtains, sofa). */
-const legacySalonSession = (): SessionSave => ({
-    ...freshSession(FIRST_ROOM, 3),
-    rooms: { [FIRST_ROOM]: { tasksDone: 4, chosen: { floor: 0, walls: 1, curtains: 2, sofa: 2 } } },
-});
 
 /** What the seam store holds, for the hook: the order of its operations and the version of the last written value. */
 export interface E2ESaveStoreLog {
@@ -151,7 +149,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
               : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : seam === 'legacy-salon'
-                  ? encodeSave(legacySalonSession())
+                  ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
     seamStoreLog = log;

@@ -2,10 +2,11 @@
 // cost 5-15 stars), plan section 9 (nothing distinguished by colour alone: a variant has a name and a colour) and the
 // art pack's manifest (1920x1080 scene, six furniture slots with three variants, four fixed layers).
 import { describe, expect, it } from 'vitest';
+import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { FIRST_ROOM, LEGACY_SALON, ROOMS, ROOM_ORDER, SALON } from '../src/data/rooms';
+import { FIRST_ROOM, ROOMS, ROOM_ORDER, SALON } from '../src/data/rooms';
 import { GAME_HEIGHT, GAME_WIDTH, MIN_TOUCH_TARGET } from '../src/data/layout';
 
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
@@ -112,16 +113,16 @@ describe('salon data', () => {
         expect(SALON.tasks.slice(0, 7).map((t) => t.id)).toEqual(['renovate', 'add-sofa', 'lay-rug', 'place-coffee-table', 'place-cabinet', 'place-armchair', 'hang-frames']);
     });
 
-    // The remap (core/rooms remapLegacySalon) tells an old save by a `chosen` key that is no slot of the new room.
+    // The v2 -> v3 step (core/migrations/legacySalon) tells an old save by a `chosen` key only the old list wrote (M-2).
     it('uses no slot id that means something else in the frozen legacy salon', () => {
         const slotIds = new Set(SALON.slots.map((s) => s.id));
-        const legacyIds = new Set(LEGACY_SALON.tasks.map((t) => t.slot));
-        for (const [oldId, newId] of Object.entries(LEGACY_SALON.renames)) {
+        const legacyIds = new Set(LEGACY_SALON_V2.tasks.map((t) => t.slot));
+        for (const [oldId, newId] of Object.entries(LEGACY_SALON_V2.renames)) {
             expect(legacyIds.has(oldId), oldId).toBe(true);
             expect(slotIds.has(newId), newId).toBe(true);
             expect(slotIds.has(oldId), `${oldId} would be mistaken for a new slot`).toBe(false);
         }
-        const renamedAway = new Set(Object.keys(LEGACY_SALON.renames));
+        const renamedAway = new Set(Object.keys(LEGACY_SALON_V2.renames));
         const dropped = [...legacyIds].filter((id) => !renamedAway.has(id) && !slotIds.has(id));
         expect(dropped.sort()).toEqual(['curtains', 'floor', 'lamp', 'plant', 'walls']);
         // At least one old key must be foreign to the new room, or the marker could not tell an old save.

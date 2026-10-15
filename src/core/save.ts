@@ -3,10 +3,11 @@
 // Every version is a one-way door once it ships to children's devices. A change to the shape adds a version, a migration step
 // in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
 import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
+import { LIFT_V2_SALON } from './migrations/legacySalon';
 import { emptyRoomState } from './rooms';
 import type { RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const DEFAULT_PROFILE = 'default';
 
 /** The part of the registry state that is saved. */
@@ -33,6 +34,8 @@ const startingVariants = (): VariantState => ({ roundsSince: 0, lastMinigame: nu
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     // v1 -> v2 (S-15): the variants block, at its starting values.
     1: (raw) => ({ ...(raw as Record<string, unknown>), version: 2, variants: startingVariants() }),
+    // v2 -> v3 (salon-load-health): a salon saved before S-16a (10 tasks) becomes the 7-task salon, in one place and once.
+    2: LIFT_V2_SALON,
 };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -80,10 +83,10 @@ const validVariants = (v: unknown): v is VariantState =>
     Array.isArray(v.puzzlesDone) &&
     v.puzzlesDone.every((id) => typeof id === 'string');
 
-/** The first top-level key of a v2 save that fails the strict check, or null when the value is a valid save. */
+/** The first top-level key of a v3 save that fails the strict check, or null when the value is a valid save. */
 export function saveProblem(value: unknown): string | null {
     if (!isRecord(value)) return 'version';
-    if (value.version !== 2) return 'version';
+    if (value.version !== SAVE_VERSION) return 'version';
     if (typeof value.profileId !== 'string') return 'profileId';
     if (!isCount(value.stars)) return 'stars';
     if (!isRecord(value.rooms) || !hasOnly(value.rooms, validRoom)) return 'rooms';
@@ -112,7 +115,7 @@ export function importProblem(raw: unknown, migrations: Readonly<Record<number, 
     return saveProblem(current);
 }
 
-/** Strict check of a v2 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
+/** Strict check of a v3 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
 export function validateSave(value: unknown): value is SaveState {
     return saveProblem(value) === null;
 }
@@ -158,7 +161,7 @@ function savedLearner(l: SessionLearner, pendingStep: number | null): SavedLearn
 
 export function encodeSave(session: SessionSave, profileId: string = DEFAULT_PROFILE): SaveState {
     return {
-        version: 2,
+        version: SAVE_VERSION,
         profileId,
         stars: session.stars,
         rooms: copyRooms(session.rooms),

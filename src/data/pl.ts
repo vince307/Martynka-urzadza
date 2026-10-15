@@ -63,8 +63,8 @@ export const pl = {
             write: 'zapis',
             replace: 'zastąpienie zapisu',
         },
-        // DESIGN-GAP 95: the kit has no line for a save moved from an older version. Told only after a v2 write in this session;
-        // `lost` (the v1 copy could not be written) is followed by the code line.
+        // DESIGN-GAP 95: the kit has no line for a save moved from an older version. Told only after a write of the new version in this session;
+        // `lost` (the copy of the old save could not be written) is followed by the code line.
         saveMigrated: {
             kept: (from: number) => `Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.`,
             lost: (from: number) => `Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.`,

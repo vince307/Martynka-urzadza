@@ -1,0 +1,14 @@
+diff --git a/src/main.ts b/src/main.ts
+index 14e416f..9e82a41 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -48,9 +48,6 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
+             width: GAME_WIDTH,
+             height: GAME_HEIGHT,
+         },
+-        loader: __E2E_HOOK__ && forcedArt === 'stall'
+-            ? { timeout: E2E_LOADER_TIMEOUT_MS, maxRetries: 0 }   // e2e build only (?e2eArt=stall)
+-            : { timeout: balance.loader.timeoutMs, maxRetries: balance.loader.maxRetries },
+         scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
+         callbacks: {
+             preBoot: (booting) => {
