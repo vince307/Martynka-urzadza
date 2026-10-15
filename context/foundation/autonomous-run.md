@@ -38,7 +38,7 @@ The same steps as `.github/workflows/ci.yml` (the required PR check).
 | build | `npm run build` (also checks that the production bundle has no e2e hook: prints `e2e hook: absent (N chunks checked)`, fails the build otherwise) | 5 s | pass/fail |
 | database tests | none | | none |
 | smoke (against the gate server) | none (the content smoke `sample` E1–E6 needs no server and runs in the unit gate) | | none |
-| e2e (only when § 11 says E2E=on) | `npx playwright test` (two servers, both started by Playwright through `webServer` in `playwright.config.ts`: the production build on the gate port 4398 for the seed (risk #8) and the e2e-hook build on 4397 for the round spec (risk #11); never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
+| e2e (only when § 11 says E2E=on) | `npx playwright test --workers=4` (4 workers since run 2026-10-14-save-s13b-s15-s14b: 6 workers flaked on load-sensitive tests; two servers, both started by Playwright through `webServer` in `playwright.config.ts`: the production build on the gate port 4398 for the seed (risk #8) and the e2e-hook build on 4397 for the round spec (risk #11); never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
 
 After a migration: none. Migration on data (`POST_MIGRATION_ON_DATA_CMD`): none (no database; the save format and its
 migrations arrive with roadmap S-11 and are tested as unit tests, test-plan.md rollout phase 4).
