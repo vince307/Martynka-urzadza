@@ -811,7 +811,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [x] 8.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (seed #8 i wszystkie spec'e, baseline, bez spadków) — see phase 8 commit (e2e 94 passed --workers=4, observed)
+- [x] 8.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (seed #8 i wszystkie spec'e, baseline, bez spadków) — d9f1fbe (e2e 94 passed --workers=4, observed)
 - [ ] 8.2 Celowe złamanie: wyjątek w callbacku `progress` → seed/first-launch czerwone; przywrócone; meta-check
 
 #### Manual
