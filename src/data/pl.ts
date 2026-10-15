@@ -77,6 +77,8 @@ export const pl = {
             timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
             'migration-failed': 'Zapis jest wyłączony: starego zapisu nie udało się przenieść do tej wersji gry. Został bez zmian.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
+            // DESIGN-GAP 113: the kit has no line for a save refused because a newer game version saved on this device.
+            newer: 'Zapis jest wyłączony: nowsza wersja gry zapisała już postępy na tym urządzeniu. Uruchom grę ponownie.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
         artHeading: 'Obrazki',
@@ -195,6 +197,7 @@ export const pl = {
         // DESIGN-GAP 70 (docs/design-gaps.md): the kit has no line per reason a device save cannot be replaced (newer version, slow read).
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
         deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
+        deviceNewer: 'Nowsza wersja gry zapisała już postępy na tym urządzeniu, więc ta karta ich nie zastąpi. Uruchom grę ponownie.',
         deviceFatal: 'Gra się zatrzymała, więc nie może teraz zastąpić zapisu. Uruchom grę ponownie.',
         deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },
@@ -274,7 +277,8 @@ export const pl = {
     },
     // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP, docs/design-gaps.md row 23: the kit has no narration of the card).
     // Loading screen of BootScene: the game's name (S-16a).
-    loading: { title: 'Martynka urządza' },
+    // DESIGN-GAP 112: `slow` is ours (the kit has no line for a slow start); shown after balance.loader.slowAfterMs.
+    loading: { title: 'Martynka urządza', slow: 'Jeszcze chwilka, wczytuję obrazki.' },
     unlock: {
         title: 'Nowa umiejętność!',
         next: 'Dalej',

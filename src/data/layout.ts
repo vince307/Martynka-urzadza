@@ -197,6 +197,7 @@ export const REGISTRY_KEYS = {
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    bootLoad: 'bootLoad',               // { cut: string[]; creates: number }: files the total boot limit ended and how often BootScene.create ran, set by BootScene; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
     today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)
@@ -440,6 +441,7 @@ export const UNLOCK_LAYOUT = {
 export const LOADING_LAYOUT = {
     title: { x: 960, y: 450 },
     bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
+    slow: { x: 960, y: 680, maxWidth: 800 },   // DESIGN-GAP 112: the "still loading" line under the bar, centred like the title, wrapped within the bar width
 } as const;
 
 /**

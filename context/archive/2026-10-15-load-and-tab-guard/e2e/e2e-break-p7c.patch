@@ -1,0 +1,13 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index caf8389..4122146 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -64,8 +64,6 @@ export class BootScene extends Scene {
+                 return;
+             }
+             try {
+-                this.loading?.slow();
+-                this.phase = 'slow';
+             } catch (error) {
+                 console.warn('Loading line failed', error);
+             }

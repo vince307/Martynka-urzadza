@@ -7,7 +7,7 @@ import { endRound } from '../src/core/curriculum';
 import { placeByChild, type SessionLearner } from '../src/core/placement';
 import type { SkillResult } from '../src/core/mastery';
 import { purchase } from '../src/core/rooms';
-import { DEFAULT_PROFILE, MIGRATIONS, SAVE_VERSION, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
+import { DEFAULT_PROFILE, MIGRATIONS, SAVE_VERSION, storedVersionNewer, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
 import { startLearning } from '../src/core/curriculum';
 import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -329,5 +329,17 @@ describe('freshSession (S-12): the one empty game, used by first launch and by r
 
     it('carries seeded stars', () => {
         expect(freshSession('salon', 12).stars).toBe(12);
+    });
+});
+
+describe('storedVersionNewer (P-5): the rule that stops an older page from overwriting a newer save', () => {
+    it.each([undefined, null, {}, { version: '4' }, { version: 3 }, { version: 2 }, 'x', 4, [], { version: Number.NaN }])('%j never refuses a write at version 3', (stored) => {
+        expect(storedVersionNewer(stored, 3)).toBe(false);
+    });
+
+    it('a numeric version above ours refuses', () => {
+        expect(storedVersionNewer({ version: 4 }, 3)).toBe(true);
+        expect(storedVersionNewer({ version: 99 }, 3)).toBe(true);
+        expect(storedVersionNewer({ version: 3 }, 2)).toBe(true);
     });
 });

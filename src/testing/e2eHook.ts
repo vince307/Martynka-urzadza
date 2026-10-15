@@ -4,11 +4,12 @@ import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
-import { encodeSave, freshSession } from '../core/save';
+import { encodeSave, freshSession, NEWER_SAVE, SAVE_VERSION, storedVersionNewer } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { FIRST_ROOM } from '../data/rooms';
+import type { BootScene } from '../scenes/BootScene';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
 import type { UIScene } from '../scenes/UIScene';
@@ -92,22 +93,25 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall';
 
 /**
  * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=corrupt` points the coins at a file that is no image
- * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang). Anything else is null.
+ * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang); `?e2eArt=stallall` switches the per-file limit off and shortens the total boot limit (E2E_BOOT_LIMITS). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' ? value : null;
 };
 
 /** The loader limit under `?e2eArt=stall`, so a run does not wait the real 12 s (no retry). */
 export const E2E_LOADER_TIMEOUT_MS = 2000;
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'legacy-salon';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon'];
+/** The boot limits under `?e2eArt=stallall`: the slow line after 0.5 s, the total cut after 3 s. */
+export const E2E_BOOT_LIMITS = { slowAfterMs: 500, totalMs: 3000 } as const;
+
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'legacy-salon' | 'newer';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon', 'newer'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -124,7 +128,7 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -175,8 +179,11 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 return new Promise<void>(() => undefined);
             }
             log.ops.push('write');
-            log.writtenVersion = next.version;
-            value = next;
+            if (seam === 'newer' && storedVersionNewer(value, next.version)) {
+                return Promise.reject(Object.assign(new Error('e2e'), { name: NEWER_SAVE }));
+            }
+            value = seam === 'newer' ? { ...next, version: SAVE_VERSION + 1 } : next;
+            log.writtenVersion = (value as { version: number }).version;
             return Promise.resolve();
         },
     };
@@ -229,6 +236,11 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
     };
+    const bootLoadSnapshot = (): { cut: string[]; creates: number } | null => {
+        const value = game.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[]; creates: number } | undefined;
+        return value ? { cut: [...value.cut], creates: value.creates } : null;
+    };
+    const boot = (): BootScene | null => game.scene.getScene(SCENE_KEYS.boot) as BootScene | null;
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
@@ -236,14 +248,19 @@ export const installE2EHook = (game: Game): void => {
     Object.defineProperty(window, '__martynkaE2E', {
         value: Object.freeze({
             get snapshot() {
+                // While BootScene shows the loading screen there is no other scene to read (audit A-1: the load can hang for seconds).
+                const loadingScene = boot();
+                if (loadingScene?.isLoading()) {
+                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase() }), save: save(), bootLoad: bootLoadSnapshot() });
+                }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), bootLoad: bootLoadSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

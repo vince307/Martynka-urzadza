@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { decodeSave, encodeSave } from '../src/core/save';
+import { decodeSave, encodeSave, NEWER_SAVE, SAVE_VERSION } from '../src/core/save';
 import { e2eArt, e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon', 'newer']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -18,6 +18,14 @@ describe('e2eSave', () => {
 });
 
 describe('e2eSaveStore', () => {
+    it('newer reads a fresh start, takes the first write, then holds a newer version and refuses the next', async () => {
+        const store = e2eSaveStore('newer');
+        await expect(store.read()).resolves.toBeUndefined();
+        await expect(store.write({ version: SAVE_VERSION } as never)).resolves.toBeUndefined();
+        await expect(store.write({ version: SAVE_VERSION } as never)).rejects.toMatchObject({ name: NEWER_SAVE });
+        expect(((await store.read()) as { version: number }).version).toBe(SAVE_VERSION + 1);
+    });
+
     it('unreadable holds a save from a future version', async () => {
         await expect(e2eSaveStore('unreadable').read()).resolves.toMatchObject({ version: 99 });
     });
@@ -104,14 +112,14 @@ describe('e2eSaveStore', () => {
 
 describe('e2eArt', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['missing', 'corrupt', 'room', 'stall']) {
+        for (const seam of ['missing', 'corrupt', 'room', 'stall', 'stallall']) {
             expect(e2eArt(`?e2eArt=${seam}`), seam).toBe(seam);
             expect(e2eArt(`?a=1&e2eArt=${seam}`), seam).toBe(seam);
         }
     });
 
     it('returns null for a missing or other value', () => {
-        for (const search of ['', '?x=1', '?e2eArt=', '?e2eArt=x', '?e2eArt=STALL']) {
+        for (const search of ['', '?x=1', '?e2eArt=', '?e2eArt=x', '?e2eArt=STALL', '?e2eArt=stall-all']) {
             expect(e2eArt(search), search).toBeNull();
         }
     });

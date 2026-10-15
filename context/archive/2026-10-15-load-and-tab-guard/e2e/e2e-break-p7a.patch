@@ -1,0 +1,12 @@
+diff --git a/src/scenes/loaderCut.ts b/src/scenes/loaderCut.ts
+index 10024c1..98e650f 100644
+--- a/src/scenes/loaderCut.ts
++++ b/src/scenes/loaderCut.ts
+@@ -8,6 +8,7 @@ import { Loader } from 'phaser';
+  * (tests/phaserLoaderPin.test.ts is the tripwire).
+  */
+ export function cutLoad(load: Loader.LoaderPlugin): string[] {
++    return [];
+     if (!load.isLoading()) {
+         return [];
+     }

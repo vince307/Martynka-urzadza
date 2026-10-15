@@ -54,13 +54,13 @@ describe('e2e hook guard', () => {
         expect(result.message).toContain('_app/index-d.js');
     });
 
-    it.each(['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'backupfail', 'backuphang', 'slow'] as const)('fails a production chunk holding the ?e2eSave=%s seam (S-11 F4)', (seam) => {
+    it.each(['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'backupfail', 'backuphang', 'slow', 'newer'] as const)('fails a production chunk holding the ?e2eSave=%s seam (S-11 F4)', (seam) => {
         const result = checkE2EHook([...clean, { fileName: '_app/index-s.js', code: `new URLSearchParams(location.search).get("e2eSave")==="${seam}"` }], false);
         expect(result.ok).toBe(false);
         expect(result.message).toContain('_app/index-s.js');
     });
 
-    it.each(['missing', 'corrupt', 'stall'] as const)('fails a production chunk holding the ?e2eArt=%s seam', (seam) => {
+    it.each(['missing', 'corrupt', 'stall', 'stallall'] as const)('fails a production chunk holding the ?e2eArt=%s seam', (seam) => {
         const result = checkE2EHook([...clean, { fileName: '_app/index-a.js', code: `new URLSearchParams(location.search).get("e2eArt")==="${seam}"` }], false);
         expect(result.ok).toBe(false);
         expect(result.message).toContain('_app/index-a.js');

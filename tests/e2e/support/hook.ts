@@ -49,7 +49,11 @@ export interface Snapshot {
     /** The star balance of the registry (the one source; equals starsTotal). */
     stars: number;
     counterText: string;
-    screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    /** The boot loading screen (BootScene still loading): its phase. */
+    loading?: { phase: 'loading' | 'slow' | 'over' };
+    /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
+    bootLoad?: { cut: string[]; creates: number } | null;
     /** What the open room shows (room screen only). */
     room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; modeText: string | null } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
@@ -63,7 +67,7 @@ export interface Snapshot {
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
     /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
-    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
+    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */
