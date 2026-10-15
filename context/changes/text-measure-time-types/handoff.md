@@ -1,55 +1,56 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by `/10x-implement` phase 2 of run `2026-10-15-fix-s14c-s14d`. Phase 2 is done and committed (INEQUALITY playable in E1.9, scene lights the tapped tile, hook fields, `answerWrong` fixed, design gap 98). The next agent must not get wrong: do not add the new snapshot field names (`correctChoices`, `markedTile`) to `vite/e2eHookGuard.mjs` (the snapshot ships in production, plan-review F1).
+Written by `/10x-tdd` phase 3 of run `2026-10-15-fix-s14c-s14d`. Phase 3 is done and committed (ORDER_OPS, TIMES_MORE, PRICE playable in E5.10 and E5.11). The next agent must not get wrong: `vite/e2eHookGuard.mjs` stays unchanged (plan-review F1); ORDER_OPS forms `a*b+c` and `a:b-c` cannot differ from left-to-right evaluation, so the generator and test demand a different left-to-right result only for `a+b*c` and `a-b:c` (plan said "always").
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | plan commits, p1 (`9507da3`), p2 `ab3d603` + this handoff |
+| Commits | plan commits, p1 `9507da3`, p2 `ab3d603`, p3 `1b18c9e` + this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; status changes are the orchestrator's) |
-| `## Progress` rows remaining | phase 2 rows 2.6 `[reviewer]` and 2.7 `[visual]` open, 1.5 `[reviewer]` open; phases 3-11 pending |
+| `## Progress` rows remaining | 3.4 (e2e part) , 3.5 `[reviewer]`, 3.6 `[visual]`; 1.5, 2.6, 2.7 as before; phases 4-11 pending |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/data/curriculum/E1.ts` | `E1.9.inequality_10` (tiles, max 10, four shapes); E1.9 now 3 skills, threshold 1 -> 2 |
-| `tests/curriculum.test.ts` | `INEQUALITY` moved from `LATER` to `GROUP_1` |
-| `src/scenes/TaskScene.ts` | field `reported` (right value tapped for the open task); `markCorrect` uses it when the task has `check`; snapshot `correctChoices`, `markedTile`; DESIGN-GAP 98 comment |
-| `src/ui/widgets/AnswerTiles.ts` | `markedValue()` getter (what the widget paints as correct) |
-| `tests/e2e/support/hook.ts` | `Snapshot.correctChoices/markedTile`; `answerWrong` takes a tile outside `correctChoices` |
-| `docs/design-gaps.md` | row 98 |
+| `src/core/tasks/generators/{orderOps,timesMore,price}.ts` | the three generators and their parsers; registered in `registry.ts` |
+| `src/data/wordTemplates.ts` | `goods` (noun, accusative, `one`, price range in whole złoty), `goodObj` |
+| `src/data/nouns.ts` | zeszyt, długopis, bułka, lizak, gumka, pocztówka, ołówek, banan, pączek |
+| `src/data/pl.ts` | `words.paid`, `tasks.orderOpsFirst/timesMore*/price*Hint` |
+| `src/data/curriculum/E5.ts` | `E5.10.price_100`, `E5.10.times_more_100`, `E5.11.order_ops_100`; E5.11 `childName` "Kolejność działań i kwartały" |
+| `tests/{orderOps,timesMore,price}.test.ts`, `tests/curriculum.test.ts` | new tests; 3 types moved from `LATER` to `GROUP_1` |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
+| RED (stubs returning an empty task) | `AssertionError: T.order_ops.a+b*c seed=1 draw=0 prompt="": expected [ { …(3) }, { …(3) } ] to deeply equal []` (18 of 18 red) |
 | `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | 2495 passed = baseline 2491 + 4 (E1.9 inequality skill in solvableInMode / contentInvariants per-skill tests) |
-| `sample` E1-E6 | exit 0 each; E1.9 shows 6 inequality tasks |
+| `npm test` | 2525 passed = baseline 2495 + 30 (18 new generator tests + 12 per-skill content invariants); deploy test scripts OK |
+| `sample` E1-E6 | exit 0 each, 0 violations |
 | `npm run build` | OK, `e2e hook: absent`; `tests/fixtures/` untouched |
-| e2e `npx playwright test --config=... --workers=4` | 82 passed = baseline 82 + 0, run in this session (5.3 min) |
-| Deliberate break | removing `E1.9.inequality_10` -> `tests/curriculum.test.ts` red: `AssertionError: E1.9 INEQUALITY: expected false to be true`; restored. Meta-check: it proves type coverage, not the scene (phase 10 does) |
-| Teacher read E1.9 `--count 6` | prompts "Jaka liczba pasuje do okienka? 1 + □ > 4", tiles near the boundary (e.g. 2/3/6/8, two fit), hints "więcej niż 3" / "mniej niż 4" correct, last line "Na przykład 1 + 8 = 9, a 9 > 4. Pasuje 8."; speech "jeden plus okienko większe niż cztery" / "mniejsze niż" good |
-| Specs that may now draw INEQUALITY | E1 rounds (E1.9 is a current-step skill from stage start 9+ or in earlier-step buckets): `first-launch.spec` (age 6 round), `task-round.spec` if on E1, `minigames.spec`, `save-restart.spec`, `save-backup-health.spec`, `save-transfer-blocked.spec`, `adaptive.spec` (mastering E1 steps); all use `answerWrong`/`answerRight`, which now skip every right tile |
+| e2e | not runnable in this session — orchestrator gate (Chromium: MachPortRendezvous Permission denied, plain command `--workers=4`); expected 82 passed = baseline 82 + 0 (no spec touches E5.10/E5.11; E5 rounds only reach them from a stage-E5 start) |
+| Deliberate breaks | ORDER_OPS answer left-to-right -> 2 red; TIMES_MORE `less` answer = total -> `expected 64 to be 32`; goods accusative `bułkę`->`bułka` -> inflection violation "kupiła 1 bułka" red; restored, 18 green. Meta-check: oracles read the printed prompt, not `task.answer` |
+| Teacher read E5.10/E5.11 `--count 6` (two seeds) | "razy więcej/mniej" always with genitive plural ("3 razy więcej naklejek", "2 razy mniej rogalików"); first hint contrasts with "o" ("Razy więcej to mnożenie, nie dodawanie: 20 · 4.") with no result; PRICE: "Jedna bułka kosztuje 3 złote", "kupił 4 pączki", "zapłaciła" by gender, złote/złotych correct; first read showed 24 zł for a bułka, so goods got believable price ranges (2-8 zł); ORDER_OPS hints "Najpierw mnożenie: 4 · 8." -> "4 · 8 = 32" -> "29 + 32 = 61"; speech "dwadzieścia dziewięć plus cztery razy osiem" OK |
 
 ## 4. Next command
 
-`/10x-tdd text-measure-time-types phase 3` (phase 3, `Driver: tdd`)
+`/10x-tdd text-measure-time-types phase 4` (phase 4, `Driver: tdd`)
 
 ## 5. Open
 
-- `[reviewer]` 1.5, 2.6 teacher reads (done informally above); `[visual]` 2.7 screenshots (tapped non-canonical green tile, wrong tile with hint, steps, retype; 1440x900 and 1024x768).
-- `[human]` rows 4.8 and 9.6 as before.
-- Retype keeps highlighting `task.answer` (one example); `check` accepts any right tile.
+- `[reviewer]` 3.5 (done informally above), `[visual]` 3.6 screenshots (PRICE longest prompt, TIMES_MORE with hint, ORDER_OPS step 1 and last solution step; 1440x900 and 1024x768); 1.5, 2.6, 2.7 as before; `[human]` 4.8, 9.6.
+- 3.4 stays unticked until the orchestrator's e2e run.
+- Unlock thresholds now: E5.10 n 1 -> 3 (threshold 1 -> 2), E5.11 n 1 -> 2 (1 -> 1); to list in the PR body.
+- PRICE `unit` shows totals up to 100; "mnożenie kilku liczb" of E5.10 is out of scope (plan).
 
 ## 6. Autonomous decisions
 
-1. **`reported` is a scene field keyed by task index**, set in `submit` only when `check` accepts the value, so a re-render paints the same tile and a new task never inherits it. Rejected: storing in core state (more churn). Would change: a second multi-right type needing state in core.
-2. **`correctChoices` only for `tiles` input with `check`** (null otherwise), so EVEN_ODD select stays `null`. Would change: a select task wanting it.
-3. **`markedTile` reads `AnswerTiles.markedValue()`**, the widget's own painted value (plan requirement), not a scene field.
-4. **E1.9 skill uses all four shapes with `max: 10`.**
+1. **ORDER_OPS "left-to-right differs" only for forms where the high-precedence operation is second** (`a+b*c`, `a-b:c`); in `a*b+c` and `a:b-c` left-to-right is the same number by arithmetic. Would change: the maintainer wants those forms dropped.
+2. **PRICE goods carry a price range** (whole złoty, min 2 so the total never equals the quantity that ends the first hint); `minQty` param (default 2, data uses 2; the test uses 1 for the accusative). Rejected: one price range for all goods (24 zł bułka).
+3. **E5.11 `childName`** changed to "Kolejność działań i kwartały" (plan: it covers order of operations).
+4. **TIMES_MORE contexts limited to `portable` ones** (small things), so large counts read naturally.
