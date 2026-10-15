@@ -1,0 +1,12 @@
+diff --git a/src/core/trayDrag.ts b/src/core/trayDrag.ts
+index 2922245..f661c47 100644
+--- a/src/core/trayDrag.ts
++++ b/src/core/trayDrag.ts
+@@ -54,6 +54,7 @@ const grab = <K extends string>(
+ export const stepTrayDrag = <K extends string>(
+     state: TrayDragState<K>, event: TrayDragEvent, geo: TrayDragGeo<K>, rules: TrayDragRules,
+ ): TrayDragState<K> => {
++    if (event.type === 'cancel' && state.carrying?.from === 'tray') return { mat: put(state.mat, state.carrying.kind, rules), carrying: null };
+     if (event.type === 'cancel' || event.type === 'reset') return idle(state);
+     const carrying = state.carrying;
+     if (event.type === 'down') {
