@@ -859,10 +859,10 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (`
-- [ ] 5.2 Deliberate break: `read` bez `try` → test magazynu czerwony; przywrócone; meta-check (dekodowanie dowodzi faza 9)
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (` — ee4336b (unit +6)
+- [x] 5.2 Deliberate break: `read` bez `try` → test magazynu czerwony; przywrócone; meta-check (dekodowanie dowodzi faza 9) — ee4336b
 - [ ] 5.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
-- [ ] 5.4 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty
+- [x] 5.4 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty — ee4336b
 
 #### Manual
 
