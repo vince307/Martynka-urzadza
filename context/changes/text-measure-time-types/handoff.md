@@ -1,59 +1,70 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by the finishing step of `/10x-e2e` phase 11 (the last phase) of run `2026-10-15-fix-s14c-s14d`. All 11 phases are committed and green; `change.md` is `implemented`. The next agent must not get wrong: only `/10x-impl-review` remains; no app code changes in phase 11.
+Written by `/10x-impl-review` of run `2026-10-15-fix-s14c-s14d`. The review found no CRITICAL. It fixed five WARNINGs and two OBSERVATIONs in one commit, `fix(text-measure-time-types): poprawki z przeglądu implementacji`. The verdict is `MERGE: CLEAR`. The next agent must not get wrong: the visual gate screenshots the post-fix prompts. E5.12 now reads "Ile centymetrów ma klasa na planie?", and E6.2 TV durations have per-template minimums.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | plan commits, p1 `9507da3` ... p10 `3e024b2`, p11 `093b129` + this handoff |
+| Commits | plan commits, p1 `9507da3` ... p11 `093b129`, handoff `dbb141b`, review fix `6d20b08`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (only `[reviewer]`, `[human]`, `[visual]` and earlier manual rows) |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`): only `[visual]` and `[human]` rows; every `[reviewer]` row is ticked `— impl-review` |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/review-round.spec.ts` | 2 specs: (#13) the year review step unlocks after E6.10 from an imported save and its round draws from several steps; (#11) a six-digit place-value answer typed on the keypad |
-| `tests/e2e/support/saveImport.ts` | import helpers moved out of `save-transfer.spec.ts` |
-| `tests/e2e/save-transfer.spec.ts` | imports the shared helpers |
-| `playwright.config.ts` | `review-round` added to `ROUND_SPEC` |
-| `context/changes/text-measure-time-types/e2e-break-p11a.patch`, `e2e-break-p11b.patch` | deliberate breaks (`stepPlayable` without review clause; keypad `maxDigits` 5) |
-| `context/changes/text-measure-time-types/e2e-request-p11.md` | request-file for the orchestrator |
-| `context/changes/text-measure-time-types/plan.md` | rows 11.1-11.4 ticked with sha `093b129` |
-| `context/changes/text-measure-time-types/change.md` | status `implemented` |
+| `context/changes/text-measure-time-types/reviews/impl-review.md` | review report: F1-F10 with decisions; ends with the `MERGE:` line |
+| `src/data/measures.ts` | `SCALE_PLAN_CM.max` 12 → 10 (F1, E5.12 stays inside the times table) |
+| `src/data/elapsed.ts`, `src/core/tasks/generators/clockElapsed.ts` | `SpanTemplate.minSpan` per span sentence; `generateSpan` rejects shorter spans (F5) |
+| `src/data/pl.ts` | `timesMorePrompt{More,Less,Factor}`, `price{Total,Unit}Prompt`, `placeValue{Join,PartValue}` (F3); `lengthScaleRealPrompt` wording (F6) |
+| `src/core/tasks/generators/{timesMore,price,placeValue}.ts` | prompts come from `pl`; `parseTimesMoreParams` maxFactor 3..10, `parsePriceParams` max ≥ 2·maxQty plus a `continue` guard (F4); `drawFourDigit` bounded (F7) |
+| `src/core/curriculum.ts`, `src/core/round/artFilter.ts`, `tests/curriculum.test.ts` | stale comments; `UNIT_CHOICE` removed from `LATER` (F7) |
+| `tests/round.test.ts` | `round with several right tiles (Task.check)`: 2 tests (F2) |
+| `tests/clockElapsed.test.ts`, `tests/price.test.ts`, `tests/timesMore.test.ts`, `tests/lengthText.test.ts` | new span-minimum test, parser rejections, scale prompt regex |
+| `context/changes/text-measure-time-types/plan.md` | `[reviewer]` rows 1.5, 2.6, 3.5, 4.6, 5.5, 6.5, 7.5, 8.6, 9.5 ticked |
+| `context/changes/text-measure-time-types/follow-ups/review-fixes.md` | section "From the implementation review": 6 follow-ups, each with `Trigger:` |
+| `context/changes/text-measure-time-types/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
-Playwright was run by the ORCHESTRATOR, not this step; recorded verbatim:
+All observed in this step. The baseline is main `e2f7caa`: unit 2479, e2e 82.
 
 | command | result |
 |---|---|
-| review-round + save-transfer | green: review-round 2 passed + save-transfer 4 passed (6 passed, 1.0 min). No spec fix needed |
-| break p11a (stepPlayable without the review clause), `-g "the year review step unlocks"` | red `toBe` Expected "unlock", Received "task". Restored |
-| break p11b (keypad maxDigits 5), `-g "six-digit place-value answer"` | red `toBe` Expected "done", Received "second". Restored |
-| full suite after restore, `--workers=4` | 86 passed (5.6 min) = baseline 84 + 2. ESLint clean on the 3 spec files. `src/` has no diff |
-| `npm run lint` / `typecheck` | OK / OK (observed in this step) |
-| `npm test` | 2666 passed (139 files) = baseline 2666 + 0 (observed) |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` (observed) |
-| servers 4397/4398 | no listener (observed with lsof) |
-
-Meta-check: p11a proves unlock and playability of the review step (no unlock card without the clause), not just the draw; p11b proves the keypad limit, not the generator.
+| `npm run lint` / `npm run typecheck` | OK / OK (before and after the fixes) |
+| `npm test` before the fixes | 2666 passed (139 files) = 2479 + 187 |
+| `npm test` after the fixes | 2669 passed (139 files) = 2479 + 190 (branch +3: 2 round, 1 span) |
+| `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK |
+| `npm run sample -- E1` ... `E6` | `Naruszenia: 0` × 6 (before and after) |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --config=… --workers=4`, before the fixes | 86 passed (6.3 min) = 82 + 4 |
+| same, after the fixes (fix commit `6d20b08` content) | 86 passed (5.8 min) = 82 + 4 |
+| break: `startableSteps` keeps the review step | red: `curriculumStart` E6 and `review.test.ts`, expected `[2,3,5,7,9,10]`, received `[2,4,6,8,10,11]`; restored. Meta-check: it proves the calendar exclusion, not the step count |
+| break: `isCorrect` ignores `check` (before F2) | all 2666 green, which revealed the gap (F2) |
+| same break after F2 | the 2 new `tests/round.test.ts` tests red (`expected 'second' to be 'done'`, `expected null to be 'second'`); restored. Meta-check: the oracle reads the prompt, not `task.check` |
+| teacher read `sample -- E1/E5/E6 --count 6` + scans `--count 60`, seeds 1-5 | E5 times-table ops max divisor 10, max quotient 10 (2100 ops); E5.12 max factor 10 after F1; TV match 46-110 min, film 30-107 min after F5 |
+| servers 4397/4398 | no listener after the suite (`lsof -sTCP:LISTEN`) |
 
 ## 4. Next command
 
-`/10x-impl-review text-measure-time-types`
+`visual gate`
 
 ## 5. Open
 
-- `[reviewer]` 9.5 and `[human]` 9.6 rows and earlier manual/visual rows in plan Progress.
-- Follow-ups in `follow-ups/review-fixes.md` (each with `Trigger:`).
+- `[visual]` rows 2.7, 3.6, 4.7, 5.6, 6.6, 7.6, 8.7 in plan Progress. The screenshots are taken after this fix commit.
+- `[human]` 4.8: the tablet voice reads `spokenTime` "8 15" as a time. Also listen for "okienko plus jeden mniejsze niż pięć" (`pl.speech.less`) and unit symbols such as "560 g".
+- `[human]` 9.6: the decisions that differ from ZADANIA/PRD (plan row 9.6).
+- Follow-ups in `follow-ups/review-fixes.md`: `pl.speech` comparison verb; unit symbols in `speak`; "Oblicz." before the place-value box; `TaskScene` `reported`; CLOCK_ELAPSED `end` never crosses midnight; duplicates `withSpeech` and the time shifts.
+- At archive time: the roadmap still shows S-14c as `planning`.
 
 ## 6. Autonomous decisions
 
-1. **Ticked 11.1-11.3 on the orchestrator's evidence**, cited verbatim in §3; Playwright not rerun here per instruction. Would change: a red in a later full-suite run.
-2. **Ticked 11.4 from observed local gates** (lint, typecheck, test, build, lsof) plus the orchestrator's run. Would change: a requirement that the orchestrator tick the build row.
-3. **Set `change.md` to `implemented`** as phase 11 is the last. Would change: impl-review finding drift.
+1. **I fixed the WARNINGs in place instead of deferring them.** The step prompt says content wording is cheap, so fix it. All the fixes are small and covered by tests. What would change this: a fix that needs a new widget or save format.
+2. **I set `SCALE_PLAN_CM.max` to 10 rather than adding a `maxPlan` param.** I rejected the param because E5.12 is the only user and a plan drawn on paper is short anyway. What would change this: an E6 scale skill that needs larger plans.
+3. **I left `pl.speech.less/greater` unchanged; it is a follow-up.** The words are shared by COMPARE_EXPR and older types, so changing them would need a teacher read of every one of them. What would change this: the [human] voice check finding the reading wrong.
+4. **I wrote per-template `minSpan` values myself** (match 45, film 30, train 20, the rest 10), based on a teacher's sense of real life. What would change this: a teacher read asking for other floors.
+5. **I ticked `[reviewer]` 8.6 and 9.5 on code evidence:** an empty diff of `save.ts`/`variants.ts`/fixtures, an unchanged `RoundKind`, every follow-up has a `Trigger:`, and the stale comments are fixed. What would change this: a later change adding review-step state.

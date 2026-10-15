@@ -22,3 +22,18 @@ Each item has a `Trigger:` line; later slices grep for it. Items moved on from e
   Trigger: a teacher read asking for text mass comparisons
 - **INEQUALITY mistake example in the parent preview** shows one canonical right answer, not the set of right tiles.
   Trigger: a v3 save or a parent asking about it
+
+## From the implementation review (2026-10-15)
+
+- **Spoken comparison reads without a verb**: `pl.speech.less` / `greater` give "okienko plus jeden mniejsze niż pięć" (E1.9, also COMPARE_EXPR). "… jest mniejsze niż …" reads better, but the words are shared by every type that speaks `<` / `>`, so the change needs its own teacher read of all of them.
+  Trigger: the [human] tablet-voice check (plan row 4.8) or the next change to `src/core/narration/spoken.ts`
+- **Unit symbols in `speak`**: MASS text and LENGTH `twoUnit` speak "560 g", "1 m okienko cm"; a Polish voice may spell the letters. Same as the existing MASS/LENGTH tasks.
+  Trigger: the [human] tablet-voice check (plan row 4.8) finding a spelled unit
+- **"Oblicz." before a place-value decomposition with a box** (E6.9 `9440 = 9000 + □ + 40` is spoken "Oblicz. …"): the shared spoken-equation prefix fits a calculation better than a missing part.
+  Trigger: the next change to `src/core/narration/spoken.ts`
+- **`TaskScene` `reported` is keyed by task index, never cleared at a new round**: guarded by `index` and `task.check`, and any stale value is one `check` accepts, so nothing wrong can show.
+  Trigger: the next change to `TaskScene.submit` or the tile marking
+- **CLOCK_ELAPSED `end` never crosses midnight** (`endEvents` end by 20.30); only `nightHours` does. Small drift from the plan, harmless for E5.3.
+  Trigger: an `end` event in the evening or night
+- **Duplicates**: `placeValue.ts` `withSpeech` repeats the digit-space stripping of `spoken.ts`; the ±5/10/15/60 time shifts in `clockElapsed.ts` repeat `clock.ts`.
+  Trigger: the next change to either generator
