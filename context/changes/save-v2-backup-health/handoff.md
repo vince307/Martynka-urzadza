@@ -1,6 +1,6 @@
 # Handoff — `save-v2-backup-health` (slice fix save-v2-backup-health, non-roadmap)
 
-Written by the visual gate of run `2026-10-15-fix-s14c-s14d`. Verdict: `VISUAL: PASS`. One focus discrepancy on the slow-read card was fixed in `1c7bc51` and captured again. The [visual] rows are ticked, and only the [human] rows remain open. The next agent archives the change and ships it. It must not add to the PR body that the [human] rows are done.
+Written by the visual gate of run `2026-10-15-fix-s14c-s14d` (verdict `VISUAL: PASS`), final pre-merge state written by the ship step. One focus discrepancy on the slow-read card was fixed in `1c7bc51` and captured again. The [visual] rows are ticked, and only the [human] rows remain open. The next agent archives the change and ships it. It must not add to the PR body that the [human] rows are done.
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual gate of run `2026-10-15-fix-s14c-s14d`. Verdict: `VISUAL: 
 |---|---|
 | Branch | `feat/save-v2-backup-health`, cut from `main` at `16848c6` |
 | Commits | plan commits + p1 `8430945` … p6 `e7407b7`, review fix `58cf156`, review docs `b9883d5`, visual fix `1c7bc51`, then this docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (archive sets the final status) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s14c-s14d/run-log.md |
+| `change.md` status | `archived` (ship step, `chore(archive): close save-v2-backup-health`); non-roadmap change, no roadmap row |
 | `## Progress` rows remaining | 4, all [human]: 2.5, 2.6, 4.7, 4.8 |
 | Working tree | clean after the docs commit; the throwaway spec was moved out to the session scratchpad (`visual-sv2.local`) |
 
@@ -41,7 +41,7 @@ All observed in this step, after the fix `1c7bc51`. Baseline is main `16848c6`: 
 
 ## 4. Next command
 
-`/10x-archive save-v2-backup-health` then ship
+none — shipped
 
 ## 5. Open
 
@@ -62,3 +62,4 @@ All observed in this step, after the fix `1c7bc51`. Baseline is main `16848c6`: 
 - **Fixed the slow-card focus instead of only recording it.** Why: DESIGN-GAP 96, written by this change, says "Graj dalej" keeps the focus, and the focus dropped to the page. The fix is one line in `mountSaveFailedCard` and never focuses an overwrite. What would change it: a maintainer preferring the focus on the disabled wait button's status text.
 - **V1/V2 recorded as follow-ups, not fixed.** Why: V1 is a copy choice that needs a teacher read (rows 94–95). V2 is a 5 s window in which nothing can be done, and Escape is already guarded. What would change it: a parent report of confusion about the double code, or an accessibility requirement for keyboard users during the write.
 - **Extra states beyond the [visual] rows** (`backuphang`, `slow`, the import after a timed-out write, the import at `hang`). Why: the step prompt names these seams and the import dialog after a timed-out write. What would change it: nothing; they only add evidence.
+- **Archived with 4 open [human] rows (ship step).** Chosen: `Continue archiving (Recommended)` — the archive warning was `0 automated, 4 manual`. Rejected: resume implementation. Why: rows 2.5, 2.6, 4.7 and 4.8 are maintainer decisions and an iPad measurement; they are a post-run checklist in the PR body („Dla właściciela produktu”), not a blocker. Soft warning: [visual]/[reviewer]/e2e rows without a SHA suffix carry their evidence inline. What would change it: the maintainer rejecting decision 2.5 or 2.6, which reopens the policy in a new change.
