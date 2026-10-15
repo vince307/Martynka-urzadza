@@ -62,3 +62,12 @@ Each item has a `Trigger:` line; later slices grep for them. Everything that car
   Trigger: the next change to the "Obrazki" section
 - F5 / F7: one `Box` helper (`RoomView.layerBox`, `rectOf` vs `roomHit` `slotBox`), one stand-in drawer (`RoomLayer.show` vs `drawStandIn`), `ROOM_ART.label` read only by tests, inline style numbers in `VariantPanel`, `RoomTaskButton`, `RoomScene.celebrate` to `ROOM_LAYOUT` / `ANIMATION`.
   Trigger: a second room or the next refactor of the room widgets
+
+## From the visual gate (`reviews/visual-review.md`)
+
+- VO1: the variant panel's tray covers most of the coffee table and the front of the rug while their look is previewed (`ROOM_LAYOUT` panel band vs `SALON` slot `coffee-table` y 535-932); the thumbnails show the whole piece, so the choice stays possible. Move the panel or lift the preview when the brief delivers a panel layout.
+  Trigger: the next change to `VariantPanel` or a designer panel frame
+- VO2: with salon art missing (`?e2eArt=room`) overlapping stand-ins hide each other's labels ("lampa" under the sofa box, "sofa Morska" half under "stolik Dębowy"); draw stand-in labels in a top layer or inset them into the visible part (`RoomView.render` / `drawStandIn`).
+  Trigger: F5 (one stand-in drawer) or the next change to `RoomView.render`
+- VO3: the hold outline is the slot's `visibleRect`, so the rug's frame runs across the armchair, the pouf and the sofa (design-gaps row 37); an outline of the picture's shape needs art or an alpha contour.
+  Trigger: designer brief delivers a hold view, or S-16b

@@ -769,7 +769,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Manual
 
-- [ ] 4.7 [visual] Sekcja „Obrazki” w panelu rodzica (1440 i 1024): obie linie przy pełnej grafice i przy `?e2eArt=room` w buildzie haka
+- [x] 4.7 [visual] Sekcja „Obrazki” w panelu rodzica (1440 i 1024): obie linie przy pełnej grafice i przy `?e2eArt=room` w buildzie haka — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
 
 ### Phase 5: Pokój rysowany z grafiki
 
@@ -780,8 +780,8 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Manual
 
-- [ ] 5.3 [visual] Zrzuty 1440 i 1024 (płótno 1920×1080 w FIT): salon przed etapem; po etapie bez mebli; każdy z 6 slotów pusty i umeblowany (wariant 0); pokój pełny z cieniami; obrys przytrzymania na sofie i dywanie; `?e2eArt=room` (zastępniki)
-- [ ] 5.4 [visual] Brak podpisów i placeholderów na pełnej grafice; dywan pod fotelem i stolikiem, sofa przed obrazkami (kolejność `z`)
+- [x] 5.3 [visual] Zrzuty 1440 i 1024 (płótno 1920×1080 w FIT): salon przed etapem; po etapie bez mebli; każdy z 6 slotów pusty i umeblowany (wariant 0); pokój pełny z cieniami; obrys przytrzymania na sofie i dywanie; `?e2eArt=room` (zastępniki) — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
+- [x] 5.4 [visual] Brak podpisów i placeholderów na pełnej grafice; dywan pod fotelem i stolikiem, sofa przed obrazkami (kolejność `z`) — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
 
 ### Phase 6: Panel wariantów i karta „Pokój gotowy!” z grafiki
 
@@ -793,7 +793,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Manual
 
-- [ ] 6.4 [visual] Zrzuty 1440 i 1024: panel wariantów dla każdego z 6 slotów z podglądem wariantu 1, panel w trybie zmiany, karta „Pokój gotowy!” z miniaturą i kafelkiem „Wkrótce”
+- [x] 6.4 [visual] Zrzuty 1440 i 1024: panel wariantów dla każdego z 6 slotów z podglądem wariantu 1, panel w trybie zmiany, karta „Pokój gotowy!” z miniaturą i kafelkiem „Wkrótce” — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
 
 ### Phase 7: Animacje salonu i „ogranicz ruch”
 
@@ -805,7 +805,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Manual
 
-- [ ] 7.4 [visual] Klatki 1440: przenikanie tła w połowie, pop sofy (dywan pod sofą nie skacze), cząsteczki; ten sam zakup z „ogranicz ruch” bez animacji
+- [x] 7.4 [visual] Klatki 1440: przenikanie tła w połowie, pop sofy (dywan pod sofą nie skacze), cząsteczki; ten sam zakup z „ogranicz ruch” bez animacji — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
 
 ### Phase 8: Ekran ładowania i książka na karcie odblokowania
 
@@ -816,7 +816,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Manual
 
-- [ ] 8.3 [visual] Ekran ładowania 1440 i 1024, karta „Nowa umiejętność!” z książką
+- [x] 8.3 [visual] Ekran ładowania 1440 i 1024, karta „Nowa umiejętność!” z książką — visual gate 2026-10-15 (`reviews/visual-review.md`, `screenshots/`)
 
 ### Phase 9: Dokumentacja, luki projektu, follow-upy
 

@@ -1,53 +1,56 @@
 # Handoff — `final-art-salon` (slice S-16a)
 
-Written by the implementation review step (`/10x-impl-review final-art-salon`, full plan, phases 1-10). Verdict APPROVED, `MERGE: CLEAR`; one fix commit (stale comments only). The next agent must not get wrong: the live-save remap (`remapLegacySalon`) is verified on data and needs no change; the remaining rows are [visual] (orchestrator gate) and [human] 2.5, 10.4.
+Written by the visual gate step. `VISUAL: PASS`, no fix commit; all six [visual] rows ticked, only [human] 2.5 and 10.4 stay open. The next agent must not get wrong: the screenshots are JPEG on purpose (size), and `validate-rule-files.sh` must PASS after the archive move.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-salon`, cut from `main` at `334ff69` |
-| Commits | phases 1-10 (`d5d6993` … `9362f3f`), review fix `898517d`, plus this handoff commit |
+| Commits | phases 1-10 (`d5d6993` … `9362f3f`), review fix `898517d`, impl-review docs `ce89b62`, plus this commit `docs(final-art-salon): bramka wizualna` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` | 8 rows open (`grep -c '^- \[ \]' plan.md`): [visual] 4.7, 5.3, 5.4, 6.4, 7.4, 8.3; [human] 2.5, 10.4. No [reviewer] rows in the plan |
-| Working tree | clean after the commit |
+| `change.md` status | `impl_reviewed` (unchanged; archive sets the next one) |
+| `## Progress` | 2 rows open (`grep -c '^- \[ \]' plan.md`): [human] 2.5, 10.4 |
+| Working tree | clean after the commit; `tests/e2e/visual.local/` deleted; `dist-e2e/` is gitignored build output |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/final-art-salon/reviews/impl-review.md` | review report: 0 critical, 2 warnings (deferred), 5 observations (1 fixed); ends with `MERGE: CLEAR — …` |
-| `context/changes/final-art-salon/follow-ups/review-fixes.md` | new section "From the implementation review": F1-F5/F7 with `Trigger:` lines |
-| `context/changes/final-art-salon/change.md` | `status: impl_reviewed` |
-| `src/scenes/RoomScene.ts`, `src/data/layout.ts`, `src/ui/widgets/RoomView.ts`, `src/ui/widgets/RoomLayer.ts` | commit `898517d`: stale comments reworded (class doc of `RoomScene`, `ROOM_LAYOUT` doc, `RoomView.objectOf`, `RoomLayer.object`); no code change |
+| `context/changes/final-art-salon/reviews/visual-review.md` | verdict per [visual] row, hand-checked star arithmetic, observations; ends with the `VISUAL:` line |
+| `context/changes/final-art-salon/screenshots/README.md` | route, seams, table state · frames · how reached |
+| `context/changes/final-art-salon/screenshots/*.jpg` | 69 frames (desktop 1440×900, tablet 1024×768), ≈ 9.7 MB |
+| `context/changes/final-art-salon/plan.md` | Progress rows 4.7, 5.3, 5.4, 6.4, 7.4, 8.3 ticked |
+| `context/changes/final-art-salon/follow-ups/review-fixes.md` | new section "From the visual gate": VO1-VO3 with `Trigger:` lines |
 
 ## 3. Verification
 
 | Command | Result (observed in this step) |
 |---|---|
-| lint / typecheck | pass (before and after `898517d`) |
-| unit | `npm test` 2939 passed = baseline 2839 + 100; deploy and ops tests OK; `sample` E1-E6 exit 0 (before the fix); after the fix lint, typecheck, `npm test` 2939, build re-run green |
-| build | pass, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` lists all 26 `assets/rooms/salon/*.webp` (1 233 242 B); no lazy chunk |
-| e2e | `npx playwright test --config=<abs> --workers=4`: 98 passed (7.1 min) = baseline 93 + 5 (`room-purchase` 1→2, `salon-art` 0→4); run on `1dc079b`, the fix after it is comments only |
-| fixtures | `git diff --exit-code main..HEAD -- tests/fixtures/` clean |
-| Deliberate break | `remapLegacySalon` rounds down (`cost + next <= spent`) → `tests/salonRemap.test.ts` 8 failed; restored, 62 passed. Meta-check: it bites the rounding rule (prefix ≥ spent, gifts with variant 0), the same 8 as the phase 2 record; idempotence is guarded separately (phase 2 meta-break) |
-| Remap on data | throwaway script: old `tasksDone` 0-10 × 6 variant patterns + a second room, 66 cases, 0 failures (stars same, carried variants kept, every new slot task has `chosen`, idempotent `toBe`, round-trips `encodeSave`/`decodeSave`) |
-| Hooks | `.claude/settings.json` and `.claude/hooks/*` predate the branch; no `--no-verify` used |
+| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | OK, `e2e hook: present (2 chunks checked)` (hook build, as intended) |
+| Throwaway Playwright spec on 4399 (`npx playwright test --config=<abs>/tests/e2e/visual.local/playwright.config.ts`, sandbox disabled after the MachPort denial) | all capture tests passed (2 projects); the first run failed only on the spec's own timing assertions (hold sampled too late, unlock loop too short), fixed in the spec and re-run |
+| Hand check | stars 71 → 66 → 59 → 50 → 40 → 28 → 15 → 0 against `SALON.tasks` costs, seen in the frames; reduced motion 12 → 7 → 0 "masz 0/9"; 30 → 9 "masz 9/10" |
+| lint / typecheck / unit / build / e2e | not re-run: no source change in this step (only docs and screenshots); last observed green by the impl-review step on `1dc079b` + comment-only `898517d` (unit 2939 = baseline 2839 + 100, e2e 98 = 93 + 5) |
+| Ports | 4399 stopped (background task stopped, `lsof -ti tcp:4399 -sTCP:LISTEN` empty) |
+
+No deliberate break in this step (no code or test changed).
 
 ## 4. Next command
 
-`visual gate (orchestrator)`
+`/10x-archive final-art-salon`
 
 ## 5. Open
 
-- [visual] 4.7 "Obrazki" section, 5.3/5.4 room screenshots and z order, 6.4 variant panel (thumbnail crop in `VariantPanel.show` verified by reading Phaser 4.2.1 source, not yet seen in a browser) and room-done card, 7.4 cross-fade/pop frames (also check F1: leave the room during the fade), 8.3 loading screen and unlock card book.
-- [human] 2.5 remap rule B (round up, no refund; old 9-10 lose 10/25 stars of value, room done; curtains disappear, floor/walls → stage, lamp/plant → decor). 10.4 iPad PWA run.
-- Follow-ups F1-F5/F7 in `follow-ups/review-fixes.md` (`RoomScene.fadeStage`, `RoomView.drawRoomMiniature`, `BootScene` progress listener, `createArtHealthView`, room helper duplication).
+- [human] 2.5 remap rule B (`remapLegacySalon`, round up, no refund). [human] 10.4 iPad PWA run (full renovation, smoothness, loading screen offline).
+- Follow-ups VO1 (`VariantPanel` tray over the previewed coffee table/rug), VO2 (`RoomView.render` stand-in labels hidden by overlapping stand-ins), VO3 (rectangular hold outline, `RoomView.highlight`, gap 37) in `follow-ups/review-fixes.md`.
+- impl-review F1 (`RoomScene.fadeStage` after sleep) not seen in frames; F2 (`RoomView.drawRoomMiniature` with partly missing art) unreachable through a seam: both stay as follow-ups.
 - Later: archive (re-run `validate-rule-files.sh` after the move), ship.
 
 ## 6. Autonomous decisions
 
-1. F1 and F2 (warnings) deferred to follow-ups instead of fixed. Why: both are cosmetic with a correct end state (F1) or occur only with partly missing art (F2); a scene change would need another full E2E gate and visual re-check. Would change: the visual gate shows F1 as distracting, or the maintainer wants it in this slice.
-2. Only the stale comments (F6) fixed in place: zero behaviour change, gate re-run without E2E. Would change: nothing.
-3. Content teacher read done on the new `pl.room.*` strings, variant names and minigame words (no generator or curriculum change in this slice, so `sample --count 6` reading of task steps not needed beyond the gate's exit 0). Would change: a later fix touching `src/data/` task content.
+1. Playwright fallback instead of Claude in Chrome. Why: every state needs touches and a long press on the Phaser canvas, which synthetic Chrome events cannot drive (profile § 8). Would change: a Chrome route that drives canvas touches.
+2. Chromium was launched with the sandbox disabled after the sandboxed run failed with `MachPortRendezvousServer … Permission denied` (profile § 8). Why: the visual gate needs a browser; the command touched only the local hook server on 4399. Would change: the orchestrator forbidding it for visual steps.
+3. Screenshots stored as JPEG quality 88 instead of PNG. Why: 69 PNG frames of the painted salon were 44 MB in a public repo; JPEG keeps them readable at ≈ 9.7 MB. Rejected: 256-colour PNG (bands the painted art and could mislead a reviewer). Would change: the maintainer wanting lossless frames.
+4. Animation frames captured at 1440 only (plan row 7.4 asks 1440); the reduced-motion and F1/rug-pop checks also desktop only. Would change: nothing.
+5. Unlock card judged on the first card reachable from the child path (E1 "Działania do 9", age 6, month 9). Why: the card layout is the same for every step. Would change: nothing.
+6. No fix commit: the observations are a missing-art state (VO2), a design gap (VO3) and a layout limit that leaves the choice possible (VO1). Would change: the maintainer judging VO1 a blocker.
