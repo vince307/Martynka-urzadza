@@ -1,10 +1,10 @@
 ---
 change_id: text-measure-time-types
 title: Typy tekstowe — czas, jednostki, ceny, kolejność działań, nierówności i runda powtórkowa (E1, E5–E6)
-status: impl_reviewed
+status: archived
 created: 2026-10-15
 updated: 2026-10-15
-archived_at: null
+archived_at: 2026-10-15T07:01:46Z
 ---
 
 ## Notes
