@@ -933,10 +933,10 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.11.money_pay_10` i `E2.2.money_pay_20`
-- [x] 8.2 `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY
-- [x] 8.3 Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never`; przywrócone; meta-check
-- [x] 8.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.11.money_pay_10` i `E2.2.money_pay_20` — 9ee5d56
+- [x] 8.2 `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY — 9ee5d56
+- [x] 8.3 Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never`; przywrócone; meta-check — 9ee5d56
+- [x] 8.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — 9ee5d56
 - [ ] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4`; czas `adaptive.spec` zapisany
 
 #### Manual
