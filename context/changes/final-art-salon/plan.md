@@ -729,9 +729,9 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [x] 1.1 Nowe testy etapu w `tests/rooms.test.ts` i `tests/variantPanel.test.ts` czerwone przed implementacją, zielone po
+- [x] 1.1 Nowe testy etapu w `tests/rooms.test.ts` i `tests/variantPanel.test.ts` czerwone przed implementacją, zielone po — d5d6993
 - [ ] 1.2 Bramka lokalna zielona: `npm run lint`, `npm run typecheck`, unit (baseline + Δ nowych testów, bez spadków), `npm run build`, e2e (baseline, bez spadków)
-- [x] 1.3 Celowe złamanie: `stepPanel` dla etapu nie sprawdza `stars >= cost` → test „za mało gwiazdek” czerwony; przywrócone; meta-check
+- [x] 1.3 Celowe złamanie: `stepPanel` dla etapu nie sprawdza `stars >= cost` → test „za mało gwiazdek” czerwony; przywrócone; meta-check — d5d6993
 
 ### Phase 2: Przeliczenie starego salonu przy wczytaniu
 
