@@ -947,9 +947,9 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 8762928
 - [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md`
+- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md` — 8762928
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
