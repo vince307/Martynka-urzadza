@@ -23,3 +23,4 @@ Findings of the observability audit 2026-10-15_2217 (PR #66) and of this change'
 - WebKit for the loader cut (`guardedPut` with `preventDefault` on a failing `get`, and the cut by loader paths, are verified in Chromium only). Trigger: a WebKit project in `playwright.config.ts`.
 - Phaser upgrade (`src/scenes/loaderCut.ts` depends on Phaser 4.2.1 loader internals; `tests/phaserLoaderPin.test.ts` is the tripwire). Trigger: any change of the `node_modules/phaser` version.
 - Closed in this change: the "font promise hand-over in `BootScene.create`" item, recorded as closed by the plan. Trigger: none (closed).
+- impl-review F3: the slow-line timer in `BootScene.preload` asks `bootLoadPhase(limits.slowAfterMs, limits)` with the constant, not the elapsed time, so the rule only confirms the timer; the scene, not `src/core/bootLoad.ts`, effectively decides. Trigger: the next change to `BootScene.preload` timers, or S-16c restyling the loading screen.

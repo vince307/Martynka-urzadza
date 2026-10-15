@@ -623,7 +623,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 1.4 [reviewer] `src/core/bootLoad.ts` bez Phasera i globali; liczby tylko w `balance.ts` z arytmetyką
+- [x] 1.4 [reviewer] `src/core/bootLoad.ts` bez Phasera i globali; liczby tylko w `balance.ts` z arytmetyką — impl-review 2026-10-16 (5a11370)
 
 ### Phase 2: Łączny limit ładowania w `BootScene` (cięcie przez ścieżki loadera)
 
@@ -635,7 +635,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 2.4 [reviewer] Wnętrze loadera tylko w `loaderCut.ts`; `onProcessComplete` przed `fileProcessComplete`; timery usuwane na `COMPLETE`; szew pod `__E2E_HOOK__`
+- [x] 2.4 [reviewer] Wnętrze loadera tylko w `loaderCut.ts`; `onProcessComplete` przed `fileProcessComplete`; timery usuwane na `COMPLETE`; szew pod `__E2E_HOOK__` — impl-review 2026-10-16 (5a11370)
 - [ ] 2.5 [human] Android z ograniczoną siecią: start ≤ ~45 s na zastępstwach, bez karty błędu
 
 ### Phase 3: Linia „jeszcze chwilka” na ekranie ładowania
@@ -648,7 +648,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 #### Manual
 
 - [ ] 3.3 [visual] Ekran ładowania pod `?e2eArt=stallall`: linia pod paskiem, 1440 i 1024
-- [ ] 3.4 [reviewer] Brak tekstu i liczb w scenie/widgecie; DESIGN-GAP 112 w trzech miejscach
+- [x] 3.4 [reviewer] Brak tekstu i liczb w scenie/widgecie; DESIGN-GAP 112 w trzech miejscach — impl-review 2026-10-16 (5a11370)
 
 ### Phase 4: Powód `'newer'` w autosaverze i widokach
 
@@ -660,7 +660,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 4.4 [reviewer] `'newer'` tylko w runtime; każdy wyczerpujący `switch`/`Record` po przyczynie zna `'newer'`
+- [x] 4.4 [reviewer] `'newer'` tylko w runtime; każdy wyczerpujący `switch`/`Record` po przyczynie zna `'newer'` — impl-review 2026-10-16 (5a11370)
 
 ### Phase 5: Strażnik w magazynie IndexedDB i szew `newer`
 
@@ -672,7 +672,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 5.4 [reviewer] `idb.ts` jedynym importerem idb-keyval; `NewerSave` bez ponowienia; odczyt w transakcji zapisu
+- [x] 5.4 [reviewer] `idb.ts` jedynym importerem idb-keyval; `NewerSave` bez ponowienia; odczyt w transakcji zapisu — impl-review 2026-10-16 (5a11370)
 
 ### Phase 6: Dokumentacja i follow-upy
 
@@ -683,7 +683,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 6.3 [reviewer] Seam sweep: nazwy w `CLAUDE.md` istnieją; brak zmian w `vite/config.shared.mjs` i `deploy/`
+- [x] 6.3 [reviewer] Seam sweep: nazwy w `CLAUDE.md` istnieją; brak zmian w `vite/config.shared.mjs` i `deploy/` — impl-review 2026-10-16 (5a11370)
 
 ### Phase 7: Zawieszone pliki i font nie blokują startu, nowszy zapis nie jest nadpisany — e2e (#15, #2)
 

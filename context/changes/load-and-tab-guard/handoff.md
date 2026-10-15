@@ -1,57 +1,67 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The e2e step wrote this handoff for phase 7 (the last phase; spec ran under the orchestrator because Chromium cannot start in the sandbox). Rows 7.1-7.6 are ticked, 7.7 is [human]; the change is `implemented`. Next is the implementation review; do not edit production code before it.
+The implementation review wrote this handoff: full plan reviewed, two WARNINGs fixed in `5a11370`, `MERGE: CLEAR`. Next is the visual gate (row 3.3): the slow line was resized in this step, so the screenshot must be taken on `5a11370` or later, not reused from earlier.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | phases 1-5 `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, phase 6 `9ee4570`, phase 7 `949aab0`, then this handoff |
+| Commits | phases `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, `9ee4570`, `949aab0`; review fix `5a11370`; then this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 3 (`grep -c '^- \[ \]' plan.md`): 2.5 [human], 3.3 [visual], 7.7 [human] |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/load-and-tab-guard.spec.ts` | three tests: (a) #15 stalled files and a late font, cut and slow line; (b) #15 A-1 a file that answers after the cut does not start the game twice (first wait is an `expect.poll` with a 15 s timeout, the cut comes at 3 s); (c) #2 a newer save is not overwritten |
-| `tests/e2e/support/hook.ts`, `playwright.config.ts` | helpers for the spec; spec added to `ROUND_SPEC` |
-| `context/changes/load-and-tab-guard/e2e-request-p7.md`, `e2e/e2e-break-p7{a,b,c,d}.patch` | orchestrator run request and the four break patches |
-| `plan.md`, `change.md` | rows 7.1-7.6 ticked, status `implemented` |
+| `context/changes/load-and-tab-guard/reviews/impl-review.md` | review report, verdict APPROVED, ends `MERGE: CLEAR — …` |
+| `src/storage/idb.ts` (`guardedPut`) | fix F1: no `tx.onerror` (the prevented read error bubbled to it and rejected a landed write; put errors were renamed `UnknownError`) |
+| `tests/idbStore.test.ts` | new test "a prevented read error that bubbles to the transaction does not reject the write" |
+| `src/ui/widgets/LoadingScreen.ts` (`slow`), `src/data/layout.ts` (`LOADING_LAYOUT.slow.maxWidth`), `docs/design-gaps.md` (row 112) | fix F2: slow line at `textStyle('bar')` 36 px, centred, wrapped at the bar width 800 |
+| `context/changes/load-and-tab-guard/plan.md` | reviewer rows 1.4, 2.4, 3.4, 4.4, 5.4, 6.3 ticked |
+| `context/changes/load-and-tab-guard/change.md` | `impl_reviewed`, updated 2026-10-16 |
+| `context/changes/load-and-tab-guard/follow-ups/review-fixes.md` | + F3 (slow timer asks the rule with a constant), with Trigger |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/load-and-tab-guard` |
-| `npm run lint` / `npm run typecheck` | pass / pass |
-| `npm test` | 2969 passed, 160 files (baseline 2969, +0); `sample` E1-E6 0 violations |
-| `npm run build` | passes, `e2e hook: absent (2 chunks checked)` |
-| e2e spec (orchestrator-observed, not run by this step) | first run (a),(c) passed, (b) failed on the 5 s `screenIs welcome` wait; fixed with a 15 s `expect.poll`; rerun 3 passed |
-| e2e full `--workers=4` (orchestrator) | 104 passed (baseline 101, +3) |
-| Break p7a (`cutLoad` without the cut) | 2 failed ((a),(b)); reverted |
-| Break p7b (no no-op `onProcessComplete`) | 3 passed; the documented plan-review F2 meta-check: in Chromium a late font is harmless without the guard, so p7b cannot turn red here (WebKit is the human row 7.7) |
-| Break p7c (no slow line) | 1 failed ((a)); reverted |
-| Break p7d (seam without the guard) | 1 failed ((c)); reverted |
-| Ports 4397-4399 | free |
+| lint / typecheck | pass / pass |
+| `npm test` before the fix | 2969 passed (baseline 2925, +44) |
+| `npm test` after `5a11370` | 2970 passed (baseline 2925, +45) |
+| deploy and ops shell tests; `sample` E1–E6 | pass; 0 violations |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `stallall`/`E2E_BOOT_LIMITS` absent from `dist/` |
+| `npx playwright test --config=<abs> --workers=4` on `5a11370`, run by this step (Chromium launched) | 104 passed (baseline 101, +3) |
+| F1 RED → GREEN | new test failed with `UnknownError: failed` from `tx.onerror` before the fix; green after |
+| Re-executed break 5.2 (`write` back to `set`) | 2 red (`B v4, A v3 refused`, `refusal is not retried`); restored. Meta-check: two stores on one fake-indexeddb database prove the read inside the transaction |
+| RED evidence phases 1, 4, 5 | quoted in handoffs `71337e3`, `309aede`, `80892a4` (assertion failures) |
+| Fixtures / save format | `git diff --stat main..HEAD -- tests/fixtures vite deploy` empty; `SAVE_VERSION` 3 |
+| Ports 4397–4399 | free |
 
 ## 4. Next command
 
-`/10x-impl-review load-and-tab-guard`
+`visual gate (orchestrator)`
 
 ## 5. Open
 
-- **Reviewer rows:** 3.3 [visual], 3.4, 4.4, 5.4, 6.3. Manual-only: 2.5 Android throttled start; 7.7 iPad.
-- **Visual gate observation:** the slow line "Jeszcze chwilka, wczytuję obrazki." renders much larger than the title width and wider than the bar (`LoadingScreen.slow`, text in `pl.loading.slow`); check at the visual gate.
-- **Phase 7 (done):** p7b stays green in Chromium by design (F2); `load-and-tab-guard` is in `ROUND_SPEC`.
-- **Risks carried:** `guardedPut` + `preventDefault` on a failing `get` unverified on WebKit; Phaser internals `^4.2.1`; cold start vs SW precache; `creates` guard.
-- **Design gaps:** 112, 113 (already in `docs/design-gaps.md`).
-- **Follow-ups:** `context/changes/load-and-tab-guard/follow-ups/review-fixes.md`.
+- **Visual gate row 3.3:** the loading screen under `?e2eArt=stallall` with a hanging file, 1440 and 1024, on `5a11370`+: the slow line ("Jeszcze chwilka, wczytuję obrazki.", `LoadingScreen.slow`) under the bar, smaller than the title, within the bar width.
+- **Human checklist:** 2.5 Android throttled start (≤ ~45 s, stand-ins, no error card); 7.7 iPad WebKit (cut ~45 s, line ~8 s, no card).
+- **Risks carried:** `guardedPut` `preventDefault` on a failing `get` unverified in WebKit; Phaser internals (`loaderCut.ts`, tripwire `tests/phaserLoaderPin.test.ts`); guard only from this build on.
+- **Design gaps:** 112 (row text updated), 113.
+- **Follow-ups:** `follow-ups/review-fixes.md` (now including impl-review F3).
 
 ## 6. Autonomous decisions
+
+- **impl-review: no AskUserQuestion; triage in place.** F1 and F2 fixed (cheap WARNINGs), F3 to follow-ups, F4/F5 accepted. Would change: none.
+- **F1 rated WARNING, not CRITICAL.** The write lands and `run`'s one retry made the forced replace succeed; no progress lost, but the error name and the retry were wrong. Chosen fix: drop `tx.onerror` (rely on `onabort` with `tx.error`). Rejected: filter `event.target === read` in `tx.onerror` (keeps the `UnknownError` rename of put errors). Would change: a browser where an unprevented request error does not abort the transaction.
+- **F2: slow line at the existing `bar` text role (36 px)**, not a new `FONT_SIZES` role. Rejected: a new role (also needs a weight entry, no kit value). Would change: the author's loading art (S-16c) with its own type size.
+
+### Earlier steps
+
 
 
 - **No AskUserQuestion.** Between-phase prompt decided as "stop after phase 2".
