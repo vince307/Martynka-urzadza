@@ -753,19 +753,19 @@ Z przeglądu planu (`reviews/plan-review.md`):
 - [x] 3.1 Nowe testy trafiania w `tests/roomHit.test.ts` czerwone przed implementacją, zielone po — 200d188
 - [x] 3.2 `tests/roomsData.test.ts`, `tests/wordRound.test.ts` przepisane i zielone — 200d188
 - [x] 3.3 `rg -n "SALON_PLACEHOLDERS|captionAnchor|drawLook" src tests` pusty — 200d188
-- [ ] 3.4 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e z przepisanymi `room-purchase`, `room-change`, `save-restart` (baseline, bez spadków)
+- [x] 3.4 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e z przepisanymi `room-purchase`, `room-change`, `save-restart` (baseline, bez spadków) — 200d188 (e2e: orchestrator note, 94 passed --workers=4)
 - [x] 3.5 Celowe złamanie: `slotAt` ignoruje predykat alfy → test „róg dywanu nad fotelem” czerwony; przywrócone; meta-check — 200d188
 
 ### Phase 4: Grafika salonu w WebP, ładowanie i zdrowie obrazków
 
 #### Automated
 
-- [ ] 4.1 `tests/roomArt.test.ts` zielony (26 wpisów = 26 plików, klucze = klucze `SALON`)
-- [ ] 4.2 `npm run art` drugi raz → `git status --porcelain public/assets` pusty (determinizm)
-- [ ] 4.3 `cat public/assets/rooms/salon/*.webp | wc -c` ≤ 1 400 000 B (BSD `du` na macOS nie ma `-b`); po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/`
-- [ ] 4.4 `git status --porcelain designs/` pusty i nic spod `designs/` nie jest w indeksie
+- [x] 4.1 `tests/roomArt.test.ts` zielony (26 wpisów = 26 plików, klucze = klucze `SALON`) — b6b0b77
+- [x] 4.2 `npm run art` drugi raz → `git status --porcelain public/assets` pusty (determinizm) — b6b0b77
+- [x] 4.3 `cat public/assets/rooms/salon/*.webp | wc -c` ≤ 1 400 000 B (BSD `du` na macOS nie ma `-b`); po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/` — b6b0b77
+- [x] 4.4 `git status --porcelain designs/` pusty i nic spod `designs/` nie jest w indeksie — b6b0b77
 - [ ] 4.5 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków)
-- [ ] 4.6 Celowe złamanie: usunięty `rooms/salon/sofa-morska.webp` → `tests/roomArt.test.ts` czerwony; przywrócony; meta-check
+- [x] 4.6 Celowe złamanie: usunięty `rooms/salon/sofa-morska.webp` → `tests/roomArt.test.ts` czerwony; przywrócony; meta-check — b6b0b77
 
 #### Manual
 
