@@ -860,7 +860,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 #### Manual
 
 - [x] 2.7 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, krok E1.1: polecenia, biernik/dopełniacz figur, intruz jednoznaczny, szlaczek z jednym następnikiem, podpowiedzi „policz rogi” — impl-review 2026-10-15 (reviews/impl-review.md)
-- [ ] 2.8 [visual] Zrzuty: SHAPES `name` pierwsza próba, SHAPES `odd` z podpowiedzią, SHAPES `all` (select), PATTERN pierwsza próba i ostatni krok rozwiązania, karta „Nowa umiejętność!” E1.1, `CoordGrid` E3.7 bez zmian — 1440×900 i 1024×768
+- [x] 2.8 [visual] Zrzuty: SHAPES `name` pierwsza próba, SHAPES `odd` z podpowiedzią, SHAPES `all` (select), PATTERN pierwsza próba i ostatni krok rozwiązania, karta „Nowa umiejętność!” E1.1, `CoordGrid` E3.7 bez zmian — 1440×900 i 1024×768 — bramka wizualna (`screenshots/s01`–`s11`); serce jednym konturem w c61099b; karta E1.1 nieosiągalna w produkcie (E1.1 to pierwszy krok), zrzucona pierwsza karta z E1 (E1.3)
 
 ### Phase 3: COMPARE_QTY, ORDINAL, CHOOSE_OP z obrazkiem w core; naprawa „złotych”
 
@@ -888,7 +888,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 #### Manual
 
 - [x] 4.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, kroki E1.1–E1.3: kafelki porównania, „który z kolei od lewej”, CHOOSE_OP obrazkowy, brak „złotych” w zakupach — impl-review 2026-10-15 (reviews/impl-review.md)
-- [ ] 4.7 [visual] Zrzuty: COMPARE_QTY pierwsza próba i „tyle samo”, ORDINAL z podpowiedzią, CHOOSE_OP `come` i `go`, COUNT E1.2 po O4 — 1440×900 i 1024×768
+- [x] 4.7 [visual] Zrzuty: COMPARE_QTY pierwsza próba i „tyle samo”, ORDINAL z podpowiedzią, CHOOSE_OP `come` i `go`, COUNT E1.2 po O4 — 1440×900 i 1024×768 — bramka wizualna (`screenshots/c01`–`c10`); COMPARE_QTY grupy obok siebie w ramkach w c61099b
 
 ### Phase 5: Tryb z obrazkami jako filtr doboru rundy
 
@@ -942,7 +942,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 #### Manual
 
 - [x] 8.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6` i `-- E2 --count 6`, kroki E1.11 i E2.2: kwoty, „najmniejszą liczbą monet”, podpowiedź od największej monety, banknot 10 zł tylko w E2 — impl-review 2026-10-15 (reviews/impl-review.md)
-- [ ] 8.7 [visual] Zrzuty: MONEY_PAY E1 pusta taca i portfel, moneta w trakcie przeciągania, portfel z 3 monetami, zły portfel z podpowiedzią, rozwiązanie; E2 taca 2 × 2 z banknotem; stand-in monety (`?e2eArt=missing`) — 1440×900 i 1024×768
+- [x] 8.7 [visual] Zrzuty: MONEY_PAY E1 pusta taca i portfel, moneta w trakcie przeciągania, portfel z 3 monetami, zły portfel z podpowiedzią, rozwiązanie; E2 taca 2 × 2 z banknotem; stand-in monety (`?e2eArt=missing`) — 1440×900 i 1024×768 — bramka wizualna (`screenshots/m01`–`m09`); kwota z „zł” bez łamania w c61099b
 
 ### Phase 9: Seam sweep, dokumentacja, luki projektu, follow-upy
 

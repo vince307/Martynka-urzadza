@@ -23,3 +23,11 @@ Each item names a file and a symbol; the trigger says when a later slice should 
 - CHOOSE_OP first hint "Przybyło, więc dodajemy." names the operation (all kinds, inherited); a method-only first line ("Popatrz na strzałkę: przybywa czy ubywa?") would teach without giving the tile. Trigger: next teacher read of CHOOSE_OP or [human] 9.7
 - CHOOSE_OP picture starts at 2 things because `nouns.ts` has no gender ("był/była/było 1"); a story with 1 needs gender data. Trigger: noun gender data in nouns.ts
 - `TaskScene.feedDrag` and `submit` are still if-chains over the drag kinds (render and `okTarget` are exhaustive `never` switches); a fourth drag branch should turn them into switches. Trigger: a fourth `DragMode`
+
+## From the visual gate (2026-10-15)
+
+- Stand-in labels of coins are about 9-10 CSS px on the 1024 tablet (tray tile and wallet cell; `?e2eArt=missing`), under the 12 px floor; `standInLabelFit` never grows the text above scale 1. Where: `src/ui/widgets/ArtImage.ts`, `standInLabelFit` in `src/ui/widgets/artLayout.ts`. Trigger: next change to `ArtImage` or a stand-in seen on a real device
+- The check mark of a marked multi-select tile sits on the outline of a big figure (a big circle or square fills 0.8 of the tile). Where: `src/ui/widgets/SelectTiles.ts` (check position), `FACE_LOOK.bigFill`. Trigger: [human] 9.6 tablet test or next change to `SelectTiles`
+- COMPARE_QTY with 10 and 10 icons: each icon is about 22 CSS px on the 1024 tablet (two frames of 4 + 4 + 2); countable but small for a 6-year-old. Where: `iconsLayout` `sides` in `src/ui/widgets/artLayout.ts`, `TASK_LAYOUT.icons`. Trigger: [human] 9.6 tablet test
+- Tray coins are drawn smaller (about 50 CSS px) than coins in the wallet (about 72 CSS px) on the tablet; the tray tile itself (about 140 scene px) is the target. Where: `TASK_LAYOUT.coinPay` in `src/data/layout.ts`. Trigger: [human] 9.6 tablet test
+- The `CoinWallet.paint` lifted-cell follow-up above stays open: the gate dragged from the tray only, not a coin lifted out of the wallet.
