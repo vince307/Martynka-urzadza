@@ -10,7 +10,7 @@ The `/10x-tdd` step wrote this handoff for phase 5 (the IndexedDB guard and the 
 | Commits | phase 1 `0c31db4`, phase 2 `79023af`, phase 3 `06b20bb`, phase 4 `1347887`, phase 5 `731bcb0`, then this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 22 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 18 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
