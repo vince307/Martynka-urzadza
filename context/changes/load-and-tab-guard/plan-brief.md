@@ -31,7 +31,7 @@ leżąca w IndexedDB jest odrzucany w tej samej transakcji; autosaver blokuje si
 | Zegar | Pętla gry (`this.time`) | W ukrytej karcie nic nowego się nie pobiera | Research / Plan |
 | Liczby | `slowAfterMs` 8 000, `totalMs` 45 000 | Zimny start ≈ 40 s przy 50 KB/s; > 24 s najgorszego pliku | Plan |
 | Dowód cięcia | e2e #15 + tripwire wersji Phasera | Lekcja: konfiguracja loadera była no-opem, wykazało to tylko e2e | Plan |
-| Strażnik zapisu | idb-keyval `update` (atomowy) + `storedVersionNewer` | Brak okna między odczytem a zapisem | Research |
+| Strażnik zapisu | `guardedPut` (get + put w jednej transakcji; błąd `get` nie blokuje) + `storedVersionNewer` | Brak okna między odczytem a zapisem | Research |
 | Powód blokady | Nowy runtime `'newer'` (nie `'future'`) | `future` to powód odczytu ze startową kartą | Research |
 | Karta dla dziecka przy `'newer'` | Nie — tylko linia rodzica + log | Rzadkie; nowy UI bez kitu przerwałby rundę | Plan |
 | Service worker | Bez zmian | FR-003 (cicha aktualizacja); dane chroni strażnik | Research |
@@ -49,7 +49,7 @@ sprzed zmiany, A-3..A-11, V-*, P-1..P-4, P-6..P-8, grafika ładowania (S-16c), d
 
 `src/core/bootLoad.ts` decyduje fazę (`loading`/`slow`/`over`); `BootScene` ustawia dwa timery pętli i renderuje;
 `src/scenes/loaderCut.ts` to jedyne miejsce dotykające wnętrza `LoaderPlugin`. Po stronie zapisu `storedVersionNewer` (core)
-używane przez `createIdbSaveStore.write` (`update`) i szew w pamięci; `NewerSave` → `blockedBy 'newer'` → `offState`,
+używane przez `createIdbSaveStore.write` (`guardedPut`) i szew w pamięci; `NewerSave` → `blockedBy 'newer'` → `offState`,
 `deviceSaveView`, `replaceGate`.
 
 ## Phases at a Glance
@@ -60,7 +60,7 @@ używane przez `createIdbSaveStore.write` (`update`) i szew w pamięci; `NewerSa
 | 2. Cięcie w `BootScene` (impl) | `cutLoad`, `bootLoad`, szew `stallall`, hak `loading`, tripwire | Wnętrze Phasera |
 | 3. Linia „jeszcze chwilka” (impl) | `LoadingScreen.slow`, `pl.loading.slow`, luka 112 | Rysowanie po `destroy` |
 | 4. Powód `'newer'` (tdd) | autosaver, `replaceGate`, widoki, luka 113 | Wyczerpujące `Record` |
-| 5. Strażnik IndexedDB (tdd) | `update` + szew `newer` | Utrata połączenia iOS |
+| 5. Strażnik IndexedDB (tdd) | `guardedPut` + szew `newer` | Utrata połączenia iOS |
 | 6. Dokumentacja (impl) | `CLAUDE.md`, follow-upy | — |
 | 7. e2e #15, #2 | Dowód przeglądarkowy, 4 patche łamiące | Chromium tylko u orkiestratora |
 

@@ -11,7 +11,7 @@ Poprawka spoza roadmapy po audycie obserwowalności 2026-10-15_2217 (PR #66, nie
    Obejmuje też ~13 plików dźwięku, które doda S-16b (ta sama kolejka).
 2. Po `balance.loader.slowAfterMs` ekran ładowania pokazuje spokojną linię `pl.loading.slow` pod paskiem (A-2).
 3. Zapis na urządzeniu nie jest nadpisywany przez kartę/instancję, która ma starszy format niż zapis już leżący w
-   IndexedDB: zapis w `src/storage/idb.ts` idzie przez idb-keyval `update` (odczyt + zapis w jednej transakcji) i odmawia,
+   IndexedDB: zapis w `src/storage/idb.ts` idzie przez `guardedPut` (odczyt + zapis w jednej transakcji `readwrite`; nieczytelny rekord nie blokuje zapisu) i odmawia,
    gdy zapisana `version` jest większa; autosaver blokuje się z runtime'owym powodem `'newer'`, rodzic widzi przyczynę w
    „Zapis gry” (P-5). Format zostaje **v3**, fixtury bajt w bajt.
 
@@ -58,7 +58,7 @@ Poprawka spoza roadmapy po audycie obserwowalności 2026-10-15_2217 (PR #66, nie
 - `LoadingScreen.slow()` rysuje `pl.loading.slow` w `LOADING_LAYOUT.slow`; DESIGN-GAP 112.
 - Szew `?e2eArt=stallall` (tylko build haka): limit na plik wyłączony, krótkie e2e `slowAfterMs`/`totalMs`; hak ma
   `screen: 'loading'` z `loading: { phase }` i `bootLoad` w migawce.
-- `storedVersionNewer(stored, version)` w `src/core/save.ts`; `createIdbSaveStore.write` przez `update` rzuca błąd o
+- `storedVersionNewer(stored, version)` w `src/core/save.ts`; `createIdbSaveStore.write` przez `guardedPut` rzuca błąd o
   nazwie `NewerSave`; `BlockReason` zyskuje `'newer'` (runtime); `replaceGate` → `Blocked`; `offState`/`deviceSaveView`
   znają `'newer'`; `pl.settings.saveOff.newer`; DESIGN-GAP 113; szew `?e2eSave=newer`.
 - Spec `tests/e2e/load-and-tab-guard.spec.ts`: #15 (wiele zawieszonych plików + font → linia, start, zastępstwa, jeden
@@ -73,7 +73,7 @@ Poprawka spoza roadmapy po audycie obserwowalności 2026-10-15_2217 (PR #66, nie
   ścieżka cięcia zeruje `retryAttempts`, woła `resetXHR()`, zeruje `ontimeout` i dopiero wtedy `nextFile`.
 - `this.time.delayedCall` ustawione w `preload` tyka podczas ładowania (scena w stanie LOADING jest krokowana); zatrzymuje
   się z ramką animacji w ukrytej karcie, jak sam loader.
-- idb-keyval 6.3.0 `update` = `get` + `put` w jednej transakcji `readwrite`; wyjątek w updaterze odrzuca przed `put`.
+- idb-keyval 6.3.0 `update` = `get` + `put` w jednej transakcji `readwrite`; wyjątek w updaterze odrzuca przed `put`, ale błąd `get` też odrzuca całość — dlatego `guardedPut` na surowym magazynie (plan-review F1).
 - Getter `snapshot` haka podczas Boot sięga do `TaskScene`, której jeszcze nie ma — e2e potrzebuje gałęzi `loading`.
 - **Lekcja poprzedniego runu**: konfiguracja `loader.timeout` w `createGame` była no-opem i wyłapało to dopiero e2e
   (`salon-load-health` faza 3 → f4415a5). Każdy mechanizm na wnętrzu loadera ma tu nazwany dowód w przeglądarce
@@ -105,7 +105,15 @@ e2e, protokół request-file). Każda faza zostawia pełną bramkę i istniejąc
   `queue`: odpiąć `data.onload/onerror` obrazka, **najpierw** podmienić `onProcessComplete` na no-op (późne rozstrzygnięcie
   `FontFace` nie może rzucić → karta błędu), potem `state = FILE_ERRORED`, `fileProcessComplete(f)`. Iterować po kopiach
   Setów. `create()` może pobiec synchronicznie w środku ostatniego wywołania — oddanie sceny jest już odroczone
-  `delayedCall(0)`.
+  `delayedCall(0)`. Pliki przeniesione z `list` nie mają `xhrLoader` (`File.load` nigdy nie ruszył): `abort()` tylko
+  przy istniejącym `xhrLoader`; każdemu ucinanemu plikowi ustawić `state = FILE_ERRORED` przed `nextFile`/
+  `fileProcessComplete` (inaczej plik z `list` zostaje `FILE_PENDING`). (plan-review F3)
+- **Dlaczego podmiana `onProcessComplete` (plan-review F2)**: pliki z `queue` NIE trafiają do `_deleteQueue`, więc nie są
+  niszczone (`File.destroy` nie zeruje im `loader`). Późne rozstrzygnięcie `FontFace` bez podmiany NIE rzuca: woła
+  `fileProcessComplete` → drugi `loadComplete` (drugi `COMPLETE`, stan loadera nadpisany z `SHUTDOWN` na `COMPLETE`,
+  tekstura/font dodane do cache po policzeniu `artHealth`). Drugiego `create()` nie ma, bo `SceneManager` podpina
+  `loader.once(COMPLETE, loadComplete)` (`SceneManager.js` `bootScene`). Podmiana (i odpięcie `onload/onerror` obrazka)
+  zostaje jako pas bezpieczeństwa przeciw drugiemu `COMPLETE` i późnemu wpisowi do cache — nie przeciw karcie błędu.
 - **Timery czyszczone na `COMPLETE`**: oba `delayedCall` (linia, cięcie) usuwane przy zwykłym końcu; linia nie może być
   rysowana po `LoadingScreen.destroy()`.
 - **Strażnik `create()`**: licznik `creates` w `bootLoad`; drugi `create()` (nie powinien wystąpić) loguje ostrzeżenie i
@@ -143,7 +151,7 @@ ujemny/NaN elapsed → `loading`, złe limity → wyjątek.
 **File**: `src/data/balance.ts` (`loader`); `tests/loaderBalance.test.ts`
 
 **Intent**: `slowAfterMs: 8000`, `totalMs: 45000` z komentarzem z arytmetyką (64 WebP + font ≈ 1,9 MB, przy 50 KB/s
-≈ 40 s zimnego pierwszego startu; S-16b +13 dźwięków; limit łączny > najgorszy przypadek jednego pliku 24 s, więc jeden
+≈ 40 s zimnego pierwszego startu, więcej gdy instalacja SW pobiera równolegle (Known risks, F4); S-16b +13 dźwięków; limit łączny > najgorszy przypadek jednego pliku 24 s, więc jeden
 zawieszony plik nadal kończy się po swoim limicie; następny start z cache SW).
 
 **Contract**: nowe przypadki: `checkBootLimits(balance.loader)` nie rzuca; `totalMs` w 30000..60000;
@@ -353,16 +361,25 @@ P-5 na prawdziwej ścieżce zapisu. Widocznie: karta/instancja ze starszym forma
 
 ### Changes Required:
 
-#### 1. `write` przez `update`
+#### 1. `write` przez `guardedPut` (jedna transakcja)
 
 **File**: `src/storage/idb.ts` (`createIdbSaveStore.write`); `tests/idbStore.test.ts`
 
-**Intent**: `write` = `run(s => update(key, old => { if (storedVersionNewer(old, value.version)) throw named
-NEWER_SAVE; return value; }, s), () => mine === writeSeq)`; `NewerSave` nie jest „lost connection”, więc bez ponowienia.
+**Intent**: `write` = `run(s => s('readwrite', (os) => guardedPut(os, key, value)), () => mine === writeSeq)`; eksportowana
+`guardedPut(store: IDBObjectStore, key, value): Promise<void>` działa na surowym magazynie (`UseStore`, `promisifyRequest`
+z idb-keyval) w JEDNEJ transakcji: `get(key)`;
+przy sukcesie `storedVersionNewer(old, value.version)` → odrzucenie błędem o nazwie `NEWER_SAVE` bez `put`, inaczej
+`put(value, key)`; przy **błędzie samego `get`** (rekord nieczytelny: `event.preventDefault()`, żeby transakcja nie
+przerwała się) → `put(value, key)` mimo to (wersji nie da się poznać, więc nie ma czego chronić). Nie używać gołego
+idb-keyval `update`: jego `req.onerror` odrzuca całość, więc wymuszone „Zastąp mimo to” przy `unavailable` z błędem
+odczytu (`replaceGate`: `unavailable` + `force` → `ok`) nigdy by się nie zapisało — ścieżka naprawy z S-12/S-15 by
+zginęła (plan-review F1). `NewerSave` nie jest „lost connection”, więc bez ponowienia.
 
 **Contract**: Testy na fake-indexeddb: magazyn B zapisuje `{ version: 4 }`, magazyn A (ta sama baza) zapisuje v3 →
 odrzucenie o nazwie `NewerSave`, odczyt zwraca `version 4`; brak zapisu → zapis przechodzi; ta sama wersja → przechodzi;
-zapis surowego obiektu bez `version` (uszkodzony) → zapis przechodzi; `backup` bez zmian (osobny klucz).
+zapis surowego obiektu bez `version` (uszkodzony) → zapis przechodzi; `backup` bez zmian (osobny klucz). Plus test
+`guardedPut` na atrapie `IDBObjectStore`, której `get` kończy się `onerror`: `put` wołany, obietnica spełniona (break:
+bez gałęzi błędu `get` → czerwony).
 
 #### 2. Szew `?e2eSave=newer`
 
@@ -372,7 +389,9 @@ zapis surowego obiektu bez `version` (uszkodzony) → zapis przechodzi; `backup`
 SAVE_VERSION + 1 }` (symulacja innej karty), a każdy `write` stosuje `storedVersionNewer` i odrzuca `NewerSave`.
 
 **Contract**: `e2eSave('?e2eSave=newer') === 'newer'`; test jednostkowy szwu: write 1 ok, write 2 odrzucony z nazwą
-`NewerSave`, `writtenVersion` zostaje `SAVE_VERSION + 1`.
+`NewerSave`, `writtenVersion` zostaje `SAVE_VERSION + 1`. Log szwu: po udanym zapisie 1 `writtenVersion` = wersja
+podbita (`SAVE_VERSION + 1`, stan „innej karty”), nie `next.version`; odrzucona próba dopisuje op `'write'` (tak jak
+`writehang`), więc spec (c) oczekuje dokładnie jednego dodatkowego `'write'` po blokadzie i żadnego dalej.
 
 ### Success Criteria:
 
@@ -405,7 +424,7 @@ Zdanie w `CLAUDE.md`, follow-upy z triggerami, zapis decyzji o service workerze.
 
 **Intent**: Jedno zdanie: łączny limit `balance.loader.totalMs` (cięcie w `src/scenes/loaderCut.ts`, Phaser 4.2.1,
 tripwire `tests/phaserLoaderPin.test.ts`), linia `pl.loading.slow` po `slowAfterMs`, `REGISTRY_KEYS.bootLoad`, strażnik
-`NewerSave` w `src/storage/idb.ts` (`update`), runtime `blockedBy 'newer'`, szwy `?e2eArt=stallall` i `?e2eSave=newer`,
+`NewerSave` w `src/storage/idb.ts` (`guardedPut`), runtime `blockedBy 'newer'`, szwy `?e2eArt=stallall` i `?e2eSave=newer`,
 luki 112-113.
 
 #### 2. Follow-upy
@@ -460,8 +479,10 @@ IndexedDB jest dowodzona testem fake-indexeddb, bo kontrakt zabrania otwierania 
 w limicie testu (cięcie 3 s); `artHealth.missing ≥` liczba plików pieniędzy; `bootLoad.cut` zawiera klucz fontu i plik
 pokoju; brak karty błędu (`page.getByRole` karty błędu niewidoczna) przez kolejne ~1 s.
 (b) „#15 A-1 a file that answers after the cut does not start the game twice”: w tym samym teście albo osobnym — po
-powitaniu zwolnić trzymany plik pokoju (`route.continue()`), odczekać, `bootLoad.creates === 1`, `screen` nadal
-`'welcome'`, brak karty błędu.
+powitaniu zwolnić trzymany **font** (`route.continue()` → późne rozstrzygnięcie `FontFace`, jedyne zdarzenie, które po
+cięciu naprawdę dociera do loadera) oraz trzymany plik pokoju (`route.continue().catch(() => undefined)` — jego XHR
+został przerwany, więc to tylko dowód, że późna odpowiedź niczego nie rusza), odczekać, `bootLoad.creates === 1`,
+`screen` nadal `'welcome'`, brak karty błędu. (plan-review F2)
 (c) „#2 P-5 a newer save written by another tab is not overwritten”: `?e2eSave=newer&e2eVariant=off`, `passWelcome`, jedno
 zadanie z odpowiedzią (zmiana stanu) → `save.blockedBy === 'newer'`, `save.store.writtenVersion === SAVE_VERSION + 1`,
 operacji `write` przybywa najwyżej o odrzuconą próbę; `openSettings` → sekcja „Zapis gry” zawiera dokładny tekst
@@ -471,9 +492,9 @@ operacji `write` przybywa najwyżej o odrzuconą próbę; `openSettings` → sek
 stan z haka tylko do odczytu; nowy kontekst = świeże urządzenie; nigdy IDB z testu; obraz ładowany przez `blob:` —
 klasyfikacja odpowiedzi najpierw po schemacie URL. **Chromium niedostępny w sesji agenta**: protokół request-file —
 `e2e-request-p7.md`, patche (tylko kod produkcyjny): `e2e-break-p7a.patch` (`cutLoad` zwraca `[]` bez cięcia → (a)
-czerwony: brak powitania), `e2e-break-p7b.patch` (bez podmiany `onProcessComplete` w `queue` → (a) lub (b) czerwony na
-karcie błędu albo braku powitania; jeśli zostaje zielony, zapisać meta-check: font nie rozstrzygnął się po cięciu w
-Chromium i ten patch nie jest dowodem), `e2e-break-p7c.patch` (`BootScene` bez `delayedCall` linii → (a) czerwony na
+czerwony: brak powitania), `e2e-break-p7b.patch` (bez podmiany `onProcessComplete` w `queue`; **oczekiwany wynik: zielony** — wg
+Critical Implementation Details późny font nie rzuca, a drugi `create` blokuje `once` Phasera; zapisać meta-check, że p7b
+nie jest dowodem i że (b) zielone przy patchu potwierdza nieszkodliwość; czerwony wynik = analiza błędna, zatrzymać się), `e2e-break-p7c.patch` (`BootScene` bez `delayedCall` linii → (a) czerwony na
 `phase 'slow'`), `e2e-break-p7d.patch` (`write` szwu bez `storedVersionNewer` → (c) czerwony na `writtenVersion`);
 `STATUS: BLOCKED — e2e needs orchestrator run (request file written)`; agent kończący commituje spec po wyniku
 orkiestratora. Każdy oczekiwany czerwony test osobno (`-g`).
@@ -484,7 +505,7 @@ orkiestratora. Każdy oczekiwany czerwony test osobno (`-g`).
 
 - `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + N` (N = liczba testów specu)
 - Deliberate break p7a (`cutLoad` bez cięcia) → (a) czerwony; przywrócone; meta-check: pliki naprawdę wiszą (SW zablokowany, limit na plik wyłączony), więc tylko limit łączny kończy ładowanie
-- Deliberate break p7b (bez no-op `onProcessComplete`) → czerwony albo udokumentowany meta-check, dlaczego nie
+- Deliberate break p7b (bez no-op `onProcessComplete`) → oczekiwany zielony z udokumentowanym meta-checkiem (plan-review F2)
 - Deliberate break p7c (bez linii) → (a) czerwony na `phase 'slow'`
 - Deliberate break p7d (szew bez strażnika) → (c) czerwony; meta-check: szew dzieli `storedVersionNewer` z `idb.ts`, prawdziwą transakcję dowodzi faza 5
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
@@ -535,9 +556,17 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 - **Ukryta karta przy starcie**: zegar pętli stoi z ramką animacji, więc start w tle nie jest cięty (świadomie: żadne nowe
   pobranie nie rusza w tle).
 - **Strażnik tylko od tego buildu** (wyżej); ta sama wersja w dwóch kartach — follow-up.
-- **`update` a utracone połączenie iOS**: ścieżka `run` ponawia `update` jak `set`; nie sprawdzone na iPadzie — `[human]`
+- **`guardedPut` a utracone połączenie iOS**: ścieżka `run` ponawia `guardedPut` jak `set`; nie sprawdzone na iPadzie — `[human]`
   przez istniejącą listę kontrolną (follow-up WebKit).
 - **Chromium w sesji agenta**: faza 7 w protokole request-file; zrzut fazy 3 przez fallback Playwright.
+- **Pierwszy start konkuruje z precache (plan-review F4)**: `registerServiceWorker` rejestruje SW na `window` `load`,
+  który nie czeka na XHR Phasera, więc instalacja SW pobiera cały build (JS + WebP + font) równolegle z ładowaniem
+  `BootScene` — przy 50 KB/s pasmo dzieli się na dwa i zimny start może przekroczyć 45 s, choć sieć działa. Skutek
+  ograniczony do tej sesji: cięcie przerywa tylko XHR strony; precache biegnie w kontekście SW niezależnie i następny
+  start czyta z cache. Gdy serwer milczy, instalacja SW też wisi (Workbox bez limitu) i następny start znowu pobiera z
+  sieci — zachowanie sprzed tej zmiany. Komentarz `balance.loader` (faza 1) ma wspomnieć tę konkurencję.
+- **Ścieżka cięcia nie ma czerwonego e2e dla podmiany `onProcessComplete`** (F2): to pas bezpieczeństwa, p7b oczekiwany
+  zielony.
 
 ## References
 
@@ -572,8 +601,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
    uciętych. Dlaczego: sztuczne zdarzenie pomyliłoby A-7 (przyczyna per plik). Co zmieniłoby: podjęcie A-7.
 8. **Kopie tekstów**: `pl.loading.slow = 'Jeszcze chwilka, wczytuję obrazki.'` (bez wielokropka — font awaryjny przed
    wczytaniem fontu zadań, por. luka 99), `saveOff.newer` jak w fazie 4; luki 112 i 113. Co zmieniłoby: tekst od autorki.
-9. **Strażnik w `update` (atomowy) w magazynie**, nie osobny `read()` przed `write()`. Co zmieniłoby: `update` źle
-   zachowujący się po utracie połączenia iOS.
+9. **Strażnik w jednej transakcji w magazynie (`guardedPut`, plan-review F1 zamiast gołego `update`)**, nie osobny `read()` przed `write()`. Co zmieniłoby: transakcja źle
+   zachowująca się po utracie połączenia iOS.
 10. **Tripwire wersji Phasera w unit + e2e jako dowód**, bez przypinania wersji w `package.json`. Dlaczego: zmiana
     zależności jest poza zakresem; tripwire wymusza świadome przejście. Co zmieniłoby: decyzja opiekuna o dokładnym pinie.
 11. **Fazy 1, 4, 5 `tdd`; 2, 3, 6 `impl`; 7 `e2e`.** Dlaczego: kontrakt (małe fazy, czysta logika test-first, e2e po
@@ -662,7 +691,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 - [ ] 7.1 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N`
 - [ ] 7.2 Deliberate break p7a (`cutLoad` bez cięcia) → (a) czerwony; przywrócone; meta-check
-- [ ] 7.3 Deliberate break p7b (bez no-op `onProcessComplete`) → czerwony albo udokumentowany meta-check
+- [ ] 7.3 Deliberate break p7b (bez no-op `onProcessComplete`) → oczekiwany zielony z udokumentowanym meta-checkiem
 - [ ] 7.4 Deliberate break p7c (bez linii) → (a) czerwony na `phase 'slow'`
 - [ ] 7.5 Deliberate break p7d (szew bez strażnika) → (c) czerwony; meta-check
 - [ ] 7.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
