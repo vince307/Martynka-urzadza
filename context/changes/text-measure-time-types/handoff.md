@@ -1,59 +1,56 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by the `/10x-plan-review` step of run `2026-10-15-fix-s14c-s14d`. The plan is reviewed (VERDICT: PROCEED) and fixed in
-place; the slice is ready for phase 1 (`Driver: tdd`). The next agent must not get wrong: no INEQUALITY skill enters the data
-before phase 2, and phase 2 must NOT add snapshot field names to `vite/e2eHookGuard.mjs` (the snapshot ships in production; the
-build would fail — plan-review F1).
+Written by `/10x-tdd` phase 1 of run `2026-10-15-fix-s14c-s14d`. Phase 1 is done and committed (rule `check` in validator and leak test, INEQUALITY generator registered, no skill in the data). The next agent must not get wrong: no INEQUALITY skill enters `src/data/curriculum/` before phase 2, and phase 2 must NOT add snapshot field names to `vite/e2eHookGuard.mjs`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | 4 on top of `e2f7caa`: change identity, research, plan, `docs(text-measure-time-types): plan review` |
+| Commits | plan commits + `test(text-measure-time-types): check w walidatorze, przecieku i dystraktorach; generator INEQUALITY (p1)` + this handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 65 (all; `grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (four files staged by path) |
+| `change.md` status | `plan_reviewed` (tdd skill sets `implementing`; left as is, status changes are the orchestrator's) |
+| `## Progress` rows remaining | 60 (`grep -c '^- \[ \]' plan.md`); 1.1-1.4 ticked, 1.5 `[reviewer]` open |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/text-measure-time-types/reviews/plan-review.md` | the review: 2 CRITICAL, 6 WARNING, 2 OBSERVATION, code-verified checks (INEQUALITY reachability, E6 pins/oracle, review step, follow-ups), `VERDICT: PROCEED` |
-| `context/changes/text-measure-time-types/plan.md` | fixed in place: hook/guard sentence (F1), phase 11 (a) via unlock card + new break p11a (F2), `markedTile` read from `AnswerTiles` (F3), phase 7 ≥ 50 % share + phase 11 up to 3 rounds (F4), validator path (F5), Known risks for phase 4 size and e2e randomness (F6, F4), `MassParams` union (F7), review `minCurrent` in `buildAdaptiveRound` + `currentGroups` fallback (F8), phase 9 follow-ups (O10); Progress 9.1 and 11.2 texts updated to match |
-| `context/changes/text-measure-time-types/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/text-measure-time-types/handoff.md` | this file |
+| `src/core/tasks/generators/inequality.ts` | `generateInequality`, `parseInequalityParams` (`{max, shapes}`), shapes `add<`, `add>`, `box+<`, `sub>`; own tile builder (2 right + 2 wrong at the boundary), `check`, 3 hint lines; first-line tail number rejected by `check` (draw loop with `MAX_ATTEMPTS`) |
+| `src/core/tasks/validate.ts` | new rules `check-answer`, `check-no-wrong`, `check-one-right` (only tasks with `check`, numeric answer, `choices`, input not `select`) |
+| `src/core/round/hints.ts` | `leaksAnswer` accepts any number `check` accepts (`isAnswerNumber`) |
+| `src/core/tasks/registry.ts` | INEQUALITY registered in `generators` and `parsers` |
+| `src/data/pl.ts` | `tasks.inequality`, `inequalityEquality`, `inequalityBoundary`, `inequalityExample` |
+| `tests/inequality.test.ts` (new), `tests/validate.test.ts`, `tests/hints.test.ts` | the tests |
+| `context/changes/text-measure-time-types/plan.md` | Progress 1.1-1.4 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/text-measure-time-types` |
-| phase titles `## Phase N` ↔ Progress `### Phase N` | `diff` identical (11); 65 `- [ ]` rows; every phase has `Driver:` (1,3–8 tdd; 2,9 impl; 10–11 e2e) |
-| `grep -l hintVisual dist/_app/*.js` | hit in `index-*.js` → snapshot fields ship in production (basis of F1) |
-| E6 oracle recomputed in node | n = 10 → ceil 1,3,5,7,9 → `[2,3,5,7,9,10]`; n = 11 → `[2,4,6,8,10,11]` (phase 8 break goes red) |
-| code reads | `isCorrect` (`src/core/round.ts`), `TaskScene.render`/`snapshot`/`submit`, `AnswerTiles.markCorrect`/`markHint`, `answerWrong`/`answerRight`, `WORD_TYPES`, `generateTask`, `hints.ts` `leaksAnswer`/`solutionSteps`, `curriculum.ts` start/floor/buckets/unlock/`buildAdaptiveRound`, `pick.ts`, `artFilter.ts`, `progress.ts`, `placement.ts`, `checkE2EHook`, `mass.ts` `MassParams` |
-| lint / typecheck / tests / build / e2e | not run: docs-only step, no code touched (baseline on main e2f7caa: lint OK, typecheck OK, 2479 tests, build OK, e2e 82 — inherited, unverified) |
+| RED (stubs first, assertions) | `tests/hints.test.ts`: `AssertionError: expected 'Najpierw zobacz 2' to be null`; `tests/validate.test.ts`: `expected [] to deeply equal [ 'check-answer' ]` (same for `check-no-wrong`, `check-one-right`); `tests/inequality.test.ts` red on the stub; 10 failed / 30 passed |
+| `npm run lint` / `npm run typecheck` | OK / OK |
+| `npm test` + deploy tests + `sample` E1-E6 | 2491 passed = baseline 2479 + 12 (6 inequality, 5 validate, 1 hints); sample E1-E6 exit 0, output unchanged (no skill uses INEQUALITY) |
+| `npm run build` | OK (`e2e hook: absent`) |
+| e2e `npx playwright test --config=... --workers=4` | 82 passed = baseline 82 + 0, run in this session |
+| Deliberate breaks | `isAnswerNumber` ignoring `check`, validator `check-no-wrong` disabled, `TILES_RIGHT = 3`: 6 tests red (hints, validate, 4 inequality draws); restored, 40/40 green. Meta-check: the inequality tests count right tiles from the printed inequality (regex oracle), not through `task.check`, so the 3-tile break is caught independently |
+| Teacher read (INEQUALITY, 4 draws per shape, max 10) | prompts "Jaka liczba pasuje do okienka? 5 + □ < 9", tiles near the boundary, line 1 gives the equality without the result, line 3 "Na przykład 5 + 2 = 7, a 7 < 9. Pasuje 2."; sub> and add> use the reversed equation ("3 = 6 − □", "5 = 2 + □") so the line's last number is never a right tile. Variety: sub> max 10 gives 28 distinct prompts per 400 draws |
 
 ## 4. Next command
 
-`/10x-tdd text-measure-time-types` (phase 1, `Driver: tdd`)
+`/10x-implement text-measure-time-types phase 2` (phase 2, `Driver: impl`)
 
 ## 5. Open
 
-- `[human]` rows (post-run checklist): 4.8 (tablet voice reads `spokenTime` „8 15”), 9.6 (decisions against ZADANIA literal text and threshold rises; listed in plan phase 9).
-- Known risks in `plan.md` `## Known risks`: phase 4 size (in-phase split recipe p4a/p4b), phase 11 e2e randomness (limit 3 rounds, phase 7 share ≥ 50 %), two right tiles for 6-year-olds, long prompts at 1024 px.
-- DESIGN-GAP planned: row 98 (several right tiles, `TaskScene` marking) in phase 2.
-- Conditional: `capacity_half_l_e5` drops to follow-up `Trigger: S-17` if variety invariants fail (plan decision 5).
-- Follow-ups to write in phase 9 (`follow-ups/review-fixes.md`): set-the-clock E5–E6, 200/500 zł, WRITTEN missing digits + F9, ARROW_TABLE multi-number, LOGIC in E6.11, timetable table, review title in HUD, mass comparisons stay with the scale, INEQUALITY mistake example in the parent preview.
-- Phase 1 title says „dystraktorach” but `src/core/tasks/distractors.ts` needs no change (O9).
-- E2E phases 10–11 use the request-file protocol; phase 11 reaches E6.11 by importing a v2 save at `unlockedStep.E6 = 10` and unlocking through one round.
+- `[reviewer]` 1.5 teacher read: done informally above; the reviewer may re-read `npm run sample` after phase 2 adds the skill.
+- `[human]` rows 4.8 and 9.6 as before; DESIGN-GAP row 98 planned in phase 2; follow-ups listed in phase 9 as before.
+- Known risks in `plan.md` `## Known risks` unchanged.
+- `src/core/tasks/distractors.ts` needed no change (O9). `answerWrong` in `tests/e2e/support/hook.ts` still picks `!== state.answer`: fixed in phase 2 together with the scene.
 
 ## 6. Autonomous decisions
 
-1. **Verdict PROCEED, not RETHINK.** Why: the approach holds against the code (`isCorrect` honours `check`; review flag + `stepPlayable` keeps save v2 and S-15 untouched; oracle math checks out). Would change: a phase discovering that `TaskScene` cannot keep the submitted value across `render` without core state (then the round state carries it — still no save change).
-2. **F2 fixed with Fix A (unlock card) over a progress-panel assertion.** Rejected: reading the settings panel's „krok N z M” (needs the 2 s gear hold + adult gate again after import). Why: the unlock card is the product signal, matches screenshot 8.7, and the break `stepPlayable` without `review` turns it red. Would change: the unlock round proving too slow/flaky → assert the progress panel instead.
-3. **F6 accepted as a Known risk, phase 4 not split now.** Rejected: renumbering to 12 phases. Why: ≤ 3 generators rule holds; renumbering ripples through Progress, handoff and drivers. Would change: phase 4 agent hitting the context limit → use the recipe (two commits in the phase).
-4. **Product decisions (INEQUALITY 2 right tiles, MIX step-first ~14 % E5, no LOGIC, text timetable, whole-złoty PRICE) not overturned.** Why: none is clearly wrong against ZADANIA/PRD and all sit in `[human]` 9.6. Would change: the author's read in 9.6.
-5. **O9 left unfixed** (phase title mentions distractors). Why: renaming touches Progress titles for no behavioural gain. Would change: an implementer misreading it as a required change.
+1. **Stubbed `generateInequality`/`parseInequalityParams` first so RED is an assertion.** Rejected: red from a missing module. Would change: n/a.
+2. **Validator rules apply only to tasks with a numeric answer, `choices` and input not `select`.** Why: EVEN_ODD select has an array answer and must stay green. Would change: another numeric multi-right type with `select`.
+3. **Equation orientation in hints ("5 = 2 + □") for `add>` and `sub>`** instead of constraining the numbers, to keep the first line free of a right-tile number while allowing the whole number range. Would change: the author's preference in the 9.6 read.
+4. **`MIN_MAX` per shape (5, 5, 5, 4)** as the parser's feasibility test. Would change: other tile counts.
