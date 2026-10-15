@@ -951,7 +951,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 63cb2b7
 - [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone — 63cb2b7
 - [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 100+ w `docs/design-gaps.md` — 63cb2b7
-- [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 86 passed on 9ee5d56 (--workers=4), phase 9 changed only comments and docs
 
 #### Manual
 
@@ -963,10 +963,10 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/picture-tasks.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3`
-- [ ] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): strefa dotyku kafelka z twarzą przesunięta → (a) czerwony; meta-check
-- [ ] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `SelectTiles` nie przełącza kafelka z twarzą → (b) czerwony; każdy czerwony osobno (`-g`); przywrócone
-- [ ] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 10.1 `npx playwright test tests/e2e/picture-tasks.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 3` — orchestrator: picture-tasks 3 passed (28.4 s); full suite 89 passed (6.5 min, --workers=4) = 86 + 3
+- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): strefa dotyku kafelka z twarzą przesunięta → (a) czerwony; meta-check — orchestrator: only "a shape tile drawn as a figure is tapped and pays a star" red (Expected "second", Received "first"), 2 passed, restored
+- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `SelectTiles` nie przełącza kafelka z twarzą → (b) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: only "select all circles and compare two groups by touch" red (Expected "done", Received "second"), 2 passed, restored
+- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build: e2e hook: absent (2 chunks checked); lint, typecheck, npm test 2832 OK; ports 4397/4398 free
 
 ### Phase 11: Płacenie monetami dotykiem — e2e (#11)
 
