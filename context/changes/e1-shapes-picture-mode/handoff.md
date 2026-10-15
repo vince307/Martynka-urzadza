@@ -1,6 +1,6 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by the visual-gate step of run `2026-10-15-fix-s14c-s14d`. Every [visual] row (2.8, 4.7, 8.7) is captured at 1440×900 and
+Written by the visual-gate step of run `2026-10-15-fix-s14c-s14d`, final pre-merge state written by the ship step. Every [visual] row (2.8, 4.7, 8.7) is captured at 1440×900 and
 1024×768 and ticked; three discrepancies were fixed in `c61099b` (COMPARE_QTY groups side by side, heart outline, unit wrap in solution
 lines); `VISUAL: PASS`. The next agent must not reintroduce stacked groups for COMPARE_QTY: the tiles say left/right, so the drawing
 carries `sides: true`.
@@ -10,9 +10,9 @@ carries `sides: true`.
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode`, cut from `main` at `10d6fe7` |
-| Commits | `f3aa504`..HEAD: phases 1-11, review fix `203b93c`, review docs `0727dfe`, visual fix `c61099b`, then this docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; archive sets it) |
+| Commits | `f3aa504`..HEAD: phases 1-11, review fix `203b93c`, review docs `0727dfe`, visual fix `c61099b`, visual docs `4fe2f4d`, then this docs commit and the archive commit |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s14c-s14d/run-log.md |
+| `change.md` status | `archived` (ship step, `chore(archive): close e1-shapes-picture-mode`); roadmap S-14d → done, Backlog Handoff refreshed |
 | Progress | 2 rows open (`grep -c '^- \[ \]' plan.md`): [human] 9.6, 9.7 |
 | Working tree | clean after this commit |
 
@@ -52,7 +52,7 @@ All observed in this step. Baseline main `10d6fe7`: unit 2672, e2e 86; branch be
 
 ## 4. Next command
 
-`/10x-archive e1-shapes-picture-mode` then ship
+none — shipped
 
 ## 5. Open
 
@@ -74,3 +74,6 @@ All observed in this step. Baseline main `10d6fe7`: unit 2672, e2e 86; branch be
    for every `childName`. Would change: a product path that shows the E1.1 card.
 5. **Small findings left as follow-ups (O1-O4)**, not fixed: none blocks answering; they need a tablet test or touch shared widgets
    (`ArtImage`) beyond this slice. Would change: [human] 9.6 showing children miss targets or cannot count.
+6. **Ship step: archive with open [human] rows.** Chosen: `Continue archiving (Recommended)` (0 automated, 2 manual pending: 9.6,
+   9.7). Why: [human] rows are the post-run checklist, listed in the PR under „Dla właściciela produktu”. 21 ticked rows without a
+   sha suffix (soft warning; docs/verification rows) left as they are. Would change: an automated row still open.
