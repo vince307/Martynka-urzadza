@@ -22,7 +22,7 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { E2E_LOAD_TIMEOUT_MS, E2E_SLOWER_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
+import { E2E_LOADER_TIMEOUT_MS, E2E_LOAD_TIMEOUT_MS, E2E_SLOWER_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -48,6 +48,9 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
             width: GAME_WIDTH,
             height: GAME_HEIGHT,
         },
+        loader: __E2E_HOOK__ && forcedArt === 'stall'
+            ? { timeout: E2E_LOADER_TIMEOUT_MS, maxRetries: 0 }   // e2e build only (?e2eArt=stall)
+            : { timeout: balance.loader.timeoutMs, maxRetries: balance.loader.maxRetries },
         scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
         callbacks: {
             preBoot: (booting) => {

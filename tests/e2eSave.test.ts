@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decodeSave, encodeSave } from '../src/core/save';
-import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
+import { e2eArt, e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
@@ -99,5 +99,20 @@ describe('e2eSaveStore', () => {
         for (let i = 0; i < 20; i++) await Promise.resolve();
         await new Promise((r) => setImmediate(r));
         expect(settled).toBe(false);
+    });
+});
+
+describe('e2eArt', () => {
+    it('reads each seam from the query string', () => {
+        for (const seam of ['missing', 'corrupt', 'room', 'stall']) {
+            expect(e2eArt(`?e2eArt=${seam}`), seam).toBe(seam);
+            expect(e2eArt(`?a=1&e2eArt=${seam}`), seam).toBe(seam);
+        }
+    });
+
+    it('returns null for a missing or other value', () => {
+        for (const search of ['', '?x=1', '?e2eArt=', '?e2eArt=x', '?e2eArt=STALL']) {
+            expect(e2eArt(search), search).toBeNull();
+        }
     });
 });
