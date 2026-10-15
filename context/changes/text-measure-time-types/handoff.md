@@ -1,15 +1,15 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by the visual gate of run `2026-10-15-fix-s14c-s14d`. Verdict `VISUAL: PASS`: every `[visual]` row is captured at 1440×900 and 1024×768, and three discrepancies are fixed in `da12957`. The slice is ready to archive. The next agent must not get wrong: the only open Progress rows are `[human]` 4.8 and 9.6, which stay open through archive and ship.
+Written by the visual gate of run `2026-10-15-fix-s14c-s14d` (verdict `VISUAL: PASS`), final pre-merge state written by the ship step: every `[visual]` row is captured at 1440×900 and 1024×768, and three discrepancies are fixed in `da12957`. The slice is ready to archive. The next agent must not get wrong: the only open Progress rows are `[human]` 4.8 and 9.6, which stay open through archive and ship.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | plan commits, p1 `9507da3` ... p11 `093b129`, review fix `6d20b08`, review docs `70cc262`, visual fix `da12957`, then this docs commit |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; archive sets its own) |
+| Commits | plan commits, p1 `9507da3` ... p11 `093b129`, review fix `6d20b08`, review docs `70cc262`, visual fix `da12957`, visual docs `3c015ab`, then this docs commit and the archive commit |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s14c-s14d/run-log.md |
+| `change.md` status | `archived` (ship step, `chore(archive): close text-measure-time-types`); roadmap S-14c → done, Backlog Handoff refreshed |
 | `## Progress` rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): `[human]` 4.8 and 9.6 only |
 | Working tree | clean after the docs commit |
 
@@ -50,7 +50,7 @@ All observed in this step. The baseline is main `e2f7caa`: unit 2479, e2e 82.
 
 ## 4. Next command
 
-`/10x-archive text-measure-time-types` then ship
+none — shipped
 
 ## 5. Open
 
@@ -58,7 +58,7 @@ All observed in this step. The baseline is main `e2f7caa`: unit 2479, e2e 82.
 - `[human]` 9.6: the decisions that differ from ZADANIA/PRD (plan row 9.6).
 - DESIGN-GAP row 99 (`docs/design-gaps.md`): a blank in a hint or solution line reads "?". It is our choice, and the kit may replace it.
 - Follow-ups in `follow-ups/review-fixes.md`, section "From the visual gate": spoken "24.00" in the E5.8 hint, the three-line hint bar at the 12-px floor (`FeedbackBar.update`), and no minimum scale in `fitPieces`. The earlier sections are unchanged.
-- At archive time: the roadmap still shows S-14c as `planning`.
+- Roadmap S-14c closed by the archive commit (`done`, entry in `## Done`, Backlog Handoff row refreshed).
 
 ## 6. Autonomous decisions
 
@@ -67,3 +67,4 @@ All observed in this step. The baseline is main `e2f7caa`: unit 2479, e2e 82.
 3. **I set the expression room beside the keypad to 760 px, not 800.** At 800 the shrunk E6.9 row ended 20 px from the keypad. 760 keeps 40 px clear and changes no expression that fit before. What would change this: a kit `.equation` width.
 4. **I grouped the keypad field (V2) although the plan row only asked that six digits fit.** The project rule is grouping from 10 000, and the solution lines the child copies are grouped. What would change this: a teacher read wanting raw digits while typing.
 5. **I added states beyond the plan rows** (tare solution, E5.12 solution, a long E6.9 decomposition) because the step prompt names long prompts and the solution beside the keypad as the risk. V3 was found only through the added E6.9 state. What would change this: nothing; extra frames do not affect ticking.
+6. **Archived with 2 open [human] rows (ship step).** Chosen: `Continue archiving` — the warning listed 2 pending Progress rows (4.8, 9.6, both `[human]`; legacy Progress format without Automated/Manual subsections, so no `(Recommended)` label) and soft SHA-less rows. Rejected: resume implementation. Why: 4.8 is a tablet-voice listen and 9.6 a maintainer decision on departures from ZADANIA/PRD; both are a post-run checklist in the PR body („Dla właściciela produktu”), not a blocker. SHA-less `[reviewer]`/`[visual]`/gate rows carry their evidence inline; every existing SHA suffix is an ancestor of HEAD. What would change it: the maintainer rejecting a 9.6 decision, which reopens it in a new change.
