@@ -42,7 +42,7 @@ cannot start in this session), so the orchestrator must run the full e2e once be
 
 ## 4. Next command
 
-`/10x-impl-review final-art-salon` is NOT next. Next: `/10x-implement final-art-salon phase 4`
+`/10x-implement final-art-salon phase 4`
 
 ## 5. Open
 
