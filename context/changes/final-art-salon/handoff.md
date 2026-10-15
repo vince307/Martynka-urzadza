@@ -1,56 +1,45 @@
 # Handoff — `final-art-salon` (slice S-16a)
 
-Written by the visual gate step. `VISUAL: PASS`, no fix commit; all six [visual] rows ticked, only [human] 2.5 and 10.4 stay open. The next agent must not get wrong: the screenshots are JPEG on purpose (size), and `validate-rule-files.sh` must PASS after the archive move.
+Written by the ship step (archive + ship) before the push, so the archived copy is final. The next agent must not get wrong: nothing is left to run for this slice; PR, CI, merge and deploy results live in the run log, not here.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-salon`, cut from `main` at `334ff69` |
-| Commits | phases 1-10 (`d5d6993` … `9362f3f`), review fix `898517d`, impl-review docs `ce89b62`, plus this commit `docs(final-art-salon): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; archive sets the next one) |
-| `## Progress` | 2 rows open (`grep -c '^- \[ \]' plan.md`): [human] 2.5, 10.4 |
-| Working tree | clean after the commit; `tests/e2e/visual.local/` deleted; `dist-e2e/` is gitignored build output |
+| Commits | phases 1-10 (`d5d6993` … `9362f3f`), review fix `898517d`, impl-review docs `ce89b62`, visual gate `13e535f`, this handoff, then `chore(archive): close final-art-salon` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in `context/runs/2026-10-15-s16a-salon-art/run-log.md` |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-10-15-final-art-salon/`) |
+| `## Progress` | 2 rows open, both [human]: 2.5, 10.4 (post-run checklist, not a blocker) |
+| Roadmap | S-16a `done` (At a glance + body + `## Done`); Backlog Handoff refreshed (S-16a done, S-16b still blocked on sound files, S-17 prerequisite met) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/final-art-salon/reviews/visual-review.md` | verdict per [visual] row, hand-checked star arithmetic, observations; ends with the `VISUAL:` line |
-| `context/changes/final-art-salon/screenshots/README.md` | route, seams, table state · frames · how reached |
-| `context/changes/final-art-salon/screenshots/*.jpg` | 69 frames (desktop 1440×900, tablet 1024×768), ≈ 9.7 MB |
-| `context/changes/final-art-salon/plan.md` | Progress rows 4.7, 5.3, 5.4, 6.4, 7.4, 8.3 ticked |
-| `context/changes/final-art-salon/follow-ups/review-fixes.md` | new section "From the visual gate": VO1-VO3 with `Trigger:` lines |
+| `reviews/visual-review.md`, `reviews/impl-review.md`, `reviews/plan-review.md` | verdicts (visual PASS; impl-review reviewed phases 1-10) |
+| `screenshots/` | 69 JPEG frames, README with route and seams |
+| `follow-ups/review-fixes.md` | every re-triggered `Trigger: S-16` item, new S-16a items, F1-F5, VO1-VO3 |
 
 ## 3. Verification
 
-| Command | Result (observed in this step) |
+| Command | Result |
 |---|---|
-| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | OK, `e2e hook: present (2 chunks checked)` (hook build, as intended) |
-| Throwaway Playwright spec on 4399 (`npx playwright test --config=<abs>/tests/e2e/visual.local/playwright.config.ts`, sandbox disabled after the MachPort denial) | all capture tests passed (2 projects); the first run failed only on the spec's own timing assertions (hold sampled too late, unlock loop too short), fixed in the spec and re-run |
-| Hand check | stars 71 → 66 → 59 → 50 → 40 → 28 → 15 → 0 against `SALON.tasks` costs, seen in the frames; reduced motion 12 → 7 → 0 "masz 0/9"; 30 → 9 "masz 9/10" |
-| lint / typecheck / unit / build / e2e | not re-run: no source change in this step (only docs and screenshots); last observed green by the impl-review step on `1dc079b` + comment-only `898517d` (unit 2939 = baseline 2839 + 100, e2e 98 = 93 + 5) |
-| Ports | 4399 stopped (background task stopped, `lsof -ti tcp:4399 -sTCP:LISTEN` empty) |
-
-No deliberate break in this step (no code or test changed).
+| local gate | last observed by the impl-review step on `1dc079b` + comment-only `898517d`: unit 2939 = baseline 2839 + 100, e2e 98 = 93 + 5; visual gate and this step changed docs only |
+| `validate-rule-files.sh` | run after the archive move (result in the run log) |
+| forge CI, merge, deploy | run log |
 
 ## 4. Next command
 
-`/10x-archive final-art-salon`
+`none — shipped`
 
 ## 5. Open
 
-- [human] 2.5 remap rule B (`remapLegacySalon`, round up, no refund). [human] 10.4 iPad PWA run (full renovation, smoothness, loading screen offline).
-- Follow-ups VO1 (`VariantPanel` tray over the previewed coffee table/rug), VO2 (`RoomView.render` stand-in labels hidden by overlapping stand-ins), VO3 (rectangular hold outline, `RoomView.highlight`, gap 37) in `follow-ups/review-fixes.md`.
-- impl-review F1 (`RoomScene.fadeStage` after sleep) not seen in frames; F2 (`RoomView.drawRoomMiniature` with partly missing art) unreachable through a seam: both stay as follow-ups.
-- Later: archive (re-run `validate-rule-files.sh` after the move), ship.
+- [human] 2.5: remap rule B (`remapLegacySalon`, round up, no refund; gifted furniture gets variant 0; old `tasksDone` 9-10 surplus 10/25 stars not refunded, room done). [human] 10.4: iPad PWA playthrough (full renovation, smoothness at ≈ 59 MB of textures, loading screen offline on first launch).
+- Restated triggers: F1 (`RoomScene.fadeStage` after sleep) `Trigger: the next change to RoomScene.fadeStage or a tablet check (10.4) showing it`; F2 (`drawRoomMiniature` with partly missing art) `Trigger: the next change to RoomDoneCard or drawRoomMiniature`; VO1-VO3 unchanged; costs `Trigger: S-17`; rollback risk `Trigger: any deploy rollback of the build that shipped S-16a`.
 
 ## 6. Autonomous decisions
 
-1. Playwright fallback instead of Claude in Chrome. Why: every state needs touches and a long press on the Phaser canvas, which synthetic Chrome events cannot drive (profile § 8). Would change: a Chrome route that drives canvas touches.
-2. Chromium was launched with the sandbox disabled after the sandboxed run failed with `MachPortRendezvousServer … Permission denied` (profile § 8). Why: the visual gate needs a browser; the command touched only the local hook server on 4399. Would change: the orchestrator forbidding it for visual steps.
-3. Screenshots stored as JPEG quality 88 instead of PNG. Why: 69 PNG frames of the painted salon were 44 MB in a public repo; JPEG keeps them readable at ≈ 9.7 MB. Rejected: 256-colour PNG (bands the painted art and could mislead a reviewer). Would change: the maintainer wanting lossless frames.
-4. Animation frames captured at 1440 only (plan row 7.4 asks 1440); the reduced-motion and F1/rug-pop checks also desktop only. Would change: nothing.
-5. Unlock card judged on the first card reachable from the child path (E1 "Działania do 9", age 6, month 9). Why: the card layout is the same for every step. Would change: nothing.
-6. No fix commit: the observations are a missing-art state (VO2), a design gap (VO3) and a layout limit that leaves the choice possible (VO1). Would change: the maintainer judging VO1 a blocker.
+1. Archived with 2 open [human] rows (2.5, 10.4). Why: both are maintainer checks after the run (a decision to confirm, a tablet playthrough), no automated row is open; the step prompt fixes this answer. Would change: the maintainer rejecting rule B (then a new change implements rule A).
+2. No SHA repoint at archive. Why: the branch is merged with a merge commit (`--merge`), so every phase SHA stays in `main` history. Would change: a squash merge.
+3. F1 trigger restated (the visual gate 7.4 did not show the paused fade, so its first trigger can no longer fire). Would change: nothing.

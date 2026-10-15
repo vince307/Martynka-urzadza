@@ -53,7 +53,7 @@ Each item has a `Trigger:` line; later slices grep for them. Everything that car
 ## From the implementation review (`reviews/impl-review.md`)
 
 - F1: the stage cross-fade (`RoomScene.fadeStage` ghosts) and the pop tween pause when the room scene sleeps and finish after `wake`; complete or destroy them in the `sleep` handler of `RoomScene.create`.
-  Trigger: the visual gate (7.4) shows it, or the next change to `RoomScene.fadeStage`
+  Trigger: the next change to `RoomScene.fadeStage` or a tablet check (human checklist 10.4) showing it (the visual gate 7.4 did not catch it in frames; restated at archive)
 - F2: `RoomView.drawRoomMiniature` draws stand-ins for missing textures on one `Graphics` under all pictures, so with partly missing art a sofa stand-in sits under the rug picture; give each stand-in its own depth in `z` order.
   Trigger: the next change to `RoomDoneCard` or `drawRoomMiniature`
 - F3: `BootScene` never removes its loader `progress` listener; `this.load.off('progress', ...)` in `create`.
