@@ -153,9 +153,9 @@ test('#2 SIR-02 a save the browser never gives can be replaced after a second co
 test('#2 SIR-02 a read that timed out offers no overwrite', async ({ page }) => {
     await silenceSpeech(page);
     await page.goto('/?e2eSave=hang');
-    const card = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
+    const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
     await expect(card).toBeVisible();
-    await card.getByRole('button', { name: pl.saveUnavailable.continue, exact: true }).tap();
+    await card.getByRole('button', { name: pl.saveSlow.continue, exact: true }).tap();
     await expect(card).toBeHidden();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'welcome');

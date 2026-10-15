@@ -1,5 +1,6 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
+import type { FailureStage } from '../core/autosave';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
@@ -52,14 +53,27 @@ export const pl = {
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
-        // Shown when the save was moved to a newer format at the start; the old copy is kept on the device.
-        saveMigrated: (from: number) => `Zapis przeniesiono z wersji ${from}.`,
+        // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
+        saveFailingDetail: (count: number, stage: FailureStage, error: string) =>
+            `${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} · ${pl.settings.saveStage[stage]} · Kod: ${error}`,
+        saveStage: {
+            encode: 'przygotowanie zapisu',
+            backup: 'kopia starego zapisu',
+            write: 'zapis',
+            replace: 'zastąpienie zapisu',
+        },
+        // DESIGN-GAP 95: the kit has no line for a save moved from an older version. Told only after a v2 write in this session;
+        // `lost` (the v1 copy could not be written) is followed by the code line.
+        saveMigrated: {
+            kept: (from: number) => `Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.`,
+            lost: (from: number) => `Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.`,
+        },
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
             // DESIGN-GAP 69: the kit has no line for the reason of a switched-off save.
             future: 'Zapis jest wyłączony: zapis na tym urządzeniu pochodzi z nowszej wersji gry. Zaktualizuj grę, a postępy wrócą.',
-            timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie.',
+            timeout: 'Zapis jest wyłączony: odczyt zapisu trwał za długo. Uruchom grę ponownie. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
             'migration-failed': 'Zapis jest wyłączony: starego zapisu nie udało się przenieść do tej wersji gry. Został bez zmian.',
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
         },
@@ -175,7 +189,7 @@ export const pl = {
         resetFailed: 'Nie udało się zacząć od nowa. Obecne postępy zostały bez zmian.',
         // DESIGN-GAP 70 (docs/design-gaps.md): the kit has no line per reason a device save cannot be replaced (newer version, slow read).
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
-        deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz.',
+        deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
         deviceFatal: 'Gra się zatrzymała, więc nie może teraz zastąpić zapisu. Uruchom grę ponownie.',
         deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },
@@ -185,6 +199,17 @@ export const pl = {
         body: 'Przeglądarka nie udostępniła zapisu gry. Można grać dalej. Jeśli to się powtarza, sprawdź, czy przeglądarka nie blokuje danych stron.',
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
+    },
+    // DESIGN-GAP 96: the kit has no card for a save that reads too slowly; it reuses the overlay styles. DESIGN-GAP 97: no way out of a read that times out at every start, so a conditional line (it also removes the save).
+    saveSlow: {
+        title: 'Zapis wczytuje się bardzo wolno',
+        body: 'Przeglądarka długo nie oddaje zapisu gry. Możesz poczekać dłużej albo grać dalej bez zapisywania tej gry.',
+        wait: 'Poczekaj dłużej',
+        waiting: 'Czekam na zapis…',
+        continue: 'Graj dalej',
+        note: 'Postępy zapisane wcześniej na tym urządzeniu zostają nietknięte.',
+        stillSlow:
+            'Zapis nadal się nie wczytał. Jeśli to się powtarza przy każdym uruchomieniu, usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.',
     },
     install: {
         title: 'Zainstaluj grę na tablecie',

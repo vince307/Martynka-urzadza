@@ -13,7 +13,7 @@ export type LoadOutcome =
     | { kind: 'fresh' }
     | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; raw: unknown }
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown }
-    | { kind: 'unavailable'; error: string };
+    | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
 export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
 
@@ -27,6 +27,8 @@ export function errorName(e: unknown): string {
 export type Persistence = 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error';
 
 export type LoadReason = Extract<LoadOutcome, { kind: 'unreadable' }>['reason'];
+
+export type FailureStage = 'encode' | 'backup' | 'write' | 'replace';
 
 export type WriteReason = 'change' | 'now' | 'hidden';
 
@@ -43,12 +45,21 @@ export interface AutosaveStatus {
     /** Name of the last write or read error (never a message); stays after a later success. */
     lastError: string | null;
     lastWriteAt: number | null;
+    /** Runtime only (never saved): the stage and error name of the last failure; stays after a later success. */
+    lastFailure: { stage: FailureStage; error: string } | null;
     /** Runtime only (never saved): the version the loaded save was migrated from, or null. */
     migratedFrom: number | null;
     /** Runtime only (never saved): why the load was unreadable; fixed at start. */
     loadReason: LoadReason | null;
     /** Runtime only (never saved): error name of the failed load; fixed at start (`lastError` moves on). */
     loadError: string | null;
+    /**
+     * Runtime only (never saved): the copy of the raw v1 save. `none` without a migration, `pending` before the first
+     * try, `failed` after at least one failed try (still owed), `done` once kept, `skipped` when v2 was written without it.
+     */
+    backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped';
+    /** Runtime only (never saved): error name of the last failed copy; stays after a later success. */
+    backupError: string | null;
     /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
     replace: 'idle' | 'writing' | 'done';
     /** Runtime only (never saved): what the browser answered to the persistence request after the first write. */
@@ -60,6 +71,10 @@ export interface AutosaverOptions {
     snapshot: () => SessionSave;
     timers: { setTimeout: (fn: () => void, ms: number) => unknown; clearTimeout: (id: unknown) => void };
     delayMs: number;
+    /** Longest wait for one store write or copy before it counts as a `timeout` failure. */
+    writeTimeoutMs: number;
+    /** Failed copies of a migrated save in one session after which the v2 save is written without the copy. */
+    backupAttempts: number;
     load: LoadOutcome['kind'];
     blockedBy: BlockReason | null;
     now: () => number;
@@ -90,6 +105,17 @@ export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReas
     return 'ok';
 }
 
+/**
+ * Races `work` against a timer: a store call that never answers becomes a `timeout` failure. The abandoned promise stays subscribed by the race, so a late rejection reaches nobody; a late success is dropped. The timer is always cleared.
+ */
+export function withTimeLimit<T>(work: Promise<T>, timers: AutosaverOptions['timers'], ms: number): Promise<T> {
+    let timer: unknown;
+    const limit = new Promise<never>((_, reject) => {
+        timer = timers.setTimeout(() => reject(Object.assign(new Error('store timed out'), { name: 'timeout' })), ms);
+    });
+    return Promise.race([work, limit]).finally(() => timers.clearTimeout(timer));
+}
+
 export type ReplaceResult = { ok: true } | { ok: false; error: string };
 
 export interface Autosaver {
@@ -103,43 +129,40 @@ export interface Autosaver {
 
 /**
  * Reads the store once. Never rejects: a failed or too slow read is `unavailable` with the error name. Never writes.
- * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody,
- * and a late success is dropped (it is never written).
+ * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody.
+ * A `timeout` outcome carries `waitLonger`: it waits on the SAME read (never a second `store.read()`, which would queue
+ * behind the hung one) with a longer limit and decodes it like a normal read; a second limit is a plain timeout.
+ * Nothing here ever writes, so a late result is only data for the caller to decide on.
  */
 export async function loadSave(
     store: SaveStore,
     limit?: { timers: AutosaverOptions['timers']; timeoutMs: number },
 ): Promise<LoadOutcome> {
-    let raw: unknown;
-    try {
-        const read = store.read();
-        if (limit === undefined) {
-            raw = await read;
-        } else {
-            read.catch(() => undefined);
-            let timer: unknown;
-            const timeout = new Promise<never>((_, reject) => {
-                timer = limit.timers.setTimeout(() => reject(Object.assign(new Error('read timed out'), { name: 'timeout' })), limit.timeoutMs);
-            });
-            try {
-                raw = await Promise.race([read, timeout]);
-            } finally {
-                limit.timers.clearTimeout(timer);
+    const read = new Promise<unknown>((resolve) => resolve(store.read()));   // a synchronous throw is a rejection too
+    const settle = async (timeoutMs: number | undefined, offerMore: boolean): Promise<LoadOutcome> => {
+        let raw: unknown;
+        try {
+            raw = limit === undefined || timeoutMs === undefined ? await read : await withTimeLimit(read, limit.timers, timeoutMs);
+        } catch (e) {
+            const error = errorName(e);
+            if (offerMore && isTimeoutError(error)) {
+                return { kind: 'unavailable', error, waitLonger: (ms) => settle(ms, false) };
             }
+            return { kind: 'unavailable', error };
         }
-    } catch (e) {
-        return { kind: 'unavailable', error: errorName(e) };
-    }
-    if (raw === undefined) return { kind: 'fresh' };
-    const result = decodeSave(raw);
-    if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
-    return { kind: 'unreadable', reason: result.reason, raw };
+        if (raw === undefined) return { kind: 'fresh' };
+        const result = decodeSave(raw);
+        if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
+        return { kind: 'unreadable', reason: result.reason, raw };
+    };
+    return settle(limit?.timeoutMs, true);
 }
 
 export function createAutosaver(options: AutosaverOptions): Autosaver {
     const { store, snapshot, timers, delayMs, log } = options;
     let blockedBy: BlockReason | null = options.blockedBy;
     let lastError: string | null = options.loadError ?? null;
+    let lastFailure: AutosaveStatus['lastFailure'] = null;
     let lastWriteAt: number | null = null;
     let consecutiveFailures = 0;
     let dirty = false;
@@ -155,7 +178,10 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let replaced = false;
     let persistence: Persistence = 'unknown';
     // One predicate for every write path: a block, a replace in progress, or a replaced save (until the page reloads).
-    let backedUp = options.migrated === undefined;
+    let backup: AutosaveStatus['backup'] = options.migrated === undefined ? 'none' : 'pending';
+    let backupFails = 0;
+    let backupError: string | null = null;
+    const backupOwed = (): boolean => backup === 'pending' || backup === 'failed';
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
     const cancelTimer = (): void => {
@@ -163,18 +189,46 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         timer = null;
     };
 
+    const limited = <T>(work: Promise<T>): Promise<T> => withTimeLimit(work, timers, options.writeTimeoutMs);
+
+    const skipBackup = (): void => {
+        backup = 'skipped';
+        log('autosave: writing v2 without the v1 copy', { from: options.migrated?.from ?? null, backupError, attempts: backupFails });
+    };
+
     /** One write attempt; resolves true on success. Never throws. */
     const attempt = async (reason: WriteReason): Promise<boolean> => {
+        let stage: FailureStage = 'encode';
         try {
             const encoded = encodeSave(snapshot());
             if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
             dirty = false;
             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
-            if (!backedUp && options.migrated) {
-                await store.backup(options.migrated.raw, options.migrated.from);
-                backedUp = true;
+            // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is
+            // the first attempt, v2 is written without the copy: the child's progress is worth more than the raw v1 bytes (SV2-01).
+            if (backupOwed() && options.migrated) {
+                stage = 'backup';
+                if (reason === 'hidden' && backupFails > 0) {
+                    skipBackup();
+                } else {
+                    try {
+                        await limited(store.backup(options.migrated.raw, options.migrated.from));
+                        backup = 'done';
+                    } catch (e) {
+                        backupFails++;
+                        backupError = errorName(e);
+                        backup = 'failed';
+                        if (reason !== 'hidden' && backupFails < options.backupAttempts) throw e;
+                        failures++;
+                        lastError = backupError;
+                        lastFailure = { stage: 'backup', error: backupError };
+                        log('autosave: backup failed', e);
+                        skipBackup();
+                    }
+                }
             }
-            await store.write(encoded);
+            stage = 'write';
+            await limited(store.write(encoded));
             writes++;
             lastWriteAt = options.now();
             consecutiveFailures = 0;
@@ -202,8 +256,9 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             failures++;
             consecutiveFailures++;
             lastError = errorName(e);
+            lastFailure = { stage, error: lastError };
             dirty = true;
-            log('autosave: write failed', e);
+            log(`autosave: ${stage} failed`, e);
             return false;
         }
     };
@@ -255,13 +310,27 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         cancelTimer();
         try {
             await inflight;
-            await store.write(state);
+            // A copy still owed is tried once and never waited on twice: a failure only marks it skipped (SRR-04).
+            if (backupOwed() && options.migrated) {
+                try {
+                    await limited(store.backup(options.migrated.raw, options.migrated.from));
+                    backup = 'done';
+                } catch (e) {
+                    backupError = errorName(e);
+                    log('autosave: backup failed', e);
+                    skipBackup();
+                }
+            }
+            await limited(store.write(state));
         } catch (e) {
             replacing = false;
             failures++;
             consecutiveFailures++;
             lastError = errorName(e);
+            lastFailure = { stage: 'replace', error: lastError };
             log('autosave: replace failed', e);
+            // An abandoned replace write may still land later; the live game is written after it.
+            if (lastError === 'timeout') dirty = true;
             if (dirty) arm();
             return { ok: false, error: lastError };
         }
@@ -300,11 +369,14 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             skipped,
             lastReason,
             lastError,
+            lastFailure,
             lastWriteAt,
             persistence,
             migratedFrom: options.migrated?.from ?? null,
             loadReason: options.loadReason ?? null,
             loadError: options.loadError ?? null,
+            backup,
+            backupError,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };

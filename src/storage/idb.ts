@@ -1,7 +1,7 @@
 // The only module that touches IndexedDB, and the only importer of idb-keyval (eslint.config.mjs enforces it).
 // One key holds the whole save, so an interrupted transaction leaves the previous save intact.
 import { createStore, get, set, type UseStore } from 'idb-keyval';
-import type { Persistence, SaveStore } from '../core/autosave';
+import { errorName, type Persistence, type SaveStore } from '../core/autosave';
 import type { SaveState } from '../core/types';
 
 export const SAVE_KEY_PREFIX = 'profile:';
@@ -29,18 +29,23 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
     };
 
     // createStore does not touch indexedDB until the first operation, so a missing indexedDB rejects here.
-    const run = async <T>(op: (s: UseStore) => Promise<T>): Promise<T> => {
+    // `mayRetry` lets a write refuse the retry: an abandoned (timed out) write must never land after a newer one.
+    const run = async <T>(op: (s: UseStore) => Promise<T>, mayRetry: () => boolean = () => true): Promise<T> => {
         try {
             return await op(open(false));
         } catch (error) {
-            if (!isLostConnection(error)) throw error;
+            if (!isLostConnection(error) || !mayRetry()) throw error;
             return op(open(true));
         }
     };
 
+    let writeSeq = 0;
     return {
         read: () => run((s) => get<unknown>(key, s)),
-        write: (value: SaveState) => run((s) => set(key, value, s)),
+        write: (value: SaveState) => {
+            const mine = ++writeSeq;
+            return run((s) => set(key, value, s), () => mine === writeSeq);
+        },
         backup: (raw: unknown, from: number) => run((s) => set(`${key}:backup-v${from}`, raw, s)),
     };
 }
@@ -51,7 +56,9 @@ export async function requestPersistence(nav: Navigator | undefined = typeof nav
         const storage = nav?.storage;
         if (typeof storage?.persist !== 'function') return 'unsupported';
         return (await storage.persist()) ? 'granted' : 'denied';
-    } catch {
+    } catch (e) {
+        // Name only, never the message (S12-12).
+        console.warn('save: persist() failed', errorName(e));
         return 'error';
     }
 }

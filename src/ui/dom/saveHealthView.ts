@@ -22,6 +22,7 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
     section.append(createText('h2', pl.settings.saveHeading), createText('p', sentence));
     // DESIGN-GAP 69: the code the parent can quote, same format as on the start card.
     if (view.kind === 'off' && view.code !== null) section.append(createText('p', pl.saveFailed.detail(view.code, __BUILD_ID__), 'overlay-muted'));
+    if (view.kind === 'failing') section.append(createText('p', pl.settings.saveFailingDetail(view.count, view.stage, view.error), 'overlay-muted'));
     if (view.kind === 'ok') {
         if (view.lastWriteAt !== null) {
             const time = new Date(view.lastWriteAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
@@ -29,7 +30,10 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
         }
         if (view.earlierFailures !== null) section.append(createText('p', pl.settings.saveEarlier(view.earlierFailures.count, view.earlierFailures.error)));
     }
-    if (view.migratedFrom !== null) section.append(createText('p', pl.settings.saveMigrated(view.migratedFrom)));
+    if (view.migration !== null) {
+        section.append(createText('p', pl.settings.saveMigrated[view.migration.copy](view.migration.from)));
+        if (view.migration.code !== null) section.append(createText('p', pl.saveFailed.detail(view.migration.code, __BUILD_ID__), 'overlay-muted'));
+    }
     if (view.persistence !== 'unknown') section.append(createText('p', pl.settings.savePersist[view.persistence]));
     return section;
 };

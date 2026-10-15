@@ -15,10 +15,13 @@ const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     skipped: 0,
     lastReason: null,
     lastError: null,
+    lastFailure: null,
     lastWriteAt: null,
     migratedFrom: null,
     loadReason: null,
     loadError: null,
+    backup: 'none',
+    backupError: null,
     replace: 'idle',
     persistence: 'unknown',
     ...over,
@@ -94,13 +97,46 @@ describe('cardCopyFor', () => {
         expect(cardCopyFor('unreadable', 'corrupt')).toBe('failed');
         expect(cardCopyFor('unreadable', 'unknown-version')).toBe('failed');
         expect(cardCopyFor('unavailable', null)).toBe('unavailable');
+        expect(cardCopyFor('unavailable', null, 'UnknownError')).toBe('unavailable');
+    });
+
+    it('a read that timed out gets the slow card (SRR-12)', () => {
+        expect(cardCopyFor('unavailable', null, 'timeout')).toBe('slow');
+        expect(cardCopyFor('unavailable', null, 'TimeoutError')).toBe('slow');
     });
 });
 
 describe('saveHealthView migration lines', () => {
-    it('keeps migratedFrom from the status and names a failed migration as its own cause', () => {
-        expect(saveHealthView(status({ migratedFrom: 1 })).migratedFrom).toBe(1);
-        expect(saveHealthView(status()).migratedFrom).toBeNull();
+    it('names a failed migration as its own cause', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'unreadable', loadReason: 'migration-failed' }))).toMatchObject({ cause: 'migration-failed', code: 'migration-failed' });
+    });
+
+    // SV2-03: the move is a fact only after a v2 write in this session; the intent from the start is not.
+    it('no migration line before the first write, even when the save was moved from v1 at the start', () => {
+        expect(saveHealthView(status({ migratedFrom: 1, backup: 'pending', writes: 0 })).migration).toBeNull();
+        // The write count alone gates the line, whatever the copy state says.
+        expect(saveHealthView(status({ migratedFrom: 1, backup: 'done', writes: 0 })).migration).toBeNull();
+        expect(saveHealthView(status({ migratedFrom: null, writes: 2 })).migration).toBeNull();
+    });
+
+    it('after a write the line says whether the v1 copy was kept, or lost with its code', () => {
+        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, backup: 'done' })).migration).toEqual({ from: 1, copy: 'kept', code: null });
+        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, backup: 'skipped', backupError: 'QuotaExceededError' })).migration).toEqual({
+            from: 1,
+            copy: 'lost',
+            code: 'QuotaExceededError',
+        });
+    });
+});
+
+describe('saveHealthView failing detail', () => {
+    it('failing carries the number of failed tries, the stage and the error code', () => {
+        const view = saveHealthView(status({ consecutiveFailures: 2, lastError: 'Other', lastFailure: { stage: 'backup', error: 'QuotaExceededError' } }));
+        expect(view).toMatchObject({ kind: 'failing', count: 2, stage: 'backup', error: 'QuotaExceededError' });
+    });
+
+    it('failing falls back to the write stage and lastError when no failure was recorded', () => {
+        expect(saveHealthView(status({ consecutiveFailures: 1, lastError: 'UnknownError' }))).toMatchObject({ stage: 'write', error: 'UnknownError' });
+        expect(saveHealthView(status({ consecutiveFailures: 1 }))).toMatchObject({ stage: 'write', error: 'Error' });
     });
 });

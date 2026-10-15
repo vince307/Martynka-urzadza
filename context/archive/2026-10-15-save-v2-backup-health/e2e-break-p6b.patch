@@ -1,0 +1,13 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index 4c19a06..63e00ad 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -321,7 +321,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+                     skipBackup();
+                 }
+             }
+-            await limited(store.write(state));
++            await store.write(state);
+         } catch (e) {
+             replacing = false;
+             failures++;

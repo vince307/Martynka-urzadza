@@ -6,6 +6,10 @@ export interface SaveCardCopy {
     continue: string;
     note: string;
     export?: string;
+    /** The wait button and its states; present only on the slow-read card. */
+    wait?: string;
+    waiting?: string;
+    stillSlow?: string;
 }
 
 export interface SaveFailedHandlers {
@@ -15,6 +19,11 @@ export interface SaveFailedHandlers {
     onExport?: () => void;
     /** Muted line under the note: the reason code and the build, for the parent to quote (audit M-S3). */
     detail?: string;
+    /**
+     * Present only for a read that timed out: "Poczekaj dłużej" waits on the same read and answers whether the card was
+     * closed by a result ('loaded') or the second limit passed too ('still-slow': the button goes, the body becomes `stillSlow`).
+     */
+    onWait?: () => Promise<'loaded' | 'still-slow'>;
 }
 
 /**
@@ -23,7 +32,7 @@ export interface SaveFailedHandlers {
  * "Graj dalej" is the main button and takes the focus; "Zachowaj kopię" is the quiet one for the parent.
  */
 export const mountSaveFailedCard = (parent: HTMLElement, handlers: SaveFailedHandlers): { remove(): void } => {
-    const { copy, onExport, onContinue, detail } = handlers;
+    const { copy, onExport, onContinue, detail, onWait } = handlers;
     const title = createText('h1', copy.title);
     title.id = 'save-failed-title';
     const continueButton = createButton(copy.continue, onContinue);
@@ -34,10 +43,27 @@ export const mountSaveFailedCard = (parent: HTMLElement, handlers: SaveFailedHan
         exportButton.classList.add('overlay-secondary');
         actions.append(exportButton);
     }
+    const body = createText('p', copy.body);
+    if (onWait && copy.wait) {
+        const waitButton = createButton(copy.wait, () => {
+            waitButton.disabled = true;
+            waitButton.textContent = copy.waiting ?? copy.wait ?? '';
+            // A disabled button drops the focus to the page: "Graj dalej" keeps the keyboard path (it never overwrites the save).
+            continueButton.focus();
+            void onWait().then((result) => {
+                if (result === 'still-slow') {
+                    waitButton.remove();
+                    body.textContent = copy.stillSlow ?? copy.body;
+                }
+            });
+        });
+        waitButton.classList.add('overlay-secondary');
+        actions.append(waitButton);
+    }
     actions.append(continueButton);
     const card = createOverlay('overlay-save-failed', [
         title,
-        createText('p', copy.body),
+        body,
         actions,
         createText('p', copy.note, 'overlay-muted'),
         ...(detail ? [createText('p', detail, 'overlay-muted')] : []),

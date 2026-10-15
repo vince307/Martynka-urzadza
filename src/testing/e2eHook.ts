@@ -3,9 +3,11 @@ import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
+import { encodeSave, freshSession } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
+import { FIRST_ROOM } from '../data/rooms';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
 import type { UIScene } from '../scenes/UIScene';
@@ -100,16 +102,25 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'v1';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'v1'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
 
+/** Under `?e2eSave=slow` the read answers (a v2 save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
+export const E2E_SLOW_READ_MS = 2500;
+
+/** The second (longer) read limit under `?e2eSave=hang|slow`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
+export const E2E_SLOWER_LOAD_TIMEOUT_MS = 5000;
+
+/** The write limit under `?e2eSave=writehang`, so the e2e run does not wait the real 5 s. */
+export const E2E_WRITE_TIMEOUT_MS = 300;
+
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -131,7 +142,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
             ? { version: 99, profileId: 'default', stars: 7 }
             : seam === 'corrupt'
               ? { version: 1, profileId: 'default', stars: 'many' }
-              : seam === 'v1'
+              : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
@@ -142,13 +153,21 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 ? Promise.reject(new DOMException('e2e', 'UnknownError'))
                 : seam === 'hang'
                   ? new Promise<unknown>(() => undefined)
-                  : Promise.resolve(value),
+                  : seam === 'slow'
+                    ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_ROOM, 7))), E2E_SLOW_READ_MS))
+                    : Promise.resolve(value),
         backup: () => {
             log.ops.push('backup');
+            if (seam === 'backupfail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
+            if (seam === 'backuphang') return new Promise<void>(() => undefined);
             return Promise.resolve();
         },
         write: (next) => {
             if (seam === 'writefail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
+            if (seam === 'writehang') {
+                log.ops.push('write');
+                return new Promise<void>(() => undefined);
+            }
             log.ops.push('write');
             log.writtenVersion = next.version;
             value = next;

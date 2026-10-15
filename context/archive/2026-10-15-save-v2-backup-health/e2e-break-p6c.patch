@@ -1,0 +1,13 @@
+diff --git a/src/ui/dom/saveFailedCard.ts b/src/ui/dom/saveFailedCard.ts
+index 2b9e36f..e1b16db 100644
+--- a/src/ui/dom/saveFailedCard.ts
++++ b/src/ui/dom/saveFailedCard.ts
+@@ -44,7 +44,7 @@ export const mountSaveFailedCard = (parent: HTMLElement, handlers: SaveFailedHan
+         actions.append(exportButton);
+     }
+     const body = createText('p', copy.body);
+-    if (onWait && copy.wait) {
++    if (false && onWait && copy.wait) {
+         const waitButton = createButton(copy.wait, () => {
+             waitButton.disabled = true;
+             waitButton.textContent = copy.waiting ?? copy.wait ?? '';

@@ -1,0 +1,13 @@
+diff --git a/src/main.ts b/src/main.ts
+index 955f455..ed0e7ba 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -142,7 +142,7 @@ const start = async (): Promise<void> => {
+                     if (settled) return;
+                     settled = true;
+                     card.remove();
+-                    resolve(slow);
++                    resolve({ kind: 'fresh' });
+                 },
+                 onWait: async () => {
+                     const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
