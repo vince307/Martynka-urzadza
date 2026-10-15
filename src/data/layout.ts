@@ -310,6 +310,8 @@ export const TASK_LAYOUT = {
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         columns: 5, rows: 2, cellInset: 8, rowKinds: 3, maxKinds: 4,
     },
+    // Coin pictures inside tray tiles and wallet cells (S-14d phase 8): inset from the tile, size under the finger. Provisional, DESIGN-GAP 104, screenshots at the visual gate.
+    coinPay: { trayInset: 14, coinInset: 10, carriedSize: 120 },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
     blocks: {

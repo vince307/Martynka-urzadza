@@ -138,6 +138,7 @@ export const E1: StageDef = {
                 skill('E1.11.clock_read_full', 11, 'CLOCK', { variant: 'read', minuteStep: 60 }),
                 skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles'),
                 skill('E1.11.money_count_10', 11, 'MONEY_COUNT', { variant: 'count', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.money_pay_10', 11, 'MONEY_PAY', { tray: ['coin-1zl', 'coin-2zl', 'coin-5zl'], min: 2, max: 10, variants: ['pay', 'fewest'] }, 'drag'),
                 skill('E1.11.money_change_10', 11, 'MONEY_CHANGE', { variant: 'change', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
                 skill('E1.11.mass_kg_10', 11, 'MASS', { variant: 'read', unit: 'kg', weights: KG, max: 10 }, 'tiles'),
             ],

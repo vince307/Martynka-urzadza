@@ -565,8 +565,8 @@ export const pl = {
         moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
         moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
         // MONEY_PAY (S-14d): the amount is a whole number of złoty; the last hint states it, as the answer is a wallet and gets no result line.
-        moneyPayPrompt: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount} najmniejszą liczbą monet.` : `Zapłać ${amount}.`),
-        moneyPaySpeak: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount} najmniejszą liczbą monet.` : `Zapłać ${amount}.`),
+        moneyPayPrompt: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
+        moneyPaySpeak: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
         moneyPayHint: (hasNote: boolean) => (hasNote ? 'Połóż największą monetę lub banknot, który nie jest za duży.' : 'Połóż największą monetę, która nie jest za duża.'),
         moneyPayRestLine: (first: string, rest: string) => `${first} i jeszcze ${rest}.`,
         moneyPaySumLine: (parts: readonly string[], amount: string) => `${parts.join(' + ')} = ${amount}`,

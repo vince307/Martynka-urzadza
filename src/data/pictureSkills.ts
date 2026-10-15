@@ -3,7 +3,7 @@
 import type { SkillDef } from '../core/types';
 
 const ALWAYS: ReadonlySet<string> = new Set([
-    'SHAPES', 'PATTERN', 'COMPARE_QTY', 'ORDINAL', 'COUNT', 'CLOCK', 'MONEY_COUNT', 'MONEY_CHANGE', 'CAPACITY',
+    'SHAPES', 'PATTERN', 'COMPARE_QTY', 'ORDINAL', 'COUNT', 'CLOCK', 'MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE', 'CAPACITY',
     'PLACE_VALUE', 'ARROW_TABLE', 'SEQUENCE', 'DATA', 'TEMPERATURE', 'MULT_GROUPS',
 ]);
 

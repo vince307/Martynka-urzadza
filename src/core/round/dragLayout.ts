@@ -1,6 +1,8 @@
 // Geometry of the `drag` answer mode (S-13 phase 8): pure rectangles in the 1920x1080 scene space, from numbers in
 // TASK_LAYOUT.drag (injected, like pictureLayout). The same rectangles draw the tray and the mat and answer a touch.
 import type { BlockDragGeo, BlockKind, Mat } from '../blockDrag';
+import { walletList } from '../coins';
+import type { TrayDragGeo } from '../trayDrag';
 import type { MoneyId } from '../../data/measures';
 import { insideRect, interiorPoint, type Rect } from '../geometry';
 
@@ -114,3 +116,16 @@ export const coinLayout = (spec: CoinSpec, kinds: readonly MoneyId[]): CoinLayou
     });
     return { tray, wallet: spec.wallet, ok: spec.ok, coin };
 };
+
+/** Hit tests of the coin reducer: the tray tile under a point, a placed coin by its wallet cell (the cell order is the wallet's list order), the wallet rectangle. */
+export const coinGeometry = (layout: CoinLayout, kinds: readonly MoneyId[]): TrayDragGeo<MoneyId> => ({
+    trayAt: (x, y) => kinds.find((kind) => { const r = layout.tray[kind]; return r !== undefined && insideRect(r, x, y); }) ?? null,
+    onMat: (x, y) => insideRect(layout.wallet, x, y),
+    matAt: (x, y, mat) => {
+        const list = walletList(mat);
+        for (let i = list.length - 1; i >= 0; i -= 1) {
+            if (insideRect(layout.coin(i), x, y)) return list[i];
+        }
+        return null;
+    },
+});

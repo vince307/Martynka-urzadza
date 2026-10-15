@@ -38,3 +38,11 @@ export const fewestCoins = (target: number, tray: readonly MoneyId[]): number[] 
     for (let left = target; left > 0; left -= last[left]) out.push(last[left]);
     return out.sort((a, b) => b - a);
 };
+
+/** The placed coins of a wallet as ids, largest first (the order the wallet draws them in; ties keep the table order of MONEY). */
+export const walletList = (counts: WalletCounts): MoneyId[] =>
+    [...MONEY].sort((a, b) => b.grosze - a.grosze).flatMap(({ id }) => Array.from({ length: counts[id] ?? 0 }, () => id));
+
+/** A wallet with nothing in it. */
+export const emptyWallet = (): Record<MoneyId, number> =>
+    Object.fromEntries(MONEY.map(({ id }) => [id, 0])) as Record<MoneyId, number>;

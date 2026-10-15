@@ -87,7 +87,7 @@ describe('generateMoneyPay', () => {
                 const all = wallets(tray.map(grosze).sort((a, b) => b - a), target, balance.coinDrag.maxTotal);
                 const shortest = Math.min(...all.map((w) => w.length));
                 expect((task.answer as number[]).length, where).toBe(shortest);
-                expect(task.prompt, where).toBe(fewest ? `Zapłać ${target / 100} zł najmniejszą liczbą monet.` : `Zapłać ${target / 100} zł.`);
+                expect(task.prompt, where).toBe(fewest ? `Zapłać ${target / 100} zł. Użyj jak najmniej monet.` : `Zapłać ${target / 100} zł.`);
             });
             expect(seen.pay, 'pay variant drawn').toBeGreaterThan(200);
             expect(seen.fewest, 'fewest variant drawn').toBeGreaterThan(200);
@@ -207,9 +207,21 @@ describe('artBlocked for the tray', () => {
     });
 });
 
-describe('MONEY_PAY has no skill in the programme yet (phase 8 adds E1.11 and E2.2)', () => {
-    it('no stage holds a MONEY_PAY skill', () => {
-        const all = Object.values(stages).flatMap((st) => st.steps.flatMap((step) => step.skills));
-        expect(all.filter((s) => s.type === 'MONEY_PAY')).toEqual([]);
+describe('MONEY_PAY in the programme (phase 8)', () => {
+    const all = Object.values(stages).flatMap((st) => st.steps.flatMap((step) => step.skills));
+    const pay = all.filter((s) => s.type === 'MONEY_PAY');
+    it('holds exactly E1.11 (coins to 10 zł) and E2.2 (a 10 zł note too), both answered by drag', () => {
+        expect(pay.map((s) => s.id)).toEqual(['E1.11.money_pay_10', 'E2.2.money_pay_20']);
+        expect(pay.every((s) => s.answer === 'drag')).toBe(true);
+        expect(parseMoneyPayParams(pay[0].params).tray).toEqual(E1_TRAY);
+        expect(parseMoneyPayParams(pay[1].params).tray).toEqual(E2_TRAY);
+    });
+    it('every programme draw is a coins task a wallet of tray coins can answer', () => {
+        for (const sk of pay) {
+            forEachDraw(generateMoneyPay, sk, {}, (task, where) => {
+                expect(dragMode(task), where).toBe('coins');
+                expect(canonicalInput(task), where).toEqual(task.answer);
+            });
+        }
     });
 });

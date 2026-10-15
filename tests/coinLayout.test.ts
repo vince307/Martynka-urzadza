@@ -1,7 +1,7 @@
 // Geometry of the coin tray and wallet (S-14d phase 6). Oracle: MIN_TOUCH_TARGET 96, at most 4 kinds on a tray
 // (3 in one row, 4 in a 2 x 2 grid), and the wallet holds balance.coinDrag.maxTotal coins.
 import { describe, expect, it } from 'vitest';
-import { coinLayout, type Rect } from '../src/core/round/dragLayout';
+import { coinGeometry, coinLayout, interiorPoint, type Rect } from '../src/core/round/dragLayout';
 import type { MoneyId } from '../src/data/measures';
 import { balance } from '../src/data/balance';
 import { MIN_TOUCH_TARGET, TASK_LAYOUT } from '../src/data/layout';
@@ -71,5 +71,26 @@ describe('coinLayout', () => {
 
     it('the wallet capacity matches the reducer cap', () => {
         expect(spec.columns * spec.rows).toBeGreaterThanOrEqual(balance.coinDrag.maxTotal);
+    });
+});
+
+describe('coinGeometry', () => {
+    const kinds: MoneyId[] = ['coin-1zl', 'coin-2zl', 'coin-5zl'];
+    const layout = coinLayout(spec, kinds);
+    const geo = coinGeometry(layout, kinds);
+    const mat = { 'coin-1zl': 1, 'coin-2zl': 0, 'coin-5zl': 2 } as Record<MoneyId, number>;
+    it('finds a tray tile by its interior and the wallet by its rectangle', () => {
+        const p = interiorPoint(layout.tray['coin-2zl']!);
+        expect(geo.trayAt(p.x, p.y)).toBe('coin-2zl');
+        const w = interiorPoint(layout.wallet);
+        expect(geo.onMat(w.x, w.y)).toBe(true);
+        expect(geo.onMat(p.x, p.y)).toBe(false);
+    });
+    it('finds a placed coin in the cell of its place in the largest-first list, and nothing in an empty cell', () => {
+        const cell = (i: number) => interiorPoint(layout.coin(i));
+        expect(geo.matAt(cell(0).x, cell(0).y, mat)).toBe('coin-5zl');
+        expect(geo.matAt(cell(1).x, cell(1).y, mat)).toBe('coin-5zl');
+        expect(geo.matAt(cell(2).x, cell(2).y, mat)).toBe('coin-1zl');
+        expect(geo.matAt(cell(3).x, cell(3).y, mat)).toBeNull();
     });
 });

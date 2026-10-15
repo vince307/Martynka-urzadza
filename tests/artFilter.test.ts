@@ -128,7 +128,8 @@ describe('rounds with missing art', () => {
                 const adaptation = learner(id === 'E2' ? 2 : 4);
                 const plain = buildAdaptiveRound(stage(id), undefined, adaptation, NORMAL, createRng(seed), rules, balance.tiles.count);
                 const empty = buildAdaptiveRound(stage(id), undefined, adaptation, NORMAL, createRng(seed), rules, balance.tiles.count, { missingIds: NONE, unlockShare: balance.curriculum.unlockShare });
-                expect(empty).toEqual(plain);
+                // JSON drops the `check` closures (MONEY_PAY tasks carry one; two closures are never equal).
+                expect(JSON.parse(JSON.stringify(empty))).toEqual(JSON.parse(JSON.stringify(plain)));
             }
         }
     });

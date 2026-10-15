@@ -923,7 +923,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 1929895
 - [x] 7.2 Klucze `generators`/`parsers` równe; MONEY_PAY nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu — 1929895
 - [x] 7.3 Deliberate break: `check` bez warunku długości w `fewest` / `coins` dla `money` bez `pay` / `artBlocked` ignoruje tacę → czerwone; przywrócone; meta-check — 1929895
-- [ ] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — orchestrator note: full e2e on 1929895, --workers=4, 86 passed (6.2 min)
 
 #### Manual
 
@@ -933,10 +933,10 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.11.money_pay_10` i `E2.2.money_pay_20`
-- [ ] 8.2 `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY
-- [ ] 8.3 Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never`; przywrócone; meta-check
-- [ ] 8.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 8.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.11.money_pay_10` i `E2.2.money_pay_20`
+- [x] 8.2 `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY
+- [x] 8.3 Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never`; przywrócone; meta-check
+- [x] 8.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
 - [ ] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4`; czas `adaptive.spec` zapisany
 
 #### Manual

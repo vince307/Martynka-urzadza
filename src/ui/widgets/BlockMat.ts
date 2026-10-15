@@ -5,6 +5,7 @@ import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
 import { drawBlock } from './BaseTenBlocks';
+import { dashedRect } from './dashedRect';
 import { textStyle } from './textStyle';
 
 type Point = { x: number; y: number };
@@ -123,7 +124,7 @@ export class BlockMat {
         // The mat: a pale field with a dashed outline.
         g.fillStyle(PLACEHOLDER_COLORS.field, 1);
         g.fillRoundedRect(layout.mat.x, layout.mat.y, layout.mat.width, layout.mat.height, TASK_LAYOUT.drag.radius);
-        this.dashedRect(g, layout.mat, teal);
+        dashedRect(g, layout.mat, teal);
 
         // Blocks on the mat, one cell each; a block lifted from the mat is drawn under the finger instead.
         const lifted = state.carrying && state.carrying.from === 'mat' ? state.carrying.kind : null;
@@ -178,23 +179,5 @@ export class BlockMat {
         const width = TASK_LAYOUT.blocks[kind].width * scale;
         const height = TASK_LAYOUT.blocks[kind].height * scale;
         return { kind, x: area.x + (area.width - width) / 2, y: area.y + (area.height - height) / 2, width, height };
-    }
-
-    private dashedRect(g: GameObjects.Graphics, r: Rect, color: number): void {
-        const { dash, dashGap, dashWidth } = TASK_LAYOUT.drag;
-        g.lineStyle(dashWidth, color, 1);
-        const edge = (x1: number, y1: number, x2: number, y2: number): void => {
-            const length = Math.hypot(x2 - x1, y2 - y1);
-            const ux = (x2 - x1) / length;
-            const uy = (y2 - y1) / length;
-            for (let at = 0; at < length; at += dash + dashGap) {
-                const end = Math.min(at + dash, length);
-                g.lineBetween(x1 + ux * at, y1 + uy * at, x1 + ux * end, y1 + uy * end);
-            }
-        };
-        edge(r.x, r.y, r.x + r.width, r.y);
-        edge(r.x + r.width, r.y, r.x + r.width, r.y + r.height);
-        edge(r.x + r.width, r.y + r.height, r.x, r.y + r.height);
-        edge(r.x, r.y + r.height, r.x, r.y);
     }
 }
