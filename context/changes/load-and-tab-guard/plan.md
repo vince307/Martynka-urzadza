@@ -647,7 +647,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Manual
 
-- [ ] 3.3 [visual] Ekran ładowania pod `?e2eArt=stallall`: linia pod paskiem, 1440 i 1024
+- [x] 3.3 [visual] Ekran ładowania pod `?e2eArt=stallall`: linia pod paskiem, 1440 i 1024 — bramka wizualna 2026-10-16 (41e7bb7 = kod 5a11370), `reviews/visual-review.md`, `screenshots/*-v01-loading-slow.png`
 - [x] 3.4 [reviewer] Brak tekstu i liczb w scenie/widgecie; DESIGN-GAP 112 w trzech miejscach — impl-review 2026-10-16 (5a11370)
 
 ### Phase 4: Powód `'newer'` w autosaverze i widokach

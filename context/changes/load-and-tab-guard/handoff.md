@@ -1,60 +1,60 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The implementation review wrote this handoff: full plan reviewed, two WARNINGs fixed in `5a11370`, `MERGE: CLEAR`. Next is the visual gate (row 3.3): the slow line was resized in this step, so the screenshot must be taken on `5a11370` or later, not reused from earlier.
+The visual gate wrote this handoff: row 3.3 (slow line on the loading screen) and the `newer` "Zapis gry" state were captured at 1440 and 1024 on the code of `5a11370`, no fix needed, `VISUAL: PASS`. Next is the archive; the two `[human]` rows stay open on purpose.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | phases `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, `9ee4570`, `949aab0`; review fix `5a11370`; then this docs commit |
+| Commits | phases `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, `9ee4570`, `949aab0`; review fix `5a11370`; docs `41e7bb7`; then this docs commit (visual gate) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 3 (`grep -c '^- \[ \]' plan.md`): 2.5 [human], 3.3 [visual], 7.7 [human] |
-| Working tree | clean after the docs commit |
+| `## Progress` rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): 2.5 [human], 7.7 [human] |
+| Working tree | clean after the docs commit (`tests/e2e/visual.local/` deleted; `dist-e2e/`, `test-results/` are gitignored build output) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/load-and-tab-guard/reviews/impl-review.md` | review report, verdict APPROVED, ends `MERGE: CLEAR — …` |
-| `src/storage/idb.ts` (`guardedPut`) | fix F1: no `tx.onerror` (the prevented read error bubbled to it and rejected a landed write; put errors were renamed `UnknownError`) |
-| `tests/idbStore.test.ts` | new test "a prevented read error that bubbles to the transaction does not reject the write" |
-| `src/ui/widgets/LoadingScreen.ts` (`slow`), `src/data/layout.ts` (`LOADING_LAYOUT.slow.maxWidth`), `docs/design-gaps.md` (row 112) | fix F2: slow line at `textStyle('bar')` 36 px, centred, wrapped at the bar width 800 |
-| `context/changes/load-and-tab-guard/plan.md` | reviewer rows 1.4, 2.4, 3.4, 4.4, 5.4, 6.3 ticked |
-| `context/changes/load-and-tab-guard/change.md` | `impl_reviewed`, updated 2026-10-16 |
-| `context/changes/load-and-tab-guard/follow-ups/review-fixes.md` | + F3 (slow timer asks the rule with a constant), with Trigger |
+| `context/changes/load-and-tab-guard/reviews/visual-review.md` | visual review, ends `VISUAL: PASS — …` |
+| `context/changes/load-and-tab-guard/screenshots/README.md` | route and table of frames |
+| `context/changes/load-and-tab-guard/screenshots/{desktop,tablet}-v01-loading-slow.png` | loading screen with the slow line (row 3.3) |
+| `context/changes/load-and-tab-guard/screenshots/{desktop,tablet}-v02-newer-save.png`, `-v03-newer-save-actions.png`, `-v04-newer-reset-dialog.png` | "Zapis gry" under `?e2eSave=newer`, the save buttons, the reset dialog with `deviceNewer` |
+| `context/changes/load-and-tab-guard/plan.md` | row 3.3 ticked |
+| `context/changes/load-and-tab-guard/follow-ups/review-fixes.md` | + spec (c) ordering race, with Trigger |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/load-and-tab-guard` |
-| lint / typecheck | pass / pass |
-| `npm test` before the fix | 2969 passed (baseline 2925, +44) |
-| `npm test` after `5a11370` | 2970 passed (baseline 2925, +45) |
-| deploy and ops shell tests; `sample` E1–E6 | pass; 0 violations |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `stallall`/`E2E_BOOT_LIMITS` absent from `dist/` |
-| `npx playwright test --config=<abs> --workers=4` on `5a11370`, run by this step (Chromium launched) | 104 passed (baseline 101, +3) |
-| F1 RED → GREEN | new test failed with `UnknownError: failed` from `tx.onerror` before the fix; green after |
-| Re-executed break 5.2 (`write` back to `set`) | 2 red (`B v4, A v3 refused`, `refusal is not retried`); restored. Meta-check: two stores on one fake-indexeddb database prove the read inside the transaction |
-| RED evidence phases 1, 4, 5 | quoted in handoffs `71337e3`, `309aede`, `80892a4` (assertion failures) |
-| Fixtures / save format | `git diff --stat main..HEAD -- tests/fixtures vite deploy` empty; `SAVE_VERSION` 3 |
-| Ports 4397–4399 | free |
+| `git branch --show-current` | `feat/load-and-tab-guard` (HEAD `41e7bb7`, after `5a11370`) |
+| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | `e2e hook: present (2 chunks checked)` |
+| throwaway spec, `npx playwright test --config=<abs visual.local config> --workers=4` against preview on 4399 | v01 2/2 passed (hook: `loading.phase === 'slow'`, `screen === 'loading'` at the shot, then `welcome`); newer: frames taken at both widths after `save.blockedBy === 'newer'`, panel text equal to `pl.settings.saveOff.newer` + `Kod: NewerSave`; the last debug log line failed after the dialog closed the panel (no product assertion failed) |
+| Hand-checked geometry | 1440: bar top 480, line top 555, line ≈ 444 px < bar 600 px; 1024: bar top ≈ 405, line ≈ 459, line ≈ 315 px < bar 427 px (arithmetic in visual-review.md) |
+| Local gate | not re-run: no code changed in this step (impl-review observed green on `5a11370`: lint, typecheck, `npm test` 2970 = baseline 2925 + 45, sample E1–E6, build, e2e 104 = baseline 101 + 3; inherited, unverified here) |
+| Port 4399 | stopped (no LISTEN) |
 
 ## 4. Next command
 
-`visual gate (orchestrator)`
+`/10x-archive load-and-tab-guard`
 
 ## 5. Open
 
-- **Visual gate row 3.3:** the loading screen under `?e2eArt=stallall` with a hanging file, 1440 and 1024, on `5a11370`+: the slow line ("Jeszcze chwilka, wczytuję obrazki.", `LoadingScreen.slow`) under the bar, smaller than the title, within the bar width.
 - **Human checklist:** 2.5 Android throttled start (≤ ~45 s, stand-ins, no error card); 7.7 iPad WebKit (cut ~45 s, line ~8 s, no card).
-- **Risks carried:** `guardedPut` `preventDefault` on a failing `get` unverified in WebKit; Phaser internals (`loaderCut.ts`, tripwire `tests/phaserLoaderPin.test.ts`); guard only from this build on.
-- **Design gaps:** 112 (row text updated), 113.
-- **Follow-ups:** `follow-ups/review-fixes.md` (now including impl-review F3).
+- **Risks carried:** `guardedPut` (`src/storage/idb.ts`) `preventDefault` on a failing `get` unverified in WebKit; Phaser internals (`src/scenes/loaderCut.ts`, tripwire `tests/phaserLoaderPin.test.ts`); guard only from this build on.
+- **Possible e2e flake:** `tests/e2e/load-and-tab-guard.spec.ts` (c) — the session's first write can absorb the answered task, so no refused write follows within the 5 s poll (seen once in the visual capture); follow-up with trigger in `follow-ups/review-fixes.md`.
+- **Design gaps:** 112, 113 (no change in this step).
+- **Follow-ups:** `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
+
+- **Playwright fallback, not Claude in Chrome.** Chrome cannot hold the font/WebP routes open (the loading state) nor do the 2 s touch hold on the canvas gear. Would change: a Chrome tool that can block requests and send touch holds.
+- **Extra frames beyond the plan row** (v03 save buttons, v04 reset dialog) to answer "nothing else in the section contradicts it". Rejected: only v02 (the buttons and the dialog text would be unread). Would change: none.
+- **Spec (c) race recorded as a follow-up, not fixed here.** It is a test-ordering issue seen once in a throwaway capture, not a product discrepancy; fixing it would touch a reviewed spec and need an e2e re-run in this docs step. Would change: (c) failing in a gate run (then fix per the follow-up).
+- **No AskUserQuestion**; no code changed, so no `fix(...)` commit and no gate re-run.
+
+### Previous step (impl review)
 
 - **impl-review: no AskUserQuestion; triage in place.** F1 and F2 fixed (cheap WARNINGs), F3 to follow-ups, F4/F5 accepted. Would change: none.
 - **F1 rated WARNING, not CRITICAL.** The write lands and `run`'s one retry made the forced replace succeed; no progress lost, but the error name and the retry were wrong. Chosen fix: drop `tx.onerror` (rely on `onabort` with `tx.error`). Rejected: filter `event.target === read` in `tx.onerror` (keeps the `UnknownError` rename of put errors). Would change: a browser where an unprevented request error does not abort the transaction.
