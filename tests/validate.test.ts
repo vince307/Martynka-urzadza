@@ -166,3 +166,62 @@ describe('validateTask: tasks with several right tiles (check)', () => {
         expect(validateTask({ ...t, prompt: 'Film trwa 2 godziny.' }, { nouns })).toEqual([]);
     });
 });
+
+describe('validateTask: faces (S-14d)', () => {
+    const tri = 'shape:triangle:red:big';
+    const circ = 'shape:circle:blue:small';
+    const sq = 'shape:square:green:big';
+    const faceTask: Task = { skillId: 's', prompt: 'Dotknij trójkąta.', answer: tri, choices: [tri, circ, sq], hint: ['Trójkąt ma 3 boki i 3 rogi.'] };
+
+    it('accepts distinct faces', () => {
+        expect(validateTask(faceTask)).toEqual([]);
+    });
+
+    it('flags a repeated face among the choices', () => {
+        expect(validateTask({ ...faceTask, choices: [tri, circ, tri] }).map((x) => x.rule)).toContain('faces-distinct');
+    });
+
+    it('flags a code that is not a face, and faces mixed with plain text', () => {
+        expect(validateTask({ ...faceTask, choices: [tri, 'shape:cube:red:big', sq] }).map((x) => x.rule)).toContain('faces-distinct');
+        expect(validateTask({ ...faceTask, choices: [tri, circ, 'parzysta'] }).map((x) => x.rule)).toContain('faces-distinct');
+    });
+
+    it('flags an answer that is not among the faces', () => {
+        expect(validateTask({ ...faceTask, answer: 'shape:star:red:big' }).map((x) => x.rule)).toContain('choices');
+    });
+
+    it('checks every face of a list answer against the choices', () => {
+        expect(validateTask({ ...faceTask, input: 'select', answer: [tri, sq] })).toEqual([]);
+        expect(validateTask({ ...faceTask, input: 'select', answer: [tri, 'shape:star:red:big'] }).map((x) => x.rule)).toContain('choices');
+    });
+});
+
+describe('validateTask: pattern drawing (S-14d)', () => {
+    const a = 'shape:circle:red:big';
+    const b = 'shape:square:red:big';
+    const row = (items: (string | null)[]): Task => ({
+        skillId: 's',
+        prompt: 'Co będzie dalej?',
+        answer: a,
+        choices: [a, b, 'shape:triangle:red:big'],
+        hint: ['Szlaczek się powtarza.'],
+        visual: { kind: 'pattern', items },
+    });
+
+    it('accepts a row of faces with the empty place last', () => {
+        expect(validateTask(row([a, b, a, b, a, b, a, null]))).toEqual([]);
+    });
+
+    it('flags a row without the empty place at the end', () => {
+        expect(validateTask(row([a, b, a, b, a, b, a, b])).map((x) => x.rule)).toContain('visual');
+        expect(validateTask(row([a, b, null, b, a, b, a, null])).map((x) => x.rule)).toContain('visual');
+        expect(validateTask(row([a, b, a, b, a, b, null, a])).map((x) => x.rule)).toContain('visual');
+    });
+
+    it('flags a row that is too short or too long, or that holds a non-face', () => {
+        expect(validateTask(row([a, b, a, null])).map((x) => x.rule)).toContain('visual');
+        expect(validateTask(row([a, b, a, b, a, b, a, b, a, b, null])).map((x) => x.rule)).toContain('visual');
+        expect(validateTask(row([a, b, a, b, 'x', b, a, null])).map((x) => x.rule)).toContain('visual');
+    });
+});
+

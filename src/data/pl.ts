@@ -229,6 +229,8 @@ export const pl = {
         got: ['dostał', 'dostała'],
         paid: ['zapłacił', 'zapłaciła'],
         has: 'ma',
+        was: 'było',
+        were: 'były',
         is: 'jest',
         are: 'są',
         and: 'i',
@@ -325,6 +327,20 @@ export const pl = {
         short: (have: number, need: number) => `masz ${have}/${need}`,
     },
     tasks: {
+        // SHAPES and PATTERN (S-14d): figures are drawn on the tiles, the texts name them by words only.
+        shapesName: (genitive: string) => `Dotknij ${genitive}.`,
+        shapesAll: (genitivePlural: string) => `Dotknij wszystkich ${genitivePlural}.`,
+        shapesOdd: 'Który nie pasuje?',
+        shapesLookEach: 'Popatrz na każdą figurę po kolei.',
+        shapesLookName: (look: string) => `Szukaj figury ${look}.`,
+        shapesLookAll: (look: string) => `Szukaj wszystkich figur ${look}.`,
+        shapesOddLook: 'Popatrz na kształt, kolor i wielkość.',
+        shapesOddThree: 'Trzy figury mają coś wspólnego, jedna jest inna.',
+        shapesOddFigure: (nominative: string) => `Tylko jedna figura to ${nominative}.`,
+        shapesOddFeature: (feminine: string) => `Tylko jedna figura jest ${feminine}.`,
+        pattern: 'Co będzie dalej?',
+        patternRepeats: 'Szlaczek się powtarza.',
+        patternPeriod: (labels: string) => `Powtarza się tak: ${labels}.`,
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
         // Same question as the BONDS hint; "Ile brakuje od 2 do 10?" read awkwardly (impl-review S-03).
@@ -337,6 +353,18 @@ export const pl = {
         factCheckSubHint: 'Dodaj wynik i odjemnik.',
         factCheckAddHint: 'Odejmij od sumy jeden ze składników.',
         factCheckDivHint: 'Pomnóż iloraz przez dzielnik.',
+        // COMPARE_QTY, ORDINAL and the picture CHOOSE_OP (S-14d): the picture carries the task, the texts stay one short sentence.
+        compareQtyPrompt: (more: boolean, many: string) => `Gdzie jest ${more ? 'więcej' : 'mniej'} ${many}?`,
+        compareQtyTiles: { left: 'Po lewej', right: 'Po prawej', same: 'Tyle samo' },
+        compareQtyCountHint: 'Policz po kolei każdą grupę. Pokazuj palcem: 1, 2, 3.',
+        compareQtyCountsHint: (left: string, right: string) => `Z lewej strony: ${left}, z prawej: ${right}.`,
+        compareQtyAnswerHint: (tile: string) => `Wybierz: ${tile}.`,
+        ordinalPrompt: (nominative: string) => `Na którym miejscu od lewej jest ${nominative}?`,
+        ordinalFromMarkHint: 'Zacznij liczyć od chorągiewki po lewej stronie.',
+        ordinalPointHint: 'Pokazuj palcem kolejne obrazki i licz.',
+        ordinalAnswerHint: (nominative: string, place: number) => `${nominative.charAt(0).toUpperCase()}${nominative.slice(1)} jest na miejscu ${place}.`,
+        chooseOpPictureStory: (was: string, counted: string, motion: 'come' | 'go', n: number) =>
+            `Na stole ${was} ${counted}. ${motion === 'come' ? 'Dołożono' : 'Zabrano'} ${n}.`,
         chooseOp: 'Które działanie pasuje?',
         chooseOpHint: {
             sum: 'Przybyło, więc dodajemy.',
@@ -536,6 +564,13 @@ export const pl = {
         moneyChangeGroszeHint: 'Złotówka to 100 groszy.',
         moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
         moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
+        // MONEY_PAY (S-14d): the amount is a whole number of złoty; the last hint states it, as the answer is a wallet and gets no result line.
+        moneyPayPrompt: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
+        moneyPaySpeak: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
+        moneyPayHint: (hasNote: boolean) => (hasNote ? 'Połóż największą monetę lub banknot, który nie jest za duży.' : 'Połóż największą monetę, która nie jest za duża.'),
+        moneyPayRestLine: (first: string, rest: string) => `${first} i jeszcze ${rest}.`,
+        moneyPaySumLine: (parts: readonly string[], amount: string) => `${parts.join(' + ')} = ${amount}`,
+        moneyPayOneLine: (amount: string, note: boolean) => (note ? `Wystarczy jeden banknot: ${amount}.` : `Wystarczy jedna moneta: ${amount}.`),
         // MASS in words (S-14c): brutto / netto / tara of a pack and unit conversions, no drawing. The pack is one thing in the
         // nominative, so no numeral has to agree with it; the asked unit is the genitive plural, the given one agrees with its number.
         massPackPrompt: {

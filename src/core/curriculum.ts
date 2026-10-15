@@ -5,6 +5,9 @@
 import { proposeStage, STAGE_ORDER, type PlacementData, type SessionLearner } from './placement';
 import type { Rng } from './rng';
 import { artBlocked, withoutArtBlocked } from './round/artFilter';
+import { withPictures } from './round/pictureFilter';
+import { balance } from '../data/balance';
+import { hasPicture } from '../data/pictureSkills';
 import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
 import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
@@ -131,12 +134,13 @@ export const buildAdaptiveRound = (
     rules: { readonly length: number; readonly uniqueRetries: number },
     tileCount: number,
     art?: { readonly missingIds: ReadonlySet<string>; readonly unlockShare: number },
+    options?: { readonly picture?: boolean },
 ): Task[] => {
     const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
     const buckets = skillBuckets(stage, previous, unlocked);
     const missing = art?.missingIds;
     // Nothing missing: the buckets and the rng use stay exactly as without the argument.
-    const pools =
+    const afterArt =
         art && missing && missing.size > 0
             ? withoutArtBlocked(
                   buckets,
@@ -144,6 +148,8 @@ export const buildAdaptiveRound = (
                   buckets.currentGroups ? 1 : unlockThreshold(buckets.current.length, art.unlockShare),
               )
             : buckets;
+    // Picture mode (E1, S-14d): after the art filter, so a missing picture never leaves a bucket full of unplayable skills.
+    const pools = options?.picture === true ? withPictures(afterArt, hasPicture, afterArt.currentGroups ? 1 : unlockThreshold(afterArt.current.length, balance.curriculum.unlockShare)) : afterArt;
     const skills = pickRoundSkills(pools, weights, rng, rules.length);
     return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);
 };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { MoneyId } from '../src/data/measures';
 import { TASK_LAYOUT } from '../src/data/layout';
 import type { Rect } from '../src/ui/widgets/geometry';
-import { iconsLayout, jugsLayout, moneyLayout, scaleLayout, standInLabelFit, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
+import { iconsLayout, jugsLayout, moneyLayout, rowLayout, scaleLayout, standInLabelFit, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
 import { ART_STAND_IN, FONT_SIZES } from '../src/data/layout';
 import { JUG_VISIBLE_RECT, THERMOMETER } from '../src/data/measures';
 
@@ -202,6 +202,23 @@ describe('iconsLayout', () => {
         expect(iconsLayout([4, 4, 4, 4], true, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(50);
     });
 
+    it('puts two compared groups side by side, each in its frame, the first one on the left (visual gate S-14d)', () => {
+        for (const area of AREAS) {
+            for (const groups of [[1, 10], [10, 10], [7, 3], [2, 2], [10, 1]]) {
+                const layout = iconsLayout(groups, false, area, TASK_LAYOUT.icons, true);
+                expect(layout.frames).toHaveLength(2);
+                const [left, right] = layout.frames;
+                expect(left.x + left.width).toBeLessThan(right.x);
+                // Both frames share one line: neither stands under the other.
+                expect(left.y).toBeLessThan(right.y + right.height);
+                expect(right.y).toBeLessThan(left.y + left.height);
+                layout.frames.forEach((frame) => expect(inside(frame, area)).toBe(true));
+                layout.icons.forEach((icon, i) => expect(inside(icon, layout.frames[i < groups[0] ? 0 : 1])).toBe(true));
+                expect(layout.icon).toBeGreaterThanOrEqual(40);
+            }
+        }
+    });
+
     it('never draws an icon above the cap', () => {
         expect(iconsLayout([1], false, AREAS[0], TASK_LAYOUT.icons).icon).toBeLessThanOrEqual(TASK_LAYOUT.icons.maxIcon);
     });
@@ -240,5 +257,22 @@ describe('standInLabelFit (visual gate, impl-review F1)', () => {
         expect(fit.lines).toBe(2);
         expect(fit.scale).toBeCloseTo(34 / 60);
         expect(standInLabelFit({ width: 50, height: 50 }, oneLine, null, { padding: 8, paddingShare: 1 })).toEqual({ lines: 1, scale: 34 / 80 });
+    });
+});
+
+describe('rowLayout (S-14d)', () => {
+    const area = { x: 100, y: 200, width: 1000, height: 300 };
+    const spec = TASK_LAYOUT.iconRow;
+    it.each([3, 5, 10])('%i icons stand in one line, in order, right of the mark, inside the area', (count) => {
+        const layout = rowLayout(count, area, spec);
+        expect(layout.icons).toHaveLength(count);
+        expect(layout.icon).toBeLessThanOrEqual(spec.maxIcon);
+        expect(layout.mark.x + layout.mark.width).toBeLessThanOrEqual(layout.icons[0].x);
+        layout.icons.forEach((r, i) => {
+            expect(r.y).toBe(layout.icons[0].y);
+            if (i > 0) expect(r.x).toBeGreaterThanOrEqual(layout.icons[i - 1].x + layout.icons[i - 1].width);
+            expect(r.x + r.width).toBeLessThanOrEqual(area.x + area.width + 1e-6);
+        });
+        expect(layout.mark.x).toBeGreaterThanOrEqual(area.x - 1e-6);
     });
 });

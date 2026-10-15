@@ -1,6 +1,6 @@
 // Stage E1 (grade 1, first semester): steps from docs/ZADANIA.md, section 3.
 // Skills carry the parameters of group-1 generators (roadmap S-03); drawing
-// and art types (shapes, counting, money, measures) arrive in M6. Numeric
+// and art types (shapes, counting, money, measures) are drawn in code or loaded from public/assets (S-13, S-14); only SPATIAL and SYMMETRY wait. Numeric
 // answers are tiles too (maintainer decision 2026-10-12, roadmap S-04): every
 // E1 answer is a tap on 3–4 tiles, so E1 has no keypad skill.
 import type { SkillDef, StageDef } from '../../core/types';
@@ -23,7 +23,18 @@ const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef 
 export const E1: StageDef = {
     id: 'E1',
     steps: [
-        { step: 1, title: 'Figury, szlaczki, porównywanie liczebności, orientacja, symetria', types: ['SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY'], skills: [] },
+        {
+            step: 1,
+            title: 'Figury, szlaczki, porównywanie liczebności, orientacja, symetria',
+            childName: 'Figury i szlaczki',
+            types: ['SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY'],
+            skills: [
+                skill('E1.1.shapes_pick', 1, 'SHAPES', { variants: ['name', 'odd'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'tiles'),
+                skill('E1.1.shapes_all', 1, 'SHAPES', { variants: ['all'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'select'),
+                skill('E1.1.compare_qty_10', 1, 'COMPARE_QTY', { max: 10, ask: ['more', 'less'], equalShare: 0.25 }, 'tiles'),
+                skill('E1.1.pattern', 1, 'PATTERN', { periods: ['AB', 'AAB', 'ABB'], figures: ['circle', 'square', 'triangle', 'star', 'heart'] }, 'tiles'),
+            ],
+        },
         {
             step: 2,
             title: 'Liczby 1–5: liczenie, „który z kolei”, znaki <, >, =',
@@ -31,7 +42,8 @@ export const E1: StageDef = {
             types: ['COUNT', 'ORDINAL', 'COMPARE_NUM'],
             skills: [
                 skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles'),
-                skill('E1.2.count_5', 2, 'COUNT', { min: 1, max: 5, tens: false }, 'tiles'),
+                skill('E1.2.ordinal_5', 2, 'ORDINAL', { max: 5 }, 'tiles'),
+                skill('E1.2.count_5', 2, 'COUNT', { min: 2, max: 5, tens: false }, 'tiles'),
             ],
         },
         {
@@ -44,6 +56,7 @@ export const E1: StageDef = {
                 skill('E1.3.missing_5', 3, 'MISSING', { max: 5, ops: ['+', '-'] }),
                 skill('E1.3.bonds_5', 3, 'BONDS', { totals: [2, 3, 4, 5] }),
                 skill('E1.3.choose_op_5', 3, 'CHOOSE_OP', { max: 5, kinds: ['sum', 'left'] }, 'tiles'),
+                skill('E1.3.choose_op_picture_5', 3, 'CHOOSE_OP', { max: 5, kinds: ['picture'] }, 'tiles'),
             ],
         },
         {
@@ -125,6 +138,7 @@ export const E1: StageDef = {
                 skill('E1.11.clock_read_full', 11, 'CLOCK', { variant: 'read', minuteStep: 60 }),
                 skill('E1.11.calendar_months', 11, 'CALENDAR', { variants: ['nextMonth', 'prevMonth'] }, 'tiles'),
                 skill('E1.11.money_count_10', 11, 'MONEY_COUNT', { variant: 'count', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
+                skill('E1.11.money_pay_10', 11, 'MONEY_PAY', { tray: ['coin-1zl', 'coin-2zl', 'coin-5zl'], min: 2, max: 10, variants: ['pay', 'fewest'] }, 'drag'),
                 skill('E1.11.money_change_10', 11, 'MONEY_CHANGE', { variant: 'change', ids: ZL_10, max: 1000, maxItems: 4, answer: 'number-zl' }, 'tiles'),
                 skill('E1.11.mass_kg_10', 11, 'MASS', { variant: 'read', unit: 'kg', weights: KG, max: 10 }, 'tiles'),
             ],

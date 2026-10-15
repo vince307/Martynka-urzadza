@@ -8,11 +8,13 @@ import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
 import { FigureGrid } from './FigureGrid';
 import { IconGroups } from './IconGroups';
+import { IconRow } from './IconRow';
 import { CoordGrid } from './CoordGrid';
 import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
 import { NumberCells } from './NumberCells';
 import { NumberLine } from './NumberLine';
+import { PatternRow } from './PatternRow';
 import { Ruler } from './Ruler';
 import { Thermometer } from './Thermometer';
 import { WrittenColumn, type ColumnMode } from './WrittenColumn';
@@ -33,11 +35,13 @@ export class TaskPicture {
     private readonly jugs: Jugs;
     private readonly thermometer: Thermometer;
     private readonly icons: IconGroups;
+    private readonly row: IconRow;
     private readonly cells: NumberCells;
     private readonly coord: CoordGrid;
     private readonly figure: FigureGrid;
     private readonly line: NumberLine;
     private readonly arrows: ArrowGraph;
+    private readonly pattern: PatternRow;
     private readonly column: WrittenColumn;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
@@ -52,11 +56,13 @@ export class TaskPicture {
         this.jugs = new Jugs(scene);
         this.thermometer = new Thermometer(scene);
         this.icons = new IconGroups(scene);
+        this.row = new IconRow(scene);
         this.cells = new NumberCells(scene);
         this.coord = new CoordGrid(scene);
         this.figure = new FigureGrid(scene);
         this.line = new NumberLine(scene);
         this.arrows = new ArrowGraph(scene);
+        this.pattern = new PatternRow(scene);
         this.column = new WrittenColumn(scene);
     }
 
@@ -77,11 +83,13 @@ export class TaskPicture {
             jugs: this.jugs,
             thermometer: this.thermometer,
             icons: this.icons,
+            row: this.row,
             cells: this.cells,
             grid: this.coord,
             figure: this.figure,
             numberLine: this.line,
             arrows: this.arrows,
+            pattern: this.pattern,
             column: this.column,
         };
         this.drawn = widgets[visual.kind] ?? null;
@@ -111,7 +119,7 @@ export class TaskPicture {
                 this.thermometer.render(visual.celsius, rect);
                 break;
             case 'icons':
-                this.icons.render(visual.icon, visual.groups, visual.framed, rect);
+                this.icons.render(visual.icon, visual.groups, visual.framed, rect, visual.motion, visual.sides === true);
                 break;
             case 'cells':
                 this.cells.render(visual.layout, visual.values, rect);
@@ -127,6 +135,12 @@ export class TaskPicture {
                 break;
             case 'arrows':
                 this.arrows.render(visual, rect);
+                break;
+            case 'pattern':
+                this.pattern.render(visual.items, rect);
+                break;
+            case 'row':
+                this.row.render(visual.icons, rect);
                 break;
             case 'column':
                 if (!column) {
@@ -153,11 +167,13 @@ export class TaskPicture {
         this.jugs.setVisible(false);
         this.thermometer.setVisible(false);
         this.icons.setVisible(false);
+        this.row.setVisible(false);
         this.cells.setVisible(false);
         this.coord.setVisible(false);
         this.figure.setVisible(false);
         this.line.setVisible(false);
         this.arrows.setVisible(false);
+        this.pattern.setVisible(false);
         this.column.setVisible(false);
     }
 

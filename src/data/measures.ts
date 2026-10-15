@@ -52,7 +52,7 @@ export const JUG_SOURCE_SIZE = 512;
 export const JUG_VISIBLE_RECT = { x: 32, y: 78, width: 448, height: 356 } as const;
 
 /** How many pieces one drawing may hold: validateVisual enforces it and each widget pools exactly that many images. */
-export const ART_LIMITS = { moneyItems: 10, weights: 6, jugs: 10, icons: 30 } as const;
+export const ART_LIMITS = { moneyItems: 10, trayKinds: 4, weights: 6, jugs: 10, icons: 30, rowMinIcons: 3, rowIcons: 10 } as const;
 
 /** The 12 icons of the kit with the dictionary noun (src/data/nouns.ts) a prompt uses; the dictionary wins over the kit label. */
 export const ICONS = [

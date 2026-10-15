@@ -44,3 +44,21 @@ describe('taskKey', () => {
         expect(taskKey(task('tiles', [1, 2, 3]))).toBe(taskKey(task('tiles', [4, 5, 6])));
     });
 });
+
+describe('selectionAnswer with faces (S-14d)', () => {
+    const faces = ['shape:circle:red:big', 'shape:square:blue:big', 'shape:circle:green:small', 'shape:triangle:red:small'];
+
+    it('hands the marked faces on, in the order of the tiles', () => {
+        const marked = toggleSelected(toggleSelected([], faces[2], faces), faces[0], faces);
+        expect(selectionAnswer(marked)).toEqual([faces[0], faces[2]]);
+    });
+
+    it('keeps an empty set empty', () => {
+        expect(selectionAnswer([])).toEqual([]);
+    });
+
+    it('still sorts numbers ascending', () => {
+        expect(selectionAnswer([20, 8, 14])).toEqual([8, 14, 20]);
+    });
+});
+

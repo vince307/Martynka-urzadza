@@ -3,6 +3,8 @@
 import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
 import { balance } from '../../data/balance';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
+import { PATTERN_LIMITS } from '../../data/shapes';
+import { faceLabel, isFace } from './faces';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
 import type { SkillDef } from '../types';
@@ -15,11 +17,16 @@ export type TaskVisual =
     | { kind: 'ruler'; unit: 'cm' | 'mm'; lengthCm: number; fromMm: number; toMm: number }
     | { kind: 'blocks'; hundreds: number; tens: number; ones: number }
     | { kind: 'bars'; bars: readonly { label: string; value: number }[]; scaleMax: number }
-    | { kind: 'money'; items: readonly MoneyId[] }
+    // `pay` (S-14d, MONEY_PAY): nothing lies on the table (`items` empty); the child pays from a tray of these nominals (1..4 kinds).
+    | { kind: 'money'; items: readonly MoneyId[]; pay?: { tray: readonly MoneyId[]; fewest: boolean } }
     | { kind: 'scale'; item: IconId; weights: readonly WeightId[] }
     | { kind: 'jugs'; jugs: readonly JugId[] }
     | { kind: 'thermometer'; celsius: number }
-    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean }
+    // `motion` (S-14d): two groups where the second one comes to the first ('come', an arrow towards it) or leaves it ('go').
+    // `sides` (S-14d visual gate, COMPARE_QTY): two groups side by side, each in its own frame, the first one on the left.
+    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean; motion?: 'come' | 'go'; sides?: true }
+    // A row of different icons with a start mark on its left (S-14d, ORDINAL): the child counts the place from the mark.
+    | { kind: 'row'; icons: readonly IconId[]; mark: 'left' }
     // Number cells (S-13b): row-major 3x3 magic square, or a pyramid as [top, middle x2, base x3]; exactly one cell is null (the empty one).
     | { kind: 'cells'; layout: 'square3' | 'pyramid3'; values: readonly (number | null)[] }
     // A square grid with labelled columns (A..) and rows (1..) and items on distinct cells (col, row are zero-based).
@@ -30,6 +37,8 @@ export type TaskVisual =
     | { kind: 'column'; op: '+' | '−'; a: number; b: number; columns: number }
     // A number line (S-14b): ticks every `tick` from `from` to `to`; `labels` are the numbers written under ticks, `box` the empty box, `jumps` arcs between ticks.
     | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] }
+    // A row of figures (S-14d): face codes, exactly one null (the empty place) and it is the last item.
+    | { kind: 'pattern'; items: readonly (string | null)[] }
     // An arrow graph or table (S-14b): every input goes to its output by the rule "op n"; exactly one value is null (the empty field).
     | { kind: 'arrows'; layout: 'graph'; op: '+' | '−'; n: number; input: number | null; output: number | null }
     | { kind: 'arrows'; layout: 'table'; op: '+' | '−'; n: number; inputs: readonly number[]; outputs: readonly (number | null)[] };
@@ -40,7 +49,7 @@ export type TaskVisual =
  */
 export type VisualShape = 'wide' | 'tall' | 'long';
 
-export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' ? 'long' : 'wide');
+export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */
 export const visualKey = (v: TaskVisual | undefined): string => {
@@ -57,7 +66,7 @@ export const visualKey = (v: TaskVisual | undefined): string => {
         case 'bars':
             return `bars:${v.scaleMax}:${v.bars.map((b) => `${b.label}=${b.value}`).join(',')}`;
         case 'money':
-            return `money:${v.items.join(',')}`;
+            return v.pay ? `money:pay:${v.pay.fewest ? 'fewest' : 'any'}:${v.pay.tray.join(',')}` : `money:${v.items.join(',')}`;
         case 'scale':
             return `scale:${v.item}:${v.weights.join(',')}`;
         case 'jugs':
@@ -65,7 +74,9 @@ export const visualKey = (v: TaskVisual | undefined): string => {
         case 'thermometer':
             return `thermometer:${v.celsius}`;
         case 'icons':
-            return `icons:${v.icon}:${v.framed ? 'framed' : 'plain'}:${v.groups.join(',')}`;
+            return `icons:${v.icon}:${v.framed ? 'framed' : v.sides ? 'sides' : 'plain'}:${v.groups.join(',')}${v.motion ? `:${v.motion}` : ''}`;
+        case 'row':
+            return `row:${v.mark}:${v.icons.join(',')}`;
         case 'cells':
             return `cells:${v.layout}:${v.values.map((x) => x ?? '_').join(',')}`;
         case 'grid':
@@ -78,6 +89,8 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return v.layout === 'graph'
                 ? `arrows:graph:${v.op}:${v.n}:${v.input ?? '_'}:${v.output ?? '_'}`
                 : `arrows:table:${v.op}:${v.n}:${v.inputs.join(',')}:${v.outputs.map((x) => x ?? '_').join(',')}`;
+        case 'pattern':
+            return `pattern:${v.items.map((x) => x ?? '_').join(',')}`;
         case 'numberLine':
             return `line:${v.from}:${v.to}:${v.tick}:${v.labels.join(',')}:${v.box ?? '_'}:${v.jumps.map((j) => `${j.from}>${j.to}`).join(',')}`;
     }
@@ -120,6 +133,14 @@ export const validateVisual = (v: TaskVisual): string[] => {
             break;
         }
         case 'money':
+            if (v.pay) {
+                // Paying: the table is empty and the tray holds 1..4 different nominals.
+                if (v.items.length > 0) out.push(`${v.items.length} money items beside a payment tray, need an empty table`);
+                if (v.pay.tray.length < 1 || v.pay.tray.length > ART_LIMITS.trayKinds) out.push(`${v.pay.tray.length} tray kinds, need 1..${ART_LIMITS.trayKinds}`);
+                if (new Set(v.pay.tray).size !== v.pay.tray.length) out.push('duplicate tray nominal');
+                for (const id of v.pay.tray) if (!MONEY.some((m) => m.id === id)) out.push(`unknown money id ${id}`);
+                break;
+            }
             if (v.items.length < 1 || v.items.length > ART_LIMITS.moneyItems) out.push(`${v.items.length} money items, need 1..${ART_LIMITS.moneyItems}`);
             for (const id of v.items) if (!MONEY.some((m) => m.id === id)) out.push(`unknown money id ${id}`);
             break;
@@ -143,6 +164,17 @@ export const validateVisual = (v: TaskVisual): string[] => {
             if (v.groups.some((g) => !isInt(g) || g < 1)) out.push('icon group sizes must be positive whole numbers');
             if (v.groups.reduce((a, b) => a + b, 0) > ART_LIMITS.icons) out.push(`more than ${ART_LIMITS.icons} icons`);
             if (v.framed && (v.groups.length < 2 || v.groups.some((g) => g !== v.groups[0]))) out.push('framed icons need 2 or more equal groups');
+            if (v.motion !== undefined && (v.groups.length !== 2 || v.framed)) out.push('an icon motion needs exactly two plain groups');
+            if (v.sides && (v.groups.length !== 2 || v.framed || v.motion !== undefined)) out.push('groups side by side need exactly two plain groups without a motion');
+            break;
+        }
+        case 'row': {
+            if (v.icons.length < ART_LIMITS.rowMinIcons || v.icons.length > ART_LIMITS.rowIcons) {
+                out.push(`${v.icons.length} icons in a row, need ${ART_LIMITS.rowMinIcons}..${ART_LIMITS.rowIcons}`);
+            }
+            if (new Set(v.icons).size !== v.icons.length) out.push('the icons of a row must differ');
+            for (const id of v.icons) if (!ICONS.some((i) => i.id === id)) out.push(`unknown row icon ${id}`);
+            if (v.mark !== 'left') out.push(`row mark ${String(v.mark)} is not left`);
             break;
         }
         case 'cells': {
@@ -190,6 +222,16 @@ export const validateVisual = (v: TaskVisual): string[] => {
             const result = v.op === '+' ? v.a + v.b : v.a - v.b;
             if (result < 0) out.push(`negative column result ${result}`);
             else if (String(result).length !== v.columns) out.push(`column result ${result} does not have ${v.columns} digits`);
+            break;
+        }
+        case 'pattern': {
+            const shown = v.items.slice(0, -1);
+            if (v.items.at(-1) !== null) out.push('pattern must end with the empty place');
+            if (shown.some((x) => x === null)) out.push('pattern has more than one empty place');
+            if (shown.length < PATTERN_LIMITS.minShown || shown.length > PATTERN_LIMITS.maxShown) {
+                out.push(`${shown.length} shown figures, need ${PATTERN_LIMITS.minShown}..${PATTERN_LIMITS.maxShown}`);
+            }
+            for (const x of shown) if (x !== null && !isFace(x)) out.push(`pattern item ${JSON.stringify(x)} is not a face`);
             break;
         }
         case 'numberLine': {
@@ -253,6 +295,7 @@ export const describeVisual = (v: TaskVisual): string => {
         case 'bars':
             return `[bars ${v.bars.map((b) => `${b.label}=${b.value}`).join(' ')}, scale ${v.scaleMax}]`;
         case 'money':
+            if (v.pay) return `[money tray ${v.pay.tray.join(' ')}${v.pay.fewest ? ', fewest' : ''}]`;
             return `[money ${v.items.join(' ')} = ${formatMoney(v.items.reduce((sum, id) => sum + (MONEY.find((m) => m.id === id)?.grosze ?? 0), 0))}]`;
         case 'scale':
             return `[scale ${v.item} | ${v.weights.join(' ')}]`;
@@ -268,7 +311,9 @@ export const describeVisual = (v: TaskVisual): string => {
         case 'thermometer':
             return `[thermometer ${formatCelsius(v.celsius)}]`;
         case 'icons':
-            return `[icons ${v.icon} ${v.groups.join('+')}${v.framed ? ' framed' : ''}]`;
+            return `[icons ${v.icon} ${v.groups.join(v.sides ? '|' : '+')}${v.framed ? ' framed' : ''}${v.motion ? ` ${v.motion}` : ''}]`;
+        case 'row':
+            return `[row ${v.icons.join(' ')}]`;
         case 'cells':
             return `[cells ${v.layout} ${v.values.map((x) => x ?? '_').join(' ')}]`;
         case 'grid':
@@ -281,6 +326,8 @@ export const describeVisual = (v: TaskVisual): string => {
             return v.layout === 'graph'
                 ? `[arrows graph ${v.input ?? '□'} ${v.op === '+' ? '+' : '−'}${v.n} ${v.output ?? '□'}]`
                 : `[arrows table ${v.op === '+' ? '+' : '−'}${v.n}: ${v.inputs.map((x, i) => `${x}>${v.outputs[i] ?? '□'}`).join(' ')}]`;
+        case 'pattern':
+            return `[pattern ${v.items.map((x) => (x === null ? '□' : faceLabel(x, { size: false }))).join(', ')}]`;
         case 'numberLine':
             return `[line ${v.from}–${v.to}/${v.tick}${v.labels.length ? ` labels ${v.labels.join(' ')}` : ''}${v.box !== null ? ` box ${v.box}` : ''}${v.jumps.length ? ` jumps ${v.jumps.map((j) => `${j.from}>${j.to}`).join(' ')}` : ''}]`;
     }

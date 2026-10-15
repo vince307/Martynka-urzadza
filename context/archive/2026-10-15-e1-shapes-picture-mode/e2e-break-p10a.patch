@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/AnswerTiles.ts b/src/ui/widgets/AnswerTiles.ts
+index 1f42976..e27f9c8 100644
+--- a/src/ui/widgets/AnswerTiles.ts
++++ b/src/ui/widgets/AnswerTiles.ts
+@@ -43,7 +43,7 @@ export class AnswerTiles {
+                 .text(rect.x + rect.width / 2, rect.y + rect.height / 2, parseFace(value) ? '' : String(value), textStyle('answer'))
+                 .setOrigin(0.5);
+             const zone = this.scene.add
+-                .zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height)
++                .zone(rect.x + rect.width / 2, rect.y + rect.height / 2 + (parseFace(value) ? 700 : 0), rect.width, rect.height)
+                 .setInteractive();
+             const tile: Tile = { rect, graphics, label, zone, value, pressed: false };
+             zone.on('pointerdown', () => this.press(tile));

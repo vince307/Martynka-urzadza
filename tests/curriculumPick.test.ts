@@ -56,9 +56,11 @@ describe('skillBuckets', () => {
     });
 
     it('an unplayable step below every playable one falls back to the first playable step', () => {
-        const first = playableSteps(stage('E1'))[0];
-        expect(first).toBeGreaterThan(1); // E1 step 1 is not playable
-        const b = skillBuckets(stage('E1'), undefined, 1);
+        // E1 step 1 became playable (S-14d), so the case is built on E1 with step 1 emptied.
+        const gapped: StageDef = { ...stage('E1'), steps: stage('E1').steps.map((st) => (st.step === 1 ? { ...st, skills: [] } : st)) };
+        const first = playableSteps(gapped)[0];
+        expect(first).toBeGreaterThan(1);
+        const b = skillBuckets(gapped, undefined, 1);
         expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([first]));
         expect(b.earlier).toEqual([]);
         expect(b.previous).toEqual([]);

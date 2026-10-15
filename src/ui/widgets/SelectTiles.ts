@@ -1,8 +1,10 @@
 import type { GameObjects, Scene } from 'phaser';
 import { selectionAnswer, toggleSelected, type SelectValue } from '../../core/round/select';
+import { parseFace } from '../../core/tasks/faces';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
+import { drawFace } from './faceDraw';
 import { tileRow, type Rect } from './geometry';
 import { textStyle } from './textStyle';
 
@@ -30,7 +32,7 @@ export class SelectTiles {
 
     constructor(
         private readonly scene: Scene,
-        private readonly onSubmit: (value: number[]) => void,
+        private readonly onSubmit: (value: SelectValue[]) => void,
     ) {
         this.ok = new ActionButton(scene, () => {
             if (this.active) {
@@ -49,7 +51,7 @@ export class SelectTiles {
         this.tiles = tileRow(choices.length, area, { width: select.tileWidth, height: tiles.height, gap: tiles.gap }).map((rect, i) => {
             const value = choices[i];
             const graphics = this.scene.add.graphics();
-            const label = this.scene.add.text(rect.x + rect.width / 2, rect.y + rect.height / 2, String(value), textStyle('answer')).setOrigin(0.5);
+            const label = this.scene.add.text(rect.x + rect.width / 2, rect.y + rect.height / 2, parseFace(value) ? '' : String(value), textStyle('answer')).setOrigin(0.5);
             const zone = this.scene.add.zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height).setInteractive();
             const tile: Tile = { rect, graphics, label, zone, value };
             zone.on('pointerdown', () => this.toggle(tile));
@@ -143,6 +145,10 @@ export class SelectTiles {
         const color = isCorrect ? PLACEHOLDER_COLORS.dotDone : marked ? PLACEHOLDER_COLORS.selectedBorder : isHint ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.tileBorder;
         graphics.lineStyle(marked || isHint ? border * 2 : border, color, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
+        const face = parseFace(tile.value);
+        if (face) {
+            drawFace(graphics, face, rect.x + rect.width / 2, rect.y + rect.height / 2, rect);
+        }
         if (marked) {
             // A check mark drawn in the corner (the font has no glyph to rely on): the mark shows without colour.
             const { markSize, markWidth } = TASK_LAYOUT.select;

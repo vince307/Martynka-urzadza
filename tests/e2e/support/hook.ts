@@ -7,6 +7,10 @@ import type { AnswerMode } from '../../../src/core/tasks/visual';
 
 export interface Point { x: number; y: number }
 export type BlockKind = 'hundred' | 'ten' | 'one';
+/** Ids of the coins and notes a payment tray can hold (the grosze each is worth sits in COIN_GROSZE). */
+export type MoneyKind = 'coin-1zl' | 'coin-2zl' | 'coin-5zl' | 'note-10zl';
+/** The branch of an open 'drag' task, as the hook publishes it (null while no 'drag' task is open). */
+export type DragBranch = 'blocks' | 'clock' | 'coins' | null;
 export interface Snapshot {
     index: number;
     solutionStep: number;
@@ -30,6 +34,10 @@ export interface Snapshot {
     /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */
     mat?: Record<BlockKind, number>;
     carrying?: boolean;
+    /** Which branch the open task's 'drag' mode uses; null when the task is not a 'drag' task. */
+    dragMode?: DragBranch;
+    /** The grosze of every coin in the wallet of a payment task (largest first); null for another task. */
+    wallet?: number[] | null;
     /** The hands of a clock to set ('drag' mode with a clock drawing), null for another task. */
     clock?: { hour: number; minute: number; carrying: 'hour' | 'minute' | null } | null;
     outcomes: (string | null)[];
@@ -77,6 +85,8 @@ export interface Targets {
     selectOk?: Point | null;
     /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
     drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
+    /** Interior points of a payment task: tray tiles per money id, the wallet, "OK" and the placed coins; null for another task. */
+    coins?: { tray: Partial<Record<MoneyKind, Point>>; wallet: Point | null; ok: Point | null; coins: (Point & { id: MoneyKind })[] } | null;
     /** Hand tips (the minute tip is null on a full-hour clock), centre, "OK" and the grab radius of a clock to set; null for another task. */
     clock?: { centre: Point; hourTip: Point; minuteTip: Point | null; ok: Point | null; radius: number } | null;
     next: Point | null;
@@ -223,6 +233,34 @@ export const buildOnMat = async (page: Page, value: number): Promise<void> => {
     }
 };
 
+/** What each tray tile is worth, in grosze: the oracle of the helpers (written here, not read from the app). */
+export const COIN_GROSZE: Record<MoneyKind, number> = { 'coin-1zl': 100, 'coin-2zl': 200, 'coin-5zl': 500, 'note-10zl': 1000 };
+
+/**
+ * Pays with `grosze` (one entry per coin): each coin is dragged from its tray tile into the wallet, and the hook's wallet is polled
+ * after each. One touch session for the whole payment, like buildOnMat. The caller taps "OK".
+ */
+export const payCoins = async (page: Page, grosze: readonly number[]): Promise<void> => {
+    const { coins } = await targets(page);
+    expect(coins?.wallet, 'a payment wallet is open').toBeTruthy();
+    // Every attempt starts from an empty wallet: the scene empties it when a task opens and after a wrong answer.
+    expect((await snapshot(page)).wallet, 'the wallet is empty before paying').toEqual([]);
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        let placed = 0;
+        for (const value of grosze) {
+            const id = (Object.keys(COIN_GROSZE) as MoneyKind[]).find((k) => COIN_GROSZE[k] === value);
+            const from = id ? coins!.tray[id] : undefined;
+            expect(from, `tray tile worth ${value}`).toBeTruthy();
+            await dragOn(cdp, page, from!, coins!.wallet!, BUILD_STEPS, 'touchEnd');
+            placed += 1;
+            await expect.poll(async () => (await snapshot(page)).wallet?.length).toBe(placed);
+        }
+    } finally {
+        await cdp.detach();
+    }
+};
+
 /** "3.15" -> hour 3, minute 15 (the answer text of a clock task). */
 const parseTime = (text: string): { hour: number; minute: number } => {
     const [hour, minute] = text.split('.').map(Number);
@@ -287,7 +325,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'coins' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
@@ -343,6 +381,13 @@ export const answerWrong = async (page: Page): Promise<number | string | (number
         await tapScene(page, selectOk!);
         return [tile.value];
     }
+    if (state.input === 'drag' && state.dragMode === 'coins') {
+        // The right wallet with one more 1 zł coin: the sum is a złoty too high, so every variant (also "fewest") refuses it.
+        const given = [...(state.answer as number[]), 100];
+        await payCoins(page, given);
+        await tapScene(page, (await targets(page)).coins!.ok!);
+        return given;
+    }
     if (state.input === 'drag' && state.clock) {
         // The hour one later on the same minutes (12 wraps to 1): a time the task certainly rejects.
         const right = parseTime(state.answer as string);
@@ -386,13 +431,27 @@ export const answerRight = async (page: Page): Promise<void> => {
             await tapScene(page, selectTiles!.find((t) => t.value === value)!);
         }
         await tapScene(page, selectOk!);
-    } else if (state.input === 'drag' && state.clock) {
-        await setClock(page, state.answer as string);
-        await tapClockOk(page);
     } else if (state.input === 'drag') {
-        const { drag } = await targets(page);
-        await buildOnMat(page, state.answer as number);
-        await tapScene(page, drag!.ok!);
+        // Exhaustive over the branches of 'drag': a new branch is a type error here until it can be answered.
+        const branch = state.dragMode;
+        switch (branch) {
+            case 'clock':
+                await setClock(page, state.answer as string);
+                await tapClockOk(page);
+                break;
+            case 'coins':
+                await payCoins(page, state.answer as number[]);
+                await tapScene(page, (await targets(page)).coins!.ok!);
+                break;
+            case 'blocks':
+                await buildOnMat(page, state.answer as number);
+                await tapScene(page, (await targets(page)).drag!.ok!);
+                break;
+            case null: case undefined:
+                throw new Error('a drag task without a dragMode in the hook snapshot');
+            default:
+                unanswerable(branch);
+        }
     } else if (state.input === 'digits') {
         await typeDigits(page, state.answer as number, await boxCount(page));
     } else if (state.input === 'keypad') {

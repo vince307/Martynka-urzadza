@@ -62,6 +62,15 @@ export const PLACEHOLDER_COLORS = {
 /** DESIGN-GAP row 53: column colours of a bar chart, in order. */
 export const CHART_COLORS: readonly number[] = [0x54beb4, 0xf1ce6b, 0xc98460, 0xa6cf7f, 0xc99b66];
 
+/** DESIGN-GAP row 100: fills of the four face colours (SHAPES, PATTERN); the outline is deep teal so a figure reads without its colour. */
+export const FACE_COLORS = { red: 0xe0707a, blue: 0x6fa8dc, green: 0x7dbb5a, yellow: 0xf1ce6b } as const;
+
+/** Look of a face: the big figure fills `bigFill` of the short side of its box, the small one `smallRatio` of that; a rectangle is wider than tall. */
+export const FACE_LOOK = { bigFill: 0.8, smallRatio: 0.6, outline: 4, rectangleWidth: 1.15, rectangleHeight: 0.7 } as const;
+
+/** A row of figures with an empty place (PATTERN): cell size and gap, the dashed frame of the place. DESIGN-GAP row 101. */
+export const PATTERN_LOOK = { cell: 132, gap: 20, maxScale: 1, dash: 14, dashGap: 10, dashWidth: 5, radius: 20 } as const;
+
 /** Deep teal as a CSS colour: every text of the task screen. */
 export const TEXT_COLOR = '#245C59';
 
@@ -293,6 +302,16 @@ export const TASK_LAYOUT = {
         labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.2, radius: 28,   // trayScale 1.3 put the 10 rod on the tray tile border (visual gate S-13)
         solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
+    // Paying with coins (S-14d phase 6): the tray holds up to 4 kinds, one row up to 3 (3 x 136 px) and a 2 x 2 grid for 4 (212 x 142 px, above MIN_TOUCH_TARGET);
+    // the wallet is the block mat, 5 x 2 cells of 188 x 230 hold balance.coinDrag.maxTotal (10) coins. Provisional, screenshots at the visual gate.
+    coinDrag: {
+        tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
+        wallet: DRAG_MAT,
+        ok: { x: 1240, y: 724, width: 440, height: 96 },
+        columns: 5, rows: 2, cellInset: 8, rowKinds: 3, maxKinds: 4,
+    },
+    // Coin pictures inside tray tiles and wallet cells (S-14d phase 8): inset from the tile, size under the finger. Provisional, DESIGN-GAP 104, screenshots at the visual gate.
+    coinPay: { trayInset: 14, coinInset: 10, carriedSize: 120 },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
     blocks: {
@@ -352,6 +371,11 @@ export const TASK_LAYOUT = {
     // Counting icons and groups of icons (S-14), in icon sizes except `maxIcon`: rows of up to `maxPerRow`, a ten in one row, groups in a rounded
     // frame each (`radius`, `border` in scene pixels). DESIGN-GAP (row added in S-14 phase 9): the kit has no plates, so a frame is drawn in code.
     icons: { gap: 0.12, maxPerRow: 6, framePad: 0.2, frameGap: 0.35, maxIcon: 150, radius: 20, border: 4 },
+    // Motion arrow of a picture story (S-14d, DESIGN-GAP row 102): a strip on the left of two stacked groups. "come" is a solid arrow up
+    // towards the first group, "go" a dashed arrow down away from it, so the two differ by shape and not only by colour. Scene pixels.
+    iconMotion: { strip: 120, shaft: 20, head: 56, dash: 22, dashGap: 14 },
+    // A row of different icons with a start flag on its left (S-14d ORDINAL, DESIGN-GAP row 102), in icon sizes except `maxIcon`.
+    iconRow: { gap: 0.2, markWidth: 0.45, maxIcon: 140, pole: 8, flag: 0.5 },
     // Thermometer face painted over the housing (kit reference/thermometer-face.js), in the 512 x 1536 units of the housing; tick lengths are the
     // x of the tick end. `minGapPx` is the smallest distance of two single-degree ticks on screen, `minLabelPx` the smallest label size, so a
     // small thermometer (a tall drawing in a 378 px column) stays readable. DESIGN-GAP (row added in S-14 phase 9): the kit has no small version.

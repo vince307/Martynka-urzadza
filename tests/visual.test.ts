@@ -312,3 +312,49 @@ describe('arrows drawing (S-14b)', () => {
         expect(validateVisual(v)).not.toEqual([]);
     });
 });
+
+describe('row of icons and the icon motion (S-14d)', () => {
+    const row = (icons: string[], mark = 'left'): TaskVisual => ({ kind: 'row', icons, mark }) as unknown as TaskVisual;
+    const moving = (groups: number[], motion: string | undefined, framed = false): TaskVisual =>
+        ({ kind: 'icons', icon: 'apple', groups, framed, ...(motion ? { motion } : {}) }) as unknown as TaskVisual;
+
+    it('a row of 3 to 10 different known icons with the start mark on the left is valid', () => {
+        expect(validateVisual(row(['key', 'apple', 'cup']))).toEqual([]);
+        expect(validateVisual(row(['key', 'apple']))).not.toEqual([]);
+        expect(validateVisual(row(['key', 'apple', 'apple']))).not.toEqual([]);
+        expect(validateVisual(row(['key', 'apple', 'dragon']))).not.toEqual([]);
+        expect(validateVisual(row(['key', 'apple', 'cup'], 'right'))).not.toEqual([]);
+        const many = ['cup', 'croissant', 'flower', 'cushion', 'book', 'lamp', 'apple', 'pear', 'teapot', 'pencil', 'key'];
+        expect(validateVisual(row(many))).not.toEqual([]);
+        expect(validateVisual(row(many.slice(0, 10)))).toEqual([]);
+    });
+
+    it('a motion needs exactly two plain groups', () => {
+        expect(validateVisual(moving([3, 2], 'come'))).toEqual([]);
+        expect(validateVisual(moving([5, 2], 'go'))).toEqual([]);
+        expect(validateVisual(moving([3], 'come'))).not.toEqual([]);
+        expect(validateVisual(moving([3, 2, 1], 'go'))).not.toEqual([]);
+        expect(validateVisual(moving([3, 3], 'come', true))).not.toEqual([]);
+    });
+
+    it('two groups side by side (COMPARE_QTY, visual gate S-14d) are exactly two plain groups without a motion', () => {
+        const sides = (groups: number[], extra: Record<string, unknown> = {}): TaskVisual =>
+            ({ kind: 'icons', icon: 'apple', groups, framed: false, sides: true, ...extra }) as unknown as TaskVisual;
+        expect(validateVisual(sides([3, 7]))).toEqual([]);
+        expect(validateVisual(sides([3]))).not.toEqual([]);
+        expect(validateVisual(sides([3, 2, 1]))).not.toEqual([]);
+        expect(validateVisual(sides([3, 3], { framed: true }))).not.toEqual([]);
+        expect(validateVisual(sides([3, 2], { motion: 'come' }))).not.toEqual([]);
+        expect(visualKey(sides([3, 2]))).not.toBe(visualKey(icons([3, 2])));
+        expect(describeVisual(sides([3, 2]))).toBe('[icons apple 3|2]');
+    });
+
+    it('keys differ by icon order and by motion; the sample line names both', () => {
+        expect(visualKey(row(['key', 'apple', 'cup']))).not.toBe(visualKey(row(['apple', 'key', 'cup'])));
+        expect(visualKey(moving([3, 2], 'come'))).not.toBe(visualKey(moving([3, 2], 'go')));
+        expect(visualKey(moving([3, 2], 'come'))).not.toBe(visualKey(moving([3, 2], undefined)));
+        expect(describeVisual(row(['key', 'apple', 'cup']))).toBe('[row key apple cup]');
+        expect(describeVisual(moving([3, 2], 'go'))).toBe('[icons apple 3+2 go]');
+        expect(visualShape(row(['key', 'apple', 'cup']))).toBe('long');
+    });
+});

@@ -4,6 +4,7 @@
 // a bonus for a round without a mistake, and they never decrease.
 import { solutionSteps } from './round/hints';
 import type { SkillResult } from './mastery';
+import { faceText } from './tasks/faces';
 import type { Task } from './tasks/types';
 
 export type RoundPhase = 'first' | 'second' | 'solution' | 'retype' | 'done';
@@ -109,12 +110,16 @@ export const next = (state: RoundState): RoundState => {
     return { ...state, finished: true, bonusEarned: bonus, starsEarned: state.starsEarned + bonus };
 };
 
+/** The parent reads the answer in words: faces become their description, a list of faces one line (the saved shape stays v2). */
+const exampleAnswer = (answer: Task['answer']): number | string | number[] =>
+    Array.isArray(answer) && answer.some((a) => typeof a === 'string') ? answer.map((a) => String(faceText(a))).join(', ') : typeof answer === 'string' ? String(faceText(answer)) : (answer as number | number[]);
+
 /** Per-task results of a round for `recordRound`; a miss carries its first wrong try as the parent's example. */
 export const roundResults = (state: RoundState): SkillResult[] =>
     state.tasks.map((task, i): SkillResult => {
         const outcome = state.outcomes[i];
         const given = state.firstWrong[i];
         return outcome !== null && outcome !== 'first' && given !== null
-            ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given, answer: task.answer } }
+            ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given: faceText(given), answer: exampleAnswer(task.answer) } }
             : { skillId: task.skillId, outcome };
     });

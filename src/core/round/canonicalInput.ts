@@ -5,9 +5,9 @@ import { balance } from '../../data/balance';
 import { dragMode } from '../tasks/dragMode';
 import { digitBoxCount, startDigitBoxes, stepDigitBoxes } from './digitBoxes';
 import type { KeypadKey } from './keypad';
-import type { Task } from '../tasks/types';
+import type { Task, TaskAnswer } from '../tasks/types';
 
-export const canonicalInput = (task: Task): number | string | number[] => {
+export const canonicalInput = (task: Task): TaskAnswer => {
     const mode = task.input;
     if (mode === 'digits') {
         const count = digitBoxCount(task);
@@ -27,7 +27,7 @@ export const canonicalInput = (task: Task): number | string | number[] => {
         const choices = task.choices ?? [];
         if (!task.answer.every((a) => choices.includes(a))) throw new Error(`select answer outside choices (skill ${task.skillId})`);
         // Reversed: a child may tap the choices in any order.
-        const input = [...task.answer].reverse();
+        const input = [...task.answer].reverse() as number[] | string[];
         if (task.check && !task.check(input)) throw new Error(`select answer rejected by check (skill ${task.skillId})`);
         return input;
     }
@@ -40,6 +40,13 @@ export const canonicalInput = (task: Task): number | string | number[] => {
                 throw new Error(`clock answer ${String(task.answer)} not in the reachable set of snap ${snap} (skill ${task.skillId})`);
             }
             return task.answer;
+        }
+        if (dragMode(task) === 'coins') {
+            const wallet = task.answer;
+            if (!Array.isArray(wallet) || !wallet.every((c) => typeof c === 'number')) throw new Error(`coins answer is not a wallet (skill ${task.skillId})`);
+            if (wallet.length > balance.coinDrag.maxTotal) throw new Error(`coins answer holds ${wallet.length} coins, the wallet takes ${balance.coinDrag.maxTotal} (skill ${task.skillId})`);
+            if (!task.check || !task.check(wallet)) throw new Error(`coins answer rejected by check (skill ${task.skillId})`);
+            return wallet;
         }
         const n = task.answer;
         if (typeof n !== 'number' || !Number.isInteger(n) || n < 0 || n > 999) throw new Error(`blocks answer ${String(n)} not buildable (skill ${task.skillId})`);

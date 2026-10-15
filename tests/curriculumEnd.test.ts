@@ -84,7 +84,7 @@ describe('unlocking a step', () => {
         expect(three.unlocked).toBe(7);
     });
 
-    it('skips unplayable steps: E2 step 1 leads to step 2 now, E1 step 7 to step 8, and E1 step 1 is the only gap left at the start', () => {
+    it('skips unplayable steps: E2 step 1 leads to step 2 now, E1 step 7 to step 8 (E1 step 1 became playable in S-14d)', () => {
         const e2 = skillIds('E2', 1);
         expect(end(learner('E2', 1, masteryOf(e2, [4, 4])), 'E2', 5).unlocked).toBe(2);
         const e1 = skillIds('E1', 7);

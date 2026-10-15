@@ -28,7 +28,7 @@ export interface Context {
     accusative: string;     // singular accusative for "ma 1 naklejkę" (equals nominative for masculine/neuter)
     place: string;          // "w kawiarni", "na półce"
     portable: boolean;      // fits boxes and plates (groups / share / each templates)
-    price?: readonly [number, number];   // a believable shop price in grosze, min..max (MONEY_CHANGE); none = never bought
+    price?: readonly [number, number];   // a believable shop price in grosze, min..max; none = never bought (the flag of `needsPrice` templates and MONEY_CHANGE)
 }
 
 export const contexts: readonly Context[] = [
@@ -90,6 +90,7 @@ export interface WordResult {
 export interface WordTemplate {
     id: string;
     kind: WordKind;
+    needsPrice?: true;      // the story buys the thing: only contexts with a `price` fit ("kupiła jeszcze 2 złote" is nonsense)
     build(args: WordArgs): WordResult;
 }
 
@@ -101,10 +102,15 @@ const MINUS = '−';
 const TIMES = '·';
 const DIVIDE = ':';
 
+/** The contexts a template may use out of `pool`: buying stories take only things with a price. */
+export const contextsFor = (template: Pick<WordTemplate, 'needsPrice'>, pool: readonly Context[] = contexts): readonly Context[] =>
+    template.needsPrice ? pool.filter((c) => c.price !== undefined) : pool;
+
 export const templates: readonly WordTemplate[] = [
     {
         id: 'sum.bought',
         kind: 'sum',
+        needsPrice: true,
         build: ({ a, b, person, ctx }) => ({
             prompt: `${person.name} ${verb(person, pl.words.had)} ${obj(a, ctx)} i ${verb(person, pl.words.bought)} jeszcze ${obj(b, ctx)}. Ile ${ctx.noun[2]} ${person.name} ${pl.words.has} teraz?`,
             answer: a + b,

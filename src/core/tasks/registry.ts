@@ -10,6 +10,8 @@ import { generateChain, parseChainParams } from './generators/chain';
 import { generateClock, parseClockParams } from './generators/clock';
 import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
+import { generateCompareQty, parseCompareQtyParams } from './generators/compareQty';
+import { generateOrdinal, parseOrdinalParams } from './generators/ordinal';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
 import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
@@ -24,6 +26,7 @@ import { generateGrid, parseGridParams } from './generators/grid';
 import { generateLength, parseLengthParams } from './generators/length';
 import { generateMass, parseMassParams } from './generators/mass';
 import { generateUnitChoice, parseUnitChoiceParams } from './generators/unitChoice';
+import { generateMoneyPay, parseMoneyPayParams } from './generators/moneyPay';
 import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
@@ -31,6 +34,7 @@ import { generateMult, parseMultParams } from './generators/mult';
 import { generateMultGroups, parseMultGroupsParams } from './generators/multGroups';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
 import { generateOrderOps, parseOrderOpsParams } from './generators/orderOps';
+import { generatePattern, parsePatternParams } from './generators/pattern';
 import { generatePerimeter, parsePerimeterParams } from './generators/perimeter';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
 import { generatePrice, parsePriceParams } from './generators/price';
@@ -39,6 +43,7 @@ import { generateTimeUnits, parseTimeUnitsParams } from './generators/timeUnits'
 import { generatePuzzleGrid, parsePuzzleGridParams } from './generators/puzzleGrid';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
+import { generateShapes, parseShapesParams } from './generators/shapes';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateTemperature, parseTemperatureParams } from './generators/temperature';
 import { generateTimesMore, parseTimesMoreParams } from './generators/timesMore';
@@ -80,6 +85,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     DATA: generateData,
     MONEY_COUNT: generateMoneyCount,
     MONEY_CHANGE: generateMoneyChange,
+    MONEY_PAY: generateMoneyPay,
     MASS: generateMass,
     CAPACITY: generateCapacity,
     TEMPERATURE: generateTemperature,
@@ -93,6 +99,10 @@ export const generators: Readonly<Record<string, Generator>> = {
     CLOCK_ELAPSED: generateClockElapsed,
     TIME_UNITS: generateTimeUnits,
     UNIT_CHOICE: generateUnitChoice,
+    SHAPES: generateShapes,
+    PATTERN: generatePattern,
+    COMPARE_QTY: generateCompareQty,
+    ORDINAL: generateOrdinal,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -127,6 +137,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     DATA: parseDataParams,
     MONEY_COUNT: parseMoneyCountParams,
     MONEY_CHANGE: parseMoneyChangeParams,
+    MONEY_PAY: parseMoneyPayParams,
     MASS: parseMassParams,
     CAPACITY: parseCapacityParams,
     TEMPERATURE: parseTemperatureParams,
@@ -140,6 +151,10 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     CLOCK_ELAPSED: parseClockElapsedParams,
     TIME_UNITS: parseTimeUnitsParams,
     UNIT_CHOICE: parseUnitChoiceParams,
+    SHAPES: parseShapesParams,
+    PATTERN: parsePatternParams,
+    COMPARE_QTY: parseCompareQtyParams,
+    ORDINAL: parseOrdinalParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

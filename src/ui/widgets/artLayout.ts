@@ -187,7 +187,7 @@ export interface IconsLayoutSpec {
 
 export interface IconsLayout {
     icons: Rect[];
-    /** One rectangle per group when `framed`, else empty. */
+    /** One rectangle per group when `framed` or `sides`, else empty. */
     frames: Rect[];
     /** The side of one icon in scene pixels. */
     icon: number;
@@ -196,10 +196,12 @@ export interface IconsLayout {
 /**
  * Icons of a counting or multiplication drawing in `area`. One group is a grid (rows of up to `maxPerRow`); `[10, k]` puts the ten in one row
  * and the rest left-aligned under it; framed groups stand in a frame each, shaped (1-3 rows of icons, frames per line) for the largest icon.
+ * `sides` (COMPARE_QTY) keeps every group on one line, each in a frame, the first on the left (1-3 rows of icons per frame).
  * The whole picture fits `area`, never above `maxIcon`.
  */
-export const iconsLayout = (groups: readonly number[], framed: boolean, area: Rect, spec: IconsLayoutSpec): IconsLayout => {
-    const pad = framed ? spec.framePad : 0;
+export const iconsLayout = (groups: readonly number[], framed: boolean, area: Rect, spec: IconsLayoutSpec, sides = false): IconsLayout => {
+    const boxed = framed || sides;
+    const pad = boxed ? spec.framePad : 0;
     type Block = { count: number; cols: number; rows: number; width: number; height: number };
     const block = (count: number, rows: number): Block => {
         const cols = Math.ceil(count / rows);
@@ -215,7 +217,14 @@ export const iconsLayout = (groups: readonly number[], framed: boolean, area: Re
         return { lines, lineWidth, lineHeight, widthUnits, heightUnits, icon: Math.min(area.width / widthUnits, area.height / heightUnits, spec.maxIcon) };
     };
     let best: ReturnType<typeof arrange>;
-    if (framed) {
+    if (sides) {
+        // Visual gate S-14d: the tiles say "Po lewej" / "Po prawej", so the groups never stand one under the other.
+        best = arrange(groups.map((count) => block(count, 1)), groups.length);
+        for (let rows = 2; rows <= Math.min(3, Math.max(...groups)); rows += 1) {
+            const candidate = arrange(groups.map((count) => block(count, Math.min(rows, count))), groups.length);
+            if (candidate.icon > best.icon + 1e-9) best = candidate;
+        }
+    } else if (framed) {
         // Visual gate S-14: every group in one row of icons left the icons small; the group shape (rows per frame, the same for every
         // group) and the frames per line are the ones that give the largest icon (ties keep fewer rows and more frames per line).
         best = arrange(groups.map((count) => block(count, 1)), groups.length <= 3 ? groups.length : Math.ceil(groups.length / 2));
@@ -237,9 +246,9 @@ export const iconsLayout = (groups: readonly number[], framed: boolean, area: Re
     const icons: Rect[] = [];
     const frames: Rect[] = [];
     for (const line of lines) {
-        let x = framed ? area.x + (area.width - lineWidth(line) * icon) / 2 : left;
+        let x = boxed ? area.x + (area.width - lineWidth(line) * icon) / 2 : left;
         for (const b of line) {
-            if (framed) frames.push({ x, y, width: b.width * icon, height: b.height * icon });
+            if (boxed) frames.push({ x, y, width: b.width * icon, height: b.height * icon });
             for (let i = 0; i < b.count; i += 1) {
                 const row = Math.floor(i / b.cols);
                 const col = i - row * b.cols;
@@ -250,6 +259,36 @@ export const iconsLayout = (groups: readonly number[], framed: boolean, area: Re
         y += (lineHeight(line) + spec.frameGap) * icon;
     }
     return { icons, frames, icon };
+};
+
+export interface RowLayoutSpec {
+    /** Gap of two icons, in icon sizes. */
+    gap: number;
+    /** Width of the start mark on the left, in icon sizes. */
+    markWidth: number;
+    /** The largest icon on screen, in scene pixels. */
+    maxIcon: number;
+}
+
+export interface RowLayout {
+    icons: Rect[];
+    /** The start mark: as high as an icon, on the left of the first one. */
+    mark: Rect;
+    icon: number;
+}
+
+/** A row of `count` icons with a start mark on its left (ORDINAL): the whole row fits `area` and is centred, never above `maxIcon`. */
+export const rowLayout = (count: number, area: Rect, spec: RowLayoutSpec): RowLayout => {
+    const widthUnits = spec.markWidth + spec.gap + count + (count - 1) * spec.gap;
+    const icon = Math.min(area.width / widthUnits, area.height, spec.maxIcon);
+    const left = area.x + (area.width - widthUnits * icon) / 2;
+    const top = area.y + (area.height - icon) / 2;
+    const first = left + (spec.markWidth + spec.gap) * icon;
+    return {
+        icons: Array.from({ length: count }, (_, i) => ({ x: first + i * (1 + spec.gap) * icon, y: top, width: icon, height: icon })),
+        mark: { x: left, y: top, width: spec.markWidth * icon, height: icon },
+        icon,
+    };
 };
 
 export interface StandInLabelFit {

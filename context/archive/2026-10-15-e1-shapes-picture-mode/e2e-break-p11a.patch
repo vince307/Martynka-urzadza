@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 37c13e5..8e4ddf0 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -1095,7 +1095,7 @@ export class TaskScene extends Scene {
+             mat: Object.freeze({ ...this.dragState.mat }),
+             carrying: this.dragState.carrying !== null,
+             clock: this.clockTask ? Object.freeze({ hour: this.clockState.hour, minute: this.clockState.minute, carrying: this.clockState.carrying }) : null,
+-            dragMode: this.dragKind,
++            dragMode: this.dragKind === 'coins' ? 'blocks' : this.dragKind,
+             wallet: this.dragKind === 'coins' ? Object.freeze(walletCoins(this.coinState.mat)) : null,
+             walletCarrying: this.dragKind === 'coins' ? this.coinState.carrying !== null : null,
+             outcomes: Object.freeze([...this.state.outcomes]),

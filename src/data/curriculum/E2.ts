@@ -1,6 +1,6 @@
 // Stage E2 (grade 1, second semester): steps from docs/ZADANIA.md, section 3.
 // Skills carry the parameters of group-1 generators (roadmap S-03); drawing
-// and art types (shapes, counting, money, measures) arrive in M6. Numeric
+// and art types (shapes, counting, money, measures) are drawn in code or loaded from public/assets (S-13, S-14); only SPATIAL and SYMMETRY wait. Numeric
 // answers use the keypad; sign and choice answers use tiles.
 import type { SkillDef, StageDef } from '../../core/types';
 
@@ -40,6 +40,7 @@ export const E2: StageDef = {
             types: ['MONEY_COUNT', 'MONEY_PAY', 'MONEY_CHANGE', 'CAPACITY'],
             skills: [
                 skill('E2.2.money_count_20', 2, 'MONEY_COUNT', { variant: 'count', ids: ZL_20, max: 2000, maxItems: 5, answer: 'number-zl' }),
+                skill('E2.2.money_pay_20', 2, 'MONEY_PAY', { tray: ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl'], min: 3, max: 20, variants: ['pay', 'fewest'] }, 'drag'),
                 skill('E2.2.money_change_20', 2, 'MONEY_CHANGE', { variant: 'change', ids: ZL_20, max: 2000, maxItems: 5, answer: 'number-zl' }),
                 skill('E2.2.capacity_litres', 2, 'CAPACITY', { jugs: ['container-1l'], variant: 'toLitres', maxLitres: 10 }),
             ],
