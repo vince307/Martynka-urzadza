@@ -1,23 +1,24 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-Written by the `/10x-new` step of run `2026-10-15-fix-s16bcd`. The change folder exists with `change.md` (source: observability audit 2026-10-15_2217, PR #66, findings A-1, A-2, P-5 + font limit), an audit-vs-repo table and the follow-ups in scope. The next agent must not promise that P-5 protects against a tab already running an older build: the guard lives only in this build onwards, and the save format stays v3.
+Written by the `/10x-research` step of run `2026-10-15-fix-s16bcd`. `research.md` answers every question `change.md` raised. The change is now `preparing`, and no product code was touched. The next agent must not end the boot load with `this.load.reset()` or by stopping the scene. Forced failure through `nextFile(f, false)` / `fileProcessComplete` is the only path that runs `create()` exactly once. P-5 protects the save only from this build onwards.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | 1 on the branch: `docs(load-and-tab-guard): change identity (autonomous run)` |
+| Commits | 2 on the branch: change identity + `docs(load-and-tab-guard): research` (this step) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the two files below were staged) |
+| Working tree | clean after the commit (only the three files below were staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/load-and-tab-guard/change.md` | change identity: source and scope, save format statement (stays v3), audit claim / repo now / correction table, open follow-ups with triggers and scope take, autonomous decisions |
+| `context/changes/load-and-tab-guard/research.md` | source-backed answers: Phaser 4.2.1 loader abort semantics and the recommended forced-failure mechanism (font included), the slow-line rule/number/string/layout, the P-5 guard via idb-keyval `update` (atomic get+put) with a new runtime `BlockReason`, the SW decision (keep `skipWaiting`/`clientsClaim`), the e2e seams |
+| `context/changes/load-and-tab-guard/change.md` | frontmatter only: `status: preparing`, `updated` |
 | `context/changes/load-and-tab-guard/handoff.md` | this handoff |
 
 ## 3. Verification
@@ -25,29 +26,50 @@ Written by the `/10x-new` step of run `2026-10-15-fix-s16bcd`. The change folder
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/load-and-tab-guard` |
-| code reads (observed in this step) | `src/data/balance.ts` `loader` 12000/1; `node_modules/phaser/src/core/Config.js` `loaderMaxParallelDownloads` 6 on Android; 64 WebP + 1 font queued in `BootScene.preload`; Phaser `FontFile` `FILE_POPULATED`; `LoadingScreen` has `progress`/`destroy` only; `SaveStore` write path never reads; `vite/config.shared.mjs` `skipWaiting`/`clientsClaim` true; `SAVE_VERSION` 3 |
-| lint / typecheck / unit / build / e2e | not run: docs-only step, no code changed (baseline on main 6f5644c per contract, inherited, unverified) |
+| source reads (this step) | `BootScene.preload/create`, `LoadingScreen`, `src/core/autosave.ts` (`attempt`, `replace`, `replaceGate`, `withTimeLimit`), `src/storage/idb.ts`, `saveHealth.ts`, `saveFile.ts` `deviceSaveView`, `main.ts` `start`/`createGame`, `e2eHook.ts` seams, `vite/config.shared.mjs`; Phaser `LoaderPlugin.nextFile/fileProcessComplete/reset`, `FontFile.onProcess` re-read after a delegated read; idb-keyval 6.3.0 `update`; `grep "\.abort()"` over the Phaser loader: no hit |
+| sizes | `public/assets` 1748 KB (64 WebP), `public/fonts` 120 KB, salon-v2 audio ogg 224 KB / m4a 884 KB (13 files) |
+| lint / typecheck / unit / build / e2e | not run: this is a docs-only step and no code changed. The baseline on main 6f5644c is the one stated in the contract; it was inherited, not verified here. |
 
-No deliberate break: no test or code in this step.
+No deliberate break was made, because this step changed no test or code.
 
 ## 4. Next command
 
-`/10x-research load-and-tab-guard`
+`/10x-plan load-and-tab-guard`
 
 ## 5. Open
 
-- Research questions for the next step:
-  - Can a total timer end Phaser's `preload` cleanly while files (and the font promise) are in flight — e.g. `this.load.reset()`/`removeAllListeners` + manual `create`, or start the next scene from a timer in `BootScene` — without a second `create()` when the loader completes late? (`src/scenes/BootScene.ts` `preload`/`create`)
-  - Where the slow-line rule lives (`src/core/`, pure, like `saveSlow` in `src/core/autosave.ts` `loadSave` `waitLonger`), its number in `src/data/balance.ts` `loader`, its text in `src/data/pl.ts` `loading`, its place in `LOADING_LAYOUT` (`src/data/layout.ts`), and how S-16b's sound files join the same queue.
-  - P-5 guard shape: a read of the stored `version` before each write in `src/core/autosave.ts` (cost per write under `withTimeLimit`), a new `BlockReason` (e.g. `future`) and its line in "Zapis gry" (`src/core/saveHealth.ts`), interplay with `replaceGate` and `Autosaver.replace`; whether a `controllerchange` signal in `src/pwa/registerServiceWorker.ts` should mark this build stale; whether `skipWaiting`/`clientsClaim` in `vite/config.shared.mjs` should change (removing them changes the update model "silent update at the next launch").
-  - e2e seams needed (hook build only, marker in `vite/e2eHookGuard.mjs`): a stall of many files (today `?e2eArt=stall` with `maxRetries: 0` and room only), a newer stored save written under a running tab.
-- Follow-ups listed in `change.md` (table "Open follow-ups…"); this change's own `follow-ups/review-fixes.md` does not exist yet — the plan/review steps create it with the audit findings not in scope (A-3..A-11, V-*, P-1..P-4, P-6..P-8) and mark the `BootScene.create` font-promise hand-over follow-up as already closed.
-- Carried risk: the v2-build-tab-over-v3 window from builds already shipped cannot be closed by code (see `change.md` table, row P-5 SW).
+- Choices for the plan (research.md "Open Questions"):
+  - Numbers: `balance.loader.totalMs` (~45 s recommended) and `slowAfterMs` (~8 s).
+  - Clock: the game loop (`this.time`, recommended) or wall time.
+  - What the child sees when the save is `'newer'`: a line for the parent only, or also a calm card with a reload button.
+  - Whether queued files (image decode, font) that the limit cuts also emit `loaderror`.
+  - Copy for `pl.loading.slow` and `settings.saveOff.newer`. Both need DESIGN-GAP rows in `docs/design-gaps.md`.
+- Risk: the forced-failure path relies on Phaser internals (`list`/`inflight`/`queue`, `nextFile`, `fileProcessComplete`, `File.resetXHR`), which are typed as public in 4.2.1. Pin them with the new e2e and a comment that names the version. This is a Phaser-upgrade trigger.
+- Risk: a late `FontFace` settle after the file was destroyed leads to an unhandled rejection, which shows the fatal card. The forced path must replace `onProcessComplete` with a no-op before it fails the file (`BootScene`, research §2).
+- Risk carried from `change.md`: a tab still running a build from before this change has no guard. Same-version two-tab ordering also stays a follow-up.
+- Follow-ups for the plan or review step to write into `follow-ups/review-fixes.md`:
+  - A-3..A-11, V-*, P-1..P-4, P-6..P-8 from audit 2026-10-15_2217. P-8 (`backup-v2` overwritten on re-migration) gets the trigger "a parent report of lost progress, or v4".
+  - "font promise hand-over in `BootScene.create`": already closed.
+- e2e seams to add, in the hook build only, each with a marker in `vite/e2eHookGuard.mjs`:
+  - an `e2eArt` value for "many stalled files + font", with short e2e totals;
+  - an `e2eSave` value for "a newer save appears after the first write";
+  - a `screen: 'loading'` read in the hook `snapshot`.
 
 ## 6. Autonomous decisions
 
-- **Next step `/10x-research`**: fixed by the step prompt; the change needs reading of Phaser loader internals, the SW and the IndexedDB write path before planning. Would change: nothing (run order).
-- **Font limit in scope** as part of A-1's total limit. Rejected: a separate `FontFace` timer as the first choice. Why: one total limit ends the wait for any file type. Would change: research showing the loader cannot be ended while the font promise is pending.
-- **P-5 scoped to "from this build on"**. Rejected: claiming the old-tab case is closed. Why: old builds' JS has no guard. Would change: evidence that the shipped build re-reads the version before writing (it does not on 6f5644c).
-- **Save format v3, guard on `version` only**; same-version two-tab ordering stays a follow-up. Rejected: a write counter / tab id (v4, forbidden in this run). Would change: research proving a sound guard needs a saved field (then stop at an open PR per the contract) or the maintainer widening scope.
-- **Title and artifacts in English**, commit message as given by the step prompt. Would change: a maintainer rule for Polish change artifacts.
+- **Forced failure (option b) recommended over `reset()` + a manual `create`, and over a timer that leaves Boot.**
+  - Why: `reset()` keeps the scene's once-listener, so a late file runs `create()` twice. Stopping the scene skips `create()`, and with it art health and the handover.
+  - What would change it: a Phaser release with a public abort that completes the loader.
+- **Game-loop clock recommended for the total limit.**
+  - Why: a backgrounded start starts no new downloads, so cutting it on wall time would fail files that never had a chance.
+  - What would change it: the plan deciding that a wall-time bound matters more, for example if a hidden start should still end within the limit.
+- **A distinct runtime `BlockReason 'newer'` instead of reusing `'future'`** (the audit suggests `future`).
+  - Why: `future` is a load-time `loadReason` with its own start card and `replaceGate` branch. A reason that appears mid-session should stay separate.
+  - What would change it: the plan showing that reuse is simpler and every consumer stays correct.
+- **The guard goes in the store write via idb-keyval `update` (atomic), not as a separate `read()` before `write()`.**
+  - Why: there is no window between the check and the put, and it adds no extra round trip outside the transaction.
+  - What would change it: `update` misbehaving on iOS Safari's lost connection (the `run` retry path), checked in the plan or impl.
+- **Keep `skipWaiting`/`clientsClaim`.**
+  - Why: removing them delays updates for a resumed PWA, against FR-003, and does not close the old-tab window for builds already shipped.
+  - What would change it: the maintainer preferring "no mixed builds" over prompt updates.
+- **No AskUserQuestion was asked.** The scope came from `change.md` and the step prompt.

@@ -1,7 +1,7 @@
 ---
 change_id: load-and-tab-guard
 title: Total limit and slow signal for the boot load, save guard against an old tab
-status: new
+status: preparing
 created: 2026-10-15
 updated: 2026-10-15
 archived_at: null
