@@ -30,9 +30,19 @@ Each item has a trigger line; later slices grep for it. Source ids are from the 
   Trigger: a migration step that can throw
 - **Mistake example shape in the history**: v3 does not change it.
   Trigger: a save that changes the shape of a mistake example, or S-17
-- **Time limit of the second font load (`FontFace`)** in `BootScene`.
-  Trigger: a parent report of a blank start
+- **Time limit of the second font load (`FontFace`)** in `BootScene`. Impl review: in Phaser 4.2.1 `FontFile` is `FILE_POPULATED` in its constructor, so `File.load` skips XHR entirely and `onProcess` awaits `new FontFace(...).load()` with no limit: the per-file timeout of f4415a5 does not cover the font, which is the one queued file H-2 leaves open (first launch before the service worker has cached it).
+  Trigger: a parent report of a blank start, or the next change to `BootScene.preload`
 - **WebKit e2e**: no WebKit project in Playwright; the iPad check is a `[human]` row.
   Trigger: a WebKit project in playwright.config.ts
 - **Two tabs of one origin** (`BroadcastChannel`): a second tab can overwrite a newer save.
   Trigger: a parent report of lost progress with two tabs open, or the next save-format change (v4)
+
+## From the implementation review (2026-10-15)
+
+- **`isRecord` copied three times** (`src/core/save.ts`, `src/core/saveFile.ts`, `src/core/migrations/legacySalon.ts`); importing it from `save.ts` would make a cycle. A small `src/core/isRecord.ts` would remove the copies.
+  Trigger: a fourth copy of `isRecord` in `src/core`
+- **The per-file loader timeout in `BootScene` (f4415a5) is guarded only by e2e (c)** of `tests/e2e/salon-load-health.spec.ts`; no unit test or break patch removes the `Loader.Events.ADD` listener alone. It also becomes redundant if Phaser stops giving files an explicit timeout of 0.
+  Trigger: a Phaser upgrade, or the next change to `BootScene.preload`
+- **A failed copy at start leaves the v3 write waiting for the next change or flush** (`createAutosaver` does not re-arm after a failed `'migration'` attempt; plan-review F8, accepted). The narrower M-2 marker also means a v2 save that was corrupt only in an old-only slot now loads after the step drops that slot (harmless).
+  Trigger: a parent report of a migration line that never appears, or the next save-format change (v4)
+

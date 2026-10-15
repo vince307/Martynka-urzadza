@@ -43,7 +43,7 @@ export class BootScene extends Scene {
         this.load.on('loaderror', (file: { key: string; type?: string }) => {
             console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
         });
-        // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image.
+        // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
         for (const art of TASK_ART) {
             if (seam === 'missing') {

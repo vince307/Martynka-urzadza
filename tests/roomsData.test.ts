@@ -113,7 +113,7 @@ describe('salon data', () => {
         expect(SALON.tasks.slice(0, 7).map((t) => t.id)).toEqual(['renovate', 'add-sofa', 'lay-rug', 'place-coffee-table', 'place-cabinet', 'place-armchair', 'hang-frames']);
     });
 
-    // The v2 -> v3 step (core/migrations/legacySalon) tells an old save by a `chosen` key that is no slot of the new room.
+    // The v2 -> v3 step (core/migrations/legacySalon) tells an old save by a `chosen` key only the old list wrote (M-2).
     it('uses no slot id that means something else in the frozen legacy salon', () => {
         const slotIds = new Set(SALON.slots.map((s) => s.id));
         const legacyIds = new Set(LEGACY_SALON_V2.tasks.map((t) => t.slot));

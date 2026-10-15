@@ -75,7 +75,7 @@ export interface AutosaverOptions {
     delayMs: number;
     /** Longest wait for one store write or copy before it counts as a `timeout` failure. */
     writeTimeoutMs: number;
-    /** Failed copies of a migrated save in one session after which the v2 save is written without the copy. */
+    /** Failed copies of a migrated save in one session after which the current version is written without the copy. */
     backupAttempts: number;
     load: LoadOutcome['kind'];
     blockedBy: BlockReason | null;
@@ -209,7 +209,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             dirty = false;
             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
             // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is
-            // the first attempt, v2 is written without the copy: the child's progress is worth more than the raw v1 bytes (SV2-01).
+            // the first attempt, the current version is written without the copy: the child's progress is worth more than the raw old bytes (SV2-01).
             let giveUpCopy = false;
             if (backupOwed() && options.migrated) {
                 stage = 'backup';

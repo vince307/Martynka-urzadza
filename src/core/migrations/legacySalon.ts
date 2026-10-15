@@ -46,7 +46,7 @@ const own = (o: Record<string, unknown>, key: string): boolean => Object.prototy
 /**
  * v2 -> v3. A salon whose `chosen` holds a key only the old list wrote is carried over by rule B: the new room gets the
  * shortest prefix of its tasks that costs at least what the child spent (capped at the whole room), every furniture piece
- * keeps its variant (renamed slots included) and a piece the rounding gifts gets variant 0. Stars and other rooms are not
+ * keeps its variant (renamed slots included), a piece the rounding gifts gets variant 0 and a key unknown to both lists is kept. Stars and other rooms are not
  * touched. Reads and never mutates its input; running it on its own result changes nothing.
  */
 export const LIFT_V2_SALON = (raw: unknown): unknown => {
@@ -77,6 +77,10 @@ export const LIFT_V2_SALON = (raw: unknown): unknown => {
         carried.set(own(LEGACY_SALON_V2.renames, key) ? LEGACY_SALON_V2.renames[key] : key, variant);
     }
     const chosen: Record<string, unknown> = {};
+    // A key that is neither an old-only slot nor a slot of the target is not ours to judge: it stays as it was (M-2).
+    for (const [key, variant] of Object.entries(chosenIn)) {
+        if (!OLD_ONLY_KEYS.has(key) && !TARGET_SLOTS.has(key)) chosen[key] = variant;
+    }
     for (const task of SALON_V3_TARGET.slice(0, prefix)) {
         if (task.slot !== null) chosen[task.slot] = carried.has(task.slot) ? carried.get(task.slot) : 0;
     }

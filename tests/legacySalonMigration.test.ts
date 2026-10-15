@@ -86,7 +86,7 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         const salon = { tasksDone: 4, chosen: { floor: 1, walls: 2, curtains: 0, sofa: 1, mystery: 2 } };
         const out = salonOf(v2With(salon)) as { tasksDone: number; chosen: Record<string, number> };
         expect(out.tasksDone).toBe(4);
-        expect(out.chosen).toMatchObject({ sofa: 1, rug: 0, 'coffee-table': 0 });
+        expect(out.chosen).toEqual({ mystery: 2, sofa: 1, rug: 0, 'coffee-table': 0 });
     });
 
     it.each([
