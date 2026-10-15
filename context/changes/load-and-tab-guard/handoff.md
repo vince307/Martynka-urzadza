@@ -1,38 +1,42 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The `/10x-implement` step wrote this handoff for phase 6 (docs only: `CLAUDE.md` and the follow-ups). Rows 5.3 (orchestrator e2e, 101 passed), 6.1 and 6.2 are ticked; 6.3 is for the reviewer. Phase 7 is the e2e phase; do not touch production code there except for the named breaks.
+The e2e step wrote this handoff for phase 7 (the last phase; spec ran under the orchestrator because Chromium cannot start in the sandbox). Rows 7.1-7.6 are ticked, 7.7 is [human]; the change is `implemented`. Next is the implementation review; do not edit production code before it.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | phases 1-5 `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, phase 6 `9ee4570`, then this handoff |
+| Commits | phases 1-5 `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, phase 6 `9ee4570`, phase 7 `949aab0`, then this handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 15 (`grep -c '^- \[ \]' plan.md`) |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | 8 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `CLAUDE.md` | one sentence block "Load limit and tab guard" (totalMs, `loaderCut.ts`, `phaserLoaderPin` tripwire, `pl.loading.slow`, `REGISTRY_KEYS.bootLoad`, `guardedPut`/`NewerSave`, `blockedBy 'newer'`, seams `stallall` and `newer`, gaps 112-113); the follow-ups are named as "(archive folder)" because the archive path does not exist yet |
-| `context/changes/load-and-tab-guard/follow-ups/review-fixes.md` | 21 entries (A-3..A-11, V-1..V-8, P-1..P-4, P-6..P-8, card for the child on `'newer'`, card order, WebKit, Phaser upgrade, font hand-over closed), each with `Trigger:` |
-| `plan.md` | rows 5.3, 6.1, 6.2 ticked |
+| `tests/e2e/load-and-tab-guard.spec.ts` | three tests: (a) #15 stalled files and a late font, cut and slow line; (b) #15 A-1 a file that answers after the cut does not start the game twice (first wait is an `expect.poll` with a 15 s timeout, the cut comes at 3 s); (c) #2 a newer save is not overwritten |
+| `tests/e2e/support/hook.ts`, `playwright.config.ts` | helpers for the spec; spec added to `ROUND_SPEC` |
+| `context/changes/load-and-tab-guard/e2e-request-p7.md`, `e2e/e2e-break-p7{a,b,c,d}.patch` | orchestrator run request and the four break patches |
+| `plan.md`, `change.md` | rows 7.1-7.6 ticked, status `implemented` |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/load-and-tab-guard` |
-| `validate-rule-files.sh` | PASS (406 paths, 0 missing) |
-| Break: `src/scenes/loaderCut.ts` -> `loaderCutX.ts` in `CLAUDE.md` | FAIL (missing: 1); restored, PASS again. Meta-check: the validator fails on a path the file asserts, so the PASS is not vacuous |
-| follow-ups `Trigger:` count | 21 entries, 21 `Trigger` mentions (the closed entry says `Trigger: none (closed)`) |
 | `npm run lint` / `npm run typecheck` | pass / pass |
-| `npm test` | 2969 passed (branch baseline 2969, +0); `sample` E1-E6 0 violations |
-| `npm run build` | passes, `e2e hook: absent (2 chunks checked)`; `git diff --stat main -- vite deploy` empty |
-| e2e | not run in this phase (no code change); orchestrator ran 101 passed after phase 5 (note), baseline stays 101 |
+| `npm test` | 2969 passed, 160 files (baseline 2969, +0); `sample` E1-E6 0 violations |
+| `npm run build` | passes, `e2e hook: absent (2 chunks checked)` |
+| e2e spec (orchestrator-observed, not run by this step) | first run (a),(c) passed, (b) failed on the 5 s `screenIs welcome` wait; fixed with a 15 s `expect.poll`; rerun 3 passed |
+| e2e full `--workers=4` (orchestrator) | 104 passed (baseline 101, +3) |
+| Break p7a (`cutLoad` without the cut) | 2 failed ((a),(b)); reverted |
+| Break p7b (no no-op `onProcessComplete`) | 3 passed; the documented plan-review F2 meta-check: in Chromium a late font is harmless without the guard, so p7b cannot turn red here (WebKit is the human row 7.7) |
+| Break p7c (no slow line) | 1 failed ((a)); reverted |
+| Break p7d (seam without the guard) | 1 failed ((c)); reverted |
+| Ports 4397-4399 | free |
 
 ## 4. Next command
 
@@ -41,7 +45,8 @@ The `/10x-implement` step wrote this handoff for phase 6 (docs only: `CLAUDE.md`
 ## 5. Open
 
 - **Reviewer rows:** 3.3 [visual], 3.4, 4.4, 5.4, 6.3. Manual-only: 2.5 Android throttled start; 7.7 iPad.
-- **Phase 7:** the `newer` seam logs op `'write'` for the refused attempt too, so the spec expects exactly one extra `'write'` after the block and none later. `load-and-tab-guard` goes into `ROUND_SPEC` in `playwright.config.ts`.
+- **Visual gate observation:** the slow line "Jeszcze chwilka, wczytuję obrazki." renders much larger than the title width and wider than the bar (`LoadingScreen.slow`, text in `pl.loading.slow`); check at the visual gate.
+- **Phase 7 (done):** p7b stays green in Chromium by design (F2); `load-and-tab-guard` is in `ROUND_SPEC`.
 - **Risks carried:** `guardedPut` + `preventDefault` on a failing `get` unverified on WebKit; Phaser internals `^4.2.1`; cold start vs SW precache; `creates` guard.
 - **Design gaps:** 112, 113 (already in `docs/design-gaps.md`).
 - **Follow-ups:** `context/changes/load-and-tab-guard/follow-ups/review-fixes.md`.
@@ -59,3 +64,4 @@ The `/10x-implement` step wrote this handoff for phase 6 (docs only: `CLAUDE.md`
 - **Phase 4 decisions:** `NewerSave` is handled in any stage of `attempt` (the error name decides); `replace` that meets it returns `{ ok:false, error:'NewerSave' }`, blocks, does not arm a write. `deviceNewer` text added to `saveTransfer` because the `blockedText` Record is exhaustive over causes (not in the plan's text list; DESIGN-GAP 113 covers it). The `offState` code is `lastFailure.error` (falls back to `lastError`) so the parent reads `NewerSave`. No AskUserQuestion; stop after phase 4.
 - **Phase 5 decisions:** `guardedPut` resolves on the transaction `oncomplete` when the object store has a transaction (a stand-in without one resolves on the put request). The two old lost-connection tests faked `set`; writes no longer call it, so the mock now wraps `createStore` (first store call faulty, later calls real). No new guard marker: `e2eSave` already covers the value, and the guard test lists `newer`. No AskUserQuestion; stop after phase 5.
 - **Phase 6 decisions:** CLAUDE.md names the follow-ups folder as "(archive folder)" without a path (the archive path does not exist before `/10x-archive`, and the validator would flag it; same style as earlier entries). The font hand-over follow-up is written as closed with `Trigger: none (closed)` so the Trigger count matches the entry count. The audit report is on the audit branch, not on this one; the one-sentence descriptions come from its table (read via `git show`). No AskUserQuestion; stop after phase 6.
+- **Phase 7 decisions:** the (b) wait was widened to 15 s by the orchestrator rather than moving the cut (the cut is a seam value, 3 s after load); tick of 7.1-7.5 rests on the orchestrator's observed runs, cited above. No AskUserQuestion; stop after phase 7.

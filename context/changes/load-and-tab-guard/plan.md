@@ -689,12 +689,12 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 7.1 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N`
-- [ ] 7.2 Deliberate break p7a (`cutLoad` bez cięcia) → (a) czerwony; przywrócone; meta-check
-- [ ] 7.3 Deliberate break p7b (bez no-op `onProcessComplete`) → oczekiwany zielony z udokumentowanym meta-checkiem
-- [ ] 7.4 Deliberate break p7c (bez linii) → (a) czerwony na `phase 'slow'`
-- [ ] 7.5 Deliberate break p7d (szew bez strażnika) → (c) czerwony; meta-check
-- [ ] 7.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 7.1 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N` — 949aab0 (spec 3 passed; full --workers=4: 104 passed (baseline 101, +3), orchestrator-observed)
+- [x] 7.2 Deliberate break p7a (`cutLoad` bez cięcia) → (a) czerwony; przywrócone; meta-check — 949aab0 (p7a -> 2 failed ((a),(b)); reverted)
+- [x] 7.3 Deliberate break p7b (bez no-op `onProcessComplete`) → oczekiwany zielony z udokumentowanym meta-checkiem — 949aab0 (p7b -> 3 passed (documented plan-review F2 meta-check: late font harmless in Chromium without the guard); reverted)
+- [x] 7.4 Deliberate break p7c (bez linii) → (a) czerwony na `phase 'slow'` — 949aab0 (p7c -> 1 failed ((a)); reverted)
+- [x] 7.5 Deliberate break p7d (szew bez strażnika) → (c) czerwony; meta-check — 949aab0 (p7d -> 1 failed ((c)); reverted)
+- [x] 7.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 949aab0 (build: e2e hook: absent (2 chunks checked); lint, typecheck, 2969 unit, sample E1-E6 0 violations; ports 4397-4399 free)
 
 #### Manual
 
