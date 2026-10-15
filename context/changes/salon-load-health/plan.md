@@ -536,7 +536,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
 - [x] 2.2 Deliberate break: brak uzbrojenia przy `migrated` / F3 przywrócone → odpowiednie testy czerwone; przywrócone; meta-check
 - [x] 2.3 Fixtury v1/v2 bajt w bajt; grep `remapLegacySalon|LEGACY_SALON|LegacyRoomLayout` w `src/` pusty
-- [x] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0` — orchestrator note: 98 passed --workers=4 on 5009efd, SV2-01 green with the edited assertion
+- [x] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0` — orchestrator note: 98 passed --workers=4 on 5009efd, SV2-01 green with the edited assertion — 5009efd
 
 #### Manual
 
@@ -548,7 +548,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 #### Automated
 
 - [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (liczby loadera, parsowanie szwu)
-- [x] 3.2 Deliberate break: `maxRetries: 3` → test budżetu czerwony; przywrócone; meta-check
+- [x] 3.2 Deliberate break: `maxRetries: 3` → test budżetu czerwony; przywrócone; meta-check — 903c70a
 - [ ] 3.3 `npm run build` drukuje `e2e hook: absent (`; `E2E_LOADER_TIMEOUT` nieobecne w `dist/`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
