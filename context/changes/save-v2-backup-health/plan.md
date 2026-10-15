@@ -654,9 +654,9 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [x] 1.2 Deliberate break: `attempt` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony; `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; `run` ignoruje `mayRetry` → test porzuconego ponowienia czerwony; przywrócone; meta-check
-- [x] 1.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2; `tests/saveKeys.test.ts` zielony
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 8430945
+- [x] 1.2 Deliberate break: `attempt` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony; `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; `run` ignoruje `mayRetry` → test porzuconego ponowienia czerwony; przywrócone; meta-check — 8430945
+- [x] 1.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2; `tests/saveKeys.test.ts` zielony — 8430945
 - [ ] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
 
 #### Manual
