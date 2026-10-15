@@ -16,7 +16,8 @@ import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { saveHealthView } from '../core/saveHealth';
 import { encodeSave, freshSession, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
-import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { FIRST_ROOM, LEGACY_SALON, ROOMS, SALON } from '../data/rooms';
+import { remapLegacySalon } from '../core/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
@@ -157,6 +158,7 @@ export class UIScene extends Scene {
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
+                    roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
@@ -192,7 +194,7 @@ export class UIScene extends Scene {
         }
         this.closeDialog = openSaveImportDialog({
             device,
-            summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
+            summarize: (s: SessionSave): SaveSummary => saveSummary(remapLegacySalon(s, LEGACY_SALON, SALON).session, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
             apply: (state, force) => saver.replace(state, { force }),

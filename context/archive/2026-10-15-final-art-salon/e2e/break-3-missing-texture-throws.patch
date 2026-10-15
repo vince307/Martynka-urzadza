@@ -1,0 +1,14 @@
+diff --git a/src/ui/widgets/RoomLayer.ts b/src/ui/widgets/RoomLayer.ts
+index 40d38d3..45b1be5 100644
+--- a/src/ui/widgets/RoomLayer.ts
++++ b/src/ui/widgets/RoomLayer.ts
+@@ -43,6 +43,9 @@ export class RoomLayer {
+     show(key: string, at: LayerPlacement, depth: number, standIn: LayerStandIn | null): void {
+         this.hide();
+         this.loaded = this.scene.textures.exists(key);
++        if (!this.loaded) {
++            throw new Error('room texture missing');
++        }
+         if (this.loaded) {
+             this.image
+                 .setTexture(key)

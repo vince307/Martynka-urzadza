@@ -13,6 +13,7 @@ import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
 import { stages } from '../src/data/curriculum';
 import { placementData } from '../src/data/placement';
+import { TEST_ROOM_PARTS, testSlot } from './roomFixtures';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const clone = <T>(v: T): T => structuredClone(v);
@@ -29,14 +30,14 @@ const deepFreeze = <T extends object>(o: T): T => {
 const room: RoomDef = {
     id: 'living',
     name: 'Salon',
-    background: 'bg',
+    ...TEST_ROOM_PARTS,
     slots: [
-        { id: 'floor', x: 0, y: 0, depth: 1, variants: ['a', 'b', 'c'] },
-        { id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] },
+        testSlot('floor', 1),
+        testSlot('sofa', 2),
     ],
     tasks: [
-        { id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
-        { id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
+        { kind: 'slot', id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
+        { kind: 'slot', id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
     ],
 };
 

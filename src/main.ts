@@ -5,8 +5,8 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { repairCurrentRoom } from './core/rooms';
-import { FIRST_ROOM, ROOMS } from './data/rooms';
+import { remapLegacySalon, repairCurrentRoom } from './core/rooms';
+import { FIRST_ROOM, LEGACY_SALON, ROOMS, SALON } from './data/rooms';
 import { freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings, VariantState } from './core/types';
@@ -208,7 +208,12 @@ const start = async (): Promise<void> => {
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
-        session = repaired.session;
+        // After the room repair, before the game: a salon saved under the old task list is carried to the current one.
+        const remapped = remapLegacySalon(repaired.session, LEGACY_SALON, SALON);
+        session = remapped.session;
+        if (remapped.remappedFrom !== null) {
+            console.warn(`Salon save from the old task list (${remapped.remappedFrom} done) carried to the current one`);
+        }
         if (repaired.repairedFrom !== null) {
             console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${FIRST_ROOM}`);
         }

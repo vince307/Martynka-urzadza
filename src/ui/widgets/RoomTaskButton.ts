@@ -1,4 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
+import { labelScale } from '../../core/fitLabel';
 import type { TaskButtonView } from '../../core/rooms';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
 import { pl, roomText } from '../../data/pl';
@@ -25,11 +26,12 @@ export class RoomTaskButton {
         private readonly onTap: (affordable: boolean) => void,
     ) {
         const { left, top, width, height } = ROOM_LAYOUT.taskButton;
-        this.graphics = scene.add.graphics();
-        this.label = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5);
-        this.cost = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5);
-        this.sub = scene.add.text(0, 0, '', textStyle('bar')).setOrigin(0.5);
-        this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive();
+        const depth = ROOM_LAYOUT.depth.controls;
+        this.graphics = scene.add.graphics().setDepth(depth);
+        this.label = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5).setDepth(depth + 1);
+        this.cost = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5).setDepth(depth + 1);
+        this.sub = scene.add.text(0, 0, '', textStyle('bar')).setOrigin(0.5).setDepth(depth + 1);
+        this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive().setDepth(depth + 2);
         this.zone.on('pointerdown', () => {
             this.pressed = true;
         });
@@ -47,7 +49,7 @@ export class RoomTaskButton {
     }
 
     show(view: TaskButtonView | null): void {
-        const { left, top, width, height, radius, border, textInset, costWidth, starRadius } = ROOM_LAYOUT.taskButton;
+        const { left, top, width, height, radius, border, textInset, costWidth, starRadius, labelGap } = ROOM_LAYOUT.taskButton;
         this.pressed = false;
         this.shown = view !== null;
         this.graphics.clear();
@@ -70,10 +72,8 @@ export class RoomTaskButton {
         const rowY = view.affordable ? top + height / 2 : top + height * 0.38;
         const text = roomText.task(view.label) ?? view.label;
         this.label.setText(text).setScale(1).setPosition(left + textInset, rowY).setAlpha(view.affordable ? 1 : 0.8);
-        const room = width - 2 * textInset - costWidth;
-        if (this.label.width > room) {
-            this.label.setScale(room / this.label.width);
-        }
+        // The label ends at least `labelGap` before the star, however long the stage name is.
+        this.label.setScale(labelScale(this.label.width, { left, width, inset: textInset, reserved: costWidth, gap: labelGap }));
         const starX = left + width - textInset - costWidth + starRadius;
         drawStar(g, starX, rowY, starRadius, PLACEHOLDER_COLORS.butter, { color: PLACEHOLDER_COLORS.nextBorder, width: 3 });
         this.cost.setText(String(view.cost)).setPosition(starX + starRadius + 12, rowY).setAlpha(view.affordable ? 1 : 0.8);

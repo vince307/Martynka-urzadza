@@ -196,6 +196,7 @@ export const REGISTRY_KEYS = {
     saver: 'saver',           // the game's autosave (the Autosaver of core/autosave: flush, status, current, replace), set in main.ts before the scenes run
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
+    roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
     today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)
@@ -435,6 +436,12 @@ export const UNLOCK_LAYOUT = {
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
+/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. DESIGN-GAP: no brand art yet (designer brief P2.2). */
+export const LOADING_LAYOUT = {
+    title: { x: 960, y: 450 },
+    bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
+} as const;
+
 /**
  * Minigame screens (S-15; kit expansion pack word-*.png, success-card): the word's letter boxes above the task, and the done card
  * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md): the kit shows no letter row together with a task prompt
@@ -470,29 +477,40 @@ export const WELCOME_LAYOUT = {
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
-/** Room scene (S-09): the salon drawn in code over `area`, the way back to the notebook and the current renovation task button. */
+/** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
     resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
-    area: { left: 180, top: 204, width: 1560, height: 656 },   // background and slots (S-09 proposal)
-    wallBottom: 520,                                            // wall and floor meet here
+    // The room fills the whole scene (S-16a): the art pack's pictures are 1920x1080. Depth bands: the room's own layers use the manifest `z` (0-99);
+    // the scene pictures sit at the bottom (`scene`, `furnishingsBefore`) and the shadows just under the first furniture (wall frames, z 5); everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
+    scene: { left: 0, top: 0, width: 1920, height: 1080 },
+    depth: { scene: 0, furnishingsBefore: 1, shadows: 4, outline: 100, controls: 110, panel: 120, celebrate: 130, card: 140 },
+    // Stand-in for a room picture whose texture is missing (and for the art before it is loaded): coloured boxes with the Polish caption, like ART_STAND_IN.
+    // variantFills[i] is the colour of variant i, so the three still differ without the art. wallBottom is where the stand-in wall meets the floor.
+    standIn: {
+        wallBottom: 520,
+        wallBefore: PLACEHOLDER_COLORS.starEmpty, floorBefore: PLACEHOLDER_COLORS.pageButtonSecondaryBorder,
+        wallAfter: PLACEHOLDER_COLORS.ivory, floorAfter: PLACEHOLDER_COLORS.tile,
+        variantFills: [PLACEHOLDER_COLORS.turquoise, PLACEHOLDER_COLORS.terracotta, PLACEHOLDER_COLORS.butter],
+        decorFill: PLACEHOLDER_COLORS.paleLeaf, decorAlpha: 0.9,
+        border: PLACEHOLDER_COLORS.deepTeal, borderWidth: 3, radius: 24,
+    },
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
     // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail
     // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md): the kit has no panel.
-    // minAspect: a thumbnail is at least this high relative to its width, so the wide floor and walls read as a swatch, not a thin strip.
-    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, minAspect: 0.5 },
+    // A thumbnail holds the variant's picture scaled to fit (S-16a); labelY: the variant name's centre, measured from the thumbnail's top.
+    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, nameHeight: 36, labelY: 172 },   // nameHeight: the strip under the picture that holds the variant name
     // "Wybieram" ends where the task button begins: after a purchase the next task's button appears at once, so the second tap
     // of a double tap must not land on it (impl-review F1). "Zamknij" may share its place (it would re-open the same panel).
     choose: { left: 1100, top: 792, width: 480, height: 100, radius: 32, border: 5 },
     close: { left: 1100, top: 908, width: 480, height: 96, radius: 32, border: 5 },
     // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
     // Top aligned with `resume`, below "Wybieram".
-    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30, labelGap: 24 },   // labelGap: the least space between the label and the star
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
-    // Slot captions and the dashed outline of an empty slot; holdOutline is the thick outline of the slot under a holding finger.
-    // DESIGN-GAP (docs/design-gaps.md rows 32 and 37): the kit has no slots and no hold view.
-    slot: { radius: 24, dash: 22, gap: 14, outline: 4, patternInset: 12, stripeWidth: 16, stripeStep: 44, dotRadius: 9, dotStep: 52, patternAlpha: 0.22, captionCharWidth: 20, holdOutline: 10 },
+    // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
+    slot: { radius: 24, holdOutline: 10 },
 } as const;
 
 /**
@@ -503,7 +521,10 @@ export const ROOM_LAYOUT = {
 export const ROOM_DONE_LAYOUT = {
     card: { left: 388, top: 220, width: 1144, height: 560, border: 7, radius: 46 },
     title: { x: 960, y: 262 },
-    tiles: { left: 490, top: 372, width: 440, height: 200, gap: 60, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.2, captionY: 172, markRadius: 26, markInset: 34 },
+    tiles: { left: 490, top: 372, width: 440, height: 200, gap: 60, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.13, captionY: 172, markRadius: 26, markInset: 34,
+        // Check mark (points as fractions of the circle's radius from its centre) and padlock (offsets from the tile's top and centre).
+        mark: { stroke: 7, startX: -0.5, bendX: -0.1, bendY: 0.4, endX: 0.5, endY: -0.35 },
+        lock: { centerY: 70, bodyHalfWidth: 28, bodyTop: 4, bodyWidth: 56, bodyHeight: 44, bodyRadius: 8, shackleRadius: 18, stroke: 8, alpha: 0.9 } },
     button: { left: 735, top: 624, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
@@ -548,6 +569,7 @@ export const ANIMATION = {
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
+    stageFadeMs: 600,      // the neglected background fades out over the renovated one (S-16a)
     purchasePopMs: 260,    // the new furniture grows to purchasePopScale and back (yoyo), S-09
     purchasePopScale: 1.08,
     purchaseParticles: 14,

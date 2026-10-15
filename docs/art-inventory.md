@@ -156,6 +156,8 @@ Zestawy do precache (bez duplikatów; dziś `dist/` ma 1,7 MB, Workbox ma limit 
 | **v1 (salon + ikony + S-14)** | 77 | 31 MB | **≈ 2,5 MB** |
 | **Wszystkie 7 lokacji + reszta** | 212 | 80 MB | **≈ 7,5 MB** |
 
+Zmierzone w S-16a: salon w `public/assets/rooms/salon/` to 26 plików WebP, 1 233 242 B (ok. 1,2 MB) przy pełnej rozdzielczości (`npm run art`); wszystkie ładowane w `BootScene` i w precache.
+
 Wniosek: PNG wprost z paczek (31–80 MB) nie nadaje się do precache na tablecie; WebP mieści v1 w ok. 2,5 MB, a
 całość w ok. 7–8 MB. Osobny problem to pamięć tekstur: tło 1920×1080 po dekodowaniu to ok. 8 MB RGBA, więc gra
 powinna ładować do Phasera tylko tekstury bieżącego pokoju (z precache, offline), a nie wszystkie lokacje na starcie.

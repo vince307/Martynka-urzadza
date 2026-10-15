@@ -32,28 +32,50 @@ export interface StageDef {
     steps: StepDef[];
 }
 
-export interface SlotDef {
-    id: string;               // e.g. "sofa"
+/** Where a picture of a room sits in the 1920x1080 scene: top-left corner, size, draw order and the part that counts as the object. */
+export interface PlacedArt {
+    id: string;
     x: number;
-    y: number;                // position in the 1920×1080 scene
-    depth: number;            // draw order
-    emptyFrame?: string;      // look before renovation (optional)
-    variants: [string, string, string]; // atlas frame keys
+    y: number;                // top-left corner of the picture in the scene
+    width: number;
+    height: number;
+    z: number;                // draw order inside the room (0-99); the room controls are drawn above that band
+    anchor: [number, number]; // foot of the object inside the picture; pops and shadows grow from here
+    visibleRect: [number, number, number, number]; // [left, top, width, height] inside the picture: the object without its margin
 }
 
-export interface RoomTaskDef {
-    id: string;
-    slot: string;             // slot this task furnishes
-    label: string;            // text key, e.g. "Wstaw kanapę"
-    cost: number;             // stars
+/** Furniture that is always there once the room is renovated (lamp, plants, pouf): no variants, no task. */
+export interface LayerDef extends PlacedArt {
+    key: string;              // texture key
 }
+
+export interface SlotDef extends PlacedArt {
+    variants: [string, string, string]; // texture keys
+}
+
+/** A renovation task: a background stage (changes the room backdrop, no variant) or a furniture slot (3 variants). */
+export type RoomTaskDef =
+    | { kind: 'stage'; id: string; label: string; cost: number }
+    | { kind: 'slot'; id: string; slot: string; label: string; cost: number };
 
 export interface RoomDef {
     id: string;               // e.g. "salon"
     name: string;
-    background: string;       // neglected-state background
+    /** Texture keys of the four full-scene pictures: the room before and after the renovation stage, its neglected furniture and shadows. */
+    scene: { before: string; after: string; furnishingsBefore: string; shadows: string };
+    decor: LayerDef[];        // shown once a stage task is done
     slots: SlotDef[];
     tasks: RoomTaskDef[];     // completed in order
+}
+
+/**
+ * The frozen task list of a room as it was before its renovation list changed (S-16a). `renames` maps an old slot id to
+ * its new one when the id changed; ids not listed keep their name. Used only to remap saves, never to draw.
+ */
+export interface LegacyRoomLayout {
+    roomId: string;
+    tasks: { slot: string; cost: number }[];
+    renames: Record<string, string>;
 }
 
 /** One entry of the room list shown on the "Pokój gotowy!" card: a room, or a teaser for a room that does not exist yet. */

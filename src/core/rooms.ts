@@ -1,7 +1,7 @@
 // Room purchase logic (S-09), pure: no Phaser, no registry. The scene passes
 // the balance in and writes the result back (plan "State sequencing").
 import type { SessionSave } from './save';
-import type { RoomDef, RoomListEntry, RoomState, RoomTaskDef } from './types';
+import type { LegacyRoomLayout, RoomDef, RoomListEntry, RoomState, RoomTaskDef } from './types';
 
 type Variant = 0 | 1 | 2;
 
@@ -15,7 +15,7 @@ export interface TaskButtonView {
 }
 
 export type PurchaseResult =
-    | { ok: true; state: RoomState; stars: number; bought: { taskId: string; slot: string; variant: Variant } }
+    | { ok: true; state: RoomState; stars: number; bought: { kind: 'stage'; taskId: string } | { kind: 'slot'; taskId: string; slot: string; variant: Variant } }
     | { ok: false; reason: 'no-task' | 'short' | 'bad-variant' };
 
 export function emptyRoomState(): RoomState {
@@ -43,17 +43,32 @@ export function taskButtonView(room: RoomDef, state: RoomState, stars: number): 
     };
 }
 
-export function purchase(room: RoomDef, state: RoomState, stars: number, variant: number): PurchaseResult {
+/** `variant` is ignored for a stage task (no variant, `chosen` untouched); a slot task needs 0-2. */
+export function purchase(room: RoomDef, state: RoomState, stars: number, variant: number | null): PurchaseResult {
     const task = currentTask(room, state);
     if (!task) return { ok: false, reason: 'no-task' };
+    if (task.kind === 'stage') {
+        if (!(stars >= task.cost)) return { ok: false, reason: 'short' };
+        return {
+            ok: true,
+            stars: stars - task.cost,
+            state: { tasksDone: state.tasksDone + 1, chosen: state.chosen },
+            bought: { kind: 'stage', taskId: task.id },
+        };
+    }
     if (variant !== 0 && variant !== 1 && variant !== 2) return { ok: false, reason: 'bad-variant' };
     if (!(stars >= task.cost)) return { ok: false, reason: 'short' };
     return {
         ok: true,
         stars: stars - task.cost,
         state: { tasksDone: state.tasksDone + 1, chosen: { ...state.chosen, [task.slot]: variant } },
-        bought: { taskId: task.id, slot: task.slot, variant },
+        bought: { kind: 'slot', taskId: task.id, slot: task.slot, variant },
     };
+}
+
+/** How many `stage` tasks are done: the stage tasks inside the done prefix of the task list. */
+export function stagesDone(room: RoomDef, state: RoomState): number {
+    return room.tasks.slice(0, state.tasksDone).filter((t) => t.kind === 'stage').length;
 }
 
 export function roomDone(room: RoomDef, state: RoomState): boolean {
@@ -100,4 +115,42 @@ export function repairCurrentRoom(
         ? { ...session.rooms }
         : { ...session.rooms, [firstRoom]: emptyRoomState() };
     return { session: { ...session, currentRoom: firstRoom, rooms }, repairedFrom: session.currentRoom };
+}
+
+/**
+ * A salon saved under the old 10-task list (S-16a) is carried to the new list at load. The marker is a `chosen` key that
+ * is no slot of the new room (the old `floor`, `walls`, ...). Rule B: the new prefix is the shortest one whose cost
+ * covers what the old prefix cost (rounding up, so nothing bought is lost), capped at the whole list; stars are never
+ * touched and nothing is refunded. Every furniture task of the new prefix gets a `chosen` entry, the carried variant
+ * (by `legacy.renames`) or 0 for a piece the rounding gifts, so it is drawn and can be changed. Pure, idempotent: with no
+ * old key the very same session comes back. Other rooms and fields are kept as they are.
+ */
+export function remapLegacySalon(
+    session: SessionSave,
+    legacy: LegacyRoomLayout,
+    room: Pick<RoomDef, 'tasks'>,
+): { session: SessionSave; remappedFrom: number | null } {
+    const unchanged = { session, remappedFrom: null };
+    const old = Object.prototype.hasOwnProperty.call(session.rooms, legacy.roomId) ? session.rooms[legacy.roomId] : undefined;
+    if (old === undefined) return unchanged;
+    const newSlots = new Set(room.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : [])));
+    if (!Object.keys(old.chosen).some((key) => !newSlots.has(key))) return unchanged;
+
+    const spent = legacy.tasks.slice(0, old.tasksDone).reduce((sum, t) => sum + t.cost, 0);
+    let prefix = 0;
+    let cost = 0;
+    while (prefix < room.tasks.length && cost < spent) {
+        cost += room.tasks[prefix].cost;
+        prefix += 1;
+    }
+    const carried: Record<string, 0 | 1 | 2> = {};
+    for (const [key, variant] of Object.entries(old.chosen)) carried[legacy.renames[key] ?? key] = variant;
+    const chosen: RoomState['chosen'] = {};
+    for (const task of room.tasks.slice(0, prefix)) {
+        if (task.kind === 'slot') chosen[task.slot] = carried[task.slot] ?? 0;
+    }
+    return {
+        session: { ...session, rooms: { ...session.rooms, [legacy.roomId]: { tasksDone: prefix, chosen } } },
+        remappedFrom: old.tasksDone,
+    };
 }

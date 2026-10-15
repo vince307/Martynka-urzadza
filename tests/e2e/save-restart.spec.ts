@@ -68,7 +68,9 @@ test('#16 FR-020 a purchase is saved at once and ?e2eStars seeds only a fresh st
     await screenIs(page, 'room');
     expect((await snapshot(page)).stars).toBe(20);
 
-    // The floor: open the purchase panel, preview a thumbnail, "Wybieram".
+    // The stage (5 stars) is one tap with no panel; then the sofa: open the purchase panel, preview a thumbnail, "Wybieram".
+    await tapTarget(page, 'taskButton');
+    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(1);
     await tapTarget(page, 'taskButton');
     await expect.poll(async () => (await snapshot(page)).room?.panel.kind).toBe('open');
     const thumbs = (await targets(page)).thumbs ?? [];
@@ -79,27 +81,30 @@ test('#16 FR-020 a purchase is saved at once and ?e2eStars seeds only a fresh st
         return panel?.kind === 'open' ? panel.preview : null;
     }).toBe(1);
     await tapTarget(page, 'choose');
-    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(1);
+    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(2);
     // Saved at once: the reason is "now" and nothing waits for the debounce.
     await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ lastReason: 'now', dirty: false });
     const bought = await snapshot(page);
-    expect(bought.stars).toBe(15);
+    expect(bought.stars).toBe(8);
+    expect(bought.room!.stageDone).toBe(true);
     const chosen = bought.room!.chosen;
+    expect(chosen.sofa).toBe(1);
 
     // The address still carries e2eStars=20: the saved balance wins over the seam.
     await page.reload();
     await screenIs(page, 'task');
     const after = await snapshot(page);
     expect(after.save?.load).toBe('loaded');
-    expect(after.counterText).toBe('15');
+    expect(after.counterText).toBe('8');
     // The reload opened a new first task: pay nothing again, then the room switch exists.
     await finishTaskWithoutStars(page);
-    expect((await snapshot(page)).stars).toBe(15);
+    expect((await snapshot(page)).stars).toBe(8);
     await tapTarget(page, 'roomSwitch');
     await screenIs(page, 'room');
     const room = (await snapshot(page)).room!;
-    expect(room.tasksDone).toBe(1);
-    expect(room.chosen.floor).toBe(chosen.floor);
+    expect(room.tasksDone).toBe(2);
+    expect(room.stageDone).toBe(true);
+    expect(room.chosen.sofa).toBe(chosen.sofa);
 });
 
 test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy and is never written', async ({ page }) => {

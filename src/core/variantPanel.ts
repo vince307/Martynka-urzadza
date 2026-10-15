@@ -26,13 +26,19 @@ export function stepPanel(panel: PanelState, event: PanelEvent, ctx: PanelContex
             return same({ kind: 'open', mode: 'change', slot: event.slot, preview: null });
         }
         if (event.type !== 'open' || !task || !(stars >= task.cost)) return same(panel);
+        if (task.kind === 'stage') {
+            // A stage has no variant panel: one tap buys it. Only this branch and the confirm below spend stars.
+            const bought = purchase(room, state, stars, null);
+            if (!bought.ok) return same(panel);
+            return { panel, state: bought.state, stars: bought.stars, bought: bought.bought, changed: null };
+        }
         return same({ kind: 'open', mode: 'buy', taskId: task.id, preview: null });
     }
     // Open panel: a panel for a task that is no longer the current one is stale.
     if (event.type === 'close') return same({ kind: 'closed' });
     if (event.type === 'open' || event.type === 'change') return same(panel);
     if (panel.mode === 'change') return stepChange(panel, event, ctx);
-    if (!task || task.id !== panel.taskId) return same({ kind: 'closed' });
+    if (!task || task.kind !== 'slot' || task.id !== panel.taskId) return same({ kind: 'closed' });
     if (event.type === 'pick') return same({ kind: 'open', mode: 'buy', taskId: panel.taskId, preview: event.variant });
     if (panel.preview === null) return same(panel);
     const result = purchase(room, state, stars, panel.preview);

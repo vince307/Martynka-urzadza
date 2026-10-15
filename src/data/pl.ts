@@ -83,6 +83,10 @@ export const pl = {
         artOk: 'Wszystkie obrazki zadań są wczytane.',
         artMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
+        // The salon pictures (the second line of "Obrazki"): the same verb agreement as artMissing.
+        roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
+        roomArtMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
@@ -269,6 +273,8 @@ export const pl = {
         earned: (n: number) => `+${n}`,
     },
     // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP, docs/design-gaps.md row 23: the kit has no narration of the card).
+    // Loading screen of BootScene: the game's name (S-16a).
+    loading: { title: 'Martynka urządza' },
     unlock: {
         title: 'Nowa umiejętność!',
         next: 'Dalej',
@@ -297,32 +303,41 @@ export const pl = {
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
-        // Imperative with the accusative, keyed by RoomTaskDef.label.
+        // Imperative with the accusative, keyed by RoomTaskDef.label. "Odnów ściany i podłogę" is the author's wording (2026-10-15).
         tasks: {
-            fixFloor: 'Napraw podłogę',
-            paintWalls: 'Pomaluj ściany',
-            hangCurtains: 'Powieś zasłony',
-            addSofa: 'Wstaw kanapę',
+            renovate: 'Odnów ściany i podłogę',
+            addSofa: 'Postaw sofę',
             layRug: 'Połóż dywan',
-            placeTable: 'Postaw stolik',
-            placeLamp: 'Postaw lampę',
-            hangShelf: 'Powieś półkę',
-            placePlant: 'Postaw kwiatek',
-            hangPicture: 'Powieś obraz',
+            placeCoffeeTable: 'Postaw stolik',
+            placeCabinet: 'Postaw komodę',
+            placeArmchair: 'Postaw fotel',
+            hangFrames: 'Powieś obrazki',
         },
-        // Nominative captions of the placeholders, keyed by SlotDef.id.
+        // Nominative captions of the furniture, keyed by SlotDef.id (also the words of the "Hasło z wyników" minigame).
         slots: {
-            floor: 'podłoga',
-            walls: 'ściany',
-            curtains: 'zasłony',
-            sofa: 'kanapa',
+            sofa: 'sofa',
             rug: 'dywan',
-            table: 'stolik',
-            lamp: 'lampa',
-            shelf: 'półka',
-            plant: 'kwiatek',
-            picture: 'obraz',
+            'coffee-table': 'stolik',
+            cabinet: 'komoda',
+            armchair: 'fotel',
+            'wall-frames': 'obrazki',
         },
+        // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
+        variants: {
+            sofa: ['Morska', 'Słoneczna', 'Listkowa'],
+            rug: ['Listki', 'Łuki', 'Kwiaty'],
+            'coffee-table': ['Dębowy', 'Kremowy', 'Turkusowy'],
+            cabinet: ['Dębowa', 'Miętowa', 'Kremowa'],
+            armchair: ['Kremowy', 'Miętowy', 'Słoneczny'],
+            'wall-frames': ['Botaniczne', 'Łąka', 'Niebo'],
+        } as Record<string, readonly [string, string, string]>,
+        // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
+        decor: {
+            'lamp-table': 'lampa',
+            'plant-left': 'roślina',
+            'plant-right': 'roślina',
+            pouf: 'pufa',
+        } as Record<string, string>,
         // Digits only, so no numeral agreement is needed.
         short: (have: number, need: number) => `masz ${have}/${need}`,
     },
@@ -743,4 +758,6 @@ export const pl = {
 export const roomText = {
     task: (key: string): string | undefined => (pl.room.tasks as Readonly<Record<string, string>>)[key],
     slot: (key: string): string | undefined => (pl.room.slots as Readonly<Record<string, string>>)[key],
+    variant: (slot: string, index: number): string | undefined => pl.room.variants[slot]?.[index],
+    decor: (key: string): string | undefined => pl.room.decor[key],
 };
