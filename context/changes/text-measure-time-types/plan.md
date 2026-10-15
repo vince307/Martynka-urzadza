@@ -918,10 +918,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 7.2 `npm run sample -- E6 --count 6` bez naruszeń; `PLACE_VALUE` w E6.9/E6.10 pokryte
-- [ ] 7.3 Deliberate break: `max: 1000000` na wariancie z klockami → parser czerwony / `speak` z „250 000” → czerwony / odpowiedź 8-cyfrowa → czerwony; przywrócone; meta-check
-- [ ] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 379721f
+- [x] 7.2 `npm run sample -- E6 --count 6` bez naruszeń; `PLACE_VALUE` w E6.9/E6.10 pokryte — 379721f
+- [x] 7.3 Deliberate break: `max: 1000000` na wariancie z klockami → parser czerwony / `speak` z „250 000” → czerwony / odpowiedź 8-cyfrowa → czerwony; przywrócone; meta-check — 379721f
+- [x] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 379721f
 
 #### Manual
 
