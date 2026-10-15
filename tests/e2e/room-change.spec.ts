@@ -10,10 +10,11 @@ import { answerRight, answerWrong, holdTouch, phaseIs, screenIs, silenceSpeech, 
 import { balance } from '../../src/data/balance';
 import { pl } from '../../src/data/pl';
 import { ROOM_LAYOUT } from '../../src/data/layout';
-import { SALON, SALON_PLACEHOLDERS } from '../../src/data/rooms';
+import { SALON } from '../../src/data/rooms';
 
 const { holdMs, moveTolerance } = balance.roomHold;
-const FIRST_COST = 5;
+const STAGE_COST = 5;
+const SOFA_COST = 7;
 
 test.setTimeout(120_000);
 
@@ -50,6 +51,14 @@ const toRoom = async (page: Page): Promise<void> => {
     await screenIs(page, 'room');
 };
 
+/** Buys the renovation stage: one tap, no panel; waits for the purchase. */
+const buyStage = async (page: Page): Promise<void> => {
+    const before = (await room(page)).room.tasksDone;
+    await tapTarget(page, 'taskButton');
+    await expect.poll(async () => (await room(page)).room.tasksDone).toBe(before + 1);
+    expect((await room(page)).room.panel.kind).toBe('closed');
+};
+
 /** Opens the purchase panel of the current task, previews thumbnail `variant` and presses "Wybieram"; waits for the purchase. */
 const buy = async (page: Page, variant: 0 | 1 | 2): Promise<void> => {
     const before = (await room(page)).room.tasksDone;
@@ -82,71 +91,77 @@ const changeTo = async (page: Page, current: number): Promise<0 | 1 | 2> => {
 
 test('#16 a hold on a furnished slot changes it for free; a tap, a short or a drifting hold opens nothing; lifting the finger over a thumbnail picks nothing', async ({ page }) => {
     await silenceSpeech(page);
-    await passWelcome(page, { e2eStars: '20' });
+    await passWelcome(page, { e2eStars: '30' });
     await toRoom(page);
-    expect((await snapshot(page)).stars).toBe(20);
+    expect((await snapshot(page)).stars).toBe(30);
 
-    // The floor is bought by the usual route: 5 stars.
+    // The stage (5) and the sofa with its second look (7) by the usual route; then the rug (9) with its first.
+    await buyStage(page);
     await buy(page, 1);
-    const S = 20 - FIRST_COST;
+    const S = 30 - STAGE_COST - SOFA_COST;
     const bought = await room(page);
     expect(bought.state.stars).toBe(S);
-    expect(bought.room.chosen.floor).toBe(1);
-    expect(bought.room.currentTask?.id).toBe('paint-walls');
-    const floorAt = (await targets(page)).slots?.floor;
-    expect(floorAt).toBeDefined();
+    expect(bought.room.chosen.sofa).toBe(1);
+    expect(bought.room.currentTask?.id).toBe('lay-rug');
+    const sofaAt = (await targets(page)).slots?.sofa;
+    expect(sofaAt).toBeDefined();
 
     // A tap, a short hold and a hold that wanders off its start open nothing.
-    await tapScene(page, floorAt!);
+    await tapScene(page, sofaAt!);
     expect((await room(page)).room.panel.kind).toBe('closed');
     expect((await room(page)).room.hold).toBe('idle');
-    await holdTouch(page, floorAt!, holdMs / 3);
+    await holdTouch(page, sofaAt!, holdMs / 3);
     expect((await room(page)).room.panel.kind).toBe('closed');
-    await holdTouch(page, floorAt!, holdMs + 400, moveTolerance * 3);
+    await holdTouch(page, sofaAt!, holdMs + 400, moveTolerance * 3);
     expect((await room(page)).room.panel.kind).toBe('closed');
     expect((await snapshot(page)).stars).toBe(S);
 
     // A full hold opens the panel in the change mode of that slot; nothing is taken.
-    await holdTouch(page, floorAt!, holdMs + 400);
+    await holdTouch(page, sofaAt!, holdMs + 400);
     await expect.poll(async () => (await room(page)).room.panel.kind).toBe('open');
     const opened = (await room(page)).room.panel;
-    expect(opened).toMatchObject({ kind: 'open', mode: 'change', slot: 'floor' });
+    expect(opened).toMatchObject({ kind: 'open', mode: 'change', slot: 'sofa' });
     expect((await snapshot(page)).stars).toBe(S);
 
     // Another look, confirmed: the room changes, the balance and the task progress do not.
-    const next = await changeTo(page, bought.room.chosen.floor);
+    const next = await changeTo(page, bought.room.chosen.sofa);
     await expect.poll(async () => (await room(page)).room.panel.kind).toBe('closed');
     const changed = await room(page);
-    expect(changed.room.chosen.floor).toBe(next);
-    expect(changed.room.chosen.floor).not.toBe(bought.room.chosen.floor);
+    expect(changed.room.chosen.sofa).toBe(next);
+    expect(changed.room.chosen.sofa).not.toBe(bought.room.chosen.sofa);
     expect(changed.state.stars).toBe(S);
     expect(changed.state.counterText).toBe(String(S));
-    expect(changed.room.tasksDone).toBe(1);
-    expect(changed.room.currentTask?.id).toBe('paint-walls');
+    expect(changed.room.tasksDone).toBe(2);
+    expect(changed.room.currentTask?.id).toBe('lay-rug');
 
     // A hold that is lifted over a thumbnail of the panel it just opened picks nothing: the press began on the room.
+    // The rug is bought for it: it is the piece that lies under the second thumbnail (the panel covers the room's lower part).
+    await buy(page, 0);
     const { thumbs } = ROOM_LAYOUT;
-    const overThumb = { x: thumbs.left + thumbs.size / 2, y: thumbs.top + 16 };
-    const floor = SALON.slots.find((slot) => slot.id === 'floor')!;
-    const look = SALON_PLACEHOLDERS.floor;
-    expect(Math.abs(overThumb.x - floor.x)).toBeLessThan(look.width / 2); // precondition: the point is on the floor...
-    expect(Math.abs(overThumb.y - floor.y)).toBeLessThan(look.height / 2);
+    const overThumb = { x: thumbs.left + thumbs.size + thumbs.gap + thumbs.size / 2, y: thumbs.top + 16 };
+    const rug = SALON.slots.find((slot) => slot.id === 'rug')!;
+    const [rl, rt, rw, rh] = rug.visibleRect;
+    expect(overThumb.x).toBeGreaterThan(rug.x + rl); // precondition: the point is on the rug...
+    expect(overThumb.x).toBeLessThan(rug.x + rl + rw);
+    expect(overThumb.y).toBeGreaterThan(rug.y + rt);
+    expect(overThumb.y).toBeLessThan(rug.y + rt + rh);
     await holdTouch(page, overThumb, holdMs + 400);
     await expect.poll(async () => (await room(page)).room.panel.kind).toBe('open');
     const held = (await room(page)).room.panel;
-    expect(held).toMatchObject({ kind: 'open', mode: 'change', slot: 'floor' });
+    expect(held).toMatchObject({ kind: 'open', mode: 'change', slot: 'rug' });
     expect(held.kind === 'open' ? held.preview : 'x').toBeNull();
-    expect((await room(page)).room.chosen.floor).toBe(next);
-    expect((await snapshot(page)).stars).toBe(S);
+    expect((await room(page)).room.chosen.rug).toBe(0);
+    expect((await snapshot(page)).stars).toBe(S - 9);
 
-    // "Zamknij" closes it, and a hold on an empty slot (curtains are not bought) opens nothing.
+    // "Zamknij" closes it, and a hold on an empty slot (the frames are not bought) opens nothing.
     await tapTarget(page, 'close');
     await expect.poll(async () => (await room(page)).room.panel.kind).toBe('closed');
-    const curtains = SALON.slots.find((slot) => slot.id === 'curtains')!;
-    await holdTouch(page, { x: curtains.x, y: curtains.y }, holdMs + 400);
+    const frames = SALON.slots.find((slot) => slot.id === 'wall-frames')!;
+    const [fl, ft, fw, fh] = frames.visibleRect;
+    await holdTouch(page, { x: frames.x + fl + fw / 2, y: frames.y + ft + fh / 4 }, holdMs + 400);
     expect((await room(page)).room.panel.kind).toBe('closed');
     expect((await room(page)).room.hold).toBe('idle');
-    expect((await snapshot(page)).stars).toBe(S);
+    expect((await snapshot(page)).stars).toBe(S - 9);
 });
 
 test('FR-019 the last purchase shows »Pokój gotowy!« and the change mode of the done room changes for free', async ({ page }) => {
@@ -156,9 +171,13 @@ test('FR-019 the last purchase shows »Pokój gotowy!« and the change mode of t
     await toRoom(page);
     expect((await snapshot(page)).stars).toBe(total);
 
-    // Ten renovation tasks, each bought with the first look; the card comes with the last one.
-    for (let i = 0; i < SALON.tasks.length; i++) {
-        await buy(page, 0);
+    // The stage first (one tap), then six furniture tasks, each bought with the first look; the card comes with the last one.
+    for (const task of SALON.tasks) {
+        if (task.kind === 'stage') {
+            await buyStage(page);
+        } else {
+            await buy(page, 0);
+        }
     }
     await expect.poll(async () => (await room(page)).room.card).not.toBeNull();
     const done = await room(page);

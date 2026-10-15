@@ -1,57 +1,41 @@
-// The first room, authored as data (S-09). Slot coordinates are in the 1920x1080
-// scene. Looks are placeholders drawn in code until the art arrives (S-16),
-// which removes SALON_PLACEHOLDERS; RoomTaskDef.label is a key into pl.room.tasks.
-import type { LegacyRoomLayout, RoomDef, RoomListEntry, SlotDef } from '../core/types';
-import type { PLACEHOLDER_COLORS } from './layout';
+// The first room, authored as data (S-09, S-16a). Geometry comes from the art pack's manifest: x/y is the top-left corner
+// of a picture in the 1920x1080 scene, `visibleRect` the object without its margin, `z` the draw order (0-99).
+// Texture keys are `salon/<file id>`. RoomTaskDef.label is a key into pl.room.tasks.
+import type { LayerDef, LegacyRoomLayout, RoomDef, RoomListEntry, SlotDef } from '../core/types';
 
-export interface Look {
-    fill: keyof typeof PLACEHOLDER_COLORS;
-    pattern: 'plain' | 'stripes' | 'dots';   // variants differ by pattern as well as colour (plan section 9)
-}
+/** Lamp, plants and pouf: part of the renovated room, no task and no variants. */
+const decor: LayerDef[] = [
+    { id: 'lamp-table', x: 769, y: 94, width: 239, height: 415, z: 25, anchor: [120, 399], visibleRect: [16, 16, 207, 383], key: 'salon/lamp-table' },
+    { id: 'plant-left', x: 70, y: 230, width: 290, height: 445, z: 26, anchor: [145, 429], visibleRect: [16, 16, 258, 413], key: 'salon/plant-left' },
+    { id: 'plant-right', x: 1648, y: 222, width: 244, height: 539, z: 35, anchor: [122, 523], visibleRect: [16, 16, 212, 507], key: 'salon/plant-right' },
+    { id: 'pouf', x: 458, y: 736, width: 278, height: 218, z: 60, anchor: [139, 202], visibleRect: [16, 16, 246, 186], key: 'salon/pouf' },
+];
 
-export interface SlotPlaceholder {
-    width: number;
-    height: number;
-    variants: [Look, Look, Look];
-    caption?: { x: number; y: number };   // where the caption is drawn when the slot centre is not a good place (wide slots)
-}
-
-/** Scene point of a slot's caption: the anchor when the placeholder has one, otherwise the slot centre. */
-export function captionAnchor(slot: SlotDef, placeholder: SlotPlaceholder): { x: number; y: number } {
-    return placeholder.caption ?? { x: slot.x, y: slot.y };
-}
-
-const slot = (id: string, x: number, y: number, depth: number): SlotDef => ({
-    id, x, y, depth, variants: [`${id}-a`, `${id}-b`, `${id}-c`],
-});
+const slots: SlotDef[] = [
+    { id: 'sofa', x: 838, y: 257, width: 835, height: 566, z: 30, anchor: [418, 550], visibleRect: [16, 16, 803, 534], variants: ['salon/sofa-morska', 'salon/sofa-sloneczna', 'salon/sofa-listkowa'] },
+    { id: 'rug', x: 432, y: 441, width: 1111, height: 640, z: 10, anchor: [556, 624], visibleRect: [16, 16, 1079, 608], variants: ['salon/rug', 'salon/rug-arcs', 'salon/rug-flowers'] },
+    { id: 'coffee-table', x: 763, y: 535, width: 537, height: 397, z: 50, anchor: [269, 381], visibleRect: [16, 16, 505, 365], variants: ['salon/coffee-table', 'salon/coffee-table-cream', 'salon/coffee-table-turquoise'] },
+    { id: 'cabinet', x: 293, y: 226, width: 512, height: 363, z: 20, anchor: [256, 347], visibleRect: [16, 16, 480, 331], variants: ['salon/cabinet', 'salon/cabinet-mint', 'salon/cabinet-cream'] },
+    { id: 'armchair', x: 248, y: 554, width: 399, height: 361, z: 40, anchor: [200, 345], visibleRect: [16, 16, 367, 329], variants: ['salon/armchair', 'salon/armchair-mint', 'salon/armchair-sunny'] },
+    { id: 'wall-frames', x: 1055, y: 15, width: 634, height: 425, z: 5, anchor: [317, 409], visibleRect: [16, 16, 602, 393], variants: ['salon/wall-frames', 'salon/wall-frames-meadow', 'salon/wall-frames-sky'] },
+];
 
 export const SALON: RoomDef = {
     id: 'salon',
     name: 'salon',
-    background: 'salon-neglected',
-    slots: [
-        slot('floor', 960, 690, 0),
-        slot('walls', 960, 362, 1),
-        slot('rug', 960, 700, 2),
-        slot('curtains', 600, 360, 3),
-        slot('picture', 1080, 330, 3),
-        slot('shelf', 1400, 330, 3),
-        slot('lamp', 340, 560, 4),
-        slot('table', 1450, 650, 4),
-        slot('plant', 1640, 620, 4),
-        slot('sofa', 1000, 600, 5),
-    ],
+    scene: { before: 'salon/before', after: 'salon/after', furnishingsBefore: 'salon/furnishings-before', shadows: 'salon/shadows' },
+    decor,
+    slots,
+    // New tasks go at the END of this list only (later slots of the art pack): `RoomState.tasksDone` counts positions in it,
+    // so inserting or reordering would move every saved room.
     tasks: [
-        { kind: 'slot', id: 'fix-floor', slot: 'floor', label: 'fixFloor', cost: 5 },
-        { kind: 'slot', id: 'paint-walls', slot: 'walls', label: 'paintWalls', cost: 6 },
-        { kind: 'slot', id: 'hang-curtains', slot: 'curtains', label: 'hangCurtains', cost: 7 },
-        { kind: 'slot', id: 'add-sofa', slot: 'sofa', label: 'addSofa', cost: 8 },
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
+        { kind: 'slot', id: 'add-sofa', slot: 'sofa', label: 'addSofa', cost: 7 },
         { kind: 'slot', id: 'lay-rug', slot: 'rug', label: 'layRug', cost: 9 },
-        { kind: 'slot', id: 'place-table', slot: 'table', label: 'placeTable', cost: 10 },
-        { kind: 'slot', id: 'place-lamp', slot: 'lamp', label: 'placeLamp', cost: 11 },
-        { kind: 'slot', id: 'hang-shelf', slot: 'shelf', label: 'hangShelf', cost: 12 },
-        { kind: 'slot', id: 'place-plant', slot: 'plant', label: 'placePlant', cost: 13 },
-        { kind: 'slot', id: 'hang-picture', slot: 'picture', label: 'hangPicture', cost: 15 },
+        { kind: 'slot', id: 'place-coffee-table', slot: 'coffee-table', label: 'placeCoffeeTable', cost: 10 },
+        { kind: 'slot', id: 'place-cabinet', slot: 'cabinet', label: 'placeCabinet', cost: 12 },
+        { kind: 'slot', id: 'place-armchair', slot: 'armchair', label: 'placeArmchair', cost: 13 },
+        { kind: 'slot', id: 'hang-frames', slot: 'wall-frames', label: 'hangFrames', cost: 15 },
     ],
 };
 
@@ -67,25 +51,6 @@ export const LEGACY_SALON: LegacyRoomLayout = {
         { slot: 'plant', cost: 13 }, { slot: 'picture', cost: 15 },
     ],
     renames: { table: 'coffee-table', shelf: 'cabinet', picture: 'wall-frames' },
-};
-
-const looks = (a: Look['fill'], b: Look['fill'], c: Look['fill']): [Look, Look, Look] => [
-    { fill: a, pattern: 'plain' },
-    { fill: b, pattern: 'stripes' },
-    { fill: c, pattern: 'dots' },
-];
-
-export const SALON_PLACEHOLDERS: Record<string, SlotPlaceholder> = {
-    floor: { width: 1560, height: 340, caption: { x: 300, y: 820 }, variants: looks('oak', 'butter', 'terracotta') },
-    walls: { width: 1560, height: 316, caption: { x: 300, y: 240 }, variants: looks('paleLeaf', 'turquoise', 'butter') },
-    rug: { width: 700, height: 120, caption: { x: 960, y: 740 }, variants: looks('terracotta', 'turquoise', 'butter') },
-    curtains: { width: 200, height: 300, variants: looks('turquoise', 'terracotta', 'butter') },
-    picture: { width: 240, height: 180, variants: looks('butter', 'turquoise', 'terracotta') },
-    shelf: { width: 300, height: 100, variants: looks('oak', 'terracotta', 'deepTeal') },
-    lamp: { width: 100, height: 360, variants: looks('butter', 'terracotta', 'turquoise') },
-    table: { width: 240, height: 140, variants: looks('oak', 'terracotta', 'deepTeal') },
-    plant: { width: 140, height: 280, variants: looks('paleLeaf', 'turquoise', 'butter') },
-    sofa: { width: 560, height: 240, variants: looks('turquoise', 'terracotta', 'butter') },
 };
 
 export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON };

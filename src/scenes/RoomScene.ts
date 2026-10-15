@@ -3,20 +3,20 @@ import { balance } from '../data/balance';
 import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
-import { holdPoint, slotAt } from '../core/roomHit';
+import { holdPoint, slotAt, slotBox } from '../core/roomHit';
 import { effectiveAutoRead } from '../core/narration/voice';
-import { currentTask, emptyRoomState, roomDone, roomsListView, taskButtonView, type RoomListItem } from '../core/rooms';
+import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import type { RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, PLACEHOLDER_COLORS, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl, roomText } from '../data/pl';
-import { FIRST_ROOM, ROOM_ORDER, ROOMS, SALON_PLACEHOLDERS } from '../data/rooms';
+import { FIRST_ROOM, ROOM_ORDER, ROOMS } from '../data/rooms';
 import type { Narrator } from '../ui/narrator';
 import { prefersReducedMotion } from '../ui/motion';
 import { PageButton } from '../ui/widgets/PageButton';
 import { RoomDoneCard } from '../ui/widgets/RoomDoneCard';
 import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
-import { drawLook, RoomView } from '../ui/widgets/RoomView';
+import { drawStandIn, RoomView } from '../ui/widgets/RoomView';
 import { drawStar } from '../ui/widgets/StarCounter';
 import { VariantPanel } from '../ui/widgets/VariantPanel';
 import type { Autosaver } from '../core/autosave';
@@ -35,6 +35,7 @@ export interface RoomSnapshot {
     hold: 'idle' | 'holding';
     heldSlot: string | null;
     done: boolean;
+    stageDone: boolean;
     mode: 'normal' | 'change';
     card: { title: string; items: RoomListItem[] } | null;
     modeText: string | null;
@@ -74,7 +75,7 @@ export class RoomScene extends Scene {
         this.card = false;
         this.cardDrawn = false;
         // Under every button (created later, so drawn and hit first): a hold on a furnished slot opens its change panel (S-10).
-        const { area } = ROOM_LAYOUT;
+        const area = ROOM_LAYOUT.scene;
         this.holdZone = this.add.zone(area.left + area.width / 2, area.top + area.height / 2, area.width, area.height).setInteractive();
         this.holdZone.on('pointerdown', (p: { id: number; x: number; y: number }) => this.feed({ type: 'down', id: p.id, x: p.x, y: p.y, now: this.time.now }));
         this.holdZone.on('pointerup', (p: { id: number; wasCanceled?: boolean }) => this.feed(p.wasCanceled ? { type: 'cancel' } : { type: 'up', id: p.id }));
@@ -97,13 +98,13 @@ export class RoomScene extends Scene {
             this.mode = this.mode === 'change' ? 'normal' : 'change';
             this.resetGesture();
             this.redraw();
-        });
+        }).setDepth(ROOM_LAYOUT.depth.controls);
         this.doneCard = new RoomDoneCard(this, () => {
             this.card = false;
             this.cardDrawn = false;
             this.redraw();
         });
-        const button = new PageButton(this, () => this.scene.switch(SCENE_KEYS.task));
+        const button = new PageButton(this, () => this.scene.switch(SCENE_KEYS.task)).setDepth(ROOM_LAYOUT.depth.controls);
         this.resume = button;
         const refresh = (): void => {
             this.panel = { kind: 'closed' };
@@ -153,7 +154,7 @@ export class RoomScene extends Scene {
             return;
         }
         const { room, state } = this.resolve();
-        const slot = event.type === 'down' ? slotAt(room, SALON_PLACEHOLDERS, state.chosen, { x: event.x, y: event.y }) : null;
+        const slot = event.type === 'down' ? slotAt(room, state.chosen, { x: event.x, y: event.y }) : null;
         const result = roomGesture(this.gesture, event, { mode: this.mode, slot, rules: balance.roomHold });
         this.gesture = result.state;
         this.view.highlight(result.held);
@@ -267,9 +268,9 @@ export class RoomScene extends Scene {
         }
         const { resume } = ROOM_LAYOUT;
         if (open) {
-            const placeholder = panelSlot ? SALON_PLACEHOLDERS[panelSlot] : undefined;
-            if (placeholder) {
-                this.variantPanel.show(placeholder.variants, placeholder, this.panel.kind === 'open' ? this.panel.preview : null);
+            const slotDef = room.slots.find((s) => s.id === panelSlot);
+            if (slotDef) {
+                this.variantPanel.show(slotDef, this.panel.kind === 'open' ? this.panel.preview : null);
             }
         } else {
             this.variantPanel.hide();
@@ -299,12 +300,14 @@ export class RoomScene extends Scene {
         }
         const { room } = this.resolve();
         const at = this.view.slotCenter(room, bought.slot);
-        const size = SALON_PLACEHOLDERS[bought.slot];
-        if (!at || !size) {
+        const slot = room.slots.find((s) => s.id === bought.slot);
+        if (!at || !slot) {
             return;
         }
-        const pop = this.add.graphics({ x: at.x, y: at.y });
-        drawLook(pop, { left: -size.width / 2, top: -size.height / 2, width: size.width, height: size.height }, size.variants[bought.variant]);
+        // The pop grows on the object's own depth, so a piece in front of it still covers it (V2: no rug popping over the sofa).
+        const box = slotBox(slot);
+        const pop = this.add.graphics({ x: at.x, y: at.y }).setDepth(slot.z + 0.25);
+        drawStandIn(pop, { left: -(box.right - box.left) / 2, top: -(box.bottom - box.top) / 2, width: box.right - box.left, height: box.bottom - box.top }, ROOM_LAYOUT.standIn.variantFills[bought.variant]);
         this.tweens.add({
             targets: pop,
             scale: ANIMATION.purchasePopScale,
@@ -325,7 +328,7 @@ export class RoomScene extends Scene {
             lifespan: ANIMATION.purchaseParticleMs,
             scale: { start: 0.9, end: 0 },
             emitting: false,
-        });
+        }).setDepth(ROOM_LAYOUT.depth.celebrate);
         emitter.explode(ANIMATION.purchaseParticles);
         this.time.delayedCall(ANIMATION.purchaseParticleMs + 100, () => emitter.destroy());
     }
@@ -371,7 +374,7 @@ export class RoomScene extends Scene {
         const { room, state } = this.resolve();
         const { chosen } = state;
         for (const slot of room.slots) {
-            const at = holdPoint(room, SALON_PLACEHOLDERS, chosen, slot.id);
+            const at = holdPoint(room, chosen, slot.id);
             if (at) {
                 out[slot.id] = at;
             }
@@ -396,6 +399,7 @@ export class RoomScene extends Scene {
             hold: this.gesture.press.kind === 'idle' ? 'idle' : 'holding',
             heldSlot: this.gesture.slot,
             done: roomDone(room, state),
+            stageDone: stagesDone(room, state) > 0,
             mode: this.mode,
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems() } : null,
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,

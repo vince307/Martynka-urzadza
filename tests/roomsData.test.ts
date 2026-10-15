@@ -1,15 +1,13 @@
-// Salon data invariants (S-09 phase 2, test-plan risk #16 support). Oracle: PRD
-// FR-016 (10 renovation tasks, cost 5-15 stars, one slot each), plan section 9
-// (nothing distinguished by colour alone) and the room geometry in ROOM_LAYOUT.
+// Salon data invariants (S-09 phase 2, S-16a phase 3; test-plan risk #16 support). Oracle: PRD FR-016 (renovation tasks,
+// cost 5-15 stars), plan section 9 (nothing distinguished by colour alone: a variant has a name and a colour) and the
+// art pack's manifest (1920x1080 scene, six furniture slots with three variants, four fixed layers).
 import { describe, expect, it } from 'vitest';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { FIRST_ROOM, ROOMS, ROOM_ORDER, SALON, SALON_PLACEHOLDERS, captionAnchor } from '../src/data/rooms';
-import { MIN_TOUCH_TARGET } from '../src/data/layout';
-import { slotBox } from '../src/core/roomHit';
+import { FIRST_ROOM, LEGACY_SALON, ROOMS, ROOM_ORDER, SALON } from '../src/data/rooms';
+import { GAME_HEIGHT, GAME_WIDTH, MIN_TOUCH_TARGET } from '../src/data/layout';
 
-const BACKGROUND_SLOTS = ['floor', 'walls'];
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
 
 // Every registered room, not only the salon (M-R5, L-R10): a second room must not slip past the invariants.
@@ -23,13 +21,13 @@ describe('every room in ROOMS', () => {
         expect([...listed].sort()).toEqual(Object.keys(ROOMS).sort());
     });
 
-    it('has one task per slot, whole costs of 5-15 stars that never fall, the first within one clean round', () => {
+    it('has one furniture task per slot, whole costs of 5-15 stars that never fall, the first within one clean round', () => {
         for (const room of rooms) {
             const slotIds = room.slots.map((s) => s.id);
             expect(new Set(slotIds).size, room.id).toBe(slotIds.length);
-            expect(room.tasks, room.id).toHaveLength(slotIds.length);
-            expect(new Set(room.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []))).size, room.id).toBe(slotIds.length);
-            for (const task of room.tasks) if (task.kind === 'slot') expect(slotIds, room.id).toContain(task.slot);
+            const bought = room.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []));
+            expect([...bought].sort(), room.id).toEqual([...slotIds].sort());
+            expect(new Set(room.tasks.map((t) => t.id)).size, room.id).toBe(room.tasks.length);
             let previous = 0;
             for (const { cost } of room.tasks) {
                 expect(Number.isInteger(cost), room.id).toBe(true);
@@ -42,29 +40,61 @@ describe('every room in ROOMS', () => {
         }
     });
 
-    it('gives every slot a placeholder (M-R5)', () => {
+    it('has child-facing text for every slot, variant, decoration and task (L-R10)', () => {
         for (const room of rooms) {
-            for (const slot of room.slots) expect(SALON_PLACEHOLDERS[slot.id], `${room.id}/${slot.id}`).toBeDefined();
+            for (const slot of room.slots) {
+                expect(roomText.slot(slot.id)?.trim().length ?? 0, `${room.id}/${slot.id}`).toBeGreaterThan(0);
+                const names = [0, 1, 2].map((i) => roomText.variant(slot.id, i));
+                for (const name of names) expect(name?.trim().length ?? 0, `${room.id}/${slot.id} variant`).toBeGreaterThan(0);
+                expect(new Set(names).size, `${room.id}/${slot.id} variant names differ`).toBe(3);
+            }
+            for (const layer of room.decor) expect(roomText.decor(layer.id)?.trim().length ?? 0, `${room.id}/${layer.id}`).toBeGreaterThan(0);
+            for (const task of room.tasks) expect(roomText.task(task.label)?.trim().length ?? 0, `${room.id}/${task.label}`).toBeGreaterThan(0);
         }
     });
 
-    it('has child-facing text for every slot and task (L-R10)', () => {
+    it('draws every piece inside the scene, in its picture, on a distinct depth below the controls band', () => {
         for (const room of rooms) {
-            for (const slot of room.slots) expect(roomText.slot(slot.id)?.trim().length ?? 0, `${room.id}/${slot.id}`).toBeGreaterThan(0);
-            for (const task of room.tasks) expect(roomText.task(task.label)?.trim().length ?? 0, `${room.id}/${task.label}`).toBeGreaterThan(0);
+            const pieces = [...room.slots, ...room.decor];
+            for (const p of pieces) {
+                const [l, t, w, h] = p.visibleRect;
+                expect(l, p.id).toBeGreaterThanOrEqual(0);
+                expect(t, p.id).toBeGreaterThanOrEqual(0);
+                expect(l + w, p.id).toBeLessThanOrEqual(p.width);
+                expect(t + h, p.id).toBeLessThanOrEqual(p.height);
+                expect(p.x + l, p.id).toBeGreaterThanOrEqual(0);
+                expect(p.y + t, p.id).toBeGreaterThanOrEqual(0);
+                expect(p.x + l + w, p.id).toBeLessThanOrEqual(GAME_WIDTH);
+                expect(p.y + t + h, p.id).toBeLessThanOrEqual(GAME_HEIGHT);
+                expect(p.anchor[0], p.id).toBeLessThanOrEqual(p.width);
+                expect(p.anchor[1], p.id).toBeLessThanOrEqual(p.height);
+                expect(p.z, p.id).toBeLessThan(ROOM_LAYOUT.depth.outline);
+            }
+            expect(new Set(pieces.map((p) => p.z)).size, `${room.id} z values are distinct, so a tie never decides a touch`).toBe(pieces.length);
+        }
+    });
+
+    it('names every texture once, under the room id', () => {
+        for (const room of rooms) {
+            const keys = [
+                ...Object.values(room.scene),
+                ...room.decor.map((l) => l.key),
+                ...room.slots.flatMap((s) => s.variants),
+            ];
+            expect(new Set(keys).size, room.id).toBe(keys.length);
+            for (const key of keys) expect(key.startsWith(`${room.id}/`), key).toBe(true);
         }
     });
 });
 
 describe('salon data', () => {
-    it('has ten slots and ten tasks, one task per slot', () => {
-        expect(SALON.slots).toHaveLength(10);
-        expect(SALON.tasks).toHaveLength(10);
-        const slotIds = SALON.slots.map((s) => s.id);
-        expect(new Set(slotIds).size).toBe(10);
-        for (const task of SALON.tasks) if (task.kind === 'slot') expect(slotIds).toContain(task.slot);
-        expect(new Set(SALON.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []))).size).toBe(10);
-        expect(new Set(SALON.tasks.map((t) => t.id)).size).toBe(10);
+    it('is the renovation stage first, then six furniture tasks, one per slot', () => {
+        expect(SALON.slots).toHaveLength(6);
+        expect(SALON.decor).toHaveLength(4);
+        expect(SALON.tasks).toHaveLength(7);
+        expect(SALON.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        for (const task of SALON.tasks.slice(1)) expect(task.kind).toBe('slot');
+        expect(SALON.slots.every((s) => s.variants.length === 3)).toBe(true);
     });
 
     it('is registered as the first room', () => {
@@ -72,65 +102,39 @@ describe('salon data', () => {
         expect(ROOMS[FIRST_ROOM]).toBe(SALON);
     });
 
-    it('costs whole stars between 5 and 15, never falling, the first within one clean round', () => {
-        const costs = SALON.tasks.map((t) => t.cost);
-        for (const cost of costs) {
-            expect(Number.isInteger(cost)).toBe(true);
-            expect(cost).toBeGreaterThanOrEqual(5);
-            expect(cost).toBeLessThanOrEqual(15);
+    it('costs 71 stars in all (about ten clean rounds), pacing documented for the tuning slice', () => {
+        // 5, 7, 9, 10, 12, 13, 15: author decision 6 of S-16a; the pace is tuned in S-17.
+        expect(SALON.tasks.map((t) => t.cost)).toEqual([5, 7, 9, 10, 12, 13, 15]);
+        expect(SALON.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(71);
+    });
+
+    it('keeps the order of the first tasks stable: new tasks are only ever appended (saved rooms count positions)', () => {
+        expect(SALON.tasks.slice(0, 7).map((t) => t.id)).toEqual(['renovate', 'add-sofa', 'lay-rug', 'place-coffee-table', 'place-cabinet', 'place-armchair', 'hang-frames']);
+    });
+
+    // The remap (core/rooms remapLegacySalon) tells an old save by a `chosen` key that is no slot of the new room.
+    it('uses no slot id that means something else in the frozen legacy salon', () => {
+        const slotIds = new Set(SALON.slots.map((s) => s.id));
+        const legacyIds = new Set(LEGACY_SALON.tasks.map((t) => t.slot));
+        for (const [oldId, newId] of Object.entries(LEGACY_SALON.renames)) {
+            expect(legacyIds.has(oldId), oldId).toBe(true);
+            expect(slotIds.has(newId), newId).toBe(true);
+            expect(slotIds.has(oldId), `${oldId} would be mistaken for a new slot`).toBe(false);
         }
-        for (let i = 1; i < costs.length; i++) expect(costs[i]).toBeGreaterThanOrEqual(costs[i - 1] ?? 0);
-        expect(costs[0]).toBeLessThanOrEqual(cleanRound);
+        const renamedAway = new Set(Object.keys(LEGACY_SALON.renames));
+        const dropped = [...legacyIds].filter((id) => !renamedAway.has(id) && !slotIds.has(id));
+        expect(dropped.sort()).toEqual(['curtains', 'floor', 'lamp', 'plant', 'walls']);
+        // At least one old key must be foreign to the new room, or the marker could not tell an old save.
+        expect(dropped.length + renamedAway.size).toBeGreaterThan(0);
     });
 
-    it('gives every slot a placeholder with three variants that differ by pattern, not colour alone', () => {
-        for (const slot of SALON.slots) {
-            const look = SALON_PLACEHOLDERS[slot.id];
-            expect(look, slot.id).toBeDefined();
-            expect(new Set(look?.variants.map((v) => v.pattern)).size, slot.id).toBe(3);
-            expect(slot.variants).toHaveLength(3);
-        }
-        expect(Object.keys(SALON_PLACEHOLDERS).sort()).toEqual(SALON.slots.map((s) => s.id).sort());
-    });
-
-    it('keeps every slot inside the room area and furniture above the panel tray', () => {
-        const { area, tray } = ROOM_LAYOUT;
-        for (const slot of SALON.slots) {
-            const look = SALON_PLACEHOLDERS[slot.id];
-            const w = look?.width ?? 0;
-            const h = look?.height ?? 0;
-            expect(slot.x - w / 2, slot.id).toBeGreaterThanOrEqual(area.left);
-            expect(slot.x + w / 2, slot.id).toBeLessThanOrEqual(area.left + area.width);
-            expect(slot.y - h / 2, slot.id).toBeGreaterThanOrEqual(area.top);
-            expect(slot.y + h / 2, slot.id).toBeLessThanOrEqual(area.top + area.height);
-            if (!BACKGROUND_SLOTS.includes(slot.id)) expect(slot.y + h / 2, slot.id).toBeLessThanOrEqual(tray.top);
-        }
-    });
-
-    it('splits the background at the wall line and draws it below the furniture', () => {
-        const { area, wallBottom } = ROOM_LAYOUT;
-        const walls = SALON.slots.find((s) => s.id === 'walls');
-        const floor = SALON.slots.find((s) => s.id === 'floor');
-        expect((walls?.y ?? 0) + (SALON_PLACEHOLDERS.walls?.height ?? 0) / 2).toBe(wallBottom);
-        expect((floor?.y ?? 0) - (SALON_PLACEHOLDERS.floor?.height ?? 0) / 2).toBe(wallBottom);
-        expect(wallBottom).toBeGreaterThan(area.top);
-        expect(wallBottom).toBeLessThan(area.top + area.height);
-        const furniture = SALON.slots.filter((s) => !BACKGROUND_SLOTS.includes(s.id));
-        const maxBackground = Math.max(walls?.depth ?? 0, floor?.depth ?? 0);
-        for (const slot of furniture) expect(slot.depth, slot.id).toBeGreaterThan(maxBackground);
-    });
-
-    it('has a non-empty child-facing label and caption for every task and slot', () => {
+    it('has a non-empty child-facing label for every task, in the author\'s wording for the stage', () => {
         expect(pl.room.name.length).toBeGreaterThan(0);
+        expect(pl.room.tasks.renovate).toBe('Odnów ściany i podłogę');
         for (const task of SALON.tasks) {
             const label = (pl.room.tasks as Record<string, string>)[task.label];
             expect(typeof label, task.label).toBe('string');
             expect(label?.trim().length, task.label).toBeGreaterThan(0);
-        }
-        for (const slot of SALON.slots) {
-            const caption = (pl.room.slots as Record<string, string>)[slot.id];
-            expect(typeof caption, slot.id).toBe('string');
-            expect(caption?.trim().length, slot.id).toBeGreaterThan(0);
         }
     });
 
@@ -161,55 +165,6 @@ describe('salon data', () => {
     it('has the room-done and change-mode strings', () => {
         for (const text of [pl.room.done.title, pl.room.done.spoken, pl.room.done.teaser, pl.room.change.enter, pl.room.change.exit, pl.room.change.hint]) {
             expect(text.trim().length).toBeGreaterThan(0);
-        }
-    });
-
-    it('keeps the salon captions apart from each other and inside the room area', () => {
-        const { area, slot: slotLayout } = ROOM_LAYOUT;
-        const boxes = SALON.slots.map((slot) => {
-            const ph = SALON_PLACEHOLDERS[slot.id];
-            if (!ph) throw new Error(slot.id);
-            const text = (pl.room.slots as Record<string, string>)[slot.id] ?? '';
-            const { x, y } = captionAnchor(slot, ph);
-            const w = text.length * slotLayout.captionCharWidth;
-            const h = 32;
-            return { id: slot.id, left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
-        });
-        for (const b of boxes) {
-            expect(b.left, b.id).toBeGreaterThanOrEqual(area.left);
-            expect(b.right, b.id).toBeLessThanOrEqual(area.left + area.width);
-            expect(b.top, b.id).toBeGreaterThanOrEqual(area.top);
-            expect(b.bottom, b.id).toBeLessThanOrEqual(area.top + area.height);
-        }
-        for (let i = 0; i < boxes.length; i++) {
-            for (let j = i + 1; j < boxes.length; j++) {
-                const a = boxes[i];
-                const b = boxes[j];
-                const apart = a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
-                expect(apart, `${a.id} vs ${b.id}`).toBe(true);
-            }
-        }
-    });
-
-    // Visual gate S-10: the rug caption at the slot centre sat on the sofa (drawn later, higher depth), so "dywan"
-    // read as a label of the sofa. A caption must stay clear of every slot drawn above its own.
-    it('keeps every salon caption off the slots drawn above its slot', () => {
-        const { slot: slotLayout } = ROOM_LAYOUT;
-        for (const slot of SALON.slots) {
-            const ph = SALON_PLACEHOLDERS[slot.id];
-            if (!ph) throw new Error(slot.id);
-            const text = (pl.room.slots as Record<string, string>)[slot.id] ?? '';
-            const { x, y } = captionAnchor(slot, ph);
-            const w = text.length * slotLayout.captionCharWidth;
-            const h = 32;
-            const cap = { left: x - w / 2, right: x + w / 2, top: y - h / 2, bottom: y + h / 2 };
-            for (const above of SALON.slots.filter((s) => s.depth > slot.depth)) {
-                const size = SALON_PLACEHOLDERS[above.id];
-                if (!size) throw new Error(above.id);
-                const b = slotBox(above, size);
-                const apart = cap.right <= b.left || b.right <= cap.left || cap.bottom <= b.top || b.bottom <= cap.top;
-                expect(apart, `${slot.id} caption under ${above.id}`).toBe(true);
-            }
         }
     });
 });

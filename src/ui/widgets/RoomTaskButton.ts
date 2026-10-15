@@ -25,11 +25,12 @@ export class RoomTaskButton {
         private readonly onTap: (affordable: boolean) => void,
     ) {
         const { left, top, width, height } = ROOM_LAYOUT.taskButton;
-        this.graphics = scene.add.graphics();
-        this.label = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5);
-        this.cost = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5);
-        this.sub = scene.add.text(0, 0, '', textStyle('bar')).setOrigin(0.5);
-        this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive();
+        const depth = ROOM_LAYOUT.depth.controls;
+        this.graphics = scene.add.graphics().setDepth(depth);
+        this.label = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5).setDepth(depth + 1);
+        this.cost = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0, 0.5).setDepth(depth + 1);
+        this.sub = scene.add.text(0, 0, '', textStyle('bar')).setOrigin(0.5).setDepth(depth + 1);
+        this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive().setDepth(depth + 2);
         this.zone.on('pointerdown', () => {
             this.pressed = true;
         });

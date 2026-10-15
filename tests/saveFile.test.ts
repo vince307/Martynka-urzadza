@@ -7,6 +7,7 @@ import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/c
 import { decodeSave, saveProblem, validateSave, type SessionSave } from '../src/core/save';
 import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
 import type { RoomDef, SaveState } from '../src/core/types';
+import { TEST_ROOM_PARTS } from './roomFixtures';
 
 const fixture = (name: string): Record<string, unknown> =>
     JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
@@ -131,7 +132,7 @@ describe('saveProblem agrees with validateSave', () => {
 
 describe('saveSummary', () => {
     const room = (id: string, tasks: number): RoomDef => ({
-        id, name: id, background: 'bg', slots: [],
+        id, name: id, ...TEST_ROOM_PARTS, slots: [],
         tasks: Array.from({ length: tasks }, (_, i) => ({ kind: 'slot' as const, id: `${id}${i}`, slot: 's', label: 'l', cost: 5 })),
     });
     const rooms = { living: room('living', 10), bedroom: room('bedroom', 8) };

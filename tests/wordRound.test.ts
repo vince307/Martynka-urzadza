@@ -2,12 +2,13 @@
 // drawing, three answer tiles, letters uncovered by finished tasks.
 import { describe, expect, it } from 'vitest';
 import { startLearning } from '../src/core/curriculum';
-import { buildWordRound, revealed } from '../src/core/minigames/word';
+import { buildWordRound, letterRow, revealed } from '../src/core/minigames/word';
 import { createRng } from '../src/core/rng';
 import { taskKey } from '../src/core/round/unique';
 import { validateTask } from '../src/core/tasks/validate';
 import type { SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
+import { GAME_WIDTH, MINIGAME_LAYOUT, PLACEHOLDER_FRAME } from '../src/data/layout';
 import { stages } from '../src/data/curriculum';
 import { MINIGAME_WORDS } from '../src/data/minigames';
 import { nouns } from '../src/data/nouns';
@@ -35,7 +36,27 @@ describe('word data', () => {
             expect(captions, w).toContain(w);
             expect(w).toBe(w.toUpperCase());
         }
-        expect(MINIGAME_WORDS.some((w) => /[ÓŁ]/.test(w))).toBe(true);
+        // Polish letters in a word are covered by the `revealed('PÓŁKA')` test below: the words are the salon's furniture, not the letters.
+    });
+
+    // Plan-review F6: OBRAZKI has 7 letters, one more than the old longest word, so a round has 7 tasks and 7 boxes.
+    it('fits the longest word\'s letter row in the canvas, inside the margin of the kit', () => {
+        const longest = Math.max(...MINIGAME_WORDS.map((w) => Array.from(w).length));
+        expect(longest).toBe(7);
+        const { width, gap } = MINIGAME_LAYOUT.letters;
+        const lefts = letterRow(longest, { width, gap }, MINIGAME_LAYOUT.letters.centerX);
+        expect(lefts[0]).toBeGreaterThanOrEqual(PLACEHOLDER_FRAME.margin);
+        expect(lefts[lefts.length - 1] + width).toBeLessThanOrEqual(GAME_WIDTH - PLACEHOLDER_FRAME.margin);
+    });
+
+    it.each(ALL)('%s: builds a round of the longest word with a task for every letter', (id) => {
+        const longest = [...MINIGAME_WORDS].sort((a, b) => Array.from(b).length - Array.from(a).length)[0];
+        for (let seed = 1; seed <= SEEDS; seed += 1) {
+            const round = buildWordRound(stage(id), previousOf(id), learning(), createRng(seed), { ...rules, words: [longest] });
+            expect(round, `${id} seed=${seed}`).not.toBeNull();
+            expect(round!.word).toBe(longest);
+            expect(round!.tasks).toHaveLength(Array.from(longest).length);
+        }
     });
 });
 

@@ -7,14 +7,15 @@ import { currentTask, emptyRoomState, nextTaskCost, purchase, repairCurrentRoom,
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
+import { TEST_ROOM_PARTS, testSlot } from './roomFixtures';
 
 const room: RoomDef = {
     id: 'test',
     name: 'Test',
-    background: 'bg',
+    ...TEST_ROOM_PARTS,
     slots: [
-        { id: 'floor', x: 0, y: 0, depth: 1, variants: ['a', 'b', 'c'] },
-        { id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] },
+        testSlot('floor', 1),
+        testSlot('sofa', 2),
     ],
     tasks: [
         { kind: 'slot', id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
@@ -189,8 +190,8 @@ describe('background stage task (S-16a)', () => {
     const staged: RoomDef = {
         id: 'staged',
         name: 'Staged',
-        background: 'bg',
-        slots: [{ id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] }],
+        ...TEST_ROOM_PARTS,
+        slots: [testSlot('sofa', 2)],
         tasks: [
             { kind: 'stage', id: 'walls', label: 'walls', cost: 5 },
             { kind: 'slot', id: 'sofa', slot: 'sofa', label: 'sofa', cost: 8 },

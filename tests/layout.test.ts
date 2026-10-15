@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
 import { placementData } from '../src/data/placement';
+import { ROOMS } from '../src/data/rooms';
 import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
@@ -47,7 +48,6 @@ describe('task screen layout constants', () => {
         // A child's tap on the notebook or the room must never land on the gear.
         const { notebook } = TASK_LAYOUT;
         expect(settings.left).toBeGreaterThanOrEqual(notebook.left + notebook.width);
-        expect(settings.left).toBeGreaterThanOrEqual(ROOM_LAYOUT.area.left + ROOM_LAYOUT.area.width);
         // Below the star counter, the speaker and "Do pokoju" (all in the top band).
         const counter = TASK_LAYOUT.starCounter;
         expect(settings.top).toBeGreaterThanOrEqual(counter.top + counter.height);
@@ -174,7 +174,24 @@ describe('task screen layout constants', () => {
         expect(first + total).toBeLessThanOrEqual(card.left + card.width);
         expect(tiles.top).toBeGreaterThan(title.y);
         expect(tiles.top + tiles.height).toBeLessThanOrEqual(button.top);
-        expect(ROOM_LAYOUT.area.width * tiles.thumbScale).toBeLessThanOrEqual(tiles.width);
+        expect(ROOM_LAYOUT.scene.width * tiles.thumbScale).toBeLessThanOrEqual(tiles.width);
+        // The miniature of the 1920x1080 scene ends above the caption line of the tile.
+        expect(tiles.thumbTop + ROOM_LAYOUT.scene.height * tiles.thumbScale).toBeLessThan(tiles.captionY - 14);
+    });
+
+    // Plan-review F3: the pictures use the manifest z (0-99); everything the child touches or reads is drawn above that band.
+    it('draws the room controls above every room layer depth and in a fixed order', () => {
+        const { depth } = ROOM_LAYOUT;
+        const order = [depth.outline, depth.controls, depth.panel, depth.celebrate, depth.card];
+        for (const d of order) expect(d).toBeGreaterThan(99);
+        expect([...order].sort((a, b) => a - b)).toEqual(order);
+        expect(new Set(order).size).toBe(order.length);
+        for (const room of Object.values(ROOMS)) {
+            for (const layer of [...room.slots, ...room.decor]) {
+                expect(layer.z, `${room.id}/${layer.id}`).toBeGreaterThanOrEqual(0);
+                expect(layer.z, `${room.id}/${layer.id}`).toBeLessThanOrEqual(99);
+            }
+        }
     });
 
     it('gives every variant thumbnail a readable height, even for the wide floor and walls', () => {

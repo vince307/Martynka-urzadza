@@ -77,6 +77,7 @@ export class PageButton {
     setDepth(depth: number): this {
         this.graphics.setDepth(depth);
         this.label.setDepth(depth + 1);
+        this.zone.setDepth(depth + 2);
         return this;
     }
 

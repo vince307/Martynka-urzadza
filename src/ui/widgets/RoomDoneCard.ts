@@ -20,9 +20,9 @@ export class RoomDoneCard {
     private readonly next: PageButton;
 
     constructor(private readonly scene: Scene, onNext: () => void) {
-        this.graphics = scene.add.graphics().setDepth(5);
-        this.title = scene.add.text(ROOM_DONE_LAYOUT.title.x, ROOM_DONE_LAYOUT.title.y, pl.room.done.title, textStyle('unlockTitle')).setOrigin(0.5, 0).setDepth(5);
-        this.next = new PageButton(scene, onNext).setDepth(5);
+        this.graphics = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.card);
+        this.title = scene.add.text(ROOM_DONE_LAYOUT.title.x, ROOM_DONE_LAYOUT.title.y, pl.room.done.title, textStyle('unlockTitle')).setOrigin(0.5, 0).setDepth(ROOM_LAYOUT.depth.card + 1);
+        this.next = new PageButton(scene, onNext).setDepth(ROOM_LAYOUT.depth.card + 1);
         this.hide();
     }
 
@@ -67,7 +67,7 @@ export class RoomDoneCard {
     }
 
     private caption(text: string, x: number, y: number, alpha = 1): void {
-        this.captions.push(this.scene.add.text(x, y, text, textStyle('bar')).setOrigin(0.5).setDepth(5).setAlpha(alpha));
+        this.captions.push(this.scene.add.text(x, y, text, textStyle('bar')).setOrigin(0.5).setDepth(ROOM_LAYOUT.depth.card + 1).setAlpha(alpha));
     }
 
     private drawRoomTile(left: number, room: RoomDef, state: RoomState, done: boolean): void {
@@ -78,7 +78,7 @@ export class RoomDoneCard {
         g.fillRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
         g.lineStyle(tiles.border, PLACEHOLDER_COLORS.nextBorder, 1);
         g.strokeRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
-        const thumbWidth = ROOM_LAYOUT.area.width * tiles.thumbScale;
+        const thumbWidth = ROOM_LAYOUT.scene.width * tiles.thumbScale;
         drawRoomMiniature(g, room, state, left + (tiles.width - thumbWidth) / 2, top + tiles.thumbTop, tiles.thumbScale);
         this.caption(pl.room.name, left + tiles.width / 2, top + tiles.captionY);
         if (done) {
