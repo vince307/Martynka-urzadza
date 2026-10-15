@@ -936,7 +936,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - [x] 8.2 `npm run sample -- E6` bez naruszeń; `tests/fixtures/` bez zmian (zapis v2) — 36e56e8
 - [x] 8.3 Deliberate break: `calendarStart` bez wyłączenia kroku powtórkowego → wyrocznia E6 czerwona; przywrócone; meta-check — 36e56e8
 - [x] 8.4 Deliberate break: `pickRoundSkills` ignoruje `currentGroups` → test udziału kroków czerwony; przywrócone — 36e56e8
-- [ ] 8.5 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 8.5 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 36e56e8 (e2e: notatka orkiestratora, pełny zestaw na 36e56e8 `--workers=4`: 82 passed)
 
 #### Manual
 
@@ -947,9 +947,9 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [ ] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md`
+- [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
+- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md`
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

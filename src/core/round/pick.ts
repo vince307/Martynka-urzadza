@@ -10,7 +10,7 @@ import type { SkillDef, StageDef, StepDef } from '../types';
 export const playable = (skill: SkillDef): boolean =>
     (skill.answer === 'tiles' || skill.answer === 'keypad' || skill.answer === 'select' || skill.answer === 'drag' || skill.answer === 'digits') && getGenerator(skill.type) !== undefined;
 
-/** The first `n` steps that have at least one playable skill, in curriculum order. */
+/** The first `n` steps that have at least one playable skill, in curriculum order (a review step has none of its own, so it never counts). */
 export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>
     stage.steps.filter((step) => step.skills.some(playable)).slice(0, n);
 
