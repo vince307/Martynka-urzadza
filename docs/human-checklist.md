@@ -151,3 +151,35 @@ Wysłane i wdrożone: `art-stand-in-and-load-signal` (#44, merge 8dc174a, Deploy
 - [ ] Napisy zastępcze mają ok. 12–13 px na tablecie 1024 px nawet w dużych ramkach monet (mogłyby rosnąć do rozmiaru ramki) — zostawione, bo to tylko awaryjny widok.
 - [ ] Przy `unreadable` „Zapisz kopię” w panelu nadal eksportuje bieżącą (świeżą) grę; tekst w dialogach to wyjaśnia, pełna poprawka to follow-up S12-04.
 - [ ] Nowy szew tylko w buildzie e2e: `?e2eArt=missing|corrupt` (strażnik buildu sprawdza znacznik `e2eArt`).
+
+## Bieg 2026-10-14-save-s13b-s15-s14b (poprawka zapisu, S-13b, S-15, S-14b)
+
+Wysłane: #48 (poprawka zapisu po audycie #45), #49 (S-13b), #50 (S-15, **zapis v2 na urządzeniach**), #51 (S-14b). `main` 16848c6: 2445 testów jednostkowych, 77 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #52 (nie scalać w biegu): **1 CRITICAL** SV2-01 — gdy zapis kopii `backup-v1` się nie uda, gra już nigdy nie zapisze postępów (blokada przy każdym starcie, w panelu tylko ogólne „nie zapisuje”). Stary zapis v1 zostaje cały. Następny bieg (uzgodniony 2026-10-15) zaczyna od poprawki SV2-01 i HIGH SV2-02/SV2-03/SRR-02.
+- [ ] S-15 1.6 — format zapisu v2 to droga jednokierunkowa: wycofanie wdrożenia do buildu sprzed #50 pokaże kartę „zapis z nowszej wersji” (nic nie nadpisze, ale gra nie wczyta postępów). Zaakceptuj.
+- [ ] S-15 5.6 — przeczytaj wszystkie 15 zagadek LOGIC (`npm run sample -- E4 --variants`). Orkiestrator i przegląd nie znaleźli błędów; to pierwsza treść pisana w całości przez agenta.
+
+### P1 — na tablecie
+
+- [ ] S-13b 8.7 — gest wskazówek zegara palcem dziecka (przyciąganie co 5 min, chwyt wskazówki).
+- [ ] S-15 9.5 — stukanie w pola Zakrywanki 160 × 136 na tablecie 1024.
+- [ ] Poprawka zapisu 4.8 — rada „wyczyść dane strony” sprawdzona na iPadzie (Safari i ikona na ekranie) i Androidzie (Chrome).
+- [ ] Poprawka zapisu 5.8 — pomiar N-7: czy zimny odczyt IndexedDB na iPadzie po długiej przerwie przekracza 5 s.
+- [ ] S-14b 8.8 — notacja przeniesienia i pożyczki w słupku (mała „1” nad kolumną, podniesiona „¹” przy pożyczce) — z wiedzy ogólnej; potwierdź albo podaj szkolny zapis.
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami: `context/archive/2026-10-14-save-reason-and-recovery/follow-ups/review-fixes.md`, `…-drawn-grid-tasks-e3-e4/…`, `…-minigame-daily-puzzle/…` (m.in. kopia v1 nieczytelna w aplikacji, import/reset bez kopii v1), `…-number-line-written-arrows/…`.
+- [ ] e2e: przy 6 przeglądarkach 4 różne testy padały pod obciążeniem (adaptive #13, parent-settings #14, openWelcome); bramki biegu używały `--workers=4`. Rozważ `workers: 4` w `playwright.config.ts`.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Poprawka zapisu 3.7 — zapisu z nowszej wersji gry nie da się nadpisać importem ani resetem (PRD milczy).
+- [ ] Poprawka zapisu 4.7 — przy trwałym `unavailable` rodzic może nadpisać zapis po drugim potwierdzeniu („Zastąp mimo to”); odwraca część decyzji 6.7 z biegu art-stand-in (FR-022).
+- [ ] S-13b 10.6 — „ustaw zegar” w E4.3 tylko kwadranse, w E3 rusza się tylko krótka wskazówka; siatka 5 × 4; zakresy tam, gdzie ZADANIA milczy; wyższe progi odblokowania E3.3/E3.5/E3.7/E3.11/E4.7 na żywych zapisach.
+- [ ] S-15 8.5 — Hasło odsłania literę po każdym rozwiązanym zadaniu (wzór z kitu) zamiast „ułożenia wyników rosnąco” (ZADANIA § 5); słowa z mebli salonu (KANAPA, DYWAN…), nie z listy kitu.
+- [ ] S-15 10.6 — wariant co 4. rundę; zagadka dnia bez karty wyboru; zagadki z puli E3–E4 trafiają też do E5–E6 (przegląd F1); Zakrywanka 0–12 na każdym etapie; ×2 także za drugą próbę; warianty nie zmieniają opanowania.
+- [ ] S-14b 9.6 — ARROW_TABLE bez „·3” i łańcuchów; WRITTEN bez „brakujących cyfr”; przeniesienie rysuje gra; oś-podpowiedź tylko E2–E3 do 30 (bez E1) i zastępuje rozkład „20 − 7” z S-03 (przegląd F4); oś SEQUENCE tylko w E2.7; wyższe progi E2.6/E3.9/E5.2/E6.7.

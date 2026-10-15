@@ -3,7 +3,7 @@ title: Autonomous run profile — Martynka urządza
 status: confirmed        # draft → confirmed (only `references/setup.md` § Prove flips it)
 skill_version: 6
 created: 2026-10-12
-updated: 2026-10-14
+updated: 2026-10-15
 env: context/foundation/autonomous-run.env
 ---
 
@@ -134,6 +134,7 @@ Note: the service worker is registered only in production builds; checks of `sw.
 - Run 2026-10-13-s12-s14: from a subagent the plain `npx playwright test --config=/Users/kamilp/Dev/Martynka-urzadza/playwright.config.ts …` (absolute config path, cwd outside the repo) launched Chromium in 4 of ~20 sessions (S-12 p7, S-13 p6, two reviews); otherwise MachPort. Every phase gate therefore re-ran e2e in the orchestrator session. The full suite now takes ~3.3 min (46 tests); `adaptive.spec` with drag rounds runs close to its 180 s limit. Phaser's image loader fetches through `blob:` object URLs — a test that classifies responses must check the URL scheme first.
 - Run 2026-10-14-fix-art-stand-in: phase agents (sonnet) could not launch Chromium in 9 of 9 sessions; the two review agents (impl-review, visual) could. The orchestrator ran e2e at every gate and committed both e2e phases from their request files. An e2e spec in `test.describe.configure({ mode: 'serial' })` stops at the first failure, so a break expected to turn several tests red must be checked by running each expected-red test alone (`-g "<title>"`). The full suite takes ~3.7 min (52 tests).
 - Run 2026-10-13-s09-s11: subagent sessions could not launch Chromium in 16 of 18 tries (MachPort); the request-file protocol (agent writes spec + `git apply` break patches, the orchestrator runs them, a finishing agent commits) carried every e2e phase. A sandboxed `npm install` with `allowed_domains: ["registry.npmjs.org"]` worked in a subagent.
+- Run 2026-10-14-save-s13b-s15-s14b: the full e2e suite (63–77 tests) under 6 workers failed in 4 of ~10 orchestrator runs on load-sensitive tests (adaptive #13 180 s limit, parent-settings #14 random drag/hold timing — now pinned via `?e2eSkills`, `openWelcome` timeouts), each green alone or on re-run. From S-15 p4 every gate ran `npx playwright test --config=<abs> --workers=4` (~5 min, 0 flakes in ~20 runs). Phase agents (sonnet) launched Chromium in ~6 of ~35 sessions; the request-file protocol carried every e2e phase, and the orchestrator fixed 3 spec defects at the green run (wrong dialog button, retype paying a star, a proposed stage's "(propozycja)" label). An archive move can leave a CLAUDE.md path into `context/changes/` — run `validate-rule-files.sh` after the archive.
 - Hooks: a per-edit ESLint + related-tests hook and an end-of-turn gate (lint, tsc, vitest) send the agent back once.
 
 ## 9. Screenshots (visual gate)
