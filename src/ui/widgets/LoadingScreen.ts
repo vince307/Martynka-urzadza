@@ -42,14 +42,17 @@ export class LoadingScreen {
 
     /**
      * Draws the calm "still loading" line under the bar once (a second call changes nothing).
-     * DESIGN-GAP 112 (docs/design-gaps.md): the kit has no line for a slow start; the text is ours, in the title style.
+     * DESIGN-GAP 112 (docs/design-gaps.md): the kit has no line for a slow start; the text is ours: centred under the bar like the title,
+     * at the bar-text size and wrapped within the bar width so it never runs off the canvas.
      */
     slow(): void {
         if (this.note) {
             return;
         }
         const { slow } = LOADING_LAYOUT;
-        this.note = this.scene.add.text(slow.x, slow.y, pl.loading.slow, textStyle('expression')).setOrigin(0.5);
+        this.note = this.scene.add
+            .text(slow.x, slow.y, pl.loading.slow, { ...textStyle('bar'), align: 'center', wordWrap: { width: slow.maxWidth } })
+            .setOrigin(0.5, 0);
     }
 
     destroy(): void {

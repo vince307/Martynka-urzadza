@@ -215,4 +215,33 @@ describe('guardedPut on a raw object store', () => {
         expect(puts).toEqual([value]);
         expect(wasPrevented()).toBe(true);
     });
+
+    // impl-review F1: in a browser the error event of the failed get BUBBLES to the transaction (IndexedDB fires request
+    // errors with bubbles: true). The transaction must not treat that prevented read error as a failed write.
+    it('a prevented read error that bubbles to the transaction does not reject the write', async () => {
+        const puts: unknown[] = [];
+        const tx = {} as { oncomplete?: () => void; onerror?: (e: unknown) => void; onabort?: () => void; error: unknown };
+        tx.error = null;
+        const os = {
+            transaction: tx,
+            get: () => {
+                const req = {} as { onerror?: (e: unknown) => void; error: unknown };
+                req.error = new DOMException('unreadable', 'UnknownError');
+                queueMicrotask(() => {
+                    const event = { target: req, preventDefault: () => undefined };
+                    req.onerror?.(event);
+                    tx.onerror?.(event);   // bubbling: request, then transaction
+                });
+                return req;
+            },
+            put: (value: unknown) => {
+                puts.push(value);
+                queueMicrotask(() => tx.oncomplete?.());
+                return {};
+            },
+        } as unknown as IDBObjectStore;
+        const value = { ...fixture, version: SAVE_VERSION } as unknown as SaveState;
+        await expect(guardedPut(os, 'profile:default', value)).resolves.toBeUndefined();
+        expect(puts).toEqual([value]);
+    });
 });

@@ -31,8 +31,10 @@ export function guardedPut(os: IDBObjectStore, key: string, value: SaveState): P
         let refused = false;
         if (tx) {
             tx.oncomplete = () => (refused ? undefined : resolve());
+            // No tx.onerror: request errors bubble to the transaction, so the prevented read error would reject a write that
+            // lands. A put error that is not prevented aborts the transaction, and tx.error then carries its own name
+            // (e.g. QuotaExceededError), not a made-up UnknownError that `run` would retry as a lost connection.
             tx.onabort = () => reject(tx.error ?? new DOMException('aborted', 'AbortError'));
-            tx.onerror = () => reject(tx.error ?? new DOMException('failed', 'UnknownError'));
         }
         const put = (): void => {
             const req = os.put(value, key);

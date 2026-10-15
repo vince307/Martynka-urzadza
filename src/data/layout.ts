@@ -441,7 +441,7 @@ export const UNLOCK_LAYOUT = {
 export const LOADING_LAYOUT = {
     title: { x: 960, y: 450 },
     bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
-    slow: { x: 960, y: 680 },   // DESIGN-GAP 112: the "still loading" line under the bar
+    slow: { x: 960, y: 680, maxWidth: 800 },   // DESIGN-GAP 112: the "still loading" line under the bar, centred like the title, wrapped within the bar width
 } as const;
 
 /**
