@@ -28,6 +28,7 @@ export interface RoomSnapshot {
     tasksDone: number;
     chosen: Readonly<Record<string, number>>;
     currentTask: { id: string; label: string; cost: number } | null;
+    taskKind: 'stage' | 'slot' | null;
     affordable: boolean;
     buttonText: string;
     panel: PanelState;
@@ -214,7 +215,8 @@ export class RoomScene extends Scene {
                 this.time.delayedCall(delay, () => this.showCard());
             }
         }
-        const celebrated = step.bought ?? step.changed;
+        // A stage purchase has no furniture to pop; the background cross-fade arrives with the art (S-16a phase 7).
+        const celebrated = step.bought?.kind === 'stage' ? null : (step.bought ?? step.changed);
         if (celebrated) {
             this.celebrate(celebrated);
         }
@@ -244,7 +246,7 @@ export class RoomScene extends Scene {
         const task = currentTask(room, state);
         const open = this.panel.kind === 'open';
         const blocked = open || this.card;
-        const panelSlot = this.panel.kind === 'open' ? (this.panel.mode === 'change' ? this.panel.slot : task?.slot) : undefined;
+        const panelSlot = this.panel.kind === 'open' ? (this.panel.mode === 'change' ? this.panel.slot : task?.kind === 'slot' ? task.slot : undefined) : undefined;
         const preview = this.panel.kind === 'open' && this.panel.preview !== null && panelSlot ? { slot: panelSlot, variant: this.panel.preview } : null;
         if (this.holdZone.input) {
             this.holdZone.input.enabled = !blocked;
@@ -387,6 +389,7 @@ export class RoomScene extends Scene {
             tasksDone: state.tasksDone,
             chosen: { ...state.chosen },
             currentTask: task ? { id: task.id, label: task.label, cost: task.cost } : null,
+            taskKind: task?.kind ?? null,
             affordable: view?.affordable ?? false,
             buttonText: this.taskButton.text(),
             panel: { ...this.panel },

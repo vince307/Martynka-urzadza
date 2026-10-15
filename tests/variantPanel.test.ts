@@ -19,9 +19,9 @@ const room: RoomDef = {
         { id: 'lamp', x: 0, y: 0, depth: 3, variants: ['a', 'b', 'c'] },
     ],
     tasks: [
-        { id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
-        { id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
-        { id: 't3', slot: 'lamp', label: 'lamp', cost: 12 },
+        { kind: 'slot', id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
+        { kind: 'slot', id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
+        { kind: 'slot', id: 't3', slot: 'lamp', label: 'lamp', cost: 12 },
     ],
 };
 
@@ -75,7 +75,7 @@ describe('picking and confirming', () => {
         expect(r.panel).toEqual(CLOSED);
         expect(r.stars).toBe(2);
         expect(r.state).toEqual({ tasksDone: 1, chosen: { floor: 1 } });
-        expect(r.bought).toEqual({ taskId: 't1', slot: 'floor', variant: 1 });
+        expect(r.bought).toEqual({ kind: 'slot', taskId: 't1', slot: 'floor', variant: 1 });
     });
     it('a balance equal to the cost buys down to zero', () => {
         const r = stepPanel(open(0), { type: 'confirm' }, { room, state: fresh(), stars: 5 });
@@ -241,5 +241,40 @@ describe('random event sequences (risk #16)', () => {
             panel = r.panel;
         }
         expect(start + earned - stars, fail('start + earned - end = spent')).toBe(spent);
+    });
+});
+
+describe('background stage task (S-16a)', () => {
+    const staged: RoomDef = {
+        id: 'staged',
+        name: 'Staged',
+        background: 'bg',
+        slots: [{ id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] }],
+        tasks: [
+            { kind: 'stage', id: 'walls', label: 'walls', cost: 5 },
+            { kind: 'slot', id: 'sofa', slot: 'sofa', label: 'sofa', cost: 8 },
+        ],
+    };
+    it('one open buys the stage: cost once, panel stays closed, chosen untouched', () => {
+        const r = stepPanel(CLOSED, { type: 'open' }, { room: staged, state: fresh(), stars: 12 });
+        expect(r.panel).toEqual(CLOSED);
+        expect(r.stars).toBe(7);
+        expect(r.bought).toEqual({ kind: 'stage', taskId: 'walls' });
+        expect(r.state).toEqual({ tasksDone: 1, chosen: {} });
+    });
+    it('too few stars: open does nothing', () => {
+        const s = fresh();
+        const r = stepPanel(CLOSED, { type: 'open' }, { room: staged, state: s, stars: 4 });
+        expect(r.stars).toBe(4);
+        expect(r.bought).toBeNull();
+        expect(r.state).toBe(s);
+    });
+    it('a second open right after opens the next slot panel and spends nothing', () => {
+        const first = stepPanel(CLOSED, { type: 'open' }, { room: staged, state: fresh(), stars: 20 });
+        const second = stepPanel(first.panel, { type: 'open' }, { room: staged, state: first.state, stars: first.stars });
+        expect(second.panel).toEqual({ kind: 'open', mode: 'buy', taskId: 'sofa', preview: null });
+        expect(second.stars).toBe(15);
+        expect(second.bought).toBeNull();
+        expect(second.state).toBe(first.state);
     });
 });

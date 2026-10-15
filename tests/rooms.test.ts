@@ -3,7 +3,7 @@
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { currentTask, emptyRoomState, nextTaskCost, purchase, repairCurrentRoom, roomDone, roomsListView, taskButtonView } from '../src/core/rooms';
+import { currentTask, emptyRoomState, nextTaskCost, purchase, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
@@ -17,8 +17,8 @@ const room: RoomDef = {
         { id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] },
     ],
     tasks: [
-        { id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
-        { id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
+        { kind: 'slot', id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
+        { kind: 'slot', id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
     ],
 };
 
@@ -67,7 +67,7 @@ describe('purchase', () => {
         expect(r.stars).toBe(0);
         expect(r.state.tasksDone).toBe(1);
         expect(r.state.chosen).toEqual({ floor: 2 });
-        expect(r.bought).toEqual({ taskId: 't1', slot: 'floor', variant: 2 });
+        expect(r.bought).toEqual({ kind: 'slot', taskId: 't1', slot: 'floor', variant: 2 });
     });
     it('one star short is refused and nothing changes', () => {
         const s = deepFreeze(emptyRoomState());
@@ -182,5 +182,40 @@ describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
         expect(out.repairedFrom).toBe('living');
         expect(out.session.currentRoom).toBe('salon');
         expect(out.session.rooms.living).toBe(living);
+    });
+});
+
+describe('background stage task (S-16a)', () => {
+    const staged: RoomDef = {
+        id: 'staged',
+        name: 'Staged',
+        background: 'bg',
+        slots: [{ id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] }],
+        tasks: [
+            { kind: 'stage', id: 'walls', label: 'walls', cost: 5 },
+            { kind: 'slot', id: 'sofa', slot: 'sofa', label: 'sofa', cost: 8 },
+        ],
+    };
+    it('buys with no variant: spends the cost once, advances, leaves chosen untouched', () => {
+        const r = purchase(staged, emptyRoomState(), 12, null);
+        expect(r).toMatchObject({ ok: true, stars: 7, bought: { kind: 'stage', taskId: 'walls' } });
+        if (r.ok) expect(r.state).toEqual({ tasksDone: 1, chosen: {} });
+    });
+    it('a stage never needs a valid variant, a slot still does', () => {
+        expect(purchase(staged, emptyRoomState(), 12, 7).ok).toBe(true);
+        expect(purchase(staged, { tasksDone: 1, chosen: {} }, 12, null)).toEqual({ ok: false, reason: 'bad-variant' });
+    });
+    it('a short balance refuses the stage', () => {
+        expect(purchase(staged, emptyRoomState(), 4, null)).toEqual({ ok: false, reason: 'short' });
+    });
+    it('a slot purchase reports kind slot', () => {
+        const r = purchase(staged, { tasksDone: 1, chosen: {} }, 8, 2);
+        expect(r).toMatchObject({ ok: true, bought: { kind: 'slot', taskId: 'sofa', slot: 'sofa', variant: 2 } });
+    });
+    it('stagesDone counts stage tasks inside the done prefix', () => {
+        expect(stagesDone(staged, { tasksDone: 0, chosen: {} })).toBe(0);
+        expect(stagesDone(staged, { tasksDone: 1, chosen: {} })).toBe(1);
+        expect(stagesDone(staged, { tasksDone: 2, chosen: {} })).toBe(1);
+        expect(stagesDone(staged, { tasksDone: 99, chosen: {} })).toBe(1);
     });
 });

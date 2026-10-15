@@ -28,8 +28,8 @@ describe('every room in ROOMS', () => {
             const slotIds = room.slots.map((s) => s.id);
             expect(new Set(slotIds).size, room.id).toBe(slotIds.length);
             expect(room.tasks, room.id).toHaveLength(slotIds.length);
-            expect(new Set(room.tasks.map((t) => t.slot)).size, room.id).toBe(slotIds.length);
-            for (const task of room.tasks) expect(slotIds, room.id).toContain(task.slot);
+            expect(new Set(room.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []))).size, room.id).toBe(slotIds.length);
+            for (const task of room.tasks) if (task.kind === 'slot') expect(slotIds, room.id).toContain(task.slot);
             let previous = 0;
             for (const { cost } of room.tasks) {
                 expect(Number.isInteger(cost), room.id).toBe(true);
@@ -62,8 +62,8 @@ describe('salon data', () => {
         expect(SALON.tasks).toHaveLength(10);
         const slotIds = SALON.slots.map((s) => s.id);
         expect(new Set(slotIds).size).toBe(10);
-        for (const task of SALON.tasks) expect(slotIds).toContain(task.slot);
-        expect(new Set(SALON.tasks.map((t) => t.slot)).size).toBe(10);
+        for (const task of SALON.tasks) if (task.kind === 'slot') expect(slotIds).toContain(task.slot);
+        expect(new Set(SALON.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []))).size).toBe(10);
         expect(new Set(SALON.tasks.map((t) => t.id)).size).toBe(10);
     });
 

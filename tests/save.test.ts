@@ -35,8 +35,8 @@ const room: RoomDef = {
         { id: 'sofa', x: 0, y: 0, depth: 2, variants: ['a', 'b', 'c'] },
     ],
     tasks: [
-        { id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
-        { id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
+        { kind: 'slot', id: 't1', slot: 'floor', label: 'fixFloor', cost: 5 },
+        { kind: 'slot', id: 't2', slot: 'sofa', label: 'sofa', cost: 8 },
     ],
 };
 

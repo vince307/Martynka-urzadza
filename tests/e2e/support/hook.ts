@@ -49,7 +49,7 @@ export interface Snapshot {
     counterText: string;
     screen: 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; modeText: string | null } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; modeText: string | null } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;

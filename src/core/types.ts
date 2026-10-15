@@ -41,12 +41,10 @@ export interface SlotDef {
     variants: [string, string, string]; // atlas frame keys
 }
 
-export interface RoomTaskDef {
-    id: string;
-    slot: string;             // slot this task furnishes
-    label: string;            // text key, e.g. "Wstaw kanapę"
-    cost: number;             // stars
-}
+/** A renovation task: a background stage (changes the room backdrop, no variant) or a furniture slot (3 variants). */
+export type RoomTaskDef =
+    | { kind: 'stage'; id: string; label: string; cost: number }
+    | { kind: 'slot'; id: string; slot: string; label: string; cost: number };
 
 export interface RoomDef {
     id: string;               // e.g. "salon"

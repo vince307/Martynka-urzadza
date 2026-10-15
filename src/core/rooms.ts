@@ -15,7 +15,7 @@ export interface TaskButtonView {
 }
 
 export type PurchaseResult =
-    | { ok: true; state: RoomState; stars: number; bought: { taskId: string; slot: string; variant: Variant } }
+    | { ok: true; state: RoomState; stars: number; bought: { kind: 'stage'; taskId: string } | { kind: 'slot'; taskId: string; slot: string; variant: Variant } }
     | { ok: false; reason: 'no-task' | 'short' | 'bad-variant' };
 
 export function emptyRoomState(): RoomState {
@@ -43,17 +43,32 @@ export function taskButtonView(room: RoomDef, state: RoomState, stars: number): 
     };
 }
 
-export function purchase(room: RoomDef, state: RoomState, stars: number, variant: number): PurchaseResult {
+/** `variant` is ignored for a stage task (no variant, `chosen` untouched); a slot task needs 0-2. */
+export function purchase(room: RoomDef, state: RoomState, stars: number, variant: number | null): PurchaseResult {
     const task = currentTask(room, state);
     if (!task) return { ok: false, reason: 'no-task' };
+    if (task.kind === 'stage') {
+        if (!(stars >= task.cost)) return { ok: false, reason: 'short' };
+        return {
+            ok: true,
+            stars: stars - task.cost,
+            state: { tasksDone: state.tasksDone + 1, chosen: state.chosen },
+            bought: { kind: 'stage', taskId: task.id },
+        };
+    }
     if (variant !== 0 && variant !== 1 && variant !== 2) return { ok: false, reason: 'bad-variant' };
     if (!(stars >= task.cost)) return { ok: false, reason: 'short' };
     return {
         ok: true,
         stars: stars - task.cost,
         state: { tasksDone: state.tasksDone + 1, chosen: { ...state.chosen, [task.slot]: variant } },
-        bought: { taskId: task.id, slot: task.slot, variant },
+        bought: { kind: 'slot', taskId: task.id, slot: task.slot, variant },
     };
+}
+
+/** How many `stage` tasks are done: the stage tasks inside the done prefix of the task list. */
+export function stagesDone(room: RoomDef, state: RoomState): number {
+    return room.tasks.slice(0, state.tasksDone).filter((t) => t.kind === 'stage').length;
 }
 
 export function roomDone(room: RoomDef, state: RoomState): boolean {
