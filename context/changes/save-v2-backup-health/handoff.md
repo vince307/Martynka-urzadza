@@ -13,7 +13,7 @@ the v1 copy after 3 failed copies) — that decision is a `[human]` row (2.5), n
 | Commits | 3 on the branch after this step: change identity, research, `docs(save-v2-backup-health): plan` |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 37 (`grep -c '^- \[ \]' plan.md`), 0 done |
+| `## Progress` rows remaining | 39 (`grep -c '^- \[ \]' plan.md`), 0 done |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
