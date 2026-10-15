@@ -837,7 +837,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 8cd9e81
 - [x] 3.2 Deliberate break: bez `EncodingError` / `cutLoad` bez `onProcessError` → czerwone; przywrócone; meta-check (atrapa vs pin vs faza 10) — 8cd9e81
-- [ ] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
+- [x] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (` — orchestrator e2e after 8cd9e81: 104 passed (--workers=4)
 
 #### Manual
 
@@ -847,9 +847,9 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 4.1 `npm run sounds` dwa razy → bez zmian po drugim przebiegu; 26 plików
-- [ ] 4.2 Deliberate break: usunięty `.ogg` → `tests/soundFiles.test.ts` czerwony; przywrócone; meta-check (tabela, nie poprawność audio)
-- [ ] 4.3 Pełna bramka lokalna zielona; `dist/sw.js` wymienia `star.m4a` i `star.ogg`
+- [x] 4.1 `npm run sounds` dwa razy → bez zmian po drugim przebiegu; 26 plików — 723fef8
+- [x] 4.2 Deliberate break: usunięty `.ogg` → `tests/soundFiles.test.ts` czerwony; przywrócone; meta-check (tabela, nie poprawność audio) — 723fef8
+- [x] 4.3 Pełna bramka lokalna zielona; `dist/sw.js` wymienia `star.m4a` i `star.ogg` — 723fef8
 
 #### Manual
 

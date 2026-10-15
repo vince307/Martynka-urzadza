@@ -1,13 +1,13 @@
 # Handoff — `final-sound` (slice S-16b)
 
-Written by `/10x-tdd final-sound phase 3` of run 2026-10-15-fix-s16bcd. Phases 1-3 (pure core/data, quiet rejections, `cutLoad` onProcessError) are done and committed (test-first); phases 4-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
+Written by `/10x-implement final-sound phase 5` of run 2026-10-15-fix-s16bcd. Phases 1-4 (pure core/data, quiet rejections, `cutLoad` onProcessError, sound files + table test) are done and committed; phases 5-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-sound`, cut from `main` at `a1625be` |
-| Commits | 4 docs + p1 a85eb75 + p2 f242c04 + p3 8cd9e81 + handoffs |
+| Commits | 4 docs + p1 a85eb75 + p2 f242c04 + p3 8cd9e81 + p4 723fef8 + handoffs |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | 0 (1.4, 2.4 are [reviewer]) |
@@ -24,6 +24,7 @@ Written by `/10x-tdd final-sound phase 3` of run 2026-10-15-fix-s16bcd. Phases 1
 | `tests/sound.test.ts` | 17 tests |
 | `src/core/errorSignal.ts`, `src/ui/dom/errorBoundary.ts`, `src/scenes/loaderCut.ts` (p3) | EncodingError/NotSupportedError quiet rejections; DOMException name read; `cutLoad` no-ops `onProcessError` |
 | `tests/loaderCut.test.ts`, `tests/errorSignal.test.ts`, `tests/phaserLoaderPin.test.ts` (p3) | +3 +2 +1 tests |
+| `scripts/copy-sounds.mjs`, `npm run sounds`, `public/assets/sounds/{m4a,ogg}/*` (26 files, byte-identical to the pack), `tests/soundFiles.test.ts` (p4) | copy script (exit 1 when pack or file missing), 3 tests table <-> disk |
 | `tests/soundCues.test.ts` | 21 tests, states built by public reducers (`startRound`/`answer`/`nextSolutionStep`/`next`, `stepPanel`) |
 | `context/changes/final-sound/{plan,change,handoff}.md` | progress rows 1.1-1.3, 3.1-3.2 ticked |
 
@@ -31,17 +32,17 @@ Written by `/10x-tdd final-sound phase 3` of run 2026-10-15-fix-s16bcd. Phases 1
 
 | Command | Result |
 |---|---|
-| RED | `expected true to be false` (EncodingError rejection fatal) and `expected "vi.fn()" to be called 1 times, but got 2 times` (late decode error) |
 | lint / typecheck | OK |
-| npm test | 3014 passed (branch baseline 3008, +6) |
+| npm test | 3017 passed (branch baseline 3014, +3 in `tests/soundFiles.test.ts`) |
 | deploy tests, sample E1-E6 | OK (no generators/content changed) |
-| build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e | not runnable in this session — orchestrator gate (MachPortRendezvous Permission denied); row 3.3 left unticked. Run the full suite: this phase touches `loaderCut.ts` and the boundary |
-| Break | `EncodingError` removed from `QUIET_REJECTIONS` and `cutLoad` without `onProcessError` no-op: both new tests red, restored. Meta: the fake file's callbacks call `loader.fileProcessComplete` like Phaser's, so it proves `cutLoad` cuts both callbacks; that Phaser really calls them is pinned by the source-text test; the real browser proof is phase 10 |
+| build | OK, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` lists `assets/sounds/m4a/star.m4a` and `assets/sounds/ogg/star.ogg` (1 each) |
+| e2e | 104 passed (--workers=4), run in this session (branch baseline 104, +0); row 3.3 ticked citing the orchestrator note (104 passed after 8cd9e81) |
+| sounds | `npm run sounds` twice: identical, 26 files; `cmp` against the pack clean; effects 132 243 B M4A / 81 144 B OGG, music 746 014 / 107 707 B (balance.loader comment updated) |
+| Break | removed `ogg/tap.ogg`: 2 of 3 tests red (URL exists, no orphan/count), restored (cmp equal). Meta: proves table <-> disk equality only, not that files decode (phase 9 `missing` empty) |
 
 ## 4. Next command
 
-`/10x-implement final-sound phase 4`
+`/10x-implement final-sound phase 5`
 
 ## 5. Open
 
