@@ -37,3 +37,13 @@ Each item has a `Trigger:` line; later slices grep for it. Items moved on from e
   Trigger: an `end` event in the evening or night
 - **Duplicates**: `placeValue.ts` `withSpeech` repeats the digit-space stripping of `spoken.ts`; the ±5/10/15/60 time shifts in `clockElapsed.ts` repeat `clock.ts`.
   Trigger: the next change to either generator
+
+## From the visual gate (2026-10-15)
+
+- **E5.8 night-hours hint spoken with a dotted time**: the hint line "Najpierw policz godziny do północy, czyli do 24.00." is read as written; other times go through `spokenTime` ("8 15").
+  Trigger: the [human] tablet-voice check (plan row 4.8) or the next change to `clockElapsed.ts` hints
+- **Three-line hint bar beside the keypad sits at the 12-CSS-px floor** (`FeedbackBar.update` fits the text to the bar height): a first hint line over ~70 characters would wrap to a fourth line below it. Longest today: 67 (E5.12).
+  Trigger: a new hint line over 70 characters on a keypad skill
+- **`fitPieces` has no minimum scale**: an expression longer than the E6.9 four-term decomposition would shrink below the prompt size without a floor.
+  Trigger: a place-value decomposition beyond four terms or five-digit numbers in an expression beside the keypad
+

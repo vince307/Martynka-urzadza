@@ -1,33 +1,34 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by `/10x-impl-review` of run `2026-10-15-fix-s14c-s14d`. The review found no CRITICAL. It fixed five WARNINGs and two OBSERVATIONs in one commit, `fix(text-measure-time-types): poprawki z przeglądu implementacji`. The verdict is `MERGE: CLEAR`. The next agent must not get wrong: the visual gate screenshots the post-fix prompts. E5.12 now reads "Ile centymetrów ma klasa na planie?", and E6.2 TV durations have per-template minimums.
+Written by the visual gate of run `2026-10-15-fix-s14c-s14d`. Verdict `VISUAL: PASS`: every `[visual]` row is captured at 1440×900 and 1024×768, and three discrepancies are fixed in `da12957`. The slice is ready to archive. The next agent must not get wrong: the only open Progress rows are `[human]` 4.8 and 9.6, which stay open through archive and ship.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | plan commits, p1 `9507da3` ... p11 `093b129`, handoff `dbb141b`, review fix `6d20b08`, then this docs commit |
+| Commits | plan commits, p1 `9507da3` ... p11 `093b129`, review fix `6d20b08`, review docs `70cc262`, visual fix `da12957`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`): only `[visual]` and `[human]` rows; every `[reviewer]` row is ticked `— impl-review` |
+| `change.md` status | `impl_reviewed` (unchanged; archive sets its own) |
+| `## Progress` rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): `[human]` 4.8 and 9.6 only |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/text-measure-time-types/reviews/impl-review.md` | review report: F1-F10 with decisions; ends with the `MERGE:` line |
-| `src/data/measures.ts` | `SCALE_PLAN_CM.max` 12 → 10 (F1, E5.12 stays inside the times table) |
-| `src/data/elapsed.ts`, `src/core/tasks/generators/clockElapsed.ts` | `SpanTemplate.minSpan` per span sentence; `generateSpan` rejects shorter spans (F5) |
-| `src/data/pl.ts` | `timesMorePrompt{More,Less,Factor}`, `price{Total,Unit}Prompt`, `placeValue{Join,PartValue}` (F3); `lengthScaleRealPrompt` wording (F6) |
-| `src/core/tasks/generators/{timesMore,price,placeValue}.ts` | prompts come from `pl`; `parseTimesMoreParams` maxFactor 3..10, `parsePriceParams` max ≥ 2·maxQty plus a `continue` guard (F4); `drawFourDigit` bounded (F7) |
-| `src/core/curriculum.ts`, `src/core/round/artFilter.ts`, `tests/curriculum.test.ts` | stale comments; `UNIT_CHOICE` removed from `LATER` (F7) |
-| `tests/round.test.ts` | `round with several right tiles (Task.check)`: 2 tests (F2) |
-| `tests/clockElapsed.test.ts`, `tests/price.test.ts`, `tests/timesMore.test.ts`, `tests/lengthText.test.ts` | new span-minimum test, parser rejections, scale prompt regex |
-| `context/changes/text-measure-time-types/plan.md` | `[reviewer]` rows 1.5, 2.6, 3.5, 4.6, 5.5, 6.5, 7.5, 8.6, 9.5 ticked |
-| `context/changes/text-measure-time-types/follow-ups/review-fixes.md` | section "From the implementation review": 6 follow-ups, each with `Trigger:` |
-| `context/changes/text-measure-time-types/change.md` | status `impl_reviewed` |
+| `context/changes/text-measure-time-types/reviews/visual-review.md` | visual review: V1-V3 with fixes, verdict per plan row, hand checks, legibility; ends with the `VISUAL:` line |
+| `context/changes/text-measure-time-types/screenshots/` | 176 PNG frames (`desktop-*`, `tablet-*`) and `README.md` (state, frames, how reached, values) |
+| `src/core/round/promptBlank.ts` | `blankAsText` (a blank inside a text line reads "?") and `fitPieces` (an expression shrinks to its room) |
+| `src/core/round/keypad.ts` | `keypadDisplay` (the typed number grouped like `formatNumber`) |
+| `src/ui/widgets/FeedbackBar.ts`, `src/ui/widgets/SolutionSteps.ts` | hint, retype and solution lines go through `blankAsText` |
+| `src/ui/widgets/Keypad.ts` | `paintField` shows `keypadDisplay` and shrinks a long number to the field |
+| `src/scenes/TaskScene.ts` | `drawExpression` lays out through `fitPieces` with `maxWidth` |
+| `src/data/layout.ts` | `TASK_LAYOUT.expression.maxWidth` 760, `expressionWide.maxWidth` 1300, `keypad.fieldPadding` 24 |
+| `tests/promptBlank.test.ts`, `tests/keypad.test.ts` | 3 new tests: blank as text, expression fit, keypad grouping |
+| `docs/design-gaps.md` | row 99: blank inside a hint or solution line written as "?" |
+| `context/changes/text-measure-time-types/plan.md` | `[visual]` rows 2.7, 3.6, 4.7, 5.6, 6.6, 7.6, 8.7 ticked |
+| `context/changes/text-measure-time-types/follow-ups/review-fixes.md` | section "From the visual gate": 3 follow-ups, each with `Trigger:` |
 
 ## 3. Verification
 
@@ -35,36 +36,34 @@ All observed in this step. The baseline is main `e2f7caa`: unit 2479, e2e 82.
 
 | command | result |
 |---|---|
-| `npm run lint` / `npm run typecheck` | OK / OK (before and after the fixes) |
-| `npm test` before the fixes | 2666 passed (139 files) = 2479 + 187 |
-| `npm test` after the fixes | 2669 passed (139 files) = 2479 + 190 (branch +3: 2 round, 1 span) |
+| `npm run lint` / `npm run typecheck` | OK / OK (after the fix, visual spec moved out of the repo) |
+| `npm test` | 2672 passed (139 files) = 2479 + 193 (branch before this step 2669, +3) |
 | `deploy/test-martynka-deploy.sh`, `deploy/ops/test-martynka-ops.sh` | OK, OK |
-| `npm run sample -- E1` ... `E6` | `Naruszenia: 0` × 6 (before and after) |
+| `npm run sample -- E1` ... `E6` | `Naruszenia: 0` × 6 (no content changed) |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --config=… --workers=4`, before the fixes | 86 passed (6.3 min) = 82 + 4 |
-| same, after the fixes (fix commit `6d20b08` content) | 86 passed (5.8 min) = 82 + 4 |
-| break: `startableSteps` keeps the review step | red: `curriculumStart` E6 and `review.test.ts`, expected `[2,3,5,7,9,10]`, received `[2,4,6,8,10,11]`; restored. Meta-check: it proves the calendar exclusion, not the step count |
-| break: `isCorrect` ignores `check` (before F2) | all 2666 green, which revealed the gap (F2) |
-| same break after F2 | the 2 new `tests/round.test.ts` tests red (`expected 'second' to be 'done'`, `expected null to be 'second'`); restored. Meta-check: the oracle reads the prompt, not `task.check` |
-| teacher read `sample -- E1/E5/E6 --count 6` + scans `--count 60`, seeds 1-5 | E5 times-table ops max divisor 10, max quotient 10 (2100 ops); E5.12 max factor 10 after F1; TV match 46-110 min, film 30-107 min after F5 |
-| servers 4397/4398 | no listener after the suite (`lsof -sTCP:LISTEN`) |
+| `npx playwright test --config=… --workers=4` | 86 passed (5.8 min) = 82 + 4 (branch +0) |
+| new tests before the code | red: `blankAsText`, `keypadDisplay`, `fitPieces` not exported |
+| break: `fitPieces` scale fixed at 1 | `tests/promptBlank.test.ts` "shrinks an expression …" red (`expected 1 to be close to 0.5`); restored |
+| break: `keypadDisplay` returns the bare buffer | `tests/keypad.test.ts` `keypadDisplay` red; restored. Meta-check: the tests prove the pure functions; that the widgets call them is proved by the re-captured frames `i04-*`, `v04-*`, `v02b/c-*` |
+| visual capture | Playwright on the hook build, port 4399: 26 tests (13 states × 2 widths) green, then `V1` re-captured twice after the expression fit |
+| servers 4397/4398/4399 | no listener at the end (`lsof -sTCP:LISTEN`) |
 
 ## 4. Next command
 
-`visual gate`
+`/10x-archive text-measure-time-types` then ship
 
 ## 5. Open
 
-- `[visual]` rows 2.7, 3.6, 4.7, 5.6, 6.6, 7.6, 8.7 in plan Progress. The screenshots are taken after this fix commit.
-- `[human]` 4.8: the tablet voice reads `spokenTime` "8 15" as a time. Also listen for "okienko plus jeden mniejsze niż pięć" (`pl.speech.less`) and unit symbols such as "560 g".
+- `[human]` 4.8: the tablet voice reads `spokenTime` "8 15" as a time. Also listen for "okienko plus jeden mniejsze niż pięć" (`pl.speech.less`), unit symbols such as "560 g", and the hint "czyli do 24.00" (follow-up from this gate).
 - `[human]` 9.6: the decisions that differ from ZADANIA/PRD (plan row 9.6).
-- Follow-ups in `follow-ups/review-fixes.md`: `pl.speech` comparison verb; unit symbols in `speak`; "Oblicz." before the place-value box; `TaskScene` `reported`; CLOCK_ELAPSED `end` never crosses midnight; duplicates `withSpeech` and the time shifts.
+- DESIGN-GAP row 99 (`docs/design-gaps.md`): a blank in a hint or solution line reads "?". It is our choice, and the kit may replace it.
+- Follow-ups in `follow-ups/review-fixes.md`, section "From the visual gate": spoken "24.00" in the E5.8 hint, the three-line hint bar at the 12-px floor (`FeedbackBar.update`), and no minimum scale in `fitPieces`. The earlier sections are unchanged.
 - At archive time: the roadmap still shows S-14c as `planning`.
 
 ## 6. Autonomous decisions
 
-1. **I fixed the WARNINGs in place instead of deferring them.** The step prompt says content wording is cheap, so fix it. All the fixes are small and covered by tests. What would change this: a fix that needs a new widget or save format.
-2. **I set `SCALE_PLAN_CM.max` to 10 rather than adding a `maxPlan` param.** I rejected the param because E5.12 is the only user and a plan drawn on paper is short anyway. What would change this: an E6 scale skill that needs larger plans.
-3. **I left `pl.speech.less/greater` unchanged; it is a follow-up.** The words are shared by COMPARE_EXPR and older types, so changing them would need a teacher read of every one of them. What would change this: the [human] voice check finding the reading wrong.
-4. **I wrote per-template `minSpan` values myself** (match 45, film 30, train 20, the rest 10), based on a teacher's sense of real life. What would change this: a teacher read asking for other floors.
-5. **I ticked `[reviewer]` 8.6 and 9.5 on code evidence:** an empty diff of `save.ts`/`variants.ts`/fixtures, an unchanged `RoundKind`, every follow-up has a `Trigger:`, and the stale comments are fixed. What would change this: a later change adding review-step state.
+1. **I captured with Playwright and not Claude in Chrome.** Every state past a first try needs canvas taps, so I followed the precedent of S-13 to S-14b (profile § 8). What would change this: Chrome driving Phaser touch.
+2. **I wrote the blank in text lines as "?" (gap 99).** I rejected drawing boxes inside the wrapped hint and solution text, which is a larger widget change for one hint line. I also rejected the word "okienko" in the equation, which reads worse. "?" is how E2.7 already marks a missing term. What would change this: a kit frame for hints with a box, or a teacher read preferring another mark.
+3. **I set the expression room beside the keypad to 760 px, not 800.** At 800 the shrunk E6.9 row ended 20 px from the keypad. 760 keeps 40 px clear and changes no expression that fit before. What would change this: a kit `.equation` width.
+4. **I grouped the keypad field (V2) although the plan row only asked that six digits fit.** The project rule is grouping from 10 000, and the solution lines the child copies are grouped. What would change this: a teacher read wanting raw digits while typing.
+5. **I added states beyond the plan rows** (tare solution, E5.12 solution, a long E6.9 decomposition) because the step prompt names long prompts and the solution beside the keypad as the risk. V3 was found only through the added E6.9 state. What would change this: nothing; extra frames do not affect ticking.

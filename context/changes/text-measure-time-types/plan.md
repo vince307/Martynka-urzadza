@@ -854,7 +854,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 2.6 [reviewer] Odczyt nauczyciela `sample` E1.9 `--count 6` (kształty, kafelki przy granicy, „mniej niż”/„więcej niż” w podpowiedzi, mowa „mniejsze niż”) — impl-review
-- [ ] 2.7 [visual] Zrzuty: nierówność pierwsza próba, stuknięty dobry kafelek niekanoniczny (zielony), zły kafelek z podpowiedzią, druga próba, krok 1 i ostatni krok rozwiązania („Pasuje …”), retype — 1440×900 i 1024×768
+- [x] 2.7 [visual] Zrzuty: nierówność pierwsza próba, stuknięty dobry kafelek niekanoniczny (zielony), zły kafelek z podpowiedzią, druga próba, krok 1 i ostatni krok rozwiązania („Pasuje …”), retype — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 3: ORDER_OPS, TIMES_MORE, PRICE + dane E5.10, E5.11
 
@@ -868,7 +868,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 3.5 [reviewer] Odczyt nauczyciela `npm run sample -- E5 --count 6`, kroki E5.10, E5.11: odmiana towarów i „razy więcej naklejek” (dopełniacz), rodzaj czasownika wg imienia, podpowiedzi uczące metody, polecenia 1–3 zdania — impl-review
-- [ ] 3.6 [visual] Zrzuty: PRICE pierwsza próba (najdłuższe polecenie z próbki), TIMES_MORE z podpowiedzią, ORDER_OPS krok 1 i ostatni krok rozwiązania — 1440×900 i 1024×768
+- [x] 3.6 [visual] Zrzuty: PRICE pierwsza próba (najdłuższe polecenie z próbki), TIMES_MORE z podpowiedzią, ORDER_OPS krok 1 i ostatni krok rozwiązania — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 4: CLOCK_ELAPSED, TIME_UNITS + dane E5.3, E5.8, E6.1, E6.2 + testy przypięte do E6
 
@@ -883,7 +883,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 4.6 [reviewer] Odczyt nauczyciela `sample` E5.3, E5.8, E6.1, E6.2 `--count 6`: zapis godzin, „trwa 45 minut”, rozkład jazdy tekstem, kwadranse/doby odmienione, podpowiedź „do pełnej godziny” bez wyniku w 1. linii — impl-review
-- [ ] 4.7 [visual] Zrzuty: E5.3 kafelki godzin (pierwsza próba), E5.3 podpowiedź, E5.8 rozkład jazdy na klawiaturze, E6.2 „do pełnej godziny”, TIME_UNITS krok rozwiązania — 1440×900 i 1024×768
+- [x] 4.7 [visual] Zrzuty: E5.3 kafelki godzin (pierwsza próba), E5.3 podpowiedź, E5.8 rozkład jazdy na klawiaturze, E6.2 „do pełnej godziny”, TIME_UNITS krok rozwiązania — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 - [ ] 4.8 [human] Głos tabletu czyta `spokenTime` („8 15”) jako godzinę, nie „osiem kropka piętnaście”
 
 ### Phase 5: UNIT_CHOICE i MASS tekstowy + dane E5.7, E6.3 (masa), E6.5
@@ -898,7 +898,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 5.5 [reviewer] Odczyt nauczyciela `sample` E5.7, E6.3, E6.5 `--count 6`: jednostki jednoznaczne, brutto/netto/tara po szkolnemu, „3 kwintale”, „2 tony”, podpowiedzi bez wyniku w 1. linii — impl-review
-- [ ] 5.6 [visual] Zrzuty: UNIT_CHOICE kafelki jednostek (pierwsza próba i podpowiedź), MASS tara na klawiaturze, MASS tona krok rozwiązania — 1440×900 i 1024×768
+- [x] 5.6 [visual] Zrzuty: UNIT_CHOICE kafelki jednostek (pierwsza próba i podpowiedź), MASS tara na klawiaturze, MASS tona krok rozwiązania — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 6: LENGTH i CAPACITY tekstowe + dane E5.12, E6.3 (długość), E5.5
 
@@ -912,7 +912,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 6.5 [reviewer] Odczyt nauczyciela `sample` E5.5, E5.12, E6.3 `--count 6`: skala po szkolnemu, zapis „4 cm 7 mm”, ułamki „½ l” czytelne, „szklanek” odmienione — impl-review
-- [ ] 6.6 [visual] Zrzuty: LENGTH skala (pierwsza próba), `twoUnit` z okienkiem w środku polecenia, CAPACITY tekst krok rozwiązania — 1440×900 i 1024×768
+- [x] 6.6 [visual] Zrzuty: LENGTH skala (pierwsza próba), `twoUnit` z okienkiem w środku polecenia, CAPACITY tekst krok rozwiązania — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 7: PLACE_VALUE ≥ 1000 + dane E6.9, E6.10
 
@@ -926,7 +926,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 7.5 [reviewer] Odczyt nauczyciela `sample` E6.9, E6.10 `--count 6`: „3 tysiące, 5 setek”, zapis z odstępem od 10 000, podpowiedź rzędami bez wyniku w 1. linii — impl-review
-- [ ] 7.6 [visual] Zrzuty: E6.9 okienko w rozkładzie, E6.10 polecenie z 250 000 i sześciocyfrowa odpowiedź wpisana na klawiaturze, krok rozwiązania — 1440×900 i 1024×768
+- [x] 7.6 [visual] Zrzuty: E6.9 okienko w rozkładzie, E6.10 polecenie z 250 000 i sześciocyfrowa odpowiedź wpisana na klawiaturze, krok rozwiązania — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 8: Krok powtórkowy MIX (E6.11)
 
@@ -941,7 +941,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Manual
 
 - [x] 8.6 [reviewer] Krok powtórkowy bez stanu w zapisie; `kind: 'round'`; brak nowego `RoundKind`; S-15 bez zmian — impl-review
-- [ ] 8.7 [visual] Zrzuty: karta „Nowa umiejętność!” z nazwą E6.11 i zadanie rundy powtórkowej — 1440×900 i 1024×768
+- [x] 8.7 [visual] Zrzuty: karta „Nowa umiejętność!” z nazwą E6.11 i zadanie rundy powtórkowej — 1440×900 i 1024×768 — visual gate (da12957, reviews/visual-review.md)
 
 ### Phase 9: Seam sweep, dokumentacja, luki projektu, follow-upy
 
