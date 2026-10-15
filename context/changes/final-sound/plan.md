@@ -811,9 +811,9 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [x] 1.2 Deliberate break: `locked` przed `off` / `boot` dla `music-loop` → czerwone; przywrócone; meta-check (reguły, nie dowód Phasera)
-- [x] 1.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — a85eb75
+- [x] 1.2 Deliberate break: `locked` przed `off` / `boot` dla `music-loop` → czerwone; przywrócone; meta-check (reguły, nie dowód Phasera) — a85eb75
+- [x] 1.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (` — a85eb75
 
 #### Manual
 
