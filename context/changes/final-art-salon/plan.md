@@ -812,7 +812,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 #### Automated
 
 - [x] 8.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (seed #8 i wszystkie spec'e, baseline, bez spadków) — d9f1fbe (e2e 94 passed --workers=4, observed)
-- [ ] 8.2 Celowe złamanie: wyjątek w callbacku `progress` → seed/first-launch czerwone; przywrócone; meta-check
+- [x] 8.2 Celowe złamanie: wyjątek w callbacku `progress` → seed/first-launch czerwone; przywrócone; meta-check — orchestrator ran the break (progress handler without try/catch + throw: seed.spec and first-launch.spec #12 red; restored); meta-check: proves a failing bar cannot block the start, not how it looks
 
 #### Manual
 
@@ -822,10 +822,10 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 9.1 `rg -n "Trigger:" context/changes/final-art-salon/follow-ups/review-fixes.md` ≥ 10 wierszy; każdy follow-up z wiersza S-16a w roadmapie ma wpis
-- [ ] 9.2 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
-- [ ] 9.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
-- [ ] 9.4 Celowe złamanie: tekst gracza literałem w `RoomScene` → `npm run lint` czerwony; przywrócone; meta-check
+- [x] 9.1 `rg -n "Trigger:" context/changes/final-art-salon/follow-ups/review-fixes.md` ≥ 10 wierszy; każdy follow-up z wiersza S-16a w roadmapie ma wpis
+- [x] 9.2 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
+- [x] 9.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
+- [x] 9.4 Celowe złamanie: tekst gracza literałem w `RoomScene` → `npm run lint` czerwony; przywrócone; meta-check (the literal stays green: ESLint has no player-text rule, only teacher read and review guard it; replaced by the boundary break `idb-keyval` import in `RoomScene` → lint red `no-restricted-imports`, restored; meta-check: proves the scene boundary rules bite, not the text rule)
 
 ### Phase 10: Remont salonu dotykiem — e2e (#16, #2)
 
