@@ -1,26 +1,27 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by the `/10x-new` step of run `2026-10-15-fix-s14c-s14d`. The change identity exists with a roadmap-claims table,
-scope per type/step, design and copy binding, save-format verdict (v2 stays) and triggered follow-ups. The next agent must
-not get wrong: MIX is a curriculum step whose round draws from the whole stage as an ordinary `'round'` (S-15 schedule
-untouched, no saved state), and a playable review step must not become the calendar start (`calendarStart`/`floorToCalendar`).
+Written by the `/10x-research` step of run `2026-10-15-fix-s14c-s14d`. `research.md` answers the change's questions with
+file + symbol anchors; the slice is ready for `/10x-plan`. The next agent must not get wrong: a `review` flag alone
+leaves E6.11 invisible (`playableSteps` needs one shared predicate), and INEQUALITY on tiles needs the scene, e2e,
+distractor and validator fixes from research § 3 even though `isCorrect` already honours `check`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | 1 on top of `e2f7caa`: `docs(text-measure-time-types): change identity (autonomous run)` |
+| Commits | 2 on top of `e2f7caa`: `docs(text-measure-time-types): change identity (autonomous run)`, `docs(text-measure-time-types): research` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | no `plan.md` yet |
-| Working tree | clean after the commit (only the two files below were staged) |
+| Working tree | clean after the commit (three files staged by path) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/text-measure-time-types/change.md` | change identity: Notes, roadmap claim vs repo now (14 rows incl. the calendar-start side effect), scope table per type, design source and copy, migration verdict, triggered follow-ups, 7 autonomous decisions |
+| `context/changes/text-measure-time-types/research.md` | research: per-type shapes/ranges/modes/hints table, INEQUALITY options, MIX shape, calendar-start effect, nouns and validator, threshold table, generator extension points, invariants |
+| `context/changes/text-measure-time-types/change.md` | frontmatter only: status `new` → `preparing`, `updated` 2026-10-15 |
 | `context/changes/text-measure-time-types/handoff.md` | this file |
 
 ## 3. Verification
@@ -28,27 +29,29 @@ untouched, no saved state), and a playable review step must not become the calen
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/text-measure-time-types` |
-| repo checks for the claims table | `src/core/tasks/registry.ts` `generators` has 37 types, none of the 8 new ones; `src/data/curriculum/E6.ts` E6.2 and E6.11 have `skills: []`; E1.9/E5.x/E6.x skill counts read from the data files; `Task.check` exists (`src/core/tasks/types.ts`) and `src/core/round.ts` uses it; `src/core/save.ts` validates `mastery` as an open map |
-| lint / typecheck / tests / build / e2e | not run: docs-only step, no code touched (baseline on main e2f7caa: lint OK, typecheck OK, 2479 tests, build OK, e2e 82 — inherited, unverified) |
+| decisive anchors re-read in main context | `isCorrect` (`src/core/round.ts`) checks `task.check` first; `answerWrong` (`tests/e2e/support/hook.ts`) picks first tile `!== state.answer`; `TaskScene` `markCorrect`/`markHint` use `task.answer`; `parsePlaceValueParams` throws for `max > 999`; `artBlocked` MASS/CAPACITY cases; `UNBOUNDED_TYPES`/`screenBound`; `calendarStart`/`skillBuckets`/`unlockThreshold`; `ACCUSATIVE_ONE` verb list; 23 nouns absent from `src/data/nouns.ts` (grep) |
+| `metadata-guard.mjs mark-researched` | `changed: true` |
+| lint / typecheck / tests / build / e2e | not run: research-only step, no code touched (baseline on main e2f7caa: lint OK, typecheck OK, 2479 tests, build OK, e2e 82 — inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-research text-measure-time-types`
+`/10x-plan text-measure-time-types`
 
 ## 5. Open
 
-- Research questions (from `change.md`): MIX shape in `src/core/curriculum.ts` `playableSteps`/`skillBuckets`/`unlockReady` (a review flag on `StepDef` vs synthetic skills); `calendarStart`/`floorToCalendar` excluding the review step; INEQUALITY as the first `check` on tiles: `src/core/round/canonicalInput.ts`, `tests/solvableInMode.test.ts`, solution lines, e2e helpers `answerRight`/`answerWrong` in `tests/e2e/support/hook.ts`; PLACE_VALUE text variants above 999 in `src/core/tasks/generators/placeValue.ts`; text variants in `mass.ts`/`length.ts` without a drawing; `capacity_half_l_e5` feasibility against `tests/contentInvariants.test.ts`.
-- Unlock thresholds rise for E1.9, E5.3, E5.7, E5.10, E5.12, E6.3, E6.5 (slower for saved learners, nothing lost) — the plan states it.
-- DESIGN-GAP candidates (rows from 98 in `docs/design-gaps.md`, not written yet): several right answers on tiles (INEQUALITY), a review-round title (MIX) only if the plan shows one.
-- Follow-ups out of scope get new triggers at archive time (see `change.md` § Triggered follow-ups): set-the-clock E5–E6, 200/500 zł notes, WRITTEN missing digits, ARROW_TABLE multi-number.
-- Heavy teacher read: every new generator, `npm run sample -- E1|E5|E6 --count 6`, new nouns (`lekcja`, `sekunda`, `doba`, `kwadrans`, `tysiąc`, goods for PRICE) in `src/data/nouns.ts`.
+- Plan decisions (research § Open Questions): INEQUALITY several right tiles (recommended, + DESIGN-GAP row from 98 in `docs/design-gaps.md`) vs one; MIX round composition (step-first recommended); review step excluded from `calendarStart`/`floorToCalendar`/`firstPlayableSteps` (recommended); `speak` texts for times and numbers ≥ 1000 (`MAX_NUMBER_WORD` in `src/core/text/numberWords.ts`).
+- Calendar side effect even with the review step excluded: E6.2 playable moves autumn E6 start from E6.3 to E6.2 and puts E6.2 into the E6 warm-up; `tests/curriculumStart.test.ts` oracle and E6 lists, `tests/curriculumEnd.test.ts`, `tests/curriculumPick.test.ts`, `tests/progress.test.ts`, `tests/perimeterSkills.test.ts`, `tests/mass.test.ts` pin today's data.
+- Unlock-threshold rises (research § 7 table): E1.9, E5.3, E5.7, E5.10, E5.12, E6.3, E6.5, E6.9, E6.10 (+ E5.5 if `capacity_half_l_e5`) — `[human]` PR note; nothing moves backwards (`endRound`, `floorToCalendar`).
+- `artBlocked` (`src/core/round/artFilter.ts`) must exempt MASS text variants; `parsePlaceValueParams` 999 check per variant.
+- Validator: add duration verbs (trwa…) to `ACCUSATIVE_ONE` or avoid "1 godzinę/minutę" in durations; avoid locative time phrases ("po … minutach").
+- Not inspected: e2e specs referencing E6 steps — plan greps them before changing E6 data.
+- Follow-ups out of scope keep/retarget triggers at archive (change.md § Triggered follow-ups).
 
 ## 6. Autonomous decisions
 
-1. Next step `/10x-research` (not `/10x-plan`) — many contact points (curriculum, round evaluation, e2e). Would change: nothing; the orchestrator fixed it.
-2. No new widgets; timetables as text. Rejected: a timetable `TaskVisual`. Would change: a teacher read finding the text unreadable.
-3. MIX = a curriculum step with a whole-stage pool, played as `kind: 'round'`. Rejected: a `MIX` generator; a new `RoundKind`. Why: no saved state, S-15 `nextRoundKind`/`afterRound` untouched. Would change: research showing step unlock needs real skills, or the author wanting a passed-test record (v3 → stop at open PR).
-4. The review step is excluded from the calendar start (recommendation). Rejected: summer start on E6.11. Would change: the author wanting review as the default start after the school year.
-5. LOGIC in E6.11 out of scope (S-15 pool, S-15 F1 is the author's decision). Would change: the author extending the puzzle pool to E5–E6.
-6. Follow-ups: in — MASS/LENGTH text, PLACE_VALUE ≥ 1000, `capacity_half_l_e5` (conditional), F9 `written.ts` attempt cap (optional); out — set-the-clock E5–E6, 200/500 zł, WRITTEN missing digits, ARROW_TABLE multi-number. Would change: a CLOCK step in E5–E6 `types:` or PRICE amounts above 100 zł in ZADANIA.
-7. Save format stays v2. Would change: any persisted MIX state → v3 → open PR stop.
+1. **Scope from change.md, no interview.** Chosen: research the questions in change.md and the step prompt. Rejected: asking. Why: contract rule 1. Would change: nothing.
+2. **INEQUALITY recommendation = several correct tiles (option A).** Rejected: one correct tile (B). Why: ZADANIA § 4 "wiele poprawnych odpowiedzi"; `isCorrect` already supports it; four bounded fixes. Would change: plan budget exceeded or the teacher read finding several right tiles confusing for E1.
+3. **Review step excluded from calendar start and warm-up (recommendation, agrees with change.md decision 4).** Rejected: summer start on E6.11. Why: ZADANIA calls E6.11 a "finałowe wyzwanie" reached by progress. Would change: the author wanting the summer start to be the year's review.
+4. **MIX composition: step first, then skill (recommendation).** Rejected: uniform over skills. Why: ZADANIA is silent; uniform lets many-skill steps dominate. Would change: the teacher read or playtest preferring weighting by skills.
+5. **`capacity_half_l_e5` judged feasible as text (½ and ¼ l, both directions).** Rejected: moving the trigger now. Why: ≥ 20 distinct tasks vs `MIN_DISTINCT` 12. Would change: the invariants failing in implementation → trigger to S-17 (change.md).
+6. **Research written in English** like prior research artifacts in `context/archive/`. Would change: a maintainer rule for Polish artifacts.
