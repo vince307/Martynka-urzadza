@@ -63,7 +63,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | done |
 | S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | done |
 | S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | done |
-| S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | proposed |
+| S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | planning |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | done |
 | S-16  | final-art-sound             | M7   | dziecko widzi docelową grafikę salonu i ekranów E3–E4, animacje, słyszy dźwięki   | S-14, S-15           | FR-026                          | blocked  |
 | S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
@@ -357,7 +357,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** uogólnienie `blockDrag` na nominały i układ portfela (follow-up S-14 `Trigger: S-14d`).
 - **Risk:** MONEY_PAY to drugi wariant `drag` — dotyka helperów e2e używanych przez każdy spec (`answerRight`); E1.1 jest dziś pusty.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-15: Minigra i zagadka dnia
 
