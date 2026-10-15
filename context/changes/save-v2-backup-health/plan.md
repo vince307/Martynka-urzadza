@@ -657,7 +657,7 @@ kolejne starty czytają v2, bez migracji.
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 8430945
 - [x] 1.2 Deliberate break: `attempt` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony; `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; `run` ignoruje `mayRetry` → test porzuconego ponowienia czerwony; przywrócone; meta-check — 8430945
 - [x] 1.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2; `tests/saveKeys.test.ts` zielony — 8430945
-- [ ] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
+- [x] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0` — 8430945 (e2e: orkiestrator, 77 passed na 8430945, --workers=4)
 
 #### Manual
 
@@ -668,9 +668,9 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: limit prób nigdy nie osiągany / wyjątek `hidden` usunięty / `replace` bez zaległej kopii → odpowiednie testy czerwone; przywrócone; meta-check (liczone operacje magazynu)
-- [ ] 2.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ccbfc11
+- [x] 2.2 Deliberate break: limit prób nigdy nie osiągany / wyjątek `hidden` usunięty / `replace` bez zaległej kopii → odpowiednie testy czerwone; przywrócone; meta-check (liczone operacje magazynu) — ccbfc11
+- [x] 2.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2 — ccbfc11
 - [ ] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
