@@ -13,6 +13,7 @@ import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
 import { NumberCells } from './NumberCells';
 import { NumberLine } from './NumberLine';
+import { PatternRow } from './PatternRow';
 import { Ruler } from './Ruler';
 import { Thermometer } from './Thermometer';
 import { WrittenColumn, type ColumnMode } from './WrittenColumn';
@@ -38,6 +39,7 @@ export class TaskPicture {
     private readonly figure: FigureGrid;
     private readonly line: NumberLine;
     private readonly arrows: ArrowGraph;
+    private readonly pattern: PatternRow;
     private readonly column: WrittenColumn;
     private area: Rect | null = null;
     private drawn: { shown(): boolean; art?(): { key: string; loaded: boolean }[] } | null = null;
@@ -57,6 +59,7 @@ export class TaskPicture {
         this.figure = new FigureGrid(scene);
         this.line = new NumberLine(scene);
         this.arrows = new ArrowGraph(scene);
+        this.pattern = new PatternRow(scene);
         this.column = new WrittenColumn(scene);
     }
 
@@ -82,6 +85,7 @@ export class TaskPicture {
             figure: this.figure,
             numberLine: this.line,
             arrows: this.arrows,
+            pattern: this.pattern,
             column: this.column,
         };
         this.drawn = widgets[visual.kind] ?? null;
@@ -129,8 +133,8 @@ export class TaskPicture {
                 this.arrows.render(visual, rect);
                 break;
             case 'pattern':
-                // The row widget arrives with phase 2; no skill draws a pattern before the curriculum lists one.
-                throw new Error('a pattern row has no widget yet (S-14d phase 2)');
+                this.pattern.render(visual.items, rect);
+                break;
             case 'column':
                 if (!column) {
                     throw new Error('a written column is drawn with its boxes');
@@ -161,6 +165,7 @@ export class TaskPicture {
         this.figure.setVisible(false);
         this.line.setVisible(false);
         this.arrows.setVisible(false);
+        this.pattern.setVisible(false);
         this.column.setVisible(false);
     }
 

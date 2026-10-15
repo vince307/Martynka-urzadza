@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
 import { FIRST_HINT_EXEMPT_TYPES, firstHint, solutionSteps } from '../src/core/round/hints';
+import { faceText } from '../src/core/tasks/faces';
 import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
@@ -165,7 +166,7 @@ describe('solutionSteps', () => {
                 if (typeof task.answer === 'number') {
                     expect(lastNumber(last), where).toBe(task.answer);
                 } else if (typeof task.answer === 'string') {
-                    expect(last, where).toContain(task.answer);
+                    expect(last, where).toContain(String(faceText(task.answer)));
                 }
             }
         }

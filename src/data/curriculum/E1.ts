@@ -23,7 +23,17 @@ const addSub = (id: string, step: number, params: SkillDef['params']): SkillDef 
 export const E1: StageDef = {
     id: 'E1',
     steps: [
-        { step: 1, title: 'Figury, szlaczki, porównywanie liczebności, orientacja, symetria', types: ['SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY'], skills: [] },
+        {
+            step: 1,
+            title: 'Figury, szlaczki, porównywanie liczebności, orientacja, symetria',
+            childName: 'Figury i szlaczki',
+            types: ['SHAPES', 'PATTERN', 'COMPARE_QTY', 'SPATIAL', 'SYMMETRY'],
+            skills: [
+                skill('E1.1.shapes_pick', 1, 'SHAPES', { variants: ['name', 'odd'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'tiles'),
+                skill('E1.1.shapes_all', 1, 'SHAPES', { variants: ['all'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'select'),
+                skill('E1.1.pattern', 1, 'PATTERN', { periods: ['AB', 'AAB', 'ABB'], figures: ['circle', 'square', 'triangle', 'star', 'heart'] }, 'tiles'),
+            ],
+        },
         {
             step: 2,
             title: 'Liczby 1–5: liczenie, „który z kolei”, znaki <, >, =',

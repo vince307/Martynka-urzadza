@@ -62,6 +62,15 @@ export const PLACEHOLDER_COLORS = {
 /** DESIGN-GAP row 53: column colours of a bar chart, in order. */
 export const CHART_COLORS: readonly number[] = [0x54beb4, 0xf1ce6b, 0xc98460, 0xa6cf7f, 0xc99b66];
 
+/** DESIGN-GAP row 100: fills of the four face colours (SHAPES, PATTERN); the outline is deep teal so a figure reads without its colour. */
+export const FACE_COLORS = { red: 0xe0707a, blue: 0x6fa8dc, green: 0x7dbb5a, yellow: 0xf1ce6b } as const;
+
+/** Look of a face: the big figure fills `bigFill` of the short side of its box, the small one `smallRatio` of that; a rectangle is wider than tall. */
+export const FACE_LOOK = { bigFill: 0.8, smallRatio: 0.6, outline: 4, rectangleWidth: 1.15, rectangleHeight: 0.7 } as const;
+
+/** A row of figures with an empty place (PATTERN): cell size and gap, the dashed frame of the place. DESIGN-GAP row 101. */
+export const PATTERN_LOOK = { cell: 132, gap: 20, maxScale: 1, dash: 14, dashGap: 10, dashWidth: 5, radius: 20 } as const;
+
 /** Deep teal as a CSS colour: every text of the task screen. */
 export const TEXT_COLOR = '#245C59';
 

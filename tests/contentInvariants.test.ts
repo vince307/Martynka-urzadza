@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
 import { firstHint } from '../src/core/round/hints';
+import { isFace } from '../src/core/tasks/faces';
 import { screenBound, UNBOUNDED_TYPES, validationBounds } from '../src/core/tasks/bounds';
 import { generators, getGenerator, getParser, parsers } from '../src/core/tasks/registry';
 import { NUMBER_SOURCE, parseNumber } from '../src/core/text/formatNumber';
@@ -101,7 +102,8 @@ for (const stage of Object.values(stages)) {
                             expect([1, 3, 4].map((i) => parseNumber(last[i])), `${where} last hint`).toContain(task.answer);
                         }
                         // A text answer ("3.30", "3 zł 40 gr") must be stated in the last hint just like a number.
-                        if (typeof task.answer === 'string' && !ANSWER_LINE_TYPES.has(skill.type)) {
+                        // A face answer (S-14d) is shown by the tile; the hints teach what to look for and never say it.
+                        if (typeof task.answer === 'string' && !ANSWER_LINE_TYPES.has(skill.type) && !isFace(task.answer)) {
                             expect(task.hint[task.hint.length - 1], `${where} last hint`).toContain(task.answer);
                         }
                         if (bounded && max !== undefined) {

@@ -1,6 +1,8 @@
 import type { GameObjects, Scene } from 'phaser';
+import { parseFace } from '../../core/tasks/faces';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { textStyle } from './textStyle';
+import { drawFace } from './faceDraw';
 import { tileRow, type Rect } from './geometry';
 
 export type Choice = number | string;
@@ -38,7 +40,7 @@ export class AnswerTiles {
             const value = choices[i];
             const graphics = this.scene.add.graphics();
             const label = this.scene.add
-                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, String(value), textStyle('answer'))
+                .text(rect.x + rect.width / 2, rect.y + rect.height / 2, parseFace(value) ? '' : String(value), textStyle('answer'))
                 .setOrigin(0.5);
             const zone = this.scene.add
                 .zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height)
@@ -120,6 +122,10 @@ export class AnswerTiles {
         const isHint = this.hintValue !== null && tile.value === this.hintValue;
         graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.dotDone : isHint ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
+        const face = parseFace(tile.value);
+        if (face) {
+            drawFace(graphics, face, rect.x + rect.width / 2, rect.y + rect.height / 2, rect);
+        }
     }
 
     private destroyTiles(): void {
