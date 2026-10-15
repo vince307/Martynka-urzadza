@@ -861,7 +861,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 - [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (` — ee4336b (unit +6)
 - [x] 5.2 Deliberate break: `read` bez `try` → test magazynu czerwony; przywrócone; meta-check (dekodowanie dowodzi faza 9) — ee4336b
-- [ ] 5.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
+- [x] 5.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0` — orchestrator note after ee4336b: 104 passed (--workers=4)
 - [x] 5.4 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty — ee4336b
 
 #### Manual
@@ -873,7 +873,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 #### Automated
 
 - [ ] 6.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [ ] 6.2 Deliberate break: patch `e2e-break-p9a.patch` przygotowany; meta-check w handoffie (dowód w fazie 9)
+- [x] 6.2 Deliberate break: patch `e2e-break-p9a.patch` przygotowany; meta-check w handoffie (dowód w fazie 9) — PLACEHOLDER
 
 #### Manual
 

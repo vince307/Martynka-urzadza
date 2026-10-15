@@ -1,0 +1,11 @@
+--- a/src/scenes/TaskScene.ts	2026-10-16 01:54:02
++++ b/src/scenes/TaskScene.ts	2026-10-16 01:54:02
+@@ -730,7 +730,7 @@
+         const open = this.state.tasks[this.state.index];
+         this.reported = open?.check?.(value) ? { index: this.state.index, value } : null;
+         this.state = answer(this.state, value);
+-        this.playRoundCues(prior);
++        void prior;
+         this.syncStars(before, this.answerSpot(value));
+         if (this.state.phase !== 'done') {
+             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place

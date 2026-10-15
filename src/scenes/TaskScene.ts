@@ -13,6 +13,8 @@ import { isExpression } from '../core/round/prompt';
 import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
+import { roundCues, dragCue, type DragShape } from '../core/sound';
+import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
 import { pictureMode } from '../core/pictureMode';
 import { localDay } from '../core/day';
@@ -267,12 +269,12 @@ export class TaskScene extends Scene {
         this.events.on('sleep', onSleep);
         this.bar = new FeedbackBar(this, () => this.advance());
         this.steps = new SolutionSteps(this, () => this.step());
-        this.summary = new SummaryPanel(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
-        this.doneCard = new MinigameDoneCard(this, () => this.startNextRound(), () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.summary = new SummaryPanel(this, () => { this.tap(); this.startNextRound(); }, () => { this.tap(); this.game.events.emit(GAME_EVENTS.toRoom); });
+        this.doneCard = new MinigameDoneCard(this, () => { this.tap(); this.startNextRound(); }, () => { this.tap(); this.game.events.emit(GAME_EVENTS.toRoom); });
         this.letters = new LetterTiles(this);
         this.diceView = new Dice(this);
         this.board = new CoverBoard(this, balance.variants.dice.max + 1, (value) => this.submit(value));
-        this.unlockCard = new UnlockCard(this, () => this.closeUnlock());
+        this.unlockCard = new UnlockCard(this, () => { this.tap(); this.closeUnlock(); });
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
         this.autoReadFirst();
@@ -724,9 +726,11 @@ export class TaskScene extends Scene {
     /** A tile or the keypad's OK handed in an answer: core decides, the scene redraws. */
     private submit(value: unknown): void {
         const before = this.state.starsEarned;
+        const prior = this.state;
         const open = this.state.tasks[this.state.index];
         this.reported = open?.check?.(value) ? { index: this.state.index, value } : null;
         this.state = answer(this.state, value);
+        this.playRoundCues(prior);
         this.syncStars(before, this.answerSpot(value));
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
@@ -740,11 +744,29 @@ export class TaskScene extends Scene {
         this.render();
     }
 
+    /** The cues of one round transition (core/sound roundCues): the scene only schedules them. */
+    private playRoundCues(prior: RoundState): void {
+        playCues(this, soundOf(this.registry), roundCues(prior, this.state, this.kind, balance.sound.starDelayMs));
+    }
+
+    /**
+     * The `tap` cue, played from the handlers of navigation buttons only: "Dalej", "Kolejna runda", "Do pokoju" (summary
+     * and minigame card), the unlock card's "Dalej" (here), "Do pokoju" in the HUD (UIScene), and in the room the task
+     * button without enough stars, "Zamknij", "Zmień wygląd"/"Gotowe", the done card's "Dalej" and "Wróć do notesu".
+     * Never on tiles, keys, select, "OK", the speaker or the gear.
+     */
+    private tap(): void {
+        playCues(this, soundOf(this.registry), [{ id: 'tap', delayMs: 0 }]);
+    }
+
     /** "Dalej" after a correct answer; after the fifth task it opens the summary. */
     private advance(): void {
         const before = this.state.starsEarned;
         const wasFinished = this.state.finished;
+        const prior = this.state;
+        this.tap();   // "Dalej" (nav button)
         this.state = next(this.state);
+        this.playRoundCues(prior);
         this.syncStars(before, this.bar.nextTarget());
         if (!wasFinished && this.state.finished) {
             this.finishRound();
@@ -769,7 +791,7 @@ export class TaskScene extends Scene {
                 return;
             }
             this.render();
-            this.autoReadUnlock();
+            this.autoReadUnlock(playBeforeSpeech(soundOf(this.registry), 'skill-unlock'));
             return;
         }
         this.beginRound();
@@ -787,9 +809,20 @@ export class TaskScene extends Scene {
      * The tap on "Kolejna runda" was the gesture: the card is read when auto-reading is on.
      * DESIGN-GAP (docs/design-gaps.md row 23): the kit does not say whether the card is read aloud.
      */
-    private autoReadUnlock(): void {
-        if (this.autoRead && this.unlockShown) {
-            this.narrator?.speak((this.registry.get(REGISTRY_KEYS.narration) as string | null) ?? '');
+    private autoReadUnlock(waitMs: number): void {
+        if (!this.autoRead || !this.unlockShown) {
+            return;
+        }
+        const speak = (): void => {
+            if (this.unlockShown) {
+                this.narrator?.speak((this.registry.get(REGISTRY_KEYS.narration) as string | null) ?? '');
+            }
+        };
+        // The cue plays first and the card is read after it (the narrator is never cut); no cue played: at once.
+        if (waitMs > 0) {
+            this.time.delayedCall(waitMs, speak);
+        } else {
+            speak();
         }
     }
 
@@ -1163,6 +1196,7 @@ export class TaskScene extends Scene {
         if (this.dragKind === 'coins') {
             const before = this.coinState;
             this.coinState = stepTrayDrag(before, event, this.coinGeo, balance.coinDrag);
+            this.playDragCue(before, this.coinState, 'coins');
             if (this.coinState !== before) {
                 this.coinWallet.render(this.coinState, this.dragLive, this.state.phase !== 'solution');
             }
@@ -1170,8 +1204,16 @@ export class TaskScene extends Scene {
         }
         const before = this.dragState;
         this.dragState = stepBlockDrag(before, event, this.dragGeo, balance.blockDrag);
+        this.playDragCue(before, this.dragState, 'blocks');
         if (this.dragState !== before) {
             this.blockMat.render(this.dragState, this.dragLive, this.state.phase !== 'solution');
+        }
+    }
+
+    private playDragCue(before: DragShape, after: DragShape, mode: 'blocks' | 'coins'): void {
+        const id = dragCue(before, after, mode);
+        if (id) {
+            playCues(this, soundOf(this.registry), [{ id, delayMs: 0 }]);
         }
     }
 

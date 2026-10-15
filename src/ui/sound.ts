@@ -1,6 +1,7 @@
 import type { Game } from 'phaser';
-import { soundOutcome, trimFrameCount, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
+import { cueDelayMs, soundOutcome, trimFrameCount, type Cue, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
 import { balance } from '../data/balance';
+import { REGISTRY_KEYS } from '../data/layout';
 import { SOUNDS } from '../data/sounds';
 
 export interface SoundStatus {
@@ -81,4 +82,31 @@ export const trimEffects = (game: Game): string[] => {
         }
     }
     return failed;
+};
+
+/** The game's sound service, or undefined where none was made (tests, a failed start): callers then stay silent. */
+export const soundOf = (registry: { get(key: string): unknown }): SoundService | undefined =>
+    registry.get(REGISTRY_KEYS.sound) as SoundService | undefined;
+
+/** Plays a cue now or after its delay on the scene clock (removed with the scene). */
+export const playCues = (
+    scene: { time: { delayedCall(ms: number, fn: () => void): unknown } },
+    service: SoundService | undefined,
+    cues: readonly Cue[],
+): void => {
+    if (!service) return;
+    for (const cue of cues) {
+        if (cue.delayMs <= 0) service.play(cue.id);
+        else scene.time.delayedCall(cue.delayMs, () => service.play(cue.id));
+    }
+};
+
+/**
+ * Plays a cue that spoken text must wait for and returns how long the text waits (0 when the cue did not play or
+ * there is no service). The narrator is never cut by an effect; the speech starts after it.
+ */
+export const playBeforeSpeech = (service: SoundService | undefined, id: SoundId): number => {
+    if (!service) return 0;
+    const def = SOUNDS.find((s) => s.id === id);
+    return def ? cueDelayMs(service.play(id), def.durationS, balance.sound.speechGapMs) : 0;
 };

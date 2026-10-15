@@ -23,6 +23,7 @@ import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
+import { playCues, soundOf } from '../ui/sound';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
 import { SpeakerButton } from '../ui/widgets/SpeakerButton';
@@ -78,7 +79,7 @@ export class UIScene extends Scene {
         const unsubscribe = this.narrator?.onAvailability(refreshSpeaker);
         refreshSpeaker();
 
-        this.roomSwitch = new RoomSwitchButton(this, () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.roomSwitch = new RoomSwitchButton(this, () => { playCues(this, soundOf(this.registry), [{ id: 'tap', delayMs: 0 }]); this.game.events.emit(GAME_EVENTS.toRoom); });
         const refreshSwitch = (): void => this.roomSwitch.setVisible(this.registry.get(REGISTRY_KEYS.roomSwitch) === true);
         this.registry.events.on(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
         refreshSwitch();
