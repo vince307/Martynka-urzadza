@@ -2,6 +2,7 @@
 
 > **Decyzje autora (2026-10-13):** v1 zostaje przy jednym pokoju (salon); pozostałe lokacje (kuchnia, pracownia, ogród zimowy, pokój dziecięcy, biblioteka, taras) jako osobne slice'y po S-16. Autor zgadza się na publikację grafiki z paczek `designs/` w publicznym repozytorium (po konwersji do `public/assets/`).
 > **Od czasu inwentarza:** S-14 (PR #41) zintegrował z paczki A v1 pieniądze, przyrządy pomiarowe i 12 ikon (38 plików WebP, ok. 0,5 MB, `public/assets/tasks/`, `npm run art`). Decyzje nadal otwarte: sloty salonu (10 czy 6), model kosztów (5–15 czy płasko), formy mebli.
+> **Paczka `martynka-salon-v2` (2026-10-15):** komplet briefu `docs/designer-brief-s16.md` — P1 dźwięki (12 efektów + muzyka, OGG/M4A), P2 (ikona aplikacji, ekran ładowania, miniatury, portfel, ikony talerz/pudełko/naklejka, zeszyt), P3 (zasłony, półka, lampa, lewa roślina, pufa × 3; tła bez zasłon). Bez etapów pośrednich i dodatkowych przyrządów. Integracja: S-16b, S-16c, S-16d.
 > **Decyzje autora (2026-10-15, S-16):** salon v1 = 6 grup mebli × 3 z `martynka-expansion-v1` + jeden etap tła przed → po (sekcja 7: sloty b, remont b w wariancie jednego etapu, formy b); koszty 5–15 (sekcja 7: koszty a); dźwięki wydzielone do S-16b. Brakujące elementy: `docs/designer-brief-s16.md`.
 > **Decyzja autora (2026-10-14):** minigry v1 (S-15) to Hasło z wyników i Zakrywanka; zagadka dnia ×2 gwiazdki; pulę zagadek LOGIC pisze agent.
 
