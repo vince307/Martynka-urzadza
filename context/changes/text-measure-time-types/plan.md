@@ -935,7 +935,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - [x] 8.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 36e56e8
 - [x] 8.2 `npm run sample -- E6` bez naruszeń; `tests/fixtures/` bez zmian (zapis v2) — 36e56e8
 - [x] 8.3 Deliberate break: `calendarStart` bez wyłączenia kroku powtórkowego → wyrocznia E6 czerwona; przywrócone; meta-check — 36e56e8
-- [x] 8.4 Deliberate break: `pickRoundSkills` ignoruje `currentGroups` → test udziału kroków czerwony; przywrócone
+- [x] 8.4 Deliberate break: `pickRoundSkills` ignoruje `currentGroups` → test udziału kroków czerwony; przywrócone — 36e56e8
 - [ ] 8.5 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
