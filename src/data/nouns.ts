@@ -45,4 +45,13 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     śliwka: ['śliwka', 'śliwki', 'śliwek'],
     stopień: ['stopień', 'stopnie', 'stopni'],
     talerzyk: ['talerzyk', 'talerzyki', 'talerzyków'],
+    zeszyt: ['zeszyt', 'zeszyty', 'zeszytów'],
+    długopis: ['długopis', 'długopisy', 'długopisów'],
+    bułka: ['bułka', 'bułki', 'bułek'],
+    lizak: ['lizak', 'lizaki', 'lizaków'],
+    gumka: ['gumka', 'gumki', 'gumek'],
+    pocztówka: ['pocztówka', 'pocztówki', 'pocztówek'],
+    ołówek: ['ołówek', 'ołówki', 'ołówków'],
+    banan: ['banan', 'banany', 'bananów'],
+    pączek: ['pączek', 'pączki', 'pączków'],
 };

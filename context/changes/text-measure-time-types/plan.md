@@ -860,9 +860,9 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E5 --count 6` bez naruszeń
-- [ ] 3.3 Deliberate break: ORDER_OPS liczy od lewej / TIMES_MORE `less` mnoży / PRICE bez biernika dla 1 → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E5 --count 6` bez naruszeń
+- [x] 3.3 Deliberate break: ORDER_OPS liczy od lewej / TIMES_MORE `less` mnoży / PRICE bez biernika dla 1 → czerwone; przywrócone; meta-check
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

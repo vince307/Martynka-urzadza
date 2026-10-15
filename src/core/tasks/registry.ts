@@ -29,13 +29,16 @@ import { generateMissing, parseMissingParams } from './generators/missing';
 import { generateMult, parseMultParams } from './generators/mult';
 import { generateMultGroups, parseMultGroupsParams } from './generators/multGroups';
 import { generateNumberWords, parseNumberWordsParams } from './generators/numberWords';
+import { generateOrderOps, parseOrderOpsParams } from './generators/orderOps';
 import { generatePerimeter, parsePerimeterParams } from './generators/perimeter';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
+import { generatePrice, parsePriceParams } from './generators/price';
 import { generatePuzzleGrid, parsePuzzleGridParams } from './generators/puzzleGrid';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateTemperature, parseTemperatureParams } from './generators/temperature';
+import { generateTimesMore, parseTimesMoreParams } from './generators/timesMore';
 import { generateWord, parseWordParams } from './generators/word';
 import { generateWritten, parseWrittenParams } from './generators/written';
 import type { Generator } from './types';
@@ -81,6 +84,9 @@ export const generators: Readonly<Record<string, Generator>> = {
     MULT_GROUPS: generateMultGroups,
     WRITTEN: generateWritten,
     ARROW_TABLE: generateArrowTable,
+    ORDER_OPS: generateOrderOps,
+    TIMES_MORE: generateTimesMore,
+    PRICE: generatePrice,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -122,6 +128,9 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     MULT_GROUPS: parseMultGroupsParams,
     WRITTEN: parseWrittenParams,
     ARROW_TABLE: parseArrowTableParams,
+    ORDER_OPS: parseOrderOpsParams,
+    TIMES_MORE: parseTimesMoreParams,
+    PRICE: parsePriceParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

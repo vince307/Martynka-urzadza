@@ -104,14 +104,21 @@ export const E5: StageDef = {
             title: 'Ilość · cena = wartość; „n razy więcej/mniej”; mnożenie kilku liczb',
             childName: 'Zadania tekstowe do 100',
             types: ['WORD', 'PRICE', 'TIMES_MORE'],
-            skills: [skill('E5.10.word_100', 10, 'WORD', { max: 100, kinds: ['groups', 'share', 'each', 'sum', 'left'] })],
+            skills: [
+                skill('E5.10.word_100', 10, 'WORD', { max: 100, kinds: ['groups', 'share', 'each', 'sum', 'left'] }),
+                skill('E5.10.price_100', 10, 'PRICE', { variants: ['total', 'unit'], max: 100, maxQty: 10 }),
+                skill('E5.10.times_more_100', 10, 'TIMES_MORE', { variants: ['more', 'less', 'factor'], max: 100, maxFactor: 10 }),
+            ],
         },
         {
             step: 11,
             title: 'Kolejność działań; miesiące 30/31 dni, kwartały',
-            childName: 'Miesiące i kwartały',
+            childName: 'Kolejność działań i kwartały',
             types: ['ORDER_OPS', 'CALENDAR'],
-            skills: [skill('E5.11.calendar_days', 11, 'CALENDAR', { variants: ['monthDays', 'quarter'] }, 'tiles')],
+            skills: [
+                skill('E5.11.order_ops_100', 11, 'ORDER_OPS', { forms: ['a+b*c', 'a-b:c', 'a*b+c', 'a:b-c'], max: 100 }),
+                skill('E5.11.calendar_days', 11, 'CALENDAR', { variants: ['monthDays', 'quarter'] }, 'tiles'),
+            ],
         },
         {
             step: 12,

@@ -226,6 +226,7 @@ export const pl = {
         gave: ['oddał', 'oddała'],
         ate: ['zjadł', 'zjadła'],
         got: ['dostał', 'dostała'],
+        paid: ['zapłacił', 'zapłaciła'],
         has: 'ma',
         is: 'jest',
         are: 'są',
@@ -384,6 +385,15 @@ export const pl = {
         inequalityBoundary: (fact: string, relation: 'less' | 'more', boundary: number) =>
             `${fact}, więc w okienku musi być ${relation === 'less' ? 'mniej' : 'więcej'} niż ${boundary}.`,
         inequalityExample: (fact: string, check: string, answer: number) => `Na przykład ${fact}, a ${check}. Pasuje ${answer}.`,
+        // ORDER_OPS: the first hint names the step that comes first, without its result.
+        orderOpsFirst: (op: 'mult' | 'div', expr: string) => `Najpierw ${op === 'mult' ? 'mnożenie' : 'dzielenie'}: ${expr}.`,
+        // TIMES_MORE: "razy" is multiplication or division, never "o" (adding or taking away).
+        timesMoreMore: (expr: string) => `„Razy więcej” to mnożenie, nie dodawanie: ${expr}.`,
+        timesMoreLess: (expr: string) => `„Razy mniej” to dzielenie, nie odejmowanie: ${expr}.`,
+        timesMoreFactor: (expr: string) => `„Ile razy więcej” to dzielenie, nie odejmowanie: ${expr}.`,
+        // PRICE: whole złoty; the goods are in data/wordTemplates.ts.
+        priceTotalHint: (expr: string) => `Cena jednej sztuki razy liczba sztuk: ${expr}.`,
+        priceUnitHint: (expr: string) => `Cenę jednej sztuki liczymy dzieleniem: ${expr}.`,
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
         wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
         numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,
