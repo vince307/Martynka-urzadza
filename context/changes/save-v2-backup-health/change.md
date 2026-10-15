@@ -1,7 +1,7 @@
 ---
 change_id: save-v2-backup-health
 title: Nieudana kopia backup-v1 nie wyłącza zapisu, limity czasu zapisu i uczciwy panel „Zapis gry”
-status: plan_reviewed
+status: implemented
 created: 2026-10-15
 updated: 2026-10-15
 archived_at: null
