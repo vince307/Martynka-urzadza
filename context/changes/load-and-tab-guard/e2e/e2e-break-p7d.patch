@@ -1,0 +1,17 @@
+diff --git a/src/testing/e2eHook.ts b/src/testing/e2eHook.ts
+index 8344e55..a3699f6 100644
+--- a/src/testing/e2eHook.ts
++++ b/src/testing/e2eHook.ts
+@@ -179,10 +179,10 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
+                 return new Promise<void>(() => undefined);
+             }
+             log.ops.push('write');
+-            if (seam === 'newer' && storedVersionNewer(value, next.version)) {
++            if (false) {
+                 return Promise.reject(Object.assign(new Error('e2e'), { name: NEWER_SAVE }));
+             }
+-            value = seam === 'newer' ? { ...next, version: SAVE_VERSION + 1 } : next;
++            value = next;
+             log.writtenVersion = (value as { version: number }).version;
+             return Promise.resolve();
+         },

@@ -1,0 +1,12 @@
+diff --git a/src/scenes/loaderCut.ts b/src/scenes/loaderCut.ts
+index 10024c1..c609304 100644
+--- a/src/scenes/loaderCut.ts
++++ b/src/scenes/loaderCut.ts
+@@ -29,7 +29,6 @@ export function cutLoad(load: Loader.LoaderPlugin): string[] {
+         }
+         // Must come before fileProcessComplete: a late FontFace settling then calls a no-op instead of a second loadComplete
+         // (queue files are never destroyed, so their `loader` stays set).
+-        file.onProcessComplete = () => undefined;
+         file.state = Loader.FILE_ERRORED;
+         load.fileProcessComplete(file);
+     }
