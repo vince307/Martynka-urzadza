@@ -29,6 +29,8 @@ export interface Snapshot {
     art?: { key: string; loaded: boolean; label: string | null }[];
     /** Task pictures that did not load (texture missing or not decodable) against all that were queued; null before the load ends. */
     artHealth?: { total: number; missing: number } | null;
+    /** The same for the salon pictures (S-16a); null before the load ends. */
+    roomArtHealth?: { total: number; missing: number } | null;
     /** The tiles marked in the 'select' mode. */
     selected?: (number | string)[];
     /** The blocks on the mat of the 'drag' mode, and whether a block is under a finger. */

@@ -1,0 +1,13 @@
+diff --git a/src/main.ts b/src/main.ts
+index febbafb..58d942f 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -209,7 +209,7 @@ const start = async (): Promise<void> => {
+             : null;
+         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
+         // After the room repair, before the game: a salon saved under the old task list is carried to the current one.
+-        const remapped = remapLegacySalon(repaired.session, LEGACY_SALON, SALON);
++        const remapped = { session: repaired.session, remappedFrom: null as number | null }; void remapLegacySalon; void LEGACY_SALON; void SALON;
+         session = remapped.session;
+         if (remapped.remappedFrom !== null) {
+             console.warn(`Salon save from the old task list (${remapped.remappedFrom} done) carried to the current one`);

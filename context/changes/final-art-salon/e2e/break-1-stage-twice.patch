@@ -1,0 +1,13 @@
+diff --git a/src/core/variantPanel.ts b/src/core/variantPanel.ts
+index 68a4332..04690a8 100644
+--- a/src/core/variantPanel.ts
++++ b/src/core/variantPanel.ts
+@@ -30,7 +30,7 @@ export function stepPanel(panel: PanelState, event: PanelEvent, ctx: PanelContex
+             // A stage has no variant panel: one tap buys it. Only this branch and the confirm below spend stars.
+             const bought = purchase(room, state, stars, null);
+             if (!bought.ok) return same(panel);
+-            return { panel, state: bought.state, stars: bought.stars, bought: bought.bought, changed: null };
++            return { panel, state, stars: bought.stars, bought: bought.bought, changed: null };
+         }
+         return same({ kind: 'open', mode: 'buy', taskId: task.id, preview: null });
+     }
