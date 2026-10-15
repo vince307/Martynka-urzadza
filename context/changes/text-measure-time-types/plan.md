@@ -893,7 +893,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 43b12f4
 - [x] 5.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń — 43b12f4
 - [x] 5.3 Deliberate break: przedmiot z dwiema sensownymi jednostkami / `artBlocked` blokuje `text` / tara > brutto → czerwone; przywrócone; meta-check — 43b12f4
-- [ ] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — e2e 82 passed on 43b12f4 (orchestrator note, --workers=4)
 
 #### Manual
 
@@ -904,10 +904,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 6.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 6.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń; `capacity_half_l_e5` spełnia `MIN_DISTINCT` i top ≤ 15 % bez wpisu w `SMALL_SPACES`
-- [ ] 6.3 Deliberate break: skala z resztą / `twoUnit` mm liczone ·100 / `artBlocked` blokuje CAPACITY `text` → czerwone; przywrócone; meta-check
-- [ ] 6.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 6.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 4319de4
+- [x] 6.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń; `capacity_half_l_e5` spełnia `MIN_DISTINCT` i top ≤ 15 % bez wpisu w `SMALL_SPACES` — 4319de4
+- [x] 6.3 Deliberate break: skala z resztą / `twoUnit` mm liczone ·100 / `artBlocked` blokuje CAPACITY `text` → czerwone; przywrócone; meta-check — 4319de4
+- [x] 6.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 4319de4
 
 #### Manual
 
