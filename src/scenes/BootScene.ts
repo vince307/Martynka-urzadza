@@ -1,6 +1,6 @@
 import { Loader, Scene } from 'phaser';
 import { artHealth } from '../core/artHealth';
-import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
+import { bootLoadPhase, checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
@@ -58,6 +58,18 @@ export class BootScene extends Scene {
         const seamEarly = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
         const limits: BootLimits = __E2E_HOOK__ && seamEarly === 'stallall' ? E2E_BOOT_LIMITS : balance.loader;
         checkBootLimits(limits);
+        // After slowAfterMs a calm line appears under the bar (audit A-2); the rule decides, the widget draws.
+        const slowTimer = this.time.delayedCall(limits.slowAfterMs, () => {
+            if (this.phase !== 'loading' || bootLoadPhase(limits.slowAfterMs, limits) !== 'slow') {
+                return;
+            }
+            try {
+                this.loading?.slow();
+                this.phase = 'slow';
+            } catch (error) {
+                console.warn('Loading line failed', error);
+            }
+        });
         const cutTimer = this.time.delayedCall(limits.totalMs, () => {
             this.cut = cutLoad(this.load);
             this.phase = 'over';
@@ -65,6 +77,7 @@ export class BootScene extends Scene {
             console.warn(`Boot load cut after ${limits.totalMs} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);
         });
         this.load.once(Loader.Events.COMPLETE, () => {
+            slowTimer.remove(false);
             cutTimer.remove(false);
         });
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });

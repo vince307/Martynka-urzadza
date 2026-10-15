@@ -13,8 +13,11 @@ export class LoadingScreen {
     private readonly back: GameObjects.Rectangle;
     private readonly title: GameObjects.Text;
     private readonly bar: GameObjects.Graphics;
+    private note: GameObjects.Text | null = null;
+    private readonly scene: Scene;
 
     constructor(scene: Scene) {
+        this.scene = scene;
         const { title } = LOADING_LAYOUT;
         this.back = scene.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, PLACEHOLDER_COLORS.ivory, 1);
         this.title = scene.add.text(title.x, title.y, pl.loading.title, textStyle('expression')).setOrigin(0.5);
@@ -37,7 +40,21 @@ export class LoadingScreen {
         this.bar.strokeRoundedRect(bar.left, bar.top, bar.width, bar.height, bar.radius);
     }
 
+    /**
+     * Draws the calm "still loading" line under the bar once (a second call changes nothing).
+     * DESIGN-GAP 112 (docs/design-gaps.md): the kit has no line for a slow start; the text is ours, in the title style.
+     */
+    slow(): void {
+        if (this.note) {
+            return;
+        }
+        const { slow } = LOADING_LAYOUT;
+        this.note = this.scene.add.text(slow.x, slow.y, pl.loading.slow, textStyle('expression')).setOrigin(0.5);
+    }
+
     destroy(): void {
+        this.note?.destroy();
+        this.note = null;
         this.back.destroy();
         this.title.destroy();
         this.bar.destroy();
