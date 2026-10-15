@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { artHealth } from '../core/artHealth';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { ROOM_ART } from '../data/roomArt';
 import { TASK_ART } from '../data/taskArt';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -12,11 +13,22 @@ import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from
  * session has no learner, otherwise to the task scene. Nothing is drawn here.
  */
 export class BootScene extends Scene {
+    private loading: LoadingScreen | null = null;
+
     constructor() {
         super(SCENE_KEYS.boot);
     }
 
     preload(): void {
+        // The loading screen is drawn first and removed in create(); a bar that fails to draw must not stop the game from starting.
+        this.loading = new LoadingScreen(this);
+        this.load.on('progress', (value: number) => {
+            try {
+                this.loading?.progress(value);
+            } catch (error) {
+                console.warn('Loading bar failed', error);
+            }
+        });
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
@@ -41,6 +53,8 @@ export class BootScene extends Scene {
     }
 
     create(): void {
+        this.loading?.destroy();
+        this.loading = null;
         // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
         const health = artHealth(TASK_ART, (key) => this.textures.exists(key));
         this.registry.set(REGISTRY_KEYS.artHealth, health);

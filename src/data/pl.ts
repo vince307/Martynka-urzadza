@@ -273,6 +273,8 @@ export const pl = {
         earned: (n: number) => `+${n}`,
     },
     // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP, docs/design-gaps.md row 23: the kit has no narration of the card).
+    // Loading screen of BootScene: the game's name (S-16a).
+    loading: { title: 'Martynka urządza' },
     unlock: {
         title: 'Nowa umiejętność!',
         next: 'Dalej',

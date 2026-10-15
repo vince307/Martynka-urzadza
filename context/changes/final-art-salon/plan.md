@@ -800,8 +800,8 @@ Z przeglądu planu (`reviews/plan-review.md`):
 #### Automated
 
 - [x] 7.1 `rg -n "shake" src/scenes/TaskScene.ts` pokazuje strażnika `prefersReducedMotion` — 82240ec
-- [ ] 7.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
-- [ ] 7.3 Celowe złamanie: karta „Pokój gotowy!” przed końcem popu → wynik e2e zapisany; meta-check
+- [x] 7.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków) — 82240ec (e2e 94 passed --workers=4: orchestrator note)
+- [x] 7.3 Celowe złamanie: karta „Pokój gotowy!” przed końcem popu → wynik e2e zapisany; meta-check — 82240ec (orchestrator: opóźnienie karty 0 przy pełnym ruchu, room-change + room-purchase zielone, 4 passed; e2e sprawdza, że karta się pojawia, nie kiedy; kolejność to pozycja bramki wizualnej 7.4; meta-check: ochronę daje ROOM_DONE_LAYOUT.button)
 
 #### Manual
 
@@ -811,7 +811,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 8.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (seed #8 i wszystkie spec'e, baseline, bez spadków)
+- [x] 8.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (seed #8 i wszystkie spec'e, baseline, bez spadków) — see phase 8 commit (e2e 94 passed --workers=4, observed)
 - [ ] 8.2 Celowe złamanie: wyjątek w callbacku `progress` → seed/first-launch czerwone; przywrócone; meta-check
 
 #### Manual

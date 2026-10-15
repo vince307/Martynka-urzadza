@@ -436,6 +436,12 @@ export const UNLOCK_LAYOUT = {
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
+/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. DESIGN-GAP: no brand art yet (designer brief P2.2). */
+export const LOADING_LAYOUT = {
+    title: { x: 960, y: 450 },
+    bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
+} as const;
+
 /**
  * Minigame screens (S-15; kit expansion pack word-*.png, success-card): the word's letter boxes above the task, and the done card
  * shared by both minigames. DESIGN-GAP 85 (docs/design-gaps.md): the kit shows no letter row together with a task prompt
