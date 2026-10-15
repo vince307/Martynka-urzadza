@@ -1,28 +1,28 @@
 # Handoff — `save-v2-backup-health` (slice fix save-v2-backup-health, non-roadmap)
 
-Written by the `/10x-research` step of run `2026-10-15-fix-s14c-s14d`. Research is done (`research.md`, status
-`complete`); nothing is planned or implemented yet. Do not get wrong: the save format stays v2 (every new state is
-runtime `AutosaveStatus` or derived), and a timed-out IndexedDB write is NOT cancelled — it keeps blocking later
-writes on the same store and may complete late, so the plan must free `inflight` and re-mark dirty after a `replace`
-timeout.
+Written by the `/10x-plan` step of run `2026-10-15-fix-s14c-s14d`. The plan is written (`plan.md`, 6 phases, `##
+Progress` all pending) with a brief; nothing is implemented. Do not get wrong: the save format stays v2 (every new state
+is runtime `AutosaveStatus` or derived), and the plan deliberately goes beyond the PRD's literal text (v2 written without
+the v1 copy after 3 failed copies) — that decision is a `[human]` row (2.5), not something a reviewer should silently undo.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-v2-backup-health`, cut from `main` at `16848c6` |
-| Commits | 2 on the branch: change identity + `docs(save-v2-backup-health): research` |
+| Commits | 3 on the branch after this step: change identity, research, `docs(save-v2-backup-health): plan` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 37 (`grep -c '^- \[ \]' plan.md`), 0 done |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/save-v2-backup-health/research.md` | Source-backed research: SV2-01 options A–D with recommendation A (N = 3, `hidden`-flush exception), v1→v2 field coverage, attempts per session, SV2-02 time-limit design and IndexedDB abandoned-transaction behaviour, SV2-03 truthful panel lines, SRR-02 in-start way out (no counter), tests/seams pinning today's behaviour, S12-07/08/12/13 status |
-| `context/changes/save-v2-backup-health/change.md` | Frontmatter only: `status: new` → `preparing`, `updated` |
+| `context/changes/save-v2-backup-health/plan.md` | Full plan: phases 1–3 `tdd` (time limit, backup policy, honest panel), 4–5 `impl` (slow-read card, dialogs + seam sweep), 6 `e2e` (risk #2); `## Autonomous decisions` 1–10; `## Progress` |
+| `context/changes/save-v2-backup-health/plan-brief.md` | Two-page brief with the key-decision table |
+| `context/changes/save-v2-backup-health/change.md` | Frontmatter `status: preparing` → `planned`, `updated` |
 | `context/changes/save-v2-backup-health/handoff.md` | This file |
 
 ## 3. Verification
@@ -30,46 +30,51 @@ timeout.
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/save-v2-backup-health` |
-| `grep -rln -E "localStorage\|sessionStorage" src tests` | no match (rc 1) — no browser-storage path exists today |
-| `node_modules/idb-keyval/dist/index.js` (6.3.0) read | `set` resolves on transaction `complete`, no abort handle; `createStore` caches the `open` promise |
-| `metadata-guard.mjs mark-researched` | `changed: true` |
+| Success Criteria ↔ Progress mapping (script over `plan.md`) | phases 1–6: automated 4/4, 4/4, 3/3, 4/4, 5/5, 6/6; manual 2/2, 3/3, 2/2, 4/4, 2/2, 0/0 |
+| Every phase body starts with `Driver:` + `Driver why:` | yes (grep `^Driver`) |
+| `metadata-guard.mjs inspect` / `mark-planned` | `changed: true`, status `planned` |
+| `context/foundation/roadmap.md` has the change id | no (0 matches) — roadmap untouched, as required for a non-roadmap change |
+| Code facts used by the plan, read in this step | `src/core/autosave.ts` (`attempt`, `replace`, `loadSave`), `src/core/saveHealth.ts`, `src/ui/dom/saveHealthView.ts`, `src/main.ts` `start`, `src/testing/e2eHook.ts` `e2eSaveStore`, dialog `busy` flags, `playwright.config.ts` `ROUND_SPEC`, test names in `tests/autosave.test.ts`, e2e specs that key the `hang` card on `pl.saveUnavailable.title` |
 | lint / typecheck / unit / build / e2e | not run: docs-only step, no code changed (baseline on main at `16848c6`: unit 2445, e2e 77 — inherited from the run contract, unverified here) |
 
 ## 4. Next command
 
-`/10x-plan save-v2-backup-health`
+`/10x-plan-review save-v2-backup-health`
 
 ## 5. Open
 
-- Plan decides (recommendations in `research.md` § Summary): SV2-01 option A with `balance.save.backupAttempts = 3`
-  and the `hidden`-flush exception; `balance.save.writeTimeoutMs = 5000` for backup, write and `replace` (+ an e2e
-  override like `E2E_LOAD_TIMEOUT_MS`); runtime `backup`/`backupError`/`lastFailure { stage, error }` in
-  `AutosaveStatus`; SRR-02 via a `timeout` card with a "wait longer" re-await of the same read
-  (`balance.save.slowLoadTimeoutMs`, ~20 000) and the site-data advice after it, no `localStorage`.
-- Candidates: SRR-04 (`replace` takes the pending backup once, non-blocking — or keep "bypass by design"), O2 (ignore
-  Escape while `busy` in `saveImportDialog.ts`/`saveResetDialog.ts`), S12-08, S12-12, S12-13, SRR-12 (comes with the
-  `timeout` card), S12-03.
-- Tests to update deliberately: `tests/autosave.test.ts` ("a failing copy writes nothing…", "replace never copies",
-  "waits for a write in flight…", "the status says which version…"), `tests/saveHealth.test.ts` (shape), e2e copy in
-  `tests/e2e/save-restart.spec.ts` / `save-transfer-blocked.spec.ts` if the `timeout` texts change. New seams
-  (`backupfail`, `backuphang`, `writehang`) under the existing `e2eSave` marker.
-- New copy → DESIGN-GAP rows from 94 in `docs/design-gaps.md`; correct the `pl.ts` comment at `saveMigrated`.
-- Follow-ups to re-file with triggers: S12-07 (`saveExport.ts` not touched), SRR-08 (needs a counter; changes the
-  SIR-02 e2e), SV2-04 (option B), N-7 `[human]` iPad measurement, plus the out-of-scope list in `change.md`.
+- `[human]` rows: 2.5 (v2 written without the v1 copy after 3 failed copies or at `hidden` after one — beyond PRD
+  FR-021), 2.6 (`replace` takes the pending copy once, non-blocking — reverses minigame-daily-puzzle "bypass by design"),
+  4.7 (no `localStorage` start counter; way out of `timeout` = wait longer on the same read + conditional advice),
+  4.8 (N-7 iPad measurement).
+- `[reviewer]`/`[visual]` rows per phase (teacher read of every new `pl.ts` string; screenshots at 1440 and 1024 of each
+  named seam state).
+- DESIGN-GAP rows to add: 94 (failing detail), 95 (migration line), 96 (slow-read card), 97 (timeout advice).
+- E2E: phases 4 (two changed specs) and 6 (new `tests/e2e/save-backup-health.spec.ts`, must be added to `ROUND_SPEC`)
+  use the request-file protocol; phase 6 has four break patches p6a–p6d.
+- Follow-ups to file in phase 5 (`follow-ups/review-fixes.md`): SV2-04/option B, SRR-08 + start counter, S12-07, S12-08,
+  S12-13, S12-03, S12-11, F7/SRR-09/SRR-01, SRR-07/10/11/13, SV2-05..15, SV2-08 (deploy), L-S3, `abort` in `idb.ts`.
+- Plan-review candidates to check: whether phase 4 (`impl` with a test-first core part) should split; the known risk of a
+  late-landing timed-out `replace` write when the page closes before the covering session write.
 
 ## 6. Autonomous decisions
 
-- **SV2-01: recommend A (N = 3, `hidden` exception) over B, C, D.** Why: PRD guardrail "Postęp nigdy nie ginie" and
-  FR-020 rule out D; FR-021 covers a failed migration, not a failed copy (PRD silent → recommendation); v2 is a
-  validated superset of what any v1 build wrote; "Zapisz kopię" already exports the full state, so B adds UI for no
-  new content; C changes the read path. Would change: a v1 field lost by `MIGRATIONS[1]`/`encodeSave`, or a
-  migration step that can throw (v3).
-- **SRR-02: no cross-start counter; in-start longer wait + advice.** Rejected: `localStorage` counter (previous
-  research: session-only in Safari private mode, no evidence it survives a broken IDB; first storage path of the
-  game). Would change: N-7 measurement showing a permanent `timeout` that a 20 s wait never resolves on most devices,
-  or a parent report that the advice appears too early.
-- **No transaction abort in `idb.ts`.** Why: idb-keyval exposes none, and a hang in `open` has no transaction.
-  Would change: evidence that hangs happen inside a live transaction on iPadOS.
-- **Research written in English** like the previous save research; anchors are symbols only (run contract).
-- Delegated two read-only subagents (tests/seams map; history and PRD); their claims used in `research.md` were
-  spot-checked against source (`dialog.ts` Escape, `UIScene.openImport`, `MIGRATIONS`, idb-keyval). No AskUserQuestion.
+- **Planned without AskUserQuestion; complexity MEDIUM-HIGH, zero questions** — research and the run contract settle
+  every product choice; the skill's interview, structure approval and clipboard steps were decided in place. Would change:
+  a human in the loop.
+- **SV2-01 option A, `backupAttempts = 3`, `hidden` exception, hung copy counts as failed** (plan decision 1–2). Rejected
+  B, C, D. Why: v2 ⊇ v1 and validated; silent loss violates "Postęp nigdy nie ginie". Would change: a v1 field that
+  `MIGRATIONS[1]`/`encodeSave` drops, or a throwing migration (v3).
+- **SRR-04 included** (decision 3) — reverses "bypass by design"; flagged `[human]` 2.6. Would change: maintainer treats
+  import/reset as a conscious abandonment of the old save.
+- **SRR-02 without a cross-start counter** (decision 4): one longer wait on the same read (20 s) + static conditional
+  advice in `saveOff.timeout`/`deviceTimeout`. Would change: N-7 showing permanent timeouts beyond 20 s.
+- **`writeTimeoutMs = 5000`, one helper, no `abort`; dirty + arm only after a `replace` timeout; `failureText`
+  unchanged** (decisions 5–7). Would change: evidence of hangs inside live iPadOS transactions / of committed rejected
+  transactions / force offered in another read state.
+- **Scope extras**: O2, S12-12, SRR-12 in; S12-03/07/08/11/13, SRR-08 out as follow-ups (decision 8). Would change: a
+  review showing S12-13 breaks input release on the new `timeout` path.
+- **Phase drivers** (decision 9): 1–3 `tdd` (pure core leads), 4 `impl` (DOM card dominates; its core part test-first
+  inside), 5 `impl` (last impl phase, carries the seam sweep), 6 `e2e` (risk #2, features built by 1–5, `E2E=on`). Would
+  change: plan-review splitting phase 4 into a `tdd` core phase and an `impl` card phase.
+- **Plan written in Polish** like the archived save plans; anchors are symbols only.
