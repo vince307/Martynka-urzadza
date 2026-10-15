@@ -17,7 +17,7 @@ Written by the finishing step of `/10x-e2e` phase 11 (the last phase) of run `20
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/money-pay.spec.ts` | 4 tests: coins dragged into the wallet, too many coins, a cancelled drag places no coin, and one more money-pay case |
+| `tests/e2e/money-pay.spec.ts` | 4 tests: coins dragged into the wallet, too many coins, a cancelled drag places no coin, and the 10 zł note in the E2 tray paying like a coin |
 | `playwright.config.ts` | `money-pay` added to `ROUND_SPEC` |
 | `context/changes/e1-shapes-picture-mode/e2e-break-p11a.patch`, `-p11b.patch`, `-p11c.patch` | deliberate-break patches (TaskScene dragMode for coins, walletCheck length, stepTrayDrag cancel) |
 | `context/changes/e1-shapes-picture-mode/e2e-request-p11.md` | phase 11 e2e request |
