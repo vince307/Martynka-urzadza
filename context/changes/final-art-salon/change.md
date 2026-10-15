@@ -1,7 +1,7 @@
 ---
 change_id: final-art-salon
 title: Docelowa grafika salonu (tło przed → po, 6 mebli × 3), animacje i ekran ładowania
-status: planned
+status: plan_reviewed
 created: 2026-10-15
 updated: 2026-10-15
 archived_at: null

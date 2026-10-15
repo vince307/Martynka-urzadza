@@ -137,7 +137,7 @@ typ (etap: przenikanie tła przyjdzie w fazie 7, tu tylko `redraw`). Hak e2e dod
 
 #### 4. Testy
 
-**File**: `tests/rooms.test.ts`, `tests/variantPanel.test.ts`
+**File**: `tests/rooms.test.ts`, `tests/variantPanel.test.ts` (oraz `kind: 'slot'` w inline'owych pokojach `tests/save.test.ts`, `tests/saveFile.test.ts` — typecheck)
 
 **Intent**: Testy na inline'owym pokoju z etapem: koszt raz, `chosen` bez zmian, `short`, drugi `open` → panel
 `buy` następnej czynności bez wydatku, `stagesDone`.
@@ -170,6 +170,10 @@ wołana przy wczytaniu i w podglądzie importu. Na starych danych salonu (faza 1
 
 **Intent**: Rozpoznać stary układ, policzyć wydane gwiazdki starego prefiksu, wybrać najkrótszy nowy prefiks o koszcie
 ≥ wydanym (max długość listy), przenieść warianty mebli według mapy nazw, usunąć stare klucze. Gwiazdek nie dotyka.
+**Każda czynność `slot` w nowym prefiksie dostaje wpis w `chosen`** — przeniesiony wariant albo `0` dla mebla
+podarowanego przez zaokrąglenie (np. stary `tasksDone` 2 → etap + sofa; 4 → etap, sofa, dywan, stolik). Bez tego
+`slotAt`/`holdPoint`/`RoomView` (warunek `chosen[slot.id] === undefined` w `src/core/roomHit.ts`) traktują mebel jako
+pusty: czynność policzona, mebel niewidoczny i nie do zmiany (plan-review F1).
 
 **Contract**: `remapLegacySalon(session: SessionSave, legacy: LegacyRoomLayout, room: RoomDef): { session: SessionSave; remappedFrom: number | null }`;
 `LegacyRoomLayout = { roomId; tasks: { slot: string; cost: number }[]; renames: Record<string, string> }`. Zwraca ten
@@ -199,8 +203,10 @@ przeliczonego zapisu. W buildzie e2e nowy seam `?e2eSave=legacy-salon` (pamięć
 **File**: `tests/salonRemap.test.ts` (nowy)
 
 **Intent**: Pokój nowego kształtu inline (etap + 6 slotów, koszty 5, 7, 9, 10, 12, 13, 15): dla każdego starego
-`tasksDone` 0–10 nowy koszt prefiksu ≥ starego i prefiks krótszy o jeden byłby < (zaokrąglenie w górę, dar ≤ 1
-czynność); każdy stary mebel w prefiksie ma swój nowy slot w nowym prefiksie z tym samym wariantem; `stars`
+`tasksDone` 0–10 nowy koszt prefiksu ≥ starego **albo nowa lista ukończona** (stare 9 i 10 = 81 i 96 > 71: pokój
+gotowy, nadwyżka wartości nie wraca — część wiersza `[human]` 2.5) i prefiks krótszy o jeden byłby < (zaokrąglenie w
+górę, dar ≤ 1 czynność); każdy stary mebel w prefiksie ma swój nowy slot w nowym prefiksie z tym samym wariantem;
+każda czynność `slot` w nowym prefiksie ma wpis w `chosen` (podarowane = 0); `stars`
 identyczne; drugie wywołanie `toBe`; `tasksDone` 0 i nowy układ → `toBe`; obcy pokój bez zmian; fixture'y z
 `tests/fixtures/` przechodzą bez zmian (`toBe`) i są bajt w bajt.
 
@@ -215,7 +221,7 @@ identyczne; drugie wywołanie `toBe`; `tasksDone` 0 i nowy układ → `toBe`; ob
 
 #### Manual Verification:
 
-- [human] Reguła przeliczenia B (zaokrąglenie w górę, bez zwrotu gwiazdek) zamiast reguły A z `change.md` (zwrot gwiazdek) — maintainer akceptuje albo zleca A (decyzja 1)
+- [human] Reguła przeliczenia B (zaokrąglenie w górę, bez zwrotu gwiazdek; meble podarowane przez zaokrąglenie z wariantem 0; przy starym `tasksDone` 9–10 nadwyżka 10/25 gwiazdek wartości nie wraca, pokój gotowy) zamiast reguły A z `change.md` (zwrot gwiazdek) — maintainer akceptuje albo zleca A (decyzja 1)
 
 ---
 
@@ -268,7 +274,10 @@ pola wzorów (`stripe*`, `dot*`, `patternAlpha`).
 STOLIK, KOMODA, FOTEL, OBRAZKI.
 
 **Contract**: test słów wymaga: każde słowo jest podpisem; asercja „jedno słowo z Ó/Ł” zastąpiona pokryciem polskich
-liter przez istniejący test `revealed('PÓŁKA')` (decyzja 7).
+liter przez istniejący test `revealed('PÓŁKA')` (decyzja 7). OBRAZKI ma 7 liter (dziś najdłuższe 6: KANAPA,
+STOLIK), więc runda hasła rośnie do 7 zadań i 7 pól (plan-review F6): test słów dodaje, że `letterRow` najdłuższego
+słowa mieści się w szerokości płótna z marginesem kitu, a `buildWordRound` z wymuszonym najdłuższym słowem buduje
+rundę na każdym etapie E1–E6; tempo gwiazdek dłuższej rundy → S-17.
 
 #### 4. Scena na zastępnikach
 
@@ -276,13 +285,17 @@ liter przez istniejący test `revealed('PÓŁKA')` (decyzja 7).
 
 **Intent**: `RoomView` rysuje tło kodem (ściana/podłoga jak dziś; jaśniejsze po etapie) i każdy umeblowany slot jako
 pudełko z podpisem w `visibleRect` na głębokości `z`; panel i miniatura używają tego samego zastępnika; `RoomScene`
-woła trafianie bez `SALON_PLACEHOLDERS`. Hak: `stageDone`, cele slotów z nowego `holdPoint`.
+woła trafianie bez `SALON_PLACEHOLDERS`. Hak: `stageDone`, cele slotów z nowego `holdPoint`. **Pasmo głębokości**
+(plan-review F3): `z` z manifestu sięga 60, a kontrolki pokoju stoją dziś na głębokości 0–5 (`RoomView.outline` 1,
+`RoomDoneCard` 5, panel i przycisk czynności domyślne 0) — meble przykryłyby panel, obrys i kartę. Warstwy pokoju
+dostają głębokość `z` (pasmo 0–99), a obrys, przycisk czynności, panel, cząsteczki i karta stałe głębokości nad pasmem
+z `ROOM_LAYOUT.depth` w `src/data/layout.ts`.
 
-**Contract**: `RoomSnapshot.stageDone: boolean`; `targets.slots` po id nowych slotów.
+**Contract**: `RoomSnapshot.stageDone: boolean`; `targets.slots` po id nowych slotów; `ROOM_LAYOUT.depth = { outline, controls, panel, celebrate, card }` (każda > 99).
 
 #### 5. Testy i e2e
 
-**File**: `tests/roomsData.test.ts`, `tests/roomHit.test.ts`, `tests/wordRound.test.ts`, `tests/e2e/room-purchase.spec.ts`, `tests/e2e/room-change.spec.ts`, `tests/e2e/save-restart.spec.ts`
+**File**: `tests/roomsData.test.ts`, `tests/roomHit.test.ts`, `tests/wordRound.test.ts`, `tests/rooms.test.ts`, `tests/variantPanel.test.ts`, `tests/save.test.ts`, `tests/saveFile.test.ts` (inline'owe sloty w nowym kształcie `SlotDef`), `tests/e2e/room-purchase.spec.ts`, `tests/e2e/room-change.spec.ts`, `tests/e2e/save-restart.spec.ts`
 
 **Intent**: Dane: 7 czynności, pierwsza `stage`, koszty 5–15 rosnące, suma 71, każdy slot ma dokładnie jedną
 czynność, geometria w 1920×1080, `visibleRect` w płótnie, id unikalne i rozłączne ze starymi (`LEGACY_SALON`
@@ -353,7 +366,7 @@ z `SALON` (sceny, warianty, dekoracja) jest w `ROOM_ART` i odwrotnie.
 
 - `tests/roomArt.test.ts` zielony (26 wpisów = 26 plików, klucze = klucze `SALON`)
 - `npm run art` drugi raz → `git status --porcelain public/assets` pusty (determinizm)
-- `du -cb public/assets/rooms/salon/*.webp` ≤ 1 400 000 B; po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/`
+- `cat public/assets/rooms/salon/*.webp | wc -c` ≤ 1 400 000 B (BSD `du` na macOS nie ma `-b`); po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/`
 - `git status --porcelain designs/` pusty i nic spod `designs/` nie jest w indeksie
 - Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków)
 - Celowe złamanie: usunięty jeden plik `rooms/salon/sofa-morska.webp` → `tests/roomArt.test.ts` czerwony; przywrócony; meta-check: zmiana `width` w tabeli bez zmiany pliku też czerwieni (test czyta nagłówek, nie tylko istnienie)
@@ -386,7 +399,7 @@ z `textures.getPixelAlpha`. Bez podpisów nad meblami (V1/V3 zamknięte).
 `ArtImage`; `RoomView` trzyma po jednym `RoomLayer` na warstwę i slot, `render(state, preview)` przełącza teksturę
 wariantu i widoczność; obrys przytrzymania i trybu zmiany z `slotBox` (`visibleRect`).
 
-**Contract**: `RoomLayer.show(key, box, depth, anchor)` / `hide()`; `RoomView.objectOf(slotId)` dla animacji fazy 7.
+**Contract**: `RoomLayer.show(key, box, depth, anchor)` / `hide()` (`depth` = `z` w paśmie 0–99 z fazy 3, kontrolki nad nim z `ROOM_LAYOUT.depth`); `RoomView.objectOf(slotId)` dla animacji fazy 7.
 
 #### 2. Scena
 
@@ -559,7 +572,8 @@ salonu; zamknięcie/zawężenie 22, 32, 33, 34, 35 (35 → S-16b).
 **File**: `context/changes/final-art-salon/follow-ups/review-fixes.md` (nowy), `CLAUDE.md`, `docs/art-inventory.md`
 
 **Intent**: Każdy follow-up `Trigger: S-16` spoza zakresu z nowym `Trigger:` (atlas, termometr, podświetlenie,
-lektor/„minus”, O3, ` = ?`, SPATIAL, portfel, zero, `audio.noAudio` → S-16b) i ryzyko rollbacku deployu po przeliczeniu.
+lektor/„minus”, O3, ` = ?`, SPATIAL, portfel, zero, dźwięk zakupu i zmiany wariantu (`playPurchaseSound`) → S-16b,
+`audio.noAudio` → S-16b) i ryzyko rollbacku deployu po przeliczeniu.
 
 ### Success Criteria:
 
@@ -590,7 +604,11 @@ orkiestrator uruchamia), wzorzec `tests/e2e/room-purchase.spec.ts`; gwiazdki prz
 
 **Intent**: (a) #16: etap kupiony jednym stuknięciem wydaje 5 raz; podwójne stuknięcie otwiera panel sofy bez wydatku;
 sofa kosztuje dopiero po „Wybieram”; z 4 gwiazdkami etap nie kupuje. (b) #2: `?e2eSave=legacy-salon` → pokój
-`tasksDone` 4 (etap, sofa, dywan, stolik), `chosen.sofa` 2, gwiazdki bez zmian; po przeładowaniu to samo (zapisane).
+`tasksDone` 4 (etap, sofa, dywan, stolik), `chosen.sofa` 2, `chosen.rug` i `chosen['coffee-table']` 0 (podarowane,
+widoczne: cele `targets.slots` istnieją), gwiazdki bez zmian. Magazyn seamu jest w pamięci i przeładowanie czyta
+znów stary zapis, więc przeładowanie dowodzi tylko idempotentnego ponownego przeliczenia; zapis przeliczonego stanu
+dowodzi log seamu (`writtenVersion` 2 po następnej zmianie, np. zakupie komody) — nie „po przeładowaniu to samo”
+(plan-review F4).
 (c) `?e2eArt=room`: etap i sofa do kupienia, panel otwiera się, `roomArtHealth` missing 26.
 
 **Contract**: tytuły z id ryzyka (`#16`, `#2`); stringi przycisków z `pl.ts`.
@@ -679,6 +697,22 @@ tylko ręczny (profil § 5), opisany w follow-upach.
 11. **Fazy:** 10, każda z ≤ 2 komponentami UI (nowe: `RoomLayer` f5, `LoadingScreen` f8). Zastępniki w fazie 3, żeby
     przełączenie danych było zielone bez grafiki.
 
+## Known risks
+
+Z przeglądu planu (`reviews/plan-review.md`):
+
+- **Faza 3 zostaje jedną fazą** (F8). Przełączenie `SlotDef`, danych `SALON`, `pl.room.*`, `MINIGAME_WORDS` i trzech
+  spec'ów salonu musi zejść w jednym commicie, bo każda faza ma być zielona z typecheckiem i e2e: podział wymagałby
+  przepisania starych 10 slotów na nowy kształt geometrii tylko po to, by fazę później je wyrzucić. Pliki są małe
+  (`RoomView` 149, `VariantPanel` 138, `RoomDoneCard` 131, `src/data/rooms.ts` 83 wiersze). Jeśli agent fazy zbliży się
+  do limitu kontekstu, nie commituje fazy bez zielonego e2e — zapisuje handoff i zwraca `NEEDS_CONTINUATION` z
+  przepisaniem spec'ów (protokół pliku-żądania) jako resztą.
+- **Złamania tylko wizualne** (F10): faza 5 (ignorowanie `stageDone`) i faza 7 (opóźnienie karty) nie mają
+  automatycznego czerwonego testu; dowodem są wiersze `[visual]` 5.3 i 7.4 — gate wizualny nie może ich pominąć.
+- **Dłuższa runda hasła** (F6): OBRAZKI = 7 zadań; jeśli test układu z fazy 3 pokaże, że 7 pól nie mieści się w kicie,
+  zamiast OBRAZKI wchodzi krótsze słowo z podpisów (lista bez OBRAZKI) i decyzja 7 dostaje dopisek.
+- **Rollback deployu** po przeliczeniu: opisany w Migration Notes; tylko ręczny (profil § 5).
+
 ## References
 
 - Research: `context/changes/final-art-salon/research.md`
@@ -710,7 +744,7 @@ tylko ręczny (profil § 5), opisany w follow-upach.
 
 #### Manual
 
-- [ ] 2.5 [human] Reguła przeliczenia B (zaokrąglenie w górę, bez zwrotu gwiazdek) zamiast reguły A z `change.md` (zwrot gwiazdek) — maintainer akceptuje albo zleca A (decyzja 1)
+- [ ] 2.5 [human] Reguła przeliczenia B (zaokrąglenie w górę, bez zwrotu gwiazdek; meble podarowane przez zaokrąglenie z wariantem 0; przy starym `tasksDone` 9–10 nadwyżka 10/25 gwiazdek wartości nie wraca, pokój gotowy) zamiast reguły A z `change.md` (zwrot gwiazdek) — maintainer akceptuje albo zleca A (decyzja 1)
 
 ### Phase 3: Nowy salon w danych, geometria z manifestu i trafianie
 
@@ -728,7 +762,7 @@ tylko ręczny (profil § 5), opisany w follow-upach.
 
 - [ ] 4.1 `tests/roomArt.test.ts` zielony (26 wpisów = 26 plików, klucze = klucze `SALON`)
 - [ ] 4.2 `npm run art` drugi raz → `git status --porcelain public/assets` pusty (determinizm)
-- [ ] 4.3 `du -cb public/assets/rooms/salon/*.webp` ≤ 1 400 000 B; po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/`
+- [ ] 4.3 `cat public/assets/rooms/salon/*.webp | wc -c` ≤ 1 400 000 B (BSD `du` na macOS nie ma `-b`); po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/`
 - [ ] 4.4 `git status --porcelain designs/` pusty i nic spod `designs/` nie jest w indeksie
 - [ ] 4.5 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków)
 - [ ] 4.6 Celowe złamanie: usunięty `rooms/salon/sofa-morska.webp` → `tests/roomArt.test.ts` czerwony; przywrócony; meta-check
