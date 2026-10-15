@@ -1,27 +1,28 @@
 # Handoff — `salon-load-health` (slice fix salon-load-health, non-roadmap)
 
-Written by the `/10x-research` step. Research is complete (`research.md`); nothing is planned or built yet.
-The one thing not to get wrong: `MIGRATIONS[2]` must be a pure function of the v2 bytes, so it uses FROZEN salon tables
-(old list + a snapshot of today's v3 target list), not the live `SALON` (which may grow at its end) — and the
-`?e2eSave=legacy-salon` seam must become a frozen v2 JSON fixture, because `encodeSave` will write v3.
+Written by the `/10x-plan` step. `plan.md` (5 phases, `## Progress` all pending) and `plan-brief.md` exist; nothing is
+built yet. The one thing not to get wrong: in phase 1 the frozen fixture `tests/fixtures/save-v2-legacy-salon.json` is
+generated from `encodeSave(legacySalonSession())` BEFORE `SAVE_VERSION` becomes 3, and `MIGRATIONS[2]` must be total
+(malformed rooms → `corrupt`, never `migration-failed`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-load-health`, cut from `main` at `7f831c5` |
-| Commits | 2 on the branch after this step (`docs(salon-load-health): change identity (autonomous run)`, `docs(salon-load-health): research`) |
+| Commits | 3 on the branch after this step (change identity, research, `docs(salon-load-health): plan`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below changed) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 26 (all; `grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the commit (only the four files below changed) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/salon-load-health/research.md` | Source-backed answers: migration data placement, import/export/gates on v3, backup key generalisation, M-3 at start, Phaser 4.2.1 loader timeout semantics, e2e seams |
-| `context/changes/salon-load-health/change.md` | Frontmatter only: status `new` → `preparing`, `updated` 2026-10-15 |
+| `context/changes/salon-load-health/plan.md` | Implementation plan: 5 phases with `Driver:` lines, success criteria, `## Autonomous decisions`, `## Progress` |
+| `context/changes/salon-load-health/plan-brief.md` | Two-page brief (decisions table, phases at a glance) |
+| `context/changes/salon-load-health/change.md` | Frontmatter status `preparing` → `planned` |
 | `context/changes/salon-load-health/handoff.md` | This file |
 
 ## 3. Verification
@@ -29,28 +30,32 @@ The one thing not to get wrong: `MIGRATIONS[2]` must be a pure function of the v
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/salon-load-health` |
-| Source reads (`src/core/save.ts`, `autosave.ts`, `saveFile.ts`, `saveHealth.ts`, `rooms.ts`, `src/data/rooms.ts`, `src/main.ts`, `src/scenes/UIScene.ts` `openImport`, `src/storage/idb.ts`, `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs`, `playwright.config.ts`) | findings in `research.md` |
-| Phaser source check (`node_modules/phaser/src/core/Config.js` `loaderTimeout`/`loaderMaxRetries`/`loaderImageLoadType`, `loader/XHRLoader.js` `ontimeout`, `loader/File.js` `onError`) | confirmed: timeout default 0, maxRetries default 2, XHR image path, timeout → retry → `loaderror` → loader completes |
+| Success Criteria ↔ Progress per phase (awk count) | 6/6, 6/6, 5/5, 4/4, 5/5 |
+| `grep -c '^Driver: ' plan.md` | 5 (tdd, tdd, impl, impl, e2e), each the first line under its `## Phase N:` heading |
+| `metadata-guard.mjs inspect` / `mark-planned` | change.md hash matched; `changed: true` |
+| Source re-reads (`src/core/save.ts`, `src/core/rooms.ts` `remapLegacySalon`, `src/data/rooms.ts` `SALON`/`LEGACY_SALON`, `src/main.ts` `start`, `src/core/autosave.ts` statuses, `src/testing/e2eHook.ts` `legacySalonSession`, `tests/e2e/salon-art.spec.ts`) | consistent with `research.md`; `legacySalonSession` has `learner: null` (spec (a) runs on the welcome screen) |
 | lint / typecheck / unit / build / e2e | not run: docs-only step, no code changed (baseline on main at `7f831c5`: unit 2939, e2e 98 — inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-plan salon-load-health`
+`/10x-plan-review salon-load-health`
 
 ## 5. Open
 
-- `[human]` One-way door: a device that loaded the v3 build shows the `future` card after a rollback to a v2 build (accepted by the maintainer at Step 0). `deploy/README.md` § 6 gets a note; no other `deploy/` change.
-- Plan choices (research `## Open Questions`): loader `timeout`/`maxRetries` values in `src/data/balance.ts` (worst case (maxRetries+1) × timeout per file; largest file 289 KB); whether `WriteReason` gains a start/migration value; whether `repairCurrentRoom` `repairedFrom` also marks dirty; whether `LEGACY_SALON` moves into core or stays in `src/data/rooms.ts` with an equality test.
-- `MIGRATIONS[2]` must be total on raw data (malformed `rooms`/`chosen` pass through to `corrupt`); a test proves it, else follow-up F7/SRR-09/SRR-01 (`replaceGate` and `migration-failed`) fires.
-- Tests that change with v3 (fixtures stay byte-identical): `tests/save.test.ts` "the current version is 2" and the v2 fixtures' "encode back to themselves"; e2e `writtenVersion` 2 in `tests/e2e/save-backup-health.spec.ts` and `tests/e2e/salon-art.spec.ts`; `tests/e2e/save-migration.spec.ts` titles.
-- H-2 e2e needs `serviceWorkers: 'block'` + a never-fulfilled `page.route` on one file + a hook-only seam shortening the loader limit (the SW runs in the hook build and precaches WebP); add the spec to `playwright.config.ts` `ROUND_SPEC`. WebKit behaviour unproven (Chromium only).
-- Strings to generalise from "v1"/"v2": `createAutosaver` `skipBackup` log, `AutosaveStatus.backup` comment, `balance.save` comment, `pl.ts` DESIGN-GAP 95 comment.
-- v3-triggered follow-ups and audit findings out of scope: unchanged from `change.md` (tables and `## Autonomous decisions` 1–6).
+- `[human]` rows in `plan.md` Progress: 1.6 (v3 one-way door — rollback below v3 shows the `future` card; accepted by the maintainer at Step 0), 3.5 (iPad/WebKit: a stalled picture ends loading in ≤ 24 s).
+- `[visual]` 2.6: "Zapis gry" under `?e2eSave=legacy-salon` before any round shows "przeniesiono z wersji 2" (1440 and 1024).
+- Phase 5 (e2e) needs the request-file protocol (`e2e-request-p5.md`, patches `e2e-break-p5a..c.patch`); the stall test needs `serviceWorkers: 'block'` + a never-fulfilled `page.route` on `assets/rooms/salon/furnishings-before.webp` and the spec name in `playwright.config.ts` `ROUND_SPEC`.
+- Phase 1 changes existing e2e asserts (`writtenVersion` 2 → 3 in `tests/e2e/salon-art.spec.ts`, `tests/e2e/save-backup-health.spec.ts`, titles in `tests/e2e/save-migration.spec.ts`): the orchestrator's e2e gate must run on phase 1.
+- Follow-ups (out of scope) are listed in plan phase 4 § 3 and land in `context/changes/salon-load-health/follow-ups/review-fixes.md` in phase 4.
+- No `ARTIFACT GAP`. `context/foundation/lessons.md` does not exist.
 
 ## 6. Autonomous decisions
 
-1. **Recommended migration data: frozen tables in `src/core`, complete by default.** Chosen over (B) `save.ts` importing `src/data/rooms.ts` (breaks the "no data imports" header and drifts as `SALON.tasks` grows; old total cost 96 > new 71, so a fully-done old salon would gain tasks) and (C) injection through `decodeSave(raw, migrations)` (four call sites: `loadSave`, `parseImport`, `deviceSaveView`, `importProblem`; a missed one reads v2 as `unknown-version`). What would change it: a lint rule or maintainer rule against content-like tables in core, or a decision that the remap target should follow future salon tasks.
-2. **Backup: no new key logic.** `backup(raw, from)` with `from` = original version gives `backup-v2` for v2 and a single `backup-v1` (raw v1) for a v1 save chained v1 → v2 → v3. What would change it: a requirement to also keep the intermediate v2 shape.
-3. **M-3 confirmed with no conflict** with the slow/unavailable cards or `replaceGate` (blocked saver only counts `skipped`; `replace` awaits `inflight`). What would change it: a plan that writes synchronously at start instead of `markDirty` (then the slow-card ordering must be re-checked).
-4. **H-2 e2e approach:** Playwright route + SW block for the stall, hook-only seam for a short limit, rather than a server middleware (none exists; adding one is new infra). What would change it: the orchestrator's request-file protocol forbidding `page.route`, or a WebKit project being added.
-5. Research ran locally plus one read-only subagent (Phaser loader + e2e seam); its key claims were re-checked in `node_modules/phaser/src` and `src/testing/e2eHook.ts`.
+1. **No interview** (contract: never AskUserQuestion): complexity HIGH-ish but every solution question was settled by `change.md`, `research.md` and the contract; remaining choices decided in `plan.md` `## Autonomous decisions` 1–10. What would change it: a maintainer answer contradicting a recorded decision.
+2. **Frozen migration tables in `src/core/migrations/legacySalon.ts`; `LEGACY_SALON`/`LegacyRoomLayout`/`remapLegacySalon` deleted in phase 2.** Rejected: data import in `save.ts`, injection through `decodeSave` params, keeping a data copy with an equality test. Why: a migration is a pure function of bytes; one truth. What would change it: a second runtime reader of the old list.
+3. **M-3 lives in `createAutosaver`** (arms a `'migration'` write when `options.migrated` is set; runtime `migrationWrittenAt`). Rejected: `markDirty()` in `main.ts`. Why: testable in `core`, no race with the slow/unavailable cards. What would change it: a start write needed for a non-migration reason.
+4. **F3/F4 ride along in phase 2** (trigger "the v3 save format" fired). What would change it: plan-review showing F3 alters import/reset dialogs beyond the tests.
+5. **Loader limits `timeoutMs 12000`, `maxRetries 1`** (worst case 24 s per file). Rejected: default retries (36 s), 5 s (too short for 289 KB on a slow first launch). What would change it: the iPad measurement (`[human]` 3.5).
+6. **E2E risk ids #2 and #15** (no art-specific risk in the test plan). What would change it: a new test-plan risk for pictures.
+7. **One note in `deploy/README.md`** despite "No changes under deploy/" — the run contract's slice rules allow exactly this note. What would change it: the maintainer treating any `deploy/` edit as needing `sync`.
+8. **Roadmap untouched** (non-roadmap change; `metadata-guard` roadmap sync skipped per step prompt).
