@@ -394,6 +394,20 @@ export const pl = {
         // PRICE: whole złoty; the goods are in data/wordTemplates.ts.
         priceTotalHint: (expr: string) => `Cena jednej sztuki razy liczba sztuk: ${expr}.`,
         priceUnitHint: (expr: string) => `Cenę jednej sztuki liczymy dzieleniem: ${expr}.`,
+        // CLOCK_ELAPSED: elapsed time. Times are written "8.15"; the unit after "jest jeszcze / mija" is the nominative.
+        elapsedToFullHour: 'Najpierw policz minuty do pełnej godziny.',
+        elapsedToFullHourLine: (next: string, minutes: number) => `Do ${next} brakuje ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedEndAddFirst: 'Dodaj czas trwania do minut na zegarze.',
+        elapsedEndRest: (minutes: number) => `Potem jeszcze ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedEndAnswer: (time: string) => `Kończy się o ${time}.`,
+        elapsedSpanSameHour: 'Czas jest w tej samej godzinie, więc odejmij minuty.',
+        elapsedSpanAfterHour: (next: string, end: string, minutes: number) => `Od ${next} do ${end} mija ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedToHourFirst: 'Do pełnej godziny liczymy od 60 minut.',
+        elapsedNightFirst: 'Najpierw policz godziny do północy, czyli do 24.00.',
+        elapsedNightAfter: (end: string, hours: number) => `Od północy do ${end} mija ${countNoun(hours, nouns.godzina)}.`,
+        // TIME_UNITS: "Ile minut to 3 godziny?"; the asked unit is the genitive plural, the given one agrees with its number.
+        timeUnitsAsk: (asked: string, given: string) => `Ile ${asked} to ${given}?`,
+        timeUnitsFact: (big: string, small: string) => `1 ${big} to ${small}.`,
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
         wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
         numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,

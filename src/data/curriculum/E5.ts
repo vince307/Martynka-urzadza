@@ -42,6 +42,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.3.number_words_100', 3, 'NUMBER_WORDS', { max: 100 }, 'tiles'),
                 skill('E5.3.calendar_months', 3, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
+                skill('E5.3.clock_end_lesson', 3, 'CLOCK_ELAPSED', { variants: ['end'], maxSpan: 45, lesson: true }, 'tiles'),
             ],
         },
         {
@@ -87,7 +88,10 @@ export const E5: StageDef = {
             title: 'Doba, rozkład jazdy; mnożenie przez 6, 7, 8, 9',
             childName: 'Mnożenie przez 6, 7, 8, 9',
             types: ['CLOCK_ELAPSED', 'MULT'],
-            skills: [skill('E5.8.mult_6_9', 8, 'MULT', { maxProduct: 100, factors: [6, 7, 8, 9] })],
+            skills: [
+                skill('E5.8.mult_6_9', 8, 'MULT', { maxProduct: 100, factors: [6, 7, 8, 9] }),
+                skill('E5.8.clock_span_timetable', 8, 'CLOCK_ELAPSED', { variants: ['span', 'nightHours'], maxSpan: 75, theme: 'ride' }),
+            ],
         },
         {
             step: 9,

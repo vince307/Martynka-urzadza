@@ -37,7 +37,7 @@ const NUMBER_WORD = new RegExp(`(${NUMBER_SOURCE})\\s+(\\p{L}+)`, 'gu');
  * accusative, which differs from the nominative for feminine nouns in -a
  * ("1 cyfrę", "1 naklejkę", "za 1 godzinę"). Masculine and neuter singular objects look the same.
  */
-const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o|za) 1 (\p{L}+)/gu;
+const ACCUSATIVE_ONE = /(?:^|\s)(ma|mają|miał|miała|kupił|kupiła|oddał|oddała|dostał|dostała|zabrano|dołożono|o|za|trwa|trwał|trwała|trwało) 1 (\p{L}+)/gu;
 
 /** Task types whose answers and texts may be negative. */
 export const NEGATIVE_TYPES: ReadonlySet<string> = new Set(['TEMPERATURE']);

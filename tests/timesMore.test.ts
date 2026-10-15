@@ -36,6 +36,11 @@ describe('generateTimesMore', () => {
                 expect(task.answer, where).toBe(s.expected);
                 expect(Number.isInteger(s.expected), where).toBe(true);
                 expect(s.expected, where).toBeGreaterThanOrEqual(2);
+                // both factors stay in the multiplication table (grade 3): 78 : 13 is not asked
+                const factors = variant === 'factor' ? [s.base, s.expected] : variant === 'less' ? [s.expected, s.base / s.expected] : [s.base, s.expected / s.base];
+                for (const f of factors) {
+                    expect(f, `${where} factor ${String(f)}`).toBeLessThanOrEqual(10);
+                }
                 if (variant === 'more') {
                     expect(task.answer as number, where).toBeGreaterThan(s.base);
                 }

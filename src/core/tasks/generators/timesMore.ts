@@ -38,7 +38,8 @@ export const generateTimesMore: Generator = (skill, rng): Task => {
     const p = parseTimesMoreParams(skill.params);
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
         const variant = rng.pick(p.variants);
-        const a = rng.int(2, p.max);
+        // both factors stay in the multiplication table (<= maxFactor), only the product may reach max
+        const a = rng.int(2, Math.min(p.max, p.maxFactor));
         const k = rng.int(2, p.maxFactor);
         const total = a * k;
         // a is the smaller amount; the answer is never the number that ends the first hint.

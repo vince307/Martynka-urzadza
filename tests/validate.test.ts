@@ -158,4 +158,11 @@ describe('validateTask: tasks with several right tiles (check)', () => {
         const select: Task = { ...several, answer: [2, 4], choices: [1, 2, 3, 4], check: (x) => Array.isArray(x) };
         expect(validateTask(select)).toEqual([]);
     });
+
+    it('"trwa 1 godzinę" takes the accusative like the other verbs of duration', () => {
+        const t = { ...base, prompt: 'Film trwa 1 godzina.' };
+        expect(validateTask(t, { nouns }).map((x) => x.rule)).toEqual(['inflection']);
+        expect(validateTask({ ...t, prompt: 'Film trwa 1 godzinę.' }, { nouns })).toEqual([]);
+        expect(validateTask({ ...t, prompt: 'Film trwa 2 godziny.' }, { nouns })).toEqual([]);
+    });
 });

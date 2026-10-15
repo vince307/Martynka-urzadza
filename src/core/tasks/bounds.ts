@@ -4,7 +4,7 @@ import type { SkillDef } from '../types';
 import { NEGATIVE_TYPES } from './validate';
 
 /** Types whose prompts legitimately carry numbers beyond their params (dates, hours, hundreds). */
-export const UNBOUNDED_TYPES: readonly string[] = ['CALENDAR', 'ROMAN', 'NUMBER_WORDS', 'CLOCK', 'GRID'];
+export const UNBOUNDED_TYPES: readonly string[] = ['CALENDAR', 'ROMAN', 'NUMBER_WORDS', 'CLOCK', 'CLOCK_ELAPSED', 'GRID'];
 
 export const boundOf = (skill: Pick<SkillDef, 'params'>): number | undefined => {
     const raw = skill.params.max ?? skill.params.maxProduct ?? skill.params.maxDividend;

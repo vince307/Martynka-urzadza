@@ -20,6 +20,8 @@ const stage = (id: StageId): StageDef => {
     if (!s) throw new Error(`no stage ${id}`);
     return s;
 };
+/** E6 with the clock-duration step emptied: a stage that still has an unplayable step between two playable ones. */
+const GAPPED_E6: StageDef = { ...stage('E6'), steps: stage('E6').steps.map((st) => (st.step === 2 ? { ...st, skills: [] } : st)) };
 const skillIds = (id: StageId, step: number): string[] =>
     stage(id).steps.filter((s) => s.step === step).flatMap((s) => s.skills.filter(playable).map((k) => k.id));
 const learner = (id: StageId, unlocked: number, mastery: Record<string, number> = {}): Adaptation => ({
@@ -88,7 +90,8 @@ describe('unlocking a step', () => {
         const e1 = skillIds('E1', 7);
         expect(end(learner('E1', 7, masteryOf(e1, [4, 4, 4])), 'E1', 5).unlocked).toBe(8);
         const e6 = skillIds('E6', 1);
-        expect(end(learner('E6', 1, masteryOf(e6, [4, 4, 4, 4])), 'E6', 5).unlocked).toBe(3); // E6 step 2 has no playable skill (E6.3 became playable in S-13b)
+        expect(end(learner('E6', 1, masteryOf(e6, [4, 4, 4, 4])), 'E6', 5).unlocked).toBe(2); // E6 step 2 became playable in S-14c (clock durations)
+        expect(endRound(learner('E6', 1, masteryOf(e6, [4, 4, 4, 4])), GAPPED_E6, round('none', 5), 1, 'round', RULES).unlocked).toBe(3); // with step 2 emptied it is skipped
     });
 
     it('the last playable step has nothing to unlock', () => {
@@ -114,10 +117,10 @@ describe('unlocking a step', () => {
     });
 
     it('an unplayable unlocked step is judged by the nearest lower playable step', () => {
-        // E6 step 2 has no playable skill: it is judged by step 1 (3 skills, 2 at mastery 4 are enough), and step 3 follows.
+        // E6 with step 2 emptied has an unplayable step: it is judged by step 1 (4 skills, 2 at mastery 4 are enough), and step 3 follows.
         const ids = skillIds('E6', 1);
         expect(ids.length).toBeGreaterThanOrEqual(2);
-        const r = end(learner('E6', 2, masteryOf(ids, [4, 4, 4])), 'E6', 5);
+        const r = endRound(learner('E6', 2, masteryOf(ids, [4, 4, 4])), GAPPED_E6, round('none', 5), 1, 'round', RULES);
         expect(r.unlocked).toBe(3);
     });
 });

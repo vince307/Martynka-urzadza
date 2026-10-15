@@ -29,9 +29,19 @@ export const E6: StageDef = {
                 skill('E6.1.calendar_time', 1, 'CALENDAR', { variants: ['timeFacts', 'monthDays', 'quarter'] }, 'tiles'),
                 skill('E6.1.temperature_negative', 1, 'TEMPERATURE', { variant: 'read', low: -30, high: 30, step: 2, answer: 'text' }, 'tiles'),
                 skill('E6.1.temperature_diff', 1, 'TEMPERATURE', { variant: 'diff', low: -20, high: 20, step: 2, answer: 'number' }),
+                skill('E6.1.time_units', 1, 'TIME_UNITS', { pairs: ['hMin', 'minS', 'dayH', 'quarterMin'], max: 400 }),
             ],
         },
-        { step: 2, title: 'Ile minut do pełnej godziny, czas trwania programu', types: ['CLOCK_ELAPSED'], skills: [] },
+        {
+            step: 2,
+            title: 'Ile minut do pełnej godziny, czas trwania programu',
+            childName: 'Ile minut do pełnej godziny',
+            types: ['CLOCK_ELAPSED'],
+            skills: [
+                skill('E6.2.clock_to_hour', 2, 'CLOCK_ELAPSED', { variants: ['toHour'], maxSpan: 60 }),
+                skill('E6.2.clock_span_programme', 2, 'CLOCK_ELAPSED', { variants: ['span'], maxSpan: 120, theme: 'show' }),
+            ],
+        },
         {
             step: 3,
             title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych',

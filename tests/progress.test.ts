@@ -47,8 +47,9 @@ describe('currentStep and the step line', () => {
         expect(view.step.title).toBe('Powtórka do 20, budowa zadania tekstowego, „o ile więcej / mniej”');
     });
 
-    it('an unplayable unlocked step (E6 step 2) counts as the nearest lower playable one (1 = 1st of 9)', () => {
-        const E6 = stages.E6 as StageDef;
+    it('an unplayable unlocked step (E6 with step 2 emptied) counts as the nearest lower playable one (1 = 1st of 9)', () => {
+        const real = stages.E6 as StageDef;
+        const E6: StageDef = { ...real, steps: real.steps.map((st) => (st.step === 2 ? { ...st, skills: [] } : st)) };
         expect(currentStep(E6, 2)).toBe(1);
         const view = progressView(E6, { ...learner([], {}, 2), unlockedStep: { E6: 2 } as Adaptation['unlockedStep'] }, RULES);
         expect(view.step.index).toBe(1);

@@ -48,8 +48,9 @@ describe('skillBuckets', () => {
     });
 
     it('an unplayable unlocked step falls back to the nearest lower playable step', () => {
-        // E6 step 2 has no playable skill (clock durations wait for a later change): unlocked step 2 plays step 1.
-        const b = skillBuckets(stage('E6'), previousOf('E6'), 2);
+        // E6 with step 2 emptied has no playable skill there: unlocked step 2 plays step 1.
+        const gapped: StageDef = { ...stage('E6'), steps: stage('E6').steps.map((st) => (st.step === 2 ? { ...st, skills: [] } : st)) };
+        const b = skillBuckets(gapped, previousOf('E6'), 2);
         expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([1]));
         expect(b.earlier).toEqual([]);
     });

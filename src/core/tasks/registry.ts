@@ -33,6 +33,8 @@ import { generateOrderOps, parseOrderOpsParams } from './generators/orderOps';
 import { generatePerimeter, parsePerimeterParams } from './generators/perimeter';
 import { generatePlaceValue, parsePlaceValueParams } from './generators/placeValue';
 import { generatePrice, parsePriceParams } from './generators/price';
+import { generateClockElapsed, parseClockElapsedParams } from './generators/clockElapsed';
+import { generateTimeUnits, parseTimeUnitsParams } from './generators/timeUnits';
 import { generatePuzzleGrid, parsePuzzleGridParams } from './generators/puzzleGrid';
 import { generateRoman, parseRomanParams } from './generators/roman';
 import { generateRounding, parseRoundingParams } from './generators/rounding';
@@ -87,6 +89,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     ORDER_OPS: generateOrderOps,
     TIMES_MORE: generateTimesMore,
     PRICE: generatePrice,
+    CLOCK_ELAPSED: generateClockElapsed,
+    TIME_UNITS: generateTimeUnits,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -131,6 +135,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     ORDER_OPS: parseOrderOpsParams,
     TIMES_MORE: parseTimesMoreParams,
     PRICE: parsePriceParams,
+    CLOCK_ELAPSED: parseClockElapsedParams,
+    TIME_UNITS: parseTimeUnitsParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);
