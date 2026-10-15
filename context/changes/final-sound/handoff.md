@@ -41,7 +41,10 @@ Written by `/10x-tdd final-sound phase 3` of run 2026-10-15-fix-s16bcd. Phases 1
 
 ## 4. Next command
 
-`/10x-implement final-sound phase 4`. Open
+`/10x-implement final-sound phase 4`
+
+## 5. Open
+
 
 - Known risks in `plan.md` `## Known risks` unchanged. Manual rows: 1.4 [reviewer], 9.7 and 10.6 [human].
 - Follow-ups to write in phase 8; DESIGN-GAP 114 in phase 7, gap 35 closes in phase 6.
