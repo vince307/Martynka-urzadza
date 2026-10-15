@@ -157,3 +157,15 @@ describe('stepBlockDrag', () => {
         expect(matValue(s.mat)).toBe(23);
     });
 });
+
+describe('S13-09 (S-14d phase 6)', () => {
+    it('a second down of the same finger while carrying drops the block (mat unchanged) and grabs again at the new point', () => {
+        const s = run([down(50, 50), move(450, 150), down(150, 50)]);
+        expect(s.mat).toEqual(emptyMat());
+        expect(s.carrying).toMatchObject({ kind: 'one', from: 'tray', x: 150, y: 50, moved: false });
+    });
+
+    it('balance.coinDrag holds the numbers of the plan', () => {
+        expect(balance.coinDrag).toEqual({ startDistance: 12, maxTotal: 10 });
+    });
+});

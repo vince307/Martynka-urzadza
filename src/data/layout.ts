@@ -302,6 +302,14 @@ export const TASK_LAYOUT = {
         labelHeight: 56, dash: 18, dashGap: 12, dashWidth: 5, shadow: 4, trayScale: 1.2, radius: 28,   // trayScale 1.3 put the 10 rod on the tray tile border (visual gate S-13)
         solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
+    // Paying with coins (S-14d phase 6): the tray holds up to 4 kinds, one row up to 3 (3 x 136 px) and a 2 x 2 grid for 4 (212 x 142 px, above MIN_TOUCH_TARGET);
+    // the wallet is the block mat, 5 x 2 cells of 188 x 230 hold balance.coinDrag.maxTotal (10) coins. Provisional, screenshots at the visual gate.
+    coinDrag: {
+        tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
+        wallet: DRAG_MAT,
+        ok: { x: 1240, y: 724, width: 440, height: 96 },
+        columns: 5, rows: 2, cellInset: 8, rowKinds: 3, maxKinds: 4,
+    },
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
     blocks: {

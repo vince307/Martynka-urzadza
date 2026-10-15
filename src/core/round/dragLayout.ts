@@ -1,6 +1,7 @@
 // Geometry of the `drag` answer mode (S-13 phase 8): pure rectangles in the 1920x1080 scene space, from numbers in
 // TASK_LAYOUT.drag (injected, like pictureLayout). The same rectangles draw the tray and the mat and answer a touch.
 import type { BlockDragGeo, BlockKind, Mat } from '../blockDrag';
+import type { MoneyId } from '../../data/measures';
 import { insideRect, interiorPoint, type Rect } from '../geometry';
 
 export { insideRect, interiorPoint, type Rect };
@@ -65,3 +66,51 @@ export const dragGeometry = (layout: DragLayout, kinds: readonly BlockKind[]): B
 
 /** The block kinds of a build task: ones and tens below 100, hundreds as well from 100 (the tray lists only these). */
 export const dragKinds = (answer: number): BlockKind[] => (answer >= 100 ? ['hundred', 'ten', 'one'] : ['ten', 'one']);
+
+export interface CoinSpec {
+    tray: Rect & { gap: number };
+    wallet: Rect;
+    ok: Rect;
+    /** Placed coins per row of the wallet. */
+    columns: number;
+    /** Rows of the wallet; columns * rows is the most coins it holds. */
+    rows: number;
+    /** Each placed coin sits in a wallet cell, inset by this much on every side. */
+    cellInset: number;
+    /** The tray is one row up to this many kinds, a 2 x 2 grid above it. */
+    rowKinds: number;
+    maxKinds: number;
+}
+export interface CoinLayout {
+    tray: Partial<Record<MoneyId, Rect>>;
+    wallet: Rect;
+    ok: Rect;
+    /** The i-th placed coin of the wallet, in the order the wallet lists them. */
+    coin: (i: number) => Rect;
+}
+
+export const coinLayout = (spec: CoinSpec, kinds: readonly MoneyId[]): CoinLayout => {
+    if (kinds.length > spec.maxKinds) throw new Error(`${kinds.length} coin kinds on a tray, at most ${spec.maxKinds}`);
+    const oneRow = kinds.length <= spec.rowKinds;
+    const columns = oneRow ? Math.max(kinds.length, 1) : 2;
+    const rows = oneRow ? 1 : Math.ceil(kinds.length / 2);
+    const tileW = (spec.tray.width - spec.tray.gap * (columns - 1)) / columns;
+    const tileH = oneRow ? Math.min(tileW, spec.tray.height) : (spec.tray.height - spec.tray.gap * (rows - 1)) / rows;
+    const tray: Partial<Record<MoneyId, Rect>> = {};
+    kinds.forEach((kind, k) => {
+        tray[kind] = {
+            x: spec.tray.x + (k % columns) * (tileW + spec.tray.gap),
+            y: spec.tray.y + Math.floor(k / columns) * (tileH + spec.tray.gap),
+            width: tileW, height: tileH,
+        };
+    });
+    const cellW = spec.wallet.width / spec.columns;
+    const cellH = spec.wallet.height / spec.rows;
+    const coin = (i: number): Rect => ({
+        x: spec.wallet.x + (i % spec.columns) * cellW + spec.cellInset,
+        y: spec.wallet.y + Math.floor(i / spec.columns) * cellH + spec.cellInset,
+        width: cellW - 2 * spec.cellInset,
+        height: cellH - 2 * spec.cellInset,
+    });
+    return { tray, wallet: spec.wallet, ok: spec.ok, coin };
+};
