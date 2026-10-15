@@ -619,7 +619,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 - [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 0c31db4
 - [x] 1.2 Deliberate break: granica `slow` / `totalMs: 20000` → odpowiednie testy czerwone; przywrócone; meta-check (reguła, nie dowód loadera) — 0c31db4
-- [ ] 1.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
+- [x] 1.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (` — 79023af (e2e per orchestrator note: 101 passed)
 
 #### Manual
 
@@ -631,7 +631,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 - [x] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (`; `E2E_BOOT_LIMITS` nieobecne w `dist/` — 79023af
 - [x] 2.2 Deliberate break: tripwire z `4.2.2` → czerwony; przywrócone; meta-check (dowód zachowania w fazie 7) — 79023af
-- [ ] 2.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`; `salon-load-health.spec.ts` „#15 H-2 …” zielony
+- [x] 2.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`; `salon-load-health.spec.ts` „#15 H-2 …” zielony — orchestrator note: 101 passed after 79023af
 
 #### Manual
 
@@ -643,7 +643,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 #### Automated
 
 - [ ] 3.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [ ] 3.2 Deliberate break: linia przy `'loading'` — meta-check w handoffie (dowód linii: patch `e2e-break-p7c`)
+- [x] 3.2 Deliberate break: linia przy `'loading'` — meta-check w handoffie (dowód linii: patch `e2e-break-p7c`) — 06b20bb
 
 #### Manual
 

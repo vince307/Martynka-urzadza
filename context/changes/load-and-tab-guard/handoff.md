@@ -1,13 +1,13 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The `/10x-implement` step wrote this handoff for phase 2 (the total boot limit and the loader cut). Rows 2.1 and 2.2 are done; 2.3 (e2e) and row 1.3 are left to the orchestrator because Chromium cannot start here. The next agent must not use the bare idb-keyval `update` in phase 5. Phase 5 uses `guardedPut` on the raw store, so a failing `get` still puts (F1). Break p7b is expected to stay green (F2).
+The `/10x-implement` step wrote this handoff for phase 3 (the slow line). Row 3.2 is done; 3.1 waits for the orchestrator e2e (Chromium cannot start here). Rows 1.3 and 2.3 were ticked on the orchestrator note. The next agent must not use the bare idb-keyval `update` in phase 5. Phase 5 uses `guardedPut` on the raw store, so a failing `get` still puts (F1). Break p7b is expected to stay green (F2).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | phase 1 `0c31db4`, phase 2 `79023af` (`feat(load-and-tab-guard): łączny limit ładowania w BootScene (p2)`), then this handoff |
+| Commits | phase 1 `0c31db4`, phase 2 `79023af`, phase 3 `06b20bb`, then this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 27 (`grep -c '^- \[ \]' plan.md`) |
@@ -32,20 +32,19 @@ The `/10x-implement` step wrote this handoff for phase 2 (the total boot limit a
 |---|---|
 | `git branch --show-current` | `feat/load-and-tab-guard` |
 | `npm run lint` / `npm run typecheck` | pass / pass |
-| unit gate (`npm test`, `sample` E1–E6) | 2942 passed (branch baseline 2940, +2: tripwire, `stallall` in the `e2eHookGuard` it.each); sample E1–E6 clean (no content change) |
+| unit gate (`npm test`, `sample` E1–E6) | 2942 passed (branch baseline 2942, +0); sample E1–E6 clean; teacher read of `pl.loading.slow` 'Jeszcze chwilka, wczytuję obrazki.' (plain, no numerals) |
 | `npm run build` | passes, prints `e2e hook: absent (2 chunks checked)`; `E2E_BOOT_LIMITS` and `stallall` absent from `dist/_app/*.js` |
-| Break: tripwire `toBe('4.2.2')` | `AssertionError: src/scenes/loaderCut.ts relies on loader internals: re-verify e2e #15 stallall, then update this pin: expected '4.2.1' to be '4.2.2'`; restored, green |
-| Meta-check | the tripwire guards only the Phaser version; the cut behaviour is proven by e2e #15 in phase 7 (patches p7a/p7b), not here |
-| e2e `npx playwright test --config=<abs> --workers=4` | e2e: not runnable in this session — orchestrator gate (Chromium `MachPortRendezvousServer … Permission denied`); expected baseline 101 + 0, with `salon-load-health.spec.ts` "#15 H-2" green |
+| Break: `bootLoadPhase(0, limits)` instead of `slowAfterMs` in the slow timer (no line ever drawn) | full vitest stays green (2942), as the plan expects; meta-check: the line is not unit-tested, its proof is e2e p7c (`phase 'slow'`); restored |
+| e2e `npx playwright test --config=<abs> --workers=4` | e2e: not runnable in this session — orchestrator gate (Chromium `MachPortRendezvousServer … Permission denied`); expected 101 + 0 (e2e: not runnable in this session — orchestrator gate; a spec run failed on Chromium launch) |
 
 ## 4. Next command
 
-`/10x-implement load-and-tab-guard phase 3` (phase 3, `Driver: impl`)
+`/10x-tdd load-and-tab-guard phase 4` (phase 4, `Driver: tdd`)
 
 ## 5. Open
 
-- **Orchestrator:** run e2e (`--workers=4`, expect 101 passed) and tick rows 1.3 and 2.3.
-- **Phase 3 inputs:** `BootScene.phase` exists (`loading`/`over`); phase 3 adds `slow` through a `delayedCall(slowAfterMs)` that calls `LoadingScreen.slow()`, using `bootLoadPhase`. The same `limits` object is built in `preload` (hook build uses `E2E_BOOT_LIMITS`), so reuse it. Remove the slow timer on `COMPLETE` and stop it after the cut.
+- **Orchestrator:** run e2e (`--workers=4`, expect 101 passed) and tick row 3.1. Visual row 3.3 and reviewer row 3.4 are not mine.
+- **Phase 3 (done):** `BootScene.phase` exists (`loading`/`over`); phase 3 adds `slow` through a `delayedCall(slowAfterMs)` that calls `LoadingScreen.slow()`, using `bootLoadPhase`. The same `limits` object is built in `preload` (hook build uses `E2E_BOOT_LIMITS`), so reuse it. Remove the slow timer on `COMPLETE` and stop it after the cut.
 - **Risks carried:** Phaser internals `^4.2.1`; cold start competes with the SW precache (F4); the `creates` guard and `onProcessComplete` swap are belts without a red test (F6; p7b expected green); the guard protects only from this build on; `guardedPut` + `preventDefault` on a failing `get` is unverified on WebKit.
 - **Manual-only rows:** 2.5 Android throttled start; 3.3 [visual] slow line; 7.7 iPad.
 - **DESIGN-GAPs planned:** 112 (`pl.loading.slow`, phase 3) and 113 (`saveOff.newer`, phase 4).
@@ -59,3 +58,4 @@ The `/10x-implement` step wrote this handoff for phase 2 (the total boot limit a
 - **`loadPhase()` returns `loading` or `over` in this phase**; `slow` arrives in phase 3.
 - **The hook returns `screen: 'loading'` while `BootScene.isLoading()`** (the loading screen exists from `preload` to `create`).
 - **e2e not run here.** Chromium cannot launch in the sandbox and the rules forbid bypassing it. Would change: a session where Chromium starts.
+- **Phase 3 decisions:** the slow timer checks `phase === 'loading'` and asks `bootLoadPhase(slowAfterMs, limits)` (limits object shared with the cut), draws via `LoadingScreen.slow()` (idempotent, destroyed with the screen), try/catch like the bar. DESIGN-GAP 112 added (pl.ts comment, widget docblock, design-gaps.md). No AskUserQuestion; stop after phase 3.
