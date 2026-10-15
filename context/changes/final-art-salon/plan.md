@@ -750,11 +750,11 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [x] 3.1 Nowe testy trafiania w `tests/roomHit.test.ts` czerwone przed implementacją, zielone po
-- [x] 3.2 `tests/roomsData.test.ts`, `tests/wordRound.test.ts` przepisane i zielone
-- [x] 3.3 `rg -n "SALON_PLACEHOLDERS|captionAnchor|drawLook" src tests` pusty
+- [x] 3.1 Nowe testy trafiania w `tests/roomHit.test.ts` czerwone przed implementacją, zielone po — 200d188
+- [x] 3.2 `tests/roomsData.test.ts`, `tests/wordRound.test.ts` przepisane i zielone — 200d188
+- [x] 3.3 `rg -n "SALON_PLACEHOLDERS|captionAnchor|drawLook" src tests` pusty — 200d188
 - [ ] 3.4 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e z przepisanymi `room-purchase`, `room-change`, `save-restart` (baseline, bez spadków)
-- [x] 3.5 Celowe złamanie: `slotAt` ignoruje predykat alfy → test „róg dywanu nad fotelem” czerwony; przywrócone; meta-check
+- [x] 3.5 Celowe złamanie: `slotAt` ignoruje predykat alfy → test „róg dywanu nad fotelem” czerwony; przywrócone; meta-check — 200d188
 
 ### Phase 4: Grafika salonu w WebP, ładowanie i zdrowie obrazków
 
