@@ -10,7 +10,7 @@ The `/10x-plan` step of run `2026-10-15-fix-s16bcd` wrote this handoff. `plan.md
 | Commits | 3 on the branch: change identity, research, and `docs(load-and-tab-guard): plan` (this step) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 30 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 31 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit. Only the four files below were staged. |
 
 ## 2. Artifacts
