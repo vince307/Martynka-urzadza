@@ -94,6 +94,7 @@ const setup = (over: Partial<AutosaverOptions> & { initial?: unknown } = {}) => 
         timers: clock.timers,
         delayMs: 500,
         writeTimeoutMs: 5000,
+        backupAttempts: 3,
         load: 'fresh',
         blockedBy: null,
         now: clock.now,
@@ -490,6 +491,7 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
             timers: makeClock().timers,
             delayMs: 500,
             writeTimeoutMs: 5000,
+            backupAttempts: 3,
             load: 'fresh',
             blockedBy: null,
             now: () => 0,
@@ -647,14 +649,14 @@ describe('backup before the first write after a migration', () => {
         expect(t.state.writes).toHaveLength(2);
     });
 
-    it('a failing copy writes nothing, counts as a failure with the copy error, and stays retryable', async () => {
+    it('a failing copy before the attempt limit writes nothing, counts as a failure with the copy error, and stays retryable', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('now');
         expect(t.state.writes).toHaveLength(0);
         expect(t.state.value).toBeUndefined();
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 0, dirty: true });
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 0, dirty: true, backup: 'failed', backupError: 'QuotaExceededError' });
         await t.saver.flush('now');
         expect(t.saver.status().consecutiveFailures).toBe(2);
         expect(t.state.writes).toHaveLength(0);
@@ -662,7 +664,68 @@ describe('backup before the first write after a migration', () => {
         await t.saver.flush('now');
         expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
         expect(t.state.writes).toHaveLength(1);
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, writes: 1 });
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, writes: 1, backup: 'done' });
+    });
+
+    it('the third failed copy in a session writes v2 without the copy, once, and says so in the log (SV2-01)', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.set(4);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await t.saver.flush('now');
+        expect(t.state.writes).toHaveLength(0);
+        await t.saver.flush('now');
+        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
+        expect(t.state.writes.map((w) => w.stars)).toEqual([4]);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', writes: 1, consecutiveFailures: 0, dirty: false });
+        expect(t.logs.filter((l) => String(l[0]).includes('without the v1 copy'))).toHaveLength(1);
+        // later changes write plainly and never ask for the copy again
+        t.set(5);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write', 'write']);
+    });
+
+    it('a copy that fails once and then works still comes before the first v2 write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        t.state.backupFails = false;
+        await t.saver.flush('now');
+        expect(t.state.ops).toEqual(['backup', 'backup', 'write']);
+        expect(t.saver.status().backup).toBe('done');
+    });
+
+    it('after a failed copy the page-hide flush writes v2 without trying the copy again', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await t.saver.flush('hidden');
+        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+    });
+
+    it('a page-hide flush that is the first attempt still tries the copy, and writes v2 even when it fails', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('hidden');
+        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+    });
+
+    it('a copy that hangs counts as a timeout failure of the copy', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'timeout', writes: 0 });
     });
 
     it('a save that was not migrated is written without a copy', async () => {
@@ -672,11 +735,27 @@ describe('backup before the first write after a migration', () => {
         expect(t.state.ops).toEqual(['write']);
     });
 
-    it('replace never copies (it is not a migration)', async () => {
+    it('replace takes the pending copy once and never waits on a failing one', async () => {
         const t = setup({ migrated, load: 'loaded' });
-        const result = await t.saver.replace(encodeSave(session(5)));
-        expect(result).toEqual({ ok: true });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.backups).toEqual([{ raw: v1, from: 1 }]);
+        expect(t.saver.status().backup).toBe('done');
+    });
+
+    it('replace with a failing copy still replaces and marks the copy skipped', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', replace: 'done' });
+    });
+
+    it('replace of a save that was not migrated never copies', async () => {
+        const t = setup({ load: 'fresh' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
         expect(t.state.ops).toEqual(['write']);
+        expect(t.saver.status().backup).toBe('none');
     });
 
     it('the status says which version the save was moved from', () => {

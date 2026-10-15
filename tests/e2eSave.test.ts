@@ -4,7 +4,7 @@ import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -54,6 +54,23 @@ describe('e2eSaveStore', () => {
         await store.backup(raw, 1);
         await store.write(encodeSave(decoded.session));
         expect(((await store.read()) as { version: number }).version).toBe(2);
+    });
+
+    it('backupfail holds the v1 fixture, rejects the copy with QuotaExceededError and still writes', async () => {
+        const store = e2eSaveStore('backupfail');
+        await expect(store.read()).resolves.toMatchObject({ version: 1, stars: 7 });
+        await expect(store.backup({}, 1)).rejects.toMatchObject({ name: 'QuotaExceededError' });
+        const decoded = decodeSave(await store.read());
+        if (decoded.kind !== 'ok') throw new Error('fixture must decode');
+        await store.write(encodeSave(decoded.session));
+        expect(((await store.read()) as { version: number }).version).toBe(2);
+    });
+
+    it('backuphang holds the v1 fixture and never answers the copy', async () => {
+        const store = e2eSaveStore('backuphang');
+        await expect(store.read()).resolves.toMatchObject({ version: 1 });
+        const outcome = await Promise.race([store.backup({}, 1).then(() => 'answered'), new Promise((r) => setTimeout(() => r('silent'), 20))]);
+        expect(outcome).toBe('silent');
     });
 
     it('hang never settles its read', async () => {

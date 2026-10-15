@@ -53,6 +53,13 @@ export interface AutosaveStatus {
     loadReason: LoadReason | null;
     /** Runtime only (never saved): error name of the failed load; fixed at start (`lastError` moves on). */
     loadError: string | null;
+    /**
+     * Runtime only (never saved): the copy of the raw v1 save. `none` without a migration, `pending` before the first
+     * try, `failed` after at least one failed try (still owed), `done` once kept, `skipped` when v2 was written without it.
+     */
+    backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped';
+    /** Runtime only (never saved): error name of the last failed copy; stays after a later success. */
+    backupError: string | null;
     /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
     replace: 'idle' | 'writing' | 'done';
     /** Runtime only (never saved): what the browser answered to the persistence request after the first write. */
@@ -66,6 +73,8 @@ export interface AutosaverOptions {
     delayMs: number;
     /** Longest wait for one store write or copy before it counts as a `timeout` failure. */
     writeTimeoutMs: number;
+    /** Failed copies of a migrated save in one session after which the v2 save is written without the copy. */
+    backupAttempts: number;
     load: LoadOutcome['kind'];
     blockedBy: BlockReason | null;
     now: () => number;
@@ -160,7 +169,10 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let replaced = false;
     let persistence: Persistence = 'unknown';
     // One predicate for every write path: a block, a replace in progress, or a replaced save (until the page reloads).
-    let backedUp = options.migrated === undefined;
+    let backup: AutosaveStatus['backup'] = options.migrated === undefined ? 'none' : 'pending';
+    let backupFails = 0;
+    let backupError: string | null = null;
+    const backupOwed = (): boolean => backup === 'pending' || backup === 'failed';
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
     const cancelTimer = (): void => {
@@ -170,6 +182,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
 
     const limited = <T>(work: Promise<T>): Promise<T> => withTimeLimit(work, timers, options.writeTimeoutMs);
 
+    const skipBackup = (): void => {
+        backup = 'skipped';
+        log('autosave: writing v2 without the v1 copy', { from: options.migrated?.from ?? null, backupError, attempts: backupFails });
+    };
+
     /** One write attempt; resolves true on success. Never throws. */
     const attempt = async (reason: WriteReason): Promise<boolean> => {
         let stage: FailureStage = 'encode';
@@ -178,10 +195,28 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
             dirty = false;
             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
-            if (!backedUp && options.migrated) {
+            // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is
+            // the first attempt, v2 is written without the copy: the child's progress is worth more than the raw v1 bytes (SV2-01).
+            if (backupOwed() && options.migrated) {
                 stage = 'backup';
-                await limited(store.backup(options.migrated.raw, options.migrated.from));
-                backedUp = true;
+                if (reason === 'hidden' && backupFails > 0) {
+                    skipBackup();
+                } else {
+                    try {
+                        await limited(store.backup(options.migrated.raw, options.migrated.from));
+                        backup = 'done';
+                    } catch (e) {
+                        backupFails++;
+                        backupError = errorName(e);
+                        backup = 'failed';
+                        if (reason !== 'hidden' && backupFails < options.backupAttempts) throw e;
+                        failures++;
+                        lastError = backupError;
+                        lastFailure = { stage: 'backup', error: backupError };
+                        log('autosave: backup failed', e);
+                        skipBackup();
+                    }
+                }
             }
             stage = 'write';
             await limited(store.write(encoded));
@@ -266,6 +301,17 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         cancelTimer();
         try {
             await inflight;
+            // A copy still owed is tried once and never waited on twice: a failure only marks it skipped (SRR-04).
+            if (backupOwed() && options.migrated) {
+                try {
+                    await limited(store.backup(options.migrated.raw, options.migrated.from));
+                    backup = 'done';
+                } catch (e) {
+                    backupError = errorName(e);
+                    log('autosave: backup failed', e);
+                    skipBackup();
+                }
+            }
             await limited(store.write(state));
         } catch (e) {
             replacing = false;
@@ -320,6 +366,8 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             migratedFrom: options.migrated?.from ?? null,
             loadReason: options.loadReason ?? null,
             loadError: options.loadError ?? null,
+            backup,
+            backupError,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };

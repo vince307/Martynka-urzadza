@@ -100,8 +100,8 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -112,7 +112,7 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -134,7 +134,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
             ? { version: 99, profileId: 'default', stars: 7 }
             : seam === 'corrupt'
               ? { version: 1, profileId: 'default', stars: 'many' }
-              : seam === 'v1'
+              : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
@@ -148,6 +148,8 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   : Promise.resolve(value),
         backup: () => {
             log.ops.push('backup');
+            if (seam === 'backupfail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
+            if (seam === 'backuphang') return new Promise<void>(() => undefined);
             return Promise.resolve();
         },
         write: (next) => {
