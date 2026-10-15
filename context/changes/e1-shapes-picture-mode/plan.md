@@ -850,11 +850,11 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [x] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje trzy umiejętności E1.1
-- [x] 2.2 `npm run sample -- E1 --count 6` bez naruszeń, z zadaniami E1.1
-- [x] 2.3 Deliberate break: wiersz `ORACLE` E1 zostawiony na `[3, 4, 6, 8, 10, 11]` → `tests/curriculumStart.test.ts` czerwony; przywrócone; meta-check
-- [x] 2.4 Deliberate break: usunięta umiejętność PATTERN z E1.1 przy typie w `GROUP_1` → `tests/curriculum.test.ts` czerwony; przywrócone
-- [x] 2.5 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje trzy umiejętności E1.1 — b9b16d5
+- [x] 2.2 `npm run sample -- E1 --count 6` bez naruszeń, z zadaniami E1.1 — b9b16d5
+- [x] 2.3 Deliberate break: wiersz `ORACLE` E1 zostawiony na `[3, 4, 6, 8, 10, 11]` → `tests/curriculumStart.test.ts` czerwony; przywrócone; meta-check — b9b16d5
+- [x] 2.4 Deliberate break: usunięta umiejętność PATTERN z E1.1 przy typie w `GROUP_1` → `tests/curriculum.test.ts` czerwony; przywrócone — b9b16d5
+- [x] 2.5 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — b9b16d5
 - [ ] 2.6 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`answerRight` po wartości kafelka działa dla twarzy)
 
 #### Manual
