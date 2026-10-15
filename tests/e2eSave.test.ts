@@ -4,7 +4,7 @@ import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'v1']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -35,6 +35,13 @@ describe('e2eSaveStore', () => {
         const store = e2eSaveStore('writefail');
         await expect(store.read()).resolves.toBeUndefined();
         await expect(store.write({} as never)).rejects.toMatchObject({ name: 'QuotaExceededError' });
+    });
+
+    it('writehang reads a fresh start, logs every write and never answers it', async () => {
+        const store = e2eSaveStore('writehang');
+        await expect(store.read()).resolves.toBeUndefined();
+        const outcome = await Promise.race([store.write({} as never).then(() => 'answered'), new Promise((r) => setTimeout(() => r('silent'), 20))]);
+        expect(outcome).toBe('silent');
     });
 
     it('v1 holds the frozen v1 fixture, decodes to v2 and logs backup before write', async () => {

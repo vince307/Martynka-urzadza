@@ -211,6 +211,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
                         snapshot: () => decoded(),
                         timers: { setTimeout: () => 0, clearTimeout: () => undefined },
                         delayMs: 500,
+                        writeTimeoutMs: 5000,
                         load: 'fresh',
                         blockedBy,
                         now: () => 0,

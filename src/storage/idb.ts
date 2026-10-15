@@ -29,18 +29,23 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
     };
 
     // createStore does not touch indexedDB until the first operation, so a missing indexedDB rejects here.
-    const run = async <T>(op: (s: UseStore) => Promise<T>): Promise<T> => {
+    // `mayRetry` lets a write refuse the retry: an abandoned (timed out) write must never land after a newer one.
+    const run = async <T>(op: (s: UseStore) => Promise<T>, mayRetry: () => boolean = () => true): Promise<T> => {
         try {
             return await op(open(false));
         } catch (error) {
-            if (!isLostConnection(error)) throw error;
+            if (!isLostConnection(error) || !mayRetry()) throw error;
             return op(open(true));
         }
     };
 
+    let writeSeq = 0;
     return {
         read: () => run((s) => get<unknown>(key, s)),
-        write: (value: SaveState) => run((s) => set(key, value, s)),
+        write: (value: SaveState) => {
+            const mine = ++writeSeq;
+            return run((s) => set(key, value, s), () => mine === writeSeq);
+        },
         backup: (raw: unknown, from: number) => run((s) => set(`${key}:backup-v${from}`, raw, s)),
     };
 }

@@ -1,12 +1,19 @@
 import 'fake-indexeddb/auto';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as idbKeyval from 'idb-keyval';
 import { decodeSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 import { createIdbSaveStore, requestPersistence } from '../src/storage/idb';
 
 // S-11 phase 3 (test-plan risk #2): the adapter round-trips through a real structured clone.
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8')) as SaveState;
+
+// The spy wraps the real `set`; a test can hold the first main-key call and reject it later (an abandoned write).
+vi.mock('idb-keyval', async (importOriginal) => {
+    const real = await importOriginal<typeof import('idb-keyval')>();
+    return { ...real, set: vi.fn(real.set) };
+});
 
 let counter = 0;
 const freshStore = (profileId?: string, dbName = `test-db-${++counter}`) => createIdbSaveStore({ dbName, storeName: 'saves', profileId });
@@ -75,5 +82,35 @@ describe('IndexedDB backup copy (S-15 phase 2)', () => {
         await freshStore(undefined, dbName).backup({ a: 1 }, 2);
         expect(await freshStore('default:backup-v2', dbName).read()).toEqual({ a: 1 });
         expect(await freshStore('default:backup-v1', dbName).read()).toBeUndefined();
+    });
+
+    // plan-review F1: an abandoned write must not land after a newer one.
+    it('an abandoned write that fails with a lost connection is not retried once a newer write started', async () => {
+        const real = await vi.importActual<typeof import('idb-keyval')>('idb-keyval');
+        const set = vi.mocked(idbKeyval.set);
+        set.mockClear();
+        let rejectFirst: (e: unknown) => void = () => undefined;
+        set.mockImplementationOnce(() => new Promise<void>((_, reject) => void (rejectFirst = reject)));
+        set.mockImplementation(real.set);
+        const store = freshStore();
+        const first = store.write({ ...fixture, stars: 1 });
+        const firstOutcome = first.then(() => 'ok', (e: unknown) => (e as Error).name);
+        await store.write({ ...fixture, stars: 2 });
+        rejectFirst(Object.assign(new Error('lost'), { name: 'InvalidStateError' }));
+        expect(await firstOutcome).toBe('InvalidStateError');
+        expect(set).toHaveBeenCalledTimes(2);
+        expect(((await store.read()) as SaveState).stars).toBe(2);
+    });
+
+    it('a lost connection still retries a write when no newer write started', async () => {
+        const real = await vi.importActual<typeof import('idb-keyval')>('idb-keyval');
+        const set = vi.mocked(idbKeyval.set);
+        set.mockClear();
+        set.mockImplementationOnce(() => Promise.reject(Object.assign(new Error('lost'), { name: 'InvalidStateError' })));
+        set.mockImplementation(real.set);
+        const store = freshStore();
+        await store.write({ ...fixture, stars: 5 });
+        expect(set).toHaveBeenCalledTimes(2);
+        expect(((await store.read()) as SaveState).stars).toBe(5);
     });
 });

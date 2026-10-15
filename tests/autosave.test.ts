@@ -3,7 +3,7 @@
 // Implementation Details (never write what was not read, never write what cannot be read, never an unhandled rejection).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createAutosaver, errorName, loadSave, replaceGate, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 
@@ -18,18 +18,20 @@ const session = (stars: number): SessionSave => {
 
 /** Store over a Map: counts writes, can fail, and can hold a write until the test resolves it. */
 const makeStore = (initial?: unknown) => {
-    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, ops: [] as string[], backups: [] as { raw: unknown; from: number }[] };
+    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, writeHangs: false, backupHangs: false, lateReject: null as null | ((e: Error) => void), ops: [] as string[], backups: [] as { raw: unknown; from: number }[] };
     const pending: (() => void)[] = [];
     const store: SaveStore = {
         read: () => (state.readFails ? Promise.reject(new Error('lost')) : Promise.resolve(state.value)),
         backup: (raw, from) => {
             state.ops.push('backup');
+            if (state.backupHangs) return new Promise<void>(() => undefined);
             if (state.backupFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
             state.backups.push({ raw, from });
             return Promise.resolve();
         },
         write: (v) => {
             state.ops.push('write');
+            if (state.writeHangs) return new Promise<void>((_, reject) => void (state.lateReject = reject));
             if (state.fail) return Promise.reject(new Error('quota'));
             const commit = () => {
                 state.value = v;
@@ -91,6 +93,7 @@ const setup = (over: Partial<AutosaverOptions> & { initial?: unknown } = {}) => 
         snapshot: () => current,
         timers: clock.timers,
         delayMs: 500,
+        writeTimeoutMs: 5000,
         load: 'fresh',
         blockedBy: null,
         now: clock.now,
@@ -486,6 +489,7 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
             snapshot: () => session(1),
             timers: makeClock().timers,
             delayMs: 500,
+            writeTimeoutMs: 5000,
             load: 'fresh',
             blockedBy: null,
             now: () => 0,
@@ -682,5 +686,89 @@ describe('backup before the first write after a migration', () => {
 
     it('a migration-failed load is replaceable like corrupt, never like future', () => {
         expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('ok');
+    });
+});
+
+describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
+    it('withTimeLimit rejects a never-answering promise as a timeout and clears its timer when the work answers', async () => {
+        const clock = makeClock();
+        const hung = withTimeLimit(new Promise<number>(() => undefined), clock.timers, 5000);
+        const rejected = hung.then(() => 'ok', (e: unknown) => errorName(e));
+        clock.advance(4999);
+        clock.advance(1);
+        expect(await rejected).toBe('timeout');
+        await expect(withTimeLimit(Promise.resolve(3), clock.timers, 5000)).resolves.toBe(3);
+        expect(clock.pending()).toBe(0);
+    });
+
+    it('a hung write is a timeout failure: flush settles, the stage is named, the state stays dirty and the next change tries again', async () => {
+        const t = setup();
+        t.state.writeHangs = true;
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, writes: 0, dirty: true, lastError: 'timeout', lastFailure: { stage: 'write', error: 'timeout' } });
+        t.state.writeHangs = false;
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+    });
+
+    it('a hung copy of a migrated save is a timeout failure at the backup stage and writes nothing', async () => {
+        const t = setup({ migrated: { from: 1, raw: fixture('save-v1.json') } });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        expect(t.saver.status().lastFailure).toEqual({ stage: 'backup', error: 'timeout' });
+        expect(t.state.ops).toEqual(['backup']);
+    });
+
+    it('replace behind a write that never answers settles within two limits as a timeout', async () => {
+        const t = setup();
+        t.state.writeHangs = true;
+        t.saver.markDirty();
+        void t.saver.flush('now');
+        await settle();
+        const result = t.saver.replace(encodeSave(session(5)));
+        await settle();
+        t.clock.advance(5000);
+        await settle();
+        t.clock.advance(5000);
+        expect(await result).toEqual({ ok: false, error: 'timeout' });
+        expect(t.saver.status()).toMatchObject({ replace: 'idle', lastFailure: { stage: 'replace', error: 'timeout' } });
+    });
+
+    it('a replace that times out re-arms the debounce so the live game is written after it', async () => {
+        const t = setup();
+        t.state.writeHangs = true;
+        const result = t.saver.replace(encodeSave(session(5)));
+        await settle();
+        t.clock.advance(5000);
+        expect(await result).toEqual({ ok: false, error: 'timeout' });
+        t.state.writeHangs = false;
+        t.set(8);
+        t.clock.advance(500);
+        await settle();
+        expect(t.state.writes.map((w) => w.stars)).toEqual([8]);
+    });
+
+    it('an abandoned write that rejects later reaches nobody', async () => {
+        const t = setup();
+        t.state.writeHangs = true;
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        t.state.lateReject?.(new Error('late'));
+        await settle();
+        await settle();
+        expect(rejections).toEqual([]);
     });
 });

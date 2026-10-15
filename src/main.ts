@@ -22,7 +22,7 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { E2E_LOAD_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
+import { E2E_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -207,6 +207,7 @@ const start = async (): Promise<void> => {
         }),
         timers,
         delayMs: balance.save.debounceMs,
+        writeTimeoutMs: __E2E_HOOK__ && seam === 'writehang' ? E2E_WRITE_TIMEOUT_MS : balance.save.writeTimeoutMs,
         load: outcome.kind,
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),

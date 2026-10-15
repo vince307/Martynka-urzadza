@@ -100,16 +100,19 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'v1';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'v1'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
 
+/** The write limit under `?e2eSave=writehang`, so the e2e run does not wait the real 5 s. */
+export const E2E_WRITE_TIMEOUT_MS = 300;
+
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so a build that saves v2 meets a real v1 save). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -149,6 +152,10 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
         },
         write: (next) => {
             if (seam === 'writefail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
+            if (seam === 'writehang') {
+                log.ops.push('write');
+                return new Promise<void>(() => undefined);
+            }
             log.ops.push('write');
             log.writtenVersion = next.version;
             value = next;
