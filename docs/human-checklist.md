@@ -183,3 +183,29 @@ Wysłane: #48 (poprawka zapisu po audycie #45), #49 (S-13b), #50 (S-15, **zapis 
 - [ ] S-15 8.5 — Hasło odsłania literę po każdym rozwiązanym zadaniu (wzór z kitu) zamiast „ułożenia wyników rosnąco” (ZADANIA § 5); słowa z mebli salonu (KANAPA, DYWAN…), nie z listy kitu.
 - [ ] S-15 10.6 — wariant co 4. rundę; zagadka dnia bez karty wyboru; zagadki z puli E3–E4 trafiają też do E5–E6 (przegląd F1); Zakrywanka 0–12 na każdym etapie; ×2 także za drugą próbę; warianty nie zmieniają opanowania.
 - [ ] S-14b 9.6 — ARROW_TABLE bez „·3” i łańcuchów; WRITTEN bez „brakujących cyfr”; przeniesienie rysuje gra; oś-podpowiedź tylko E2–E3 do 30 (bez E1) i zastępuje rozkład „20 − 7” z S-03 (przegląd F4); oś SEQUENCE tylko w E2.7; wyższe progi E2.6/E3.9/E5.2/E6.7.
+
+## Bieg 2026-10-15-fix-s14c-s14d (poprawka SV2-01, S-14c, S-14d)
+
+Bieg uzgodniony 2026-10-15 („S-14c + S-14d + fix po audycie, pełna wysyłka”). Wysłane: #54 (poprawka CRITICAL SV2-01 z audytu #52 i HIGH SV2-02/SV2-03/SRR-02), #55 (S-14c), #56 (S-14d). `main` eaeec52: 2839 testów jednostkowych, 93 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #57 (nie scalać w biegu): 0 CRITICAL, 0 HIGH, 14 MEDIUM. Najważniejsze: SVB-02 (po „Poczekaj dłużej” prawdziwy błąd odczytu wygląda jak `timeout`), SVB-04 (import/reset po limicie czasu mówi „bez zmian”, a zapis może jeszcze dojść), PIC-02 (drugi palec na OK płaci, gdy moneta jest jeszcze niesiona), PIC-03 (bez grafiki monet/odważników E1.11 może się nie odblokować w trybie z obrazkami).
+- [ ] Poprawka zapisu 2.5 — po 3 nieudanych kopiach v1 w sesji (albo przy zamknięciu strony po pierwszej) gra zapisuje v2 bez kopii surowego v1. Zaakceptuj albo odwróć (PRD tego nie rozstrzyga; v2 zawiera wszystko z v1).
+
+### P1 — na tablecie
+
+- [ ] S-14d 9.6 — test z palcem 6-latka: przeciąganie monety do portfela, zdejmowanie stuknięciem, kafelki z figurami, „Po lewej / Po prawej / Tyle samo”.
+- [ ] S-14c 4.8 — czy głos tabletu czyta „8 15” jako godzinę.
+- [ ] Poprawka zapisu 4.8 — pomiar N-7 na iPadzie: czy 20 s „Poczekaj dłużej” wystarcza przy zimnym IndexedDB.
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-15-save-v2-backup-health/`, `…-text-measure-time-types/`, `…-e1-shapes-picture-mode/` (`follow-ups/review-fixes.md`): m.in. SPATIAL, SYMMETRY, BONDS „połącz pary”, „ustaw zegar” w E5–E6, grafika portfela, mowa nierówności w E1.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Poprawka zapisu 2.6 — import/reset w zmigrowanej sesji próbują zaległej kopii v1 raz i nie czekają na nią (SRR-04).
+- [ ] Poprawka zapisu 4.7 — bez licznika startów; wyjście z trwałego `timeout` to „Poczekaj dłużej” na ten sam odczyt i warunkowa rada o danych strony.
+- [ ] S-14c 9.6 — INEQUALITY na kafelkach (2 dobre, 2 złe) z jednym przykładem w rozwiązaniu; runda powtórkowa E6.11 losuje krok, potem umiejętność, ~14 % z E5 (w łagodzeniu więcej — audyt TXT-01); E6.11 nigdy nie jest startem ani rozgrzewką; bez LOGIC w E6.11; rozkład jazdy tekstem; ceny w pełnych złotych; bez „ustaw zegar” w E5–E6; wyższe progi odblokowania 10 kroków E1–E6; start E6 przesunięty przez grywalny E6.2.
+- [ ] S-14d 9.7 — SPATIAL, SYMMETRY i BONDS „połącz pary” poza slice'em; ORDINAL tylko liczby do 5; E1.11 bez banknotu 10 zł (jest w E2.2); tryb z obrazkami jako filtr tylko w E1 (6 lat wrzesień–styczeń albo łagodzenie); wyższe progi E1.2 i E1.3; start E1 we wrześniu na E1.1; po złej zapłacie portfel się opróżnia.
