@@ -551,6 +551,8 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 - [x] 3.2 Deliberate break: `maxRetries: 3` → test budżetu czerwony; przywrócone; meta-check — 903c70a
 - [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `E2E_LOADER_TIMEOUT` nieobecne w `dist/`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — orchestrator note: 98 passed --workers=4 on 903c70a (+0); dist/ has no E2E_LOADER_TIMEOUT (p3 build check)
 
+> Note (phase 5 evidence): the config-only `loader.timeout` of 903c70a was a no-op: Phaser 4.2.1 gives every file `xhrSettings.timeout` 0, which overrides the game-config value (File.js + MergeXHRSettings.js). f4415a5 fixed it (BootScene copies `this.load.xhr.timeout` onto every added file); proven by p5 test (c), red before the fix and after break p5c, green after (7.7 s).
+
 #### Manual
 
 - [ ] 3.4 [reviewer] Liczby tylko w `balance.ts`; szew tylko pod `__E2E_HOOK__`; komentarz z budżetem czasu
@@ -572,8 +574,8 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [ ] 5.1 `npx playwright test tests/e2e/salon-load-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 3`
-- [ ] 5.2 Deliberate break p5a: brak uzbrojenia przy `migrated` → (a) czerwony ((b) może zostać zielony przez naprawę pokoju); meta-check
-- [ ] 5.3 Deliberate break p5b: `MIGRATIONS[2]` bez przeliczenia → (a) czerwony
-- [ ] 5.4 Deliberate break p5c: `createGame` bez `loader` → (c) czerwony; przywrócone; meta-check (plik naprawdę wisi)
-- [ ] 5.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 5.1 `npx playwright test tests/e2e/salon-load-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 3` — orchestrator: salon-load-health.spec 3 passed (c in 7.7 s); full `--workers=4` 101 passed = 98 + 3 — b604b00
+- [x] 5.2 Deliberate break p5a: brak uzbrojenia przy `migrated` → (a) czerwony ((b) może zostać zielony przez naprawę pokoju); meta-check — orchestrator: e2e-break-p5a.patch -> 1 failed (#2 H-1/M-3 migrated salon written as v3 at start); reverted — b604b00
+- [x] 5.3 Deliberate break p5b: `MIGRATIONS[2]` bez przeliczenia → (a) czerwony — orchestrator: e2e-break-p5b.patch -> 1 failed in salon-art.spec (#2 old task list carried over at load), as predicted; reverted — b604b00
+- [x] 5.4 Deliberate break p5c: `createGame` bez `loader` → (c) czerwony; przywrócone; meta-check (plik naprawdę wisi) — orchestrator: e2e-break-p5c.patch -> 1 failed (#15 H-2 hanging picture); pre-fix state (no f4415a5) also red on (c); reverted — b604b00
+- [x] 5.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, typecheck, npm test 2925, sample E1-E6, build "e2e hook: absent (2 chunks checked)" pass; no servers left — b604b00

@@ -1,54 +1,49 @@
 # Handoff — `salon-load-health` (slice fix salon-load-health, non-roadmap)
 
-Written by `/10x-implement salon-load-health phase 4`: docs-only closeout (rollback note, CLAUDE.md sentence, comment fixes, follow-ups), commit 27406ab. The one thing not to get wrong: phase 5 is `Driver: e2e` and only adds the spec; the v3 and loader code already exist.
+Written by `/10x-e2e salon-load-health phase 5` (finished after the orchestrator's browser run): the e2e spec for risks #2 and #15 is committed, the change is `implemented`. The one thing not to get wrong: the loader timeout only works because f4415a5 copies it onto every file; the config value alone is a no-op in Phaser 4.2.1.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-load-health`, cut from `main` at `7f831c5` |
-| Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2), 903c70a (p3), 27406ab (p4) + this handoff |
+| Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2), 903c70a (p3), f4415a5 (p3 fix), 27406ab (p4), b604b00 (p5) + this handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (unchanged; phase 5 closes it) |
-| `## Progress` rows remaining | 12 |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | 9 (all [reviewer]/[human]/[visual]) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `deploy/README.md` | one rollback note: below the v3 build the `future` card shows (only `deploy/` change vs main) |
-| `CLAUDE.md` | `remapLegacySalon` sentence replaced; new "Save format v3 and loader limit" sentence; no path into `context/changes/` |
-| `src/data/balance.ts`, `src/data/pl.ts`, `src/core/saveHealth.ts` | comments only: no hard-coded v1/v2 |
-| `context/changes/salon-load-health/follow-ups/review-fixes.md` | 17 follow-ups, each with a `Trigger:` line |
-| `plan.md` | rows 3.1, 3.3 (orchestrator note), 4.1-4.3 ticked |
+| `tests/e2e/salon-load-health.spec.ts` | 3 tests: (a),(b) migrated salon written as v3 at start (#2), (c) a never-answering picture does not block start (#15) |
+| `tests/e2e/support/hook.ts`, `playwright.config.ts` | helpers and config for the new spec |
+| `context/changes/salon-load-health/e2e/e2e-break-p5{a,b,c}.patch` | the three deliberate breaks |
+| `context/changes/salon-load-health/e2e-request-p5.md` | the orchestrator request that was executed |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `npm run lint` / `typecheck` | pass / pass |
-| `npm test` | 2925 passed (p3 baseline 2925, +0: comments/docs only) |
-| deploy + ops shell tests, `sample` E1-E6 | pass |
-| `npm run build` | pass, `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS; deliberate break (CLAUDE.md path to a missing file) FAIL; restored, PASS |
-| `git diff --stat main -- deploy/` | only `deploy/README.md` (+1) |
-| `grep remapLegacySalon\|LEGACY_SALON\b\|LegacyRoomLayout` in src, CLAUDE.md | empty |
-| e2e | not run: no code change in this phase (orchestrator note covers p3: 98 passed, baseline stays 98) |
-| fix p3 (per-file xhr timeout) | lint, typecheck, npm test, sample E1-E6, build pass; Playwright not run (Chromium cannot start in the subagent): the orchestrator proves test #15 |
+| `npm test` | 2925 passed (158 files; p4 baseline 2925, +0) |
+| `sample` E1-E6, `npm run build` | pass, `e2e hook: absent (2 chunks checked)` |
+| e2e (orchestrator, observed) | salon-load-health.spec 3 passed; full `--workers=4` 101 passed (98 + 3) |
+| break p5a / p5b / p5c | each 1 failed: #2 in salon-load-health.spec / #2 in salon-art.spec / #15; all reverted |
+| pre-fix (no f4415a5) | (c) red: loading bar stuck at ~99% |
 
 ## 4. Next command
 
-`/10x-e2e salon-load-health phase 5` (phase 5, `Driver: e2e`)
+`/10x-impl-review salon-load-health`
 
 ## 5. Open
 
-- [reviewer] 4.4, 3.4, 2.5, 1.5; [human] 3.5, 1.6; [visual] 2.6; all of phase 5.
-- The follow-up file lists audit ids M-4..L-8 by their short descriptions (source report is not committed).
+- [reviewer] 4.4, 3.4, 2.5, 1.5; [human] 3.5, 1.6; [visual] 2.6.
+- Follow-ups are in `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-1. **CLAUDE.md names no follow-up path**: the change moves to `context/archive/` later and `validate-rule-files.sh` fails on a path that does not exist yet, so it says "in the salon-load-health change (archive folder)".
-2. **Backup comments generalised** ("previous version") in CLAUDE.md, balance and pl comments rather than naming v2/v3.
-3. **No e2e run**: no behaviour changed.
-4. **Fix p3**: Phaser 4.2.1 gives each file `xhrSettings.timeout` 0, which overrides the game-config `loader.timeout`; `BootScene.preload` now copies `this.load.xhr.timeout` onto every file on `Loader.Events.ADD`. `maxRetries` was unaffected.
+1. **E2E run by the orchestrator**: Chromium cannot start in the subagent; rows 5.1-5.4 cite its observed results.
+2. **Plan note under phase 3**: records that the config-only timeout was a no-op and f4415a5 fixed it, proven by p5 (c).
+3. **Epilogue**: `change.md` status set to `implemented`.
