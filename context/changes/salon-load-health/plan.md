@@ -526,7 +526,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `src/core/save.ts` bez importu `src/data`; tabele kroku zamrożone; v3 bez nowych pól
+- [x] 1.5 [reviewer] `src/core/save.ts` bez importu `src/data`; tabele kroku zamrożone; v3 bez nowych pól — impl review, 4fb1a5b
 - [ ] 1.6 [human] Drzwi jednokierunkowe v3: po rollbacku do buildu v2 urządzenie z v3 widzi kartę `future` i gra bez zapisu
 
 ### Phase 2: Zapis przy starcie, jedno przeliczenie i polityka kopii dla v2
@@ -540,7 +540,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Manual
 
-- [ ] 2.5 [reviewer] `migrationWrittenAt` i `'migration'` tylko w runtime; jeden punkt decyzji o zapisie przy starcie; logi kopii bez „v1” na sztywno
+- [x] 2.5 [reviewer] `migrationWrittenAt` i `'migration'` tylko w runtime; jeden punkt decyzji o zapisie przy starcie; logi kopii bez „v1” na sztywno — impl review, 4fb1a5b
 - [ ] 2.6 [visual] „Zapis gry” przy `?e2eSave=legacy-salon` bez rundy: linia „przeniesiono z wersji 2” — 1440 i 1024
 
 ### Phase 3: Limit czasu ładowania plików w konfiguracji gry
@@ -555,7 +555,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Manual
 
-- [ ] 3.4 [reviewer] Liczby tylko w `balance.ts`; szew tylko pod `__E2E_HOOK__`; komentarz z budżetem czasu
+- [x] 3.4 [reviewer] Liczby tylko w `balance.ts`; szew tylko pod `__E2E_HOOK__`; komentarz z budżetem czasu — impl review, 4fb1a5b
 - [ ] 3.5 [human] iPad (WebKit): zawieszony plik kończy ładowanie po ≤ 24 s i gra startuje na zastępstwach
 
 ### Phase 4: Notatka wdrożeniowa, dokumentacja i follow-upy
@@ -568,7 +568,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Manual
 
-- [ ] 4.4 [reviewer] Seam sweep: brak martwych odwołań do `remapLegacySalon`/`LEGACY_SALON`; notatka rollbacku zgodna z `pl.saveFuture`
+- [x] 4.4 [reviewer] Seam sweep: brak martwych odwołań do `remapLegacySalon`/`LEGACY_SALON`; notatka rollbacku zgodna z `pl.saveFuture` — impl review, 4fb1a5b
 
 ### Phase 5: Stary salon zapisany jako v3 przy starcie i zawieszony plik nie blokuje startu — e2e (#2, #15)
 
