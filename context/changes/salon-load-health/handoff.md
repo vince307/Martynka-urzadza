@@ -1,52 +1,52 @@
 # Handoff — `salon-load-health` (slice fix salon-load-health, non-roadmap)
 
-Written by `/10x-implement salon-load-health phase 3`: the game config now carries a loader time limit from `balance.loader`, with an e2e-only `?e2eArt=stall` seam that shortens it (commit 903c70a). The one thing not to get wrong: e2e was NOT runnable in this session (Chromium dies on MachPortRendezvous), so rows 3.1 and 3.3 stay open for the orchestrator.
+Written by `/10x-implement salon-load-health phase 4`: docs-only closeout (rollback note, CLAUDE.md sentence, comment fixes, follow-ups), commit 27406ab. The one thing not to get wrong: phase 5 is `Driver: e2e` and only adds the spec; the v3 and loader code already exist.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-load-health`, cut from `main` at `7f831c5` |
-| Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2), 903c70a (p3) + this handoff |
+| Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2), 903c70a (p3), 27406ab (p4) + this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; phase 5 closes it) |
-| `## Progress` rows remaining | 15 |
+| `## Progress` rows remaining | 10 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/data/balance.ts` | `balance.loader = { timeoutMs: 12000, maxRetries: 1 }` with the time-budget comment |
-| `src/main.ts` | `createGame` sets `loader: { timeout, maxRetries }`; under `__E2E_HOOK__ && forcedArt === 'stall'` the e2e values |
-| `src/testing/e2eHook.ts` | `E2EArtSeam` + `'stall'`, `E2E_LOADER_TIMEOUT_MS = 2000`; `BootScene` unchanged (an unknown seam queues the normal files) |
-| `tests/loaderBalance.test.ts` | new: limit 5000..20000, retries 0..2, (retries+1) x limit <= 30000 |
-| `tests/e2eSave.test.ts`, `tests/e2eHookGuard.test.ts` | `e2eArt` parsing cases; guard case for `stall` (marker `e2eArt` already covers it) |
-| `plan.md` | rows 2.4 (orchestrator note, 98 passed) and 3.2 ticked |
+| `deploy/README.md` | one rollback note: below the v3 build the `future` card shows (only `deploy/` change vs main) |
+| `CLAUDE.md` | `remapLegacySalon` sentence replaced; new "Save format v3 and loader limit" sentence; no path into `context/changes/` |
+| `src/data/balance.ts`, `src/data/pl.ts`, `src/core/saveHealth.ts` | comments only: no hard-coded v1/v2 |
+| `context/changes/salon-load-health/follow-ups/review-fixes.md` | 17 follow-ups, each with a `Trigger:` line |
+| `plan.md` | rows 3.1, 3.3 (orchestrator note), 4.1-4.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm run lint` / `npm run typecheck` | pass / pass |
-| `npm test` | 2925 passed (p2 baseline 2919 + 6: 3 loader, 2 e2eArt, 1 guard) |
+| `npm run lint` / `typecheck` | pass / pass |
+| `npm test` | 2925 passed (p3 baseline 2925, +0: comments/docs only) |
 | deploy + ops shell tests, `sample` E1-E6 | pass |
-| `npm run build` | pass, `e2e hook: absent (2 chunks checked)`; `grep -c E2E_LOADER_TIMEOUT dist/_app/*.js` = 0 in both chunks |
-| `npx playwright test` | e2e: not runnable in this session — orchestrator gate (baseline 98, expect +0) |
-| Break (`maxRetries: 3`) | red: "allows at most two retries" (3 > 2) and the budget test (48000 > 30000); restored |
-| Meta-check | the budget test fails on the time product, not on key existence; the behaviour itself (a stalled file ends the load) is proven only in phase 5 e2e |
+| `npm run build` | pass, `e2e hook: absent (2 chunks checked)` |
+| `validate-rule-files.sh` | PASS; deliberate break (CLAUDE.md path to a missing file) FAIL; restored, PASS |
+| `git diff --stat main -- deploy/` | only `deploy/README.md` (+1) |
+| `grep remapLegacySalon\|LEGACY_SALON\b\|LegacyRoomLayout` in src, CLAUDE.md | empty |
+| e2e | not run: no code change in this phase (orchestrator note covers p3: 98 passed, baseline stays 98) |
 
 ## 4. Next command
 
-`/10x-implement salon-load-health phase 4` (phase 4, `Driver: impl`)
+`/10x-e2e salon-load-health phase 5` (phase 5, `Driver: e2e`)
 
 ## 5. Open
 
-- Rows 3.1 and 3.3 (orchestrator e2e, `--workers=4`, expect 98 + 0); [reviewer] 3.4, 2.5, 1.5; [human] 3.5, 1.6; [visual] 2.6.
-- Not verified without a browser: Phaser 4 honours `loader.timeout`/`maxRetries` from the game config (phase 5 `stall` spec proves it).
+- [reviewer] 4.4, 3.4, 2.5, 1.5; [human] 3.5, 1.6; [visual] 2.6; all of phase 5.
+- The follow-up file lists audit ids M-4..L-8 by their short descriptions (source report is not committed).
 
 ## 6. Autonomous decisions
 
-1. **No TDD for the config glue** (plan driver `impl`); only the numbers and seam parsing got tests.
-2. **`stall` needs no `BootScene` change**: the scene only branches on `missing`, `corrupt`, `room`, so `stall` queues every file as normal.
-3. **Row 3.1/3.3 left open** because their gate includes e2e; 3.2 ticked.
+1. **CLAUDE.md names no follow-up path**: the change moves to `context/archive/` later and `validate-rule-files.sh` fails on a path that does not exist yet, so it says "in the salon-load-health change (archive folder)".
+2. **Backup comments generalised** ("previous version") in CLAUDE.md, balance and pl comments rather than naming v2/v3.
+3. **No e2e run**: no behaviour changed.

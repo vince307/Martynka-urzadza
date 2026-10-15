@@ -560,9 +560,9 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [x] 4.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — p4 commit
-- [x] 4.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:` — p4 commit
-- [x] 4.3 `git diff --stat main -- deploy/` = tylko `deploy/README.md`; pełna bramka lokalna zielona — p4 commit (e2e not needed: docs/comments only)
+- [x] 4.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — 27406ab
+- [x] 4.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:` — 27406ab
+- [x] 4.3 `git diff --stat main -- deploy/` = tylko `deploy/README.md`; pełna bramka lokalna zielona — 27406ab (e2e not needed: docs/comments only)
 
 #### Manual
 
