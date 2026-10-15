@@ -642,7 +642,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — orchestrator e2e 101 passed after p4 (note), p3 1347887
 - [x] 3.2 Deliberate break: linia przy `'loading'` — meta-check w handoffie (dowód linii: patch `e2e-break-p7c`) — 06b20bb
 
 #### Manual
@@ -656,7 +656,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 - [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 1347887
 - [x] 4.2 Deliberate break: `attempt` bez `NewerSave` / `replaceGate` bez `'newer'` → czerwone; przywrócone; meta-check (liczone operacje) — 1347887
-- [ ] 4.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty; pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
+- [x] 4.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty; pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (` — orchestrator e2e 101 passed (note)
 
 #### Manual
 
@@ -666,8 +666,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 5.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: `write` na `set` → test „B v4, A v3 refused” czerwony; przywrócone; meta-check (dwa magazyny, jedna baza)
+- [x] 5.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 731bcb0
+- [x] 5.2 Deliberate break: `write` na `set` → test „B v4, A v3 refused” czerwony; przywrócone; meta-check (dwa magazyny, jedna baza) — 731bcb0
 - [ ] 5.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
