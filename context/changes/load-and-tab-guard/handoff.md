@@ -1,78 +1,61 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The `/10x-tdd` step wrote this handoff for phase 1 (the pure boot-load rule and the numbers). Rows 1.1 and 1.2 are done; row 1.3 is left open because Chromium could not start in this session, so the e2e part of the gate belongs to the orchestrator. The next agent must not use the bare idb-keyval `update` in phase 5. Phase 5 uses `guardedPut` on the raw store, so a failing `get` still puts (F1). A cut must also expect break p7b to stay green (F2).
+The `/10x-implement` step wrote this handoff for phase 2 (the total boot limit and the loader cut). Rows 2.1 and 2.2 are done; 2.3 (e2e) and row 1.3 are left to the orchestrator because Chromium cannot start here. The next agent must not use the bare idb-keyval `update` in phase 5. Phase 5 uses `guardedPut` on the raw store, so a failing `get` still puts (F1). Break p7b is expected to stay green (F2).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
-| Commits | 6 before this handoff commit: identity, research, plan, plan handoff fix, plan review, and `test(load-and-tab-guard): reguła ładowania i liczby (p1)` (0c31db4); then a plan-rows commit and this handoff |
+| Commits | phase 1 `0c31db4`, phase 2 `79023af` (`feat(load-and-tab-guard): łączny limit ładowania w BootScene (p2)`), then this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 29 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 27 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/bootLoad.ts` | `bootLoadPhase` (`loading` / `slow` / `over`), `checkBootLimits`, `BootLimits`; pure |
-| `src/data/balance.ts` | `balance.loader` gained `slowAfterMs: 8000` and `totalMs: 45000`, with the arithmetic in the comment (F4 precache competition named) |
-| `tests/bootLoad.test.ts` | boundaries 0, slow-1, slow, total-1, total; NaN and negative elapsed; six bad-limit rejections |
-| `tests/loaderBalance.test.ts` | total limit 30..60 s, above `(maxRetries + 1) × timeoutMs`, slow line 3..15 s, `checkBootLimits(balance.loader)` |
-| `context/changes/load-and-tab-guard/plan.md` | rows 1.1 and 1.2 ticked with 0c31db4 |
-| `context/changes/load-and-tab-guard/handoff.md` | this handoff |
+| `src/scenes/loaderCut.ts` | `cutLoad(load)`: moves `list` files to `inflight`, ends `queue` files (swaps `onProcessComplete`, detaches image callbacks) and `inflight`/`list` files (`retryAttempts` 0, `resetXHR`, `ontimeout` null, `abort` only with an `xhrLoader`) as `FILE_ERRORED`; returns the cut keys |
+| `src/scenes/BootScene.ts` | total-limit timer (`this.time.delayedCall(totalMs)`, removed on `COMPLETE`), one `console.warn` line, `publish()` of `REGISTRY_KEYS.bootLoad`, `creates` guard, `loadPhase()` (`loading`/`over` for now) and `isLoading()` |
+| `src/data/layout.ts` | `REGISTRY_KEYS.bootLoad` (runtime only) |
+| `src/main.ts` | `?e2eArt=stallall` gives `loader: { timeout: 0, maxRetries: 0 }` (hook build only) |
+| `src/testing/e2eHook.ts` | `E2EArtSeam` + `stallall`, `E2E_BOOT_LIMITS` (500 ms / 3000 ms), snapshot `screen: 'loading'` with `loading.phase`, `bootLoad` in every snapshot |
+| `tests/e2e/support/hook.ts` | `Snapshot.screen` + `'loading'`, `loading`, `bootLoad` |
+| `tests/phaserLoaderPin.test.ts` | tripwire: Phaser must be 4.2.1 |
+| `tests/e2eSave.test.ts`, `tests/e2eHookGuard.test.ts` | `stallall` parsing and the production-chunk guard case; the existing `e2eArt` marker covers the value |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/load-and-tab-guard` |
-| RED (stubs returned `'loading'` and never threw) | `AssertionError: expected 'loading' to be 'slow'`, `expected 'loading' to be 'over'`, `expected [Function] to throw an error` (6 cases); 12 failed, 6 passed |
-| GREEN `npx vitest run tests/bootLoad.test.ts tests/loaderBalance.test.ts` | 18 passed |
-| Break 1: `elapsedMs >= slowAfterMs` changed to `>` | `is slow from the slow line until the total limit` red; restored |
-| Break 2: `totalMs: 20000` | `keeps the total limit between 30 and 60 s` and `keeps the total limit above the worst case of one stalled file` red; restored |
-| Meta-check | the breaks fail the rule and number tests only; they prove nothing about the loader ending (phase 7) |
 | `npm run lint` / `npm run typecheck` | pass / pass |
-| unit gate (`npm test`, deploy scripts, `sample` E1–E6) | 2940 passed (baseline 2925, +15); sample E1–E6 clean |
-| `npm run build` | passes, prints `e2e hook: absent (2 chunks checked)` |
-| e2e `npx playwright test --config=<abs> --workers=4` | e2e: not runnable in this session — orchestrator gate (Chromium `MachPortRendezvousServer … Permission denied`; baseline 101 expected, +0) |
+| unit gate (`npm test`, `sample` E1–E6) | 2942 passed (branch baseline 2940, +2: tripwire, `stallall` in the `e2eHookGuard` it.each); sample E1–E6 clean (no content change) |
+| `npm run build` | passes, prints `e2e hook: absent (2 chunks checked)`; `E2E_BOOT_LIMITS` and `stallall` absent from `dist/_app/*.js` |
+| Break: tripwire `toBe('4.2.2')` | `AssertionError: src/scenes/loaderCut.ts relies on loader internals: re-verify e2e #15 stallall, then update this pin: expected '4.2.1' to be '4.2.2'`; restored, green |
+| Meta-check | the tripwire guards only the Phaser version; the cut behaviour is proven by e2e #15 in phase 7 (patches p7a/p7b), not here |
+| e2e `npx playwright test --config=<abs> --workers=4` | e2e: not runnable in this session — orchestrator gate (Chromium `MachPortRendezvousServer … Permission denied`); expected baseline 101 + 0, with `salon-load-health.spec.ts` "#15 H-2" green |
 
 ## 4. Next command
 
-`/10x-implement load-and-tab-guard phase 2` (phase 2, `Driver: impl`)
+`/10x-implement load-and-tab-guard phase 3` (phase 3, `Driver: impl`)
 
 ## 5. Open
 
-
-- **Drivers by phase:**
-  - Phase 1 `tdd`: `src/core/bootLoad.ts`, `balance.loader` (done, 0c31db4).
-  - Phase 2 `impl`: `src/scenes/loaderCut.ts` `cutLoad`, `REGISTRY_KEYS.bootLoad`, `?e2eArt=stallall`, hook `screen: 'loading'`, `tests/phaserLoaderPin.test.ts`.
-  - Phase 3 `impl`: `LoadingScreen.slow`, `pl.loading.slow`, gap 112.
-  - Phase 4 `tdd`: `storedVersionNewer`, `BlockReason 'newer'`, `replaceGate`, `offState`, `deviceSaveView`, gap 113.
-  - Phase 5 `tdd`: `guardedPut` in `src/storage/idb.ts`, `?e2eSave=newer`.
-  - Phase 6 `impl`: `CLAUDE.md` and `follow-ups/review-fixes.md`.
-  - Phase 7 `e2e`: `tests/e2e/load-and-tab-guard.spec.ts`, request-file protocol, patches p7a–p7d.
-- **Risks carried** (plan `## Known risks`):
-  - Phaser internals: `^4.2.1`, guarded by the tripwire plus e2e #15.
-  - The cold first start competes with the SW precache (F4).
-  - The `creates` guard and the font swap are belts with no red test (F6, and p7b is expected green).
-  - The guard only protects from this build onwards.
-  - Two tabs of the same version stay unguarded.
-  - `guardedPut` + `preventDefault` on a failing `get` is unverified on WebKit/iOS.
-- **Manual-only rows (human checklist):**
-  - 2.5: Android on a throttled network starts in about 45 s or less.
-  - 7.7: iPad/WebKit shows the cut and the slow line.
-  - 3.3 [visual]: the slow line.
-- **DESIGN-GAPs planned:** 112 (`pl.loading.slow`) and 113 (`saveOff.newer`), added in phases 3 and 4.
-- **Follow-ups:** none yet. Phase 6 writes `follow-ups/review-fixes.md`.
-- **Row 1.3** (full gate incl. e2e) is open: the orchestrator runs e2e (`--workers=4`, expect 101 passed) and ticks it. Row 1.4 is [reviewer].
+- **Orchestrator:** run e2e (`--workers=4`, expect 101 passed) and tick rows 1.3 and 2.3.
+- **Phase 3 inputs:** `BootScene.phase` exists (`loading`/`over`); phase 3 adds `slow` through a `delayedCall(slowAfterMs)` that calls `LoadingScreen.slow()`, using `bootLoadPhase`. The same `limits` object is built in `preload` (hook build uses `E2E_BOOT_LIMITS`), so reuse it. Remove the slow timer on `COMPLETE` and stop it after the cut.
+- **Risks carried:** Phaser internals `^4.2.1`; cold start competes with the SW precache (F4); the `creates` guard and `onProcessComplete` swap are belts without a red test (F6; p7b expected green); the guard protects only from this build on; `guardedPut` + `preventDefault` on a failing `get` is unverified on WebKit.
+- **Manual-only rows:** 2.5 Android throttled start; 3.3 [visual] slow line; 7.7 iPad.
+- **DESIGN-GAPs planned:** 112 (`pl.loading.slow`, phase 3) and 113 (`saveOff.newer`, phase 4).
+- **Follow-ups:** none yet; phase 6 writes `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-- **No AskUserQuestion was asked.** Between-phase prompt decided as "stop after phase 1".
-- **Phase kept `Driver: tdd`, no inline part.** The whole phase is a pure rule plus numbers.
-- **Stubs first, so the RED is an assertion.** `bootLoad.ts` shipped as a stub returning `'loading'`, which gave assertion failures, not a missing module. Would change: none.
-- **`bootLoadPhase` uses `!(elapsed >= slowAfterMs)`** so NaN and negative values read as `loading`. Rejected: separate `Number.isNaN` guards. Would change: a caller needing NaN to be an error.
-- **e2e not run here.** Chromium cannot launch in the subagent sandbox and the phase rules forbid bypassing it. Would change: a session where Chromium starts.
+- **No AskUserQuestion.** Between-phase prompt decided as "stop after phase 2".
+- **Cut result published after `cutLoad` returns.** `create()` runs synchronously inside the last `nextFile`, before the keys are assigned, so `BootScene` calls `publish()` in `create` (empty `cut`) and again after the cut. Rejected: a callback argument on `cutLoad` (changes the planned contract). Would change: none.
+- **`E2E_BOOT_LIMITS` read in `BootScene` directly** under `__E2E_HOOK__` and the `forcedArt` registry value, not a new registry key. Rejected: a second key. Would change: a second consumer.
+- **`loadPhase()` returns `loading` or `over` in this phase**; `slow` arrives in phase 3.
+- **The hook returns `screen: 'loading'` while `BootScene.isLoading()`** (the loading screen exists from `preload` to `create`).
+- **e2e not run here.** Chromium cannot launch in the sandbox and the rules forbid bypassing it. Would change: a session where Chromium starts.

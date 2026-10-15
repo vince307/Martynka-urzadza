@@ -629,8 +629,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (`; `E2E_BOOT_LIMITS` nieobecne w `dist/`
-- [ ] 2.2 Deliberate break: tripwire z `4.2.2` → czerwony; przywrócone; meta-check (dowód zachowania w fazie 7)
+- [x] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `npm run build` drukuje `e2e hook: absent (`; `E2E_BOOT_LIMITS` nieobecne w `dist/` — 79023af
+- [x] 2.2 Deliberate break: tripwire z `4.2.2` → czerwony; przywrócone; meta-check (dowód zachowania w fazie 7) — 79023af
 - [ ] 2.3 e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`; `salon-load-health.spec.ts` „#15 H-2 …” zielony
 
 #### Manual
