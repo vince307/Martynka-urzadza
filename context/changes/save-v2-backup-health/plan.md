@@ -662,7 +662,7 @@ kolejne starty czytają v2, bez migracji.
 #### Manual
 
 - [x] 1.5 [reviewer] `lastFailure` tylko w statusie runtime; jeden helper limitu; w `src/storage/idb.ts` tylko strażnik ponowienia `write` — impl-review PASS (reviews/impl-review.md)
-- [ ] 1.6 [visual] „Zapis gry” przy `?e2eSave=writehang`: `failing`, nie `notYet` — 1440 i 1024
+- [x] 1.6 [visual] „Zapis gry” przy `?e2eSave=writehang`: `failing`, nie `notYet` — 1440 i 1024
 
 ### Phase 2: Polityka kopii v1: trzy próby, potem v2 bez kopii
 
@@ -690,7 +690,7 @@ kolejne starty czytają v2, bez migracji.
 #### Manual
 
 - [x] 3.4 [reviewer] Teacher read `saveFailingDetail`, `saveStage`, `saveMigrated.kept/lost`; wiersze 94–95 — impl-review PASS (reviews/impl-review.md)
-- [ ] 3.5 [visual] „Zapis gry” przy `?e2eSave=v1`, `backupfail`, `writefail`, `writehang` po pierwszej rundzie — 1440 i 1024
+- [x] 3.5 [visual] „Zapis gry” przy `?e2eSave=v1`, `backupfail`, `writefail`, `writehang` po pierwszej rundzie — 1440 i 1024
 
 ### Phase 4: Wolny odczyt: karta „Poczekaj dłużej” i rada zamiast pętli
 
@@ -704,7 +704,7 @@ kolejne starty czytają v2, bez migracji.
 #### Manual
 
 - [x] 4.5 [reviewer] Teacher read `saveSlow.*`, `saveOff.timeout`, `deviceTimeout`; wiersze 96–97; fokus nigdy na „Poczekaj dłużej”; flaga `settled` (F2) — impl-review PASS (reviews/impl-review.md)
-- [ ] 4.6 [visual] Karta przy `?e2eSave=hang` (przed, w trakcie, po drugim limicie), `?e2eSave=unavailable`; „Zapis gry” i dialog resetu przy `hang` — 1440 i 1024
+- [x] 4.6 [visual] Karta przy `?e2eSave=hang` (przed, w trakcie, po drugim limicie), `?e2eSave=unavailable`; „Zapis gry” i dialog resetu przy `hang` — 1440 i 1024
 - [ ] 4.7 [human] Decyzja: bez licznika startów; wyjście z trwałego `timeout` = dłuższe czekanie na ten sam odczyt + warunkowa rada
 - [ ] 4.8 [human] Pomiar N-7 na iPadzie: czy 20 s rozstrzyga trwały `timeout`
 
@@ -721,7 +721,7 @@ kolejne starty czytają v2, bez migracji.
 #### Manual
 
 - [x] 5.6 [reviewer] Seam sweep: jeden helper limitu, jedna prawda o kopii, brak martwych kluczy, komentarze, gaps 43/45/50/69–71 spójne z 94–97, follow-upy z `Trigger:`, zdanie w `CLAUDE.md` — impl-review PASS (reviews/impl-review.md)
-- [ ] 5.7 [visual] Dialog resetu przy `?e2eSave=writehang`: w trakcie i po limicie (`resetFailed`, „Zamknij”) — 1440 i 1024
+- [x] 5.7 [visual] Dialog resetu przy `?e2eSave=writehang`: w trakcie i po limicie (`resetFailed`, „Zamknij”) — 1440 i 1024
 
 ### Phase 6: Zapis przetrwa padającą kopię i zawieszony magazyn — e2e (#2)
 

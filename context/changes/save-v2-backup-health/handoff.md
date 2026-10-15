@@ -1,70 +1,64 @@
 # Handoff — `save-v2-backup-health` (slice fix save-v2-backup-health, non-roadmap)
 
-Written by `/10x-impl-review` of run `2026-10-15-fix-s14c-s14d`. Review verdict: APPROVED, `MERGE: CLEAR`. Two WARNINGs were fixed in `58cf156`, the reviewer rows are ticked, and `change.md` is `impl_reviewed`. The next agent runs the visual gate. It must not touch production code except to fix a visual-gate finding.
+Written by the visual gate of run `2026-10-15-fix-s14c-s14d`. Verdict: `VISUAL: PASS`. One focus discrepancy on the slow-read card was fixed in `1c7bc51` and captured again. The [visual] rows are ticked, and only the [human] rows remain open. The next agent archives the change and ships it. It must not add to the PR body that the [human] rows are done.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-v2-backup-health`, cut from `main` at `16848c6` |
-| Commits | plan commits + p1 `8430945` … p6 `e7407b7`, review fix `58cf156`, then this docs commit |
+| Commits | plan commits + p1 `8430945` … p6 `e7407b7`, review fix `58cf156`, review docs `b9883d5`, visual fix `1c7bc51`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | only [visual] 1.6, 3.5, 4.6, 5.7 and [human] 2.5, 2.6, 4.7, 4.8 |
-| Working tree | clean after the docs commit |
+| `change.md` status | `impl_reviewed` (archive sets the final status) |
+| `## Progress` rows remaining | 4, all [human]: 2.5, 2.6, 4.7, 4.8 |
+| Working tree | clean after the docs commit; the throwaway spec was moved out to the session scratchpad (`visual-sv2.local`) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/save-v2-backup-health/reviews/impl-review.md` | review report: a save-safety table by symbol, the reviewer rows, F1–F6, and `MERGE: CLEAR` |
-| `tests/autosave.test.ts` | `hasSettled` helper; "a hung write is a timeout failure…" and "replace behind a write that never answers…" now fail by assertion, not by the vitest timeout (F1) |
-| `src/data/pl.ts` | `settings.saveOff.timeout` and `saveTransfer.deviceTimeout` now say "może pomóc usunięcie danych tej strony" instead of "pomoże" (F2) |
-| `context/changes/save-v2-backup-health/follow-ups/review-fixes.md` | new follow-up for F3/F4 (`replace` marks the copy `skipped` after one try; log `attempts: 0`), with a `Trigger:` |
-| `context/changes/save-v2-backup-health/plan.md` | reviewer rows 1.5, 2.7, 3.4, 4.5, 5.6 ticked |
-| `context/changes/save-v2-backup-health/change.md` | status `impl_reviewed` |
+| `src/ui/dom/saveFailedCard.ts` | fix `1c7bc51`: `mountSaveFailedCard` moves the focus to "Graj dalej" when "Poczekaj dłużej" is tapped (DESIGN-GAP 96) |
+| `context/changes/save-v2-backup-health/screenshots/*.png` | 40 frames: 20 states at 1440 and 1024 |
+| `context/changes/save-v2-backup-health/screenshots/README.md` | frame table: state, widths, how each was reached |
+| `context/changes/save-v2-backup-health/reviews/visual-review.md` | the judgement, focus log, hand check, ending `VISUAL: PASS — …` |
+| `context/changes/save-v2-backup-health/plan.md` | [visual] rows 1.6, 3.5, 4.6 and 5.7 ticked |
+| `context/changes/save-v2-backup-health/follow-ups/review-fixes.md` | V1 (code named twice after failed copies) and V2 (focus during an in-flight import/reset write), each with a `Trigger:` |
+| `context/changes/save-v2-backup-health/handoff.md` | this file |
 
 ## 3. Verification
 
-All observed in this step. Baseline is main `16848c6`: unit 2445, e2e 77.
+All observed in this step, after the fix `1c7bc51`. Baseline is main `16848c6`: unit 2445, e2e 77.
 
 | Command | Result |
 |---|---|
-| lint, typecheck | OK, before and after the fix |
-| `npm test` + deploy tests + `sample` E1–E6 | 2479 passed (128 files) = baseline 2445 + 34; still 2479 after the fix (assertions added, no new tests); every sample OK |
+| visual spec (16 tests, 2 viewports, hook build on 4399) | 16 passed. The card tests were re-run after the fix: 4 passed, and the focus log reads `Graj dalej` in frames 20, 21, 22 and 26 |
+| `npm run lint`, `npm run typecheck` | OK (the throwaway spec moved out first) |
+| `npm test` + deploy and ops tests + `sample` E1–E6 | 2479 passed = baseline 2445 + 34, unchanged from impl-review; deploy OK, ops OK, every sample OK |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --config=… --workers=4` (Chromium launched first try) | 82 passed (5.8 min) = baseline 77 + 5 |
-| Break 1 (unit): `attempt` calls `store.write(encoded)` without `limited` | before F1: 3 tests red only by `Test timed out in 5000ms`; after F1: "hung write" and "replace behind…" red at once with `AssertionError: expected false to be true`; restored |
-| Break 2 (unit): `idb.ts` `run` ignores `mayRetry` | "an abandoned write … is not retried once a newer write started" red (`expected 'ok' to be 'InvalidStateError'`); restored |
-| Break 3 (e2e): `e2e-break-p6a.patch` (the copy never gives up), `-g "SV2-01"`, 1 worker | red: `toBe` Expected 2, Received null on `writtenVersion`; reversed with `git apply -R`; tree clean |
-| Meta-check | break 1 now proves the time limit by assertion. Break 2 proves the write-order guard in the store, not in the autosaver. Break 3 proves SV2-01 in the browser (the save is never written as v2) |
-| Fixtures and format | `git diff --stat main..HEAD -- tests/fixtures src/core/save.ts` empty; `SAVE_VERSION = 2` |
-| Ports 4397/4398 | no listener after the runs |
+| `npx playwright test --config=…/playwright.config.ts --workers=4` | 82 passed (5.7 min) = baseline 77 + 5 |
+| Deliberate break | none in this step: the fix is a DOM focus move with no unit DOM harness. The before/after focus log of the visual spec is the proof: `BODY` before and `BUTTON:Graj dalej` after |
+| Ports 4397/4398/4399 | no listener after the runs |
 
 ## 4. Next command
 
-Next: `visual gate`
+`/10x-archive save-v2-backup-health` then ship
 
 ## 5. Open
 
-- Visual rows (`plan.md` Progress), for the visual gate:
-  - 1.6: "Zapis gry" at `?e2eSave=writehang` shows `failing`.
-  - 3.5: the panel at `v1`, `backupfail`, `writefail`, `writehang`.
-  - 4.6: the slow card at `hang` (before, during, after) and at `unavailable`; the panel and reset dialog at `hang`.
-  - 5.7: the reset dialog at `writehang`.
-  - All at 1440 and 1024. Gestures and the adult gate go through the Playwright fallback (profile § 8).
-- Human checklist:
-  - [ ] 2.5: v2 is written without the raw v1 copy after 3 failed copies, or at page hide after the first.
+- Human checklist (`plan.md` Progress):
+  - [ ] 2.5: after 3 failed copies (or at page hide after the first), v2 is written without the raw v1 copy.
   - [ ] 2.6: import and reset try a copy that is still owed once (SRR-04).
-  - [ ] 4.7: no start counter; the way out of a timeout is a longer wait plus the advice.
-  - [ ] 4.8: N-7 iPad measurement.
-- Follow-ups with `Trigger:` are in `follow-ups/review-fixes.md`. New in this step: F3/F4 in `src/core/autosave.ts` `replace`/`skipBackup`.
-- The e2e slow-read constants are timing-sensitive (`src/testing/e2eHook.ts` `E2E_SLOW_READ_MS`, spec `SLOW_READ_MS`; F5). They are green here.
-- DESIGN-GAP rows 94–97 (`docs/design-gaps.md`) still need the visual gate.
+  - [ ] 4.7: there is no start counter; the way out of a timeout is a longer wait plus the advice.
+  - [ ] 4.8: the N-7 iPad measurement (`balance.save.slowLoadTimeoutMs`).
+- DESIGN-GAP rows 94–97 (`docs/design-gaps.md`) stay: the kit has no frames for these views. The wording is provisional and still needs a teacher read.
+- Follow-ups with `Trigger:` are in `follow-ups/review-fixes.md`. New in this step:
+  - V1: `createSaveHealthView` / `saveHealthView` names the copy failure code twice.
+  - V2: the busy branch of `openSaveImportDialog` / `openSaveResetDialog` leaves no focus target during the write.
+- The e2e slow-read constants are still timing-sensitive (`E2E_SLOW_READ_MS`; impl-review F5). They were green in this step.
 
 ## 6. Autonomous decisions
 
-- **F1 fixed in tests (helper `hasSettled`), not by `vi.setConfig` or a shorter timeout.** Why: the contract asks for RED by assertion. The helper fails in milliseconds and names the cause. What would change it: a test-runner rule that forbids helper predicates (none exists).
-- **F2 copy softened ("może pomóc").** Rejected: leaving "pomoże". Why: the game cannot know that clearing site data fixes a hang, and the brief asks for honest copy. No spec asserts the literal text. What would change it: a teacher or maintainer preferring the firmer wording.
-- **F3/F4 recorded as a follow-up, not fixed.** Why: the behaviour is the plan's decision 3, under `[human]` 2.6, and no progress is lost (v2 ⊇ v1). Changing it would alter the reviewed SRR-04 contract. What would change it: the maintainer rejecting 2.6, or a v3 migration that can drop fields.
-- **Verdict APPROVED / MERGE: CLEAR.** Why: no CRITICAL was found, the two WARNINGs are fixed, and every save-safety point was verified by symbol. What would change it: a visual-gate finding of a misleading parent line, or a flaky slow-read e2e.
+- **Playwright only, no Claude-in-Chrome pass.** Rejected: capturing the start cards in Chrome. Why: every panel and dialog state needs the gear hold, which Chrome cannot drive (profile § 8). The cards' timed states depend on the hook build's shortened limits. One renderer keeps the frames comparable, as in the save-reason-and-recovery gate. What would change it: Chrome learning to drive the Phaser hold, or a card-only change.
+- **Fixed the slow-card focus instead of only recording it.** Why: DESIGN-GAP 96, written by this change, says "Graj dalej" keeps the focus, and the focus dropped to the page. The fix is one line in `mountSaveFailedCard` and never focuses an overwrite. What would change it: a maintainer preferring the focus on the disabled wait button's status text.
+- **V1/V2 recorded as follow-ups, not fixed.** Why: V1 is a copy choice that needs a teacher read (rows 94–95). V2 is a 5 s window in which nothing can be done, and Escape is already guarded. What would change it: a parent report of confusion about the double code, or an accessibility requirement for keyboard users during the write.
+- **Extra states beyond the [visual] rows** (`backuphang`, `slow`, the import after a timed-out write, the import at `hang`). Why: the step prompt names these seams and the import dialog after a timed-out write. What would change it: nothing; they only add evidence.
