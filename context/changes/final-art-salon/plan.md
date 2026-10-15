@@ -787,7 +787,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [x] 6.1 `rg -n "minAspect" src` pusty; liczby ptaszka/kłódki tylko w `src/data/layout.ts`
+- [x] 6.1 `rg -n "minAspect" src` pusty; liczby ptaszka/kłódki tylko w `src/data/layout.ts` — 9364408
 - [ ] 6.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
 - [ ] 6.3 Celowe złamanie: `thumbTargets` ze starej geometrii → e2e `room-change` czerwony; przywrócone; meta-check
 
