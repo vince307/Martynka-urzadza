@@ -150,7 +150,9 @@ stary salon + nieznany nie-stary klucz → klucz przeniesiony; brak `salon` → 
 #### 2. Wersja 3
 
 **File**: `src/core/save.ts` (`SAVE_VERSION`, `MIGRATIONS[2]`, `saveProblem`, `encodeSave`, komentarze „v2 save”);
-`src/core/types.ts` (`SaveV3`, alias bieżącego kształtu); `tests/save.test.ts`; `tests/fixtures/save-v3.json` (nowy);
+`src/core/types.ts` (`SaveV3`, alias bieżącego kształtu); `tests/save.test.ts`; `tests/saveFile.test.ts` (przypadki
+`saveProblem`/`validateSave` na `save-v2*.json` — „names %s”, „a valid save has no problem” — przechodzą na `save-v3.json`,
+bo `saveProblem` na v2 zwraca teraz `'version'`; plan-review F2); `tests/fixtures/save-v3.json` (nowy);
 `tests/fixtures/save-v2-legacy-salon.json` (nowy)
 
 **Intent**: Podbicie wersji wzorem v1 → v2. Fixtury v1/v2 dekodują się do v3 (`migratedFrom` 1/2); `save-v3.json`
@@ -203,7 +205,10 @@ M-3, reszta H-1 (brak podwójnego przeliczenia), M-1 (kopia v2 tą samą ścież
 
 #### 1. Zapis przy starcie po migracji
 
-**File**: `src/core/autosave.ts` (`WriteReason`, `AutosaveStatus`, `createAutosaver`); `tests/autosave.test.ts`
+**File**: `src/core/autosave.ts` (`WriteReason`, `AutosaveStatus`, `createAutosaver`); `tests/autosave.test.ts` (także
+istniejące przypadki z `migrated` — po `advance` widzą teraz zapis startowy; plan-review F1);
+`tests/e2e/save-backup-health.spec.ts` („#2 SV2-01”: zaraz po starcie `backup` to `'pending'` albo `'failed'` — zapis
+startowy mógł już zużyć pierwszą próbę kopii; asercja `ops.slice(0, 4)` = trzy `backup` i `write` bez zmian; plan-review F1)
 
 **Intent**: Gdy `options.migrated` jest ustawione, autosaver przy utworzeniu oznacza stan jako brudny i uzbraja zapis
 z powodem `'migration'` (kopia najpierw, jak dziś). Pierwszy udany zapis po migracji ustawia `migrationWrittenAt`.
@@ -280,7 +285,7 @@ pierwszym starcie pliki z cache service workera.
 
 #### 2. Szew `stall`
 
-**File**: `src/testing/e2eHook.ts` (`E2EArtSeam` + `'stall'`, `E2E_LOADER_TIMEOUT_MS = 500`); `src/main.ts`
+**File**: `src/testing/e2eHook.ts` (`E2EArtSeam` + `'stall'`, `E2E_LOADER_TIMEOUT_MS = 2000`); `src/main.ts`
 `createGame` (pod `__E2E_HOOK__ && art === 'stall'`: `{ timeout: E2E_LOADER_TIMEOUT_MS, maxRetries: 0 }`);
 `tests/e2eSave.test.ts` (parsowanie `e2eArt`, dziś bez testu — nowy przypadek), `tests/e2eHookGuard.test.ts`
 
@@ -339,7 +344,9 @@ bezpieczny, gra bez zapisu do powrotu nowego buildu). Domyka M-S1 (`save-observa
 (SV2-04/opcja B, trigger „a parent report of lost progress after an update”); e2e dwóch buildów (trigger „the next
 save-format change (v4)”); F7/SRR-09/SRR-01 (trigger „a migration step that can throw”); przykład błędu w historii
 (trigger „a save that changes the shape of a mistake example, or S-17”); limit `FontFace` (trigger „a parent report of a
-blank start”); WebKit e2e (trigger „a WebKit project in playwright.config.ts”).
+blank start”); WebKit e2e (trigger „a WebKit project in playwright.config.ts”); dwie karty jednego originu
+(`BroadcastChannel`, trigger przeniesiony z „first save-format change” na „a parent report of lost progress with two
+tabs open, or the next save-format change (v4)”; plan-review F6).
 
 ### Success Criteria:
 
@@ -380,8 +387,14 @@ nie `null`, `lastReason 'migration'`; pokój: `tasksDone 4`, `chosen { sofa: 2, 
 at start”: `?e2eSave=v1` → bez rundy `writtenVersion 3`, jedna operacja `backup`. (c) „#15 H-2 a picture that never
 answers ends the loading after the limit and is counted as missing”: `test.use({ serviceWorkers: 'block' })`,
 `page.route('**/assets/rooms/salon/furnishings-before.webp', () => {})` (nigdy nie odpowiada), `?e2eArt=stall` → ekran
-powitania osiągnięty (`screen 'welcome'`), `roomArtHealth.missing ≥ 1`; po `passWelcome` i przejściu do pokoju pokój
+powitania osiągnięty (`screen 'welcome'`); po `passWelcome` `roomArtHealth.missing ≥ 1` i po przejściu do pokoju pokój
 grywalny na zastępstwach.
+
+**Kolejność asercji (plan-review F3)**: migawka haka na ekranie powitania ma tylko `screen`, `learner`, `settings`,
+`inputEnabled`, `save`, `artHealth` — bez `room` i `roomArtHealth`, a „Zapis gry” otwiera się kołem zębatym HUD-u, którego
+na powitaniu nie ma. Dlatego w (a) na powitaniu sprawdzane są tylko `save` i `save.store` (zapis startowy), a pokój i
+„Zapis gry” dopiero po `passWelcome` (pokój przez drogę `toRoom` z `tests/e2e/salon-art.spec.ts` albo pominięty, bo
+przeliczenie pokoju już sprawdza „#2 a salon saved under the old task list…”); w (c) `roomArtHealth` po `passWelcome`.
 
 **Contract**: `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; teksty z DOM po kluczach `pl` (dokładne napisy
 przycisków per stan); stan z haka tylko do odczytu; nowy kontekst = świeże urządzenie; nigdy IDB z testu;
@@ -395,7 +408,7 @@ oczekiwany czerwony test osobno (`-g`).
 #### Automated Verification:
 
 - `npx playwright test tests/e2e/salon-load-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 3`
-- Deliberate break (patch `e2e-break-p5a.patch`): `createAutosaver` bez uzbrojenia przy `migrated` → (a) i (b) czerwone na braku `write`; meta-check: dowodzi M-3 w prawdziwym starcie, nie tylko w `core`
+- Deliberate break (patch `e2e-break-p5a.patch`): `createAutosaver` bez uzbrojenia przy `migrated` → (a) czerwony na braku `write` przed jakimkolwiek tapnięciem; (b) może zostać zielony, bo fixture v1 ma `currentRoom` „living”, a naprawa pokoju (`repairedFrom`) sama woła `markDirty()` (plan-review F4) — tylko (a) jest dowodem; meta-check: dowodzi M-3 w prawdziwym starcie, nie tylko w `core`
 - Deliberate break (patch `e2e-break-p5b.patch`): `MIGRATIONS[2]` zwraca wejście z samym `version: 3` → (a) czerwony na `tasksDone`/`chosen`
 - Deliberate break (patch `e2e-break-p5c.patch`): `createGame` bez klucza `loader` → (c) czerwony (powitanie nie pojawia się w limicie testu); przywrócone; meta-check: plik naprawdę wisi (SW zablokowany), a nie odrzuca
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
@@ -443,6 +456,16 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 - **Wolna sieć przy pierwszym starcie**: plik > 12 s pobierania pada (po jednym ponowieniu) i jest zastępstwem do
   następnego startu (wtedy z cache SW). Świadomie — lepsze niż wieczny pasek.
 - **Chromium w sesji agenta**: faza 5 w protokole request-file; zrzut fazy 2 przez fallback Playwright.
+- **Kopia przed zapisem startowym (plan-review F8)**: gdy pierwsza próba kopii przy starcie padnie, `attempt` rzuca przed
+  `store.write`, a pętla `save` nie uzbraja timera ponownie — zapis v2 na urządzeniu zostaje nietknięty do następnej zmiany
+  dziecka albo `flush` (polityka `backupAttempts` bez zmian). M-3 („bez powtórki przy każdym starcie”) obowiązuje więc od
+  udanej kopii albo trzeciej porażki; świadomie — kopia ma pierwszeństwo przed szybkim zapisem v3.
+- **Powód zapisu startowego (plan-review F4)**: `markDirty()` z naprawy pokoju przezbraja timer z powodem `'change'`, więc
+  `lastReason 'migration'` jest gwarantowany tylko bez naprawy; `migrationWrittenAt` ustawia pierwszy udany zapis po
+  migracji niezależnie od powodu.
+- **Limit loadera a odczyt zapisu (plan-review F7)**: odczyt IndexedDB (`balance.save.loadTimeoutMs` 5 s, karta `slow`)
+  kończy się przed `createGame`; limit loadera biegnie dopiero potem, przy widocznym pasku `LoadingScreen` — limity się nie
+  sumują w pustym ekranie. Start offline z cache service workera odpowiada od razu i limitu nie dotyka.
 
 ## References
 
@@ -550,7 +573,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 #### Automated
 
 - [ ] 5.1 `npx playwright test tests/e2e/salon-load-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 3`
-- [ ] 5.2 Deliberate break p5a: brak uzbrojenia przy `migrated` → (a) i (b) czerwone; meta-check
+- [ ] 5.2 Deliberate break p5a: brak uzbrojenia przy `migrated` → (a) czerwony ((b) może zostać zielony przez naprawę pokoju); meta-check
 - [ ] 5.3 Deliberate break p5b: `MIGRATIONS[2]` bez przeliczenia → (a) czerwony
 - [ ] 5.4 Deliberate break p5c: `createGame` bez `loader` → (c) czerwony; przywrócone; meta-check (plik naprawdę wisi)
 - [ ] 5.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
