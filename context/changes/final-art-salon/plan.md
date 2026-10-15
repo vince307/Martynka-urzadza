@@ -822,10 +822,10 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [x] 9.1 `rg -n "Trigger:" context/changes/final-art-salon/follow-ups/review-fixes.md` ≥ 10 wierszy; każdy follow-up z wiersza S-16a w roadmapie ma wpis
-- [x] 9.2 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS
-- [x] 9.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
-- [x] 9.4 Celowe złamanie: tekst gracza literałem w `RoomScene` → `npm run lint` czerwony; przywrócone; meta-check (the literal stays green: ESLint has no player-text rule, only teacher read and review guard it; replaced by the boundary break `idb-keyval` import in `RoomScene` → lint red `no-restricted-imports`, restored; meta-check: proves the scene boundary rules bite, not the text rule)
+- [x] 9.1 `rg -n "Trigger:" context/changes/final-art-salon/follow-ups/review-fixes.md` ≥ 10 wierszy; każdy follow-up z wiersza S-16a w roadmapie ma wpis — 300ea43
+- [x] 9.2 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS — 300ea43
+- [x] 9.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków) — 300ea43
+- [x] 9.4 Celowe złamanie: tekst gracza literałem w `RoomScene` → `npm run lint` czerwony; przywrócone; meta-check (the literal stays green: ESLint has no player-text rule, only teacher read and review guard it; replaced by the boundary break `idb-keyval` import in `RoomScene` → lint red `no-restricted-imports`, restored; meta-check: proves the scene boundary rules bite, not the text rule) — 300ea43
 
 ### Phase 10: Remont salonu dotykiem — e2e (#16, #2)
 
