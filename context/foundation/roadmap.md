@@ -3,7 +3,7 @@ project: "Martynka urządza"
 version: 1
 status: draft
 created: 2026-10-11
-updated: 2026-10-15
+updated: 2026-10-16
 prd_version: 1
 main_goal: market-feedback
 top_blocker: external
@@ -66,7 +66,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | done |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | done |
 | S-16a | final-art-salon             | M7   | dziecko remontuje salon z docelowej grafiki (tło przed → po, 6 mebli × 3), widzi animacje i ekran ładowania | S-14, S-15 | FR-026 | done |
-| S-16b | final-sound                 | M7   | dziecko słyszy dźwięki gry po pierwszym dotknięciu; gra grywalna bez dźwięku       | S-16a                | FR-017, FR-026                  | proposed |
+| S-16b | final-sound                 | M7   | dziecko słyszy dźwięki gry po pierwszym dotknięciu; gra grywalna bez dźwięku       | S-16a                | FR-017, FR-026                  | planning |
 | S-16c | final-art-p2                | M7   | dziecko widzi docelową ikonę aplikacji, ekran ładowania, miniaturę salonu, portfel i zeszyt z paczki salon-v2 | S-16a | FR-026 | proposed |
 | S-16d | salon-extra-slots           | M7   | dziecko urządza w salonie 5 nowych miejsc (zasłony, półka, lampa, roślina, pufa) po 3 warianty | S-16a | FR-016, FR-019 | proposed |
 | S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
@@ -400,7 +400,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Decyzje autora (2026-10-15):** dźwięki z paczki `designs/martynka-salon-v2` (12 efektów + `music-loop`, OGG i M4A); efekty domyślnie włączone, muzyka domyślnie wyłączona (rodzic włącza w panelu); ustawienie dźwięku poza zapisem gry (osobny klucz, format zapisu zostaje v3), chyba że plan wykaże, że się nie da — wtedy bieg zatrzymuje się na otwartym PR.
 - **Unknowns:** —
 - **Risk:** odblokowanie Web Audio na iPadzie po pierwszym dotknięciu; waga precache (~1,1 MB obu formatów).
-- **Status:** proposed
+- **Status:** planning
 
 ### S-16c: Grafika P2 z paczki salon-v2
 
