@@ -33,3 +33,23 @@ Each item has a `Trigger:` line; later slices grep for it.
   Trigger: S-14c or the next change to WRITTEN
 - **F10: written column at the visual gate**: the hint phase draws the first carry/borrow column, which may differ from the ones line of the first hint (330 + 571); "OK" with empty boxes does nothing (`TaskScene.pressBoxKey`) — a nudge may help.
   Trigger: the visual gate of this change
+
+## From the visual gate (2026-10-15, `reviews/visual-review.md`)
+
+Fixed in the gate: V1–V6 (solution strip beside the column, borrow "1", hint-line labels, E3.9 line width, dense-line box and
+label stagger, hint rectangle width). The "Visual gate for the written column" item and F10's screenshot part above are closed by
+it; F8's `WrittenColumn` offsets moved to `TASK_LAYOUT.written.borrowOne` (the `'#245c59'` colour and `BlockMat.dashedRect` remain).
+
+- **O1: the E2.7 prompt wraps its last term alone** ("…, 20, / 30"): `TaskScene.drawSentence` / `wrapBlankLines` do not glue the
+  last term to the one before it like `keepTogether` does for solution lines.
+  Trigger: the next change to `drawSentence` or `wrapBlankLines`
+- **O2: E2.7 line labels only the sequence terms**; no 0 / 100 anchor (`src/core/tasks/generators/sequence.ts` `labels`).
+  Trigger: the author's read ([human] 9.6) or the next change to SEQUENCE
+- **O3: the hint of a one-jump ADD_SUB task repeats the prompt** ("Oblicz. dziesięć minus dwa"): `addSubHint` with one jump.
+  Trigger: the author's read ([human] 9.6, with F4)
+- **O5: a borrow across zero shows the whole chain in the hint** (8, 9, ¹3 over 903) while the hint text names the ones only
+  (`WrittenColumn.render` with `columnMarks` of the hint phase).
+  Trigger: the author's read ([human] 8.8)
+- **Hint and solution rectangles still provisional**: `TASK_LAYOUT.picture.digits` 400 / 392, `hint.keypad` 798, `long` (gaps 92, 93,
+  88) were fixed against screenshots, not against a kit frame.
+  Trigger: a kit frame for the task screen with a drawing beside the keypad

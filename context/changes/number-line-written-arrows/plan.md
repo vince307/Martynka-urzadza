@@ -894,7 +894,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 #### Manual
 
 - [x] 5.6 [reviewer] Odczyt nauczyciela `sample` E2.6, E2.7, E3.9 `--count 6` — impl-review teacher read E2.6/E2.7/E3.9 OK after F3
-- [ ] 5.7 [visual] Zrzuty: graf z pustym wyjściem, graf z pustym wejściem, tabelka, ciąg na osi E2.7, ciąg w fazie rozwiązania (oś w 768 × 190), skoki E3.9 z kafelkami, skoki z podpowiedzią — 1440×900 i 1024×768
+- [x] 5.7 [visual] Zrzuty: graf z pustym wyjściem, graf z pustym wejściem, tabelka, ciąg na osi E2.7, ciąg w fazie rozwiązania (oś w 768 × 190), skoki E3.9 z kafelkami, skoki z podpowiedzią — 1440×900 i 1024×768 — visual gate: a01–a08, n01–n06b (1440/1024); V4 E3.9 full width, `screenshots/README.md`
 
 ### Phase 6: Oś-podpowiedź w `TaskScene`, dane ADD_SUB ≤ 30
 
@@ -908,7 +908,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 #### Manual
 
 - [x] 6.5 [reviewer] Odczyt nauczyciela `sample` E2.1, E2.3, E2.5, E3.2, E3.6, E3.8 `--count 6` (`hint visual:` ↔ linie podpowiedzi) — impl-review teacher read OK; F4 follow-up on DT − U
-- [ ] 6.6 [visual] Zrzuty: ADD_SUB pierwsza próba (bez osi), podpowiedź z osią (dodawanie przez dziesiątkę), podpowiedź z osią (odejmowanie), krok 1 i ostatni krok rozwiązania z osią i liniami, retype — 1440×900 i 1024×768
+- [x] 6.6 [visual] Zrzuty: ADD_SUB pierwsza próba (bez osi), podpowiedź z osią (dodawanie przez dziesiątkę), podpowiedź z osią (odejmowanie), krok 1 i ostatni krok rozwiązania z osią i liniami, retype — 1440×900 i 1024×768 — visual gate: h01–h03 (1440/1024); V3/V5/V6 label collisions and 12-px hint line fixed
 
 ### Phase 7: Widżet `WrittenColumn`, klawiatura klawiszy, gałąź `digits` w scenie
 
@@ -936,7 +936,7 @@ umiejętności). Nowe umiejętności startują z mastery 0; progi rosną zgodnie
 #### Manual
 
 - [x] 8.6 [reviewer] Odczyt nauczyciela `sample` E5.2, E6.7 i E5.5 `--count 6` (linie kolumn, „1 dalej”, pożyczka, skrócona podpowiedź O5) — impl-review teacher read E5.2/E6.7/E5.5 OK; borrow across zero right
-- [ ] 8.7 [visual] Zrzuty: słupek E5 pusty, częściowo wypełniony (aktywne okienko), podpowiedź z przeniesieniem, kroki rozwiązania obok słupka, odejmowanie z pożyczką w rozwiązaniu, słupek E6 trzycyfrowy, retype, poprawna odpowiedź — 1440×900 i 1024×768
+- [x] 8.7 [visual] Zrzuty: słupek E5 pusty, częściowo wypełniony (aktywne okienko), podpowiedź z przeniesieniem, kroki rozwiązania obok słupka, odejmowanie z pożyczką w rozwiązaniu, słupek E6 trzycyfrowy, retype, poprawna odpowiedź — 1440×900 i 1024×768 — visual gate: w01–w17 (1440/1024); V1 solution strip, V2 borrow "1" fixed
 - [ ] 8.8 [human] Notacja przeniesienia i pożyczki w słupku pochodzi z wiedzy ogólnej, nie z repo ani kitu — autor potwierdza albo podaje szkolny zapis
 
 ### Phase 9: Dokumentacja, luki projektu, follow-upy i seam sweep
