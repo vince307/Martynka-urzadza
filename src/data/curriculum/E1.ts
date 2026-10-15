@@ -1,6 +1,6 @@
 // Stage E1 (grade 1, first semester): steps from docs/ZADANIA.md, section 3.
 // Skills carry the parameters of group-1 generators (roadmap S-03); drawing
-// and art types (shapes, counting, money, measures) arrive in M6. Numeric
+// and art types (shapes, counting, money, measures) are drawn in code or loaded from public/assets (S-13, S-14); only SPATIAL and SYMMETRY wait. Numeric
 // answers are tiles too (maintainer decision 2026-10-12, roadmap S-04): every
 // E1 answer is a tap on 3–4 tiles, so E1 has no keypad skill.
 import type { SkillDef, StageDef } from '../../core/types';

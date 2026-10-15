@@ -255,7 +255,7 @@ export class TaskScene extends Scene {
         this.dragState = initialBlockDrag();
         this.coinState = { mat: emptyWallet(), carrying: null };
         this.dragLive = false;
-        // The whole scene feeds raw pointer events to the drag reducer of the task (core/blockDrag or core/clockSet, chosen by dragMode); it acts only while a 'drag' task takes touches.
+        // The whole scene feeds raw pointer events to the drag reducer of the task (core/blockDrag, core/clockSet or the coin wallet over core/trayDrag, chosen by dragMode); it acts only while a 'drag' task takes touches.
         type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
         const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
         this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
@@ -1146,7 +1146,7 @@ export class TaskScene extends Scene {
         return { snapMinutes: this.clockSnap, grabRadius: balance.clockSet.grabRadius, startDistance: balance.clockSet.startDistance };
     }
 
-    /** One raw pointer event for the drag reducers (blocks or the clock to set); touches count only while a 'drag' task is open, a cancel or reset always does. */
+    /** One raw pointer event for the drag reducers (blocks, the clock to set or coins to pay); touches count only while a 'drag' task is open, a cancel or reset always does. */
     private feedDrag(event: BlockDragEvent & ClockSetEvent): void {
         if (!this.dragLive && event.type !== 'cancel' && event.type !== 'reset') {
             return;

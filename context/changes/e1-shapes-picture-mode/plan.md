@@ -610,7 +610,7 @@ potem `… (p8b)` z §3; wiersze Progress odhaczane po drugim.
 - `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY
 - Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never` (nie timeout); przywrócone; meta-check: dowodzi wyczerpującości helpera, nie sceny (scenę dowodzi faza 11)
 - `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
-- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4` (nieprzypięte spece mogą losować E1.11/E2.2); czas `adaptive.spec` zapisany
+- E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4` (nieprzypięte spece mogą losować E1.11/E2.2); czas `adaptive.spec` zapisany — orchestrator note: 86 passed on 9ee5d56 (--workers=4, 6.3 min) + smoke of E1.11/E2.2 coin tasks 2/2
 
 #### Manual Verification:
 
@@ -937,7 +937,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 8.2 `npm run sample -- E1 --count 6` i `-- E2 --count 6` bez naruszeń, z zadaniami MONEY_PAY — 9ee5d56
 - [x] 8.3 Deliberate break: `case 'coins'` usunięty z `answerRight` → `npm run typecheck` czerwony na `never`; przywrócone; meta-check — 9ee5d56
 - [x] 8.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — 9ee5d56
-- [ ] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4`; czas `adaptive.spec` zapisany
+- [x] 8.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` z `--workers=4`; czas `adaptive.spec` zapisany
 
 #### Manual
 
@@ -948,9 +948,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
-- [ ] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
-- [ ] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 100+ w `docs/design-gaps.md`
+- [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
+- [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 100+ w `docs/design-gaps.md`
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
