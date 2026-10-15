@@ -22,8 +22,9 @@ const isVariant = (x: unknown): x is TimesMoreVariant => VARIANTS.includes(x as 
 
 export const parseTimesMoreParams = (params: Record<string, unknown>): TimesMoreParams => {
     const { max, maxFactor, variants } = params;
-    if (!Number.isInteger(maxFactor) || (maxFactor as number) < 2) {
-        throw new TypeError(`TIMES_MORE params.maxFactor must be an integer >= 2, got ${String(maxFactor)}`);
+    // 3..10: two distinct factors from 2 need at least 3, and the multiplication table ends at 10
+    if (!Number.isInteger(maxFactor) || (maxFactor as number) < 3 || (maxFactor as number) > 10) {
+        throw new TypeError(`TIMES_MORE params.maxFactor must be an integer in 3..10, got ${String(maxFactor)}`);
     }
     if (!Number.isInteger(max) || (max as number) < 4 * 2) {
         throw new TypeError(`TIMES_MORE params.max must be an integer >= 8, got ${String(max)}`);
@@ -53,7 +54,7 @@ export const generateTimesMore: Generator = (skill, rng): Task => {
         if (variant === 'more') {
             return {
                 skillId: skill.id,
-                prompt: `${person.name} ${has} ${countNoun(a, ctx.noun)}. ${other.name} ${has} ${k} razy więcej ${gen}. Ile ${gen} ${has} ${other.name}?`,
+                prompt: pl.tasks.timesMorePromptMore(person.name, other.name, has, countNoun(a, ctx.noun), k, gen),
                 answer: total,
                 hint: [pl.tasks.timesMoreMore(`${a} ${TIMES} ${k}`), `${a} ${TIMES} ${k} = ${total}`],
             };
@@ -61,14 +62,14 @@ export const generateTimesMore: Generator = (skill, rng): Task => {
         if (variant === 'less') {
             return {
                 skillId: skill.id,
-                prompt: `${person.name} ${has} ${countNoun(total, ctx.noun)}. ${other.name} ${has} ${k} razy mniej ${gen}. Ile ${gen} ${has} ${other.name}?`,
+                prompt: pl.tasks.timesMorePromptLess(person.name, other.name, has, countNoun(total, ctx.noun), k, gen),
                 answer: a,
                 hint: [pl.tasks.timesMoreLess(`${total} ${DIVIDE} ${k}`), `${total} ${DIVIDE} ${k} = ${a}`],
             };
         }
         return {
             skillId: skill.id,
-            prompt: `${person.name} ${has} ${countNoun(a, ctx.noun)}, a ${other.name} ${has} ${countNoun(total, ctx.noun)}. Ile razy więcej ${gen} ${has} ${other.name}?`,
+            prompt: pl.tasks.timesMorePromptFactor(person.name, other.name, has, countNoun(a, ctx.noun), countNoun(total, ctx.noun), gen),
             answer: k,
             hint: [pl.tasks.timesMoreFactor(`${total} ${DIVIDE} ${a}`), `${total} ${DIVIDE} ${a} = ${k}`],
         };

@@ -63,5 +63,7 @@ describe('generatePrice', () => {
     it('rejects an unknown variant and a quantity range with no room', () => {
         expect(() => parsePriceParams({ variants: ['x'], max: 100, maxQty: 10 })).toThrow(TypeError);
         expect(() => parsePriceParams({ variants: ['total'], max: 100, maxQty: 1 })).toThrow(TypeError);
+        // the cheapest good costs 2 zł, so 10 of them do not fit under 8 zł
+        expect(() => parsePriceParams({ variants: ['total'], max: 8, maxQty: 10 })).toThrow(TypeError);
     });
 });

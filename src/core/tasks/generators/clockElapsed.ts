@@ -92,12 +92,13 @@ const generateSpan = (skillId: string, p: ClockElapsedParams, rng: Rng): Task =>
         const m2 = rng.int(1, 59);
         const next = rng.chance(0.5) ? 1 : 0;
         const span = next * 60 + m2 - m1;
-        if (span < 10 || span > p.maxSpan) {
+        const pick = rng.pick(templates);
+        if (span < pick.minSpan || span > p.maxSpan) {
             continue;
         }
         const from = hour * 60 + m1;
         const to = (hour + next) * 60 + m2;
-        const { prompt, speak } = fill(rng.pick(templates), { a: clock(from), b: clock(to) }, { a: spoken(from), b: spoken(to) });
+        const { prompt, speak } = fill(pick.template, { a: clock(from), b: clock(to) }, { a: spoken(from), b: spoken(to) });
         const hint = next === 0
             ? [pl.tasks.elapsedSpanSameHour, `${m2} ${MINUS} ${m1} = ${span}`]
             : [

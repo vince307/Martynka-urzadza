@@ -69,14 +69,17 @@ const withSpeech = (task: Task): Task => {
 
 const digitsOf = (n: number): number[] => PLACE_VALUES.map((v) => Math.floor(n / v) % 10);
 
+const MAX_FOUR_DIGIT_ATTEMPTS = 1000;
+
 /** A four-digit number with at least two non-zero digits (so a part is left when one is hidden). */
 const drawFourDigit = (p: PlaceValueParams, rng: Rng): number[] => {
-    for (;;) {
+    for (let attempt = 0; attempt < MAX_FOUR_DIGIT_ATTEMPTS; attempt += 1) {
         const digits = digitsOf(rng.int(1000, Math.min(p.max, 9999)));
         if (digits.filter((d) => d > 0).length >= 2) {
             return digits;
         }
     }
+    throw new Error(`PLACE_VALUE thousands: no four-digit number after ${MAX_FOUR_DIGIT_ATTEMPTS} attempts (max ${p.max})`);
 };
 
 const generateThousands = (skillId: string, p: PlaceValueParams, rng: Rng): Task => {
@@ -106,7 +109,7 @@ const generateThousands = (skillId: string, p: PlaceValueParams, rng: Rng): Task
         };
     }
     const parts = nonZero.map((i) => countNoun(digits[i], PLACE_NOUNS[i]));
-    const phrase = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} i ${parts[parts.length - 1]}`;
+    const phrase = pl.tasks.placeValueJoin(parts);
     const values = nonZero.map((i) => digits[i] * PLACE_VALUES[i]);
     return {
         skillId,
@@ -114,7 +117,7 @@ const generateThousands = (skillId: string, p: PlaceValueParams, rng: Rng): Task
         answer: n,
         hint: [
             pl.tasks.placeValueComposeHint,
-            nonZero.map((i) => `${countNoun(digits[i], PLACE_NOUNS[i])} to ${digits[i] * PLACE_VALUES[i]}`).join(', ') + '.',
+            nonZero.map((i) => pl.tasks.placeValuePartValue(countNoun(digits[i], PLACE_NOUNS[i]), digits[i] * PLACE_VALUES[i])).join(', ') + '.',
             `${values.join(' + ')} = ${n}`,
         ],
     };

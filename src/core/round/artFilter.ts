@@ -8,7 +8,7 @@ import type { SkillBuckets } from './pick';
 
 /**
  * True when the skill's result can only be read from a picture that is missing: MONEY_COUNT (any coin or note it can
- * draw), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` carry the amounts in
+ * draw), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
  * the prompt, so they are never blocked.
  */
 export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): boolean => {

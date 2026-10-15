@@ -95,7 +95,7 @@ export const currentStep = (stage: StageDef, unlockedStep: number): number => {
 };
 
 /**
- * The three pools a round draws from. `current` is the playable step at `unlockedStep` (an unplayable step falls to the
+ * The pools a round draws from (three, plus `currentGroups` on a review step). `current` is the playable step at `unlockedStep` (an unplayable step falls to the
  * nearest lower playable one, and below the first playable step to the first), `earlier` the playable steps before it,
  * `previous` all playable skills of the previous stage (empty for E1). On a review step (`StepDef.review`) `current` is
  * every playable skill of the stage's other steps, also given as `currentGroups` (one group per step, so a draw picks the

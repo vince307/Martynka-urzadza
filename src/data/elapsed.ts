@@ -20,16 +20,22 @@ export const endEvents: readonly EndEvent[] = [
 
 export type SpanTheme = 'ride' | 'show';
 
-export const spanTemplates: Readonly<Record<SpanTheme, readonly string[]>> = {
+/** A span sentence and the shortest duration that is believable for it (a match on TV is not 11 minutes long). */
+export interface SpanTemplate {
+    template: string;
+    minSpan: number;   // minutes
+}
+
+export const spanTemplates: Readonly<Record<SpanTheme, readonly SpanTemplate[]>> = {
     ride: [
-        'Autobus odjeżdża o {a}, a przyjeżdża o {b}. Ile minut trwa jazda?',
-        'Pociąg odjeżdża o {a}, a przyjeżdża o {b}. Ile minut trwa podróż?',
-        'Tramwaj odjeżdża o {a}, a dojeżdża o {b}. Ile minut trwa przejazd?',
+        { template: 'Autobus odjeżdża o {a}, a przyjeżdża o {b}. Ile minut trwa jazda?', minSpan: 10 },
+        { template: 'Pociąg odjeżdża o {a}, a przyjeżdża o {b}. Ile minut trwa podróż?', minSpan: 20 },
+        { template: 'Tramwaj odjeżdża o {a}, a dojeżdża o {b}. Ile minut trwa przejazd?', minSpan: 10 },
     ],
     show: [
-        'Film w telewizji zaczyna się o {a}, a kończy o {b}. Ile minut trwa film?',
-        'Mecz w telewizji zaczyna się o {a}, a kończy o {b}. Ile minut trwa mecz?',
-        'Program o zwierzętach zaczyna się o {a}, a kończy o {b}. Ile minut trwa program?',
+        { template: 'Film w telewizji zaczyna się o {a}, a kończy o {b}. Ile minut trwa film?', minSpan: 30 },
+        { template: 'Mecz w telewizji zaczyna się o {a}, a kończy o {b}. Ile minut trwa mecz?', minSpan: 45 },
+        { template: 'Program o zwierzętach zaczyna się o {a}, a kończy o {b}. Ile minut trwa program?', minSpan: 10 },
     ],
 };
 

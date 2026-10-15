@@ -21,8 +21,9 @@ const BANDS: Record<string, [number, number]> = {
     Ulica: [50, 100],
 };
 const PLACE = Object.keys(BANDS).join('|');
+const PLACE_LOWER = PLACE.toLowerCase();
 const FORWARD = new RegExp(`^Na planie 1 cm to (\\d+) m\\. (${PLACE}) ma na planie (\\d+) cm długości\\. Ile metrów długości ma naprawdę\\?$`);
-const BACKWARD = new RegExp(`^Na planie 1 cm to (\\d+) m\\. (${PLACE}) ma naprawdę (\\d+) m długości\\. Ile centymetrów długości ma na planie\\?$`);
+const BACKWARD = new RegExp(`^Na planie 1 cm to (\\d+) m\\. (${PLACE}) ma naprawdę (\\d+) m długości\\. Ile centymetrów ma (${PLACE_LOWER}) na planie\\?$`);
 
 describe('generateLength scale', () => {
     it('1000 draws: whole numbers both ways, a believable place, no drawing', () => {
@@ -38,6 +39,7 @@ describe('generateLength scale', () => {
             const m = (f ?? b)!;
             const per = Number(m[1]);
             const place = m[2];
+            if (b) expect(m[4], where).toBe(place.toLowerCase());
             scales.add(per);
             places.add(place);
             expect([2, 5, 10], where).toContain(per);

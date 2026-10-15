@@ -20,6 +20,15 @@ const DAY = 24 * 60;
 const text = (min: number): string => formatTime(Math.floor((min % DAY) / 60), min % 60);
 
 describe('generateClockElapsed', () => {
+    it('span (show): a match lasts at least 45 minutes and a film at least 30, as on real TV', () => {
+        const show = skill({ variants: ['span'], maxSpan: 120, theme: 'show' });
+        forEachDraw(generateClockElapsed, show, {}, (task, where) => {
+            const [from, to] = times(task.prompt);
+            if (task.prompt.startsWith('Mecz')) expect(to - from, where).toBeGreaterThanOrEqual(45);
+            if (task.prompt.startsWith('Film')) expect(to - from, where).toBeGreaterThanOrEqual(30);
+        });
+    });
+
     it('end (lesson): start plus 45 minutes, exactly one tile is the end, never "8.60"', () => {
         const lesson = skill({ variants: ['end'], maxSpan: 45, lesson: true }, 'tiles');
         const hours = new Set<string>();

@@ -18,7 +18,6 @@ export interface PriceParams {
 
 const MAX_ATTEMPTS = 1000;
 const isVariant = (x: unknown): x is PriceVariant => x === 'total' || x === 'unit';
-const cap = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
 export const parsePriceParams = (params: Record<string, unknown>): PriceParams => {
     const { max, maxQty, minQty = 2, variants } = params;
@@ -27,6 +26,10 @@ export const parsePriceParams = (params: Record<string, unknown>): PriceParams =
     }
     if (!Number.isInteger(maxQty) || (maxQty as number) < 2) {
         throw new TypeError(`PRICE params.maxQty must be an integer >= 2, got ${String(maxQty)}`);
+    }
+    // every good costs at least 2 zł (see Good.price), so the largest quantity must still fit under max
+    if ((max as number) < 2 * (maxQty as number)) {
+        throw new TypeError(`PRICE params.max must be at least 2 * maxQty, got max ${String(max)}, maxQty ${String(maxQty)}`);
     }
     if (!Number.isInteger(minQty) || (minQty as number) < 1 || (minQty as number) > (maxQty as number)) {
         throw new TypeError(`PRICE params.minQty must be an integer in 1..maxQty, got ${String(minQty)}`);
@@ -44,9 +47,13 @@ export const generatePrice: Generator = (skill, rng): Task => {
         const qty = rng.int(variant === 'unit' ? Math.max(2, p.minQty) : p.minQty, p.maxQty);
         const good = rng.pick(goods);
         // price >= 2 (see Good.price): with 1 złoty the total would equal the quantity that ends the first hint
-        const price = rng.int(good.price[0], Math.min(good.price[1], Math.floor(p.max / qty)));
+        const top = Math.min(good.price[1], Math.floor(p.max / qty));
+        if (top < good.price[0]) {
+            continue;
+        }
+        const price = rng.int(good.price[0], top);
         const total = qty * price;
-        if (total > p.max || price === qty || price < good.price[0]) {
+        if (total > p.max || price === qty) {
             continue;
         }
         const person = rng.pick(people);
@@ -56,14 +63,14 @@ export const generatePrice: Generator = (skill, rng): Task => {
             const paid = person.gender === 'm' ? pl.words.paid[0] : pl.words.paid[1];
             return {
                 skillId: skill.id,
-                prompt: `${person.name} ${bought} ${goodObj(qty, good)}. ${cap(good.one)} kosztuje ${countNoun(price, zl)}. Ile złotych ${paid} za zakupy?`,
+                prompt: pl.tasks.priceTotalPrompt(person.name, bought, goodObj(qty, good), good.one, countNoun(price, zl), paid),
                 answer: total,
                 hint: [pl.tasks.priceTotalHint(`${price} ${TIMES} ${qty}`), `${price} ${TIMES} ${qty} = ${total}`],
             };
         }
         return {
             skillId: skill.id,
-            prompt: `${person.name} ${bought} ${goodObj(qty, good)} za ${countNoun(total, zl)}. Ile kosztuje ${good.one}?`,
+            prompt: pl.tasks.priceUnitPrompt(person.name, bought, goodObj(qty, good), countNoun(total, zl), good.one),
             answer: price,
             hint: [pl.tasks.priceUnitHint(`${total} ${DIVIDE} ${qty}`), `${total} ${DIVIDE} ${qty} = ${price}`],
         };

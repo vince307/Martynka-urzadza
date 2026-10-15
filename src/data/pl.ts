@@ -392,9 +392,21 @@ export const pl = {
         timesMoreMore: (expr: string) => `„Razy więcej” to mnożenie, nie dodawanie: ${expr}.`,
         timesMoreLess: (expr: string) => `„Razy mniej” to dzielenie, nie odejmowanie: ${expr}.`,
         timesMoreFactor: (expr: string) => `„Ile razy więcej” to dzielenie, nie odejmowanie: ${expr}.`,
+        // Prompts: `has` is the verb ("ma"), `gen` the noun in the genitive plural, `base`/`total` counted nouns ("3 klocki").
+        timesMorePromptMore: (person: string, other: string, has: string, base: string, k: number, gen: string) =>
+            `${person} ${has} ${base}. ${other} ${has} ${k} razy więcej ${gen}. Ile ${gen} ${has} ${other}?`,
+        timesMorePromptLess: (person: string, other: string, has: string, total: string, k: number, gen: string) =>
+            `${person} ${has} ${total}. ${other} ${has} ${k} razy mniej ${gen}. Ile ${gen} ${has} ${other}?`,
+        timesMorePromptFactor: (person: string, other: string, has: string, base: string, total: string, gen: string) =>
+            `${person} ${has} ${base}, a ${other} ${has} ${total}. Ile razy więcej ${gen} ${has} ${other}?`,
         // PRICE: whole złoty; the goods are in data/wordTemplates.ts.
         priceTotalHint: (expr: string) => `Cena jednej sztuki razy liczba sztuk: ${expr}.`,
         priceUnitHint: (expr: string) => `Cenę jednej sztuki liczymy dzieleniem: ${expr}.`,
+        // `bought`/`paid` agree with the buyer, `goods` is the counted accusative ("4 zeszyty", "1 bułkę"), `one` "jeden zeszyt".
+        priceTotalPrompt: (person: string, bought: string, goods: string, one: string, price: string, paid: string) =>
+            `${person} ${bought} ${goods}. ${one.charAt(0).toUpperCase() + one.slice(1)} kosztuje ${price}. Ile złotych ${paid} za zakupy?`,
+        priceUnitPrompt: (person: string, bought: string, goods: string, total: string, one: string) =>
+            `${person} ${bought} ${goods} za ${total}. Ile kosztuje ${one}?`,
         // CLOCK_ELAPSED: elapsed time. Times are written "8.15"; the unit after "jest jeszcze / mija" is the nominative.
         elapsedToFullHour: 'Najpierw policz minuty do pełnej godziny.',
         elapsedToFullHourLine: (next: string, minutes: number) => `Do ${next} brakuje ${countNoun(minutes, nouns.minuta)}.`,
@@ -498,7 +510,7 @@ export const pl = {
         lengthScalePlanPrompt: (perCm: number, place: string, plan: number) =>
             `Na planie 1 cm to ${perCm} m. ${place} ma na planie ${plan} cm długości. Ile metrów długości ma naprawdę?`,
         lengthScaleRealPrompt: (perCm: number, place: string, real: number) =>
-            `Na planie 1 cm to ${perCm} m. ${place} ma naprawdę ${real} m długości. Ile centymetrów długości ma na planie?`,
+            `Na planie 1 cm to ${perCm} m. ${place} ma naprawdę ${real} m długości. Ile centymetrów ma ${place.toLowerCase()} na planie?`,
         lengthScalePlanFirst: 'Pomnóż centymetry z planu przez to, ile metrów ma 1 cm.',
         lengthScaleRealFirst: 'Sprawdź, ile razy 1 cm planu mieści się w prawdziwej długości.',
         lengthScalePlanAnswer: (place: string, real: number) => `${place} ma naprawdę ${real} m długości.`,
@@ -620,6 +632,8 @@ export const pl = {
         placeValueDigitAnswerHint: (place: string, digit: number) => `Na miejscu ${place} jest cyfra ${digit}.`,
         placeValueGapHint: 'Od całej liczby odejmij części, które już są.',
         placeValueComposeSentence: (parts: string) => `${parts} to jaka liczba?`,
+        placeValueJoin: (parts: readonly string[]) => (parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} i ${parts[parts.length - 1]}`),
+        placeValuePartValue: (part: string, value: number) => `${part} to ${value}`,
         placeValueComposeHint: 'Zamień każdy rząd na liczbę i dodaj.',
         placeValueOrdersCountPrompt: (n: number) => `Ile tysięcy to ${formatNumber(n)}?`,
         placeValueOrdersCountHint: 'Odetnij z końca liczby trzy zera.',

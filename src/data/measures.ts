@@ -147,11 +147,11 @@ export const MASS_FACTORS = {
 } as const;
 
 /**
- * LENGTH `scale` (S-14c): what a plan can show, in real metres. A plan is drawn on paper, so it shows 2 to 12 cm; a side of a
- * room is 3 to 9 m, a pitch up to 100 m. The generator picks a scale, a place and a plan length that give a whole real length
+ * LENGTH `scale` (S-14c): what a plan can show, in real metres. A plan is drawn on paper, so it shows 2 to 10 cm (so the
+ * plan length stays a times-table factor in grade 3); a side of a room is 3 to 9 m, a pitch up to 100 m. The generator picks a scale, a place and a plan length that give a whole real length
  * inside the place's range.
  */
-export const SCALE_PLAN_CM = { min: 2, max: 12 } as const;
+export const SCALE_PLAN_CM = { min: 2, max: 10 } as const;
 export const SCALE_PLACES: readonly { subject: string; minM: number; maxM: number }[] = [
     { subject: 'Pokój', minM: 3, maxM: 9 },
     { subject: 'Klasa', minM: 6, maxM: 10 },

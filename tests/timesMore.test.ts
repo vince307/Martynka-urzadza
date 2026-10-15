@@ -61,5 +61,8 @@ describe('generateTimesMore', () => {
     it('rejects an unknown variant and a max that cannot hold a product', () => {
         expect(() => parseTimesMoreParams({ variants: ['o'], max: 100, maxFactor: 10 })).toThrow(TypeError);
         expect(() => parseTimesMoreParams({ variants: ['more'], max: 3, maxFactor: 10 })).toThrow(TypeError);
+        // maxFactor 2 leaves only 2 · 2, which the generator rejects; above 10 leaves the multiplication table
+        expect(() => parseTimesMoreParams({ variants: ['more'], max: 100, maxFactor: 2 })).toThrow(TypeError);
+        expect(() => parseTimesMoreParams({ variants: ['more'], max: 100, maxFactor: 11 })).toThrow(TypeError);
     });
 });
