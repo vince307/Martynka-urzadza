@@ -49,3 +49,16 @@ Each item has a `Trigger:` line; later slices grep for them. Everything that car
   Trigger: S-17
 - Future slots are appended at the end of the task list so a saved `tasksDone` stays valid.
   Trigger: a new slot from the designer brief P3
+
+## From the implementation review (`reviews/impl-review.md`)
+
+- F1: the stage cross-fade (`RoomScene.fadeStage` ghosts) and the pop tween pause when the room scene sleeps and finish after `wake`; complete or destroy them in the `sleep` handler of `RoomScene.create`.
+  Trigger: the visual gate (7.4) shows it, or the next change to `RoomScene.fadeStage`
+- F2: `RoomView.drawRoomMiniature` draws stand-ins for missing textures on one `Graphics` under all pictures, so with partly missing art a sofa stand-in sits under the rug picture; give each stand-in its own depth in `z` order.
+  Trigger: the next change to `RoomDoneCard` or `drawRoomMiniature`
+- F3: `BootScene` never removes its loader `progress` listener; `this.load.off('progress', ...)` in `create`.
+  Trigger: the next change to `BootScene`
+- F4: `createArtHealthView` (`src/ui/dom/artHealthView.ts`, used by `settingsPanel`) hides the salon line while the task art health is unknown; show the section when either is known.
+  Trigger: the next change to the "Obrazki" section
+- F5 / F7: one `Box` helper (`RoomView.layerBox`, `rectOf` vs `roomHit` `slotBox`), one stand-in drawer (`RoomLayer.show` vs `drawStandIn`), `ROOM_ART.label` read only by tests, inline style numbers in `VariantPanel`, `RoomTaskButton`, `RoomScene.celebrate` to `ROOM_LAYOUT` / `ANIMATION`.
+  Trigger: a second room or the next refactor of the room widgets
