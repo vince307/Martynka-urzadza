@@ -878,7 +878,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - [x] 4.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń; E6.2 w próbce — 1ced210
 - [x] 4.3 Deliberate break: `end` przez północ bez modulo doba / `toHour` liczy od 0 / `speak` z „8.15” → czerwone; przywrócone; meta-check — 1ced210
 - [x] 4.4 Deliberate break: wyrocznia E6 zostawiona na `[3, 4, 6, 8, 10, 10]` → `tests/curriculumStart.test.ts` czerwony; przywrócone — 1ced210
-- [ ] 4.5 `tests/fixtures/` bez zmian; pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 4.5 `tests/fixtures/` bez zmian; pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 1ced210 (e2e: orchestrator note, 82 passed on 1ced210 with --workers=4)
 
 #### Manual
 
@@ -890,9 +890,9 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 5.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń
-- [ ] 5.3 Deliberate break: przedmiot z dwiema sensownymi jednostkami / `artBlocked` blokuje `text` / tara > brutto → czerwone; przywrócone; meta-check
+- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 43b12f4
+- [x] 5.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń — 43b12f4
+- [x] 5.3 Deliberate break: przedmiot z dwiema sensownymi jednostkami / `artBlocked` blokuje `text` / tara > brutto → czerwone; przywrócone; meta-check — 43b12f4
 - [ ] 5.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
