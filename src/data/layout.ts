@@ -475,9 +475,9 @@ export const WELCOME_LAYOUT = {
 export const ROOM_LAYOUT = {
     resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
     // The room fills the whole scene (S-16a): the art pack's pictures are 1920x1080. Depth bands: the room's own layers use the manifest `z` (0-99);
-    // everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
+    // the scene pictures sit at the bottom (`scene`, `furnishingsBefore`) and the shadows just under the first furniture (wall frames, z 5); everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
     scene: { left: 0, top: 0, width: 1920, height: 1080 },
-    depth: { outline: 100, controls: 110, panel: 120, celebrate: 130, card: 140 },
+    depth: { scene: 0, furnishingsBefore: 1, shadows: 4, outline: 100, controls: 110, panel: 120, celebrate: 130, card: 140 },
     // Stand-in for a room picture whose texture is missing (and for the art before it is loaded): coloured boxes with the Polish caption, like ART_STAND_IN.
     // variantFills[i] is the colour of variant i, so the three still differ without the art. wallBottom is where the stand-in wall meets the floor.
     standIn: {

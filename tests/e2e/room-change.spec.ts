@@ -138,7 +138,8 @@ test('#16 a hold on a furnished slot changes it for free; a tap, a short or a dr
     // The rug is bought for it: it is the piece that lies under the second thumbnail (the panel covers the room's lower part).
     await buy(page, 0);
     const { thumbs } = ROOM_LAYOUT;
-    const overThumb = { x: thumbs.left + thumbs.size + thumbs.gap + thumbs.size / 2, y: thumbs.top + 16 };
+    // The rug is a diamond whose corners are transparent (a touch there goes through), so the point sits in the right part of the thumbnail, where the rug is opaque.
+    const overThumb = { x: thumbs.left + thumbs.size + thumbs.gap + thumbs.size * 0.85, y: thumbs.top + 16 };
     const rug = SALON.slots.find((slot) => slot.id === 'rug')!;
     const [rl, rt, rw, rh] = rug.visibleRect;
     expect(overThumb.x).toBeGreaterThan(rug.x + rl); // precondition: the point is on the rug...

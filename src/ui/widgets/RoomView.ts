@@ -1,10 +1,11 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { LayerDef, RoomDef, RoomState, SlotDef } from '../../core/types';
-import { stagesDone } from '../../core/rooms';
+import { roomDone, stagesDone } from '../../core/rooms';
 import { slotBox, type Box } from '../../core/roomHit';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
 import { roomText } from '../../data/pl';
-import { textStyle } from './textStyle';
+import { SCENE_SIZE } from '../../data/roomArt';
+import { RoomLayer } from './RoomLayer';
 
 export interface RoomPreview {
     slot: string;
@@ -21,19 +22,20 @@ export const layerBox = (layer: LayerDef): Box => {
 };
 
 /**
- * The room (S-09, S-16a): the backdrop, then the furnished slots and the fixed decoration, each on its own depth `z` (0-99, below the
- * controls, see `ROOM_LAYOUT.depth`). Today every piece is a stand-in box with its Polish caption in the picture's visible rectangle;
- * it stays as the fallback for a missing texture. It takes no input.
- * DESIGN-GAP (docs/design-gaps.md): the room pictures arrive in the next phases; the stand-in is ours.
+ * The room (S-09, S-16a): the art pack's pictures in the 1920x1080 scene. Before the renovation stage: the neglected room and its
+ * furnishings; after it: the renovated room, the decoration and every bought piece, each on its own depth `z` (0-99, below the controls,
+ * see `ROOM_LAYOUT.depth`); the shadows come with the finished room. A picture whose texture is missing is a stand-in box with its
+ * Polish caption (a missing scene picture: the coloured backdrop). It takes no input.
+ * DESIGN-GAP (docs/design-gaps.md): the stand-in is ours; the kit has none for a room picture.
  */
 export class RoomView {
     private readonly backdrop: GameObjects.Graphics;
     private readonly outline: GameObjects.Graphics;
-    private pieces: GameObjects.GameObject[] = [];
+    private readonly layers = new Map<string, RoomLayer>();
     private room: RoomDef | null = null;
 
     constructor(private readonly scene: Scene) {
-        this.backdrop = scene.add.graphics().setDepth(0);
+        this.backdrop = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.scene);
         this.outline = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.outline);
     }
 
@@ -55,22 +57,37 @@ export class RoomView {
 
     render(room: RoomDef, state: RoomState, preview: RoomPreview | null): void {
         this.room = room;
-        const { scene: area, standIn } = ROOM_LAYOUT;
+        const { depth, standIn } = ROOM_LAYOUT;
         const renovated = stagesDone(room, state) > 0;
-        const g = this.backdrop;
-        g.clear();
-        g.fillStyle(renovated ? standIn.wallAfter : standIn.wallBefore, 1);
-        g.fillRect(area.left, area.top, area.width, standIn.wallBottom - area.top);
-        g.fillStyle(renovated ? standIn.floorAfter : standIn.floorBefore, 1);
-        g.fillRect(area.left, standIn.wallBottom, area.width, area.top + area.height - standIn.wallBottom);
-        this.pieces.forEach((piece) => piece.destroy());
-        this.pieces = [];
+        const wanted = new Set<string>();
+        const layer = (id: string): RoomLayer => {
+            wanted.add(id);
+            let l = this.layers.get(id);
+            if (!l) {
+                l = new RoomLayer(this.scene);
+                this.layers.set(id, l);
+            }
+            return l;
+        };
+        const whole = { x: 0, y: 0, width: SCENE_SIZE.width, height: SCENE_SIZE.height, anchor: [0, 0] } as const;
+        const backgroundKey = renovated ? room.scene.after : room.scene.before;
+        layer('scene').show(backgroundKey, whole, depth.scene, null);
+        this.drawBackdrop(renovated, !this.scene.textures.exists(backgroundKey));
+        if (!renovated) {
+            layer('furnishings').show(room.scene.furnishingsBefore, whole, depth.furnishingsBefore, null);
+        }
+        if (roomDone(room, state)) {
+            layer('shadows').show(room.scene.shadows, whole, depth.shadows, null);
+        }
         const chosen: Record<string, 0 | 1 | 2> = { ...state.chosen };
         if (preview) {
             chosen[preview.slot] = preview.variant;
         }
         if (renovated) {
-            room.decor.forEach((layer) => this.standIn(layer.z, layerBox(layer), standIn.decorFill, roomText.decor(layer.id) ?? layer.id, standIn.decorAlpha));
+            room.decor.forEach((art) => {
+                const caption = roomText.decor(art.id) ?? art.id;
+                layer(`decor:${art.id}`).show(art.key, art, art.z, { box: layerBox(art), fill: standIn.decorFill, alpha: standIn.decorAlpha, caption });
+            });
         }
         room.slots.forEach((slot) => {
             const variant = chosen[slot.id];
@@ -78,8 +95,32 @@ export class RoomView {
                 return;
             }
             const caption = [roomText.slot(slot.id) ?? slot.id, roomText.variant(slot.id, variant)].filter(Boolean).join('\n');
-            this.standIn(slot.z, slotBox(slot), standIn.variantFills[variant], caption, 1);
+            layer(`slot:${slot.id}`).show(slot.variants[variant], slot, slot.z, { box: slotBox(slot), fill: standIn.variantFills[variant], alpha: 1, caption });
         });
+        this.layers.forEach((l, id) => {
+            if (!wanted.has(id)) {
+                l.hide();
+            }
+        });
+    }
+
+    /** The coloured backdrop, only while the scene picture of the moment is missing. */
+    private drawBackdrop(renovated: boolean, missing: boolean): void {
+        const g = this.backdrop;
+        g.clear();
+        if (!missing) {
+            return;
+        }
+        const { scene: area, standIn } = ROOM_LAYOUT;
+        g.fillStyle(renovated ? standIn.wallAfter : standIn.wallBefore, 1);
+        g.fillRect(area.left, area.top, area.width, standIn.wallBottom - area.top);
+        g.fillStyle(renovated ? standIn.floorAfter : standIn.floorBefore, 1);
+        g.fillRect(area.left, standIn.wallBottom, area.width, area.top + area.height - standIn.wallBottom);
+    }
+
+    /** The picture of a furnished slot (for the pop of the next phase); null for a stand-in or an empty slot. */
+    objectOf(slotId: string): GameObjects.Image | null {
+        return this.layers.get(`slot:${slotId}`)?.object() ?? null;
     }
 
     /** Centre of a slot in scene space, for the purchase animation. */
@@ -90,13 +131,6 @@ export class RoomView {
         }
         const b = slotBox(slot);
         return { x: (b.left + b.right) / 2, y: (b.top + b.bottom) / 2 };
-    }
-
-    private standIn(depth: number, box: Box, fill: number, caption: string, alpha: number): void {
-        const g = this.scene.add.graphics().setDepth(depth);
-        drawStandIn(g, rectOf(box), fill, alpha);
-        const text = this.scene.add.text((box.left + box.right) / 2, (box.top + box.bottom) / 2, caption, textStyle('caption')).setOrigin(0.5).setDepth(depth + 0.5);
-        this.pieces.push(g, text);
     }
 }
 

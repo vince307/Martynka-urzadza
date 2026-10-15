@@ -764,7 +764,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 - [x] 4.2 `npm run art` drugi raz → `git status --porcelain public/assets` pusty (determinizm) — b6b0b77
 - [x] 4.3 `cat public/assets/rooms/salon/*.webp | wc -c` ≤ 1 400 000 B (BSD `du` na macOS nie ma `-b`); po `npm run build` `dist/sw.js` wymienia wszystkie 26 plików `rooms/salon/` — b6b0b77
 - [x] 4.4 `git status --porcelain designs/` pusty i nic spod `designs/` nie jest w indeksie — b6b0b77
-- [ ] 4.5 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków)
+- [x] 4.5 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków) — b6b0b77 (e2e: orchestrator note, 94 passed --workers=4)
 - [x] 4.6 Celowe złamanie: usunięty `rooms/salon/sofa-morska.webp` → `tests/roomArt.test.ts` czerwony; przywrócony; meta-check — b6b0b77
 
 #### Manual
@@ -776,7 +776,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 #### Automated
 
 - [ ] 5.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline + spec'e salonu z fazy 3, bez spadków)
-- [ ] 5.2 Celowe złamanie: `RoomView` ignoruje `stageDone` → wynik e2e zapisany; meta-check: stan dowodzi tylko gate wizualny
+- [x] 5.2 Celowe złamanie: `RoomView` ignoruje `stageDone` → wynik e2e zapisany; meta-check: stan dowodzi tylko gate wizualny — (unit zielony 2930 przy złamaniu; e2e nie do uruchomienia tutaj, plan przewiduje zielone; przywrócone)
 
 #### Manual
 

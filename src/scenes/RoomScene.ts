@@ -3,7 +3,7 @@ import { balance } from '../data/balance';
 import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
-import { holdPoint, slotAt, slotBox } from '../core/roomHit';
+import { holdPoint, slotAt, slotBox, type AlphaAt } from '../core/roomHit';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import type { RoomDef, RoomState, Settings } from '../core/types';
@@ -154,7 +154,7 @@ export class RoomScene extends Scene {
             return;
         }
         const { room, state } = this.resolve();
-        const slot = event.type === 'down' ? slotAt(room, state.chosen, { x: event.x, y: event.y }) : null;
+        const slot = event.type === 'down' ? slotAt(room, state.chosen, { x: event.x, y: event.y }, this.alphaAt(room, state.chosen)) : null;
         const result = roomGesture(this.gesture, event, { mode: this.mode, slot, rules: balance.roomHold });
         this.gesture = result.state;
         this.view.highlight(result.held);
@@ -162,6 +162,21 @@ export class RoomScene extends Scene {
             this.resetGesture();
             this.dispatch({ type: 'change', slot: result.open });
         }
+    }
+
+    /**
+     * Alpha of the picture a slot shows now, read from its texture (a touch on a transparent pixel goes to the piece below). Asked on
+     * a pointer `down` only, never on a move. Null when the texture is not loaded: the slot's rectangle alone counts then.
+     */
+    private alphaAt(room: RoomDef, chosen: Readonly<Record<string, number>>): AlphaAt {
+        return (slotId, localX, localY) => {
+            const variant = chosen[slotId];
+            const key = room.slots.find((s) => s.id === slotId)?.variants[variant ?? -1];
+            if (!key || !this.textures.exists(key)) {
+                return null;
+            }
+            return this.textures.getPixelAlpha(Math.floor(localX), Math.floor(localY), key);
+        };
     }
 
     private resetGesture(): void {
@@ -374,7 +389,7 @@ export class RoomScene extends Scene {
         const { room, state } = this.resolve();
         const { chosen } = state;
         for (const slot of room.slots) {
-            const at = holdPoint(room, chosen, slot.id);
+            const at = holdPoint(room, chosen, slot.id, undefined, this.alphaAt(room, chosen));
             if (at) {
                 out[slot.id] = at;
             }
