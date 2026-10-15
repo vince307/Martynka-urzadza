@@ -961,10 +961,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [x] 10.1 `npx playwright test tests/e2e/inequality.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: inequality 2 passed (19.4 s); full suite --workers=4 84 passed (5.4 min) = 82 + 2
-- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): scena podświetla `task.answer` zamiast zgłoszonej wartości → (a) czerwony; meta-check — orchestrator: --workers=1, test (a) red `toBe` Expected 4, Received 2 (markedTile), test (b) green; restored
-- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `isCorrect` ignoruje `check` → (a) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: same test red `toBe` Expected "done", Received "second"; restored, src/ has no diff
-- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`; lint, typecheck OK, npm test 2666; no listener on 4397/4398
+- [x] 10.1 `npx playwright test tests/e2e/inequality.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: inequality 2 passed (19.4 s); full suite --workers=4 84 passed (5.4 min) = 82 + 2 — 3e024b2
+- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): scena podświetla `task.answer` zamiast zgłoszonej wartości → (a) czerwony; meta-check — orchestrator: --workers=1, test (a) red `toBe` Expected 4, Received 2 (markedTile), test (b) green; restored — 3e024b2
+- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `isCorrect` ignoruje `check` → (a) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: same test red `toBe` Expected "done", Received "second"; restored, src/ has no diff — 3e024b2
+- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`; lint, typecheck OK, npm test 2666; no listener on 4397/4398 — 3e024b2
 
 ### Phase 11: Runda powtórkowa z zaimportowanego zapisu i sześciocyfrowa odpowiedź — e2e (#13, #11)
 
