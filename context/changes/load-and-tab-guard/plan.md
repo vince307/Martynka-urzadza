@@ -654,8 +654,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `attempt` bez `NewerSave` / `replaceGate` bez `'newer'` → czerwone; przywrócone; meta-check (liczone operacje)
+- [x] 4.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [x] 4.2 Deliberate break: `attempt` bez `NewerSave` / `replaceGate` bez `'newer'` → czerwone; przywrócone; meta-check (liczone operacje)
 - [ ] 4.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty; pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual

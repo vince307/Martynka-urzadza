@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
-import { decodeSave, saveProblem, validateSave, type SessionSave } from '../src/core/save';
+import { decodeSave, encodeSave, freshSession, saveProblem, validateSave, type SessionSave } from '../src/core/save';
 import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
 import type { RoomDef, SaveState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
@@ -228,5 +228,13 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
                     const open = view.kind === 'unreadable';
                     expect(wrote, JSON.stringify({ blockedBy, loadReason, loadError })).toBe(forceable || open);
                 }
+    });
+});
+
+describe('deviceSaveView newer (P-5)', () => {
+    it('a newer-save block is blocked, never forceable', () => {
+        const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
+        const current = encodeSave(freshSession('living'));
+        expect(deviceSaveView({ blockedBy: 'newer', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'newer', forceable: false });
     });
 });

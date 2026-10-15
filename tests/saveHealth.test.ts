@@ -141,3 +141,9 @@ describe('saveHealthView failing detail', () => {
         expect(saveHealthView(status({ consecutiveFailures: 1 }))).toMatchObject({ stage: 'write', error: 'Error' });
     });
 });
+
+describe('saveHealthView newer (P-5)', () => {
+    it('a newer-save block is off with cause newer and the code NewerSave', () => {
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'newer', lastError: 'NewerSave', lastFailure: { stage: 'write', error: 'NewerSave' } }))).toMatchObject({ kind: 'off', cause: 'newer', code: 'NewerSave' });
+    });
+});

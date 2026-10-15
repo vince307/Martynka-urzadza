@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, SAVE_VERSION, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, NEWER_SAVE, SAVE_VERSION, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 
 export interface SaveStore {
@@ -15,7 +15,8 @@ export type LoadOutcome =
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown }
     | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
-export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
+/** `newer` (runtime only, never saved): the store refused a write because it holds a save of a newer format (P-5). */
+export type BlockReason = 'unreadable' | 'unavailable' | 'fatal' | 'newer';
 
 /** Only the name of a thrown value, never its message or stack. */
 export function errorName(e: unknown): string {
@@ -101,7 +102,7 @@ export const isTimeoutError = (name: string | null): boolean => name === 'timeou
  */
 export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'>, force: boolean): 'ok' | 'Blocked' {
     const { blockedBy, loadReason, loadError } = status;
-    if (blockedBy === 'fatal') return 'Blocked';
+    if (blockedBy === 'fatal' || blockedBy === 'newer') return 'Blocked';
     if (blockedBy === 'unreadable') return loadReason === 'future' ? 'Blocked' : 'ok';
     if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force ? 'ok' : 'Blocked';
     return 'ok';
@@ -266,6 +267,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastFailure = { stage, error: lastError };
             dirty = true;
             log(`autosave: ${stage} failed`, e);
+            if (lastError === NEWER_SAVE) {
+                // A newer page saved here: never retry, never overwrite it (P-5).
+                blockedBy ??= 'newer';
+                cancelTimer();
+            }
             return false;
         }
     };
@@ -341,6 +347,10 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastError = errorName(e);
             lastFailure = { stage: 'replace', error: lastError };
             log('autosave: replace failed', e);
+            if (lastError === NEWER_SAVE) {
+                blockedBy ??= 'newer';
+                return { ok: false, error: lastError };
+            }
             // An abandoned replace write may still land later; the live game is written after it.
             if (lastError === 'timeout') dirty = true;
             if (dirty) arm();

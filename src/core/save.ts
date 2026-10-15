@@ -8,6 +8,16 @@ import { emptyRoomState } from './rooms';
 import type { RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
 export const SAVE_VERSION = 3;
+
+/** Error name a store write throws when the stored save is of a newer format than the page writing (P-5). */
+export const NEWER_SAVE = 'NewerSave';
+
+/** True only for a stored record whose numeric `version` is above `version`; anything else (no record, wrong shape) never refuses a write. */
+export function storedVersionNewer(stored: unknown, version: number): boolean {
+    if (typeof stored !== 'object' || stored === null) return false;
+    const stamp = (stored as { version?: unknown }).version;
+    return typeof stamp === 'number' && Number.isFinite(stamp) && stamp > version;
+}
 export const DEFAULT_PROFILE = 'default';
 
 /** The part of the registry state that is saved. */

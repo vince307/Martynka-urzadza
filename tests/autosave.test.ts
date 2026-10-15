@@ -1026,3 +1026,77 @@ describe('loadSave waitLonger (SRR-02)', () => {
         expect(await loadSave(broken, { timers: makeClock().timers, timeoutMs: 5000 })).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 });
+
+const newerError = (): Error => Object.assign(new Error('stored save is newer'), { name: 'NewerSave' });
+
+describe('a store that refuses with NewerSave blocks saving for good (P-5)', () => {
+    it('blocks with the runtime reason newer, tries the write once and never again', async () => {
+        const t = setup();
+        let calls = 0;
+        t.store.write = () => (calls++, Promise.reject(newerError()));
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(calls).toBe(1);
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'newer', blocked: true, lastFailure: { stage: 'write', error: 'NewerSave' } });
+        t.saver.markDirty();
+        t.clock.advance(5000);
+        await t.saver.flush('now');
+        await t.saver.flush('hidden');
+        await settle();
+        expect(calls).toBe(1);
+        expect(t.clock.pending()).toBe(0);
+        expect(t.saver.status().skipped).toBeGreaterThan(0);
+        expect(t.logs.length).toBe(1);
+    });
+
+    it('the first write after a migration that meets a newer save blocks, keeps the copy rule, and never retries', async () => {
+        const v2 = fixture('save-v2.json');
+        const t = setup({ migrated: { from: 2, raw: v2 }, load: 'loaded' });
+        let writes = 0;
+        t.store.write = () => (writes++, Promise.reject(newerError()));
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(writes).toBe(1);
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'newer', migrationWrittenAt: null });
+        t.clock.advance(60000);
+        await t.saver.flush('hidden');
+        expect(writes).toBe(1);
+    });
+
+    it('replace meets NewerSave: returns the error, blocks, arms nothing and does not stay busy', async () => {
+        const t = setup();
+        t.store.write = () => Promise.reject(newerError());
+        expect(await t.saver.replace(encodeSave(session(9)))).toEqual({ ok: false, error: 'NewerSave' });
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'newer', replace: 'idle' });
+        t.saver.markDirty();
+        expect(t.clock.pending()).toBe(0);
+    });
+
+    it('once blocked as newer, replace is refused even with force and the store is not touched', async () => {
+        const t = setup();
+        t.saver.block('newer');
+        expect(await t.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.ops).toEqual([]);
+    });
+
+    it('replaceGate says Blocked for newer with and without force', () => {
+        expect(replaceGate({ blockedBy: 'newer', loadReason: null, loadError: null }, true)).toBe('Blocked');
+        expect(replaceGate({ blockedBy: 'newer', loadReason: null, loadError: null }, false)).toBe('Blocked');
+    });
+
+    it('any other write error is still retried as before', async () => {
+        const t = setup();
+        t.state.fail = true;
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        expect(t.saver.status()).toMatchObject({ blockedBy: null, consecutiveFailures: 1, dirty: true });
+        t.state.fail = false;
+        await t.saver.flush('now');
+        expect(t.saver.status().writes).toBe(1);
+    });
+});
