@@ -730,17 +730,17 @@ Z przeglądu planu (`reviews/plan-review.md`):
 #### Automated
 
 - [x] 1.1 Nowe testy etapu w `tests/rooms.test.ts` i `tests/variantPanel.test.ts` czerwone przed implementacją, zielone po — d5d6993
-- [ ] 1.2 Bramka lokalna zielona: `npm run lint`, `npm run typecheck`, unit (baseline + Δ nowych testów, bez spadków), `npm run build`, e2e (baseline, bez spadków)
+- [x] 1.2 Bramka lokalna zielona: `npm run lint`, `npm run typecheck`, unit (baseline + Δ nowych testów, bez spadków), `npm run build`, e2e (baseline, bez spadków) — d5d6993 (e2e: orchestrator note, 93/93)
 - [x] 1.3 Celowe złamanie: `stepPanel` dla etapu nie sprawdza `stars >= cost` → test „za mało gwiazdek” czerwony; przywrócone; meta-check — d5d6993
 
 ### Phase 2: Przeliczenie starego salonu przy wczytaniu
 
 #### Automated
 
-- [ ] 2.1 `tests/salonRemap.test.ts` czerwony przed implementacją, zielony po (wszystkie stare `tasksDone` 0–10, idempotencja, fixture'y)
-- [ ] 2.2 `git diff --exit-code tests/fixtures/` czysty (fixture'y bajt w bajt)
-- [ ] 2.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków)
-- [ ] 2.4 Celowe złamanie: zaokrąglenie w dół → test „prefiks ≥ wydanego” czerwony; przywrócone; meta-check idempotencji
+- [x] 2.1 `tests/salonRemap.test.ts` czerwony przed implementacją, zielony po (wszystkie stare `tasksDone` 0–10, idempotencja, fixture'y) — bab7ad7
+- [x] 2.2 `git diff --exit-code tests/fixtures/` czysty (fixture'y bajt w bajt) — bab7ad7
+- [x] 2.3 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build z `e2e hook: absent`, e2e (baseline, bez spadków) — bab7ad7
+- [x] 2.4 Celowe złamanie: zaokrąglenie w dół → test „prefiks ≥ wydanego” czerwony; przywrócone; meta-check idempotencji — bab7ad7
 
 #### Manual
 
