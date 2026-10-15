@@ -491,15 +491,15 @@ export const ROOM_LAYOUT = {
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
     // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail
     // lifts by `lift` and gets the thick border, so the choice never rests on colour alone. DESIGN-GAP (docs/design-gaps.md): the kit has no panel.
-    // minAspect: a thumbnail is at least this high relative to its width, so the wide floor and walls read as a swatch, not a thin strip.
-    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, minAspect: 0.5, nameHeight: 36, nameInset: 28 },   // nameHeight: the strip under the picture that holds the variant name
+    // A thumbnail holds the variant's picture scaled to fit (S-16a); labelY: the variant name's centre, measured from the thumbnail's top.
+    thumbs: { left: 340, top: 828, size: 200, gap: 30, radius: 28, border: 4, selectedBorder: 10, lift: 16, inset: 20, nameHeight: 36, labelY: 172 },   // nameHeight: the strip under the picture that holds the variant name
     // "Wybieram" ends where the task button begins: after a purchase the next task's button appears at once, so the second tap
     // of a double tap must not land on it (impl-review F1). "Zamknij" may share its place (it would re-open the same panel).
     choose: { left: 1100, top: 792, width: 480, height: 100, radius: 32, border: 5 },
     close: { left: 1100, top: 908, width: 480, height: 96, radius: 32, border: 5 },
     // Current renovation task button. DESIGN-GAP (docs/design-gaps.md): the kit has no task button; page-button look, ours.
     // Top aligned with `resume`, below "Wybieram".
-    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30 },
+    taskButton: { left: 900, top: 892, width: 720, height: 128, radius: 32, border: 5, textInset: 36, costWidth: 150, starRadius: 30, labelGap: 24 },   // labelGap: the least space between the label and the star
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
@@ -515,7 +515,10 @@ export const ROOM_LAYOUT = {
 export const ROOM_DONE_LAYOUT = {
     card: { left: 388, top: 220, width: 1144, height: 560, border: 7, radius: 46 },
     title: { x: 960, y: 262 },
-    tiles: { left: 490, top: 372, width: 440, height: 200, gap: 60, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.13, captionY: 172, markRadius: 26, markInset: 34 },
+    tiles: { left: 490, top: 372, width: 440, height: 200, gap: 60, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.13, captionY: 172, markRadius: 26, markInset: 34,
+        // Check mark (points as fractions of the circle's radius from its centre) and padlock (offsets from the tile's top and centre).
+        mark: { stroke: 7, startX: -0.5, bendX: -0.1, bendY: 0.4, endX: 0.5, endY: -0.35 },
+        lock: { centerY: 70, bodyHalfWidth: 28, bodyTop: 4, bodyWidth: 56, bodyHeight: 44, bodyRadius: 8, shackleRadius: 18, stroke: 8, alpha: 0.9 } },
     button: { left: 735, top: 624, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 

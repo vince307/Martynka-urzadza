@@ -145,29 +145,74 @@ export function drawStandIn(
     g.strokeRoundedRect(box.left, box.top, box.width, box.height, radius ?? r);
 }
 
+/** One picture of the miniature: the texture key and its rectangle in scene space, with the stand-in look for a missing texture. */
+export interface MiniaturePiece {
+    key: string;
+    placement: { x: number; y: number; width: number; height: number };
+    box: Box;
+    fill: number;
+    alpha: number;
+}
+
 /**
- * The room at a small scale: backdrop and the furnished slots by `z` (empty slots are left out), as stand-ins. `left`/`top` is where
- * the scene's corner lands; used by the "Pokój gotowy!" card for its list of rooms.
+ * The pictures of the room's miniature, back to front: the scene, the neglected furnishings until the stage, the shadows of a
+ * finished room, the decoration after the stage, then the furnished slots by `z` (empty slots are left out). The same layers as `RoomView.render`.
  */
-export function drawRoomMiniature(g: GameObjects.Graphics, room: RoomDef, state: RoomState, left: number, top: number, scale: number): void {
-    const { scene: area, standIn } = ROOM_LAYOUT;
+export function miniaturePieces(room: RoomDef, state: RoomState): MiniaturePiece[] {
+    const { standIn } = ROOM_LAYOUT;
     const renovated = stagesDone(room, state) > 0;
-    const wall = (standIn.wallBottom - area.top) * scale;
-    g.fillStyle(renovated ? standIn.wallAfter : standIn.wallBefore, 1);
-    g.fillRect(left, top, area.width * scale, wall);
-    g.fillStyle(renovated ? standIn.floorAfter : standIn.floorBefore, 1);
-    g.fillRect(left, top + wall, area.width * scale, area.height * scale - wall);
-    const place = (b: Box): { left: number; top: number; width: number; height: number } =>
-        ({ left: left + (b.left - area.left) * scale, top: top + (b.top - area.top) * scale, width: (b.right - b.left) * scale, height: (b.bottom - b.top) * scale });
-    const pieces: { z: number; box: Box; fill: number; alpha: number }[] = [];
+    const whole = { x: 0, y: 0, width: SCENE_SIZE.width, height: SCENE_SIZE.height };
+    const wholeBox: Box = { left: 0, top: 0, right: SCENE_SIZE.width, bottom: SCENE_SIZE.height };
+    const pieces: MiniaturePiece[] = [{ key: renovated ? room.scene.after : room.scene.before, placement: whole, box: wholeBox, fill: renovated ? standIn.wallAfter : standIn.wallBefore, alpha: 1 }];
+    if (!renovated) {
+        pieces.push({ key: room.scene.furnishingsBefore, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
+    }
+    if (roomDone(room, state)) {
+        pieces.push({ key: room.scene.shadows, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
+    }
+    const placed: { z: number; piece: MiniaturePiece }[] = [];
+    const at = (a: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number } => ({ x: a.x, y: a.y, width: a.width, height: a.height });
     if (renovated) {
-        room.decor.forEach((layer) => pieces.push({ z: layer.z, box: layerBox(layer), fill: standIn.decorFill, alpha: standIn.decorAlpha }));
+        room.decor.forEach((layer) => placed.push({ z: layer.z, piece: { key: layer.key, placement: at(layer), box: layerBox(layer), fill: standIn.decorFill, alpha: standIn.decorAlpha } }));
     }
     room.slots.forEach((slot: SlotDef) => {
         const variant = state.chosen[slot.id];
         if (variant !== undefined) {
-            pieces.push({ z: slot.z, box: slotBox(slot), fill: standIn.variantFills[variant], alpha: 1 });
+            placed.push({ z: slot.z, piece: { key: slot.variants[variant], placement: at(slot), box: slotBox(slot), fill: standIn.variantFills[variant], alpha: 1 } });
         }
     });
-    pieces.sort((a, b) => a.z - b.z).forEach((p) => drawStandIn(g, place(p.box), p.fill, p.alpha, scale, standIn.radius * scale));
+    return [...pieces, ...placed.sort((a, b) => a.z - b.z).map((p) => p.piece)];
+}
+
+/**
+ * The room at a small scale from the same pictures as the room itself. `left`/`top` is where the scene's corner lands. A piece whose
+ * texture is missing is a stand-in box on `g` (the coloured backdrop for the scene picture, nothing for a full-scene overlay).
+ * Returns the images it added, in order, from `depth` up, so the caller can destroy them; used by the "Pokój gotowy!" card.
+ */
+export function drawRoomMiniature(
+    scene: Scene, g: GameObjects.Graphics, room: RoomDef, state: RoomState, left: number, top: number, scale: number, depth: number,
+): GameObjects.Image[] {
+    const { scene: area, standIn } = ROOM_LAYOUT;
+    const images: GameObjects.Image[] = [];
+    miniaturePieces(room, state).forEach((piece, index) => {
+        const { x, y, width, height } = piece.placement;
+        if (scene.textures.exists(piece.key)) {
+            images.push(scene.add.image(left + x * scale, top + y * scale, piece.key).setOrigin(0, 0).setDisplaySize(width * scale, height * scale).setDepth(depth + index / 1000));
+            return;
+        }
+        if (piece.alpha === 0) {
+            return;
+        }
+        if (index === 0) {
+            const wall = (standIn.wallBottom - area.top) * scale;
+            g.fillStyle(piece.fill, 1);
+            g.fillRect(left, top, area.width * scale, wall);
+            g.fillStyle(piece.fill === standIn.wallAfter ? standIn.floorAfter : standIn.floorBefore, 1);
+            g.fillRect(left, top + wall, area.width * scale, area.height * scale - wall);
+            return;
+        }
+        const b = piece.box;
+        drawStandIn(g, { left: left + (b.left - area.left) * scale, top: top + (b.top - area.top) * scale, width: (b.right - b.left) * scale, height: (b.bottom - b.top) * scale }, piece.fill, piece.alpha, scale, standIn.radius * scale);
+    });
+    return images;
 }

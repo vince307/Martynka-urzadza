@@ -775,7 +775,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 5.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline + spec'e salonu z fazy 3, bez spadków)
+- [x] 5.1 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline + spec'e salonu z fazy 3, bez spadków) — e2e 94 passed z notatki orkiestratora (9f5a798)
 - [x] 5.2 Celowe złamanie: `RoomView` ignoruje `stageDone` → wynik e2e zapisany; meta-check: stan dowodzi tylko gate wizualny — (unit zielony 2930 przy złamaniu; e2e nie do uruchomienia tutaj, plan przewiduje zielone; przywrócone)
 
 #### Manual
@@ -787,7 +787,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 6.1 `rg -n "minAspect" src` pusty; liczby ptaszka/kłódki tylko w `src/data/layout.ts`
+- [x] 6.1 `rg -n "minAspect" src` pusty; liczby ptaszka/kłódki tylko w `src/data/layout.ts`
 - [ ] 6.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
 - [ ] 6.3 Celowe złamanie: `thumbTargets` ze starej geometrii → e2e `room-change` czerwony; przywrócone; meta-check
 

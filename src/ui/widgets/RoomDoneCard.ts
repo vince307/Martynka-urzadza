@@ -11,12 +11,13 @@ import { textStyle } from './textStyle';
  * The "Pokój gotowy!" card over the finished room: the title, the list of rooms (a tile with a miniature and a check mark for a room,
  * a faded dashed tile "Wkrótce" for the next one, with a padlock while it is locked) and "Dalej". The tiles are not buttons.
  * It draws what it is given and decides nothing.
- * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card and the art waits for S-16.
+ * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card and its miniature is the room's own pictures in scale (S-16a).
  */
 export class RoomDoneCard {
     private readonly graphics: GameObjects.Graphics;
     private readonly title: GameObjects.Text;
     private captions: GameObjects.Text[] = [];
+    private pictures: GameObjects.Image[] = [];
     private readonly next: PageButton;
 
     constructor(private readonly scene: Scene, onNext: () => void) {
@@ -64,6 +65,8 @@ export class RoomDoneCard {
     private clearCaptions(): void {
         this.captions.forEach((text) => text.destroy());
         this.captions = [];
+        this.pictures.forEach((image) => image.destroy());
+        this.pictures = [];
     }
 
     private caption(text: string, x: number, y: number, alpha = 1): void {
@@ -79,7 +82,7 @@ export class RoomDoneCard {
         g.lineStyle(tiles.border, PLACEHOLDER_COLORS.nextBorder, 1);
         g.strokeRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
         const thumbWidth = ROOM_LAYOUT.scene.width * tiles.thumbScale;
-        drawRoomMiniature(g, room, state, left + (tiles.width - thumbWidth) / 2, top + tiles.thumbTop, tiles.thumbScale);
+        this.pictures.push(...drawRoomMiniature(this.scene, g, room, state, left + (tiles.width - thumbWidth) / 2, top + tiles.thumbTop, tiles.thumbScale, ROOM_LAYOUT.depth.card + 1));
         this.caption(pl.room.name, left + tiles.width / 2, top + tiles.captionY);
         if (done) {
             // A check mark in a circle: the "done" sign is a shape, not only a colour.
@@ -88,11 +91,12 @@ export class RoomDoneCard {
             const r = tiles.markRadius;
             g.fillStyle(PLACEHOLDER_COLORS.nextBorder, 1);
             g.fillCircle(cx, cy, r);
-            g.lineStyle(7, PLACEHOLDER_COLORS.ivory, 1);
+            const { mark } = tiles;
+            g.lineStyle(mark.stroke, PLACEHOLDER_COLORS.ivory, 1);
             g.beginPath();
-            g.moveTo(cx - r * 0.5, cy);
-            g.lineTo(cx - r * 0.1, cy + r * 0.4);
-            g.lineTo(cx + r * 0.5, cy - r * 0.35);
+            g.moveTo(cx + r * mark.startX, cy);
+            g.lineTo(cx + r * mark.bendX, cy + r * mark.bendY);
+            g.lineTo(cx + r * mark.endX, cy + r * mark.endY);
             g.strokePath();
         }
     }
@@ -118,12 +122,13 @@ export class RoomDoneCard {
         if (locked) {
             // A padlock: body and shackle.
             const cx = left + tiles.width / 2;
-            const cy = top + 70;
-            g.fillStyle(border, 0.9);
-            g.fillRoundedRect(cx - 28, cy - 4, 56, 44, 8);
-            g.lineStyle(8, border, 0.9);
+            const { lock } = tiles;
+            const cy = top + lock.centerY;
+            g.fillStyle(border, lock.alpha);
+            g.fillRoundedRect(cx - lock.bodyHalfWidth, cy - lock.bodyTop, lock.bodyWidth, lock.bodyHeight, lock.bodyRadius);
+            g.lineStyle(lock.stroke, border, lock.alpha);
             g.beginPath();
-            g.arc(cx, cy - 4, 18, Math.PI, 0, false);
+            g.arc(cx, cy - lock.bodyTop, lock.shackleRadius, Math.PI, 0, false);
             g.strokePath();
         }
         this.caption(pl.room.done.teaser, left + tiles.width / 2, top + tiles.captionY, 0.8);

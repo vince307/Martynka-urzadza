@@ -194,11 +194,11 @@ describe('task screen layout constants', () => {
         }
     });
 
-    it('gives every variant thumbnail a readable height, even for the wide floor and walls', () => {
+    it('keeps the variant name inside its thumbnail, under the picture', () => {
         const { thumbs } = ROOM_LAYOUT;
-        const room = thumbs.size - 2 * thumbs.inset;
-        expect(thumbs.minAspect * room).toBeGreaterThanOrEqual(room / 3);
-        expect(thumbs.minAspect).toBeLessThanOrEqual(1);
+        expect(thumbs.labelY).toBeLessThan(thumbs.size);
+        expect(thumbs.labelY).toBeGreaterThanOrEqual(thumbs.size - thumbs.inset - thumbs.nameHeight / 2);
+        expect('minAspect' in thumbs).toBe(false);
     });
 
     it('keeps the variant panel touch targets 96 px or more, inside the tray, apart from each other and clear of the HUD', () => {
