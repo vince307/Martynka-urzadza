@@ -1,6 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
 import type { FailureStage } from '../core/autosave';
+import { formatNumber } from '../core/text/formatNumber';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
@@ -610,6 +611,25 @@ export const pl = {
         placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
         placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
             `Liczba ${n} to ${[t > 0 ? countNoun(t, nouns.dziesiątka) : '', o > 0 ? countNoun(o, nouns.jedność) : ''].filter((x) => x !== '').join(' i ')}.`,
+        // PLACE_VALUE thousands and orders (S-14c): text only, numbers from 10 000 grouped by `formatNumber`.
+        placeValuePlaces: { thousands: 'tysięcy', hundreds: 'setek', tens: 'dziesiątek', ones: 'jedności' },
+        placeValueDigitPrompt: (place: string, n: number) => `Jaka cyfra jest na miejscu ${place} w liczbie ${formatNumber(n)}?`,
+        placeValueDigitHint: 'Czytaj liczbę od lewej: tysiące, setki, dziesiątki, jedności.',
+        placeValueDigitLine: (n: number, th: number, h: number, t: number, o: number) =>
+            `${formatNumber(n)}: ${countNoun(th, nouns.tysiąc)}, ${countNoun(h, nouns.setka)}, ${countNoun(t, nouns.dziesiątka)}, ${countNoun(o, nouns.jedność)}.`,
+        placeValueDigitAnswerHint: (place: string, digit: number) => `Na miejscu ${place} jest cyfra ${digit}.`,
+        placeValueGapHint: 'Od całej liczby odejmij części, które już są.',
+        placeValueComposeSentence: (parts: string) => `${parts} to jaka liczba?`,
+        placeValueComposeHint: 'Zamień każdy rząd na liczbę i dodaj.',
+        placeValueOrdersCountPrompt: (n: number) => `Ile tysięcy to ${formatNumber(n)}?`,
+        placeValueOrdersCountHint: 'Odetnij z końca liczby trzy zera.',
+        placeValueOrdersCountAnswerHint: (n: number, k: number) => `Po odcięciu trzech zer z ${formatNumber(n)} zostaje ${k}.`,
+        placeValueOrdersHundredsPrompt: (n: number) => `Ile setek tysięcy ma ${formatNumber(n)}?`,
+        placeValueOrdersHundredsHint: 'Jedna setka tysięcy to sto tysięcy.',
+        placeValueOrdersHundredsAnswerHint: (n: number, d: number) => `${formatNumber(n)} to ${countNoun(d, nouns.setka)} tysięcy.`,
+        placeValueOrdersCompose: (hundreds: number, thousands: number) => `${countNoun(hundreds, nouns.setka)} tysięcy i ${thousands} tysięcy`,
+        placeValueOrdersComposeLine: (hundreds: number, thousands: number) =>
+            `${countNoun(hundreds, nouns.setka)} tysięcy to ${formatNumber(hundreds * 100000)}, ${thousands} tysięcy to ${formatNumber(thousands * 1000)}.`,
         // PUZZLE_GRID (S-13b): the magic square and the number pyramid are drawings; the texts name the rule.
         puzzleMagicPrompt: 'Jaka liczba pasuje do pustego pola w kwadracie magicznym?',
         puzzleMagicSpeak: 'Popatrz na kwadrat magiczny. Jaka liczba pasuje do pustego pola?',

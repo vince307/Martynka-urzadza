@@ -111,6 +111,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.9.rounding_100', 9, 'ROUNDING', { max: 10000, to: 100 }),
                 skill('E6.9.rounding_1000', 9, 'ROUNDING', { max: 10000, to: 1000 }),
+                skill('E6.9.place_value_10000', 9, 'PLACE_VALUE', { variant: 'thousands', max: 10000 }),
             ],
         },
         {
@@ -121,6 +122,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.10.roman_2000', 10, 'ROMAN', { max: 2000 }, 'tiles'),
                 skill('E6.10.compare_num_1000000', 10, 'COMPARE_NUM', { max: 1000000 }, 'tiles'),
+                skill('E6.10.place_value_1000000', 10, 'PLACE_VALUE', { variant: 'orders', max: 1000000 }),
             ],
         },
         { step: 11, title: 'Powtórka całego roku — „Test przed klasą 4”', types: ['MIX', 'LOGIC'], skills: [] },

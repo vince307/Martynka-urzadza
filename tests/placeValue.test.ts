@@ -5,6 +5,9 @@ import { firstHint } from '../src/core/round/hints';
 import { generatePlaceValue, parsePlaceValueParams } from '../src/core/tasks/generators/placeValue';
 import type { SkillDef } from '../src/core/types';
 import { forEachDraw } from './helpers';
+import { balance } from '../src/data/balance';
+import { E6 } from '../src/data/curriculum/E6';
+import { formatNumber } from '../src/core/text/formatNumber';
 
 const skill = (id: string, params: Record<string, unknown>, answer: SkillDef['answer'] = 'keypad'): SkillDef => ({ id, stage: 'E3', step: 6, type: 'PLACE_VALUE', params, answer });
 
@@ -151,5 +154,138 @@ describe('PLACE_VALUE answer hint: numeral agreement', () => {
         forEachDraw(generatePlaceValue, TENS_30, { max: 30 }, (task, where) => {
             expect(task.hint[task.hint.length - 1], where).toBe(expected(task.answer as number));
         });
+    });
+});
+
+// Phase 7 (S-14c): thousands and orders of magnitude, written as text on the keypad.
+describe('PLACE_VALUE thousands and orders', () => {
+    const THOUSANDS = skill('E6.9.place_value_10000', { variant: 'thousands', max: 10000 });
+    const ORDERS = skill('E6.10.place_value_1000000', { variant: 'orders', max: 1000000 });
+    const PLACES: Record<string, number> = { tysięcy: 1000, setek: 100, dziesiątek: 10, jedności: 1 };
+    const PARTS: Record<string, number> = { tysiąc: 1000, tysiące: 1000, tysięcy: 1000, setka: 100, setki: 100, setek: 100, dziesiątka: 10, dziesiątki: 10, dziesiątek: 10, jedność: 1, jedności: 1 };
+    const plain = (text: string): number => Number(text.replace(/\u00A0/g, ''));
+
+    // The oracle reads the numbers off the prompt, never from task.answer; it returns the kind of the prompt.
+    const expectedOf = (prompt: string): { kind: string; value: number } => {
+        let m = /^Jaka cyfra jest na miejscu (\p{L}+) w liczbie ([\d\u00A0]+)\?$/u.exec(prompt);
+        if (m) return { kind: 'digit', value: Math.floor(plain(m[2]) / PLACES[m[1]]) % 10 };
+        m = /^([\d\u00A0]+) = (.+)$/u.exec(prompt);
+        if (m) {
+            const parts = m[2].split(' + ');
+            expect(parts.filter((x) => x === '□').length, prompt).toBe(1);
+            const known = parts.filter((x) => x !== '□').reduce((sum, x) => sum + plain(x), 0);
+            return { kind: 'gap', value: plain(m[1]) - known };
+        }
+        m = /^(.+) to jaka liczba\?$/u.exec(prompt);
+        if (m) {
+            let total = 0;
+            for (const part of m[1].split(/, | i /u)) {
+                const q = /^(\d+) (\p{L}+)(?: (tysięcy))?$/u.exec(part);
+                if (!q) expect.fail(`part "${part}" of "${prompt}"`);
+                total += Number(q[1]) * (q[3] ? PARTS[q[2]] * 1000 : PARTS[q[2]]);
+            }
+            return { kind: 'compose', value: total };
+        }
+        m = /^Ile tysięcy to ([\d\u00A0]+)\?$/u.exec(prompt);
+        if (m) return { kind: 'thousandsOf', value: plain(m[1]) / 1000 };
+        m = /^Ile setek tysięcy ma ([\d\u00A0]+)\?$/u.exec(prompt);
+        if (m) return { kind: 'hundredThousandsOf', value: plain(m[1]) / 100000 };
+        return expect.fail(`unknown prompt shape "${prompt}"`);
+    };
+
+    it('thousands: digit, gap and compose tasks, each right by its own prompt, up to 10 000', () => {
+        const kinds = new Set<string>();
+        forEachDraw(generatePlaceValue, THOUSANDS, { max: 10000 }, (task, where) => {
+            const { kind, value } = expectedOf(task.prompt);
+            kinds.add(kind);
+            expect(task.visual, where).toBeUndefined();
+            expect(task.answer, where).toBe(value);
+            expect(task.hint.length, where).toBeGreaterThanOrEqual(2);
+            expect(task.hint[0], where).not.toMatch(/\d/);
+            expect(task.hint[task.hint.length - 1], where).toContain(String(task.answer));
+            if (kind === 'gap') {
+                expect(task.prompt, where).toContain('□');
+                expect(task.prompt, where).toMatch(/^\d{4} = /);
+            }
+        });
+        expect([...kinds].sort()).toEqual(['compose', 'digit', 'gap']);
+    });
+
+    it('thousands: the compose prompt agrees "1 tysiąc, 2 tysiące, 5 tysięcy" and skips zero orders', () => {
+        const prompts = new Set<string>();
+        forEachDraw(generatePlaceValue, THOUSANDS, { max: 10000 }, (task) => {
+            if (task.prompt.endsWith('to jaka liczba?')) prompts.add(task.prompt);
+        });
+        const all = [...prompts].join('\n');
+        expect(all).toMatch(/(^|\s)1 tysiąc[ ,]/m);
+        expect(all).toMatch(/\b[234] tysiące\b/);
+        expect(all).toMatch(/\b[5-9] tysięcy\b/);
+        expect(all).not.toMatch(/\b0 /);
+    });
+
+    it('orders: "Ile tysięcy to 250 000?", full hundreds of thousands and the composed number', () => {
+        const kinds = new Set<string>();
+        let large = 0;
+        let total = 0;
+        forEachDraw(generatePlaceValue, ORDERS, { max: 1000000 }, (task, where) => {
+            const { kind, value } = expectedOf(task.prompt);
+            kinds.add(kind);
+            expect(task.answer, where).toBe(value);
+            expect(task.hint[0], where).not.toMatch(/\d/);
+            expect(task.hint[task.hint.length - 1], where).toContain(formatNumber(task.answer as number));
+            total += 1;
+            if ((task.answer as number) >= 100000) large += 1;
+        });
+        expect([...kinds].sort()).toEqual(['compose', 'hundredThousandsOf', 'thousandsOf']);
+        // The round spec of phase 11 needs a six-digit answer: at least half of the draws have one (plan-review F4).
+        expect(large / total).toBeGreaterThanOrEqual(0.5);
+    });
+
+    it('numbers from 10 000 are grouped with a no-break space and spoken without it', () => {
+        let grouped = 0;
+        for (const s of [THOUSANDS, ORDERS]) {
+            forEachDraw(generatePlaceValue, s, { max: s === ORDERS ? 1000000 : 10000 }, (task, where) => {
+                expect(task.prompt, where).not.toMatch(/\d{5,}/);
+                for (const line of task.hint) expect(line, where).not.toMatch(/\d{5,}/);
+                if (/\d\u00A0\d{3}/.test(task.prompt)) {
+                    grouped += 1;
+                    expect(task.speak, where).toBeDefined();
+                    expect(task.speak, where).not.toMatch(/\u00A0|\d \d{3}/);
+                    expect(task.speak, where).toMatch(/\d{5,}/);
+                }
+            });
+        }
+        expect(grouped).toBeGreaterThan(100);
+    });
+
+    it('the answer never needs more digits than the keypad takes', () => {
+        for (const s of [THOUSANDS, ORDERS]) {
+            forEachDraw(generatePlaceValue, s, { max: s === ORDERS ? 1000000 : 10000 }, (task, where) => {
+                expect(String(task.answer).length, where).toBeLessThanOrEqual(balance.keypad.maxDigits);
+            });
+        }
+    });
+
+    it('the 999 limit of the block drawings still holds per variant; thousands and orders have their own limits', () => {
+        expect(() => parsePlaceValueParams({ variant: 'thousands', max: 10000 })).not.toThrow();
+        expect(() => parsePlaceValueParams({ variant: 'orders', max: 1000000 })).not.toThrow();
+        for (const params of [
+            { variant: 'read', min: 100, max: 1000000 },
+            { variant: 'tens', min: 11, max: 1000 },
+            { variant: 'thousands', max: 20000 },
+            { variant: 'thousands', max: 500 },
+            { variant: 'orders', max: 1000 },
+            { variant: 'orders', max: 2000000 },
+            { variant: 'orders' },
+        ]) {
+            expect(() => parsePlaceValueParams(params), JSON.stringify(params)).toThrow(TypeError);
+        }
+    });
+
+    it('E6.9 and E6.10 carry the new skills with their planned parameters', () => {
+        const e6 = (id: string): SkillDef | undefined => E6.steps.flatMap((st) => st.skills).find((sk) => sk.id === id);
+        expect(e6('E6.9.place_value_10000')?.params).toEqual({ variant: 'thousands', max: 10000 });
+        expect(e6('E6.10.place_value_1000000')?.params).toEqual({ variant: 'orders', max: 1000000 });
+        expect(e6('E6.9.place_value_10000')?.type).toBe('PLACE_VALUE');
     });
 });

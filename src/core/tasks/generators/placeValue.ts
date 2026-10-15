@@ -2,11 +2,15 @@
 // (blocks -> the number), `tens` (blocks -> how many tens), `decompose`
 // ("47 = 40 + □", no drawing) and `build` ("Zbuduj z klocków liczbę 23.", no
 // drawing: the child drags blocks onto the mat, answer mode `drag`).
+import { nouns } from '../../../data/nouns';
 import { pl } from '../../../data/pl';
+import type { Rng } from '../../rng';
+import { formatNumber } from '../../text/formatNumber';
+import { countNoun } from '../../text/plural';
 import { BOX, MINUS } from '../symbols';
 import type { Generator, Task } from '../types';
 
-export type PlaceValueVariant = 'read' | 'tens' | 'decompose' | 'build';
+export type PlaceValueVariant = 'read' | 'tens' | 'decompose' | 'build' | 'thousands' | 'orders';
 
 export interface PlaceValueParams {
     variant: PlaceValueVariant;
@@ -14,12 +18,20 @@ export interface PlaceValueParams {
     max: number;
 }
 
-const VARIANTS: readonly PlaceValueVariant[] = ['read', 'tens', 'decompose', 'build'];
+const VARIANTS: readonly PlaceValueVariant[] = ['read', 'tens', 'decompose', 'build', 'thousands', 'orders'];
 
 export const parsePlaceValueParams = (params: Record<string, unknown>): PlaceValueParams => {
     const { variant, min, max } = params;
     if (!VARIANTS.includes(variant as PlaceValueVariant)) {
         throw new TypeError(`PLACE_VALUE params.variant must be one of ${VARIANTS.join(', ')}, got ${String(variant)}`);
+    }
+    if (variant === 'thousands' || variant === 'orders') {
+        // Text-only variants: no drawing, so the 999 limit of the block variants does not apply (the keypad takes 7 digits).
+        const [low, high] = variant === 'thousands' ? [1000, 10000] : [110000, 1000000];
+        if (typeof max !== 'number' || !Number.isInteger(max) || max < low || max > high) {
+            throw new TypeError(`PLACE_VALUE ${variant} needs an integer params.max within ${low}..${high}, got ${String(max)}`);
+        }
+        return { variant, min: variant === 'thousands' ? 1000 : 10000, max };
     }
     if (typeof min !== 'number' || typeof max !== 'number' || !Number.isInteger(min) || !Number.isInteger(max) || min < 1 || min > max) {
         throw new TypeError(`PLACE_VALUE needs integer params.min and params.max with 1 <= min <= max, got ${String(min)}..${String(max)}`);
@@ -45,8 +57,113 @@ export const parsePlaceValueParams = (params: Record<string, unknown>): PlaceVal
     return { variant: variant as PlaceValueVariant, min, max };
 };
 
+const PLACE_VALUES = [1000, 100, 10, 1] as const;
+const PLACE_NAMES = [pl.tasks.placeValuePlaces.thousands, pl.tasks.placeValuePlaces.hundreds, pl.tasks.placeValuePlaces.tens, pl.tasks.placeValuePlaces.ones] as const;
+const PLACE_NOUNS = [nouns.tysiąc, nouns.setka, nouns.dziesiątka, nouns.jedność] as const;
+
+/** The narrator reads digits; a grouping space between them would split the number. */
+const withSpeech = (task: Task): Task => {
+    const plain = task.prompt.replace(/(?<=\d)\u00A0(?=\d)/gu, '');
+    return plain === task.prompt ? task : { ...task, speak: plain };
+};
+
+const digitsOf = (n: number): number[] => PLACE_VALUES.map((v) => Math.floor(n / v) % 10);
+
+/** A four-digit number with at least two non-zero digits (so a part is left when one is hidden). */
+const drawFourDigit = (p: PlaceValueParams, rng: Rng): number[] => {
+    for (;;) {
+        const digits = digitsOf(rng.int(1000, Math.min(p.max, 9999)));
+        if (digits.filter((d) => d > 0).length >= 2) {
+            return digits;
+        }
+    }
+};
+
+const generateThousands = (skillId: string, p: PlaceValueParams, rng: Rng): Task => {
+    const digits = drawFourDigit(p, rng);
+    const n = digits.reduce((sum, d, i) => sum + d * PLACE_VALUES[i], 0);
+    const nonZero = digits.map((_d, i) => i).filter((i) => digits[i] > 0);
+    const kind = rng.int(0, 2);
+    if (kind === 0) {
+        const i = rng.pick(nonZero);
+        return {
+            skillId,
+            prompt: pl.tasks.placeValueDigitPrompt(PLACE_NAMES[i], n),
+            answer: digits[i],
+            hint: [pl.tasks.placeValueDigitHint, pl.tasks.placeValueDigitLine(n, ...(digits as [number, number, number, number])), pl.tasks.placeValueDigitAnswerHint(PLACE_NAMES[i], digits[i])],
+        };
+    }
+    if (kind === 1) {
+        const hidden = rng.pick(nonZero);
+        const terms = nonZero.map((i) => (i === hidden ? BOX : String(digits[i] * PLACE_VALUES[i])));
+        const known = nonZero.filter((i) => i !== hidden).map((i) => digits[i] * PLACE_VALUES[i]);
+        const answer = digits[hidden] * PLACE_VALUES[hidden];
+        return {
+            skillId,
+            prompt: `${n} = ${terms.join(' + ')}`,
+            answer,
+            hint: [pl.tasks.placeValueGapHint, `${[n, ...known].join(` ${MINUS} `)} = ${answer}`],
+        };
+    }
+    const parts = nonZero.map((i) => countNoun(digits[i], PLACE_NOUNS[i]));
+    const phrase = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} i ${parts[parts.length - 1]}`;
+    const values = nonZero.map((i) => digits[i] * PLACE_VALUES[i]);
+    return {
+        skillId,
+        prompt: pl.tasks.placeValueComposeSentence(phrase),
+        answer: n,
+        hint: [
+            pl.tasks.placeValueComposeHint,
+            nonZero.map((i) => `${countNoun(digits[i], PLACE_NOUNS[i])} to ${digits[i] * PLACE_VALUES[i]}`).join(', ') + '.',
+            `${values.join(' + ')} = ${n}`,
+        ],
+    };
+};
+
+const generateOrders = (skillId: string, p: PlaceValueParams, rng: Rng): Task => {
+    if (rng.chance(0.7)) {
+        // Composed number: the answer has six digits (a hundred thousand and up).
+        const pairs: [number, number][] = [];
+        for (let hundreds = 1; hundreds <= 9; hundreds += 1) {
+            for (let tens = 1; tens <= 9; tens += 1) {
+                if (hundreds * 100000 + tens * 10000 <= p.max) pairs.push([hundreds, tens * 10]);
+            }
+        }
+        const [hundreds, thousands] = rng.pick(pairs);
+        const answer = hundreds * 100000 + thousands * 1000;
+        return withSpeech({
+            skillId,
+            prompt: pl.tasks.placeValueComposeSentence(pl.tasks.placeValueOrdersCompose(hundreds, thousands)),
+            answer,
+            hint: [pl.tasks.placeValueComposeHint, pl.tasks.placeValueOrdersComposeLine(hundreds, thousands), `${formatNumber(hundreds * 100000)} + ${formatNumber(thousands * 1000)} = ${formatNumber(answer)}`],
+        });
+    }
+    if (rng.chance(0.5)) {
+        const k = rng.int(10, Math.floor(p.max / 1000));
+        return withSpeech({
+            skillId,
+            prompt: pl.tasks.placeValueOrdersCountPrompt(k * 1000),
+            answer: k,
+            hint: [pl.tasks.placeValueOrdersCountHint, pl.tasks.placeValueOrdersCountAnswerHint(k * 1000, k)],
+        });
+    }
+    const d = rng.int(1, Math.min(9, Math.floor(p.max / 100000)));
+    return withSpeech({
+        skillId,
+        prompt: pl.tasks.placeValueOrdersHundredsPrompt(d * 100000),
+        answer: d,
+        hint: [pl.tasks.placeValueOrdersHundredsHint, pl.tasks.placeValueOrdersHundredsAnswerHint(d * 100000, d)],
+    });
+};
+
 export const generatePlaceValue: Generator = (skill, rng): Task => {
     const p = parsePlaceValueParams(skill.params);
+    if (p.variant === 'thousands') {
+        return generateThousands(skill.id, p, rng);
+    }
+    if (p.variant === 'orders') {
+        return generateOrders(skill.id, p, rng);
+    }
     let n = rng.int(p.min, p.max);
     if (p.variant === 'decompose') {
         while (n % 10 === 0 || n <= 10) {

@@ -35,6 +35,7 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     doba: ['doba', 'doby', 'dób'],
     kwadrans: ['kwadrans', 'kwadranse', 'kwadransów'],
     setka: ['setka', 'setki', 'setek'],
+    tysiąc: ['tysiąc', 'tysiące', 'tysięcy'],
     lampa: ['lampa', 'lampy', 'lamp'],
     czajniczek: ['czajniczek', 'czajniczki', 'czajniczków'],
     klucz: ['klucz', 'klucze', 'kluczy'],
