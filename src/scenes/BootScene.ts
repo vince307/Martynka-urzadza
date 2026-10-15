@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Loader, Scene } from 'phaser';
 import { artHealth } from '../core/artHealth';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
@@ -27,6 +27,14 @@ export class BootScene extends Scene {
                 this.loading?.progress(value);
             } catch (error) {
                 console.warn('Loading bar failed', error);
+            }
+        });
+        // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,
+        // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).
+        const limitMs = this.load.xhr.timeout;
+        this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
+            if (typeof limitMs === 'number' && limitMs > 0) {
+                file.xhrSettings.timeout = limitMs;
             }
         });
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
