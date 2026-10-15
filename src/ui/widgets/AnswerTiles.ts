@@ -76,6 +76,11 @@ export class AnswerTiles {
         this.tiles.forEach((t) => this.paint(t));
     }
 
+    /** The value whose tile is painted as the correct one now (null when none is); the e2e hook reads what the widget draws. */
+    markedValue(): Choice | null {
+        return this.correctValue;
+    }
+
     /** Outlines the tile of the answer in the hint colour while the child retypes the result. */
     markHint(value: Choice | null): void {
         this.hintValue = value;

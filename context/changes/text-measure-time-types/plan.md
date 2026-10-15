@@ -845,11 +845,11 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.9.inequality_10`
-- [ ] 2.2 `npm run sample -- E1 --count 6` bez naruszeń, z zadaniami E1.9 nierówności
-- [ ] 2.3 Deliberate break: usunięty `INEQUALITY` z umiejętności E1.9 przy typie w `GROUP_1` → `tests/curriculum.test.ts` czerwony; przywrócone; meta-check
-- [ ] 2.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
-- [ ] 2.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (stare spece z `answerWrong` zielone)
+- [x] 2.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje `E1.9.inequality_10`
+- [x] 2.2 `npm run sample -- E1 --count 6` bez naruszeń, z zadaniami E1.9 nierówności
+- [x] 2.3 Deliberate break: usunięty `INEQUALITY` z umiejętności E1.9 przy typie w `GROUP_1` → `tests/curriculum.test.ts` czerwony; przywrócone; meta-check
+- [x] 2.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 2.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (stare spece z `answerWrong` zielone)
 
 #### Manual
 

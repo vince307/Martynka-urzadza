@@ -104,6 +104,7 @@ export const E1: StageDef = {
             skills: [
                 addSub('E1.9.add_sub_10', 9, { max: 10, ops: ['+', '-'], bridge: 'any' }),
                 skill('E1.9.missing_op_10', 9, 'MISSING_OP', { max: 10, ops: ['+', '-'] }, 'tiles'),
+                skill('E1.9.inequality_10', 9, 'INEQUALITY', { max: 10, shapes: ['add<', 'add>', 'box+<', 'sub>'] }, 'tiles'),
             ],
         },
         {

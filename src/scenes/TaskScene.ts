@@ -88,6 +88,8 @@ export interface TaskSnapshot {
     readonly answer: unknown;
     readonly visual: TaskVisual | null;   // the drawing of the open task (a copy)
     readonly digits: { readonly count: number; readonly filled: readonly number[] } | null;   // the result boxes of a written column ('digits' mode), from the ones; null in any other mode
+    readonly correctChoices: readonly (number | string)[] | null;   // the tiles the task's `check` accepts, null for a task without `check`
+    readonly markedTile: number | string | null;   // the tile painted as correct now, read from the widget
     readonly hintVisual: TaskVisual['kind'] | null;   // the kind of the hint drawing on screen now (S-14b), else null
     readonly art: readonly { readonly key: string; readonly loaded: boolean }[];   // the art images on screen now, read from the widget (S-14)
     readonly choices: readonly (number | string)[];
@@ -137,6 +139,7 @@ export class TaskScene extends Scene {
     private state!: RoundState;
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
+    private reported: { index: number; value: unknown } | null = null;   // the right value the child gave for the open task (several right tiles)
     private select!: SelectTiles;
     private blockMat!: BlockMat;
     private dragState: BlockDragState = initialBlockDrag();
@@ -466,7 +469,9 @@ export class TaskScene extends Scene {
         this.board.setActive(diceRound && view.inputActive);
         this.keypad.setActive(shows.keypad && view.inputActive);
         if (finishedTask) {
-            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
+            // DESIGN-GAP (docs/design-gaps.md row 98): a task with several right tiles lights the tile the child tapped, not the canonical one.
+            const tapped = this.reported !== null && this.reported.index === this.state.index && task.check ? this.reported.value : null;
+            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? ((tapped ?? task.answer) as number | string) : null);
             this.keypad.markCorrect();
             this.select.markCorrect(view.input === 'select' ? (task.answer as number[]) : []);
         }
@@ -686,6 +691,8 @@ export class TaskScene extends Scene {
     /** A tile or the keypad's OK handed in an answer: core decides, the scene redraws. */
     private submit(value: unknown): void {
         const before = this.state.starsEarned;
+        const open = this.state.tasks[this.state.index];
+        this.reported = open?.check?.(value) ? { index: this.state.index, value } : null;
         this.state = answer(this.state, value);
         this.syncStars(before, this.answerSpot(value));
         if (this.state.phase !== 'done') {
@@ -1038,6 +1045,8 @@ export class TaskScene extends Scene {
             digits: view.input === 'digits' ? Object.freeze({ count: this.boxes.count, filled: Object.freeze([...this.boxes.digits]) }) : null,
             answer: Array.isArray(task.answer) ? [...task.answer] : task.answer,
             visual: task.visual ? structuredClone(task.visual) : null,
+            correctChoices: task.check && view.input === 'tiles' ? Object.freeze(view.choices.filter((c) => task.check?.(c))) : null,
+            markedTile: this.tiles.markedValue(),
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
