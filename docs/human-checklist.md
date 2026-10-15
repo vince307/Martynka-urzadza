@@ -236,3 +236,28 @@ Bieg po decyzjach autora z 2026-10-15 (PR #59: 6 mebli + etap tła, koszty 5–1
 - [ ] S-16a — przed etapem widać cały zniszczony salon (jedna wspólna warstwa „meble przed”), po etapie tylko kupione meble; cienie dopiero w gotowym pokoju; lampa, rośliny i pufa jako stała dekoracja.
 - [ ] S-16a — grafika jako 26 osobnych plików WebP w pełnej rozdzielczości (1,23 MB w pamięci offline), bez atlasu; ekran ładowania rysowany kodem.
 - [ ] S-16a — w minigrze Hasło słowa z nowych podpisów mebli (OBRAZKI ma 7 liter → runda 7 zadań).
+
+## Bieg 2026-10-15-fix-salon-load-health (poprawka po audycie #63: H-1, H-2, M-3, M-2)
+
+Bieg po audycie #63, decyzje na starcie: pełna wysyłka, **zapis v3 z migracją**. Wysłane: #65 (`salon-load-health`, merge e369b19, Deploy 38800281299). `main` e369b19: 2925 testów jednostkowych (−62 usuniętego testu przeliczenia, przeniesionego do migracji), 101 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #66 (nie scalać w biegu): 0 CRITICAL, 1 HIGH. A-1: limit czasu działa na każdy plik, nie na całe ładowanie — Android pobiera 6 plików naraz, więc przy serwerze, który nie odpowiada, pasek może stać ok. 4 minuty bez sygnału (brak linii „jeszcze się ładuje”, A-2). P-5: stara karta/instancja PWA może po cichu nadpisać zapis v3 zapisem v2 (autozapis nie sprawdza wersji w magazynie; rozszerza znany follow-up „dwie karty”). Także: czcionka gry bez limitu ładowania (Phaser `FontFile` nie używa XHR), przyczyna błędu obrazka nie jest rozróżniana.
+- [ ] Poprawka 1.6 — drzwi jednokierunkowe v3: urządzenie, które wczytało v3, po cofnięciu wdrożenia do buildu z v2 pokaże kartę „zapis z nowszej wersji” i zagra bez zapisu (`deploy/README.md` ma notatkę). Zaakceptowane na starcie biegu — potwierdź.
+
+### P1 — na tablecie
+
+- [ ] Poprawka 3.5 — na iPadzie zawieszony obrazek kończy ładowanie w ≤ 24 s (12 s × 2 próby) i pokazuje zastępnik; sprawdzić przy słabym Wi-Fi przy pierwszym uruchomieniu.
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-15-salon-load-health/follow-ups/review-fixes.md` (20): m.in. limit ładowania czcionki, zapis v3 po nieudanej kopii czeka na następną zmianę (F8), `isRecord` skopiowany 3 razy w `src/core`.
+- [ ] Narzędzia testów na urządzeniach (rozmowa 2026-10-15): projekt WebKit z profilem iPada w Playwright, Android przez ADB/emulator, iPad przez symulator + Appium/WebdriverIO — kandydat na `/10x-test-plan --refresh`.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Każdy zapis v2 (nie tylko ze starym salonem) dostaje kopię `backup-v2` przed pierwszym zapisem v3; zapis v1 przechodzi v1→v2→v3 w jednym odczycie z jedną kopią `backup-v1`.
+- [ ] Zmigrowany zapis zapisuje się przy starcie sam (bez akcji dziecka), po udanej kopii.
+- [ ] Limit ładowania 12 s na plik i 1 ponowienie (`balance.loader`); limit z konfiguracji Phasera był martwy w 4.2.1, więc gra ustawia go na każdym pliku w `BootScene`.
+- [ ] Nieznane klucze w starym salonie, które nie są starymi slotami, są zachowywane (M-2).
