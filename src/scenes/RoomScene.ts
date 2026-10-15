@@ -43,7 +43,7 @@ export interface RoomSnapshot {
 }
 
 /**
- * The room (S-09, S-10): the salon drawn in code, "Wróć do notesu" and the button of the current renovation task.
+ * The room (S-09, S-10, S-16a): the salon drawn from its pictures (stand-ins when one is missing), "Wróć do notesu" and the button of the current renovation task.
  * It owns the variant panel's state, the child's hold gesture, the change mode and the "Pokój gotowy!" card: the star balance and the room
  * progress live in the game registry, the scene only draws them and redraws on wake. The task scene sleeps underneath and wakes as it was left.
  * A task the child cannot afford yet sends them back to the notebook; an affordable one opens the variant panel, and only "Wybieram" there spends stars (core/variantPanel).

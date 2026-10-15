@@ -75,7 +75,7 @@ export class RoomLayer {
         return this.loaded && this.image.visible;
     }
 
-    /** The picture's image while it is on screen, for the animations of the next phase; null for a stand-in or when hidden. */
+    /** The picture's image while it is on screen, for the purchase pop; null for a stand-in or when hidden. */
     object(): GameObjects.Image | null {
         return this.showsPicture() ? this.image : null;
     }

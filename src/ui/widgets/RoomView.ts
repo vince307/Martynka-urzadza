@@ -118,7 +118,7 @@ export class RoomView {
         g.fillRect(area.left, standIn.wallBottom, area.width, area.top + area.height - standIn.wallBottom);
     }
 
-    /** The picture of a furnished slot (for the pop of the next phase); null for a stand-in or an empty slot. */
+    /** The picture of a furnished slot (for the purchase pop); null for a stand-in or an empty slot. */
     objectOf(slotId: string): GameObjects.Image | null {
         return this.layers.get(`slot:${slotId}`)?.object() ?? null;
     }

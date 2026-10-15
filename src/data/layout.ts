@@ -477,7 +477,7 @@ export const WELCOME_LAYOUT = {
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
 } as const;
 
-/** Room scene (S-09): the salon drawn in code over `area`, the way back to the notebook and the current renovation task button. */
+/** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
     resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
     // The room fills the whole scene (S-16a): the art pack's pictures are 1920x1080. Depth bands: the room's own layers use the manifest `z` (0-99);
