@@ -306,7 +306,10 @@ export const TASK_LAYOUT = {
     // jumps longer than 1 and the dashed box on a tick are not in the kit.
     numberLine: {
         gap: 58, denseGap: 30, denseFrom: 12, pad: 40, axis: 4, tick: 24, arc: 5, head: 12, dot: 9, border: 4,
-        arcZone: 120, arcMax: 84, arcLift: 14, minLabelSpan: 36, labelDrop: 42, box: { width: 52, height: 46, dash: 9 }, maxScale: 1.4,
+        arcZone: 120, arcMax: 84, arcLift: 14, minLabelSpan: 36, labelDrop: 42, maxScale: 1.4,
+        labelStagger: 30,   // visual gate S-14b: the second of two labels on neighbouring ticks of a dense line drops this far ("10" "11" ran into "1011")
+        // `denseWidth`: the box on a dense line (visual gate S-14b: 52 wide it covered the "0" of a landing "10" on the next tick).
+        box: { width: 52, denseWidth: 30, height: 46, dash: 9 },
     },
     // Arrow graph and table (DESIGN-GAP 89): circles of `disc` (graph) or square tiles of `tile` (table) with the rule on an arrow.
     arrows: {

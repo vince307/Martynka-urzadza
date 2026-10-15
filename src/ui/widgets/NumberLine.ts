@@ -4,6 +4,7 @@ import type { TaskVisual } from '../../core/tasks/visual';
 import { dashedRect } from './dashed';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
+import { labelRows } from '../../core/round/lineLabels';
 
 type Line = Extract<TaskVisual, { kind: 'numberLine' }>;
 
@@ -47,13 +48,13 @@ export class NumberLine {
             g.lineBetween(xOf(n), axisY - (L.tick / 2) * s, xOf(n), axisY + (L.tick / 2) * s);
         }
         const labelY = axisY + (L.tick / 2 + L.labelDrop / 2 + 4) * s;
-        for (const n of line.labels) {
-            if (n !== line.box) {
-                this.texts.push(this.scene.add.text(xOf(n), labelY, String(n), textStyle('lineLabel')).setOrigin(0.5).setScale(s));
-            }
-        }
+        const shown = line.labels.filter((n) => n !== line.box);
+        const rows = labelRows(shown, line.tick, ticks >= L.denseFrom);
+        shown.forEach((n, i) => {
+            this.texts.push(this.scene.add.text(xOf(n), labelY + rows[i] * L.labelStagger * s, String(n), textStyle('lineLabel')).setOrigin(0.5).setScale(s));
+        });
         if (line.box !== null) {
-            const w = L.box.width * s;
+            const w = (ticks >= L.denseFrom ? L.box.denseWidth : L.box.width) * s;
             const h = L.box.height * s;
             g.lineStyle(L.border * s * 0.6, TEAL, 1);
             g.fillStyle(PLACEHOLDER_COLORS.butter, 1);

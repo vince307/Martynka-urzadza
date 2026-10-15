@@ -257,3 +257,12 @@ describe('a long drawing: the number line of a tiles task (visual gate S-14b: 0.
         expect(pictureLayout(spec, 'keypad', true, 'long')).toEqual(pictureLayout(spec, 'keypad', true, 'wide'));
     });
 });
+
+describe('the box of a dense number line (visual gate S-14b: the box at 11 covered the "0" of the landing "10")', () => {
+    it('leaves room for a two-digit label on the next tick', () => {
+        const L = TASK_LAYOUT.numberLine;
+        const twoDigitHalf = 0.5 * 2 * 0.5 * FONT_SIZES.lineLabel;   // Atkinson digits are about half an em wide
+        expect(L.box.denseWidth / 2 + twoDigitHalf).toBeLessThan(L.denseGap);
+        expect(L.box.width / 2 + twoDigitHalf).toBeLessThan(L.gap);
+    });
+});
