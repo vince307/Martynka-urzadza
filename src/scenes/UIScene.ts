@@ -16,7 +16,8 @@ import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { saveHealthView } from '../core/saveHealth';
 import { encodeSave, freshSession, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
-import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { FIRST_ROOM, LEGACY_SALON, ROOMS, SALON } from '../data/rooms';
+import { remapLegacySalon } from '../core/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
@@ -192,7 +193,7 @@ export class UIScene extends Scene {
         }
         this.closeDialog = openSaveImportDialog({
             device,
-            summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
+            summarize: (s: SessionSave): SaveSummary => saveSummary(remapLegacySalon(s, LEGACY_SALON, SALON).session, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
             apply: (state, force) => saver.replace(state, { force }),

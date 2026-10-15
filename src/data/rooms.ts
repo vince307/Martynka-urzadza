@@ -1,7 +1,7 @@
 // The first room, authored as data (S-09). Slot coordinates are in the 1920x1080
 // scene. Looks are placeholders drawn in code until the art arrives (S-16),
 // which removes SALON_PLACEHOLDERS; RoomTaskDef.label is a key into pl.room.tasks.
-import type { RoomDef, RoomListEntry, SlotDef } from '../core/types';
+import type { LegacyRoomLayout, RoomDef, RoomListEntry, SlotDef } from '../core/types';
 import type { PLACEHOLDER_COLORS } from './layout';
 
 export interface Look {
@@ -53,6 +53,20 @@ export const SALON: RoomDef = {
         { kind: 'slot', id: 'place-plant', slot: 'plant', label: 'placePlant', cost: 13 },
         { kind: 'slot', id: 'hang-picture', slot: 'picture', label: 'hangPicture', cost: 15 },
     ],
+};
+
+/**
+ * The salon task list as live saves know it (before S-16a): `tasksDone` counted positions in this list and `chosen` was
+ * keyed by these slot ids. Frozen on purpose, never edited: `remapLegacySalon` reads it to carry such a save over.
+ */
+export const LEGACY_SALON: LegacyRoomLayout = {
+    roomId: 'salon',
+    tasks: [
+        { slot: 'floor', cost: 5 }, { slot: 'walls', cost: 6 }, { slot: 'curtains', cost: 7 }, { slot: 'sofa', cost: 8 },
+        { slot: 'rug', cost: 9 }, { slot: 'table', cost: 10 }, { slot: 'lamp', cost: 11 }, { slot: 'shelf', cost: 12 },
+        { slot: 'plant', cost: 13 }, { slot: 'picture', cost: 15 },
+    ],
+    renames: { table: 'coffee-table', shelf: 'cabinet', picture: 'wall-frames' },
 };
 
 const looks = (a: Look['fill'], b: Look['fill'], c: Look['fill']): [Look, Look, Look] => [
