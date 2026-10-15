@@ -1,6 +1,6 @@
 # Handoff — `load-and-tab-guard` (slice fix, non-roadmap)
 
-The visual gate wrote this handoff: row 3.3 (slow line on the loading screen) and the `newer` "Zapis gry" state were captured at 1440 and 1024 on the code of `5a11370`, no fix needed, `VISUAL: PASS`. Next is the archive; the two `[human]` rows stay open on purpose.
+The ship step wrote this handoff (final pre-merge state) before `/10x-archive`: the change is archived on the branch, then pushed, PR, CI, merge and deploy follow. The two `[human]` rows stay open on purpose (post-run checklist).
 
 ## 1. State
 
@@ -8,8 +8,8 @@ The visual gate wrote this handoff: row 3.3 (slow line on the loading screen) an
 |---|---|
 | Branch | `feat/load-and-tab-guard`, cut from `main` at `6f5644c` |
 | Commits | phases `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, `9ee4570`, `949aab0`; review fix `5a11370`; docs `41e7bb7`; then this docs commit (visual gate) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s16bcd/run-log.md |
+| `change.md` status | `archived` (this step, `chore(archive): close load-and-tab-guard`) |
 | `## Progress` rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): 2.5 [human], 7.7 [human] |
 | Working tree | clean after the docs commit (`tests/e2e/visual.local/` deleted; `dist-e2e/`, `test-results/` are gitignored build output) |
 
@@ -37,7 +37,7 @@ The visual gate wrote this handoff: row 3.3 (slow line on the loading screen) an
 
 ## 4. Next command
 
-`/10x-archive load-and-tab-guard`
+none — shipped
 
 ## 5. Open
 
@@ -48,6 +48,10 @@ The visual gate wrote this handoff: row 3.3 (slow line on the loading screen) an
 - **Follow-ups:** `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
+
+- **Ship step, archive prompt: `Continue archiving (Recommended)`.** Warnings: 2 Progress rows pending (0 automated, 2 manual: 2.5, 7.7 [human], a post-run checklist); 18 done rows without a SHA suffix (docs/verification rows, soft signal); every cited SHA is an ancestor of HEAD, review covers phases 1-7, so no repoint offered. Would change: an automated row pending.
+
+### Previous step (visual gate)
 
 - **Playwright fallback, not Claude in Chrome.** Chrome cannot hold the font/WebP routes open (the loading state) nor do the 2 s touch hold on the canvas gear. Would change: a Chrome tool that can block requests and send touch holds.
 - **Extra frames beyond the plan row** (v03 save buttons, v04 reset dialog) to answer "nothing else in the section contradicts it". Rejected: only v02 (the buttons and the dialog text would be unread). Would change: none.
