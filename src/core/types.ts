@@ -155,5 +155,10 @@ export interface SaveV2 extends Omit<SaveV1, 'version'> {
     variants: VariantState;
 }
 
+/** Save format, version 3: the shape of version 2 (the change is data: the old 10-task salon is carried over to the 7-task one). */
+export interface SaveV3 extends Omit<SaveV2, 'version'> {
+    version: 3;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV2;
+export type SaveState = SaveV3;

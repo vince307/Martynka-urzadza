@@ -4,7 +4,7 @@ import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -44,7 +44,7 @@ describe('e2eSaveStore', () => {
         expect(outcome).toBe('silent');
     });
 
-    it('v1 holds the frozen v1 fixture, decodes to v2 and logs backup before write', async () => {
+    it('v1 holds the frozen v1 fixture, decodes to the current version and logs backup before write', async () => {
         const store = e2eSaveStore('v1');
         const raw = await store.read();
         expect(raw).toMatchObject({ version: 1, stars: 7 });
@@ -53,7 +53,17 @@ describe('e2eSaveStore', () => {
         if (decoded.kind !== 'ok') return;
         await store.backup(raw, 1);
         await store.write(encodeSave(decoded.session));
-        expect(((await store.read()) as { version: number }).version).toBe(2);
+        expect(((await store.read()) as { version: number }).version).toBe(3);
+    });
+
+    it('legacy-salon holds the frozen v2 bytes and decodes through MIGRATIONS[2] to the 4-task salon', async () => {
+        const raw = await e2eSaveStore('legacy-salon').read();
+        expect(raw).toMatchObject({ version: 2 });
+        expect(decodeSave(raw)).toMatchObject({
+            kind: 'ok',
+            migratedFrom: 2,
+            session: { stars: 3, rooms: { salon: { tasksDone: 4, chosen: { sofa: 2, rug: 0, 'coffee-table': 0 } } } },
+        });
     });
 
     it('backupfail holds the v1 fixture, rejects the copy with QuotaExceededError and still writes', async () => {
@@ -63,7 +73,7 @@ describe('e2eSaveStore', () => {
         const decoded = decodeSave(await store.read());
         if (decoded.kind !== 'ok') throw new Error('fixture must decode');
         await store.write(encodeSave(decoded.session));
-        expect(((await store.read()) as { version: number }).version).toBe(2);
+        expect(((await store.read()) as { version: number }).version).toBe(3);
     });
 
     it('backuphang holds the v1 fixture and never answers the copy', async () => {
@@ -73,7 +83,7 @@ describe('e2eSaveStore', () => {
         expect(outcome).toBe('silent');
     });
 
-    it('slow answers late with a v2 save of 7 stars', async () => {
+    it('slow answers late with a current-version save of 7 stars', async () => {
         const raw = await e2eSaveStore('slow').read();
         expect(decodeSave(raw)).toMatchObject({ kind: 'ok', migratedFrom: null, session: { stars: 7 } });
     });

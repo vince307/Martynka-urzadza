@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "profileId": "default",
+  "stars": 3,
+  "rooms": {
+    "salon": {
+      "tasksDone": 4,
+      "chosen": {
+        "floor": 0,
+        "walls": 1,
+        "curtains": 2,
+        "sofa": 2
+      }
+    }
+  },
+  "currentRoom": "salon",
+  "settings": {
+    "autoRead": null
+  },
+  "learner": null,
+  "variants": {
+    "roundsSince": 0,
+    "lastMinigame": null,
+    "puzzleDay": null,
+    "puzzlesDone": []
+  }
+}

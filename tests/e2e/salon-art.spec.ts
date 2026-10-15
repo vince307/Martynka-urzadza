@@ -128,7 +128,7 @@ test('#2 a salon saved under the old task list is carried over at load and the c
     await phaseIs(page, 'done');
     await tapNext(page);
     await playRoundRight(page, 4);
-    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(2);
+    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(3);
     const after = await snapshot(page);
     expect(after.stars).toBeGreaterThan(3);
 });

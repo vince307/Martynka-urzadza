@@ -1,9 +1,10 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
+import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
-import { encodeSave, freshSession, type SessionSave } from '../core/save';
+import { encodeSave, freshSession } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -127,12 +128,6 @@ export const e2eSave = (search: string): E2ESaveSeam | null => {
     return value !== null && E2E_SAVE_SEAMS.includes(value) ? (value as E2ESaveSeam) : null;
 };
 
-/** `?e2eSave=legacy-salon`: a v2 save from before S-16a, the salon with 4 of the old 10 tasks done (floor, walls, curtains, sofa). */
-const legacySalonSession = (): SessionSave => ({
-    ...freshSession(FIRST_ROOM, 3),
-    rooms: { [FIRST_ROOM]: { tasksDone: 4, chosen: { floor: 0, walls: 1, curtains: 2, sofa: 2 } } },
-});
-
 /** What the seam store holds, for the hook: the order of its operations and the version of the last written value. */
 export interface E2ESaveStoreLog {
     ops: ('backup' | 'write')[];
@@ -151,7 +146,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
               : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : seam === 'legacy-salon'
-                  ? encodeSave(legacySalonSession())
+                  ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
     seamStoreLog = log;
