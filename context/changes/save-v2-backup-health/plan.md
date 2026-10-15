@@ -712,10 +712,10 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (log `persist()`)
-- [x] 5.2 Deliberate break: `requestPersistence` bez `console.warn` → nowy test czerwony; przywrócone; meta-check
-- [x] 5.3 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
-- [x] 5.4 Każdy follow-up w `follow-ups/review-fixes.md` ma `Trigger:`
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (log `persist()`) — 087d9de
+- [x] 5.2 Deliberate break: `requestPersistence` bez `console.warn` → nowy test czerwony; przywrócone; meta-check — 087d9de
+- [x] 5.3 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — 087d9de
+- [x] 5.4 Każdy follow-up w `follow-ups/review-fixes.md` ma `Trigger:` — 087d9de
 - [ ] 5.5 `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
