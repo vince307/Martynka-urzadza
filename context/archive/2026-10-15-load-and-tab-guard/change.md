@@ -1,10 +1,10 @@
 ---
 change_id: load-and-tab-guard
 title: Total limit and slow signal for the boot load, save guard against an old tab
-status: impl_reviewed
+status: archived
 created: 2026-10-15
-updated: 2026-10-16
-archived_at: null
+updated: 2026-10-15
+archived_at: 2026-10-15T22:44:35Z
 ---
 
 ## Notes
