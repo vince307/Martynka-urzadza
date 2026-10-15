@@ -835,8 +835,8 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [x] 3.2 Deliberate break: bez `EncodingError` / `cutLoad` bez `onProcessError` → czerwone; przywrócone; meta-check (atrapa vs pin vs faza 10)
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 8cd9e81
+- [x] 3.2 Deliberate break: bez `EncodingError` / `cutLoad` bez `onProcessError` → czerwone; przywrócone; meta-check (atrapa vs pin vs faza 10) — 8cd9e81
 - [ ] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual

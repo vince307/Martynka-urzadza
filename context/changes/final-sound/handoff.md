@@ -1,13 +1,13 @@
 # Handoff — `final-sound` (slice S-16b)
 
-Written by `/10x-tdd final-sound phase 2` of run 2026-10-15-fix-s16bcd. Phases 1-2 (pure core/data, no scene wiring) are done and committed (test-first); phases 3-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
+Written by `/10x-tdd final-sound phase 3` of run 2026-10-15-fix-s16bcd. Phases 1-3 (pure core/data, quiet rejections, `cutLoad` onProcessError) are done and committed (test-first); phases 4-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-sound`, cut from `main` at `a1625be` |
-| Commits | 4 docs + p1 a85eb75 + p2 f242c04 + handoffs |
+| Commits | 4 docs + p1 a85eb75 + p2 f242c04 + p3 8cd9e81 + handoffs |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
 | `## Progress` rows remaining | 0 (1.4, 2.4 are [reviewer]) |
@@ -22,32 +22,33 @@ Written by `/10x-tdd final-sound phase 2` of run 2026-10-15-fix-s16bcd. Phases 1
 | `src/data/balance.ts` | `sound` block |
 | `src/core/sound.ts` (p2) | + `Cue`, `DragShape`, `roundCues`, `panelCue`, `dragCue` |
 | `tests/sound.test.ts` | 17 tests |
+| `src/core/errorSignal.ts`, `src/ui/dom/errorBoundary.ts`, `src/scenes/loaderCut.ts` (p3) | EncodingError/NotSupportedError quiet rejections; DOMException name read; `cutLoad` no-ops `onProcessError` |
+| `tests/loaderCut.test.ts`, `tests/errorSignal.test.ts`, `tests/phaserLoaderPin.test.ts` (p3) | +3 +2 +1 tests |
 | `tests/soundCues.test.ts` | 21 tests, states built by public reducers (`startRound`/`answer`/`nextSolutionStep`/`next`, `stepPanel`) |
-| `context/changes/final-sound/{plan,change,handoff}.md` | progress rows 1.1-1.3 ticked |
+| `context/changes/final-sound/{plan,change,handoff}.md` | progress rows 1.1-1.3, 3.1-3.2 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED | stubs returned []/null; first assertion: `expected [] to deeply equal [ { id: 'answer-right', …(1) }, …(1) ]` (11 failed) |
+| RED | `expected true to be false` (EncodingError rejection fatal) and `expected "vi.fn()" to be called 1 times, but got 2 times` (late decode error) |
 | lint / typecheck | OK |
-| npm test | 3008 passed (branch baseline 2987, +21) |
+| npm test | 3014 passed (branch baseline 3008, +6) |
 | deploy tests, sample E1-E6 | OK (no generators/content changed) |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e | not run: pure core only, no scene wiring; orchestrator runs it after the first wiring phase (p5/p6) |
-| Break 1 | `answer-retry` also on `second`→`solution`: "no cue for the solution…" red, restored |
-| Break 2 | `panelCue` without `changed`: "a free change plays purchase" red, restored. Meta: states come from real reducers, so it guards the reducer shapes, not playback |
+| e2e | not runnable in this session — orchestrator gate (MachPortRendezvous Permission denied); row 3.3 left unticked. Run the full suite: this phase touches `loaderCut.ts` and the boundary |
+| Break | `EncodingError` removed from `QUIET_REJECTIONS` and `cutLoad` without `onProcessError` no-op: both new tests red, restored. Meta: the fake file's callbacks call `loader.fileProcessComplete` like Phaser's, so it proves `cutLoad` cuts both callbacks; that Phaser really calls them is pinned by the source-text test; the real browser proof is phase 10 |
 
 ## 4. Next command
 
-`/10x-tdd final-sound phase 3`
-
-## 5. Open
+`/10x-implement final-sound phase 4`. Open
 
 - Known risks in `plan.md` `## Known risks` unchanged. Manual rows: 1.4 [reviewer], 9.7 and 10.6 [human].
 - Follow-ups to write in phase 8; DESIGN-GAP 114 in phase 7, gap 35 closes in phase 6.
 
 ## 6. Autonomous decisions
+
+- Phase 3: no stubs needed (module exists), RED by assertion on the unchanged code. `signalOfRejection` reads `name` for a `DOMException` (guarded by `typeof DOMException`), `hasError` unchanged. Would change: none.
 
 - Stubs written first so RED is an assertion failure; stub defaults deliberately wrong. Would change: none.
 - `balance.sound` added in this phase with the plan's numbers; comment explains each. Would change: author tuning after listening.
