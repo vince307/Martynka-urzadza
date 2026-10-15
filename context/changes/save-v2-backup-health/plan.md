@@ -696,9 +696,9 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [x] 4.1 Testy `waitLonger` czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 4.2 Deliberate break: `waitLonger` woła `store.read()` ponownie → test „read called once” czerwony; przywrócone; meta-check
-- [x] 4.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `slow` tylko pod `e2eSave`
+- [x] 4.1 Testy `waitLonger` czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — afbf9a8
+- [x] 4.2 Deliberate break: `waitLonger` woła `store.read()` ponownie → test „read called once” czerwony; przywrócone; meta-check — afbf9a8
+- [x] 4.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `slow` tylko pod `e2eSave` — afbf9a8
 - [ ] 4.4 E2E (orkiestrator, `--workers=4`): `<baseline gałęzi e2e> + 0`, zmienione M-S4 i test `hang` zielone
 
 #### Manual
