@@ -763,6 +763,14 @@ describe('backup before the first write after a migration', () => {
         expect(setup().saver.status().migratedFrom).toBeNull();
     });
 
+    it('the copy is a fact only after the write: pending at the start, done once v2 is written (SV2-03)', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        expect(t.saver.status().backup).toBe('pending');
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status()).toMatchObject({ backup: 'done', writes: 1 });
+    });
+
     it('a migration-failed load is replaceable like corrupt, never like future', () => {
         expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('ok');
     });

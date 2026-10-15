@@ -671,7 +671,7 @@ kolejne starty czytają v2, bez migracji.
 - [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ccbfc11
 - [x] 2.2 Deliberate break: limit prób nigdy nie osiągany / wyjątek `hidden` usunięty / `replace` bez zaległej kopii → odpowiednie testy czerwone; przywrócone; meta-check (liczone operacje magazynu) — ccbfc11
 - [x] 2.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2 — ccbfc11
-- [ ] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — ccbfc11 (e2e: orkiestrator, 77 passed na ccbfc11, --workers=4)
 
 #### Manual
 
@@ -683,8 +683,8 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Deliberate break: `migration` bez warunku `writes > 0` / `stage` z `lastError` → testy czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [x] 3.2 Deliberate break: `migration` bez warunku `writes > 0` / `stage` z `lastError` → testy czerwone; przywrócone; meta-check
 - [ ] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

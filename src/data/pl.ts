@@ -1,5 +1,6 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
+import type { FailureStage } from '../core/autosave';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
@@ -52,8 +53,21 @@ export const pl = {
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
-        // Shown when the save was moved to a newer format at the start; the old copy is kept on the device.
-        saveMigrated: (from: number) => `Zapis przeniesiono z wersji ${from}.`,
+        // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
+        saveFailingDetail: (count: number, stage: FailureStage, error: string) =>
+            `${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} · ${pl.settings.saveStage[stage]} · Kod: ${error}`,
+        saveStage: {
+            encode: 'przygotowanie zapisu',
+            backup: 'kopia starego zapisu',
+            write: 'zapis',
+            replace: 'zastąpienie zapisu',
+        },
+        // DESIGN-GAP 95: the kit has no line for a save moved from an older version. Told only after a v2 write in this session;
+        // `lost` (the v1 copy could not be written) is followed by the code line.
+        saveMigrated: {
+            kept: (from: number) => `Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.`,
+            lost: (from: number) => `Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.`,
+        },
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
             unavailable: 'Zapis jest wyłączony: przeglądarka nie udostępniła zapisu.',
