@@ -920,9 +920,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [x] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 7.2 Klucze `generators`/`parsers` równe; MONEY_PAY nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- [x] 7.3 Deliberate break: `check` bez warunku długości w `fewest` / `coins` dla `money` bez `pay` / `artBlocked` ignoruje tacę → czerwone; przywrócone; meta-check
+- [x] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 1929895
+- [x] 7.2 Klucze `generators`/`parsers` równe; MONEY_PAY nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu — 1929895
+- [x] 7.3 Deliberate break: `check` bez warunku długości w `fewest` / `coins` dla `money` bez `pay` / `artBlocked` ignoruje tacę → czerwone; przywrócone; meta-check — 1929895
 - [ ] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
