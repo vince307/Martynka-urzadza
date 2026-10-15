@@ -1,4 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
+import { blankAsText } from '../../core/round/promptBlank';
 import type { RoundView } from '../../core/round/view';
 import type { AnswerMode } from '../../core/tasks/visual';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
@@ -80,9 +81,9 @@ export class FeedbackBar {
     private textOf(bar: RoundView['bar']): string {
         switch (bar.kind) {
             case 'hint':
-                return bar.line === null ? pl.round.tryAgain : `${pl.round.tryAgain}\n${bar.line}`;
+                return bar.line === null ? pl.round.tryAgain : `${pl.round.tryAgain}\n${blankAsText(bar.line)}`;
             case 'retype':
-                return bar.line;
+                return blankAsText(bar.line);
             case 'correct':
                 return bar.stars > 0 ? pl.round.correctStar(bar.stars) : pl.round.correct;
             default:

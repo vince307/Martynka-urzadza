@@ -218,13 +218,13 @@ export const TASK_LAYOUT = {
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
     prompt: { x: 960, y: 290, maxWidth: 1300 },
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
-    expression: { x: 620, y: 456 },          // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside
+    expression: { x: 620, y: 456, maxWidth: 760 },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
     blank: { width: 64, height: 84, lineWidth: 8, radius: 12, gap: 24 },   // drawn "□" in an expression (DESIGN-GAP 8): about one digit of the expression font; gap = a word space
     blankInline: { width: 52, height: 68, lineWidth: 6, radius: 10, lineHeight: 92 },   // drawn "□" inside a sentence prompt (DESIGN-GAP 8): about one digit of the prompt font
-    expressionWide: { x: 960, y: 500 },      // above the tiles
+    expressionWide: { x: 960, y: 500, maxWidth: 1300 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4 },
+    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4, fieldPadding: 24 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },

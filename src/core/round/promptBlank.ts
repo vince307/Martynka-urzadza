@@ -6,6 +6,13 @@ export type PlacedPiece = { piece: PromptPiece; left: number; width: number };
 
 export const BLANK = '□';
 
+/** How a blank reads inside plain text (a hint or solution line): the font has no "□" and a text line cannot hold the drawn box. */
+const BLANK_TEXT = '?';
+
+// DESIGN-GAP (docs/design-gaps.md row 99): the kit has no blank inside a hint or solution line; we write it as "?".
+/** The line with every "□" written as "?" (visual gate S-14c: the INEQUALITY hint "2 = 7 − □" showed a tiny system glyph). */
+export const blankAsText = (line: string): string => line.split(BLANK).join(BLANK_TEXT);
+
 /** Splits a prompt on every "□"; text pieces are trimmed and empty ones dropped. */
 export const splitBlanks = (prompt: string): PromptPiece[] => {
     const pieces: PromptPiece[] = [];
@@ -37,6 +44,26 @@ export const layoutPieces = (
         return item;
     });
     return { placed, width: total };
+};
+
+/**
+ * `layoutPieces` for an expression that must stay within `maxWidth`: when the row at full size is wider, every piece (text and
+ * box, gaps included) shrinks by the same `scale` (visual gate S-14c: "6618 = 6000 + 600 + □ + 8" ran under the keypad).
+ */
+export const fitPieces = (
+    pieces: readonly PromptPiece[],
+    textWidth: (text: string, index: number) => number,
+    blankWidth: number,
+    gap: number,
+    maxWidth: number,
+): { placed: PlacedPiece[]; width: number; scale: number } => {
+    const full = layoutPieces(pieces, textWidth, blankWidth, gap);
+    const scale = Math.min(1, maxWidth / full.width);
+    if (scale === 1) {
+        return { ...full, scale };
+    }
+    const shrunk = layoutPieces(pieces, (text, i) => textWidth(text, i) * scale, blankWidth * scale, gap * scale);
+    return { ...shrunk, scale };
 };
 
 export type PromptLine = { placed: PlacedPiece[]; width: number };

@@ -10,7 +10,7 @@ import { earn } from '../core/stars';
 import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
 import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
-import { BLANK, layoutPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
+import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
@@ -667,22 +667,23 @@ export class TaskScene extends Scene {
     }
 
     /** The expression centred on `at`; each "□" becomes an outlined box the size of a digit. */
-    private drawExpression(text: string, at: Point, color: string): void {
+    private drawExpression(text: string, at: Point & { maxWidth: number }, color: string): void {
         const blank = TASK_LAYOUT.blank;
         const pieces = splitBlanks(text);
         const made = pieces.map((p) =>
             p.kind === 'text' ? this.add.text(0, 0, p.text, textStyle('expression', color)).setOrigin(0, 0.5) : null,
         );
-        const { placed } = layoutPieces(pieces, (_t, i) => made[i]?.width ?? 0, blank.width, blank.gap);
+        // A long expression shrinks to its room (visual gate S-14c: an E6.9 decomposition ran under the keypad).
+        const { placed, scale } = fitPieces(pieces, (_t, i) => made[i]?.width ?? 0, blank.width, blank.gap, at.maxWidth);
         placed.forEach(({ piece, left, width }, i) => {
             const t = made[i];
             if (piece.kind === 'text' && t) {
-                t.setPosition(at.x + left, at.y);
+                t.setScale(scale).setPosition(at.x + left, at.y);
                 this.promptTexts.push(t);
             } else {
                 const box = this.add.graphics({ x: at.x + left + width / 2, y: at.y });
-                box.lineStyle(blank.lineWidth, parseInt(color.slice(1), 16), 1);
-                box.strokeRoundedRect(-width / 2, -blank.height / 2, width, blank.height, blank.radius);
+                box.lineStyle(blank.lineWidth * scale, parseInt(color.slice(1), 16), 1);
+                box.strokeRoundedRect(-width / 2, (-blank.height * scale) / 2, width, blank.height * scale, blank.radius * scale);
                 this.promptBoxes.push(box);
             }
         });

@@ -1,5 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
-import { keypadInput, type KeypadKey } from '../../core/round/keypad';
+import { keypadDisplay, keypadInput, type KeypadKey } from '../../core/round/keypad';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { textStyle } from './textStyle';
 import { pl } from '../../data/pl';
@@ -146,7 +146,9 @@ export class Keypad {
         this.fieldGraphics.fillRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
         this.fieldGraphics.lineStyle(TASK_LAYOUT.keypad.fieldBorder, this.correct ? PLACEHOLDER_COLORS.dotDone : PLACEHOLDER_COLORS.tileBorder, 1);
         this.fieldGraphics.strokeRoundedRect(x, y, width, height, TASK_LAYOUT.keypad.radius);
-        this.fieldText.setText(this.buffer === '' ? '?' : this.buffer);
+        // Grouped like every number on screen (visual gate S-14c: "220000" against "220 000" in the solution); a long number shrinks to the field.
+        this.fieldText.setScale(1).setText(this.buffer === '' ? '?' : keypadDisplay(this.buffer));
+        this.fieldText.setScale(Math.min(1, (width - 2 * TASK_LAYOUT.keypad.fieldPadding) / this.fieldText.width));
         this.fieldText.setColor(this.buffer === '' ? `#${PLACEHOLDER_COLORS.fieldPlaceholder.toString(16)}` : TEXT_COLOR);
     }
 }
