@@ -1,29 +1,27 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by the `/10x-plan` step of run `2026-10-15-fix-s14c-s14d`. `plan.md` (11 phases, 63 Progress rows) and
-`plan-brief.md` are written; no product code yet. The next agent must not accept a phase that makes a MONEY_PAY skill
-reachable (curriculum data) without the snapshot `dragMode`, the exhaustive `answerRight`/`answerWrong` switch and
-`payCoins` in the same phase (plan Phase 8), and must keep the save at v2.
+Written by the `/10x-plan-review` step of run `2026-10-15-fix-s14c-s14d`. Verdict PROCEED; `plan.md` was patched for two
+CRITICAL defects in the face-code answer path. The next agent must not skip the new Phase 1 §3a: without it a SHAPES `all`
+task (strings in `select`) is unanswerable and the child is stuck in `retype` forever.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode`, cut from `main` at `10d6fe7` |
-| Commits | 3 on top of `10d6fe7`: change identity (`f3aa504`), research (`5cab986`), `docs(e1-shapes-picture-mode): plan` |
+| Commits | 4 on top of `10d6fe7`: identity (`f3aa504`), research (`5cab986`), plan (`2f42f2e`), `docs(e1-shapes-picture-mode): plan review` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 63 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (plan.md, plan-brief.md, change.md, handoff.md, roadmap.md staged by path) |
+| Working tree | clean after the commit (staged by path) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/e1-shapes-picture-mode/plan.md` | full plan: 11 phases with `Driver:` lines, Critical Implementation Details (face codes, MONEY_PAY answer contract, `trayDrag`, scene `dragKind`, e2e helper switch, picture mode, E1 calendar start, threshold table), Autonomous decisions 1–12, Progress |
-| `context/changes/e1-shapes-picture-mode/plan-brief.md` | two-page brief with the key-decisions table |
-| `context/changes/e1-shapes-picture-mode/change.md` | frontmatter `status: planned`, `updated: 2026-10-15` |
-| `context/foundation/roadmap.md` | S-14d status `proposed` → `planning` (at-a-glance row and item body) |
+| `context/changes/e1-shapes-picture-mode/reviews/plan-review.md` | review report: 2 CRITICAL, 3 WARNING, 2 OBSERVATION, contract-check table, `VERDICT: PROCEED` |
+| `context/changes/e1-shapes-picture-mode/plan.md` | Phase 1 new §3a (`Task.answer` + `string[]`, `selectionAnswer` keeps strings, `solutionSteps` uses `faceLabel`), criterion/row 1.3 extended; Phase 2 `SelectTiles.onSubmit` type and `tests/curriculumPick.test.ts`; Phase 7 last hint states the amount; three `## Known risks` entries |
+| `context/changes/e1-shapes-picture-mode/change.md` | `status: plan_reviewed` |
 | `context/changes/e1-shapes-picture-mode/handoff.md` | this file |
 
 ## 3. Verification
@@ -32,46 +30,39 @@ reachable (curriculum data) without the snapshot `dragMode`, the exhaustive `ans
 |---|---|
 | `git branch --show-current` | `feat/e1-shapes-picture-mode` (observed) |
 | `ls context/foundation/lessons.md` | absent (no lesson applies) |
-| `metadata-guard.mjs inspect` then `mark-planned` | `{"changed":true}`; status `preparing` → `planned` |
-| Success Criteria ↔ Progress mapping (python count per phase) | 1:1 in all 11 phases (5, 8, 5, 7, 5, 5, 5, 7, 7, 4, 5 rows) |
-| `Driver:` + `Driver why:` first lines under every `## Phase N:` | observed for all 11 (tdd 1, 3, 5, 6, 7; impl 2, 4, 8, 9; e2e 10, 11) |
-| Anchors re-read this step | `dragMode` (full file), `blockDrag.ts` (full file), `Task` type, `TaskVisual` union, `TaskScene` `clockTask`/`feedDrag`/`okTarget`, `AnswerTiles`/`SelectTiles` `setChoices`, `tests/curriculum.test.ts` `GROUP_1`/`LATER`, `tests/curriculumStart.test.ts` E1 `ORACLE` row, `REGISTRY_KEYS.month`, `buildAdaptiveRound` signature, `placementData.months.autumn`, design-gaps max row 99, `ROUND_SPEC` |
-| lint / typecheck / unit / build / e2e | not run: plan-only step, no code changed. Baseline on main at 10d6fe7 (contract, inherited, unverified): unit 2672 passed, e2e 86 passed |
+| Code checks (one sub-agent + own greps) | `selectionAnswer` filters to numbers (`src/core/round/select.ts`); `solutionSteps` appends `String(answer)` for a string answer not in the last hint (`src/core/round/hints.ts`); `tests/curriculumPick.test.ts` asserts `playableSteps(E1)[0] > 1`; `tests/blockDrag.test.ts` has no case pinning old S13-09; `canonicalInput` non-clock drag assumes blocks; word minigame `WORD_TYPES` = ADD_SUB/MULT/DIV; `tsconfig.json` includes `tests` (Phase 8 `never` break is real) |
+| `grep -c 'Driver:' plan.md` | 11 (one per phase) |
+| Progress rows | 63, unchanged count; rows edited in place (1.3) |
+| lint / typecheck / unit / build / e2e | not run: review-only step, no code changed. Baseline on main at 10d6fe7 (contract, inherited, unverified): unit 2672, e2e 86 |
 
-No deliberate break in this step (no tests written).
+No deliberate break (no tests written).
 
 ## 4. Next command
 
-`/10x-plan-review e1-shapes-picture-mode`
+`/10x-tdd e1-shapes-picture-mode` (Phase 1, `Driver: tdd`)
 
 ## 5. Open
 
-- `[human]` rows in `plan.md` Progress: 9.6 tablet test with a real 6-year-old finger (coin drag, picture tiles); 9.7
-  decisions against ZADANIA/PRD/roadmap (SPATIAL, SYMMETRY, BONDS pairs out; ORDINAL numbers only, range 5; E1.11 without the
-  10 zł note; picture mode as an E1-only filter; thresholds E1.2 1 → 2, E1.3 2 → 3 on live saves; E1 September start on E1.1;
-  E1.1 in the E2 warm-up).
-- Contract changes vs `change.md`: decision 5 reversed (generic `trayDrag` in `src/core/trayDrag.ts`, blocks as instance,
-  S13-09 fixed); decision 6 reversed (MONEY_PAY answer `number[]` + `check`).
-- DESIGN-GAP rows planned: 100 (faces in tiles), 101 (pattern row), 102 (icon row + arrow), 103 (coin wallet), 104 (picture
-  mode; row 21 updated).
-- Follow-ups planned in Phase 9 (`follow-ups/review-fixes.md`, each with `Trigger:`): SPATIAL, SYMMETRY, BONDS pairs, ORDINAL
-  tap/words/to 10, E1 hint number line, E1.10 `place_read_12`, wrong wallet in the parent view, wallet art, 10 zł in E1.11.
-- Plan-review attention: size of Phase 8 (fallback `p8a`/`p8b` commits written in the plan); the shared-reducer regression
-  risk in Phase 6 (full e2e incl. `drawn-tasks.spec` required in that phase); `hasPicture` table kept honest by a sampling test.
+- `[human]` rows in `plan.md` Progress: 9.6 tablet test with a 6-year-old finger; 9.7 decisions against ZADANIA/PRD/roadmap
+  (SPATIAL, SYMMETRY, BONDS pairs out; ORDINAL numbers only, to 5; E1.11 without 10 zł; picture mode E1 only; thresholds E1.2
+  1 → 2, E1.3 2 → 3; E1 September start on E1.1; E1.1 in the E2 warm-up).
+- Known risks added: `taskKey` in `src/core/round/unique.ts` ignores tiles for SHAPES `name`; MONEY_PAY array answer gets no
+  result line from `solutionSteps`; `tests/artFilter.test.ts` E2.2 case depends on `artBlocked` knowing MONEY_PAY (Phase 7).
+- Phase 8 helpers: the `switch (state.dragMode)` needs a `null` arm before the `never` default (review F6).
+- Unpinned E1 specs (first-launch age 6, minigames `startE1`, save-backup-health, save-restart) will draw SHAPES `all` after
+  Phase 2/5 — safe only with Phase 1 §3a.
+- DESIGN-GAP rows 100–104 and follow-ups still planned in Phases 2, 4, 5, 8, 9.
 
 ## 6. Autonomous decisions
 
-1. **Complexity HIGH, zero `AskUserQuestion`** (contract rule 1). Every open question from research § Open Questions was
-   decided from research recommendations: coins only in E1.11 (Q1), ORDINAL number tiles (Q2), picture-mode band Sept–Jan +
-   easing, E1 only (Q3), wallet drawn in code + DESIGN-GAP (Q4), exhaustive helper makes Q5 irrelevant. Would change: a
-   maintainer answer or plan-review finding against any of them.
-2. **Eleven small phases** (tdd core → impl widget + data per content group; picture mode; MONEY_PAY as reducer → generator →
-   scene/hook/helpers/data; seam sweep; two e2e). Rejected: S-14c-style combined generator+data tdd phases (the widgets here are
-   new UI and need an `impl` phase each). Would change: plan-review asking for fewer, larger phases.
-3. **CHOOSE_OP picture as a new skill** (E1.3 threshold 2 → 3) — research recommendation. Would change: playtest showing E1.3
-   unlocks too slowly.
-4. **Generic `trayDrag` over a separate coin reducer** — research measured ≥ 70 % shared code (change.md decision 5 reversal
-   condition met). Would change: plan-review judging block-drag regression risk higher than duplication.
-5. **Picture mode E1 only**, against ZADANIA's easing text naming it for every stage → `[human]` 9.7. Would change: a kit view
-   or a request to bias E2+ rounds.
-6. **Roadmap status edit committed with the plan** (step prompt), not left for `/10x-implement`. Would change: nothing.
+1. **Verdict PROCEED, not RETHINK.** The approach (face codes, generic `trayDrag`, `number[]` + `check`, picture-mode filter)
+   holds against the code; the defects are local. Would change: a defect that needs save v3 or a new answer mode.
+2. **F1 fixed in core (Phase 1) rather than a numeric face encoding.** Rejected: encoding faces as numbers (keeps
+   `selectionAnswer` as is but makes `answerRight`, the validator and the parent view read opaque ids). Would change: a
+   wider blast radius of `string[]` in `Task.answer` found during Phase 1 (then numeric ids with a lookup).
+3. **F2: the result line uses `faceLabel`, not "closed when face".** Keeps the retype bar showing the answer in words.
+   Would change: teacher read preferring the last hint to carry the answer.
+4. **F4 accepted as a Known risk**, not a plan change: one task per skill makes it a redraw, not a stuck round. Would change:
+   `sample` or a uniqueness test showing repeated SHAPES prompts in a round.
+5. **No product decision overturned**; all against-the-letter choices are already in `[human]` 9.7.
+6. **Next command is `/10x-tdd`** because Phase 1 carries `Driver: tdd`.

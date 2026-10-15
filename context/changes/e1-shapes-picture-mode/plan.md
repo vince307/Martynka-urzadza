@@ -214,9 +214,21 @@ w ostatniej linii, opisany słowami, nie kodem). Pętla z `MAX_ATTEMPTS` i rzute
 `parsePatternParams { periods: ('AB' | 'ABB' | 'AAB' | 'ABC')[]; figures: Figure[] }`; SHAPES `name`/`odd` → `input: 'tiles'`,
 `all` → `select` z `check` (wariant `all` żyje w osobnej umiejętności, bo tryb odpowiedzi jest per umiejętność).
 
+#### 3a. Odpowiedzi z twarzami w modelu rundy (plan-review F1, F2)
+
+**File**: `src/core/tasks/types.ts` i `src/core/types.ts` (`Task.answer: number | string | number[] | string[]`), `src/core/round/select.ts` (`selectionAnswer`), `src/core/round/hints.ts` (`solutionSteps`), `src/core/save.ts` (tylko jeśli typ `example.answer` tego wymaga — format v2 bez zmian, `validExample` nadal przyjmuje to, co v2 zapisał)
+
+**Intent**: (F1) `selectionAnswer` dziś odrzuca napisy (`filter(value is number)`), więc SHAPES `all` z twarzami zawsze
+wysyłałby `[]` — dziecko utknęłoby w `retype` na zawsze. Nowy kontrakt: liczby rosnąco jak dziś, napisy w kolejności
+`choices` (typ `SelectValue[]`); test: zaznaczone twarze wracają, zestaw liczb bez zmian (EVEN_ODD). (F2) `solutionSteps`
+dla odpowiedzi-twarzy dopisuje dziś „Wynik: shape:triangle:red:big” (pokazane i czytane przez narratora): dla `isFace(answer)`
+linia wyniku dostaje `faceLabel(answer)`, nigdy kod; test na `solutionSteps` i na `spokenTask` w fazie `solution`.
+
+**Contract**: `selectionAnswer(selected): SelectValue[]`; żaden tekst widziany lub czytany nie zawiera `shape:`.
+
 #### 4. Testy
 
-**File**: `tests/faces.test.ts`, `tests/shapes.test.ts`, `tests/pattern.test.ts` (nowe), `tests/validate.test.ts`
+**File**: `tests/faces.test.ts`, `tests/shapes.test.ts`, `tests/pattern.test.ts` (nowe), `tests/validate.test.ts`, `tests/select.test.ts`, `tests/hints.test.ts` (lub istniejące pliki tych modułów)
 
 **Intent**: 1000 losowań (`tests/helpers.ts`), wyrocznia w teście: docelowa figura liczona z kodów twarzy kafelków, intruz =
 jedyny kafelek różny od pozostałych trzech w policzonej cesze, następnik szlaczka = element `items[len mod okres]` liczony z
@@ -228,7 +240,7 @@ pokazanych; `faces-distinct` łapie duplikat; `faceLabel` daje polską nazwę (b
 
 - Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
 - Klucze `generators`/`parsers` równe; SHAPES i PATTERN nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony → odpowiednie testy czerwone; przywrócone; meta-check: wyrocznia liczy cechy z kodów twarzy, nie z pól generatora
+- Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony / `selectionAnswer` znów odrzuca napisy / `solutionSteps` dopisuje surowy kod → odpowiednie testy czerwone; przywrócone; meta-check: wyrocznia liczy cechy z kodów twarzy, nie z pól generatora
 - Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual Verification:
@@ -250,7 +262,7 @@ Dziecko gra E1.1 (SHAPES dwie umiejętności, PATTERN); start kalendarza E1 we w
 
 #### 1. Rysowanie figur (helper + kafelki)
 
-**File**: `src/ui/widgets/faceDraw.ts` (nowy helper wyjęty z `CoordGrid.drawItem`), `src/ui/widgets/CoordGrid.ts`, `src/ui/widgets/AnswerTiles.ts`, `src/ui/widgets/SelectTiles.ts`
+**File**: `src/ui/widgets/faceDraw.ts` (nowy helper wyjęty z `CoordGrid.drawItem`), `src/ui/widgets/CoordGrid.ts`, `src/ui/widgets/AnswerTiles.ts`, `src/ui/widgets/SelectTiles.ts` (także `onSubmit: (value: SelectValue[]) => void` po zmianie `selectionAnswer` z fazy 1)
 
 **Intent**: kafelek z twarzą rysuje figurę (kontur 4 px, kolor z tokenów, rozmiar `big`/`small` widoczny), bez napisu;
 `CoordGrid` używa tego samego helpera (bez zmiany wyglądu siatki). Komentarz `DESIGN-GAP` (wiersz 100).
@@ -268,7 +280,7 @@ Dziecko gra E1.1 (SHAPES dwie umiejętności, PATTERN); start kalendarza E1 we w
 
 #### 3. Dane, podgląd rodzica i testy przypięte
 
-**File**: `src/data/curriculum/E1.ts` (E1.1: `E1.1.shapes_pick` tiles `name`+`odd`, `E1.1.shapes_all` select, `E1.1.pattern`; `childName` ≤ 28 znaków), `src/core/progress.ts` lub `src/ui/dom/progressView.ts` (przykład błędu z twarzą przez `faceLabel`), `tests/curriculum.test.ts` (SHAPES, PATTERN → `GROUP_1`), `tests/curriculumStart.test.ts` (`ORACLE` E1 `[2, 4, 6, 8, 10, 11]` z komentarzem obliczenia, `playableSteps` `[1…11]`), `tests/curriculumEnd.test.ts` (tytuł i asercja bez „E1 step 1 is the only gap”), `docs/design-gaps.md` (wiersze 100, 101)
+**File**: `src/data/curriculum/E1.ts` (E1.1: `E1.1.shapes_pick` tiles `name`+`odd`, `E1.1.shapes_all` select, `E1.1.pattern`; `childName` ≤ 28 znaków), `src/core/progress.ts` lub `src/ui/dom/progressView.ts` (przykład błędu z twarzą przez `faceLabel`), `tests/curriculum.test.ts` (SHAPES, PATTERN → `GROUP_1`), `tests/curriculumStart.test.ts` (`ORACLE` E1 `[2, 4, 6, 8, 10, 11]` z komentarzem obliczenia, `playableSteps` `[1…11]`), `tests/curriculumEnd.test.ts` (tytuł i asercja bez „E1 step 1 is the only gap”), `tests/curriculumPick.test.ts` (test „an unplayable step below every playable one…” przypina `playableSteps(E1)[0] > 1` — przepisany na syntetycznym etapie z niegrywalnym krokiem 1, plan-review F3), `docs/design-gaps.md` (wiersze 100, 101)
 
 **Intent**: E1.1 grywalny; testy przypięte zmienione w tej samej fazie (reguła kontraktu). Przykład błędu SHAPES w podglądzie
 rodzica to polska nazwa, nie kod.
@@ -535,7 +547,8 @@ nominały spoza `MONEY`, cel nieosiągalny); zadanie `input: 'drag'`, `answer: n
 **File**: `tests/moneyPay.test.ts` (nowy), `tests/dragMode.test.ts`, `tests/canonicalInput.test.ts`, `tests/artFilter.test.ts`, `tests/solvableInMode.test.ts` (ręczny przypadek monet)
 
 **Intent**: 1000 losowań; `check` na zestawach z przeszukania wyczerpującego (każdy zestaw o dobrej sumie przyjęty w `pay`,
-tylko minimalne w `fewest`); różnorodność ≥ `MIN_DISTINCT` dla zakresu E1.
+tylko minimalne w `fewest`); różnorodność ≥ `MIN_DISTINCT` dla zakresu E1; ostatnia podpowiedź podaje kwotę celu słowami
+(`solutionSteps` nie dopisze linii wyniku dla tablicy — plan-review F5).
 
 ### Success Criteria:
 
@@ -761,6 +774,15 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 ## Known risks
 
+- **`taskKey` (`src/core/round/unique.ts`) pomija `choices` poza `select`** — SHAPES `name` bez rysunku ma tylko kilka
+  poleceń („Dotknij trójkąta.”), więc dwa zadania z tym samym poleceniem i innymi kafelkami liczą się jako duplikat; przy
+  jednej umiejętności na zadanie rundy to tylko przerysowanie (plan-review F4). Zmieniłoby: `sample`/test unikalności
+  pokazujący brak wariantów → klucz z twarzą docelową.
+- **Rozwiązanie MONEY_PAY bez linii „Wynik”**: `solutionSteps` uznaje odpowiedź-tablicę za zamkniętą, więc ostatnia
+  podpowiedź musi podać kwotę słowami („5 zł + 2 zł = 7 zł”) — test generatora w fazie 7 to sprawdza (plan-review F5).
+- **`tests/artFilter.test.ts` (E2.2 „keeps the current step whole”)** zależy od tego, że `artBlocked` zna MONEY_PAY
+  (faza 7) — bez tego dodanie `E2.2.money_pay_20` w fazie 8 zmienia wynik filtra (plan-review F5).
+
 - **Rozmiar fazy 8** (scena + widżet + hak + helpery + dane) — zmieniłoby: limit kontekstu agenta → commity `p8a`/`p8b` w tej samej fazie.
 - **Figury `small` na 1024 px** mogą być za małe dla 6-latka — zmieniłoby: zrzut/tablet → minimalny rozmiar figury w `layout.ts`.
 - **6-latek jesienią** w e2e (dzisiejszy miesiąc październik) dostaje rundy z obrazkami w nieprzypiętych specach — helpery
@@ -817,7 +839,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 - [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
 - [ ] 1.2 Klucze `generators`/`parsers` równe; SHAPES i PATTERN nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- [ ] 1.3 Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony → czerwone; przywrócone; meta-check
+- [ ] 1.3 Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony / `selectionAnswer` odrzuca napisy / surowy kod w `solutionSteps` → czerwone; przywrócone; meta-check
 - [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
