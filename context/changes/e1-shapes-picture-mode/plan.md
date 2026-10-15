@@ -732,7 +732,7 @@ jedno zadanie z banknotem.
 
 #### Automated Verification:
 
-- `npx playwright test tests/e2e/money-pay.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 4`; czas pełnego zestawu zapisany — orchestrator: money-pay 4 passed (50.3 s); full suite 93 passed (6.6 min, --workers=4) = 89 + 4; no spec fix needed — SHA
+- `npx playwright test tests/e2e/money-pay.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 4`; czas pełnego zestawu zapisany — orchestrator: money-pay 4 passed (50.3 s); full suite 93 passed (6.6 min, --workers=4) = 89 + 4; no spec fix needed — 75861ab
 - Deliberate break (patch `e2e-break-p11a.patch`): `case 'coins'` w `answerRight` zamieniony na `buildOnMat` → (a) czerwony z czytelnym błędem w ≤ 30 s, nie timeout całego testu; meta-check: dowodzi, że helper nie ma fallbacku do klocków
 - Deliberate break (patch `e2e-break-p11b.patch`): `check` MONEY_PAY bez warunku długości → (b) czerwony (gwiazdka za zły portfel); meta-check: dowodzi `check` w ścieżce sceny, nie w unit
 - Deliberate break (patch `e2e-break-p11c.patch`): `cancel` w `stepTrayDrag` kładzie monetę → (c) czerwony; każdy oczekiwany czerwony osobno (`-g`); przywrócone
@@ -973,7 +973,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 #### Automated
 
 - [x] 11.1 `npx playwright test tests/e2e/money-pay.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 4`; czas pełnego zestawu zapisany
-- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `case 'coins'` → `buildOnMat` → (a) czerwony z czytelnym błędem, nie timeout; meta-check — orchestrator: `-g "coins dragged into the wallet"` red, `toBe` Expected "coins", Received "blocks"; restored — SHA
-- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `check` MONEY_PAY bez warunku długości → (b) czerwony; meta-check — orchestrator: `-g "too many coins"` red, `toBe` Expected "second", Received "done"; restored — SHA
-- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): `cancel` kładzie monetę → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: `-g "a cancelled drag places no coin"` red, `toEqual` (wallet has an extra coin); restored — SHA
-- [x] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build: e2e hook: absent (2 chunks checked); lint, typecheck, npm test 2832 OK; ports 4397/4398 free — SHA
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `case 'coins'` → `buildOnMat` → (a) czerwony z czytelnym błędem, nie timeout; meta-check — orchestrator: `-g "coins dragged into the wallet"` red, `toBe` Expected "coins", Received "blocks"; restored — 75861ab
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `check` MONEY_PAY bez warunku długości → (b) czerwony; meta-check — orchestrator: `-g "too many coins"` red, `toBe` Expected "second", Received "done"; restored — 75861ab
+- [x] 11.4 Deliberate break (patch `e2e-break-p11c.patch`): `cancel` kładzie monetę → (c) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: `-g "a cancelled drag places no coin"` red, `toEqual` (wallet has an extra coin); restored — 75861ab
+- [x] 11.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build: e2e hook: absent (2 chunks checked); lint, typecheck, npm test 2832 OK; ports 4397/4398 free — 75861ab
