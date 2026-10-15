@@ -1,10 +1,10 @@
 ---
 change_id: salon-load-health
 title: Zapis v3 z migracją starego salonu, limit czasu ładowania grafiki i zapis po migracji przy starcie
-status: impl_reviewed
+status: archived
 created: 2026-10-15
 updated: 2026-10-15
-archived_at: null
+archived_at: 2026-10-15T20:10:41Z
 ---
 
 ## Notes
