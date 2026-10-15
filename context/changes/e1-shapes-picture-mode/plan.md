@@ -894,9 +894,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 5.2 Deliberate break: `pictureMode` bez warunku miesiąca / filtr zjada cały `current` / wpis tabeli fałszywy dla COUNT → czerwone; przywrócone; meta-check
-- [x] 5.3 `tests/fixtures/` bez zmian (zapis v2); pełna bramka lokalna zielona
+- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — d29760e
+- [x] 5.2 Deliberate break: `pictureMode` bez warunku miesiąca / filtr zjada cały `current` / wpis tabeli fałszywy dla COUNT → czerwone; przywrócone; meta-check — d29760e
+- [x] 5.3 `tests/fixtures/` bez zmian (zapis v2); pełna bramka lokalna zielona — d29760e
 - [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

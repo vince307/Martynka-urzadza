@@ -1,59 +1,57 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by `/10x-implement` phase 4 of run `2026-10-15-fix-s14c-s14d`. Phase 4 is committed and green except e2e (not runnable here). COMPARE_QTY, ORDINAL and picture CHOOSE_OP are now in the curriculum (E1.1, E1.2, E1.3) and drawn: `IconRow` (row with a flag) and the motion arrow in `IconGroups`.
+Written by `/10x-tdd` phase 5 of run `2026-10-15-fix-s14c-s14d`. Phase 5 is committed and green except e2e (not runnable here). Picture mode is a pure draw filter; no save field, save stays v2.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode` |
-| Commits | phase 1 `a230f1a`, phase 2 `b9b16d5`, phase 3 `670e988`, phase 4 code `c6c6600`, then this handoff commit |
+| Commits | phases 1-4 `a230f1a`, `b9b16d5`, `670e988`, `c6c6600`; phase 5 `d29760e`, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| Progress | rows 4.1-4.4 ticked with the phase 4 sha; 3.4 ticked citing the orchestrator note (86 passed on `670e988`); 4.5 e2e (orchestrator), 4.6 `[reviewer]`, 4.7 `[visual]`, 3.5, 1.5, 2.7 `[reviewer]`, 2.8 `[visual]` open |
+| Progress | 4.5 ticked citing the orchestrator note (86 passed on `c6c6600`); 5.1-5.3 ticked with `d29760e`; 5.4 e2e (orchestrator), 5.5 `[reviewer]`, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/ui/widgets/IconRow.ts` (new) | row of different icons, gold flag on a teal pole on the left; pooled `ArtImage`s (`ART_LIMITS.rowIcons`) |
-| `src/ui/widgets/IconGroups.ts` | optional `motion`: a 120 px strip left of the stacked groups; `come` solid arrow up to the first group, `go` dashed arrow down away (shape, not colour) |
-| `src/ui/widgets/artLayout.ts` | `rowLayout` (pure); `src/data/layout.ts` `TASK_LAYOUT.iconRow`, `iconMotion` |
-| `src/ui/widgets/TaskPicture.ts` | `row` case draws (the phase 3 throw is gone); `visualShape` of a `row` is `long` (notebook's full width) |
-| `src/data/curriculum/E1.ts` | E1.1 `compare_qty_10` (max 10, more/less, equalShare 0.25), E1.2 `ordinal_5`, `count_5` `min: 2` (O4), E1.3 `choose_op_picture_5` |
-| `docs/design-gaps.md` | row 102 (row with flag, motion arrow) |
-| tests | `tests/curriculum.test.ts` (COMPARE_QTY, ORDINAL to `GROUP_1`), `tests/count.test.ts` (E1.2.count_5 data skill never draws one icon; the 1..5 tiles test uses its own min-1 skill), `tests/artLayout.test.ts` (`rowLayout`), `tests/visual.test.ts` (row shape `long`) |
+| `src/core/pictureMode.ts` (new) | `pictureMode(learner, month, rules = balance.pictureMode)`: stage E1 and (`easedRounds > 0` or age 6 in an autumn month) |
+| `src/data/pictureSkills.ts` (new) | `hasPicture(skill)`: static table by type (plus CHOOSE_OP all-`picture` kinds, LENGTH `ruler`, MASS not `text`) |
+| `src/core/round/pictureFilter.ts` (new) | `withPictures(buckets, hasPicture, minCurrent)`: `earlier`/`previous` keep picture skills, `current` only if >= threshold, a bucket that would empty stays whole |
+| `src/core/curriculum.ts` | `buildAdaptiveRound(..., art?, options?: { picture?: boolean })`, applied after the art filter, threshold `unlockThreshold(n, balance.curriculum.unlockShare)` |
+| `src/scenes/TaskScene.ts` | `freshRound` passes `picture: month !== undefined && pictureMode(learner, month)` (month from `REGISTRY_KEYS.month`); warm-up unchanged |
+| `src/data/balance.ts` | `pictureMode: { age: 6, months: placementData.monthBands.autumn }` |
+| `docs/design-gaps.md` | row 21 updated, new row 103 |
+| `tests/pictureMode.test.ts` (new) | 7 tests: mode table (5 ages x 12 months x eased x E1/E2), `hasPicture` vs 100 generated tasks per E1/E2 skill, >= 90% pictures in `earlier`, off = no option, E1.2 current filtered, E1.3 current whole |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
 | `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | 2756 passed (branch baseline 2740, +16); deploy and ops test scripts OK |
-| `npm run sample -- E1` ... `E6` | `Naruszenia: 0` x6; E1 shows compare_qty_10, ordinal_5, choose_op_picture_5 and count_5 never 1 icon |
+| `npm test` | 2763 passed (branch baseline 2756, +7); deploy and ops test scripts OK |
+| `npm run sample -- E1` ... `E6` | exit 0 x6 (no content change this phase) |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `tests/fixtures/` untouched |
-| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium MachPortRendezvous Permission denied, plain `--workers=4`); expected 86 + 0. Phase 3 row 3.4 ticked from the orchestrator note (86 passed on `670e988`, 5.7 min) |
-| Break | `E1.2.count_5` back to `min: 1` -> `tests/count.test.ts` `E1.2.count_5 (S-14d O4)`: `AssertionError: expected 1 to be 2`; restored. Meta-check: the same test also asserts `visual.groups` totals >= 2 per draw, so it reads the drawing, not only the param |
-| Thresholds | no test pinned the E1.2/E1.3 skill counts (E1.2 now 3, E1.3 now 5 skills; unlock `ceil(0.5 n)` = 2 and 3); the whole suite stayed green after the data change |
-| Teacher read (`sample -- E1 --count 6`, E1.1-E1.3) | COMPARE_QTY: "Gdzie jest więcej kłębków/lamp?", genitive plural right, "Tyle samo" for 1+1, hints count then name the tile. ORDINAL: "Na którym miejscu od lewej jest kwiatek?", first hints give no place. CHOOSE_OP picture: "Na stole były 2 poduszki. Dołożono 1." / "Zabrano 1.", three distinct operations, hint "Przybyło, więc dodajemy." first. Word CHOOSE_OP stories: no "złotych" in purchases. No defect found |
-
-E2E specs that may now draw the new tasks: only those that play an E1 round without forcing skills, i.e. via `passWelcomeAsParent`/child path on E1: `tests/e2e/first-launch.spec.ts`, `tests/e2e/minigames.spec.ts`, and `parent-settings.spec.ts` where it starts on E1 without `?e2eSkills`. `passWelcome` starts on E3, so `task-round`, `narrator`, `room-*`, `save-*` cannot draw them. `answerRight` taps the tile whose value equals `state.answer` (string tiles for COMPARE_QTY and CHOOSE_OP, number tiles for ORDINAL), which already works for these.
+| e2e | `e2e: not runnable in this session — orchestrator gate` (Chromium MachPortRendezvous Permission denied on `first-launch.spec.ts`, plain `--workers=4`); expected 86 + 0. 4.5 ticked from the orchestrator note (86 passed on `c6c6600`, 5.8 min) |
+| RED | stubs first (all return false / ignore the option); `AssertionError: E1 age=6 month=0 eased=0: expected false to be true`, `E1.1.shapes_pick: expected false to be true`, `expected 0 to be greater than or equal to 0.9` |
+| Breaks | `pictureMode` without the month condition -> `E1 age=6 month=1 eased=0: expected true to be false`; filter ignoring the threshold -> `E1.3.add_sub_5: expected false to be true`; COUNT dropped from the table -> `E1.2.count_5: expected false to be true`. All restored. Meta-check: the table test's oracle is the drawn tasks, not the table |
+| Unpinned E1 e2e specs that may draw a different mix (plan Known risk F7) | only `tests/e2e/first-launch.spec.ts` "age 6 starts on E1" (age 6, month pinned October, so picture mode is on; `answerRight` already handles tile faces and drawings). `minigames.spec.ts` starts E1 at age 10+ (mode off); `passWelcome` starts on E3; `parent-settings.spec.ts:175/188` use the E3 default |
 
 ## 4. Next command
 
-`/10x-tdd e1-shapes-picture-mode phase 5` (Phase 5, `Driver: tdd`)
+`/10x-tdd e1-shapes-picture-mode phase 6` (Phase 6, `Driver: tdd`)
 
 ## 5. Open
 
-- 4.5 e2e: orchestrator runs `npx playwright test --workers=4` (expect 86 passed); 4.6 `[reviewer]`, 4.7 `[visual]` (1440x900 and 1024x768: COMPARE_QTY first try and "tyle samo", ORDINAL with hint, CHOOSE_OP `come` and `go`, COUNT E1.2); the earlier manual rows 1.5, 2.7, 2.8, 3.5 stay open.
-- Visual risk to check first: the motion arrow strip (120 px) shrinks the icon area; ordinal row of 10 icons only possible with `max: 10` (the data uses 5).
-- Phase 5 (round filter for picture mode) now has picture-heavy E1 steps to filter.
+- 5.4 e2e (orchestrator, `--workers=4`, expect 86); 5.5 `[reviewer]` (no field in `Settings`/`SavedLearner`, `variants.ts` and easing weights untouched, row 21/103 honest); the earlier manual rows 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 stay open.
+- Watch `first-launch.spec.ts` age-6 test first when the orchestrator runs e2e.
 
 ## 6. Autonomous decisions
 
-1. Phase run in this context, no subagent; commit message and next-phase prompts decided in place, stopped after phase 4.
-2. The row uses shape `long` (full notebook width) rather than `wide`; the phase 3 test line that expected `wide` was updated to `long`. Would change: the visual gate shows the row too small.
-3. Motion arrow lives in the strip left of the groups: `come` solid up, `go` dashed down. Rejected: arrow between groups (they are stacked with little room). Would change: the visual gate.
-4. E1.1 compare_qty uses `equalShare 0.25`, `max 10`; E1.3 picture skill `max 5` (parser limit 10).
-5. `tests/count.test.ts` "ends" test got its own min-1 skill because the data skill no longer draws 1.
+1. `pictureMode` takes the rules as a third argument defaulting to `balance.pictureMode`; the autumn months come from the placement table so the two cannot drift. Would change: a different band for picture mode than for placement.
+2. `buildAdaptiveRound` imports `balance` and `hasPicture` directly (core may import data), threshold uses `balance.curriculum.unlockShare`; the plan's `{ picture: boolean }` option kept.
+3. Month missing in the registry means mode off (scenes never call Date).
+4. No teacher read: no `src/data/` content or generator changed (only the new table and balance number).
+5. Commit message and next-phase prompts decided in place, stopped after phase 5.
