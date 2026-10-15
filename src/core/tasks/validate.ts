@@ -4,10 +4,11 @@
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
 import { dragMode } from './dragMode';
+import { parseFace } from './faces';
 import type { Task } from './types';
 import { validateVisual } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right' | 'faces-distinct';
 
 export interface Violation {
     skillId: string;
@@ -77,6 +78,16 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
             if (!task.choices.includes(a)) {
                 add('choices', `answer ${String(a)} not among ${JSON.stringify(task.choices)}`);
             }
+        }
+    }
+
+    // Face choices (S-14d) are told apart by looking: all of them well-formed faces, none repeated, none mixed with plain text.
+    if (task.choices?.some((c) => typeof c === 'string' && c.startsWith('shape:'))) {
+        const faces = task.choices.map((c) => parseFace(c));
+        if (faces.some((f) => f === null)) {
+            add('faces-distinct', `choices mix faces with other values or hold a malformed face: ${JSON.stringify(task.choices)}`);
+        } else if (new Set(task.choices).size !== task.choices.length) {
+            add('faces-distinct', `a face repeats among ${JSON.stringify(task.choices)}`);
         }
     }
 

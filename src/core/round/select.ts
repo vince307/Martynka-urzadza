@@ -19,6 +19,11 @@ export const toggleSelected = (
     return choices.filter((choice) => next.has(choice));
 };
 
-/** What "OK" hands to the task: the marked numbers, ascending. An empty set is an ordinary (usually wrong) answer. */
-export const selectionAnswer = (selected: readonly SelectValue[]): number[] =>
-    selected.filter((value): value is number => typeof value === 'number').sort((a, b) => a - b);
+/**
+ * What "OK" hands to the task: the marked numbers ascending, then the marked texts (face codes) in the order of the tiles
+ * they were given in. An empty set is an ordinary (usually wrong) answer.
+ */
+export const selectionAnswer = (selected: readonly SelectValue[]): SelectValue[] => [
+    ...selected.filter((value): value is number => typeof value === 'number').sort((a, b) => a - b),
+    ...selected.filter((value): value is string => typeof value === 'string'),
+];

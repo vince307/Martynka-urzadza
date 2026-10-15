@@ -4,6 +4,9 @@ import type { Rng } from '../rng';
 import type { SkillDef } from '../types';
 import type { AnswerMode, TaskVisual } from './visual';
 
+/** One value, a set of numbers (EVEN_ODD) or a set of face codes (SHAPES "all"). */
+export type TaskAnswer = number | string | number[] | string[];
+
 export interface Task {
     skillId: string;
     prompt: string;                      // player-facing text (Polish) or a bare expression
@@ -11,7 +14,7 @@ export interface Task {
     visual?: TaskVisual;                 // drawing description (clock, ruler, blocks, bars, money, scale, jugs, thermometer, icons)
     hintVisual?: TaskVisual;             // number line that explains the hint steps (S-14b); shown from the second mistake, never gives the answer away
     input?: AnswerMode;                  // how the child answers; stamped by generateTask from the skill
-    answer: number | string | number[];
+    answer: TaskAnswer;
     choices?: (number | string)[];       // for tile answers
     hint: string[];                      // successive hint steps shown after a mistake
     check?: (input: unknown) => boolean; // tasks with several correct answers

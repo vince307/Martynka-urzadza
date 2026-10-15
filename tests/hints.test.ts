@@ -199,3 +199,26 @@ describe('firstHint with several right answers (check)', () => {
         expect(firstHint({ ...task, hint: ['Najpierw zobacz 3', 'Potem 4'] })).toBe('Najpierw zobacz 3');
     });
 });
+
+describe('solutionSteps with face answers (S-14d)', () => {
+    const base: Task = { skillId: 'E1.1.shapes_pick', prompt: 'Dotknij trójkąta.', hint: ['Trójkąt ma 3 boki i 3 rogi.', 'Policz rogi w każdej figurze.'], answer: 'shape:triangle:red:big' };
+
+    it('closes with the words of the face, never the code', () => {
+        const steps = solutionSteps(base, answerLine);
+        expect(steps.at(-1)).toBe('Wynik: duży czerwony trójkąt');
+        expect(steps.join(' ')).not.toContain('shape:');
+    });
+
+    it('closes a list of faces with their words', () => {
+        const all: Task = { ...base, answer: ['shape:circle:red:big', 'shape:circle:blue:small'] };
+        const steps = solutionSteps(all, answerLine);
+        expect(steps.at(-1)).toBe('Wynik: duże czerwone koło, małe niebieskie koło');
+        expect(steps.join(' ')).not.toContain('shape:');
+    });
+
+    it('leaves a number list as it was (EVEN_ODD): the hint closes it', () => {
+        const evens: Task = { skillId: 'x', prompt: 'Zaznacz.', hint: ['Parzyste kończą się na 0, 2, 4, 6 albo 8.'], answer: [4, 8] };
+        expect(solutionSteps(evens, answerLine)).toEqual(evens.hint);
+    });
+});
+

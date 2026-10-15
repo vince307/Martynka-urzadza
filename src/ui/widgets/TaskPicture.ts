@@ -128,6 +128,9 @@ export class TaskPicture {
             case 'arrows':
                 this.arrows.render(visual, rect);
                 break;
+            case 'pattern':
+                // The row widget arrives with phase 2; no skill draws a pattern before the curriculum lists one.
+                throw new Error('a pattern row has no widget yet (S-14d phase 2)');
             case 'column':
                 if (!column) {
                     throw new Error('a written column is drawn with its boxes');

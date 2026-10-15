@@ -5,9 +5,9 @@ import { balance } from '../../data/balance';
 import { dragMode } from '../tasks/dragMode';
 import { digitBoxCount, startDigitBoxes, stepDigitBoxes } from './digitBoxes';
 import type { KeypadKey } from './keypad';
-import type { Task } from '../tasks/types';
+import type { Task, TaskAnswer } from '../tasks/types';
 
-export const canonicalInput = (task: Task): number | string | number[] => {
+export const canonicalInput = (task: Task): TaskAnswer => {
     const mode = task.input;
     if (mode === 'digits') {
         const count = digitBoxCount(task);
@@ -27,7 +27,7 @@ export const canonicalInput = (task: Task): number | string | number[] => {
         const choices = task.choices ?? [];
         if (!task.answer.every((a) => choices.includes(a))) throw new Error(`select answer outside choices (skill ${task.skillId})`);
         // Reversed: a child may tap the choices in any order.
-        const input = [...task.answer].reverse();
+        const input = [...task.answer].reverse() as number[] | string[];
         if (task.check && !task.check(input)) throw new Error(`select answer rejected by check (skill ${task.skillId})`);
         return input;
     }

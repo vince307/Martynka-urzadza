@@ -2,6 +2,7 @@
 // walks through. A hint line that already states the result must not be shown
 // first ("Spróbuj jeszcze raz" is shown instead); the solution always ends
 // with the result.
+import { faceText, isFace } from '../tasks/faces';
 import type { Task } from '../tasks/types';
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 
@@ -65,19 +66,24 @@ export const firstHint = (task: Task): string | null => {
     return null;
 };
 
+/** The answer in words for the result line: a face becomes its description ("duży czerwony trójkąt"), never its code. */
+const answerText = (answer: Task['answer']): string =>
+    Array.isArray(answer) ? answer.map((a) => String(faceText(a))).join(', ') : String(faceText(answer));
+
 /** Every hint line, closed by an answer line when the last one does not state the result. */
 export const solutionSteps = (task: Task, answerLine: (answer: string) => string): string[] => {
     const steps = [...task.hint];
     const last = steps[steps.length - 1] ?? '';
     const answer = task.answer;
+    // A face (or a list of faces) is only ever said by the result line: the hint cannot contain a code.
     const closed =
         typeof answer === 'number'
             ? lastNumber(last) === answer
             : typeof answer === 'string'
-              ? last.includes(answer)
-              : true;
+              ? !isFace(answer) && last.includes(answer)
+              : !(answer.length > 0 && answer.every(isFace));
     if (!closed) {
-        steps.push(answerLine(Array.isArray(answer) ? answer.join(', ') : String(answer)));
+        steps.push(answerLine(answerText(answer)));
     }
     return steps;
 };

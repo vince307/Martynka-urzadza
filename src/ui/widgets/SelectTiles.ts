@@ -30,7 +30,7 @@ export class SelectTiles {
 
     constructor(
         private readonly scene: Scene,
-        private readonly onSubmit: (value: number[]) => void,
+        private readonly onSubmit: (value: SelectValue[]) => void,
     ) {
         this.ok = new ActionButton(scene, () => {
             if (this.active) {

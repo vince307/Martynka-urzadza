@@ -285,6 +285,16 @@ describe('first wrong try (S-08, parent preview)', () => {
         expect(r[0].example).toEqual({ prompt: ts[0].prompt, given: WRONG, answer: ts[0].answer });
     });
 
+    it('roundResults tells the parent a face in words, never as a code (S-14d)', () => {
+        const tri = 'shape:triangle:red:big';
+        const sq = 'shape:square:blue:small';
+        const pick: Task = { skillId: 'E1.1.shapes_pick', prompt: 'Dotknij trójkąta.', answer: tri, choices: [tri, sq], hint: ['Trójkąt ma 3 boki i 3 rogi.'] };
+        let s = startRound([pick], RULES);
+        s = answer(s, sq);
+        s = next(answer(s, tri));
+        expect(roundResults(s)[0].example).toEqual({ prompt: 'Dotknij trójkąta.', given: 'mały niebieski kwadrat', answer: 'duży czerwony trójkąt' });
+    });
+
     it('roundResults has no example for a first-try solve or an unplayed task', () => {
         const s = solveFirst(startRound(tasks(), RULES));
         const r = roundResults(s);

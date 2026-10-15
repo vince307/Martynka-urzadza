@@ -325,6 +325,20 @@ export const pl = {
         short: (have: number, need: number) => `masz ${have}/${need}`,
     },
     tasks: {
+        // SHAPES and PATTERN (S-14d): figures are drawn on the tiles, the texts name them by words only.
+        shapesName: (genitive: string) => `Dotknij ${genitive}.`,
+        shapesAll: (genitivePlural: string) => `Dotknij wszystkich ${genitivePlural}.`,
+        shapesOdd: 'Który nie pasuje?',
+        shapesLookEach: 'Popatrz na każdą figurę po kolei.',
+        shapesLookName: (look: string) => `Szukaj figury ${look}.`,
+        shapesLookAll: (look: string) => `Szukaj wszystkich figur ${look}.`,
+        shapesOddLook: 'Popatrz na kształt, kolor i wielkość.',
+        shapesOddThree: 'Trzy figury mają coś wspólnego, jedna jest inna.',
+        shapesOddFigure: (nominative: string) => `Tylko jedna figura to ${nominative}.`,
+        shapesOddFeature: (feminine: string) => `Tylko jedna figura jest ${feminine}.`,
+        pattern: 'Co będzie dalej?',
+        patternRepeats: 'Szlaczek się powtarza.',
+        patternPeriod: (labels: string) => `Powtarza się tak: ${labels}.`,
         missing: 'Jaka liczba pasuje w okienku?',
         missingHint: (inverse: string) => `Policz w drugą stronę: ${inverse}`,
         // Same question as the BONDS hint; "Ile brakuje od 2 do 10?" read awkwardly (impl-review S-03).

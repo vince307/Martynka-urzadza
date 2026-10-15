@@ -3,6 +3,8 @@
 import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
 import { balance } from '../../data/balance';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
+import { PATTERN_LIMITS } from '../../data/shapes';
+import { faceLabel, isFace } from './faces';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
 import type { SkillDef } from '../types';
@@ -30,6 +32,8 @@ export type TaskVisual =
     | { kind: 'column'; op: '+' | '−'; a: number; b: number; columns: number }
     // A number line (S-14b): ticks every `tick` from `from` to `to`; `labels` are the numbers written under ticks, `box` the empty box, `jumps` arcs between ticks.
     | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] }
+    // A row of figures (S-14d): face codes, exactly one null (the empty place) and it is the last item.
+    | { kind: 'pattern'; items: readonly (string | null)[] }
     // An arrow graph or table (S-14b): every input goes to its output by the rule "op n"; exactly one value is null (the empty field).
     | { kind: 'arrows'; layout: 'graph'; op: '+' | '−'; n: number; input: number | null; output: number | null }
     | { kind: 'arrows'; layout: 'table'; op: '+' | '−'; n: number; inputs: readonly number[]; outputs: readonly (number | null)[] };
@@ -78,6 +82,8 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return v.layout === 'graph'
                 ? `arrows:graph:${v.op}:${v.n}:${v.input ?? '_'}:${v.output ?? '_'}`
                 : `arrows:table:${v.op}:${v.n}:${v.inputs.join(',')}:${v.outputs.map((x) => x ?? '_').join(',')}`;
+        case 'pattern':
+            return `pattern:${v.items.map((x) => x ?? '_').join(',')}`;
         case 'numberLine':
             return `line:${v.from}:${v.to}:${v.tick}:${v.labels.join(',')}:${v.box ?? '_'}:${v.jumps.map((j) => `${j.from}>${j.to}`).join(',')}`;
     }
@@ -192,6 +198,16 @@ export const validateVisual = (v: TaskVisual): string[] => {
             else if (String(result).length !== v.columns) out.push(`column result ${result} does not have ${v.columns} digits`);
             break;
         }
+        case 'pattern': {
+            const shown = v.items.slice(0, -1);
+            if (v.items.at(-1) !== null) out.push('pattern must end with the empty place');
+            if (shown.some((x) => x === null)) out.push('pattern has more than one empty place');
+            if (shown.length < PATTERN_LIMITS.minShown || shown.length > PATTERN_LIMITS.maxShown) {
+                out.push(`${shown.length} shown figures, need ${PATTERN_LIMITS.minShown}..${PATTERN_LIMITS.maxShown}`);
+            }
+            for (const x of shown) if (x !== null && !isFace(x)) out.push(`pattern item ${JSON.stringify(x)} is not a face`);
+            break;
+        }
         case 'numberLine': {
             if (!isInt(v.from) || !isInt(v.to) || !isInt(v.tick) || v.tick < 1 || v.from >= v.to) {
                 out.push(`number line from ${v.from} to ${v.to} every ${v.tick} is not a rising whole-number scale`);
@@ -281,6 +297,8 @@ export const describeVisual = (v: TaskVisual): string => {
             return v.layout === 'graph'
                 ? `[arrows graph ${v.input ?? '□'} ${v.op === '+' ? '+' : '−'}${v.n} ${v.output ?? '□'}]`
                 : `[arrows table ${v.op === '+' ? '+' : '−'}${v.n}: ${v.inputs.map((x, i) => `${x}>${v.outputs[i] ?? '□'}`).join(' ')}]`;
+        case 'pattern':
+            return `[pattern ${v.items.map((x) => (x === null ? '□' : faceLabel(x, { size: false }))).join(', ')}]`;
         case 'numberLine':
             return `[line ${v.from}–${v.to}/${v.tick}${v.labels.length ? ` labels ${v.labels.join(' ')}` : ''}${v.box !== null ? ` box ${v.box}` : ''}${v.jumps.length ? ` jumps ${v.jumps.map((j) => `${j.from}>${j.to}`).join(' ')}` : ''}]`;
     }
