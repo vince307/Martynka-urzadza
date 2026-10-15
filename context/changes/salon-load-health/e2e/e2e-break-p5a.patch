@@ -1,0 +1,13 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index 612ba5a..2fb6cc2 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -356,7 +356,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+     };
+ 
+     // A migrated save is written once at start, without waiting for a change (audit M-3); the copy goes first.
+-    if (options.migrated !== undefined && blockedBy === null) {
++    if (false && options.migrated !== undefined && blockedBy === null) {
+         dirty = true;
+         arm();
+     }

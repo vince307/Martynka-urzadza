@@ -1,0 +1,13 @@
+diff --git a/src/core/save.ts b/src/core/save.ts
+index d163ec4..2ce0f02 100644
+--- a/src/core/save.ts
++++ b/src/core/save.ts
+@@ -35,7 +35,7 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+     // v1 -> v2 (S-15): the variants block, at its starting values.
+     1: (raw) => ({ ...(raw as Record<string, unknown>), version: 2, variants: startingVariants() }),
+     // v2 -> v3 (salon-load-health): a salon saved before S-16a (10 tasks) becomes the 7-task salon, in one place and once.
+-    2: LIFT_V2_SALON,
++    2: (raw) => ({ ...(raw as Record<string, unknown>), version: 3 }),
+ };
+ 
+ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
