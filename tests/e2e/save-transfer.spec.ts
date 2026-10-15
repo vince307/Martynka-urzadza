@@ -9,6 +9,7 @@
 import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
+import { chooseFile, jsonFile, openImport, reloadedBy } from './support/saveImport';
 import { playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { ROOMS } from '../../src/data/rooms';
@@ -50,30 +51,6 @@ async function playRoundAndSettle(page: Page): Promise<void> {
     expect((await snapshot(page)).save!.writes).toBeGreaterThanOrEqual(1);
     await tapTarget(page, 'nextRound');
     await screenIs(page, 'task');
-}
-
-/** Picks `file` in the real file chooser that the dialog's button opens. */
-async function chooseFile(page: Page, buttonName: string, file: { name: string; mimeType: string; buffer: Buffer }): Promise<void> {
-    const dialog = page.getByRole('dialog', { name: pl.saveTransfer.importTitle });
-    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), dialog.getByRole('button', { name: buttonName, exact: true }).tap()]);
-    await chooser.setFiles(file);
-}
-
-const jsonFile = (name: string, value: unknown) => ({ name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)) });
-
-/** Settings panel -> "Wczytaj z pliku": the import dialog is open afterwards. */
-async function openImport(page: Page): Promise<void> {
-    const panel = await openSettings(page);
-    await panel.getByRole('button', { name: pl.saveTransfer.importButton, exact: true }).tap();
-    await expect(page.getByRole('dialog', { name: pl.saveTransfer.importTitle })).toBeVisible();
-}
-
-/** Starts the wait for the reload the game does after a replaced save, then runs `act`; the game is loaded again afterwards. */
-async function reloadedBy(page: Page, act: () => Promise<void>): Promise<void> {
-    const loaded = page.waitForEvent('load', { timeout: 15_000 });
-    await act();
-    await loaded;
-    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
 }
 
 // e2eVariant=off on every start: rounds before and after a reload or an import share one variant counter (S-15), and the 4th ordinary round would be the daily puzzle.

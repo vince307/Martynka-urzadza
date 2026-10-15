@@ -970,7 +970,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/review-round.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`; czas pełnego zestawu zapisany
-- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `stepPlayable` bez klauzuli `review` → (a) czerwony (brak karty odblokowania)
-- [ ] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `balance.keypad.maxDigits` 5 → (b) czerwony; każdy czerwony osobno (`-g`); przywrócone; meta-check
-- [ ] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 11.1 `npx playwright test tests/e2e/review-round.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`; czas pełnego zestawu zapisany — orchestrator: review-round 2 passed + save-transfer 4 passed (6 passed, 1.0 min); full suite --workers=4 86 passed (5.6 min) = 84 + 2 — SHA
+- [x] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `stepPlayable` bez klauzuli `review` → (a) czerwony (brak karty odblokowania) — orchestrator: p11a, `-g "the year review step unlocks"`: red `toBe` Expected "unlock", Received "task"; restored — SHA
+- [x] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `balance.keypad.maxDigits` 5 → (b) czerwony; każdy czerwony osobno (`-g`); przywrócone; meta-check — orchestrator: p11b, `-g "six-digit place-value answer"`: red `toBe` Expected "done", Received "second"; restored, src/ no diff — SHA
+- [x] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`; lint, typecheck OK, npm test 2666; no listener on 4397/4398 — SHA
