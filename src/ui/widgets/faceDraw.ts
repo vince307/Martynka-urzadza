@@ -3,6 +3,7 @@ import { Math as PhaserMath, type GameObjects } from 'phaser';
 import type { Face } from '../../core/tasks/faces';
 import { FACE_COLORS, FACE_LOOK, PLACEHOLDER_COLORS } from '../../data/layout';
 import type { FigureId } from '../../data/shapes';
+import { heartPoints } from './figurePoints';
 import type { Rect } from './geometry';
 
 const vec = (pts: readonly { x: number; y: number }[]): PhaserMath.Vector2[] => pts.map((p) => new PhaserMath.Vector2(p.x, p.y));
@@ -50,19 +51,10 @@ export const drawShape = (g: GameObjects.Graphics, figure: FigureId, cx: number,
             break;
         }
         case 'heart': {
-            const lobe = r * 0.55;
-            g.fillCircle(cx - lobe, cy - lobe * 0.5, lobe);
-            g.fillCircle(cx + lobe, cy - lobe * 0.5, lobe);
-            const pts = [
-                { x: cx - r * 1.04, y: cy - lobe * 0.2 },
-                { x: cx + r * 1.04, y: cy - lobe * 0.2 },
-                { x: cx, y: cy + r },
-            ];
+            // One outline (visual gate S-14d): stroked lobes showed their inner arcs and the heart read as three figures.
+            const pts = heartPoints(cx, cy, r);
             g.fillPoints(vec(pts), true);
-            g.lineBetween(cx - r * 1.04, cy - lobe * 0.2, cx, cy + r);
-            g.lineBetween(cx + r * 1.04, cy - lobe * 0.2, cx, cy + r);
-            g.strokeCircle(cx - lobe, cy - lobe * 0.5, lobe);
-            g.strokeCircle(cx + lobe, cy - lobe * 0.5, lobe);
+            g.strokePoints(vec(pts), true);
             break;
         }
         default: {

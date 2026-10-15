@@ -119,7 +119,7 @@ export class TaskPicture {
                 this.thermometer.render(visual.celsius, rect);
                 break;
             case 'icons':
-                this.icons.render(visual.icon, visual.groups, visual.framed, rect, visual.motion);
+                this.icons.render(visual.icon, visual.groups, visual.framed, rect, visual.motion, visual.sides === true);
                 break;
             case 'cells':
                 this.cells.render(visual.layout, visual.values, rect);

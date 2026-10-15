@@ -337,6 +337,18 @@ describe('row of icons and the icon motion (S-14d)', () => {
         expect(validateVisual(moving([3, 3], 'come', true))).not.toEqual([]);
     });
 
+    it('two groups side by side (COMPARE_QTY, visual gate S-14d) are exactly two plain groups without a motion', () => {
+        const sides = (groups: number[], extra: Record<string, unknown> = {}): TaskVisual =>
+            ({ kind: 'icons', icon: 'apple', groups, framed: false, sides: true, ...extra }) as unknown as TaskVisual;
+        expect(validateVisual(sides([3, 7]))).toEqual([]);
+        expect(validateVisual(sides([3]))).not.toEqual([]);
+        expect(validateVisual(sides([3, 2, 1]))).not.toEqual([]);
+        expect(validateVisual(sides([3, 3], { framed: true }))).not.toEqual([]);
+        expect(validateVisual(sides([3, 2], { motion: 'come' }))).not.toEqual([]);
+        expect(visualKey(sides([3, 2]))).not.toBe(visualKey(icons([3, 2])));
+        expect(describeVisual(sides([3, 2]))).toBe('[icons apple 3|2]');
+    });
+
     it('keys differ by icon order and by motion; the sample line names both', () => {
         expect(visualKey(row(['key', 'apple', 'cup']))).not.toBe(visualKey(row(['apple', 'key', 'cup'])));
         expect(visualKey(moving([3, 2], 'come'))).not.toBe(visualKey(moving([3, 2], 'go')));

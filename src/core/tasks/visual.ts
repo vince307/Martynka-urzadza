@@ -23,7 +23,8 @@ export type TaskVisual =
     | { kind: 'jugs'; jugs: readonly JugId[] }
     | { kind: 'thermometer'; celsius: number }
     // `motion` (S-14d): two groups where the second one comes to the first ('come', an arrow towards it) or leaves it ('go').
-    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean; motion?: 'come' | 'go' }
+    // `sides` (S-14d visual gate, COMPARE_QTY): two groups side by side, each in its own frame, the first one on the left.
+    | { kind: 'icons'; icon: IconId; groups: readonly number[]; framed: boolean; motion?: 'come' | 'go'; sides?: true }
     // A row of different icons with a start mark on its left (S-14d, ORDINAL): the child counts the place from the mark.
     | { kind: 'row'; icons: readonly IconId[]; mark: 'left' }
     // Number cells (S-13b): row-major 3x3 magic square, or a pyramid as [top, middle x2, base x3]; exactly one cell is null (the empty one).
@@ -73,7 +74,7 @@ export const visualKey = (v: TaskVisual | undefined): string => {
         case 'thermometer':
             return `thermometer:${v.celsius}`;
         case 'icons':
-            return `icons:${v.icon}:${v.framed ? 'framed' : 'plain'}:${v.groups.join(',')}${v.motion ? `:${v.motion}` : ''}`;
+            return `icons:${v.icon}:${v.framed ? 'framed' : v.sides ? 'sides' : 'plain'}:${v.groups.join(',')}${v.motion ? `:${v.motion}` : ''}`;
         case 'row':
             return `row:${v.mark}:${v.icons.join(',')}`;
         case 'cells':
@@ -164,6 +165,7 @@ export const validateVisual = (v: TaskVisual): string[] => {
             if (v.groups.reduce((a, b) => a + b, 0) > ART_LIMITS.icons) out.push(`more than ${ART_LIMITS.icons} icons`);
             if (v.framed && (v.groups.length < 2 || v.groups.some((g) => g !== v.groups[0]))) out.push('framed icons need 2 or more equal groups');
             if (v.motion !== undefined && (v.groups.length !== 2 || v.framed)) out.push('an icon motion needs exactly two plain groups');
+            if (v.sides && (v.groups.length !== 2 || v.framed || v.motion !== undefined)) out.push('groups side by side need exactly two plain groups without a motion');
             break;
         }
         case 'row': {
@@ -309,7 +311,7 @@ export const describeVisual = (v: TaskVisual): string => {
         case 'thermometer':
             return `[thermometer ${formatCelsius(v.celsius)}]`;
         case 'icons':
-            return `[icons ${v.icon} ${v.groups.join('+')}${v.framed ? ' framed' : ''}${v.motion ? ` ${v.motion}` : ''}]`;
+            return `[icons ${v.icon} ${v.groups.join(v.sides ? '|' : '+')}${v.framed ? ' framed' : ''}${v.motion ? ` ${v.motion}` : ''}]`;
         case 'row':
             return `[row ${v.icons.join(' ')}]`;
         case 'cells':

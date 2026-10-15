@@ -202,6 +202,23 @@ describe('iconsLayout', () => {
         expect(iconsLayout([4, 4, 4, 4], true, area, TASK_LAYOUT.icons).icon).toBeGreaterThanOrEqual(50);
     });
 
+    it('puts two compared groups side by side, each in its frame, the first one on the left (visual gate S-14d)', () => {
+        for (const area of AREAS) {
+            for (const groups of [[1, 10], [10, 10], [7, 3], [2, 2], [10, 1]]) {
+                const layout = iconsLayout(groups, false, area, TASK_LAYOUT.icons, true);
+                expect(layout.frames).toHaveLength(2);
+                const [left, right] = layout.frames;
+                expect(left.x + left.width).toBeLessThan(right.x);
+                // Both frames share one line: neither stands under the other.
+                expect(left.y).toBeLessThan(right.y + right.height);
+                expect(right.y).toBeLessThan(left.y + left.height);
+                layout.frames.forEach((frame) => expect(inside(frame, area)).toBe(true));
+                layout.icons.forEach((icon, i) => expect(inside(icon, layout.frames[i < groups[0] ? 0 : 1])).toBe(true));
+                expect(layout.icon).toBeGreaterThanOrEqual(40);
+            }
+        }
+    });
+
     it('never draws an icon above the cap', () => {
         expect(iconsLayout([1], false, AREAS[0], TASK_LAYOUT.icons).icon).toBeLessThanOrEqual(TASK_LAYOUT.icons.maxIcon);
     });

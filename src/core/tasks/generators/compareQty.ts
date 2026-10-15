@@ -46,7 +46,8 @@ export const generateCompareQty: Generator = (skill, rng): Task => {
     return {
         skillId: skill.id,
         prompt: pl.tasks.compareQtyPrompt(ask === 'more', forms[2]),
-        visual: { kind: 'icons', icon: icon.id, groups: [left, right], framed: false },
+        // The tiles say left and right, so the groups stand side by side (visual gate S-14d: stacked rows had no left or right).
+        visual: { kind: 'icons', icon: icon.id, groups: [left, right], framed: false, sides: true },
         answer,
         choices: rng.shuffle([tiles.left, tiles.right, tiles.same]),
         hint: [pl.tasks.compareQtyCountHint, pl.tasks.compareQtyCountsHint(countNoun(left, forms), countNoun(right, forms)), pl.tasks.compareQtyAnswerHint(answer)],

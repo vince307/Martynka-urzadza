@@ -1,5 +1,5 @@
 // DESIGN-GAP 62 (docs/design-gaps.md): the kit has no plate or box for MULT_GROUPS.
-// DESIGN-GAP (docs/design-gaps.md row 102): the kit has no motion arrow for a picture story; it is drawn in code.
+// DESIGN-GAP (docs/design-gaps.md row 102): the kit has no motion arrow for a picture story and no left/right pair of groups; both are drawn in code.
 import type { GameObjects, Scene } from 'phaser';
 import type { IconId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
@@ -25,13 +25,13 @@ export class IconGroups {
         this.images = Array.from({ length: MAX_ICONS }, () => new ArtImage(scene));
     }
 
-    render(icon: IconId, groups: readonly number[], framed: boolean, rect: Rect, motion?: 'come' | 'go'): void {
+    render(icon: IconId, groups: readonly number[], framed: boolean, rect: Rect, motion?: 'come' | 'go', sides = false): void {
         this.setVisible(false);
         this.area = rect;
         const look = TASK_LAYOUT.iconMotion;
         // A motion arrow takes a strip on the left; the two groups stand one under the other in the rest.
         const inner = motion ? { x: rect.x + look.strip, y: rect.y, width: rect.width - look.strip, height: rect.height } : rect;
-        const layout = iconsLayout(groups, framed, inner, TASK_LAYOUT.icons);
+        const layout = iconsLayout(groups, framed, inner, TASK_LAYOUT.icons, sides);
         if (layout.frames.length > 0) {
             const frame = TASK_LAYOUT.icons;
             this.frames.setVisible(true).fillStyle(PLACEHOLDER_COLORS.tile, 1).lineStyle(frame.border, PLACEHOLDER_COLORS.deepTeal, 1);

@@ -42,6 +42,8 @@ describe('generateCompareQty', () => {
                 const [l, r] = task.visual.groups;
                 expect(task.visual.groups, where).toHaveLength(2);
                 expect(task.visual.framed, where).toBe(false);
+                // Visual gate S-14d: the tiles say left and right, so the groups stand side by side (never one under the other).
+                expect(task.visual.sides, where).toBe(true);
                 expect(task.visual.motion, where).toBeUndefined();
                 for (const g of [l, r]) {
                     expect(g, where).toBeGreaterThanOrEqual(1);
