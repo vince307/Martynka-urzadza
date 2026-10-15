@@ -1,10 +1,10 @@
 ---
 change_id: e1-shapes-picture-mode
 title: E1 z obrazkami — figury, szlaczki, porównywanie liczebności, „który z kolei” i płacenie monetami
-status: impl_reviewed
+status: archived
 created: 2026-10-15
 updated: 2026-10-15
-archived_at: null
+archived_at: 2026-10-15T10:53:07Z
 ---
 
 ## Notes
