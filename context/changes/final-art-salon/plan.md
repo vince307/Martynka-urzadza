@@ -831,9 +831,9 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/salon-art.spec.ts --workers=4` zielony (uruchamia orkiestrator)
-- [ ] 10.2 Złamania z łatek, każdy test osobno (`-g`): podwójny zakup etapu, brak `remapLegacySalon` w `main.ts`, `RoomLayer` rzuca przy braku tekstury → czerwone; przywrócone
-- [ ] 10.3 Pełna bramka lokalna: lint, typecheck, unit (baseline + Δ), build, e2e (baseline + nowe testy speca)
+- [x] 10.1 `npx playwright test tests/e2e/salon-art.spec.ts --workers=4` zielony (uruchamia orkiestrator) — orkiestrator: 4 passed (po poprawce #2: tapTarget taskButton zamiast roomSwitch) — 9362f3f
+- [x] 10.2 Złamania z łatek, każdy test osobno (`-g`): podwójny zakup etapu, brak `remapLegacySalon` w `main.ts`, `RoomLayer` rzuca przy braku tekstury → czerwone; przywrócone — orkiestrator: break-1 2 czerwone (#16 x2), break-2 1 czerwony (#2), break-3 1 czerwony (#16 brak tekstur); przywrócone — 9362f3f
+- [x] 10.3 Pełna bramka lokalna: lint, typecheck, unit (baseline + Δ), build, e2e (baseline + nowe testy speca) — lint, typecheck, unit 2939 (Δ0), sample E1-E6, build zielone; e2e pełny 98 passed (baseline 94 + 4) — 9362f3f
 
 #### Manual
 
