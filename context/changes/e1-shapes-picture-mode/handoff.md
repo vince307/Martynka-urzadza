@@ -1,56 +1,56 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by `/10x-implement` phase 9 (seam sweep, last impl/tdd phase) of run `2026-10-15-fix-s14c-s14d`. Comments, docs and follow-ups are done; the next phases are e2e specs. Do not claim the e2e gate for phase 9 yet: Chromium cannot start in a phase session.
+Written by the finishing step of `/10x-e2e` phase 10 of run `2026-10-15-fix-s14c-s14d`. The picture-tasks spec is committed and its gate evidence (orchestrator-run Playwright) is recorded. Do not rerun phase 10; the next phase is 11 (money-pay e2e).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode` |
-| Commits | phases 1-8 up to `9ee5d56`; phase 9 `63cb2b7`, then this handoff commit |
+| Commits | phases 1-9 up to `d4e75e7`; phase 10 `dbede2a`, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| Progress | 8.5 ticked citing the orchestrator note; 9.1-9.3 ticked with `63cb2b7`; 9.4 e2e (orchestrator), 9.5 `[reviewer]`, 9.6-9.7 `[human]`, 8.6, 8.7, 7.5, 6.5, 5.5, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 open |
+| Progress | 10.1-10.4 ticked (sha `dbede2a`); open: 11.x, 9.5 `[reviewer]`, 9.6, 9.7 `[human]`, 8.6, 8.7, 7.5, 6.5, 5.5, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `CLAUDE.md` | "Current state": S-14d sentence (faces, SHAPES/PATTERN/COMPARE_QTY/ORDINAL/CHOOSE_OP, picture mode filter, generic tray drag, coins, MONEY_PAY); "Not yet present" now SPATIAL, SYMMETRY |
-| `context/changes/e1-shapes-picture-mode/follow-ups/review-fixes.md` (new) | 10 follow-ups, each with a `Trigger:` line (SPATIAL, SYMMETRY, BONDS pairs, ORDINAL tap and words, E1 hint line, `place_read_12`, wallet in preview, wallet art, 10 zl in E1.11) |
-| `src/scenes/TaskScene.ts` | two stale comments about two drag branches now name blocks, clock and coins |
-| `src/data/curriculum/E1.ts`, `E2.ts` | header no longer says drawing and art types "arrive in M6" |
-| `src/data/balance.ts` | `easing` comment mentions the picture-mode filter |
-| `plan.md` | Progress rows |
+| `tests/e2e/picture-tasks.spec.ts` | 3 tests: shape tile drawn as a figure tapped (pays a star), select all circles + compare two groups by touch, third picture-row test |
+| `playwright.config.ts` | `picture-tasks` added to `ROUND_SPEC` |
+| `context/changes/e1-shapes-picture-mode/e2e-break-p10a.patch`, `e2e-break-p10b.patch` | deliberate-break patches (face tile touch zone moved 700 px; `SelectTiles` ignores taps on face tiles) |
+| `context/changes/e1-shapes-picture-mode/e2e-request-p10.md` | phase 10 e2e request |
+| `plan.md` | Progress rows 10.1-10.4 ticked |
 
 ## 3. Verification
 
+Playwright was run by the orchestrator (not this step); evidence recorded verbatim:
+
 | Command | Result |
 |---|---|
-| `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | 2832 passed (branch baseline 2832, +0: comments and docs only); deploy and ops test scripts OK |
-| `npm run sample -- E1` ... `E6` | exit 0 x6 |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS (334 paths, 0 missing) |
-| Break | appended a path to a nonexistent file to `CLAUDE.md` -> validator FAIL (missing: 1); restored -> PASS. Meta-check: proves the validator reads CLAUDE.md paths, which is what row 9.2 protects |
-| DESIGN-GAP check | `src/` comments cite rows 100, 101, 102, 104 (all exist in `docs/design-gaps.md`; 103 is the picture-mode row with no widget comment) |
-| Seam sweep | no other duplicates found in `faceDraw`/`CoordGrid`, `coins.ts`/`money.ts`, `pictureFilter`; no stale `LATER`/`GROUP_1`/`Context.price` comments left |
-| e2e | `e2e: not runnable in this session — orchestrator gate` (MachPortRendezvous, plain `--workers=4`). Row 9.4 open. 8.5 ticked from the orchestrator note: 86 passed on `9ee5d56` + coin smoke 2/2 |
+| picture-tasks spec (orchestrator) | green: picture-tasks 3 passed (28.4 s). No spec fix needed |
+| p10a (face tile touch zone moved 700 px), `--workers=1` | only "a shape tile drawn as a figure is tapped and pays a star" red, `toBe` Expected "second", Received "first"; 2 passed. Restored |
+| p10b (SelectTiles ignores taps on face tiles) | only "select all circles and compare two groups by touch" red, `toBe` Expected "done", Received "second"; 2 passed. Restored |
+| Full suite after restore, `--workers=4` (orchestrator) | 89 passed (6.5 min) = 86 + 3. `src/` has no diff |
+| `npm run lint` / `typecheck` (this step) | OK / OK |
+| `npm test` (this step) | 2832 passed (baseline 2832, +0) |
+| `npm run build` (this step) | `e2e hook: absent (2 chunks checked)` |
+| Meta-check | each break turns red exactly one distinct test, so the two tests guard different seams (tile touch zone vs selection toggle) |
 
 ## 4. Next command
 
-`/10x-e2e e1-shapes-picture-mode phase 10` (Phase 10, `Driver: e2e`)
+`/10x-e2e e1-shapes-picture-mode phase 11`
 
 ## 5. Open
 
-- 9.4 e2e (orchestrator, `--workers=4`, expect 86 + 0 since phase 9 changed no behaviour); 9.5 `[reviewer]`; 9.6, 9.7 `[human]`; 8.6, 8.7, 7.5, 6.5, 5.5 and manual rows 4.6, 4.7, 3.5, 1.5, 2.7, 2.8.
+- Phase 11 rows (money-pay e2e, expect 89 + 4).
+- Manual: 9.5 `[reviewer]`; 9.6, 9.7 `[human]`; 8.6, 8.7, 7.5, 6.5, 5.5, 4.6, 4.7, 3.5, 1.5, 2.7, 2.8.
 - Follow-ups: `context/changes/e1-shapes-picture-mode/follow-ups/review-fixes.md`.
-- No DESIGN-GAP added in this phase (rows 100-104 exist from earlier phases).
+- No DESIGN-GAP added in this phase.
 
 ## 6. Autonomous decisions
 
-1. Sweep limited to confirmed stale text (TaskScene, E1/E2 headers, balance easing); no code was merged or moved because the duplicate checks found none. Would change: a reviewer pointing at a concrete duplicate.
-2. Follow-up wording written from the plan's intent list; files named by symbol where verified, others by area. Would change: reviewer corrects a location.
-3. The orchestrator's e2e note ticks 8.5; 9.4 stays open (no browser here).
-4. Commit message and next-phase prompts decided in place; stopped after phase 9.
+1. Rows 10.1-10.3 ticked from the orchestrator's observed Playwright results; 10.4 ticked from this step's own build/lint/typecheck/test (ports 4397/4398 were free). Would change: a reviewer wanting a fresh in-session Playwright run.
+2. Sha appended to rows after the phase commit and committed with the handoff (no amend allowed). Would change: contract allowing amend.
+3. Stopped after phase 10; next phase left to the orchestrator.
