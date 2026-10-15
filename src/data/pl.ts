@@ -564,6 +564,13 @@ export const pl = {
         moneyChangeGroszeHint: 'Złotówka to 100 groszy.',
         moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
         moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
+        // MONEY_PAY (S-14d): the amount is a whole number of złoty; the last hint states it, as the answer is a wallet and gets no result line.
+        moneyPayPrompt: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount} najmniejszą liczbą monet.` : `Zapłać ${amount}.`),
+        moneyPaySpeak: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount} najmniejszą liczbą monet.` : `Zapłać ${amount}.`),
+        moneyPayHint: (hasNote: boolean) => (hasNote ? 'Połóż największą monetę lub banknot, który nie jest za duży.' : 'Połóż największą monetę, która nie jest za duża.'),
+        moneyPayRestLine: (first: string, rest: string) => `${first} i jeszcze ${rest}.`,
+        moneyPaySumLine: (parts: readonly string[], amount: string) => `${parts.join(' + ')} = ${amount}`,
+        moneyPayOneLine: (coin: string) => `Wystarczy jedna moneta: ${coin}.`,
         // MASS in words (S-14c): brutto / netto / tara of a pack and unit conversions, no drawing. The pack is one thing in the
         // nominative, so no numeral has to agree with it; the asked unit is the genitive plural, the given one agrees with its number.
         massPackPrompt: {

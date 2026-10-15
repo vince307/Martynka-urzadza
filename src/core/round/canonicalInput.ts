@@ -41,6 +41,13 @@ export const canonicalInput = (task: Task): TaskAnswer => {
             }
             return task.answer;
         }
+        if (dragMode(task) === 'coins') {
+            const wallet = task.answer;
+            if (!Array.isArray(wallet) || !wallet.every((c) => typeof c === 'number')) throw new Error(`coins answer is not a wallet (skill ${task.skillId})`);
+            if (wallet.length > balance.coinDrag.maxTotal) throw new Error(`coins answer holds ${wallet.length} coins, the wallet takes ${balance.coinDrag.maxTotal} (skill ${task.skillId})`);
+            if (!task.check || !task.check(wallet)) throw new Error(`coins answer rejected by check (skill ${task.skillId})`);
+            return wallet;
+        }
         const n = task.answer;
         if (typeof n !== 'number' || !Number.isInteger(n) || n < 0 || n > 999) throw new Error(`blocks answer ${String(n)} not buildable (skill ${task.skillId})`);
         const digits = String(n).padStart(3, '0').split('').map(Number);

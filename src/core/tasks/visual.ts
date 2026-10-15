@@ -17,7 +17,8 @@ export type TaskVisual =
     | { kind: 'ruler'; unit: 'cm' | 'mm'; lengthCm: number; fromMm: number; toMm: number }
     | { kind: 'blocks'; hundreds: number; tens: number; ones: number }
     | { kind: 'bars'; bars: readonly { label: string; value: number }[]; scaleMax: number }
-    | { kind: 'money'; items: readonly MoneyId[] }
+    // `pay` (S-14d, MONEY_PAY): nothing lies on the table (`items` empty); the child pays from a tray of these nominals (1..4 kinds).
+    | { kind: 'money'; items: readonly MoneyId[]; pay?: { tray: readonly MoneyId[]; fewest: boolean } }
     | { kind: 'scale'; item: IconId; weights: readonly WeightId[] }
     | { kind: 'jugs'; jugs: readonly JugId[] }
     | { kind: 'thermometer'; celsius: number }
@@ -64,7 +65,7 @@ export const visualKey = (v: TaskVisual | undefined): string => {
         case 'bars':
             return `bars:${v.scaleMax}:${v.bars.map((b) => `${b.label}=${b.value}`).join(',')}`;
         case 'money':
-            return `money:${v.items.join(',')}`;
+            return v.pay ? `money:pay:${v.pay.fewest ? 'fewest' : 'any'}:${v.pay.tray.join(',')}` : `money:${v.items.join(',')}`;
         case 'scale':
             return `scale:${v.item}:${v.weights.join(',')}`;
         case 'jugs':
@@ -131,6 +132,14 @@ export const validateVisual = (v: TaskVisual): string[] => {
             break;
         }
         case 'money':
+            if (v.pay) {
+                // Paying: the table is empty and the tray holds 1..4 different nominals.
+                if (v.items.length > 0) out.push(`${v.items.length} money items beside a payment tray, need an empty table`);
+                if (v.pay.tray.length < 1 || v.pay.tray.length > ART_LIMITS.trayKinds) out.push(`${v.pay.tray.length} tray kinds, need 1..${ART_LIMITS.trayKinds}`);
+                if (new Set(v.pay.tray).size !== v.pay.tray.length) out.push('duplicate tray nominal');
+                for (const id of v.pay.tray) if (!MONEY.some((m) => m.id === id)) out.push(`unknown money id ${id}`);
+                break;
+            }
             if (v.items.length < 1 || v.items.length > ART_LIMITS.moneyItems) out.push(`${v.items.length} money items, need 1..${ART_LIMITS.moneyItems}`);
             for (const id of v.items) if (!MONEY.some((m) => m.id === id)) out.push(`unknown money id ${id}`);
             break;
@@ -284,6 +293,7 @@ export const describeVisual = (v: TaskVisual): string => {
         case 'bars':
             return `[bars ${v.bars.map((b) => `${b.label}=${b.value}`).join(' ')}, scale ${v.scaleMax}]`;
         case 'money':
+            if (v.pay) return `[money tray ${v.pay.tray.join(' ')}${v.pay.fewest ? ', fewest' : ''}]`;
             return `[money ${v.items.join(' ')} = ${formatMoney(v.items.reduce((sum, id) => sum + (MONEY.find((m) => m.id === id)?.grosze ?? 0), 0))}]`;
         case 'scale':
             return `[scale ${v.item} | ${v.weights.join(' ')}]`;

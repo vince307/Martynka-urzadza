@@ -3,12 +3,14 @@
 // numeral agreement for nouns from a dictionary.
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { inflect, type PluralForms } from '../text/plural';
+import { balance } from '../../data/balance';
+import { MONEY } from '../../data/measures';
 import { dragMode } from './dragMode';
 import { parseFace } from './faces';
 import type { Task } from './types';
 import { validateVisual } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right' | 'faces-distinct';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right' | 'faces-distinct' | 'coins';
 
 export interface Violation {
     skillId: string;
@@ -142,6 +144,31 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
             dragMode(task);
         } catch (e) {
             add('mode', e instanceof Error ? e.message : String(e));
+        }
+    }
+
+    // Paying with coins: the answer is a wallet (a list of grosze) and `check` is the judge, so it must accept the answer, accept
+    // no wallet that is empty, too short or too long, and the wallet must fit the mat.
+    if (task.visual?.kind === 'money' && task.visual.pay) {
+        if (task.input !== undefined && task.input !== 'drag') {
+            add('mode', `paying with coins needs the drag mode, got ${task.input}`);
+        }
+        const wallet = task.answer;
+        const tray = task.visual.pay.tray.map((id) => MONEY.find((m) => m.id === id)?.grosze);
+        if (!Array.isArray(wallet) || !wallet.every((c) => typeof c === 'number' && tray.includes(c))) {
+            add('coins', `a wallet answer is a list of tray nominals, got ${JSON.stringify(wallet)}`);
+        } else {
+            if (wallet.length === 0 || wallet.length > balance.coinDrag.maxTotal) {
+                add('coins', `a wallet of ${wallet.length} coins, the mat takes 1..${balance.coinDrag.maxTotal}`);
+            }
+            if (!task.check?.(wallet)) {
+                add('check-answer', 'check refuses the answer wallet or is missing');
+            } else {
+                const smallest = Math.min(...(wallet as number[]));
+                if (task.check([]) || task.check([...wallet, smallest]) || task.check(wallet.slice(1))) {
+                    add('check-no-wrong', 'check accepts an empty, longer or shorter wallet');
+                }
+            }
         }
     }
 

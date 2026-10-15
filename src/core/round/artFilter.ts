@@ -2,13 +2,14 @@
 // The filter is optional and never empties a round: see `withoutArtBlocked`. Data comes in as arguments.
 import { parseMassParams } from '../tasks/generators/mass';
 import { parseMoneyCountParams } from '../tasks/generators/money';
+import { parseMoneyPayParams } from '../tasks/generators/moneyPay';
 import { parseCapacityParams } from '../tasks/generators/capacity';
 import type { SkillDef } from '../types';
 import type { SkillBuckets } from './pick';
 
 /**
  * True when the skill's result can only be read from a picture that is missing: MONEY_COUNT (any coin or note it can
- * draw), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
+ * draw), MONEY_PAY (any nominal of its tray: a coin the child cannot see cannot be picked), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
  * the prompt, so they are never blocked.
  */
 export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): boolean => {
@@ -17,6 +18,8 @@ export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): bo
     switch (skill.type) {
         case 'MONEY_COUNT':
             return any(parseMoneyCountParams(skill.params).ids);
+        case 'MONEY_PAY':
+            return any(parseMoneyPayParams(skill.params).tray);
         case 'MASS': {
             // The text variant (brutto / netto / tara, conversions) has no picture, so it is never blocked.
             const p = parseMassParams(skill.params);

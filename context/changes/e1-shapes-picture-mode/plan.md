@@ -910,7 +910,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 6.1 Nowe testy czerwone przed implementacją, zielone po; `tests/blockDrag.test.ts` (stare przypadki) zielony bez edycji asercji; unit `<baseline gałęzi> + N` — a992ecf
 - [x] 6.2 Deliberate break: stare S13-09 / `fewestCoins` pierwsza kombinacja / taca 4 rodzajów w jednym rzędzie → czerwone; przywrócone; meta-check — a992ecf
 - [x] 6.3 Pełna bramka lokalna zielona — a992ecf
-- [ ] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `drawn-tasks.spec` (klocki na wspólnym reduktorze)
+- [x] 6.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`, w tym `drawn-tasks.spec` (klocki na wspólnym reduktorze) — orchestrator note: 86 passed on a992ecf (`--workers=4`, 5.9 min), drawn-tasks x2 10/10
 
 #### Manual
 
@@ -920,9 +920,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 7.2 Klucze `generators`/`parsers` równe; MONEY_PAY nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- [ ] 7.3 Deliberate break: `check` bez warunku długości w `fewest` / `coins` dla `money` bez `pay` / `artBlocked` ignoruje tacę → czerwone; przywrócone; meta-check
+- [x] 7.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 7.2 Klucze `generators`/`parsers` równe; MONEY_PAY nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
+- [x] 7.3 Deliberate break: `check` bez warunku długości w `fewest` / `coins` dla `money` bez `pay` / `artBlocked` ignoruje tacę → czerwone; przywrócone; meta-check
 - [ ] 7.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

@@ -26,6 +26,7 @@ import { generateGrid, parseGridParams } from './generators/grid';
 import { generateLength, parseLengthParams } from './generators/length';
 import { generateMass, parseMassParams } from './generators/mass';
 import { generateUnitChoice, parseUnitChoiceParams } from './generators/unitChoice';
+import { generateMoneyPay, parseMoneyPayParams } from './generators/moneyPay';
 import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
@@ -84,6 +85,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     DATA: generateData,
     MONEY_COUNT: generateMoneyCount,
     MONEY_CHANGE: generateMoneyChange,
+    MONEY_PAY: generateMoneyPay,
     MASS: generateMass,
     CAPACITY: generateCapacity,
     TEMPERATURE: generateTemperature,
@@ -135,6 +137,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     DATA: parseDataParams,
     MONEY_COUNT: parseMoneyCountParams,
     MONEY_CHANGE: parseMoneyChangeParams,
+    MONEY_PAY: parseMoneyPayParams,
     MASS: parseMassParams,
     CAPACITY: parseCapacityParams,
     TEMPERATURE: parseTemperatureParams,
