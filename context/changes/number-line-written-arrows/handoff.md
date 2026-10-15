@@ -1,15 +1,15 @@
 # Handoff — `number-line-written-arrows` (slice S-14b)
 
-Written by the visual-gate step: every [visual] state of rows 5.7, 6.6 and 8.7 captured at 1440×900 and 1024×768, six discrepancies fixed in three `fix(...)` commits, `VISUAL: PASS`. Next is `/10x-archive` and ship; the [human] rows 8.8 and 9.6 stay open for the author — do not tick them.
+Final pre-merge state, written by the ship step (archive + ship, 2026-10-15). Before it the visual gate captured every [visual] state of rows 5.7, 6.6 and 8.7 at 1440×900 and 1024×768, fixed six discrepancies in three `fix(...)` commits and returned `VISUAL: PASS`. The [human] rows 8.8 and 9.6 stay open for the author — a post-run checklist, not a blocker.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/number-line-written-arrows`, from `main` at `882cd93` |
-| Commits | plan commits + p1 `cfea708` .. p11 `4dc12e7` + review fix + `3782115` (impl-review docs) + visual fixes `f966f61`, `33a053b`, `2bb41dd` + this docs commit `docs(number-line-written-arrows): bramka wizualna` |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (archive sets `archived`) |
+| Commits | plan commits + p1 `cfea708` .. p11 `4dc12e7` + review fix + `3782115` (impl-review docs) + visual fixes `f966f61`, `33a053b`, `2bb41dd` + `54a3ea1` (visual gate docs) + this handoff commit + `chore(archive): close number-line-written-arrows` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in `context/runs/2026-10-14-save-s13b-s15-s14b/run-log.md` |
+| `change.md` status | `archived` (set by `/10x-archive` in the ship step) |
 | `## Progress` | 2 rows open: 8.8, 9.6 [human]; [visual] 5.7, 6.6, 8.7 ticked by this step |
 | Working tree | clean after the docs commit |
 
@@ -52,7 +52,7 @@ Observed in this step, after the last fix (`2bb41dd`). Baseline main `882cd93`: 
 
 ## 4. Next command
 
-`/10x-archive number-line-written-arrows` then ship
+none — shipped
 
 ## 5. Open
 
@@ -70,3 +70,5 @@ Observed in this step, after the last fix (`2bb41dd`). Baseline main `882cd93`: 
 5. **V5 stagger instead of dropping an essential label.** Why: start and landings are what the hint lines name. Would change: the author preferring fewer numbers.
 6. **V6 by widening the hint rectangle to 798 (x 226)** rather than shrinking `denseGap`. Why: `denseGap` 30 is the floor for the box + label room (V5 test). Would change: a kit frame for the hint drawing.
 7. **O1–O5 left as follow-ups**: none is a defect of the captured views' legibility; each is content or a neighbouring view (prompt wrap). Would change: the author's read.
+8. **Archived with [human] 8.8 and 9.6 open** (ship step). Why: both are the author's reads (school notation, decisions against ZADANIA and higher unlock thresholds); the run prompt makes open [human] rows a post-run checklist, listed in the PR section „Dla właściciela produktu”. Would change: an author decision that needs code before the merge.
+9. **Follow-up triggers restated in the roadmap Backlog Handoff** for S-14c (WRITTEN missing digits, F9, ARROW_TABLE multi-field, E5.5 `capacity_half_l_e5`) and S-14d (E1.10 `place_read_12`, hint number line for E1). Why: the run prompt asks to carry them to the dependent rows.
