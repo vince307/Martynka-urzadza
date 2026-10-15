@@ -65,7 +65,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | done |
 | S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | done |
 | S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | done |
-| S-16a | final-art-salon             | M7   | dziecko remontuje salon z docelowej grafiki (tło przed → po, 6 mebli × 3), widzi animacje i ekran ładowania | S-14, S-15 | FR-026 | proposed |
+| S-16a | final-art-salon             | M7   | dziecko remontuje salon z docelowej grafiki (tło przed → po, 6 mebli × 3), widzi animacje i ekran ładowania | S-14, S-15 | FR-026 | planning |
 | S-16b | final-sound                 | M7   | dziecko słyszy dźwięki gry po pierwszym dotknięciu; gra grywalna bez dźwięku       | S-16a                | FR-017, FR-026                  | blocked  |
 | S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
 
@@ -385,7 +385,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Decyzje autora (2026-10-15):** 6 slotów mebli + jeden etap tła przed → po (zamiast 10 slotów); koszty 5–15 gwiazdek za czynność (stroi S-17); warianty mogą różnić się formą (wspólne płótno i kotwica); dźwięki wydzielone do S-16b. Zapisy z 10-slotowym salonem (`tasksDone` liczy pozycje starej listy) przelicza naprawa przy wczytaniu bez zmiany wersji formatu, jeśli się da (zapis v3 tylko gdy konieczny: wtedy bieg zatrzymuje się na otwartym PR). Przyszłe sloty od grafika (brief P3) dopisuje się **na końcu** listy czynności, żeby stary `tasksDone` pozostał poprawny.
 - **Unknowns:** —
 - **Risk:** zmiana listy czynności salonu na żywych zapisach (przemapowanie postępu); waga precache (WebP ≈ 1,2 MB dla salonu).
-- **Status:** proposed
+- **Status:** planning
 
 ### S-16b: Dźwięki
 

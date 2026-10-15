@@ -1,27 +1,30 @@
 # Handoff — `final-art-salon` (slice S-16a)
 
-Written by the `/10x-research` step: `research.md` answers the change's unknowns (stage task, v2 remap, import/export,
-done card, art weight, Phaser 4 loading/hit-test, design sources). Nothing is implemented. The next agent must not get
-wrong: `furnishings-before` and `shadows` are single whole-room layers that cannot be split per slot, and the import
-preview (`parseImport` → `saveSummary`) sees the raw, unremapped save — the remap must run there too.
+Written by the `/10x-plan` step: `plan.md` (10 phases, drivers tdd ×3, impl ×6, e2e ×1) and `plan-brief.md` exist;
+nothing is implemented. The next agent must not get wrong: the remap rule is **B** (shortest new prefix whose cost is
+≥ the stars spent in the old prefix, variants carried, stars untouched) — deliberately against `change.md` decision 3
+(rule A, refund), with a `[human]` row 2.5 for the maintainer.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-salon`, cut from `main` at `334ff69` |
-| Commits | 2 on the branch after this step's commit (`docs(final-art-salon): change identity (autonomous run)`, `docs(final-art-salon): research`) |
+| Commits | 3 on the branch after this step's commit (`docs(final-art-salon): change identity (autonomous run)`, `docs(final-art-salon): research`, `docs(final-art-salon): plan`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 47 (`grep -c '^- \[ \]' plan.md`), 0 done |
+| Roadmap | S-16a `proposed` → `planning` (At a glance row + body `Status`), committed with the plan |
 | Working tree | clean after the commit (only files of this step staged) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/final-art-salon/research.md` | Research: summary (10 findings), detailed findings per area, measured WebP table, code references, 7 open choices with recommendations for `/10x-plan` |
-| `context/changes/final-art-salon/change.md` | Frontmatter only: `status` new → preparing, `updated` 2026-10-15 |
+| `context/changes/final-art-salon/plan.md` | Full plan: 10 phases with `Driver:`/`Driver why:`, success criteria, `## Autonomous decisions` (11), `## Progress` |
+| `context/changes/final-art-salon/plan-brief.md` | Two-page brief with the key-decisions table |
+| `context/changes/final-art-salon/change.md` | Frontmatter `status` preparing → planned |
+| `context/foundation/roadmap.md` | S-16a status → planning, `updated` 2026-10-15 |
 | `context/changes/final-art-salon/handoff.md` | This handoff |
 
 ## 3. Verification
@@ -29,41 +32,47 @@ preview (`parseImport` → `saveSummary`) sees the raw, unremapped save — the 
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/final-art-salon` |
-| WebP measurement (scratchpad script `measure.mjs`, `cwebp -q 85 -alpha_q 100 -m 6`, output only in the session scratchpad, nothing in `public/`) | 26 salon files: 1 233 242 B full size, 475 260 B half, 973 520 B at q 75 |
-| Alpha analysis (python PIL, read-only on `designs/`) | `furnishings-before` bbox (0,22,1864,1080), alpha inside every slot/layer canvas; `shadows` bbox (144,433,1881,999), 129 493 of 157 536 pixels inside the rug canvas |
-| `du` of `dist/` (stale build, not rebuilt) | 2 416 KB; `public/assets` 496 KB |
-| Phaser 4.2.1 sources (`node_modules/phaser/src`) + context7 | preload renders, `progress` event, `getPixelAlpha`, `DynamicTexture.render()`, `__MISSING` confirmed |
-| lint / typecheck / tests / build / e2e | not run: research step, no code changed (baseline on main `334ff69` per contract, inherited, unverified here) |
+| Success Criteria ↔ Progress check (python over `plan.md`) | phases 1–10: criteria count = Progress row count (3, 5, 5, 7, 4, 4, 4, 3, 4, 4) |
+| `metadata-guard.mjs inspect` / `mark-planned` | change.md hash matched; `{"changed":true}` |
+| Remap rule B arithmetic (by hand, in plan decision 1) | old `tasksDone` 0…10 → new 0,1,2,3,4,5,6,6,7,7,7; every old furniture piece lands in the new prefix |
+| lint / typecheck / tests / build / e2e | not run: planning step, no code changed (baseline on main `334ff69` per contract, inherited, unverified here) |
 
 ## 4. Next command
 
-`/10x-plan final-art-salon`
+`/10x-plan-review final-art-salon`
 
 ## 5. Open
 
-- Plan choices (research `## Open Questions`): remap rule A (refund) vs B (round up, no star change — recommended);
-  empty-slot look / when `furnishings-before` and `shadows` show; full-bleed scene vs `ROOM_LAYOUT.area`; hit-test
-  with injected alpha predicate; thumbnails and room-list miniature from scaled Images; new `MINIGAME_WORDS`
-  (`src/data/minigames.ts`) — no new caption has Ó/Ł, `tests/wordRound.test.ts` asserts one; cost curve over 7 tasks.
-- Tests to rewrite: `tests/roomsData.test.ts`, `tests/roomHit.test.ts`, `tests/wordRound.test.ts`; e2e
-  `tests/e2e/room-purchase.spec.ts`, `tests/e2e/room-change.spec.ts`, `tests/e2e/save-restart.spec.ts` (`chosen.floor`).
-- `TaskScene.shake` is not guarded by `prefersReducedMotion` (NFR "ogranicz ruch"); cheap fix, plan decides.
-- `pl.settings.artOk`/`artMissing` speak of task pictures only; counting room art needs new copy.
-- DESIGN-GAP candidates (rows from 105): loading screen (brief P2.2), empty-slot look and per-slot shadows, salon
-  miniature (P2.3), before → after transition (P3.6); closures of rows 22, 32–35.
-- Out-of-scope follow-ups get new triggers at archive (list in `change.md` `## Triggered follow-ups`).
+- Manual rows (human checklist): `[human]` 2.5 remap rule B vs A; `[human]` 10.4 iPad playthrough (≈ 59 MB textures,
+  offline loading screen); `[visual]` 4.7, 5.3, 5.4, 6.4, 7.4, 8.3 (states: before stage, after stage, each of 6 slots
+  empty/furnished, variant panel per slot, change mode, room done, stand-ins `?e2eArt=room`, animations, loading
+  screen, unlock-card book; widths 1440 and 1024, canvas 1920×1080 in FIT).
+- New e2e seams planned: `?e2eSave=legacy-salon` (phase 2, `src/testing/e2eHook.ts` `E2ESaveSeam`) and `?e2eArt=room`
+  (phase 4), both under existing markers in `vite/e2eHookGuard.mjs`.
+- Phase 3 is the largest (data switch + geometry + stand-ins + 3 unit tests + 3 e2e specs `room-purchase`,
+  `room-change`, `save-restart`); plan-review may split it.
+- Phase 5 deliberate break can only be proven visually (recorded as such in the plan).
+- DESIGN-GAP rows 105+ and follow-up triggers are written in phase 9 (`follow-ups/review-fixes.md`).
+- No lessons file in `context/foundation/` — none applied.
 
 ## 6. Autonomous decisions
 
-1. Scope derived from `change.md` and the step prompt (no question asked). Chosen: the research questions in the previous
-   handoff §5 plus the step prompt's list. Would change: nothing — the step fixes the scope.
-2. Three parallel workers (room logic/save, rendering/art pipeline, Phaser 4 docs) plus local measurements. Would
-   change: nothing material; all three returned.
-3. Recommended remap rule B (round up, no refund) over change.md decision 3 (A, refund). Why: `src/core/stars.ts`
-   states the balance only grows by what a round earned, and B keeps that while losing no value. Would change: the
-   maintainer preferring exact value with a refund, or a cost curve where rounding up gifts more than one cheap task.
-4. Recommended full resolution WebP (1,23 MB) over half (0,48 MB). Why: the scene is drawn 1:1 in the 1920×1080 game
-   space and a retina tablet shows ≈ 2048 device px; precache stays far under limits. Would change: a precache or
-   memory budget set by the maintainer, or a visual gate showing no difference at half size.
-5. Corrected the Phaser worker's GPU estimate (≈ 250 MB assumed 30 full-screen textures) to ≈ 59 MB from the manifest
-   sizes. Would change: trimming shadows or loading only one background at a time.
+1. **Remap rule B over A.** Chosen: round up, no refund, variants carried via `table→coffee-table`, `shelf→cabinet`,
+   `picture→wall-frames`. Rejected: A (refund in stars). Why: maintainer rule "nothing bought lost silently; stars never
+   taken away" holds without an exception to `src/core/stars.ts`; gift ≤ 1 task. Would change: maintainer prefers exact
+   value with refund, or a cost curve where rounding up gifts more than one task.
+2. **Costs 5, 7, 9, 10, 12, 13, 15 (sum 71), furniture order sofa, rug, coffee-table, cabinet, armchair, wall-frames.**
+   Why: within 5–15, mirrors the old order so every old piece maps inside the new prefix. Would change: maintainer costs (S-17).
+3. **Empty slots draw nothing after the stage; `furnishings-before` before it; `shadows` only when done.** Why: layers
+   cannot be split per slot. Would change: per-slot art from the designer.
+4. **Full-bleed scene, panel tray unchanged; full-resolution WebP; hit by `visibleRect` + `z` + injected alpha.**
+   Would change: visual gate showing a hidden preview, a precache/memory budget, or alpha cost on the tablet.
+5. **Word list = 6 new captions; the Ó/Ł assertion replaced by the existing `revealed('PÓŁKA')` test.** Would change: a
+   P3 slot whose caption has Ó/Ł.
+6. **Stage bought with one tap, no confirmation** (FR-016). Would change: playtest showing accidental stage purchases.
+7. **10 small phases**, ≤ 2 UI components each (new: `RoomLayer` p5, `LoadingScreen` p8); stand-ins land with the data
+   switch (p3) so every phase is green before art exists. Would change: plan-review asking to split p3.
+8. **Follow-ups in scope:** furniture art, V1/V3 captions, hit/outline, salon miniature, F4, F6, V2, book (gap 22),
+   `TaskScene.shake` reduced-motion guard. Out (re-triggered in p9): atlas, thermometer, hint highlight, narrator units
+   and "minus", O3, ` = ?`, SPATIAL, wallet, zero glyph, `audio.noAudio` → S-16b. Would change: spare budget after p9.
+9. **Roadmap status edit committed with the plan** (contract clean tree over the skill's "leave uncommitted").
