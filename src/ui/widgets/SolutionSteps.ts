@@ -1,4 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
+import { blankAsText } from '../../core/round/promptBlank';
 import type { RoundView } from '../../core/round/view';
 import { keepTogether } from '../../core/text/nowrap';
 import { TASK_LAYOUT } from '../../data/layout';
@@ -45,7 +46,7 @@ export class SolutionSteps {
 
     /** Height of the lines at scale 1, wrapped at `maxWidth` (the text keeps them, ready to be placed). */
     private measure(bar: SolutionBar, maxWidth: number): number {
-        this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.map(keepTogether).join('\n'));   // an equation never breaks (visual gate S-14b)
+        this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.map((line) => keepTogether(blankAsText(line))).join('\n'));   // an equation never breaks (S-14b); a blank reads "?" (S-14c)
         return this.text.height;
     }
 

@@ -4,7 +4,7 @@ import type { SkillDef } from '../types';
 import { NEGATIVE_TYPES } from './validate';
 
 /** Types whose prompts legitimately carry numbers beyond their params (dates, hours, hundreds). */
-export const UNBOUNDED_TYPES: readonly string[] = ['CALENDAR', 'ROMAN', 'NUMBER_WORDS', 'CLOCK', 'GRID'];
+export const UNBOUNDED_TYPES: readonly string[] = ['CALENDAR', 'ROMAN', 'NUMBER_WORDS', 'CLOCK', 'CLOCK_ELAPSED', 'GRID'];
 
 export const boundOf = (skill: Pick<SkillDef, 'params'>): number | undefined => {
     const raw = skill.params.max ?? skill.params.maxProduct ?? skill.params.maxDividend;
@@ -30,7 +30,8 @@ export const screenBound = (skill: Pick<SkillDef, 'type' | 'params'>): number | 
     }
     if (skill.type === 'CAPACITY') {
         const jugs = Array.isArray(p.jugs) ? (p.jugs as string[]) : [];
-        const perLitre = jugs.includes('container-quarter-l') ? 4 : jugs.includes('container-half-l') ? 2 : 1;
+        const glasses = Array.isArray(p.glasses) ? (p.glasses as string[]) : [];
+        const perLitre = jugs.includes('container-quarter-l') || glasses.includes('quarter') ? 4 : jugs.includes('container-half-l') || glasses.includes('half') ? 2 : 1;
         return perLitre * num(p.maxLitres);
     }
     if (skill.type === 'TEMPERATURE') {

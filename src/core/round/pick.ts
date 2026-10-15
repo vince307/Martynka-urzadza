@@ -10,7 +10,7 @@ import type { SkillDef, StageDef, StepDef } from '../types';
 export const playable = (skill: SkillDef): boolean =>
     (skill.answer === 'tiles' || skill.answer === 'keypad' || skill.answer === 'select' || skill.answer === 'drag' || skill.answer === 'digits') && getGenerator(skill.type) !== undefined;
 
-/** The first `n` steps that have at least one playable skill, in curriculum order. */
+/** The first `n` steps that have at least one playable skill, in curriculum order (a review step has none of its own, so it never counts). */
 export const firstPlayableSteps = (stage: StageDef, n: number): StepDef[] =>
     stage.steps.filter((step) => step.skills.some(playable)).slice(0, n);
 
@@ -36,6 +36,8 @@ export interface SkillBuckets {
     readonly current: readonly SkillDef[];
     readonly earlier: readonly SkillDef[];
     readonly previous: readonly SkillDef[];
+    /** Review step only: `current` split by step; a draw from `current` picks a group first, then a skill in it. */
+    readonly currentGroups?: readonly (readonly SkillDef[])[];
 }
 
 /**
@@ -60,6 +62,7 @@ export const pickRoundSkills = (buckets: SkillBuckets, weights: Weights, rng: Rn
                 break;
             }
         }
-        return rng.pick(buckets[chosen]);
+        const groups = chosen === 'current' ? buckets.currentGroups : undefined;
+        return groups && groups.length > 0 ? rng.pick(rng.pick(groups)) : rng.pick(buckets[chosen]);
     });
 };

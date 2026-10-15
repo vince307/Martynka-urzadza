@@ -1,0 +1,13 @@
+diff --git a/src/data/balance.ts b/src/data/balance.ts
+index 77dc111..347ee62 100644
+--- a/src/data/balance.ts
++++ b/src/data/balance.ts
+@@ -4,7 +4,7 @@ export const balance = {
+     round: { length: 5, starPerTask: 1, cleanRoundBonus: 2, uniqueRetries: 20 }, // uniqueRetries: redraws of a task whose prompt already appeared in the round (smallest pool 9 prompts, failure odds about 1e-7); PRD FR-006/FR-007: 5 tasks, 1 star each, +2 for a round without a mistake
+     warmup: { length: 6, previousCount: 3, currentSteps: 2, minFirstTry: 4 }, // placement warm-up: 3 tasks of the previous stage + 3 of the first 2 playable steps of the current one; fewer than 4 right on the first try lowers the stage by one (ZADANIA section 1 gives no numbers)
+     parentGate: { factorMin: 13, factorMax: 19, maxDigits: 3 }, // adult gate: two-digit x two-digit, outside E6 multiplication (6 x 12, 4 x 70); product 169-361
+-    keypad: { maxDigits: 7 }, // largest answers are 7-digit (E6)
++    keypad: { maxDigits: 5 }, // largest answers are 7-digit (E6)
+     narrator: { rate: 0.85, voicePollMs: 250, voiceTimeoutMs: 3000, cancelGapMs: 80, autoReadStages: ['E1', 'E2'] }, // speech rate, voice-list polling, pause after cancel (Safari), stages that read tasks aloud by default
+     mastery: { max: 5, unlockAt: 4, streakForGain: 3, gain: 1, historyLength: 200 }, // mastery 0..5 per skill from the first try only (ZADANIA section 1 "Adaptacja trudności"): 3 correct first tries in a row = +1, a miss resets the streak and never lowers mastery (maintainer decision 2026-10-13), a step unlocks at >= 4; history keeps the last ~200 answers (plan section 5)
+     curriculum: { weights: { current: 60, earlier: 30, previous: 10 }, minStartSteps: 2, unlockShare: 0.5 }, // ZADANIA section 1: ~60% current step, ~30% earlier steps, ~10% previous stage; the start step never falls below the 2nd playable step of the stage and follows the school calendar (rule D); a step unlocks when at least ceil(0.5 * n) of its skills reach mastery 4

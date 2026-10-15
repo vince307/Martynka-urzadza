@@ -1,0 +1,13 @@
+diff --git a/src/core/curriculum.ts b/src/core/curriculum.ts
+index 4f073cc..4d85267 100644
+--- a/src/core/curriculum.ts
++++ b/src/core/curriculum.ts
+@@ -22,7 +22,7 @@ export interface CurriculumRules {
+ const SEMESTER_MONTHS = 5; // September-January, February-June
+ 
+ /** A step the child can play: it has a playable skill, or it is a review step (draws from the rest of the stage). */
+-export const stepPlayable = (step: StepDef): boolean => step.review === true || step.skills.some(playable);
++export const stepPlayable = (step: StepDef): boolean => step.skills.some(playable);
+ 
+ /** Step numbers that can be played (see `stepPlayable`), in curriculum order. */
+ export const playableSteps = (stage: StageDef): number[] => stage.steps.filter(stepPlayable).map((step) => step.step);

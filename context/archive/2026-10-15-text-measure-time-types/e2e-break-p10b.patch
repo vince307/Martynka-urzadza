@@ -1,0 +1,13 @@
+diff --git a/src/core/round.ts b/src/core/round.ts
+index 2fc1d8e..8d01835 100644
+--- a/src/core/round.ts
++++ b/src/core/round.ts
+@@ -51,7 +51,7 @@ const sameSet = (a: readonly unknown[], b: readonly unknown[]): boolean =>
+ 
+ /** `check` wins; two lists are the same set in any order (a `select` answer), everything else is strict equality. */
+ const isCorrect = (task: Task, input: unknown): boolean => {
+-    if (task.check) return task.check(input);
++    if (task.check) return input === task.answer;
+     if (Array.isArray(task.answer) && Array.isArray(input)) return sameSet(task.answer, input);
+     return input === task.answer;
+ };

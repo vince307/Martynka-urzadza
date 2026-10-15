@@ -47,6 +47,29 @@ export const contexts: readonly Context[] = [
 /** A counted object: "1 naklejkę", "2 naklejki", "5 naklejek" (accusative for 1). */
 export const obj = (n: number, ctx: Context): string => (n === 1 ? `1 ${ctx.accusative}` : countNoun(n, ctx.noun));
 
+/** Goods for PRICE: `one` is the nominative with the right "jeden / jedna / jedno", `accusative` follows "kupił(a) 1". */
+export interface Good {
+    noun: PluralForms;
+    accusative: string;
+    one: string;
+    price: readonly [number, number]; // a believable price of one, whole złoty, min..max (>= 2: see PRICE)
+}
+
+export const goods: readonly Good[] = [
+    { noun: nouns.zeszyt, accusative: 'zeszyt', one: 'jeden zeszyt', price: [2, 8] },
+    { noun: nouns.długopis, accusative: 'długopis', one: 'jeden długopis', price: [2, 6] },
+    { noun: nouns.bułka, accusative: 'bułkę', one: 'jedna bułka', price: [2, 4] },
+    { noun: nouns.lizak, accusative: 'lizak', one: 'jeden lizak', price: [2, 5] },
+    { noun: nouns.gumka, accusative: 'gumkę', one: 'jedna gumka', price: [2, 6] },
+    { noun: nouns.pocztówka, accusative: 'pocztówkę', one: 'jedna pocztówka', price: [2, 8] },
+    { noun: nouns.ołówek, accusative: 'ołówek', one: 'jeden ołówek', price: [2, 5] },
+    { noun: nouns.banan, accusative: 'banan', one: 'jeden banan', price: [2, 5] },
+    { noun: nouns.pączek, accusative: 'pączek', one: 'jeden pączek', price: [2, 6] },
+];
+
+/** "3 zeszyty", "1 bułkę": accusative for 1. */
+export const goodObj = (n: number, good: Good): string => (n === 1 ? `1 ${good.accusative}` : countNoun(n, good.noun));
+
 export type WordKind = 'sum' | 'left' | 'start' | 'twoSteps' | 'moreBy' | 'age' | 'groups' | 'share' | 'each';
 
 export interface WordArgs {

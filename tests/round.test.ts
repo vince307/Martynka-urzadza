@@ -8,7 +8,9 @@ import { createRng } from '../src/core/rng';
 import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
 import { balance } from '../src/data/balance';
+import { E1 } from '../src/data/curriculum/E1';
 import { E3 } from '../src/data/curriculum/E3';
+import { generateInequality } from '../src/core/tasks/generators/inequality';
 
 const RULES: RoundRules = balance.round;
 
@@ -288,5 +290,49 @@ describe('first wrong try (S-08, parent preview)', () => {
         const r = roundResults(s);
         expect(r[0]).toEqual({ skillId: 'T.0', outcome: 'first' });
         expect(r[1]).toEqual({ skillId: 'T.1', outcome: null });
+    });
+});
+
+// S-14c: a task with several right tiles (INEQUALITY, `Task.check`). A right tile that is not the model answer must pay
+// like the model answer in every phase: a child never sees a right tap counted as wrong.
+describe('round with several right tiles (Task.check)', () => {
+    const inequality = (): Task => {
+        const skill = E1.steps.flatMap((st) => st.skills).find((sk) => sk.id === 'E1.9.inequality_10');
+        if (!skill) throw new Error('E1.9.inequality_10 is missing');
+        return generateInequality(skill, createRng(7));
+    };
+    /** A right tile other than the model answer, and a wrong one, read from the prompt by an independent oracle. */
+    const tiles = (t: Task): { otherRight: number; wrong: number } => {
+        const m = /(\d+|□) ([+−]) (\d+|□) ([<>]) (\d+)$/.exec(t.prompt);
+        if (!m) throw new Error(`unparsable prompt "${t.prompt}"`);
+        const holds = (x: number): boolean => {
+            const [l, r] = [m[1] === '□' ? x : Number(m[1]), m[3] === '□' ? x : Number(m[3])];
+            const v = m[2] === '+' ? l + r : l - r;
+            return m[4] === '<' ? v < Number(m[5]) : v > Number(m[5]);
+        };
+        const choices = (t.choices ?? []) as number[];
+        const otherRight = choices.find((c) => c !== t.answer && holds(c));
+        const wrong = choices.find((c) => !holds(c));
+        if (otherRight === undefined || wrong === undefined) throw new Error('expected a second right tile and a wrong one');
+        return { otherRight, wrong };
+    };
+
+    it('pays a star on the first try for a right tile that is not the model answer', () => {
+        const t = inequality();
+        const s = answer(startRound([t], RULES), tiles(t).otherRight);
+        expect(s.phase).toBe('done');
+        expect(s.outcomes[0]).toBe('first');
+        expect(s.starsEarned).toBe(RULES.starPerTask);
+    });
+
+    it('pays on the second try and settles the retype with the other right tile', () => {
+        const t = inequality();
+        const { otherRight, wrong } = tiles(t);
+        const second = answer(answer(startRound([t], RULES), wrong), otherRight);
+        expect(second.outcomes[0]).toBe('second');
+        let r = answer(answer(startRound([t], RULES), wrong), wrong);
+        for (let i = 0; i < 10 && r.phase === 'solution'; i += 1) r = nextSolutionStep(r);
+        expect(r.phase).toBe('retype');
+        expect(answer(r, otherRight).phase).toBe('done');
     });
 });

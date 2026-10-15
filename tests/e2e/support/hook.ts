@@ -15,6 +15,10 @@ export interface Snapshot {
     /** The result boxes of a written column ('digits' mode): how many and the digits typed so far (from the ones); null in any other mode. */
     digits?: { count: number; filled: number[] } | null;
     answer: unknown;
+    /** The tiles the task's `check` accepts (several right tiles), null for a task without `check`. */
+    correctChoices?: (number | string)[] | null;
+    /** The tile painted as correct now (read from the widget), null when none. */
+    markedTile?: number | string | null;
     /** The drawing of the open task (a copy), null for a task without one. */
     visual?: { kind: string } | null;
     /** The art images on screen now (S-14), read from the widget's own objects: texture key and whether the texture is loaded. */
@@ -326,7 +330,8 @@ export const answerWrong = async (page: Page): Promise<number | string | (number
     const state = await snapshot(page);
     if (state.input === 'tiles') {
         const { tiles } = await targets(page);
-        const tile = tiles.find((t) => t.value !== state.answer)!;
+        const right = state.correctChoices ?? [state.answer as number | string];
+        const tile = tiles.find((t) => !right.includes(t.value))!;
         await tapScene(page, tile);
         return tile.value;
     }

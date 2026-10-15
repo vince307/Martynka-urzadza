@@ -1,7 +1,7 @@
 // Keypad buffer rules: digits append up to the limit, delete removes the last
 // digit, no leading zeros, "ok" on an empty buffer submits nothing.
 import { describe, expect, it } from 'vitest';
-import { keypadInput, type KeypadKey } from '../src/core/round/keypad';
+import { keypadDisplay, keypadInput, type KeypadKey } from '../src/core/round/keypad';
 import { balance } from '../src/data/balance';
 
 const type = (keys: KeypadKey[], max = 3): { buffer: string; submit: number | null } => {
@@ -39,5 +39,16 @@ describe('keypadInput', () => {
     });
     it('only ok submits', () => {
         expect(type(['1', '2']).submit).toBeNull();
+    });
+});
+
+// Visual gate S-14c: "220000" typed for E6.10 was six bare digits while the prompt and the solution write "220 000".
+describe('keypadDisplay', () => {
+    it('groups the typed number like formatNumber (from 10 000) and leaves the empty buffer empty', () => {
+        expect(keypadDisplay('')).toBe('');
+        expect(keypadDisplay('0')).toBe('0');
+        expect(keypadDisplay('9103')).toBe('9103');
+        expect(keypadDisplay('220000')).toBe('220\u00A0000');
+        expect(keypadDisplay('1000000')).toBe('1\u00A0000\u00A0000');
     });
 });

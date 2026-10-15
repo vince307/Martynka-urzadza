@@ -8,7 +8,7 @@ import type { SkillBuckets } from './pick';
 
 /**
  * True when the skill's result can only be read from a picture that is missing: MONEY_COUNT (any coin or note it can
- * draw), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE and CAPACITY `howMany` carry the amounts in
+ * draw), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
  * the prompt, so they are never blocked.
  */
 export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): boolean => {
@@ -17,8 +17,11 @@ export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): bo
     switch (skill.type) {
         case 'MONEY_COUNT':
             return any(parseMoneyCountParams(skill.params).ids);
-        case 'MASS':
-            return any(parseMassParams(skill.params).weights);
+        case 'MASS': {
+            // The text variant (brutto / netto / tara, conversions) has no picture, so it is never blocked.
+            const p = parseMassParams(skill.params);
+            return p.variant !== 'text' && any(p.weights);
+        }
         case 'CAPACITY': {
             const p = parseCapacityParams(skill.params);
             return p.variant === 'toLitres' && any(p.jugs);
@@ -38,5 +41,9 @@ export const withoutArtBlocked = (buckets: SkillBuckets, blocked: (s: SkillDef) 
     const earlier = keep(buckets.earlier);
     const previous = keep(buckets.previous);
     if (current.length + earlier.length + previous.length === 0) return buckets;
-    return { current: current.length > 0 && current.length >= minCurrent ? current : buckets.current, earlier, previous };
+    const useCurrent = current.length > 0 && current.length >= minCurrent;
+    const result = { current: useCurrent ? current : buckets.current, earlier, previous };
+    if (!buckets.currentGroups) return result;
+    // Review step: the groups follow `current` (filtered groups, empty ones dropped, or the whole unfiltered set).
+    return { ...result, currentGroups: useCurrent ? buckets.currentGroups.map(keep).filter((g) => g.length > 0) : buckets.currentGroups };
 };

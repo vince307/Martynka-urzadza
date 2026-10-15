@@ -34,6 +34,7 @@ const jugsOf = (task: Task, where: string): readonly JugId[] => {
 describe('generateCapacity toLitres', () => {
     for (const s of [E2_LITRES, HALF_L, QUARTER_L]) {
         const p = parseCapacityParams(s.params);
+        if (p.variant === 'text') throw new Error('fixture');
         it(`${s.id}: 1000 draws add up the drawn jugs to whole litres (at most 10 jugs, up to ${p.maxLitres} l)`, () => {
             const seen = new Set<string>();
             forEachDraw(generateCapacity, s, {}, (task, where) => {

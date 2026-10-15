@@ -33,7 +33,7 @@ const playableOf = (st: StageDef, pred: (step: number) => boolean): SkillDef[] =
 const ids = (skills: readonly SkillDef[]): string[] => skills.map((s) => s.id);
 // The step whose skills are "current" for an unlocked step: the nearest playable step at or below it, else the first.
 const currentStep = (st: StageDef, unlocked: number): number => {
-    const steps = st.steps.filter((x) => x.skills.some(isPlayable)).map((x) => x.step);
+    const steps = st.steps.filter((x) => x.review === true || x.skills.some(isPlayable)).map((x) => x.step);
     const below = steps.filter((n) => n <= unlocked);
     return below.length > 0 ? Math.max(...below) : steps[0];
 };
@@ -48,8 +48,9 @@ describe('skillBuckets', () => {
     });
 
     it('an unplayable unlocked step falls back to the nearest lower playable step', () => {
-        // E6 step 2 has no playable skill (clock durations wait for a later change): unlocked step 2 plays step 1.
-        const b = skillBuckets(stage('E6'), previousOf('E6'), 2);
+        // E6 with step 2 emptied has no playable skill there: unlocked step 2 plays step 1.
+        const gapped: StageDef = { ...stage('E6'), steps: stage('E6').steps.map((st) => (st.step === 2 ? { ...st, skills: [] } : st)) };
+        const b = skillBuckets(gapped, previousOf('E6'), 2);
         expect(new Set(b.current.map((s) => s.step))).toEqual(new Set([1]));
         expect(b.earlier).toEqual([]);
     });
@@ -68,8 +69,11 @@ describe('skillBuckets', () => {
             for (const unlocked of stage(id).steps.map((s) => s.step)) {
                 const b = skillBuckets(stage(id), previousOf(id), unlocked);
                 const cur = currentStep(stage(id), unlocked);
-                expect(ids(b.current), `${id}@${unlocked} current`).toEqual(ids(playableOf(stage(id), (n) => n === cur)));
-                expect(ids(b.earlier), `${id}@${unlocked} earlier`).toEqual(ids(playableOf(stage(id), (n) => n < cur)));
+                // A review step plays every other step of the stage as "current" and has no earlier steps.
+                const review = stage(id).steps.find((x) => x.step === cur)?.review === true;
+                const reviewStepNumbers = new Set(stage(id).steps.filter((x) => x.review === true).map((x) => x.step));
+                expect(ids(b.current), `${id}@${unlocked} current`).toEqual(ids(playableOf(stage(id), (n) => (review ? !reviewStepNumbers.has(n) : n === cur))));
+                expect(ids(b.earlier), `${id}@${unlocked} earlier`).toEqual(review ? [] : ids(playableOf(stage(id), (n) => n < cur)));
                 const prev = previousOf(id);
                 expect(ids(b.previous), `${id}@${unlocked} previous`).toEqual(prev ? ids(playableOf(prev, () => true)) : []);
             }

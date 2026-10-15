@@ -10,7 +10,7 @@ import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
 import { generateTask } from './tasks/generateTask';
 import type { Task } from './tasks/types';
-import type { Adaptation, SkillDef, StageDef, StageId } from './types';
+import type { Adaptation, SkillDef, StageDef, StageId, StepDef } from './types';
 
 /** Numbers of the curriculum rules; they come from data/balance.ts as arguments. */
 export interface CurriculumRules {
@@ -21,9 +21,14 @@ export interface CurriculumRules {
 
 const SEMESTER_MONTHS = 5; // September-January, February-June
 
-/** Step numbers that have at least one playable skill, in curriculum order. */
-export const playableSteps = (stage: StageDef): number[] =>
-    stage.steps.filter((step) => step.skills.some(playable)).map((step) => step.step);
+/** A step the child can play: it has a playable skill, or it is a review step (draws from the rest of the stage). */
+export const stepPlayable = (step: StepDef): boolean => step.review === true || step.skills.some(playable);
+
+/** Step numbers that can be played (see `stepPlayable`), in curriculum order. */
+export const playableSteps = (stage: StageDef): number[] => stage.steps.filter(stepPlayable).map((step) => step.step);
+
+/** Steps a child can start on: the playable ones minus review steps (a review step is only ever unlocked by play). */
+const startableSteps = (stage: StageDef): number[] => stage.steps.filter((step) => step.review !== true && stepPlayable(step)).map((step) => step.step);
 
 /**
  * First unlocked step of `stage` for a child of `age` in `month` (getMonth(), 0-11).
@@ -31,7 +36,7 @@ export const playableSteps = (stage: StageDef): number[] =>
  * semester sets the share of playable steps, never fewer than `minStartSteps`.
  */
 export const calendarStart = (stage: StageDef, age: number, month: number, data: PlacementData, rules: CurriculumRules): number => {
-    const steps = playableSteps(stage);
+    const steps = startableSteps(stage);
     if (steps.length === 0) throw new RangeError(`Stage ${stage.id} has no playable steps`);
     const calendarStage = proposeStage(age, month, data);
     const behind = STAGE_ORDER.indexOf(stage.id) < STAGE_ORDER.indexOf(calendarStage);
@@ -90,18 +95,26 @@ export const currentStep = (stage: StageDef, unlockedStep: number): number => {
 };
 
 /**
- * The three pools a round draws from. `current` is the playable step at `unlockedStep` (an unplayable step falls to the
+ * The pools a round draws from (three, plus `currentGroups` on a review step). `current` is the playable step at `unlockedStep` (an unplayable step falls to the
  * nearest lower playable one, and below the first playable step to the first), `earlier` the playable steps before it,
- * `previous` all playable skills of the previous stage (empty for E1).
+ * `previous` all playable skills of the previous stage (empty for E1). On a review step (`StepDef.review`) `current` is
+ * every playable skill of the stage's other steps, also given as `currentGroups` (one group per step, so a draw picks the
+ * step first), and `earlier` is empty.
  */
 export const skillBuckets = (stage: StageDef, previous: StageDef | undefined, unlockedStep: number): SkillBuckets => {
     const current = currentStep(stage, unlockedStep);
     const skillsOf = (pick: (step: number) => boolean): SkillDef[] =>
         stage.steps.filter((s) => pick(s.step)).flatMap((s) => s.skills.filter(playable));
+    const previousSkills = previous ? previous.steps.flatMap((s) => s.skills.filter(playable)) : [];
+    if (stage.steps.some((s) => s.step === current && s.review === true)) {
+        // Review step: the whole stage, grouped by step so a draw picks the step first.
+        const groups = stage.steps.filter((s) => s.review !== true).map((s) => s.skills.filter(playable)).filter((g) => g.length > 0);
+        return { current: groups.flat(), earlier: [], previous: previousSkills, currentGroups: groups };
+    }
     return {
         current: skillsOf((n) => n === current),
         earlier: skillsOf((n) => n < current),
-        previous: previous ? previous.steps.flatMap((s) => s.skills.filter(playable)) : [],
+        previous: previousSkills,
     };
 };
 
@@ -125,7 +138,11 @@ export const buildAdaptiveRound = (
     // Nothing missing: the buckets and the rng use stay exactly as without the argument.
     const pools =
         art && missing && missing.size > 0
-            ? withoutArtBlocked(buckets, (skill) => artBlocked(skill, missing), unlockThreshold(buckets.current.length, art.unlockShare))
+            ? withoutArtBlocked(
+                  buckets,
+                  (skill) => artBlocked(skill, missing),
+                  buckets.currentGroups ? 1 : unlockThreshold(buckets.current.length, art.unlockShare),
+              )
             : buckets;
     const skills = pickRoundSkills(pools, weights, rng, rules.length);
     return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);

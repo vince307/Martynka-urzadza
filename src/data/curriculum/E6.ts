@@ -29,15 +29,29 @@ export const E6: StageDef = {
                 skill('E6.1.calendar_time', 1, 'CALENDAR', { variants: ['timeFacts', 'monthDays', 'quarter'] }, 'tiles'),
                 skill('E6.1.temperature_negative', 1, 'TEMPERATURE', { variant: 'read', low: -30, high: 30, step: 2, answer: 'text' }, 'tiles'),
                 skill('E6.1.temperature_diff', 1, 'TEMPERATURE', { variant: 'diff', low: -20, high: 20, step: 2, answer: 'number' }),
+                skill('E6.1.time_units', 1, 'TIME_UNITS', { pairs: ['hMin', 'minS', 'dayH', 'quarterMin'], max: 400 }),
             ],
         },
-        { step: 2, title: 'Ile minut do pełnej godziny, czas trwania programu', types: ['CLOCK_ELAPSED'], skills: [] },
+        {
+            step: 2,
+            title: 'Ile minut do pełnej godziny, czas trwania programu',
+            childName: 'Ile minut do pełnej godziny',
+            types: ['CLOCK_ELAPSED'],
+            skills: [
+                skill('E6.2.clock_to_hour', 2, 'CLOCK_ELAPSED', { variants: ['toHour'], maxSpan: 60 }),
+                skill('E6.2.clock_span_programme', 2, 'CLOCK_ELAPSED', { variants: ['span'], maxSpan: 120, theme: 'show' }),
+            ],
+        },
         {
             step: 3,
             title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych',
             childName: 'Obwody figur na kratkach',
             types: ['MASS', 'LENGTH', 'PERIMETER'],
-            skills: [skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 })],
+            skills: [
+                skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 }),
+                skill('E6.3.mass_tare_kg', 3, 'MASS', { variant: 'text', kinds: ['net', 'gross', 'tare'], unit: 'kg', max: 100 }),
+                skill('E6.3.length_two_units', 3, 'LENGTH', { variant: 'twoUnit', pairs: ['cm-mm', 'm-cm'], max: 1000 }),
+            ],
         },
         {
             step: 4,
@@ -57,6 +71,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.5.complement_100_1000', 5, 'COMPLEMENT', { max: 1000, targets: [100, 1000] }),
                 skill('E6.5.place_read_1000', 5, 'PLACE_VALUE', { variant: 'read', min: 100, max: 999 }),
+                skill('E6.5.mass_tonne', 5, 'MASS', { variant: 'text', kinds: ['tToKg', 'qToKg'], max: 5000 }),
             ],
         },
         {
@@ -96,6 +111,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.9.rounding_100', 9, 'ROUNDING', { max: 10000, to: 100 }),
                 skill('E6.9.rounding_1000', 9, 'ROUNDING', { max: 10000, to: 1000 }),
+                skill('E6.9.place_value_10000', 9, 'PLACE_VALUE', { variant: 'thousands', max: 10000 }),
             ],
         },
         {
@@ -106,8 +122,9 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.10.roman_2000', 10, 'ROMAN', { max: 2000 }, 'tiles'),
                 skill('E6.10.compare_num_1000000', 10, 'COMPARE_NUM', { max: 1000000 }, 'tiles'),
+                skill('E6.10.place_value_1000000', 10, 'PLACE_VALUE', { variant: 'orders', max: 1000000 }),
             ],
         },
-        { step: 11, title: 'Powtórka całego roku — „Test przed klasą 4”', types: ['MIX', 'LOGIC'], skills: [] },
+        { step: 11, title: 'Powtórka całego roku — „Test przed klasą 4”', types: ['MIX', 'LOGIC'], skills: [], review: true, childName: 'Powtórka roku' },
     ],
 };

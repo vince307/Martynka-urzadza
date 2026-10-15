@@ -42,6 +42,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.3.number_words_100', 3, 'NUMBER_WORDS', { max: 100 }, 'tiles'),
                 skill('E5.3.calendar_months', 3, 'CALENDAR', { variants: ['nextMonth', 'prevMonth', 'quarter', 'romanMonth'] }, 'tiles'),
+                skill('E5.3.clock_end_lesson', 3, 'CLOCK_ELAPSED', { variants: ['end'], maxSpan: 45, lesson: true }, 'tiles'),
             ],
         },
         {
@@ -63,6 +64,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.5.capacity_quarter_l', 5, 'CAPACITY', { jugs: ['container-1l', 'container-half-l', 'container-quarter-l'], variant: 'toLitres', maxLitres: 4 }),
                 skill('E5.5.mass_half_kg_e5', 5, 'MASS', { variant: 'half', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
+                skill('E5.5.capacity_half_l_e5', 5, 'CAPACITY', { variant: 'text', glasses: ['half', 'quarter'], maxLitres: 5 }),
             ],
         },
         {
@@ -80,6 +82,8 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.7.compare_diff_100', 7, 'COMPARE_DIFF', { max: 100 }),
                 skill('E5.7.length_ruler_mm', 7, 'LENGTH', { variant: 'ruler', unit: 'mm', lengthCm: 10, minMm: 11, maxMm: 95, startShift: 0.3 }),
+                skill('E5.7.unit_choice', 7, 'UNIT_CHOICE', { quantities: ['length', 'mass'] }, 'tiles'),
+                skill('E5.7.mass_grams', 7, 'MASS', { variant: 'text', kinds: ['kgToG', 'fractionKg', 'net', 'gross', 'tare'], unit: 'g', max: 5000 }),
             ],
         },
         {
@@ -87,7 +91,10 @@ export const E5: StageDef = {
             title: 'Doba, rozkład jazdy; mnożenie przez 6, 7, 8, 9',
             childName: 'Mnożenie przez 6, 7, 8, 9',
             types: ['CLOCK_ELAPSED', 'MULT'],
-            skills: [skill('E5.8.mult_6_9', 8, 'MULT', { maxProduct: 100, factors: [6, 7, 8, 9] })],
+            skills: [
+                skill('E5.8.mult_6_9', 8, 'MULT', { maxProduct: 100, factors: [6, 7, 8, 9] }),
+                skill('E5.8.clock_span_timetable', 8, 'CLOCK_ELAPSED', { variants: ['span', 'nightHours'], maxSpan: 75, theme: 'ride' }),
+            ],
         },
         {
             step: 9,
@@ -104,14 +111,21 @@ export const E5: StageDef = {
             title: 'Ilość · cena = wartość; „n razy więcej/mniej”; mnożenie kilku liczb',
             childName: 'Zadania tekstowe do 100',
             types: ['WORD', 'PRICE', 'TIMES_MORE'],
-            skills: [skill('E5.10.word_100', 10, 'WORD', { max: 100, kinds: ['groups', 'share', 'each', 'sum', 'left'] })],
+            skills: [
+                skill('E5.10.word_100', 10, 'WORD', { max: 100, kinds: ['groups', 'share', 'each', 'sum', 'left'] }),
+                skill('E5.10.price_100', 10, 'PRICE', { variants: ['total', 'unit'], max: 100, maxQty: 10 }),
+                skill('E5.10.times_more_100', 10, 'TIMES_MORE', { variants: ['more', 'less', 'factor'], max: 100, maxFactor: 10 }),
+            ],
         },
         {
             step: 11,
             title: 'Kolejność działań; miesiące 30/31 dni, kwartały',
-            childName: 'Miesiące i kwartały',
+            childName: 'Kolejność działań i kwartały',
             types: ['ORDER_OPS', 'CALENDAR'],
-            skills: [skill('E5.11.calendar_days', 11, 'CALENDAR', { variants: ['monthDays', 'quarter'] }, 'tiles')],
+            skills: [
+                skill('E5.11.order_ops_100', 11, 'ORDER_OPS', { forms: ['a+b*c', 'a-b:c', 'a*b+c', 'a:b-c'], max: 100 }),
+                skill('E5.11.calendar_days', 11, 'CALENDAR', { variants: ['monthDays', 'quarter'] }, 'tiles'),
+            ],
         },
         {
             step: 12,
@@ -121,6 +135,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.12.perimeter_side_square', 12, 'PERIMETER', { variant: 'sideSquare', max: 40 }),
                 skill('E5.12.perimeter_side_rect', 12, 'PERIMETER', { variant: 'sideRect', max: 60 }),
+                skill('E5.12.length_scale', 12, 'LENGTH', { variant: 'scale', scales: [2, 5, 10], max: 100 }),
             ],
         },
     ],

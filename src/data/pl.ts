@@ -1,6 +1,7 @@
 // All player-facing Polish strings live here. Scenes and generators reference
 // keys, never literals. Task prompts that need a number are functions.
 import type { FailureStage } from '../core/autosave';
+import { formatNumber } from '../core/text/formatNumber';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
@@ -226,6 +227,7 @@ export const pl = {
         gave: ['oddał', 'oddała'],
         ate: ['zjadł', 'zjadła'],
         got: ['dostał', 'dostała'],
+        paid: ['zapłacił', 'zapłaciła'],
         has: 'ma',
         is: 'jest',
         are: 'są',
@@ -378,6 +380,56 @@ export const pl = {
             n === 0 ? 'Zero kończy się cyfrą 0, więc jest parzyste' : `${n} kończy się cyfrą ${lastDigit}, więc jest ${isEven ? 'parzysta' : 'nieparzysta'}`,
         selectEven: 'Zaznacz wszystkie liczby parzyste.',
         selectEvenHint: 'Liczby parzyste kończą się na 0, 2, 4, 6 albo 8.',
+        // INEQUALITY: several tiles fit; the hint walks through the equality at the boundary.
+        inequality: (expr: string) => `Jaka liczba pasuje do okienka? ${expr}`,
+        inequalityEquality: (equation: string) => `Najpierw znajdź równość: ${equation}.`,
+        inequalityBoundary: (fact: string, relation: 'less' | 'more', boundary: number) =>
+            `${fact}, więc w okienku musi być ${relation === 'less' ? 'mniej' : 'więcej'} niż ${boundary}.`,
+        inequalityExample: (fact: string, check: string, answer: number) => `Na przykład ${fact}, a ${check}. Pasuje ${answer}.`,
+        // ORDER_OPS: the first hint names the step that comes first, without its result.
+        orderOpsFirst: (op: 'mult' | 'div', expr: string) => `Najpierw ${op === 'mult' ? 'mnożenie' : 'dzielenie'}: ${expr}.`,
+        // TIMES_MORE: "razy" is multiplication or division, never "o" (adding or taking away).
+        timesMoreMore: (expr: string) => `„Razy więcej” to mnożenie, nie dodawanie: ${expr}.`,
+        timesMoreLess: (expr: string) => `„Razy mniej” to dzielenie, nie odejmowanie: ${expr}.`,
+        timesMoreFactor: (expr: string) => `„Ile razy więcej” to dzielenie, nie odejmowanie: ${expr}.`,
+        // Prompts: `has` is the verb ("ma"), `gen` the noun in the genitive plural, `base`/`total` counted nouns ("3 klocki").
+        timesMorePromptMore: (person: string, other: string, has: string, base: string, k: number, gen: string) =>
+            `${person} ${has} ${base}. ${other} ${has} ${k} razy więcej ${gen}. Ile ${gen} ${has} ${other}?`,
+        timesMorePromptLess: (person: string, other: string, has: string, total: string, k: number, gen: string) =>
+            `${person} ${has} ${total}. ${other} ${has} ${k} razy mniej ${gen}. Ile ${gen} ${has} ${other}?`,
+        timesMorePromptFactor: (person: string, other: string, has: string, base: string, total: string, gen: string) =>
+            `${person} ${has} ${base}, a ${other} ${has} ${total}. Ile razy więcej ${gen} ${has} ${other}?`,
+        // PRICE: whole złoty; the goods are in data/wordTemplates.ts.
+        priceTotalHint: (expr: string) => `Cena jednej sztuki razy liczba sztuk: ${expr}.`,
+        priceUnitHint: (expr: string) => `Cenę jednej sztuki liczymy dzieleniem: ${expr}.`,
+        // `bought`/`paid` agree with the buyer, `goods` is the counted accusative ("4 zeszyty", "1 bułkę"), `one` "jeden zeszyt".
+        priceTotalPrompt: (person: string, bought: string, goods: string, one: string, price: string, paid: string) =>
+            `${person} ${bought} ${goods}. ${one.charAt(0).toUpperCase() + one.slice(1)} kosztuje ${price}. Ile złotych ${paid} za zakupy?`,
+        priceUnitPrompt: (person: string, bought: string, goods: string, total: string, one: string) =>
+            `${person} ${bought} ${goods} za ${total}. Ile kosztuje ${one}?`,
+        // CLOCK_ELAPSED: elapsed time. Times are written "8.15"; the unit after "jest jeszcze / mija" is the nominative.
+        elapsedToFullHour: 'Najpierw policz minuty do pełnej godziny.',
+        elapsedToFullHourLine: (next: string, minutes: number) => `Do ${next} brakuje ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedEndAddFirst: 'Dodaj czas trwania do minut na zegarze.',
+        elapsedEndRest: (minutes: number) => `Potem jeszcze ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedEndAnswer: (time: string) => `Kończy się o ${time}.`,
+        elapsedSpanSameHour: 'Czas jest w tej samej godzinie, więc odejmij minuty.',
+        elapsedSpanAfterHour: (next: string, end: string, minutes: number) => `Od ${next} do ${end} mija ${countNoun(minutes, nouns.minuta)}.`,
+        elapsedToHourFirst: 'Godzina ma 60 minut. Od 60 odejmij minuty, które już minęły.',
+        elapsedNightFirst: 'Najpierw policz godziny do północy, czyli do 24.00.',
+        elapsedNightAfter: (end: string, hours: number) => `Od północy do ${end} mija ${countNoun(hours, nouns.godzina)}.`,
+        // TIME_UNITS: "Ile minut to 3 godziny?"; the asked unit is the genitive plural, the given one agrees with its number.
+        timeUnitsAsk: (asked: string, given: string) => `Ile ${asked} to ${given}?`,
+        timeUnitsFact: (big: string, small: string) => `1 ${big} to ${small}.`,
+        // UNIT_CHOICE: "Długopis ma 14 □." with unit tiles. The first hint holds no digit and names no unit.
+        unitChoicePrompt: (subject: string, verb: 'ma' | 'waży', n: number) => `${subject} ${verb} ${n} □.`,
+        unitChoiceSpeak: (subject: string, verb: 'ma' | 'waży', n: number) => `${subject} ${verb} ${n}. Jaka to jednostka?`,
+        unitChoiceFirst: {
+            length: 'Porównaj z paznokciem, ręką, klasą i długą drogą.',
+            mass: 'Czy to lekkie jak piórko, czy ciężkie jak człowiek?',
+        },
+        unitChoiceLike: (subject: string, like: string) => `${subject} ${like}.`,
+        unitChoiceAnswer: (subject: string, verb: 'ma' | 'waży', n: number, unit: string) => `${subject} ${verb} ${n} ${unit}.`,
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
         wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
         numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,
@@ -454,6 +506,16 @@ export const pl = {
         lengthMetreHint: '1 m = 100 cm',
         rulerUnitLabel: 'cm',   // printed at the end of the drawn ruler (its digits count centimetres, also on the millimetre ruler)
         lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
+        // LENGTH in words (S-14c): plan scale and two-unit expressions. The place is a nominative subject, so no case has to agree.
+        lengthScalePlanPrompt: (perCm: number, place: string, plan: number) =>
+            `Na planie 1 cm to ${perCm} m. ${place} ma na planie ${plan} cm długości. Ile metrów długości ma naprawdę?`,
+        lengthScaleRealPrompt: (perCm: number, place: string, real: number) =>
+            `Na planie 1 cm to ${perCm} m. ${place} ma naprawdę ${real} m długości. Ile centymetrów ma ${place.toLowerCase()} na planie?`,
+        lengthScalePlanFirst: 'Pomnóż centymetry z planu przez to, ile metrów ma 1 cm.',
+        lengthScaleRealFirst: 'Sprawdź, ile razy 1 cm planu mieści się w prawdziwej długości.',
+        lengthScalePlanAnswer: (place: string, real: number) => `${place} ma naprawdę ${real} m długości.`,
+        lengthScaleRealAnswer: (place: string, plan: number) => `${place} ma na planie ${plan} cm długości.`,
+        lengthFact: (big: string, factor: number, small: string) => `1 ${big} = ${factor} ${small}`,
         // MONEY_COUNT, MONEY_CHANGE and MASS (S-14). Amounts are written with the short signs (zł, gr, kg, dag) by the caller; the
         // spoken forms come from core/text/measure.ts. A purchase is one thing in the accusative, so no numeral has to agree with it.
         moneyCountPrompt: (mode: 'number-zl' | 'number-gr' | 'text') =>
@@ -474,6 +536,23 @@ export const pl = {
         moneyChangeGroszeHint: 'Złotówka to 100 groszy.',
         moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
         moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
+        // MASS in words (S-14c): brutto / netto / tara of a pack and unit conversions, no drawing. The pack is one thing in the
+        // nominative, so no numeral has to agree with it; the asked unit is the genitive plural, the given one agrees with its number.
+        massPackPrompt: {
+            net: (pack: string, a: number, b: number, unit: string) => `${pack}: razem z opakowaniem (brutto) waży ${a} ${unit}, samo opakowanie (tara) ${b} ${unit}. Ile waży zawartość (netto)?`,
+            gross: (pack: string, a: number, b: number, unit: string) => `${pack}: zawartość (netto) waży ${a} ${unit}, a opakowanie (tara) ${b} ${unit}. Ile waży całość (brutto)?`,
+            tare: (pack: string, a: number, b: number, unit: string) => `${pack}: razem z opakowaniem (brutto) waży ${a} ${unit}, a sama zawartość (netto) ${b} ${unit}. Ile waży opakowanie (tara)?`,
+        },
+        massPackFirst: {
+            net: 'Brutto to masa z opakowaniem, netto to sama zawartość.',
+            gross: 'Brutto to zawartość razem z opakowaniem.',
+            tare: 'Tara to samo opakowanie: brutto bez netto.',
+        },
+        massAsk: (asked: string, given: string) => `Ile ${asked} to ${given}?`,
+        massFact: (big: string, small: string) => `1 ${big} to ${small}.`,
+        massHalfKgPrompt: 'Ile gramów to pół kilograma?',
+        massQuarterKgPrompt: 'Ile gramów to ćwierć kilograma?',
+        massToKiloPrompt: (grams: number) => `Na wadze jest ${grams} g. Ile gramów brakuje do 1 kg?`,
         massPrompt: (unit: 'kg' | 'dag', noun: string) => `Waga jest w równowadze. Ile ${unit === 'kg' ? 'kilogramów' : 'dekagramów'} waży ${noun}?`,
         massHalfPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do pół kilograma?',
         massKiloPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do kilograma?',
@@ -500,6 +579,13 @@ export const pl = {
         capacityLitreFitsHalf: 'Dwa takie dzbanki to razem jeden litr.',
         capacityLitreFitsQuarter: 'Cztery takie dzbanki to razem jeden litr.',
         capacityHowManyAnswerHint: (jugs: string) => `To razem ${jugs}.`,
+        // CAPACITY in words (S-14c): glasses of ½ l and ¼ l. The narrator gets the fractions spelled out.
+        capacityGlassesPrompt: (litres: string, liquid: string, sign: string) => `W dzbanku jest ${litres} ${liquid}. Ile szklanek po ${sign} l możesz z niego nalać?`,
+        capacityGlassesSpeak: (litres: string, liquid: string, words: string) => `W dzbanku jest ${litres} ${liquid}. Ile szklanek po ${words} możesz z niego nalać?`,
+        capacityGlassesToLitresPrompt: (glasses: string, sign: string) => `${glasses} po ${sign} l to ile litrów?`,
+        capacityGlassesToLitresSpeak: (glasses: string, words: string) => `${glasses} po ${words} to ile litrów?`,
+        capacityGlassFact: { half: 'Dwie szklanki po ½ l to razem litr.', quarter: 'Cztery szklanki po ¼ l to razem litr.' },
+        capacityGlassWords: { half: 'pół litra', quarter: 'ćwierć litra' },
         temperatureReadPrompt: (mode: 'number' | 'text') => (mode === 'number' ? 'Ile stopni pokazuje termometr?' : 'Jaką temperaturę pokazuje termometr?'),
         temperatureFindHint: 'Znajdź koniec słupka i najbliższą liczbę.',
         temperatureBelowZeroHint: 'Poniżej zera liczymy w dół.',
@@ -537,6 +623,27 @@ export const pl = {
         placeValueBuildHint: 'Dziesiątki to długie klocki, a jedności to małe kostki.',
         placeValueBuildAnswerHint: (n: number, t: number, o: number) =>
             `Liczba ${n} to ${[t > 0 ? countNoun(t, nouns.dziesiątka) : '', o > 0 ? countNoun(o, nouns.jedność) : ''].filter((x) => x !== '').join(' i ')}.`,
+        // PLACE_VALUE thousands and orders (S-14c): text only, numbers from 10 000 grouped by `formatNumber`.
+        placeValuePlaces: { thousands: 'tysięcy', hundreds: 'setek', tens: 'dziesiątek', ones: 'jedności' },
+        placeValueDigitPrompt: (place: string, n: number) => `Jaka cyfra jest na miejscu ${place} w liczbie ${formatNumber(n)}?`,
+        placeValueDigitHint: 'Czytaj liczbę od lewej: tysiące, setki, dziesiątki, jedności.',
+        placeValueDigitLine: (n: number, th: number, h: number, t: number, o: number) =>
+            `${formatNumber(n)}: ${countNoun(th, nouns.tysiąc)}, ${countNoun(h, nouns.setka)}, ${countNoun(t, nouns.dziesiątka)}, ${countNoun(o, nouns.jedność)}.`,
+        placeValueDigitAnswerHint: (place: string, digit: number) => `Na miejscu ${place} jest cyfra ${digit}.`,
+        placeValueGapHint: 'Od całej liczby odejmij części, które już są.',
+        placeValueComposeSentence: (parts: string) => `${parts} to jaka liczba?`,
+        placeValueJoin: (parts: readonly string[]) => (parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} i ${parts[parts.length - 1]}`),
+        placeValuePartValue: (part: string, value: number) => `${part} to ${value}`,
+        placeValueComposeHint: 'Zamień każdy rząd na liczbę i dodaj.',
+        placeValueOrdersCountPrompt: (n: number) => `Ile tysięcy to ${formatNumber(n)}?`,
+        placeValueOrdersCountHint: 'Odetnij z końca liczby trzy zera.',
+        placeValueOrdersCountAnswerHint: (n: number, k: number) => `Po odcięciu trzech zer z ${formatNumber(n)} zostaje ${k}.`,
+        placeValueOrdersHundredsPrompt: (n: number) => `Ile setek tysięcy ma ${formatNumber(n)}?`,
+        placeValueOrdersHundredsHint: 'Jedna setka tysięcy to sto tysięcy.',
+        placeValueOrdersHundredsAnswerHint: (n: number, d: number) => `${formatNumber(n)} to ${countNoun(d, nouns.setka)} tysięcy.`,
+        placeValueOrdersCompose: (hundreds: number, thousands: number) => `${countNoun(hundreds, nouns.setka)} tysięcy i ${thousands} tysięcy`,
+        placeValueOrdersComposeLine: (hundreds: number, thousands: number) =>
+            `${countNoun(hundreds, nouns.setka)} tysięcy to ${formatNumber(hundreds * 100000)}, ${thousands} tysięcy to ${formatNumber(thousands * 1000)}.`,
         // PUZZLE_GRID (S-13b): the magic square and the number pyramid are drawings; the texts name the rule.
         puzzleMagicPrompt: 'Jaka liczba pasuje do pustego pola w kwadracie magicznym?',
         puzzleMagicSpeak: 'Popatrz na kwadrat magiczny. Jaka liczba pasuje do pustego pola?',

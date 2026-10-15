@@ -2,19 +2,34 @@
 // Variants: `read` (the item's mass in kg or dag), `half` (how many dag are missing to half a kilogram) and `convert` (to a
 // kilogram). The item's mass comes from a table of believable masses per icon (`SCALE_ITEMS`), never a free number, and the
 // weights are a real way to build exactly that mass with the kit's weights (at most 6 on the pan).
-import { ICONS, SCALE_ITEMS, WEIGHTS, type IconId, type WeightId } from '../../../data/measures';
+import { ICONS, MASS_FACTORS, MASS_PACKS, SCALE_ITEMS, WEIGHTS, type IconId, type WeightId } from '../../../data/measures';
+import { nouns } from '../../../data/nouns';
 import { pl } from '../../../data/pl';
-import { MINUS } from '../symbols';
+import { countNoun } from '../../text/plural';
+import { DIVIDE, MINUS, TIMES } from '../symbols';
+import type { Rng } from '../../rng';
 import type { Generator, Task } from '../types';
 
-export interface MassParams {
+export interface ScaleMassParams {
     variant: 'read' | 'half' | 'convert';
     unit: 'kg' | 'dag';
     weights: WeightId[];
     max: number;            // the largest answer, in `unit`
 }
 
-const VARIANTS: readonly MassParams['variant'][] = ['read', 'half', 'convert'];
+export type TextKind = 'net' | 'gross' | 'tare' | 'kgToG' | 'fractionKg' | 'tToKg' | 'qToKg';
+
+/** A MASS task told in words, with no drawing: brutto / netto / tara of a pack and unit conversions. */
+export interface TextMassParams {
+    variant: 'text';
+    kinds: TextKind[];
+    unit?: 'g' | 'kg';      // the unit of a pack's masses, needed by net, gross and tare
+    max: number;            // the largest number on screen
+}
+
+export type MassParams = ScaleMassParams | TextMassParams;
+
+const VARIANTS: readonly ScaleMassParams['variant'][] = ['read', 'half', 'convert'];
 const isInt = (x: unknown): x is number => Number.isInteger(x);
 const grams = (id: WeightId): number => WEIGHTS.find((w) => w.id === id)?.grams ?? 0;
 const MAX_ON_PAN = 6;
@@ -45,7 +60,7 @@ interface Option {
 }
 
 /** The (item, mass) pairs a skill may draw, each with the ways to put that mass on the pan. */
-const optionsOf = (p: MassParams): Option[] => {
+const optionsOf = (p: ScaleMassParams): Option[] => {
     const wanted = (g: number): boolean => {
         if (p.variant === 'half') return g >= 100 && g <= 400;
         if (p.variant === 'convert') return g >= 100 && g <= 900;
@@ -64,12 +79,46 @@ const optionsOf = (p: MassParams): Option[] => {
     return out;
 };
 
+const TEXT_KINDS: readonly TextKind[] = ['net', 'gross', 'tare', 'kgToG', 'fractionKg', 'tToKg', 'qToKg'];
+const PACK_KINDS: readonly TextKind[] = ['net', 'gross', 'tare'];
+const isPackKind = (k: TextKind): boolean => PACK_KINDS.includes(k);
+const GROSS_STEP_G = 50;
+const TARE_STEP_G = 10;
+const MIN_COUNT = 2;
+const TO_KILO_MIN = 100;
+const TO_KILO_MAX = 900;
+
+/** Largest count of the big unit asked for a conversion kind: the larger number on screen stays within `max`. */
+const maxCount = (kind: 'kgToG' | 'tToKg' | 'qToKg', max: number): number => Math.min(MASS_FACTORS[kind].maxN, Math.floor(max / MASS_FACTORS[kind].factor));
+
+const parseTextParams = (params: Record<string, unknown>): TextMassParams => {
+    const fail = (why: string): never => {
+        throw new TypeError(`MASS text ${why}`);
+    };
+    const { kinds, unit, max } = params;
+    if (!Array.isArray(kinds) || kinds.length === 0) fail('needs a non-empty params.kinds');
+    const list = kinds as TextKind[];
+    if (new Set(list).size !== list.length) fail('params.kinds has a duplicate');
+    for (const k of list) if (!TEXT_KINDS.includes(k)) fail(`has an unknown kind ${String(k)}`);
+    if (!isInt(max)) return fail(`needs an integer params.max, got ${String(max)}`);
+    if (list.some(isPackKind)) {
+        if (unit !== 'g' && unit !== 'kg') fail(`net, gross and tare need params.unit g or kg, got ${String(unit)}`);
+        if (!MASS_PACKS.some((x) => x.unit === unit && x.min <= max)) fail(`params.max ${max} holds no pack in ${String(unit)}`);
+    }
+    for (const k of list) {
+        if ((k === 'kgToG' || k === 'tToKg' || k === 'qToKg') && maxCount(k, max) < MIN_COUNT) fail(`${k} needs params.max to hold ${MIN_COUNT} units, got ${max}`);
+        if (k === 'fractionKg' && max < 1000) fail(`fractionKg needs params.max >= 1000, got ${max}`);
+    }
+    return { variant: 'text', kinds: list, ...(list.some(isPackKind) ? { unit: unit as 'g' | 'kg' } : {}), max };
+};
+
 export const parseMassParams = (params: Record<string, unknown>): MassParams => {
     const fail = (why: string): never => {
         throw new TypeError(`MASS ${why}`);
     };
     const { variant, unit, weights, max } = params;
-    if (!VARIANTS.includes(variant as MassParams['variant'])) fail(`params.variant must be one of ${VARIANTS.join(', ')}, got ${String(variant)}`);
+    if (variant === 'text') return parseTextParams(params);
+    if (!VARIANTS.includes(variant as ScaleMassParams['variant'])) fail(`params.variant must be one of ${VARIANTS.join(', ')}, got ${String(variant)}`);
     if (unit !== 'kg' && unit !== 'dag') fail(`params.unit must be kg or dag, got ${String(unit)}`);
     if (!Array.isArray(weights) || weights.length === 0) return fail('needs a non-empty params.weights');
     if (new Set(weights).size !== weights.length) fail('params.weights has a duplicate');
@@ -82,13 +131,61 @@ export const parseMassParams = (params: Record<string, unknown>): MassParams => 
     // One unit per scale: kg weights read in kg, dag weights in dag (no "1 kg 20 dag" sums).
     const inUnit = (id: WeightId): boolean => (unit === 'kg' ? grams(id) % 1000 === 0 : grams(id) < 1000);
     if (!typed.every(inUnit)) fail(`params.weights must all be ${String(unit)} weights`);
-    const parsed: MassParams = { variant: variant as MassParams['variant'], unit: unit as MassParams['unit'], weights: typed, max: max as number };
+    const parsed: ScaleMassParams = { variant: variant as ScaleMassParams['variant'], unit: unit as ScaleMassParams['unit'], weights: typed, max: max as number };
     if (optionsOf(parsed).length === 0) fail('has no believable item mass buildable from these weights');
     return parsed;
 };
 
+const generatePack = (skillId: string, p: TextMassParams, kind: 'net' | 'gross' | 'tare', rng: Rng): Task => {
+    const unit = p.unit ?? 'g';
+    const pack = rng.pick(MASS_PACKS.filter((x) => x.unit === unit && x.min <= p.max));
+    // The gross mass is a round number inside the pack's range; the packaging is at most a quarter of it.
+    const grossStep = unit === 'g' ? GROSS_STEP_G : 1;
+    const gross = grossStep * rng.int(Math.ceil(pack.min / grossStep), Math.floor(Math.min(pack.max, p.max) / grossStep));
+    const tareStep = unit === 'g' ? TARE_STEP_G : 1;
+    const tare = tareStep * rng.int(1, Math.floor(gross / 4 / tareStep));
+    const net = gross - tare;
+    const first = pl.tasks.massPackFirst[kind];
+    if (kind === 'net') {
+        return { skillId, prompt: pl.tasks.massPackPrompt.net(pack.subject, gross, tare, unit), answer: net, hint: [first, `${gross} ${MINUS} ${tare} = ${net}`] };
+    }
+    if (kind === 'gross') {
+        return { skillId, prompt: pl.tasks.massPackPrompt.gross(pack.subject, net, tare, unit), answer: gross, hint: [first, `${net} + ${tare} = ${gross}`] };
+    }
+    return { skillId, prompt: pl.tasks.massPackPrompt.tare(pack.subject, gross, net, unit), answer: tare, hint: [first, `${gross} ${MINUS} ${net} = ${tare}`] };
+};
+
+const generateConversion = (skillId: string, p: TextMassParams, kind: 'kgToG' | 'tToKg' | 'qToKg', rng: Rng): Task => {
+    const def = MASS_FACTORS[kind];
+    const [big, small] = [nouns[def.big], nouns[def.small]];
+    const n = rng.int(MIN_COUNT, maxCount(kind, p.max));
+    const total = n * def.factor;
+    const fact = pl.tasks.massFact(big[0], countNoun(def.factor, small));
+    if (rng.chance(0.5)) {
+        return { skillId, prompt: pl.tasks.massAsk(small[2], countNoun(n, big)), answer: total, hint: [fact, `${n} ${TIMES} ${def.factor} = ${total}`] };
+    }
+    return { skillId, prompt: pl.tasks.massAsk(big[2], countNoun(total, small)), answer: n, hint: [fact, `${total} ${DIVIDE} ${def.factor} = ${n}`] };
+};
+
+const generateFractionKg = (skillId: string, rng: Rng): Task => {
+    const fact = pl.tasks.massFact(nouns.kilogram[0], countNoun(1000, nouns.gram));
+    const roll = rng.int(0, 4);
+    if (roll === 0) return { skillId, prompt: pl.tasks.massHalfKgPrompt, answer: 500, hint: [fact, `1000 ${DIVIDE} 2 = 500`] };
+    if (roll === 1) return { skillId, prompt: pl.tasks.massQuarterKgPrompt, answer: 250, hint: [fact, `1000 ${DIVIDE} 4 = 250`] };
+    const grams = GROSS_STEP_G * rng.int(TO_KILO_MIN / GROSS_STEP_G, TO_KILO_MAX / GROSS_STEP_G);
+    return { skillId, prompt: pl.tasks.massToKiloPrompt(grams), answer: 1000 - grams, hint: [fact, `1000 ${MINUS} ${grams} = ${1000 - grams}`] };
+};
+
+const generateText = (skillId: string, p: TextMassParams, rng: Rng): Task => {
+    const kind = rng.pick(p.kinds);
+    if (kind === 'net' || kind === 'gross' || kind === 'tare') return generatePack(skillId, p, kind, rng);
+    if (kind === 'fractionKg') return generateFractionKg(skillId, rng);
+    return generateConversion(skillId, p, kind, rng);
+};
+
 export const generateMass: Generator = (skill, rng): Task => {
     const p = parseMassParams(skill.params);
+    if (p.variant === 'text') return generateText(skill.id, p, rng);
     const option = rng.pick(optionsOf(p));
     const weights = rng.pick(option.builds);
     const noun = ICONS.find((i) => i.id === option.icon)?.noun ?? option.icon;

@@ -18,14 +18,15 @@ describe('E4.7 with the perimeter skills', () => {
 });
 
 describe('S-13b new playable perimeter steps', () => {
-    it('E5.12 has two keypad skills and unlocks at 1 (ceil(0.5 * 2))', async () => {
+    it('E5.12 has two perimeter skills and the scale skill (S-14c), all on the keypad, and unlocks at 2 (ceil(0.5 * 3))', async () => {
         const { E5 } = await import('../src/data/curriculum/E5');
         const step = E5.steps.find((s) => s.step === 12)!;
         expect(step.skills.map((s) => [s.id, s.answer])).toEqual([
             ['E5.12.perimeter_side_square', 'keypad'],
             ['E5.12.perimeter_side_rect', 'keypad'],
+            ['E5.12.length_scale', 'keypad'],
         ]);
-        expect(unlockThreshold(step.skills.length, balance.curriculum.unlockShare)).toBe(1);
+        expect(unlockThreshold(step.skills.length, balance.curriculum.unlockShare)).toBe(2);
     });
 
     it('E5.12 side of a square divides by 4 inside the multiplication table (two-digit quotients wait for E6.4)', async () => {
@@ -36,11 +37,12 @@ describe('S-13b new playable perimeter steps', () => {
         });
     });
 
-    it('E6.3 has one composite skill on the keypad and every new playable step has a short childName', async () => {
+    it('E6.3 has one composite perimeter skill on the keypad (and the tare skill of S-14c) and every new playable step has a short childName', async () => {
         const { E5 } = await import('../src/data/curriculum/E5');
         const { E6 } = await import('../src/data/curriculum/E6');
         const step = E6.steps.find((s) => s.step === 3)!;
-        expect(step.skills.map((s) => s.id)).toEqual(['E6.3.perimeter_composite']);
+        expect(step.skills.filter((s) => s.type === 'PERIMETER').map((s) => s.id)).toEqual(['E6.3.perimeter_composite']);
+        expect(step.skills.map((s) => s.id)).toEqual(['E6.3.perimeter_composite', 'E6.3.mass_tare_kg', 'E6.3.length_two_units']);
         for (const s of [E5.steps.find((x) => x.step === 12)!, step]) {
             expect(s.childName?.length ?? 0).toBeGreaterThan(0);
             expect(s.childName!.length).toBeLessThanOrEqual(28);
