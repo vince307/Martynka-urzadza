@@ -837,10 +837,10 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Klucze `generators`/`parsers` równe; SHAPES i PATTERN nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- [ ] 1.3 Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony / `selectionAnswer` odrzuca napisy / surowy kod w `solutionSteps` → czerwone; przywrócone; meta-check
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — a230f1a
+- [x] 1.2 Klucze `generators`/`parsers` równe; SHAPES i PATTERN nadal w `LATER`; `npm run sample -- E1` … `E6` bez zmian w wyjściu — a230f1a
+- [x] 1.3 Deliberate break: intruz różni się dwiema cechami / szlaczek bez pustego miejsca na końcu / `faces-distinct` wyłączony / `selectionAnswer` odrzuca napisy / surowy kod w `solutionSteps` → czerwone; przywrócone; meta-check — a230f1a
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — a230f1a
 
 #### Manual
 

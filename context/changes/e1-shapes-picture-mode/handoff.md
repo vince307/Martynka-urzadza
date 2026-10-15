@@ -1,68 +1,70 @@
 # Handoff — `e1-shapes-picture-mode` (slice S-14d)
 
-Written by the `/10x-plan-review` step of run `2026-10-15-fix-s14c-s14d`. Verdict PROCEED; `plan.md` was patched for two
-CRITICAL defects in the face-code answer path. The next agent must not skip the new Phase 1 §3a: without it a SHAPES `all`
-task (strings in `select`) is unanswerable and the child is stuck in `retype` forever.
+Written by `/10x-tdd` phase 1 of run `2026-10-15-fix-s14c-s14d`. Phase 1 (face codes, SHAPES, PATTERN, the §3a answer path) is committed and green; no curriculum data yet, so nothing is reachable in the game. Do not let Phase 2 forget the stand-ins left on purpose: `TaskPicture` throws for a `pattern` drawing until the row widget exists, and tiles still draw text, not faces.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/e1-shapes-picture-mode`, cut from `main` at `10d6fe7` |
-| Commits | 4 on top of `10d6fe7`: identity (`f3aa504`), research (`5cab986`), plan (`2f42f2e`), `docs(e1-shapes-picture-mode): plan review` |
+| Commits | identity `f3aa504`, research `5cab986`, plan `2f42f2e`, plan review, phase 1 code `a230f1a`, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 63 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (staged by path) |
+| `change.md` status | `plan_reviewed` (unchanged; the last phase sets `implemented`) |
+| `## Progress` rows remaining | 59 (`grep -c '^- \[ \]' plan.md`); rows 1.1-1.4 ticked with `a230f1a`, 1.5 is `[reviewer]` |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/e1-shapes-picture-mode/reviews/plan-review.md` | review report: 2 CRITICAL, 3 WARNING, 2 OBSERVATION, contract-check table, `VERDICT: PROCEED` |
-| `context/changes/e1-shapes-picture-mode/plan.md` | Phase 1 new §3a (`Task.answer` + `string[]`, `selectionAnswer` keeps strings, `solutionSteps` uses `faceLabel`), criterion/row 1.3 extended; Phase 2 `SelectTiles.onSubmit` type and `tests/curriculumPick.test.ts`; Phase 7 last hint states the amount; three `## Known risks` entries |
-| `context/changes/e1-shapes-picture-mode/change.md` | `status: plan_reviewed` |
-| `context/changes/e1-shapes-picture-mode/handoff.md` | this file |
+| `src/core/tasks/faces.ts` | `Face`, `faceKey`, `parseFace`, `isFace`, `faceLabel(code, {size})`, `faceText` (code to words, other values unchanged) |
+| `src/data/shapes.ts` | figures with gender and Polish forms (`fact`, `look`), colour and size ids with gender forms, `PATTERN_LIMITS`, `SHAPES_LIMITS` |
+| `src/core/tasks/generators/shapes.ts`, `pattern.ts` | SHAPES (`name`, `odd`, `all`) and PATTERN (AB, ABB, AAB, ABC; figure, colour or both) generators with params parsers; registered in `registry.ts` |
+| `src/core/tasks/visual.ts`, `validate.ts` | `pattern` drawing (key, validation, `describeVisual` in words); rule `faces-distinct` |
+| `src/core/tasks/types.ts`, `round/select.ts`, `round/hints.ts`, `round/canonicalInput.ts`, `round.ts` | §3a: `TaskAnswer` with `string[]`; `selectionAnswer` returns `SelectValue[]`; `solutionSteps` result line in words; `roundResults` example in words (saved shape stays v2) |
+| `src/ui/widgets/SelectTiles.ts`, `TaskPicture.ts` | `onSubmit` takes `SelectValue[]`; `TaskPicture` throws for `pattern` until Phase 2 |
+| `src/data/pl.ts`, `src/data/nouns.ts` | `tasks.shapes*`, `tasks.pattern*`; nouns `prostokąt`, `bok`, `róg` |
+| `tests/faces.test.ts`, `tests/shapesTiles.test.ts`, `tests/pattern.test.ts` (new); `tests/validate.test.ts`, `select.test.ts`, `hints.test.ts`, `round.test.ts` (extended) | note: `tests/shapes.test.ts` already exists (number shapes); the tile tests are in `shapesTiles.test.ts` |
+| `context/changes/e1-shapes-picture-mode/plan.md`, `handoff.md` | rows 1.1-1.4 ticked; this file |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/e1-shapes-picture-mode` (observed) |
-| `ls context/foundation/lessons.md` | absent (no lesson applies) |
-| Code checks (one sub-agent + own greps) | `selectionAnswer` filters to numbers (`src/core/round/select.ts`); `solutionSteps` appends `String(answer)` for a string answer not in the last hint (`src/core/round/hints.ts`); `tests/curriculumPick.test.ts` asserts `playableSteps(E1)[0] > 1`; `tests/blockDrag.test.ts` has no case pinning old S13-09; `canonicalInput` non-clock drag assumes blocks; word minigame `WORD_TYPES` = ADD_SUB/MULT/DIV; `tsconfig.json` includes `tests` (Phase 8 `never` break is real) |
-| `grep -c 'Driver:' plan.md` | 11 (one per phase) |
-| Progress rows | 63, unchanged count; rows edited in place (1.3) |
-| lint / typecheck / unit / build / e2e | not run: review-only step, no code changed. Baseline on main at 10d6fe7 (contract, inherited, unverified): unit 2672, e2e 86 |
-
-No deliberate break (no tests written).
+| `npm run lint` / `npm run typecheck` | OK / OK |
+| `npm test` | 2708 passed (baseline 2672, +36); `deploy/test-martynka-deploy.sh` and `deploy/ops/test-martynka-ops.sh` OK |
+| `npm run sample -- E1` ... `E6` | `Naruszenia: 0` x6 (curriculum untouched, E1.1 still has no skills) |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test ... --workers=4` | 86 passed (baseline 86, +0), run in this session |
+| RED observed | first assertion failures before any production code (stubs only): `AssertionError: expected null to deeply equal { figure: 'triangle', …(2) }` (faces), `expected 'Wynik: shape:triangle:red:big' to be 'Wynik: duży czerwony trójkąt'` (hints), `expected [] to deeply equal [ 'shape:circle:red:big', …(1) ]` (select), `E1.1.pattern_AB seed=1 draw=0 prompt="": expected [ Array(1) ] to deeply equal []` (pattern) |
+| Break 1: intruder differs in two features | `tests/shapesTiles.test.ts` red: `expected [ Array(2) ] to have a length of 1 but got 2`; restored |
+| Break 2: pattern row without the empty place | `tests/pattern.test.ts` red (5 tests); restored |
+| Break 3: `faces-distinct` off | `tests/validate.test.ts` red (`expected [ 'choices' ] to include 'faces-distinct'`); restored |
+| Break 4: `selectionAnswer` drops strings | `tests/select.test.ts` red (`expected [] to deeply equal [ 'shape:circle:red:big', …(1) ]`); restored |
+| Break 5: raw code in the result line | `tests/hints.test.ts` red (`expected 'Wynik: shape:triangle:red:big' to be …`); restored |
+| Meta-check | the odd-one-out oracle in the test counts features from `parseFace` of the tiles, not from generator fields; the pattern oracle finds the smallest period of the shown faces; so the breaks hit the rule, not a label |
+| Teacher read (`scratchpad` script, 6 draws per SHAPES variant, 3 per PATTERN period, tiles and result in words) | read: "Dotknij trójkąta/kwadratu/koła/prostokąta", "Dotknij wszystkich kół/trójkątów", hints teach before the result ("Trójkąt ma 3 boki i 3 rogi." / "Szukaj figury z 3 rogami." / "Wynik: …"); no code in any text; gender agreement of "duże czerwone koło" / "duża żółta gwiazdka" correct. Nothing to change |
 
 ## 4. Next command
 
-`/10x-tdd e1-shapes-picture-mode` (Phase 1, `Driver: tdd`)
+`/10x-implement e1-shapes-picture-mode phase 2` (Phase 2, `Driver: impl`)
 
 ## 5. Open
 
-- `[human]` rows in `plan.md` Progress: 9.6 tablet test with a 6-year-old finger; 9.7 decisions against ZADANIA/PRD/roadmap
-  (SPATIAL, SYMMETRY, BONDS pairs out; ORDINAL numbers only, to 5; E1.11 without 10 zł; picture mode E1 only; thresholds E1.2
-  1 → 2, E1.3 2 → 3; E1 September start on E1.1; E1.1 in the E2 warm-up).
-- Known risks added: `taskKey` in `src/core/round/unique.ts` ignores tiles for SHAPES `name`; MONEY_PAY array answer gets no
-  result line from `solutionSteps`; `tests/artFilter.test.ts` E2.2 case depends on `artBlocked` knowing MONEY_PAY (Phase 7).
-- Phase 8 helpers: the `switch (state.dragMode)` needs a `null` arm before the `never` default (review F6).
-- Unpinned E1 specs (first-launch age 6, minigames `startE1`, save-backup-health, save-restart) will draw SHAPES `all` after
-  Phase 2/5 — safe only with Phase 1 §3a.
-- DESIGN-GAP rows 100–104 and follow-ups still planned in Phases 2, 4, 5, 8, 9.
+- `[reviewer]` row 1.5 (teacher read) is done in my own words above; the reviewer confirms. `[human]` rows 9.6, 9.7 as before.
+- Phase 2 must: replace the `TaskPicture` `pattern` throw with the row widget; draw faces on `AnswerTiles`/`SelectTiles` (colour ids to layout tokens in `layout.ts`, not in core); add curriculum skills for E1.1 (the SHAPES `all` skill needs `answer: 'select'`, `name`/`odd` `tiles`; params `variants` and `figures`, figures from `NAMED_FIGURE_IDS` (>= 3), PATTERN figures from `FIGURE_IDS` (>= 3)); update `ORACLE` E1 and `playableSteps`; move SHAPES and PATTERN from `LATER` to `GROUP_1` in `tests/curriculum.test.ts`.
+- Colour choice for PATTERN uses only `size: 'big'`; the faces tile size therefore matters only for SHAPES.
+- `taskKey` (`src/core/round/unique.ts`) still ignores tiles for SHAPES `name` (plan Known risk F4); a redraw, not a stuck round.
+- A `select` task has no first-wrong example, so `roundResults` never shows a list of faces to the parent (the conversion is in place for when it does).
+- `tests/shapes.test.ts` (number shapes) kept; the plan names `tests/shapes.test.ts` for the tile tests, the file is `tests/shapesTiles.test.ts`.
+- Unpinned E1 specs will draw SHAPES `all` after Phase 2; safe only because `selectionAnswer` now hands faces on and the e2e `answerRight` picks tile values (plan 2.6).
 
 ## 6. Autonomous decisions
 
-1. **Verdict PROCEED, not RETHINK.** The approach (face codes, generic `trayDrag`, `number[]` + `check`, picture-mode filter)
-   holds against the code; the defects are local. Would change: a defect that needs save v3 or a new answer mode.
-2. **F1 fixed in core (Phase 1) rather than a numeric face encoding.** Rejected: encoding faces as numbers (keeps
-   `selectionAnswer` as is but makes `answerRight`, the validator and the parent view read opaque ids). Would change: a
-   wider blast radius of `string[]` in `Task.answer` found during Phase 1 (then numeric ids with a lookup).
-3. **F2: the result line uses `faceLabel`, not "closed when face".** Keeps the retype bar showing the answer in words.
-   Would change: teacher read preferring the last hint to carry the answer.
-4. **F4 accepted as a Known risk**, not a plan change: one task per skill makes it a redraw, not a stuck round. Would change:
-   `sample` or a uniqueness test showing repeated SHAPES prompts in a round.
-5. **No product decision overturned**; all against-the-letter choices are already in `[human]` 9.7.
-6. **Next command is `/10x-tdd`** because Phase 1 carries `Driver: tdd`.
+1. **`odd` majority tiles are distinct faces, not copies.** Chosen: three tiles agree in the odd feature and differ in exactly one other feature, the third feature is constant, so exactly one (tile, feature) pair is a 3+1 split. Rejected: three identical tiles (violates `faces-distinct`/the duplicate rule, and a select value must be unique). Would change: a design that lets `odd` tiles repeat (then the validator rule and `AnswerTiles` values need an index).
+2. **`faces-distinct` means: every `shape:` choice parses and none repeats; faces mixed with plain text are flagged.** The generic duplicate rule fires too, so the test asserts the face rule by name. Would change: a task type that legitimately mixes a face tile with a text tile.
+3. **Result line in words via `faceText`/`faceLabel` (full label with size)**; `faceLabel(code, {size: false})` exists for PATTERN hints where the size is constant. `roundResults` converts a face (and a list) to words so the saved v2 example never holds a code. Would change: a save v3 with a typed example.
+4. **SHAPES params require 3 or more distinct NAMED figures (no star, heart); PATTERN 3 or more of all six.** Would change: curriculum data asking for 2-figure rows.
+5. **Mixed phase inline part:** the stand-in throw in `TaskPicture` and the `SelectTiles.onSubmit` type change were scaffolding added inline (no test of their own); Phase 2 replaces them. Driver stays `tdd`.
+6. **e2e run by this session** (Chromium started with the plain command): 86 passed.
+7. **Test file name:** `tests/shapesTiles.test.ts` because `tests/shapes.test.ts` is the number-shapes test; I first overwrote it by mistake and restored it from git before committing.
