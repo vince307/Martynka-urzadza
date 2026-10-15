@@ -823,9 +823,9 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: retry przy `second` → `solution` / `panelCue` bez `changed` → czerwone; przywrócone; meta-check (stany z reduktorów)
-- [ ] 2.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — PENDSHA
+- [x] 2.2 Deliberate break: retry przy `second` → `solution` / `panelCue` bez `changed` → czerwone; przywrócone; meta-check (stany z reduktorów) — PENDSHA
+- [x] 2.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (` — PENDSHA
 
 #### Manual
 
