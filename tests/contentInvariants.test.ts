@@ -143,7 +143,7 @@ for (const stage of Object.values(stages)) {
                     if (products > 0) {
                         expect(zeroOne / products, `${skill.id}: ${zeroOne} ·0/·1 of ${products}`).toBeLessThanOrEqual(MAX_ZERO_ONE_SHARE);
                     }
-                });
+                }, 30_000); // the heaviest skills (MONEY_PAY wallet enumeration) take ~1.5 s locally and over 5 s on a loaded CI runner
             }
         }
     });
