@@ -1183,6 +1183,9 @@ export class TaskScene extends Scene {
 
     /** A short sideways wobble after a mistake; it never blocks input. */
     private shake(): void {
+        if (prefersReducedMotion()) {
+            return;
+        }
         const camera = this.cameras.main;
         this.tweens.killTweensOf(camera);
         camera.scrollX = 0;

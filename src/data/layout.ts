@@ -563,6 +563,7 @@ export const ANIMATION = {
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
+    stageFadeMs: 600,      // the neglected background fades out over the renovated one (S-16a)
     purchasePopMs: 260,    // the new furniture grows to purchasePopScale and back (yoyo), S-09
     purchasePopScale: 1.08,
     purchaseParticles: 14,

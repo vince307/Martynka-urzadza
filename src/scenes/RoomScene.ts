@@ -3,7 +3,7 @@ import { balance } from '../data/balance';
 import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
-import { holdPoint, slotAt, slotBox, type AlphaAt } from '../core/roomHit';
+import { holdPoint, slotAt, type AlphaAt } from '../core/roomHit';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import type { RoomDef, RoomState, Settings } from '../core/types';
@@ -16,7 +16,8 @@ import { prefersReducedMotion } from '../ui/motion';
 import { PageButton } from '../ui/widgets/PageButton';
 import { RoomDoneCard } from '../ui/widgets/RoomDoneCard';
 import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
-import { drawStandIn, RoomView } from '../ui/widgets/RoomView';
+import { SCENE_SIZE } from '../data/roomArt';
+import { RoomView } from '../ui/widgets/RoomView';
 import { drawStar } from '../ui/widgets/StarCounter';
 import { VariantPanel } from '../ui/widgets/VariantPanel';
 import type { Autosaver } from '../core/autosave';
@@ -224,15 +225,19 @@ export class RoomScene extends Scene {
         }
         this.redraw();
         if (this.card && !this.cardDrawn) {
-            const delay = prefersReducedMotion() ? 0 : ANIMATION.purchasePopMs;
+            const delay = prefersReducedMotion() ? 0 : Math.max(ANIMATION.purchasePopMs, ANIMATION.stageFadeMs);
             if (delay === 0) {
                 this.showCard();
             } else {
                 this.time.delayedCall(delay, () => this.showCard());
             }
         }
-        // A stage purchase has no furniture to pop; the background cross-fade arrives with the art (S-16a phase 7).
-        const celebrated = step.bought?.kind === 'stage' ? null : (step.bought ?? step.changed);
+        // A stage purchase has no furniture to pop: the neglected background fades out instead.
+        if (step.bought?.kind === 'stage') {
+            this.fadeStage();
+            return;
+        }
+        const celebrated = step.bought ?? step.changed;
         if (celebrated) {
             this.celebrate(celebrated);
         }
@@ -306,6 +311,28 @@ export class RoomScene extends Scene {
         return this.resume as PageButton;
     }
 
+    /** The neglected room fades away over the renovated one; nothing when the child asked for less motion. */
+    private fadeStage(): void {
+        this.playPurchaseSound();
+        if (prefersReducedMotion()) {
+            return;
+        }
+        const { room } = this.resolve();
+        const { depth } = ROOM_LAYOUT;
+        const keys = [
+            { key: room.scene.before, depth: depth.scene + 0.1 },
+            { key: room.scene.furnishingsBefore, depth: depth.furnishingsBefore + 0.1 },
+        ];
+        // DESIGN-GAP (docs/design-gaps.md): the pack has no in-between backgrounds (brief P3.6), so this is a plain cross-fade.
+        keys.forEach(({ key, depth: at }) => {
+            if (!this.textures.exists(key)) {
+                return;
+            }
+            const ghost = this.add.image(0, 0, key).setOrigin(0, 0).setDisplaySize(SCENE_SIZE.width, SCENE_SIZE.height).setDepth(at);
+            this.tweens.add({ targets: ghost, alpha: 0, duration: ANIMATION.stageFadeMs, ease: 'Sine.easeInOut', onComplete: () => ghost.destroy() });
+        });
+    }
+
     /** Pop of the new furniture and a burst of stars; nothing at all when the child asked for less motion. */
     private celebrate(bought: { slot: string; variant: 0 | 1 | 2 }): void {
         // DESIGN-GAP (docs/design-gaps.md): the purchase has no sound yet; the hook for it is here.
@@ -315,22 +342,23 @@ export class RoomScene extends Scene {
         }
         const { room } = this.resolve();
         const at = this.view.slotCenter(room, bought.slot);
-        const slot = room.slots.find((s) => s.id === bought.slot);
-        if (!at || !slot) {
+        if (!at) {
             return;
         }
-        // The pop grows on the object's own depth, so a piece in front of it still covers it (V2: no rug popping over the sofa).
-        const box = slotBox(slot);
-        const pop = this.add.graphics({ x: at.x, y: at.y }).setDepth(slot.z + 0.25);
-        drawStandIn(pop, { left: -(box.right - box.left) / 2, top: -(box.bottom - box.top) / 2, width: box.right - box.left, height: box.bottom - box.top }, ROOM_LAYOUT.standIn.variantFills[bought.variant]);
-        this.tweens.add({
-            targets: pop,
-            scale: ANIMATION.purchasePopScale,
-            duration: ANIMATION.purchasePopMs,
-            yoyo: true,
-            ease: 'Sine.easeOut',
-            onComplete: () => pop.destroy(),
-        });
+        // The pop grows the picture itself, on its own depth and around its anchor, so a piece in front still covers it (V2).
+        const object = this.view.objectOf(bought.slot);
+        if (object) {
+            const [sx, sy] = [object.scaleX, object.scaleY];
+            this.tweens.add({
+                targets: object,
+                scaleX: sx * ANIMATION.purchasePopScale,
+                scaleY: sy * ANIMATION.purchasePopScale,
+                duration: ANIMATION.purchasePopMs,
+                yoyo: true,
+                ease: 'Sine.easeOut',
+                onComplete: () => object.setScale(sx, sy),
+            });
+        }
         if (!this.textures.exists(PURCHASE_STAR_TEXTURE)) {
             const g = this.make.graphics({}, false);
             drawStar(g, 24, 24, 22, PLACEHOLDER_COLORS.butter, { color: PLACEHOLDER_COLORS.nextBorder, width: 3 });
