@@ -211,3 +211,10 @@ Porównanie z audytem 2026-10-15 20:10 (PR #63, niezmergowany; obszary pokrywaj�
   - 18 wywołań `console.error/warn` (było 10);
   - 2 domyślne `.catch(() => undefined)` (`registerServiceWorker.ts`, `installHint.ts`).
   - PR #65 nie zmienił tych liczb.
+
+## Autonomous decisions
+
+- **Obszary:** wybrano 2 obszary z argumentów kroku zamiast pytania (AskUserQuestion) o wybór z dokumentów bazowych. Argumenty mają pierwszeństwo w skilli. Odpowiedź zmieniłby inny zestaw argumentów.
+- **Dowód w czasie działania:** pominięty, bo krok jest statyczny (profil § 11, bez `--runtime`), mimo HIGH (A-1). Odpowiedź zmieniłoby wywołanie z `--runtime` albo zgoda opiekuna.
+- **`previous_report`:** wskazuje na 2026-10-13 17:51, ostatni raport na `main`. Audyt 20:10 jest tylko w niezmergowanym PR #63, więc porównuje się z nim po identyfikatorach w § 7, bez ścieżki. Odpowiedź zmieniłoby zmergowanie #63.
+- **Wagi:** A-1 ma high, nie critical, bo gra w końcu startuje z zastępnikami, a ślepota jest czasowa. P-5 ma medium, bo jest rozszerzeniem zaakceptowanego follow-upu „dwie karty”. P-1 jest wymienione, mimo że to znane F8, bo potwierdzono je w kodzie. Odpowiedź zmieniłby pomiar czasu A-1 na Androidzie albo zgłoszenie utraty postępu.
