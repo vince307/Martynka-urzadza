@@ -35,6 +35,7 @@ Written by `/10x-implement salon-load-health phase 4`: docs-only closeout (rollb
 | `git diff --stat main -- deploy/` | only `deploy/README.md` (+1) |
 | `grep remapLegacySalon\|LEGACY_SALON\b\|LegacyRoomLayout` in src, CLAUDE.md | empty |
 | e2e | not run: no code change in this phase (orchestrator note covers p3: 98 passed, baseline stays 98) |
+| fix p3 (per-file xhr timeout) | lint, typecheck, npm test, sample E1-E6, build pass; Playwright not run (Chromium cannot start in the subagent): the orchestrator proves test #15 |
 
 ## 4. Next command
 
@@ -50,3 +51,4 @@ Written by `/10x-implement salon-load-health phase 4`: docs-only closeout (rollb
 1. **CLAUDE.md names no follow-up path**: the change moves to `context/archive/` later and `validate-rule-files.sh` fails on a path that does not exist yet, so it says "in the salon-load-health change (archive folder)".
 2. **Backup comments generalised** ("previous version") in CLAUDE.md, balance and pl comments rather than naming v2/v3.
 3. **No e2e run**: no behaviour changed.
+4. **Fix p3**: Phaser 4.2.1 gives each file `xhrSettings.timeout` 0, which overrides the game-config `loader.timeout`; `BootScene.preload` now copies `this.load.xhr.timeout` onto every file on `Loader.Events.ADD`. `maxRetries` was unaffected.
