@@ -617,8 +617,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: granica `slow` / `totalMs: 20000` → odpowiednie testy czerwone; przywrócone; meta-check (reguła, nie dowód loadera)
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 0c31db4
+- [x] 1.2 Deliberate break: granica `slow` / `totalMs: 20000` → odpowiednie testy czerwone; przywrócone; meta-check (reguła, nie dowód loadera) — 0c31db4
 - [ ] 1.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`
 
 #### Manual
