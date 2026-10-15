@@ -716,7 +716,7 @@ kolejne starty czytają v2, bez migracji.
 - [x] 5.2 Deliberate break: `requestPersistence` bez `console.warn` → nowy test czerwony; przywrócone; meta-check — 087d9de
 - [x] 5.3 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — 087d9de
 - [x] 5.4 Każdy follow-up w `follow-ups/review-fixes.md` ma `Trigger:` — 087d9de
-- [ ] 5.5 `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 5.5 `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — e2e 77 passed on 087d9de (orchestrator note, --workers=4); build absent verified in phase 5
 
 #### Manual
 
@@ -727,10 +727,10 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 6.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 5`
-- [ ] 6.2 Deliberate break p6a: polityka kopii nigdy nie rezygnuje → (a) czerwony; meta-check
-- [ ] 6.3 Deliberate break p6b: `replace` bez `withTimeLimit` → (b) czerwony
-- [ ] 6.4 Deliberate break p6c: `start` pomija `waitLonger` → (c) i (d) czerwone
-- [ ] 6.5 Deliberate break p6d: `onEscape` resetu bez strażnika `busy` → (b) czerwony; przywrócone
-- [ ] 6.6 Deliberate break p6e: późny wynik `waitLonger` przyjęty po „Graj dalej” → (e) czerwony; przywrócone
-- [ ] 6.7 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 6.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 5` — spec ×3 --workers=4 = 15 passed; pełny zestaw 82 passed (77 + 5), po poprawkach orkiestratora (handoff §3)
+- [x] 6.2 Deliberate break p6a: polityka kopii nigdy nie rezygnuje → (a) czerwony; meta-check — SV2-01 red (Expected 2, Received null); przywrócone
+- [x] 6.3 Deliberate break p6b: `replace` bez `withTimeLimit` → (b) czerwony — SV2-02 red (element not found); przywrócone
+- [x] 6.4 Deliberate break p6c: `start` pomija `waitLonger` → (c) i (d) czerwone — „slow read can be waited” red (brak przycisku); przywrócone
+- [x] 6.5 Deliberate break p6d: `onEscape` resetu bez strażnika `busy` → (b) czerwony; przywrócone — SV2-02 red (element not found)
+- [x] 6.6 Deliberate break p6e: „Graj dalej” rozstrzyga świeżo (świeży wynik odblokowuje zapis, łamie regułę; flaga `settled` jest no-opem po „Graj dalej”) → (e) czerwony; przywrócone — „continuing while the slow read” red (`toMatchObject`, load/blocked)
+- [x] 6.7 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build absent (2 chunks), lint, typecheck, 2479 unit green

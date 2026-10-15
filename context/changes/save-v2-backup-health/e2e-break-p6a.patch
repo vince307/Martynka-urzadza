@@ -1,0 +1,13 @@
+diff --git a/src/core/autosave.ts b/src/core/autosave.ts
+index 4c19a06..f412931 100644
+--- a/src/core/autosave.ts
++++ b/src/core/autosave.ts
+@@ -218,7 +218,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
+                         backupFails++;
+                         backupError = errorName(e);
+                         backup = 'failed';
+-                        if (reason !== 'hidden' && backupFails < options.backupAttempts) throw e;
++                        if (reason !== 'hidden') throw e;
+                         failures++;
+                         lastError = backupError;
+                         lastFailure = { stage: 'backup', error: backupError };

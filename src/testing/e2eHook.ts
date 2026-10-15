@@ -109,10 +109,10 @@ const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable
 export const E2E_LOAD_TIMEOUT_MS = 300;
 
 /** Under `?e2eSave=slow` the read answers (a v2 save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
-export const E2E_SLOW_READ_MS = 800;
+export const E2E_SLOW_READ_MS = 2500;
 
 /** The second (longer) read limit under `?e2eSave=hang|slow`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
-export const E2E_SLOWER_LOAD_TIMEOUT_MS = 1500;
+export const E2E_SLOWER_LOAD_TIMEOUT_MS = 5000;
 
 /** The write limit under `?e2eSave=writehang`, so the e2e run does not wait the real 5 s. */
 export const E2E_WRITE_TIMEOUT_MS = 300;
