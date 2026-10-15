@@ -14,6 +14,7 @@ import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/pro
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { buildAdaptiveRound, endRound, roundWeights } from '../core/curriculum';
+import { pictureMode } from '../core/pictureMode';
 import { localDay } from '../core/day';
 import { coveredAfter, diceBoard, type DiceThrow } from '../core/minigames/dice';
 import { buildWordRound, lettersUncovered, revealed, wordAvailable } from '../core/minigames/word';
@@ -855,6 +856,7 @@ export class TaskScene extends Scene {
         }
         // A variant that cannot be built (a word round without a fitting word, dice off) is an ordinary round.
         const previousId = previousStage(this.stage.id);
+        const month = this.registry.get(REGISTRY_KEYS.month) as number | undefined;
         const tasks = buildAdaptiveRound(
             this.stage,
             previousId ? getStage(previousId) : undefined,
@@ -864,6 +866,7 @@ export class TaskScene extends Scene {
             balance.round,
             balance.tiles.count,
             { missingIds, unlockShare: balance.curriculum.unlockShare },
+            { picture: month !== undefined && pictureMode(learner, month) },
         );
         return { kind: 'round', state: startRound(tasks, balance.round) };
     }

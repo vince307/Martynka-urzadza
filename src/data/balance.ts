@@ -1,5 +1,7 @@
 // Tuning numbers of the game as data (plan section 4). Scenes and core take
 // these as arguments; later slices extend this object.
+import { placementData } from './placement';
+
 export const balance = {
     round: { length: 5, starPerTask: 1, cleanRoundBonus: 2, uniqueRetries: 20 }, // uniqueRetries: redraws of a task whose prompt already appeared in the round (smallest pool 9 prompts, failure odds about 1e-7); PRD FR-006/FR-007: 5 tasks, 1 star each, +2 for a round without a mistake
     warmup: { length: 6, previousCount: 3, currentSteps: 2, minFirstTry: 4 }, // placement warm-up: 3 tasks of the previous stage + 3 of the first 2 playable steps of the current one; fewer than 4 right on the first try lowers the stage by one (ZADANIA section 1 gives no numbers)
@@ -17,5 +19,6 @@ export const balance = {
     blockDrag: { startDistance: 12, maxPerKind: 9 }, // `drag` answer mode (S-13): a finger must travel 12 game px (about 6 CSS px at 1024 wide, above touch jitter) before a touch is a drag and not a tap; at most 9 blocks of a kind on the mat (a 10th ten is a hundred)
     clockSet: { grabRadius: 56, startDistance: 12 }, // clock to set (S-13b): a hand is grabbed within 56 game px of its tip (a 112 px handle, above the 96 px touch target); a finger must travel 12 game px before the hand follows it
     variants: { everyRounds: 3, puzzleMultiplier: 2, puzzleStages: ['E3', 'E4'], minigames: ['word', 'dice'] as readonly ('word' | 'dice')[], dice: { throws: 13, max: 12 }, word: { tiles: 3 } }, // S-15: every 4th ordinary round is a variant (3 ordinary rounds between); the daily puzzle pays x2 stars per task (author decision 2026-10-14); puzzles exist for E3-E4 only; `minigames` lists the enabled minigames; dice: 13 throws, results 0..12; word: 3 answer tiles
+    pictureMode: { age: 6, months: placementData.monthBands.autumn }, // S-14d: E1 rounds prefer tasks with a picture for 6-year-olds in September-January (the autumn band of the placement table) and while easing (ZADANIA section 1); a draw filter only, nothing is saved
     tiles: { count: 4 },   // answer tiles per task, including the correct one (kit task-tiles.png shows 4)
 } as const;

@@ -883,7 +883,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 4.2 `npm run sample -- E1 --count 6` bez naruszeń, z E1.1 compare_qty, E1.2 ordinal, E1.3 choose_op_picture; `count_5` nigdy 1 — c6c6600
 - [x] 4.3 Deliberate break: `E1.2.count_5` z powrotem `min: 1` → test „co najmniej 2 ikony” czerwony; przywrócone; meta-check — c6c6600
 - [x] 4.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — c6c6600
-- [ ] 4.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 4.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 86 passed (5.8 min, --workers=4) on c6c6600
 
 #### Manual
 
@@ -894,9 +894,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 5.2 Deliberate break: `pictureMode` bez warunku miesiąca / filtr zjada cały `current` / wpis tabeli fałszywy dla COUNT → czerwone; przywrócone; meta-check
-- [ ] 5.3 `tests/fixtures/` bez zmian (zapis v2); pełna bramka lokalna zielona
+- [x] 5.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 5.2 Deliberate break: `pictureMode` bez warunku miesiąca / filtr zjada cały `current` / wpis tabeli fałszywy dla COUNT → czerwone; przywrócone; meta-check
+- [x] 5.3 `tests/fixtures/` bez zmian (zapis v2); pełna bramka lokalna zielona
 - [ ] 5.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual
