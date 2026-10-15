@@ -112,7 +112,7 @@ describe('generateMoneyPay', () => {
                 expect(task.check?.('7'), where).toBe(false);
             });
         }
-    });
+    }, 30_000); // wallet enumeration: ~1.5 s locally, over 5 s on a loaded CI runner
 
     it('[200, 200, 100] pays 5 zł in the plain task and is refused when the fewest coins are asked', () => {
         const draw = (fewest: boolean): Task => generateMoneyPay(skill(E1_TRAY, 5, 5, [fewest ? 'fewest' : 'pay']), createRng(1));
@@ -231,5 +231,5 @@ describe('MONEY_PAY in the programme (phase 8)', () => {
                 expect(canonicalInput(task), where).toEqual(task.answer);
             });
         }
-    });
+    }, 30_000);
 });
