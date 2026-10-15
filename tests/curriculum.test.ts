@@ -71,10 +71,10 @@ describe('child-facing step names', () => {
                 expect(name!, name).not.toMatch(/\.$/);
             });
         }
-        it(`${stage.id}: childNames are distinct and only on playable steps`, () => {
+        it(`${stage.id}: childNames are distinct and only on playable steps (a review step counts)`, () => {
             const names = named.map((step) => step.childName);
             expect(new Set(names).size).toBe(names.length);
-            for (const step of stage.steps.filter((s) => !s.skills.some(playable))) {
+            for (const step of stage.steps.filter((s) => !s.skills.some(playable) && s.review !== true)) {
                 expect(step.childName, `${stage.id}.${step.step}`).toBeUndefined();
             }
         });

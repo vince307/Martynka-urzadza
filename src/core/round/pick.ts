@@ -36,6 +36,8 @@ export interface SkillBuckets {
     readonly current: readonly SkillDef[];
     readonly earlier: readonly SkillDef[];
     readonly previous: readonly SkillDef[];
+    /** Review step only: `current` split by step; a draw from `current` picks a group first, then a skill in it. */
+    readonly currentGroups?: readonly (readonly SkillDef[])[];
 }
 
 /**
@@ -60,6 +62,7 @@ export const pickRoundSkills = (buckets: SkillBuckets, weights: Weights, rng: Rn
                 break;
             }
         }
-        return rng.pick(buckets[chosen]);
+        const groups = chosen === 'current' ? buckets.currentGroups : undefined;
+        return groups && groups.length > 0 ? rng.pick(rng.pick(groups)) : rng.pick(buckets[chosen]);
     });
 };

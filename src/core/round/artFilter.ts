@@ -41,5 +41,9 @@ export const withoutArtBlocked = (buckets: SkillBuckets, blocked: (s: SkillDef) 
     const earlier = keep(buckets.earlier);
     const previous = keep(buckets.previous);
     if (current.length + earlier.length + previous.length === 0) return buckets;
-    return { current: current.length > 0 && current.length >= minCurrent ? current : buckets.current, earlier, previous };
+    const useCurrent = current.length > 0 && current.length >= minCurrent;
+    const result = { current: useCurrent ? current : buckets.current, earlier, previous };
+    if (!buckets.currentGroups) return result;
+    // Review step: the groups follow `current` (filtered groups, empty ones dropped, or the whole unfiltered set).
+    return { ...result, currentGroups: useCurrent ? buckets.currentGroups.map(keep).filter((g) => g.length > 0) : buckets.currentGroups };
 };

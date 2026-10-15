@@ -125,6 +125,6 @@ export const E6: StageDef = {
                 skill('E6.10.place_value_1000000', 10, 'PLACE_VALUE', { variant: 'orders', max: 1000000 }),
             ],
         },
-        { step: 11, title: 'Powtórka całego roku — „Test przed klasą 4”', types: ['MIX', 'LOGIC'], skills: [] },
+        { step: 11, title: 'Powtórka całego roku — „Test przed klasą 4”', types: ['MIX', 'LOGIC'], skills: [], review: true, childName: 'Powtórka roku' },
     ],
 };

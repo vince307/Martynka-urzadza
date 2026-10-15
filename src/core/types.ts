@@ -24,6 +24,7 @@ export interface StepDef {
     childName?: string;       // short nominative name shown to the child on the "Nowa umiejętność!" card; set on playable steps only
     types: string[];          // task types the catalogue lists for this step
     skills: SkillDef[];       // skills with parameters; empty until a generator exists
+    review?: true;            // review step: no own skills, draws from the stage's other steps (S-14c)
 }
 
 export interface StageDef {

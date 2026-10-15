@@ -54,7 +54,7 @@ describe('playableSteps', () => {
         expect(playableSteps(stage('E3'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
         expect(playableSteps(stage('E4'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
         expect(playableSteps(stage('E5'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-        expect(playableSteps(stage('E6'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        expect(playableSteps(stage('E6'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]); // 11 = the review step, never a calendar start
     });
 });
 
