@@ -1,55 +1,70 @@
 # Handoff — `save-v2-backup-health` (slice fix save-v2-backup-health, non-roadmap)
 
-Written by the finishing step of `/10x-e2e` phase 6 (the last phase) of run `2026-10-15-fix-s14c-s14d`. All phases are committed and `change.md` is `implemented`; the next agent reviews, and must not touch production code except to fix review findings.
+Written by `/10x-impl-review` of run `2026-10-15-fix-s14c-s14d`. Review verdict: APPROVED, `MERGE: CLEAR`. Two WARNINGs were fixed in `58cf156`, the reviewer rows are ticked, and `change.md` is `impl_reviewed`. The next agent runs the visual gate. It must not touch production code except to fix a visual-gate finding.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-v2-backup-health`, cut from `main` at `16848c6` |
-| Commits | plan commits + p1 `8430945`, p2 `ccbfc11`, p3 `ec72589`, p4 `afbf9a8`, p5 `087d9de`, p6 `e7407b7`, handoff commits |
+| Commits | plan commits + p1 `8430945` … p6 `e7407b7`, review fix `58cf156`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md`: only [reviewer], [visual], [human] rows (1.5, 1.6, 2.5-2.7, 3.4, 3.5, 4.5-4.8, 5.6, 5.7) |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | only [visual] 1.6, 3.5, 4.6, 5.7 and [human] 2.5, 2.6, 4.7, 4.8 |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/save-backup-health.spec.ts` | 5 tests (SV2-01, SV2-02, slow read can be waited, continuing while the slow read answers, plus the card test) |
-| `tests/e2e/support/hook.ts`, `playwright.config.ts` | save type in the hook helper; `ROUND_SPEC` |
-| `src/testing/e2eHook.ts` | e2e build only: `E2E_SLOW_READ_MS` 2500, `E2E_SLOWER_LOAD_TIMEOUT_MS` 5000 |
-| `context/changes/save-v2-backup-health/e2e-break-p6{a..e}.patch`, `e2e-request-p6.md` | deliberate-break patches and the phase request |
-| `plan.md` | rows 5.5, 6.1-6.7 ticked with shas |
+| `context/changes/save-v2-backup-health/reviews/impl-review.md` | review report: a save-safety table by symbol, the reviewer rows, F1–F6, and `MERGE: CLEAR` |
+| `tests/autosave.test.ts` | `hasSettled` helper; "a hung write is a timeout failure…" and "replace behind a write that never answers…" now fail by assertion, not by the vitest timeout (F1) |
+| `src/data/pl.ts` | `settings.saveOff.timeout` and `saveTransfer.deviceTimeout` now say "może pomóc usunięcie danych tej strony" instead of "pomoże" (F2) |
+| `context/changes/save-v2-backup-health/follow-ups/review-fixes.md` | new follow-up for F3/F4 (`replace` marks the copy `skipped` after one try; log `attempts: 0`), with a `Trigger:` |
+| `context/changes/save-v2-backup-health/plan.md` | reviewer rows 1.5, 2.7, 3.4, 4.5, 5.6 ticked |
+| `context/changes/save-v2-backup-health/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
+All observed in this step. Baseline is main `16848c6`: unit 2445, e2e 77.
+
 | Command | Result |
 |---|---|
-| lint, typecheck | OK |
-| `npm test` | 2479 passed (128 files) |
+| lint, typecheck | OK, before and after the fix |
+| `npm test` + deploy tests + `sample` E1–E6 | 2479 passed (128 files) = baseline 2445 + 34; still 2479 after the fix (assertions added, no new tests); every sample OK |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| Playwright | not run by me (sandbox); orchestrator evidence below |
-| Orchestrator spec fix 1 | test "#2 SRR-02 continuing while the slow read is still answering never overwrites it" asserted `counterText < 7` after a whole round, but a clean round pays 5 + 2 bonus = 7, so it could not tell a fresh session from an adopted late read (first run: Expected < 7, Received 7). Now it plays ONE task (`playTaskRight`) and polls `counterText` = '1' (an adopted read would show 8) |
-| Orchestrator fix 2 (e2e build only, `src/testing/e2eHook.ts`) | `E2E_SLOW_READ_MS` 800 -> 2500 and `E2E_SLOWER_LOAD_TIMEOUT_MS` 1500 -> 5000, mirrored in the spec (`SLOW_READ_MS`, new `SLOWER_LIMIT_MS`) with matching expect timeouts. Reason: under load the spec's two taps ("Poczekaj dłużej", then "Graj dalej") took longer than 800 ms, the slow read answered first (correct product behaviour) and the card closed — a test-timing race (seen 1 of 2 repeats). Production timings (`balance.save`) unchanged; build prints `e2e hook: absent` |
-| Green after the fixes | save-backup-health x3 with --workers=4 = 15 passed (1.0 min) |
-| Breaks (each alone, --workers=1) | p6a (copy never gives up) -> SV2-01 red `toBe` Expected 2, Received null; p6b (replace without limit) -> SV2-02 red `toBeVisible` element not found; p6c (no wait button) -> "slow read can be waited" red (tap timeout, button absent); p6d (Escape without busy guard) -> SV2-02 red `toBeVisible` element not found; p6e ("Graj dalej" resolves fresh) -> "continuing while the slow read" red `toMatchObject` (load/blocked differ). All restored; the only src diff left is fix 2 |
-| Full suite after restore (--workers=4) | 82 passed (5.4 min) = 77 + 5. Unit 2479 |
-| Meta-check p6e | breaks the rule (a fresh outcome unblocks the saver), not the `settled` flag (a no-op once "Graj dalej" resolved); plan row 6.6 worded accordingly |
+| `npx playwright test --config=… --workers=4` (Chromium launched first try) | 82 passed (5.8 min) = baseline 77 + 5 |
+| Break 1 (unit): `attempt` calls `store.write(encoded)` without `limited` | before F1: 3 tests red only by `Test timed out in 5000ms`; after F1: "hung write" and "replace behind…" red at once with `AssertionError: expected false to be true`; restored |
+| Break 2 (unit): `idb.ts` `run` ignores `mayRetry` | "an abandoned write … is not retried once a newer write started" red (`expected 'ok' to be 'InvalidStateError'`); restored |
+| Break 3 (e2e): `e2e-break-p6a.patch` (the copy never gives up), `-g "SV2-01"`, 1 worker | red: `toBe` Expected 2, Received null on `writtenVersion`; reversed with `git apply -R`; tree clean |
+| Meta-check | break 1 now proves the time limit by assertion. Break 2 proves the write-order guard in the store, not in the autosaver. Break 3 proves SV2-01 in the browser (the save is never written as v2) |
+| Fixtures and format | `git diff --stat main..HEAD -- tests/fixtures src/core/save.ts` empty; `SAVE_VERSION = 2` |
+| Ports 4397/4398 | no listener after the runs |
 
 ## 4. Next command
 
-Next: `/10x-impl-review save-v2-backup-health`
+Next: `visual gate`
 
 ## 5. Open
 
-- Reviewer rows 1.5, 2.7, 3.4, 4.5, 5.6; visual 1.6, 3.5, 4.6, 5.7; human 2.5, 2.6, 4.7, 4.8 (checklist in `plan.md` Progress).
-- Follow-ups with `Trigger:` in `context/changes/save-v2-backup-health/follow-ups/review-fixes.md` (includes: no e2e for Escape on the import dialog).
-- The e2e slow-read constants in `src/testing/e2eHook.ts` are timing-sensitive; if flaky again, raise `E2E_SLOW_READ_MS` with the spec's `SLOW_READ_MS`.
+- Visual rows (`plan.md` Progress), for the visual gate:
+  - 1.6: "Zapis gry" at `?e2eSave=writehang` shows `failing`.
+  - 3.5: the panel at `v1`, `backupfail`, `writefail`, `writehang`.
+  - 4.6: the slow card at `hang` (before, during, after) and at `unavailable`; the panel and reset dialog at `hang`.
+  - 5.7: the reset dialog at `writehang`.
+  - All at 1440 and 1024. Gestures and the adult gate go through the Playwright fallback (profile § 8).
+- Human checklist:
+  - [ ] 2.5: v2 is written without the raw v1 copy after 3 failed copies, or at page hide after the first.
+  - [ ] 2.6: import and reset try a copy that is still owed once (SRR-04).
+  - [ ] 4.7: no start counter; the way out of a timeout is a longer wait plus the advice.
+  - [ ] 4.8: N-7 iPad measurement.
+- Follow-ups with `Trigger:` are in `follow-ups/review-fixes.md`. New in this step: F3/F4 in `src/core/autosave.ts` `replace`/`skipBackup`.
+- The e2e slow-read constants are timing-sensitive (`src/testing/e2eHook.ts` `E2E_SLOW_READ_MS`, spec `SLOW_READ_MS`; F5). They are green here.
+- DESIGN-GAP rows 94–97 (`docs/design-gaps.md`) still need the visual gate.
 
 ## 6. Autonomous decisions
 
-- Ticked 6.7 on observed build/lint/typecheck/unit plus orchestrator suite run; "servers killed" taken as true because none were started by this step. Would change if a leftover process on 4397/4398 is found.
-- Commit messages as proposed; no subagent used.
-- Wording of row 6.6 changed per the orchestrator (p6e breaks the unblock rule, not `settled`).
+- **F1 fixed in tests (helper `hasSettled`), not by `vi.setConfig` or a shorter timeout.** Why: the contract asks for RED by assertion. The helper fails in milliseconds and names the cause. What would change it: a test-runner rule that forbids helper predicates (none exists).
+- **F2 copy softened ("może pomóc").** Rejected: leaving "pomoże". Why: the game cannot know that clearing site data fixes a hang, and the brief asks for honest copy. No spec asserts the literal text. What would change it: a teacher or maintainer preferring the firmer wording.
+- **F3/F4 recorded as a follow-up, not fixed.** Why: the behaviour is the plan's decision 3, under `[human]` 2.6, and no progress is lost (v2 ⊇ v1). Changing it would alter the reviewed SRR-04 contract. What would change it: the maintainer rejecting 2.6, or a v3 migration that can drop fields.
+- **Verdict APPROVED / MERGE: CLEAR.** Why: no CRITICAL was found, the two WARNINGs are fixed, and every save-safety point was verified by symbol. What would change it: a visual-gate finding of a misleading parent line, or a flaky slow-read e2e.

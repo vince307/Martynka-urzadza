@@ -16,3 +16,4 @@ Findings of the observability audit 2026-10-15_0253 and of plan review that this
 - Visual-gate O2: colon without a list in the reset dialog. Trigger: the next copy change to the reset dialog's lead line or saveSummaryView.ts.
 - O4: `tests/deviceSaveWiring.test.ts` for openExport and design-gaps rows 43-51. Trigger: the next change to UIScene.openExport.
 - No e2e for the Escape guard on the import dialog (reset is covered in phase 6). Trigger: the next change to saveImportDialog.ts.
+- Impl-review F3/F4: `Autosaver.replace` marks the v1 copy `skipped` after one failed try even when its own write then fails, so later ordinary writes skip the copy after 1 failure (not `backupAttempts`); its `skipBackup` log reads `attempts: 0` and says "writing" before the write is known. Keep the copy `failed` (owed) when the replace write fails and count the try in `backupFails`. Trigger: the next change to `replace` in src/core/autosave.ts, or the v3 save format.
