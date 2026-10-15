@@ -34,10 +34,13 @@ export type TaskVisual =
     | { kind: 'arrows'; layout: 'graph'; op: '+' | '−'; n: number; input: number | null; output: number | null }
     | { kind: 'arrows'; layout: 'table'; op: '+' | '−'; n: number; inputs: readonly number[]; outputs: readonly (number | null)[] };
 
-/** `tall` drawings are narrower than high and need the room beside the keypad solution; the rest are wide. */
-export type VisualShape = 'wide' | 'tall';
+/**
+ * `tall` drawings are narrower than high and need the room beside the keypad solution; `long` ones (a number line) are far wider than
+ * high and take the notebook's full width in a tiles task (visual gate S-14b); the rest are wide.
+ */
+export type VisualShape = 'wide' | 'tall' | 'long';
 
-export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : 'wide');
+export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */
 export const visualKey = (v: TaskVisual | undefined): string => {

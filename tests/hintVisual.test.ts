@@ -7,7 +7,7 @@ import { createRng } from '../src/core/rng';
 import { answer, startRound } from '../src/core/round';
 import { hintPictureLayout, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { roundView } from '../src/core/round/view';
-import { addSubHint, addSubJumps, generateAddSub, parseAddSubParams } from '../src/core/tasks/generators/addSub';
+import { addSubHint, addSubJumps, generateAddSub, hintLine, parseAddSubParams } from '../src/core/tasks/generators/addSub';
 import type { Task } from '../src/core/tasks/types';
 import { validateTask } from '../src/core/tasks/validate';
 import type { SkillDef, StageDef } from '../src/core/types';
@@ -58,6 +58,29 @@ describe('addSubJumps', () => {
     });
 });
 
+describe('hintLine labels (visual gate S-14b: "25" ran into the start "26", the box covered "5")', () => {
+    const labelsOf = (a: number, op: '+' | '-', b: number): readonly number[] => {
+        const v = hintLine(addSubJumps(a, op, b), op === '+' ? a + b : a - b);
+        return v.kind === 'numberLine' ? v.labels : [];
+    };
+
+    it('leaves out a multiple of five on the tick next to the start, a landing or the box', () => {
+        expect(labelsOf(26, '-', 22)).toEqual([0, 6, 10, 15, 20, 26, 30]);
+        expect(labelsOf(9, '+', 3)).toEqual([0, 5, 9, 10, 15, 20]);
+        expect(labelsOf(13, '-', 9)).toEqual([0, 10, 13, 15, 20]);
+    });
+
+    it('keeps every multiple of five on a line of one ten (its ticks are far enough apart)', () => {
+        expect(labelsOf(30, '-', 9)).toEqual([20, 25, 30]);
+        expect(labelsOf(30, '-', 6)).toEqual([20, 25, 30]);
+    });
+
+    it('never drops the start or a landing, even next to each other', () => {
+        expect(labelsOf(19, '+', 2)).toEqual(expect.arrayContaining([19, 20]));
+        expect(labelsOf(21, '-', 2)).toEqual(expect.arrayContaining([20, 21]));
+    });
+});
+
 describe('ADD_SUB with a number line', () => {
     it('rejects line above 30 and accepts 30', () => {
         expect(() => parseAddSubParams({ max: 31, ops: ['+'], bridge: 'any', line: true })).toThrow();
@@ -85,7 +108,11 @@ describe('ADD_SUB with a number line', () => {
             expect(v.jumps.at(-1)!.to, where).toBe(result);
             expect(v.labels, where).toContain(v.jumps[0].from);
             for (const j of v.jumps.slice(0, -1)) expect(v.labels, where).toContain(j.to);
-            for (let n = v.from; n <= v.to; n += 1) if (n % 5 === 0 && n !== result) expect(v.labels, where).toContain(n);
+            const marked = [v.jumps[0].from, ...v.jumps.map((j) => j.to)];
+            const crowded = (n: number): boolean => v.to - v.from > 10 && marked.some((m) => Math.abs(m - n) === 1);
+            for (let n = v.from; n <= v.to; n += 1) {
+                if (n % 5 === 0 && n !== result && !crowded(n)) expect(v.labels, where).toContain(n);
+            }
             expect(Math.min(...v.jumps.map((j) => Math.min(j.from, j.to))), where).toBeGreaterThanOrEqual(v.from);
             expect(Math.max(...v.jumps.map((j) => Math.max(j.from, j.to))), where).toBeLessThanOrEqual(v.to);
             expect(validateTask({ ...task, input: 'keypad' }, { max: 30 }), where).toEqual([]);

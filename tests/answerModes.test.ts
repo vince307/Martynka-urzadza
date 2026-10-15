@@ -4,7 +4,7 @@ import { pictureLayout } from '../src/core/round/pictureLayout';
 import { playable } from '../src/core/round/pick';
 import { validateTask } from '../src/core/tasks/validate';
 import { ANSWER_MODES, type SkillDef } from '../src/core/types';
-import { TASK_LAYOUT } from '../src/data/layout';
+import { FONT_SIZES, TASK_LAYOUT } from '../src/data/layout';
 
 const skill = (answer: SkillDef['answer']): SkillDef => ({ id: 'T.1', stage: 'E1', step: 1, type: 'ADD_SUB', params: {}, answer });
 
@@ -57,6 +57,13 @@ describe('written column layout (S-14b)', () => {
         const widthUnits = 4 * W.colW;
         const heightUnits = W.markRow + 2 * W.row + W.ruleGap + W.box.height;
         expect(Math.min(digits.picture.width / widthUnits, digits.picture.height / heightUnits)).toBeGreaterThanOrEqual(1);
+    });
+    it('the solution strip beside the column holds a three-digit equation on one line and ends before the keypad (visual gate S-14b)', () => {
+        const { picture, lines } = TASK_LAYOUT.picture.digits;
+        expect(picture.x + picture.width).toBeLessThanOrEqual(lines.x);
+        expect(lines.x + lines.width).toBeLessThanOrEqual(TASK_LAYOUT.keypad.left);
+        // "805 − 198 = 607." is 16 characters of about half the font size each: 352 px at 44 px (320 broke it inside the equation).
+        expect(lines.width).toBeGreaterThanOrEqual(16 * 0.5 * FONT_SIZES.solutionLine);
     });
     it('the result boxes are touch-sized squares of the digit', () => {
         expect(TASK_LAYOUT.written.box.width).toBeGreaterThanOrEqual(TASK_LAYOUT.written.colW * 0.8);

@@ -264,9 +264,16 @@ export const TASK_LAYOUT = {
             picture: { x: 661, y: 396, width: 600, height: 190 },
             solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
+        // S-14b visual gate: a number line in a tiles task (E3.9 jumps, 0..30) drew its labels about 9 CSS px tall on a 1024 px tablet in the
+        // 600 px `tiles` rectangle; a long drawing takes the notebook's full width, the solution lines under it, both above the tiles (top 712).
+        long: {
+            tiles: { x: 236, y: 380, width: 1448, height: 300 },
+            tilesSolution: { picture: { x: 236, y: 330, width: 1448, height: 200 }, lines: { x: 236, y: 540, width: 1448, height: 160 } },
+        },
         // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP 93 (docs/design-gaps.md): the kit has no layout for the column beside its solution lines; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
-        digits: { picture: { x: 236, y: 340, width: 440, height: 508 }, lines: { x: 700, y: 340, width: 320, height: 508 } },
+        // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
+        digits: { picture: { x: 216, y: 340, width: 400, height: 508 }, lines: { x: 632, y: 340, width: 392, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
         hint: { keypad: { picture: { x: 236, y: 530, width: 768, height: 190 }, lines: { x: 236, y: 730, width: 768, height: 118 } } },
         minHeight: 120,
@@ -312,6 +319,9 @@ export const TASK_LAYOUT = {
         colW: 82, markRow: 60, row: 92, ruleGap: 12, rule: 4, maxScale: 1.3,
         box: { width: 70, height: 92, radius: 14, border: 4, activeBorder: 8 },
         carry: { radius: 22, border: 3 }, strike: 5, lendDrop: 6,
+        // The small "1" of a column that borrows sits before its digit, raised (centre `dx` left of and `dy` above the digit's centre). Visual gate S-14b:
+        // in the mark row it read as part of a number with the lenders' digits ("7 9 1" over 805).
+        borrowOne: { dx: 34, dy: 22 },
     },
     // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
     coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },

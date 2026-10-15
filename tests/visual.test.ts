@@ -259,7 +259,7 @@ describe('column and numberLine drawings (S-14b)', () => {
         expect(describeVisual(column('+', 38, 27, 2))).toBe('[column 38 + 27]');
         expect(describeVisual(line())).toBe('[line 0–100/10 labels 30 40 60 box 50]');
         expect(visualShape(column('+', 38, 27, 2))).toBe('wide');
-        expect(visualShape(line())).toBe('wide');
+        expect(visualShape(line())).toBe('long');   // visual gate S-14b: the full notebook width in a tiles task
     });
     it('accepts good columns and rejects a result with the wrong digit count or a negative result', () => {
         expect(validateVisual(column('+', 38, 27, 2))).toEqual([]);

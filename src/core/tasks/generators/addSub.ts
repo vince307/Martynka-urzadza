@@ -180,14 +180,19 @@ const isFive = (n: number): boolean => n % 5 === 0;
 
 /**
  * The hint drawing: a line from the full ten under the lower end to the full ten over the higher one, a tick per unit.
- * Labels: the start, the landings between, every multiple of five; never the result, which gets the box.
+ * Labels: the start, the landings between, every multiple of five; never the result, which gets the box. On a line of more than one ten
+ * a multiple of five on the tick next to the start, a landing or the box is left out: the two numbers (or the box) ran into each other (visual gate S-14b).
  */
-const hintLine = (jumps: readonly Jump[], result: number): TaskVisual => {
+export const hintLine = (jumps: readonly Jump[], result: number): TaskVisual => {
     const points = jumps.flatMap((j) => [j.from, j.to]);
     const from = Math.floor(Math.min(...points) / 10) * 10;
     const to = Math.ceil(Math.max(...points) / 10) * 10;
     const labels = new Set<number>([jumps[0].from, ...jumps.slice(0, -1).map((j) => j.to)]);
-    for (let n = from; n <= to; n += 1) if (isFive(n)) labels.add(n);
+    const marked = [...labels, result];
+    const dense = to - from > 10;   // two or three tens: the ticks stand close; one ten has room for every label
+    for (let n = from; n <= to; n += 1) {
+        if (isFive(n) && !(dense && marked.some((m) => Math.abs(m - n) === 1))) labels.add(n);
+    }
     labels.delete(result);
     return { kind: 'numberLine', from, to, tick: 1, labels: [...labels].sort((x, y) => x - y), box: result, jumps: jumps.map((j) => ({ ...j })) };
 };

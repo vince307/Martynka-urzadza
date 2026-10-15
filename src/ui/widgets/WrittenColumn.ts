@@ -13,7 +13,7 @@ export type ColumnMode = 'active' | 'locked' | 'correct';
 /**
  * A written column after the kit's reference/written-addition.svg: operands right-aligned, the sign at the left, a rule, a row of result boxes.
  * Carries are a small digit in a gold circle above the next column; a borrow strikes the lender's digit and writes the smaller one above it, with a
- * small "1" before the digit of the column that borrows. DESIGN-GAP 90 and 91 (docs/design-gaps.md): the kit has no result boxes, no active box and no borrow notation.
+ * small raised "1" before the digit of the column that borrows. DESIGN-GAP 90 and 91 (docs/design-gaps.md): the kit has no result boxes, no active box and no borrow notation.
  */
 export class WrittenColumn {
     private readonly graphics: GameObjects.Graphics;
@@ -61,10 +61,10 @@ export class WrittenColumn {
         for (const [col, now] of struck) {
             g.lineStyle(W.strike * s, TEAL, 1);
             g.lineBetween(xOf(col) - 0.3 * W.colW * s, rowAY + 0.3 * W.row * s, xOf(col) + 0.3 * W.colW * s, rowAY - 0.3 * W.row * s);
-            this.digit(xOf(col) + (prefixed.has(col) ? 12 * s : 0), markY + W.lendDrop * s, String(now), 'columnMark', s);
+            this.digit(xOf(col), markY + W.lendDrop * s, String(now), 'columnMark', s);
         }
         for (const col of prefixed) {
-            this.digit(xOf(col) - 22 * s, markY + W.lendDrop * s, '1', 'columnMark', s);
+            this.digit(xOf(col) - W.borrowOne.dx * s, rowAY - W.borrowOne.dy * s, '1', 'columnMark', s);
         }
         for (const { col } of marks.carries) {
             if (col >= v.columns) continue;

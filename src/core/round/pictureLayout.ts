@@ -24,6 +24,8 @@ export interface PictureSpec {
     minHeight: number;
     /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
     tall: { tiles: TallSpec; keypad: TallSpec };
+    /** A long drawing (a number line) in a tiles task: the notebook's full width, the solution lines under it, both above the tiles. */
+    long: { tiles: PictureRect; tilesSolution: { picture: PictureRect; lines: PictureRect } };
 }
 
 /** A horizontal span (x, width) in scene pixels. */
@@ -52,7 +54,8 @@ const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => {
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
  * `lines: null` means the lines keep their place for a task without a drawing (under the prompt).
- * A pictured `select` task keeps its drawing above the select tiles; a `drag` drawing (the clock to set) takes the mat.
+ * A pictured `select` task keeps its drawing above the select tiles; a `drag` drawing (the clock to set) takes the mat; a long drawing
+ * (a number line) of a tiles task takes the full width; beside the keypad it keeps the wide rectangles.
  */
 export const pictureLayout = (
     spec: PictureSpec,
@@ -63,6 +66,9 @@ export const pictureLayout = (
     if (shape === 'tall') {
         const tall = tallOf(spec, input);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
+    }
+    if (shape === 'long' && input === 'tiles') {
+        return solution ? spec.long.tilesSolution : { picture: spec.long.tiles, lines: null };
     }
     switch (input) {
         case 'drag': return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };

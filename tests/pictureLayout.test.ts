@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
-import { TASK_LAYOUT } from '../src/data/layout';
+import { FONT_SIZES, TASK_LAYOUT } from '../src/data/layout';
+import { visualShape } from '../src/core/tasks/visual';
 
 const spec = TASK_LAYOUT.picture;
 const apart = (a: PictureRect, b: PictureRect): boolean =>
@@ -214,5 +215,45 @@ describe('clockSetLayout', () => {
         expect(layout.lines).toEqual(TASK_LAYOUT.drag.solutionLines);
         expect(apart(face, layout.ok)).toBe(true);
         expect(apart(face, layout.lines)).toBe(true);
+    });
+});
+
+describe('a long drawing: the number line of a tiles task (visual gate S-14b: 0..30 jumps drew labels about 9 CSS px tall on a 1024 px tablet)', () => {
+    const L = TASK_LAYOUT.numberLine;
+    const TABLET = 1024 / 1920;
+    // The NumberLine widget's own fit: 31 ticks a dense gap apart, arcs above, labels and the box under the axis.
+    const labelPx = (rect: PictureRect): number => {
+        const widthUnits = 2 * L.pad + 30 * L.denseGap;
+        const heightUnits = L.arcZone + L.tick / 2 + L.labelDrop + L.box.height;
+        return Math.min(rect.width / widthUnits, rect.height / heightUnits, L.maxScale) * FONT_SIZES.lineLabel * TABLET;
+    };
+    const line = { kind: 'numberLine', from: 0, to: 30, tick: 1, labels: [0, 5], box: null, jumps: [] } as const;
+
+    it('a number line is long, a chart stays wide and a thermometer tall', () => {
+        expect(visualShape(line)).toBe('long');
+        expect(visualShape({ kind: 'thermometer', celsius: 5 })).toBe('tall');
+    });
+
+    it('keeps the labels of a 0..30 line at least 12 CSS px on the tablet, before and during the solution', () => {
+        expect(labelPx(pictureLayout(spec, 'tiles', false, 'long').picture)).toBeGreaterThanOrEqual(12);
+        expect(labelPx(pictureLayout(spec, 'tiles', true, 'long').picture)).toBeGreaterThanOrEqual(12);
+    });
+
+    it('stays inside the page, above the tiles row, with the solution lines under the line', () => {
+        for (const solution of [false, true]) {
+            const { picture, lines } = pictureLayout(spec, 'tiles', solution, 'long');
+            expect(inside(picture, page)).toBe(true);
+            expect(apart(picture, tileRowRect(3))).toBe(true);
+            if (lines) {
+                expect(apart(picture, lines)).toBe(true);
+                expect(apart(lines, tileRowRect(3))).toBe(true);
+                expect(inside(lines, page)).toBe(true);
+            }
+        }
+    });
+
+    it('a long drawing beside the keypad keeps the wide rectangles', () => {
+        expect(pictureLayout(spec, 'keypad', false, 'long')).toEqual(pictureLayout(spec, 'keypad', false, 'wide'));
+        expect(pictureLayout(spec, 'keypad', true, 'long')).toEqual(pictureLayout(spec, 'keypad', true, 'wide'));
     });
 });
