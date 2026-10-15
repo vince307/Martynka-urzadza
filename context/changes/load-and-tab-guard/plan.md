@@ -668,7 +668,7 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 - [x] 5.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — 731bcb0
 - [x] 5.2 Deliberate break: `write` na `set` → test „B v4, A v3 refused” czerwony; przywrócone; meta-check (dwa magazyny, jedna baza) — 731bcb0
-- [ ] 5.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 5.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 731bcb0 (e2e 101 passed, orchestrator note)
 
 #### Manual
 
@@ -678,8 +678,8 @@ nadpisać nowszy zapis, a karta z buildu v2 (S-15..) może nadpisać v3 — tego
 
 #### Automated
 
-- [ ] 6.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
-- [ ] 6.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona
+- [x] 6.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — 9ee4570
+- [x] 6.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona — 9ee4570
 
 #### Manual
 
