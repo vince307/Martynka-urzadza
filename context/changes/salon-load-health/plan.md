@@ -547,9 +547,9 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [ ] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (liczby loadera, parsowanie szwu)
+- [x] 3.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (liczby loadera, parsowanie szwu) — orchestrator note: 98 passed --workers=4 on 903c70a; unit 2925 (p2 baseline 2919 + 6)
 - [x] 3.2 Deliberate break: `maxRetries: 3` → test budżetu czerwony; przywrócone; meta-check — 903c70a
-- [ ] 3.3 `npm run build` drukuje `e2e hook: absent (`; `E2E_LOADER_TIMEOUT` nieobecne w `dist/`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.3 `npm run build` drukuje `e2e hook: absent (`; `E2E_LOADER_TIMEOUT` nieobecne w `dist/`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — orchestrator note: 98 passed --workers=4 on 903c70a (+0); dist/ has no E2E_LOADER_TIMEOUT (p3 build check)
 
 #### Manual
 
@@ -560,9 +560,9 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [ ] 4.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
-- [ ] 4.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`
-- [ ] 4.3 `git diff --stat main -- deploy/` = tylko `deploy/README.md`; pełna bramka lokalna zielona
+- [x] 4.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — p4 commit
+- [x] 4.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:` — p4 commit
+- [x] 4.3 `git diff --stat main -- deploy/` = tylko `deploy/README.md`; pełna bramka lokalna zielona — p4 commit (e2e not needed: docs/comments only)
 
 #### Manual
 
