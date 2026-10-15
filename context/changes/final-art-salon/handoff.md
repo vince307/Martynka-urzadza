@@ -13,7 +13,7 @@ nothing is implemented. The next agent must not get wrong: the remap rule is **B
 | Commits | 3 on the branch after this step's commit (`docs(final-art-salon): change identity (autonomous run)`, `docs(final-art-salon): research`, `docs(final-art-salon): plan`) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 47 (`grep -c '^- \[ \]' plan.md`), 0 done |
+| `## Progress` rows remaining | 43 (`grep -c '^- \[ \]' plan.md`), 0 done |
 | Roadmap | S-16a `proposed` → `planning` (At a glance row + body `Status`), committed with the plan |
 | Working tree | clean after the commit (only files of this step staged) |
 
