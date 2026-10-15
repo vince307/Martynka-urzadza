@@ -844,7 +844,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Odczyt nauczyciela szablonów SHAPES i PATTERN (6 losowań na wariant z testu, `faceLabel` zamiast kodów): „Dotknij trójkąta”, „wszystkich kół”, podpowiedzi bez wyniku w 1. linii
+- [x] 1.5 [reviewer] Odczyt nauczyciela szablonów SHAPES i PATTERN (6 losowań na wariant z testu, `faceLabel` zamiast kodów): „Dotknij trójkąta”, „wszystkich kół”, podpowiedzi bez wyniku w 1. linii — impl-review 2026-10-15 (reviews/impl-review.md)
 
 ### Phase 2: Figury na kafelkach, szlaczek i E1.1 grywalny
 
@@ -859,7 +859,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 2.7 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, krok E1.1: polecenia, biernik/dopełniacz figur, intruz jednoznaczny, szlaczek z jednym następnikiem, podpowiedzi „policz rogi”
+- [x] 2.7 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, krok E1.1: polecenia, biernik/dopełniacz figur, intruz jednoznaczny, szlaczek z jednym następnikiem, podpowiedzi „policz rogi” — impl-review 2026-10-15 (reviews/impl-review.md)
 - [ ] 2.8 [visual] Zrzuty: SHAPES `name` pierwsza próba, SHAPES `odd` z podpowiedzią, SHAPES `all` (select), PATTERN pierwsza próba i ostatni krok rozwiązania, karta „Nowa umiejętność!” E1.1, `CoordGrid` E3.7 bez zmian — 1440×900 i 1024×768
 
 ### Phase 3: COMPARE_QTY, ORDINAL, CHOOSE_OP z obrazkiem w core; naprawa „złotych”
@@ -873,7 +873,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Odczyt nauczyciela szablonów COMPARE_QTY, ORDINAL, CHOOSE_OP `picture` (6 losowań z testu): dopełniacz po „więcej”, „który z kolei”, „Dołożono/Zabrano”, podpowiedzi bez wyniku w 1. linii
+- [x] 3.5 [reviewer] Odczyt nauczyciela szablonów COMPARE_QTY, ORDINAL, CHOOSE_OP `picture` (6 losowań z testu): dopełniacz po „więcej”, „który z kolei”, „Dołożono/Zabrano”, podpowiedzi bez wyniku w 1. linii — impl-review 2026-10-15 (reviews/impl-review.md)
 
 ### Phase 4: Rząd ikon i strzałka; COMPARE_QTY, ORDINAL i CHOOSE_OP z obrazkiem w programie; O4
 
@@ -887,7 +887,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 4.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, kroki E1.1–E1.3: kafelki porównania, „który z kolei od lewej”, CHOOSE_OP obrazkowy, brak „złotych” w zakupach
+- [x] 4.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6`, kroki E1.1–E1.3: kafelki porównania, „który z kolei od lewej”, CHOOSE_OP obrazkowy, brak „złotych” w zakupach — impl-review 2026-10-15 (reviews/impl-review.md)
 - [ ] 4.7 [visual] Zrzuty: COMPARE_QTY pierwsza próba i „tyle samo”, ORDINAL z podpowiedzią, CHOOSE_OP `come` i `go`, COUNT E1.2 po O4 — 1440×900 i 1024×768
 
 ### Phase 5: Tryb z obrazkami jako filtr doboru rundy
@@ -901,7 +901,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 5.5 [reviewer] Żadnego pola w `Settings`/`SavedLearner`; `variants.ts` i wagi łagodzenia bez zmian; wiersz 21 opisuje tryb uczciwie
+- [x] 5.5 [reviewer] Żadnego pola w `Settings`/`SavedLearner`; `variants.ts` i wagi łagodzenia bez zmian; wiersz 21 opisuje tryb uczciwie — impl-review 2026-10-15 (reviews/impl-review.md)
 
 ### Phase 6: Wspólny reduktor taca→mata, S13-09 i geometria tacy monet
 
@@ -914,7 +914,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 6.5 [reviewer] `blockDrag.ts` to cienka instancja; brak duplikatu logiki gestu; S13-09 opisany w komentarzu reduktora
+- [x] 6.5 [reviewer] `blockDrag.ts` to cienka instancja; brak duplikatu logiki gestu; S13-09 opisany w komentarzu reduktora — impl-review 2026-10-15 (reviews/impl-review.md)
 
 ### Phase 7: Generator MONEY_PAY, gałąź `coins` w `dragMode` i model odpowiedzi
 
@@ -927,7 +927,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 7.5 [reviewer] Odczyt nauczyciela szablonów MONEY_PAY (6 losowań na wariant z testu): „Zapłać 7 zł”, „najmniejszą liczbą monet”, podpowiedź „od największej monety”
+- [x] 7.5 [reviewer] Odczyt nauczyciela szablonów MONEY_PAY (6 losowań na wariant z testu): „Zapłać 7 zł”, „najmniejszą liczbą monet”, podpowiedź „od największej monety” — impl-review 2026-10-15 (reviews/impl-review.md)
 
 ### Phase 8: Portfel w scenie, hak `dragMode`, wyczerpujące helpery e2e i MONEY_PAY w E1.11, E2.2
 
@@ -941,7 +941,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 8.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6` i `-- E2 --count 6`, kroki E1.11 i E2.2: kwoty, „najmniejszą liczbą monet”, podpowiedź od największej monety, banknot 10 zł tylko w E2
+- [x] 8.6 [reviewer] Odczyt nauczyciela `npm run sample -- E1 --count 6` i `-- E2 --count 6`, kroki E1.11 i E2.2: kwoty, „najmniejszą liczbą monet”, podpowiedź od największej monety, banknot 10 zł tylko w E2 — impl-review 2026-10-15 (reviews/impl-review.md)
 - [ ] 8.7 [visual] Zrzuty: MONEY_PAY E1 pusta taca i portfel, moneta w trakcie przeciągania, portfel z 3 monetami, zły portfel z podpowiedzią, rozwiązanie; E2 taca 2 × 2 z banknotem; stand-in monety (`?e2eArt=missing`) — 1440×900 i 1024×768
 
 ### Phase 9: Seam sweep, dokumentacja, luki projektu, follow-upy
@@ -955,7 +955,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Manual
 
-- [ ] 9.5 [reviewer] Każdy follow-up ma `Trigger:` (w tym SPATIAL, SYMMETRY, BONDS pary); brak nieaktualnych komentarzy o dwóch gałęziach drag; brak duplikatu rysowania figur
+- [x] 9.5 [reviewer] Każdy follow-up ma `Trigger:` (w tym SPATIAL, SYMMETRY, BONDS pary); brak nieaktualnych komentarzy o dwóch gałęziach drag; brak duplikatu rysowania figur — impl-review 2026-10-15 (reviews/impl-review.md)
 - [ ] 9.6 [human] Test na tablecie z prawdziwym palcem 6-latka: przeciąganie monety do portfela i zdejmowanie stuknięciem, stukanie kafelków z figurami i „Po lewej/Po prawej/Tyle samo”
 - [ ] 9.7 [human] Decyzje wbrew dosłownemu ZADANIA/PRD/roadmapie: SPATIAL, SYMMETRY, BONDS „połącz pary” poza slice'em; ORDINAL tylko liczby i do 5; E1.11 bez banknotu 10 zł; tryb z obrazkami jako filtr tylko w E1; wyższe progi E1.2 i E1.3 na żywych zapisach; start E1 we wrześniu na E1.1; E1.1 w rozgrzewce E2
 
