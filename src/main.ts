@@ -50,6 +50,8 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
         },
         loader: __E2E_HOOK__ && forcedArt === 'stall'
             ? { timeout: E2E_LOADER_TIMEOUT_MS, maxRetries: 0 }   // e2e build only (?e2eArt=stall)
+            : __E2E_HOOK__ && forcedArt === 'stallall'
+                ? { timeout: 0, maxRetries: 0 }   // e2e build only (?e2eArt=stallall): no limit per file, only the total limit can end the load
             : { timeout: balance.loader.timeoutMs, maxRetries: balance.loader.maxRetries },
         scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
         callbacks: {

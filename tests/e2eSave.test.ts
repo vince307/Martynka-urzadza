@@ -104,14 +104,14 @@ describe('e2eSaveStore', () => {
 
 describe('e2eArt', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['missing', 'corrupt', 'room', 'stall']) {
+        for (const seam of ['missing', 'corrupt', 'room', 'stall', 'stallall']) {
             expect(e2eArt(`?e2eArt=${seam}`), seam).toBe(seam);
             expect(e2eArt(`?a=1&e2eArt=${seam}`), seam).toBe(seam);
         }
     });
 
     it('returns null for a missing or other value', () => {
-        for (const search of ['', '?x=1', '?e2eArt=', '?e2eArt=x', '?e2eArt=STALL']) {
+        for (const search of ['', '?x=1', '?e2eArt=', '?e2eArt=x', '?e2eArt=STALL', '?e2eArt=stall-all']) {
             expect(e2eArt(search), search).toBeNull();
         }
     });

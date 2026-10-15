@@ -1,8 +1,11 @@
 import { Loader, Scene } from 'phaser';
 import { artHealth } from '../core/artHealth';
+import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { needsPlacement, type SessionLearner } from '../core/placement';
-import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
+import { cutLoad } from './loaderCut';
+import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
 import { TASK_ART } from '../data/taskArt';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -14,9 +17,22 @@ import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from
  */
 export class BootScene extends Scene {
     private loading: LoadingScreen | null = null;
+    private phase: BootLoadPhase = 'loading';
+    private cut: string[] = [];
+    private creates = 0;
 
     constructor() {
         super(SCENE_KEYS.boot);
+    }
+
+    /** The phase of the loading screen (read-only; the e2e hook reads it). */
+    loadPhase(): BootLoadPhase {
+        return this.phase;
+    }
+
+    /** Whether the loading screen is still up. */
+    isLoading(): boolean {
+        return this.loading !== null;
     }
 
     preload(): void {
@@ -36,6 +52,20 @@ export class BootScene extends Scene {
             if (typeof limitMs === 'number' && limitMs > 0) {
                 file.xhrSettings.timeout = limitMs;
             }
+        });
+        // One limit for the WHOLE boot load (audit A-1): the per-file limit above does not bound a loader with many
+        // stalled files or a pending font promise. Past it every unfinished file ends as a load error and the game starts with what loaded.
+        const seamEarly = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
+        const limits: BootLimits = __E2E_HOOK__ && seamEarly === 'stallall' ? E2E_BOOT_LIMITS : balance.loader;
+        checkBootLimits(limits);
+        const cutTimer = this.time.delayedCall(limits.totalMs, () => {
+            this.cut = cutLoad(this.load);
+            this.phase = 'over';
+            this.publish();
+            console.warn(`Boot load cut after ${limits.totalMs} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);
+        });
+        this.load.once(Loader.Events.COMPLETE, () => {
+            cutTimer.remove(false);
         });
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
@@ -60,7 +90,17 @@ export class BootScene extends Scene {
         }
     }
 
+    private publish(): void {
+        this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], creates: this.creates });
+    }
+
     create(): void {
+        this.creates += 1;
+        this.publish();
+        if (this.creates > 1) {
+            console.warn('BootScene.create ran twice; the second run is ignored');
+            return;
+        }
         this.loading?.destroy();
         this.loading = null;
         // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
