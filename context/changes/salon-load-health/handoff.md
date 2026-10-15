@@ -10,7 +10,7 @@ Written by `/10x-implement salon-load-health phase 4`: docs-only closeout (rollb
 | Commits | identity, research, plan, plan review, 826150c (p1), 6922792 + 5009efd (p2), 903c70a (p3), 27406ab (p4) + this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged; phase 5 closes it) |
-| `## Progress` rows remaining | 10 |
+| `## Progress` rows remaining | 12 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
