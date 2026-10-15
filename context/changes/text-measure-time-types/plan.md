@@ -874,10 +874,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — SHA
-- [x] 4.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń; E6.2 w próbce — SHA
-- [x] 4.3 Deliberate break: `end` przez północ bez modulo doba / `toHour` liczy od 0 / `speak` z „8.15” → czerwone; przywrócone; meta-check — SHA
-- [x] 4.4 Deliberate break: wyrocznia E6 zostawiona na `[3, 4, 6, 8, 10, 10]` → `tests/curriculumStart.test.ts` czerwony; przywrócone — SHA
+- [x] 4.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 1ced210
+- [x] 4.2 `npm run sample -- E5 --count 6` i `E6 --count 6` bez naruszeń; E6.2 w próbce — 1ced210
+- [x] 4.3 Deliberate break: `end` przez północ bez modulo doba / `toHour` liczy od 0 / `speak` z „8.15” → czerwone; przywrócone; meta-check — 1ced210
+- [x] 4.4 Deliberate break: wyrocznia E6 zostawiona na `[3, 4, 6, 8, 10, 10]` → `tests/curriculumStart.test.ts` czerwony; przywrócone — 1ced210
 - [ ] 4.5 `tests/fixtures/` bez zmian; pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
