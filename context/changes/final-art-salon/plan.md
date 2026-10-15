@@ -788,8 +788,8 @@ Z przeglądu planu (`reviews/plan-review.md`):
 #### Automated
 
 - [x] 6.1 `rg -n "minAspect" src` pusty; liczby ptaszka/kłódki tylko w `src/data/layout.ts` — 9364408
-- [ ] 6.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
-- [ ] 6.3 Celowe złamanie: `thumbTargets` ze starej geometrii → e2e `room-change` czerwony; przywrócone; meta-check
+- [x] 6.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków) — 9364408 (e2e 94 passed --workers=4 per orchestrator note)
+- [x] 6.3 Celowe złamanie: `thumbTargets` ze starej geometrii → e2e `room-change` czerwony; przywrócone; meta-check — 9364408 (orchestrator note: 2 failed in room-change, restored)
 
 #### Manual
 
@@ -799,7 +799,7 @@ Z przeglądu planu (`reviews/plan-review.md`):
 
 #### Automated
 
-- [ ] 7.1 `rg -n "shake" src/scenes/TaskScene.ts` pokazuje strażnika `prefersReducedMotion`
+- [x] 7.1 `rg -n "shake" src/scenes/TaskScene.ts` pokazuje strażnika `prefersReducedMotion` — 82240ec
 - [ ] 7.2 Bramka lokalna zielona: lint, typecheck, unit (baseline + Δ), build, e2e (baseline, bez spadków)
 - [ ] 7.3 Celowe złamanie: karta „Pokój gotowy!” przed końcem popu → wynik e2e zapisany; meta-check
 
