@@ -1,5 +1,5 @@
-// Converts the art kit's money, measuring and counting-icon PNGs to the WebP files the task screen loads
-// (public/assets/tasks/). The kit stays in designs/ (never committed); only the results are. Output is
+// Converts the art kits' PNGs to the WebP files the game loads: money, measuring and counting icons of the task screen
+// (public/assets/tasks/) and the salon of the room (public/assets/rooms/salon/, full resolution of the pack). The kit stays in designs/ (never committed); only the results are. Output is
 // deterministic, so re-running it leaves committed files unchanged. Needs the `cwebp` binary (libwebp).
 // Usage: npm run art
 import { execFileSync } from 'node:child_process';
@@ -10,6 +10,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
+const EXPANSION = join(ROOT, 'designs/martynka-expansion-v1');
+const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 
 // Output sizes are at most twice the displayed size (half of the kit's resolution), see the plan, "Ladowanie".
 const SQUARE = [256, 256];
@@ -23,6 +25,21 @@ const weights = ['weight-1kg', 'weight-2kg', 'weight-5kg', 'weight-10dag', 'weig
 const jugs = ['container-1l', 'container-half-l', 'container-quarter-l'];
 const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'];
 
+const sceneFiles = ['architecture-before', 'architecture-after', 'furnishings-before', 'shadows'];
+const decor = ['lamp-table', 'plant-left', 'plant-right', 'pouf'];
+const furniture = [
+    'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
+    'coffee-table', 'coffee-table-cream', 'coffee-table-turquoise', 'cabinet', 'cabinet-mint', 'cabinet-cream',
+    'armchair', 'armchair-mint', 'armchair-sunny', 'wall-frames', 'wall-frames-meadow', 'wall-frames-sky',
+];
+
+/** Salon files keep the size of the source (the manifest's pixel geometry); no -resize. */
+/** @type {Array<{ from: string, to: string }>} */
+const ROOM_JOBS = [
+    ...sceneFiles.map((id) => ({ from: `assets/room/${id}.png`, to: `salon/${id}.webp` })),
+    ...[...decor, ...furniture].map((id) => ({ from: `assets/furniture/${id}.png`, to: `salon/${id}.webp` })),
+];
+
 /** @type {Array<{ from: string, to: string, size: number[] }>} */
 const JOBS = [
     ...coins.map((id) => ({ from: `assets/money/${id}.png`, to: `money/${id}.webp`, size: SQUARE })),
@@ -34,28 +51,38 @@ const JOBS = [
     ...icons.map((id) => ({ from: `assets/icons/${id}.png`, to: `icons/${id}.webp`, size: SQUARE })),
 ];
 
-if (!existsSync(KIT)) {
-    console.error(`Art kit not found: ${KIT} (designs/ is local only)`);
-    process.exit(1);
+for (const dir of [KIT, EXPANSION]) {
+    if (!existsSync(dir)) {
+        console.error(`Art kit not found: ${dir} (designs/ is local only)`);
+        process.exit(1);
+    }
 }
 
-let total = 0;
-for (const job of JOBS) {
-    const source = join(KIT, job.from);
-    const target = join(OUT, job.to);
+/** @param {string} source @param {string} target @param {string[]} resize */
+const convert = (source, target, resize) => {
     if (!existsSync(source)) {
         console.error(`Missing kit file: ${source}`);
         process.exit(1);
     }
     mkdirSync(dirname(target), { recursive: true });
     try {
-        execFileSync('cwebp', ['-quiet', '-resize', String(job.size[0]), String(job.size[1]), '-q', '85', '-alpha_q', '100', '-m', '6', source, '-o', target]);
+        execFileSync('cwebp', ['-quiet', ...resize, '-q', '85', '-alpha_q', '100', '-m', '6', source, '-o', target]);
     } catch (error) {
-        console.error(`cwebp failed for ${job.from} (is cwebp installed?): ${error instanceof Error ? error.message : error}`);
+        console.error(`cwebp failed for ${source} (is cwebp installed?): ${error instanceof Error ? error.message : error}`);
         process.exit(1);
     }
-    const bytes = statSync(target).size;
+    return statSync(target).size;
+};
+
+let total = 0;
+for (const job of JOBS) {
+    const bytes = convert(join(KIT, job.from), join(OUT, job.to), ['-resize', String(job.size[0]), String(job.size[1])]);
     total += bytes;
     console.log(`${job.to}  ${job.size[0]}x${job.size[1]}  ${bytes} B`);
 }
-console.log(`${JOBS.length} files, ${total} B`);
+for (const job of ROOM_JOBS) {
+    const bytes = convert(join(EXPANSION, job.from), join(ROOM_OUT, job.to), []);
+    total += bytes;
+    console.log(`rooms/${job.to}  ${bytes} B`);
+}
+console.log(`${JOBS.length + ROOM_JOBS.length} files, ${total} B`);

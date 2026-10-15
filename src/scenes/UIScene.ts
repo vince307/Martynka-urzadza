@@ -158,6 +158,7 @@ export class UIScene extends Scene {
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
+                    roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),

@@ -91,15 +91,15 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room';
 
 /**
- * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=corrupt` points the coins at a file that is no image
+ * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=corrupt` points the coins at a file that is no image
  * (200 and a decode failure, no load error). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' ? value : null;
 };
 
 export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'legacy-salon';
@@ -227,6 +227,10 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
     };
+    const roomArtHealthSnapshot = (): { total: number; missing: number } | null => {
+        const value = game.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined;
+        return value ? { total: value.total, missing: value.missing.length } : null;
+    };
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
@@ -241,7 +245,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

@@ -83,6 +83,10 @@ export const pl = {
         artOk: 'Wszystkie obrazki zadań są wczytane.',
         artMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
+        // The salon pictures (the second line of "Obrazki"): the same verb agreement as artMissing.
+        roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
+        roomArtMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
