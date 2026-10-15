@@ -10,7 +10,7 @@ The e2e step wrote this handoff for phase 7 (the last phase; spec ran under the 
 | Commits | phases 1-5 `0c31db4`, `79023af`, `06b20bb`, `1347887`, `731bcb0`, phase 6 `9ee4570`, phase 7 `949aab0`, then this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implemented` |
-| `## Progress` rows remaining | 8 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
@@ -40,7 +40,7 @@ The e2e step wrote this handoff for phase 7 (the last phase; spec ran under the 
 
 ## 4. Next command
 
-`/10x-e2e load-and-tab-guard phase 7` (phase 7, `Driver: e2e`)
+`/10x-impl-review load-and-tab-guard`
 
 ## 5. Open
 
