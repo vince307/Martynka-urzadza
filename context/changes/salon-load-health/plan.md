@@ -541,7 +541,7 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 #### Manual
 
 - [x] 2.5 [reviewer] `migrationWrittenAt` i `'migration'` tylko w runtime; jeden punkt decyzji o zapisie przy starcie; logi kopii bez „v1” na sztywno — impl review, 4fb1a5b
-- [ ] 2.6 [visual] „Zapis gry” przy `?e2eSave=legacy-salon` bez rundy: linia „przeniesiono z wersji 2” — 1440 i 1024
+- [x] 2.6 [visual] „Zapis gry” przy `?e2eSave=legacy-salon` bez rundy: linia „przeniesiono z wersji 2” — 1440 i 1024 — bramka wizualna, `reviews/visual-review.md` (v01, także v1 i zawieszony obrazek)
 
 ### Phase 3: Limit czasu ładowania plików w konfiguracji gry
 
