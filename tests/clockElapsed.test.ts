@@ -73,6 +73,7 @@ describe('generateClockElapsed', () => {
             expect(task.answer as number, where).toBeGreaterThanOrEqual(1);
             expect(task.answer as number, where).toBeLessThanOrEqual(59);
             expect(task.hint[task.hint.length - 1], where).toBe(`60 − ${now % 60} = ${String(task.answer)}`);
+            expect(task.hint[0], where).toBe('Godzina ma 60 minut. Od 60 odejmij minuty, które już minęły.');
         });
     });
 

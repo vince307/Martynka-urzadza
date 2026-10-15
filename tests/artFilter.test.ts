@@ -34,6 +34,16 @@ describe('artBlocked', () => {
         expect(artBlocked(skillById('E2.2.capacity_litres'), new Set(['container-half-l']))).toBe(false);
     });
 
+    it('never blocks a text MASS skill: E5.7 grams, E6.3 tare and E6.5 tonnes read without a picture', () => {
+        const everything = new Set(['weight-1kg', 'weight-2kg', 'weight-5kg', 'weight-10dag', 'weight-20dag', 'weight-50dag']);
+        for (const id of ['E5.7.mass_grams', 'E6.3.mass_tare_kg', 'E6.5.mass_tonne']) {
+            const s = skillById(id);
+            expect(s.params.variant, id).toBe('text');
+            expect(artBlocked(s, everything), id).toBe(false);
+        }
+        expect(artBlocked(skillById('E3.4.mass_kg_10'), everything)).toBe(true);
+    });
+
     it('never blocks MONEY_CHANGE or a CAPACITY howMany skill', () => {
         const everything = new Set(['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'note-20zl', 'container-half-l', 'container-quarter-l', 'container-1l']);
         expect(artBlocked(skillById('E2.2.money_change_20'), everything)).toBe(false);

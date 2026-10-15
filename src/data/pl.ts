@@ -402,12 +402,21 @@ export const pl = {
         elapsedEndAnswer: (time: string) => `Kończy się o ${time}.`,
         elapsedSpanSameHour: 'Czas jest w tej samej godzinie, więc odejmij minuty.',
         elapsedSpanAfterHour: (next: string, end: string, minutes: number) => `Od ${next} do ${end} mija ${countNoun(minutes, nouns.minuta)}.`,
-        elapsedToHourFirst: 'Do pełnej godziny liczymy od 60 minut.',
+        elapsedToHourFirst: 'Godzina ma 60 minut. Od 60 odejmij minuty, które już minęły.',
         elapsedNightFirst: 'Najpierw policz godziny do północy, czyli do 24.00.',
         elapsedNightAfter: (end: string, hours: number) => `Od północy do ${end} mija ${countNoun(hours, nouns.godzina)}.`,
         // TIME_UNITS: "Ile minut to 3 godziny?"; the asked unit is the genitive plural, the given one agrees with its number.
         timeUnitsAsk: (asked: string, given: string) => `Ile ${asked} to ${given}?`,
         timeUnitsFact: (big: string, small: string) => `1 ${big} to ${small}.`,
+        // UNIT_CHOICE: "Długopis ma 14 □." with unit tiles. The first hint holds no digit and names no unit.
+        unitChoicePrompt: (subject: string, verb: 'ma' | 'waży', n: number) => `${subject} ${verb} ${n} □.`,
+        unitChoiceSpeak: (subject: string, verb: 'ma' | 'waży', n: number) => `${subject} ${verb} ${n}. Jaka to jednostka?`,
+        unitChoiceFirst: {
+            length: 'Porównaj z paznokciem, ręką, klasą i długą drogą.',
+            mass: 'Czy to lekkie jak piórko, czy ciężkie jak człowiek?',
+        },
+        unitChoiceLike: (subject: string, like: string) => `${subject} ${like}.`,
+        unitChoiceAnswer: (subject: string, verb: 'ma' | 'waży', n: number, unit: string) => `${subject} ${verb} ${n} ${unit}.`,
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
         wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
         numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,
@@ -504,6 +513,23 @@ export const pl = {
         moneyChangeGroszeHint: 'Złotówka to 100 groszy.',
         moneyChangeGroszeLine: (had: number, price: number, change: number) => `Zamień na grosze: ${had} − ${price} = ${change}.`,
         moneyChangeAnswerHint: (amount: string) => `Zostało ${amount}.`,
+        // MASS in words (S-14c): brutto / netto / tara of a pack and unit conversions, no drawing. The pack is one thing in the
+        // nominative, so no numeral has to agree with it; the asked unit is the genitive plural, the given one agrees with its number.
+        massPackPrompt: {
+            net: (pack: string, a: number, b: number, unit: string) => `${pack}: razem z opakowaniem (brutto) waży ${a} ${unit}, samo opakowanie (tara) ${b} ${unit}. Ile waży zawartość (netto)?`,
+            gross: (pack: string, a: number, b: number, unit: string) => `${pack}: zawartość (netto) waży ${a} ${unit}, a opakowanie (tara) ${b} ${unit}. Ile waży całość (brutto)?`,
+            tare: (pack: string, a: number, b: number, unit: string) => `${pack}: razem z opakowaniem (brutto) waży ${a} ${unit}, a sama zawartość (netto) ${b} ${unit}. Ile waży opakowanie (tara)?`,
+        },
+        massPackFirst: {
+            net: 'Brutto to masa z opakowaniem, netto to sama zawartość.',
+            gross: 'Brutto to zawartość razem z opakowaniem.',
+            tare: 'Tara to samo opakowanie: brutto bez netto.',
+        },
+        massAsk: (asked: string, given: string) => `Ile ${asked} to ${given}?`,
+        massFact: (big: string, small: string) => `1 ${big} to ${small}.`,
+        massHalfKgPrompt: 'Ile gramów to pół kilograma?',
+        massQuarterKgPrompt: 'Ile gramów to ćwierć kilograma?',
+        massToKiloPrompt: (grams: number) => `Na wadze jest ${grams} g. Ile gramów brakuje do 1 kg?`,
         massPrompt: (unit: 'kg' | 'dag', noun: string) => `Waga jest w równowadze. Ile ${unit === 'kg' ? 'kilogramów' : 'dekagramów'} waży ${noun}?`,
         massHalfPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do pół kilograma?',
         massKiloPrompt: 'Waga jest w równowadze. Ile dekagramów brakuje do kilograma?',

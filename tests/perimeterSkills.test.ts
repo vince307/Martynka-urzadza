@@ -36,11 +36,12 @@ describe('S-13b new playable perimeter steps', () => {
         });
     });
 
-    it('E6.3 has one composite skill on the keypad and every new playable step has a short childName', async () => {
+    it('E6.3 has one composite perimeter skill on the keypad (and the tare skill of S-14c) and every new playable step has a short childName', async () => {
         const { E5 } = await import('../src/data/curriculum/E5');
         const { E6 } = await import('../src/data/curriculum/E6');
         const step = E6.steps.find((s) => s.step === 3)!;
-        expect(step.skills.map((s) => s.id)).toEqual(['E6.3.perimeter_composite']);
+        expect(step.skills.filter((s) => s.type === 'PERIMETER').map((s) => s.id)).toEqual(['E6.3.perimeter_composite']);
+        expect(step.skills.map((s) => s.id)).toEqual(['E6.3.perimeter_composite', 'E6.3.mass_tare_kg']);
         for (const s of [E5.steps.find((x) => x.step === 12)!, step]) {
             expect(s.childName?.length ?? 0).toBeGreaterThan(0);
             expect(s.childName!.length).toBeLessThanOrEqual(28);

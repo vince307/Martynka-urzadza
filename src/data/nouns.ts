@@ -57,4 +57,9 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     ołówek: ['ołówek', 'ołówki', 'ołówków'],
     banan: ['banan', 'banany', 'bananów'],
     pączek: ['pączek', 'pączki', 'pączków'],
+    gram: ['gram', 'gramy', 'gramów'],
+    dekagram: ['dekagram', 'dekagramy', 'dekagramów'],
+    kilogram: ['kilogram', 'kilogramy', 'kilogramów'],
+    tona: ['tona', 'tony', 'ton'],
+    kwintal: ['kwintal', 'kwintale', 'kwintali'],
 };

@@ -95,3 +95,53 @@ export const THERMOMETER = {
     pixelsPerDegree: 16,
     frame: { width: 512, height: 1536 },
 } as const;
+
+/** Units a UNIT_CHOICE task offers as tiles, by quantity (a child at E5 knows no tonne yet). */
+export const UNIT_TILES = {
+    length: ['mm', 'cm', 'm', 'km'],
+    mass: ['g', 'dag', 'kg'],
+} as const;
+export type UnitQuantity = keyof typeof UNIT_TILES;
+
+/**
+ * Things with a length or a mass for UNIT_CHOICE. `like` finishes "<Subject> ..." in the second hint and names no unit;
+ * the number runs from `min` to `max` in steps of `step`. Each range is chosen so that exactly one tile unit makes sense
+ * (a pen of 14 cm, an apple of 150 g); `dag` is only ever a distractor, because the same mass reads in g and in dag.
+ */
+export const UNIT_ITEMS: readonly { subject: string; quantity: UnitQuantity; unit: string; min: number; max: number; step: number; like: string }[] = [
+    { subject: 'Długopis', quantity: 'length', unit: 'cm', min: 12, max: 16, step: 1, like: 'jest tak długi jak twoja dłoń' },
+    { subject: 'Ołówek', quantity: 'length', unit: 'cm', min: 15, max: 19, step: 1, like: 'jest trochę dłuższy niż twoja dłoń' },
+    { subject: 'Mrówka', quantity: 'length', unit: 'mm', min: 3, max: 8, step: 1, like: 'jest mniejsza niż paznokieć' },
+    { subject: 'Ziarnko ryżu', quantity: 'length', unit: 'mm', min: 6, max: 9, step: 1, like: 'jest drobne jak okruszek' },
+    { subject: 'Klasa', quantity: 'length', unit: 'm', min: 8, max: 10, step: 1, like: 'ma kilkanaście kroków długości' },
+    { subject: 'Boisko szkolne', quantity: 'length', unit: 'm', min: 40, max: 60, step: 5, like: 'jest długie na kilkadziesiąt kroków' },
+    { subject: 'Droga do szkoły', quantity: 'length', unit: 'km', min: 1, max: 3, step: 1, like: 'to spacer na kilkanaście minut' },
+    { subject: 'Droga z Warszawy do Krakowa', quantity: 'length', unit: 'km', min: 290, max: 300, step: 5, like: 'to kilka godzin jazdy pociągiem' },
+    { subject: 'Jabłko', quantity: 'mass', unit: 'g', min: 120, max: 200, step: 10, like: 'mieści się w jednej dłoni' },
+    { subject: 'Moneta', quantity: 'mass', unit: 'g', min: 4, max: 8, step: 1, like: 'jest lekka jak piórko' },
+    { subject: 'Kromka chleba', quantity: 'mass', unit: 'g', min: 25, max: 40, step: 5, like: 'jest lekka jak kilka monet' },
+    { subject: 'Jajko', quantity: 'mass', unit: 'g', min: 50, max: 70, step: 5, like: 'leży lekko na dłoni' },
+    { subject: 'Kot', quantity: 'mass', unit: 'kg', min: 3, max: 6, step: 1, like: 'jest lżejszy niż dziecko' },
+    { subject: 'Plecak ucznia', quantity: 'mass', unit: 'kg', min: 3, max: 6, step: 1, like: 'da się go unieść jedną ręką' },
+    { subject: 'Pies', quantity: 'mass', unit: 'kg', min: 8, max: 25, step: 1, like: 'jest cięższy niż plecak, a lżejszy niż dorosły' },
+    { subject: 'Tata', quantity: 'mass', unit: 'kg', min: 70, max: 95, step: 5, like: 'jest dużo cięższy niż dziecko' },
+];
+
+/** Packs for the brutto / netto / tara tasks: the unit their mass reads in and the believable range of the gross mass. */
+export const MASS_PACKS: readonly { subject: string; unit: 'g' | 'kg'; min: number; max: number }[] = [
+    { subject: 'Puszka groszku', unit: 'g', min: 400, max: 600 },
+    { subject: 'Słoik miodu', unit: 'g', min: 400, max: 1000 },
+    { subject: 'Paczka makaronu', unit: 'g', min: 200, max: 600 },
+    { subject: 'Pudełko herbatników', unit: 'g', min: 200, max: 500 },
+    { subject: 'Worek ziemniaków', unit: 'kg', min: 10, max: 30 },
+    { subject: 'Skrzynka jabłek', unit: 'kg', min: 10, max: 20 },
+    { subject: 'Wiadro farby', unit: 'kg', min: 8, max: 20 },
+    { subject: 'Karton książek', unit: 'kg', min: 8, max: 20 },
+];
+
+/** What a text MASS skill converts: how many grams one of the big unit is (the noun key is in `nouns`). */
+export const MASS_FACTORS = {
+    kgToG: { big: 'kilogram', small: 'gram', factor: 1000, maxN: 9 },
+    tToKg: { big: 'tona', small: 'kilogram', factor: 1000, maxN: 5 },
+    qToKg: { big: 'kwintal', small: 'kilogram', factor: 100, maxN: 9 },
+} as const;

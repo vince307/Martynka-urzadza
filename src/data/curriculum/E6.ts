@@ -47,7 +47,10 @@ export const E6: StageDef = {
             title: 'Brutto/netto/tara; mm i wyrażenia dwumianowe; obwody figur złożonych',
             childName: 'Obwody figur na kratkach',
             types: ['MASS', 'LENGTH', 'PERIMETER'],
-            skills: [skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 })],
+            skills: [
+                skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 }),
+                skill('E6.3.mass_tare_kg', 3, 'MASS', { variant: 'text', kinds: ['net', 'gross', 'tare'], unit: 'kg', max: 100 }),
+            ],
         },
         {
             step: 4,
@@ -67,6 +70,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.5.complement_100_1000', 5, 'COMPLEMENT', { max: 1000, targets: [100, 1000] }),
                 skill('E6.5.place_read_1000', 5, 'PLACE_VALUE', { variant: 'read', min: 100, max: 999 }),
+                skill('E6.5.mass_tonne', 5, 'MASS', { variant: 'text', kinds: ['tToKg', 'qToKg'], max: 5000 }),
             ],
         },
         {

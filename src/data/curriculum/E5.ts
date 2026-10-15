@@ -81,6 +81,8 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.7.compare_diff_100', 7, 'COMPARE_DIFF', { max: 100 }),
                 skill('E5.7.length_ruler_mm', 7, 'LENGTH', { variant: 'ruler', unit: 'mm', lengthCm: 10, minMm: 11, maxMm: 95, startShift: 0.3 }),
+                skill('E5.7.unit_choice', 7, 'UNIT_CHOICE', { quantities: ['length', 'mass'] }, 'tiles'),
+                skill('E5.7.mass_grams', 7, 'MASS', { variant: 'text', kinds: ['kgToG', 'fractionKg', 'net', 'gross', 'tare'], unit: 'g', max: 5000 }),
             ],
         },
         {

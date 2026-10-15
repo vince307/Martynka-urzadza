@@ -23,6 +23,7 @@ import { generateHalf, parseHalfParams } from './generators/half';
 import { generateGrid, parseGridParams } from './generators/grid';
 import { generateLength, parseLengthParams } from './generators/length';
 import { generateMass, parseMassParams } from './generators/mass';
+import { generateUnitChoice, parseUnitChoiceParams } from './generators/unitChoice';
 import { generateMoneyChange, generateMoneyCount, parseMoneyChangeParams, parseMoneyCountParams } from './generators/money';
 import { generateMissingOp, parseMissingOpParams } from './generators/missingOp';
 import { generateMissing, parseMissingParams } from './generators/missing';
@@ -91,6 +92,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     PRICE: generatePrice,
     CLOCK_ELAPSED: generateClockElapsed,
     TIME_UNITS: generateTimeUnits,
+    UNIT_CHOICE: generateUnitChoice,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -137,6 +139,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     PRICE: parsePriceParams,
     CLOCK_ELAPSED: parseClockElapsedParams,
     TIME_UNITS: parseTimeUnitsParams,
+    UNIT_CHOICE: parseUnitChoiceParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);
