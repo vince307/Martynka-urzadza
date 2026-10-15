@@ -275,7 +275,8 @@ export const TASK_LAYOUT = {
         // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
         digits: { picture: { x: 216, y: 340, width: 400, height: 508 }, lines: { x: 632, y: 340, width: 392, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
-        hint: { keypad: { picture: { x: 236, y: 530, width: 768, height: 190 }, lines: { x: 236, y: 730, width: 768, height: 118 } } },
+        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
+        hint: { keypad: { picture: { x: 226, y: 530, width: 798, height: 190 }, lines: { x: 226, y: 730, width: 798, height: 118 } } },
         minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },

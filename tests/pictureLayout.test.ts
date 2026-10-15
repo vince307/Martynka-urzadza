@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, fitSize, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
+import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, fitSize, hintPictureLayout, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { FONT_SIZES, TASK_LAYOUT } from '../src/data/layout';
 import { visualShape } from '../src/core/tasks/visual';
 
@@ -264,5 +264,19 @@ describe('the box of a dense number line (visual gate S-14b: the box at 11 cover
         const twoDigitHalf = 0.5 * 2 * 0.5 * FONT_SIZES.lineLabel;   // Atkinson digits are about half an em wide
         expect(L.box.denseWidth / 2 + twoDigitHalf).toBeLessThan(L.denseGap);
         expect(L.box.width / 2 + twoDigitHalf).toBeLessThan(L.gap);
+    });
+});
+
+describe('the hint number line beside the keypad (visual gate S-14b: a 0..30 line drew its labels at 11.7 CSS px on the tablet)', () => {
+    it('keeps the labels of a 0..30 hint line at least 12 CSS px on a 1024 px tablet and ends before the keypad', () => {
+        const L = TASK_LAYOUT.numberLine;
+        const { picture, lines } = hintPictureLayout(spec, 'keypad');
+        const widthUnits = 2 * L.pad + 30 * L.denseGap;
+        const heightUnits = L.arcZone + L.tick / 2 + L.labelDrop + L.box.height;
+        const s = Math.min(picture.width / widthUnits, picture.height / heightUnits, L.maxScale);
+        expect(s * FONT_SIZES.lineLabel * (1024 / 1920)).toBeGreaterThanOrEqual(12);
+        expect(picture.x + picture.width).toBeLessThan(TASK_LAYOUT.keypad.left);
+        expect(lines.x + lines.width).toBeLessThan(TASK_LAYOUT.keypad.left);
+        expect(picture.x).toBeGreaterThanOrEqual(notebook.left + notebook.border);
     });
 });
