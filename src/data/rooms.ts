@@ -1,7 +1,7 @@
 // The first room, authored as data (S-09, S-16a). Geometry comes from the art pack's manifest: x/y is the top-left corner
 // of a picture in the 1920x1080 scene, `visibleRect` the object without its margin, `z` the draw order (0-99).
 // Texture keys are `salon/<file id>`. RoomTaskDef.label is a key into pl.room.tasks.
-import type { LayerDef, LegacyRoomLayout, RoomDef, RoomListEntry, SlotDef } from '../core/types';
+import type { LayerDef, RoomDef, RoomListEntry, SlotDef } from '../core/types';
 
 /** Lamp, plants and pouf: part of the renovated room, no task and no variants. */
 const decor: LayerDef[] = [
@@ -37,20 +37,6 @@ export const SALON: RoomDef = {
         { kind: 'slot', id: 'place-armchair', slot: 'armchair', label: 'placeArmchair', cost: 13 },
         { kind: 'slot', id: 'hang-frames', slot: 'wall-frames', label: 'hangFrames', cost: 15 },
     ],
-};
-
-/**
- * The salon task list as live saves know it (before S-16a): `tasksDone` counted positions in this list and `chosen` was
- * keyed by these slot ids. Frozen on purpose, never edited: `remapLegacySalon` reads it to carry such a save over.
- */
-export const LEGACY_SALON: LegacyRoomLayout = {
-    roomId: 'salon',
-    tasks: [
-        { slot: 'floor', cost: 5 }, { slot: 'walls', cost: 6 }, { slot: 'curtains', cost: 7 }, { slot: 'sofa', cost: 8 },
-        { slot: 'rug', cost: 9 }, { slot: 'table', cost: 10 }, { slot: 'lamp', cost: 11 }, { slot: 'shelf', cost: 12 },
-        { slot: 'plant', cost: 13 }, { slot: 'picture', cost: 15 },
-    ],
-    renames: { table: 'coffee-table', shelf: 'cabinet', picture: 'wall-frames' },
 };
 
 export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON };

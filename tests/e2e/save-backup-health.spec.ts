@@ -46,7 +46,9 @@ test('#2 SV2-01 a v1 save whose copy always fails is written as v3 after three t
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await fromHook(page, 'snapshot');
     await screenIs(page, 'task');
-    expect((await snapshot(page)).save).toMatchObject({ load: 'loaded', migratedFrom: 1, backup: 'pending' });
+    expect((await snapshot(page)).save).toMatchObject({ load: 'loaded', migratedFrom: 1 });
+    // The start write (audit M-3) may already have used the first copy try: the copy is owed, not yet done.
+    expect(['pending', 'failed']).toContain((await snapshot(page)).save?.backup);
 
     // Rounds until the third failed copy: a round is several save attempts, so one is normally enough.
     for (let round = 0; round < 3 && (await snapshot(page)).save?.store?.writtenVersion !== 3; round++) {

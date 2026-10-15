@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LEGACY_SALON_V2, LIFT_V2_SALON, SALON_V3_TARGET } from '../src/core/migrations/legacySalon';
 import { MIGRATIONS, decodeSave } from '../src/core/save';
-import { LEGACY_SALON, SALON } from '../src/data/rooms';
+import { SALON } from '../src/data/rooms';
 
 const fixture = (name: string): Record<string, unknown> =>
     JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
@@ -110,9 +110,13 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
 });
 
 describe('the frozen tables', () => {
-    it('L-1: the old list is the one the app still carries (until phase 2 removes it)', () => {
-        expect(LEGACY_SALON_V2.tasks).toEqual(LEGACY_SALON.tasks);
-        expect(LEGACY_SALON_V2.renames).toEqual(LEGACY_SALON.renames);
+    it('L-1: the old list is a frozen literal (the live data no longer carries it)', () => {
+        expect(LEGACY_SALON_V2.tasks).toEqual([
+            { slot: 'floor', cost: 5 }, { slot: 'walls', cost: 6 }, { slot: 'curtains', cost: 7 }, { slot: 'sofa', cost: 8 },
+            { slot: 'rug', cost: 9 }, { slot: 'table', cost: 10 }, { slot: 'lamp', cost: 11 }, { slot: 'shelf', cost: 12 },
+            { slot: 'plant', cost: 13 }, { slot: 'picture', cost: 15 },
+        ]);
+        expect(LEGACY_SALON_V2.renames).toEqual({ table: 'coffee-table', shelf: 'cabinet', picture: 'wall-frames' });
         expect(LEGACY_SALON_V2.tasks.map((t) => t.slot)).toEqual(OLD_SLOTS);
     });
 

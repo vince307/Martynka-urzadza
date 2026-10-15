@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, SAVE_VERSION, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 
 export interface SaveStore {
@@ -30,7 +30,7 @@ export type LoadReason = Extract<LoadOutcome, { kind: 'unreadable' }>['reason'];
 
 export type FailureStage = 'encode' | 'backup' | 'write' | 'replace';
 
-export type WriteReason = 'change' | 'now' | 'hidden';
+export type WriteReason = 'change' | 'now' | 'hidden' | 'migration';
 
 export interface AutosaveStatus {
     load: LoadOutcome['kind'];
@@ -54,10 +54,12 @@ export interface AutosaveStatus {
     /** Runtime only (never saved): error name of the failed load; fixed at start (`lastError` moves on). */
     loadError: string | null;
     /**
-     * Runtime only (never saved): the copy of the raw v1 save. `none` without a migration, `pending` before the first
-     * try, `failed` after at least one failed try (still owed), `done` once kept, `skipped` when v2 was written without it.
+     * Runtime only (never saved): the copy of the raw older save. `none` without a migration, `pending` before the first
+     * try, `failed` after at least one failed try (still owed), `done` once kept, `skipped` when the new version was written without it.
      */
     backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped';
+    /** Runtime only (never saved): when the first write after a migration succeeded, or null (not migrated, or not yet written). */
+    migrationWrittenAt: number | null;
     /** Runtime only (never saved): error name of the last failed copy; stays after a later success. */
     backupError: string | null;
     /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
@@ -181,6 +183,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let backup: AutosaveStatus['backup'] = options.migrated === undefined ? 'none' : 'pending';
     let backupFails = 0;
     let backupError: string | null = null;
+    let migrationWrittenAt: number | null = null;
     const backupOwed = (): boolean => backup === 'pending' || backup === 'failed';
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
@@ -191,9 +194,10 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
 
     const limited = <T>(work: Promise<T>): Promise<T> => withTimeLimit(work, timers, options.writeTimeoutMs);
 
+    /** Called only after the save itself was written without the copy: a failed write leaves the copy owed. */
     const skipBackup = (): void => {
         backup = 'skipped';
-        log('autosave: writing v2 without the v1 copy', { from: options.migrated?.from ?? null, backupError, attempts: backupFails });
+        log(`autosave: writing v${SAVE_VERSION} without the v${options.migrated?.from ?? '?'} copy`, { from: options.migrated?.from ?? null, backupError, attempts: backupFails });
     };
 
     /** One write attempt; resolves true on success. Never throws. */
@@ -206,10 +210,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
             // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is
             // the first attempt, v2 is written without the copy: the child's progress is worth more than the raw v1 bytes (SV2-01).
+            let giveUpCopy = false;
             if (backupOwed() && options.migrated) {
                 stage = 'backup';
                 if (reason === 'hidden' && backupFails > 0) {
-                    skipBackup();
+                    giveUpCopy = true;
                 } else {
                     try {
                         await limited(store.backup(options.migrated.raw, options.migrated.from));
@@ -223,14 +228,16 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
                         lastError = backupError;
                         lastFailure = { stage: 'backup', error: backupError };
                         log('autosave: backup failed', e);
-                        skipBackup();
+                        giveUpCopy = true;
                     }
                 }
             }
             stage = 'write';
             await limited(store.write(encoded));
+            if (giveUpCopy) skipBackup();
             writes++;
             lastWriteAt = options.now();
+            if (options.migrated && migrationWrittenAt === null) migrationWrittenAt = lastWriteAt;
             consecutiveFailures = 0;
             lastReason = reason;
             if (!firstDone) {
@@ -292,7 +299,8 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         cancelTimer();
         timer = timers.setTimeout(() => {
             timer = null;
-            void save('change');
+            // Until the migrated save is written once, the debounced write carries that reason.
+            void save(options.migrated !== undefined && migrationWrittenAt === null ? 'migration' : 'change');
         }, delayMs);
     };
 
@@ -311,17 +319,21 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         try {
             await inflight;
             // A copy still owed is tried once and never waited on twice: a failure only marks it skipped (SRR-04).
+            let giveUpCopy = false;
             if (backupOwed() && options.migrated) {
                 try {
                     await limited(store.backup(options.migrated.raw, options.migrated.from));
                     backup = 'done';
                 } catch (e) {
+                    backupFails++;
                     backupError = errorName(e);
+                    backup = 'failed';
                     log('autosave: backup failed', e);
-                    skipBackup();
+                    giveUpCopy = true;
                 }
             }
             await limited(store.write(state));
+            if (giveUpCopy) skipBackup();
         } catch (e) {
             replacing = false;
             failures++;
@@ -338,9 +350,16 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         replaced = true;
         writes++;
         lastWriteAt = options.now();
+        if (options.migrated && migrationWrittenAt === null) migrationWrittenAt = lastWriteAt;
         consecutiveFailures = 0;
         return { ok: true };
     };
+
+    // A migrated save is written once at start, without waiting for a change (audit M-3); the copy goes first.
+    if (options.migrated !== undefined && blockedBy === null) {
+        dirty = true;
+        arm();
+    }
 
     return {
         markDirty: () => {
@@ -377,6 +396,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             loadError: options.loadError ?? null,
             backup,
             backupError,
+            migrationWrittenAt,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };

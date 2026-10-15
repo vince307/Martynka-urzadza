@@ -533,9 +533,9 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [ ] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 2.2 Deliberate break: brak uzbrojenia przy `migrated` / F3 przywrócone → odpowiednie testy czerwone; przywrócone; meta-check
-- [ ] 2.3 Fixtury v1/v2 bajt w bajt; grep `remapLegacySalon|LEGACY_SALON|LegacyRoomLayout` w `src/` pusty
+- [x] 2.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
+- [x] 2.2 Deliberate break: brak uzbrojenia przy `migrated` / F3 przywrócone → odpowiednie testy czerwone; przywrócone; meta-check
+- [x] 2.3 Fixtury v1/v2 bajt w bajt; grep `remapLegacySalon|LEGACY_SALON|LegacyRoomLayout` w `src/` pusty
 - [ ] 2.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
 
 #### Manual
