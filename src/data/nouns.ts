@@ -41,6 +41,7 @@ export const nouns: Readonly<Record<string, PluralForms>> = {
     kłębek: ['kłębek', 'kłębki', 'kłębków'],
     litr: ['litr', 'litry', 'litrów'],
     dzbanek: ['dzbanek', 'dzbanki', 'dzbanków'],
+    szklanka: ['szklanka', 'szklanki', 'szklanek'],
     piętro: ['piętro', 'piętra', 'pięter'],
     wagon: ['wagon', 'wagony', 'wagonów'],
     osoba: ['osoba', 'osoby', 'osób'],

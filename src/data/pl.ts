@@ -493,6 +493,16 @@ export const pl = {
         lengthMetreHint: '1 m = 100 cm',
         rulerUnitLabel: 'cm',   // printed at the end of the drawn ruler (its digits count centimetres, also on the millimetre ruler)
         lengthConvertAnswerHint: (cm: number) => `To jest ${cm} cm.`,
+        // LENGTH in words (S-14c): plan scale and two-unit expressions. The place is a nominative subject, so no case has to agree.
+        lengthScalePlanPrompt: (perCm: number, place: string, plan: number) =>
+            `Na planie 1 cm to ${perCm} m. ${place} ma na planie ${plan} cm długości. Ile metrów długości ma naprawdę?`,
+        lengthScaleRealPrompt: (perCm: number, place: string, real: number) =>
+            `Na planie 1 cm to ${perCm} m. ${place} ma naprawdę ${real} m długości. Ile centymetrów długości ma na planie?`,
+        lengthScalePlanFirst: 'Pomnóż centymetry z planu przez to, ile metrów ma 1 cm.',
+        lengthScaleRealFirst: 'Sprawdź, ile razy 1 cm planu mieści się w prawdziwej długości.',
+        lengthScalePlanAnswer: (place: string, real: number) => `${place} ma naprawdę ${real} m długości.`,
+        lengthScaleRealAnswer: (place: string, plan: number) => `${place} ma na planie ${plan} cm długości.`,
+        lengthFact: (big: string, factor: number, small: string) => `1 ${big} = ${factor} ${small}`,
         // MONEY_COUNT, MONEY_CHANGE and MASS (S-14). Amounts are written with the short signs (zł, gr, kg, dag) by the caller; the
         // spoken forms come from core/text/measure.ts. A purchase is one thing in the accusative, so no numeral has to agree with it.
         moneyCountPrompt: (mode: 'number-zl' | 'number-gr' | 'text') =>
@@ -556,6 +566,13 @@ export const pl = {
         capacityLitreFitsHalf: 'Dwa takie dzbanki to razem jeden litr.',
         capacityLitreFitsQuarter: 'Cztery takie dzbanki to razem jeden litr.',
         capacityHowManyAnswerHint: (jugs: string) => `To razem ${jugs}.`,
+        // CAPACITY in words (S-14c): glasses of ½ l and ¼ l. The narrator gets the fractions spelled out.
+        capacityGlassesPrompt: (litres: string, liquid: string, sign: string) => `W dzbanku jest ${litres} ${liquid}. Ile szklanek po ${sign} l możesz z niego nalać?`,
+        capacityGlassesSpeak: (litres: string, liquid: string, words: string) => `W dzbanku jest ${litres} ${liquid}. Ile szklanek po ${words} możesz z niego nalać?`,
+        capacityGlassesToLitresPrompt: (glasses: string, sign: string) => `${glasses} po ${sign} l to ile litrów?`,
+        capacityGlassesToLitresSpeak: (glasses: string, words: string) => `${glasses} po ${words} to ile litrów?`,
+        capacityGlassFact: { half: 'Dwie szklanki po ½ l to razem litr.', quarter: 'Cztery szklanki po ¼ l to razem litr.' },
+        capacityGlassWords: { half: 'pół litra', quarter: 'ćwierć litra' },
         temperatureReadPrompt: (mode: 'number' | 'text') => (mode === 'number' ? 'Ile stopni pokazuje termometr?' : 'Jaką temperaturę pokazuje termometr?'),
         temperatureFindHint: 'Znajdź koniec słupka i najbliższą liczbę.',
         temperatureBelowZeroHint: 'Poniżej zera liczymy w dół.',

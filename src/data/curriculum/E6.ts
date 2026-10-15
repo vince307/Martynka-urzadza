@@ -50,6 +50,7 @@ export const E6: StageDef = {
             skills: [
                 skill('E6.3.perimeter_composite', 3, 'PERIMETER', { variant: 'composite', max: 40 }),
                 skill('E6.3.mass_tare_kg', 3, 'MASS', { variant: 'text', kinds: ['net', 'gross', 'tare'], unit: 'kg', max: 100 }),
+                skill('E6.3.length_two_units', 3, 'LENGTH', { variant: 'twoUnit', pairs: ['cm-mm', 'm-cm'], max: 1000 }),
             ],
         },
         {

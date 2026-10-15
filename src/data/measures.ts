@@ -145,3 +145,31 @@ export const MASS_FACTORS = {
     tToKg: { big: 'tona', small: 'kilogram', factor: 1000, maxN: 5 },
     qToKg: { big: 'kwintal', small: 'kilogram', factor: 100, maxN: 9 },
 } as const;
+
+/**
+ * LENGTH `scale` (S-14c): what a plan can show, in real metres. A plan is drawn on paper, so it shows 2 to 12 cm; a side of a
+ * room is 3 to 9 m, a pitch up to 100 m. The generator picks a scale, a place and a plan length that give a whole real length
+ * inside the place's range.
+ */
+export const SCALE_PLAN_CM = { min: 2, max: 12 } as const;
+export const SCALE_PLACES: readonly { subject: string; minM: number; maxM: number }[] = [
+    { subject: 'Pokój', minM: 3, maxM: 9 },
+    { subject: 'Klasa', minM: 6, maxM: 10 },
+    { subject: 'Ogród', minM: 10, maxM: 40 },
+    { subject: 'Sala gimnastyczna', minM: 20, maxM: 40 },
+    { subject: 'Boisko', minM: 30, maxM: 100 },
+    { subject: 'Ulica', minM: 50, maxM: 100 },
+];
+
+/** LENGTH `twoUnit`: the factor of each pair and the range of the larger part ("4 cm 7 mm", "2 m 35 cm"). */
+export const TWO_UNIT_PAIRS = {
+    'cm-mm': { big: 'cm', small: 'mm', factor: 10, minBig: 1, maxBig: 30 },
+    'm-cm': { big: 'm', small: 'cm', factor: 100, minBig: 1, maxBig: 9 },
+} as const;
+export type TwoUnitPair = keyof typeof TWO_UNIT_PAIRS;
+
+/** CAPACITY `text`: glasses per litre, the liquids and the number of litres the pitcher holds. */
+export const GLASS_PER_LITRE = { half: 2, quarter: 4 } as const;
+export type GlassSize = keyof typeof GLASS_PER_LITRE;
+export const GLASS_SIGN: Record<GlassSize, string> = { half: '½', quarter: '¼' };
+export const PITCHER_LIQUIDS: readonly string[] = ['soku', 'wody', 'mleka', 'kompotu'];

@@ -17,10 +17,23 @@ describe('S-14c phase 5 skills', () => {
         expect(threshold(E5, 7)).toBe(2);
     });
 
-    it('E6.3 gains the tare skill (2 skills, threshold 1; phase 6 adds the third) and E6.5 the tonne skill (threshold 1 -> 2)', () => {
-        expect(idsOf(E6, 3)).toEqual(['E6.3.perimeter_composite', 'E6.3.mass_tare_kg']);
-        expect(threshold(E6, 3)).toBe(1);
+    it('E6.3 has the tare skill and (phase 6) the two-unit length skill: 3 skills, threshold 2; E6.5 gains the tonne skill (threshold 1 -> 2)', () => {
+        expect(idsOf(E6, 3)).toEqual(['E6.3.perimeter_composite', 'E6.3.mass_tare_kg', 'E6.3.length_two_units']);
+        expect(threshold(E6, 3)).toBe(2);
         expect(idsOf(E6, 5)).toEqual(['E6.5.complement_100_1000', 'E6.5.place_read_1000', 'E6.5.mass_tonne']);
         expect(threshold(E6, 5)).toBe(2);
+    });
+});
+
+describe('S-14c phase 6 skills', () => {
+    it('E5.12 gains the plan scale (3 skills, threshold 2) and E5.5 the half-litre glasses (3 skills, threshold 2)', () => {
+        expect(idsOf(E5, 12)).toEqual(['E5.12.perimeter_side_square', 'E5.12.perimeter_side_rect', 'E5.12.length_scale']);
+        expect(threshold(E5, 12)).toBe(2);
+        expect(idsOf(E5, 5)).toEqual(['E5.5.capacity_quarter_l', 'E5.5.mass_half_kg_e5', 'E5.5.capacity_half_l_e5']);
+        expect(threshold(E5, 5)).toBe(2);
+        const skills = E5.steps.flatMap((s) => s.skills);
+        expect(skills.find((s) => s.id === 'E5.12.length_scale')).toMatchObject({ type: 'LENGTH', answer: 'keypad' });
+        expect(skills.find((s) => s.id === 'E5.5.capacity_half_l_e5')).toMatchObject({ type: 'CAPACITY', answer: 'keypad' });
+        expect(E6.steps.flatMap((s) => s.skills).find((s) => s.id === 'E6.3.length_two_units')).toMatchObject({ type: 'LENGTH', answer: 'keypad' });
     });
 });

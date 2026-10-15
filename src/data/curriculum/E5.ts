@@ -64,6 +64,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.5.capacity_quarter_l', 5, 'CAPACITY', { jugs: ['container-1l', 'container-half-l', 'container-quarter-l'], variant: 'toLitres', maxLitres: 4 }),
                 skill('E5.5.mass_half_kg_e5', 5, 'MASS', { variant: 'half', unit: 'dag', weights: ['weight-10dag', 'weight-20dag', 'weight-50dag'], max: 100 }),
+                skill('E5.5.capacity_half_l_e5', 5, 'CAPACITY', { variant: 'text', glasses: ['half', 'quarter'], maxLitres: 5 }),
             ],
         },
         {
@@ -134,6 +135,7 @@ export const E5: StageDef = {
             skills: [
                 skill('E5.12.perimeter_side_square', 12, 'PERIMETER', { variant: 'sideSquare', max: 40 }),
                 skill('E5.12.perimeter_side_rect', 12, 'PERIMETER', { variant: 'sideRect', max: 60 }),
+                skill('E5.12.length_scale', 12, 'LENGTH', { variant: 'scale', scales: [2, 5, 10], max: 100 }),
             ],
         },
     ],
