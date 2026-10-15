@@ -1,6 +1,6 @@
 # Handoff — `final-sound` (slice S-16b)
 
-Written by `/10x-implement final-sound phase 5` of run 2026-10-15-fix-s16bcd. Phases 1-4 (pure core/data, quiet rejections, `cutLoad` onProcessError, sound files + table test) are done and committed; phases 5-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
+Written by `/10x-implement final-sound phase 4` of run 2026-10-15-fix-s16bcd. Phases 1-4 (pure core/data, quiet rejections, `cutLoad` onProcessError, sound files + table test) are done and committed; phases 5-10 pending. Do not get wrong: e2e request counting needs `serviceWorkers: 'block'`, and decode failure never fires `loaderror` (use `cache.audio.exists`), see plan-review.
 
 ## 1. State
 
