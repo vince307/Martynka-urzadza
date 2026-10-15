@@ -7,6 +7,9 @@ import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { cutLoad } from './loaderCut';
 import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
+import { SOUNDS } from '../data/sounds';
+import type { SoundService } from '../ui/sound';
+import { trimEffects } from '../ui/sound';
 import { TASK_ART } from '../data/taskArt';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 
@@ -84,7 +87,7 @@ export class BootScene extends Scene {
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
         this.load.on('loaderror', (file: { key: string; type?: string }) => {
-            console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
+            console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : file.type === 'audio' ? `Sound failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
         });
         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
@@ -94,12 +97,26 @@ export class BootScene extends Scene {
             }
             this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
         }
+        this.queueSounds();
         // The salon pictures load the same way; a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
         for (const art of ROOM_ART) {
             if (seam === 'room') {
                 continue;
             }
             this.load.image(art.key, art.url);
+        }
+    }
+
+    /**
+     * Sound effects join the same queue and the same limits. [m4a, ogg]: Phaser takes the first format the browser plays.
+     * A decode failure fires no `loaderror` (Phaser ends it as a processed file), so health is read from the cache in create().
+     * Without Web Audio there is no decoding at all and every effect stays missing.
+     */
+    private queueSounds(): void {
+        for (const def of SOUNDS) {
+            if (def.boot) {
+                this.load.audio(def.key, [...def.urls]);
+            }
         }
     }
 
@@ -126,6 +143,21 @@ export class BootScene extends Scene {
         this.registry.set(REGISTRY_KEYS.roomArtHealth, roomHealth);
         if (roomHealth.missing.length > 0) {
             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);
+        }
+        // Sound effects: trim the encoder padding BEFORE the hand-over below, so no play meets an untrimmed buffer; then record what is missing.
+        try {
+            const untrimmed = trimEffects(this.game);
+            const soundHealth = artHealth(
+                SOUNDS.filter((def) => def.boot).map((def) => ({ key: def.key, id: def.id })),
+                (key) => this.cache.audio.exists(key) && !untrimmed.includes(key),
+            );
+            this.registry.set(REGISTRY_KEYS.soundHealth, soundHealth);
+            (this.registry.get(REGISTRY_KEYS.sound) as SoundService | undefined)?.setMissing(soundHealth.missing);
+            if (soundHealth.missing.length > 0) {
+                console.warn(`Sounds missing: ${soundHealth.missing.length} of ${soundHealth.total}: ${soundHealth.missing.join(', ')}`);
+            }
+        } catch (error) {
+            console.warn('Sound setup failed; playing without effects', error);
         }
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only

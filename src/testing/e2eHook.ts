@@ -3,6 +3,7 @@ import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
+import type { SoundService, SoundStatus } from '../ui/sound';
 import type { SessionLearner } from '../core/placement';
 import { encodeSave, freshSession, NEWER_SAVE, SAVE_VERSION, storedVersionNewer } from '../core/save';
 import { playable } from '../core/round/pick';
@@ -240,6 +241,10 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[]; creates: number } | undefined;
         return value ? { cut: [...value.cut], creates: value.creates } : null;
     };
+    const soundSnapshot = (): SoundStatus | null => {
+        const value = game.registry.get(REGISTRY_KEYS.sound) as SoundService | undefined;
+        return value ? deepFreeze(value.status()) : null;
+    };
     const boot = (): BootScene | null => game.scene.getScene(SCENE_KEYS.boot) as BootScene | null;
     const inputEnabled = (): boolean => game.input.enabled;
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
@@ -251,16 +256,16 @@ export const installE2EHook = (game: Game): void => {
                 // While BootScene shows the loading screen there is no other scene to read (audit A-1: the load can hang for seconds).
                 const loadingScene = boot();
                 if (loadingScene?.isLoading()) {
-                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase() }), save: save(), bootLoad: bootLoadSnapshot() });
+                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase() }), save: save(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), bootLoad: bootLoadSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {
