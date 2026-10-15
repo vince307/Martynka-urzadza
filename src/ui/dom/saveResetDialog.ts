@@ -37,7 +37,10 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
     };
     const show = (body: HTMLElement[]): void => {
         handle?.close();
-        handle = openDialog(parent, createText('h1', pl.saveTransfer.resetTitle), body, finish);
+        handle = openDialog(parent, createText('h1', pl.saveTransfer.resetTitle), body, () => {
+            // Escape during the write must not close the dialog: a pending reload would fire in the middle of play.
+            if (!busy) finish();
+        });
     };
 
     const blockedStep = (cause: Parameters<typeof blockedText>[0], forceable: boolean): void => {

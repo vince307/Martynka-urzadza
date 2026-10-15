@@ -63,6 +63,17 @@ describe('IndexedDB save store', () => {
         await expect(requestPersistence(nav(() => { throw new Error('x'); }))).resolves.toBe('error');
         await expect(requestPersistence(nav(() => Promise.reject(new Error('x'))))).resolves.toBe('error');
     });
+
+    it('requestPersistence logs the error name, not the message', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        try {
+            const nav = { storage: { persist: () => Promise.reject(new DOMException('secret detail', 'SecurityError')) } } as unknown as Navigator;
+            await expect(requestPersistence(nav)).resolves.toBe('error');
+            expect(warn).toHaveBeenCalledWith('save: persist() failed', 'SecurityError');
+        } finally {
+            warn.mockRestore();
+        }
+    });
 });
 
 describe('IndexedDB backup copy (S-15 phase 2)', () => {

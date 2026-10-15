@@ -121,7 +121,7 @@ installErrorBoundary(window, () => {
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail); never IndexedDB.
+    // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail|writehang|v1|backupfail|backuphang|slow); never IndexedDB.
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
     const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };

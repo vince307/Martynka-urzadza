@@ -42,7 +42,10 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
     };
     const show = (title: string, body: HTMLElement[]): void => {
         handle?.close();
-        handle = openDialog(parent, createText('h1', title), body, finish);
+        handle = openDialog(parent, createText('h1', title), body, () => {
+            // Escape during the write must not close the dialog: a pending reload would fire in the middle of play.
+            if (!busy) finish();
+        });
     };
 
     const stepTwo = (session: SessionSave, forced: boolean, file: { build: string | null; exportedAt: string | null }): void => {

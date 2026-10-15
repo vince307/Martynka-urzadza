@@ -699,7 +699,7 @@ kolejne starty czytają v2, bez migracji.
 - [x] 4.1 Testy `waitLonger` czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — afbf9a8
 - [x] 4.2 Deliberate break: `waitLonger` woła `store.read()` ponownie → test „read called once” czerwony; przywrócone; meta-check — afbf9a8
 - [x] 4.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `slow` tylko pod `e2eSave` — afbf9a8
-- [ ] 4.4 E2E (orkiestrator, `--workers=4`): `<baseline gałęzi e2e> + 0`, zmienione M-S4 i test `hang` zielone
+- [x] 4.4 E2E (orkiestrator, `--workers=4`): `<baseline gałęzi e2e> + 0`, zmienione M-S4 i test `hang` zielone (orkiestrator: 77 passed na afbf9a8, --workers=4)
 
 #### Manual
 
@@ -712,10 +712,10 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (log `persist()`)
-- [ ] 5.2 Deliberate break: `requestPersistence` bez `console.warn` → nowy test czerwony; przywrócone; meta-check
-- [ ] 5.3 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
-- [ ] 5.4 Każdy follow-up w `follow-ups/review-fixes.md` ma `Trigger:`
+- [x] 5.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` (log `persist()`)
+- [x] 5.2 Deliberate break: `requestPersistence` bez `console.warn` → nowy test czerwony; przywrócone; meta-check
+- [x] 5.3 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
+- [x] 5.4 Każdy follow-up w `follow-ups/review-fixes.md` ma `Trigger:`
 - [ ] 5.5 `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
