@@ -519,10 +519,10 @@ Urządzenie z v1: łańcuch v1 → v2 → v3, jedna kopia `backup-v1`. Rollback 
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: znacznik „dowolny nieznany klucz” / krok bez strażnika kształtu / snapshot z żywego `SALON` → odpowiednie testy czerwone; przywrócone; meta-check
-- [ ] 1.3 Fixtury v1/v2 bajt w bajt (`git diff --stat tests/fixtures` = tylko dwa nowe pliki); `SAVE_VERSION` 3
-- [ ] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N` — 826150c
+- [x] 1.2 Deliberate break: znacznik „dowolny nieznany klucz” / krok bez strażnika kształtu / snapshot z żywego `SALON` → odpowiednie testy czerwone; przywrócone; meta-check — 826150c
+- [x] 1.3 Fixtury v1/v2 bajt w bajt (`git diff --stat tests/fixtures` = tylko dwa nowe pliki); `SAVE_VERSION` 3 — 826150c
+- [x] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0` — 826150c
 
 #### Manual
 
