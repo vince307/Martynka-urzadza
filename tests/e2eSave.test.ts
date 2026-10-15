@@ -4,7 +4,7 @@ import { e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -71,6 +71,11 @@ describe('e2eSaveStore', () => {
         await expect(store.read()).resolves.toMatchObject({ version: 1 });
         const outcome = await Promise.race([store.backup({}, 1).then(() => 'answered'), new Promise((r) => setTimeout(() => r('silent'), 20))]);
         expect(outcome).toBe('silent');
+    });
+
+    it('slow answers late with a v2 save of 7 stars', async () => {
+        const raw = await e2eSaveStore('slow').read();
+        expect(decodeSave(raw)).toMatchObject({ kind: 'ok', migratedFrom: null, session: { stars: 7 } });
     });
 
     it('hang never settles its read', async () => {

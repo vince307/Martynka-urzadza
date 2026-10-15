@@ -13,7 +13,7 @@ export type LoadOutcome =
     | { kind: 'fresh' }
     | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; raw: unknown }
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown }
-    | { kind: 'unavailable'; error: string };
+    | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
 export type BlockReason = 'unreadable' | 'unavailable' | 'fatal';
 
@@ -129,24 +129,33 @@ export interface Autosaver {
 
 /**
  * Reads the store once. Never rejects: a failed or too slow read is `unavailable` with the error name. Never writes.
- * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody,
- * and a late success is dropped (it is never written).
+ * With a `limit` the read races a timer; the abandoned read is caught at once so a late rejection reaches nobody.
+ * A `timeout` outcome carries `waitLonger`: it waits on the SAME read (never a second `store.read()`, which would queue
+ * behind the hung one) with a longer limit and decodes it like a normal read; a second limit is a plain timeout.
+ * Nothing here ever writes, so a late result is only data for the caller to decide on.
  */
 export async function loadSave(
     store: SaveStore,
     limit?: { timers: AutosaverOptions['timers']; timeoutMs: number },
 ): Promise<LoadOutcome> {
-    let raw: unknown;
-    try {
-        const read = store.read();
-        raw = limit === undefined ? await read : await withTimeLimit(read, limit.timers, limit.timeoutMs);
-    } catch (e) {
-        return { kind: 'unavailable', error: errorName(e) };
-    }
-    if (raw === undefined) return { kind: 'fresh' };
-    const result = decodeSave(raw);
-    if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
-    return { kind: 'unreadable', reason: result.reason, raw };
+    const read = new Promise<unknown>((resolve) => resolve(store.read()));   // a synchronous throw is a rejection too
+    const settle = async (timeoutMs: number | undefined, offerMore: boolean): Promise<LoadOutcome> => {
+        let raw: unknown;
+        try {
+            raw = limit === undefined || timeoutMs === undefined ? await read : await withTimeLimit(read, limit.timers, timeoutMs);
+        } catch (e) {
+            const error = errorName(e);
+            if (offerMore && isTimeoutError(error)) {
+                return { kind: 'unavailable', error, waitLonger: (ms) => settle(ms, false) };
+            }
+            return { kind: 'unavailable', error };
+        }
+        if (raw === undefined) return { kind: 'fresh' };
+        const result = decodeSave(raw);
+        if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
+        return { kind: 'unreadable', reason: result.reason, raw };
+    };
+    return settle(limit?.timeoutMs, true);
 }
 
 export function createAutosaver(options: AutosaverOptions): Autosaver {

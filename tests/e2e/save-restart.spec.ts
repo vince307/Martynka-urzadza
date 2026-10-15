@@ -191,9 +191,9 @@ test('#2 C-1 a save the browser will not give shows the card, plays without writ
 test('#2 M-S4 a read that never answers ends in the same card after the load timeout', async ({ page }) => {
     await silenceSpeech(page);
     await page.goto('/?e2eSave=hang');
-    const card = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
+    const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
     await expect(card).toBeVisible();
-    await card.getByRole('button', { name: pl.saveUnavailable.continue }).tap();
+    await card.getByRole('button', { name: pl.saveSlow.continue }).tap();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'welcome');
     let age: { x: number; y: number } | undefined;

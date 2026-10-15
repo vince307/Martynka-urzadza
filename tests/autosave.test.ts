@@ -153,7 +153,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
         expect(outcome).toBeUndefined();
         clock.advance(1);
         await settle();
-        expect(outcome).toEqual({ kind: 'unavailable', error: 'timeout' });
+        expect(outcome).toMatchObject({ kind: 'unavailable', error: 'timeout' });
     });
 
     it('a read faster than the limit returns its result and leaves no timer', async () => {
@@ -170,7 +170,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
         const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), backup: () => Promise.resolve(), write: () => Promise.resolve() };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
-        expect(await pending).toEqual({ kind: 'unavailable', error: 'timeout' });
+        expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
         fail(new Error('late'));
         await Promise.resolve();
         await Promise.resolve();
@@ -185,7 +185,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
         const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), backup: () => Promise.resolve(), write: (v) => f.store.write(v) };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
-        expect(await pending).toEqual({ kind: 'unavailable', error: 'timeout' });
+        expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
         resolve(fixture('save-v1.json'));
         await settle();
         expect(f.state.writes).toHaveLength(0);
@@ -857,5 +857,68 @@ describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
         await settle();
         await settle();
         expect(rejections).toEqual([]);
+    });
+});
+
+describe('loadSave waitLonger (SRR-02)', () => {
+    const slowStore = () => {
+        const calls = { reads: 0 };
+        let answer!: (v: unknown) => void;
+        const store: SaveStore = {
+            read: () => {
+                calls.reads += 1;
+                return new Promise<unknown>((resolve) => (answer = resolve));
+            },
+            backup: () => Promise.resolve(),
+            write: () => Promise.resolve(),
+        };
+        return { store, calls, answer: (v: unknown) => answer(v) };
+    };
+    const timedOut = async (f: ReturnType<typeof slowStore>, clock: ReturnType<typeof makeClock>) => {
+        const pending = loadSave(f.store, { timers: clock.timers, timeoutMs: 5000 });
+        clock.advance(5000);
+        const out = await pending;
+        if (out.kind !== 'unavailable' || !out.waitLonger) throw new Error('expected a waitLonger');
+        return out.waitLonger;
+    };
+
+    it('waits on the SAME read: a late save is decoded and the store is read once', async () => {
+        const clock = makeClock();
+        const f = slowStore();
+        const waitLonger = await timedOut(f, clock);
+        const second = waitLonger(20000);
+        f.answer(fixture('save-v1.json'));
+        expect((await second).kind).toBe('loaded');
+        expect(f.calls.reads).toBe(1);
+    });
+
+    it('a late fresh store and a late unreadable save are told apart like a normal read', async () => {
+        const clock = makeClock();
+        const a = slowStore();
+        const waitA = await timedOut(a, clock);
+        const pa = waitA(20000);
+        a.answer(undefined);
+        expect(await pa).toEqual({ kind: 'fresh' });
+        const b = slowStore();
+        const waitB = await timedOut(b, clock);
+        const pb = waitB(20000);
+        b.answer({ version: 99, profileId: 'default' });
+        expect(await pb).toMatchObject({ kind: 'unreadable', reason: 'future' });
+    });
+
+    it('a second limit is a plain timeout with no further waitLonger', async () => {
+        const clock = makeClock();
+        const f = slowStore();
+        const waitLonger = await timedOut(f, clock);
+        const second = waitLonger(20000);
+        clock.advance(20000);
+        const out = await second;
+        expect(out).toEqual({ kind: 'unavailable', error: 'timeout' });
+        expect(clock.pending()).toBe(0);
+    });
+
+    it('only a timeout carries waitLonger', async () => {
+        const broken: SaveStore = { read: () => Promise.reject(new Error('x')), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        expect(await loadSave(broken, { timers: makeClock().timers, timeoutMs: 5000 })).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 });

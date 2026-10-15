@@ -52,11 +52,11 @@ export function saveHealthView(status: AutosaveStatus): SaveHealthView {
     return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status) };
 }
 
-export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable';
+export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable' | 'slow';
 
 /** Which card copy a save that could not be read gets: the reason decides, never the order of the checks (SIR-01). */
-export function cardCopyFor(kind: 'unreadable' | 'unavailable', reason: string | null): SaveCardKey {
-    if (kind === 'unavailable') return 'unavailable';
+export function cardCopyFor(kind: 'unreadable' | 'unavailable', reason: string | null, error?: string | null): SaveCardKey {
+    if (kind === 'unavailable') return isTimeoutError(error ?? null) ? 'slow' : 'unavailable';
     if (reason === 'future') return 'future';
     if (reason === 'migration-failed') return 'migrationFailed';
     return 'failed';

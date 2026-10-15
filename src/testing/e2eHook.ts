@@ -3,9 +3,11 @@ import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SessionLearner } from '../core/placement';
+import { encodeSave, freshSession } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
+import { FIRST_ROOM } from '../data/rooms';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
 import type { UIScene } from '../scenes/UIScene';
@@ -100,11 +102,17 @@ export const e2eArt = (search: string): E2EArtSeam | null => {
     return value === 'missing' || value === 'corrupt' ? value : null;
 };
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
+
+/** Under `?e2eSave=slow` the read answers (a v2 save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
+export const E2E_SLOW_READ_MS = 800;
+
+/** The second (longer) read limit under `?e2eSave=hang|slow`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
+export const E2E_SLOWER_LOAD_TIMEOUT_MS = 1500;
 
 /** The write limit under `?e2eSave=writehang`, so the e2e run does not wait the real 5 s. */
 export const E2E_WRITE_TIMEOUT_MS = 300;
@@ -145,7 +153,9 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 ? Promise.reject(new DOMException('e2e', 'UnknownError'))
                 : seam === 'hang'
                   ? new Promise<unknown>(() => undefined)
-                  : Promise.resolve(value),
+                  : seam === 'slow'
+                    ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_ROOM, 7))), E2E_SLOW_READ_MS))
+                    : Promise.resolve(value),
         backup: () => {
             log.ops.push('backup');
             if (seam === 'backupfail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));

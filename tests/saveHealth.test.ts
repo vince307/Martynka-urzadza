@@ -97,6 +97,12 @@ describe('cardCopyFor', () => {
         expect(cardCopyFor('unreadable', 'corrupt')).toBe('failed');
         expect(cardCopyFor('unreadable', 'unknown-version')).toBe('failed');
         expect(cardCopyFor('unavailable', null)).toBe('unavailable');
+        expect(cardCopyFor('unavailable', null, 'UnknownError')).toBe('unavailable');
+    });
+
+    it('a read that timed out gets the slow card (SRR-12)', () => {
+        expect(cardCopyFor('unavailable', null, 'timeout')).toBe('slow');
+        expect(cardCopyFor('unavailable', null, 'TimeoutError')).toBe('slow');
     });
 });
 

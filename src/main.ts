@@ -2,7 +2,7 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
-import { createAutosaver, loadSave, type Autosaver } from './core/autosave';
+import { createAutosaver, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { repairCurrentRoom } from './core/rooms';
@@ -22,7 +22,7 @@ import { RoomScene } from './scenes/RoomScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
-import { E2E_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
+import { E2E_LOAD_TIMEOUT_MS, E2E_SLOWER_LOAD_TIMEOUT_MS, E2E_WRITE_TIMEOUT_MS, e2eArt, e2eDay, e2eFail, e2eMonth, e2eSave, e2eSaveStore, e2eSkills, e2eStars, e2eVariant, installE2EHook } from './testing/e2eHook';
 import { installErrorBoundary } from './ui/dom/errorBoundary';
 import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
@@ -125,22 +125,53 @@ const start = async (): Promise<void> => {
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
     const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
-    const outcome = await loadSave(store, {
+    const first = await loadSave(store, {
         timers,
-        timeoutMs: __E2E_HOOK__ && seam === 'hang' ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
+        timeoutMs: __E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
     });
+    // A read that timed out gets a card with "Poczekaj dłużej" (the same read, a longer limit). One `settled` flag decides
+    // the card: "Graj dalej" starts the game on the first outcome (saver blocked), and a late read after it is only logged;
+    // it never changes the outcome or unblocks the saver, or a fresh 0-star session would overwrite a healthy save.
+    const slowCard = (slow: LoadOutcome & { kind: 'unavailable' }): Promise<LoadOutcome> =>
+        new Promise<LoadOutcome>((resolve) => {
+            let settled = false;
+            const card = mountSaveFailedCard(document.body, {
+                copy: pl.saveSlow,
+                detail: pl.saveFailed.detail(slow.error, __BUILD_ID__),
+                onContinue: () => {
+                    if (settled) return;
+                    settled = true;
+                    card.remove();
+                    resolve(slow);
+                },
+                onWait: async () => {
+                    const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
+                    if (settled) {
+                        console.warn(`save: late read ignored (${late.kind})`);
+                        return 'loaded';
+                    }
+                    if (late.kind === 'unavailable') return 'still-slow';
+                    settled = true;
+                    card.remove();
+                    resolve(late);
+                    return 'loaded';
+                },
+            });
+        });
+    const outcome = first.kind === 'unavailable' && first.waitLonger ? await slowCard(first) : first;
+    const playedOnFirst = outcome === first && first.kind === 'unavailable' && first.waitLonger !== undefined;
     if (outcome.kind === 'unavailable') {
         console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
     }
-    if (outcome.kind === 'unreadable' || outcome.kind === 'unavailable') {
+    if ((outcome.kind === 'unreadable' || outcome.kind === 'unavailable') && !playedOnFirst) {
         // Either way the game starts only on "Graj dalej", in a fresh session with the saver blocked. Only an
         // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
         const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         const reason = outcome.kind === 'unreadable' ? outcome.reason : null;
-        const cardCopies = { future: pl.saveFuture, migrationFailed: pl.saveMigrationFailed, failed: pl.saveFailed, unavailable: pl.saveUnavailable };
+        const cardCopies = { future: pl.saveFuture, migrationFailed: pl.saveMigrationFailed, failed: pl.saveFailed, unavailable: pl.saveUnavailable, slow: pl.saveSlow };
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                copy: cardCopies[cardCopyFor(outcome.kind, reason)],
+                copy: cardCopies[cardCopyFor(outcome.kind, reason, outcome.kind === 'unavailable' ? outcome.error : null)],
                 // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
                 detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:

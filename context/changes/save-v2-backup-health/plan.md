@@ -685,7 +685,7 @@ kolejne starty czytają v2, bez migracji.
 
 - [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ec72589
 - [x] 3.2 Deliberate break: `migration` bez warunku `writes > 0` / `stage` z `lastError` → testy czerwone; przywrócone; meta-check — ec72589
-- [ ] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — ec72589 (e2e: orkiestrator, 77 passed na ec72589, --workers=4)
 
 #### Manual
 
@@ -696,9 +696,9 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 4.1 Testy `waitLonger` czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 4.2 Deliberate break: `waitLonger` woła `store.read()` ponownie → test „read called once” czerwony; przywrócone; meta-check
-- [ ] 4.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `slow` tylko pod `e2eSave`
+- [x] 4.1 Testy `waitLonger` czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 4.2 Deliberate break: `waitLonger` woła `store.read()` ponownie → test „read called once” czerwony; przywrócone; meta-check
+- [x] 4.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; build hook zawiera `slow` tylko pod `e2eSave`
 - [ ] 4.4 E2E (orkiestrator, `--workers=4`): `<baseline gałęzi e2e> + 0`, zmienione M-S4 i test `hang` zielone
 
 #### Manual
