@@ -191,11 +191,13 @@ Klasyfikacja zdarzeń z tabeli research w `core`, żeby sceny tylko wołały `so
 
 **Contract**: `roundCues(before: RoundState, after: RoundState, kind: RoundKind, starDelayMs: number): readonly
 { id: SoundId; delayMs: number }[]`. Reguły: faza `first|second|retype` → `done` → `answer-right` (0); gdy
-`after.starsEarned > before.starsEarned` dodatkowo `star` (`starDelayMs`); `first` → `second` → `answer-retry`;
-`second` → `solution` → nic; `!before.finished && after.finished` → `round-bonus` gdy `kind === 'round'` i premia
-naliczona (pole premii stanu rundy, nazwa z `src/core/round.ts`), `minigame-done` gdy `kind !== 'round'`; brak zmiany →
-`[]`. Testy budują stany przez publiczne `answer`/`advance` z `src/core/round.ts` (bez ręcznych literałów faz tam, gdzie
-się da): pierwsza dobra, druga dobra, retype (bez gwiazdki → tylko `answer-right`), dwa błędy, koniec rundy z premią i
+w TYM przejściu (wejście w `done`) `after.starsEarned > before.starsEarned` dodatkowo `star` (`starDelayMs`) — wzrost
+`starsEarned` o premię przy `next` kończącym rundę NIE daje `star`; `first` → `second` → `answer-retry`;
+`second` → `solution` → nic; `!before.finished && after.finished` → `round-bonus` gdy `kind === 'round'` i
+`after.bonusEarned > 0` (pole `RoundState.bonusEarned`, `src/core/round.ts` `next`; warianty mają `cleanRoundBonus` 0),
+`minigame-done` gdy `kind !== 'round'`; brak zmiany → `[]`. Testy budują stany przez publiczne `startRound`/`answer`/
+`nextSolutionStep`/`next` z `src/core/round.ts` (w `round.ts` nie ma `advance`; bez ręcznych literałów faz tam, gdzie
+się da), w tym test „the bonus at the round end plays round-bonus, not star”: pierwsza dobra, druga dobra, retype (bez gwiazdki → tylko `answer-right`), dwa błędy, koniec rundy z premią i
 bez, koniec wariantu.
 
 #### 2. Panel i przeciąganie
@@ -208,8 +210,10 @@ bez, koniec wariantu.
 event: PanelEvent): SoundId | null` (typy z `src/core/variantPanel.ts` `stepPanel`): `closed` → `open` → `panel-open`;
 zdarzenie `pick` (podgląd wariantu) → `variant-pick`; zakup (`bought`) albo zmiana (`changed`) → `purchase` (FR-017:
 każde „Wybieram” ma dźwięk); zamknięcie → nic. `dragCue(before: { carrying: unknown | null }, after: { carrying: unknown |
-null }, mode: 'blocks' | 'coins' | 'clock'): SoundId | null` → `coin` gdy `carrying` przeszło z obiektu w `null` i `mode`
-to `blocks` albo `coins`; zegar → nic. Testy na wszystkich gałęziach, w tym zmiana w trybie `change` bez kosztu.
+null }, mode: 'blocks' | 'coins' | 'clock'): SoundId | null` → `coin` gdy `carrying` przeszło z obiektu w `null` ORAZ
+suma `mat` wzrosła (odłożenie na planszę; anulowanie albo powrót do tacy też zeruje `carrying` — `idle` w
+`src/core/trayDrag.ts` — i nie gra nic), a `mode` to `blocks` albo `coins`; zegar → nic. Kontrakt więc:
+`dragCue(before: { carrying; mat }, after: { carrying; mat }, mode)` (kształt `TrayDragState`). Testy na wszystkich gałęziach, w tym zmiana w trybie `change` bez kosztu.
 
 ### Success Criteria:
 
@@ -258,7 +262,11 @@ albo `reason instanceof DOMException` (bez zmiany `hasError` dla innych obiektó
 **Intent**: Plik w `queue` (dekodowanie audio, obrazek, font) dostaje no-op zarówno `onProcessComplete`, jak i
 `onProcessError` przed `fileProcessComplete`; tripwire tekstu źródła Phasera dla ścieżki, na której to polega.
 
-**Contract**: test jednostkowy z `vi.mock('phaser', () => ({ Loader: { FILE_ERRORED: <wartość z Phasera> } }))` i atrapą
+**Contract**: test jednostkowy z `vi.mock('phaser', () => ({ Loader: { FILE_ERRORED: 16 } }))` (wartość z
+`node_modules/phaser/src/loader/const.js`; `loaderCut.ts` importuje z Phasera tylko `Loader`, więc fabryka wystarcza —
+prawdziwy Phaser nie jest ładowany w node) oraz `vi.stubGlobal('HTMLImageElement', class {})` (vitest działa w
+środowisku `node`; bez tego `file.data instanceof HTMLImageElement` w pętli `queue` rzuca `ReferenceError` i test
+byłby czerwony błędem, nie asercją), i atrapą
 loadera (`isLoading`, `list`, `inflight`, `queue` jako `Set`, `fileProcessComplete`, `nextFile` jako szpiedzy): po
 `cutLoad` wywołanie `file.onProcessError()` i `file.onProcessComplete()` pliku z `queue` nie woła `fileProcessComplete`
 ponownie (licznik = 1); klucze zwrócone. Pin w `tests/phaserLoaderPin.test.ts`: tekst
@@ -503,7 +511,13 @@ SoundPrefs })`; ta sama sesja wejścia (`openInputSession`) co dziś.
 **Intent**: Gdy `prefs.music` i jest loader: jeśli brak w cache — `load.audio(music.key, urls)` z
 `xhrSettings.timeout = musicLoadTimeoutMs` i `load.start()` (`music: 'loading'`); po wczytaniu przycięcie (jak w fazie 5),
 potem — jeśli nadal włączona — `manager.add(key, { loop: true, volume: masterVolume × musicVolume })` i `play` po
-odblokowaniu (`once('unlocked')` gdy `locked`); błąd ładowania → `music: 'missing'`, log. Wyłączenie → `stop` + `destroy`
+odblokowaniu (`once('unlocked')` gdy `locked`); błąd ładowania → `music: 'missing'`, log. Wynik rozstrzyga
+zdarzenie `complete` loadera + `cache.audio.exists(key)`, NIE `loaderror`: błąd dekodowania (`File.onProcessError` →
+`fileProcessComplete`) nie emituje `FILE_LOAD_ERROR` w Phaserze 4.2.1 (emituje go tylko `nextFile` przy błędzie
+pobrania). To samo w `BootScene`: braki efektów liczy `soundHealth` z cache, `loaderror` loguje tylko pobranie.
+`attachLoader` sam rusza ładowanie, gdy `prefs.music` jest już `true` (odczyt z `localStorage` po ponownym
+uruchomieniu); `UIScene` uruchamia `TaskScene.create` raz (`scene.launch`), `scene.switch` do pokoju usypia tylko
+`TaskScene`, więc loader `UIScene` żyje przez całą sesję (na ekranie powitania muzyki nie ma — rusza z ekranem zadań). Wyłączenie → `stop` + `destroy`
 dźwięku (bufor zostaje w cache). Grając muzyka trwa przez wszystkie sceny (usługa w rejestrze gry).
 
 **Contract**: `SoundService.attachLoader(load: Loader.LoaderPlugin): void`; `status().music` zgodnie z opisem; drugi
@@ -597,8 +611,11 @@ gotowy!” nie jest tu wymagany.
 (c) „#14 S-16b the parent turns effects off and music on; the choice survives a reload”: brama rodzica jak w
 `parent-settings.spec.ts`, „Efekty dźwiękowe” → „Wyłączone”, „Muzyka” → „Włączone”, „Zatwierdź”; następna odpowiedź
 loguje `off`; żądanie sieciowe `assets/sounds/*/music-loop.*` pojawia się dopiero po „Zatwierdź” (zero przed), potem
-`sound.music` = `'playing'`; przeładowanie w TYM SAMYM kontekście → `sound.prefs` = `{ effects: false, music: true }`;
-nowy kontekst → domyślne.
+`sound.music` = `'playing'`; przeładowanie w TYM SAMYM kontekście → `sound.prefs` = `{ effects: false, music: true }` i żądanie `music-loop`
+pojawia się bez otwierania panelu (`attachLoader` przy `prefs.music`);
+nowy kontekst → domyślne. **Liczenie żądań**: `test.use({ serviceWorkers: 'block' })` w tym specu (build haka to build
+produkcyjny, więc instalacja service workera pobrałaby `music-loop.*` z listy precache przed „Zatwierdź”, a `page.route`
+nie widzi żądań obsłużonych przez SW) i nasłuch `page.on('request')` (poziom strony, nie kontekstu).
 
 **Contract**: `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; teksty po kluczach `pl` (dokładne napisy, także
 „Wyłączone”/„Włączone” w obrębie grupy po `aria-labelledby`); stan z haka tylko do odczytu; nigdy IDB ani `localStorage`
@@ -622,7 +639,9 @@ wyniku orkiestratora. Każdy oczekiwany czerwony test osobno (`-g`).
 
 #### Manual Verification:
 
-- [human] iPad, odsłuch (lista kontrolna): kontekst odblokowuje się na pierwszym dotyku (pierwsze cue po dotyku słychać), efekty i czytanie poleceń grają razem bez ucinania mowy, głośność efektów i muzyki rozsądna, pętla muzyki bez trzasku w miejscu zapętlenia, przełącznik ciszy — zanotować, co robi
+- [human] iPad, odsłuch (lista kontrolna): kontekst odblokowuje się na pierwszym dotyku (pierwsze cue po dotyku słychać), efekty i czytanie poleceń grają razem bez ucinania mowy, głośność efektów i muzyki rozsądna, pętla muzyki bez trzasku w miejscu zapętlenia, przełącznik ciszy — zanotować, co robi; decyzje produktowe do
+odsłuchu autorki: `purchase` także przy darmowej zmianie wariantu (FR-018, decyzja 7), `answer-retry` tylko raz na
+zadanie (decyzja 6), `tap` i `round-bonus` razem na ostatnim „Dalej”
 
 ---
 
@@ -647,7 +666,8 @@ Nowy spec `tests/e2e/final-sound-failure.spec.ts` (`chromium-hook`) i rozszerzen
 `page.route('**/assets/sounds/**/star.*', r => r.fulfill({ status: 200, body: 'not audio' }))`; `passWelcome`, jedna
 dobra odpowiedź → `sound.missing` zawiera klucz `star`, log `star` = `missing`, `answer-right` = `played`; karta błędu
 niewidoczna przez ~1 s po starcie i po odpowiedzi; gra dalej odpowiada.
-(b) „#15 S-16b hanging sound downloads end at the total boot limit”: `?e2eArt=stallall`, `page.route` trzyma wszystkie
+(b) „#15 S-16b hanging sound downloads end at the total boot limit”: `serviceWorkers: 'block'` jak (a) i jak
+`load-and-tab-guard.spec.ts` (inaczej `page.route` nie przechwyci żądań idących przez SW), `?e2eArt=stallall`, `page.route` trzyma wszystkie
 `**/assets/sounds/**` bez odpowiedzi; powitanie w limicie testu; `bootLoad.cut` zawiera klucze `sounds/…`;
 `sound.missing` = 12; brak karty błędu; `bootLoad.creates === 1`.
 
@@ -656,8 +676,9 @@ niewidoczna przez ~1 s po starcie i po odpowiedzi; gra dalej odpowiada.
 **File**: `tests/e2e/seed.spec.ts`
 
 **Intent**: Po przeładowaniu offline każdy plik dźwięku, który strona zażądała, przyszedł z service workera
-(`response.fromServiceWorker()`); przy starcie zażądano dokładnie 12 plików `assets/sounds/` (jeden format na efekt),
-żadnego `music-loop`.
+(`response.fromServiceWorker()`); przy starcie strona (`page.on('request')`, nie kontekst — instalacja SW pobiera z
+precache oba formaty i `music-loop`, a Playwright zgłasza te żądania tylko na kontekście) zażądała dokładnie 12 plików
+`assets/sounds/` (jeden format na efekt), żadnego `music-loop`.
 
 **Contract**: jak dotąd po `TASK_ART`: `expect.poll` na liście URL-i dźwięków spoza SW = `[]`; liczba żądanych = 12.
 Patche: `e2e-break-p10a.patch` (`EncodingError` usunięte z `QUIET_REJECTIONS` → (a) czerwony: karta),
@@ -718,6 +739,16 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 - **Pierwsze cue przed pierwszym dotykiem przepada** (`locked`) — świadomie (FR-026: dźwięk po pierwszym dotknięciu).
 - **Pętla muzyki bez nakładki** — możliwy trzask; `[human]` + follow-up.
 - **Wnętrze Phasera**: `cutLoad`, przycięcie przez `cache.audio`, `unlock`; tripwire wersji + piny tekstu + e2e.
+- **Fallback HTML5 Audio** (urządzenie bez Web Audio): wpisy `cache.audio` to nie `AudioBuffer`; przycięcie pomija
+  wpis, który nie jest `AudioBuffer` (sprawdzenie `instanceof`), zamiast liczyć go jako brak. Docelowe tablety mają Web
+  Audio; nieprzetestowane (plan-review F7).
+- **`locked` schodzi klatkę po `resume()`**: Phaser czyści `locked` w `BaseSoundManager.update` po rozwiązaniu
+  `context.resume()`, więc cue w tym samym stuknięciu, które odblokowuje, może dać `locked` (dopuszczone w 9(a)).
+- **Zamknięcie `UIScene`** (dziś nieosiągalne: uruchamiana raz) porzuciłoby ładowanie muzyki w stanie `loading`;
+  `attachLoader` przy `shutdown` sceny odłącza loader i wraca do `off` (plan-review F6).
+- **Instalacja SW pobiera oba formaty i `music-loop` (~1,07 MB) równolegle z ładowaniem startu** przy pierwszym
+  uruchomieniu — konkuruje o łącze z kolejką startu (już dziś tak jest z grafiką); limit łączny `balance.loader.totalMs`
+  to obejmuje.
 
 ## References
 
@@ -885,7 +916,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 9.7 [human] iPad, odsłuch: odblokowanie na pierwszym dotyku, efekty z mową bez ucinania, głośność, pętla muzyki bez trzasku, przełącznik ciszy
+- [ ] 9.7 [human] iPad, odsłuch: odblokowanie na pierwszym dotyku, efekty z mową bez ucinania, głośność, pętla muzyki bez trzasku, przełącznik ciszy; decyzje: `purchase` przy darmowej zmianie, jedno `answer-retry`, `tap` + `round-bonus`
 
 ### Phase 10: Uszkodzony albo wiszący dźwięk nie zatrzymuje gry, dźwięki offline — e2e (#15, #8)
 
