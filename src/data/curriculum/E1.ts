@@ -31,6 +31,7 @@ export const E1: StageDef = {
             skills: [
                 skill('E1.1.shapes_pick', 1, 'SHAPES', { variants: ['name', 'odd'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'tiles'),
                 skill('E1.1.shapes_all', 1, 'SHAPES', { variants: ['all'], figures: ['circle', 'square', 'triangle', 'rectangle'] }, 'select'),
+                skill('E1.1.compare_qty_10', 1, 'COMPARE_QTY', { max: 10, ask: ['more', 'less'], equalShare: 0.25 }, 'tiles'),
                 skill('E1.1.pattern', 1, 'PATTERN', { periods: ['AB', 'AAB', 'ABB'], figures: ['circle', 'square', 'triangle', 'star', 'heart'] }, 'tiles'),
             ],
         },
@@ -41,7 +42,8 @@ export const E1: StageDef = {
             types: ['COUNT', 'ORDINAL', 'COMPARE_NUM'],
             skills: [
                 skill('E1.2.compare_num_5', 2, 'COMPARE_NUM', { max: 5 }, 'tiles'),
-                skill('E1.2.count_5', 2, 'COUNT', { min: 1, max: 5, tens: false }, 'tiles'),
+                skill('E1.2.ordinal_5', 2, 'ORDINAL', { max: 5 }, 'tiles'),
+                skill('E1.2.count_5', 2, 'COUNT', { min: 2, max: 5, tens: false }, 'tiles'),
             ],
         },
         {
@@ -54,6 +56,7 @@ export const E1: StageDef = {
                 skill('E1.3.missing_5', 3, 'MISSING', { max: 5, ops: ['+', '-'] }),
                 skill('E1.3.bonds_5', 3, 'BONDS', { totals: [2, 3, 4, 5] }),
                 skill('E1.3.choose_op_5', 3, 'CHOOSE_OP', { max: 5, kinds: ['sum', 'left'] }, 'tiles'),
+                skill('E1.3.choose_op_picture_5', 3, 'CHOOSE_OP', { max: 5, kinds: ['picture'] }, 'tiles'),
             ],
         },
         {

@@ -8,6 +8,7 @@ import { ClockFace } from './ClockFace';
 import type { Rect } from './geometry';
 import { FigureGrid } from './FigureGrid';
 import { IconGroups } from './IconGroups';
+import { IconRow } from './IconRow';
 import { CoordGrid } from './CoordGrid';
 import { Jugs } from './Jugs';
 import { MoneyTable } from './MoneyTable';
@@ -34,6 +35,7 @@ export class TaskPicture {
     private readonly jugs: Jugs;
     private readonly thermometer: Thermometer;
     private readonly icons: IconGroups;
+    private readonly row: IconRow;
     private readonly cells: NumberCells;
     private readonly coord: CoordGrid;
     private readonly figure: FigureGrid;
@@ -54,6 +56,7 @@ export class TaskPicture {
         this.jugs = new Jugs(scene);
         this.thermometer = new Thermometer(scene);
         this.icons = new IconGroups(scene);
+        this.row = new IconRow(scene);
         this.cells = new NumberCells(scene);
         this.coord = new CoordGrid(scene);
         this.figure = new FigureGrid(scene);
@@ -80,6 +83,7 @@ export class TaskPicture {
             jugs: this.jugs,
             thermometer: this.thermometer,
             icons: this.icons,
+            row: this.row,
             cells: this.cells,
             grid: this.coord,
             figure: this.figure,
@@ -115,7 +119,7 @@ export class TaskPicture {
                 this.thermometer.render(visual.celsius, rect);
                 break;
             case 'icons':
-                this.icons.render(visual.icon, visual.groups, visual.framed, rect);
+                this.icons.render(visual.icon, visual.groups, visual.framed, rect, visual.motion);
                 break;
             case 'cells':
                 this.cells.render(visual.layout, visual.values, rect);
@@ -136,8 +140,8 @@ export class TaskPicture {
                 this.pattern.render(visual.items, rect);
                 break;
             case 'row':
-                // Stand-in on purpose (S-14d phase 3): no curriculum step draws a row until its widget exists (phase 4).
-                throw new Error('a row of icons has no widget yet');
+                this.row.render(visual.icons, rect);
+                break;
             case 'column':
                 if (!column) {
                     throw new Error('a written column is drawn with its boxes');
@@ -163,6 +167,7 @@ export class TaskPicture {
         this.jugs.setVisible(false);
         this.thermometer.setVisible(false);
         this.icons.setVisible(false);
+        this.row.setVisible(false);
         this.cells.setVisible(false);
         this.coord.setVisible(false);
         this.figure.setVisible(false);

@@ -8,11 +8,12 @@ import { countNoun } from '../src/core/text/plural';
 import type { SkillDef } from '../src/core/types';
 import { ICONS } from '../src/data/measures';
 import { nouns } from '../src/data/nouns';
+import { E1 } from '../src/data/curriculum/E1';
 import { forEachDraw } from './helpers';
 
 const skill = (id: string, params: Record<string, unknown>): SkillDef => ({ id, stage: 'E1', step: 2, type: 'COUNT', params, answer: 'tiles' });
 
-const COUNT_5 = skill('E1.2.count_5', { min: 1, max: 5, tens: false });
+const COUNT_5 = skill('E1.2.count_5', { min: 2, max: 5, tens: false });
 const COUNT_7 = skill('E1.4.count_7', { min: 4, max: 7, tens: false });
 const COUNT_12 = skill('E1.10.count_12', { min: 11, max: 12, tens: true });
 
@@ -57,7 +58,7 @@ describe('generateCount', () => {
 
     it('the tiles of the largest and smallest counts stay inside 1..max', () => {
         const ends = new Set<string>();
-        forEachDraw(generateCount, COUNT_5, {}, (task, where) => {
+        forEachDraw(generateCount, skill('x.count_1_5', { min: 1, max: 5, tens: false }), {}, (task, where) => {
             const { n } = drawn(task, where);
             if (n === 1) expect([...(task.choices ?? [])].sort(), where).toEqual([1, 2, 3]);
             if (n === 5) expect([...(task.choices ?? [])].sort(), where).toEqual([3, 4, 5]);
@@ -74,6 +75,16 @@ describe('generateCount', () => {
             expect(task.prompt, where).toBe('Ile jest kredek?');
         });
         expect(pencils).toBeGreaterThan(0);
+    });
+});
+
+describe('E1.2.count_5 (S-14d O4)', () => {
+    it('never draws a single icon: the data skill has min 2 and every drawing has at least 2 icons', () => {
+        const data = E1.steps.flatMap((st) => st.skills).find((s) => s.id === 'E1.2.count_5');
+        expect(data?.params.min).toBe(2);
+        forEachDraw(generateCount, data!, {}, (task, where) => {
+            expect(drawn(task, where).n, where).toBeGreaterThanOrEqual(2);
+        });
     });
 });
 

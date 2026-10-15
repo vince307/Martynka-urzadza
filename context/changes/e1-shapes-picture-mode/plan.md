@@ -869,7 +869,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 670e988
 - [x] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E1` … `E6` bez naruszeń — 670e988
 - [x] 3.3 Deliberate break: ORDINAL liczy od prawej / CHOOSE_OP `go` daje `+` / filtr `price` usunięty → czerwone; przywrócone; meta-check — 670e988
-- [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — 670e988 (e2e: orchestrator note, full run on 670e988, --workers=4, 86 passed, 5.7 min)
 
 #### Manual
 
@@ -879,10 +879,10 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje nowe umiejętności
-- [ ] 4.2 `npm run sample -- E1 --count 6` bez naruszeń, z E1.1 compare_qty, E1.2 ordinal, E1.3 choose_op_picture; `count_5` nigdy 1
-- [ ] 4.3 Deliberate break: `E1.2.count_5` z powrotem `min: 1` → test „co najmniej 2 ikony” czerwony; przywrócone; meta-check
-- [ ] 4.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (`
+- [x] 4.1 Pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`; `tests/solvableInMode.test.ts` obejmuje nowe umiejętności — @@SHA@@
+- [x] 4.2 `npm run sample -- E1 --count 6` bez naruszeń, z E1.1 compare_qty, E1.2 ordinal, E1.3 choose_op_picture; `count_5` nigdy 1 — @@SHA@@
+- [x] 4.3 Deliberate break: `E1.2.count_5` z powrotem `min: 1` → test „co najmniej 2 ikony” czerwony; przywrócone; meta-check — @@SHA@@
+- [x] 4.4 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — @@SHA@@
 - [ ] 4.5 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
 
 #### Manual

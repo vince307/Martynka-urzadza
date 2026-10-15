@@ -361,6 +361,11 @@ export const TASK_LAYOUT = {
     // Counting icons and groups of icons (S-14), in icon sizes except `maxIcon`: rows of up to `maxPerRow`, a ten in one row, groups in a rounded
     // frame each (`radius`, `border` in scene pixels). DESIGN-GAP (row added in S-14 phase 9): the kit has no plates, so a frame is drawn in code.
     icons: { gap: 0.12, maxPerRow: 6, framePad: 0.2, frameGap: 0.35, maxIcon: 150, radius: 20, border: 4 },
+    // Motion arrow of a picture story (S-14d, DESIGN-GAP row 102): a strip on the left of two stacked groups. "come" is a solid arrow up
+    // towards the first group, "go" a dashed arrow down away from it, so the two differ by shape and not only by colour. Scene pixels.
+    iconMotion: { strip: 120, shaft: 20, head: 56, dash: 22, dashGap: 14 },
+    // A row of different icons with a start flag on its left (S-14d ORDINAL, DESIGN-GAP row 102), in icon sizes except `maxIcon`.
+    iconRow: { gap: 0.2, markWidth: 0.45, maxIcon: 140, pole: 8, flag: 0.5 },
     // Thermometer face painted over the housing (kit reference/thermometer-face.js), in the 512 x 1536 units of the housing; tick lengths are the
     // x of the tick end. `minGapPx` is the smallest distance of two single-degree ticks on screen, `minLabelPx` the smallest label size, so a
     // small thermometer (a tall drawing in a 378 px column) stays readable. DESIGN-GAP (row added in S-14 phase 9): the kit has no small version.

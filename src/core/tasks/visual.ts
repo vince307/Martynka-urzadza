@@ -47,7 +47,7 @@ export type TaskVisual =
  */
 export type VisualShape = 'wide' | 'tall' | 'long';
 
-export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' ? 'long' : 'wide');
+export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */
 export const visualKey = (v: TaskVisual | undefined): string => {

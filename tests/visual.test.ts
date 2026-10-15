@@ -343,6 +343,6 @@ describe('row of icons and the icon motion (S-14d)', () => {
         expect(visualKey(moving([3, 2], 'come'))).not.toBe(visualKey(moving([3, 2], undefined)));
         expect(describeVisual(row(['key', 'apple', 'cup']))).toBe('[row key apple cup]');
         expect(describeVisual(moving([3, 2], 'go'))).toBe('[icons apple 3+2 go]');
-        expect(visualShape(row(['key', 'apple', 'cup']))).toBe('wide');
+        expect(visualShape(row(['key', 'apple', 'cup']))).toBe('long');
     });
 });

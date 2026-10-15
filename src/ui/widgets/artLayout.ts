@@ -252,6 +252,36 @@ export const iconsLayout = (groups: readonly number[], framed: boolean, area: Re
     return { icons, frames, icon };
 };
 
+export interface RowLayoutSpec {
+    /** Gap of two icons, in icon sizes. */
+    gap: number;
+    /** Width of the start mark on the left, in icon sizes. */
+    markWidth: number;
+    /** The largest icon on screen, in scene pixels. */
+    maxIcon: number;
+}
+
+export interface RowLayout {
+    icons: Rect[];
+    /** The start mark: as high as an icon, on the left of the first one. */
+    mark: Rect;
+    icon: number;
+}
+
+/** A row of `count` icons with a start mark on its left (ORDINAL): the whole row fits `area` and is centred, never above `maxIcon`. */
+export const rowLayout = (count: number, area: Rect, spec: RowLayoutSpec): RowLayout => {
+    const widthUnits = spec.markWidth + spec.gap + count + (count - 1) * spec.gap;
+    const icon = Math.min(area.width / widthUnits, area.height, spec.maxIcon);
+    const left = area.x + (area.width - widthUnits * icon) / 2;
+    const top = area.y + (area.height - icon) / 2;
+    const first = left + (spec.markWidth + spec.gap) * icon;
+    return {
+        icons: Array.from({ length: count }, (_, i) => ({ x: first + i * (1 + spec.gap) * icon, y: top, width: icon, height: icon })),
+        mark: { x: left, y: top, width: spec.markWidth * icon, height: icon },
+        icon,
+    };
+};
+
 export interface StandInLabelFit {
     /** 1 = the label on one line, 2 = broken at its space ("10" over "dag"). */
     lines: 1 | 2;
