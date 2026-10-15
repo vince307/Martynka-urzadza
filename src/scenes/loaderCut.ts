@@ -27,9 +27,11 @@ export function cutLoad(load: Loader.LoaderPlugin): string[] {
             file.data.onload = null;
             file.data.onerror = null;
         }
-        // Must come before fileProcessComplete: a late FontFace settling then calls a no-op instead of a second loadComplete
+        // Must come before fileProcessComplete: a late FontFace settling or a late decodeAudioData callback (success or
+        // error: AudioFile.onProcess calls one of the two) then calls a no-op instead of a second loadComplete
         // (queue files are never destroyed, so their `loader` stays set).
         file.onProcessComplete = () => undefined;
+        file.onProcessError = () => undefined;
         file.state = Loader.FILE_ERRORED;
         load.fileProcessComplete(file);
     }

@@ -37,4 +37,13 @@ describe('isFatalSignal', () => {
         expect(isFatalSignal(sig({ kind: 'rejection', name: 'AbortError' }))).toBe(false);
         expect(isFatalSignal(sig({ kind: 'rejection', name: 'NotAllowedError' }))).toBe(false);
     });
+
+    it('treats unhandled audio decode rejections as noise, not as a failure', () => {
+        expect(isFatalSignal(sig({ kind: 'rejection', name: 'EncodingError' }))).toBe(false);
+        expect(isFatalSignal(sig({ kind: 'rejection', name: 'NotSupportedError' }))).toBe(false);
+    });
+
+    it('keeps the audio names fatal for error events (only rejections are quiet)', () => {
+        expect(isFatalSignal(sig({ kind: 'error', name: 'EncodingError' }))).toBe(true);
+    });
 });
