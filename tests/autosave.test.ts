@@ -10,6 +10,15 @@ import type { SaveState } from '../src/core/types';
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const settle = (): Promise<void> => new Promise((r) => setImmediate(r));
 
+/** Whether `p` has settled after a few turns: a missing time limit fails by assertion, not by the vitest timeout. */
+const hasSettled = async (p: Promise<unknown>): Promise<boolean> => {
+    let done = false;
+    void p.then(() => (done = true), () => (done = true));
+    await settle();
+    await settle();
+    return done;
+};
+
 const session = (stars: number): SessionSave => {
     const ok = decodeSave(fixture('save-v1-fresh.json'));
     if (ok.kind !== 'ok') throw new Error('fixture');
@@ -795,6 +804,7 @@ describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
         const flushed = t.saver.flush('now');
         await settle();
         t.clock.advance(5000);
+        expect(await hasSettled(flushed)).toBe(true);
         await flushed;
         expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, writes: 0, dirty: true, lastError: 'timeout', lastFailure: { stage: 'write', error: 'timeout' } });
         t.state.writeHangs = false;
@@ -827,6 +837,7 @@ describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
         t.clock.advance(5000);
         await settle();
         t.clock.advance(5000);
+        expect(await hasSettled(result)).toBe(true);
         expect(await result).toEqual({ ok: false, error: 'timeout' });
         expect(t.saver.status()).toMatchObject({ replace: 'idle', lastFailure: { stage: 'replace', error: 'timeout' } });
     });
