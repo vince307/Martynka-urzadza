@@ -10,6 +10,8 @@ import { generateChain, parseChainParams } from './generators/chain';
 import { generateClock, parseClockParams } from './generators/clock';
 import { generateCompareExpr, parseCompareExprParams } from './generators/compareExpr';
 import { generateCompareDiff, parseCompareDiffParams } from './generators/compareDiff';
+import { generateCompareQty, parseCompareQtyParams } from './generators/compareQty';
+import { generateOrdinal, parseOrdinalParams } from './generators/ordinal';
 import { generateCompareNum, parseCompareNumParams } from './generators/compareNum';
 import { generateChooseOp, parseChooseOpParams } from './generators/chooseOp';
 import { generateComplement, parseComplementParams } from './generators/complement';
@@ -97,6 +99,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     UNIT_CHOICE: generateUnitChoice,
     SHAPES: generateShapes,
     PATTERN: generatePattern,
+    COMPARE_QTY: generateCompareQty,
+    ORDINAL: generateOrdinal,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -146,6 +150,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     UNIT_CHOICE: parseUnitChoiceParams,
     SHAPES: parseShapesParams,
     PATTERN: parsePatternParams,
+    COMPARE_QTY: parseCompareQtyParams,
+    ORDINAL: parseOrdinalParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

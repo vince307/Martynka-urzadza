@@ -135,6 +135,9 @@ export class TaskPicture {
             case 'pattern':
                 this.pattern.render(visual.items, rect);
                 break;
+            case 'row':
+                // Stand-in on purpose (S-14d phase 3): no curriculum step draws a row until its widget exists (phase 4).
+                throw new Error('a row of icons has no widget yet');
             case 'column':
                 if (!column) {
                     throw new Error('a written column is drawn with its boxes');

@@ -855,7 +855,7 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 - [x] 2.3 Deliberate break: wiersz `ORACLE` E1 zostawiony na `[3, 4, 6, 8, 10, 11]` → `tests/curriculumStart.test.ts` czerwony; przywrócone; meta-check — b9b16d5
 - [x] 2.4 Deliberate break: usunięta umiejętność PATTERN z E1.1 przy typie w `GROUP_1` → `tests/curriculum.test.ts` czerwony; przywrócone — b9b16d5
 - [x] 2.5 `tests/fixtures/` bez zmian; `npm run build` drukuje `e2e hook: absent (` — b9b16d5
-- [ ] 2.6 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`answerRight` po wartości kafelka działa dla twarzy)
+- [x] 2.6 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` (`answerRight` po wartości kafelka działa dla twarzy) — orchestrator note: full e2e on b9b16d5, --workers=4, 86 passed (5.9 min)
 
 #### Manual
 
@@ -866,9 +866,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [ ] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [ ] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E1` … `E6` bez naruszeń
-- [ ] 3.3 Deliberate break: ORDINAL liczy od prawej / CHOOSE_OP `go` daje `+` / filtr `price` usunięty → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
+- [x] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E1` … `E6` bez naruszeń
+- [x] 3.3 Deliberate break: ORDINAL liczy od prawej / CHOOSE_OP `go` daje `+` / filtr `price` usunięty → czerwone; przywrócone; meta-check
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual

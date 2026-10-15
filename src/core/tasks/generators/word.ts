@@ -1,6 +1,6 @@
 // WORD: a word problem from data/wordTemplates.ts with numbers drawn so the
 // story and the result stay inside the stage range (ZADANIA.md, section 4).
-import { contexts, people, templates, type Person, type WordKind, type WordTemplate } from '../../../data/wordTemplates';
+import { contexts, contextsFor, people, templates, type Person, type WordKind, type WordTemplate } from '../../../data/wordTemplates';
 import type { Rng } from '../../rng';
 import type { Generator, Task } from '../types';
 
@@ -94,7 +94,7 @@ export const generateWord: Generator = (skill, rng): Task => {
         const [person, other] = pickTwoPeople(rng);
         // Boxes and plates only hold small things.
         const pool = kind === 'groups' || kind === 'share' || kind === 'each' ? contexts.filter((x) => x.portable) : contexts;
-        const result = template.build({ a, b, c, person, other, ctx: rng.pick(pool) });
+        const result = template.build({ a, b, c, person, other, ctx: rng.pick(contextsFor(template, pool)) });
         if (result.answer >= 0 && result.answer <= p.max) {
             return { skillId: skill.id, prompt: result.prompt, answer: result.answer, hint: result.hint };
         }

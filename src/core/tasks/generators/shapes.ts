@@ -42,13 +42,17 @@ const figureDef = (id: FigureId) => {
 
 const randomFace = (figure: FigureId, rng: Rng): Face => ({ figure, colour: rng.pick(COLOUR_IDS), size: rng.pick(SIZE_IDS) });
 
+/** A square is a rectangle: the two never share a task, or a child who taps the square would be marked wrong. */
+const clash = (a: string, b: string): boolean => (a === 'square' && b === 'rectangle') || (a === 'rectangle' && b === 'square');
+
 const range = ([min, max]: readonly [number, number]): readonly [number, number] => [min, max];
 
 /** "Dotknij trójkąta.": 3–4 tiles of different figures, one of the named kind. */
 const name = (skillId: string, figures: readonly FigureId[], rng: Rng): Task => {
     const target = rng.pick(figures);
-    const count = Math.min(rng.int(...range(SHAPES_LIMITS.nameTiles)), figures.length);
-    const others = rng.shuffle(figures.filter((f) => f !== target)).slice(0, count - 1);
+    const pool = figures.filter((f) => f !== target && !clash(f, target));
+    const count = Math.min(rng.int(...range(SHAPES_LIMITS.nameTiles)), pool.length + 1);
+    const others = rng.shuffle(pool).slice(0, count - 1);
     const faces = rng.shuffle([target, ...others].map((figure) => randomFace(figure, rng)));
     const def = figureDef(target);
     return {
@@ -69,7 +73,7 @@ const odd = (skillId: string, figures: readonly FigureId[], rng: Rng): Task => {
     const varying = rng.pick((['figure', 'colour'] as const).filter((f) => f !== different));
     const constant = (['figure', 'colour', 'size'] as const).find((f) => f !== different && f !== varying) as Feature;
     const shared = rng.pick(pool[different]);
-    const alone = rng.pick(pool[different].filter((v) => v !== shared));
+    const alone = rng.pick(pool[different].filter((v) => v !== shared && !(different === 'figure' && clash(v, shared))));
     const fixed = rng.pick(pool[constant]);
     const three = rng.shuffle(pool[varying]).slice(0, 3);
     const oddVarying = rng.pick(pool[varying]);
@@ -99,7 +103,7 @@ const all = (skillId: string, figures: readonly FigureId[], rng: Rng): Task => {
     const target = rng.pick(figures);
     const targetCount = rng.int(...range(SHAPES_LIMITS.allTargets));
     const total = rng.int(...range(SHAPES_LIMITS.allTiles));
-    const others = figures.filter((f) => f !== target);
+    const others = figures.filter((f) => f !== target && !clash(f, target));
     const combos = COLOUR_IDS.flatMap((colour) => SIZE_IDS.map((size) => ({ colour, size })));
     const right: Face[] = rng.shuffle(combos).slice(0, targetCount).map((c) => ({ figure: target, ...c }));
     const wrong: Face[] = [];

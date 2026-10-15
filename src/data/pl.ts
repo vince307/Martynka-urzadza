@@ -229,6 +229,8 @@ export const pl = {
         got: ['dostał', 'dostała'],
         paid: ['zapłacił', 'zapłaciła'],
         has: 'ma',
+        was: 'było',
+        were: 'były',
         is: 'jest',
         are: 'są',
         and: 'i',
@@ -351,6 +353,18 @@ export const pl = {
         factCheckSubHint: 'Dodaj wynik i odjemnik.',
         factCheckAddHint: 'Odejmij od sumy jeden ze składników.',
         factCheckDivHint: 'Pomnóż iloraz przez dzielnik.',
+        // COMPARE_QTY, ORDINAL and the picture CHOOSE_OP (S-14d): the picture carries the task, the texts stay one short sentence.
+        compareQtyPrompt: (more: boolean, many: string) => `Gdzie jest ${more ? 'więcej' : 'mniej'} ${many}?`,
+        compareQtyTiles: { left: 'Po lewej', right: 'Po prawej', same: 'Tyle samo' },
+        compareQtyCountHint: 'Policz po kolei każdą grupę. Pokazuj palcem: 1, 2, 3.',
+        compareQtyCountsHint: (left: string, right: string) => `Z lewej strony: ${left}, z prawej: ${right}.`,
+        compareQtyAnswerHint: (tile: string) => `Wybierz: ${tile}.`,
+        ordinalPrompt: (nominative: string) => `Na którym miejscu od lewej jest ${nominative}?`,
+        ordinalFromMarkHint: 'Liczymy od znacznika po lewej stronie.',
+        ordinalPointHint: 'Pokazuj palcem kolejne obrazki i licz.',
+        ordinalAnswerHint: (nominative: string, place: number) => `${nominative.charAt(0).toUpperCase()}${nominative.slice(1)} jest na miejscu ${place}.`,
+        chooseOpPictureStory: (was: string, counted: string, motion: 'come' | 'go', n: number) =>
+            `Na stole ${was} ${counted}. ${motion === 'come' ? 'Dołożono' : 'Zabrano'} ${n}.`,
         chooseOp: 'Które działanie pasuje?',
         chooseOpHint: {
             sum: 'Przybyło, więc dodajemy.',
