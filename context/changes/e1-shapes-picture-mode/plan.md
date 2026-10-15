@@ -866,9 +866,9 @@ na otwartym PR z wierszem `[human]` (kontrakt runu).
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N`
-- [x] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E1` … `E6` bez naruszeń
-- [x] 3.3 Deliberate break: ORDINAL liczy od prawej / CHOOSE_OP `go` daje `+` / filtr `price` usunięty → czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją, zielone po; unit `<baseline gałęzi> + N` — 670e988
+- [x] 3.2 Klucze `generators`/`parsers` równe; `npm run sample -- E1` … `E6` bez naruszeń — 670e988
+- [x] 3.3 Deliberate break: ORDINAL liczy od prawej / CHOOSE_OP `go` daje `+` / filtr `price` usunięty → czerwone; przywrócone; meta-check — 670e988
 - [ ] 3.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
