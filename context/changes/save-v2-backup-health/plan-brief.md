@@ -52,12 +52,12 @@ dwa dialogi). Każdy nowy szew e2e w buildzie z hakiem pod markerem `e2eSave`.
 
 | Phase | What it delivers | Key risk |
 | --- | --- | --- |
-| 1. Limit czasu (tdd) | `withTimeLimit`, `lastFailure` z etapem, szew `writehang` | późne odrzucenie porzuconej obietnicy → karta fatalna |
+| 1. Limit czasu (tdd) | `withTimeLimit`, `lastFailure` z etapem, szew `writehang`, strażnik ponowienia w `idb.ts` | późne odrzucenie porzuconej obietnicy → karta fatalna |
 | 2. Polityka kopii (tdd) | 3 próby → v2 bez kopii, `hidden`, kopia w `replace`, szwy `backupfail`/`backuphang` | decyzja ponad PRD (`[human]` 2.5) |
 | 3. Panel o skutku (tdd) | `failing` z kodem, linia przeniesienia po zapisie, gaps 94–95 | zmiana kształtu `SaveHealthView` |
 | 4. Wolny odczyt (impl) | karta „Poczekaj dłużej”, `waitLonger`, rada, szew `slow`, gaps 96–97, 2 spec'e zmienione | pętla kart w `main.ts start` |
 | 5. Dialogi + domknięcie (impl) | Escape przy `busy`, log `persist()`, seam sweep, follow-upy, `CLAUDE.md` | brak testu DOM (dowód w fazie 6) |
-| 6. E2E #2 (e2e) | 4 testy: padająca kopia, zawieszony zapis + Escape, wolny odczyt, odczyt bez odpowiedzi | Chromium tylko u orkiestratora |
+| 6. E2E #2 (e2e) | 5 testów: padająca kopia, zawieszony zapis + Escape, wolny odczyt, odczyt bez odpowiedzi, „Graj dalej” w trakcie czekania | Chromium tylko u orkiestratora |
 
 **Prerequisites:** gałąź `feat/save-v2-backup-health` z `main` @ `16848c6`; baseline unit 2445, e2e 77 (kontrakt runu).
 **Estimated effort:** 6 faz, każda jedna sesja agenta; e2e faz 4 i 6 przez protokół request-file.

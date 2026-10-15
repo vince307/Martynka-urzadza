@@ -99,6 +99,13 @@ których zachowanie faza zmienia, są aktualizowane w tej samej fazie (tylko faz
   zawieszoną transakcją i przywraca to, co mówi dialog („Obecne postępy zostały bez zmian”).
 - **`replace` nie potrzebuje osobnego limitu na `inflight`**: każda próba ma ograniczony czas (kopia + zapis ≤ 2 ×
   limit), a pętla `save` kończy się po pierwszej porażce — więc `await inflight` jest ograniczone. Test to przypina.
+- **Porzucony zapis nie może ponowić się po nowszym** (plan-review F1): `src/storage/idb.ts` `run` ponawia operację na
+  świeżym połączeniu po `InvalidStateError`/`UnknownError`. Dziś `inflight` szereguje zapisy, więc ponowienie zawsze
+  poprzedza następny zapis. Z limitem czasu zapis A porzucony w żywej transakcji może zostać przerwany (`UnknownError`)
+  **po** tym, jak zapis B (kolejkowany za nim) się zatwierdził — ponowienie A ląduje wtedy ostatnie i na urządzeniu
+  zostaje starszy stan (przy `replace`: import/reset, o którym dialog powiedział „bez zmian”). Dlatego faza 1 dodaje w
+  `createIdbSaveStore` licznik zapisów głównego klucza: ponowienie `write` jest dozwolone tylko, gdy od jego startu nie
+  ruszył żaden późniejszy `write`; inaczej odrzuca pierwotnym błędem. Kopia (`backup`, inny klucz) ponawia się jak dziś.
 - **`hidden` po porażce kopii**: strona może zostać zabita zaraz po `flush('hidden')`; wtedy ponowna kopia (do 5 s) to
   zła wymiana. Wyjątek dotyczy tylko sesji, w której kopia już raz padła; pierwsza próba przy `hidden` dalej kopiuje.
 
@@ -126,7 +133,7 @@ Istniejące testy `loadSave` bez zmian.
 
 #### 2. Limit i etap w autosaverze
 
-**File**: `src/core/autosave.ts` (`AutosaverOptions`, `AutosaveStatus`, `createAutosaver` → `attempt`, `replace`); `tests/autosave.test.ts`
+**File**: `src/core/autosave.ts` (`AutosaverOptions`, `AutosaveStatus`, `createAutosaver` → `attempt`, `replace`); `tests/autosave.test.ts` (helper `setup` i drugie wywołanie `createAutosaver` w tym pliku); `tests/saveFile.test.ts` (wywołanie `createAutosaver` — nowa wymagana opcja)
 
 **Intent**: `store.backup` i `store.write` w `attempt` oraz `store.write` w `replace` idą przez `withTimeLimit`. Każda
 porażka zapisuje etap; log mówi, co padło (`autosave: backup failed` dla kopii — koniec mylącego `write failed`). Po
@@ -156,18 +163,31 @@ w `ops`). `main.ts` przekazuje `writeTimeoutMs: __E2E_HOOK__ && (seam === 'write
 E2E_WRITE_TIMEOUT_MS : balance.save.writeTimeoutMs` (`backuphang` dochodzi w fazie 2 — tu tylko `writehang`). Marker
 `e2eSave` już pokrywa nową wartość.
 
+#### 4. Ponowienie porzuconego zapisu (plan-review F1)
+
+**File**: `src/storage/idb.ts` (`createIdbSaveStore`, `run`); `tests/idbStore.test.ts`
+
+**Intent**: Zob. „Critical Implementation Details” — porzucony zapis nie ponawia się na świeżym połączeniu, jeśli po nim
+ruszył późniejszy `write`; wtedy odrzuca pierwotnym błędem (autosaver i tak już go porzucił).
+
+**Contract**: `run(op, mayRetry = () => true)`; `write` bierze `const mine = ++writeSeq` i podaje `() => mine ===
+writeSeq`; `read` i `backup` bez zmian. Test (najpierw czerwony, `vi.mock('idb-keyval')` z `importOriginal` albo spy na
+`set`): pierwszy `set` głównego klucza czeka, potem drugi `write` się rozstrzyga, potem pierwszy odrzuca
+`InvalidStateError` → pierwszy `write` odrzuca, `set` głównego klucza wołane dokładnie 2 razy (bez ponowienia), w bazie
+wartość drugiego; istniejący przypadek ponowienia bez późniejszego zapisu zostaje zielony.
+
 ### Success Criteria:
 
 #### Automated Verification:
 
 - Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- Deliberate break: `attempt` woła `store.write` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony (`flush` nie rozstrzyga się, test kończy się na limicie vitest); `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; przywrócone; meta-check: testy używają magazynu, który naprawdę nigdy nie odpowiada, a nie odrzuca z nazwą `timeout`
+- Deliberate break: `attempt` woła `store.write` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony (`flush` nie rozstrzyga się, test kończy się na limicie vitest); `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; `run` w `idb.ts` ignoruje `mayRetry` → test „porzucony zapis nie ponawia się po nowszym” czerwony; przywrócone; meta-check: testy używają magazynu, który naprawdę nigdy nie odpowiada, a nie odrzuca z nazwą `timeout`
 - `tests/fixtures/` bez zmian (`git diff --stat tests/fixtures` pusty); `SAVE_VERSION` 2; `tests/saveKeys.test.ts` zielony
 - Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
 
 #### Manual Verification:
 
-- [reviewer] `lastFailure` tylko w statusie runtime (nie w `encodeSave`/`SaveState`); jeden helper limitu (bez drugiej kopii wyścigu w `replace` lub `loadSave`); `src/storage/idb.ts` nietknięty
+- [reviewer] `lastFailure` tylko w statusie runtime (nie w `encodeSave`/`SaveState`); jeden helper limitu (bez drugiej kopii wyścigu w `replace` lub `loadSave`); w `src/storage/idb.ts` tylko strażnik ponowienia `write` (bez `abort`, klucze bez zmian)
 - [visual] „Zapis gry” przy `?e2eSave=writehang` po pierwszej zmianie: stan `failing` (nie `notYet`) — 1440 i 1024 szerokości
 
 ---
@@ -268,7 +288,7 @@ the save was moved from” → dodatkowo `backup: 'pending'` przed zapisem i `'d
 
 #### 2. Linie w „Zapis gry”
 
-**File**: `src/ui/dom/saveHealthView.ts` `createSaveHealthView`; `src/data/pl.ts` (`pl.settings`); `docs/design-gaps.md` (wiersze 94, 95)
+**File**: `src/ui/dom/saveHealthView.ts` `createSaveHealthView`; `src/data/pl.ts` (`pl.settings`); `tests/saveTransferCopy.test.ts` (asercja `pl.settings.saveMigrated(1)` → `kept`/`lost`); `docs/design-gaps.md` (wiersze 94, 95)
 
 **Intent**: Pod zdaniem `saveFailing` wyciszona linia z liczbą prób, etapem i kodem; linia przeniesienia według
 `migration`, przy `lost` dodatkowo `pl.saveFailed.detail(code, __BUILD_ID__)`. Poprawiony komentarz przy kluczu
@@ -279,7 +299,7 @@ próba', 'nieudane próby', 'nieudanych prób'])} · ${saveStage[stage]} · Kod:
 'przygotowanie zapisu', backup: 'kopia starego zapisu', write: 'zapis', replace: 'zastąpienie zapisu' }`;
 `saveMigrated: { kept: (from) => \`Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.\`, lost:
 (from) => \`Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.\` }` (klucz-funkcja zastąpiony
-obiektem; żaden spec go nie używa). Wiersz 94: „The kit has no line for why saving fails” → liczba, etap, kod pod
+obiektem; żaden spec e2e go nie używa, jedyny test jednostkowy to `tests/saveTransferCopy.test.ts`). Wiersz 94: „The kit has no line for why saving fails” → liczba, etap, kod pod
 `saveFailing` (rev. 43, 50). Wiersz 95: „The kit has no line for a save moved from an older version” → linia po
 pierwszym zapisie v2, z informacją o kopii i kodem (rev. 69).
 
@@ -357,6 +377,14 @@ w dalszej części `start` (autosaver `load`/`blockedBy`/`migrated` z nowego wyn
 (`unreadable`), pokazuje swoją kartę. `slow` = odczyt rozstrzyga się po `E2E_SLOW_READ_MS` zakodowanym zapisem v2
 (`freshSession` z 7 gwiazdkami); limity e2e pod `hang`/`slow`: 300 ms i 1500 ms.
 
+**Rozstrzygnięcie karty jest jedno** (plan-review F2): „Graj dalej” zostaje aktywne w trakcie czekania (rodzic nie może
+utknąć), więc karta ma jedną flagę `settled`. Pierwsze z dwóch zdarzeń wygrywa: „Graj dalej” → gra startuje z
+pierwotnym `outcome` (`unavailable`/`timeout`, autosaver zablokowany, `replaceGate` dalej `Blocked`); późny wynik
+`waitLonger`, który przyjdzie potem, jest tylko logowany (`save: late read ignored`, nazwa rodzaju) i **nigdy** nie
+zmienia `outcome`, nie odblokowuje autosavera ani nie startuje drugiej gry — inaczej świeża sesja (0 gwiazdek)
+nadpisałaby zdrowy, wolno czytany zapis. Późny wynik przed „Graj dalej” zamyka kartę (albo podmienia ją na kartę
+`unreadable`), a `outcome` jest podmieniany przed `createGame`/`createAutosaver`.
+
 #### 4. Spec'e, które ta faza zmienia
 
 **File**: `tests/e2e/save-restart.spec.ts` („#2 M-S4 a read that never answers…”); `tests/e2e/save-transfer-blocked.spec.ts` (test `hang`)
@@ -376,7 +404,7 @@ w dalszej części `start` (autosaver `load`/`blockedBy`/`migrated` z nowego wyn
 
 #### Manual Verification:
 
-- [reviewer] Teacher read `saveSlow.*`, nowej treści `saveOff.timeout`/`deviceTimeout` (warunkowa, z ostrzeżeniem, że rada usuwa zapis); wiersze 96–97; fokus nigdy na „Poczekaj dłużej”
+- [reviewer] Teacher read `saveSlow.*`, nowej treści `saveOff.timeout`/`deviceTimeout` (warunkowa, z ostrzeżeniem, że rada usuwa zapis); wiersze 96–97; fokus nigdy na „Poczekaj dłużej”; jedna flaga `settled` — późny wynik po „Graj dalej” nigdy nie zmienia `outcome` ani autosavera (F2)
 - [visual] Zrzuty karty: `?e2eSave=hang` przed czekaniem, w trakcie („Czekam na zapis…”), po drugim limicie (`stillSlow`); `?e2eSave=unavailable` (karta `saveUnavailable` bez zmian); „Zapis gry” i dialog resetu przy `?e2eSave=hang` (nowa treść) — 1440 i 1024 szerokości
 - [human] Decyzja: bez licznika startów w `localStorage`; wyjście z trwałego `timeout` to dłuższe czekanie na ten sam odczyt + warunkowa rada o danych strony
 - [human] Pomiar N-7 na iPadzie: zimny odczyt IndexedDB po długiej przerwie — czy 20 s `slowLoadTimeoutMs` rozstrzyga trwały `timeout` (decyduje o liczniku startów)
@@ -434,7 +462,13 @@ step to saveImportDialog/saveResetDialog`); S12-03, S12-11 (`Trigger: any replac
 after apply`); F7 / SRR-09 / SRR-01 (`Trigger: a migration step that can throw (v3)`); SRR-07, SRR-10, SRR-11, SRR-13,
 SV2-05..SV2-15 bez SV2-08 (`Trigger: the next change to autosave.ts attempt or main.ts start`), SV2-08 (`Trigger: a human
 deploy/ change`); L-S3 `visibilitychange` (`Trigger: the next change to the visibilitychange handler in main.ts`);
-abort transakcji w `idb.ts` (`Trigger: evidence that hangs happen inside a live transaction on iPadOS`). Zamknięte
+abort transakcji w `idb.ts` (`Trigger: evidence that hangs happen inside a live transaction on iPadOS`). Triggery
+spełnione przez tę zmianę, a odłożone (plan-review F4; archiwum `2026-10-14-save-reason-and-recovery`): visual-gate O1
+— treść karty startowej dla `future` (`Trigger: the first deploy rollback across a save version, or the next change to
+the future branch of saveFailedCard.ts` — faza 4 dodaje kartę `slow`, nie rusza `future`); visual-gate O2 —
+dwukropek bez listy w dialogu resetu (`Trigger: the next copy change to the reset dialog's lead line or
+saveSummaryView.ts`); O4 `tests/deviceSaveWiring.test.ts` openExport i wiersze 43–51 (`Trigger: the next change to
+UIScene.openExport`; wiersze 43/45/50 są tu tylko uspójniane z 94–97). Zamknięte
 (odnośniki do archiwum, archiwum nieedytowane): „A permanently failing backup write blocks every save…” (F5), S12-02,
 „`Autosaver.replace` never takes the v1 backup” (SRR-04), osobna karta `timeout` (SRR-12), O2, F3 (szew
 `unavailable`, formalnie).
@@ -491,12 +525,14 @@ failing`; reset → potwierdzenie → Escape w trakcie nie zamyka dialogu → `r
 przeładowania. (c) „#2 SRR-02 a slow read can be waited for”: `?e2eSave=slow` → karta `pl.saveSlow.title` → „Poczekaj
 dłużej” → karta znika, licznik gwiazdek 7, `save.blockedBy null`. (d) „#2 SRR-02 a read that never answers ends in the
 advice, not a loop”: `?e2eSave=hang` → „Poczekaj dłużej” → `pl.saveSlow.stillSlow` widoczne, brak przycisku czekania →
-„Graj dalej” → gra.
+„Graj dalej” → gra. (e) „#2 SRR-02 continuing while the slow read is still answering never overwrites it” (F2):
+`?e2eSave=slow` → „Poczekaj dłużej” → od razu „Graj dalej” → licznik gwiazdek 0, `save.blockedBy 'unavailable'`;
+odczekanie dłużej niż `E2E_SLOW_READ_MS` i zagranie zadania → `store.ops` bez żadnego `write`, licznik dalej 0.
 
 **Contract**: `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; teksty z DOM po kluczach `pl` (dokładne napisy
 przycisków per stan dialogu), stan z haka tylko do odczytu; nowy kontekst = świeże urządzenie; nigdy IDB z testu;
 `?e2eSkills=` i `e2eVariant=off` przy graniu rund. **Chromium niedostępny w sesji agenta**: protokół request-file —
-`e2e-request-p6.md`, patche `e2e-break-p6a.patch` … `e2e-break-p6d.patch` (tylko kod produkcyjny), `STATUS: BLOCKED —
+`e2e-request-p6.md`, patche `e2e-break-p6a.patch` … `e2e-break-p6e.patch` (tylko kod produkcyjny), `STATUS: BLOCKED —
 e2e needs orchestrator run (request file written)`; agent kończący commituje spec po wyniku orkiestratora. Spec w trybie
 serial → każdy oczekiwany czerwony test osobno (`-g`).
 
@@ -504,11 +540,12 @@ serial → każdy oczekiwany czerwony test osobno (`-g`).
 
 #### Automated Verification:
 
-- `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 4`
+- `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 5`
 - Deliberate break (patch `e2e-break-p6a.patch`): polityka kopii nigdy nie rezygnuje (`backupAttempts` ignorowane) → (a) czerwony na braku `write`; meta-check: dowodzi SV2-01 w przeglądarce, nie tylko w `core`
 - Deliberate break (patch `e2e-break-p6b.patch`): `replace` woła `store.write` bez `withTimeLimit` → (b) czerwony (dialog zostaje z wyłączonymi przyciskami)
 - Deliberate break (patch `e2e-break-p6c.patch`): `start` pomija `waitLonger` (karta bez akcji czekania) → (c) i (d) czerwone
 - Deliberate break (patch `e2e-break-p6d.patch`): `onEscape` dialogu resetu bez strażnika `busy` → (b) czerwony na zniknięciu dialogu; przywrócone
+- Deliberate break (patch `e2e-break-p6e.patch`): `start` przyjmuje późny wynik `waitLonger` także po „Graj dalej” (bez flagi `settled`) → (e) czerwony; przywrócone
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
 ---
@@ -553,6 +590,14 @@ kolejne starty czytają v2, bez migracji.
   może wylądować mimo komunikatu „bez zmian”. Rzadkie (zawieszony magazyn, który potem ożywa); odnotowane.
 - **Trwały `timeout`** dalej bez wyjścia w aplikacji poza radą — zależy od N-7. `[human]` 4.8.
 - **Chromium w sesji agenta**: fazy 4 i 6 w protokole request-file; zrzuty przez fallback Playwright.
+- **Dialog importu/resetu może być zajęty do ~20 s** na zawieszonym magazynie (plan-review F3): `await inflight` (kopia
+  + zapis ≤ 2 × `writeTimeoutMs`), potem zaległa kopia (≤ limit) i zapis `replace` (≤ limit). Zawsze się rozstrzyga;
+  przyciski wyłączone, Escape zablokowany (O2). Test „replace rozstrzyga się” w fazie 1 i 2 liczy ten łączny budżet.
+- **Wyjątek `hidden` przy pierwszej porażce kopii** (plan-review F5): na zdrowym urządzeniu jedna przejściowa porażka
+  kopii akurat przy ukryciu karty kończy się zapisem v2 bez kopii. Świadomie (zabita strona = utracona sesja); objęte
+  `[human]` 2.5.
+- **Faza 4 jest największa** (rdzeń `waitLonger`, karta, `main.ts`, szew, dwa spec'e): zostaje jedną fazą, bo
+  rozdzielenie rdzenia od karty zostawiłoby `waitLonger` bez konsumenta; agent fazy 4 robi część `core` najpierw.
 
 ## References
 
@@ -610,13 +655,13 @@ kolejne starty czytają v2, bez migracji.
 #### Automated
 
 - [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Deliberate break: `attempt` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony; `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; przywrócone; meta-check
+- [ ] 1.2 Deliberate break: `attempt` bez `withTimeLimit` → test „hung write is a timeout failure” czerwony; `withTimeLimit` bez `work.catch` → test późnego odrzucenia czerwony; `run` ignoruje `mayRetry` → test porzuconego ponowienia czerwony; przywrócone; meta-check
 - [ ] 1.3 `tests/fixtures/` bez zmian; `SAVE_VERSION` 2; `tests/saveKeys.test.ts` zielony
 - [ ] 1.4 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator, `--workers=4`) `<baseline gałęzi e2e> + 0`
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `lastFailure` tylko w statusie runtime; jeden helper limitu; `src/storage/idb.ts` nietknięty
+- [ ] 1.5 [reviewer] `lastFailure` tylko w statusie runtime; jeden helper limitu; w `src/storage/idb.ts` tylko strażnik ponowienia `write`
 - [ ] 1.6 [visual] „Zapis gry” przy `?e2eSave=writehang`: `failing`, nie `notYet` — 1440 i 1024
 
 ### Phase 2: Polityka kopii v1: trzy próby, potem v2 bez kopii
@@ -658,7 +703,7 @@ kolejne starty czytają v2, bez migracji.
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Teacher read `saveSlow.*`, `saveOff.timeout`, `deviceTimeout`; wiersze 96–97; fokus nigdy na „Poczekaj dłużej”
+- [ ] 4.5 [reviewer] Teacher read `saveSlow.*`, `saveOff.timeout`, `deviceTimeout`; wiersze 96–97; fokus nigdy na „Poczekaj dłużej”; flaga `settled` (F2)
 - [ ] 4.6 [visual] Karta przy `?e2eSave=hang` (przed, w trakcie, po drugim limicie), `?e2eSave=unavailable`; „Zapis gry” i dialog resetu przy `hang` — 1440 i 1024
 - [ ] 4.7 [human] Decyzja: bez licznika startów; wyjście z trwałego `timeout` = dłuższe czekanie na ten sam odczyt + warunkowa rada
 - [ ] 4.8 [human] Pomiar N-7 na iPadzie: czy 20 s rozstrzyga trwały `timeout`
@@ -682,9 +727,10 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [ ] 6.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 4`
+- [ ] 6.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` zielone; pełne `npx playwright test --workers=4`: `<baseline gałęzi e2e> + 5`
 - [ ] 6.2 Deliberate break p6a: polityka kopii nigdy nie rezygnuje → (a) czerwony; meta-check
 - [ ] 6.3 Deliberate break p6b: `replace` bez `withTimeLimit` → (b) czerwony
 - [ ] 6.4 Deliberate break p6c: `start` pomija `waitLonger` → (c) i (d) czerwone
 - [ ] 6.5 Deliberate break p6d: `onEscape` resetu bez strażnika `busy` → (b) czerwony; przywrócone
-- [ ] 6.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [ ] 6.6 Deliberate break p6e: późny wynik `waitLonger` przyjęty po „Graj dalej” → (e) czerwony; przywrócone
+- [ ] 6.7 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
