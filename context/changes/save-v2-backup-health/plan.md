@@ -683,8 +683,8 @@ kolejne starty czytają v2, bez migracji.
 
 #### Automated
 
-- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N`
-- [x] 3.2 Deliberate break: `migration` bez warunku `writes > 0` / `stage` z `lastError` → testy czerwone; przywrócone; meta-check
+- [x] 3.1 Nowe testy czerwone przed implementacją (asercja), zielone po; unit `<baseline gałęzi> + N` — ec72589
+- [x] 3.2 Deliberate break: `migration` bez warunku `writes > 0` / `stage` z `lastError` → testy czerwone; przywrócone; meta-check — ec72589
 - [ ] 3.3 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
