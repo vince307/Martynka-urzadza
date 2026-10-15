@@ -873,7 +873,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 #### Automated
 
 - [ ] 6.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [x] 6.2 Deliberate break: patch `e2e-break-p9a.patch` przygotowany; meta-check w handoffie (dowód w fazie 9) — PLACEHOLDER
+- [x] 6.2 Deliberate break: patch `e2e-break-p9a.patch` przygotowany; meta-check w handoffie (dowód w fazie 9) — d073e7c (no own red test; proof in phase 9)
 
 #### Manual
 
