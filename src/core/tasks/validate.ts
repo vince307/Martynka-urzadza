@@ -7,7 +7,7 @@ import { dragMode } from './dragMode';
 import type { Task } from './types';
 import { validateVisual } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right';
 
 export interface Violation {
     skillId: string;
@@ -77,6 +77,21 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
             if (!task.choices.includes(a)) {
                 add('choices', `answer ${String(a)} not among ${JSON.stringify(task.choices)}`);
             }
+        }
+    }
+
+    // Several right tiles (INEQUALITY): `check` must accept the answer, refuse at least one tile, and accept at least two,
+    // otherwise there is no "several". Set answers (EVEN_ODD select) have an array answer and are not judged here.
+    if (task.check && typeof task.answer === 'number' && task.choices && task.input !== 'select') {
+        const accepted = task.choices.filter((c) => task.check?.(c) === true);
+        if (!task.check(task.answer)) {
+            add('check-answer', `check refuses the answer ${task.answer}`);
+        }
+        if (accepted.length === task.choices.length) {
+            add('check-no-wrong', `check accepts every tile ${JSON.stringify(task.choices)}`);
+        }
+        if (accepted.length < 2) {
+            add('check-one-right', `check accepts ${accepted.length} of ${JSON.stringify(task.choices)}`);
         }
     }
 

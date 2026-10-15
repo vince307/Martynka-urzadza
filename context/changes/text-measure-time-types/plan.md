@@ -832,10 +832,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
-- [ ] 1.2 Klucze `generators`/`parsers` równe; `INEQUALITY` nadal w `LATER` (bez umiejętności); `npm run sample -- E1` … `E6` bez zmian w wyjściu
-- [ ] 1.3 Deliberate break: budowniczy daje 3 dobre kafelki / `leaksAnswer` ignoruje `check` / walidator nie wymaga złego kafelka → czerwone; przywrócone; meta-check
-- [ ] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 1.1 Nowe testy czerwone przed implementacją (asercja, nie błąd importu), zielone po; unit `<baseline gałęzi> + N`
+- [x] 1.2 Klucze `generators`/`parsers` równe; `INEQUALITY` nadal w `LATER` (bez umiejętności); `npm run sample -- E1` … `E6` bez zmian w wyjściu
+- [x] 1.3 Deliberate break: budowniczy daje 3 dobre kafelki / `leaksAnswer` ignoruje `check` / walidator nie wymaga złego kafelka → czerwone; przywrócone; meta-check
+- [x] 1.4 Pełna bramka lokalna zielona; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
 
 #### Manual
 

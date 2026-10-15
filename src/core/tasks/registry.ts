@@ -18,6 +18,7 @@ import { generateData, parseDataParams } from './generators/data';
 import { generateDiv, parseDivParams } from './generators/div';
 import { generateEvenOdd, parseEvenOddParams } from './generators/evenOdd';
 import { generateFactFamily, parseFactFamilyParams } from './generators/factFamily';
+import { generateInequality, parseInequalityParams } from './generators/inequality';
 import { generateHalf, parseHalfParams } from './generators/half';
 import { generateGrid, parseGridParams } from './generators/grid';
 import { generateLength, parseLengthParams } from './generators/length';
@@ -51,6 +52,7 @@ export const generators: Readonly<Record<string, Generator>> = {
     HALF: generateHalf,
     COMPARE_NUM: generateCompareNum,
     EVEN_ODD: generateEvenOdd,
+    INEQUALITY: generateInequality,
     NUMBER_WORDS: generateNumberWords,
     ROMAN: generateRoman,
     CALENDAR: generateCalendar,
@@ -91,6 +93,7 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     HALF: parseHalfParams,
     COMPARE_NUM: parseCompareNumParams,
     EVEN_ODD: parseEvenOddParams,
+    INEQUALITY: parseInequalityParams,
     NUMBER_WORDS: parseNumberWordsParams,
     ROMAN: parseRomanParams,
     CALENDAR: parseCalendarParams,

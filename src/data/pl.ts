@@ -378,6 +378,12 @@ export const pl = {
             n === 0 ? 'Zero kończy się cyfrą 0, więc jest parzyste' : `${n} kończy się cyfrą ${lastDigit}, więc jest ${isEven ? 'parzysta' : 'nieparzysta'}`,
         selectEven: 'Zaznacz wszystkie liczby parzyste.',
         selectEvenHint: 'Liczby parzyste kończą się na 0, 2, 4, 6 albo 8.',
+        // INEQUALITY: several tiles fit; the hint walks through the equality at the boundary.
+        inequality: (expr: string) => `Jaka liczba pasuje do okienka? ${expr}`,
+        inequalityEquality: (equation: string) => `Najpierw znajdź równość: ${equation}.`,
+        inequalityBoundary: (fact: string, relation: 'less' | 'more', boundary: number) =>
+            `${fact}, więc w okienku musi być ${relation === 'less' ? 'mniej' : 'więcej'} niż ${boundary}.`,
+        inequalityExample: (fact: string, check: string, answer: number) => `Na przykład ${fact}, a ${check}. Pasuje ${answer}.`,
         numberToWords: (n: number) => `Jak zapisać słowami liczbę ${n}?`,
         wordsToNumber: (words: string) => `Która liczba to „${words}”?`,
         numberWordsHint: (n: number, parts: string) => `${n} to ${parts}`,

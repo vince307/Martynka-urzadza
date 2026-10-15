@@ -38,6 +38,10 @@ const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/
 const containsToken = (line: string, text: string): boolean =>
     new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(text)}(?![\\p{L}\\p{N}])`, 'u').test(line);
 
+/** The answer itself, or any number `check` accepts when the task has several right answers. */
+const isAnswerNumber = (task: Task, n: number | undefined): boolean =>
+    n !== undefined && (task.check ? task.check(n) : n === task.answer);
+
 /**
  * A line gives the result away when its last number is the numeric answer, or when it states a text answer (a time, an amount)
  * as a whole token. Sign and set answers are never judged: a middle-of-line number equal to the
@@ -46,7 +50,7 @@ const containsToken = (line: string, text: string): boolean =>
  */
 const leaksAnswer = (task: Task, line: string): boolean =>
     typeof task.answer === 'number'
-        ? lastNumber(line) === task.answer && !(!line.includes('=') && OPEN_EXPRESSION.test(line))
+        ? isAnswerNumber(task, lastNumber(line)) && !(!line.includes('=') && OPEN_EXPRESSION.test(line))
         : typeof task.answer === 'string' && WORDLIKE_TEXT.test(task.answer) && containsToken(line, task.answer);
 
 /** Hint for the first wrong answer, or null when the child should just try again. */

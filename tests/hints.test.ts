@@ -184,3 +184,18 @@ describe('solutionSteps', () => {
         expect(solutionSteps({ ...negative, hint: ['Wynik: \u22125'] }, answerLine)).toEqual(['Wynik: \u22125']);
     });
 });
+
+describe('firstHint with several right answers (check)', () => {
+    const task: Task = {
+        skillId: 'T.1',
+        prompt: '5 + □ < 8',
+        answer: 1,
+        choices: [1, 2, 3, 4],
+        hint: ['Najpierw zobacz 2', 'Potem 3'],
+        check: (x) => typeof x === 'number' && x < 3,
+    };
+    it('treats a line ending with ANY accepted number as a leak', () => {
+        expect(firstHint(task)).toBeNull(); // ends with 2, which check accepts though answer is 1
+        expect(firstHint({ ...task, hint: ['Najpierw zobacz 3', 'Potem 4'] })).toBe('Najpierw zobacz 3');
+    });
+});

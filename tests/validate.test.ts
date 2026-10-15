@@ -132,3 +132,30 @@ describe('call sites validate programme skills through validationBounds (S-14)',
         expect(offenders).toEqual([]);
     });
 });
+
+describe('validateTask: tasks with several right tiles (check)', () => {
+    const several: Task = {
+        skillId: 's',
+        prompt: '5 + □ < 8',
+        answer: 1,
+        choices: [1, 2, 3, 4],
+        hint: ['h'],
+        check: (x) => typeof x === 'number' && x < 3,
+    };
+    it('accepts two right and two wrong tiles', () => {
+        expect(validateTask(several)).toEqual([]);
+    });
+    it('flags an answer the check refuses', () => {
+        expect(validateTask({ ...several, answer: 3 }).map((x) => x.rule)).toEqual(['check-answer']);
+    });
+    it('flags a task whose every tile passes the check', () => {
+        expect(validateTask({ ...several, check: () => true }).map((x) => x.rule)).toEqual(['check-no-wrong']);
+    });
+    it('flags a tiles task with only one right tile', () => {
+        expect(validateTask({ ...several, check: (x) => x === 1 }).map((x) => x.rule)).toEqual(['check-one-right']);
+    });
+    it('leaves set answers (EVEN_ODD select) alone', () => {
+        const select: Task = { ...several, answer: [2, 4], choices: [1, 2, 3, 4], check: (x) => Array.isArray(x) };
+        expect(validateTask(select)).toEqual([]);
+    });
+});
