@@ -48,6 +48,8 @@ export const mountSaveFailedCard = (parent: HTMLElement, handlers: SaveFailedHan
         const waitButton = createButton(copy.wait, () => {
             waitButton.disabled = true;
             waitButton.textContent = copy.waiting ?? copy.wait ?? '';
+            // A disabled button drops the focus to the page: "Graj dalej" keeps the keyboard path (it never overwrites the save).
+            continueButton.focus();
             void onWait().then((result) => {
                 if (result === 'still-slow') {
                     waitButton.remove();
