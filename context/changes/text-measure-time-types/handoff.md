@@ -1,30 +1,28 @@
 # Handoff — `text-measure-time-types` (slice S-14c)
 
-Written by the `/10x-plan` step of run `2026-10-15-fix-s14c-s14d`. `plan.md` (11 phases, drivers tagged) and `plan-brief.md`
-are written; the slice is ready for `/10x-plan-review`. The next agent must not get wrong: no INEQUALITY skill may enter the
-data before phase 2, which changes `TaskScene` marking, the hook fields, `answerWrong` and E1.9 data in one commit; and the
-E6 calendar oracle `[2, 3, 5, 7, 9, 10]` set in phase 4 must stay unchanged in phase 8 (that is the proof the review step is
-excluded from `calendarStart`).
+Written by the `/10x-plan-review` step of run `2026-10-15-fix-s14c-s14d`. The plan is reviewed (VERDICT: PROCEED) and fixed in
+place; the slice is ready for phase 1 (`Driver: tdd`). The next agent must not get wrong: no INEQUALITY skill enters the data
+before phase 2, and phase 2 must NOT add snapshot field names to `vite/e2eHookGuard.mjs` (the snapshot ships in production; the
+build would fail — plan-review F1).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/text-measure-time-types`, cut from `main` at `e2f7caa` |
-| Commits | 3 on top of `e2f7caa`: change identity, research, `docs(text-measure-time-types): plan` |
+| Commits | 4 on top of `e2f7caa`: change identity, research, plan, `docs(text-measure-time-types): plan review` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 65 (all; `grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (five files staged by path) |
+| Working tree | clean after the commit (four files staged by path) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/text-measure-time-types/plan.md` | the plan: 11 phases (1 tdd, 2 impl, 3–8 tdd, 9 impl seam sweep, 10–11 e2e), thresholds table, critical details (`check`, review step, E6 oracle, speech, validator), autonomous decisions, `## Progress` |
-| `context/changes/text-measure-time-types/plan-brief.md` | two-page brief with the key-decision table |
-| `context/changes/text-measure-time-types/change.md` | status `preparing` → `planned` |
-| `context/foundation/roadmap.md` | S-14c `proposed` → `planning` (At a glance row and slice block) |
+| `context/changes/text-measure-time-types/reviews/plan-review.md` | the review: 2 CRITICAL, 6 WARNING, 2 OBSERVATION, code-verified checks (INEQUALITY reachability, E6 pins/oracle, review step, follow-ups), `VERDICT: PROCEED` |
+| `context/changes/text-measure-time-types/plan.md` | fixed in place: hook/guard sentence (F1), phase 11 (a) via unlock card + new break p11a (F2), `markedTile` read from `AnswerTiles` (F3), phase 7 ≥ 50 % share + phase 11 up to 3 rounds (F4), validator path (F5), Known risks for phase 4 size and e2e randomness (F6, F4), `MassParams` union (F7), review `minCurrent` in `buildAdaptiveRound` + `currentGroups` fallback (F8), phase 9 follow-ups (O10); Progress 9.1 and 11.2 texts updated to match |
+| `context/changes/text-measure-time-types/change.md` | status `planned` → `plan_reviewed` |
 | `context/changes/text-measure-time-types/handoff.md` | this file |
 
 ## 3. Verification
@@ -32,33 +30,30 @@ excluded from `calendarStart`).
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/text-measure-time-types` |
-| phase headings / drivers | 11 `## Phase N:` bodies, each with `Driver:` + `Driver why:` as first lines |
-| Success Criteria ↔ Progress | awk count per phase equal (5,7,6,8,6,6,6,7,6,4,4 = 65 rows) |
-| `metadata-guard.mjs mark-planned` | `changed: true` |
-| anchors re-read in this step | `playableSteps`/`calendarStart`/`floorToCalendar`/`currentStep`/`skillBuckets`/`unlockReady` (`src/core/curriculum.ts`), `pickRoundSkills`/`SkillBuckets`/`firstPlayableSteps` (`src/core/round/pick.ts`), `withoutArtBlocked`/`artBlocked` (`src/core/round/artFilter.ts`), `markCorrect`/`markHint` (`TaskScene`), `answerWrong` (`tests/e2e/support/hook.ts`), `GROUP_1`/`LATER` (`tests/curriculum.test.ts`), E6 pins (`tests/curriculumStart.test.ts` oracle, `curriculumPick`, `curriculumEnd`, `progress`, `perimeterSkills`), e2e grep for E6/E1 (only `written-column.spec.ts` plays E6, forced skill) |
-| lint / typecheck / tests / build / e2e | not run: plan-only step, no code touched (baseline on main e2f7caa: lint OK, typecheck OK, 2479 tests, build OK, e2e 82 — inherited, unverified) |
+| phase titles `## Phase N` ↔ Progress `### Phase N` | `diff` identical (11); 65 `- [ ]` rows; every phase has `Driver:` (1,3–8 tdd; 2,9 impl; 10–11 e2e) |
+| `grep -l hintVisual dist/_app/*.js` | hit in `index-*.js` → snapshot fields ship in production (basis of F1) |
+| E6 oracle recomputed in node | n = 10 → ceil 1,3,5,7,9 → `[2,3,5,7,9,10]`; n = 11 → `[2,4,6,8,10,11]` (phase 8 break goes red) |
+| code reads | `isCorrect` (`src/core/round.ts`), `TaskScene.render`/`snapshot`/`submit`, `AnswerTiles.markCorrect`/`markHint`, `answerWrong`/`answerRight`, `WORD_TYPES`, `generateTask`, `hints.ts` `leaksAnswer`/`solutionSteps`, `curriculum.ts` start/floor/buckets/unlock/`buildAdaptiveRound`, `pick.ts`, `artFilter.ts`, `progress.ts`, `placement.ts`, `checkE2EHook`, `mass.ts` `MassParams` |
+| lint / typecheck / tests / build / e2e | not run: docs-only step, no code touched (baseline on main e2f7caa: lint OK, typecheck OK, 2479 tests, build OK, e2e 82 — inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-plan-review text-measure-time-types`
+`/10x-tdd text-measure-time-types` (phase 1, `Driver: tdd`)
 
 ## 5. Open
 
-- `[human]` rows: 4.8 (tablet voice reads `spokenTime` „8 15”), 9.6 (decisions against ZADANIA literal text: INEQUALITY on tiles with one example in the solution, MIX step-first with ~14 % E5, E6.11 not a calendar start/warm-up, no LOGIC, timetable as text, PRICE whole złote, no set-the-clock in E5–E6; unlock-threshold rises on 10 steps and the E6 start shifted by E6.2).
+- `[human]` rows (post-run checklist): 4.8 (tablet voice reads `spokenTime` „8 15”), 9.6 (decisions against ZADANIA literal text and threshold rises; listed in plan phase 9).
+- Known risks in `plan.md` `## Known risks`: phase 4 size (in-phase split recipe p4a/p4b), phase 11 e2e randomness (limit 3 rounds, phase 7 share ≥ 50 %), two right tiles for 6-year-olds, long prompts at 1024 px.
 - DESIGN-GAP planned: row 98 (several right tiles, `TaskScene` marking) in phase 2.
 - Conditional: `capacity_half_l_e5` drops to follow-up `Trigger: S-17` if variety invariants fail (plan decision 5).
-- Follow-ups with triggers are written in phase 9 (`follow-ups/review-fixes.md`): set-the-clock E5–E6, 200/500 zł, WRITTEN missing digits + F9, ARROW_TABLE multi-number, LOGIC in E6.11, timetable table, review title in HUD.
-- E2E phases 10–11 use the request-file protocol (Chromium from subagents is unreliable, profile § 8); phase 11 reaches E6.11 through the product import path (helper possibly extracted from `tests/e2e/save-transfer.spec.ts`).
-- Save format stays v2 — no phase needs v3.
+- Follow-ups to write in phase 9 (`follow-ups/review-fixes.md`): set-the-clock E5–E6, 200/500 zł, WRITTEN missing digits + F9, ARROW_TABLE multi-number, LOGIC in E6.11, timetable table, review title in HUD, mass comparisons stay with the scale, INEQUALITY mistake example in the parent preview.
+- Phase 1 title says „dystraktorach” but `src/core/tasks/distractors.ts` needs no change (O9).
+- E2E phases 10–11 use the request-file protocol; phase 11 reaches E6.11 by importing a v2 save at `unlockedStep.E6 = 10` and unlocking through one round.
 
 ## 6. Autonomous decisions
 
-1. **INEQUALITY = option A (2 right + 2 wrong tiles, `check`, solution shows one example).** Rejected: one right tile. Why: ZADANIA § 4, `isCorrect` already honours `check`. Would change: teacher read/playtest finding two right tiles confusing for E1.
-2. **MIX = `StepDef.review` + `stepPlayable` + `SkillBuckets.currentGroups`, step-first draw, ordinary `kind: 'round'`, `previous` (E5) kept.** Rejected: MIX generator, new `RoundKind`, skill-uniform draw. Why: no saved state, S-15 untouched, steps with many skills would dominate. Would change: author wanting skill weighting or a "passed test" record (v3 → stop at PR).
-3. **Review step excluded from calendar start and warm-up.** Rejected: summer start on E6.11. Why: ZADANIA "finałowe wyzwanie"; `floorToCalendar` would lift saved learners onto it. Would change: author wanting the review as the post-year default.
-4. **Generator + data in the same tdd phase (≤ 3 generators/variants), INEQUALITY split core (1) / scene+data (2).** Rejected: S-14b pattern (generators first, data later). Why: the teacher read reads real `sample` output in the same phase; the step prompt requires the scene fix in the phase that makes INEQUALITY reachable. Would change: a phase exceeding one agent's context → split.
-5. **`capacity_half_l_e5` in scope as text.** Would change: variety invariants failing → trigger to S-17.
-6. **Speech via `spokenTime` and ungrouped numbers in `speak`.** Rejected: number words past 1000 in the narrator. Would change: `[human]` 4.8 finding bad pronunciation.
-7. **E2E: two specs; E6.11 reached through save import, no new e2e seam.** Rejected: `?e2eUnlock`, playing to unlock. Would change: import too slow/flaky in a spec → seam with a marker in `vite/e2eHookGuard.mjs`.
-8. **No `AskUserQuestion`; complexity HIGH, budget 0 questions** — every open question was answered by research/change.md recommendations (contract rule 1, order: step prompt → recommendation). Plan written in Polish like the archived plan example; roadmap status edit committed with the plan (step prompt).
-9. **Progress row titles abbreviated for some deliberate-break criteria** (as in the archived S-14b plan); the phase block holds the full text and indices map one-to-one. Would change: plan-review requiring verbatim copies.
+1. **Verdict PROCEED, not RETHINK.** Why: the approach holds against the code (`isCorrect` honours `check`; review flag + `stepPlayable` keeps save v2 and S-15 untouched; oracle math checks out). Would change: a phase discovering that `TaskScene` cannot keep the submitted value across `render` without core state (then the round state carries it — still no save change).
+2. **F2 fixed with Fix A (unlock card) over a progress-panel assertion.** Rejected: reading the settings panel's „krok N z M” (needs the 2 s gear hold + adult gate again after import). Why: the unlock card is the product signal, matches screenshot 8.7, and the break `stepPlayable` without `review` turns it red. Would change: the unlock round proving too slow/flaky → assert the progress panel instead.
+3. **F6 accepted as a Known risk, phase 4 not split now.** Rejected: renumbering to 12 phases. Why: ≤ 3 generators rule holds; renumbering ripples through Progress, handoff and drivers. Would change: phase 4 agent hitting the context limit → use the recipe (two commits in the phase).
+4. **Product decisions (INEQUALITY 2 right tiles, MIX step-first ~14 % E5, no LOGIC, text timetable, whole-złoty PRICE) not overturned.** Why: none is clearly wrong against ZADANIA/PRD and all sit in `[human]` 9.6. Would change: the author's read in 9.6.
+5. **O9 left unfixed** (phase title mentions distractors). Why: renaming touches Progress titles for no behavioural gain. Would change: an implementer misreading it as a required change.

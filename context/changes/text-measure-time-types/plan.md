@@ -153,8 +153,12 @@ dokleja gołego „2”). Pierwsza linia nie może kończyć się liczbą przyjm
 **zgłoszoną** (scena zna ją w `submit`), bez `check` — `task.answer` jak dziś; `markHint` w retype nadal pokazuje
 `task.answer` (jeden przykład do przepisania, `check` przyjmie każdy dobry). Migawka zadania w haku: `correctChoices:
 (number | string)[] | null` (kafelki przepuszczone przez `check`, `null` bez `check`) i `markedTile: number | string | null`
-(kafelek podświetlony jako dobry). `answerWrong` dla kafelków bierze kafelek spoza `correctChoices` (bez `check` — `!==
-answer`). Nowe pola haka dopisane do listy znaczników w `vite/e2eHookGuard.mjs`.
+(kafelek podświetlony jako dobry — czytany z `AnswerTiles` jako wartość, którą widżet faktycznie maluje, np. getter
+`markedValue()`, a nie z pola sceny ustawianego obok; inaczej break p10a nie zrobi się czerwony). Wartość zgłoszona żyje w polu
+sceny ustawianym w `submit` i czyszczonym przy zmianie zadania, więc ponowny `render` maluje to samo. `answerWrong` dla kafelków
+bierze kafelek spoza `correctChoices` (bez `check` — `!== answer`). **`vite/e2eHookGuard.mjs` bez zmian:** `TaskScene.snapshot()`
+jest kodem produkcyjnym (pola migawki, np. `hintVisual`, są w `dist/_app/index-*.js`), więc nazwy pól jako znaczniki wywróciłyby
+`npm run build` (plan-review F1).
 
 **Krok powtórkowy (faza 8; zależy faza 11).**
 
@@ -172,7 +176,9 @@ interface SkillBuckets { current; earlier; previous; currentGroups?: readonly (r
 
 `skillBuckets` dla kroku `review`: `current` = wszystkie grywalne umiejętności niepowtórkowych kroków etapu (płasko, dla progów
 i filtrów), `currentGroups` = te same umiejętności pogrupowane po kroku (puste grupy pominięte), `earlier` = `[]`, `previous` jak
-dziś (całe E5). `withoutArtBlocked` filtruje też `currentGroups` i dla kroku powtórkowego dostaje `minCurrent` = 1. Rozgrzewka
+dziś (całe E5). `withoutArtBlocked` filtruje też `currentGroups`; gdy `current` wraca do niefiltrowanego (za mało zostało), wraca
+też niefiltrowane `currentGroups`. `minCurrent` = 1 dla kroku powtórkowego ustawia `buildAdaptiveRound` (`src/core/curriculum.ts`,
+dziś `unlockThreshold(buckets.current.length, …)` — dla ~25 umiejętności E6 dałoby 13), nie `artFilter.ts`. Rozgrzewka
 (`firstPlayableSteps`) i `pickSkills` bez zmian (krok bez umiejętności odpada sam). Wagi: 60/30/10 z pustym `earlier` → ~86 % E6,
 ~14 % E5; łagodzenie 20/50/30 → ~40/60. Brak nowego stanu: `recordRound` zapisuje mastery prawdziwych umiejętności.
 
@@ -259,7 +265,7 @@ Dziecko E1 gra nierówności; każdy dobry kafelek daje gwiazdkę i świeci na z
 
 #### 1. Scena i hak
 
-**File**: `src/scenes/TaskScene.ts`, `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs`, `tests/e2e/support/hook.ts`
+**File**: `src/scenes/TaskScene.ts`, `src/ui/widgets/AnswerTiles.ts` (getter malowanej wartości), `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` (nie `vite/e2eHookGuard.mjs` — plan-review F1)
 
 **Intent**: wg Critical Implementation Details („Scena i hak dla `check`”); `Snapshot` w helperach e2e dostaje `correctChoices`
 i `markedTile`; `answerWrong` dla kafelków bierze kafelek spoza `correctChoices`.
@@ -435,7 +441,9 @@ z palcem/pokojem), ostatnia „Długopis ma 14 cm.”.
 `tToKg`, `qToKg`; bez `visual`; `parseMassParams` wymaga `weights` tylko dla wariantów z wagą; `artBlocked` zwraca `false` dla
 `text` (jak CAPACITY `howMany`).
 
-**Contract**: `MassParams` z nowym członkiem `{ variant: 'text'; kinds: (…)[]; max: number }`.
+**Contract**: `MassParams` z nowym członkiem `{ variant: 'text'; kinds: (…)[]; max: number }`. Dziś `MassParams` to płaski obiekt
+(`variant: 'read' | 'half' | 'convert'`, `unit`, `weights`, `max`) — faza zamienia go w unię rozróżnianą po `variant`, a `artBlocked`
+(`src/core/round/artFilter.ts`) zawęża typ przed odczytem `weights` (plan-review F7).
 
 #### 3. Dane i testy
 
@@ -539,7 +547,8 @@ dla wariantów z klockami.
 **File**: `src/data/curriculum/E6.ts`, `tests/placeValue.test.ts`
 
 **Intent**: E6.9 + `E6.9.place_value_10000`; E6.10 + `E6.10.place_value_1000000` (wariant złożenia daje odpowiedzi ≥ 100 000 —
-potrzebne fazie 11); 1000 losowań, wynik liczony w teście z liczb polecenia.
+potrzebne fazie 11; test przypina, że co najmniej 50 % losowań `E6.10.place_value_1000000` ma odpowiedź ≥ 100 000, żeby spec fazy 11
+nie był losowo czerwony — plan-review F4); 1000 losowań, wynik liczony w teście z liczb polecenia.
 
 ### Success Criteria:
 
@@ -641,14 +650,16 @@ nieaktualne komentarze (`playableSteps` „at least one playable skill”, `skil
 **Intent**: follow-upy z `Trigger:` — „ustaw zegar” E5–E6 → `a CLOCK step in E5–E6 or a tablet test`; banknoty 200/500 →
 `a money skill above 100 zł`; WRITTEN „brakujące cyfry” i F9 → `the next change to WRITTEN`; ARROW_TABLE wieloliczbowy →
 `a multi-number reducer`; LOGIC w E6.11 → `S-15 F1 (puzzle pool for E5–E6)`; rozkład jazdy jako tabelka → `a teacher read or
-tablet test finding the text timetable unreadable`; tytuł powtórki w HUD → `a kit view for the review round`; (warunkowo)
-`capacity_half_l_e5` → `S-17`.
+tablet test finding the text timetable unreadable`; tytuł powtórki w HUD → `a kit view for the review round`; porównania mas
+„cięższe/lżejsze” zostają przy rysowanej wadze (część follow-upu S-14 „warianty tekstowe MASS”) → `a teacher read asking for text
+mass comparisons`; przykład błędu INEQUALITY w podglądzie rodzica pokazuje jedną kanoniczną odpowiedź → `a v3 save or a parent
+asking about it`; (warunkowo) `capacity_half_l_e5` → `S-17`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
 - Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
 - Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md`
 - E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
@@ -709,11 +720,16 @@ Nowy `tests/e2e/review-round.spec.ts` (projekt `chromium-hook`); cel < 90 s.
 
 **File**: `playwright.config.ts` (`review-round` w `ROUND_SPEC`), `tests/e2e/review-round.spec.ts` (nowy), `tests/e2e/support/*` (wspólny helper importu wyciągnięty z `tests/e2e/save-transfer.spec.ts`, jeśli jest tam lokalny)
 
-**Intent**: (a) „#13 the year review round draws from several E6 steps”: zapis v2 (stała w specu, jak w `save-transfer.spec.ts`) z
-etapem E6 i `unlockedStep.E6 = 11`, import przez panel rodzica („Wczytaj z pliku”, napisy z `pl.ts`), `?e2eMonth` przypięty,
-`e2eVariant=off`; runda 5 zadań `answerRight`; `learner.history` ostatnich 5: każde z E6.1–E6.10 albo E5, co najmniej 2 różne
-kroki E6. (b) „#11 a six-digit place-value answer is typed on the keypad”: E6, `?e2eSkills=E6.10.place_value_1000000`, rundy aż
-do zadania z odpowiedzią ≥ 100 000 (najwyżej 2 rundy), `answerRight` → gwiazdka.
+**Intent**: (a) „#13 the year review step unlocks after E6.10 and its round draws from several E6 steps”: zapis v2 (stała w specu,
+jak w `save-transfer.spec.ts`) z etapem E6, `unlockedStep.E6 = 10`, `warmupPending: false` i mastery 4 dla wszystkich umiejętności
+E6.10, import przez panel rodzica („Wczytaj z pliku”, napisy z `pl.ts`), `?e2eMonth` przypięty, `e2eVariant=off`; jedna runda
+`answerRight` → „Kolejna runda” → karta odblokowania (`screen: 'unlock'`, nazwa E6.11 z danych) → „Dalej”; runda powtórki 5 zadań
+`answerRight`; `learner.unlockedStep.E6 = 11`; `learner.history` zadań tej rundy: każde z E6.1–E6.10 albo E5, co najmniej 2 różne
+kroki E6 (gdy runda ma < 2 kroki E6 — kolejna runda, najwyżej 3, asercja po wszystkich). Dlaczego karta: bez fazy 8 zapis z
+`unlockedStep.E6 = 11` gra E6.10 jako bieżący, a `earlier` i tak losuje wiele kroków E6 — sama historia nie odróżnia kroku
+powtórkowego od jego braku (plan-review F2). (b) „#11 a six-digit place-value answer is typed on the keypad”: E6,
+`?e2eSkills=E6.10.place_value_1000000`, rundy aż do zadania z odpowiedzią ≥ 100 000 (najwyżej 3 rundy; udział ≥ 50 % przypina faza
+7), `answerRight` → gwiazdka.
 
 **Contract**: jak faza 10; request-file `e2e-request-p11.md`, patche `e2e-break-p11a…b.patch`; nigdy nie pisać IndexedDB z testu.
 
@@ -722,7 +738,7 @@ do zadania z odpowiedzią ≥ 100 000 (najwyżej 2 rundy), `answerRight` → gwi
 #### Automated Verification:
 
 - `npx playwright test tests/e2e/review-round.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`; czas pełnego zestawu zapisany
-- Deliberate break (patch `e2e-break-p11a.patch`): `skillBuckets` dla kroku powtórkowego bierze własne (puste) umiejętności → (a) czerwony (wszystko z E5)
+- Deliberate break (patch `e2e-break-p11a.patch`): `stepPlayable` bez klauzuli `review` (E6.11 niegrywalny, `unlockReady` z E6.10 daje `null`) → (a) czerwony (brak karty odblokowania); meta-check: dowodzi odblokowania i grywalności kroku powtórkowego, nie samego losowania
 - Deliberate break (patch `e2e-break-p11b.patch`): `balance.keypad.maxDigits` 5 → (b) czerwony; każdy oczekiwany czerwony osobno (`-g`); przywrócone; meta-check: dowodzi limitu klawiatury, nie generatora
 - `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
 
@@ -764,6 +780,12 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - **Głos tabletu** dla „8 15” i dużych liczb — `[human]` faza 4; zmieniłoby: zła wymowa → `speak` słowami.
 - **E6.2 w rozgrzewce E6** (pierwsze dwa grywalne kroki to teraz E6.1, E6.2) — świadomie przyjęte.
 - **Chromium w sesji agenta**: e2e uruchamia orkiestrator; fazy 10–11 protokół request-file.
+- **Rozmiar fazy 4** (CLOCK_ELAPSED z czterema wariantami, TIME_UNITS, `spokenTime`, reguła `trwa`, ~8 rzeczowników, dane czterech
+  kroków i pięć przepisanych testów E6) — największa faza treści (plan-review F6). Zmieniłoby: agent fazy zbliża się do limitu
+  kontekstu → zatrzymuje się po CLOCK_ELAPSED + E5.3/E5.8/E6.2 + testach E6 (commit `… (p4a)`), TIME_UNITS + E6.1 idzie osobnym
+  commitem `… (p4b)` w tej samej fazie; wiersze Progress 4.x odhaczane po drugim commicie.
+- **Losowość e2e fazy 11** — asercje „≥ 2 kroki E6” i „odpowiedź ≥ 100 000” są probabilistyczne; łagodzone limitem 3 rund i udziałem
+  ≥ 50 % przypiętym w fazie 7 (plan-review F4). Zmieniłoby: flake w bramce → szew e2e z markerem albo deterministyczne ziarno.
 
 ## References
 
@@ -925,7 +947,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 9.1 `bash scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
+- [ ] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N`
 - [ ] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
 - [ ] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md`
 - [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
@@ -949,6 +971,6 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 #### Automated
 
 - [ ] 11.1 `npx playwright test tests/e2e/review-round.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`; czas pełnego zestawu zapisany
-- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `skillBuckets` dla kroku powtórkowego bierze własne (puste) umiejętności → (a) czerwony
+- [ ] 11.2 Deliberate break (patch `e2e-break-p11a.patch`): `stepPlayable` bez klauzuli `review` → (a) czerwony (brak karty odblokowania)
 - [ ] 11.3 Deliberate break (patch `e2e-break-p11b.patch`): `balance.keypad.maxDigits` 5 → (b) czerwony; każdy czerwony osobno (`-g`); przywrócone; meta-check
 - [ ] 11.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
