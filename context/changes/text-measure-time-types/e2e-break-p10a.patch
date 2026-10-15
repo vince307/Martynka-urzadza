@@ -1,0 +1,13 @@
+diff --git a/src/scenes/TaskScene.ts b/src/scenes/TaskScene.ts
+index 5695679..7702565 100644
+--- a/src/scenes/TaskScene.ts
++++ b/src/scenes/TaskScene.ts
+@@ -471,7 +471,7 @@ export class TaskScene extends Scene {
+         if (finishedTask) {
+             // DESIGN-GAP (docs/design-gaps.md row 98): a task with several right tiles lights the tile the child tapped, not the canonical one.
+             const tapped = this.reported !== null && this.reported.index === this.state.index && task.check ? this.reported.value : null;
+-            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? ((tapped ?? task.answer) as number | string) : null);
++            this.tiles.markCorrect(view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
+             this.keypad.markCorrect();
+             this.select.markCorrect(view.input === 'select' ? (task.answer as number[]) : []);
+         }

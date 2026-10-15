@@ -950,7 +950,7 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 - [x] 9.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; pełna bramka lokalna zielona; unit `<baseline gałęzi> + N` — 8762928
 - [x] 9.2 Deliberate break: ścieżka w `CLAUDE.md` do nieistniejącego pliku → walidator czerwony; przywrócone
 - [x] 9.3 Komentarze `DESIGN-GAP` w `src/` ↔ wiersze 98+ w `docs/design-gaps.md` — 8762928
-- [ ] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0`
+- [x] 9.4 E2E (orkiestrator): pełne `<baseline gałęzi e2e> + 0` — orchestrator note: 82 passed on 36e56e8 with --workers=4, phase 9 changed only comments/docs
 
 #### Manual
 
@@ -961,10 +961,10 @@ bez cofania `unlockedStep`. Fixture'y `tests/fixtures/save-v1*.json`, `save-v2*.
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/inequality.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2`
-- [ ] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): scena podświetla `task.answer` zamiast zgłoszonej wartości → (a) czerwony; meta-check
-- [ ] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `isCorrect` ignoruje `check` → (a) czerwony; każdy czerwony osobno (`-g`); przywrócone
-- [ ] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 10.1 `npx playwright test tests/e2e/inequality.spec.ts` zielony; pełne `<baseline gałęzi e2e> + 2` — orchestrator: inequality 2 passed (19.4 s); full suite --workers=4 84 passed (5.4 min) = 82 + 2
+- [x] 10.2 Deliberate break (patch `e2e-break-p10a.patch`): scena podświetla `task.answer` zamiast zgłoszonej wartości → (a) czerwony; meta-check — orchestrator: --workers=1, test (a) red `toBe` Expected 4, Received 2 (markedTile), test (b) green; restored
+- [x] 10.3 Deliberate break (patch `e2e-break-p10b.patch`): `isCorrect` ignoruje `check` → (a) czerwony; każdy czerwony osobno (`-g`); przywrócone — orchestrator: same test red `toBe` Expected "done", Received "second"; restored, src/ has no diff
+- [x] 10.4 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — build `e2e hook: absent (2 chunks checked)`; lint, typecheck OK, npm test 2666; no listener on 4397/4398
 
 ### Phase 11: Runda powtórkowa z zaimportowanego zapisu i sześciocyfrowa odpowiedź — e2e (#13, #11)
 
