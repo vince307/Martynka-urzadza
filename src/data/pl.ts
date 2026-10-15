@@ -360,7 +360,7 @@ export const pl = {
         compareQtyCountsHint: (left: string, right: string) => `Z lewej strony: ${left}, z prawej: ${right}.`,
         compareQtyAnswerHint: (tile: string) => `Wybierz: ${tile}.`,
         ordinalPrompt: (nominative: string) => `Na którym miejscu od lewej jest ${nominative}?`,
-        ordinalFromMarkHint: 'Liczymy od znacznika po lewej stronie.',
+        ordinalFromMarkHint: 'Zacznij liczyć od chorągiewki po lewej stronie.',
         ordinalPointHint: 'Pokazuj palcem kolejne obrazki i licz.',
         ordinalAnswerHint: (nominative: string, place: number) => `${nominative.charAt(0).toUpperCase()}${nominative.slice(1)} jest na miejscu ${place}.`,
         chooseOpPictureStory: (was: string, counted: string, motion: 'come' | 'go', n: number) =>
@@ -570,7 +570,7 @@ export const pl = {
         moneyPayHint: (hasNote: boolean) => (hasNote ? 'Połóż największą monetę lub banknot, który nie jest za duży.' : 'Połóż największą monetę, która nie jest za duża.'),
         moneyPayRestLine: (first: string, rest: string) => `${first} i jeszcze ${rest}.`,
         moneyPaySumLine: (parts: readonly string[], amount: string) => `${parts.join(' + ')} = ${amount}`,
-        moneyPayOneLine: (coin: string) => `Wystarczy jedna moneta: ${coin}.`,
+        moneyPayOneLine: (amount: string, note: boolean) => (note ? `Wystarczy jeden banknot: ${amount}.` : `Wystarczy jedna moneta: ${amount}.`),
         // MASS in words (S-14c): brutto / netto / tara of a pack and unit conversions, no drawing. The pack is one thing in the
         // nominative, so no numeral has to agree with it; the asked unit is the genitive plural, the given one agrees with its number.
         massPackPrompt: {

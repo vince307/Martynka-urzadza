@@ -134,6 +134,14 @@ describe('generateMoneyPay', () => {
         });
     });
 
+    it('a one-piece payment names a note as a note, never as a coin (teacher read, impl-review)', () => {
+        const ten = generateMoneyPay(skill(E2_TRAY, 10, 10, ['pay']), createRng(1));
+        expect(ten.answer).toEqual([1000]);
+        expect(ten.hint.at(-1)).toBe('Wystarczy jeden banknot: 10 zł.');
+        const five = generateMoneyPay(skill(E2_TRAY, 5, 5, ['pay']), createRng(1));
+        expect(five.hint.at(-1)).toBe('Wystarczy jedna moneta: 5 zł.');
+    });
+
     it('a 6-year-old can solve it: the right wallet reaches done at the first try through the round', () => {
         forEachDraw(generateMoneyPay, skill(E2_TRAY, 3, 20, ['pay', 'fewest']), {}, (task, where) => {
             const s = answer(startRound([task], balance.round), canonicalInput(task));

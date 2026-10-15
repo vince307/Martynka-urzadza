@@ -64,7 +64,7 @@ export const generateMoneyPay: Generator = (skill, rng): Task => {
     const first = wallet[0];
     const hint = [pl.tasks.moneyPayHint(hasNote)];
     if (wallet.length === 1) {
-        hint.push(pl.tasks.moneyPayOneLine(formatMoney(first)));
+        hint.push(pl.tasks.moneyPayOneLine(formatMoney(first), first >= 1000));   // 10 zł and up is a note
     } else {
         hint.push(pl.tasks.moneyPayRestLine(formatMoney(first), formatMoney(target - first)), pl.tasks.moneyPaySumLine(wallet.map(formatMoney), amount));
     }

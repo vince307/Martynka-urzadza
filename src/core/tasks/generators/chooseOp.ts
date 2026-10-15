@@ -77,6 +77,10 @@ export const generateChooseOp: Generator = (skill, rng): Task => {
         const flipped = plus ? `${Math.max(a, b)} ${other} ${Math.min(a, b)}` : `${a} ${other} ${b}`;
         const answer = `${a} ${sign} ${b}`;
         if (motion) {
+            // "Na stole było 1 kwiatek" needs the noun's gender (był/była/było), which nouns.ts does not hold: the picture starts at 2.
+            if (a < 2) {
+                continue;
+            }
             const icon = rng.pick(ICONS);
             const forms = nouns[icon.noun];
             const was = pluralCategory(a) === 'few' ? pl.words.were : pl.words.was;

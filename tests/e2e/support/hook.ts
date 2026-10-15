@@ -243,6 +243,8 @@ export const COIN_GROSZE: Record<MoneyKind, number> = { 'coin-1zl': 100, 'coin-2
 export const payCoins = async (page: Page, grosze: readonly number[]): Promise<void> => {
     const { coins } = await targets(page);
     expect(coins?.wallet, 'a payment wallet is open').toBeTruthy();
+    // Every attempt starts from an empty wallet: the scene empties it when a task opens and after a wrong answer.
+    expect((await snapshot(page)).wallet, 'the wallet is empty before paying').toEqual([]);
     const cdp = await page.context().newCDPSession(page);
     try {
         let placed = 0;

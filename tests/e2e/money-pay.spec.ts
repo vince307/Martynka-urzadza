@@ -73,7 +73,7 @@ test('#11 coins dragged into the wallet pay the amount and earn a star', async (
     expect((await snapshot(page)).summary).toMatchObject({ earned: ROUND_LENGTH + 2, bonus: 2, stars: Array(ROUND_LENGTH).fill(true) });
 });
 
-test('#11 a wallet with too many coins in the fewest-coins task gives a hint, a retype pays no star', async ({ page }) => {
+test('#11 a wallet with too many coins in the fewest-coins task gives a hint, an emptied wallet and a retype that pays no star', async ({ page }) => {
     test.setTimeout(90_000);
     await open(page, 'Klasa 1, I półrocze', 'E1', 'E1.11.money_pay_10');
     const task = await reachTask(page, isFewest);
@@ -89,12 +89,8 @@ test('#11 a wallet with too many coins in the fewest-coins task gives a hint, a 
     const missed = await snapshot(page);
     expect(missed.starsEarned).toBe(stars);
 
-    // A wrong wallet stays on the table: the child takes coins out by touch until it is empty, then pays properly.
-    for (let left = missed.wallet!.length; left > 0; left--) {
-        const { coins } = await targets(page);
-        await tapScene(page, coins!.coins[0]);
-        await expect.poll(async () => (await snapshot(page)).wallet?.length).toBe(left - 1);
-    }
+    // A wrong wallet is emptied (like a wrong build on the block mat): the second try starts from the tray again.
+    expect(missed.wallet).toEqual([]);
     await answerRight(page);
     await phaseIs(page, 'done');
     const done = await snapshot(page);
@@ -107,10 +103,7 @@ test('#11 a wallet with too many coins in the fewest-coins task gives a hint, a 
     const before = await snapshot(page);
     await answerWrong(page);
     await phaseIs(page, 'second');
-    for (let left = (await snapshot(page)).wallet!.length; left > 0; left--) {
-        await tapScene(page, (await targets(page)).coins!.coins[0]);
-        await expect.poll(async () => (await snapshot(page)).wallet?.length).toBe(left - 1);
-    }
+    expect((await snapshot(page)).wallet).toEqual([]);
     await answerWrong(page);
     await phaseIs(page, 'solution');
     for (let guard = 0; guard < 10 && (await snapshot(page)).phase === 'solution'; guard++) {
@@ -124,10 +117,7 @@ test('#11 a wallet with too many coins in the fewest-coins task gives a hint, a 
         }).toBe(true);
     }
     await phaseIs(page, 'retype');
-    for (let left = (await snapshot(page)).wallet!.length; left > 0; left--) {
-        await tapScene(page, (await targets(page)).coins!.coins[0]);
-        await expect.poll(async () => (await snapshot(page)).wallet?.length).toBe(left - 1);
-    }
+    expect((await snapshot(page)).wallet).toEqual([]);
     await answerRight(page);
     await phaseIs(page, 'done');
     const after = await snapshot(page);

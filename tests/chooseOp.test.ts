@@ -82,6 +82,14 @@ describe('generateChooseOp', () => {
         expect(motions).toEqual(new Set(['come', 'go']));
     });
 
+    it('picture: the table starts with at least 2 things, so the verb agrees ("były 2", "było 5", never "było 1 kwiatek")', () => {
+        forEachDraw(generateChooseOp, skillOf({ max: 10, kinds: ['picture'] }), {}, (task, where) => {
+            const groups = (task.visual as unknown as { groups: number[] }).groups;
+            expect(groups[0], where).toBeGreaterThanOrEqual(2);
+            expect(task.prompt, where).toMatch(/^Na stole (były [234] |było \d+ )/);
+        });
+    });
+
     it('picture only fits the pictures of 10 icons', () => {
         expect(() => parseChooseOpParams({ max: 12, kinds: ['picture'] })).toThrow(TypeError);
         expect(() => parseChooseOpParams({ max: 10, kinds: ['sum', 'picture'] })).not.toThrow();

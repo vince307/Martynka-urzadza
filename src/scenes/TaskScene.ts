@@ -734,6 +734,7 @@ export class TaskScene extends Scene {
             this.select.clear();   // a wrong set is cleared too
             this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
             this.clockState = initialClockSet(this.clockStart);   // and a wrong time: the hands go back to the start
+            this.coinState = { mat: emptyWallet(), carrying: null };   // and a wrong payment: the wallet is emptied, the child pays again from the tray
             this.shake();
         }
         this.render();
