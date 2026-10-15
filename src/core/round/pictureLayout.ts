@@ -1,5 +1,5 @@
 // DESIGN-GAP 65 (docs/design-gaps.md): the thermometer is tall: it takes a column on the left in every phase, the answers and the bar move right of it (rev. of rows 52 and 57).
-// Where a task's drawing and its solution lines go (S-13): pure rectangles in the 1920x1080 scene space.
+// Where a task's drawing and its solution lines go (S-13; S-14b adds the written column `digits` and the hint drawing under the expression): pure rectangles in the 1920x1080 scene space.
 // The numbers come in as data (TASK_LAYOUT.picture); this file only decides which rectangle applies.
 import type { Rect } from '../geometry';
 import type { AnswerMode, VisualShape } from '../tasks/visual';
@@ -16,10 +16,16 @@ export interface PictureSpec {
     select: { picture: PictureRect; solution: { picture: PictureRect; lines: PictureRect } };
     /** A clock to set (`drag`): the drawing takes the mat, the solution lines the tray's place. */
     drag: { picture: PictureRect; lines: PictureRect };
+    /** A written column (`digits`): the column stays in one place in every phase, the solution lines beside it. */
+    digits: { picture: PictureRect; lines: PictureRect };
+    /** The hint drawing (a number line under the expression, keypad only): the drawing and the solution lines under it. */
+    hint: { keypad: { picture: PictureRect; lines: PictureRect } };
     /** Smallest height a drawing keeps under a long prompt. */
     minHeight: number;
     /** A tall drawing (thermometer): a column in every phase; the tiles row and the bar move right of it. */
     tall: { tiles: TallSpec; keypad: TallSpec };
+    /** A long drawing (a number line) in a tiles task: the notebook's full width, the solution lines under it, both above the tiles. */
+    long: { tiles: PictureRect; tilesSolution: { picture: PictureRect; lines: PictureRect } };
 }
 
 /** A horizontal span (x, width) in scene pixels. */
@@ -36,12 +42,20 @@ export interface TallSpec {
     answers?: Span;
 }
 
-const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => (input === 'keypad' ? spec.tall.keypad : spec.tall.tiles);
+const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => {
+    switch (input) {
+        case 'keypad': return spec.tall.keypad;
+        case 'tiles': return spec.tall.tiles;
+        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode`);
+        default: { const _exhaustive: never = input; return _exhaustive; }
+    }
+};
 
 /**
  * The drawing rectangle and, while the solution steps are shown, the rectangle of their lines.
  * `lines: null` means the lines keep their place for a task without a drawing (under the prompt).
- * A pictured `select` task keeps its drawing above the select tiles; a `drag` drawing (the clock to set) takes the mat.
+ * A pictured `select` task keeps its drawing above the select tiles; a `drag` drawing (the clock to set) takes the mat; a long drawing
+ * (a number line) of a tiles task takes the full width; beside the keypad it keeps the wide rectangles.
  */
 export const pictureLayout = (
     spec: PictureSpec,
@@ -53,16 +67,17 @@ export const pictureLayout = (
         const tall = tallOf(spec, input);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
     }
-    if (input === 'drag') {
-        return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };
+    if (shape === 'long' && input === 'tiles') {
+        return solution ? spec.long.tilesSolution : { picture: spec.long.tiles, lines: null };
     }
-    if (input === 'select') {
-        return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
+    switch (input) {
+        case 'drag': return { picture: spec.drag.picture, lines: solution ? spec.drag.lines : null };
+        case 'select': return solution ? spec.select.solution : { picture: spec.select.picture, lines: null };
+        case 'keypad': return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
+        case 'tiles': return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
+        case 'digits': return { picture: spec.digits.picture, lines: solution ? spec.digits.lines : null };
+        default: { const _exhaustive: never = input; return _exhaustive; }
     }
-    if (input === 'keypad') {
-        return solution ? spec.keypadSolution : { picture: spec.keypad, lines: null };
-    }
-    return solution ? spec.tilesSolution : { picture: spec.tiles, lines: null };
 };
 
 /**
@@ -70,11 +85,15 @@ export const pictureLayout = (
  * A tall drawing moves the tiles row and the bar right of its column.
  */
 export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape): { tiles: Span | null; bar: Span | null } => {
-    if (shape !== 'tall' || (input !== 'tiles' && input !== 'keypad')) {
-        return { tiles: null, bar: null };
+    switch (input) {
+        case 'tiles': case 'keypad': {
+            if (shape !== 'tall') return { tiles: null, bar: null };
+            const tall = tallOf(spec, input);
+            return { tiles: tall.answers ?? null, bar: tall.bar };
+        }
+        case 'drag': case 'select': case 'digits': return { tiles: null, bar: null };
+        default: { const _exhaustive: never = input; return _exhaustive; }
     }
-    const tall = tallOf(spec, input);
-    return { tiles: tall.answers ?? null, bar: tall.bar };
 };
 
 /**
@@ -124,4 +143,13 @@ export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect 
         ok: drag.ok,
         lines: drag.solutionLines,
     };
+};
+
+/** The hint number line and the solution lines under it; only the keypad task has room for them. */
+export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode): { picture: PictureRect; lines: PictureRect } => {
+    switch (input) {
+        case 'keypad': return spec.hint.keypad;
+        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode`);
+        default: { const _exhaustive: never = input; return _exhaustive; }
+    }
 };

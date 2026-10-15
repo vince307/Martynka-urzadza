@@ -50,6 +50,44 @@ describe('generateSequence', () => {
         expect(() => parseSequenceParams({ max: 100, steps: [10], length: 3 })).toThrow(TypeError);
         expect(() => parseSequenceParams({ max: 100, steps: [10], length: 7 })).toThrow(TypeError);
         expect(() => parseSequenceParams({ max: 100, steps: [10], directions: [] })).toThrow(TypeError);
-        expect(parseSequenceParams({ max: 100, steps: [10] })).toEqual({ max: 100, steps: [10], length: 4, start: 'multiple', directions: ['up', 'down'] });
+        expect(parseSequenceParams({ max: 100, steps: [10] })).toEqual({ max: 100, steps: [10], length: 4, start: 'multiple', directions: ['up', 'down'], line: false });
     });
 });
+
+describe('generateSequence with a number line (S-14b)', () => {
+    const LINE = skillOf({ max: 100, steps: [10], start: 'multiple', line: true });
+    it('draws the given terms as labels and the gap as the box, which is the answer', () => {
+        forEachDraw(generateSequence, LINE, { max: 100 }, (task, where) => {
+            const v = task.visual;
+            if (v?.kind !== 'numberLine') throw new Error(`no number line ${where}`);
+            const t = terms(task.prompt);
+            const given = t.filter((x): x is number => x !== null);
+            expect(v.from, where).toBe(0);
+            expect(v.to, where).toBe(100);
+            expect(v.tick, where).toBe(10);
+            expect([...v.labels].sort((a, b) => a - b), where).toEqual([...given].sort((a, b) => a - b));
+            expect(v.labels, where).not.toContain(task.answer);
+            expect(v.box, where).toBe(task.answer);
+            expect(v.jumps, where).toEqual([]);
+        });
+    });
+    it('the tick follows the chosen step', () => {
+        const ticks = new Set<number>();
+        forEachDraw(generateSequence, skillOf({ max: 20, steps: [2, 5], start: 'multiple', line: true }), { max: 20 }, (task) => {
+            if (task.visual?.kind === 'numberLine') ticks.add(task.visual.tick);
+        });
+        expect(ticks).toEqual(new Set([2, 5]));
+    });
+    it('is off unless asked for', () => {
+        forEachDraw(generateSequence, skillOf({ max: 100, steps: [10] }), { max: 100 }, (task, where) => {
+            expect(task.visual, where).toBeUndefined();
+        });
+    });
+    it('rejects a line that does not fit or does not sit on ticks', () => {
+        expect(() => parseSequenceParams({ max: 100, steps: [2], line: true })).toThrow(TypeError);
+        expect(() => parseSequenceParams({ max: 100, steps: [10], start: 'any', line: true })).toThrow(TypeError);
+        expect(() => parseSequenceParams({ max: 100, steps: [10], line: 'yes' })).toThrow(TypeError);
+        expect(parseSequenceParams({ max: 100, steps: [10], line: true }).line).toBe(true);
+    });
+});
+

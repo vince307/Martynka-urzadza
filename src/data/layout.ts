@@ -95,6 +95,12 @@ export const FONT_SIZES = {
     chartAxis: 26,          // DESIGN-GAP row 53: numbers on the vertical axis
     thermoLabel: 50,        // kit reference/thermometer-face.js labels, in housing units (scaled; never below TASK_LAYOUT.thermometer.minLabelPx)
     cellValue: 44,          // DESIGN-GAP row 73: a number in a magic-square or pyramid cell
+    lineLabel: 28,          // kit reference/number-line.svg: numbers under the ticks
+    lineJump: 30,           // kit number-line.svg has no arc label; DESIGN-GAP 88: the "+k" over an arc
+    arrowRule: 40,          // DESIGN-GAP 89: the rule "+5" on an arrow of a graph or table
+    columnDigit: 72,        // kit reference/written-addition.svg: digits of the written column
+    columnSign: 64,         // kit reference/written-addition.svg: the + or − sign
+    columnMark: 34,         // DESIGN-GAP 91: the small carry or borrow digit
     gridLabel: 30,          // DESIGN-GAP row 74: column letters and row numbers of the coordinate grid
     sideLabel: 30,          // DESIGN-GAP row 75: the length written at a side of a figure
     artLabel: 24,           // stand-in label of a drawing whose texture failed to load (never shown when the art loads)
@@ -134,6 +140,12 @@ export const FONT_WEIGHTS = {
     chartAxis: 650,
     thermoLabel: 700,       // kit reference/thermometer-face.js
     cellValue: 750,
+    lineLabel: 700,         // kit reference/number-line.svg
+    lineJump: 750,
+    arrowRule: 750,
+    columnDigit: 700,       // kit reference/written-addition.svg
+    columnSign: 700,
+    columnMark: 750,
     gridLabel: 700,
     sideLabel: 700,
     artLabel: 650,
@@ -252,7 +264,19 @@ export const TASK_LAYOUT = {
             picture: { x: 661, y: 396, width: 600, height: 190 },
             solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
+        // S-14b visual gate: a number line in a tiles task (E3.9 jumps, 0..30) drew its labels about 9 CSS px tall on a 1024 px tablet in the
+        // 600 px `tiles` rectangle; a long drawing takes the notebook's full width, the solution lines under it, both above the tiles (top 712).
+        long: {
+            tiles: { x: 236, y: 380, width: 1448, height: 300 },
+            tilesSolution: { picture: { x: 236, y: 330, width: 1448, height: 200 }, lines: { x: 236, y: 540, width: 1448, height: 160 } },
+        },
+        // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP 93 (docs/design-gaps.md): the kit has no layout for the column beside its solution lines; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
+        // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
+        digits: { picture: { x: 216, y: 340, width: 400, height: 508 }, lines: { x: 632, y: 340, width: 392, height: 508 } },
+        // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
+        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
+        hint: { keypad: { picture: { x: 226, y: 530, width: 798, height: 190 }, lines: { x: 226, y: 730, width: 798, height: 118 } } },
         minHeight: 120,
         tall: {
             tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
@@ -278,6 +302,31 @@ export const TASK_LAYOUT = {
     // Bar chart (DESIGN-GAP row 53), own units: columns `barWidth` wide `barGap` apart, `plotHeight` tall, axis labels left, bar labels under the columns.
     // Number cells (DESIGN-GAP row 73), own units: a magic square (3 x 3) or a pyramid (1, 2, 3 cells, each row shifted half a cell), `cell` wide and tall; the empty cell is dashed.
     cells: { cell: 96, border: 4, dash: 14, maxScale: 1.5 },
+    // Number line (kit reference/number-line.svg, own units: axis 4, ticks 2 x 24 high, arcs 5, dots r 9). Ticks are `gap` apart (`denseGap` from `denseFrom` ticks, so
+    // 0..30 stays readable beside the keypad); arcs rise at most `arcMax`, an arc narrower than `minLabelSpan` has no label. DESIGN-GAP 88: 0..100 with a box,
+    // jumps longer than 1 and the dashed box on a tick are not in the kit.
+    numberLine: {
+        gap: 58, denseGap: 30, denseFrom: 12, pad: 40, axis: 4, tick: 24, arc: 5, head: 12, dot: 9, border: 4,
+        arcZone: 120, arcMax: 84, arcLift: 14, minLabelSpan: 36, labelDrop: 42, maxScale: 1.4,
+        labelStagger: 30,   // visual gate S-14b: the second of two labels on neighbouring ticks of a dense line drops this far ("10" "11" ran into "1011")
+        // `denseWidth`: the box on a dense line (visual gate S-14b: 52 wide it covered the "0" of a landing "10" on the next tick).
+        box: { width: 52, denseWidth: 30, height: 46, dash: 9 },
+    },
+    // Arrow graph and table (DESIGN-GAP 89): circles of `disc` (graph) or square tiles of `tile` (table) with the rule on an arrow.
+    arrows: {
+        disc: 120, arrow: 270, rule: 56, border: 4, head: 16, line: 5, dash: 14,
+        tile: 96, tileGap: 16, ruleColumn: 170, rowGap: 96, maxScale: 1.5,
+    },
+    // Written column (DESIGN-GAP 90, 91), own units: digits in columns `colW` apart (kit written-addition.svg: 72 px digits, 82 px columns, 4 px rule),
+    // a `markRow` for carries and borrows above the first operand, the result boxes under the rule. The active box has a thicker border and the butter fill.
+    written: {
+        colW: 82, markRow: 60, row: 92, ruleGap: 12, rule: 4, maxScale: 1.3,
+        box: { width: 70, height: 92, radius: 14, border: 4, activeBorder: 8 },
+        carry: { radius: 22, border: 3 }, strike: 5, lendDrop: 6,
+        // The small "1" of a column that borrows sits before its digit, raised (centre `dx` left of and `dy` above the digit's centre). Visual gate S-14b:
+        // in the mark row it read as part of a number with the lenders' digits ("7 9 1" over 805).
+        borrowOne: { dx: 34, dy: 22 },
+    },
     // Coordinate grid (DESIGN-GAP row 74), own units: `cell` squares, column letters above, row numbers on the left, shapes filling `itemFill` of a cell.
     coord: { cell: 76, labelInset: 46, labelDrop: 40, line: 2, border: 4, itemFill: 0.62, maxScale: 1.5 },
     // Figure with labelled sides (DESIGN-GAP rows 75, 76): outline `line` px, lattice `grid` px, labels `labelPad` px off the edge, a point per corner `dot`;

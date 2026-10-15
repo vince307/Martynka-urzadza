@@ -1,6 +1,7 @@
 // Drawing descriptions carried by a task (S-13): numbers and labels only, no colours or pixels.
 // The scene decides how to draw them; core only validates and keys them.
 import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
+import { balance } from '../../data/balance';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
@@ -24,12 +25,22 @@ export type TaskVisual =
     // A square grid with labelled columns (A..) and rows (1..) and items on distinct cells (col, row are zero-based).
     | { kind: 'grid'; columns: number; rows: number; items: readonly { item: GridItemId; col: number; row: number }[] }
     // A polygon in lattice units; sides[i] labels the edge from vertex i to i+1 (null = no label).
-    | { kind: 'figure'; lattice: boolean; vertices: readonly (readonly [number, number])[]; sides: readonly (number | null)[] };
+    | { kind: 'figure'; lattice: boolean; vertices: readonly (readonly [number, number])[]; sides: readonly (number | null)[] }
+    // A written column (S-14b): operands right-aligned, the result has exactly `columns` digits.
+    | { kind: 'column'; op: '+' | '−'; a: number; b: number; columns: number }
+    // A number line (S-14b): ticks every `tick` from `from` to `to`; `labels` are the numbers written under ticks, `box` the empty box, `jumps` arcs between ticks.
+    | { kind: 'numberLine'; from: number; to: number; tick: number; labels: readonly number[]; box: number | null; jumps: readonly { from: number; to: number }[] }
+    // An arrow graph or table (S-14b): every input goes to its output by the rule "op n"; exactly one value is null (the empty field).
+    | { kind: 'arrows'; layout: 'graph'; op: '+' | '−'; n: number; input: number | null; output: number | null }
+    | { kind: 'arrows'; layout: 'table'; op: '+' | '−'; n: number; inputs: readonly number[]; outputs: readonly (number | null)[] };
 
-/** `tall` drawings are narrower than high and need the room beside the keypad solution; the rest are wide. */
-export type VisualShape = 'wide' | 'tall';
+/**
+ * `tall` drawings are narrower than high and need the room beside the keypad solution; `long` ones (a number line) are far wider than
+ * high and take the notebook's full width in a tiles task (visual gate S-14b); the rest are wide.
+ */
+export type VisualShape = 'wide' | 'tall' | 'long';
 
-export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : 'wide');
+export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */
 export const visualKey = (v: TaskVisual | undefined): string => {
@@ -61,6 +72,14 @@ export const visualKey = (v: TaskVisual | undefined): string => {
             return `grid:${v.columns}x${v.rows}:${v.items.map((i) => `${i.item}@${i.col},${i.row}`).join(';')}`;
         case 'figure':
             return `figure:${v.lattice ? 'lattice' : 'free'}:${v.vertices.map(([x, y]) => `${x},${y}`).join(';')}:${v.sides.map((x) => x ?? '_').join(',')}`;
+        case 'column':
+            return `column:${v.op}:${v.a}:${v.b}:${v.columns}`;
+        case 'arrows':
+            return v.layout === 'graph'
+                ? `arrows:graph:${v.op}:${v.n}:${v.input ?? '_'}:${v.output ?? '_'}`
+                : `arrows:table:${v.op}:${v.n}:${v.inputs.join(',')}:${v.outputs.map((x) => x ?? '_').join(',')}`;
+        case 'numberLine':
+            return `line:${v.from}:${v.to}:${v.tick}:${v.labels.join(',')}:${v.box ?? '_'}:${v.jumps.map((j) => `${j.from}>${j.to}`).join(',')}`;
     }
 };
 
@@ -164,6 +183,54 @@ export const validateVisual = (v: TaskVisual): string[] => {
             }
             break;
         }
+        case 'column': {
+            const wider = Math.max(v.a, v.b);
+            if (!isInt(v.a) || !isInt(v.b) || v.a < 0 || v.b < 0) out.push('column operands must be whole numbers from 0');
+            if (v.columns !== String(wider).length) out.push(`${v.columns} columns for the ${String(wider).length}-digit ${wider}`);
+            const result = v.op === '+' ? v.a + v.b : v.a - v.b;
+            if (result < 0) out.push(`negative column result ${result}`);
+            else if (String(result).length !== v.columns) out.push(`column result ${result} does not have ${v.columns} digits`);
+            break;
+        }
+        case 'numberLine': {
+            if (!isInt(v.from) || !isInt(v.to) || !isInt(v.tick) || v.tick < 1 || v.from >= v.to) {
+                out.push(`number line from ${v.from} to ${v.to} every ${v.tick} is not a rising whole-number scale`);
+                break;
+            }
+            if ((v.to - v.from) % v.tick !== 0) out.push(`number line ${v.from}..${v.to} is not a whole number of ticks of ${v.tick}`);
+            const ticks = Math.floor((v.to - v.from) / v.tick) + 1;
+            if (ticks > balance.numberLine.maxTicks) out.push(`${ticks} ticks, at most ${balance.numberLine.maxTicks}`);
+            const onTick = (n: number): boolean => isInt(n) && n >= v.from && n <= v.to && (n - v.from) % v.tick === 0;
+            for (const n of v.labels) if (!onTick(n)) out.push(`label ${n} is not on a tick in the range`);
+            if (v.box !== null && !onTick(v.box)) out.push(`box ${v.box} is not on a tick in the range`);
+            for (const j of v.jumps) if (!onTick(j.from) || !onTick(j.to)) out.push(`jump ${j.from}>${j.to} does not start and end on a tick`);
+            break;
+        }
+        case 'arrows': {
+            const max = balance.arrows.maxValue;
+            const go = (x: number): number => (v.op === '+' ? x + v.n : x - v.n);
+            if (!isInt(v.n) || v.n < 1) out.push(`arrow rule step ${v.n} is not a positive whole number`);
+            const pairs: { input: number | null; output: number | null }[] =
+                v.layout === 'graph' ? [{ input: v.input, output: v.output }] : v.inputs.map((input, i) => ({ input, output: v.outputs[i] ?? null }));
+            if (v.layout === 'table') {
+                if (v.outputs.length !== v.inputs.length) out.push(`${v.outputs.length} outputs for ${v.inputs.length} inputs`);
+                if (v.inputs.length < balance.arrows.tableMin || v.inputs.length > balance.arrows.tableMax) {
+                    out.push(`${v.inputs.length} table rows, need ${balance.arrows.tableMin}..${balance.arrows.tableMax}`);
+                }
+                if (new Set(v.inputs).size !== v.inputs.length) out.push('duplicate table inputs');
+            }
+            const empty = pairs.reduce((n, p) => n + (p.input === null ? 1 : 0) + (p.output === null ? 1 : 0), 0);
+            if (empty !== 1) out.push(`arrows drawing needs exactly one empty field, got ${empty}`);
+            for (const p of pairs) {
+                // The empty field is derived from the other one of its pair.
+                const input = p.input ?? (p.output === null ? null : v.op === '+' ? p.output - v.n : p.output + v.n);
+                const output = p.output ?? (p.input === null ? null : go(p.input));
+                if (input === null || output === null) continue;
+                if (go(input) !== output) out.push(`arrow ${input} to ${output} is off the rule ${v.op}${v.n}`);
+                for (const x of [input, output]) if (!isInt(x) || x < 0 || x > max) out.push(`arrow value ${x} outside 0..${max}`);
+            }
+            break;
+        }
         default: {
             const unreachable: never = v;
             out.push(`unknown visual ${JSON.stringify(unreachable)}`);
@@ -208,5 +275,13 @@ export const describeVisual = (v: TaskVisual): string => {
             return `[grid ${v.columns}×${v.rows} ${v.items.map((i) => `${GRID_ITEMS.find((g) => g.id === i.item)?.noun ?? i.item} ${String.fromCharCode(65 + i.col)}${i.row + 1}`).join(', ')}]`;
         case 'figure':
             return v.lattice ? `[figure lattice ${v.vertices.length} vertices]` : `[figure ${v.sides.map((x) => (x === null ? '?' : `${x} cm`)).join(' ')}]`;
+        case 'column':
+            return `[column ${v.a} ${v.op} ${v.b}]`;
+        case 'arrows':
+            return v.layout === 'graph'
+                ? `[arrows graph ${v.input ?? '□'} ${v.op === '+' ? '+' : '−'}${v.n} ${v.output ?? '□'}]`
+                : `[arrows table ${v.op === '+' ? '+' : '−'}${v.n}: ${v.inputs.map((x, i) => `${x}>${v.outputs[i] ?? '□'}`).join(' ')}]`;
+        case 'numberLine':
+            return `[line ${v.from}–${v.to}/${v.tick}${v.labels.length ? ` labels ${v.labels.join(' ')}` : ''}${v.box !== null ? ` box ${v.box}` : ''}${v.jumps.length ? ` jumps ${v.jumps.map((j) => `${j.from}>${j.to}`).join(' ')}` : ''}]`;
     }
 };

@@ -21,7 +21,7 @@ const rules = balance.warmup;
 
 // Independent oracle: what "playable" means, restated from the scene's needs.
 const playableSkills = (skills: readonly SkillDef[]): SkillDef[] =>
-    skills.filter((s) => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag') && getGenerator(s.type) !== undefined);
+    skills.filter((s) => (s.answer === 'tiles' || s.answer === 'keypad' || s.answer === 'select' || s.answer === 'drag' || s.answer === 'digits') && getGenerator(s.type) !== undefined);
 const stageOf = (id: StageId): StageDef => getStage(id) as StageDef;
 const allSkillIds = (stage: StageDef): Set<string> => new Set(playableSkills(stage.steps.flatMap((s) => s.skills)).map((s) => s.id));
 const firstStepsSkillIds = (stage: StageDef, n: number): Set<string> =>

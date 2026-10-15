@@ -3,6 +3,7 @@
 // Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
 // (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
 import { expect, type CDPSession, type Page } from '@playwright/test';
+import type { AnswerMode } from '../../../src/core/tasks/visual';
 
 export interface Point { x: number; y: number }
 export type BlockKind = 'hundred' | 'ten' | 'one';
@@ -10,7 +11,9 @@ export interface Snapshot {
     index: number;
     solutionStep: number;
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
-    input: 'tiles' | 'keypad' | 'select' | 'drag';
+    input: AnswerMode;
+    /** The result boxes of a written column ('digits' mode): how many and the digits typed so far (from the ones); null in any other mode. */
+    digits?: { count: number; filled: number[] } | null;
     answer: unknown;
     /** The drawing of the open task (a copy), null for a task without one. */
     visual?: { kind: string } | null;
@@ -75,6 +78,8 @@ export interface Targets {
     next: Point | null;
     /** The rectangle of the drawing (null while hidden); a spec aims at its interior. */
     picture?: { x: number; y: number; width: number; height: number } | null;
+    /** The rectangle of the hint number line of an ADD_SUB task (null while hidden): it shows only after a miss. */
+    hintPicture?: { x: number; y: number; width: number; height: number } | null;
     step: Point | null;
     nextRound: Point | null;
     toRoom: Point | null;
@@ -291,6 +296,28 @@ export const tapNumber = async (page: Page, value: number): Promise<void> => {
     await tapScene(page, keys.find((k) => k.key === 'ok')!);
 };
 
+/** Types `value` into the boxes of a written column ('digits' mode): the digits from the ones to the highest column, then OK. */
+export const typeDigits = async (page: Page, value: number, columns: number): Promise<void> => {
+    const { keys } = await targets(page);
+    const digits = String(value).padStart(columns, '0').split('').reverse();
+    for (const digit of digits) {
+        await tapScene(page, keys.find((k) => k.key === digit)!);
+    }
+    await tapScene(page, keys.find((k) => k.key === 'ok')!);
+};
+
+/** The number of result boxes of the open 'digits' task. */
+const boxCount = async (page: Page): Promise<number> => {
+    const digits = (await snapshot(page)).digits;
+    expect(digits, 'a written column is open').toBeTruthy();
+    return digits!.count;
+};
+
+/** Never reached for a mode the helper handles; a new answer mode is a type error here until it is answered. */
+const unanswerable = (mode: never): never => {
+    throw new Error(`no e2e answer for mode ${String(mode)}`);
+};
+
 /**
  * An answer the task certainly rejects: another tile, answer + 1 on the keypad or on the mat (drag), or one marked tile that is not in the
  * answer set (select; never depends on the tile order). Returns the value given.
@@ -328,6 +355,16 @@ export const answerWrong = async (page: Page): Promise<number | string | (number
         await tapScene(page, drag!.ok!);
         return given;
     }
+    if (state.input === 'digits') {
+        // Same number of digits: one more, or one less when the answer is the top of the range (never a carry into a new column).
+        const right = state.answer as number;
+        const given = String(right + 1).length === String(right).length ? right + 1 : right - 1;
+        await typeDigits(page, given, await boxCount(page));
+        return given;
+    }
+    if (state.input !== 'keypad') {
+        return unanswerable(state.input);
+    }
     const given = (state.answer as number) + 1;
     await tapNumber(page, given);
     return given;
@@ -351,8 +388,12 @@ export const answerRight = async (page: Page): Promise<void> => {
         const { drag } = await targets(page);
         await buildOnMat(page, state.answer as number);
         await tapScene(page, drag!.ok!);
-    } else {
+    } else if (state.input === 'digits') {
+        await typeDigits(page, state.answer as number, await boxCount(page));
+    } else if (state.input === 'keypad') {
         await tapNumber(page, state.answer as number);
+    } else {
+        unanswerable(state.input);
     }
 };
 

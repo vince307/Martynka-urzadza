@@ -28,7 +28,7 @@ export class FeedbackBar {
 
     /** `at` moves the bar's span (a tall drawing beside it); by default the bar spans under the tiles or left of the keypad. */
     update(bar: RoundView['bar'], input: AnswerMode, at?: { x: number; width: number }): void {
-        const span = at ?? TASK_LAYOUT.barSpan[input === 'keypad' ? 'keypad' : 'tiles'];
+        const span = at ?? TASK_LAYOUT.barSpan[this.spanOf(input)];
         const { height, bottom, radius, padding, hintBorder } = TASK_LAYOUT.bar;
         const top = bottom - height;
         const centerY = top + height / 2;
@@ -66,6 +66,15 @@ export class FeedbackBar {
     /** Centre of the "Dalej" button for the e2e hook, null while hidden. */
     nextTarget(): { x: number; y: number } | null {
         return this.button.target();
+    }
+
+    /** The bar sits left of the keypad for the keypad modes and under the answers otherwise. */
+    private spanOf(input: AnswerMode): 'keypad' | 'tiles' {
+        switch (input) {
+            case 'keypad': case 'digits': return 'keypad';
+            case 'tiles': case 'select': case 'drag': return 'tiles';
+            default: { const unreachable: never = input; return unreachable; }
+        }
     }
 
     private textOf(bar: RoundView['bar']): string {

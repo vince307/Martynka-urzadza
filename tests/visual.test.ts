@@ -247,3 +247,68 @@ describe('grid-task visuals (S-13b)', () => {
         }
     });
 });
+
+describe('column and numberLine drawings (S-14b)', () => {
+    const column = (op: '+' | '−', a: number, b: number, columns: number): TaskVisual => ({ kind: 'column', op, a, b, columns });
+    const line = (over: Partial<Extract<TaskVisual, { kind: 'numberLine' }>> = {}): TaskVisual => ({
+        kind: 'numberLine', from: 0, to: 100, tick: 10, labels: [30, 40, 60], box: 50, jumps: [], ...over,
+    });
+    it('keys and describes a column and a number line', () => {
+        expect(visualKey(column('+', 38, 27, 2))).not.toBe(visualKey(column('+', 38, 28, 2)));
+        expect(visualKey(line())).not.toBe(visualKey(line({ box: 40 })));
+        expect(describeVisual(column('+', 38, 27, 2))).toBe('[column 38 + 27]');
+        expect(describeVisual(line())).toBe('[line 0–100/10 labels 30 40 60 box 50]');
+        expect(visualShape(column('+', 38, 27, 2))).toBe('wide');
+        expect(visualShape(line())).toBe('long');   // visual gate S-14b: the full notebook width in a tiles task
+    });
+    it('accepts good columns and rejects a result with the wrong digit count or a negative result', () => {
+        expect(validateVisual(column('+', 38, 27, 2))).toEqual([]);
+        expect(validateVisual(column('+', 68, 47, 2)).join()).toMatch(/digits/);       // 115 has three digits
+        expect(validateVisual(column('−', 27, 38, 2)).join()).toMatch(/negative/);
+        expect(validateVisual(column('−', 65, 62, 2)).join()).toMatch(/digits/);       // 3 has one digit
+        expect(validateVisual(column('+', 38, 27, 3)).join()).toMatch(/columns/);
+    });
+    it('accepts a good number line and rejects off-tick, out-of-range and too many ticks', () => {
+        expect(validateVisual(line())).toEqual([]);
+        expect(validateVisual(line({ labels: [35] })).join()).toMatch(/tick/);
+        expect(validateVisual(line({ box: 110 })).join()).toMatch(/tick|range/);
+        expect(validateVisual(line({ from: 0, to: 40, tick: 1, labels: [], box: null })).join()).toMatch(/ticks/);   // 41 ticks
+        expect(validateVisual(line({ jumps: [{ from: 0, to: 15 }] })).join()).toMatch(/tick/);
+        expect(validateVisual(line({ from: 50, to: 50 })).join()).toMatch(/from/);
+    });
+});
+
+describe('arrows drawing (S-14b)', () => {
+    const graph = (over: Partial<Extract<TaskVisual, { kind: 'arrows'; layout: 'graph' }>> = {}): TaskVisual => ({
+        kind: 'arrows', layout: 'graph', op: '+', n: 5, input: 7, output: null, ...over,
+    });
+    const table = (outputs: (number | null)[], inputs = [3, 5, 8]): TaskVisual => ({ kind: 'arrows', layout: 'table', op: '−', n: 2, inputs, outputs });
+    it('keys and describes a graph and a table', () => {
+        expect(visualKey(graph())).not.toBe(visualKey(graph({ input: 8 })));
+        expect(visualKey(graph())).not.toBe('');
+        expect(visualKey(graph())).not.toBe(visualKey(table([1, 3, null])));
+        expect(describeVisual(graph())).toBe('[arrows graph 7 +5 □]');
+        expect(describeVisual(table([1, 3, null]))).toBe('[arrows table −2: 3>1 5>3 8>□]');
+        expect(visualShape(graph())).toBe('wide');
+    });
+    it('accepts one empty field that follows the rule', () => {
+        expect(validateVisual(graph())).toEqual([]);
+        expect(validateVisual(graph({ input: null, output: 12 }))).toEqual([]);
+        expect(validateVisual(table([1, 3, null]))).toEqual([]);
+    });
+    it.each([
+        ['no empty field in a graph', graph({ output: 12 })],
+        ['two empty fields in a graph', graph({ input: null })],
+        ['a graph off the rule', graph({ input: 7, output: 11, n: 5 })],
+        ['a value above 20', graph({ input: 18, output: null })],
+        ['a negative value', graph({ op: '−', input: 3, output: null })],
+        ['two empty outputs in a table', table([1, null, null])],
+        ['no empty output in a table', table([1, 3, 6])],
+        ['a table off the rule', table([1, 4, null])],
+        ['outputs of another length', table([1, null], [3, 5, 8])],
+        ['a rule of zero', graph({ n: 0, output: 7 })],
+        ['duplicate inputs', table([1, 1, null], [3, 3, 8])],
+    ])('rejects %s', (_name, v) => {
+        expect(validateVisual(v)).not.toEqual([]);
+    });
+});

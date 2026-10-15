@@ -33,7 +33,7 @@ const SMALL_SPACES: Record<string, { minDistinct: number; measured: string }> = 
 // 64 characters is the longest hint measured to wrap into two lines there.
 const KEYPAD_HINT_MAX = 64;
 // Keypad first hints longer than KEYPAD_HINT_MAX before the rule existed; each one is a follow-up, never a new entry.
-const LONG_KEYPAD_HINTS: ReadonlySet<string> = new Set(['E5.5.capacity_quarter_l']);
+const LONG_KEYPAD_HINTS: ReadonlySet<string> = new Set<string>();
 const MAX_TOP_SHARE = 0.15;        // the most frequent task
 const MAX_DEGENERATE_SHARE = 0.1;  // n − n, n : n
 const MAX_ZERO_ONE_SHARE = 0.35;   // ·0 and ·1 when allowed
@@ -82,7 +82,7 @@ for (const stage of Object.values(stages)) {
                         const key = `${task.prompt}|${visualKey(task.visual)}|${(task.choices ?? []).join('/')}`;
                         seen.set(key, (seen.get(key) ?? 0) + 1);
 
-                        if (skill.answer === 'keypad' && !LONG_KEYPAD_HINTS.has(skill.id)) {
+                        if ((skill.answer === 'keypad' || skill.answer === 'digits') && !LONG_KEYPAD_HINTS.has(skill.id)) {
                             expect((firstHint(task) ?? '').length, `${where} first hint fits two lines of the keypad bar`).toBeLessThanOrEqual(KEYPAD_HINT_MAX);
                         }
 

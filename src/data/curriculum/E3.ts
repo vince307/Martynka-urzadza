@@ -33,7 +33,7 @@ export const E3: StageDef = {
             childName: 'Działania do 20 z okienkiem',
             types: ['ADD_SUB', 'MISSING'],
             skills: [
-                addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten' }),
+                addSub('E3.2.add_sub_20_bridge', 2, { max: 20, ops: ['+', '-'], bridge: 'ten', line: true }),
                 skill('E3.2.missing_20', 2, 'MISSING', { max: 20, ops: ['+', '-'], bridge: 'ten' }),
             ],
         },
@@ -79,7 +79,7 @@ export const E3: StageDef = {
             childName: 'Działania do 30',
             types: ['PLACE_VALUE', 'ADD_SUB'],
             skills: [
-                addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none' }),
+                addSub('E3.6.add_sub_30_nobridge', 6, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'none', line: true }),
                 skill('E3.6.place_read_30', 6, 'PLACE_VALUE', { variant: 'read', min: 11, max: 30 }),
                 skill('E3.6.place_tens_30', 6, 'PLACE_VALUE', { variant: 'tens', min: 11, max: 30 }),
                 skill('E3.6.place_build_30', 6, 'PLACE_VALUE', { variant: 'build', min: 11, max: 30 }, 'drag'),
@@ -103,7 +103,7 @@ export const E3: StageDef = {
             title: '+ i − do 30 z przekroczeniem, dwie dwucyfrowe',
             childName: 'Przekraczanie dziesiątki',
             types: ['ADD_SUB'],
-            skills: [addSub('E3.8.add_sub_30_bridge', 8, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'any' })],
+            skills: [addSub('E3.8.add_sub_30_bridge', 8, { max: 30, shapes: ['DU+U', 'DU-U', 'DU+DU', 'DU-DU'], bridge: 'any', line: true })],
         },
         {
             step: 9,
@@ -114,6 +114,7 @@ export const E3: StageDef = {
                 skill('E3.9.mult_30', 9, 'MULT', { maxProduct: 30, maxFactor: 10, allowZeroOne: true }),
                 skill('E3.9.mult_groups_result', 9, 'MULT_GROUPS', { variant: 'result', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
                 skill('E3.9.mult_groups_expr', 9, 'MULT_GROUPS', { variant: 'expr', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
+                skill('E3.9.mult_groups_jumps', 9, 'MULT_GROUPS', { variant: 'jumps', groups: [2, 5], size: [2, 6], max: 30 }, 'tiles'),
                 skill('E3.9.word_groups_30', 9, 'WORD', { max: 30, kinds: ['groups'], maxFactor: 6 }),
             ],
         },

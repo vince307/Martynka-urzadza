@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { RoundView } from '../../core/round/view';
+import { keepTogether } from '../../core/text/nowrap';
 import { TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ActionButton } from './ActionButton';
@@ -44,7 +45,7 @@ export class SolutionSteps {
 
     /** Height of the lines at scale 1, wrapped at `maxWidth` (the text keeps them, ready to be placed). */
     private measure(bar: SolutionBar, maxWidth: number): number {
-        this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.join('\n'));
+        this.text.setScale(1).setWordWrapWidth(maxWidth, true).setText(bar.lines.map(keepTogether).join('\n'));   // an equation never breaks (visual gate S-14b)
         return this.text.height;
     }
 

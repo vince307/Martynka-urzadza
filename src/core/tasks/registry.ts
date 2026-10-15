@@ -2,6 +2,7 @@
 // without an entry are reported by scripts/sample.ts as "brak generatora"
 // instead of failing. Parsers reject parameters that would have no solutions.
 import { generateAddSub, parseAddSubParams } from './generators/addSub';
+import { generateArrowTable, parseArrowTableParams } from './generators/arrowTable';
 import { generateBonds, parseBondsParams } from './generators/bonds';
 import { generateCalendar, parseCalendarParams } from './generators/calendar';
 import { generateCapacity, parseCapacityParams } from './generators/capacity';
@@ -35,6 +36,7 @@ import { generateRounding, parseRoundingParams } from './generators/rounding';
 import { generateSequence, parseSequenceParams } from './generators/sequence';
 import { generateTemperature, parseTemperatureParams } from './generators/temperature';
 import { generateWord, parseWordParams } from './generators/word';
+import { generateWritten, parseWrittenParams } from './generators/written';
 import type { Generator } from './types';
 
 export type ParamsParser = (params: Record<string, unknown>) => unknown;
@@ -75,6 +77,8 @@ export const generators: Readonly<Record<string, Generator>> = {
     TEMPERATURE: generateTemperature,
     COUNT: generateCount,
     MULT_GROUPS: generateMultGroups,
+    WRITTEN: generateWritten,
+    ARROW_TABLE: generateArrowTable,
 };
 
 export const parsers: Readonly<Record<string, ParamsParser>> = {
@@ -113,6 +117,8 @@ export const parsers: Readonly<Record<string, ParamsParser>> = {
     TEMPERATURE: parseTemperatureParams,
     COUNT: parseCountParams,
     MULT_GROUPS: parseMultGroupsParams,
+    WRITTEN: parseWrittenParams,
+    ARROW_TABLE: parseArrowTableParams,
 };
 
 const has = (record: Readonly<Record<string, unknown>>, type: string): boolean => Object.prototype.hasOwnProperty.call(record, type);

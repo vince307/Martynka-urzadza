@@ -1,0 +1,13 @@
+diff --git a/src/core/round/digitBoxes.ts b/src/core/round/digitBoxes.ts
+index 51535c1..1d06f86 100644
+--- a/src/core/round/digitBoxes.ts
++++ b/src/core/round/digitBoxes.ts
+@@ -19,7 +19,7 @@ export const stepDigitBoxes = (s: DigitBoxes, key: KeypadKey): { state: DigitBox
+     if (s.digits.length >= s.count) {
+         return { state: s, submit: null };
+     }
+-    return { state: { count: s.count, digits: [...s.digits, Number(key)] }, submit: null };
++    return { state: { count: s.count, digits: [Number(key), ...s.digits] }, submit: null };
+ };
+ 
+ /** One box per column of the task's written column; any other drawing has no boxes. */

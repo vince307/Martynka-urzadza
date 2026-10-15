@@ -162,6 +162,9 @@ for (const step of stage!.steps) {
                 if (task.visual) {
                     console.log(`    visual: ${describeVisual(task.visual)}`);
                 }
+                if (task.hintVisual) {
+                    console.log(`    hint visual: ${describeVisual(task.hintVisual)}`);
+                }
                 console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
                 console.log(`      czyta: ${spokenTask(task, pl.speech, pl.round.calculate)}`);
             } catch (error) {

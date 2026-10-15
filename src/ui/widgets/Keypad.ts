@@ -20,6 +20,8 @@ export class Keypad {
     private buffer = '';
     private active = false;
     private correct = false;
+    private keyMode = false;   // the keys go to the scene (digit boxes), the entry field stays hidden
+    private visible = true;
     private readonly buttons: Button[] = [];
     private readonly field: Rect;
     private readonly fieldGraphics: GameObjects.Graphics;
@@ -30,6 +32,7 @@ export class Keypad {
         scene: Scene,
         private readonly maxDigits: number,
         private readonly onSubmit: (value: number) => void,
+        private readonly onKey?: (key: KeypadKey) => void,
     ) {
         const grid = keypadGrid(TASK_LAYOUT.keypad);
         this.field = grid.field;
@@ -59,9 +62,22 @@ export class Keypad {
         this.active = active;
     }
 
+    /** Key mode (the 'digits' task): every key is handed to `onKey`, the entry field is not drawn. */
+    setKeyMode(on: boolean): void {
+        if (on === this.keyMode) {
+            return;   // render() calls this on every redraw; only a change of mode clears what was typed
+        }
+        this.keyMode = on;
+        this.buffer = '';
+        this.paintField();
+        this.setVisible(this.visible);
+    }
+
     setVisible(visible: boolean): void {
+        this.visible = visible;
         this.objects.forEach((o) => {
-            (o as GameObjects.GameObject & { setVisible(v: boolean): unknown }).setVisible(visible);
+            const shown = visible && !(this.keyMode && (o === this.fieldGraphics || o === this.fieldText));
+            (o as GameObjects.GameObject & { setVisible(v: boolean): unknown }).setVisible(shown);
             if (o.input) {
                 o.input.enabled = visible;
             }
@@ -92,6 +108,10 @@ export class Keypad {
         }
         button.pressed = true;
         this.paintButton(button);   // synchronous highlight
+        if (this.keyMode) {
+            this.onKey?.(button.key);
+            return;
+        }
         const result = keypadInput(this.buffer, button.key, this.maxDigits);
         this.buffer = result.buffer;
         this.paintField();

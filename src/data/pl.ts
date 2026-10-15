@@ -317,6 +317,13 @@ export const pl = {
             moreBy: 'Jest więcej, więc dodajemy.',
         },
         sequence: 'Uzupełnij ciąg:',
+        // ARROW_TABLE (S-14b, DESIGN-GAP 89: the kit has no arrow-graph copy, the texts are ours): the rule line never states a result.
+        arrowGraph: 'Uzupełnij graf.',
+        arrowTable: 'Uzupełnij tabelkę.',
+        arrowRule: (plus: boolean, n: number) => (plus ? `Reguła strzałki: dodaj ${n} do liczby.` : `Reguła strzałki: odejmij ${n} od liczby.`),
+        arrowRuleBack: (plus: boolean, n: number, from: number) => (plus ? `Idź pod prąd strzałki: od ${from} odejmij ${n}.` : `Idź pod prąd strzałki: do ${from} dodaj ${n}.`),
+        multGroupsJumps: 'Które działanie pokazują skoki?',
+        multGroupsJumpsHint: 'Policz skoki i sprawdź, jak długi jest jeden skok.',
         sequenceHint: (step: number, up: boolean) =>
             `Każda następna liczba jest o ${step} ${up ? 'większa' : 'mniejsza'}.`,
         missingOpHint: (a: number, plus: boolean) =>
@@ -457,9 +464,9 @@ export const pl = {
         capacityLitresPrompt: 'Ile litrów wody jest w dzbankach?',
         capacityLitresSpeak: 'Popatrz na dzbanki. Ile litrów wody jest w dzbankach?',
         capacityOneLitreFact: 'Każdy duży dzbanek mieści litr.',
-        capacityHalfFact: 'Dwa dzbanki po pół litra to razem litr.',
+        capacityHalfFact: 'Dwa dzbanki po pół litra to litr.',
         capacityQuarterFact: 'Cztery dzbanki po ćwierć litra to razem litr.',
-        capacityQuarterAlso: 'Cztery dzbanki po ćwierć litra też.',
+        capacityQuarterAlso: 'Cztery po ćwierć litra też.',
         capacityLitresAnswerHint: (litres: string) => `To razem ${litres}.`,
         capacityHowMany: (jug: 'half' | 'quarter', litres: string) =>
             `Ile dzbanków po ${jug === 'half' ? 'pół' : 'ćwierć'} litra potrzeba, żeby nalać ${litres} wody?`,
@@ -485,6 +492,7 @@ export const pl = {
         multGroupsResultHint: 'Policz, ile jest talerzyków i ile jest na jednym.',
         multGroupsExpr: 'Które działanie pokazuje obrazek?',
         multGroupsExprHint: 'Zobacz, ile jest grup i ile ikon w jednej grupie.',
+        multGroupsJumpsCountsHint: (jumps: number, length: number) => `Skoków: ${jumps}. Każdy ma długość ${length}.`,
         multGroupsCountsHint: (groups: number, size: number) => `Grup: ${groups}. W każdej po ${size}.`,
         multGroupsExprAnswerHint: (expr: string) => `Pasuje ${expr}.`,
         // PLACE_VALUE and DATA (S-13). The blocks and the bar chart are drawings; the texts only name them.
@@ -536,6 +544,18 @@ export const pl = {
             `Obwód prostokąta wynosi ${perimeter} cm. Jeden bok ma ${side} cm. Ile centymetrów ma drugi bok?`,
         perimeterCompositePrompt: 'Bok każdej kratki ma 1 cm. Oblicz obwód tej figury w centymetrach.',
         sideLabel: (cm: number) => `${cm} cm`,   // written at a side of a drawn figure
+        // WRITTEN (S-14b, DESIGN-GAP 90, 91): the kit has no copy for the column task; prompts and step lines are ours.
+        writtenAddPrompt: (a: number, b: number) => `Dodaj w słupku: ${a} + ${b}`,
+        writtenSubPrompt: (a: number, b: number) => `Odejmij w słupku: ${a} − ${b}`,
+        writtenColumnNames: ['Jedności', 'Dziesiątki', 'Setki'] as readonly string[],
+        writtenBorrowFrom: ['dziesiątkę', 'setkę'] as readonly string[],   // accusative: the unit borrowed from the next column
+        writtenAddLine: (name: string, terms: string, total: number, carry: boolean) =>
+            carry ? `${name}: ${terms} = ${total}. Piszę ${total - 10}, 1 dalej.` : `${name}: ${terms} = ${total}.`,
+        writtenSubLine: (name: string, a: number, b: number) => `${name}: ${a} − ${b} = ${a - b}.`,
+        writtenSubLineReduced: (name: string, was: number, now: number, b: number) => `${name}: było ${was}, po pożyczce ${now}. ${now} − ${b} = ${now - b}.`,
+        writtenSubBorrowLine: (name: string, a: number, b: number, unit: string) => `${name}: ${a} − ${b} nie da się. Pożyczam ${unit}: ${a + 10} − ${b} = ${a + 10 - b}.`,
+        writtenSubBorrowLineReduced: (name: string, was: number, now: number, b: number, unit: string) =>
+            `${name}: było ${was}, po pożyczce ${now}. ${now} − ${b} nie da się. Pożyczam ${unit}: ${now + 10} − ${b} = ${now + 10 - b}.`,
         perimeterHint: 'Obwód to suma długości wszystkich boków.',
         perimeterSquareHint: 'Kwadrat ma cztery równe boki.',
         perimeterSideRectHint: 'Obwód to dwa razy suma dwóch sąsiednich boków.',
