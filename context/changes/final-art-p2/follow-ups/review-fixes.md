@@ -47,3 +47,12 @@ Each item has a `Trigger:` line; later slices grep for them. Nothing from earlie
   Trigger: precache over budget, or a PNG optimiser available without a new npm dependency
 - F6: `scripts/make-icons.mjs` `fail()` exits inside `try`, leaving the temp dir; a missing binary prints `ENOENT` instead of the "is cwebp installed?" text of `make-task-art.mjs`.
   Trigger: the next change to `scripts/make-icons.mjs`
+
+## From the visual gate
+
+- VO1: a coin placed in the pack wallet is drawn about 84 game px wide (inside its 144 × 104 box, `TASK_LAYOUT.coinPay.coinInset`), visibly smaller than the same coin in its tray tile (≈ 40 vs ≈ 50 CSS px at 1024). The touch target is the whole box, so it is above the touch limit; only the look differs (`CoinWallet.paint`).
+  Trigger: [human] row 10.4 (paying by finger on the iPad) or the author's note on the wallet
+- VO2: the loading screen keeps the plan's layout (`LOADING_LAYOUT`: emblem 300² above the title in the middle), while the pack preview `screenshots/loading-screen.png` shows a larger emblem in the centre and the title near the bottom. The ivory outline from the visual gate (`LOADING_LAYOUT.textStroke`) matches the pack's title.
+  Trigger: the author asks for the pack's composition
+- VO3: the drawn wallet fallback (no `wallet-open.webp`) is the S-14d white dashed field; it pays, but it does not look like a wallet.
+  Trigger: a field report of the drawn wallet, or the next change to `CoinWallet`

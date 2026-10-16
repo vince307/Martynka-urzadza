@@ -803,7 +803,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 4.4 [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred, 10 zł note fits, full wallet dims the tray, coins ≥ touch size; feedback bar above the wallet's lower edge
+- [x] 4.4 [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred, 10 zł note fits, full wallet dims the tray, coins ≥ touch size; feedback bar above the wallet's lower edge — visual gate: frames w01-w11 (`reviews/visual-review.md`), held first coin leaves its own cell empty (w08)
 - [x] 4.5 [reviewer] No number or text in the widget; DESIGN-GAP 115 row and comment — impl-review: no number/text in CoinWallet; gap 115 row and comment
 
 ### Phase 5: Loading screen with background and emblem
@@ -816,7 +816,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 5.4 [visual] Loading screen at 1440 and 1024: background, emblem, title readable, bar and slow line
+- [x] 5.4 [visual] Loading screen at 1440 and 1024: background, emblem, title readable, bar and slow line — visual gate: frames l01-l04; title outline added in 076c213
 - [x] 5.5 [reviewer] `progress` listener removed; `loaderror` listener untouched; `totalMs` comment numbers match the files — impl-review: listener removed, loaderror untouched; totalMs comment fixed in 04863b9
 
 ### Phase 6: Notebook on the unlock card, salon thumbnail fallback on "Pokój gotowy!"
@@ -828,7 +828,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 6.3 [visual] Unlock card with the notebook; "Pokój gotowy!" live and (with `?e2eArt=room`) thumbnail, at 1440 and 1024
+- [x] 6.3 [visual] Unlock card with the notebook; "Pokój gotowy!" live and (with `?e2eArt=room`) thumbnail, at 1440 and 1024 — visual gate: frames u01, d01-d03
 - [x] 6.4 [reviewer] `drawRoomMiniature` untouched for the live path; no new text or numbers in widgets — impl-review: RoomView.ts unchanged
 
 ### Phase 7: App icons from the pack
