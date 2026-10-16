@@ -192,6 +192,37 @@ export const dragTouch = async (page: Page, from: Point, to: Point, steps = 8): 
     await dragGesture(page, from, to, steps, 'touchEnd');
 };
 
+/**
+ * A finger that starts on `from`, travels to `to` (scene space) and STAYS DOWN: the gesture is mid-way while the caller reads the hook.
+ * `release(end)` moves to `end`, lifts the finger and detaches. (Not `holdTouch`, which is the long press of the room.)
+ */
+export const holdDrag = async (page: Page, from: Point, to: Point, steps = 4): Promise<{ release(end: Point): Promise<void> }> => {
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        const start = await toPage(page, from);
+        const stop = await toPage(page, to);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+        for (let step = 1; step <= steps; step++) {
+            const at = { x: start.x + ((stop.x - start.x) * step) / steps, y: start.y + ((stop.y - start.y) * step) / steps };
+            await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+        }
+    } catch (error) {
+        await cdp.detach();
+        throw error;
+    }
+    return {
+        release: async (end: Point): Promise<void> => {
+            try {
+                const at = await toPage(page, end);
+                await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+                await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            } finally {
+                await cdp.detach();
+            }
+        },
+    };
+};
+
 /** The same drag, but the system cancels the touch (touchCancel) instead of lifting the finger. */
 export const cancelTouch = async (page: Page, from: Point, to: Point, steps = 8): Promise<void> => {
     await dragGesture(page, from, to, steps, 'touchCancel');
