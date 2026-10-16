@@ -16,6 +16,7 @@ import { createIdbSaveStore, requestPersistence } from './storage/idb';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
+import type { SwStatus } from './core/swStatus';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
 import { RoomScene } from './scenes/RoomScene';
@@ -247,6 +248,8 @@ const start = async (): Promise<void> => {
     const today = (): string => pinnedDay ?? localDay(new Date());
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
+    swTarget = game;
+    if (lastSwStatus) game.registry.set(REGISTRY_KEYS.swStatus, lastSwStatus);
     let refusedCardUp = false;
     // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({
@@ -321,6 +324,12 @@ container?.addEventListener('touchend', unlockSpeech);
 mountRotateOverlay(document.body);
 // Android would open a context menu on a long press; the parent's long press must not.
 container?.addEventListener('contextmenu', (event) => event.preventDefault());
-registerServiceWorker();
+// The status may arrive before the game exists: keep the last one and hand it over when `start` has built the game.
+let lastSwStatus: SwStatus | null = null;
+let swTarget: Game | null = null;
+registerServiceWorker((status) => {
+    lastSwStatus = status;
+    swTarget?.registry.set(REGISTRY_KEYS.swStatus, status);
+});
 
 void start();   // a rejected start is a real startup failure: the error boundary shows the card

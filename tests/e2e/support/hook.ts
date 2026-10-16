@@ -29,6 +29,8 @@ export interface Snapshot {
     art?: { key: string; loaded: boolean; label: string | null }[];
     /** Task pictures that did not load (texture missing or not decodable) against all that were queued; null before the load ends. */
     artHealth?: { total: number; missing: number } | null;
+    /** The service worker's runtime record (phase, error name, takeover); null before the first status. */
+    sw?: { phase: string; error: string | null; takenOver: boolean } | null;
     /** The same for the salon pictures (S-16a); null before the load ends. */
     roomArtHealth?: { total: number; missing: number } | null;
     /** The tiles marked in the 'select' mode. */
