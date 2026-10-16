@@ -700,9 +700,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 2.1 Full local gate green; unit `<branch baseline> + N` (layout and miniature assertions); build prints `e2e hook: absent (`
+- [x] 2.1 Full local gate green; unit `<branch baseline> + N` (layout and miniature assertions); build prints `e2e hook: absent (` (e2e part: orchestrator, 2.2)
 - [ ] 2.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (no visible change with today's data)
-- [ ] 2.3 Deliberate break: `depth.shadows` 6 → layout assertion red; restored; patch `e2e-break-p6a.patch` written; meta-check in the handoff
+- [x] 2.3 Deliberate break: `depth.shadows` 6 → layout assertion red; restored; patch `e2e-break-p6a.patch` written; meta-check in the handoff
 
 #### Manual
 

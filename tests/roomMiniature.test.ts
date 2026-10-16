@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { miniaturePieces } from '../src/ui/widgets/RoomView';
+import { shownVariants } from '../src/core/rooms';
 import { SALON } from '../src/data/rooms';
 import type { RoomState } from '../src/core/types';
 
@@ -28,5 +29,16 @@ describe('miniaturePieces', () => {
         expect(slotKeys).toHaveLength(SALON.slots.length);
         const sofa = SALON.slots[0];
         expect(slotKeys).toContain(sofa.variants[2]);
+    });
+
+    it('draws exactly the shown slots, in z order, for a renovated state', () => {
+        const state: RoomState = { tasksDone: 1, chosen: { [SALON.slots[0].id]: 1 } };
+        const shown = shownVariants(SALON, state);
+        const expected = SALON.slots
+            .filter((s) => shown[s.id] !== undefined)
+            .sort((a, b) => a.z - b.z)
+            .map((s) => s.variants[shown[s.id]]);
+        const slotKeys = keys(state).filter((k) => SALON.slots.some((s) => s.variants.includes(k)));
+        expect(slotKeys).toEqual(expected);
     });
 });

@@ -1,0 +1,11 @@
+--- a/src/ui/widgets/RoomView.ts
++++ b/src/ui/widgets/RoomView.ts
+@@ -90,7 +90,7 @@
+                 layer(`decor:${art.id}`).show(art.key, art, art.z, { box: layerBox(art), fill: standIn.decorFill, alpha: standIn.decorAlpha, caption });
+             });
+         }
+-        const shown = shownVariants(room, { ...state, chosen });
++        const shown = chosen;
+         this.shownNow = {};
+         room.slots.forEach((slot) => {
+             const variant = shown[slot.id];
