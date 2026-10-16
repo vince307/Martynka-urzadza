@@ -1,15 +1,15 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the visual-gate step of run 2026-10-16-audit-sweep. All five `[visual]` rows are captured at 1440×900 and 1024×768 and ticked, with `VISUAL: PASS`. No source changed in this step. The save format stays v4 and the frozen fixtures are untouched; the next agent must not change what is saved.
+Written by the visual-gate step of run 2026-10-16-audit-sweep, final pre-merge state stamped by the ship step (archive + ship). All five `[visual]` rows are captured at 1440×900 and 1024×768 and ticked, with `VISUAL: PASS`. No source changed in this step. The save format stays v4 and the frozen fixtures are untouched; the next agent must not change what is saved.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1-p14 + handoffs, then review fix `03a597e`, then `76daf9a` `docs(child-flow-guards): impl review`, then `docs(child-flow-guards): bramka wizualna` (this step) |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` sets the next status) |
+| Commits | docs + p1-p14 + handoffs, then review fix `03a597e`, then `76daf9a` `docs(child-flow-guards): impl review`, then `08506a3` `docs(child-flow-guards): bramka wizualna`, then this handoff and `chore(archive): close child-flow-guards` (ship step) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-16-audit-sweep/run-log.md |
+| `change.md` status | `archived` (set by `/10x-archive` in the ship step) |
 | `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): `[human]` 2.7, 5.7, 6.7, 9.5, 14.4; `[reviewer] (CI at ship)` 13.7 |
 | Working tree | clean after the commit (the throwaway spec was moved out of the repo) |
 
@@ -39,7 +39,7 @@ There were no deliberate breaks in this step (no test or source was added).
 
 ## 4. Next command
 
-`/10x-archive child-flow-guards then ship`
+`none — shipped`
 
 ## 5. Open
 
@@ -62,6 +62,8 @@ There were no deliberate breaks in this step (no test or source was added).
 **DESIGN-GAP rows:** 122-125 are unchanged. No new gap: everything shown is covered by them.
 
 ## 6. Autonomous decisions
+
+- **Ship step: archived with 6 open rows (`Continue archiving`, the skill's Recommended option: 0 automated, 6 manual).** The five `[human]` rows (2.7, 5.7, 6.7, 9.5, 14.4) go to the post-run checklist; they need a tablet or the product owner and do not block the archive. Row 13.7 `[reviewer] (CI at ship)` is ticked in the archived plan from the PR's CI log. No SHA repointing: the slice merges with a merge commit, so the phase SHAs stay in main's history. No roadmap row (non-roadmap change). Would change: a failing CI or a reviewer asking to keep the change open.
 
 - **Playwright fallback, not Claude in Chrome.** Every state needs canvas touches (wallet drags, the 2 s gear hold, whole rounds), and the previous gate took the same route. Would change: a Chrome tool that drives canvas touches.
 - **E6.11 reached through the parent import plus play.** I imported the save file of `tests/e2e/review-round.spec.ts` through the parent's "Wczytaj z pliku", widened to every E6 skill at mastery 5, then unlocked E6.11 with one round of play. The rejected options were mastering E6 by play (out of reach) and writing IndexedDB (forbidden). Would change: an `e2eStep` URL seam.
