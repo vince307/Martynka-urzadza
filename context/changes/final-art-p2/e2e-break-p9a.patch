@@ -1,0 +1,13 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index 3ed7576..f82067a 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -76,7 +76,7 @@ export class BootScene extends Scene {
+                 }
+             };
+             artEvents.push([event, show]);
+-            this.load.on(event, show);
++            void show;
+             this.load.image(art.key, art.url);
+         }
+         // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,

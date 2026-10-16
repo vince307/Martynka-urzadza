@@ -444,6 +444,8 @@ export const UNLOCK_LAYOUT = {
 
 /** Loading screen of BootScene (S-16a): the title and the progress bar, centred. DESIGN-GAP: no brand art yet (designer brief P2.2). */
 export const LOADING_LAYOUT = {
+    background: { width: 1920, height: 1080 },   // the pack's loading background fills the canvas
+    emblem: { x: 960, y: 270, size: 300 },       // the pack's emblem, 300 square, above the title
     title: { x: 960, y: 450 },
     bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
     slow: { x: 960, y: 680, maxWidth: 800 },   // DESIGN-GAP 112: the "still loading" line under the bar, centred like the title, wrapped within the bar width
