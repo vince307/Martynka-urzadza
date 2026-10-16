@@ -225,6 +225,9 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let backupFails = 0;
     let backupError: string | null = null;
     let migrationWrittenAt: number | null = null;
+    let owedNoted = false;
+    let copying: Promise<void> | null = null;
+    let migrationRetries = 0;
     const backupOwed = (): boolean => backup === 'pending' || backup === 'failed';
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
@@ -241,6 +244,55 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         log(`autosave: writing v${SAVE_VERSION} without the v${options.migrated?.from ?? '?'} copy`, { from: options.migrated?.from ?? null, backupError, attempts: backupFails });
     };
 
+    /**
+     * Stores what is known about the owed copy BEFORE a write that leaves it owed (plan review F2): a hidden flush is often the
+     * last thing a page does, so the cap may never be reached. Never awaited past: a failure or hang is logged, the write goes on.
+     * A later successful copy overwrites the record with `kept` in its own transaction.
+     */
+    const noteOwed = (): void => {
+        if (!options.migrated) return;
+        const record: BackupRecord = { from: options.migrated.from, result: isTimeoutError(backupError) ? 'uncertain' : 'lost', error: backupError, at: options.now() };
+        try {
+            limited(store.noteBackup(record)).catch((e: unknown) => log('autosave: noteBackup failed', e));
+        } catch (e) {
+            log('autosave: noteBackup failed', e);
+        }
+    };
+
+    /**
+     * One try of the copy, ALWAYS after the progress was written; the source is only `migrated.raw`, never the stored key.
+     * Never throws. A failed try counts once (V-6); at `backupAttempts` the copy is given up for good and the record says so (V-7).
+     */
+    const tryCopy = async (final: boolean): Promise<void> => {
+        const migrated = options.migrated;
+        if (!migrated || !backupOwed()) return;
+        try {
+            await limited(store.backup(migrated.raw, migrated.from));
+            backup = 'done';
+        } catch (e) {
+            backupFails++;
+            backupError = errorName(e);
+            backup = 'failed';
+            failures++;
+            lastError = backupError;
+            lastFailure = { stage: 'backup', error: backupError };
+            log('autosave: backup failed', e);
+            if (final || backupFails >= options.backupAttempts) {
+                skipBackup();
+                noteOwed();
+            }
+        }
+    };
+
+    /** The copy runs beside the saver, never inside a write: a hanging copy must not hold the next progress write. */
+    const startCopy = (reason: WriteReason): void => {
+        if (copying !== null || !backupOwed()) return;
+        if (reason === 'hidden' && backupFails > 0) return;   // the page is going away: progress first, the copy stays owed
+        copying = tryCopy(false).finally(() => {
+            copying = null;
+        });
+    };
+
     /** One write attempt; resolves true on success. Never throws. */
     const attempt = async (reason: WriteReason): Promise<boolean> => {
         let stage: FailureStage = 'encode';
@@ -248,39 +300,20 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             const encoded = encodeSave(snapshot());
             if (!validateSave(encoded)) throw Object.assign(new Error(`autosave: encoded state does not validate (${saveProblem(encoded) ?? 'unknown'})`), { name: 'InvalidSave' });
             dirty = false;
-            // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
-            // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is
-            // the first attempt, the current version is written without the copy: the child's progress is worth more than the raw old bytes (SV2-01).
-            let giveUpCopy = false;
-            if (backupOwed() && options.migrated) {
-                stage = 'backup';
-                if (reason === 'hidden' && backupFails > 0) {
-                    giveUpCopy = true;
-                } else {
-                    try {
-                        await limited(store.backup(options.migrated.raw, options.migrated.from));
-                        backup = 'done';
-                    } catch (e) {
-                        backupFails++;
-                        backupError = errorName(e);
-                        backup = 'failed';
-                        if (reason !== 'hidden' && backupFails < options.backupAttempts) throw e;
-                        failures++;
-                        lastError = backupError;
-                        lastFailure = { stage: 'backup', error: backupError };
-                        log('autosave: backup failed', e);
-                        giveUpCopy = true;
-                    }
-                }
+            // The child's progress is written first and never waits on the copy of the old bytes (SVB-01); the copy follows the write.
+            const owed = backupOwed() && options.migrated !== undefined;
+            if (owed && !owedNoted) {
+                owedNoted = true;
+                noteOwed();
             }
             stage = 'write';
             await limited(store.write(encoded));
-            if (giveUpCopy) skipBackup();
             writes++;
             lastWriteAt = options.now();
             if (options.migrated && migrationWrittenAt === null) migrationWrittenAt = lastWriteAt;
             consecutiveFailures = 0;
             lastReason = reason;
+            if (owed) startCopy(reason);
             if (!firstDone) {
                 firstDone = true;
                 try {
@@ -320,6 +353,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
                         log('autosave: onBlocked listener failed', listenerError);
                     }
                 }
+            }
+            // The first write after a migration re-arms itself, a bounded number of times (the child may never change anything).
+            if (!writesOff() && options.migrated !== undefined && migrationWrittenAt === null && migrationRetries < balance.save.migrationWriteRetries) {
+                migrationRetries++;
+                arm();
             }
             return false;
         }
@@ -379,22 +417,12 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         cancelTimer();
         try {
             await inflight;
-            // A copy still owed is tried once and never waited on twice: a failure only marks it skipped (SRR-04).
-            let giveUpCopy = false;
-            if (backupOwed() && options.migrated) {
-                try {
-                    await limited(store.backup(options.migrated.raw, options.migrated.from));
-                    backup = 'done';
-                } catch (e) {
-                    backupFails++;
-                    backupError = errorName(e);
-                    backup = 'failed';
-                    log('autosave: backup failed', e);
-                    giveUpCopy = true;
-                }
-            }
+            // The same accounting as a normal write: the record first, the save, then the copy tried once and never waited on twice (SRR-04, V-7).
+            const owed = backupOwed() && options.migrated !== undefined;
+            if (owed) noteOwed();
             await limited(store.write(state, 'replace'));
-            if (giveUpCopy) skipBackup();
+            if (owed) await copying;
+            if (owed) await tryCopy(true);
         } catch (e) {
             replacing = false;
             failures++;

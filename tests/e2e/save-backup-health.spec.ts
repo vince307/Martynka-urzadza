@@ -52,7 +52,7 @@ test('#2 SV2-01 a v1 save whose copy always fails is written as v4 after three t
     expect(['pending', 'failed']).toContain((await snapshot(page)).save?.backup);
 
     // Rounds until the third failed copy: a round is several save attempts, so one is normally enough.
-    for (let round = 0; round < 3 && (await snapshot(page)).save?.store?.writtenVersion !== SAVE_VERSION; round++) {
+    for (let round = 0; round < 3 && (await snapshot(page)).save?.backup !== 'skipped'; round++) {
         await playRoundRight(page, 5);
         if (round < 2) {
             await tapTarget(page, 'nextRound');
@@ -61,9 +61,11 @@ test('#2 SV2-01 a v1 save whose copy always fails is written as v4 after three t
             await screenIs(page, 'task');
         }
     }
-    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
+    await expect.poll(async () => (await snapshot(page)).save?.backup).toBe('skipped');
     const save = (await snapshot(page)).save!;
-    expect(save.store!.ops.slice(0, 4)).toEqual(['backup', 'backup', 'backup', 'write']);
+    // save-truth p5: the progress is written first, each failed copy follows a write.
+    expect(save.store!.writtenVersion).toBe(SAVE_VERSION);
+    expect(save.store!.ops[0]).toBe('write');
     expect(save.store!.ops.filter((op) => op === 'backup')).toHaveLength(3);
     expect(save).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', blocked: false });
 

@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { backupExtras } from './helpers';
-import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type BackupRecord, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -29,13 +29,21 @@ const session = (stars: number): SessionSave => {
 
 /** Store over a Map: counts writes, can fail, and can hold a write until the test resolves it. */
 const makeStore = (initial?: unknown) => {
-    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, writeHangs: false, backupHangs: false, lateReject: null as null | ((e: Error) => void), ops: [] as string[], backups: [] as { raw: unknown; from: number }[] };
+    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, writeHangs: false, backupHangs: false, lateReject: null as null | ((e: Error) => void), ops: [] as string[], all: [] as string[], notes: [] as BackupRecord[], noteHangs: false, noteFails: false, backups: [] as { raw: unknown; from: number }[] };
     const pending: (() => void)[] = [];
     const store: SaveStore = {
         read: () => (state.readFails ? Promise.reject(new Error('lost')) : Promise.resolve(state.value)),
         ...backupExtras,
+        noteBackup: (record) => {
+            state.all.push('noteBackup');
+            state.notes.push(record);
+            if (state.noteHangs) return new Promise<void>(() => undefined);
+            if (state.noteFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
+            return Promise.resolve();
+        },
         backup: (raw, from) => {
             state.ops.push('backup');
+            state.all.push('backup');
             if (state.backupHangs) return new Promise<'written'>(() => undefined);
             if (state.backupFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
             state.backups.push({ raw, from });
@@ -43,6 +51,7 @@ const makeStore = (initial?: unknown) => {
         },
         write: (v) => {
             state.ops.push('write');
+            state.all.push('write');
             if (state.writeHangs) return new Promise<void>((_, reject) => void (state.lateReject = reject));
             if (state.fail) return Promise.reject(new Error('quota'));
             const commit = () => {
@@ -700,96 +709,111 @@ describe('backup before the first write after a migration', () => {
         }
     });
 
-    it('copies the raw v1 once, BEFORE the first write, and never again', async () => {
+    // save-truth phase 5: reversed (copy BEFORE the write became copy AFTER it: the progress never waits on the old bytes).
+    it('copies the raw v1 once, AFTER the first write, and never again', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.set(2);
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
         t.set(3);
         t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'write', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
         expect(t.state.backups).toEqual([{ raw: v1, from: 1 }]);
         expect(t.state.writes).toHaveLength(2);
     });
 
-    it('a failing copy before the attempt limit writes nothing, counts as a failure with the copy error, and stays retryable', async () => {
+    // save-truth phase 5: reversed. A failing copy no longer blocks the progress write; it is counted once per try and retried after later writes.
+    it('a failing copy before the attempt limit does not hold the write, counts once per try, and stays retryable', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.writes).toHaveLength(0);
-        expect(t.state.value).toBeUndefined();
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 0, dirty: true, backup: 'failed', backupError: 'QuotaExceededError' });
-        await t.saver.flush('now');
-        expect(t.saver.status().consecutiveFailures).toBe(2);
-        expect(t.state.writes).toHaveLength(0);
-        t.state.backupFails = false;
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
+        await settle();
         expect(t.state.writes).toHaveLength(1);
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, writes: 1, backup: 'done' });
-    });
-
-    it('the third failed copy in a session writes v2 without the copy, once, and says so in the log (SV2-01)', async () => {
-        const t = setup({ migrated, load: 'loaded' });
-        t.state.backupFails = true;
-        t.set(4);
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, failures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 1, dirty: false, backup: 'failed', backupError: 'QuotaExceededError' });
+        t.set(2);
         t.saver.markDirty();
         await t.saver.flush('now');
-        await t.saver.flush('now');
-        expect(t.state.writes).toHaveLength(0);
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
-        expect(t.state.writes.map((w) => w.stars)).toEqual([4]);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', writes: 1, consecutiveFailures: 0, dirty: false });
-        expect(t.logs.filter((l) => String(l[0]).includes('without the v1 copy'))).toHaveLength(1);
-        // later changes write plainly and never ask for the copy again
-        t.set(5);
-        t.saver.markDirty();
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write', 'write']);
-    });
-
-    it('a copy that fails once and then works still comes before the first v2 write', async () => {
-        const t = setup({ migrated, load: 'loaded' });
-        t.state.backupFails = true;
-        t.saver.markDirty();
-        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status().failures).toBe(2);
         t.state.backupFails = false;
+        t.set(3);
+        t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'write']);
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup', 'write', 'backup']);
+        expect(t.state.writes).toHaveLength(3);
+        expect(t.saver.status()).toMatchObject({ writes: 3, backup: 'done' });
+    });
+
+    it('the third failed copy in a session gives the copy up, once, and says so in the log (SV2-01); the progress was written every time', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        for (const stars of [4, 5, 6, 7]) {
+            t.set(stars);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup', 'write', 'backup', 'write']);
+        expect(t.state.writes.map((w) => w.stars)).toEqual([4, 5, 6, 7]);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', writes: 4, consecutiveFailures: 0, dirty: false });
+        expect(t.logs.filter((l) => String(l[0]).includes('without the v1 copy'))).toHaveLength(1);
+    });
+
+    it('a copy that fails once and then works comes after the first v2 write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.state.backupFails = false;
+        t.set(2);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup']);
         expect(t.saver.status().backup).toBe('done');
     });
 
-    it('after a failed copy the page-hide flush writes v2 without trying the copy again', async () => {
+    // save-truth phase 5: reversed ("writes v2 without trying the copy again" gave the copy up at the first hidden flush; now it stays owed).
+    it('after a failed copy the page-hide flush writes progress and keeps the copy owed', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
+        t.set(2);
+        t.saver.markDirty();
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 2 });
     });
 
-    it('a page-hide flush that is the first attempt still tries the copy, and writes v2 even when it fails', async () => {
+    it('a page-hide flush that is the first attempt writes first, then tries the copy', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 1 });
     });
 
-    it('a copy that hangs counts as a timeout failure of the copy', async () => {
+    it('a copy that hangs counts as a timeout failure of the copy, and the write was not held', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupHangs = true;
         t.saver.markDirty();
-        const flushed = t.saver.flush('now');
+        await t.saver.flush('now');
         await settle();
+        expect(t.saver.status()).toMatchObject({ backup: 'pending', writes: 1 });
         t.clock.advance(5000);
-        await flushed;
-        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'timeout', writes: 0 });
+        await settle();
+        await settle();
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'timeout', writes: 1 });
     });
 
     it('a save that was not migrated is written without a copy', async () => {
@@ -802,7 +826,7 @@ describe('backup before the first write after a migration', () => {
     it('replace takes the pending copy once and never waits on a failing one', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.state.backups).toEqual([{ raw: v1, from: 1 }]);
         expect(t.saver.status().backup).toBe('done');
     });
@@ -811,7 +835,7 @@ describe('backup before the first write after a migration', () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', replace: 'done' });
     });
 
@@ -827,11 +851,12 @@ describe('backup before the first write after a migration', () => {
         expect(setup().saver.status().migratedFrom).toBeNull();
     });
 
-    it('the copy is a fact only after the write: pending at the start, done once v2 is written (SV2-03)', async () => {
+    it('the copy is a fact only after the write: pending at the start, done once v2 and the copy are written (SV2-03)', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(t.saver.status().backup).toBe('pending');
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
         expect(t.saver.status()).toMatchObject({ backup: 'done', writes: 1 });
     });
 
@@ -848,14 +873,14 @@ describe('write at start after a migration (audit M-3)', () => {
     const v2 = fixture('save-v2.json');
     const migrated = { from: 2, raw: v2 };
 
-    it('a migrated start writes without a change: the copy first, then the save, reason migration', async () => {
+    it('a migrated start writes without a change: the save first, then the copy, reason migration', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(t.state.ops).toEqual([]);
         expect(t.saver.status()).toMatchObject({ migrationWrittenAt: null, dirty: true });
         t.clock.advance(500);
         await settle();
         await settle();
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.state.backups).toEqual([{ raw: v2, from: 2 }]);
         expect(t.saver.status()).toMatchObject({ lastReason: 'migration', migrationWrittenAt: t.clock.now(), backup: 'done', dirty: false, writes: 1 });
     });
@@ -874,19 +899,23 @@ describe('write at start after a migration (audit M-3)', () => {
         expect(t.clock.pending()).toBe(0);
     });
 
-    it('a failed copy keeps the device save untouched and migrationWrittenAt null; the next tries go on as before', async () => {
+    // save-truth phase 5: reversed. A failed copy no longer keeps the device save untouched; the progress write comes first.
+    it('a failed copy does not hold the start write: migrationWrittenAt is set, the copy stays owed and is retried', async () => {
         const t = setup({ migrated, load: 'loaded', initial: v2 });
         t.state.backupFails = true;
         t.clock.advance(500);
         await settle();
         await settle();
-        expect(t.state.ops).toEqual(['backup']);
-        expect(t.state.value).toBe(v2);
-        expect(t.saver.status()).toMatchObject({ migrationWrittenAt: null, backup: 'failed', writes: 0, dirty: true });
-        t.state.backupFails = false;
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 1 });
         expect(t.saver.status().migrationWrittenAt).not.toBeNull();
+        t.state.backupFails = false;
+        t.set(2);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup']);
+        expect(t.saver.status().backup).toBe('done');
     });
 
     it('a failed write leaves migrationWrittenAt null', async () => {
@@ -901,30 +930,38 @@ describe('write at start after a migration (audit M-3)', () => {
     it('a hidden flush before the timer writes at once', async () => {
         const t = setup({ migrated, load: 'loaded' });
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.saver.status().migrationWrittenAt).not.toBeNull();
     });
 
     it('a v2 copy and the log name the real versions (F4)', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
-        await t.saver.flush('hidden');
+        for (const stars of [2, 3, 4]) {
+            t.set(stars);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
         expect(line?.[0]).toBe('autosave: writing v4 without the v2 copy');
-        expect(line?.[1]).toMatchObject({ from: 2, attempts: 1 });
+        expect(line?.[1]).toMatchObject({ from: 2, attempts: 3 });
     });
 
-    it('F3: a replace whose copy fails and whose own write fails leaves the copy owed and counted', async () => {
+    // save-truth phase 5: reversed. A replace whose own write fails never reaches the copy; the copy stays owed for a later write.
+    it('F3: a replace whose own write fails leaves the copy owed and untried', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.state.fail = true;
         const result = await t.saver.replace(encodeSave(session(5)));
         expect(result.ok).toBe(false);
-        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'QuotaExceededError', replace: 'idle' });
+        expect(t.saver.status()).toMatchObject({ backup: 'pending', replace: 'idle' });
         expect(t.logs.some((l) => String(l[0]).includes('without the v2 copy'))).toBe(false);
         t.state.fail = false;
         await t.saver.flush('now');
-        expect(t.state.ops.filter((o) => o === 'backup').length).toBeGreaterThanOrEqual(2);
+        await settle();
+        expect(t.state.ops.filter((o) => o === 'backup').length).toBeGreaterThanOrEqual(1);
     });
 
     it('F4: a copy that fails and a save that is written is skipped with the real attempt count in the log', async () => {
@@ -933,6 +970,158 @@ describe('write at start after a migration (audit M-3)', () => {
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
         expect(t.saver.status().backup).toBe('skipped');
         expect(t.logs.find((l) => String(l[0]).includes('without the v2 copy'))?.[1]).toMatchObject({ attempts: 1 });
+    });
+});
+
+// save-truth phase 5 (SVB-01, V-6, V-7, P-1): the progress is written first, the copy follows and is bounded.
+describe('copy after the write, bounded retry of the first write (save-truth p5)', () => {
+    const v2 = fixture('save-v2.json');
+    const migrated = { from: 2, raw: v2 };
+
+    it('a hidden flush after a failed copy writes progress and keeps the copy owed', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.set(4);
+        t.saver.markDirty();
+        await t.saver.flush('hidden');
+        await settle();
+        expect(t.state.writes.map((w) => w.stars)).toEqual([1, 4]);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 2 });
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
+    });
+
+    it('a failed first write after a migration is retried without markDirty, at most migrationWriteRetries times', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.fail = true;
+        for (let i = 0; i < 12; i++) {
+            t.clock.advance(500);
+            await settle();
+            await settle();
+        }
+        expect(t.state.ops.filter((o) => o === 'write')).toHaveLength(1 + balance.save.migrationWriteRetries);
+        t.state.fail = false;
+        t.clock.advance(5000);
+        await settle();
+        expect(t.state.writes).toHaveLength(0);
+        // a store that works again, once a change arms the saver, writes
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+    });
+
+    it('a retried first write that works stops the retries', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.fail = true;
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.state.fail = false;
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.clock.advance(5000);
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+        expect(t.saver.status().migrationWrittenAt).not.toBeNull();
+    });
+
+    it('a write that leaves the copy owed notes `lost` first, and a later copy is attempted after the write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.all).toEqual(['noteBackup', 'write', 'backup']);
+        expect(t.state.notes[0]).toMatchObject({ from: 2, result: 'lost' });
+        // the copy is tried after later writes, never again before them, and the note is made once
+        t.state.backupFails = false;
+        t.set(3);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.all).toEqual(['noteBackup', 'write', 'backup', 'write', 'backup']);
+        expect(t.saver.status().backup).toBe('done');
+    });
+
+    it('a hanging noteBackup does not hold the write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.noteHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.state.writes).toHaveLength(1);
+        expect(t.saver.status().writes).toBe(1);
+    });
+
+    it('a failing noteBackup does not hold the write either, and an unhandled rejection never escapes', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.noteFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+        expect(rejections).toEqual([]);
+    });
+
+    it('a hanging copy does not hold the next progress write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        t.set(6);
+        t.saver.markDirty();
+        await t.saver.flush('hidden');
+        expect(t.state.writes.map((w) => w.stars)).toEqual([1, 6]);
+    });
+
+    it('the copy is given up once at backupAttempts, with a lost record, and never asked for again (V-6, V-7)', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        for (let i = 2; i < 8; i++) {
+            t.set(i);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
+        expect(t.state.ops.filter((o) => o === 'backup')).toHaveLength(3);
+        const status = t.saver.status();
+        expect(status).toMatchObject({ backup: 'skipped', failures: 3 });
+        expect(t.logs.filter((l) => String(l[0]).includes('without the v2 copy'))).toHaveLength(1);
+        expect(t.state.notes.at(-1)).toMatchObject({ from: 2, result: 'lost', error: 'QuotaExceededError' });
+    });
+
+    it('a copy that timed out is given up as `uncertain`', async () => {
+        const t = setup({ migrated, load: 'loaded', backupAttempts: 1 });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await settle();
+        await settle();
+        expect(t.saver.status().backup).toBe('skipped');
+        expect(t.state.notes.at(-1)).toMatchObject({ result: 'uncertain', error: 'timeout' });
+    });
+
+    it('replace over an owed failing copy notes `lost` first, writes, then gives the copy up', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.all.slice(0, 3)).toEqual(['noteBackup', 'write', 'backup']);
+        expect(t.state.notes[0]).toMatchObject({ result: 'lost' });
+        expect(t.saver.status().backup).toBe('skipped');
+    });
+
+    it('the copy source is the loaded raw value, never the stored one', async () => {
+        const t = setup({ migrated, load: 'loaded', initial: { version: 99, other: true } });
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.backups).toEqual([{ raw: v2, from: 2 }]);
     });
 });
 
@@ -965,16 +1154,18 @@ describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
         expect(t.state.writes).toHaveLength(1);
     });
 
-    it('a hung copy of a migrated save is a timeout failure at the backup stage and writes nothing', async () => {
+    // save-truth phase 5: reversed ("writes nothing" became "the write goes first, the copy times out beside it").
+    it('a hung copy of a migrated save is a timeout failure at the backup stage, after the write', async () => {
         const t = setup({ migrated: { from: 1, raw: fixture('save-v1.json') } });
         t.state.backupHangs = true;
         t.saver.markDirty();
-        const flushed = t.saver.flush('now');
+        await t.saver.flush('now');
         await settle();
         t.clock.advance(5000);
-        await flushed;
+        await settle();
+        await settle();
         expect(t.saver.status().lastFailure).toEqual({ stage: 'backup', error: 'timeout' });
-        expect(t.state.ops).toEqual(['backup']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
     });
 
     it('replace behind a write that never answers settles within two limits as a timeout', async () => {
