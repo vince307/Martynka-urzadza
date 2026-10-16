@@ -1161,9 +1161,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 5.1 New and reversed tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 5.2 Deliberate break: hidden give-up on the first failure / `arm` call removed → red; restored; meta-check (scheduler over a scripted store)
-- [ ] 5.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts` and `save-migration.spec.ts` green
+- [x] 5.1 New and reversed tests red before the change (assertion), green after; unit `<branch baseline> + N` — 3714f3c
+- [x] 5.2 Deliberate break: hidden give-up on the first failure / `arm` call removed → red; restored; meta-check (scheduler over a scripted store) — 3714f3c
+- [x] 5.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts` and `save-migration.spec.ts` green — 3714f3c
 
 #### Manual
 
