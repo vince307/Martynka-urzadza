@@ -1,0 +1,13 @@
+diff --git a/src/core/swStatus.ts b/src/core/swStatus.ts
+index 68938c7..f56125c 100644
+--- a/src/core/swStatus.ts
++++ b/src/core/swStatus.ts
+@@ -65,7 +65,7 @@ const LINES: Record<SwPhase, OfflineLine> = {
+     unsupported: 'unsupported',
+     registering: 'installing',
+     installing: 'installing',
+-    ready: 'ready',
++    ready: 'installing', // BREAK
+     'install-failed': 'failed',
+     'register-failed': 'registerFailed',
+ };
