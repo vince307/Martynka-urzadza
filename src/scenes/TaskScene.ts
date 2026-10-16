@@ -249,7 +249,7 @@ export class TaskScene extends Scene {
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value), (key) => this.pressBoxKey(key));
-        this.blockMat = new BlockMat(this, (value) => this.submit(value));
+        this.blockMat = new BlockMat(this, (value) => { if (canSubmit(this.dragState)) this.submit(value); });   // like the coins and the clock (PIC-02, impl review)
         this.coinWallet = new CoinWallet(this, (grosze) => this.submit(grosze));
         // "OK" under a second finger while a hand is still held is ignored: the held pose is not settled yet, and
         // ending the task would cancel the grab and draw the hands back to the pose before it (impl review).

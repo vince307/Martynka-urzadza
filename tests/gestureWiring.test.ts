@@ -14,8 +14,9 @@ describe('gesture wiring', () => {
         expect(scene).not.toMatch(/pointerupoutside', \(\) =>/);
     });
 
-    it('the coin wallet "OK" and the clock "OK" ask canSubmit', () => {
+    it('the coin wallet "OK", the block mat "OK" and the clock "OK" ask canSubmit', () => {
         expect(read('../src/ui/widgets/CoinWallet.ts')).toMatch(/canSubmit\(this\.state\)/);
         expect(read('../src/scenes/TaskScene.ts')).toMatch(/canSubmit\(this\.clockState\)/);
+        expect(read('../src/scenes/TaskScene.ts')).toMatch(/new BlockMat\(this, \(value\) => \{ if \(canSubmit\(this\.dragState\)\)/);
     });
 });
