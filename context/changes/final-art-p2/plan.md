@@ -156,7 +156,8 @@ the reducer's touched cell and the full state become pure functions the widget c
 'mat'` and `list[i] === carrying.kind`, else `list.lastIndexOf(carrying.kind)`; −1 when not carrying from the mat.
 `walletFull(mat, maxTotal): boolean`. Tests: six coins inside the wallet, ≥ `MIN_TOUCH_TARGET` both ways, pairwise apart,
 each centred on its scaled drop centre (±1 px); `dropCenters.length === balance.coinDrag.maxTotal`; tray and OK still
-apart from the wallet and inside the notebook for 1–4 kinds; `liftedSlot` picks the touched second 2-zł coin, falls back
+apart from the wallet and inside the notebook for 1–4 kinds; `liftedSlot` picks the touched FIRST of two 2-zł coins (index 0 of
+`[2 zł, 2 zł]`, where `lastIndexOf` would give 1 — touching the last one cannot tell the two apart; plan review F2), falls back
 for a wrong-kind cell; `walletFull` at 5 / 6; `blockDrag.test` pin → `{ startDistance: 12, maxTotal: 6 }`.
 
 #### 3. Content checks follow the cap
@@ -326,14 +327,27 @@ coins at `layout.coin(i)` (a note fits its box keeping its aspect through `ArtIm
 tray tiles draw at `TASK_LAYOUT.coinPay.fullTrayAlpha` (new, e.g. 0.45) — the full-wallet signal (DESIGN-GAP 115, new row).
 
 **Contract**: `placed` pool length `balance.coinDrag.maxTotal`; a wallet `Image` (or `ArtImage` without stand-in use)
-created before the placed coins so coins draw above it; `targets()` unchanged in shape plus `walletArt: 'art' | 'drawn'`
-and `full: boolean`; header DESIGN-GAP comment narrowed to the tray, drop and full look.
+created in the `CoinWallet` constructor before the placed coins so coins draw above it (no `setDepth`: `TaskScene` creates
+`CoinWallet` before `FeedbackBar`, so the bar and its buttons draw above the wallet's lower edge, which at y 905 reaches into
+the bar zone 864–960); `targets()` keeps its shape plus `walletArt: 'art' | 'drawn'` and `full: boolean`, and
+`targets().coins` lists only the coins DRAWN in the wallet: while a coin is lifted from the wallet, the entry at
+`liftedSlot(...)` is left out (plan review F3; existing specs read `coins.coins` only at rest); header DESIGN-GAP comment
+narrowed to the tray, drop and full look.
 
 #### 2. Hook
 
 **File**: `src/testing/e2eHook.ts`; `tests/e2e/support/hook.ts` (types)
 
 **Contract**: the read-only `coins` snapshot gains `walletArt` and `full`; no URL seam, no marker change.
+
+#### 3. Boot queue for the non-loading UI art
+
+**File**: `src/scenes/BootScene.ts` (`preload`)
+
+**Intent**: The wallet texture must be loaded for this phase to draw it (plan review F1): queue every `UI_ART` entry except
+`loadingBackground` / `loadingEmblem` after the `ROOM_ART` loop (same queue, per-file limit and total cut; no seam skips
+them). Phase 5 adds the two loading entries at the front of the queue. Notebook and `salon-after` are loaded from here on
+too (drawn by phase 6).
 
 ### Success Criteria:
 
@@ -345,7 +359,7 @@ and `full: boolean`; header DESIGN-GAP comment narrowed to the tray, drop and fu
 
 #### Manual Verification:
 
-- [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred in their places, the 10 zł note fits, full wallet dims the tray, coins ≥ touch size
+- [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred in their places, the 10 zł note fits, full wallet dims the tray, coins ≥ touch size; after a miss the feedback bar and its buttons draw above the wallet's lower edge
 - [reviewer] No number or text in the widget; DESIGN-GAP 115 row and comment
 
 ---
@@ -366,8 +380,8 @@ today's drawn screen. Three boot follow-ups are fixed in the same handler.
 
 **File**: `src/scenes/BootScene.ts` (`preload`, `create`)
 
-**Intent**: Queue `UI_ART` loading background and emblem FIRST, the other `UI_ART` entries after the room art (same queue,
-same per-file limit and total cut); redraw on their `filecomplete-image-<key>`; remove `progress` and those listeners on
+**Intent**: Queue `UI_ART` loading background and emblem FIRST (the other `UI_ART` entries are already queued after the room
+art since phase 4; same queue, same per-file limit and total cut); redraw on their `filecomplete-image-<key>`; remove `progress` and those listeners on
 `COMPLETE`; a failed bar or art draw logs once (A-10); the slow timer passes the elapsed scene time since `preload`
 began, not the constant (impl-review F3).
 
@@ -475,7 +489,8 @@ when the pack or a binary is missing. The placeholder PNG encoder is removed.
 **File**: `public/icons/*.png`, `public/favicon.png`; `tests/appIcons.test.ts` (new); `vite/config.shared.mjs`, `index.html` (paths unchanged; only touched if a `purpose: 'any'` is added — not planned)
 
 **Contract**: test reads each PNG's IHDR: 192², 512², 512², 180², 48²; every `manifest.icons[].src` in
-`vite/config.shared.mjs` exists under `public/`; `icon-512.png` larger than 100 KB (not the placeholder).
+`vite/config.shared.mjs` (read as text with a regex over `src: '/icons/…'`, not imported: the module pulls in
+`vite-plugin-pwa`; plan review F6) exists under `public/`; `icon-512.png` larger than 100 KB (not the placeholder).
 
 ### Success Criteria:
 
@@ -508,7 +523,10 @@ Docs match the code; carried follow-ups keep their triggers.
 sentence: `UI_ART`, `public/assets/ui/`, six-place wallet, `artPick`); `docs/design-gaps.md` (rows 22, 105, 108 closed
 with the S-16c note; 104 narrowed; new row 115 "full wallet dims the tray"); `context/changes/final-art-p2/follow-ups/review-fixes.md`
 (carried: A-3/A-4/S14-08, `FontFace` limit, per-file timeout test, art-health set, texture atlas, `salon-before`, plate as
-MULT_GROUPS frame — each with `Trigger:`).
+MULT_GROUPS frame; and, fired by this slice but deferred (plan review F4): the three `Rect` types (`dragLayout`/`pictureLayout`/
+`geometry`, fired by phase 1), shared `ArtPool`/`fitRect` and S14-10 (fired by the `ArtImage` edit), ASL-02..09 and the coin
+stand-in label size (fired by the `ArtImage` `SIZES` edit), the slashed zero V3 (fired by "S-16 art pack"; a font decision
+for the maintainer) — each with `Trigger:`; S14-09 recorded as closed for `UI_ART` keys by the `SIZES` change).
 
 ### Success Criteria:
 
@@ -576,15 +594,17 @@ New spec `tests/e2e/final-art-wallet.spec.ts` (`chromium-hook`, added to `ROUND_
 
 #### 1. Spec
 
-**File**: `tests/e2e/final-art-wallet.spec.ts` (new); `playwright.config.ts`
+**File**: `tests/e2e/final-art-wallet.spec.ts` (new); `playwright.config.ts`; `tests/e2e/support/hook.ts` (new helper
+`holdTouch(page, from, to): Promise<{ release(end: Point): Promise<void> }>` — one CDP session: `touchStart`, moves past
+`startDistance`, returns while the finger is down; `release` moves to `end` and sends `touchEnd`, then detaches; plan review F3)
 
 **Intent**:
 (a) "#11 S-16c six coins fill the wallet art, a seventh flies back and the tray dims": `?e2eVariant=off&e2eSkills=E1.11.money_pay_10`
 (parent path and stage pair as in `money-pay.spec.ts`); `coins.walletArt === 'art'`; drag six 1-zł coins → `wallet`
 length 6, `full === true`; a seventh drag → length stays 6; take one out → `full === false`.
-(b) "#11 S-16c lifting the second of two equal coins leaves its own place empty": two 2-zł coins, start a drag on the
-second coin's target and hold mid-way; the hook's `coins.coins` (drawn cells) lacks that cell, not the last one; drop
-outside → wallet length 1.
+(b) "#11 S-16c lifting the first of two equal coins leaves its own place empty": two 2-zł coins, start a drag on the
+FIRST coin's target (index 0; `lastIndexOf` would hide index 1) and hold mid-way with a new support helper; the hook's
+`coins.coins` (drawn cells) still holds the point of cell 1 and not that of cell 0; release outside the wallet → wallet length 1.
 (c) "#11 S-16c without the wallet picture the drawn wallet still pays": `page.route('**/assets/ui/wallet-open.webp', abort)`
 → `walletArt === 'drawn'`; `answerRight` pays and earns a star.
 
@@ -671,6 +691,8 @@ None: save format v3 unchanged; no new storage key.
 - **Background upscaled 2×** (960 → 1920) may look soft; it is a blurred salon by design — visual gate decides, the
   script size is one constant.
 - **Full-wallet dim** is our own signal (gap 115); a child may still try a seventh coin — it flies back, no penalty.
+- **Wallet reaches the bar zone** (wallet bottom 905, feedback bar 864–960): the bar draws above by creation order
+  (plan review F5); a later `setDepth` on the wallet would hide the hint bar — visual 4.4 checks it.
 - **`payCoins` helper** waits for the wallet length to grow; any future spec paying 7+ coins would hang — the phase-1
   spec fix documents the cap.
 
@@ -718,7 +740,12 @@ None: save format v3 unchanged; no new storage key.
     Rejected: `sips` (fails in the sandbox, RGBA, larger). Would change: libwebp missing on the build machine.
 12. **Follow-ups taken**: impl-review F3 (slow timer elapsed), F3 (`progress` listener), A-10 (log once), F2 (miniature,
     by the thumbnail fallback), `CoinWallet.paint` lifted cell. Carried: A-3/A-4/S14-08, `FontFace`, per-file timeout test,
-    art-health set, atlas — their symbols are not edited.
+    art-health set, atlas — their symbols are not edited. Fired but deferred (plan review F4): three `Rect` types (phase 1
+    edits `dragLayout`; unifying them touches `pictureLayout` and every widget, a refactor outside an art slice); `ArtPool` /
+    `fitRect`, S14-10, ASL-02..09 and the coin stand-in label size (phase 2 edits only `ArtImage`'s `SIZES` lookup, not
+    pooling, fitting or stand-in text); V3 slashed zero (needs a font decision, no font in the pack). S14-09 (a key outside
+    `TASK_ART` drawn 1:1) is closed for the new keys by `SIZES` from `UI_ART`. Would change: a phase having to edit those
+    symbols anyway.
 13. **Phases 1–3 `tdd`, 4–8 `impl`, 9–11 `e2e`** (contract: pure logic test-first; e2e after the phases that build it;
     risks #11, #15, #16). Driver per phase as above.
 14. **Plan written in English** like `change.md` and `research.md` of this slice; commit messages in Polish (profile § 1).
@@ -776,7 +803,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 4.4 [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred, 10 zł note fits, full wallet dims the tray, coins ≥ touch size
+- [ ] 4.4 [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred, 10 zł note fits, full wallet dims the tray, coins ≥ touch size; feedback bar above the wallet's lower edge
 - [ ] 4.5 [reviewer] No number or text in the widget; DESIGN-GAP 115 row and comment
 
 ### Phase 5: Loading screen with background and emblem
