@@ -7,6 +7,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
 import { answerRight, answerWrong, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapNext, tapScene, tapTarget, targets } from './support/hook';
+import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(120_000);
 
@@ -128,7 +129,7 @@ test('#2 a salon saved under the old task list is carried over at load and the c
     await phaseIs(page, 'done');
     await tapNext(page);
     await playRoundRight(page, 4);
-    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(3);
+    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
     const after = await snapshot(page);
     expect(after.stars).toBeGreaterThan(3);
 });

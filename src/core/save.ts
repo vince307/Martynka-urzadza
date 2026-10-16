@@ -7,7 +7,7 @@ import { LIFT_V2_SALON } from './migrations/legacySalon';
 import { emptyRoomState } from './rooms';
 import type { RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Error name a store write throws when the stored save is of a newer format than the page writing (P-5). */
 export const NEWER_SAVE = 'NewerSave';
@@ -17,6 +17,25 @@ export function storedVersionNewer(stored: unknown, version: number): boolean {
     if (typeof stored !== 'object' || stored === null) return false;
     const stamp = (stored as { version?: unknown }).version;
     return typeof stamp === 'number' && Number.isFinite(stamp) && stamp > version;
+}
+
+/** Error name a store write throws when another tab wrote a newer generation than the one this page last saw (B-1). */
+export const OTHER_WRITER_SAVE = 'OtherWriterSave';
+
+export type WriteVerdict = { kind: 'refuse'; error: typeof NEWER_SAVE | typeof OTHER_WRITER_SAVE } | { kind: 'put'; generation: number };
+
+/**
+ * The one rule a store applies inside its write transaction. `page.base` is the generation this page last saw stored.
+ * A newer format always refuses; another writer that is ahead refuses a normal write (a stale tab) and is overwritten
+ * only by an explicit `replace`; otherwise the new generation is one above the highest known.
+ */
+export function writeVerdict(stored: unknown, page: { version: number; base: number; writer: string }, mode: 'normal' | 'replace'): WriteVerdict {
+    if (storedVersionNewer(stored, page.version)) return { kind: 'refuse', error: NEWER_SAVE };
+    const rec = typeof stored === 'object' && stored !== null ? (stored as { generation?: unknown; writer?: unknown }) : null;
+    const generation = rec !== null && isCount(rec.generation) ? rec.generation : 0;
+    const writer = rec !== null && typeof rec.writer === 'string' ? rec.writer : '';
+    if (mode === 'normal' && generation > page.base && writer !== page.writer) return { kind: 'refuse', error: OTHER_WRITER_SAVE };
+    return { kind: 'put', generation: Math.max(generation, page.base) + 1 };
 }
 export const DEFAULT_PROFILE = 'default';
 
@@ -46,6 +65,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     1: (raw) => ({ ...(raw as Record<string, unknown>), version: 2, variants: startingVariants() }),
     // v2 -> v3 (salon-load-health): a salon saved before S-16a (10 tasks) becomes the 7-task salon, in one place and once.
     2: LIFT_V2_SALON,
+    // v3 -> v4 (stale-tab-and-health): the guard fields a store stamps inside its write transaction.
+    3: (raw) => ({ ...(raw as Record<string, unknown>), version: 4, generation: 0, writer: '' }),
 };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -93,7 +114,7 @@ const validVariants = (v: unknown): v is VariantState =>
     Array.isArray(v.puzzlesDone) &&
     v.puzzlesDone.every((id) => typeof id === 'string');
 
-/** The first top-level key of a v3 save that fails the strict check, or null when the value is a valid save. */
+/** The first top-level key of a v4 save that fails the strict check, or null when the value is a valid save. */
 export function saveProblem(value: unknown): string | null {
     if (!isRecord(value)) return 'version';
     if (value.version !== SAVE_VERSION) return 'version';
@@ -106,6 +127,8 @@ export function saveProblem(value: unknown): string | null {
     if (autoRead !== null && typeof autoRead !== 'boolean') return 'settings';
     if (value.learner !== null && !validLearner(value.learner)) return 'learner';
     if (!validVariants(value.variants)) return 'variants';
+    if (!isCount(value.generation)) return 'generation';
+    if (typeof value.writer !== 'string') return 'writer';
     return null;
 }
 
@@ -125,7 +148,7 @@ export function importProblem(raw: unknown, migrations: Readonly<Record<number, 
     return saveProblem(current);
 }
 
-/** Strict check of a v3 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
+/** Strict check of a v4 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
 export function validateSave(value: unknown): value is SaveState {
     return saveProblem(value) === null;
 }
@@ -179,6 +202,8 @@ export function encodeSave(session: SessionSave, profileId: string = DEFAULT_PRO
         settings: { autoRead: session.settings.autoRead },
         learner: session.learner ? savedLearner(session.learner, session.learner.pendingUnlock) : null,
         variants: copyVariants(session.variants),
+        generation: 0,
+        writer: '',
     };
 }
 

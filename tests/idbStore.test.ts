@@ -96,6 +96,12 @@ describe('IndexedDB backup copy (S-15 phase 2)', () => {
         expect(await freshStore('default:backup-v1', dbName).read()).toBeUndefined();
     });
 
+    it('a v3 copy goes to backup-v3 (stale-tab-and-health)', async () => {
+        const dbName = `bk-${++counter}`;
+        await freshStore(undefined, dbName).backup({ a: 3 }, 3);
+        expect(await freshStore('default:backup-v3', dbName).read()).toEqual({ a: 3 });
+    });
+
     // plan-review F1: an abandoned write must not land after a newer one.
     // The first store call goes to `first`; every later call (also the next store) goes to the real store.
     const faultyFirstCall = async (first: (real: idbKeyval.UseStore) => Promise<unknown>) => {

@@ -61,7 +61,7 @@ describe('e2eSaveStore', () => {
         if (decoded.kind !== 'ok') return;
         await store.backup(raw, 1);
         await store.write(encodeSave(decoded.session));
-        expect(((await store.read()) as { version: number }).version).toBe(3);
+        expect(((await store.read()) as { version: number }).version).toBe(SAVE_VERSION);
     });
 
     it('legacy-salon holds the frozen v2 bytes and decodes through MIGRATIONS[2] to the 4-task salon', async () => {
@@ -81,7 +81,7 @@ describe('e2eSaveStore', () => {
         const decoded = decodeSave(await store.read());
         if (decoded.kind !== 'ok') throw new Error('fixture must decode');
         await store.write(encodeSave(decoded.session));
-        expect(((await store.read()) as { version: number }).version).toBe(3);
+        expect(((await store.read()) as { version: number }).version).toBe(SAVE_VERSION);
     });
 
     it('backuphang holds the v1 fixture and never answers the copy', async () => {

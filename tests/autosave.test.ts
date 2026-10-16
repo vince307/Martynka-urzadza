@@ -123,7 +123,7 @@ describe('loadSave', () => {
         expect(loaded.kind).toBe('loaded');
         if (loaded.kind === 'loaded') expect(loaded.session.stars).toBe(7);
 
-        const future = { version: 4, stars: 1 };
+        const future = { version: 5, stars: 1 };
         const f = makeStore(future);
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
@@ -852,7 +852,7 @@ describe('write at start after a migration (audit M-3)', () => {
         t.state.backupFails = true;
         await t.saver.flush('hidden');
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
-        expect(line?.[0]).toBe('autosave: writing v3 without the v2 copy');
+        expect(line?.[0]).toBe('autosave: writing v4 without the v2 copy');
         expect(line?.[1]).toMatchObject({ from: 2, attempts: 1 });
     });
 

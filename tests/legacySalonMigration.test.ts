@@ -47,7 +47,7 @@ const EXPECTED: [number, number, Record<string, number>][] = [
 
 describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
     it('is registered next to the v1 step', () => {
-        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2']);
+        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2', '3']);
     });
 
     it.each(EXPECTED)('old tasksDone %i becomes %i with the carried variants', (n, done, chosen) => {
