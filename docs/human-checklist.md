@@ -209,3 +209,30 @@ Bieg uzgodniony 2026-10-15 („S-14c + S-14d + fix po audycie, pełna wysyłka�
 - [ ] Poprawka zapisu 4.7 — bez licznika startów; wyjście z trwałego `timeout` to „Poczekaj dłużej” na ten sam odczyt i warunkowa rada o danych strony.
 - [ ] S-14c 9.6 — INEQUALITY na kafelkach (2 dobre, 2 złe) z jednym przykładem w rozwiązaniu; runda powtórkowa E6.11 losuje krok, potem umiejętność, ~14 % z E5 (w łagodzeniu więcej — audyt TXT-01); E6.11 nigdy nie jest startem ani rozgrzewką; bez LOGIC w E6.11; rozkład jazdy tekstem; ceny w pełnych złotych; bez „ustaw zegar” w E5–E6; wyższe progi odblokowania 10 kroków E1–E6; start E6 przesunięty przez grywalny E6.2.
 - [ ] S-14d 9.7 — SPATIAL, SYMMETRY i BONDS „połącz pary” poza slice'em; ORDINAL tylko liczby do 5; E1.11 bez banknotu 10 zł (jest w E2.2); tryb z obrazkami jako filtr tylko w E1 (6 lat wrzesień–styczeń albo łagodzenie); wyższe progi E1.2 i E1.3; start E1 we wrześniu na E1.1; po złej zapłacie portfel się opróżnia.
+
+## Bieg 2026-10-15-s16a-salon-art (S-16a, docelowa grafika salonu)
+
+Bieg po decyzjach autora z 2026-10-15 (PR #59: 6 mebli + etap tła, koszty 5–15, dźwięki → S-16b; „Kontynuuj, pełna wysyłka”). Wysłane: #61 (S-16a `final-art-salon`), po nim #62 (globalny limit 30 s w vitest — Deploy po #61 padł na teście MONEY_PAY > 5 s; wcześniej #60 tego samego dnia). `main` 7f831c5: 2939 testów jednostkowych, 98 e2e. Brief dla grafika: `docs/designer-brief-s16.md`.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #63 (nie scalać w biegu): 0 CRITICAL, 2 HIGH. H-1: po przeliczeniu salonu `tasksDone` znaczy pozycję na nowej liście przy formacie v2 — powrót do wersji sprzed S-16a pokaże złe meble, a ponowna aktualizacja przeliczy salon drugi raz (naprawa wymaga decyzji o zapisie v3). H-2: brak limitu czasu ładowania w Phaserze (`loader.timeout` 0), a `BootScene` ładuje teraz 26 plików więcej — jedno zawieszone żądanie to pasek, który nigdy się nie kończy. M-3: przeliczenie nie jest oznaczane do zapisu, więc powtarza się przy każdym starcie, dopóki dziecko czegoś nie zmieni.
+- [ ] S-16a 2.5 — reguła przeliczenia starego salonu (B): nowy postęp = najkrótszy początek nowej listy, który kosztuje co najmniej tyle, ile dziecko wydało; warianty przechodzą na meble, które zostały; mebel „w prezencie” (objęty zaokrągleniem) dostaje wariant 0; gwiazdki się nie zmieniają, nadwyżki nie oddajemy (stary `tasksDone` 9–10 = 81/96 gwiazdek → pełny salon za 71). Zaakceptuj albo odwróć (alternatywa A: zaokrąglenie w dół + zwrot gwiazdek, wymaga wyjątku od reguły „gwiazdki rosną tylko z rund”).
+
+### P1 — na tablecie
+
+- [ ] S-16a 10.4 — przejście salonu na iPadzie: płynność przy ~59 MB tekstur, ekran ładowania offline (z pamięci podręcznej), przytrzymanie mebla palcem, przenikanie tła po „Odnów ściany i podłogę”.
+- [ ] Czy tytuł ekranu ładowania czcionką systemową (czcionka gry ładuje się w tym samym kroku) jest akceptowalny.
+
+### P2 — później
+
+- [ ] Grafik: brief `docs/designer-brief-s16.md` — P1 dźwięki odblokują S-16b; P2 ikona aplikacji, tło ekranu ładowania, miniatura salonu, portfel, ikony talerz/pudełko/naklejka; P3 nowe sloty (dopisywane na końcu listy).
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-15-final-art-salon/follow-ups/review-fixes.md`: m.in. panel wariantów zasłania podglądany stolik i przód dywanu (VO1), nachodzące podpisy zastępników (VO2), prostokątny obrys przytrzymania (VO3), przenikanie tła dogrywa się po powrocie do pokoju (F1), kolejność zastępników na miniaturze (F2), reguła lint dla polskiego tekstu w scenach (plan zakładał, że istnieje).
+- [ ] Wcześniejsze audyty nadal otwarte: #42, #45, #52, #57.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] S-16a — koszty czynności 5, 7, 9, 10, 12, 13, 15 (razem 71, było 96 za 10 slotów); kolejność mebli jak dawniej (sofa, dywan, stolik, komoda, fotel, obrazki); etap tła kupowany jednym stuknięciem bez panelu.
+- [ ] S-16a — przed etapem widać cały zniszczony salon (jedna wspólna warstwa „meble przed”), po etapie tylko kupione meble; cienie dopiero w gotowym pokoju; lampa, rośliny i pufa jako stała dekoracja.
+- [ ] S-16a — grafika jako 26 osobnych plików WebP w pełnej rozdzielczości (1,23 MB w pamięci offline), bez atlasu; ekran ładowania rysowany kodem.
+- [ ] S-16a — w minigrze Hasło słowa z nowych podpisów mebli (OBRAZKI ma 7 liter → runda 7 zadań).
