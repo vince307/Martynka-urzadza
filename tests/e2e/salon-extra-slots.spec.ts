@@ -120,3 +120,41 @@ test('#16 S-16d each of the five new tasks costs its price once, after »Wybiera
     expect(end.done).toBe(true);
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
 });
+
+test('#2 FR-019 S-16d a salon finished with seven tasks gets the five new ones and the done card again at the twelfth', async ({ page }) => {
+    await salonWithOldTasks(page);
+    const saved = await room(page);
+    expect(saved.tasksDone).toBe(OLD_TASKS);
+    const chosenBefore = saved.chosen;
+    // A purchase is saved at once (not by the debounce); only then does a reload prove the SAVE.
+    await expect.poll(async () => (await snapshot(page)).save, { timeout: 15_000 }).toMatchObject({ lastReason: 'now', dirty: false });
+
+    await page.reload();
+    await screenIs(page, 'task');
+    expect((await snapshot(page)).save?.load).toBe('loaded');
+    await solveByRetype(page);
+    await tapTarget(page, 'roomSwitch');
+    await screenIs(page, 'room');
+    await expect.poll(async () => (await room(page)).currentTask?.id, { timeout: 30_000 }).toBe('hang-curtains');
+
+    const reopened = await room(page);
+    expect(reopened.tasksDone).toBe(OLD_TASKS);
+    expect(reopened.done).toBe(false);
+    expect(reopened.card).toBeNull();
+    expect(reopened.modeText).toBeNull();
+    expect(reopened.chosen).toEqual(chosenBefore);
+
+    for (const task of SALON.tasks.slice(OLD_TASKS)) {
+        await buy(page, 0);
+        if (task !== SALON.tasks[SALON.tasks.length - 1]) expect((await room(page)).card).toBeNull();
+    }
+    await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
+    const done = await room(page);
+    expect(done.done).toBe(true);
+    expect(done.card?.items[0]).toMatchObject({ kind: 'room', id: 'salon', done: true });
+    expect(done.card?.items[1]).toMatchObject({ kind: 'teaser', unlocked: true });
+
+    await tapTarget(page, 'cardNext');
+    await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).toBeNull();
+    await expect.poll(async () => (await room(page)).modeText, { timeout: 15_000 }).toBe(pl.room.change.enter);
+});
