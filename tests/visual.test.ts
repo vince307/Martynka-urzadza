@@ -1,6 +1,6 @@
 // The drawing description of a task: stable key, validation and the one-line sample form (S-13).
 import { describe, expect, it } from 'vitest';
-import { describeVisual, validateVisual, visualArtIds, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
+import { assertPool, describeVisual, lineTicks, validateVisual, visualArtIds, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
 
 const clock = (hour: number, minute: number): TaskVisual => ({ kind: 'clock', hour, minute });
 const ruler = (fromMm: number, toMm: number, lengthCm = 15, unit: 'cm' | 'mm' = 'cm'): TaskVisual => ({ kind: 'ruler', unit, lengthCm, fromMm, toMm });
@@ -369,5 +369,18 @@ describe('visualArtIds (child-flow-guards p1)', () => {
         expect(visualArtIds({ kind: 'jugs', jugs: ['container-1l', 'container-half-l'] })).toEqual(['container-1l', 'container-half-l']);
         expect(visualArtIds(clock(3, 0))).toEqual([]);
         expect(visualArtIds({ kind: 'thermometer', celsius: 5 })).toEqual([]);
+    });
+});
+
+describe('assertPool and lineTicks', () => {
+    it('assertPool passes up to the limit and throws past it', () => {
+        expect(() => assertPool(10, 10, 'money')).not.toThrow();
+        expect(() => assertPool(11, 10, 'money')).toThrow(/money.*11.*10/);
+    });
+    it('lineTicks counts ticks and throws on a bad step or too many ticks', () => {
+        expect(lineTicks({ from: 0, to: 100, tick: 10 })).toBe(11);
+        expect(() => lineTicks({ from: 0, to: 10, tick: 0 })).toThrow(/tick/);
+        expect(() => lineTicks({ from: 0, to: 10, tick: -1 })).toThrow(/tick/);
+        expect(() => lineTicks({ from: 0, to: 40, tick: 1 })).toThrow(/ticks/);
     });
 });

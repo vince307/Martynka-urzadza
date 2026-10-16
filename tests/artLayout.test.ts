@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MoneyId } from '../src/data/measures';
+import { COIN_IDS, type MoneyId } from '../src/data/measures';
 import { TASK_LAYOUT } from '../src/data/layout';
 import type { Rect } from '../src/ui/widgets/geometry';
 import { iconsLayout, jugsLayout, moneyLayout, rowLayout, scaleLayout, standInLabelFit, thermometerLayout, thermometerMarks } from '../src/ui/widgets/artLayout';
@@ -274,5 +274,11 @@ describe('rowLayout (S-14d)', () => {
             expect(r.x + r.width).toBeLessThanOrEqual(area.x + area.width + 1e-6);
         });
         expect(layout.mark.x).toBeGreaterThanOrEqual(area.x - 1e-6);
+    });
+});
+
+describe('coin sizes', () => {
+    it('TASK_LAYOUT.money.coinMm has exactly the coin ids', () => {
+        expect(Object.keys(TASK_LAYOUT.money.coinMm).sort()).toEqual([...COIN_IDS].sort());
     });
 });

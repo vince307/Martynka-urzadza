@@ -1,5 +1,5 @@
 // Placement of the art drawings of a task (S-14): pure rectangles, so the widgets and the tests share them.
-import type { MoneyId } from '../../data/measures';
+import type { CoinId, MoneyId, NoteId } from '../../data/measures';
 import type { Rect } from './geometry';
 
 export interface MoneyLayoutSpec {
@@ -9,7 +9,7 @@ export interface MoneyLayoutSpec {
     rowGap: number;
     coinPerMm: number;
     maxScale: number;
-    coinMm: Readonly<Record<string, number>>;
+    coinMm: Readonly<Record<CoinId, number>>;
 }
 
 export interface Placed {
@@ -17,7 +17,7 @@ export interface Placed {
     rect: Rect;
 }
 
-const isNote = (id: MoneyId): boolean => id.startsWith('note-');
+const isNote = (id: MoneyId): id is NoteId => id.startsWith('note-');
 
 /** Notes in the upper row, coins in the lower one, each row centred; the whole table fits `area`, never above `maxScale`. */
 export const moneyLayout = (items: readonly MoneyId[], area: Rect, spec: MoneyLayoutSpec): Placed[] => {
@@ -25,7 +25,7 @@ export const moneyLayout = (items: readonly MoneyId[], area: Rect, spec: MoneyLa
     const coins = items.filter((id) => !isNote(id));
     const size = (id: MoneyId): { width: number; height: number } => {
         if (isNote(id)) return { width: spec.noteWidth, height: spec.noteHeight };
-        const d = (spec.coinMm[id] ?? 20) * spec.coinPerMm;
+        const d = spec.coinMm[id] * spec.coinPerMm;
         return { width: d, height: d };
     };
     const rows = [notes, coins].filter((row) => row.length > 0);

@@ -4,6 +4,7 @@ import type { MoneyId } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
 import { ART_LIMITS } from '../../data/measures';
+import { assertPool } from '../../core/tasks/visual';
 import { ArtImage } from './ArtImage';
 import { moneyLayout } from './artLayout';
 import type { Rect } from './geometry';
@@ -22,7 +23,8 @@ export class MoneyTable {
     render(items: readonly MoneyId[], rect: Rect): void {
         this.setVisible(false);
         this.area = rect;
-        moneyLayout(items, rect, TASK_LAYOUT.money).forEach((placed, i) => this.images[i]?.show(ART_KEYS.money(placed.id), placed.rect));
+        assertPool(items.length, MAX_ITEMS, 'money');
+        moneyLayout(items, rect, TASK_LAYOUT.money).forEach((placed, i) => this.images[i].show(ART_KEYS.money(placed.id), placed.rect));
     }
 
     setVisible(visible: boolean): void {

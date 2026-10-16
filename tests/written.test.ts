@@ -111,6 +111,9 @@ describe('WRITTEN tasks', () => {
 
 describe('columnMarks', () => {
     const col = (op: '+' | '−', a: number, b: number, columns: number): Column => ({ kind: 'column', op, a, b, columns });
+    it('throws on a carry off the last column (95 + 7 in 2 columns)', () => {
+        expect(() => columnMarks(col('+', 95, 7, 2), 'all')).toThrow(/last/);
+    });
     it('shows nothing when told none', () => {
         expect(columnMarks(col('+', 38, 27, 2), 'none')).toEqual({ carries: [], borrows: [] });
     });

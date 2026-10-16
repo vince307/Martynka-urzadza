@@ -52,6 +52,25 @@ export type VisualShape = 'wide' | 'tall' | 'long';
 /** The answer modes with a layout for a tall drawing (`pictureLayout` `tallOf`). */
 export const TALL_MODES = ['tiles', 'keypad'] as const;
 
+/** A widget pools a fixed number of images (`ART_LIMITS`); a drawing past the pool is a data bug, so it throws instead of dropping pieces. */
+export const assertPool = (count: number, limit: number, what: string): void => {
+    if (!Number.isInteger(count) || count > limit) {
+        throw new RangeError(`${what}: ${count} pieces, the pool holds ${limit}`);
+    }
+};
+
+/** Number of ticks of a drawn number line; throws on a step below 1 or more ticks than the line can label. */
+export const lineTicks = (line: { from: number; to: number; tick: number }): number => {
+    if (!(line.tick >= 1)) {
+        throw new RangeError(`number line: tick ${line.tick} is below 1`);
+    }
+    const ticks = Math.floor((line.to - line.from) / line.tick) + 1;
+    if (ticks > balance.numberLine.maxTicks) {
+        throw new RangeError(`number line: ${ticks} ticks, at most ${balance.numberLine.maxTicks}`);
+    }
+    return ticks;
+};
+
 export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */

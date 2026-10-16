@@ -70,7 +70,12 @@ export const columnMarks = (visual: ColumnVisual, show: 'none' | 'first' | 'all'
         return marks;
     }
     for (const step of columnSteps(visual)) {
-        if (step.marks.carry) marks.carries.push({ col: step.col + 1 });
+        if (step.marks.carry) {
+            if (step.col + 1 >= visual.columns) {
+                throw new RangeError(`columnMarks: ${visual.a} ${visual.op} ${visual.b} carries off the last of ${visual.columns} columns`);
+            }
+            marks.carries.push({ col: step.col + 1 });
+        }
         if (step.marks.borrow) marks.borrows.push(step.marks.borrow);
     }
     if (show === 'first') {

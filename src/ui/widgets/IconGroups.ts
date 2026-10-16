@@ -5,6 +5,7 @@ import type { IconId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
 import { ART_LIMITS } from '../../data/measures';
+import { assertPool } from '../../core/tasks/visual';
 import { ArtImage } from './ArtImage';
 import { iconsLayout } from './artLayout';
 import type { Rect } from './geometry';
@@ -28,6 +29,7 @@ export class IconGroups {
     render(icon: IconId, groups: readonly number[], framed: boolean, rect: Rect, motion?: 'come' | 'go', sides = false): void {
         this.setVisible(false);
         this.area = rect;
+        assertPool(groups.reduce((a, b) => a + b, 0), MAX_ICONS, 'icons');
         const look = TASK_LAYOUT.iconMotion;
         // A motion arrow takes a strip on the left; the two groups stand one under the other in the rest.
         const inner = motion ? { x: rect.x + look.strip, y: rect.y, width: rect.width - look.strip, height: rect.height } : rect;
@@ -39,7 +41,7 @@ export class IconGroups {
                 this.frames.fillRoundedRect(f.x, f.y, f.width, f.height, frame.radius).strokeRoundedRect(f.x, f.y, f.width, f.height, frame.radius);
             }
         }
-        layout.icons.forEach((spot, i) => this.images[i]?.show(ART_KEYS.icon(icon), spot));
+        layout.icons.forEach((spot, i) => this.images[i].show(ART_KEYS.icon(icon), spot));
         const first = layout.icons[0];
         const second = layout.icons[groups[0] ?? 0];
         if (motion && first && second) {

@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
-import type { TaskVisual } from '../../core/tasks/visual';
+import { lineTicks, type TaskVisual } from '../../core/tasks/visual';
 import { dashedRect } from './dashed';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
@@ -25,7 +25,7 @@ export class NumberLine {
         this.texts.forEach((t) => t.destroy());
         this.texts = [];
         const L = TASK_LAYOUT.numberLine;
-        const ticks = Math.floor((line.to - line.from) / line.tick) + 1;
+        const ticks = lineTicks(line);
         const gap = ticks >= L.denseFrom ? L.denseGap : L.gap;
         const hasJumps = line.jumps.length > 0;
         const above = hasJumps ? L.arcZone : L.tick;
