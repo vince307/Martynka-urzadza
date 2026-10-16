@@ -867,9 +867,9 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/final-art-wallet.spec.ts tests/e2e/money-pay.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 3`
-- [ ] 10.2 Deliberate break p10a → (b) red; p10b → (c) red; p10c → (a) red; each restored; meta-check (cap in the real touch path)
-- [ ] 10.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 10.1 `npx playwright test tests/e2e/final-art-wallet.spec.ts tests/e2e/money-pay.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 3` (orchestrator: spec + money-pay 7 passed; full --workers=4 114 passed (111+3)) — 109b8b1
+- [x] 10.2 Deliberate break p10a → (b) red; p10b → (c) red; p10c → (a) red; each restored; meta-check (cap in the real touch path) (orchestrator: p10a rewritten to break both liftedSlot calls -> "lifting the first of two equal coins" red; p10b -> "without the wallet picture" red; p10c -> "six coins fill the wallet art" red; all reverted; the e2e proves the targets path, the painted cell of a lifted coin is a visual-gate item) — 109b8b1
+- [x] 10.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed (build prints `e2e hook: absent (2 chunks checked)`; lint, typecheck, 3062 unit tests, sample E1-E6 exit 0; servers killed by orchestrator) — 109b8b1
 
 #### Manual
 
