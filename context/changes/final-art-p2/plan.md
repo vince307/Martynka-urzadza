@@ -837,7 +837,7 @@ None: save format v3 unchanged; no new storage key.
 
 - [x] 7.1 `npm run icons` twice → no diff in `public/icons`, `public/favicon.png` — fcaa3dc
 - [x] 7.2 Deliberate break: `icon-192.png` replaced by the 512 file → `tests/appIcons.test.ts` red; restored; meta-check (sizes and paths, not launcher crop) — fcaa3dc
-- [ ] 7.3 Full local gate green; `dist/sw.js` lists `icons/icon-512.png`; manifest icon paths unchanged
+- [x] 7.3 Full local gate green; `dist/sw.js` lists `icons/icon-512.png`; manifest icon paths unchanged (e2e part: orchestrator note, full run after 4d9dd7b, 109 passed with --workers=4)
 
 #### Manual
 
@@ -858,10 +858,10 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 9.1 `npx playwright test tests/e2e/final-art-loading.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [ ] 9.2 Deliberate break p9a → (a) red; restored; meta-check (art received, not its look)
-- [ ] 9.3 Deliberate break p9b → (b) red; restored
-- [ ] 9.4 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 9.1 `npx playwright test tests/e2e/final-art-loading.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2` (orchestrator: spec 2 passed; full --workers=4 111 passed (109+2))
+- [x] 9.2 Deliberate break p9a → (a) red; restored; meta-check (art received, not its look) (orchestrator: e2e-break-p9a.patch -> (a) failed, reverted; art received not its look)
+- [x] 9.3 Deliberate break p9b → (b) red; restored (orchestrator: e2e-break-p9b.patch -> (b) failed, reverted)
+- [x] 9.4 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed (build prints `e2e hook: absent (2 chunks checked)`; lint, typecheck, 3062 unit tests (3061+1), sample E1-E6 exit 0; servers killed by orchestrator)
 
 ### Phase 10: MONEY_PAY with the six-place wallet by touch — e2e (#11)
 
