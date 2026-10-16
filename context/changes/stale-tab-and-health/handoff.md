@@ -1,52 +1,52 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Phase 11 (e2e, risk #2) written by `/10x-e2e` in run `2026-10-16-fix-stale-tab-health`; spec `tests/e2e/stale-tab.spec.ts`. The next agent must not get wrong: phase 12 is an e2e phase too (`health-lines`, risks #8, #14); the stale-tab spec needs two pages of ONE context on the real IndexedDB (no `?e2eSave`), and the card rises mid-round, so the stale window answers one task only.
+Phase 12 (e2e, risks #8 and #14), the last phase, written by `/10x-e2e` in run `2026-10-16-fix-stale-tab-health`; spec `tests/e2e/health-lines.spec.ts`. The change is `implemented`; open rows are [reviewer], [visual], [human] and the orchestrator's full-suite gate for 12.1/12.3. Do not tick those without observing them.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | ..., `aa68062` (p10), docs ticks, then the p11 test commit and its handoff |
+| Commits | ..., p11 `12347a5`, `5867533`, p12 test `207d599`, then this close-out |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implementing` |
-| `## Progress` rows remaining | 11.1 and 11.3 (full `--workers=4` suite and full local gate, orchestrator), 11.4 [human], phase 12, earlier [reviewer] rows, 10.5, 10.7, 6.4, 5.5, 3.5, 2.5 |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | 12.1 and 12.3 (orchestrator gate), 12.4 [visual], 11.4 [human], earlier [reviewer] rows, 10.5, 10.7, 6.4, 5.5, 3.5, 2.5 |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `tests/e2e/stale-tab.spec.ts` | two tests: (a) "#2 B-1 a second window that saved later wins; the stale one stops and shows the card", (b) "#2 B-1 a reset in one window is not undone by the other" |
-| `playwright.config.ts` | `stale-tab` added to `ROUND_SPEC` (chromium-hook) |
-| `context/changes/stale-tab-and-health/e2e-break-p11b.patch` | `writeVerdict` never refuses `OtherWriterSave` (`src/core/save.ts`) |
-| `context/changes/stale-tab-and-health/e2e-break-p11a.patch` | card wiring removed in `src/main.ts` (from phase 4) |
+| `tests/e2e/health-lines.spec.ts` | (a) "#8 P-1 after the worker installs the panel says the game starts offline", (b) "#14 G-1 a screen picture that did not load is named in the pictures section" |
+| `playwright.config.ts` | `health-lines` added to `ROUND_SPEC` only |
+| `context/changes/stale-tab-and-health/e2e-break-p12b.patch` | `BootScene` no longer sets `REGISTRY_KEYS.uiArtHealth` |
+| `context/changes/stale-tab-and-health/e2e-break-p12a.patch` | `swStatus.ts` maps `ready` to `installing` (phase 6) |
+| `plan.md`, `change.md`, `handoff.md` | ticks 11.1/11.3 (orchestrator gate 5867533, 123 passed), 12.2; status implemented |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npx playwright test tests/e2e/stale-tab.spec.ts` | 2 passed (about 43 s) |
-| break p11a (`git apply`), (a) alone | red: `getByRole('alertdialog').getByText('Zacznijmy grę jeszcze raz')` expected visible, element(s) not found; reverted with `git apply -R` |
-| break p11b, (a) alone | red: `expect(blockedBy).toBe('otherTab')`, received `null`; reverted |
-| break p11b, (b) alone | red: same line, Expected "otherTab", Received null; reverted |
-| meta-check | (b) proves the data rule in a real browser (a reset is not written back by the stale window); (a) the child-facing outcome (newest stars win, calm card); p11a leaves `blockedBy` green and fails only on the card, so the card test is not satisfied by the data rule |
+| `npx playwright test tests/e2e/health-lines.spec.ts` | 2 passed (about 24 s), run three times |
+| break p12a, (a) alone | red: `expect(panel.getByText(pl.settings.offline.ready)).toBeVisible()` "element(s) not found"; reverted with `git apply -R` |
+| break p12b, (b) alone | red: `expect(panel.getByText(pl.settings.uiArtMissing(1, total))).toBeVisible()` "element(s) not found"; reverted |
+| meta-check | (a) the hook build is a production build, so Chromium really installs the worker; `sw.phase` reached `ready` and the reducer line reached the DOM. (b) the aborted file went through the real loader into `uiArtHealth` and the panel; the task-picture line stays "all loaded" |
 | eslint on spec and config, `npm run typecheck`, `npm run build` | OK; `e2e hook: absent (2 chunks checked)`; ports 4397/4398 free |
-| full `--workers=4` suite | not run by me (orchestrator gate, expect baseline + 2) |
+| full `--workers=4` suite | not run by me (orchestrator gate, expect baseline 121 + 4 = 125) |
 
 ## 4. Next command
 
-`/10x-e2e stale-tab-and-health phase 12`
+`/10x-impl-review stale-tab-and-health`
 
 ## 5. Open
 
-- Rows: 11.1 and 11.3 need the orchestrator's full gate; 11.4 [human].
-- The stale window cannot play a whole round: the card rises after the first answered task (a write is refused at once) and holds the game's input; `staleWork` answers one task then polls `blockedBy`.
-- Carried: [human] 11.4; [visual] 12.4.
+- 12.1 and 12.3: the full suite and full local gate are the orchestrator's.
+- Manual: 12.4 [visual] panel states at 1440 and 1024; 11.4 [human] iPad card.
+- Earlier [reviewer] rows and 10.5, 10.7, 6.4, 5.5, 3.5, 2.5 unchanged.
 
 ## 6. Autonomous decisions
 
-- Row 10.4 ticked with the orchestrator's gate (3ec9805, 121 e2e passed).
-- Rows 11.1 and 11.3 left open: they hold the full-suite and full-gate parts that are the orchestrator's.
-- Assertion on the fresh game in (b) is `learner === null` on the welcome screen (the hook has no `stars` there).
-- Non-browser aspects of risk #2 (`writeVerdict` rule, store transaction) stay covered by the unit tests of phases 1-4.
+- Service worker: the `chromium-hook` project (`dist-e2e/`, port 4397) is a production build, so the worker registers there; no other project or webServer used, config touched only in `ROUND_SPEC`.
+- (a) runs with workers allowed; (b) sits in its own `describe` with `serviceWorkers: 'block'` so `page.route` reaches the loader.
+- Row 12.2 ticked; 12.1/12.3 left for the orchestrator's gate (as in phase 11). Rows 11.1/11.3 ticked with the orchestrator's gate result.
+- Epilogue: `change.md` set to `implemented` despite open [reviewer]/[visual]/[human] rows, per the run prompt. A sed slip wrote "- [x] - [ ]" into rows 11.1/11.3 in `207d599`; fixed in the close-out commit (no amend).
