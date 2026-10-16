@@ -727,9 +727,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [x] 4.1 New tests red before the function exists (assertion via a stub, not an import error), green after; unit `<branch baseline> + N`
-- [x] 4.2 Deliberate break: `roomArtCheck` always ok → "one missing" red; restored; meta-check (comparison, not production)
-- [x] 4.3 Full local gate green; `bash deploy/test-martynka-deploy.sh` unchanged and green
+- [x] 4.1 New tests red before the function exists (assertion via a stub, not an import error), green after; unit `<branch baseline> + N` — 57d34c6
+- [x] 4.2 Deliberate break: `roomArtCheck` always ok → "one missing" red; restored; meta-check (comparison, not production) — 57d34c6
+- [x] 4.3 Full local gate green; `bash deploy/test-martynka-deploy.sh` unchanged and green — 57d34c6
 
 #### Manual
 
