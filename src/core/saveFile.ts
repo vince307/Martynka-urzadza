@@ -76,7 +76,7 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
 export type DeviceSaveView =
     | { kind: 'summary'; summary: SaveSummary }
     | { kind: 'unreadable' }
-    | { kind: 'blocked'; cause: 'future' | 'timeout' | 'unavailable' | 'fatal' | 'newer'; forceable: boolean }
+    | { kind: 'blocked'; cause: 'future' | 'timeout' | 'unavailable' | 'fatal' | 'newer' | 'otherTab'; forceable: boolean }
     | { kind: 'broken' };
 
 export function deviceSaveView(

@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, NEWER_SAVE, SAVE_VERSION, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 
 export interface SaveStore {
@@ -17,7 +17,7 @@ export type LoadOutcome =
     | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
 /** `newer` (runtime only, never saved): the store refused a write because it holds a save of a newer format (P-5). */
-export type BlockReason = 'unreadable' | 'unavailable' | 'fatal' | 'newer';
+export type BlockReason = 'unreadable' | 'unavailable' | 'fatal' | 'newer' | 'otherTab';
 
 /** Only the name of a thrown value, never its message or stack. */
 export function errorName(e: unknown): string {
@@ -88,6 +88,8 @@ export interface AutosaverOptions {
     loadReason?: LoadReason;
     log: (...args: unknown[]) => void;
     onFirstWrite?: () => Promise<Persistence> | void;
+    /** Called once, when a write is first refused because a newer version or another window of the game saved here (never for load blocks or `replace`). */
+    onBlocked?: (reason: 'newer' | 'otherTab') => void;
 }
 
 /**
@@ -103,7 +105,7 @@ export const isTimeoutError = (name: string | null): boolean => name === 'timeou
  */
 export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'>, force: boolean): 'ok' | 'Blocked' {
     const { blockedBy, loadReason, loadError } = status;
-    if (blockedBy === 'fatal' || blockedBy === 'newer') return 'Blocked';
+    if (blockedBy === 'fatal' || blockedBy === 'newer' || blockedBy === 'otherTab') return 'Blocked';
     if (blockedBy === 'unreadable') return loadReason === 'future' ? 'Blocked' : 'ok';
     if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force ? 'ok' : 'Blocked';
     return 'ok';
@@ -268,10 +270,19 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastFailure = { stage, error: lastError };
             dirty = true;
             log(`autosave: ${stage} failed`, e);
-            if (lastError === NEWER_SAVE) {
-                // A newer page saved here: never retry, never overwrite it (P-5).
-                blockedBy ??= 'newer';
+            if (lastError === NEWER_SAVE || lastError === OTHER_WRITER_SAVE) {
+                // A newer page or another window saved here: never retry, never overwrite it (P-5).
+                const reason = lastError === NEWER_SAVE ? 'newer' : 'otherTab';
+                const first = blockedBy === null;
+                blockedBy ??= reason;
                 cancelTimer();
+                if (first) {
+                    try {
+                        options.onBlocked?.(reason);
+                    } catch (listenerError) {
+                        log('autosave: onBlocked listener failed', listenerError);
+                    }
+                }
             }
             return false;
         }

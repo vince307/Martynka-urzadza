@@ -238,3 +238,11 @@ describe('deviceSaveView newer (P-5)', () => {
         expect(deviceSaveView({ blockedBy: 'newer', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'newer', forceable: false });
     });
 });
+
+describe('deviceSaveView otherTab (stale tab)', () => {
+    it('an other-writer block is blocked, never forceable', () => {
+        const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
+        const current = encodeSave(freshSession('living'));
+        expect(deviceSaveView({ blockedBy: 'otherTab', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'otherTab', forceable: false });
+    });
+});

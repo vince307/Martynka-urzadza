@@ -86,6 +86,8 @@ export const pl = {
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
             // DESIGN-GAP 113: the kit has no line for a save refused because a newer game version saved on this device.
             newer: 'Zapis jest wyłączony: nowsza wersja gry zapisała już postępy na tym urządzeniu. Uruchom grę ponownie.',
+            // DESIGN-GAP 116: the kit has no line for a save refused because another window of the game saved later.
+            otherTab: 'Zapis jest wyłączony: inne okno gry zapisało postępy później niż to. Zamknij pozostałe okna i uruchom grę ponownie.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
         artHeading: 'Obrazki',
@@ -205,6 +207,8 @@ export const pl = {
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
         deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
         deviceNewer: 'Nowsza wersja gry zapisała już postępy na tym urządzeniu, więc ta karta ich nie zastąpi. Uruchom grę ponownie.',
+        // DESIGN-GAP 116: the kit has no line for a device save that another window of the game wrote later.
+        deviceOtherTab: 'Inne okno gry zapisało postępy później, więc ta karta ich nie zastąpi. Zamknij pozostałe okna i uruchom grę ponownie.',
         deviceFatal: 'Gra się zatrzymała, więc nie może teraz zastąpić zapisu. Uruchom grę ponownie.',
         deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },

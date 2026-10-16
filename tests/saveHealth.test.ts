@@ -147,3 +147,9 @@ describe('saveHealthView newer (P-5)', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'newer', lastError: 'NewerSave', lastFailure: { stage: 'write', error: 'NewerSave' } }))).toMatchObject({ kind: 'off', cause: 'newer', code: 'NewerSave' });
     });
 });
+
+describe('saveHealthView otherTab (stale tab)', () => {
+    it('an other-writer block is off with cause otherTab and the code OtherWriterSave', () => {
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'otherTab', lastError: 'OtherWriterSave', lastFailure: { stage: 'write', error: 'OtherWriterSave' } }))).toMatchObject({ kind: 'off', cause: 'otherTab', code: 'OtherWriterSave' });
+    });
+});

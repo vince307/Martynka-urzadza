@@ -30,6 +30,7 @@ const offState = (status: AutosaveStatus, blockedBy: BlockReason): SaveHealthSta
         return { kind: 'off', cause: isTimeoutError(status.loadError) ? 'timeout' : 'unavailable', code: status.loadError };
     }
     if (blockedBy === 'newer') return { kind: 'off', cause: 'newer', code: status.lastFailure?.error ?? status.lastError };
+    if (blockedBy === 'otherTab') return { kind: 'off', cause: 'otherTab', code: status.lastFailure?.error ?? status.lastError };
     return { kind: 'off', cause: 'fatal', code: status.lastError };
 };
 
