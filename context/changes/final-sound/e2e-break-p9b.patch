@@ -1,0 +1,12 @@
+diff --git a/src/scenes/UIScene.ts b/src/scenes/UIScene.ts
+index c07337d..5d3e9a2 100644
+--- a/src/scenes/UIScene.ts
++++ b/src/scenes/UIScene.ts
+@@ -235,7 +235,6 @@ export class UIScene extends Scene {
+         this.registry.set(REGISTRY_KEYS.settings, { autoRead });
+         if (soundPrefs) {
+             this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
+-            soundOf(this.registry)?.setPrefs(soundPrefs);
+             createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+         }
+         this.closeSettings();

@@ -872,7 +872,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 6.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 6.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — d073e7c; orchestrator note after d073e7c: 104 passed (--workers=4)
 - [x] 6.2 Deliberate break: patch `e2e-break-p9a.patch` przygotowany; meta-check w handoffie (dowód w fazie 9) — d073e7c (no own red test; proof in phase 9)
 
 #### Manual
@@ -884,8 +884,8 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 #### Automated
 
 - [ ] 7.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
-- [ ] 7.2 Deliberate break: patche `e2e-break-p9b.patch` i `e2e-break-p9c.patch` przygotowane; meta-check w handoffie
-- [ ] 7.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty
+- [x] 7.2 Deliberate break: patche `e2e-break-p9b.patch` i `e2e-break-p9c.patch` przygotowane; meta-check w handoffie — dc3e930
+- [x] 7.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty — dc3e930
 
 #### Manual
 

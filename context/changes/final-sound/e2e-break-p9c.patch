@@ -1,0 +1,15 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index 8c28e08..ac63c60 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -114,9 +114,7 @@ export class BootScene extends Scene {
+      */
+     private queueSounds(): void {
+         for (const def of SOUNDS) {
+-            if (def.boot) {
+-                this.load.audio(def.key, [...def.urls]);
+-            }
++            this.load.audio(def.key, [...def.urls]);
+         }
+     }
+ 
