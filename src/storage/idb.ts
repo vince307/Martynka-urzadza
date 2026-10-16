@@ -76,6 +76,7 @@ export function guardedPut(
     });
 }
 
+/** One id per store, so one per page load: the store stamps it in the record so a second tab can be told apart (B-1). */
 const randomWriter = (): string =>
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
