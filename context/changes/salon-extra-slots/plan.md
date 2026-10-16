@@ -762,9 +762,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 7.1 `npx playwright test tests/e2e/salon-extra-slots.spec.ts -g "#2 FR-019"` green; full `--workers=4`: `<branch e2e baseline> + 1`
-- [ ] 7.2 Deliberate break p7 → red; restored; meta-check (saved prefix keeps its meaning, card follows the 12-task list)
-- [ ] 7.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 7.1 `npx playwright test tests/e2e/salon-extra-slots.spec.ts -g "#2 FR-019"` green; full `--workers=4`: `<branch e2e baseline> + 1` — 74a7377 (orchestrator: spec 3 passed; full-suite count stays with the orchestrator after p8)
+- [x] 7.2 Deliberate break p7 → red; restored; meta-check (saved prefix keeps its meaning, card follows the 12-task list) — 74a7377 (orchestrator: break p7 → 1 failed, the FR-019 test; reverted)
+- [x] 7.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — 74a7377 (build `e2e hook: absent (2 chunks checked)`, lint, typecheck, 3076 unit, sample E1-E6 clean)
 
 ### Phase 8: Curtains above the scene are held for a free change — e2e (#16)
 
