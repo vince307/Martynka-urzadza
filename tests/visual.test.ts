@@ -1,6 +1,6 @@
 // The drawing description of a task: stable key, validation and the one-line sample form (S-13).
 import { describe, expect, it } from 'vitest';
-import { describeVisual, validateVisual, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
+import { describeVisual, validateVisual, visualArtIds, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
 
 const clock = (hour: number, minute: number): TaskVisual => ({ kind: 'clock', hour, minute });
 const ruler = (fromMm: number, toMm: number, lengthCm = 15, unit: 'cm' | 'mm' = 'cm'): TaskVisual => ({ kind: 'ruler', unit, lengthCm, fromMm, toMm });
@@ -356,5 +356,18 @@ describe('row of icons and the icon motion (S-14d)', () => {
         expect(describeVisual(row(['key', 'apple', 'cup']))).toBe('[row key apple cup]');
         expect(describeVisual(moving([3, 2], 'go'))).toBe('[icons apple 3+2 go]');
         expect(visualShape(row(['key', 'apple', 'cup']))).toBe('long');
+    });
+});
+
+describe('visualArtIds (child-flow-guards p1)', () => {
+    it('names the pictures a drawing needs, [] for drawn-in-code kinds', () => {
+        expect(visualArtIds({ kind: 'icons', icon: 'key', groups: [2, 3], framed: false })).toEqual(['key']);
+        expect(visualArtIds({ kind: 'row', icons: ['key', 'cup', 'book'], mark: 'left' })).toEqual(['key', 'cup', 'book']);
+        expect(visualArtIds({ kind: 'scale', item: 'apple', weights: ['weight-1kg', 'weight-2kg'] })).toEqual(['apple', 'weight-1kg', 'weight-2kg']);
+        expect(visualArtIds({ kind: 'money', items: ['coin-1zl', 'note-10zl'] })).toEqual(['coin-1zl', 'note-10zl']);
+        expect(visualArtIds({ kind: 'money', items: [], pay: { tray: ['coin-1zl', 'coin-5zl'], fewest: false } })).toEqual(['coin-1zl', 'coin-5zl']);
+        expect(visualArtIds({ kind: 'jugs', jugs: ['container-1l', 'container-half-l'] })).toEqual(['container-1l', 'container-half-l']);
+        expect(visualArtIds(clock(3, 0))).toEqual([]);
+        expect(visualArtIds({ kind: 'thermometer', celsius: 5 })).toEqual([]);
     });
 });

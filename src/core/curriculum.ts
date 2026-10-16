@@ -13,6 +13,7 @@ import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
 import { generateTask } from './tasks/generateTask';
 import type { Task } from './tasks/types';
+import { visualArtIds } from './tasks/visual';
 import type { Adaptation, SkillDef, StageDef, StageId, StepDef } from './types';
 
 /** Numbers of the curriculum rules; they come from data/balance.ts as arguments. */
@@ -149,9 +150,17 @@ export const buildAdaptiveRound = (
               )
             : buckets;
     // Picture mode (E1, S-14d): after the art filter, so a missing picture never leaves a bucket full of unplayable skills.
-    const pools = options?.picture === true ? withPictures(afterArt, hasPicture, afterArt.currentGroups ? 1 : unlockThreshold(afterArt.current.length, balance.curriculum.unlockShare)) : afterArt;
+    const pools = options?.picture === true ? withPictures(afterArt, hasPicture, afterArt.currentGroups ? 1 : unlockThreshold(buckets.current.length, balance.curriculum.unlockShare)) : afterArt;
     const skills = pickRoundSkills(pools, weights, rng, rules.length);
-    return distinctTasks(skills, rng, (skill) => generateTask(skill, rng, { tileCount }), rules.uniqueRetries);
+    // Missing art: a task that draws a missing picture is redrawn (a few times); exhausted, the last one stays with its stand-in box.
+    const generate = (skill: SkillDef): Task => {
+        let task = generateTask(skill, rng, { tileCount });
+        if (!missing || missing.size === 0) return task;
+        const needsMissing = (t: Task): boolean => [t.visual, t.hintVisual].some((v) => v !== undefined && visualArtIds(v).some((id) => missing.has(id)));
+        for (let tries = 0; tries < balance.round.artRetries && needsMissing(task); tries += 1) task = generateTask(skill, rng, { tileCount });
+        return task;
+    };
+    return distinctTasks(skills, rng, generate, rules.uniqueRetries);
 };
 
 /** Numbers of the easing rule; they come from data/balance.ts as arguments. */

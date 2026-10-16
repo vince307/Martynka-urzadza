@@ -96,6 +96,43 @@ export const visualKey = (v: TaskVisual | undefined): string => {
     }
 };
 
+/**
+ * Ids of the loaded pictures a drawing is made of (what `missingIds` names), so a round can redraw a task whose picture is missing.
+ * Drawn-in-code kinds return []. The shared frames (`balance-scale`, `thermometer-frame`) are not listed: every scale or
+ * thermometer task uses them, so a redraw cannot avoid them.
+ */
+export const visualArtIds = (v: TaskVisual): readonly string[] => {
+    switch (v.kind) {
+        case 'icons':
+            return [v.icon];
+        case 'row':
+            return v.icons;
+        case 'scale':
+            return [v.item, ...v.weights];
+        case 'money':
+            return v.pay ? v.pay.tray : v.items;
+        case 'jugs':
+            return v.jugs;
+        case 'clock':
+        case 'ruler':
+        case 'blocks':
+        case 'bars':
+        case 'thermometer':
+        case 'cells':
+        case 'grid':
+        case 'figure':
+        case 'column':
+        case 'arrows':
+        case 'pattern':
+        case 'numberLine':
+            return [];
+        default: {
+            const never: never = v;
+            return never;
+        }
+    }
+};
+
 const isInt = (n: number): boolean => Number.isInteger(n);
 
 /** Rule violations of a drawing; [] when it can be drawn and read. */

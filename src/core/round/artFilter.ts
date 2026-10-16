@@ -3,13 +3,15 @@
 import { parseMassParams } from '../tasks/generators/mass';
 import { parseMoneyCountParams } from '../tasks/generators/money';
 import { parseMoneyPayParams } from '../tasks/generators/moneyPay';
+import { ICONS } from '../../data/measures';
+import { parseOrdinalParams } from '../tasks/generators/ordinal';
 import { parseCapacityParams } from '../tasks/generators/capacity';
 import type { SkillDef } from '../types';
 import type { SkillBuckets } from './pick';
 
 /**
  * True when the skill's result can only be read from a picture that is missing: MONEY_COUNT (any coin or note it can
- * draw), MONEY_PAY (any nominal of its tray: a coin the child cannot see cannot be picked), MASS (any weight), CAPACITY `toLitres` (any jug). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
+ * draw), MONEY_PAY (any nominal of its tray: a coin the child cannot see cannot be picked), MASS (any weight), CAPACITY `toLitres` (any jug), ORDINAL (fewer icons loaded than its row needs). MONEY_CHANGE, MASS `text` and CAPACITY `howMany` / `text` carry the amounts in
  * the prompt, so they are never blocked.
  */
 export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): boolean => {
@@ -29,6 +31,9 @@ export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): bo
             const p = parseCapacityParams(skill.params);
             return p.variant === 'toLitres' && any(p.jugs);
         }
+        case 'ORDINAL':
+            // The row is drawn from the loaded icons: blocked when fewer remain than the longest row needs.
+            return ICONS.filter((icon) => !missingIds.has(icon.id)).length < parseOrdinalParams(skill.params).max;
         default:
             return false;
     }
