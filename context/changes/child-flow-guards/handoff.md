@@ -19,7 +19,7 @@ Written by the visual-gate step of run 2026-10-16-audit-sweep. All five `[visual
 |---|---|
 | `context/changes/child-flow-guards/reviews/visual-review.md` | visual review: verdict per row, hand-checked numbers, decisions; ends with `VISUAL: PASS — …` |
 | `context/changes/child-flow-guards/screenshots/README.md` | table of states, frames and how each was reached |
-| `context/changes/child-flow-guards/screenshots/*.jpg` | 30 frames (`desktop-*` 1440×900, `tablet-*` 1024×768): wallet line, COMPARE_QTY, HALF hint, progress E1 and E6.11, pyramid steps 0-2 + retype, perimeter steps 0-1 + retype |
+| `context/changes/child-flow-guards/screenshots/*.jpg` | 24 frames (`desktop-*` 1440×900, `tablet-*` 1024×768): wallet line, COMPARE_QTY, HALF hint, progress E1 and E6.11, pyramid steps 0-2 + retype, perimeter steps 0-1 + retype |
 | `context/changes/child-flow-guards/plan.md` | `[visual]` rows 2.6, 3.6, 5.6, 6.6, 10.5 ticked |
 | `context/changes/child-flow-guards/follow-ups/review-fixes.md` | new section "From the visual gate": VG-1 (pyramid overflow) and VG-2 (zł wrap). F3 and F7 now carry what the frames show, with new triggers; 20 triggers in total |
 | `context/changes/child-flow-guards/handoff.md` | this file |
