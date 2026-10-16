@@ -23,16 +23,27 @@ export interface CurriculumRules {
     readonly unlockShare: number;
 }
 
+/**
+ * Bucket weights of a review step: it has no "earlier" steps (the whole stage is its `current`), so the earlier share
+ * folds into `current` and the previous stage keeps its own share: 90/10 normally, 70/30 while easing
+ * (docs/ZADANIA.md "~10% powtórka z poprzedniego etapu").
+ */
+export const reviewWeights = (w: Weights): Weights => ({ current: w.current + w.earlier, earlier: 0, previous: w.previous });
+
 const SEMESTER_MONTHS = 5; // September-January, February-June
 
-/** A step the child can play: it has a playable skill, or it is a review step (draws from the rest of the stage). */
-export const stepPlayable = (step: StepDef): boolean => step.review === true || step.skills.some(playable);
+/**
+ * A step the child can play: it has a playable skill, or it is a review step (draws from the rest of the stage). With
+ * `stage`, a review step counts only when a non-review step of that stage is playable (else a round would have nothing to draw).
+ */
+export const stepPlayable = (step: StepDef, stage?: StageDef): boolean =>
+    step.review === true ? stage === undefined || stage.steps.some((s) => s.review !== true && s.skills.some(playable)) : step.skills.some(playable);
 
 /** Step numbers that can be played (see `stepPlayable`), in curriculum order. */
-export const playableSteps = (stage: StageDef): number[] => stage.steps.filter(stepPlayable).map((step) => step.step);
+export const playableSteps = (stage: StageDef): number[] => stage.steps.filter((step) => stepPlayable(step, stage)).map((step) => step.step);
 
 /** Steps a child can start on: the playable ones minus review steps (a review step is only ever unlocked by play). */
-const startableSteps = (stage: StageDef): number[] => stage.steps.filter((step) => step.review !== true && stepPlayable(step)).map((step) => step.step);
+const startableSteps = (stage: StageDef): number[] => stage.steps.filter((step) => step.review !== true && stepPlayable(step, stage)).map((step) => step.step);
 
 /**
  * First unlocked step of `stage` for a child of `age` in `month` (getMonth(), 0-11).
@@ -138,6 +149,8 @@ export const buildAdaptiveRound = (
     options?: { readonly picture?: boolean },
 ): Task[] => {
     const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
+    // A stage with nothing to draw (e.g. only a review step) fails here with its name, not deep inside the picker.
+    if (playableSteps(stage).length === 0) throw new RangeError(`No playable skills for stage ${stage.id} step ${unlocked}`);
     const buckets = skillBuckets(stage, previous, unlocked);
     const missing = art?.missingIds;
     // Nothing missing: the buckets and the rng use stay exactly as without the argument.
@@ -151,7 +164,10 @@ export const buildAdaptiveRound = (
             : buckets;
     // Picture mode (E1, S-14d): after the art filter, so a missing picture never leaves a bucket full of unplayable skills.
     const pools = options?.picture === true ? withPictures(afterArt, hasPicture, afterArt.currentGroups ? 1 : unlockThreshold(buckets.current.length, balance.curriculum.unlockShare)) : afterArt;
-    const skills = pickRoundSkills(pools, weights, rng, rules.length);
+    if (pools.current.length + pools.earlier.length + pools.previous.length === 0) {
+        throw new RangeError(`No playable skills for stage ${stage.id} step ${currentStep(stage, unlocked)}`);
+    }
+    const skills = pickRoundSkills(pools, pools.currentGroups ? reviewWeights(weights) : weights, rng, rules.length);
     // Missing art: a task that draws a missing picture is redrawn (a few times); exhausted, the last one stays with its stand-in box.
     const generate = (skill: SkillDef): Task => {
         let task = generateTask(skill, rng, { tileCount });
@@ -184,6 +200,8 @@ export const unlockReady = (stage: StageDef, adaptation: Adaptation, rules: Curr
     const current = currentStep(stage, adaptation.unlockedStep[stage.id] ?? 1);
     const next = steps.find((n) => n > current);
     if (next === undefined) return null;
+    // A review step has no skills of its own to master, so it never unlocks what follows it by being "ready" at once.
+    if (stage.steps.some((s) => s.step === current && s.review === true)) return null;
     const skills = stage.steps.filter((s) => s.step === current).flatMap((s) => s.skills.filter(playable));
     const mastered = skills.filter((k) => (adaptation.mastery[k.id] ?? 0) >= rules.unlockAt).length;
     return mastered >= unlockThreshold(skills.length, rules.unlockShare) ? next : null;

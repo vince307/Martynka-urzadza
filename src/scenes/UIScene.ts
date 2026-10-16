@@ -2,7 +2,7 @@ import { Scene } from 'phaser';
 import { openInputSession, type InputSession, type InputSuspender } from '../core/inputSuspend';
 import { IDLE, longPress, type LongPressEvent, type LongPressState } from '../core/longPress';
 import { effectiveAutoRead } from '../core/narration/voice';
-import { changeStageByParent, initialSettings, type SessionLearner } from '../core/placement';
+import { changeStageByParent, initialSettings, previousStage, type SessionLearner } from '../core/placement';
 import { progressView } from '../core/progress';
 import { createRng } from '../core/rng';
 import type { Settings } from '../core/types';
@@ -160,10 +160,13 @@ export class UIScene extends Scene {
                     this.closeSettings();
                     return;
                 }
+                // DESIGN-GAP 122: the kit's progress preview lists the current stage only; previous-stage skills are drawn too, so they are listed.
+                const before = previousStage(stage.id);
+                const previousDef = before ? getStage(before) : undefined;
                 this.closeDialog = openSettingsPanel({
                     stage: learner.stage,
                     autoRead: settings.autoRead,
-                    progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
+                    progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
