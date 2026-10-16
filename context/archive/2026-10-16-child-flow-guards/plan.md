@@ -1106,7 +1106,7 @@ Details.
 #### Manual
 
 - [x] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 122-125 match the code comments — impl review
-- [ ] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38898544137, job 116964813604)
+- [x] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (job 117192831932: `Tests  3416 passed (3416)`, `e2e hook: absent (2 chunks checked)`) — CI run 38966095199
 
 ### Phase 14: The puzzle is paid once after a close; solution lines stay on screen — e2e (#2, #11)
 
