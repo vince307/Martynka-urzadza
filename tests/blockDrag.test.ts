@@ -166,6 +166,6 @@ describe('S13-09 (S-14d phase 6)', () => {
     });
 
     it('balance.coinDrag holds the numbers of the plan', () => {
-        expect(balance.coinDrag).toEqual({ startDistance: 12, maxTotal: 10 });
+        expect(balance.coinDrag).toEqual({ startDistance: 12, maxTotal: 6 });
     });
 });

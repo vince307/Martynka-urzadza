@@ -9,6 +9,20 @@ import { answerRight, answerWrong, cancelTouch, dragTouch, payCoins, phaseIs, sc
 import { passWelcomeAsParent } from './support/welcome';
 
 const ROUND_LENGTH = 5;
+const E1_TRAY = [100, 200, 500];   // the grosze of the E1.11 tray: 1, 2 and 5 zł
+
+/** The fewest coins (grosze, largest first) of `values` that add up to `target`. */
+const fewestCoins = (target: number, values: readonly number[]): number[] => {
+    const best: (number[] | null)[] = [[]];
+    for (let sum = 1; sum <= target; sum += 1) {
+        best[sum] = null;
+        for (const v of values) {
+            const rest = sum >= v ? best[sum - v] : null;
+            if (rest && (!best[sum] || rest.length + 1 < best[sum]!.length)) best[sum] = [v, ...rest];
+        }
+    }
+    return (best[target] ?? []).sort((a, b) => b - a);
+};
 const MAX_TASKS = 40;
 
 const open = async (page: Page, stageLabel: string, stage: string, skill: string): Promise<void> => {
@@ -81,8 +95,11 @@ test('#11 a wallet with too many coins in the fewest-coins task gives a hint, an
     const stars = task.starsEarned;
 
     // The right sum, but the biggest coin changed into 1 zł coins: more coins than the shortest wallet.
-    const spread = [...Array.from({ length: answer[0] / 100 }, () => 100), ...answer.slice(1)];
+    // The first coin is broken into the fewest coins of smaller tray nominals (5 -> 2+2+1, 2 -> 1+1), so the wallet stays within the six places.
+    const smaller = E1_TRAY.filter((value) => value < answer[0]);
+    const spread = [...fewestCoins(answer[0], smaller), ...answer.slice(1)];
     expect(spread.length).toBeGreaterThan(answer.length);
+    expect(spread.length).toBeLessThanOrEqual(6);
     await payCoins(page, spread);
     await tapScene(page, (await targets(page)).coins!.ok!);
     await phaseIs(page, 'second');

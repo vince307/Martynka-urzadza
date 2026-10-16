@@ -1,7 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
 import { walletCoins, walletList } from '../../core/coins';
 import type { TrayDragState } from '../../core/trayDrag';
-import { interiorPoint, type CoinLayout, type Rect } from '../../core/round/dragLayout';
+import { interiorPoint, liftedSlot, type CoinLayout, type Rect } from '../../core/round/dragLayout';
 import { ART_LIMITS, type MoneyId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
@@ -120,7 +120,7 @@ export class CoinWallet {
 
         // Placed coins, one cell each; a coin lifted from the wallet is drawn under the finger instead.
         const list = walletList(state.mat);
-        const lifted = state.carrying?.from === 'mat' ? list.lastIndexOf(state.carrying.kind) : -1;
+        const lifted = liftedSlot(layout, list, state.carrying);
         let slot = 0;
         list.forEach((id, i) => {
             if (i === lifted) return;

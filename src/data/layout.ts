@@ -308,12 +308,14 @@ export const TASK_LAYOUT = {
         solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
     // Paying with coins (S-14d phase 6): the tray holds up to 4 kinds, one row up to 3 (3 x 136 px) and a 2 x 2 grid for 4 (212 x 142 px, above MIN_TOUCH_TARGET);
-    // the wallet is the block mat, 5 x 2 cells of 188 x 230 hold balance.coinDrag.maxTotal (10) coins. Provisional, screenshots at the visual gate.
+    // the wallet is the pack wallet art (640 x 420, six drop centres from the pack manifest = balance.coinDrag.maxTotal) scaled 1.25 into the notebook;
+    // a placed coin's box is the drop-centre pitch scaled minus coinGap (144 x 104 px). DESIGN-GAP 104, screenshots at the visual gate.
     coinDrag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        wallet: DRAG_MAT,
+        wallet: { x: 308, y: 380, width: 800, height: 525 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
-        columns: 5, rows: 2, cellInset: 8, rowKinds: 3, maxKinds: 4,
+        art: { width: 640, height: 420, dropCenters: [[200, 160], [320, 160], [440, 160], [200, 248], [320, 248], [440, 248]] },
+        coinGap: 6, rowKinds: 3, maxKinds: 4,
     },
     // Coin pictures inside tray tiles and wallet cells (S-14d phase 8): inset from the tile, size under the finger. Provisional, DESIGN-GAP 104, screenshots at the visual gate.
     coinPay: { trayInset: 14, coinInset: 10, carriedSize: 120 },

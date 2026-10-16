@@ -2,7 +2,7 @@
 // TASK_LAYOUT.drag (injected, like pictureLayout). The same rectangles draw the tray and the mat and answer a touch.
 import type { BlockDragGeo, BlockKind, Mat } from '../blockDrag';
 import { walletList } from '../coins';
-import type { TrayDragGeo } from '../trayDrag';
+import type { Carrying, Counts, TrayDragGeo } from '../trayDrag';
 import type { MoneyId } from '../../data/measures';
 import { insideRect, interiorPoint, type Rect } from '../geometry';
 
@@ -73,12 +73,10 @@ export interface CoinSpec {
     tray: Rect & { gap: number };
     wallet: Rect;
     ok: Rect;
-    /** Placed coins per row of the wallet. */
-    columns: number;
-    /** Rows of the wallet; columns * rows is the most coins it holds. */
-    rows: number;
-    /** Each placed coin sits in a wallet cell, inset by this much on every side. */
-    cellInset: number;
+    /** The wallet picture in its own units; its drop centres are the places of the placed coins (wallet list order). */
+    art: { width: number; height: number; dropCenters: readonly (readonly [number, number])[] };
+    /** A placed coin's box is its drop-centre pitch (scaled) minus this gap on both axes. */
+    coinGap: number;
     /** The tray is one row up to this many kinds, a 2 x 2 grid above it. */
     rowKinds: number;
     maxKinds: number;
@@ -106,18 +104,32 @@ export const coinLayout = (spec: CoinSpec, kinds: readonly MoneyId[]): CoinLayou
             width: tileW, height: tileH,
         };
     });
-    const cellW = spec.wallet.width / spec.columns;
-    const cellH = spec.wallet.height / spec.rows;
-    const coin = (i: number): Rect => ({
-        x: spec.wallet.x + (i % spec.columns) * cellW + spec.cellInset,
-        y: spec.wallet.y + Math.floor(i / spec.columns) * cellH + spec.cellInset,
-        width: cellW - 2 * spec.cellInset,
-        height: cellH - 2 * spec.cellInset,
-    });
+    const scale = spec.wallet.width / spec.art.width;
+    const pitch = (axis: 0 | 1): number => {
+        let best = Infinity;
+        for (const a of spec.art.dropCenters) {
+            for (const b of spec.art.dropCenters) {
+                const d = Math.abs(a[axis] - b[axis]);
+                if (d > 0 && d < best) best = d;
+            }
+        }
+        return best;
+    };
+    const boxW = pitch(0) * scale - spec.coinGap;
+    const boxH = pitch(1) * scale - spec.coinGap;
+    const coin = (i: number): Rect => {
+        const centre = spec.art.dropCenters[i];
+        if (!centre) throw new Error(`coin ${i}: the wallet art has ${spec.art.dropCenters.length} places`);
+        return {
+            x: spec.wallet.x + centre[0] * scale - boxW / 2,
+            y: spec.wallet.y + centre[1] * scale - boxH / 2,
+            width: boxW, height: boxH,
+        };
+    };
     return { tray, wallet: spec.wallet, ok: spec.ok, coin };
 };
 
-/** Hit tests of the coin reducer: the tray tile under a point, a placed coin by its wallet cell (the cell order is the wallet's list order), the wallet rectangle. */
+/** Hit tests of the coin reducer: the tray tile under a point, a placed coin by its wallet cell (the cell order is the wallet's list order; at most one cell per drop centre), the wallet rectangle. */
 export const coinGeometry = (layout: CoinLayout, kinds: readonly MoneyId[]): TrayDragGeo<MoneyId> => ({
     trayAt: (x, y) => kinds.find((kind) => { const r = layout.tray[kind]; return r !== undefined && insideRect(r, x, y); }) ?? null,
     onMat: (x, y) => insideRect(layout.wallet, x, y),
@@ -129,3 +141,19 @@ export const coinGeometry = (layout: CoinLayout, kinds: readonly MoneyId[]): Tra
         return null;
     },
 });
+
+/**
+ * The wallet cell a lifted coin leaves empty: the cell the finger went down in when it holds a coin of the carried kind (the
+ * first of two equal coins can be the one grabbed), else the last coin of that kind. -1 when nothing is carried from the wallet.
+ */
+export const liftedSlot = (layout: CoinLayout, list: readonly MoneyId[], carrying: Carrying<MoneyId> | null): number => {
+    if (!carrying || carrying.from !== 'mat') return -1;
+    for (let i = 0; i < list.length; i += 1) {
+        if (list[i] === carrying.kind && insideRect(layout.coin(i), carrying.startX, carrying.startY)) return i;
+    }
+    return list.lastIndexOf(carrying.kind);
+};
+
+/** True when the wallet holds `maxTotal` coins or more (the reducer then refuses another). */
+export const walletFull = (mat: Counts<MoneyId>, maxTotal: number): boolean =>
+    Object.values<number>(mat).reduce((sum, n) => sum + n, 0) >= maxTotal;
