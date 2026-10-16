@@ -449,6 +449,7 @@ export const LOADING_LAYOUT = {
     title: { x: 960, y: 450 },
     bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
     slow: { x: 960, y: 680, maxWidth: 800 },   // DESIGN-GAP 112: the "still loading" line under the bar, centred like the title, wrapped within the bar width
+    textStroke: { title: 12, slow: 8 },   // visual gate S-16c: over the pack background the title and the slow line get an ivory outline (pack screenshots/loading-screen.png outlines its title), the deep teal ran into the turquoise sofa
 } as const;
 
 /**

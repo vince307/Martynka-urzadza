@@ -1,5 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, LOADING_LAYOUT, PLACEHOLDER_COLORS } from '../../data/layout';
+import { GAME_HEIGHT, GAME_WIDTH, LOADING_LAYOUT, PAGE_BACKGROUND, PLACEHOLDER_COLORS } from '../../data/layout';
 import { UI_ART_KEYS } from '../../data/uiArt';
 import { pl } from '../../data/pl';
 import { textStyle } from './textStyle';
@@ -56,6 +56,9 @@ export class LoadingScreen {
         this.note = this.scene.add
             .text(slow.x, slow.y, pl.loading.slow, { ...textStyle('bar'), align: 'center', wordWrap: { width: slow.maxWidth } })
             .setOrigin(0.5, 0);
+        if (this.background) {
+            this.note.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.slow);
+        }
     }
 
     /**
@@ -71,6 +74,9 @@ export class LoadingScreen {
             const { background } = LOADING_LAYOUT;
             this.background = this.scene.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, key).setDisplaySize(background.width, background.height).setDepth(-2);
             this.back.setVisible(false);
+            // Over the busy background the texts get an ivory outline, as the pack's title has; the drawn screen keeps plain text.
+            this.title.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.title);
+            this.note?.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.slow);
         } else if (id === 'loadingEmblem' && !this.emblem) {
             const { emblem } = LOADING_LAYOUT;
             this.emblem = this.scene.add.image(emblem.x, emblem.y, key).setDisplaySize(emblem.size, emblem.size).setDepth(-1);
