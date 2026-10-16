@@ -869,7 +869,7 @@ migrates that save again.
 - [x] 3.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 032adb1
 - [x] 3.2 Deliberate break: `OtherWriterSave` as ordinary failure / `onBlocked` on every refusal → red; restored; meta-check (state machine, not the card) — 032adb1
 - [x] 3.3 Full local gate green; build prints `e2e hook: absent (` — 032adb1
-- [ ] 3.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 3.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate b62b3f1 (121 passed)
 
 #### Manual
 
@@ -879,9 +879,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 4.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (`
+- [x] 4.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — e7184c0
 - [ ] 4.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `load-and-tab-guard.spec.ts` still green
-- [ ] 4.3 Deliberate break: patch `e2e-break-p11a.patch` written; meta-check in the handoff
+- [x] 4.3 Deliberate break: patch `e2e-break-p11a.patch` written; meta-check in the handoff — e7184c0
 
 #### Manual
 
