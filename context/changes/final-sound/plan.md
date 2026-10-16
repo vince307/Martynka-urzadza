@@ -883,7 +883,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 7.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0`
+- [x] 7.1 Pełna bramka lokalna zielona; `npm run build` drukuje `e2e hook: absent (`; e2e (orkiestrator) `<baseline gałęzi e2e> + 0` — dc3e930 (e2e: orkiestrator, 104 passed --workers=4)
 - [x] 7.2 Deliberate break: patche `e2e-break-p9b.patch` i `e2e-break-p9c.patch` przygotowane; meta-check w handoffie — dc3e930
 - [x] 7.3 `SAVE_VERSION` 3; `git diff --stat main -- tests/fixtures` pusty — dc3e930
 
@@ -896,8 +896,8 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 8.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone
-- [ ] 8.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona
+- [x] 8.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — SHA8
+- [x] 8.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona — SHA8
 
 #### Manual
 

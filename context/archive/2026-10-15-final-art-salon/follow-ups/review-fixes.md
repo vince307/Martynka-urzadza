@@ -23,9 +23,11 @@ Each item has a `Trigger:` line; later slices grep for them. Everything that car
 - Slashed zero in the task font (S-04 V3): the font has only that glyph.
   Trigger: the maintainer asks for a plain 0
 - `audio.noAudio` and audio rejections are outside the error boundary.
-  Trigger: S-16b (the first sound)
+  Resolved in S-16b (final-sound): `QUIET_REJECTIONS` names the audio rejections, `cutLoad` has `onProcessError`.
+  Trigger: none (closed)
 - Purchase sound and variant-change sound: `RoomScene.playPurchaseSound` is still an empty hook (design-gaps 35); no sound files exist.
-  Trigger: S-16b
+  Resolved in S-16b (final-sound): `panelCue` plays `purchase`; design gap 35 closed.
+  Trigger: none (closed)
 
 ## Done in S-16a (closed, for the record)
 
@@ -70,4 +72,4 @@ Each item has a `Trigger:` line; later slices grep for them. Everything that car
 - VO2: with salon art missing (`?e2eArt=room`) overlapping stand-ins hide each other's labels ("lampa" under the sofa box, "sofa Morska" half under "stolik Dębowy"); draw stand-in labels in a top layer or inset them into the visible part (`RoomView.render` / `drawStandIn`).
   Trigger: F5 (one stand-in drawer) or the next change to `RoomView.render`
 - VO3: the hold outline is the slot's `visibleRect`, so the rug's frame runs across the armchair, the pouf and the sofa (design-gaps row 37); an outline of the picture's shape needs art or an alpha contour.
-  Trigger: designer brief delivers a hold view, or S-16b
+  Trigger: designer brief delivers a hold view, or S-17 polish
