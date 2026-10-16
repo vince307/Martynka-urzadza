@@ -155,7 +155,8 @@ and the e2e hook can reach.
 
 **Contract**: the scan box is `slotBox(slot)` intersected with the scene rectangle `ROOM_LAYOUT.scene` (imported from
 `src/data/layout.ts`; if an ESLint boundary forbids it, pass the box from `RoomScene.slotTargets` instead and record it)
-shrunk by the margin `step / 2`, so the result `p` satisfies `scene.left + m ≤ p.x ≤ right − m`, `scene.top + m ≤ p.y ≤
+shrunk by the margin `step / 2` (`src/core/roomHit.ts` already imports `src/data/balance.ts`, and the core ESLint block
+forbids only Phaser and `idb-keyval`, so the import is allowed; plan review F5), so the result `p` satisfies `scene.left + m ≤ p.x ≤ right − m`, `scene.top + m ≤ p.y ≤
 bottom − m`; still `slotAt(p ± m) === slotId`. Signature unchanged. New tests on a synthetic room with a slot at `y: −70`
 (box top −54): `holdPoint` (no alpha, and with an alpha that is opaque everywhere) returns `y ≥ step / 2`; a slot fully
 above the scene returns null. `slotAt` unchanged.
@@ -361,7 +362,7 @@ summary reads correctly; recorded in the handoff.
 #### Manual Verification:
 
 - [reviewer] Teacher read recorded; `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` unchanged; nothing from `designs/` staged
-- [visual] Salon at 1440 and 1024: renovated room shows the old lamp, plant and pouf; bare window before the curtains; curtains above the shadows; shelf partly behind the cabinet; panels of the five new tasks (curtain thumbnails fit); pouf under the tray (VO1)
+- [visual] Salon at 1440 and 1024: renovated room shows the old lamp, plant and pouf; bare window before the curtains; curtains above the shadows; shelf partly behind the cabinet; panels of the five new tasks (curtain thumbnails fit); pouf under the tray (VO1); the "Pokój gotowy!" miniature at task 12 (curtains start 70 × 0.13 ≈ 9 px above the miniature, plan review F2)
 
 ---
 
@@ -433,7 +434,11 @@ start or a second room), "Wymień …" offering variant 0 = the current look (S-
 `VariantPanel`), VO3 curtains hold outline overlaps shelf and cabinet (designer hold view / S-17), L-7 per-layer state
 (next change to `RoomLayer`), F2, L-4, L-R8, L-R11, F1 (unchanged triggers), M-6 second half / P-6, a done salon loses its
 shadows, mode button and teaser until task 12 (S-17 if the author dislikes it), `MINIGAME_WORDS` without the new words
-(author asks), costs 8–15 (S-17).
+(author asks), costs 8–15 (S-17); plan review F1: VO2 (overlapping stand-in labels, fired by the `RoomView.render` change,
+re-triggered) and the per-file timeout test of `2026-10-16-final-art-p2` (fired by the `balance.loader` change, re-triggered);
+plan review F3: a hold on an unbought default-look piece (old pouf, lamp) passes through to the bought slot under it
+(trigger: a report of the wrong panel opening, or S-17); plan review F2: the done-card miniature does not clip the curtains
+above its top (trigger: the visual gate finding it visible, or the next change to `drawRoomMiniature`).
 
 ### Success Criteria:
 
@@ -605,6 +610,23 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 - **"Wymień" can buy the current look** (variant 0 offered) — allowed by the author's rule; S-17 follow-up.
 - **The buy-everything specs run longer** (12 purchases): limits raised to 180 s in phase 3; a flake there is load, not logic.
 - **Cold start ≈ 46.6 s** at 50 KB/s, close to the 50 s cut; the atlas follow-up carries the trigger.
+- **Follow-ups fired by this slice and deferred (plan review F1)**, each carried in phase 5 with its reason:
+  VO2 (trigger: next change to `RoomView.render`) — the stand-in path changes only by the slot loop; the labels of the five
+  new stand-ins are checked in visual 3.7 with `?e2eArt=room`, a fix needs the one stand-in drawer (F5);
+  per-file timeout test (`2026-10-16-final-art-p2`, trigger: next change to `balance.loader` or the boot queue) — only
+  `totalMs` changes, the per-file limit and its path are untouched; L-4 (trigger: a change to the room hit test) — the
+  `holdPoint` clip keeps every asked point inside the scene and inside the picture (curtains local y ≥ 70), so
+  `getPixelAlpha` is never asked out of range by this change; L-7 (trigger: next change to `salon-art.spec.ts`) — the only
+  edit is the count 26 → 38, and `RoomSnapshot.shown` covers what the new specs read; L-R8 / L-R11 (trigger: next change to
+  RoomScene) — phase 2 adds one snapshot field and touches neither `stepPanel` refusals nor `celebrate`/`onSleep`.
+- **A hold on an unbought default-look piece goes through it (plan review F3)**: `slotAt` reads `chosen`, so holding the old
+  pouf can open the change panel of the rug or armchair under it, as holding the decoration pouf does today. Not a
+  regression; the "Wymień" panel opens from the task button. Follow-up in phase 5.
+- **A still-open S-16c tab or PWA instance can overwrite a purchase of the new tasks (plan review F4)**: both write v3, so
+  the version guard of `load-and-tab-guard` (P-5) does not apply; the same holds for any same-version change and is not
+  specific to this slice. No action.
+- **The done-card miniature draws the curtains ≈ 9 px above its top edge (plan review F2)**: `drawRoomMiniature` has no
+  clip and stays unedited (F2 of `final-art-salon`); inside the 16 px tile padding, checked in visual 3.7.
 
 ## References
 
@@ -699,7 +721,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 #### Manual
 
 - [ ] 3.6 [reviewer] Teacher read recorded; `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` unchanged; nothing from `designs/` staged
-- [ ] 3.7 [visual] Salon at 1440 and 1024: default look, bare window, curtains above the shadows, shelf behind the cabinet, five panels, pouf under the tray
+- [ ] 3.7 [visual] Salon at 1440 and 1024: default look, bare window, curtains above the shadows, shelf behind the cabinet, five panels, pouf under the tray, done-card miniature at task 12
 
 ### Phase 4: Deploy smoke counts the room art (M-6 first half)
 
