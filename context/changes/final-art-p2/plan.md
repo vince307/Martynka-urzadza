@@ -879,6 +879,6 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/final-art-room-done.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 3`
-- [ ] 11.2 Deliberate break p11a → (b) red; restored; meta-check (choice of picture, not its look)
-- [ ] 11.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 11.1 `npx playwright test tests/e2e/final-art-room-done.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 3` — orchestrator: 3 passed, full 117 (114 + 3) — b434ef7
+- [x] 11.2 Deliberate break p11a → (b) red; restored; meta-check (choice of picture, not its look) — orchestrator: 2 failed (pack thumbnail, drawn miniature), (a) stayed green — b434ef7
+- [x] 11.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — lint, typecheck, 3062 tests, sample E1-E6, build OK — b434ef7

@@ -1,15 +1,15 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The `/10x-e2e final-art-p2 phase 10` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 10 (e2e) is committed (109b8b1) on the orchestrator's results. Next is phase 11 (`Driver: e2e`); row 10.4 [human], rows 7.4 [human] and 8.3 [reviewer] stay open.
+The `/10x-impl-review final-art-p2` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 11 (e2e, the last) is committed (b434ef7) on the orchestrator's results. All phases are implemented; rows 10.4 [human], 7.4 [human], 8.3 [reviewer] stay open.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-p2`, cut from `main` at `c16734d` |
-| Commits | phases 1-6 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, `3df2b56`, `64932d6`, phase 7 `fcaa3dc`, phase 9 `d9fae0f`, phase 10 `109b8b1`, plus handoff commits |
+| Commits | phases 1-6 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, `3df2b56`, `64932d6`, phase 7 `fcaa3dc`, phase 9 `d9fae0f`, phase 10 `109b8b1`, phase 11 `b434ef7`, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` (unchanged) |
+| `change.md` status | `implemented` |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (7.4 [human], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows open) |
 | Working tree | clean after the handoff commit |
 
@@ -26,19 +26,19 @@ The `/10x-e2e final-art-p2 phase 10` step of autonomous run `2026-10-15-fix-s16b
 | command | result |
 |---|---|
 | `npm run lint`, `typecheck` | OK |
-| `npm test` | 3062 passed (no unit delta in p10); `sample` E1-E6 exit 0 |
+| `npm test` | 3062 passed (no unit delta in p11); `sample` E1-E6 exit 0 |
 | `npm run build` | prints `e2e hook: absent (2 chunks checked)` |
-| e2e (orchestrator, observed 2026-10-16) | wallet spec + money-pay 7 passed; full `--workers=4` 114 passed (111 + 3); breaks p10a (both liftedSlot calls), p10b, p10c each red, reverted; not run in this session |
+| e2e (orchestrator, observed 2026-10-16) | room-done spec 3 passed; full `--workers=4` 117 passed (114 + 3); break p11a: 2 red (pack thumbnail, drawn miniature), (a) green as planned, reverted; not run in this session |
 
 ## 4. Next command
 
-`/10x-e2e final-art-p2 phase 11`
+`/10x-impl-review final-art-p2`
 
 ## 5. Open
 
 - 7.4 [human], 8.3 [reviewer], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
 - Visual gate: the e2e reads hook targets, so the painted cell of a lifted coin in CoinWallet (paint-path `liftedSlot` call, ~line 150) is covered only by the visual gate and 10.4 [human].
-- Phase 11 must still add the `?e2eArt=room` spec and apply the p11a break.
+- Phase 11 added tests/e2e/final-art-room-done.spec.ts (3 tests) and a one-line playwright.config.ts change by the orchestrator.
 
 ## 6. Autonomous decisions
 
