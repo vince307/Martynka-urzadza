@@ -7,6 +7,7 @@ import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { cutLoad } from './loaderCut';
 import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
+import { UI_ART } from '../data/uiArt';
 import { SOUNDS } from '../data/sounds';
 import type { SoundService } from '../ui/sound';
 import { trimEffects } from '../ui/sound';
@@ -104,6 +105,10 @@ export class BootScene extends Scene {
                 continue;
             }
             this.load.image(art.key, art.url);
+        }
+        // The other screens' pictures (wallet, notebook, salon thumbnail) join the queue after the salon; the two loading pictures are queued first by the loading screen (phase 5).
+        for (const art of UI_ART) {
+            if (art.id !== 'loadingBackground' && art.id !== 'loadingEmblem') this.load.image(art.key, art.url);
         }
     }
 

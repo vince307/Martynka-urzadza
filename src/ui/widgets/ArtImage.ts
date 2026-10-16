@@ -69,6 +69,13 @@ export class ArtImage {
             .setVisible(text !== '');
     }
 
+    /** Fades the picture or its stand-in; `show` leaves the value as it is. */
+    setAlpha(alpha: number): void {
+        this.image.setAlpha(alpha);
+        this.box.setAlpha(alpha);
+        this.label.setAlpha(alpha);
+    }
+
     hide(): void {
         this.current = null;
         this.image.setVisible(false);

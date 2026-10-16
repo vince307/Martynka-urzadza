@@ -1,11 +1,13 @@
 import type { GameObjects, Scene } from 'phaser';
 import { walletCoins, walletList } from '../../core/coins';
 import type { TrayDragState } from '../../core/trayDrag';
-import { interiorPoint, liftedSlot, type CoinLayout, type Rect } from '../../core/round/dragLayout';
+import { interiorPoint, liftedSlot, walletFull, type CoinLayout, type Rect } from '../../core/round/dragLayout';
+import { balance } from '../../data/balance';
 import { ART_LIMITS, type MoneyId } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ART_KEYS } from '../../data/taskArt';
+import { UI_ART_KEYS } from '../../data/uiArt';
 import { ActionButton } from './ActionButton';
 import { ArtImage } from './ArtImage';
 import { dashedRect } from './dashedRect';
@@ -18,6 +20,10 @@ export interface CoinWalletTargets {
     ok: Point | null;
     /** The coins lying in the wallet, in the order the wallet lists them (largest first). */
     coins: (Point & { id: MoneyId })[];
+    /** Which wallet look is on screen: the pack picture or the drawn field (texture missing). */
+    walletArt: 'art' | 'drawn';
+    /** True while the wallet holds the most coins it takes (the tray is dimmed). */
+    full: boolean;
 }
 
 /**
@@ -25,10 +31,12 @@ export interface CoinWalletTargets {
  * dashed wallet (or taps it), taps a placed coin to take it out, and "OK" hands in the grosze of every placed coin. The gesture
  * is core/trayDrag.ts; this widget draws the state the scene gives it and publishes interior points for the e2e hook.
  * The sum of the wallet is never drawn while the child pays: it would give the answer away (the solution lines state it).
- * DESIGN-GAP (docs/design-gaps.md row 104): the kit has no wallet, tray or drop look; they are drawn in code around the kit's coins.
+ * The wallet is the pack picture (UI_ART_KEYS.wallet), the drawn dashed field when that texture is missing.
+ * DESIGN-GAP (docs/design-gaps.md rows 104, 115): the kit has no tray, drop or full-wallet look; they are drawn in code around the kit's coins (a full wallet dims the tray).
  */
 export class CoinWallet {
     private readonly frame: GameObjects.Graphics;
+    private readonly walletImage: GameObjects.Image;
     private readonly placed: ArtImage[];
     private readonly trayImages: ArtImage[];
     private readonly carriedImage: ArtImage;
@@ -45,7 +53,9 @@ export class CoinWallet {
         private readonly onSubmit: (grosze: number[]) => void,
     ) {
         this.frame = scene.add.graphics().setVisible(false);
-        this.placed = Array.from({ length: ART_LIMITS.moneyItems }, () => new ArtImage(scene));
+        // Created before the coins so they draw above it; no setDepth, so the feedback bar (created later by the scene) draws above its lower edge.
+        this.walletImage = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
+        this.placed = Array.from({ length: balance.coinDrag.maxTotal }, () => new ArtImage(scene));
         this.trayImages = Array.from({ length: ART_LIMITS.trayKinds }, () => new ArtImage(scene));
         this.carriedImage = new ArtImage(scene);
         this.ok = new ActionButton(scene, () => {
@@ -74,6 +84,7 @@ export class CoinWallet {
         this.visible = visible;
         if (!visible) {
             this.frame.clear().setVisible(false);
+            this.walletImage.setVisible(false);
             this.placed.forEach((image) => image.hide());
             this.trayImages.forEach((image) => image.hide());
             this.carriedImage.hide();
@@ -85,7 +96,7 @@ export class CoinWallet {
     targets(): CoinWalletTargets {
         const layout = this.layout;
         if (!this.visible || !layout || !this.state) {
-            return { tray: {}, wallet: null, ok: null, coins: [] };
+            return { tray: {}, wallet: null, ok: null, coins: [], walletArt: 'drawn', full: false };
         }
         const tray: Partial<Record<MoneyId, Point>> = {};
         if (this.trayShown) {
@@ -94,12 +105,21 @@ export class CoinWallet {
                 if (r) tray[kind] = interiorPoint(r);
             }
         }
-        const coins = walletList(this.state.mat).map((id, i) => ({ id, ...interiorPoint(layout.coin(i)) }));
-        return { tray, wallet: interiorPoint(layout.wallet), ok: this.ok.target(), coins };
+        const list = walletList(this.state.mat);
+        const lifted = liftedSlot(layout, list, this.state.carrying);
+        const coins = list.flatMap((id, i) => (i === lifted ? [] : [{ id, ...interiorPoint(layout.coin(i)) }]));
+        return {
+            tray, wallet: interiorPoint(layout.wallet), ok: this.ok.target(), coins,
+            walletArt: this.walletArtLoaded() ? 'art' : 'drawn', full: walletFull(this.state.mat, balance.coinDrag.maxTotal),
+        };
     }
 
     okTarget(): Point | null {
         return this.ok.target();
+    }
+
+    private walletArtLoaded(): boolean {
+        return this.walletImage.scene.textures.exists(UI_ART_KEYS.wallet);
     }
 
     private paint(state: TrayDragState<MoneyId>): void {
@@ -114,9 +134,16 @@ export class CoinWallet {
         }
         g.setVisible(true);
         const { drag, coinPay } = TASK_LAYOUT;
-        g.fillStyle(PLACEHOLDER_COLORS.field, 1);
-        g.fillRoundedRect(layout.wallet.x, layout.wallet.y, layout.wallet.width, layout.wallet.height, drag.radius);
-        dashedRect(g, layout.wallet, PLACEHOLDER_COLORS.deepTeal);
+        if (this.walletArtLoaded()) {
+            const w = layout.wallet;
+            this.walletImage.setTexture(UI_ART_KEYS.wallet).setPosition(w.x + w.width / 2, w.y + w.height / 2).setDisplaySize(w.width, w.height).setVisible(true);
+        } else {
+            this.walletImage.setVisible(false);
+            g.fillStyle(PLACEHOLDER_COLORS.field, 1);
+            g.fillRoundedRect(layout.wallet.x, layout.wallet.y, layout.wallet.width, layout.wallet.height, drag.radius);
+            dashedRect(g, layout.wallet, PLACEHOLDER_COLORS.deepTeal);
+        }
+        const trayAlpha = walletFull(state.mat, balance.coinDrag.maxTotal) ? coinPay.fullTrayAlpha : 1;
 
         // Placed coins, one cell each; a coin lifted from the wallet is drawn under the finger instead.
         const list = walletList(state.mat);
@@ -131,11 +158,12 @@ export class CoinWallet {
             this.kinds.forEach((kind, k) => {
                 const r = layout.tray[kind];
                 if (!r) return;
-                g.fillStyle(PLACEHOLDER_COLORS.tile, 1);
+                g.fillStyle(PLACEHOLDER_COLORS.tile, trayAlpha);
                 g.fillRoundedRect(r.x, r.y, r.width, r.height, drag.radius);
-                g.lineStyle(TASK_LAYOUT.blocks.border, PLACEHOLDER_COLORS.tileBorder, 1);
+                g.lineStyle(TASK_LAYOUT.blocks.border, PLACEHOLDER_COLORS.tileBorder, trayAlpha);
                 g.strokeRoundedRect(r.x, r.y, r.width, r.height, drag.radius);
                 this.trayImages[k]?.show(ART_KEYS.money(kind), inset(r, coinPay.trayInset));
+                this.trayImages[k]?.setAlpha(trayAlpha);
             });
         }
 

@@ -787,7 +787,7 @@ None: save format v3 unchanged; no new storage key.
 
 - [x] 3.1 New tests red before implementation (assertion), green after; unit `<branch baseline> + N` — 59ebc25
 - [x] 3.2 Deliberate break: `miniatureMode` `live` when any key exists → red; restored; meta-check (rule only) — 59ebc25
-- [ ] 3.3 Full local gate green; build prints `e2e hook: absent (`
+- [x] 3.3 Full local gate green; build prints `e2e hook: absent (` — 59ebc25 (e2e: orchestrator note, full e2e after 59ebc25 108 passed + 1 known flake)
 
 #### Manual
 
@@ -797,9 +797,9 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 4.1 Full local gate green; unit `<branch baseline> + 0`; build prints `e2e hook: absent (`
+- [x] 4.1 Full local gate green; unit `<branch baseline> + 0`; build prints `e2e hook: absent (`
 - [ ] 4.2 e2e (orchestrator) `<branch e2e baseline> + 0`, `money-pay.spec.ts` green
-- [ ] 4.3 Deliberate break: patches `e2e-break-p10a.patch` and `e2e-break-p10b.patch` written; meta-check in the handoff (proof in phase 10)
+- [x] 4.3 Deliberate break: patches `e2e-break-p10a.patch` and `e2e-break-p10b.patch` written; meta-check in the handoff (proof in phase 10)
 
 #### Manual
 

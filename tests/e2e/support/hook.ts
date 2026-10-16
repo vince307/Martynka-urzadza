@@ -94,7 +94,7 @@ export interface Targets {
     /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
     drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
     /** Interior points of a payment task: tray tiles per money id, the wallet, "OK" and the placed coins; null for another task. */
-    coins?: { tray: Partial<Record<MoneyKind, Point>>; wallet: Point | null; ok: Point | null; coins: (Point & { id: MoneyKind })[] } | null;
+    coins?: { tray: Partial<Record<MoneyKind, Point>>; wallet: Point | null; ok: Point | null; coins: (Point & { id: MoneyKind })[]; walletArt: 'art' | 'drawn'; full: boolean } | null;
     /** Hand tips (the minute tip is null on a full-hour clock), centre, "OK" and the grab radius of a clock to set; null for another task. */
     clock?: { centre: Point; hourTip: Point; minuteTip: Point | null; ok: Point | null; radius: number } | null;
     next: Point | null;
