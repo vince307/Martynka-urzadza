@@ -2,6 +2,7 @@ import type { GameObjects, Scene } from 'phaser';
 import type { GridItemId } from '../../data/gridItems';
 import { CHART_COLORS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
+import { coordScale } from '../../core/round/drawingFit';
 import { drawShape } from './faceDraw';
 import { drawLattice } from './lattice';
 import { textStyle } from './textStyle';
@@ -34,7 +35,7 @@ export class CoordGrid {
         const c = TASK_LAYOUT.coord;
         const widthUnits = c.labelInset + columns * c.cell;
         const heightUnits = c.labelDrop + rows * c.cell;
-        const s = Math.min(rect.width / widthUnits, rect.height / heightUnits, c.maxScale);
+        const s = coordScale(columns, rows, rect, c);
         const left = rect.x + (rect.width - widthUnits * s) / 2 + c.labelInset * s;
         const top = rect.y + (rect.height - heightUnits * s) / 2 + c.labelDrop * s;
         const cell = c.cell * s;

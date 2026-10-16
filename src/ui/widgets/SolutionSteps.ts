@@ -13,6 +13,7 @@ type SolutionBar = Extract<RoundView['bar'], { kind: 'solution' }>;
 export class SolutionSteps {
     private readonly text: GameObjects.Text;
     private readonly button: ActionButton;
+    private overflow = false;
 
     constructor(scene: Scene, onStep: () => void) {
         this.text = scene.add
@@ -31,7 +32,9 @@ export class SolutionSteps {
     show(bar: SolutionBar, centerX: number, top: number, maxWidth: number, limit?: number): void {
         const { bottom, height } = TASK_LAYOUT.bar;
         const buttonCenterY = bottom - height / 2;
-        const scale = Math.max(TASK_LAYOUT.solution.minScale, Math.min(1, this.room(top, limit) / this.measure(bar, maxWidth)));
+        const measured = this.measure(bar, maxWidth);
+        this.overflow = this.room(top, limit) < TASK_LAYOUT.solution.minScale * measured;   // the lines are clamped to minScale and still run past `limit` (audit WNA-04)
+        const scale = Math.max(TASK_LAYOUT.solution.minScale, Math.min(1, this.room(top, limit) / measured));
         this.text.setPosition(centerX, top).setVisible(true).setScale(scale);
         this.button.showCentered(bar.button === 'next' ? pl.round.nextStep : pl.round.gotIt, centerX, buttonCenterY);
     }
@@ -55,7 +58,13 @@ export class SolutionSteps {
         return (limit ?? bottom - height - TASK_LAYOUT.solution.bottomGap) - top;
     }
 
+    /** True while the lines on screen overflow their room even at the smallest scale; the scene warns once per skill, the e2e hook reads it. */
+    overflowed(): boolean {
+        return this.overflow;
+    }
+
     hide(): void {
+        this.overflow = false;
         this.text.setVisible(false);
         this.button.hide();
     }

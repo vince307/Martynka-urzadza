@@ -121,6 +121,7 @@ export interface TaskSnapshot {
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
     readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
+    readonly solutionOverflow: boolean;   // the solution lines on screen overflow their room even at the smallest scale (audit WNA-04)
 }
 
 export interface TaskTargets {
@@ -189,6 +190,7 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
     private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
     private promptBaseSize: number = FONT_SIZES.prompt;   // the size the prompt was drawn at (a long sentence is smaller), restored when the steps close
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
@@ -531,6 +533,10 @@ export class TaskScene extends Scene {
                 const bar = view.bar;
                 this.fitPromptToSteps(task, (): boolean => this.steps.fits(bar, top(), maxWidth, limit));
                 this.steps.show(view.bar, centerX, top(), maxWidth, limit);
+            }
+            if (this.steps.overflowed() && !this.overflowWarned.has(task.skillId)) {
+                this.overflowWarned.add(task.skillId);
+                console.warn(`Solution lines overflow at the smallest scale: ${task.skillId}`);
             }
         } else {
             this.steps.hide();
@@ -1153,6 +1159,7 @@ export class TaskScene extends Scene {
             unlock: this.unlockView(),
             variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()), covered: this.dice === null ? null : Object.freeze(this.board.coveredValues()) }),
             today: this.today(),
+            solutionOverflow: this.steps.overflowed(),
         });
     }
 

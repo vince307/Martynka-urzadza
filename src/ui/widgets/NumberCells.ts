@@ -1,25 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { cellPositions, cellsScale, type CellsLayout } from '../../core/round/drawingFit';
 import { dashedRect } from './dashed';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
-
-type CellsLayout = 'square3' | 'pyramid3';
-
-/** Position of every cell in cell units (x, y of the top-left corner), in value order: row-major for the square, top then middle then base for the pyramid. */
-export const cellPositions = (layout: CellsLayout): readonly { x: number; y: number }[] => {
-    if (layout === 'square3') {
-        return Array.from({ length: 9 }, (_, i) => ({ x: i % 3, y: Math.floor(i / 3) }));
-    }
-    return [
-        { x: 1, y: 0 },
-        { x: 0.5, y: 1 },
-        { x: 1.5, y: 1 },
-        { x: 0, y: 2 },
-        { x: 1, y: 2 },
-        { x: 2, y: 2 },
-    ];
-};
 
 /**
  * A magic square or a number pyramid drawn in code: a tile per cell with its number, the empty cell dashed with a "?".
@@ -41,7 +25,7 @@ export class NumberCells {
         const c = TASK_LAYOUT.cells;
         const spots = cellPositions(layout);
         const cols = 3;
-        const s = Math.min(rect.width / (cols * c.cell), rect.height / (3 * c.cell), c.maxScale);
+        const s = cellsScale(rect, c);
         const left = rect.x + (rect.width - cols * c.cell * s) / 2;
         const top = rect.y + (rect.height - 3 * c.cell * s) / 2;
         const g = this.graphics;
