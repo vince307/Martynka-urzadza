@@ -16,3 +16,5 @@
   Trigger: a WebKit project in playwright.config.ts
 - Music status stays `loading` while the audio context is locked, until the first gesture.
   Trigger: a parent report that the settings panel shows music as loading
+- Visual gate: the parent panel mixes heading alignment ("Dźwięki" centred like the reading caption, "Zapis gry"/"Obrazki" left-aligned in their section views, `src/ui/dom/settingsPanel.ts` `openSettingsPanel`). Not a defect of this slice; one alignment rule for panel h2s would read calmer.
+  Trigger: the next change to the settings panel layout, or S-17 polish

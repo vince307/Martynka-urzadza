@@ -889,7 +889,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 7.4 [visual] Panel 1440 i 1024: sekcja „Dźwięki” czytelna, wzór jak czytanie, linia braków ukryta przy zdrowym starcie
+- [x] 7.4 [visual] Panel 1440 i 1024: sekcja „Dźwięki” czytelna, wzór jak czytanie, linia braków ukryta przy zdrowym starcie — bramka wizualna 2026-10-16 (VISUAL: PASS, `reviews/visual-review.md`)
 - [x] 7.5 [reviewer] Teksty tylko w `pl.ts`; DESIGN-GAP 114 w trzech miejscach; `localStorage` tylko przez `soundPrefs.ts` — impl review 2026-10-16 (PASS)
 
 ### Phase 8: Dokumentacja i follow-upy
