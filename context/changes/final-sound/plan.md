@@ -922,11 +922,11 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 10.1 `npx playwright test tests/e2e/final-sound-failure.spec.ts tests/e2e/seed.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N`
-- [ ] 10.2 Deliberate break p10a (bez `EncodingError`) → (a) czerwony na karcie; przywrócone; meta-check
-- [ ] 10.3 Deliberate break p10b (`cutLoad` bez cięcia) → (b) czerwony; meta-check
-- [ ] 10.4 Deliberate break p10c (precache bez audio) → seed czerwony
-- [ ] 10.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 10.1 `npx playwright test tests/e2e/final-sound-failure.spec.ts tests/e2e/seed.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N` — 3 passed (spec + seed); full 109 passed (baseline 107, +2), orchestrator run — 224a78a
+- [x] 10.2 Deliberate break p10a (bez `EncodingError`) → (a) czerwony na karcie; przywrócone; meta-check — p10a: 1 failed (#15 not-audio card), reverted — 224a78a
+- [x] 10.3 Deliberate break p10b (`cutLoad` bez cięcia) → (b) czerwony; meta-check — p10b: 1 failed (#15 hanging downloads), reverted — 224a78a
+- [x] 10.4 Deliberate break p10c (precache bez audio) → seed czerwony — p10c: seed offline test failed, reverted — 224a78a
+- [x] 10.5 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — lint, tsc, 3029 tests, sample E1-E6, build absent (2 chunks) — 224a78a
 
 #### Manual
 
