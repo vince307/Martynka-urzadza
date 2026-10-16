@@ -980,9 +980,9 @@ Details.
 
 #### Automated
 
-- [ ] 4.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 4.2 Deliberate break: `finishVariant` ignoring the flag / `lastTaskSettled` true on a retype step → red; restored; meta-check (source order and rule)
-- [ ] 4.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `daily-puzzle.spec.ts` and `minigames.spec.ts` green
+- [x] 4.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 7fad790
+- [x] 4.2 Deliberate break: `finishVariant` ignoring the flag / `lastTaskSettled` true on a retype step → red; restored; meta-check (source order and rule) — 7fad790
+- [x] 4.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `daily-puzzle.spec.ts` and `minigames.spec.ts` green — 7fad790
 
 #### Manual
 
