@@ -1131,11 +1131,11 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 3.1 New and reversed tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 3.2 Deliberate break: `replaceGate` ignoring `unavailableStarts` / `bump` on a throwing storage returning 2 → red; restored; meta-check (rule and module)
-- [ ] 3.3 `martynka:unavailableStarts` not a registry key and not in `SAVE_KEYS` (`tests/saveKeys.test.ts` green unchanged)
-- [ ] 3.4 Full local gate green; build prints `e2e hook: absent (`
-- [ ] 3.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the two edited `save-transfer-blocked.spec.ts` tests green
+- [x] 3.1 New and reversed tests red before the change (assertion), green after; unit `<branch baseline> + N` — d3c2f4b
+- [x] 3.2 Deliberate break: `replaceGate` ignoring `unavailableStarts` / `bump` on a throwing storage returning 2 → red; restored; meta-check (rule and module) — d3c2f4b
+- [x] 3.3 `martynka:unavailableStarts` not a registry key and not in `SAVE_KEYS` (`tests/saveKeys.test.ts` green unchanged) — d3c2f4b
+- [x] 3.4 Full local gate green; build prints `e2e hook: absent (` — d3c2f4b
+- [x] 3.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the two edited `save-transfer-blocked.spec.ts` tests green — d3c2f4b
 
 #### Manual
 
