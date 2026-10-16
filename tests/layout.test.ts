@@ -190,7 +190,9 @@ describe('task screen layout constants', () => {
             for (const layer of [...room.slots, ...room.decor]) {
                 expect(layer.z, `${room.id}/${layer.id}`).toBeGreaterThanOrEqual(0);
                 expect(layer.z, `${room.id}/${layer.id}`).toBeLessThanOrEqual(99);
+                expect(layer.z, `${room.id}/${layer.id}`).toBeGreaterThan(depth.shadows);
             }
+            expect(depth.furnishingsBefore).toBeLessThan(depth.shadows);
         }
     });
 

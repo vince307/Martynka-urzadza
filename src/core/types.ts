@@ -51,6 +51,8 @@ export interface LayerDef extends PlacedArt {
 
 export interface SlotDef extends PlacedArt {
     variants: [string, string, string]; // texture keys
+    /** Variant shown as decoration from the renovation stage until the slot is bought (author decision 2026-10-15: lamp, left plant, pouf show their old look). */
+    shownBeforePurchase?: 0 | 1 | 2;
 }
 
 /** A renovation task: a background stage (changes the room backdrop, no variant) or a furniture slot (3 variants). */

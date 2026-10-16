@@ -2,6 +2,7 @@
 // answers a touch cannot drift apart. A slot's rectangle is the `visibleRect` of its picture in the scene; the highest
 // `z` wins, and a transparent pixel of a picture lets the touch through to the piece below.
 import { balance } from '../data/balance';
+import { ROOM_LAYOUT } from '../data/layout';
 import type { RoomDef, SlotDef } from './types';
 
 export interface Point { x: number; y: number }
@@ -34,7 +35,7 @@ export function slotAt(
 
 /**
  * A point (grid of `step` px inside the slot rectangle) where `slotAt` returns this slot with a margin of `step / 2`
- * on every side; null if none. The margin matters: a real touch on the scaled canvas lands a pixel or so off the asked
+ * on every side, inside the scene rectangle; null if none. The margin matters: a real touch on the scaled canvas lands a pixel or so off the asked
  * point (520 game px is 346.67 page px at 1280 wide), so a point on the slot's edge can miss it.
  */
 export function holdPoint(
@@ -42,8 +43,14 @@ export function holdPoint(
 ): Point | null {
     const slot = room.slots.find((s) => s.id === slotId);
     if (!slot || chosen[slotId] === undefined) return null;
-    const box = slotBox(slot);
     const m = step / 2;
+    // A picture may start above the scene (the curtains): scan only the part a finger can reach, inside the scene by the margin.
+    const full = slotBox(slot);
+    const sc = ROOM_LAYOUT.scene;
+    const box: Box = {
+        left: Math.max(full.left, sc.left + m), top: Math.max(full.top, sc.top + m),
+        right: Math.min(full.right, sc.left + sc.width - m), bottom: Math.min(full.bottom, sc.top + sc.height - m),
+    };
     const near = [-m, 0, m];
     const clear = (x: number, y: number): boolean =>
         near.every((dx) => near.every((dy) => slotAt(room, chosen, { x: x + dx, y: y + dy }, alphaAt) === slotId));

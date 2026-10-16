@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest';
 import { holdPoint, slotAt, slotBox } from '../src/core/roomHit';
 import type { AlphaAt } from '../src/core/roomHit';
 import { balance } from '../src/data/balance';
+import { ROOM_LAYOUT } from '../src/data/layout';
 import { SALON } from '../src/data/rooms';
+import type { RoomDef } from '../src/core/types';
 
 const all: Record<string, number> = Object.fromEntries(SALON.slots.map((s) => [s.id, 0]));
 const at = (x: number, y: number, chosen: Record<string, number> = all, alpha?: AlphaAt) => slotAt(SALON, chosen, { x, y }, alpha);
@@ -140,5 +142,27 @@ describe('holdPoint', () => {
     });
     it('is null for an unknown slot', () => {
         expect(holdPoint(SALON, all, 'nope')).toBeNull();
+    });
+});
+
+describe('holdPoint inside the scene (S-16d)', () => {
+    // Curtains: picture starts above the canvas (slot y -70, box top -54).
+    const high = { id: 'curtains', x: 700, y: -70, z: 6, visibleRect: [0, 16, 400, 300], variants: ['a', 'b', 'c'] } as unknown as RoomDef['slots'][number];
+    const gone = { ...high, id: 'ceiling', y: -500 };
+    const room = { ...SALON, slots: [high, gone] };
+    const chosen = { curtains: 0, ceiling: 0 };
+    it('lands at least half a step inside the scene, with and without an alpha', () => {
+        const m = 10;
+        for (const a of [undefined, opaque]) {
+            const p = holdPoint(room, chosen, 'curtains', 20, a);
+            expect(p).not.toBeNull();
+            expect(p!.y).toBeGreaterThanOrEqual(ROOM_LAYOUT.scene.top + m);
+            expect(p!.x).toBeGreaterThanOrEqual(ROOM_LAYOUT.scene.left + m);
+            expect(p!.y).toBeLessThanOrEqual(ROOM_LAYOUT.scene.top + ROOM_LAYOUT.scene.height - m);
+            expect(slotAt(room, chosen, p!, a)).toBe('curtains');
+        }
+    });
+    it('a slot fully above the scene has no hold point', () => {
+        expect(holdPoint(room, chosen, 'ceiling')).toBeNull();
     });
 });

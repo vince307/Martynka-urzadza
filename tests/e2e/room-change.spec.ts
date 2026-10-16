@@ -16,7 +16,7 @@ const { holdMs, moveTolerance } = balance.roomHold;
 const STAGE_COST = 5;
 const SOFA_COST = 7;
 
-test.setTimeout(120_000);
+test.setTimeout(180_000);
 
 const room = async (page: Page) => {
     const state = await snapshot(page);

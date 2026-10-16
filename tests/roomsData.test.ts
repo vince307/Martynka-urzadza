@@ -22,20 +22,17 @@ describe('every room in ROOMS', () => {
         expect([...listed].sort()).toEqual(Object.keys(ROOMS).sort());
     });
 
-    it('has one furniture task per slot, whole costs of 5-15 stars that never fall, the first within one clean round', () => {
+    it('has one furniture task per slot, whole costs of 5-15 stars, the first within one clean round', () => {
         for (const room of rooms) {
             const slotIds = room.slots.map((s) => s.id);
             expect(new Set(slotIds).size, room.id).toBe(slotIds.length);
             const bought = room.tasks.flatMap((t) => (t.kind === 'slot' ? [t.slot] : []));
             expect([...bought].sort(), room.id).toEqual([...slotIds].sort());
             expect(new Set(room.tasks.map((t) => t.id)).size, room.id).toBe(room.tasks.length);
-            let previous = 0;
             for (const { cost } of room.tasks) {
                 expect(Number.isInteger(cost), room.id).toBe(true);
                 expect(cost, room.id).toBeGreaterThanOrEqual(5);
                 expect(cost, room.id).toBeLessThanOrEqual(15);
-                expect(cost, room.id).toBeGreaterThanOrEqual(previous);
-                previous = cost;
             }
             expect(room.tasks[0]?.cost ?? 0, room.id).toBeLessThanOrEqual(cleanRound);
         }
@@ -64,7 +61,9 @@ describe('every room in ROOMS', () => {
                 expect(l + w, p.id).toBeLessThanOrEqual(p.width);
                 expect(t + h, p.id).toBeLessThanOrEqual(p.height);
                 expect(p.x + l, p.id).toBeGreaterThanOrEqual(0);
-                expect(p.y + t, p.id).toBeGreaterThanOrEqual(0);
+                // Only the curtains may reach above the scene (pack curtainEdit.note); at least half stays inside.
+                if (p.id === 'curtains') expect(p.y + t + h / 2, p.id).toBeGreaterThanOrEqual(0);
+                else expect(p.y + t, p.id).toBeGreaterThanOrEqual(0);
                 expect(p.x + l + w, p.id).toBeLessThanOrEqual(GAME_WIDTH);
                 expect(p.y + t + h, p.id).toBeLessThanOrEqual(GAME_HEIGHT);
                 expect(p.anchor[0], p.id).toBeLessThanOrEqual(p.width);
@@ -89,10 +88,10 @@ describe('every room in ROOMS', () => {
 });
 
 describe('salon data', () => {
-    it('is the renovation stage first, then six furniture tasks, one per slot', () => {
-        expect(SALON.slots).toHaveLength(6);
-        expect(SALON.decor).toHaveLength(4);
-        expect(SALON.tasks).toHaveLength(7);
+    it('is the renovation stage first, then one furniture task per slot', () => {
+        expect(SALON.slots).toHaveLength(11);
+        expect(SALON.decor).toHaveLength(1);
+        expect(SALON.tasks).toHaveLength(12);
         expect(SALON.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         for (const task of SALON.tasks.slice(1)) expect(task.kind).toBe('slot');
         expect(SALON.slots.every((s) => s.variants.length === 3)).toBe(true);
@@ -103,14 +102,29 @@ describe('salon data', () => {
         expect(ROOMS[FIRST_ROOM]).toBe(SALON);
     });
 
-    it('costs 71 stars in all (about ten clean rounds), pacing documented for the tuning slice', () => {
-        // 5, 7, 9, 10, 12, 13, 15: author decision 6 of S-16a; the pace is tuned in S-17.
-        expect(SALON.tasks.map((t) => t.cost)).toEqual([5, 7, 9, 10, 12, 13, 15]);
-        expect(SALON.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(71);
+    it('costs 129 stars in all, pacing documented for the tuning slice', () => {
+        // 5, 7, 9, 10, 12, 13, 15 (S-16a) then 8, 10, 12, 13, 15 (S-16d); the pace is tuned in S-17.
+        expect(SALON.tasks.map((t) => t.cost)).toEqual([5, 7, 9, 10, 12, 13, 15, 8, 10, 12, 13, 15]);
+        expect(SALON.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(129);
     });
 
     it('keeps the order of the first tasks stable: new tasks are only ever appended (saved rooms count positions)', () => {
         expect(SALON.tasks.slice(0, 7).map((t) => t.id)).toEqual(['renovate', 'add-sofa', 'lay-rug', 'place-coffee-table', 'place-cabinet', 'place-armchair', 'hang-frames']);
+    });
+
+    // M-R4: a later slice appends to this literal and never edits an earlier entry (saved rooms count positions).
+    it('M-R4: the task id order is append-only', () => {
+        expect(SALON.tasks.map((t) => t.id)).toEqual([
+            'renovate', 'add-sofa', 'lay-rug', 'place-coffee-table', 'place-cabinet', 'place-armchair', 'hang-frames',
+            'hang-curtains', 'hang-shelf', 'swap-lamp', 'swap-plant', 'swap-pouf',
+        ]);
+    });
+
+    it('shows the old look of exactly the lamp, left plant and pouf until they are bought', () => {
+        const withDefault = SALON.slots.filter((s) => s.shownBeforePurchase !== undefined).map((s) => s.id);
+        expect(withDefault.sort()).toEqual(['lamp-table', 'plant-left', 'pouf']);
+        for (const s of SALON.slots) if (withDefault.includes(s.id)) expect(s.shownBeforePurchase).toBe(0);
+        expect(SALON.decor.map((l) => l.id)).toEqual(['plant-right']);
     });
 
     // The v2 -> v3 step (core/migrations/legacySalon) tells an old save by a `chosen` key only the old list wrote (M-2).
@@ -124,7 +138,9 @@ describe('salon data', () => {
         }
         const renamedAway = new Set(Object.keys(LEGACY_SALON_V2.renames));
         const dropped = [...legacyIds].filter((id) => !renamedAway.has(id) && !slotIds.has(id));
-        expect(dropped.sort()).toEqual(['curtains', 'floor', 'lamp', 'plant', 'walls']);
+        expect(dropped.sort()).toEqual(['floor', 'lamp', 'plant', 'walls']);
+        // `curtains` is the one old-only key that is also a live slot id: safe, LIFT_V2_SALON runs only for version < 3.
+        expect(legacyIds.has('curtains') && slotIds.has('curtains')).toBe(true);
         // At least one old key must be foreign to the new room, or the marker could not tell an old save.
         expect(dropped.length + renamedAway.size).toBeGreaterThan(0);
     });

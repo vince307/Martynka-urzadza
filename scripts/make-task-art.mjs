@@ -11,7 +11,6 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
-const EXPANSION = join(ROOT, 'designs/martynka-expansion-v1');
 const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const UI_OUT = join(ROOT, 'public/assets/ui');
@@ -29,11 +28,14 @@ const jugs = ['container-1l', 'container-half-l', 'container-quarter-l'];
 const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'];
 
 const sceneFiles = ['architecture-before', 'architecture-after', 'furnishings-before', 'shadows'];
-const decor = ['lamp-table', 'plant-left', 'plant-right', 'pouf'];
+const decor = ['plant-right'];
 const furniture = [
     'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
     'coffee-table', 'coffee-table-cream', 'coffee-table-turquoise', 'cabinet', 'cabinet-mint', 'cabinet-cream',
     'armchair', 'armchair-mint', 'armchair-sunny', 'wall-frames', 'wall-frames-meadow', 'wall-frames-sky',
+    'lamp-table', 'plant-left', 'pouf',
+    'curtains-leaf', 'curtains-cream', 'curtains-botanical', 'shelf-oak', 'shelf-mint', 'shelf-arch',
+    'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
 ];
 
 /** Salon files keep the size of the source (the manifest's pixel geometry); no -resize. */
@@ -65,7 +67,7 @@ const UI_JOBS = [
 ];
 const V2_ICONS = ['plate', 'box', 'sticker'];
 
-for (const dir of [KIT, EXPANSION, SALON_V2]) {
+for (const dir of [KIT, SALON_V2]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -95,7 +97,7 @@ for (const job of JOBS) {
     console.log(`${job.to}  ${job.size[0]}x${job.size[1]}  ${bytes} B`);
 }
 for (const job of ROOM_JOBS) {
-    const bytes = convert(join(EXPANSION, job.from), join(ROOM_OUT, job.to), []);
+    const bytes = convert(join(SALON_V2, job.from), join(ROOM_OUT, job.to), []);
     total += bytes;
     console.log(`rooms/${job.to}  ${bytes} B`);
 }

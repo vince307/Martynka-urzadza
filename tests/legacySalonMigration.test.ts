@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LEGACY_SALON_V2, LIFT_V2_SALON, SALON_V3_TARGET } from '../src/core/migrations/legacySalon';
-import { MIGRATIONS, decodeSave } from '../src/core/save';
+import { MIGRATIONS, decodeSave, encodeSave, freshSession } from '../src/core/save';
 import { SALON } from '../src/data/rooms';
 
 const fixture = (name: string): Record<string, unknown> =>
@@ -123,5 +123,22 @@ describe('the frozen tables', () => {
     it('L-1: the v3 target is the first 7 tasks of the live salon (it may grow at the end, the snapshot may not)', () => {
         expect(SALON_V3_TARGET).toEqual(SALON.tasks.slice(0, 7).map((t) => ({ slot: t.kind === 'slot' ? t.slot : null, cost: t.cost })));
         expect(SALON_V3_TARGET).toHaveLength(7);
+        expect(SALON.tasks.length).toBeGreaterThan(SALON_V3_TARGET.length);
+    });
+
+    it('a v3 save with chosen.curtains is decoded unchanged (curtains is a live slot id since S-16d)', () => {
+        const session = freshSession('salon');
+        session.rooms.salon = { tasksDone: 8, chosen: { sofa: 0, curtains: 1 } };
+        const r = decodeSave(JSON.parse(JSON.stringify(encodeSave(session))));
+        expect(r.kind).toBe('ok');
+        if (r.kind !== 'ok') return;
+        expect(r.session.rooms.salon).toEqual({ tasksDone: 8, chosen: { sofa: 0, curtains: 1 } });
+    });
+
+    it('a lifted v2 salon never carries curtains', () => {
+        for (let n = 0; n <= OLD_SLOTS.length; n++) {
+            const salon = salonOf(v2With(oldSalon(n))) as { chosen: Record<string, number> };
+            expect(Object.keys(salon.chosen), String(n)).not.toContain('curtains');
+        }
     });
 });

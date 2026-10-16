@@ -30,6 +30,7 @@ export interface RoomSnapshot {
     roomId: string;
     tasksDone: number;
     chosen: Readonly<Record<string, number>>;
+    shown: Readonly<Record<string, number>>;
     currentTask: { id: string; label: string; cost: number } | null;
     taskKind: 'stage' | 'slot' | null;
     affordable: boolean;
@@ -452,6 +453,7 @@ export class RoomScene extends Scene {
             roomId: room.id,
             tasksDone: state.tasksDone,
             chosen: { ...state.chosen },
+            shown: this.view.shown(),
             currentTask: task ? { id: task.id, label: task.label, cost: task.cost } : null,
             taskKind: task?.kind ?? null,
             affordable: view?.affordable ?? false,

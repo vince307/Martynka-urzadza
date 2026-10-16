@@ -323,8 +323,13 @@ export const pl = {
             placeCabinet: 'Postaw komodę',
             placeArmchair: 'Postaw fotel',
             hangFrames: 'Powieś obrazki',
+            hangCurtains: 'Powieś zasłony',
+            hangShelf: 'Powieś półkę',
+            swapLamp: 'Wymień lampę',
+            swapPlant: 'Wymień roślinę',
+            swapPouf: 'Wymień pufę',
         },
-        // Nominative captions of the furniture, keyed by SlotDef.id (also the words of the "Hasło z wyników" minigame).
+        // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
             sofa: 'sofa',
             rug: 'dywan',
@@ -332,6 +337,11 @@ export const pl = {
             cabinet: 'komoda',
             armchair: 'fotel',
             'wall-frames': 'obrazki',
+            curtains: 'zasłony',
+            'wall-shelf': 'półka',
+            'lamp-table': 'lampa',
+            'plant-left': 'roślina',
+            pouf: 'pufa',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -341,13 +351,15 @@ export const pl = {
             cabinet: ['Dębowa', 'Miętowa', 'Kremowa'],
             armchair: ['Kremowy', 'Miętowy', 'Słoneczny'],
             'wall-frames': ['Botaniczne', 'Łąka', 'Niebo'],
+            curtains: ['Listkowe', 'Lniane', 'Botaniczne'],
+            'wall-shelf': ['Dębowa', 'Miętowa', 'Z łukiem'],
+            'lamp-table': ['Klasyczna', 'Wiklinowa', 'Kwiatowa'],
+            'plant-left': ['Monstera', 'Paproć', 'Fikus'],
+            pouf: ['Pikowana', 'Pleciona', 'Na nóżkach'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {
-            'lamp-table': 'lampa',
-            'plant-left': 'roślina',
             'plant-right': 'roślina',
-            pouf: 'pufa',
         } as Record<string, string>,
         // Digits only, so no numeral agreement is needed.
         short: (have: number, need: number) => `masz ${have}/${need}`,

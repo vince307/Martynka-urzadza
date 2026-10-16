@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { LayerDef, RoomDef, RoomState, SlotDef } from '../../core/types';
-import { roomDone, stagesDone } from '../../core/rooms';
+import { roomDone, shownVariants, stagesDone } from '../../core/rooms';
 import { slotBox, type Box } from '../../core/roomHit';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
 import { roomText } from '../../data/pl';
@@ -33,6 +33,7 @@ export class RoomView {
     private readonly outline: GameObjects.Graphics;
     private readonly layers = new Map<string, RoomLayer>();
     private room: RoomDef | null = null;
+    private shownNow: Record<string, 0 | 1 | 2> = {};
 
     constructor(private readonly scene: Scene) {
         this.backdrop = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.scene);
@@ -89,11 +90,14 @@ export class RoomView {
                 layer(`decor:${art.id}`).show(art.key, art, art.z, { box: layerBox(art), fill: standIn.decorFill, alpha: standIn.decorAlpha, caption });
             });
         }
+        const shown = shownVariants(room, { ...state, chosen });
+        this.shownNow = {};
         room.slots.forEach((slot) => {
-            const variant = chosen[slot.id];
+            const variant = shown[slot.id];
             if (variant === undefined) {
                 return;
             }
+            this.shownNow[slot.id] = variant;
             const caption = [roomText.slot(slot.id) ?? slot.id, roomText.variant(slot.id, variant)].filter(Boolean).join('\n');
             layer(`slot:${slot.id}`).show(slot.variants[variant], slot, slot.z, { box: slotBox(slot), fill: standIn.variantFills[variant], alpha: 1, caption });
         });
@@ -116,6 +120,11 @@ export class RoomView {
         g.fillRect(area.left, area.top, area.width, standIn.wallBottom - area.top);
         g.fillStyle(renovated ? standIn.floorAfter : standIn.floorBefore, 1);
         g.fillRect(area.left, standIn.wallBottom, area.width, area.top + area.height - standIn.wallBottom);
+    }
+
+    /** The variant each slot showed at the last `render` (bought, previewed or the default look), for the e2e hook. */
+    shown(): Readonly<Record<string, 0 | 1 | 2>> {
+        return { ...this.shownNow };
     }
 
     /** The picture of a furnished slot (for the purchase pop); null for a stand-in or an empty slot. */
@@ -175,8 +184,9 @@ export function miniaturePieces(room: RoomDef, state: RoomState): MiniaturePiece
     if (renovated) {
         room.decor.forEach((layer) => placed.push({ z: layer.z, piece: { key: layer.key, placement: at(layer), box: layerBox(layer), fill: standIn.decorFill, alpha: standIn.decorAlpha } }));
     }
+    const shown = shownVariants(room, state);
     room.slots.forEach((slot: SlotDef) => {
-        const variant = state.chosen[slot.id];
+        const variant = shown[slot.id];
         if (variant !== undefined) {
             placed.push({ z: slot.z, piece: { key: slot.variants[variant], placement: at(slot), box: slotBox(slot), fill: standIn.variantFills[variant], alpha: 1 } });
         }
