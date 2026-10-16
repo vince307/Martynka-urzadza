@@ -1035,9 +1035,9 @@ Details.
 
 #### Automated
 
-- [ ] 8.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`; `solvableInMode` green for every skill
-- [ ] 8.2 Deliberate break: keypad branch unchecked / `TALL_MODES` with `select` → red; restored; meta-check (oracle and rule)
-- [ ] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 8.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`; `solvableInMode` green for every skill — 9bbde57
+- [x] 8.2 Deliberate break: keypad branch unchecked / `TALL_MODES` with `select` → red; restored; meta-check (oracle and rule) — 9bbde57
+- [x] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 9bbde57
 
 #### Manual
 
