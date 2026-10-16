@@ -690,7 +690,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 - [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 4ac1460
 - [x] 1.2 Deliberate break: `shownVariant` ignoring `stagesDone` / `holdPoint` scanning from `box.top` → red; restored; meta-check (rules on synthetic data) — 4ac1460
 - [x] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — 4ac1460
-- [ ] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator note: 117 passed after 12202f6
 
 #### Manual
 
@@ -701,7 +701,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 #### Automated
 
 - [x] 2.1 Full local gate green; unit `<branch baseline> + N` (layout and miniature assertions); build prints `e2e hook: absent (` (e2e part: orchestrator, 2.2) — 12202f6
-- [ ] 2.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (no visible change with today's data)
+- [x] 2.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (no visible change with today's data) — orchestrator note: 117 passed after 12202f6
 - [x] 2.3 Deliberate break: `depth.shadows` 6 → layout assertion red; restored; patch `e2e-break-p6a.patch` written; meta-check in the handoff — 12202f6
 
 #### Manual
@@ -712,10 +712,10 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 3.1 Changed/new tests red before the data and art (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 3.2 `npm run art` twice → `git status --porcelain public/` unchanged after the second run; only the two architecture files modified
-- [ ] 3.3 Deliberate break: swapped task order / `pouf` without `shownBeforePurchase` / curtains y −700 → red; restored; meta-check (data and files, not drawing)
-- [ ] 3.4 Full local gate green; build prints `e2e hook: absent (`; `dist/sw.js` lists `assets/rooms/salon/curtains-leaf.webp`
+- [x] 3.1 Changed/new tests red before the data and art (assertion, not import error), green after; unit `<branch baseline> + N` — 0bc3fec
+- [x] 3.2 `npm run art` twice → `git status --porcelain public/` unchanged after the second run; only the two architecture files modified — 0bc3fec
+- [x] 3.3 Deliberate break: swapped task order / `pouf` without `shownBeforePurchase` / curtains y −700 → red; restored; meta-check (data and files, not drawing) — 0bc3fec
+- [x] 3.4 Full local gate green; build prints `e2e hook: absent (`; `dist/sw.js` lists `assets/rooms/salon/curtains-leaf.webp` (e2e part: orchestrator, 3.5) — 0bc3fec
 - [ ] 3.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `salon-art`, `room-change`, `final-art-room-done` green
 
 #### Manual
