@@ -1,15 +1,15 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The visual gate step of autonomous run `2026-10-15-fix-s16bcd` wrote this. The gate returns `VISUAL: PASS`. It made one fix in `076c213`: an ivory outline on the loading title and slow line over the pack background. The rows [visual] 4.4, 5.4 and 6.3 are ticked. Archive next. Only two [human] rows remain open, 7.4 and 10.4, and they must stay open.
+The visual gate step of autonomous run `2026-10-15-fix-s16bcd` wrote this; the ship step updated §1 and §4 before the archive move. The gate returns `VISUAL: PASS`. It made one fix in `076c213`: an ivory outline on the loading title and slow line over the pack background. The rows [visual] 4.4, 5.4 and 6.3 are ticked. Archive next. Only two [human] rows remain open, 7.4 and 10.4, and they must stay open.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-p2`, cut from `main` at `c16734d` |
-| Commits | phases 1-11 (`afac8e1` … `b434ef7`), review fix `04863b9`, impl-review docs `8b3f2d8`, visual fix `076c213`, then this docs commit (`docs(final-art-p2): bramka wizualna`) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; the archive step stamps it) |
+| Commits | phases 1-11 (`afac8e1` … `b434ef7`), review fix `04863b9`, impl-review docs `8b3f2d8`, visual fix `076c213`, visual gate docs `e5b020e`, then the ship step's handoff and archive commits |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s16bcd/run-log.md |
+| `change.md` status | `archived` (stamped by the ship step's `/10x-archive`) |
 | `## Progress` rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): 7.4 and 10.4, both [human] |
 | Working tree | clean after the docs commit |
 
@@ -43,7 +43,7 @@ No deliberate break in this step. The fix is visual only, and no test asserts th
 
 ## 4. Next command
 
-`/10x-archive final-art-p2`
+none — shipped
 
 ## 5. Open
 
