@@ -721,7 +721,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 #### Manual
 
 - [x] 3.6 [reviewer] Teacher read recorded; `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` unchanged; nothing from `designs/` staged — impl review (reviews/impl-review.md)
-- [ ] 3.7 [visual] Salon at 1440 and 1024: default look, bare window, curtains above the shadows, shelf behind the cabinet, five panels, pouf under the tray, done-card miniature at task 12
+- [x] 3.7 [visual] Salon at 1440 and 1024: default look, bare window, curtains above the shadows, shelf behind the cabinet, five panels, pouf under the tray, done-card miniature at task 12 — visual gate (reviews/visual-review.md)
 
 ### Phase 4: Deploy smoke counts the room art (M-6 first half)
 

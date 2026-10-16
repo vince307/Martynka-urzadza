@@ -23,3 +23,12 @@ Each entry has a `Trigger:` line; later slices grep for them.
   Trigger: a report of the wrong panel opening, or S-17.
 - Plan review F2: the done-card miniature (`drawRoomMiniature`) does not clip the curtains above its top.
   Trigger: the visual gate finding it visible, or the next change to `drawRoomMiniature`.
+
+## From the visual gate
+
+- VG-1 (= plan review F2 / impl review F5, seen): in the done card's LIVE miniature (full art, `miniatureMode` 'live') the curtain
+  rings reach ≈ 5 CSS px (1440 wide) above the top edge of the miniature picture, onto the tile's ivory padding; they stay inside
+  the tile border and touch neither the check mark nor the caption. Judged cosmetic, not fixed. Trigger: the next change to
+  `drawRoomMiniature` or `RoomDoneCard.drawRoomTile`, or the author asking for a clipped miniature.
+- VG-2: the hold outline of the curtains is a rectangle whose top edge lies above the canvas (the picture starts at y −70), so only
+  three sides are drawn. Trigger: with VO3 (a designer hold view, or S-17).
