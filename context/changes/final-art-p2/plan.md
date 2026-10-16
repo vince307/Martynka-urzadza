@@ -811,7 +811,7 @@ None: save format v3 unchanged; no new storage key.
 #### Automated
 
 - [x] 5.1 Full local gate green; build prints `e2e hook: absent (` (e2e part: orchestrator) — 3df2b56
-- [ ] 5.2 e2e (orchestrator) `<branch e2e baseline> + 0`, `load-and-tab-guard.spec.ts` and `salon-load-health.spec.ts` green
+- [x] 5.2 e2e (orchestrator) `<branch e2e baseline> + 0`, `load-and-tab-guard.spec.ts` and `salon-load-health.spec.ts` green — orchestrator note: full e2e after 3df2b56, 109 passed (--workers=4)
 - [x] 5.3 Deliberate break: patches `e2e-break-p9a.patch` and `e2e-break-p9b.patch` written; meta-check in the handoff — 3df2b56
 
 #### Manual
@@ -823,8 +823,8 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 6.1 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator) `<branch e2e baseline> + 0`
-- [ ] 6.2 Deliberate break: patch `e2e-break-p11a.patch` written; meta-check in the handoff
+- [x] 6.1 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator) `<branch e2e baseline> + 0` — 64932d6 (e2e run here: 109 passed, --workers=4)
+- [x] 6.2 Deliberate break: patch `e2e-break-p11a.patch` written; meta-check in the handoff — 64932d6
 
 #### Manual
 

@@ -1,29 +1,27 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The `/10x-implement final-art-p2 phase 5` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 5 (loading screen with background and emblem) is committed (sha in the plan rows). Rows 5.2 (e2e), 5.4 [visual], 5.5 [reviewer] stay open. Next is phase 6 (`Driver: impl`).
+The `/10x-implement final-art-p2 phase 6` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 6 (notebook on the unlock card, room-done miniature fallback) is committed (64932d6). Next is phase 7 (`Driver: impl`); rows 6.3 [visual] and 6.4 [reviewer] stay open.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-p2`, cut from `main` at `c16734d` |
-| Commits | phases 1-4 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, phase 5 `3df2b56`, plus handoff commits |
+| Commits | phases 1-5 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, `3df2b56`, phase 6 `64932d6`, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (5.2 e2e, 5.4 [visual], 5.5 [reviewer] and earlier manual rows open) |
+| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows open) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/scenes/BootScene.ts` | queues the two loading pictures first, redraws on `filecomplete-image-<key>` (draw failure logs once, A-10), removes `progress` and those listeners on `COMPLETE` (F3), slow timer passes the real elapsed scene time since preload (re-arms for the rest if it fires early, F3), `loadingArt()` for the hook |
-| `src/ui/widgets/LoadingScreen.ts` | `showArt(id)` (background fills the canvas and hides the ivory rect, emblem above the title, depths -2/-1 under title and bar), `artShown()`, both destroyed in `destroy()`; slow line unchanged |
-| `src/data/layout.ts` | `LOADING_LAYOUT.background`, `.emblem` |
-| `src/data/balance.ts` | `loader` comment recomputed (2 077 722 B, about 41.6 s at 50 KB/s); `totalMs` stays 45 000 |
-| `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | `loading: { phase, art: { background, emblem } }` |
-| `docs/design-gaps.md` | row 105 marked CLOSED |
-| `e2e-break-p9a.patch`, `e2e-break-p9b.patch` | break patches for phase 9 (a: no listener on `filecomplete`, so no `showArt`; b: loading art queued after the total limit) |
+| `src/ui/widgets/UnlockCard.ts` | draws `firstLoaded([notebook, icon book]) ?? icon book` through `ArtImage`; DESIGN-GAP 22 comment removed |
+| `src/ui/widgets/RoomDoneCard.ts` | `drawRoomTile` picks `miniatureMode(...)`: `live`/`drawn` call `drawRoomMiniature` as before, `thumbnail` draws one `salon-after` image in the same rect; `miniature()` getter (null while hidden) |
+| `src/scenes/RoomScene.ts`, `tests/e2e/support/hook.ts` | room snapshot gains `doneMiniature` |
+| `docs/design-gaps.md` | rows 22 (CLOSED) and 108 updated |
+| `e2e-break-p11a.patch` | break for phase 11: tile always `live` (applies to the committed tree) |
 
 ## 3. Verification
 
@@ -33,23 +31,21 @@ The `/10x-implement final-art-p2 phase 5` step of autonomous run `2026-10-15-fix
 | `npm test` | 3054 passed (branch baseline 3054, +0); both deploy scripts OK |
 | `npm run sample -- E1..E6` | exit 0 each |
 | `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e | `load-and-tab-guard` + `salon-load-health` specs: Chromium cannot launch in this session (6 failed on launch, SIGTRAP) — `e2e: not runnable in this session — orchestrator gate`; row 5.2 left open. Row 4.2 ticked from the orchestrator note (109 passed after d56c3b2) |
-| Break | patches written against the committed tree, `git apply --check` OK for both; no unit test covers the scene (proof is phase 9). Meta-check: both patches change only production code and would stay unit-green |
+| e2e | `npx playwright test --workers=4`: 109 passed (baseline 109, +0); row 5.2 ticked from the orchestrator note |
+| Break | patch written, `git apply --check` OK; no unit/e2e test covers the tile mode yet (proof is phase 11). Meta-check: it changes only production code, so the suite stays green by design |
 | Teacher read | not needed: no content or generator change |
 
 ## 4. Next command
 
-`/10x-implement final-art-p2 phase 6` (phase 6: Notebook on the unlock card, salon thumbnail fallback on "Pokój gotowy!", `Driver: impl`)
+`/10x-implement final-art-p2 phase 7` (phase 7: App icons from the pack, `Driver: impl`)
 
 ## 5. Open
 
-- Row 5.2 e2e (orchestrator: full e2e, `load-and-tab-guard.spec.ts` and `salon-load-health.spec.ts` must stay green; the hook `loading` snapshot gained `art`, the slow timer now re-arms if it fires early), 5.4 [visual], 5.5 [reviewer], 4.4, 4.5.
-- Phase 6 draws notebook and `salon-after` (already queued after the room art).
-- Earlier open items stand as in the earlier handoffs.
+- 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
+- Phase 11 must add the `?e2eArt=room` spec reading `room.doneMiniature` (`live` normally, `thumbnail` with the seam) and apply the p11a break.
 
 ## 6. Autonomous decisions
 
-- The slow timer measures `this.time.now - startedAt`; if it fires a hair early the phase stays `loading` and the timer is re-armed for the remainder (rejected: passing the constant, the old behaviour; rejected: clamping the elapsed time up, which would hide the check).
-- No new e2e seam for "no loading art": the plan's phase 9 uses the stall seams and the break patches.
-- Row 105 in `docs/design-gaps.md` was closed here (phase 8 may reword it).
+- The thumbnail is sized `scene.width x scene.height` times `thumbScale` (250x140), the same rect as the live miniature.
+- The mode is computed per tile draw and stored on the card; the hook reports it only while the card is drawn.
 - Mixed phase: none.
