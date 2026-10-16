@@ -162,6 +162,36 @@ describe('generateMoneyPay', () => {
         expect(five.hint.at(-1)).toBe('Wystarczy jedna moneta: 5 zł.');
     });
 
+    it('PIC-05: the fewest variant names the right sum with too many coins, with a calm line and no verdict', () => {
+        const line = 'Kwota się zgadza. Spróbuj zapłacić mniejszą liczbą monet.';
+        const task = generateMoneyPay(skill(E1_TRAY, 5, 5, ['fewest']), createRng(1));
+        expect(task.feedback?.([200, 200, 100])).toBe(line);
+        expect(task.feedback?.([100, 100, 100, 100, 100])).toBe(line);
+        expect(task.check?.([200, 200, 100])).toBe(false);          // the line never decides right or wrong
+        expect(task.feedback?.([500])).toBeNull();                   // the fewest wallet is right, no note
+        expect(task.feedback?.([200, 200])).toBeNull();              // wrong sum
+        expect(task.feedback?.([200, 200, 200])).toBeNull();         // wrong sum, too many
+        expect(task.feedback?.([1000])).toBeNull();                  // not a tray coin
+        expect(task.feedback?.([])).toBeNull();
+        expect(task.feedback?.('x')).toBeNull();
+        expect(line).not.toMatch(/źle|błąd|błędn|niepoprawn/i);
+    });
+
+    it('PIC-05: the plain variant has no feedback', () => {
+        const task = generateMoneyPay(skill(E1_TRAY, 5, 5, ['pay']), createRng(1));
+        expect(task.feedback).toBeUndefined();
+    });
+
+    it('PIC-05: through the round, the same-sum longer wallet leaves a note on the second try, stars unchanged', () => {
+        const task = generateMoneyPay(skill(E1_TRAY, 5, 5, ['fewest']), createRng(1));
+        const s = answer(startRound([task], balance.round), [200, 200, 100]);
+        expect(s.phase).toBe('second');
+        expect(s.notes[0]).toBe('Kwota się zgadza. Spróbuj zapłacić mniejszą liczbą monet.');
+        expect(s.starsEarned).toBe(0);
+        const done = answer(s, [500]);
+        expect(done.outcomes[0]).toBe('second');
+    });
+
     it('a 6-year-old can solve it: the right wallet reaches done at the first try through the round', () => {
         forEachDraw(generateMoneyPay, skill(E2_TRAY, 3, 20, ['pay', 'fewest']), {}, (task, where) => {
             const s = answer(startRound([task], balance.round), canonicalInput(task));

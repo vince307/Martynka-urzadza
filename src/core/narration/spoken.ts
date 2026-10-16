@@ -98,7 +98,7 @@ export const narrationOf = (state: RoundState, opts: NarrationOptions): string |
         case 'done':
             return spokenTask(task, words, calculate);
         case 'second': {
-            const hint = firstHint(task);
+            const hint = state.notes[state.index] ?? firstHint(task);
             return `${tryAgain}. ${hint === null ? spokenTask(task, words, calculate) : spokenText(hint, words)}`;
         }
         case 'solution': {

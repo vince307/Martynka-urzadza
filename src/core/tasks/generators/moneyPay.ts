@@ -53,6 +53,16 @@ const walletCheck = (tray: readonly MoneyId[], target: number, fewestLength: num
     };
 };
 
+/** PIC-05: the right sum from tray coins only, in more coins than the fewest wallet, earns one calm line (never a verdict). */
+const tooManyCoins = (tray: readonly MoneyId[], target: number, fewestLength: number): ((input: unknown) => string | null) => {
+    const allowed = new Set(tray.map(grosze));
+    return (input) => {
+        if (!Array.isArray(input) || input.length <= fewestLength || input.length > balance.coinDrag.maxTotal) return null;
+        if (!input.every((c) => typeof c === 'number' && allowed.has(c))) return null;
+        return (input as number[]).reduce((a, b) => a + b, 0) === target ? pl.tasks.moneyPayTooManyCoins : null;
+    };
+};
+
 export const generateMoneyPay: Generator = (skill, rng): Task => {
     const p = parseMoneyPayParams(skill.params);
     const zloty = rng.int(p.min, p.max);
@@ -75,6 +85,7 @@ export const generateMoneyPay: Generator = (skill, rng): Task => {
         visual: { kind: 'money', items: [], pay: { tray: p.tray, fewest } },
         answer: wallet,
         check: walletCheck(p.tray, target, fewest ? wallet.length : null),
+        ...(fewest ? { feedback: tooManyCoins(p.tray, target, wallet.length) } : {}),
         hint,
     };
 };

@@ -27,6 +27,8 @@ export interface RoundState {
     readonly outcomes: readonly (Outcome | null)[];
     /** The first wrong value per task (number or tile text), kept for the parent's mistake examples; null when none. */
     readonly firstWrong: readonly (number | string | null)[];
+    /** A calm line from `task.feedback` for the first miss of a task, shown instead of the first hint; null when none. */
+    readonly notes: readonly (string | null)[];
     readonly starsEarned: number;
     readonly bonusEarned: number;
     readonly finished: boolean;
@@ -42,6 +44,7 @@ export const startRound = (tasks: readonly Task[], rules: RoundRules): RoundStat
         solutionStep: 0,
         outcomes: played.map(() => null),
         firstWrong: played.map(() => null),
+        notes: played.map(() => null),
         starsEarned: 0,
         bonusEarned: 0,
         finished: played.length === 0,
@@ -92,6 +95,11 @@ const captureFirstWrong = (state: RoundState, input: unknown): RoundState['first
     return value === null ? state.firstWrong : state.firstWrong.map((w, i) => (i === state.index ? value : w));
 };
 
+const captureNote = (state: RoundState, input: unknown): RoundState['notes'] => {
+    const note = state.tasks[state.index].feedback?.(input) ?? null;
+    return state.notes.map((n, i) => (i === state.index ? note : n));
+};
+
 /** A child's answer: in `first`, `second` and `retype` only; any other phase returns the same state. */
 export const answer = (state: RoundState, input: unknown): RoundState => {
     if (state.finished) {
@@ -100,7 +108,7 @@ export const answer = (state: RoundState, input: unknown): RoundState => {
     const correct = isCorrect(state.tasks[state.index], input);
     switch (state.phase) {
         case 'first':
-            return correct ? settle(state, 'first') : { ...state, phase: 'second', firstWrong: captureFirstWrong(state, input) };
+            return correct ? settle(state, 'first') : { ...state, phase: 'second', firstWrong: captureFirstWrong(state, input), notes: captureNote(state, input) };
         case 'second':
             return correct ? settle(state, 'second') : { ...state, phase: 'solution', solutionStep: 0 };
         case 'retype':

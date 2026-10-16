@@ -51,6 +51,13 @@ describe('roundView', () => {
         expect(view(wrong(start(tile))).inputActive).toBe(true);
     });
 
+    it('second try shows the task note instead of the first hint, and the hint when there is none (PIC-05)', () => {
+        const noted: Task = { ...tile, feedback: (v) => (v === -1 ? 'Kwota się zgadza.' : null) };
+        expect(view(wrong(start(noted))).bar).toEqual({ kind: 'hint', line: 'Kwota się zgadza.' });
+        const quiet: Task = { ...tile, feedback: () => null };
+        expect(view(wrong(start(quiet))).bar).toEqual({ kind: 'hint', line: '2 + 3' });
+    });
+
     it('solution shows lines up to the step; input is off; last step offers "gotIt"', () => {
         let s = wrong(wrong(start(keys)));
         expect(view(s)).toMatchObject({ inputActive: false, bar: { kind: 'solution', lines: ['20 + 5'], button: 'next' } });
