@@ -491,7 +491,7 @@ sessions: request-file protocol — `e2e-request-p6.md` + `e2e-break-p6a.patch` 
 
 - `npx playwright test tests/e2e/salon-extra-slots.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
 - Deliberate break p6a → (a) red; p6b → (b) red; each restored; meta-check: (a) proves the drawn layer record, not the pixels (visual phase 3)
-- Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — lint, typecheck, unit 3076, sample E1-E6, build `e2e hook: absent (2 chunks checked)`; no servers started here — d3ce24a
 
 #### Manual Verification:
 
@@ -750,9 +750,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 6.1 `npx playwright test tests/e2e/salon-extra-slots.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [ ] 6.2 Deliberate break p6a → (a) red; p6b → (b) red; each restored; meta-check (drawn layer record, not pixels)
-- [ ] 6.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 6.1 `npx playwright test tests/e2e/salon-extra-slots.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2` — spec 2 passed (orchestrator, --workers=2); full-suite 117 + 2 count open: orchestrator observes after phase 8 — d3ce24a
+- [x] 6.2 Deliberate break p6a → (a) red; p6b → (b) red; each restored; meta-check (drawn layer record, not pixels) — p6a: 1 failed ("old look"), p6b: 1 failed ("costs its price once"), both reverted (orchestrator) — d3ce24a
+- [x] 6.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
 
 #### Manual
 
