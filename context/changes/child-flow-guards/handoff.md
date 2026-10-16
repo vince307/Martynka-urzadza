@@ -1,17 +1,18 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-new` step of run 2026-10-16-audit-sweep (slice 1 of 3). The change identity exists with every
-slice-1 finding re-verified against the repo; nothing is implemented. The next agent must use the **audit's** ids for
-PIC-01 (ORDINAL in `artBlocked`) and PIC-03 (picture-mode threshold) — the run's scope file has their labels swapped.
+Written by the `/10x-research` step of run 2026-10-16-audit-sweep (slice 1 of 3). Research is complete for every
+in-scope finding; nothing is implemented. The next agent must not plan a two-finger e2e spec: Phaser 4.2.1 has one
+touch pointer by default (`input.activePointers` 1, `src/main.ts` `createGame` sets none), so PIC-02/GRD-02/GRD-03 are
+proven by unit tests only.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | 1 on the branch: `docs(child-flow-guards): change identity (autonomous run)` |
+| Commits | 2 on the branch: `docs(child-flow-guards): change identity (autonomous run)`, `docs(child-flow-guards): research` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
 | Working tree | clean after the commit |
 
@@ -19,7 +20,8 @@ PIC-01 (ORDINAL in `artBlocked`) and PIC-03 (picture-mode threshold) — the run
 
 | path | what it is |
 |---|---|
-| `context/changes/child-flow-guards/change.md` | change identity: source, re-verification table (finding / audit says / repo now / in scope), save-format statement (stays v4), generators to teacher-read, new `pl.ts` string (PIC-05), design-kit binding, E2E candidates, area follow-ups with takes, deferred LOW items with triggers, autonomous decisions |
+| `context/changes/child-flow-guards/research.md` | per-finding root cause (file + symbol), smallest fix, first failing test, risk; answers to open unknowns (a)-(f); two-finger verdict; recommended 10-phase grouping |
+| `context/changes/child-flow-guards/change.md` | frontmatter only: `status: new` → `preparing` |
 | `context/changes/child-flow-guards/handoff.md` | this file |
 
 ## 3. Verification
@@ -27,37 +29,41 @@ PIC-01 (ORDINAL in `artBlocked`) and PIC-03 (picture-mode threshold) — the run
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/child-flow-guards` |
-| `git log d8ca132..HEAD --stat` (non-context files) | only `docs/human-checklist.md` changed since the triage base: the triage file:line evidence still applies |
-| grep/read of every slice-1 symbol (`artBlocked`, `buildAdaptiveRound`, `CoinWallet` ok, `captureFirstWrong`, `walletCheck`, `generateCompareQty`, `skillBuckets`, `unlockReady`, `canonicalInput`, `stepClockSet`, `TaskScene.create` cancel wiring, `figureLayout` `minCell`, `SolutionSteps.show`, the generator loops, `tallOf`, `validateTask` mode rules, `countRound`, widget `images[i]?.show`, `forcedSkills`, `coinMm`, `TaskPicture` widgets map, `written.ts` borrow loop, `NumberLine.render`, `clockElapsed` `swap`, `placeValue` parser) | all 21 MEDIUM and 20 LOW still open; none dropped |
-| lint / typecheck / tests / build / e2e | not run — docs-only step, no code changed (baseline on main 9b7fe37: unit 3139 passed, e2e 125 passed, inherited, unverified) |
+| grep `node_modules/phaser/src/core/Config.js` `inputActivePointers`, `InputManager.js` constructor loop, `src/` for `activePointers\|addPointer` | default 1; loop `i <= pointersTotal` (mouse + 1 touch); no hit in `src/` |
+| read `src/core/tasks/generators/half.ts` hint, `src/data/curriculum/E3.ts` `E3.10.half_30` | first hint line states the result (confirms the TXT-02 measurement) |
+| read `tests/review.test.ts` "about 14 % E5", `docs/ZADANIA.md` weights line | contradiction recorded (TXT-01) |
+| lint / typecheck / tests / build / e2e | not run — research-only step, no code changed (baseline on main 9b7fe37: unit 3139 passed, e2e 125 passed, inherited, unverified) |
+| first-hint suppression probe (worker B, throwaway tsx in scratchpad) | 6922 multi-line tasks, 62 suppressed (half_30 50/50) — observed by the worker, not re-run here |
 
 ## 4. Next command
 
-`/10x-research child-flow-guards`
+`/10x-plan child-flow-guards`
 
 ## 5. Open
 
-- Research questions: (a) how `Task.check` can report a reason for PIC-05 (`src/core/tasks/generators/moneyPay.ts`
-  `walletCheck`, `src/core/round.ts` `answer`, `src/scenes/TaskScene.ts` `submit`) without changing round semantics;
-  (b) the G-4 redraw point (`src/core/curriculum.ts` `buildAdaptiveRound` vs `src/core/round/pick.ts`) and its bound;
-  (c) TXT-01 weights on a review step and which previous-stage skills `src/core/progress.ts` `progressView` should show;
-  (d) whether CDP multi-touch in `tests/e2e/support/hook.ts` can drive a second finger (PIC-02, GRD-02);
-  (e) a pure "fits" rule per drawing kind (GRD-04, WNA-04) over every skill × `TASK_LAYOUT` rect;
-  (f) where SV2-10 writes the variant state (`TaskScene` `countRound` vs the answer path that calls `earn`).
-- DESIGN-GAP rows expected: 122 (PIC-05 wallet reason line), possibly 123 (COMPARE_QTY tile order/arrow).
-- Teacher read required for every changed generator (list in `change.md` § Generators touched).
-- Deferred LOW items with triggers: GRD-09, WNA-08, WNA-09, TXT-06 (`change.md` § Deferred); they go to
-  `follow-ups/review-fixes.md` at archive time.
+- Plan decisions recorded as open in `research.md` § Open Questions: TXT-01 90/10 vs the pinned 14 % (research recommends
+  90/10 per `docs/ZADANIA.md`); GRD-04/WNA-04 heuristic `linesFit` vs a measured overflow flag; whether the stricter
+  `canonicalInput` (TXT-03) exposes a current skill; whether `stepClockSet` and `stepTrayDrag` should agree on a second
+  finger's `down` (GRD-02).
+- New content bug in scope via TXT-02: `src/core/tasks/generators/half.ts` hint order (`E3.10.half_30`), teacher read.
+- DESIGN-GAP rows expected: 122 (PIC-05 wallet line in `src/data/pl.ts`), optional 123 (COMPARE_QTY fixed tile order).
+- Teacher read for every changed generator (`change.md` § Generators touched, plus `half.ts`).
+- E2E: only the SV2-10 puzzle-reload spec (`?e2eVariant=puzzle`, answer, reload) is a feasible browser risk.
+- Follow-ups to write at archive: F4 note (second finger dropped by `input.activePointers` default 1; re-open a
+  multi-point CDP e2e if raised); letterbox-thumb risk (`TouchManager.onTouchStartWindow` forwards letterbox touches to
+  the only touch pointer), trigger [human] tablet test; deferred GRD-09, WNA-08, WNA-09, TXT-06 (`change.md` § Deferred).
 
 ## 6. Autonomous decisions
 
-- Next step `/10x-research` instead of the skill default `/10x-plan`: fixed by the step prompt and justified by ~40
-  findings across many modules. Would change: a much smaller scope.
-- Audit ids over the scope file's swapped PIC-01/PIC-03 labels: the audit is the primary source and the triage agrees.
-  Would change: nothing (both are in scope).
-- 4 LOW deferred (GRD-09 format change, WNA-08 test churn, WNA-09 no kit view, TXT-06 M-size DOM plumbing), all MEDIUM
-  kept. Would change: plan review finding the scope over ~12 phases (next to defer: GRD-06, GRD-07, WNA-10).
-- PIC-04/S13-06 example stored as a formatted string in the existing `given` field: keeps the save at v4. Would change:
-  a need to show the drawing with the example (then v5 together with GRD-09).
-- Fired-but-carried follow-ups (placeValue/clockElapsed duplicates, VO3 wallet look): no child-flow impact or no kit view.
-  Would change: the plan editing those exact lines anyway.
+- **Two-finger proof by unit, not e2e.** Chosen because a second simultaneous touch never reaches a scene in Phaser's
+  default config, so a CDP multi-point spec cannot go red first; rejected: a mouse + touch e2e (not the child's case,
+  unverified in Chromium with `hasTouch`). Would change: raising `input.activePointers` or a device report of the bug.
+- **TXT-01 recommendation 90/10 (fold `earlier` into `current` on a review step).** Chosen from `docs/ZADANIA.md` ~10 %
+  previous stage; rejected: keeping the S-14c 14 % pin (E5 majority while easing). Would change: the maintainer
+  confirming the 14 % was intended.
+- **HALF hint added to scope** (found by TXT-02's test, which would go red on it). Would change: plan review moving it to
+  a separate content change.
+- **G-4 redraw in `buildAdaptiveRound` with a bound of 8, keep the last task when exhausted.** Rejected: redraw in
+  `pick.ts`/`unique.ts`. Would change: a missing-art case where 8 redraws measurably fail.
+- **Research only, four parallel workers** (curriculum, generators, widgets, gestures); decisive claims re-checked in
+  the main context. Would change: nothing.
