@@ -1073,9 +1073,9 @@ Details.
 
 #### Automated
 
-- [x] 11.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (`
-- [x] 11.2 Deliberate break: `assertPool` never throwing / a `coinMm` key removed → red; restored; meta-check (guards and types)
-- [x] 11.3 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `art-tasks.spec.ts`, `written-column.spec.ts`, `number-line.spec.ts` green
+- [x] 11.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — efaa4d5
+- [x] 11.2 Deliberate break: `assertPool` never throwing / a `coinMm` key removed → red; restored; meta-check (guards and types) — efaa4d5
+- [x] 11.3 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `art-tasks.spec.ts`, `written-column.spec.ts`, `number-line.spec.ts` green — efaa4d5
 
 #### Manual
 

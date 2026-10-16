@@ -1,43 +1,44 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-tdd` step for phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) are
-committed; phases 11-14 are open. Keep the save format v4.
+Written by the `/10x-implement` step for phase 11 (after phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) and 11 (`efaa4d5`) are
+committed; phases 12-14 are open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` `feat(child-flow-guards): Drawing fit and a solution-overflow signal (p10)` + handoffs |
+| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` + p11 `efaa4d5` `feat(child-flow-guards): Widget pool guards and types (p11)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 11-14 open |
+| `## Progress` rows remaining | phase 11: 11.4 `[reviewer]`; phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 12-14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/round/drawingFit.ts` | `cellPositions` (moved from `NumberCells`), `cellsScale`, `coordScale`, `drawingFit(visual, rect, layout)` (switch over `TaskVisual['kind']`, `never` default; cells/grid/figure checked against `TASK_LAYOUT.figure.minCell`, read only here) |
-| `src/ui/widgets/{NumberCells,CoordGrid}.ts` | call the shared scale helpers |
-| `src/ui/widgets/SolutionSteps.ts`, `src/scenes/TaskScene.ts` | `overflowed()` (room < `minScale` x measured height); `console.warn` once per skill; snapshot `solutionOverflow` |
-| tests | `tests/drawingFit.test.ts` (helpers, per-kind fit, all-skills loop 5 seeds x 30 draws x both solution states on the real `pictureLayout` rect, `KNOWN_SMALL` empty), `tests/overflowWiring.test.ts` (source reads) |
+| `src/core/tasks/visual.ts` | `assertPool(count, limit, what)` and `lineTicks(line)` (throw `RangeError`; tick < 1 or > `balance.numberLine.maxTicks`) |
+| `src/core/tasks/written.ts` | `columnMarks` throws on a carry off the last column |
+| `src/ui/widgets/{IconGroups,IconRow,MoneyTable,Jugs}.ts` | call `assertPool`, no `?.show`, no `if (spot)` |
+| `src/ui/widgets/{NumberLine,WrittenColumn,TaskPicture,artLayout}.ts`, `src/data/layout.ts` | `lineTicks`; guard dropped; total `Record`; `coinMm: Record<CoinId, number>` + `satisfies`; `isNote` type guard |
+| tests | `tests/visual.test.ts` (assertPool, lineTicks), `tests/artLayout.test.ts` (coinMm keys = `COIN_IDS`), `tests/written.test.ts` (95 + 7 in 2 columns throws) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED | stub (`drawingFit` true, helpers wrong): `AssertionError: expected [] to have a length of 9 but got +0`, `expected 1 to be 1.5`, `expected true to be false` (cells/grid/figure thin rect) |
-| First real run | `E4.7.perimeter_rect: a drawn cell under 36px` (and `perimeter_triangle`, `E5.12.perimeter_side_rect`): free figures judged by unit scale; fixed by the free-figure rule (thinnest side x unit >= minCell), `minCell` untouched |
-| GREEN | full suite Tests 3406 passed (p9 3208, +198) |
-| Break | `cells` case returns true: `cells fits a roomy rectangle and not a thin one` red; restored. Second break `minCell` 36 -> 90 (restored): 8 red incl. magic_square, pyramid, grid_where/what, perimeter skills |
-| Meta-check | proves geometry on the real layout rects (worst-case rect is the pictureLayout one, not the `belowPrompt` shrink), not text metrics; overflow flag is wired by source test only (phase 14 measures) |
-| lint / typecheck | OK / OK; deploy scripts OK; `sample` E1-E6 OK; build OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.4m) = baseline + 0, after the last code edit |
+| RED | new tests written with the guards in the same step (helpers new); break below proves them |
+| Break 1 | `assertPool` condition forced `false`: `assertPool passes up to the limit and throws past it` red; restored with `git checkout` |
+| Break 2 | `'coin-5zl'` removed from `coinMm`: typecheck red (TS1360 / TS2345) and 8 tests red; restored |
+| Meta-check | proves the guard helper and the key-set typing, not the drawing; widget wiring covered by the existing e2e (art-tasks, written-column, number-line green) |
+| unit | Tests 3410 passed (p10 3406, +4) |
+| lint / typecheck / deploy scripts / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
+| e2e `--workers=4` | 125 passed (10.1m) = baseline + 0, after the last code edit |
 
 ## 4. Next command
 
-`/10x-implement child-flow-guards phase 11`
+`/10x-tdd child-flow-guards phase 12`
 
 ## 5. Open
 
@@ -55,6 +56,8 @@ committed; phases 11-14 are open. Keep the save format v4.
 - Phase 4 `[reviewer]` 4.4: `afterRound` reachable once per variant round (submit counts, `finishVariant` skips); the 3.x flaky `final-art-loading #15` did not fail this time.
 
 ## 6. Autonomous decisions
+
+- **Phase 11 impl scope**: `assertPool` and `lineTicks` live in `src/core/tasks/visual.ts` (not a new file); `lineTicks` tests sit in `tests/visual.test.ts` and `columnMarks` in `tests/written.test.ts` (existing homes) instead of the plan's `answerModes`/new `numberLine` test files. `IconGroups` pool is the sum of the groups. Would change: a reviewer wanting separate test files. Manual 11.4 `[reviewer]` left open (grep for `?.show`, `?? 20`, `?? null` is empty in the touched files).
 
 
 - Earlier decisions of the plan review stand (see plan `## Autonomous decisions`).
