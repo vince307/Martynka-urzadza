@@ -26,3 +26,18 @@ Trigger: the next change to `CoinWallet`, or a kit view of the wallet
 Trigger: a new drawn skill failing the `drawingFit` test
 - **Seam sweep (phase 13)**: remaining `while` loops in generators are `addSub` (digit loop) and bounded `compareNum`; each generator keeps its own `MAX_ATTEMPTS` constant next to `drawUntil` (all still used).
 Trigger: the next change to a generator that loops
+
+## From the impl review (2026-10-16)
+
+- **`modeWidgets` not yet the only mode switch in `TaskScene.render`** (impl review F2): phase 13 moved the private `widgetsOf` to `src/core/round/view.ts` `modeWidgets`, but the boolean `view.input === '…'` checks in `TaskScene.render`/`snapshot` stay (same count as main); the plan wanted `render` to ask the map instead.
+Trigger: the next change to `TaskScene.render`, or a new answer mode
+- **Cell floor checked only in tests** (impl review F3): `drawingFit` (`src/core/round/drawingFit.ts`) is asserted over `pictureLayout` rects in `tests/drawingFit.test.ts`, but at runtime `belowPrompt(..., TASK_LAYOUT.picture.minHeight)` in `TaskScene.render` can shrink the rect under a long prompt, and `NumberCells`/`CoordGrid` do not clamp (no `minScale` in `TASK_LAYOUT.cells`/`coord`, p10 deviation).
+Trigger: visual gate row 10.5 of this change, or a GRID/PUZZLE_GRID skill with a prompt longer than two lines
+- **A lost `up` of one pointer holds the clock hand against another pointer** (impl review F4): `stepClockSet` ignores a `down` of another pointer id while a hand is carried, and `canSubmit` blocks "OK"; on a touch-only tablet every touch is pointer 1 (recovers), only mixed mouse + touch can stay held until "Do pokoju".
+Trigger: a device report of a clock hand that cannot be put down, or a change of `input.activePointers`
+- **Clean-round bonus of a variant lost on a close before "Dalej"** (impl review F5): the variant is now counted at its last answer (`TaskScene.submit`), but `cleanRoundBonus` is paid in `next()` at "Dalej"; a close in between records the day's puzzle without the bonus.
+Trigger: the next change to variant rounds (`src/core/variants.ts`, `TaskScene.finishVariant`), or [human] row 14.4
+- **ORDINAL art rule counts loaded icons, the generator shuffles all `ICONS`** (impl review F6): `artBlocked` 'ORDINAL' (`src/core/round/artFilter.ts`) admits the skill with ≥ `max` icons loaded, while `generateOrdinal` draws from all 15, so with many icons missing the G-4 redraw rarely helps and stand-ins show.
+Trigger: the next change to `artFilter.ts` or `ordinal.ts`, or an "Obrazki" report with icons missing
+- **Progress preview "began" rule** (impl review F7): `progressView` counts previous-stage misses from the earliest current-stage history entry, so warm-up misses show and a stage the parent just raised shows none.
+Trigger: visual gate row 2.6 of this change, or a parent finding the list confusing

@@ -945,7 +945,7 @@ Details.
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `visualArtIds` switch ends in a `never` guard; `src/core` has no Phaser import; `pick.ts`/`unique.ts` untouched
+- [x] 1.5 [reviewer] `visualArtIds` switch ends in a `never` guard; `src/core` has no Phaser import; `pick.ts`/`unique.ts` untouched — impl review
 
 ### Phase 2: Review step shares, guards and the progress preview (TXT-01, TXT-04, TXT-05)
 
@@ -958,7 +958,7 @@ Details.
 
 #### Manual
 
-- [ ] 2.5 [reviewer] DESIGN-GAP 122 row and comment present; no Polish text in `src/core`
+- [x] 2.5 [reviewer] DESIGN-GAP 122 row and comment present; no Polish text in `src/core` — impl review
 - [ ] 2.6 [visual] Parent progress preview with a weak E5 skill while on E6.11, at 1440 (1920×1080 fit) and 1024×768
 - [ ] 2.7 [human] Accept the E6.11 review share 90/10 (easing 70/30) instead of S-14c's ≈ 14 %
 
@@ -973,7 +973,7 @@ Details.
 
 #### Manual
 
-- [ ] 3.5 [reviewer] DESIGN-GAP 123 row and comment present; `validExample` in `src/core/save.ts` unchanged
+- [x] 3.5 [reviewer] DESIGN-GAP 123 row and comment present; `validExample` in `src/core/save.ts` unchanged — impl review
 - [ ] 3.6 [visual] Parent progress preview with a wallet example and a shapes example, at 1440 (1920×1080 fit) and 1024×768
 
 ### Phase 4: A variant round is counted at its last answer (SV2-10)
@@ -986,7 +986,7 @@ Details.
 
 #### Manual
 
-- [ ] 4.4 [reviewer] `afterRound` reachable once per variant round; `SAVE_VERSION` still 4; variant schedule rules unchanged
+- [x] 4.4 [reviewer] `afterRound` reachable once per variant round; `SAVE_VERSION` still 4; variant schedule rules unchanged — impl review
 
 ### Phase 5: A calm reason line for a wallet with too many coins (PIC-05)
 
@@ -999,7 +999,7 @@ Details.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] `Task.check` still boolean in all five readers; DESIGN-GAP 124 row and comment present
+- [x] 5.5 [reviewer] `Task.check` still boolean in all five readers; DESIGN-GAP 124 row and comment present — impl review
 - [ ] 5.6 [visual] MONEY_PAY "fewest" task after a same-sum longer wallet, bar with the new line, at 1440 (1920×1080 fit) and 1024×768
 - [ ] 5.7 [human] Accept the wording of the new wallet line (gap 124; the kit has no such copy)
 
@@ -1014,7 +1014,7 @@ Details.
 
 #### Manual
 
-- [ ] 6.5 [reviewer] DESIGN-GAP 125 row and comment present; `SUPPRESSED_OK` holds only the three phrasing cases with a reason
+- [x] 6.5 [reviewer] DESIGN-GAP 125 row and comment present; `SUPPRESSED_OK` holds only the three phrasing cases with a reason — impl review
 - [ ] 6.6 [visual] COMPARE_QTY tiles in the new order and an E3.10 HALF first hint, at 1440 (1920×1080 fit) and 1024×768
 - [ ] 6.7 [human] Accept the fixed COMPARE_QTY tile order "Po lewej · Tyle samo · Po prawej" (gap 125)
 
@@ -1029,7 +1029,7 @@ Details.
 
 #### Manual
 
-- [ ] 7.5 [reviewer] No unbounded loop left in `src/core/tasks/generators`; E5/E6 `thousands` params ≥ 1001
+- [x] 7.5 [reviewer] No unbounded loop left in `src/core/tasks/generators`; E5/E6 `thousands` params ≥ 1001 — impl review
 
 ### Phase 8: Answer-mode oracle and validator rules (TXT-03/GRD-01, WNA-01/F6, WNA-02, WNA-03)
 
@@ -1041,7 +1041,7 @@ Details.
 
 #### Manual
 
-- [ ] 8.4 [reviewer] Every `switch` over a mode ends in a `never` guard; no runtime path calls `canonicalInput`
+- [x] 8.4 [reviewer] Every `switch` over a mode ends in a `never` guard; no runtime path calls `canonicalInput` — impl review
 
 ### Phase 9: Gesture guards (PIC-02, GRD-02, GRD-03, F5)
 
@@ -1053,7 +1053,7 @@ Details.
 
 #### Manual
 
-- [ ] 9.4 [reviewer] "a second finger cancels the carry and changes nothing" unchanged; no Phaser import in `src/core`
+- [x] 9.4 [reviewer] "a second finger cancels the carry and changes nothing" unchanged; no Phaser import in `src/core` — impl review
 - [ ] 9.5 [human] Tablet (trackpad, mouse or two fingers): "OK" while a coin or a clock hand is held does nothing; the hand keeps its place under a second touch
 
 ### Phase 10: Drawing fit and a solution-overflow signal (GRD-04, WNA-04)
@@ -1066,7 +1066,7 @@ Details.
 
 #### Manual
 
-- [ ] 10.4 [reviewer] `KNOWN_SMALL` empty or each entry has a follow-up; `minCell` read in one place
+- [x] 10.4 [reviewer] `KNOWN_SMALL` empty or each entry has a follow-up; `minCell` read in one place — impl review
 - [ ] 10.5 [visual] PERIMETER composite and PUZZLE_GRID pyramid in the solution phase, at 1440 (1920×1080 fit) and 1024×768
 
 ### Phase 11: Widget pool guards and types (S13-11, S14-10, S14-09, GRD-06, WNA-05, WNA-07)
@@ -1079,7 +1079,7 @@ Details.
 
 #### Manual
 
-- [ ] 11.4 [reviewer] No `?.show` left in the four widgets; no `?? 20` / `?? null` fallback in `artLayout.ts`/`TaskPicture.ts`
+- [x] 11.4 [reviewer] No `?.show` left in the four widgets; no `?? 20` / `?? null` fallback in `artLayout.ts`/`TaskPicture.ts` — impl review
 
 ### Phase 12: One dial geometry and the set-clock type (GRD-07, GRD-08)
 
@@ -1091,7 +1091,7 @@ Details.
 
 #### Manual
 
-- [ ] 12.4 [reviewer] `grep -n "snap ?? " src/` empty; CLOCK fixtures updated only for the union shape
+- [x] 12.4 [reviewer] `grep -n "snap ?? " src/` empty; CLOCK fixtures updated only for the union shape — impl review
 
 ### Phase 13: Mode widgets, e2e skills seam, docs and seam sweep (WNA-10, S13-14)
 
@@ -1105,7 +1105,7 @@ Details.
 
 #### Manual
 
-- [ ] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 122-125 match the code comments
+- [x] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 122-125 match the code comments — impl review
 - [ ] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38898544137, job 116964813604)
 
 ### Phase 14: The puzzle is paid once after a close; solution lines stay on screen — e2e (#2, #11)
