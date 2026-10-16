@@ -1,10 +1,10 @@
 ---
 change_id: final-sound
 title: Game sounds from the salon-v2 pack, effects on and music off by default
-status: impl_reviewed
+status: archived
 created: 2026-10-16
 updated: 2026-10-16
-archived_at: null
+archived_at: 2026-10-16T01:34:33Z
 ---
 
 ## Notes
