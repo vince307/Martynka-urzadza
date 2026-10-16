@@ -1085,9 +1085,9 @@ Details.
 
 #### Automated
 
-- [x] 12.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [x] 12.2 Deliberate break: `ClockFace` radius off `dialGeometry` → red; restored; meta-check (one source)
-- [x] 12.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `clock-set.spec.ts` and `drawn-tasks.spec.ts` green
+- [x] 12.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 8e19a7e
+- [x] 12.2 Deliberate break: `ClockFace` radius off `dialGeometry` → red; restored; meta-check (one source) — 8e19a7e
+- [x] 12.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `clock-set.spec.ts` and `drawn-tasks.spec.ts` green — 8e19a7e
 
 #### Manual
 

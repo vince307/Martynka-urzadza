@@ -1,44 +1,43 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-implement` step for phase 11 (after phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) and 11 (`efaa4d5`) are
-committed; phases 12-14 are open. Keep the save format v4.
+Written by the `/10x-tdd` step for phase 12 (after phase 11 `efaa4d5`; phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) and 11 (`efaa4d5`) and 12 (`8e19a7e`) are
+committed; phases 13-14 are open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` + p11 `efaa4d5` `feat(child-flow-guards): Widget pool guards and types (p11)` + handoffs |
+| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` + p11 `efaa4d5` + p12 `8e19a7e` `feat(child-flow-guards): One dial geometry and the set-clock type (p12)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 11: 11.4 `[reviewer]`; phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 12-14 open |
+| `## Progress` rows remaining | phase 12: 12.4 `[reviewer]`; phase 11: 11.4 `[reviewer]`; phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 13-14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/tasks/visual.ts` | `assertPool(count, limit, what)` and `lineTicks(line)` (throw `RangeError`; tick < 1 or > `balance.numberLine.maxTicks`) |
-| `src/core/tasks/written.ts` | `columnMarks` throws on a carry off the last column |
-| `src/ui/widgets/{IconGroups,IconRow,MoneyTable,Jugs}.ts` | call `assertPool`, no `?.show`, no `if (spot)` |
-| `src/ui/widgets/{NumberLine,WrittenColumn,TaskPicture,artLayout}.ts`, `src/data/layout.ts` | `lineTicks`; guard dropped; total `Record`; `coinMm: Record<CoinId, number>` + `satisfies`; `isNote` type guard |
-| tests | `tests/visual.test.ts` (assertPool, lineTicks), `tests/artLayout.test.ts` (coinMm keys = `COIN_IDS`), `tests/written.test.ts` (95 + 7 in 2 columns throws) |
+| `src/core/round/pictureLayout.ts` | `dialGeometry(rect, dial)` (centre, scale, `polar`), used by `clockSetLayout` |
+| `src/ui/widgets/ClockFace.ts` | `render` uses `dialGeometry` |
+| `src/core/tasks/visual.ts` | clock visual is a union: plain, or `set: true` with a required `snap`; the "snap without set" rule is gone |
+| `src/core/tasks/dragMode.ts`, `canonicalInput.ts`, `src/scenes/TaskScene.ts` | a non-set clock in drag throws; no `snap ?? 60` left |
+| tests | `tests/pictureLayout.test.ts` (`dialGeometry`: same centre/scale as the layout, hand tips of every `reachableTimes(5)` time on the rings), `tests/solvableInMode.test.ts` (`dragMode` clock branch with a set clock; non-set clock throws), `tests/visual.test.ts` (cast for the invalid-data case) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED | new tests written with the guards in the same step (helpers new); break below proves them |
-| Break 1 | `assertPool` condition forced `false`: `assertPool passes up to the limit and throws past it` red; restored with `git checkout` |
-| Break 2 | `'coin-5zl'` removed from `coinMm`: typecheck red (TS1360 / TS2345) and 8 tests red; restored |
-| Meta-check | proves the guard helper and the key-set typing, not the drawing; widget wiring covered by the existing e2e (art-tasks, written-column, number-line green) |
-| unit | Tests 3410 passed (p10 3406, +4) |
+| RED | with a `dialGeometry` stub: `AssertionError: expected { x: +0, y: +0 } to deeply equal { x: 708, y: 610 }`; tips test `AssertionError: 1.00: expected +0 to be close to 767.01...`; `dragMode > throws for a clock that is not a clock to set`: `AssertionError: expected [Function] to throw an error` |
+| Break | `polar` radius scaled by 0.9 in `dialGeometry`: the tips test red (1 failed), restored from a copy |
+| Meta-check | proves the shared geometry and the rings agree (one source), not the drawn pixels; ClockFace wiring covered by clock-set / drawn-tasks e2e (green) |
+| unit | Tests 3413 passed (p11 3410, +3) |
 | lint / typecheck / deploy scripts / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.1m) = baseline + 0, after the last code edit |
+| e2e `--workers=4` | 125 passed (10.9m) = baseline + 0, after the last code edit |
 
 ## 4. Next command
 
-`/10x-tdd child-flow-guards phase 12`
+`/10x-implement child-flow-guards phase 13`
 
 ## 5. Open
 
@@ -56,6 +55,8 @@ committed; phases 12-14 are open. Keep the save format v4.
 - Phase 4 `[reviewer]` 4.4: `afterRound` reachable once per variant round (submit counts, `finishVariant` skips); the 3.x flaky `final-art-loading #15` did not fail this time.
 
 ## 6. Autonomous decisions
+
+- **Phase 12 test-first scope**: all pure `core`; inline: `ClockFace`/`TaskScene` wiring and the type change. The hand-tip test uses `dialGeometry.polar` against the layout rings (the widget draws through the same `polar`), so the break scales `polar`, not the widget. Union uses `set?: undefined; snap?: undefined` for the plain clock. Manual 12.4 `[reviewer]` left open (`grep "snap ?? " src/` is empty). Would change: a reviewer wanting a test that renders ClockFace in Phaser.
 
 - **Phase 11 impl scope**: `assertPool` and `lineTicks` live in `src/core/tasks/visual.ts` (not a new file); `lineTicks` tests sit in `tests/visual.test.ts` and `columnMarks` in `tests/written.test.ts` (existing homes) instead of the plan's `answerModes`/new `numberLine` test files. `IconGroups` pool is the sum of the groups. Would change: a reviewer wanting separate test files. Manual 11.4 `[reviewer]` left open (grep for `?.show`, `?? 20`, `?? null` is empty in the touched files).
 
