@@ -11,11 +11,13 @@ const signalOfError = (event: ErrorEvent, origin: string): ErrorSignal => ({
 const signalOfRejection = (event: PromiseRejectionEvent): ErrorSignal => {
     const reason: unknown = event.reason;
     const isError = reason instanceof Error;
+    // Old WebKit: a DOMException does not inherit from Error, but its name is what the decision reads.
+    const named = isError || (typeof DOMException !== 'undefined' && reason instanceof DOMException);
     return {
         kind: 'rejection',
-        message: isError ? reason.message : String(reason),
+        message: named ? (reason as Error).message : String(reason),
         hasError: isError,
-        name: isError ? reason.name : undefined,
+        name: named ? (reason as Error).name : undefined,
         foreign: false,
     };
 };

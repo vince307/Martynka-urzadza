@@ -1,6 +1,7 @@
 import type { ArtHealthView } from '../../core/artHealth';
 import type { SaveHealthView } from '../../core/saveHealth';
 import type { ProgressView } from '../../core/progress';
+import type { SoundPrefs } from '../../core/sound';
 import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog } from './dialog';
@@ -23,8 +24,10 @@ export interface SettingsPanelOptions {
     saveHealth?: SaveHealthView;
     artHealth?: ArtHealthView;
     roomArtHealth?: ArtHealthView;
+    /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
+    sound?: { prefs: SoundPrefs; missing: number };
     /** Takes the pending choices; the caller applies them through core. */
-    onConfirm: (result: { stage: StageId; autoRead: boolean | null }) => void;
+    onConfirm: (result: { stage: StageId; autoRead: boolean | null; sound: SoundPrefs | null }) => void;
     onCancel: () => void;
     /** "Zapisz kopię": the panel closes and the caller opens the export dialog. Absent = no button (no saver). */
     onExport?: () => void;
@@ -40,10 +43,12 @@ export interface SettingsPanelOptions {
  * "Anuluj" / Escape. The reading choice stays null until the parent taps On or Off. One overlay scroll,
  * the two actions stick to the bottom of it (plan review F2). Returns the function that closes the panel.
  * DESIGN-GAP (docs/design-gaps.md row 26): the kit has no settings view; built from the S-06 dialog parts.
+ * DESIGN-GAP (row 114): the kit has no sound settings; a "Dźwięki" section after the reading choice with two On/Off groups in the same
+ * pattern and a muted line when effects failed to load, applied by "Zatwierdź".
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, artHealth, roomArtHealth, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, artHealth, roomArtHealth, sound, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -67,6 +72,40 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     readingTitle.id = 'settings-panel-reading';
     readingRow.setAttribute('aria-labelledby', readingTitle.id);
 
+    // Sounds: two On/Off groups built like the reading group; null result = no section, nothing to apply.
+    const chosenSound: SoundPrefs | null = sound ? { ...sound.prefs } : null;
+    const soundGroup = (heading: string, id: string, key: keyof SoundPrefs): { title: HTMLElement; row: HTMLElement; refresh: () => void } => {
+        const onButton = createButton(pl.settings.autoReadOn, () => {
+            if (chosenSound) chosenSound[key] = true;
+            refresh();
+        });
+        const offButton = createButton(pl.settings.autoReadOff, () => {
+            if (chosenSound) chosenSound[key] = false;
+            refresh();
+        });
+        const row = document.createElement('div');
+        row.className = 'parent-choices';
+        row.setAttribute('role', 'group');
+        row.append(onButton, offButton);
+        const title = createText('p', heading);
+        title.id = id;
+        row.setAttribute('aria-labelledby', id);
+        return {
+            title,
+            row,
+            refresh: () => {
+                const value = chosenSound?.[key] ?? false;
+                onButton.setAttribute('aria-pressed', String(value));
+                offButton.setAttribute('aria-pressed', String(!value));
+            },
+        };
+    };
+    const effects = soundGroup(pl.settings.effectsHeading, 'settings-panel-effects', 'effects');
+    const music = soundGroup(pl.settings.musicHeading, 'settings-panel-music', 'music');
+    const soundHeading = createText('h2', pl.settings.soundHeading);
+    const soundMissing = createText('p', sound ? pl.settings.soundMissing(sound.missing) : '', 'overlay-muted');
+    soundMissing.hidden = !sound || sound.missing <= 0;
+
     const noVoice = createText('p', pl.settings.noVoice, 'overlay-muted');
     noVoice.hidden = watchVoice !== undefined;
     let unwatch: (() => void) | undefined;
@@ -76,6 +115,8 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         const reading = chosenReading ?? autoReadDefault(chosenStage);
         on.setAttribute('aria-pressed', String(reading));
         off.setAttribute('aria-pressed', String(!reading));
+        effects.refresh();
+        music.refresh();
     };
 
     const close = (): void => {
@@ -85,7 +126,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     };
     const confirm = createButton(pl.parent.confirm, () => {
         close();
-        onConfirm({ stage: chosenStage, autoRead: chosenReading });
+        onConfirm({ stage: chosenStage, autoRead: chosenReading, sound: chosenSound });
     });
     confirm.classList.add('parent-primary');
     const cancel = (): void => {
@@ -120,7 +161,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

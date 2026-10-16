@@ -1,0 +1,12 @@
+diff --git a/src/scenes/loaderCut.ts b/src/scenes/loaderCut.ts
+index 3015999..9ace52d 100644
+--- a/src/scenes/loaderCut.ts
++++ b/src/scenes/loaderCut.ts
+@@ -11,6 +11,7 @@ export function cutLoad(load: Loader.LoaderPlugin): string[] {
+     if (!load.isLoading()) {
+         return [];
+     }
++    return [];
+     const waiting = [...load.list];
+     const flying = [...load.inflight];
+     const decoding = [...load.queue];

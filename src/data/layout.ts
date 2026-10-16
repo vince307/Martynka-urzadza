@@ -203,6 +203,9 @@ export const REGISTRY_KEYS = {
     today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)
     forcedVariant: 'forcedVariant',     // e2e build only: 'off' | 'word' | 'dice' | 'puzzle' (main.ts, from the page address); the name is not an e2e marker on purpose
     hudTitle: 'hudTitle',               // HudTitleView | null: the variant title in the HUD, set by the task scene; runtime only, not in SAVE_KEYS
+    sound: 'sound',                     // the game's SoundService (src/ui/sound.ts), set in main.ts; runtime only, not in SAVE_KEYS
+    soundPrefs: 'soundPrefs',           // SoundPrefs (core/sound), the device preference read from localStorage in main.ts; runtime only, not in SAVE_KEYS
+    soundHealth: 'soundHealth',         // ArtHealth of the sound effects (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 

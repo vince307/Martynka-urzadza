@@ -33,11 +33,14 @@ import { openSaveExportDialog } from './ui/dom/saveExportDialog';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
+import { createSoundService } from './ui/sound';
+import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
+import type { SoundPrefs } from './core/sound';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, forcedArt: string | null, forcedVariant: string | null, today: () => string, start: SessionSave): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, forcedArt: string | null, forcedVariant: string | null, today: () => string, start: SessionSave, soundPrefs: SoundPrefs): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -58,6 +61,9 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
             preBoot: (booting) => {
                 booting.registry.set(REGISTRY_KEYS.narrator, narrator);
                 booting.registry.set(REGISTRY_KEYS.month, month);
+                // The device sound preference (outside the save) and the one sound service; game.sound is created after preBoot, so the service reads it lazily.
+                booting.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
+                booting.registry.set(REGISTRY_KEYS.sound, createSoundService(booting, soundPrefs));
                 // Session state: the saved one, or the fresh one (start is built in start() from the load outcome).
                 booting.registry.set(REGISTRY_KEYS.settings, start.settings);
                 booting.registry.set(REGISTRY_KEYS.stars, start.stars);
@@ -234,7 +240,7 @@ const start = async (): Promise<void> => {
     // The calendar day of the daily puzzle: local fields, read at each round start. The e2e build may pin it with ?e2eDay=YYYY-MM-DD.
     const pinnedDay = __E2E_HOOK__ ? e2eDay(window.location.search) : null;
     const today = (): string => pinnedDay ?? localDay(new Date());
-    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session);
+    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
     // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({

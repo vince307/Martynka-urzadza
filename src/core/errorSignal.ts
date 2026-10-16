@@ -7,7 +7,9 @@ export interface ErrorSignal {
     foreign: boolean;
 }
 
-const QUIET_REJECTIONS = new Set(['AbortError', 'NotAllowedError']);
+// EncodingError and NotSupportedError: Phaser drops the promise of decodeAudioData, so a bad sound file rejects unhandled.
+// The game plays on without that sound (follow-up audio.noAudio); only rejections are quiet, `error` events stay fatal.
+const QUIET_REJECTIONS = new Set(['AbortError', 'NotAllowedError', 'EncodingError', 'NotSupportedError']);
 
 /** An error event without an error object that browsers raise for harmless reasons. */
 const isOpaqueNoise = (message: string): boolean =>

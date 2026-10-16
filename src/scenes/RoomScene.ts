@@ -5,6 +5,8 @@ import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
 import { holdPoint, slotAt, type AlphaAt } from '../core/roomHit';
 import { effectiveAutoRead } from '../core/narration/voice';
+import { panelCue } from '../core/sound';
+import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import type { RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
@@ -84,6 +86,7 @@ export class RoomScene extends Scene {
         this.input.on('pointermove', (p: { id: number; x: number; y: number }) => this.feed({ type: 'move', id: p.id, x: p.x, y: p.y }));
         this.taskButton = new RoomTaskButton(this, (affordable) => {
             if (!affordable) {
+                this.tap();
                 this.scene.switch(SCENE_KEYS.task);
                 return;
             }
@@ -96,16 +99,18 @@ export class RoomScene extends Scene {
             () => this.dispatch({ type: 'close' }),
         );
         this.modeButton = new PageButton(this, () => {
+            this.tap();
             this.mode = this.mode === 'change' ? 'normal' : 'change';
             this.resetGesture();
             this.redraw();
         }).setDepth(ROOM_LAYOUT.depth.controls);
         this.doneCard = new RoomDoneCard(this, () => {
+            this.tap();
             this.card = false;
             this.cardDrawn = false;
             this.redraw();
         });
-        const button = new PageButton(this, () => this.scene.switch(SCENE_KEYS.task)).setDepth(ROOM_LAYOUT.depth.controls);
+        const button = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.task); }).setDepth(ROOM_LAYOUT.depth.controls);
         this.resume = button;
         const refresh = (): void => {
             this.panel = { kind: 'closed' };
@@ -201,6 +206,9 @@ export class RoomScene extends Scene {
     private dispatch(event: PanelEvent): void {
         const { room, state } = this.resolve();
         const step = stepPanel(this.panel, event, { room, state, stars: this.stars() });
+        // One cue per tap: opening, previewing, "Wybieram" (a purchase or a free change); "Zamknij" is a navigation tap.
+        const cue = panelCue(this.panel, step, event);
+        playCues(this, soundOf(this.registry), cue ? [{ id: cue, delayMs: 0 }] : event.type === 'close' && this.panel.kind !== 'closed' ? [{ id: 'tap', delayMs: 0 }] : []);
         this.panel = step.panel;
         if (this.panel.kind === 'open') {
             this.resetGesture();
@@ -249,11 +257,22 @@ export class RoomScene extends Scene {
         }
         this.cardDrawn = true;
         this.redraw();
+        const wait = playBeforeSpeech(soundOf(this.registry), 'room-done');
         const settings = this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined;
         const learner = this.registry.get(REGISTRY_KEYS.learner) as { stage: string } | undefined;
         if (settings && learner && effectiveAutoRead(settings, learner.stage, balance.narrator.autoReadStages)) {
             // The tap on "Wybieram" was the gesture that unlocks speech (like the unlock card after "Dalej").
-            (this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined)?.speak(pl.room.done.spoken);
+            // The cue plays first and the card is read after it (the narrator is never cut); no cue played: at once.
+            const speak = (): void => {
+                if (this.cardDrawn) {
+                    (this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined)?.speak(pl.room.done.spoken);
+                }
+            };
+            if (wait > 0) {
+                this.time.delayedCall(wait, speak);
+            } else {
+                speak();
+            }
         }
     }
 
@@ -313,7 +332,6 @@ export class RoomScene extends Scene {
 
     /** The neglected room fades away over the renovated one; nothing when the child asked for less motion. */
     private fadeStage(): void {
-        this.playPurchaseSound();
         if (prefersReducedMotion()) {
             return;
         }
@@ -335,8 +353,6 @@ export class RoomScene extends Scene {
 
     /** Pop of the new furniture and a burst of stars; nothing at all when the child asked for less motion. */
     private celebrate(bought: { slot: string; variant: 0 | 1 | 2 }): void {
-        // DESIGN-GAP (docs/design-gaps.md): the purchase has no sound yet; the hook for it is here.
-        this.playPurchaseSound();
         if (prefersReducedMotion()) {
             return;
         }
@@ -376,8 +392,9 @@ export class RoomScene extends Scene {
         this.time.delayedCall(ANIMATION.purchaseParticleMs + 100, () => emitter.destroy());
     }
 
-    private playPurchaseSound(): void {
-        // No sound file exists yet (S-16 brings it); intentionally empty.
+    /** The `tap` cue of a navigation button (see TaskScene.tap for the list). */
+    private tap(): void {
+        playCues(this, soundOf(this.registry), [{ id: 'tap', delayMs: 0 }]);
     }
 
     /** Centre of "Wróć do notesu" in scene space, for the e2e hook. */

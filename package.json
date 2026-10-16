@@ -22,7 +22,8 @@
     "sample": "node --import tsx scripts/sample.ts",
     "check:deploy": "node --import tsx scripts/check-deploy.ts",
     "icons": "node scripts/make-icons.mjs",
-    "art": "node scripts/make-task-art.mjs"
+    "art": "node scripts/make-task-art.mjs",
+    "sounds": "node scripts/copy-sounds.mjs"
   },
   "dependencies": {
     "idb-keyval": "6.3.0",

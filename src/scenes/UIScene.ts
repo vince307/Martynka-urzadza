@@ -20,9 +20,12 @@ import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
+import type { SoundPrefs } from '../core/sound';
+import { createSoundPrefStore, deviceStorage } from '../storage/soundPrefs';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
+import { playCues, soundOf } from '../ui/sound';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
 import { SpeakerButton } from '../ui/widgets/SpeakerButton';
@@ -78,10 +81,13 @@ export class UIScene extends Scene {
         const unsubscribe = this.narrator?.onAvailability(refreshSpeaker);
         refreshSpeaker();
 
-        this.roomSwitch = new RoomSwitchButton(this, () => this.game.events.emit(GAME_EVENTS.toRoom));
+        this.roomSwitch = new RoomSwitchButton(this, () => { playCues(this, soundOf(this.registry), [{ id: 'tap', delayMs: 0 }]); this.game.events.emit(GAME_EVENTS.toRoom); });
         const refreshSwitch = (): void => this.roomSwitch.setVisible(this.registry.get(REGISTRY_KEYS.roomSwitch) === true);
         this.registry.events.on(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
         refreshSwitch();
+
+        // The music loads through this scene's loader (it lives for the whole session) and only when the parent turned it on.
+        soundOf(this.registry)?.attachLoader(this.load);
 
         this.title = new HudTitle(this);
         const refreshTitle = (): void => this.title.set((this.registry.get(REGISTRY_KEYS.hudTitle) as HudTitleView | null | undefined) ?? null);
@@ -134,6 +140,7 @@ export class UIScene extends Scene {
             return;
         }
         const narrator = this.narrator;
+        const sound = soundOf(this.registry);
         const saver = this.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
         narrator?.cancel();
         const session = openInputSession(suspender);   // every dialog callback below runs in it: a throw ends the hold and goes on to the error boundary
@@ -158,13 +165,14 @@ export class UIScene extends Scene {
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
                     ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
                     ...(saver ? { onImport: () => session.run(() => this.openImport(saver, session)) } : {}),
                     ...(saver ? { onReset: () => session.run(() => this.openReset(saver, session)) } : {}),
-                    onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead)),
+                    onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead, result.sound)),
                 });
                 }),
         });
@@ -218,13 +226,18 @@ export class UIScene extends Scene {
     }
 
     /** The learner and the settings come from core; the task scene reacts to the event only when the stage changed. */
-    private applySettings(stage: SessionLearner['stage'], autoRead: boolean | null): void {
+    private applySettings(stage: SessionLearner['stage'], autoRead: boolean | null, soundPrefs: SoundPrefs | null): void {
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'settings') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only
         }
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
         const changed = changeStageByParent(learner, stage);
         this.registry.set(REGISTRY_KEYS.settings, { autoRead });
+        if (soundPrefs) {
+            this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
+            soundOf(this.registry)?.setPrefs(soundPrefs);
+            createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+        }
         this.closeSettings();
         if (changed !== learner) {
             this.registry.set(REGISTRY_KEYS.learner, changed);

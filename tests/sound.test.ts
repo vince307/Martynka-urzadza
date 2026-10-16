@@ -1,0 +1,101 @@
+// Origin: change final-sound, phase 1. Oracles are typed here, not read from the code under test.
+import { describe, expect, it } from 'vitest';
+import { cueDelayMs, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
+import { balance } from '../src/data/balance';
+import { SOUNDS } from '../src/data/sounds';
+
+const on = { effects: true, music: true };
+const open = { locked: false, exists: true };
+
+describe('sound prefs', () => {
+    it('defaults to effects on and music off', () => {
+        expect(DEFAULT_SOUND_PREFS).toEqual({ effects: true, music: false });
+    });
+    it('keeps a valid field and defaults the rest', () => {
+        expect(parseSoundPrefs('{"effects":false}')).toEqual({ effects: false, music: false });
+        expect(parseSoundPrefs({ music: 'yes' })).toEqual({ effects: true, music: false });
+        expect(parseSoundPrefs({ music: true, effects: false })).toEqual({ effects: false, music: true });
+    });
+    it('falls back to defaults on garbage', () => {
+        for (const raw of ['{', 42, null, undefined, '[]', 'null']) {
+            expect(parseSoundPrefs(raw)).toEqual({ effects: true, music: false });
+        }
+    });
+});
+
+describe('soundOutcome', () => {
+    it('plays when on, loaded and unlocked', () => {
+        expect(soundOutcome('effect', on, open)).toBe('played');
+        expect(soundOutcome('music', on, open)).toBe('played');
+    });
+    it('off wins over missing and locked', () => {
+        const off = { effects: false, music: false };
+        expect(soundOutcome('effect', off, { locked: true, exists: false })).toBe('off');
+        expect(soundOutcome('music', { effects: true, music: false }, { locked: true, exists: true })).toBe('off');
+    });
+    it('uses the flag of its own kind', () => {
+        expect(soundOutcome('effect', { effects: false, music: true }, open)).toBe('off');
+        expect(soundOutcome('music', { effects: true, music: false }, open)).toBe('off');
+    });
+    it('missing wins over locked; locked when only the context is locked', () => {
+        expect(soundOutcome('effect', on, { locked: true, exists: false })).toBe('missing');
+        expect(soundOutcome('effect', on, { locked: true, exists: true })).toBe('locked');
+    });
+});
+
+describe('trimFrameCount', () => {
+    it('rounds the logical duration at the context rate', () => {
+        expect(trimFrameCount(0.48, 48000, 30000)).toBe(23040);
+        expect(trimFrameCount(0.48, 44100, 30000)).toBe(21168);
+    });
+    it('never exceeds the available frames', () => {
+        expect(trimFrameCount(0.48, 48000, 20000)).toBe(20000);
+    });
+    it('keeps all frames for an unusable duration', () => {
+        for (const d of [0, -1, Infinity, NaN]) expect(trimFrameCount(d, 44100, 999)).toBe(999);
+    });
+});
+
+describe('cueDelayMs', () => {
+    it('is cue length plus the gap only when the cue played', () => {
+        expect(cueDelayMs('played', 1.4, 150)).toBe(1550);
+        expect(cueDelayMs('played', 2.3, 150)).toBe(2450);
+    });
+    it('is 0 for every other outcome', () => {
+        for (const o of ['off', 'locked', 'missing'] as const) expect(cueDelayMs(o, 1.4, 150)).toBe(0);
+    });
+});
+
+describe('SOUNDS table', () => {
+    const durations: Record<string, number> = {
+        'answer-right': 0.48, 'answer-retry': 0.32, star: 0.23, 'round-bonus': 1.2, tap: 0.07, 'panel-open': 0.32,
+        'variant-pick': 0.16, purchase: 0.76, 'room-done': 2.3, 'skill-unlock': 1.4, coin: 0.16, 'minigame-done': 1.5,
+        'music-loop': 48,
+    };
+    it('has the 13 sounds of the manifest with unique ids', () => {
+        expect(SOUNDS.map(s => s.id).sort()).toEqual(Object.keys(durations).sort());
+        expect(new Set(SOUNDS.map(s => s.id)).size).toBe(13);
+    });
+    it('has the manifest durations, keys and m4a-then-ogg urls', () => {
+        for (const s of SOUNDS) {
+            expect(s.durationS).toBe(durations[s.id]);
+            expect(s.key).toBe(`sounds/${s.id}`);
+            expect(s.urls).toEqual([`assets/sounds/m4a/${s.id}.m4a`, `assets/sounds/ogg/${s.id}.ogg`]);
+        }
+    });
+    it('loads 12 sounds at boot, all but the music', () => {
+        expect(SOUNDS.filter(s => s.boot)).toHaveLength(12);
+        expect(SOUNDS.find(s => s.id === 'music-loop')?.boot).toBe(false);
+    });
+});
+
+describe('balance.sound', () => {
+    it('holds the volumes and delays', () => {
+        const b = balance.sound;
+        expect([b.masterVolume, b.effectVolume, b.musicVolume]).toEqual([0.55, 0.65, 0.14]);
+        expect([b.starDelayMs, b.speechGapMs, b.logSize]).toEqual([250, 150, 50]);
+    });
+    it('gives the 746 KB music file longer than it needs at 50 KB/s', () => {
+        expect(balance.sound.musicLoadTimeoutMs).toBeGreaterThan((746014 / 50000) * 1000);
+    });
+});
