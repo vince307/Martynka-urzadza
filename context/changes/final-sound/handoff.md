@@ -1,6 +1,6 @@
 # Handoff — `final-sound` (slice S-16b)
 
-Written by the visual-gate step of run 2026-10-15-fix-s16bcd. The visual gate passed (VISUAL: PASS, no code change), row 7.4 is ticked, only the two [human] iPad rows remain. Do not get wrong: the full e2e on the last code sha `82860d2` (expected 109 = 104 + 5) is still the impl review's MERGE condition and was NOT observed in this step either — the orchestrator must see it green before shipping.
+Final pre-merge state written by the ship step of run 2026-10-15-fix-s16bcd (archive before push). Earlier: written by the visual-gate step. The visual gate passed (VISUAL: PASS, no code change), row 7.4 is ticked, only the two [human] iPad rows remain. The impl review's MERGE condition (full e2e on code sha `82860d2`, 109 = 104 + 5) was observed by the orchestrator on `ceff218`: 109 passed.
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual-gate step of run 2026-10-15-fix-s16bcd. The visual gate pa
 |---|---|
 | Branch | `feat/final-sound`, cut from `main` at `a1625be` |
 | Commits | docs + p1..p10 + handoffs, `a15adf7` + `82860d2` (review fixes), `ceff218` (impl review), then this `docs(final-sound): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s16bcd/run-log.md |
+| `change.md` status | `archived` (ship step) |
 | `## Progress` rows remaining | 2: [human] 9.7, 10.6 (`grep -c '^- \[ \]' plan.md` = 2) |
 | Working tree | clean after the commit; `tests/e2e/visual.local/` deleted |
 
@@ -39,11 +39,11 @@ Port 4399 not listening after the step; no other server started.
 
 ## 4. Next command
 
-`/10x-archive final-sound`
+`none — shipped`
 
 ## 5. Open
 
-- Orchestrator: full `npx playwright test --workers=4` on `82860d2` must show 109 passed (impl-review MERGE condition).
+- Impl-review MERGE condition met: the orchestrator observed full `npx playwright test --workers=4` on `ceff218` (code = `82860d2`): 109 passed.
 - [human] 9.7: iPad listening (unlock on first touch, effects with speech, volume, music loop click, silent switch; `purchase` on a free change, one `answer-retry`, `tap` + `round-bonus`).
 - [human] 10.6: iPad offline, sounds from the cache.
 - Follow-up added: heading alignment in `src/ui/dom/settingsPanel.ts` `openSettingsPanel` (see `follow-ups/review-fixes.md`). Earlier follow-ups unchanged.
