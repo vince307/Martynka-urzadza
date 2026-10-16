@@ -1,43 +1,43 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-tdd` step for phase 9 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) and 9 (`843a462`) are
-committed; phases 10-14 are open. Keep the save format v4.
+Written by the `/10x-tdd` step for phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) are
+committed; phases 11-14 are open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` `feat(child-flow-guards): Gesture guards (p9)` + handoffs |
+| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` `feat(child-flow-guards): Drawing fit and a solution-overflow signal (p10)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 10-14 open |
+| `## Progress` rows remaining | phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 11-14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/trayDrag.ts` | `canSubmit(state)` (false while `carrying`); `TrayDragEvent` cancel has optional `pointerId`, a mismatched id is ignored |
-| `src/core/clockSet.ts` | same cancel shape; `down` of another pointer while a hand is held returns the state unchanged; same pointer keeps the S13-09 restart |
-| `src/core/dragEvents.ts` | `rawToDragEvent(kind, p)` for down/move/up/upoutside, `wasCanceled` and upoutside give `cancel` with `p.id`; `never` default |
-| `src/scenes/TaskScene.ts`, `src/ui/widgets/CoinWallet.ts` | four listeners use `rawToDragEvent`; clock "OK" and wallet "OK" ask `canSubmit` |
-| tests | `tests/clockSet.test.ts` (GRD-02, GRD-03; the old other-finger-restart test now uses the same pointer), `tests/trayDrag.test.ts` (cancel id, `canSubmit`), `tests/dragEvents.test.ts`, `tests/gestureWiring.test.ts` (source reads) |
+| `src/core/round/drawingFit.ts` | `cellPositions` (moved from `NumberCells`), `cellsScale`, `coordScale`, `drawingFit(visual, rect, layout)` (switch over `TaskVisual['kind']`, `never` default; cells/grid/figure checked against `TASK_LAYOUT.figure.minCell`, read only here) |
+| `src/ui/widgets/{NumberCells,CoordGrid}.ts` | call the shared scale helpers |
+| `src/ui/widgets/SolutionSteps.ts`, `src/scenes/TaskScene.ts` | `overflowed()` (room < `minScale` x measured height); `console.warn` once per skill; snapshot `solutionOverflow` |
+| tests | `tests/drawingFit.test.ts` (helpers, per-kind fit, all-skills loop 5 seeds x 30 draws x both solution states on the real `pictureLayout` rect, `KNOWN_SMALL` empty), `tests/overflowWiring.test.ts` (source reads) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED | stubs (`canSubmit` true, `rawToDragEvent` throws): `AssertionError: expected { hour: 9, minute: +0, ... } to be { hour: 3, minute: +0, ... }` (clock GRD-02/03); `canSubmit` and tray cancel-id assertions failed; wiring `AssertionError: expected 'import { Scene ...' to match /rawToDragEvent\('down'/`; dragEvents failed with the stub's `Error: todo` |
-| GREEN | full suite Tests 3208 passed (p8 3199, +9) |
-| Break | `canSubmit` always true + clock `down` back to `grab(idle(state))`: 2 red (`canSubmit is false while something is carried`, `GRD-02 ... ANOTHER finger`); restored |
-| Meta-check | proves reducers and source wiring, not Phaser pointer delivery (one touch pointer) |
+| RED | stub (`drawingFit` true, helpers wrong): `AssertionError: expected [] to have a length of 9 but got +0`, `expected 1 to be 1.5`, `expected true to be false` (cells/grid/figure thin rect) |
+| First real run | `E4.7.perimeter_rect: a drawn cell under 36px` (and `perimeter_triangle`, `E5.12.perimeter_side_rect`): free figures judged by unit scale; fixed by the free-figure rule (thinnest side x unit >= minCell), `minCell` untouched |
+| GREEN | full suite Tests 3406 passed (p9 3208, +198) |
+| Break | `cells` case returns true: `cells fits a roomy rectangle and not a thin one` red; restored. Second break `minCell` 36 -> 90 (restored): 8 red incl. magic_square, pyramid, grid_where/what, perimeter skills |
+| Meta-check | proves geometry on the real layout rects (worst-case rect is the pictureLayout one, not the `belowPrompt` shrink), not text metrics; overflow flag is wired by source test only (phase 14 measures) |
 | lint / typecheck | OK / OK; deploy scripts OK; `sample` E1-E6 OK; build OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.2m) = baseline + 0, after the last code edit |
+| e2e `--workers=4` | 125 passed (10.4m) = baseline + 0, after the last code edit |
 
 ## 4. Next command
 
-`/10x-tdd child-flow-guards phase 10`
+`/10x-implement child-flow-guards phase 11`
 
 ## 5. Open
 
@@ -77,3 +77,5 @@ committed; phases 10-14 are open. Keep the save format v4.
 - **Phase 8 test-first scope**: all pure `core`; inline: the `TaskScene` argument passing. New rule name `hintVisual` (plan). The `moneyPay` tests were edited because they depended on the unchecked oracle. Would change: none. Manual 8.4 `[reviewer]` left open: every mode `switch` ends in `never` (canonicalInput, validateTask, pictureLayout, answerSpans, hintPictureLayout, tallOf); `canonicalInput` is called only from tests.
 
 - **Phase 9 test-first scope**: all pure `core`; inline: the `TaskScene`/`CoinWallet` wiring (covered by `gestureWiring.test.ts`). The old clock test with pointer 2 restarting the grab encoded the bug and was changed to pointer 1. Gestures proven by unit tests only (one Phaser touch pointer). Would change: a device report of a lost carry.
+
+- **Phase 10 test-first scope**: all pure `core`; inline: widget calls and the overflow flag (source-read test). `minScale` in `TASK_LAYOUT.cells/coord` NOT added: the widgets keep their raw fit scale and `drawingFit` judges it against `figure.minCell` (one place). Free (non-lattice) figures have no cells, so the floor applies to the thinnest side (units x cell px); a lattice figure to its cell. No `KNOWN_SMALL` entry needed. Would change: the visual gate (10.5) finding a free figure too small.

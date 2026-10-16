@@ -1060,9 +1060,9 @@ Details.
 
 #### Automated
 
-- [ ] 10.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 10.2 Deliberate break: `cellsScale` without the floor check → red; restored; meta-check (geometry, not text metrics)
-- [ ] 10.3 Build prints `e2e hook: absent (`; full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `grid-tasks.spec.ts` green
+- [x] 10.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 7ac58d2
+- [x] 10.2 Deliberate break: `cellsScale` without the floor check → red; restored; meta-check (geometry, not text metrics) — 7ac58d2
+- [x] 10.3 Build prints `e2e hook: absent (`; full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `grid-tasks.spec.ts` green — 7ac58d2
 
 #### Manual
 
