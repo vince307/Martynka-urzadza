@@ -981,7 +981,7 @@ migrates that save again.
 #### Automated
 
 - [ ] 12.1 `npx playwright test tests/e2e/health-lines.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [x] - [ ] 12.2 Deliberate break p12a → (a) red; p12b → (b) red; each restored; meta-check — 207d599
+- [x] 12.2 Deliberate break p12a → (a) red; p12b → (b) red; each restored; meta-check — 207d599
 - [ ] 12.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
 
 #### Manual
