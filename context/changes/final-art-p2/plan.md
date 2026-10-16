@@ -835,8 +835,8 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 7.1 `npm run icons` twice → no diff in `public/icons`, `public/favicon.png`
-- [ ] 7.2 Deliberate break: `icon-192.png` replaced by the 512 file → `tests/appIcons.test.ts` red; restored; meta-check (sizes and paths, not launcher crop)
+- [x] 7.1 `npm run icons` twice → no diff in `public/icons`, `public/favicon.png` — fcaa3dc
+- [x] 7.2 Deliberate break: `icon-192.png` replaced by the 512 file → `tests/appIcons.test.ts` red; restored; meta-check (sizes and paths, not launcher crop) — fcaa3dc
 - [ ] 7.3 Full local gate green; `dist/sw.js` lists `icons/icon-512.png`; manifest icon paths unchanged
 
 #### Manual

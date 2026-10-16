@@ -1,51 +1,51 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The `/10x-implement final-art-p2 phase 6` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 6 (notebook on the unlock card, room-done miniature fallback) is committed (64932d6). Next is phase 7 (`Driver: impl`); rows 6.3 [visual] and 6.4 [reviewer] stay open.
+The `/10x-implement final-art-p2 phase 7` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 7 (app icons from the pack) is committed (fcaa3dc). Next is phase 8 (`Driver: impl`); rows 7.3 (e2e part) and 7.4 [human] stay open.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-p2`, cut from `main` at `c16734d` |
-| Commits | phases 1-5 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, `3df2b56`, phase 6 `64932d6`, plus handoff commits |
+| Commits | phases 1-6 `afac8e1`, `1dd8fb1`, `59ebc25`, `d56c3b2`, `3df2b56`, `64932d6`, phase 7 `fcaa3dc`, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows open) |
+| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (7.3 e2e part, 7.4 [human], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows open) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/widgets/UnlockCard.ts` | draws `firstLoaded([notebook, icon book]) ?? icon book` through `ArtImage`; DESIGN-GAP 22 comment removed |
-| `src/ui/widgets/RoomDoneCard.ts` | `drawRoomTile` picks `miniatureMode(...)`: `live`/`drawn` call `drawRoomMiniature` as before, `thumbnail` draws one `salon-after` image in the same rect; `miniature()` getter (null while hidden) |
-| `src/scenes/RoomScene.ts`, `tests/e2e/support/hook.ts` | room snapshot gains `doneMiniature` |
-| `docs/design-gaps.md` | rows 22 (CLOSED) and 108 updated |
-| `e2e-break-p11a.patch` | break for phase 11: tile always `live` (applies to the committed tree) |
+| `scripts/make-icons.mjs` | rewritten converter: cwebp lossless resize then dwebp PNG from `designs/martynka-salon-v2/assets/app`; exits 1 when pack or binary is missing |
+| `public/icons/*.png`, `public/favicon.png` | the five pack icons (192, 512, maskable 512, apple-touch 180, favicon 48) |
+| `tests/appIcons.test.ts` | IHDR sizes, icon-512 over 100 KB, every manifest icon src exists under public/ |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | `npm run lint`, `npm run typecheck` | OK |
-| `npm test` | 3054 passed (branch baseline 3054, +0); both deploy scripts OK |
+| `npm test` | 3061 passed (branch baseline 3054, +7); both deploy scripts OK |
 | `npm run sample -- E1..E6` | exit 0 each |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e | `npx playwright test --workers=4`: 109 passed (baseline 109, +0); row 5.2 ticked from the orchestrator note |
-| Break | patch written, `git apply --check` OK; no unit/e2e test covers the tile mode yet (proof is phase 11). Meta-check: it changes only production code, so the suite stays green by design |
-| Teacher read | not needed: no content or generator change |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `dist/sw.js` lists `icons/icon-512.png`; manifest icon paths unchanged |
+| `npm run icons` twice | identical md5 on all five files (7.1) |
+| Break | `icon-192.png` replaced by the 512 file: `AssertionError: expected [ 512, 512 ] to deeply equal [ 192, 192 ]`; restored. Meta-check: proves sizes and manifest paths, not launcher crop |
+| e2e | not runnable in this session — orchestrator gate (Chromium MachPortRendezvous Permission denied); no code path of the game changed, only PNG files |
+| Deploy smoke | not run: plan does not name it; manifest and precache unchanged |
 
 ## 4. Next command
 
-`/10x-implement final-art-p2 phase 7` (phase 7: App icons from the pack, `Driver: impl`)
+`/10x-implement final-art-p2 phase 8` (phase 8: Documentation, design gaps, follow-ups, `Driver: impl`)
 
 ## 5. Open
 
-- 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
-- Phase 11 must add the `?e2eArt=room` spec reading `room.doneMiniature` (`live` normally, `thumbnail` with the seam) and apply the p11a break.
+- 7.3 e2e part, 7.4 [human], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
+- Phase 8 must update the CLAUDE.md line about placeholder icons / `npm run icons` (now a pack converter needing cwebp and dwebp and the local `designs/` folder).
+- Phase 11 must still add the `?e2eArt=room` spec and apply the p11a break.
 
 ## 6. Autonomous decisions
 
-- The thumbnail is sized `scene.width x scene.height` times `thumbScale` (250x140), the same rect as the live miniature.
-- The mode is computed per tile draw and stored on the card; the hook reports it only while the card is drawn.
+- apple-touch 180 and favicon 48 come from the regular full-bleed icon; maskable only feeds the maskable file. Manifest and `index.html` untouched (no `purpose: any` added).
+- Row 7.3 left unticked until the orchestrator runs e2e.
 - Mixed phase: none.
