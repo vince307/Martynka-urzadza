@@ -71,7 +71,9 @@ Grounded in `research.md` (its Code References are the source, not re-searched) 
   (bounded); "Zapis gry" tells across launches whether the old copy is kept, lost, uncertain or still being moved, names
   a timed-out write as "mogło się zapisać", and names the fatal error.
 - The parent can save the kept old-version copy from "Zapis gry" ("Zachowaj kopię starego zapisu").
-- A reload is never refused as "another window"; an older build writing over the save is noticed and named; a second tab
+- A reload race is never named "another window": the late write of this tab's previous page still refuses (this page
+  never read it, so writing over it would lose it) but is named `PreviousPageSave` in the log and on the card; an older
+  build writing over the save is noticed and named; a second tab
   that saved stops this tab at once (BroadcastChannel, when the browser has it), and the refusal card shows a code line.
 - Export says "pobieranie rozpoczęte" (not "pobrany") after a link click and refuses a state that does not validate; an
   unreadable file is named as such; a broken device save gets a line instead of a silent close; a timed-out import/reset
@@ -344,7 +346,9 @@ string | null; at: number }`, all required, so no store can skip them)
 **File**: `src/storage/idb.ts` (`createIdbSaveStore`)
 
 **Intent**: `backup` runs one `readwrite` transaction: `os.count(backup-v<from>)`; when 0, put the raw copy and the
-record `kept`; resolve `'written'` or `'kept'` on `tx.oncomplete`. `readBackups` gets `backup-v1..v{SAVE_VERSION-1}`
+record `kept`; when 1 (a copy made by an older build or an earlier session), put only the record `kept` for that `from`
+(plan review F2: so the line is true across launches for copies older than this build); resolve `'written'` or
+`'kept'` on `tx.oncomplete`. `readBackups` gets `backup-v1..v{SAVE_VERSION-1}`
 (absent keys skipped). `backupRecord`/`noteBackup` get/set `profile:default:backup-status`. The main key is never
 touched by any of them.
 
@@ -359,7 +363,7 @@ behaviour for `backup`); the test stores in `tests/autosave.test.ts` (one shared
 
 **File**: `tests/idbStore.test.ts`, `tests/e2eSave.test.ts`
 
-**Contract**: second `backup` for the same `from` → `'kept'`, first bytes unchanged; record `kept` written with the copy;
+**Contract**: second `backup` for the same `from` → `'kept'`, first bytes unchanged, record `kept` present; record `kept` written with the copy;
 `readBackups` returns only present versions; `noteBackup` never touches `profile:default` or a `backup-v<N>` key.
 
 ### Success Criteria:
@@ -401,6 +405,15 @@ attempts write first, then retry the copy from `migrated.raw` while `backupFails
 A failed copy counts once per attempt (V-6); after `skipped` the copy is never retried, whatever a write does (V-7). A
 `'kept'` answer from `backup` is `done`.
 
+**Record before a write that leaves the copy owed (plan review F2).** A hidden flush is often the last thing a tablet
+page does, so the cap may never be reached in that session and `migrated.raw` dies with the page. Therefore, before the
+first `store.write` that runs while the copy is still owed (hidden branch, cap branch, and `replace`'s give-up branch),
+the autosaver calls `noteBackup({ result: lastError is timeout ? 'uncertain' : 'lost', … })` once, through
+`withTimeLimit` and never awaited past it (a failure or hang is logged and the write goes on). A later successful copy
+overwrites the record with `kept` in its own transaction (phase 4), so the stored record is never more pessimistic than
+the truth for longer than one write. `replace`'s copy branch follows the same accounting (V-7: no copy after
+`skipped`; the impl-review F3/F4 follow-up of save-v2-backup-health is thereby **in**).
+
 **Contract**: the comment "the child's progress is worth more than the raw old bytes" kept; the copy source is only
 `migrated.raw`, never the stored key.
 
@@ -417,7 +430,9 @@ most `migrationWriteRetries` times per session; a store that never works stops r
 **File**: `tests/autosave.test.ts`
 
 **Contract**: new "a hidden flush after a failed copy writes progress and keeps the copy owed"; new "a failed first
-write after a migration is retried without markDirty, at most N times"; new V-6 (one failure per attempt) and V-7 (no
+write after a migration is retried without markDirty, at most N times"; new "a write that leaves the copy owed notes
+`lost` first, and a later copy notes `kept`" (scripted store records the op order `noteBackup` → `write` → `backup`);
+new "a hanging `noteBackup` does not hold the write"; new "`replace` over an owed failing copy notes `lost`"; new V-6 (one failure per attempt) and V-7 (no
 copy after `skipped`). Reversed: "after a failed copy the page-hide flush writes v2 without trying the copy again" and
 "the third failed copy in a session writes v2 without the copy, once, … (SV2-01)" — the order becomes write-then-copy
 and the give-up writes a record; reversed because a hidden flush is the common flush on a tablet ("3 tries" were 1). If
@@ -459,7 +474,9 @@ beside `loadSave` and passes it; the error boundary passes `errorName(error)` to
 
 #### 2. View
 
-**File**: `src/core/saveHealth.ts` (`migrationOf`: record first, then session status; a `pending` state while
+**File**: `src/core/saveHealth.ts` (`migrationOf`: the live session status when this session migrated
+(`migratedFrom !== null`, it knows more than the record — e.g. a copy still being retried), the stored record
+otherwise (later launches); a `pending` state while
 `migratedFrom !== null && migrationWrittenAt === null`; an `uncertain` record with the copy present (`readBackups` at
 panel open is phase 9 — here the record alone) shows as `uncertain`; `stateOf`/`offState`: `failing` with
 `lastFailure.error` timeout and `lateWrite !== 'failed'` → the timeout variant; fatal → `fatalError ?? lastError`; a
@@ -499,7 +516,7 @@ Driver why: `writeVerdict` is pure with exact verdicts, the writer module works 
 
 ### Overview
 
-A reload is the same tab, never "another window"; a duplicated tab stays a different writer; a v3 record written over
+A reload is named as the same tab, never "another window"; a duplicated tab stays a different writer; a v3 record written over
 this page's v4 save by an older build is noticed, logged once and named in "Zapis gry".
 
 ### Changes Required:
@@ -514,7 +531,12 @@ the last 8; any throw → a fresh random id with no ended list, today's behaviou
 #### 2. Verdicts
 
 **File**: `src/core/save.ts` (`writeVerdict(stored, page: { version; base; writer; endedWriters? }, mode)`): a stored
-record whose `writer` is in `endedWriters` counts as this tab's previous document (put, not refuse); a put over a stored
+record with `generation > page.base` whose `writer` is in `endedWriters` is this tab's previous document — it is still
+**refused**, with the new `PREVIOUS_PAGE_SAVE = 'PreviousPageSave'` instead of `OTHER_WRITER_SAVE` (plan review F1:
+this page loaded before that late write landed and never read it, so a put would silently drop the child's last
+progress; the audit's T-3 fix direction is "distinguish in the log", not "write over it"). `autosave.ts` maps
+`PREVIOUS_PAGE_SAVE` like `OTHER_WRITER_SAVE` (`blockedBy 'otherTab'`, `onBlocked` once, the calm card that reloads and
+keeps the latest progress) and its log names the previous page; a put over a stored
 `version < page.version` while `page.base > 0` returns `{ kind:'put', generation, olderWriter: true }`;
 `src/storage/idb.ts` (`guardedPut` resolves the flag; the store calls `options.onOlderWriter?.()`); `src/core/autosave.ts`
 (`noteOlderWriter()` → runtime `olderWriterSeen`, one `log`)
@@ -526,8 +548,10 @@ gap 130), `src/core/saveHealth.ts` + `saveHealthView.ts` (one line when `olderWr
 
 #### 4. Tests
 
-**File**: `tests/saveV4.test.ts` (or the `writeVerdict` cases in `tests/save.test.ts`): same `tabId`, ended nonce →
-put; same `tabId`, live nonce → refuse; base 0 over v3 → plain put (first write after a migration); base ≥ 1 over v3 →
+**File**: `tests/saveV4.test.ts` (or the `writeVerdict` cases in `tests/save.test.ts`): same `tabId`, ended nonce,
+`generation > base` → refuse `PreviousPageSave` (never put); same `tabId`, live nonce → refuse `OtherWriterSave`;
+ended nonce with `generation <= base` → put (as today); `tests/autosave.test.ts`: a `PreviousPageSave` refusal blocks
+as `otherTab` and logs "previous page"; base 0 over v3 → plain put (first write after a migration); base ≥ 1 over v3 →
 `olderWriter`. New `tests/writerId.test.ts` (copied list in a duplicated tab does not contain the original's live
 nonce; throwing storage). `tests/idbStore.test.ts` (flag reaches `onOlderWriter`), `tests/saveHealth.test.ts`.
 
@@ -536,7 +560,7 @@ nonce; throwing storage). `tests/idbStore.test.ts` (flag reaches `onOlderWriter`
 #### Automated Verification:
 
 - New tests red before the change (assertion), green after; unit `<branch baseline> + N`; every existing `writeVerdict` and B-1 test green unchanged
-- Deliberate break: ended-list check matching on `tabId` alone → the duplicated-tab case red; `olderWriter` without `base > 0` → the migration case red; each restored; meta-check: proves the verdict, the reload race itself is not reproduced in a browser
+- Deliberate break: ended-list check matching on `tabId` alone → the duplicated-tab case red; ended nonce turned into a put → the `PreviousPageSave` case red; `olderWriter` without `base > 0` → the migration case red; each restored; meta-check: proves the verdict, the reload race itself is not reproduced in a browser
 - Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` and `load-and-tab-guard.spec.ts` green
 
 #### Manual Verification:
@@ -567,20 +591,24 @@ the constructor and `postMessage`, name `martynka-save`, message `{ writer, gene
 
 #### 2. Verdict and autosaver
 
-**File**: `src/core/save.ts` (`channelVerdict(msg, page: { writer; base; endedWriters }) → 'stale' | 'ignore'`: stale
-when `msg.writer !== page.writer`, not in `endedWriters`, and `msg.generation > page.base`); `src/core/autosave.ts`
+**File**: `src/core/save.ts` (`channelVerdict(msg, page: { writer; base }) → 'stale' | 'ignore'`: stale when
+`msg.writer !== page.writer` and `msg.generation > page.base` — exactly the case `writeVerdict` would refuse at the next
+write, ended writers included (plan review F1), so the channel only moves a refusal earlier and never blocks a write
+`writeVerdict` would allow); `src/core/autosave.ts`
 (`noticeOtherWriter()` shares the refusal branch: `blockedBy 'otherTab'`, `onBlocked('otherTab')` once, writes stop);
 `src/main.ts` wires channel → verdict → `noticeOtherWriter`, and `onWritten` → `post`
 
 #### 3. Code line
 
 **File**: `src/ui/dom/saveRefusedCard.ts` (`mountSaveRefusedCard({ …, detail? })`, the `overlay-muted` line of
-`saveFailedCard`); `src/main.ts` `onBlocked(reason)` passes `pl.saveFailed.detail(reason === 'newer' ? NEWER_SAVE :
-OTHER_WRITER_SAVE, __BUILD_ID__)` (no new pl string)
+`saveFailedCard`); `AutosaverOptions.onBlocked(reason, error)` gains the refusal's error name (`NewerSave`,
+`OtherWriterSave`, `PreviousPageSave`, or `OtherWriterSave` for a channel notice); `src/main.ts` passes
+`pl.saveFailed.detail(error, __BUILD_ID__)` (no new pl string)
 
 #### 4. Tests
 
-**File**: `tests/save.test.ts` (`channelVerdict` cases incl. equal writer and ended nonce), `tests/autosave.test.ts`
+**File**: `tests/save.test.ts` (`channelVerdict` cases incl. equal writer → ignore, `generation <= base` → ignore,
+another writer with `generation > base` → stale), `tests/autosave.test.ts`
 (`noticeOtherWriter` blocks, calls `onBlocked` once, a later `markDirty` writes nothing), new `tests/saveChannel.test.ts`
 (missing `BroadcastChannel` → no-op; throwing constructor → no-op)
 
@@ -614,8 +642,9 @@ can be imported again (`parseImport` → `decodeSave`).
 
 #### 1. Wiring
 
-**File**: `src/scenes/UIScene.ts` (`openSettings` reads `store.readBackups()` through the registry's saver/store
-accessor once at panel open; new `openBackupExport(from, raw)` inside the same input session); `src/ui/dom/saveHealthView.ts`
+**File**: `src/scenes/UIScene.ts` (`openSettings` reads the copies once at panel open through a new pass-through
+`Autosaver.readBackups()` in `src/core/autosave.ts` — the registry holds only `REGISTRY_KEYS.saver`, never the store
+(plan review F3), so no new registry key; new `openBackupExport(from, raw)` inside the same input session); `src/ui/dom/saveHealthView.ts`
 (one button when a copy exists, the newest `from`; an `uncertain` record with a present copy reads as kept)
 
 #### 2. Copy
@@ -845,7 +874,9 @@ zapisu", `downloadStarted`/`invalid`, `replaceUnconfirmed`, `unreadable-file`, `
 `lateReadVerdict` + `?e2eSave=slowfail`, design gaps 126–138; save format stays v4); new
 `context/changes/save-truth/follow-ups/review-fixes.md` (each with `Trigger:`: S12-03, S12-11, S12-13, SRR-07, SRR-13,
 SV2-13, SV2-15, T-4/F6, V-3/V-5/V-8, P-7, L-S3, welcome-screen import, raw copy inside the dialogs, abort after a
-timeout, two-build e2e, BroadcastChannel inside an iPadOS home-screen app (unverified), Safari floor for `count`)
+timeout, two-build e2e, BroadcastChannel inside an iPadOS home-screen app (unverified), Safari floor for `count`,
+SV2-08/M-S1 deploy-side rollback guard, Escape during `replace` without an import-dialog e2e, the `isRecord` watch
+(fourth copy), T-1 prevention (older build overwritten silently))
 
 #### 5. Seam sweep
 
@@ -995,7 +1026,12 @@ line then falls back to the session status, as today).
 - **BroadcastChannel inside an iPadOS home-screen app is unverified**: the channel is a hint; without it today's
   refusal at the next write stays.
 - **Copy after write**: a kill between the v4 write and a later successful copy loses the copy — the same outcome as
-  today's hidden give-up, now recorded as `lost`.
+  today's hidden give-up, now recorded as `lost` BEFORE that write (plan review F2), so the next launch says so.
+- **Record and copy share one transaction** (phase 4): a failure to put the small record aborts the copy too. Accepted:
+  the copy then counts as a failed copy under the bounded retry, and the progress write never waits on it beyond
+  `writeTimeoutMs` (plan review F4).
+- **T-1 stays detection only**: an older build's v3 write over this page's v4 save is still overwritten by this page's
+  next write (pre-existing; now logged and named). Prevention is out of scope (change.md decision 4; plan review F6).
 - **Several reversed tests** (phases 2, 3, 5, 10, 11): each is named in its phase; any other red test is a regression.
 - **e2e load sensitivity** (profile § 8): the full suite runs ~10–12 min at 4 workers; a single flaky spec is re-run
   alone before it counts.
@@ -1036,8 +1072,10 @@ line then falls back to the session status, as today).
 9. **P-1 retry cap `backupAttempts + 1`** as `balance.save.migrationWriteRetries` (research Q4). Would change: a store
    that recovers only after more tries.
 10. **T-3 two-part writer `tabId:nonce` with an ended list** (last 8). Rejected: plain sessionStorage id (breaks B-1
-    for duplicated tabs), BroadcastChannel collision check (not available everywhere). Would change: a report of a
-    reload still refused.
+    for duplicated tabs), BroadcastChannel collision check (not available everywhere). **Plan review F1:** the ended
+    list only NAMES the refusal (`PreviousPageSave`); it never turns it into a put, because the late write of the
+    previous page carries progress this page never read. Rejected: put over it (silent loss of the last flush). Would
+    change: a design that re-reads the store and merges before writing (not in scope).
 11. **T-1 detection only**: `olderWriter` when `stored.version < page.version && page.base > 0`; the base-0 migration
     race stays undetected. Would change: a report of a lost save after a rollback.
 12. **T-2 channel is a hint** behind `channelVerdict`; `writeVerdict` stays the authority. Would change: a false block
@@ -1149,7 +1187,7 @@ line then falls back to the session status, as today).
 #### Automated
 
 - [ ] 7.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; existing `writeVerdict` and B-1 tests green unchanged
-- [ ] 7.2 Deliberate break: ended-list check on `tabId` alone / `olderWriter` without `base > 0` → red; restored; meta-check (verdict, not the reload race)
+- [ ] 7.2 Deliberate break: ended-list check on `tabId` alone / ended nonce turned into a put / `olderWriter` without `base > 0` → red; restored; meta-check (verdict, not the reload race)
 - [ ] 7.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` and `load-and-tab-guard.spec.ts` green
 
 #### Manual
