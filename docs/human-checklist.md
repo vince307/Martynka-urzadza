@@ -209,9 +209,3 @@ Bieg uzgodniony 2026-10-15 („S-14c + S-14d + fix po audycie, pełna wysyłka�
 - [ ] Poprawka zapisu 4.7 — bez licznika startów; wyjście z trwałego `timeout` to „Poczekaj dłużej” na ten sam odczyt i warunkowa rada o danych strony.
 - [ ] S-14c 9.6 — INEQUALITY na kafelkach (2 dobre, 2 złe) z jednym przykładem w rozwiązaniu; runda powtórkowa E6.11 losuje krok, potem umiejętność, ~14 % z E5 (w łagodzeniu więcej — audyt TXT-01); E6.11 nigdy nie jest startem ani rozgrzewką; bez LOGIC w E6.11; rozkład jazdy tekstem; ceny w pełnych złotych; bez „ustaw zegar” w E5–E6; wyższe progi odblokowania 10 kroków E1–E6; start E6 przesunięty przez grywalny E6.2.
 - [ ] S-14d 9.7 — SPATIAL, SYMMETRY i BONDS „połącz pary” poza slice'em; ORDINAL tylko liczby do 5; E1.11 bez banknotu 10 zł (jest w E2.2); tryb z obrazkami jako filtr tylko w E1 (6 lat wrzesień–styczeń albo łagodzenie); wyższe progi E1.2 i E1.3; start E1 we wrześniu na E1.1; po złej zapłacie portfel się opróżnia.
-
-## Bieg 2026-10-15-fix-s16bcd — S-16b (dźwięki)
-
-- [ ] S-16b 9.7 — iPad, odsłuch: kontekst audio odblokowuje się na pierwszym dotyku, efekty grają z czytaniem poleceń bez ucinania mowy, głośność efektów i muzyki, pętla muzyki bez trzasku, przełącznik ciszy (zanotuj, co robi). Decyzje: `purchase` także przy darmowej zmianie wyglądu, jedno `answer-retry`, `tap` + `round-bonus`.
-- [ ] S-16b 10.6 — iPad offline (tryb samolotowy po pierwszym uruchomieniu): dźwięki grają z cache.
-- [ ] S-16b — efekty domyślnie włączone, muzyka domyślnie wyłączona; ustawienie leży poza zapisem (`localStorage`), więc import/reset zapisu go nie zmienia.
