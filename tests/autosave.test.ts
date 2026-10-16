@@ -1421,3 +1421,98 @@ describe('a store that refuses with OtherWriterSave blocks saving for good (stal
         expect(replaceGate({ blockedBy: 'otherTab', loadReason: null, loadError: null }, false)).toBe('Blocked');
     });
 });
+
+describe('what the status keeps for the parent view (save-truth p6: SVB-01 line, SVB-03, SRR-11, V1)', () => {
+    const v2 = fixture('save-v2.json');
+    const record: BackupRecord = { from: 2, result: 'lost', error: 'QuotaExceededError', at: 7 };
+
+    it('withTimeLimit tells an observer how a write that answered after the limit ended, and never changes the result', async () => {
+        const clock = makeClock();
+        const seen: string[] = [];
+        let landLate: () => void = () => undefined;
+        const lands = withTimeLimit(new Promise<void>((resolve) => void (landLate = resolve)), clock.timers, 100, (outcome) => void seen.push(outcome));
+        const landed = lands.then(() => 'ok', (e: unknown) => errorName(e));
+        clock.advance(100);
+        expect(await landed).toBe('timeout');
+        expect(seen).toEqual([]);
+        landLate();
+        await settle();
+        expect(seen).toEqual(['landed']);
+
+        let failLate: (e: Error) => void = () => undefined;
+        const fails = withTimeLimit(new Promise<void>((_, reject) => void (failLate = reject)), clock.timers, 100, (outcome) => void seen.push(outcome));
+        const failed = fails.then(() => 'ok', (e: unknown) => errorName(e));
+        clock.advance(100);
+        expect(await failed).toBe('timeout');
+        failLate(new Error('late'));
+        await settle();
+        expect(seen).toEqual(['landed', 'failed']);
+
+        // work that answers in time never reaches the observer
+        await withTimeLimit(Promise.resolve(1), clock.timers, 100, (outcome) => void seen.push(outcome));
+        await settle();
+        expect(seen).toEqual(['landed', 'failed']);
+    });
+
+    it('a write that answers after the limit is lateWrite landed, a late rejection is failed, the next good write clears it', async () => {
+        const t = setup();
+        let landLate: () => void = () => undefined;
+        t.store.write = () => new Promise<void>((resolve) => void (landLate = resolve));
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        expect(t.saver.status()).toMatchObject({ lastFailure: { stage: 'write', error: 'timeout' }, lateWrite: null });
+        landLate();
+        await settle();
+        expect(t.saver.status().lateWrite).toBe('landed');
+
+        let failLate: (e: Error) => void = () => undefined;
+        t.store.write = () => new Promise<void>((_, reject) => void (failLate = reject));
+        t.saver.markDirty();
+        const again = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await again;
+        failLate(Object.assign(new Error('late'), { name: 'QuotaExceededError' }));
+        await settle();
+        expect(t.saver.status().lateWrite).toBe('failed');
+        t.store.write = () => Promise.resolve();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status().lateWrite).toBeNull();
+    });
+
+    it('a fatal block keeps the error name it was given (first block wins), and none when it got none', () => {
+        const a = setup();
+        a.saver.block('fatal', 'TypeError');
+        a.saver.block('fatal', 'RangeError');
+        expect(a.saver.status()).toMatchObject({ blockedBy: 'fatal', fatalError: 'TypeError' });
+        const b = setup();
+        b.saver.block('fatal');
+        expect(b.saver.status().fatalError).toBeNull();
+        const c = setup({ blockedBy: 'unreadable' });
+        c.saver.block('fatal', 'TypeError');
+        expect(c.saver.status()).toMatchObject({ blockedBy: 'unreadable', fatalError: null });
+    });
+
+    it('the stored record of the copy is carried into the status, null without one', () => {
+        expect(setup({ backupRecord: record }).saver.status().backupRecord).toEqual(record);
+        expect(setup().saver.status().backupRecord).toBeNull();
+    });
+
+    it('failed copies are counted apart, and the last error of a write stays the last write error', async () => {
+        const t = setup({ migrated: { from: 2, raw: v2 }, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status()).toMatchObject({ backupFailures: 1, lastError: 'QuotaExceededError', lastWriteError: null });
+        t.state.fail = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status()).toMatchObject({ lastWriteError: 'Error' });
+    });
+});

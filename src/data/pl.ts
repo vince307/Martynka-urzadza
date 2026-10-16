@@ -68,6 +68,8 @@ export const pl = {
             unsupported: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
+        // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
+        saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
         saveFailingDetail: (count: number, stage: FailureStage, error: string) =>
@@ -83,6 +85,10 @@ export const pl = {
         saveMigrated: {
             kept: (from: number) => `Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.`,
             lost: (from: number) => `Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.`,
+            // DESIGN-GAP 127: the store never answered about the copy, so it is neither kept nor lost.
+            uncertain: (from: number) => `Zapis przeniesiono z wersji ${from}. Nie wiadomo, czy stara kopia została zachowana.`,
+            // DESIGN-GAP 128: shown until the first write of the new version.
+            pending: (from: number) => `Zapis jest przenoszony z wersji ${from}. Poczekaj chwilę.`,
         },
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',

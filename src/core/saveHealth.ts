@@ -4,20 +4,27 @@ import { SAVE_VERSION } from './save';
 
 export type SaveHealthState =
     | { kind: 'off'; cause: BlockReason | 'future' | 'timeout' | 'migration-failed'; code: string | null }
-    | { kind: 'failing'; count: number; stage: FailureStage; error: string }
+    | { kind: 'failing'; count: number; stage: FailureStage; error: string; slow: boolean }
     | { kind: 'notYet' }
     | { kind: 'ok'; lastWriteAt: number | null; earlierFailures: { count: number; error: string } | null };
 
-// The save moved from an older format, told as a fact: only after a write of the new version in this session, with the fate of the old copy.
-export type SaveMigration = { from: number; copy: 'kept' | 'lost'; code: string | null };
+// The save moved from an older format: `pending` until the new version is written, then the fate of the old copy (kept, lost, or not known).
+export type SaveMigration = { from: number; copy: 'pending' | 'kept' | 'lost' | 'uncertain'; code: string | null };
 
 export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null };
 
+// The session that migrated knows its own copy state (it can be still retried); later launches read the stored record (SVB-01).
 const migrationOf = (status: AutosaveStatus): SaveMigration | null => {
-    if (status.migratedFrom === null || status.writes === 0) return null;
-    if (status.backup === 'done') return { from: status.migratedFrom, copy: 'kept', code: null };
-    if (status.backup === 'skipped') return { from: status.migratedFrom, copy: 'lost', code: status.backupError };
-    return null;
+    if (status.migratedFrom !== null) {
+        const from = status.migratedFrom;
+        if (status.migrationWrittenAt === null) return { from, copy: 'pending', code: null };
+        if (status.backup === 'done') return { from, copy: 'kept', code: null };
+        if (status.backup === 'skipped') return { from, copy: isTimeoutError(status.backupError) ? 'uncertain' : 'lost', code: status.backupError };
+        return null;
+    }
+    const record = status.backupRecord;
+    if (record === null) return null;
+    return { from: record.from, copy: record.result, code: record.result === 'kept' ? null : record.error };
 };
 
 // The cause the parent reads, and a code to quote. The load reason and error are the start state (never lastError,
@@ -32,7 +39,7 @@ const offState = (status: AutosaveStatus, blockedBy: BlockReason): SaveHealthSta
     }
     if (blockedBy === 'newer') return { kind: 'off', cause: 'newer', code: status.lastFailure?.error ?? status.lastError };
     if (blockedBy === 'otherTab') return { kind: 'off', cause: 'otherTab', code: status.lastFailure?.error ?? status.lastError };
-    return { kind: 'off', cause: 'fatal', code: status.lastError };
+    return { kind: 'off', cause: 'fatal', code: status.fatalError ?? status.lastError };
 };
 
 const stateOf = (status: AutosaveStatus): SaveHealthState => {
@@ -42,12 +49,16 @@ const stateOf = (status: AutosaveStatus): SaveHealthState => {
             count: status.consecutiveFailures,
             stage: status.lastFailure?.stage ?? 'write',
             error: status.lastFailure?.error ?? status.lastError ?? 'Error',
+            // A write that timed out may have landed (SVB-03): said so unless its late answer was a failure.
+            slow: status.lastFailure?.error === 'timeout' && status.lateWrite !== 'failed',
         };
     if (status.writes === 0) return { kind: 'notYet' };
+    // A failed copy has its own line in the migration part; it is not repeated here (V1).
+    const earlier = status.failures - status.backupFailures;
     return {
         kind: 'ok',
         lastWriteAt: status.lastWriteAt,
-        earlierFailures: status.failures > 0 ? { count: status.failures, error: status.lastError ?? 'Error' } : null,
+        earlierFailures: earlier > 0 ? { count: earlier, error: status.lastWriteError ?? status.lastError ?? 'Error' } : null,
     };
 };
 

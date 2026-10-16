@@ -2,7 +2,7 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
-import { createAutosaver, isTimeoutError, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
+import { createAutosaver, errorName, isTimeoutError, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { repairCurrentRoom } from './core/rooms';
@@ -115,7 +115,7 @@ const month = (__E2E_HOOK__ ? e2eMonth(window.location.search) : null) ?? new Da
 // The error boundary goes up before the game exists (the game starts inside a font promise). When the game breaks
 // the child sees a calm card; every step is guarded on its own so the handler itself can never throw.
 const booted: { game?: Game; saver?: Autosaver; failed?: boolean } = {};   // filled once the game exists; the boundary reads it lazily
-installErrorBoundary(window, () => {
+installErrorBoundary(window, (error) => {
     booted.failed = true;   // a failure while the save is read (or the unreadable card is up) means the game never starts
     const attempt = (step: () => void): void => {
         try {
@@ -129,7 +129,7 @@ installErrorBoundary(window, () => {
     attempt(() => (booted.game?.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspend());
     attempt(() => booted.game?.loop.sleep());
     // The state at the moment of an exception is uncertain: never save it (a bad save would bring the card back at every start).
-    attempt(() => booted.saver?.block('fatal'));
+    attempt(() => booted.saver?.block('fatal', errorName(error)));
 });
 
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
@@ -250,6 +250,14 @@ const start = async (): Promise<void> => {
             console.warn(`Save unreadable (${unreadableCode(outcome)}); playing without saving this session`);
         }
     }
+    // What became of an earlier launch's copy of an older save: shown in "Zapis gry" (SVB-01). Display only, so a failed or slow read is just no line.
+    const backupRecord =
+        outcome.kind === 'loaded' || outcome.kind === 'fresh'
+            ? await withTimeLimit(store.backupRecord(), timers, balance.save.writeTimeoutMs).catch((e: unknown) => {
+                  console.error('backup record not read', e);
+                  return null;
+              })
+            : null;
     // The calendar day of the daily puzzle: local fields, read at each round start. The e2e build may pin it with ?e2eDay=YYYY-MM-DD.
     const pinnedDay = __E2E_HOOK__ ? e2eDay(window.location.search) : null;
     const today = (): string => pinnedDay ?? localDay(new Date());
@@ -277,6 +285,7 @@ const start = async (): Promise<void> => {
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),
         migrated: outcome.kind === 'loaded' && outcome.migratedFrom !== null ? { from: outcome.migratedFrom, raw: outcome.raw } : undefined,
+        backupRecord,
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         loadFrom: outcome.kind === 'unreadable' ? outcome.from : undefined,

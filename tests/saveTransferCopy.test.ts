@@ -39,6 +39,9 @@ describe('pl.saveTransfer import copy', () => {
         expect(pl.saveTransfer.fileInfo('14.10.2026', null)).toBe('Kopia z 14.10.2026');
         expect(pl.settings.saveMigrated.kept(1)).toBe('Zapis przeniesiono z wersji 1. Stara kopia została na tym urządzeniu.');
         expect(pl.settings.saveMigrated.lost(1)).toBe('Zapis przeniesiono z wersji 1, ale starej kopii nie udało się zachować.');
+        expect(pl.settings.saveMigrated.uncertain(2)).toBe('Zapis przeniesiono z wersji 2. Nie wiadomo, czy stara kopia została zachowana.');
+        expect(pl.settings.saveMigrated.pending(2)).toBe('Zapis jest przenoszony z wersji 2. Poczekaj chwilę.');
+        expect(pl.settings.saveFailingTimeout).toBe('Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.');
         expect(pl.settings.saveFailingDetail(1, 'write', 'QuotaExceededError')).toBe('1 nieudana próba · zapis · Kod: QuotaExceededError');
         expect(pl.settings.saveFailingDetail(2, 'backup', 'X')).toBe('2 nieudane próby · kopia starego zapisu · Kod: X');
         expect(pl.settings.saveFailingDetail(5, 'replace', 'X')).toBe('5 nieudanych prób · zastąpienie zapisu · Kod: X');

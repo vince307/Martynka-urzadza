@@ -15,7 +15,9 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
         view.kind === 'off'
             ? pl.settings.saveOff[view.cause]
             : view.kind === 'failing'
-              ? pl.settings.saveFailing
+              ? view.slow
+                  ? pl.settings.saveFailingTimeout
+                  : pl.settings.saveFailing
               : view.kind === 'notYet'
                 ? pl.settings.saveNotYet
                 : pl.settings.saveOk;
