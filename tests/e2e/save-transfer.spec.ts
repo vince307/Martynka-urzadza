@@ -179,7 +179,9 @@ test('#2 reset asks first and ends on the welcome screen', async ({ page }) => {
     panel = await openSettings(page);
     await panel.getByRole('button', { name: pl.saveTransfer.resetButton, exact: true }).tap();
     await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: pl.saveTransfer.resetConfirm, exact: true }).tap();
+    // Wait for the reload like the import tests: a hook read in flight while the page navigates would throw
+    // "Execution context was destroyed" (seen in the S-16b review once the precache grew by the sound files).
+    await reloadedBy(page, () => dialog.getByRole('button', { name: pl.saveTransfer.resetConfirm, exact: true }).tap());
     await screenIs(page, 'welcome');
     // Nothing of the child is left: the learner is gone with the save.
     expect((await snapshot(page)).learner).toBeNull();
