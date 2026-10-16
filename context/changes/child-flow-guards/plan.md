@@ -1022,10 +1022,10 @@ Details.
 
 #### Automated
 
-- [x] 7.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`; 1000-draw replay tests unchanged and green
-- [x] 7.2 Deliberate break: `drawUntil` without the cap / `shapes` `all` without the throw → red; restored; meta-check (bound vs unchanged draws)
-- [x] 7.3 Teacher read: `npm run sample -- <stage> --count 6` for every stage with a changed type (E1–E6), changed steps read; recorded in the commit body
-- [x] 7.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 7.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`; 1000-draw replay tests unchanged and green — 1be8a78
+- [x] 7.2 Deliberate break: `drawUntil` without the cap / `shapes` `all` without the throw → red; restored; meta-check (bound vs unchanged draws) — 1be8a78
+- [x] 7.3 Teacher read: `npm run sample -- <stage> --count 6` for every stage with a changed type (E1–E6), changed steps read; recorded in the commit body — 1be8a78
+- [x] 7.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 1be8a78
 
 #### Manual
 
