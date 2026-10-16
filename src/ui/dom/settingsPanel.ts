@@ -30,7 +30,7 @@ export interface SettingsPanelOptions {
     roomArtHealth?: ArtHealthView;
     uiArtHealth?: ArtHealthView;
     /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
-    sound?: { prefs: SoundPrefs; missing: number; music: MusicState };
+    sound?: { prefs: SoundPrefs; missing: number; music: MusicState; prefsKept?: boolean };
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null; sound: SoundPrefs | null }) => void;
     onCancel: () => void;
@@ -116,6 +116,10 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     musicStatus.hidden = line === null;
     musicStatus.className += ' parent-music-status';
 
+    // DESIGN-GAP 121: one muted line while the device refused to keep the sound choice; it holds for this session only.
+    const prefsNotKept = createText('p', pl.settings.soundPrefsNotKept, 'overlay-muted');
+    prefsNotKept.hidden = !sound || sound.prefsKept !== false;
+
     const noVoice = createText('p', pl.settings.noVoice, 'overlay-muted');
     noVoice.hidden = watchVoice !== undefined;
     let unwatch: (() => void) | undefined;
@@ -171,7 +175,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

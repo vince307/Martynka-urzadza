@@ -46,6 +46,11 @@ export function musicLine(prefs: SoundPrefs, music: MusicState): MusicLine | nul
     return null;
 }
 
+/** Cache keys of every effect (the entries loaded with the boot queue, never the music): what "all effects missing" means after a setup failure. */
+export function allEffectKeys(defs: readonly { key: string; boot: boolean }[]): string[] {
+    return defs.filter((def) => def.boot).map((def) => def.key);
+}
+
 /** Frames to keep of a decoded buffer: the logical length at the context rate (encoder padding is cut), never more than exist. */
 export function trimFrameCount(durationS: number, sampleRate: number, available: number): number {
     if (!Number.isFinite(durationS) || durationS <= 0) return available;

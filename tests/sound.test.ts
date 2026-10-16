@@ -1,6 +1,6 @@
 // Origin: change final-sound, phase 1. Oracles are typed here, not read from the code under test.
 import { describe, expect, it } from 'vitest';
-import { cueDelayMs, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
+import { allEffectKeys, cueDelayMs, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
 import { balance } from '../src/data/balance';
 import { SOUNDS } from '../src/data/sounds';
 
@@ -113,5 +113,21 @@ describe('music status line', () => {
     it('shows nothing while the music plays or has not started', () => {
         expect(musicLine(on, 'playing')).toBeNull();
         expect(musicLine(on, 'off')).toBeNull();
+    });
+});
+
+describe('allEffectKeys', () => {
+    it('lists every effect of the table and never the music', () => {
+        const table = [
+            { key: 'sounds/a', boot: true },
+            { key: 'sounds/b', boot: true },
+            { key: 'sounds/music-loop', boot: false },
+        ];
+        expect(allEffectKeys(table)).toEqual(['sounds/a', 'sounds/b']);
+    });
+    it('covers the whole real table without the music key', () => {
+        const keys = allEffectKeys(SOUNDS);
+        expect(keys).toHaveLength(SOUNDS.length - 1);
+        expect(keys).not.toContain('sounds/music-loop');
     });
 });

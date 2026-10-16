@@ -10,6 +10,7 @@ import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
 import { UI_ART } from '../data/uiArt';
 import { SOUNDS } from '../data/sounds';
+import { allEffectKeys } from '../core/sound';
 import type { SoundService } from '../ui/sound';
 import { trimEffects } from '../ui/sound';
 import { TASK_ART } from '../data/taskArt';
@@ -214,6 +215,11 @@ export class BootScene extends Scene {
             }
         } catch (error) {
             console.warn('Sound setup failed; playing without effects', error);
+            try {
+                (this.registry.get(REGISTRY_KEYS.sound) as SoundService | undefined)?.setMissing(allEffectKeys(SOUNDS));   // the "Dźwięki" section says so
+            } catch (inner) {
+                console.warn('Sound setup failure could not be recorded', inner);
+            }
         }
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only

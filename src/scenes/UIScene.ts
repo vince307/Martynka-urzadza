@@ -169,7 +169,7 @@ export class UIScene extends Scene {
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                     uiArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined),
-                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music } } : {}),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
@@ -240,7 +240,8 @@ export class UIScene extends Scene {
         if (soundPrefs) {
             this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
             soundOf(this.registry)?.setPrefs(soundPrefs);
-            createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+            const kept = createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+            this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept);
         }
         this.closeSettings();
         if (changed !== learner) {

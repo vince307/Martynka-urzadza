@@ -46,6 +46,8 @@ export const pl = {
             waitingUnlock: 'Muzyka ruszy po pierwszym dotknięciu ekranu.',
             missing: 'Muzyka nie wczytała się. Gra działa dalej bez niej.',
         },
+        // DESIGN-GAP 121: the kit has no line for a sound choice the device would not keep; the text is ours, to be read by a teacher.
+        soundPrefsNotKept: 'Ustawienie dźwięku obowiązuje tylko do zamknięcia gry.',
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',
