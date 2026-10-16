@@ -739,8 +739,8 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 5.1 `validate-rule-files.sh` PASS; deliberate break in `CLAUDE.md` → FAIL; restored
-- [ ] 5.2 Every follow-up entry has a `Trigger:` line; full local gate green
+- [x] 5.1 `validate-rule-files.sh` PASS; deliberate break in `CLAUDE.md` → FAIL; restored
+- [x] 5.2 Every follow-up entry has a `Trigger:` line; full local gate green
 
 #### Manual
 
