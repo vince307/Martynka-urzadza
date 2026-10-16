@@ -1,0 +1,13 @@
+diff --git a/src/core/rooms.ts b/src/core/rooms.ts
+index 6f96596..620fccb 100644
+--- a/src/core/rooms.ts
++++ b/src/core/rooms.ts
+@@ -60,7 +60,7 @@ export function purchase(room: RoomDef, state: RoomState, stars: number, variant
+     if (!(stars >= task.cost)) return { ok: false, reason: 'short' };
+     return {
+         ok: true,
+-        stars: stars - task.cost,
++        stars: stars - (room.tasks[state.tasksDone + 1]?.cost ?? task.cost),
+         state: { tasksDone: state.tasksDone + 1, chosen: { ...state.chosen, [task.slot]: variant } },
+         bought: { kind: 'slot', taskId: task.id, slot: task.slot, variant },
+     };
