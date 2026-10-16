@@ -1,46 +1,48 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-tdd` step for phase 4 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`) and 4 (`7fad790`) are
-committed; phases 5-14 are open. Keep the save format v4; phase 5 touches the MONEY_PAY feedback/bar, not the variant counting.
+Written by the `/10x-tdd` step for phase 5 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`) and 5 (`fbee812`) are
+committed; phases 6-14 are open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` `feat(child-flow-guards): A variant round is counted at its last answer (p4)` + handoffs |
+| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` `feat(child-flow-guards): A calm reason line for a wallet with too many coins (p5)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 5-14 open |
+| `## Progress` rows remaining | phase 5: 5.5 `[reviewer]`, 5.6 `[visual]`, 5.7 `[human]`; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 6-14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/round.ts` | new `lastTaskSettled(prior, after)`: done now, not before, index = last task |
-| `src/scenes/TaskScene.ts` | `submit` counts a variant once (`countRound(this.kind)`, `variantCounted = true`, `flush('now')`); `finishVariant` skips `countRound` when counted; `applyRound` resets `variantCounted` and `reported`; field `variantCounted` |
-| `tests/round.test.ts` | `describe('lastTaskSettled (SV2-10)')`, 6 tests |
-| `tests/variantCountWiring.test.ts` | new source test (submit order, finishVariant flag, applyRound reset, beginRound does not own it) |
+| `src/core/tasks/types.ts` | `Task.feedback?: (input) => string \| null` (never decides right/wrong; `check` stays boolean) |
+| `src/core/round.ts` | `RoundState.notes` per task, `captureNote` sets it on the first miss |
+| `src/core/round/view.ts`, `src/core/narration/spoken.ts` | `second` bar and narration use `notes[index] ?? firstHint` |
+| `src/core/tasks/generators/moneyPay.ts` | `tooManyCoins` feedback, `fewest` variant only; no rng call added |
+| `src/data/pl.ts`, `docs/design-gaps.md` | `tasks.moneyPayTooManyCoins`, DESIGN-GAP 124 (comment + row) |
+| tests | `tests/moneyPay.test.ts` (3 PIC-05 tests), `tests/roundView.test.ts`, `tests/spoken.test.ts` (1 each) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (stub returned false) | `AssertionError: expected false to be true` (3 predicate tests); wiring: `expected 'private submit(value: unknown): void …' to match /lastTaskSettled\(prior,\s*this\.state\)/` (also finishVariant, applyRound) |
-| GREEN | round + wiring tests 38 passed |
-| Break 1: `finishVariant` always `countRound` | wiring test red (finishVariant flag); restored |
-| Break 2: predicate `after.phase !== 'first'` | 3 predicate tests red (retype wrong, wrong answer, already done); restored |
-| Meta-check | proves the rule and the call order in source, not the saved bytes (phase 14 e2e) |
-| lint / typecheck | OK / OK (first lint caught a missing import the source test could not) |
-| unit | Tests 3169 passed = p3 3159 + 10; deploy scripts OK; `sample` E1-E6 OK |
+| RED | `AssertionError: expected undefined to be 'Kwota się zgadza. Spróbuj zapłacić mn…'` (moneyPay); view: `expected { kind: 'hint', line: '2 + 3' } to deeply equal …`; spoken: `expected 'Spróbuj jeszcze raz. Oblicz. dziewięć…' to be 'Spróbuj jeszcze raz. Kwota…'` |
+| GREEN | 3 files, 72 passed |
+| Break 1: `barOf` without `notes` | roundView PIC-05 test red; restored |
+| Break 2: feedback ignores length/sum | moneyPay PIC-05 test red; restored |
+| Meta-check | proves the rule and bar selection, not how `FeedbackBar` renders (5.6 visual) |
+| lint / typecheck | OK / OK |
+| unit | Tests 3174 passed = p4 3169 + 5; deploy scripts OK; `sample` E1-E6 OK |
+| teacher read | E1.11 / E2.2 money_pay read, tasks unchanged, line calm and correct Polish |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.0m), `daily-puzzle` and `minigames` green |
-| fixtures | untouched; `SAVE_VERSION` 4 |
+| e2e `--workers=4` | 125 passed (9.9m) |
 
 ## 4. Next command
 
-`/10x-tdd child-flow-guards phase 5`
+`/10x-tdd child-flow-guards phase 6`
 
 ## 5. Open
 
@@ -49,7 +51,7 @@ committed; phases 5-14 are open. Keep the save format v4; phase 5 touches the MO
   wording (gap 124); 6.7 `[human]` accept the COMPARE_QTY tile order (gap 125); 9.5 `[human]` tablet check that "OK" is
   inert while a coin or a clock hand is held; 14.4 `[human]` puzzle closed before "Dalej" is not paid again;
   `[visual]` 2.6, 3.6, 5.6, 6.6, 10.5 at 1440 (1920×1080 fit) and 1024×768; `[reviewer]` 1.5, 2.5, 3.5; `[visual]` 3.6.
-- DESIGN-GAP rows still to add: 124 (wallet line), 125 (COMPARE_QTY order); 122 is done.
+- DESIGN-GAP rows still to add: 125 (COMPARE_QTY order); 122-124 are done.
 - Teacher read rows: 5.3 (E1.11, E2.2), 6.3 (COMPARE_QTY, E3.10 HALF), 7.3 (every stage with a changed generator type).
 - Follow-ups to write in phase 13 (`follow-ups/review-fixes.md`): GRD-09, WNA-08, WNA-09, TXT-06, F4 two-finger note,
   letterbox thumb, placeValue/clockElapsed dedup, `ArtPool`/`fitRect`, `grosze(id)` lookup, VO3 wallet look, any
@@ -70,3 +72,5 @@ committed; phases 5-14 are open. Keep the save format v4; phase 5 touches the MO
 - **Phase 3 test-first scope**: all pure `core`; inline: gap row 123 and its comment. Discriminator for a wallet is the drawing (`visual.kind === 'money'` with `pay`), for select `task.input === 'select'`. Old saved examples (numeric `given`, `number[]` answer) untouched. Flaky e2e spec above: not investigated further (out of slice); candidate follow-up.
 
 - **Phase 4 test-first scope**: predicate in `core`, scene wiring covered by a source test; the scene edit is inline production code, no mixed-phase question. `reported` reset moved into `applyRound` per F1. Would change: none.
+
+- **Phase 5 test-first scope**: all pure `core` + data; no inline scaffolding beyond the gap row. `feedback` takes `unknown` (like `check`). Narration reads "Spróbuj jeszcze raz." then the note. Would change: the human rejecting the wording (5.7).

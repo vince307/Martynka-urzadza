@@ -992,10 +992,10 @@ Details.
 
 #### Automated
 
-- [ ] 5.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 5.2 Deliberate break: `feedback` on a wrong sum / `barOf` ignoring `note` → red; restored; meta-check (rule and bar selection)
-- [ ] 5.3 Teacher read: `npm run sample -- E1 --count 6` and `-- E2 --count 6`, every task of E1.11 and E2.2 read; recorded in the commit body
-- [ ] 5.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `money-pay.spec.ts` green
+- [x] 5.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — fbee812
+- [x] 5.2 Deliberate break: `feedback` on a wrong sum / `barOf` ignoring `note` → red; restored; meta-check (rule and bar selection) — fbee812
+- [x] 5.3 Teacher read: `npm run sample -- E1 --count 6` and `-- E2 --count 6`, every task of E1.11 and E2.2 read; recorded in the commit body — fbee812
+- [x] 5.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `money-pay.spec.ts` green — fbee812
 
 #### Manual
 
