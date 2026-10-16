@@ -1,0 +1,14 @@
+diff --git a/src/core/save.ts b/src/core/save.ts
+index 22f1bf2..d3d0d80 100644
+--- a/src/core/save.ts
++++ b/src/core/save.ts
+@@ -34,7 +34,8 @@ export function writeVerdict(stored: unknown, page: { version: number; base: num
+     const rec = typeof stored === 'object' && stored !== null ? (stored as { generation?: unknown; writer?: unknown }) : null;
+     const generation = rec !== null && isCount(rec.generation) ? rec.generation : 0;
+     const writer = rec !== null && typeof rec.writer === 'string' ? rec.writer : '';
+-    if (mode === 'normal' && generation > page.base && writer !== page.writer) return { kind: 'refuse', error: OTHER_WRITER_SAVE };
++    // BREAK
++    if (mode === 'normal' && false && generation > page.base && writer !== page.writer) return { kind: 'refuse', error: OTHER_WRITER_SAVE };
+     return { kind: 'put', generation: Math.max(generation, page.base) + 1 };
+ }
+ export const DEFAULT_PROFILE = 'default';

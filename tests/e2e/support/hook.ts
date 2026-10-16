@@ -29,6 +29,8 @@ export interface Snapshot {
     art?: { key: string; loaded: boolean; label: string | null }[];
     /** Task pictures that did not load (texture missing or not decodable) against all that were queued; null before the load ends. */
     artHealth?: { total: number; missing: number } | null;
+    /** The service worker's runtime record (phase, error name, takeover); null before the first status. */
+    sw?: { phase: string; error: string | null; takenOver: boolean } | null;
     /** The same for the salon pictures (S-16a); null before the load ends. */
     roomArtHealth?: { total: number; missing: number } | null;
     /** The tiles marked in the 'select' mode. */
@@ -55,7 +57,7 @@ export interface Snapshot {
     /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
     bootLoad?: { cut: string[]; creates: number } | null;
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
-    sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'playing' | 'missing' } | null;
+    sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
     room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
@@ -69,7 +71,7 @@ export interface Snapshot {
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
     /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
-    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
+    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'otherTab' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */

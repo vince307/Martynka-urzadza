@@ -126,7 +126,7 @@ test('#14 S-16b the parent turns effects off and music on; the music is requeste
     await expect(panel).toHaveCount(0);
 
     await expect.poll(() => requests.length).toBeGreaterThan(0);
-    await expect.poll(async () => (await snapshot(page)).sound?.music).toMatch(/loading|playing/);
+    await expect.poll(async () => (await snapshot(page)).sound?.music).toMatch(/loading|waiting-unlock|playing/);
     expect((await snapshot(page)).sound?.prefs).toEqual({ effects: false, music: true });
 
     // The next answer is logged as switched off.

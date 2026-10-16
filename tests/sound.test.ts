@@ -1,6 +1,6 @@
 // Origin: change final-sound, phase 1. Oracles are typed here, not read from the code under test.
 import { describe, expect, it } from 'vitest';
-import { cueDelayMs, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
+import { allEffectKeys, cueDelayMs, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
 import { balance } from '../src/data/balance';
 import { SOUNDS } from '../src/data/sounds';
 
@@ -97,5 +97,37 @@ describe('balance.sound', () => {
     });
     it('gives the 746 KB music file longer than it needs at 50 KB/s', () => {
         expect(balance.sound.musicLoadTimeoutMs).toBeGreaterThan((746014 / 50000) * 1000);
+    });
+});
+
+describe('music status line', () => {
+    const states = ['off', 'loading', 'waiting-unlock', 'playing', 'missing'] as const;
+    it('shows nothing when music is switched off, whatever the state', () => {
+        for (const state of states) expect(musicLine({ effects: true, music: false }, state)).toBeNull();
+    });
+    it('names downloading, waiting for a tap and a missing file apart', () => {
+        expect(musicLine(on, 'loading')).toBe('loading');
+        expect(musicLine(on, 'waiting-unlock')).toBe('waitingUnlock');
+        expect(musicLine(on, 'missing')).toBe('missing');
+    });
+    it('shows nothing while the music plays or has not started', () => {
+        expect(musicLine(on, 'playing')).toBeNull();
+        expect(musicLine(on, 'off')).toBeNull();
+    });
+});
+
+describe('allEffectKeys', () => {
+    it('lists every effect of the table and never the music', () => {
+        const table = [
+            { key: 'sounds/a', boot: true },
+            { key: 'sounds/b', boot: true },
+            { key: 'sounds/music-loop', boot: false },
+        ];
+        expect(allEffectKeys(table)).toEqual(['sounds/a', 'sounds/b']);
+    });
+    it('covers the whole real table without the music key', () => {
+        const keys = allEffectKeys(SOUNDS);
+        expect(keys).toHaveLength(SOUNDS.length - 1);
+        expect(keys).not.toContain('sounds/music-loop');
     });
 });

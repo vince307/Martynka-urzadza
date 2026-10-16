@@ -1,0 +1,13 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index a4c1a0f..608b405 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -197,7 +197,7 @@ export class BootScene extends Scene {
+             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);
+         }
+         const uiHealth = artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key));
+-        this.registry.set(REGISTRY_KEYS.uiArtHealth, uiHealth);
++        // BREAK
+         if (uiHealth.missing.length > 0) {
+             console.warn(`UI art missing: ${uiHealth.missing.length} of ${uiHealth.total}: ${uiHealth.missing.join(', ')}`);
+         }

@@ -31,11 +31,12 @@ export const mountInstallHint = (
     // the install button to the visible overlay whenever it arrives.
     let installPrompt: BeforeInstallPromptEvent | null = null;
     let onPromptAvailable: (() => void) | null = null;
-    window.addEventListener('beforeinstallprompt', (event) => {
+    const onBeforeInstall = (event: Event): void => {
         event.preventDefault();
         installPrompt = event as BeforeInstallPromptEvent;
         onPromptAvailable?.();
-    });
+    };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
 
     const actions = document.createElement('div');
     actions.className = 'overlay-actions';
@@ -50,6 +51,7 @@ export const mountInstallHint = (
         overlay.remove();
         release?.();
         onPromptAvailable = null;
+        window.removeEventListener('beforeinstallprompt', onBeforeInstall);   // F4: no more preventDefault() after "Graj w przeglądarce"
     };
 
     const addInstallButton = (): void => {

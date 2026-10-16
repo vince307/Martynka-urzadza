@@ -16,6 +16,7 @@ import { createIdbSaveStore, requestPersistence } from './storage/idb';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
+import type { SwStatus } from './core/swStatus';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
 import { RoomScene } from './scenes/RoomScene';
@@ -32,6 +33,7 @@ import { cardCopyFor } from './core/saveHealth';
 import { openSaveExportDialog } from './ui/dom/saveExportDialog';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
+import { mountSaveRefusedCard } from './ui/dom/saveRefusedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createSoundService } from './ui/sound';
 import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
@@ -220,7 +222,7 @@ const start = async (): Promise<void> => {
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
-        // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already v3.
+        // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
         if (outcome.migratedFrom !== null) {
             console.warn(`Save migrated from v${outcome.migratedFrom}`);
@@ -242,6 +244,9 @@ const start = async (): Promise<void> => {
     const today = (): string => pinnedDay ?? localDay(new Date());
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
+    swTarget = game;
+    if (lastSwStatus) game.registry.set(REGISTRY_KEYS.swStatus, lastSwStatus);
+    let refusedCardUp = false;
     // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({
         store,
@@ -265,6 +270,12 @@ const start = async (): Promise<void> => {
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
+        // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).
+        onBlocked: () => {
+            if (refusedCardUp) return;
+            refusedCardUp = true;
+            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
+        },
     });
     booted.saver = saver;
     game.registry.set(REGISTRY_KEYS.saver, saver);
@@ -309,6 +320,12 @@ container?.addEventListener('touchend', unlockSpeech);
 mountRotateOverlay(document.body);
 // Android would open a context menu on a long press; the parent's long press must not.
 container?.addEventListener('contextmenu', (event) => event.preventDefault());
-registerServiceWorker();
+// The status may arrive before the game exists: keep the last one and hand it over when `start` has built the game.
+let lastSwStatus: SwStatus | null = null;
+let swTarget: Game | null = null;
+registerServiceWorker((status) => {
+    lastSwStatus = status;
+    swTarget?.registry.set(REGISTRY_KEYS.swStatus, status);
+});
 
 void start();   // a rejected start is a real startup failure: the error boundary shows the card

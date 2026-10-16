@@ -1,0 +1,14 @@
+diff --git a/src/main.ts b/src/main.ts
+index 86d768c..96697a4 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -275,7 +275,8 @@ const start = async (): Promise<void> => {
+         onBlocked: () => {
+             if (refusedCardUp) return;
+             refusedCardUp = true;
+-            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
++            // BREAK
++            if (refusedCardUp) return; // mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
+         },
+     });
+     booted.saver = saver;

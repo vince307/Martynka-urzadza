@@ -34,6 +34,23 @@ export function soundOutcome(kind: 'effect' | 'music', prefs: SoundPrefs, state:
     return 'played';
 }
 
+export type MusicState = 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing';
+export type MusicLine = 'loading' | 'waitingUnlock' | 'missing';
+
+/** The one muted line under the music group: only while music is switched on and not playing. */
+export function musicLine(prefs: SoundPrefs, music: MusicState): MusicLine | null {
+    if (!prefs.music) return null;
+    if (music === 'loading') return 'loading';
+    if (music === 'waiting-unlock') return 'waitingUnlock';
+    if (music === 'missing') return 'missing';
+    return null;
+}
+
+/** Cache keys of every effect (the entries loaded with the boot queue, never the music): what "all effects missing" means after a setup failure. */
+export function allEffectKeys(defs: readonly { key: string; boot: boolean }[]): string[] {
+    return defs.filter((def) => def.boot).map((def) => def.key);
+}
+
 /** Frames to keep of a decoded buffer: the logical length at the context rate (encoder padding is cut), never more than exist. */
 export function trimFrameCount(durationS: number, sampleRate: number, available: number): number {
     if (!Number.isFinite(durationS) || durationS <= 0) return available;

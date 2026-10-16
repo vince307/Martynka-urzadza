@@ -152,5 +152,12 @@ export interface SaveV3 extends Omit<SaveV2, 'version'> {
     version: 3;
 }
 
+/** Save format, version 4: version 3 plus the guard fields a store stamps in its write transaction (a stale tab never overwrites newer progress). */
+export interface SaveV4 extends Omit<SaveV3, 'version'> {
+    version: 4;
+    generation: number;
+    writer: string;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV3;
+export type SaveState = SaveV4;

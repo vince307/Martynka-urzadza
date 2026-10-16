@@ -123,7 +123,7 @@ describe('loadSave', () => {
         expect(loaded.kind).toBe('loaded');
         if (loaded.kind === 'loaded') expect(loaded.session.stars).toBe(7);
 
-        const future = { version: 4, stars: 1 };
+        const future = { version: 5, stars: 1 };
         const f = makeStore(future);
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
@@ -852,7 +852,7 @@ describe('write at start after a migration (audit M-3)', () => {
         t.state.backupFails = true;
         await t.saver.flush('hidden');
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
-        expect(line?.[0]).toBe('autosave: writing v3 without the v2 copy');
+        expect(line?.[0]).toBe('autosave: writing v4 without the v2 copy');
         expect(line?.[1]).toMatchObject({ from: 2, attempts: 1 });
     });
 
@@ -1098,5 +1098,77 @@ describe('a store that refuses with NewerSave blocks saving for good (P-5)', () 
         t.state.fail = false;
         await t.saver.flush('now');
         expect(t.saver.status().writes).toBe(1);
+    });
+});
+
+const otherWriterError = (): Error => Object.assign(new Error('another page saved later'), { name: 'OtherWriterSave' });
+
+describe('a store that refuses with OtherWriterSave blocks saving for good (stale tab)', () => {
+    it('blocks with the runtime reason otherTab, tries once, never again, and tells the listener once', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        let calls = 0;
+        t.store.write = () => (calls++, Promise.reject(otherWriterError()));
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(calls).toBe(1);
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'otherTab', blocked: true, lastFailure: { stage: 'write', error: 'OtherWriterSave' } });
+        t.saver.markDirty();
+        t.clock.advance(5000);
+        await t.saver.flush('now');
+        await t.saver.flush('hidden');
+        await settle();
+        expect(calls).toBe(1);
+        expect(t.clock.pending()).toBe(0);
+        expect(told).toEqual(['otherTab']);
+    });
+
+    it('NewerSave tells the listener once with newer', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        t.store.write = () => Promise.reject(newerError());
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(told).toEqual(['newer']);
+    });
+
+    it('a load block and an ordinary failure never tell the listener', async () => {
+        const told: string[] = [];
+        const blocked = setup({ blockedBy: 'unreadable', onBlocked: (reason) => void told.push(reason) });
+        blocked.saver.markDirty();
+        await blocked.saver.flush('now');
+        const failing = setup({ onBlocked: (reason) => void told.push(reason) });
+        failing.state.fail = true;
+        failing.saver.markDirty();
+        await failing.saver.flush('now');
+        expect(told).toEqual([]);
+    });
+
+    it('a listener that throws never breaks the write path', async () => {
+        const t = setup({ onBlocked: () => { throw new Error('listener'); } });
+        t.store.write = () => Promise.reject(otherWriterError());
+        t.saver.markDirty();
+        await expect(t.saver.flush('now')).resolves.toBeUndefined();
+        expect(t.saver.status().blockedBy).toBe('otherTab');
+        expect(rejections).toEqual([]);
+    });
+
+    it('replace meets OtherWriterSave in the store only as a refusal reported to the dialog, without telling the listener', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        t.store.write = () => Promise.reject(newerError());
+        expect(await t.saver.replace(encodeSave(session(9)))).toEqual({ ok: false, error: 'NewerSave' });
+        expect(told).toEqual([]);
+    });
+
+    it('replaceGate says Blocked for otherTab with and without force', () => {
+        expect(replaceGate({ blockedBy: 'otherTab', loadReason: null, loadError: null }, true)).toBe('Blocked');
+        expect(replaceGate({ blockedBy: 'otherTab', loadReason: null, loadError: null }, false)).toBe('Blocked');
     });
 });

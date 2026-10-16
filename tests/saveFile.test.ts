@@ -14,7 +14,7 @@ const fixture = (name: string): Record<string, unknown> =>
 const clone = <T>(v: T): T => structuredClone(v);
 const MAX = 1_000_000;
 const v1 = (): SaveState => fixture('save-v1.json') as unknown as SaveState;
-const v3 = (): SaveState => fixture('save-v3.json') as unknown as SaveState;
+const v3 = (): SaveState => fixture('save-v4.json') as unknown as SaveState;
 const decoded = (): SessionSave => {
     const d = decodeSave(v1());
     if (d.kind !== 'ok') throw new Error('fixture must decode');
@@ -114,18 +114,18 @@ describe('saveProblem agrees with validateSave', () => {
         ['learner', (r) => { (r.learner as Record<string, unknown>).stage = 'E9'; }, 'learner'],
     ];
     it.each(broken)('names %s', (_n, mutate, key) => {
-        const r = clone(fixture('save-v3.json'));
+        const r = clone(fixture('save-v4.json'));
         mutate(r);
         expect(saveProblem(r)).toBe(key);
         expect(validateSave(r)).toBe(false);
     });
 
-    it.each([null, 'x', 7, [], {}, fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
+    it.each([null, 'x', 7, [], {}, fixture('save-v4.json'), fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
         expect(validateSave(value)).toBe(saveProblem(value) === null);
     });
 
     it('a valid save has no problem', () => {
-        expect(saveProblem(fixture('save-v3.json'))).toBeNull();
+        expect(saveProblem(fixture('save-v4.json'))).toBeNull();
         expect(saveProblem(fixture('save-v2.json'))).toBe('version');
     });
 });
@@ -236,5 +236,13 @@ describe('deviceSaveView newer (P-5)', () => {
         const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
         const current = encodeSave(freshSession('living'));
         expect(deviceSaveView({ blockedBy: 'newer', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'newer', forceable: false });
+    });
+});
+
+describe('deviceSaveView otherTab (stale tab)', () => {
+    it('an other-writer block is blocked, never forceable', () => {
+        const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
+        const current = encodeSave(freshSession('living'));
+        expect(deviceSaveView({ blockedBy: 'otherTab', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'otherTab', forceable: false });
     });
 });

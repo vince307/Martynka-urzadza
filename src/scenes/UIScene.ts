@@ -14,6 +14,7 @@ import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { saveHealthView } from '../core/saveHealth';
+import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
@@ -153,6 +154,7 @@ export class UIScene extends Scene {
                 session.run(() => {
                 const settings = (this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined) ?? initialSettings();
                 const readStages = balance.narrator.autoReadStages;
+                const swStatus = this.registry.get(REGISTRY_KEYS.swStatus) as SwStatus | undefined;
                 const stage = getStage(learner.stage);
                 if (!stage) {
                     this.closeSettings();
@@ -163,9 +165,11 @@ export class UIScene extends Scene {
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }),
                     saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+                    ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
-                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length } } : {}),
+                    uiArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
@@ -236,7 +240,8 @@ export class UIScene extends Scene {
         if (soundPrefs) {
             this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
             soundOf(this.registry)?.setPrefs(soundPrefs);
-            createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+            const kept = createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
+            this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept);
         }
         this.closeSettings();
         if (changed !== learner) {

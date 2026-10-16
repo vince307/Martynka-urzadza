@@ -10,6 +10,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
 import { fromHook, playRoundRight, playTaskRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
+import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(120_000);
 
@@ -40,7 +41,7 @@ async function startAsChild(page: Page): Promise<void> {
     await screenIs(page, 'task');
 }
 
-test('#2 SV2-01 a v1 save whose copy always fails is written as v3 after three tries', async ({ page }) => {
+test('#2 SV2-01 a v1 save whose copy always fails is written as v4 after three tries', async ({ page }) => {
     await silenceSpeech(page);
     await page.goto('/?e2eSave=backupfail&e2eMonth=10&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
@@ -51,7 +52,7 @@ test('#2 SV2-01 a v1 save whose copy always fails is written as v3 after three t
     expect(['pending', 'failed']).toContain((await snapshot(page)).save?.backup);
 
     // Rounds until the third failed copy: a round is several save attempts, so one is normally enough.
-    for (let round = 0; round < 3 && (await snapshot(page)).save?.store?.writtenVersion !== 3; round++) {
+    for (let round = 0; round < 3 && (await snapshot(page)).save?.store?.writtenVersion !== SAVE_VERSION; round++) {
         await playRoundRight(page, 5);
         if (round < 2) {
             await tapTarget(page, 'nextRound');
@@ -60,7 +61,7 @@ test('#2 SV2-01 a v1 save whose copy always fails is written as v3 after three t
             await screenIs(page, 'task');
         }
     }
-    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(3);
+    await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
     const save = (await snapshot(page)).save!;
     expect(save.store!.ops.slice(0, 4)).toEqual(['backup', 'backup', 'backup', 'write']);
     expect(save.store!.ops.filter((op) => op === 'backup')).toHaveLength(3);

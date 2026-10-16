@@ -40,6 +40,14 @@ export const pl = {
         // The verb and the pronoun agree with the count (1 nie wczytał się … bez niego, 2-4 nie wczytały się, 5+ nie wczytało się).
         soundMissing: (n: number) =>
             `Nie ${inflect(n, ['wczytał', 'wczytały', 'wczytało'])} się ${countNoun(n, ['dźwięk', 'dźwięki', 'dźwięków'])}. Gra działa dalej bez ${inflect(n, ['niego', 'nich', 'nich'])}.`,
+        // DESIGN-GAP 120: the kit has no line for music that is on but not playing; the text is ours, to be read by a teacher.
+        musicStatus: {
+            loading: 'Muzyka się wczytuje.',
+            waitingUnlock: 'Muzyka ruszy po pierwszym dotknięciu ekranu.',
+            missing: 'Muzyka nie wczytała się. Gra działa dalej bez niej.',
+        },
+        // DESIGN-GAP 121: the kit has no line for a sound choice the device would not keep; the text is ours, to be read by a teacher.
+        soundPrefsNotKept: 'Ustawienie dźwięku obowiązuje tylko do zamknięcia gry.',
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',
@@ -86,6 +94,18 @@ export const pl = {
             fatal: 'Zapis jest wyłączony do ponownego uruchomienia gry.',
             // DESIGN-GAP 113: the kit has no line for a save refused because a newer game version saved on this device.
             newer: 'Zapis jest wyłączony: nowsza wersja gry zapisała już postępy na tym urządzeniu. Uruchom grę ponownie.',
+            // DESIGN-GAP 116: the kit has no line for a save refused because another window of the game saved later.
+            otherTab: 'Zapis jest wyłączony: inne okno gry zapisało postępy później niż to. Zamknij pozostałe okna i uruchom grę ponownie.',
+        },
+        // Offline readiness (DESIGN-GAP 118): the kit has no such line; provisional wording, to be read by a teacher.
+        offline: {
+            heading: 'Gra bez internetu',
+            ready: 'Gra jest gotowa do działania bez internetu.',
+            installing: 'Gra przygotowuje się do działania bez internetu. Poczekaj chwilę.',
+            failed: 'Nie udało się przygotować gry do działania bez internetu. Uruchom grę ponownie, gdy będzie internet.',
+            registerFailed: 'Gra nie przygotuje się do działania bez internetu na tym urządzeniu.',
+            unsupported: 'Ta przeglądarka nie pozwala grać bez internetu.',
+            takenOver: 'Nowsza wersja gry jest gotowa. Zacznie działać przy następnym uruchomieniu.',
         },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
         artHeading: 'Obrazki',
@@ -96,6 +116,10 @@ export const pl = {
         roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
         roomArtMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
+        // The screen pictures (the third line of "Obrazki", DESIGN-GAP 119): the same verb agreement as artMissing.
+        uiArtOk: 'Wszystkie obrazki ekranów są wczytane.',
+        uiArtMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
@@ -115,6 +139,12 @@ export const pl = {
         body: 'Dotknij przycisku, a gra uruchomi się od nowa.',
         restart: 'Zacznij od nowa',
         build: (id: string) => `Wersja ${id}`,
+    },
+    // DESIGN-GAP 117: the kit has no card for a save refused because a newer version or another window saved; calm, for the child, one button.
+    saveRefused: {
+        title: 'Zacznijmy grę jeszcze raz',
+        body: 'Dotknij przycisku, a gra uruchomi się od nowa i zachowa najnowsze postępy.',
+        restart: 'Zacznij od nowa',
     },
     // DESIGN-GAP 42: the kit has no copy for a save that cannot be read; the parent sees it, the child only taps "Graj dalej".
     saveFailed: {
@@ -205,6 +235,8 @@ export const pl = {
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
         deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',
         deviceNewer: 'Nowsza wersja gry zapisała już postępy na tym urządzeniu, więc ta karta ich nie zastąpi. Uruchom grę ponownie.',
+        // DESIGN-GAP 116: the kit has no line for a device save that another window of the game wrote later.
+        deviceOtherTab: 'Inne okno gry zapisało postępy później, więc ta karta ich nie zastąpi. Zamknij pozostałe okna i uruchom grę ponownie.',
         deviceFatal: 'Gra się zatrzymała, więc nie może teraz zastąpić zapisu. Uruchom grę ponownie.',
         deviceUnreadable: 'Zapisu na tym urządzeniu nie da się odczytać. Jeśli chcesz go zachować, uruchom grę ponownie i na pierwszej karcie wybierz „Zachowaj kopię”. „Zapisz kopię” w tym panelu zapisuje tylko obecną grę.',
     },

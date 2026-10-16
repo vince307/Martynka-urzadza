@@ -10,6 +10,7 @@ import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
 import { UI_ART } from '../data/uiArt';
 import { SOUNDS } from '../data/sounds';
+import { allEffectKeys } from '../core/sound';
 import type { SoundService } from '../ui/sound';
 import { trimEffects } from '../ui/sound';
 import { TASK_ART } from '../data/taskArt';
@@ -195,6 +196,11 @@ export class BootScene extends Scene {
         if (roomHealth.missing.length > 0) {
             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);
         }
+        const uiHealth = artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key));
+        this.registry.set(REGISTRY_KEYS.uiArtHealth, uiHealth);
+        if (uiHealth.missing.length > 0) {
+            console.warn(`UI art missing: ${uiHealth.missing.length} of ${uiHealth.total}: ${uiHealth.missing.join(', ')}`);
+        }
         // Sound effects: trim the encoder padding BEFORE the hand-over below, so no play meets an untrimmed buffer; then record what is missing.
         try {
             const untrimmed = trimEffects(this.game);
@@ -209,6 +215,11 @@ export class BootScene extends Scene {
             }
         } catch (error) {
             console.warn('Sound setup failed; playing without effects', error);
+            try {
+                (this.registry.get(REGISTRY_KEYS.sound) as SoundService | undefined)?.setMissing(allEffectKeys(SOUNDS));   // the "Dźwięki" section says so
+            } catch (inner) {
+                console.warn('Sound setup failure could not be recorded', inner);
+            }
         }
         if (__E2E_HOOK__ && this.registry.get(REGISTRY_KEYS.forcedFailure) === 'boot') {
             throw new Error(E2E_FORCED_FAILURE);   // e2e build only

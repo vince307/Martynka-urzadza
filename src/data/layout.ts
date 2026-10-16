@@ -197,6 +197,7 @@ export const REGISTRY_KEYS = {
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter
     bootLoad: 'bootLoad',               // { cut: string[]; creates: number }: files the total boot limit ended and how often BootScene.create ran, set by BootScene; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
@@ -205,7 +206,9 @@ export const REGISTRY_KEYS = {
     hudTitle: 'hudTitle',               // HudTitleView | null: the variant title in the HUD, set by the task scene; runtime only, not in SAVE_KEYS
     sound: 'sound',                     // the game's SoundService (src/ui/sound.ts), set in main.ts; runtime only, not in SAVE_KEYS
     soundPrefs: 'soundPrefs',           // SoundPrefs (core/sound), the device preference read from localStorage in main.ts; runtime only, not in SAVE_KEYS
+    soundPrefsKept: 'soundPrefsKept',   // boolean: false when the device refused to keep the sound choice (UIScene.applySettings); runtime only, not in SAVE_KEYS
     soundHealth: 'soundHealth',         // ArtHealth of the sound effects (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 

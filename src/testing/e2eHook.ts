@@ -3,6 +3,7 @@ import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
+import type { SwStatus } from '../core/swStatus';
 import type { SoundService, SoundStatus } from '../ui/sound';
 import type { SessionLearner } from '../core/placement';
 import { encodeSave, freshSession, NEWER_SAVE, SAVE_VERSION, storedVersionNewer } from '../core/save';
@@ -229,6 +230,10 @@ export const installE2EHook = (game: Game): void => {
         const saver = game.registry.get(REGISTRY_KEYS.saver) as Autosaver | undefined;
         return saver ? deepFreeze({ ...saver.status(), store: storeSnapshot() }) : null;
     };
+    const swSnapshot = (): { phase: string; error: string | null; takenOver: boolean } | null => {
+        const value = game.registry.get(REGISTRY_KEYS.swStatus) as SwStatus | undefined;
+        return value ? { phase: value.phase, error: value.error, takenOver: value.takenOver } : null;
+    };
     const artHealthSnapshot = (): { total: number; missing: number } | null => {
         const value = game.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
@@ -260,12 +265,12 @@ export const installE2EHook = (game: Game): void => {
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {
