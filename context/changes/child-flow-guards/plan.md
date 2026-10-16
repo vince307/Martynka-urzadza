@@ -966,10 +966,10 @@ Details.
 
 #### Automated
 
-- [ ] 3.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 3.2 Deliberate break: `captureFirstWrong` back to number/string only → red; restored; meta-check (capture and text)
-- [ ] 3.3 `git diff --stat tests/fixtures` empty; `SAVE_VERSION` still 4
-- [ ] 3.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 3.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — b4b6076
+- [x] 3.2 Deliberate break: `captureFirstWrong` back to number/string only → red; restored; meta-check (capture and text) — b4b6076
+- [x] 3.3 `git diff --stat tests/fixtures` empty; `SAVE_VERSION` still 4 — b4b6076
+- [x] 3.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — b4b6076
 
 #### Manual
 
