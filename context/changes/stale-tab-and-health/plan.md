@@ -956,7 +956,7 @@ migrates that save again.
 - [x] 10.1 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored — aa68062
 - [x] 10.2 Every follow-up entry has a `Trigger:` line — aa68062
 - [x] 10.3 `git diff --stat main -- deploy/` shows only `deploy/README.md` — aa68062
-- [ ] 10.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 10.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate 3ec9805 (121 e2e passed)
 
 #### Manual
 
@@ -969,7 +969,7 @@ migrates that save again.
 #### Automated
 
 - [ ] 11.1 `npx playwright test tests/e2e/stale-tab.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [ ] 11.2 Deliberate break p11a → (a) red; p11b → (a) and (b) red; each restored; meta-check
+- [x] 11.2 Deliberate break p11a → (a) red; p11b → (a) and (b) red; each restored; meta-check
 - [ ] 11.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
 
 #### Manual
