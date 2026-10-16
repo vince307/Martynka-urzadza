@@ -847,7 +847,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 1.6 [reviewer] `src/core/save.ts` has no browser globals; `MIGRATIONS[3]` total on any raw object; older fixtures untouched
+- [x] 1.6 [reviewer] `src/core/save.ts` has no browser globals; `MIGRATIONS[3]` total on any raw object; older fixtures untouched — impl-review 2026-10-16
 
 ### Phase 2: Compare-and-set inside `guardedPut`
 
@@ -860,7 +860,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 2.5 [reviewer] `src/storage/idb.ts` stays the only importer of `idb-keyval`; read and put share one transaction; `writer` never logged
+- [x] 2.5 [reviewer] `src/storage/idb.ts` stays the only importer of `idb-keyval`; read and put share one transaction; `writer` never logged — impl-review 2026-10-16
 
 ### Phase 3: `otherTab` block reason, health line and refusal hook
 
@@ -873,7 +873,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 3.5 [reviewer] No Polish text in `src/core`; `pl.ts` keys carry the DESIGN-GAP 116 comment; `docs/design-gaps.md` row 116 present
+- [x] 3.5 [reviewer] No Polish text in `src/core`; `pl.ts` keys carry the DESIGN-GAP 116 comment; `docs/design-gaps.md` row 116 present — impl-review 2026-10-16
 
 ### Phase 4: Child card at the first refused write (B-2)
 
@@ -885,7 +885,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 4.4 [reviewer] No text in the component outside `pl.ts`; the card holds and releases the input switch like `saveFailedCard`
+- [x] 4.4 [reviewer] No text in the component outside `pl.ts`; the card holds and releases the input switch like `saveFailedCard` — impl-review 2026-10-16
 
 ### Phase 5: Service-worker status reducer and registration signal (P-1, B-8, F4)
 
@@ -898,7 +898,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 5.5 [reviewer] `src/core/swStatus.ts` has no browser globals; `registerServiceWorker` never throws into `main.ts`
+- [x] 5.5 [reviewer] `src/core/swStatus.ts` has no browser globals; `registerServiceWorker` never throws into `main.ts` — impl-review 2026-10-16
 
 ### Phase 6: Offline status section in the parent's panel
 
@@ -910,7 +910,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 6.4 [reviewer] No Polish text in the scene or core; DESIGN-GAP 118 row and comment present
+- [x] 6.4 [reviewer] No Polish text in the scene or core; DESIGN-GAP 118 row and comment present — impl-review 2026-10-16
 
 ### Phase 7: UI art health in "Obrazki" (G-1, L-6, L-8)
 
@@ -923,7 +923,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 7.5 [reviewer] `artFilter` input unchanged; DESIGN-GAP 119 row and comment present
+- [x] 7.5 [reviewer] `artFilter` input unchanged; DESIGN-GAP 119 row and comment present — impl-review 2026-10-16
 
 ### Phase 8: Music status line (S-1, S-3, S-11)
 
@@ -935,7 +935,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 8.4 [reviewer] `src/core/sound.ts` stays pure; no sound state written to the save
+- [x] 8.4 [reviewer] `src/core/sound.ts` stays pure; no sound state written to the save — impl-review 2026-10-16
 
 ### Phase 9: Honest sound section after a setup failure and an unsaved preference (S-8, S-6)
 
@@ -947,7 +947,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 9.4 [reviewer] No new copy beyond `soundPrefsNotKept`; the `catch` calls `setMissing(allEffectKeys(...))` and still never rethrows
+- [x] 9.4 [reviewer] No new copy beyond `soundPrefsNotKept`; the `catch` calls `setMissing(allEffectKeys(...))` and still never rethrows — impl-review 2026-10-16
 
 ### Phase 10: Documentation, follow-ups and seam sweep
 
@@ -960,7 +960,7 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 10.5 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper or stale "v3" comment; gap rows 116-121 match the code comments
+- [x] 10.5 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper or stale "v3" comment; gap rows 116-121 match the code comments — impl-review 2026-10-16
 - [x] 10.6 [human] Accept or reverse save format v4 (one-way door; rollback below this build shows the `future` card) — accepted by the maintainer in the run session 2026-10-16
 - [ ] 10.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches the regex `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed`
 
@@ -980,9 +980,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 12.1 `npx playwright test tests/e2e/health-lines.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
+- [x] 12.1 `npx playwright test tests/e2e/health-lines.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2` — orchestrator gate 10de24c (125 passed)
 - [x] 12.2 Deliberate break p12a → (a) red; p12b → (b) red; each restored; meta-check — 207d599
-- [ ] 12.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 12.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — orchestrator gate 10de24c (125 passed)
 
 #### Manual
 
