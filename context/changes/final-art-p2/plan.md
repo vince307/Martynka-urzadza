@@ -797,9 +797,9 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [x] 4.1 Full local gate green; unit `<branch baseline> + 0`; build prints `e2e hook: absent (`
+- [x] 4.1 Full local gate green; unit `<branch baseline> + 0`; build prints `e2e hook: absent (` — d56c3b2
 - [ ] 4.2 e2e (orchestrator) `<branch e2e baseline> + 0`, `money-pay.spec.ts` green
-- [x] 4.3 Deliberate break: patches `e2e-break-p10a.patch` and `e2e-break-p10b.patch` written; meta-check in the handoff (proof in phase 10)
+- [x] 4.3 Deliberate break: patches `e2e-break-p10a.patch` and `e2e-break-p10b.patch` written; meta-check in the handoff (proof in phase 10) — d56c3b2
 
 #### Manual
 
