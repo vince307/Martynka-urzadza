@@ -42,3 +42,4 @@ The `/10x-implement final-art-p2 phase 8` step of autonomous run `2026-10-15-fix
 
 - CLAUDE.md names the follow-ups file generically ("`follow-ups/review-fixes.md` of the final-art-p2 change") because the archive path is not known yet.
 - Mixed phase: none.
+- Poprawka p5: BootScene budowała nazwę zdarzenia pliku z podwójnym myślnikiem (`filecomplete--image-...`), więc obrazy ekranu ładowania nigdy się nie pokazywały; teraz `fileKeyCompleteEvent` (src/core/loaderEvent.ts) składa nazwę jak Phaser, a tests/phaserLoaderPin.test.ts pilnuje formatu w źródle Phasera.
