@@ -951,10 +951,10 @@ Details.
 
 #### Automated
 
-- [ ] 2.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 2.2 Deliberate break: `reviewWeights` returning `w` / `unlockReady` without the review branch → red; restored; meta-check (weights over seeds)
-- [ ] 2.3 Full local gate green; build prints `e2e hook: absent (`
-- [ ] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `review-round.spec.ts` green
+- [x] 2.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — ae03a52
+- [x] 2.2 Deliberate break: `reviewWeights` returning `w` / `unlockReady` without the review branch → red; restored; meta-check (weights over seeds) — ae03a52
+- [x] 2.3 Full local gate green; build prints `e2e hook: absent (` — ae03a52
+- [x] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `review-round.spec.ts` green — ae03a52
 
 #### Manual
 
