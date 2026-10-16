@@ -1,6 +1,6 @@
 # Handoff — `salon-extra-slots` (slice S-16d)
 
-Written by the visual-gate step of autonomous run `2026-10-15-fix-s16bcd`: `VISUAL: PASS`, no code changed, row 3.7 ticked. The slice is ready for archive; the next agent must not touch `SALON_V3_TARGET`, `LEGACY_SALON_V2` or `tests/fixtures/`, and must leave the [human] rows 6.4 and 8.4 open.
+Final pre-merge state, written by the ship step of autonomous run `2026-10-15-fix-s16bcd` before the archive move (earlier: visual gate `VISUAL: PASS`, row 3.7 ticked). `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` untouched; the [human] rows 6.4 and 8.4 stay open as a post-run checklist.
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual-gate step of autonomous run `2026-10-15-fix-s16bcd`: `VISU
 |---|---|
 | Branch | `feat/salon-extra-slots` (cut from main `a06795b`) |
 | Commits | p1 4ac1460 … p8 9c41760, handoffs, impl review 9036f75, plus this `docs(salon-extra-slots): bramka wizualna` commit; no fix commits |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-15-fix-s16bcd/run-log.md |
+| `change.md` status | `archived` (by `/10x-archive`, this step) |
 | Progress rows remaining | 2 (`grep -c '^- \[ \]' plan.md`): 6.4 [human], 8.4 [human] |
 | Working tree | clean after this commit (`tests/e2e/visual.local/` deleted, never staged) |
 
@@ -38,7 +38,7 @@ No deliberate break: no test or code was written in this step.
 
 ## 4. Next command
 
-`/10x-archive salon-extra-slots`
+none — shipped
 
 ## 5. Open
 
