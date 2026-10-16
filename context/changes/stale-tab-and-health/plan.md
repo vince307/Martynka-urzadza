@@ -931,7 +931,7 @@ migrates that save again.
 
 - [x] 8.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — ae33f85
 - [x] 8.2 Deliberate break: `musicLine` ignoring `prefs.music` → red; restored; meta-check (rule, not Phaser's unlock) — ae33f85
-- [ ] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound` specs green
+- [x] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound` specs green — orchestrator gate b45963e (121 e2e passed)
 
 #### Manual
 
@@ -941,9 +941,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 9.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (`
+- [x] 9.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — 6b6365d (unit 3136 + 2; build absent, 2 chunks)
 - [ ] 9.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
-- [ ] 9.3 Deliberate break: `allEffectKeys` returning the music key or nothing → red; restored; meta-check recorded
+- [x] 9.3 Deliberate break: `allEffectKeys` returning the music key or nothing → red; restored; meta-check recorded — 6b6365d
 
 #### Manual
 
