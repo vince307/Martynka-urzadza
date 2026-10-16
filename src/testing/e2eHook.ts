@@ -9,6 +9,7 @@ import type { SessionLearner } from '../core/placement';
 import { encodeSave, freshSession, NEWER_SAVE, SAVE_VERSION, storedVersionNewer } from '../core/save';
 import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
+import { stages } from '../data/curriculum';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { FIRST_ROOM } from '../data/rooms';
 import type { BootScene } from '../scenes/BootScene';
@@ -56,8 +57,9 @@ export const e2eSkills = (search: string): string[] | null => {
 };
 
 /**
- * The skills of a forced round: the ids repeated to `length`. Null (an ordinary round) when no list is set or when
- * any id is not a playable skill of the stage, so an id of a mode that cannot be answered yet never reaches the scene.
+ * The skills of a forced round: the ids repeated to `length`. Null (an ordinary round) when no list is set or when an id
+ * belongs to another stage (a spec may pin a skill and then change the stage). An id that no stage has, or that is not
+ * playable, throws and names it, so a typo in a spec fails loudly instead of silently giving an ordinary round.
  */
 export const forcedSkills = (stage: StageDef, ids: readonly string[] | null | undefined, length: number): SkillDef[] | null => {
     if (!ids || ids.length === 0) {
@@ -65,7 +67,12 @@ export const forcedSkills = (stage: StageDef, ids: readonly string[] | null | un
     }
     const all = stage.steps.flatMap((step) => step.skills);
     const found = ids.map((id) => all.find((skill) => skill.id === id));
-    if (found.some((skill) => skill === undefined || !playable(skill))) {
+    const elsewhere = (id: string): boolean => Object.values(stages).some((other) => other !== stage && other.steps.some((step) => step.skills.some((skill) => skill.id === id)));
+    const bad = ids.filter((id, i) => !elsewhere(id) && (found[i] === undefined || !playable(found[i])));
+    if (bad.length > 0) {
+        throw new Error(`e2eSkills: unknown or unplayable skill id for stage ${stage.id}: ${bad.join(', ')}`);
+    }
+    if (found.some((skill) => skill === undefined)) {
         return null;
     }
     return Array.from({ length }, (_, i) => found[i % found.length] as SkillDef);

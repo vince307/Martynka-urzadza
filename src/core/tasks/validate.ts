@@ -8,9 +8,9 @@ import { MONEY } from '../../data/measures';
 import { dragMode } from './dragMode';
 import { parseFace } from './faces';
 import type { Task } from './types';
-import { validateVisual } from './visual';
+import { TALL_MODES, validateVisual, visualShape } from './visual';
 
-export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'check-answer' | 'check-no-wrong' | 'check-one-right' | 'faces-distinct' | 'coins';
+export type ViolationRule = 'range' | 'negative' | 'choices' | 'inflection' | 'hint' | 'visual' | 'mode' | 'hintVisual' | 'check-answer' | 'check-no-wrong' | 'check-one-right' | 'faces-distinct' | 'coins';
 
 export interface Violation {
     skillId: string;
@@ -114,9 +114,6 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
     }
 
-    if (task.input === 'digits' && task.visual?.kind !== 'column') {
-        add('mode', 'digits needs a column drawing');
-    }
 
     // A number line never gives the answer away: no label equals a numeric answer, and the empty box can only be the answer itself.
     // This holds for the hint drawing too; a hint drawing belongs to the keypad only (it needs the room beside the solution lines).
@@ -139,12 +136,32 @@ export const validateTask = (task: Task, ctx: ValidationContext = {}): Violation
         }
     }
 
-    if (task.input === 'drag') {
-        try {
-            dragMode(task);
-        } catch (e) {
-            add('mode', e instanceof Error ? e.message : String(e));
-        }
+    // One switch over the answer modes (F6): a new mode fails to compile here until its rules are written.
+    const mode = task.input ?? 'tiles';   // hand-built tasks without a mode are tiles or keypad
+    switch (mode) {
+        case 'tiles': case 'keypad': case 'select':
+            break;
+        case 'digits':
+            if (task.visual?.kind !== 'column') {
+                add('mode', 'digits needs a column drawing');
+            }
+            break;
+        case 'drag':
+            try {
+                dragMode(task);
+            } catch (e) {
+                add('mode', e instanceof Error ? e.message : String(e));
+            }
+            break;
+        default: { const _exhaustive: never = mode; return _exhaustive; }
+    }
+    // A tall drawing (a thermometer) has a layout only beside the keypad or the tiles (WNA-01).
+    if (task.visual && visualShape(task.visual) === 'tall' && !(TALL_MODES as readonly string[]).includes(mode)) {
+        add('mode', `a ${task.visual.kind} drawing is tall and needs ${TALL_MODES.join(' or ')}, got ${mode}`);
+    }
+    // The scene draws a hint drawing only when the task has none of its own (WNA-03).
+    if (task.hintVisual && task.visual) {
+        add('hintVisual', `a hint drawing needs a task without its own drawing, got ${task.visual.kind}`);
     }
 
     // Paying with coins: the answer is a wallet (a list of grosze) and `check` is the judge, so it must accept the answer, accept

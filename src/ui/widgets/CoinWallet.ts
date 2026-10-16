@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import { walletCoins, walletList } from '../../core/coins';
-import type { TrayDragState } from '../../core/trayDrag';
+import { canSubmit, type TrayDragState } from '../../core/trayDrag';
 import { interiorPoint, liftedSlot, walletFull, type CoinLayout, type Rect } from '../../core/round/dragLayout';
 import { balance } from '../../data/balance';
 import { ART_LIMITS, type MoneyId } from '../../data/measures';
@@ -59,7 +59,7 @@ export class CoinWallet {
         this.trayImages = Array.from({ length: ART_LIMITS.trayKinds }, () => new ArtImage(scene));
         this.carriedImage = new ArtImage(scene);
         this.ok = new ActionButton(scene, () => {
-            if (this.active && this.state) {
+            if (this.active && this.state && canSubmit(this.state)) {
                 const grosze = walletCoins(this.state.mat);
                 if (grosze.length > 0) this.onSubmit(grosze);
             }

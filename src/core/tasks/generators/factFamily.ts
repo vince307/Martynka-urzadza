@@ -4,6 +4,7 @@
 import { pl } from '../../../data/pl';
 import { arithLine } from '../arith';
 import { BOX, DIVIDE, MINUS, TIMES } from '../symbols';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 
 export type FactVariant = 'swap' | 'checkSub' | 'checkAdd' | 'checkDiv';
@@ -47,12 +48,14 @@ export const generateFactFamily: Generator = (skill, rng): Task => {
     });
     switch (variant) {
         case 'swap': {
-            let a = 0;
-            let b = 0;
-            while (a === b) {
-                a = rng.int(1, p.max - 1);
-                b = rng.int(1, p.max - a);
-            }
+            const [a, b] = drawUntil<[number, number]>(
+                `FACT_FAMILY swap max ${p.max}`,
+                () => {
+                    const x = rng.int(1, p.max - 1);
+                    return [x, rng.int(1, p.max - x)];
+                },
+                ([x, y]) => x !== y,
+            );
             // The unknown is the term that is not repeated on the right side.
             return rng.chance(0.5)
                 ? make(`${a} + ${b} = ${b} + ${BOX}`, a, pl.tasks.factSwapHint, arithLine(b, a, '+'))

@@ -29,7 +29,7 @@ const barOf = (state: RoundState, task: Task, answerLine: (answer: string) => st
         case 'first':
             return { kind: 'none' };
         case 'second':
-            return { kind: 'hint', line: firstHint(task) };
+            return { kind: 'hint', line: state.notes[state.index] ?? firstHint(task) };
         case 'solution': {
             // DESIGN-GAP: the kit offers "Pokaż kroki" after the first mistake; the plan walks the steps after the second (docs/design-gaps.md row 2).
             const steps = solutionSteps(task, answerLine);
@@ -62,4 +62,15 @@ export const roundView = (state: RoundState, answerLine: (answer: string) => str
         inputActive: !state.finished && ['first', 'second', 'retype'].includes(state.phase),
         switchVisible: !state.finished && state.phase === 'done',
     };
+};
+
+/** Which input widgets an answer mode shows; the one place that maps a mode to its widgets (the switch is exhaustive). */
+export const modeWidgets = (input: AnswerMode): { tiles: boolean; keypad: boolean; select: boolean } => {
+    switch (input) {
+        case 'tiles': return { tiles: true, keypad: false, select: false };
+        case 'keypad': case 'digits': return { tiles: false, keypad: true, select: false };
+        case 'select': return { tiles: false, keypad: false, select: true };
+        case 'drag': return { tiles: false, keypad: false, select: false };
+        default: { const unreachable: never = input; return unreachable; }
+    }
 };

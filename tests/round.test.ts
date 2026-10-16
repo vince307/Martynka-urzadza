@@ -3,7 +3,7 @@
 // mistake, 0 for a retyped result, stars never decrease. Expected values come
 // from the PRD, not from the implementation.
 import { describe, expect, it } from 'vitest';
-import { answer, next, nextSolutionStep, roundResults, startRound, type RoundRules, type RoundState } from '../src/core/round';
+import { answer, lastTaskSettled, next, nextSolutionStep, roundResults, startRound, type RoundRules, type RoundState } from '../src/core/round';
 import { createRng } from '../src/core/rng';
 import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
@@ -47,7 +47,7 @@ const failTask = (s: RoundState): RoundState => {
 
 describe('balance', () => {
     it('keeps the PRD numbers as data', () => {
-        expect(balance.round).toEqual({ length: 5, starPerTask: 1, cleanRoundBonus: 2, uniqueRetries: 20 });
+        expect(balance.round).toEqual({ length: 5, starPerTask: 1, cleanRoundBonus: 2, uniqueRetries: 20, artRetries: 8 });
     });
 });
 
@@ -295,6 +295,38 @@ describe('first wrong try (S-08, parent preview)', () => {
         expect(roundResults(s)[0].example).toEqual({ prompt: 'Dotknij trójkąta.', given: 'mały niebieski kwadrat', answer: 'duży czerwony trójkąt' });
     });
 
+    // PIC-04 / S13-06: a list answer (wallet, select) leaves an example in the existing `given` string.
+    it('roundResults reads a wrong wallet as money, largest first, and the model wallet as money too (PIC-04)', () => {
+        const wallet: Task = {
+            skillId: 'E1.11.money_pay_10',
+            prompt: 'Zapłać 5 zł.',
+            input: 'drag',
+            visual: { kind: 'money', items: [], pay: { tray: ['coin-1zl', 'coin-2zl', 'coin-5zl'], fewest: false } },
+            answer: [500],
+            hint: ['5 zł to jedna moneta.'],
+        };
+        let s = startRound([wallet], RULES);
+        s = answer(s, [100, 200, 200]);
+        expect(s.firstWrong[0]).toBe('2 zł, 2 zł, 1 zł');
+        s = next(answer(s, [500]));
+        expect(roundResults(s)[0].example).toEqual({ prompt: 'Zapłać 5 zł.', given: '2 zł, 2 zł, 1 zł', answer: '5 zł' });
+    });
+
+    it('roundResults reads a wrong select answer as the faces words in choices order (S13-06)', () => {
+        const tri = 'shape:triangle:red:big';
+        const sq = 'shape:square:blue:small';
+        const cir = 'shape:circle:green:big';
+        const pickAll: Task = { skillId: 'E1.1.shapes_all', prompt: 'Zaznacz trójkąty.', input: 'select', answer: [tri], choices: [tri, sq, cir], hint: ['Trójkąt ma 3 rogi.'] };
+        let s = startRound([pickAll], RULES);
+        s = answer(s, [cir, sq]);
+        s = next(answer(s, [tri]));
+        expect(roundResults(s)[0].example).toEqual({
+            prompt: 'Zaznacz trójkąty.',
+            given: 'mały niebieski kwadrat, duże zielone koło',
+            answer: 'duży czerwony trójkąt',
+        });
+    });
+
     it('roundResults has no example for a first-try solve or an unplayed task', () => {
         const s = solveFirst(startRound(tasks(), RULES));
         const r = roundResults(s);
@@ -344,5 +376,49 @@ describe('round with several right tiles (Task.check)', () => {
         for (let i = 0; i < 10 && r.phase === 'solution'; i += 1) r = nextSolutionStep(r);
         expect(r.phase).toBe('retype');
         expect(answer(r, otherRight).phase).toBe('done');
+    });
+});
+
+describe('lastTaskSettled (SV2-10)', () => {
+    const toLast = (): RoundState => {
+        let s = startRound(tasks(), RULES);
+        for (let i = 0; i < 4; i += 1) s = solveFirst(s);
+        return s;
+    };
+
+    it('is true when the last task is solved on the first try', () => {
+        const prior = toLast();
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[4].answer))).toBe(true);
+    });
+
+    it('is true when the last task is solved on the second try', () => {
+        const prior = answer(toLast(), WRONG);
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[4].answer))).toBe(true);
+    });
+
+    it('is true at the retype of the last task, not before', () => {
+        let s = answer(answer(toLast(), WRONG), WRONG);
+        for (let i = 0; i < 10 && s.phase === 'solution'; i += 1) s = nextSolutionStep(s);
+        expect(s.phase).toBe('retype');
+        const wrongRetype = answer(s, WRONG);
+        expect(lastTaskSettled(s, wrongRetype)).toBe(false);
+        expect(lastTaskSettled(s, answer(s, s.tasks[4].answer))).toBe(true);
+    });
+
+    it('is false for a wrong answer that leaves the last task open', () => {
+        const prior = toLast();
+        expect(lastTaskSettled(prior, answer(prior, WRONG))).toBe(false);
+    });
+
+    it('is false when an earlier task settles', () => {
+        const prior = startRound(tasks(), RULES);
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[0].answer))).toBe(false);
+    });
+
+    it('is false once the last task was already done (Dalej, a second call)', () => {
+        const prior = toLast();
+        const done = answer(prior, prior.tasks[4].answer);
+        expect(lastTaskSettled(done, answer(done, done.tasks[4].answer))).toBe(false);
+        expect(lastTaskSettled(done, next(done))).toBe(false);
     });
 });

@@ -40,7 +40,10 @@ describe('every skill is solvable in its answer mode', () => {
 
 describe('dragMode', () => {
     it('picks the clock branch from the drawing, not from the answer type', () => {
-        expect(dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0 } })).toBe('clock');
+        expect(dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0, set: true, snap: 60 } })).toBe('clock');
+    });
+    it('throws for a clock that is not a clock to set', () => {
+        expect(() => dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0 } })).toThrow(/set/);
     });
     it('keeps blocks for no drawing or a blocks drawing', () => {
         expect(dragMode({ ...base, answer: 42 })).toBe('blocks');
@@ -59,6 +62,18 @@ describe('validateTask is aware of the answer mode', () => {
     it('flags a drag task whose drawing has no drag branch', () => {
         const t: Task = { ...base, input: 'drag', visual: { kind: 'thermometer', celsius: 3 } };
         expect(validateTask(t).map((v) => v.rule)).toContain('mode');
+    });
+    it('flags a tall drawing in a mode that has no tall layout (select, drag, digits)', () => {
+        for (const input of ['select', 'drag', 'digits'] as const) {
+            const t: Task = { ...base, input, answer: input === 'select' ? [1] : 1, choices: input === 'select' ? [1, 2] : undefined, visual: { kind: 'thermometer', celsius: 3 } };
+            expect(validateTask(t, { allowNegative: true }).map((v) => v.rule), input).toContain('mode');
+        }
+    });
+    it('accepts a tall drawing with tiles or keypad', () => {
+        for (const input of ['tiles', 'keypad'] as const) {
+            const t: Task = { ...base, input, answer: 3, choices: input === 'tiles' ? [3, 4] : undefined, visual: { kind: 'thermometer', celsius: 3 } };
+            expect(validateTask(t, { allowNegative: true }).map((v) => v.rule), input).not.toContain('mode');
+        }
     });
     it('accepts a drag task with a blocks drawing', () => {
         const t: Task = { ...base, input: 'drag', answer: 42, visual: { kind: 'blocks', hundreds: 0, tens: 4, ones: 2 } };

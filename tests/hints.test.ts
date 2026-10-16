@@ -23,14 +23,56 @@ const draw = (skill: SkillDef, seed: number): Task => generateTask(skill, create
 const allSkills = Object.values(stages).flatMap((stage) => (stage ? stage.steps.flatMap((step) => step.skills) : []));
 
 describe('firstHint', () => {
-    it('is null for single-line hints (HALF has two lines but line 0 is the result)', () => {
+    it('HALF shows a method line first and never states the result in it (TXT-02)', () => {
         const half = [...skillsOfType(E3, 'HALF'), ...skillsOfType(E4, 'HALF'), ...skillsOfType(E1, 'HALF')];
         expect(half.length).toBeGreaterThan(0);
         for (const skill of half) {
             for (let seed = 0; seed < 30; seed += 1) {
-                expect(firstHint(draw(skill, seed)), `${skill.id} seed ${seed}`).toBeNull();
+                const task = draw(skill, seed);
+                const first = firstHint(task);
+                expect(first, `${skill.id} seed ${seed}`).toBe(task.hint[0]);
+                expect(first, `${skill.id} seed ${seed}`).not.toContain('=');
+                expect(task.hint[1], `${skill.id} seed ${seed}`).toBe(`${task.prompt.match(/\d+/)?.[0]} : 2 = ${String(task.answer)}`);
             }
         }
+    });
+
+    // The "o 10" step of these skills equals the answer by phrasing, so the first hint is rightly held back.
+    const SUPPRESSED_OK: Record<string, string> = {
+        'E2.7.sequence_tens_100': 'the "o 10" step equals the answer by phrasing',
+        'E2.6.arrow_graph_20': 'the "o 10" step equals the answer by phrasing',
+        'E2.6.arrow_table_20': 'the "o 10" step equals the answer by phrasing',
+    };
+
+    it('every skill with two or more hint lines shows its first hint, except the named phrasing cases (TXT-02)', () => {
+        const tally = new Map<string, { multi: number; suppressed: number }>();
+        for (const skill of allSkills) {
+            if (skill.type === 'ROMAN') {
+                continue;
+            }
+            const t = { multi: 0, suppressed: 0 };
+            for (let seed = 0; seed < 50; seed += 1) {
+                const task = draw(skill, seed);
+                if (task.hint.length < 2) {
+                    continue;
+                }
+                t.multi += 1;
+                if (firstHint(task) === null) {
+                    t.suppressed += 1;
+                }
+            }
+            tally.set(skill.id, t);
+        }
+        for (const [id, t] of tally) {
+            if (id in SUPPRESSED_OK) {
+                expect(t.suppressed, `${id} is listed as a phrasing case`).toBeGreaterThan(0);
+                expect(t.suppressed, `${id} must still show its first hint sometimes`).toBeLessThan(t.multi);
+            } else {
+                expect(t.suppressed, `${id} never shows ${t.suppressed} of ${t.multi} first hints`).toBe(0);
+            }
+            expect(t.suppressed === t.multi && t.multi > 0, `${id} never shows a first hint`).toBe(false);
+        }
+        expect(Object.keys(SUPPRESSED_OK).every((id) => tally.has(id))).toBe(true);
     });
 
     it('shows the interval line for ROUNDING even when it ends with the answer', () => {

@@ -5,6 +5,7 @@ import { buildAdaptiveRound, skillBuckets, unlockThreshold } from '../src/core/c
 import { createRng } from '../src/core/rng';
 import { artBlocked, withoutArtBlocked } from '../src/core/round/artFilter';
 import type { SkillBuckets } from '../src/core/round/pick';
+import { visualArtIds } from '../src/core/tasks/visual';
 import { buildWarmup } from '../src/core/round/warmup';
 import type { Adaptation, SkillDef, StageDef, StageId } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -154,6 +155,50 @@ describe('rounds with missing art', () => {
         for (let seed = 1; seed <= 100; seed += 1) {
             const tasks = buildWarmup(cur, prev, createRng(seed), balance.warmup, balance.tiles.count, balance.round.uniqueRetries, (s) => s.type === 'MONEY_COUNT');
             expect(tasks.filter((t) => t.skillId.includes('money_count'))).toEqual([]);
+        }
+    });
+});
+
+describe('ORDINAL in the art filter and the redraw (child-flow-guards p1)', () => {
+    const ordinal = skillById('E1.2.ordinal_5');
+    const allIcons = ['cup', 'croissant', 'flower', 'cushion', 'book', 'lamp', 'apple', 'pear', 'teapot', 'pencil', 'key', 'yarn', 'plate', 'box', 'sticker'];
+    const rules = { length: balance.round.length, uniqueRetries: balance.round.uniqueRetries };
+    const adapt = (step: number): Adaptation => ({ unlockedStep: { E1: step, E2: 1, E3: 1, E4: 1, E5: 1, E6: 1 }, mastery: {}, streak: {}, history: [], weakStreak: 0, easedRounds: 0 });
+    const NORMAL = { current: 60, earlier: 30, previous: 10 };
+
+    it('blocks ORDINAL when fewer icons are loaded than its row needs, not with one missing', () => {
+        expect(artBlocked(ordinal, new Set(allIcons.slice(0, 11)))).toBe(true); // 4 loaded < max 5
+        expect(artBlocked(ordinal, new Set(allIcons.slice(0, 10)))).toBe(false); // 5 loaded
+        expect(artBlocked(ordinal, new Set(['key']))).toBe(false);
+    });
+
+    it('E1.11 with coins, notes and weights missing and picture mode on: the step still shows enough skills to unlock (threshold of the step)', () => {
+        const missingIds = new Set(['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'weight-1kg', 'weight-2kg', 'weight-5kg']);
+        const threshold = unlockThreshold(stage('E1').steps.find((s) => s.step === 11)?.skills.length ?? 0, balance.curriculum.unlockShare);
+        const drawn = new Set<string>();
+        for (let seed = 1; seed <= 200; seed += 1) {
+            const tasks = buildAdaptiveRound(stage('E1'), undefined, adapt(11), NORMAL, createRng(seed), rules, balance.tiles.count, { missingIds, unlockShare: balance.curriculum.unlockShare }, { picture: true });
+            for (const t of tasks) if (t.skillId.startsWith('E1.11.')) drawn.add(t.skillId);
+        }
+        expect(drawn.size).toBeGreaterThanOrEqual(threshold);
+    });
+
+    it('E1 step 2 with the key missing: no drawn task (or hint drawing) names the key', () => {
+        const missingIds = new Set(['key']);
+        for (let seed = 1; seed <= 100; seed += 1) {
+            const tasks = buildAdaptiveRound(stage('E1'), undefined, adapt(2), NORMAL, createRng(seed), rules, balance.tiles.count, { missingIds, unlockShare: balance.curriculum.unlockShare });
+            for (const t of tasks) {
+                expect(t.visual ? visualArtIds(t.visual) : [], `seed ${seed} ${t.skillId}`).not.toContain('key');
+                expect(t.hintVisual ? visualArtIds(t.hintVisual) : [], `seed ${seed} ${t.skillId}`).not.toContain('key');
+            }
+        }
+    });
+
+    it('a round with nothing missing equals the round without the art argument', () => {
+        for (let seed = 1; seed <= 30; seed += 1) {
+            const a = buildAdaptiveRound(stage('E1'), undefined, adapt(2), NORMAL, createRng(seed), rules, balance.tiles.count);
+            const b = buildAdaptiveRound(stage('E1'), undefined, adapt(2), NORMAL, createRng(seed), rules, balance.tiles.count, { missingIds: new Set(), unlockShare: 0.5 });
+            expect(b.map((t) => t.prompt)).toEqual(a.map((t) => t.prompt));
         }
     });
 });

@@ -1,6 +1,6 @@
 // The drawing description of a task: stable key, validation and the one-line sample form (S-13).
 import { describe, expect, it } from 'vitest';
-import { describeVisual, validateVisual, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
+import { assertPool, describeVisual, lineTicks, validateVisual, visualArtIds, visualKey, visualShape, type TaskVisual } from '../src/core/tasks/visual';
 
 const clock = (hour: number, minute: number): TaskVisual => ({ kind: 'clock', hour, minute });
 const ruler = (fromMm: number, toMm: number, lengthCm = 15, unit: 'cm' | 'mm' = 'cm'): TaskVisual => ({ kind: 'ruler', unit, lengthCm, fromMm, toMm });
@@ -56,7 +56,7 @@ describe('a clock to set (S-13b)', () => {
         expect(validateVisual(set(4, 14, 5))).not.toEqual([]);
         expect(validateVisual(set(0, 0, 60))).not.toEqual([]);
         expect(validateVisual(set(13, 0, 60))).not.toEqual([]);
-        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true })).not.toEqual([]);
+        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true } as unknown as TaskVisual)).not.toEqual([]);   // the type forbids it; data from outside might not
     });
 
     it('is wide', () => {
@@ -356,5 +356,31 @@ describe('row of icons and the icon motion (S-14d)', () => {
         expect(describeVisual(row(['key', 'apple', 'cup']))).toBe('[row key apple cup]');
         expect(describeVisual(moving([3, 2], 'go'))).toBe('[icons apple 3+2 go]');
         expect(visualShape(row(['key', 'apple', 'cup']))).toBe('long');
+    });
+});
+
+describe('visualArtIds (child-flow-guards p1)', () => {
+    it('names the pictures a drawing needs, [] for drawn-in-code kinds', () => {
+        expect(visualArtIds({ kind: 'icons', icon: 'key', groups: [2, 3], framed: false })).toEqual(['key']);
+        expect(visualArtIds({ kind: 'row', icons: ['key', 'cup', 'book'], mark: 'left' })).toEqual(['key', 'cup', 'book']);
+        expect(visualArtIds({ kind: 'scale', item: 'apple', weights: ['weight-1kg', 'weight-2kg'] })).toEqual(['apple', 'weight-1kg', 'weight-2kg']);
+        expect(visualArtIds({ kind: 'money', items: ['coin-1zl', 'note-10zl'] })).toEqual(['coin-1zl', 'note-10zl']);
+        expect(visualArtIds({ kind: 'money', items: [], pay: { tray: ['coin-1zl', 'coin-5zl'], fewest: false } })).toEqual(['coin-1zl', 'coin-5zl']);
+        expect(visualArtIds({ kind: 'jugs', jugs: ['container-1l', 'container-half-l'] })).toEqual(['container-1l', 'container-half-l']);
+        expect(visualArtIds(clock(3, 0))).toEqual([]);
+        expect(visualArtIds({ kind: 'thermometer', celsius: 5 })).toEqual([]);
+    });
+});
+
+describe('assertPool and lineTicks', () => {
+    it('assertPool passes up to the limit and throws past it', () => {
+        expect(() => assertPool(10, 10, 'money')).not.toThrow();
+        expect(() => assertPool(11, 10, 'money')).toThrow(/money.*11.*10/);
+    });
+    it('lineTicks counts ticks and throws on a bad step or too many ticks', () => {
+        expect(lineTicks({ from: 0, to: 100, tick: 10 })).toBe(11);
+        expect(() => lineTicks({ from: 0, to: 10, tick: 0 })).toThrow(/tick/);
+        expect(() => lineTicks({ from: 0, to: 10, tick: -1 })).toThrow(/tick/);
+        expect(() => lineTicks({ from: 0, to: 40, tick: 1 })).toThrow(/ticks/);
     });
 });

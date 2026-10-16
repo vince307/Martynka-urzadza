@@ -4,6 +4,7 @@ import type { JugId } from '../../data/measures';
 import { ART_LIMITS, JUG_SOURCE_SIZE, JUG_VISIBLE_RECT } from '../../data/measures';
 import { TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
+import { assertPool } from '../../core/tasks/visual';
 import { ArtImage } from './ArtImage';
 import { jugsLayout } from './artLayout';
 import type { Rect } from './geometry';
@@ -22,12 +23,12 @@ export class Jugs {
     render(jugs: readonly JugId[], rect: Rect): void {
         this.setVisible(false);
         this.area = rect;
+        assertPool(jugs.length, MAX_JUGS, 'jugs');
         const layout = jugsLayout(jugs.length, rect, { ...TASK_LAYOUT.jugs, imageSize: JUG_SOURCE_SIZE, visible: JUG_VISIBLE_RECT });
         jugs.forEach((id, i) => {
-            const spot = layout.images[i];
             // A missing jug is a box over the jug's own visible part, not over the image's transparent margin (visual gate:
             // full-image boxes overlapped the next row and the solution line under them).
-            if (spot) this.images[i]?.show(ART_KEYS.measuring(id), spot, layout.jugs[i]);
+            this.images[i].show(ART_KEYS.measuring(id), layout.images[i], layout.jugs[i]);
         });
     }
 

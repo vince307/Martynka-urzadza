@@ -168,6 +168,11 @@ describe('narrationOf', () => {
     it('on the second try says try again and reads the first hint', () => {
         expect(narrationOf(answer(round(), WRONG), opts)).toBe('Spróbuj jeszcze raz. trzydzieści plus dwadzieścia równa się pięćdziesiąt');
     });
+    it('on the second try reads the task note instead of the first hint (PIC-05)', () => {
+        const noted: Task = { ...t('9 − 4', ['9 − 4 = 5'], 5), feedback: () => 'Kwota się zgadza. Spróbuj jeszcze raz.' };
+        const s = answer(startRound([noted], { ...balance.round, length: 1 }), WRONG);
+        expect(narrationOf(s, opts)).toBe('Spróbuj jeszcze raz. Kwota się zgadza. Spróbuj jeszcze raz.');
+    });
     it('on the second try without a hint repeats the command', () => {
         const s = answer(startRound([t('9 − 4', ['9 − 4 = 5'], 5), t('1 + 1', [], 2)], { ...balance.round, length: 2 }), WRONG);
         expect(narrationOf(s, opts)).toBe('Spróbuj jeszcze raz. Oblicz. dziewięć minus cztery');

@@ -127,6 +127,19 @@ describe('round trip of a session built with the real core functions', () => {
         expect(result).toEqual({ kind: 'ok', migratedFrom: null, session });
     });
 
+    it('a list-answer example (PIC-04) is a plain string and round-trips in the same v4 shape', () => {
+        const withExample: SessionSave = {
+            ...session,
+            learner: {
+                ...learner,
+                history: [{ skillId: 'E1.11.money_pay_10', ok: false, firstTry: false, at: 1, example: { prompt: 'Zapłać 5 zł.', given: '2 zł, 2 zł, 1 zł', answer: '5 zł' } }],
+            },
+        };
+        const result = decodeSave(clone(encodeSave(withExample)));
+        expect(result).toEqual({ kind: 'ok', migratedFrom: null, session: withExample });
+        expect(SAVE_VERSION).toBe(4);
+    });
+
     it('a game without a learner round-trips and encodes the current version', () => {
         const fresh: SessionSave = { stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null, variants: START_VARIANTS };
         const encoded = encodeSave(fresh);

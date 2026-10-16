@@ -8,6 +8,7 @@ import type { Rng } from '../../rng';
 import { formatNumber } from '../../text/formatNumber';
 import { countNoun } from '../../text/plural';
 import { BOX, MINUS } from '../symbols';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 
 export type PlaceValueVariant = 'read' | 'tens' | 'decompose' | 'build' | 'thousands' | 'orders';
@@ -27,7 +28,7 @@ export const parsePlaceValueParams = (params: Record<string, unknown>): PlaceVal
     }
     if (variant === 'thousands' || variant === 'orders') {
         // Text-only variants: no drawing, so the 999 limit of the block variants does not apply (the keypad takes 7 digits).
-        const [low, high] = variant === 'thousands' ? [1000, 10000] : [110000, 1000000];
+        const [low, high] = variant === 'thousands' ? [1001, 10000] : [110000, 1000000];
         if (typeof max !== 'number' || !Number.isInteger(max) || max < low || max > high) {
             throw new TypeError(`PLACE_VALUE ${variant} needs an integer params.max within ${low}..${high}, got ${String(max)}`);
         }
@@ -167,12 +168,10 @@ export const generatePlaceValue: Generator = (skill, rng): Task => {
     if (p.variant === 'orders') {
         return generateOrders(skill.id, p, rng);
     }
-    let n = rng.int(p.min, p.max);
-    if (p.variant === 'decompose') {
-        while (n % 10 === 0 || n <= 10) {
-            n = rng.int(p.min, p.max);
-        }
-    }
+    const n =
+        p.variant === 'decompose'
+            ? drawUntil(`PLACE_VALUE decompose ${p.min}..${p.max}`, () => rng.int(p.min, p.max), (x) => x % 10 !== 0 && x > 10)
+            : rng.int(p.min, p.max);
     const h = Math.floor(n / 100);
     const t = Math.floor((n % 100) / 10);
     const o = n % 10;

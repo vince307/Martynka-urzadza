@@ -4,6 +4,7 @@ import type { IconId } from '../../data/measures';
 import { ART_LIMITS } from '../../data/measures';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { ART_KEYS } from '../../data/taskArt';
+import { assertPool } from '../../core/tasks/visual';
 import { ArtImage } from './ArtImage';
 import { rowLayout } from './artLayout';
 import type { Rect } from './geometry';
@@ -22,6 +23,7 @@ export class IconRow {
     render(icons: readonly IconId[], rect: Rect): void {
         this.setVisible(false);
         this.area = rect;
+        assertPool(icons.length, ART_LIMITS.rowIcons, 'icon row');
         const look = TASK_LAYOUT.iconRow;
         const layout = rowLayout(icons.length, rect, look);
         const m = layout.mark;
@@ -32,8 +34,7 @@ export class IconRow {
         const top = m.y + look.pole;
         this.flag.fillTriangle(poleX + look.pole / 2, top, poleX + look.pole / 2 + flagSize, top + flagSize / 2, poleX + look.pole / 2, top + flagSize);
         icons.forEach((id, i) => {
-            const spot = layout.icons[i];
-            if (spot) this.images[i]?.show(ART_KEYS.icon(id), spot);
+            this.images[i].show(ART_KEYS.icon(id), layout.icons[i]);
         });
     }
 

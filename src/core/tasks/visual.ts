@@ -13,7 +13,8 @@ export type AnswerMode = SkillDef['answer'];
 
 export type TaskVisual =
     // `set`: the child turns the hands; hour/minute are the start pose and `snap` (60 or 5 minutes) the only source of the snapping.
-    | { kind: 'clock'; hour: number; minute: number; set?: true; snap?: 60 | 5 }
+    | { kind: 'clock'; hour: number; minute: number; set?: undefined; snap?: undefined }
+    | { kind: 'clock'; hour: number; minute: number; set: true; snap: 60 | 5 }
     | { kind: 'ruler'; unit: 'cm' | 'mm'; lengthCm: number; fromMm: number; toMm: number }
     | { kind: 'blocks'; hundreds: number; tens: number; ones: number }
     | { kind: 'bars'; bars: readonly { label: string; value: number }[]; scaleMax: number }
@@ -49,6 +50,28 @@ export type TaskVisual =
  */
 export type VisualShape = 'wide' | 'tall' | 'long';
 
+/** The answer modes with a layout for a tall drawing (`pictureLayout` `tallOf`). */
+export const TALL_MODES = ['tiles', 'keypad'] as const;
+
+/** A widget pools a fixed number of images (`ART_LIMITS`); a drawing past the pool is a data bug, so it throws instead of dropping pieces. */
+export const assertPool = (count: number, limit: number, what: string): void => {
+    if (!Number.isInteger(count) || count > limit) {
+        throw new RangeError(`${what}: ${count} pieces, the pool holds ${limit}`);
+    }
+};
+
+/** Number of ticks of a drawn number line; throws on a step below 1 or more ticks than the line can label. */
+export const lineTicks = (line: { from: number; to: number; tick: number }): number => {
+    if (!(line.tick >= 1)) {
+        throw new RangeError(`number line: tick ${line.tick} is below 1`);
+    }
+    const ticks = Math.floor((line.to - line.from) / line.tick) + 1;
+    if (ticks > balance.numberLine.maxTicks) {
+        throw new RangeError(`number line: ${ticks} ticks, at most ${balance.numberLine.maxTicks}`);
+    }
+    return ticks;
+};
+
 export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */
@@ -58,7 +81,7 @@ export const visualKey = (v: TaskVisual | undefined): string => {
     }
     switch (v.kind) {
         case 'clock':
-            return v.set ? `clock:${v.hour}:${v.minute}:set:${v.snap ?? ''}` : `clock:${v.hour}:${v.minute}`;
+            return v.set ? `clock:${v.hour}:${v.minute}:set:${v.snap}` : `clock:${v.hour}:${v.minute}`;
         case 'ruler':
             return `ruler:${v.unit}:${v.lengthCm}:${v.fromMm}:${v.toMm}`;
         case 'blocks':
@@ -96,6 +119,43 @@ export const visualKey = (v: TaskVisual | undefined): string => {
     }
 };
 
+/**
+ * Ids of the loaded pictures a drawing is made of (what `missingIds` names), so a round can redraw a task whose picture is missing.
+ * Drawn-in-code kinds return []. The shared frames (`balance-scale`, `thermometer-frame`) are not listed: every scale or
+ * thermometer task uses them, so a redraw cannot avoid them.
+ */
+export const visualArtIds = (v: TaskVisual): readonly string[] => {
+    switch (v.kind) {
+        case 'icons':
+            return [v.icon];
+        case 'row':
+            return v.icons;
+        case 'scale':
+            return [v.item, ...v.weights];
+        case 'money':
+            return v.pay ? v.pay.tray : v.items;
+        case 'jugs':
+            return v.jugs;
+        case 'clock':
+        case 'ruler':
+        case 'blocks':
+        case 'bars':
+        case 'thermometer':
+        case 'cells':
+        case 'grid':
+        case 'figure':
+        case 'column':
+        case 'arrows':
+        case 'pattern':
+        case 'numberLine':
+            return [];
+        default: {
+            const never: never = v;
+            return never;
+        }
+    }
+};
+
 const isInt = (n: number): boolean => Number.isInteger(n);
 
 /** Rule violations of a drawing; [] when it can be drawn and read. */
@@ -108,9 +168,7 @@ export const validateVisual = (v: TaskVisual): string[] => {
             if (v.set) {
                 if (v.snap !== 60 && v.snap !== 5) out.push(`clock to set needs snap 60 or 5, got ${String(v.snap)}`);
                 if (v.hour < 1 || v.hour > 12) out.push(`clock to set starts on hour ${v.hour}, need 1..12`);
-                if (v.snap && v.minute % v.snap !== 0 && !(v.snap === 60 && v.minute === 0)) out.push(`clock to set starts on minute ${v.minute}, off the snap ${v.snap}`);
-            } else if (v.snap !== undefined) {
-                out.push('clock snap without set');
+                if (v.minute % v.snap !== 0 && !(v.snap === 60 && v.minute === 0)) out.push(`clock to set starts on minute ${v.minute}, off the snap ${v.snap}`);
             }
             break;
         case 'ruler':

@@ -28,10 +28,17 @@ describe('forcedSkills', () => {
         expect(forcedSkills(stage, ids, 5)?.map((s) => s.id)).toEqual([ids[0], ids[1], ids[0], ids[1], ids[0]]);
     });
 
-    it('gives an ordinary round (null) for no list, an unknown id or an id of another stage', () => {
+    it('gives an ordinary round (null) for no list', () => {
         expect(forcedSkills(stage, null, 5)).toBeNull();
         expect(forcedSkills(stage, [], 5)).toBeNull();
-        expect(forcedSkills(stage, ['E3.99.none'], 5)).toBeNull();
+    });
+
+    it('gives an ordinary round (null) for an id of another stage (a spec may change the stage)', () => {
         expect(forcedSkills(stage, ['E1.6.even_odd_select_10'], 5)).toBeNull();
+    });
+
+    it('throws, naming the id, for an id no stage has', () => {
+        expect(() => forcedSkills(stage, ['E3.99.none'], 5)).toThrow(/E3\.99\.none/);
+        expect(() => forcedSkills(stage, ['E3.7.select_even_30', 'E3.98.typo'], 5)).toThrow(/E3\.98\.typo/);
     });
 });

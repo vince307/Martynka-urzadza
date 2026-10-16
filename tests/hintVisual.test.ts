@@ -146,6 +146,13 @@ describe('validateTask and the hint drawing', () => {
         expect(validateTask({ ...base, hintVisual: line([7, 10], 13) }, {})).toEqual([]);
     });
 
+    it('flags a hint drawing on a task that has its own drawing (the scene would drop it)', () => {
+        const own = { kind: 'numberLine', from: 0, to: 20, tick: 1, labels: [7], box: null, jumps: [] } as const;
+        const rules = validateTask({ ...base, visual: own, hintVisual: line([7, 10], 13) }, {}).map((v) => v.rule);
+        expect(rules).toContain('hintVisual');
+        expect(validateTask({ ...base, hintVisual: line([7, 10], 13) }, {}).map((v) => v.rule)).not.toContain('hintVisual');
+    });
+
     it('allows a hint drawing only with the keypad', () => {
         const tiles: Task = { ...base, input: 'tiles', choices: [12, 13, 14], hintVisual: line([7, 10], 13) };
         expect(validateTask(tiles, {}).map((v) => v.rule)).toContain('mode');

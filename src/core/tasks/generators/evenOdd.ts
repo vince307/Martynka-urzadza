@@ -3,6 +3,8 @@
 import { pl } from '../../../data/pl';
 import type { Generator, Task } from '../types';
 
+const MAX_ATTEMPTS = 1000;
+
 export interface EvenOddParams {
     max: number;
     min: 0 | 1;     // 0 admits zero as a drawn number (E1.6); default 1
@@ -44,10 +46,12 @@ export const generateEvenOdd: Generator = (skill, rng): Task => {
     // 2–4 even numbers among six distinct tiles.
     const evenCount = rng.int(2, 4);
     const tiles = new Set<number>();
-    while (tiles.size < evenCount) {
+    for (let attempt = 0; tiles.size < evenCount; attempt += 1) {
+        if (attempt >= MAX_ATTEMPTS) throw new RangeError(`EVEN_ODD select: no ${evenCount} even tiles in ${MAX_ATTEMPTS} tries (max ${p.max})`);
         tiles.add(2 * rng.int(1, Math.floor(p.max / 2)));
     }
-    while (tiles.size < SELECT_TILES) {
+    for (let attempt = 0; tiles.size < SELECT_TILES; attempt += 1) {
+        if (attempt >= MAX_ATTEMPTS) throw new RangeError(`EVEN_ODD select: no ${SELECT_TILES} distinct tiles in ${MAX_ATTEMPTS} tries (max ${p.max})`);
         tiles.add(2 * rng.int(0, Math.floor((p.max - 1) / 2)) + 1);
     }
     const choices = rng.shuffle([...tiles]);

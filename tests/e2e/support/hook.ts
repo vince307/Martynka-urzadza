@@ -14,6 +14,8 @@ export type DragBranch = 'blocks' | 'clock' | 'coins' | null;
 export interface Snapshot {
     index: number;
     solutionStep: number;
+    /** The solution lines on screen overflow their room even at the smallest scale (audit WNA-04). */
+    solutionOverflow?: boolean;
     phase: 'first' | 'second' | 'solution' | 'retype' | 'done';
     input: AnswerMode;
     /** The result boxes of a written column ('digits' mode): how many and the digits typed so far (from the ones); null in any other mode. */

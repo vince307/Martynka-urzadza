@@ -1,5 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
-import { clockHandAngles } from '../../core/round/pictureLayout';
+import { clockHandAngles, dialGeometry } from '../../core/round/pictureLayout';
 import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
@@ -24,13 +24,7 @@ export class ClockFace {
     /** Draws the dial centred in `rect`, as large as fits. */
     render(hour: number, minute: number, rect: Rect): void {
         this.area = rect;
-        const s = Math.min(rect.width, rect.height) / (2 * DIAL.outer + DIAL.border);
-        const cx = rect.x + rect.width / 2;
-        const cy = rect.y + rect.height / 2;
-        const polar = (angle: number, r: number): { x: number; y: number } => {
-            const rad = (angle * Math.PI) / 180;
-            return { x: cx + Math.sin(rad) * r * s, y: cy - Math.cos(rad) * r * s };
-        };
+        const { centre: { x: cx, y: cy }, scale: s, polar } = dialGeometry(rect, DIAL);
         const g = this.graphics;
         g.clear();
         g.fillStyle(PLACEHOLDER_COLORS.oak, 1);

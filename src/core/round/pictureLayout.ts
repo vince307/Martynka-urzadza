@@ -42,11 +42,13 @@ export interface TallSpec {
     answers?: Span;
 }
 
-const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => {
+const forSkill = (skillId?: string): string => (skillId ? ` (skill ${skillId})` : '');
+
+const tallOf = (spec: PictureSpec, input: AnswerMode, skillId?: string): TallSpec => {
     switch (input) {
         case 'keypad': return spec.tall.keypad;
         case 'tiles': return spec.tall.tiles;
-        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode`);
+        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode${forSkill(skillId)}`);
         default: { const _exhaustive: never = input; return _exhaustive; }
     }
 };
@@ -62,9 +64,10 @@ export const pictureLayout = (
     input: AnswerMode,
     solution: boolean,
     shape: VisualShape,
+    skillId?: string,
 ): { picture: PictureRect; lines: PictureRect | null } => {
     if (shape === 'tall') {
-        const tall = tallOf(spec, input);
+        const tall = tallOf(spec, input, skillId);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
     }
     if (shape === 'long' && input === 'tiles') {
@@ -84,11 +87,11 @@ export const pictureLayout = (
  * Where the answers and the bar go beside a drawing: null keeps the default (the notebook's tiles row, `TASK_LAYOUT.barSpan`).
  * A tall drawing moves the tiles row and the bar right of its column.
  */
-export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape): { tiles: Span | null; bar: Span | null } => {
+export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape, skillId?: string): { tiles: Span | null; bar: Span | null } => {
     switch (input) {
         case 'tiles': case 'keypad': {
             if (shape !== 'tall') return { tiles: null, bar: null };
-            const tall = tallOf(spec, input);
+            const tall = tallOf(spec, input, skillId);
             return { tiles: tall.answers ?? null, bar: tall.bar };
         }
         case 'drag': case 'select': case 'digits': return { tiles: null, bar: null };
@@ -132,11 +135,27 @@ export interface ClockSetLayout {
     lines: Rect;
 }
 
+export interface DialGeometry { centre: { x: number; y: number }; scale: number; polar: (angle: number, radius: number) => { x: number; y: number } }
+
+/** The one dial geometry: centred in `rect`, as large as fits; `polar` maps an angle (degrees clockwise from 12) and a radius in dial units to scene pixels. Shared by the ClockFace widget and the set-clock layout. */
+export const dialGeometry = (rect: Rect, dial: DialSpec): DialGeometry => {
+    const scale = Math.min(rect.width, rect.height) / (2 * dial.outer + dial.border);
+    const centre = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    return {
+        centre,
+        scale,
+        polar: (angle, radius) => {
+            const rad = (angle * Math.PI) / 180;
+            return { x: centre.x + Math.sin(rad) * radius * scale, y: centre.y - Math.cos(rad) * radius * scale };
+        },
+    };
+};
+
 /** Where the dial of a clock to set sits (same scale rule as the ClockFace widget) and what shares the screen with it. */
 export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect }, dial: DialSpec): ClockSetLayout => {
-    const scale = Math.min(drag.mat.width, drag.mat.height) / (2 * dial.outer + dial.border);
+    const { centre, scale } = dialGeometry(drag.mat, dial);
     return {
-        centre: { x: drag.mat.x + drag.mat.width / 2, y: drag.mat.y + drag.mat.height / 2 },
+        centre,
         scale,
         hourLength: dial.hourLength * scale,
         minuteLength: dial.minuteLength * scale,
@@ -146,10 +165,10 @@ export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect 
 };
 
 /** The hint number line and the solution lines under it; only the keypad task has room for them. */
-export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode): { picture: PictureRect; lines: PictureRect } => {
+export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode, skillId?: string): { picture: PictureRect; lines: PictureRect } => {
     switch (input) {
         case 'keypad': return spec.hint.keypad;
-        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode`);
+        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode${forSkill(skillId)}`);
         default: { const _exhaustive: never = input; return _exhaustive; }
     }
 };

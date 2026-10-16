@@ -1,7 +1,7 @@
 // Origin: S-14c phase 8. The review step (E6.11): playable without own skills, never a calendar start or warm-up step,
 // draws a round from the stage's other steps (step first, then skill), still unlocks like any other step.
 import { describe, expect, it } from 'vitest';
-import { buildAdaptiveRound, calendarStart, currentStep, endRound, playableSteps, skillBuckets, stepPlayable, unlockReady, unlockThreshold } from '../src/core/curriculum';
+import { buildAdaptiveRound, calendarStart, currentStep, endRound, playableSteps, reviewWeights, skillBuckets, stepPlayable, unlockReady, unlockThreshold } from '../src/core/curriculum';
 import { createRng } from '../src/core/rng';
 import { firstPlayableSteps, pickRoundSkills } from '../src/core/round/pick';
 import { withoutArtBlocked } from '../src/core/round/artFilter';
@@ -79,13 +79,13 @@ describe('review step E6.11', () => {
         expect(skillBuckets(E6, E5, 5).currentGroups).toBeUndefined();
     });
 
-    it('a review round draws each E6 step about equally (step first), about 14 % E5, nothing else', () => {
+    it('a review round draws each E6 step about equally (step first), about 10 % E5 (TXT-01, was 14 %), nothing else', () => {
         const b = skillBuckets(E6, E5, 11);
-        const picks = pickRoundSkills(b, RULES.weights, createRng(7), 20000);
+        const picks = pickRoundSkills(b, reviewWeights(RULES.weights), createRng(7), 20000);
         const e6 = picks.filter((k) => k.id.startsWith('E6.'));
         expect(picks.every((k) => k.id.startsWith('E6.') || k.id.startsWith('E5.'))).toBe(true);
-        expect(picks.length - e6.length).toBeGreaterThan(20000 * 0.12);
-        expect(picks.length - e6.length).toBeLessThan(20000 * 0.16);
+        expect(picks.length - e6.length).toBeGreaterThan(20000 * 0.08);
+        expect(picks.length - e6.length).toBeLessThan(20000 * 0.12);
         for (let n = 1; n <= 10; n++) {
             const share = e6.filter((k) => stepOf(k.id) === n).length / e6.length;
             expect(share, `E6.${n}`).toBeGreaterThan(0.085);

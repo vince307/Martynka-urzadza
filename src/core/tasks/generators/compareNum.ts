@@ -82,8 +82,11 @@ const largeHint = (a: number, b: number, sign: string): string[] => {
     }
     const [sa, sb] = [String(a), String(b)];
     let i = 0;
-    while (sa[i] === sb[i]) {
+    while (i < sa.length && sa[i] === sb[i]) {
         i += 1;
+    }
+    if (i >= sa.length) {
+        throw new RangeError(`COMPARE_NUM hint: ${a} and ${b} do not differ`);
     }
     const place = pl.tasks.placeNames[la - 1 - i] ?? '';
     return [pl.tasks.compareFirstDiffHint(place, Number(sa[i]), Number(sb[i])), last];

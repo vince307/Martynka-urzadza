@@ -113,6 +113,9 @@ const all = (skillId: string, figures: readonly FigureId[], rng: Rng): Task => {
             wrong.push(face);
         }
     }
+    if (wrong.length < total - targetCount) {
+        throw new RangeError(`SHAPES all: only ${wrong.length} of ${total - targetCount} distinct wrong faces in ${MAX_ATTEMPTS} tries`);
+    }
     const choices = rng.shuffle([...right, ...wrong]).map(faceKey);
     const rightKeys = right.map(faceKey);
     const answer = choices.filter((c) => rightKeys.includes(c));

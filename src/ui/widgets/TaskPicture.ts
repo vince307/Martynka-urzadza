@@ -73,7 +73,7 @@ export class TaskPicture {
             return;
         }
         this.area = rect;
-        const widgets: Partial<Record<TaskVisual['kind'], { shown(): boolean; art?(): { key: string; loaded: boolean }[] }>> = {
+        const widgets: Record<TaskVisual['kind'], { shown(): boolean; art?(): { key: string; loaded: boolean }[] }> = {
             clock: this.clock,
             ruler: this.ruler,
             blocks: this.blocks,
@@ -92,7 +92,7 @@ export class TaskPicture {
             pattern: this.pattern,
             column: this.column,
         };
-        this.drawn = widgets[visual.kind] ?? null;
+        this.drawn = widgets[visual.kind];
         switch (visual.kind) {
             case 'clock':
                 this.clock.render(visual.hour, visual.minute, rect);

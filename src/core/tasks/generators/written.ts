@@ -4,6 +4,7 @@
 import { pl } from '../../../data/pl';
 import type { Rng } from '../../rng';
 import { MINUS } from '../symbols';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 import { columnSteps, type ColumnVisual } from '../written';
 
@@ -30,16 +31,20 @@ export const parseWrittenParams = (params: Record<string, unknown>): WrittenPara
 const draw = (p: WrittenParams, rng: Rng): ColumnVisual => {
     const lo = p.digits === 2 ? 10 : 100;
     const hi = p.digits === 2 ? 99 : 999;
-    for (;;) {
-        const x = rng.int(lo, hi);
-        const y = rng.int(lo, hi);
-        const [a, b] = p.op === '+' ? [x, y] : [Math.max(x, y), Math.min(x, y)];
-        const result = p.op === '+' ? a + b : a - b;
-        if (result < lo || result > hi) continue;
-        const v: ColumnVisual = { kind: 'column', op: p.op, a, b, columns: p.digits };
-        if (p.carry === 'required' && !columnSteps(v).some((s) => s.over)) continue;
-        return v;
-    }
+    return drawUntil<ColumnVisual>(
+        `WRITTEN ${p.op} ${p.digits} digits, carry ${p.carry}`,
+        () => {
+            const x = rng.int(lo, hi);
+            const y = rng.int(lo, hi);
+            const [a, b] = p.op === '+' ? [x, y] : [Math.max(x, y), Math.min(x, y)];
+            return { kind: 'column', op: p.op, a, b, columns: p.digits };
+        },
+        (v) => {
+            const result = p.op === '+' ? v.a + v.b : v.a - v.b;
+            if (result < lo || result > hi) return false;
+            return p.carry !== 'required' || columnSteps(v).some((s) => s.over);
+        },
+    );
 };
 
 const hintLines = (v: ColumnVisual, result: number): string[] => {

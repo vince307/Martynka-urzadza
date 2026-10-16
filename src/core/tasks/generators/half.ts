@@ -23,6 +23,6 @@ export const generateHalf: Generator = (skill, rng): Task => {
         skillId: skill.id,
         prompt: pl.tasks.half(n),
         answer: half,
-        hint: [`${n} ${DIVIDE} 2 = ${half}`, `${half} + ${half} = ${n}`],
+        hint: [pl.tasks.halfMethodHint, `${n} ${DIVIDE} 2 = ${half}`, `${half} + ${half} = ${n}`],
     };
 };

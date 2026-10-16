@@ -461,6 +461,7 @@ export const pl = {
             `${n} jest między ${low} a ${high}`,
             `${n} jest bliżej ${nearest}`,
         ],
+        halfMethodHint: 'Połowa to jedna z dwóch równych części.',
         half: (n: number) => `Ile to jest połowa liczby ${n}?`,
         compareHint: (n: number, parts: string) => `${n} to ${parts}`,
         compareDigitsHint: (n: string, digits: string) => `${n} ma ${digits}`,
@@ -638,6 +639,8 @@ export const pl = {
         moneyPayPrompt: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
         moneyPaySpeak: (amount: string, fewest: boolean) => (fewest ? `Zapłać ${amount}. Użyj jak najmniej monet.` : `Zapłać ${amount}.`),
         moneyPayHint: (hasNote: boolean) => (hasNote ? 'Połóż największą monetę lub banknot, który nie jest za duży.' : 'Połóż największą monetę, która nie jest za duża.'),
+        // DESIGN-GAP 124: the kit has no line for a wallet with the right sum but more coins than needed; the text is ours, to be read by a teacher.
+        moneyPayTooManyCoins: 'Kwota się zgadza. Spróbuj zapłacić mniejszą liczbą monet.',
         moneyPayRestLine: (first: string, rest: string) => `${first} i jeszcze ${rest}.`,
         moneyPaySumLine: (parts: readonly string[], amount: string) => `${parts.join(' + ')} = ${amount}`,
         moneyPayOneLine: (amount: string, note: boolean) => (note ? `Wystarczy jeden banknot: ${amount}.` : `Wystarczy jedna moneta: ${amount}.`),

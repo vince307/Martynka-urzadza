@@ -8,7 +8,7 @@ import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
 import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
-import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
+import { answer, lastTaskSettled, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
@@ -26,13 +26,14 @@ import type { ArtHealth } from '../core/artHealth';
 import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
-import { roundView } from '../core/round/view';
+import { modeWidgets, roundView } from '../core/round/view';
 import { digitBoxCount, startDigitBoxes, stepDigitBoxes, type DigitBoxes } from '../core/round/digitBoxes';
 import type { KeypadKey } from '../core/round/keypad';
 import { columnMarks } from '../core/tasks/written';
 import { dragMode, type DragMode } from '../core/tasks/dragMode';
 import { emptyWallet, walletCoins } from '../core/coins';
-import { stepTrayDrag, type TrayDragGeo, type TrayDragState } from '../core/trayDrag';
+import { rawToDragEvent, type RawPointer } from '../core/dragEvents';
+import { canSubmit, stepTrayDrag, type TrayDragGeo, type TrayDragState } from '../core/trayDrag';
 import type { MoneyId } from '../data/measures';
 import { coinGeometry, coinLayout, dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, hintPictureLayout, pictureLayout } from '../core/round/pictureLayout';
@@ -120,6 +121,7 @@ export interface TaskSnapshot {
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
     readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
+    readonly solutionOverflow: boolean;   // the solution lines on screen overflow their room even at the smallest scale (audit WNA-04)
 }
 
 export interface TaskTargets {
@@ -150,6 +152,7 @@ export class TaskScene extends Scene {
     private state!: RoundState;
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
+    private variantCounted = false;   // this variant round already went through countRound (at its last answer)
     private reported: { index: number; value: unknown } | null = null;   // the right value the child gave for the open task (several right tiles)
     private select!: SelectTiles;
     private blockMat!: BlockMat;
@@ -187,6 +190,7 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
     private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
     private promptBaseSize: number = FONT_SIZES.prompt;   // the size the prompt was drawn at (a long sentence is smaller), restored when the steps close
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
@@ -245,12 +249,12 @@ export class TaskScene extends Scene {
         this.tiles = new AnswerTiles(this, (value) => this.submit(value));
         this.select = new SelectTiles(this, (value) => this.submit(value));
         this.keypad = new Keypad(this, balance.keypad.maxDigits, (value) => this.submit(value), (key) => this.pressBoxKey(key));
-        this.blockMat = new BlockMat(this, (value) => this.submit(value));
+        this.blockMat = new BlockMat(this, (value) => { if (canSubmit(this.dragState)) this.submit(value); });   // like the coins and the clock (PIC-02, impl review)
         this.coinWallet = new CoinWallet(this, (grosze) => this.submit(grosze));
         // "OK" under a second finger while a hand is still held is ignored: the held pose is not settled yet, and
         // ending the task would cancel the grab and draw the hands back to the pose before it (impl review).
         this.clockSet = new ClockSet(this, (value) => {
-            if (this.clockState.carrying === null) this.submit(value);
+            if (canSubmit(this.clockState)) this.submit(value);
         });
         this.clockState = initialClockSet(this.clockStart);
         this.dragKind = null;
@@ -258,13 +262,11 @@ export class TaskScene extends Scene {
         this.coinState = { mat: emptyWallet(), carrying: null };
         this.dragLive = false;
         // The whole scene feeds raw pointer events to the drag reducer of the task (core/blockDrag, core/clockSet or the coin wallet over core/trayDrag, chosen by dragMode); it acts only while a 'drag' task takes touches.
-        type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
-        const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
-        this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
-        this.input.on('pointermove', (p: Raw) => this.feedDrag({ type: 'move', pointerId: p.id, x: p.x, y: p.y }));
-        this.input.on('pointerup', (p: Raw) => this.feedDrag(lift(p)));
+        this.input.on('pointerdown', (p: RawPointer) => this.feedDrag(rawToDragEvent('down', p)));
+        this.input.on('pointermove', (p: RawPointer) => this.feedDrag(rawToDragEvent('move', p)));
+        this.input.on('pointerup', (p: RawPointer) => this.feedDrag(rawToDragEvent('up', p)));
         // A finger lifted outside the canvas (the letterbox) is not a drop: like a system cancel it leaves the mat as it was.
-        this.input.on('pointerupoutside', () => this.feedDrag({ type: 'cancel' }));
+        this.input.on('pointerupoutside', (p: RawPointer) => this.feedDrag(rawToDragEvent('upoutside', p)));
         const onSleep = (): void => this.feedDrag({ type: 'reset' });
         this.events.on('sleep', onSleep);
         this.bar = new FeedbackBar(this, () => this.advance());
@@ -433,7 +435,7 @@ export class TaskScene extends Scene {
                 this.diceView.show({ a: thrown.a, b: thrown.b, op: thrown.op });
             }
             if (view.input === 'tiles' && !diceRound) {
-                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
+                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide', task0.skillId).tiles ?? undefined);
             }
             if (view.input === 'select') {
                 this.select.setChoices(view.choices);
@@ -442,9 +444,9 @@ export class TaskScene extends Scene {
             this.dragState = initialBlockDrag();
             this.coinState = { mat: emptyWallet(), carrying: null };
             this.dragKind = view.input === 'drag' ? dragMode(task0) : null;
-            if (this.clockTask && task0.visual?.kind === 'clock') {
+            if (this.clockTask && task0.visual?.kind === 'clock' && task0.visual.set) {
                 this.clockStart = { hour: task0.visual.hour, minute: task0.visual.minute };
-                this.clockSnap = task0.visual.snap ?? 60;
+                this.clockSnap = task0.visual.snap;
                 this.clockState = initialClockSet(this.clockStart);
             }
             // Only the blocks branch of 'drag' has a tray; the branch comes from the drawing (core/tasks/dragMode), not from the answer's type.
@@ -460,16 +462,16 @@ export class TaskScene extends Scene {
         const task = this.state.tasks[this.state.index];
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
         const solutionShown = view.bar.kind === 'solution';
-        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
+        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide', task.skillId);
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         const columnState = view.visual?.kind === 'column' ? { marks: columnMarks(view.visual, this.marksShown()), boxes: this.boxes, mode: this.state.phase === 'done' ? ('correct' as const) : view.inputActive ? ('active' as const) : ('locked' as const) } : undefined;
         this.picture.render(this.dragKind === 'clock' || this.dragKind === 'coins' ? null : view.visual, pictureRect, columnState);   // a clock to set is drawn by ClockSet, a payment by CoinWallet
         // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP 92, docs/design-gaps.md).
-        const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input) : null;
+        const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input, task.skillId) : null;
         this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';
-        const shows = this.widgetsOf(view.input);
+        const shows = modeWidgets(view.input);
         this.tiles.setVisible(shows.tiles && !diceRound);
         this.keypad.setKeyMode(view.input === 'digits');
         this.keypad.setVisible(shows.keypad);
@@ -510,7 +512,7 @@ export class TaskScene extends Scene {
         }
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
-        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
+        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide', task.skillId).bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).
@@ -531,6 +533,10 @@ export class TaskScene extends Scene {
                 const bar = view.bar;
                 this.fitPromptToSteps(task, (): boolean => this.steps.fits(bar, top(), maxWidth, limit));
                 this.steps.show(view.bar, centerX, top(), maxWidth, limit);
+            }
+            if (this.steps.overflowed() && !this.overflowWarned.has(task.skillId)) {
+                this.overflowWarned.add(task.skillId);
+                console.warn(`Solution lines overflow at the smallest scale: ${task.skillId}`);
             }
         } else {
             this.steps.hide();
@@ -632,7 +638,7 @@ export class TaskScene extends Scene {
         const wordRound = this.kind === 'word';
         const promptY = task.visual ? TASK_LAYOUT.picture.promptY : wordRound ? MINIGAME_LAYOUT.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
-        const beside = this.widgetsOf(input).keypad;   // the keypad sits right of the prompt
+        const beside = modeWidgets(input).keypad;   // the keypad sits right of the prompt
         const sentence = !beside ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
         const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : !beside ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
@@ -732,6 +738,12 @@ export class TaskScene extends Scene {
         this.state = answer(this.state, value);
         this.playRoundCues(prior);
         this.syncStars(before, this.answerSpot(value));
+        if (this.kind !== 'round' && !this.variantCounted && lastTaskSettled(prior, this.state)) {
+            // A variant is counted with its last stars, so closing before "Dalej" cannot replay it (SV2-10).
+            this.countRound(this.kind);
+            this.variantCounted = true;
+            void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+        }
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
             this.boxes = startDigitBoxes(this.boxes.count);   // and wrong digits: every box is emptied, so the right ones are not given away
@@ -836,6 +848,8 @@ export class TaskScene extends Scene {
     /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
     private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] }): void {
         this.state = round.state;
+        this.variantCounted = false;
+        this.reported = null;
         this.kind = round.kind;
         this.puzzleId = round.puzzleId ?? null;
         this.word = round.word ?? null;
@@ -968,7 +982,7 @@ export class TaskScene extends Scene {
      * No endRound: the variant never touches mastery, unlocks or the easing counters. One registry write, then the save.
      */
     private finishVariant(kind: VariantKind): void {
-        this.countRound(kind);
+        if (!this.variantCounted) this.countRound(kind);   // normally counted already at the last answer (submit)
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
     }
 
@@ -1024,17 +1038,6 @@ export class TaskScene extends Scene {
                 }
             case 'keypad': case 'digits': return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
             default: { const unreachable: never = view.input; return unreachable; }
-        }
-    }
-
-    /** Which input widgets an answer mode shows; the one place that maps a mode to its widgets (the switch is exhaustive). */
-    private widgetsOf(input: AnswerMode): { tiles: boolean; keypad: boolean; select: boolean } {
-        switch (input) {
-            case 'tiles': return { tiles: true, keypad: false, select: false };
-            case 'keypad': case 'digits': return { tiles: false, keypad: true, select: false };
-            case 'select': return { tiles: false, keypad: false, select: true };
-            case 'drag': return { tiles: false, keypad: false, select: false };
-            default: { const unreachable: never = input; return unreachable; }
         }
     }
 
@@ -1145,6 +1148,7 @@ export class TaskScene extends Scene {
             unlock: this.unlockView(),
             variant: this.kind === 'round' ? null : Object.freeze({ kind: this.kind, puzzleId: this.puzzleId, letters: this.word === null ? null : Object.freeze(this.letters.letters()), covered: this.dice === null ? null : Object.freeze(this.board.coveredValues()) }),
             today: this.today(),
+            solutionOverflow: this.steps.overflowed(),
         });
     }
 

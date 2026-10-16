@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generateClockElapsed, parseClockElapsedParams } from '../src/core/tasks/generators/clockElapsed';
+import { fill, generateClockElapsed, parseClockElapsedParams } from '../src/core/tasks/generators/clockElapsed';
+import { endEvents, nightTemplates, spanTemplates, toHourTemplates } from '../src/data/elapsed';
 import { formatTime } from '../src/core/text/time';
 import type { SkillDef } from '../src/core/types';
 import { forEachDraw } from './helpers';
@@ -123,5 +124,21 @@ describe('generateClockElapsed', () => {
         expect(() => parseClockElapsedParams({ variants: ['span'], maxSpan: 5 })).toThrow(TypeError);
         expect(() => parseClockElapsedParams({ variants: ['span'] })).toThrow(TypeError);
         expect(parseClockElapsedParams({ variants: ['span', 'nightHours'], maxSpan: 75 }).maxSpan).toBe(75);
+    });
+});
+
+describe('elapsed templates (TXT-07)', () => {
+    const placeholders = (t: string): string[] => [...t.matchAll(/\{(\w)\}/g)].map((m) => m[1]);
+    const within = (t: string, allowed: string[]): boolean => placeholders(t).every((p) => allowed.includes(p));
+
+    it('every template uses only the placeholders its generator fills', () => {
+        for (const e of endEvents) expect(within(e.template, ['a', 'd']), e.template).toBe(true);
+        for (const s of [...spanTemplates.ride, ...spanTemplates.show]) expect(within(s.template, ['a', 'b']), s.template).toBe(true);
+        for (const t of [...toHourTemplates, ...nightTemplates]) expect(within(t, ['a', 'b']), t).toBe(true);
+    });
+
+    it('fill refuses an unknown placeholder, naming it and the template', () => {
+        expect(() => fill('Jest {a}, potem {z}.', { a: '8.00' }, {})).toThrow(/\{z\}.*Jest \{a\}, potem \{z\}\./);
+        expect(fill('Jest {a}.', { a: '8.00' }, { a: 'osiem' })).toEqual({ prompt: 'Jest 8.00.', speak: 'Jest osiem.' });
     });
 });

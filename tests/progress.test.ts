@@ -147,6 +147,11 @@ describe('progressView examples', () => {
         expect(examplesOf([miss(W, 1, ex('Dopisz', 4, [3, 12345]))])[0].answer).toBe('3, 12 345');
     });
 
+    it('shows a list-answer example as the text it was saved with and an old wallet in grosze as numbers (PIC-04)', () => {
+        expect(examplesOf([miss(W, 1, ex('Zapłać 5 zł.', '2 zł, 2 zł, 1 zł', '5 zł'))])).toEqual([{ prompt: 'Zapłać 5 zł.', given: '2 zł, 2 zł, 1 zł', answer: '5 zł' }]);
+        expect(examplesOf([miss(W, 1, ex('Zapłać 5 zł.', 7, [500]))])[0].answer).toBe('500');
+    });
+
     it('turns line breaks in the prompt into spaces', () => {
         expect(examplesOf([miss(W, 1, ex('7 + __\n= 10', 2, 3))])[0].prompt).toBe('7 + __ = 10');
     });

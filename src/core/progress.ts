@@ -42,13 +42,17 @@ const formatExample = (example: MistakeExample): ProgressExample => ({
  * The step the child is on ("step N of M" over playable steps) and the weakest skills of the stage: playable skills with
  * at least one first-try miss, ranked by mastery ascending, misses descending, newer miss first, curriculum order.
  */
-export const progressView = (stage: StageDef, adaptation: Adaptation, rules: ProgressRules): ProgressView => {
+export const progressView = (stage: StageDef, adaptation: Adaptation, rules: ProgressRules, previous?: StageDef): ProgressView => {
     const steps = playableSteps(stage);
     const current = currentStep(stage, adaptation.unlockedStep[stage.id] ?? 1);
     const title = stage.steps.find((s) => s.step === current)?.title ?? '';
-    const candidates = stage.steps.flatMap((s) =>
+    // Previous-stage skills are drawn on every step (about 10 %): their misses count from the day the current stage began,
+    // i.e. the earliest history entry of a current-stage skill. DESIGN-GAP 122: the kit's progress preview lists the current stage only.
+    const began = adaptation.history.reduce((at, h) => (h.skillId.startsWith(`${stage.id}.`) ? Math.min(at, h.at) : at), Infinity);
+    const sources = [...stage.steps.map((s) => ({ s, since: -Infinity })), ...(previous ? previous.steps.map((s) => ({ s, since: began })) : [])];
+    const candidates = sources.flatMap(({ s, since }) =>
         s.skills.filter(playable).map((skill) => {
-            const misses = adaptation.history.filter((h) => h.skillId === skill.id && !h.firstTry);
+            const misses = adaptation.history.filter((h) => h.skillId === skill.id && !h.firstTry && h.at >= since);
             return {
                 skill,
                 title: s.title,

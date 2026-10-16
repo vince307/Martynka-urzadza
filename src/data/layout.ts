@@ -1,3 +1,4 @@
+import type { CoinId } from './measures';
 // Scene geometry and placeholder colours. Scenes import these instead of
 // hard-coding numbers (plan section 14: no balance numbers in scenes).
 
@@ -366,7 +367,7 @@ export const TASK_LAYOUT = {
     // than a coin and the coins differ a little (diameter in mm x `coinPerMm`, from the real coins). DESIGN-GAP (row added in S-14 phase 9): the kit has no table layout.
     money: {
         noteWidth: 192, noteHeight: 128, gap: 24, rowGap: 20, coinPerMm: 4.8, maxScale: 1.4,
-        coinMm: { 'coin-01gr': 15.5, 'coin-02gr': 17.5, 'coin-05gr': 19.5, 'coin-10gr': 16.5, 'coin-20gr': 18.5, 'coin-50gr': 20.5, 'coin-1zl': 23, 'coin-2zl': 21.5, 'coin-5zl': 24 },
+        coinMm: { 'coin-01gr': 15.5, 'coin-02gr': 17.5, 'coin-05gr': 19.5, 'coin-10gr': 16.5, 'coin-20gr': 18.5, 'coin-50gr': 20.5, 'coin-1zl': 23, 'coin-2zl': 21.5, 'coin-5zl': 24 } satisfies Record<CoinId, number>,
     },
     // Balance scale in balance (S-14), in the 512 x 384 units of the converted drawing: the item stands in the left pan, the weights in the
     // right one (up to `perRow` side by side, further rows `rowLift` higher). DESIGN-GAP (row added in S-14 phase 9): the kit shows the scale without things on it.

@@ -67,7 +67,6 @@ export class WrittenColumn {
             this.digit(xOf(col) - W.borrowOne.dx * s, rowAY - W.borrowOne.dy * s, '1', 'columnMark', s);
         }
         for (const { col } of marks.carries) {
-            if (col >= v.columns) continue;
             g.fillStyle(PLACEHOLDER_COLORS.butter, 1);
             g.fillCircle(xOf(col), markY, W.carry.radius * s);
             g.lineStyle(W.carry.border * s, PLACEHOLDER_COLORS.starOutline, 1);

@@ -289,3 +289,10 @@ describe('PLACE_VALUE thousands and orders', () => {
         expect(e6('E6.9.place_value_10000')?.type).toBe('PLACE_VALUE');
     });
 });
+
+describe('thousands bound (TXT-08)', () => {
+    it('refuses a max of 1000: every draw would need two non-zero digits', () => {
+        expect(() => parsePlaceValueParams({ variant: 'thousands', max: 1000 })).toThrow(TypeError);
+        expect(() => parsePlaceValueParams({ variant: 'thousands', max: 1001 })).not.toThrow();
+    });
+});

@@ -18,6 +18,7 @@ export interface Task {
     choices?: (number | string)[];       // for tile answers
     hint: string[];                      // successive hint steps shown after a mistake
     check?: (input: unknown) => boolean; // tasks with several correct answers
+    feedback?: (input: unknown) => string | null; // a calm line for a known near miss; never decides right or wrong (PIC-05)
     tileRange?: { min: number; max: number }; // tile values the generator knows to be possible, narrower than the skill bound
 }
 

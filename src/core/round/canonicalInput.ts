@@ -34,8 +34,8 @@ export const canonicalInput = (task: Task): TaskAnswer => {
     if (mode === 'drag') {
         if (dragMode(task) === 'clock') {
             const visual = task.visual;
-            const snap = visual?.kind === 'clock' ? visual.snap : undefined;
-            if (snap === undefined) throw new Error(`clock to set without a snap (skill ${task.skillId})`);
+            if (visual?.kind !== 'clock' || !visual.set) throw new Error(`clock to set without a snap (skill ${task.skillId})`);   // dragMode already guarantees it
+            const snap = visual.snap;
             if (typeof task.answer !== 'string' || !reachableTimes(snap).includes(task.answer)) {
                 throw new Error(`clock answer ${String(task.answer)} not in the reachable set of snap ${snap} (skill ${task.skillId})`);
             }
@@ -55,7 +55,27 @@ export const canonicalInput = (task: Task): TaskAnswer => {
         return n;
     }
     switch (mode) {
-        case 'tiles': case 'keypad': case undefined: return task.answer;   // undefined: hand-built tasks in tests (tiles or keypad)
+        case 'tiles': return tileInput(task);
+        case 'keypad': return keypadInput(task);
+        case undefined: return task.choices ? tileInput(task) : keypadInput(task);   // undefined: hand-built tasks in tests (tiles or keypad)
         default: { const _exhaustive: never = mode; return _exhaustive; }
     }
+};
+
+/** The tile a child taps for the right answer: the first one `check` accepts, else the one equal to the answer. */
+const tileInput = (task: Task): TaskAnswer => {
+    const choices = task.choices ?? [];
+    const tile = task.check ? choices.find((c) => task.check?.(c) === true) : choices.find((c) => c === task.answer);
+    if (tile === undefined) throw new Error(`no tile gives the answer ${String(task.answer)} among ${JSON.stringify(choices)} (skill ${task.skillId})`);
+    return tile;
+};
+
+/** What the keypad can type: a non-negative whole number of at most `balance.keypad.maxDigits` digits that `check` accepts. */
+const keypadInput = (task: Task): TaskAnswer => {
+    const n = task.answer;
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 0 || String(n).length > balance.keypad.maxDigits) {
+        throw new Error(`keypad cannot type the answer ${String(n)} (skill ${task.skillId})`);
+    }
+    if (task.check?.(n) === false) throw new Error(`keypad answer ${n} rejected by check (skill ${task.skillId})`);
+    return n;
 };
