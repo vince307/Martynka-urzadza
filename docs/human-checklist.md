@@ -209,3 +209,27 @@ Bieg uzgodniony 2026-10-15 („S-14c + S-14d + fix po audycie, pełna wysyłka�
 - [ ] Poprawka zapisu 4.7 — bez licznika startów; wyjście z trwałego `timeout` to „Poczekaj dłużej” na ten sam odczyt i warunkowa rada o danych strony.
 - [ ] S-14c 9.6 — INEQUALITY na kafelkach (2 dobre, 2 złe) z jednym przykładem w rozwiązaniu; runda powtórkowa E6.11 losuje krok, potem umiejętność, ~14 % z E5 (w łagodzeniu więcej — audyt TXT-01); E6.11 nigdy nie jest startem ani rozgrzewką; bez LOGIC w E6.11; rozkład jazdy tekstem; ceny w pełnych złotych; bez „ustaw zegar” w E5–E6; wyższe progi odblokowania 10 kroków E1–E6; start E6 przesunięty przez grywalny E6.2.
 - [ ] S-14d 9.7 — SPATIAL, SYMMETRY i BONDS „połącz pary” poza slice'em; ORDINAL tylko liczby do 5; E1.11 bez banknotu 10 zł (jest w E2.2); tryb z obrazkami jako filtr tylko w E1 (6 lat wrzesień–styczeń albo łagodzenie); wyższe progi E1.2 i E1.3; start E1 we wrześniu na E1.1; po złej zapłacie portfel się opróżnia.
+
+## Bieg 2026-10-16-fix-stale-tab-health (poprawka po audycie #73: B-1, G-1, S-1, P-1)
+
+Bieg uruchomiony 2026-10-16 („fix:stale-tab-and-health”, pełna wysyłka). Wysłane: #75 (merge 1a3edb4, Deploy 38899186902 zielony). Format zapisu v3 → v4 (zaakceptowany w czacie: „akceptuje v4, kontynuuj”). `main` 1a3edb4: 3139 testów jednostkowych, 125 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #76 (nie scalać w biegu): 0 CRITICAL, 0 HIGH, 7 MEDIUM, 8 LOW. Najważniejsze: T-1 (`src/core/save.ts` `writeVerdict` — okno z buildu sprzed #69 nadal pisze v3 na v4 bez śladu; okno #69–#72 dostaje odmowę `NewerSave` bez karty), O-1 (`src/core/swStatus.ts` `INSTALL_FAILED` — przyczyna nieudanej instalacji SW ginie; smoke deployu nie sprawdza, że pliki z precache są serwowane, P-3), O-2 (`stepSw` — po nieudanej aktualizacji za aktywnym SW panel mówi „gotowa offline”, a urządzenie zostaje na starym buildzie).
+- [ ] Starszy audyt PR #73 (2026-10-16_0915) — zamknięte przez #75: B-1, B-2, B-7, G-1, S-1, S-3, S-6, S-8, S-11; częściowo P-1 i B-8. Zdecyduj, czy PR #73 scalić jako historię, czy zamknąć.
+
+### P1 — na tablecie
+
+- [ ] stale-tab-and-health 11.4 — iPad: czy karta „Zacznijmy grę jeszcze raz” czyta się spokojnie dla 6–8-latka i czy „Zacznij od nowa” przywraca najnowsze gwiazdki (dwie karty Safari albo karta + ikona PWA).
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-16-stale-tab-and-health/follow-ups/review-fixes.md` (16 wpisów + VG-1 z bramki wizualnej): m.in. P-8 „zachowaj pierwszą kopię”, e2e na dwóch prawdziwych buildach, kolejność kart `future`/`newer`, `takenOver` widoczne dopiero po jawnym `registration.update()` (VG-1), test #2 P-5 czerwony tylko w izolacji.
+- [ ] Wycofanie poniżej buildu v4 pokazuje kartę `future` do ponownego wdrożenia (notatka w `deploy/README.md`).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Karta odmowy zapisu pojawia się przy `otherTab` I `newer` i trzyma wejście, więc w tej karcie rodzic nie otworzy ustawień ani nie przeczyta powodu w „Zapis gry” (follow-up z wyzwalaczem; przegląd uznał to za zgodne z FR-003/FR-020).
+- [ ] Edycja tylko dokumentacji `deploy/README.md` w biegu (precedens 27406ab, #65); profil § 5 doprecyzowany w tym PR.
+- [ ] Bazowa linia po wysyłce wzięta z CI 38898544137 + bramki orkiestratora (drzewo merge = głowa gałęzi), bez ponownego `baseline.sh`.
