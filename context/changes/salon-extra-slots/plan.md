@@ -687,9 +687,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [x] 1.2 Deliberate break: `shownVariant` ignoring `stagesDone` / `holdPoint` scanning from `box.top` → red; restored; meta-check (rules on synthetic data)
-- [x] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`)
+- [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 4ac1460
+- [x] 1.2 Deliberate break: `shownVariant` ignoring `stagesDone` / `holdPoint` scanning from `box.top` → red; restored; meta-check (rules on synthetic data) — 4ac1460
+- [x] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — 4ac1460
 - [ ] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
