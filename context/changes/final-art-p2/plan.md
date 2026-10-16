@@ -759,9 +759,9 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 1.1 New/changed tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `maxTotal` 10 / box without `coinGap` / `liftedSlot` always `lastIndexOf` → red; restored; meta-check (geometry, not drawing)
-- [ ] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`)
+- [x] 1.1 New/changed tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — afac8e1
+- [x] 1.2 Deliberate break: `maxTotal` 10 / box without `coinGap` / `liftedSlot` always `lastIndexOf` → red; restored; meta-check (geometry, not drawing) — afac8e1
+- [x] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — afac8e1
 - [ ] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `money-pay.spec.ts` green
 
 #### Manual
