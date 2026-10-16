@@ -108,6 +108,10 @@ export const pl = {
         roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
         roomArtMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
+        // The screen pictures (the third line of "Obrazki", DESIGN-GAP 119): the same verb agreement as artMissing.
+        uiArtOk: 'Wszystkie obrazki ekranów są wczytane.',
+        uiArtMissing: (count: number, total: number) =>
+            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek. Uruchom grę ponownie.`,
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {

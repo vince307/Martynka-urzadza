@@ -24,3 +24,13 @@ describe('pl.settings.soundMissing', () => {
         expect(pl.settings.soundMissing(count)).toBe(text);
     });
 });
+
+describe('pl.settings.uiArtMissing', () => {
+    it.each([
+        [1, '1 z 5 obrazków ekranów nie wczytał się.'],
+        [2, '2 z 5 obrazków ekranów nie wczytały się.'],
+        [5, '5 z 5 obrazków ekranów nie wczytało się.'],
+    ])('agrees the verb with %i', (count, start) => {
+        expect(pl.settings.uiArtMissing(count, 5).startsWith(start)).toBe(true);
+    });
+});

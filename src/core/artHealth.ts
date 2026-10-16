@@ -21,3 +21,8 @@ export const artHealthView = (health: ArtHealth | undefined): ArtHealthView => {
     if (!health) return { kind: 'unknown' };
     return health.missing.length === 0 ? { kind: 'ok', total: health.total } : { kind: 'missing', count: health.missing.length, total: health.total };
 };
+
+/** State of the whole "Obrazki" section: `missing` when any line is missing, `ok` otherwise (an `unknown` line says nothing). */
+export const sectionState = (views: readonly (ArtHealthView | undefined)[]): 'ok' | 'missing' => {
+    return views.some((view) => view?.kind === 'missing') ? 'missing' : 'ok';
+};

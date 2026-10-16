@@ -1,6 +1,6 @@
 // Origin: change art-stand-in-and-load-signal, phase 1. The record of which task pictures did not load.
 import { describe, expect, it } from 'vitest';
-import { artHealth, artHealthView } from '../src/core/artHealth';
+import { artHealth, artHealthView, sectionState } from '../src/core/artHealth';
 
 const entries = Array.from({ length: 38 }, (_, i) => ({ key: `art-key-${i}`, id: `id-${i}` }));
 
@@ -23,5 +23,20 @@ describe('artHealth', () => {
     it('handles no entries and an absent record', () => {
         expect(artHealthView(artHealth([], () => false))).toEqual({ kind: 'ok', total: 0 });
         expect(artHealthView(undefined)).toEqual({ kind: 'unknown' });
+    });
+});
+
+// Change stale-tab-and-health, phase 7 (G-1, L-6, L-8): the section never says "ok" while one line is missing.
+describe('sectionState', () => {
+    const ok = { kind: 'ok', total: 5 } as const;
+    const gone = { kind: 'missing', count: 2, total: 5 } as const;
+    it.each([
+        ['all ok', [ok, ok, ok], 'ok'],
+        ['only UI missing', [ok, ok, gone], 'missing'],
+        ['only room missing', [ok, gone, ok], 'missing'],
+        ['only task missing', [gone, ok, ok], 'missing'],
+        ['unknown and absent lines are ignored', [ok, { kind: 'unknown' }, undefined], 'ok'],
+    ] as const)('%s', (_name, views, state) => {
+        expect(sectionState(views)).toBe(state);
     });
 });

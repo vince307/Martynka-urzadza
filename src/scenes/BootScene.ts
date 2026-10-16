@@ -195,6 +195,11 @@ export class BootScene extends Scene {
         if (roomHealth.missing.length > 0) {
             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);
         }
+        const uiHealth = artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key));
+        this.registry.set(REGISTRY_KEYS.uiArtHealth, uiHealth);
+        if (uiHealth.missing.length > 0) {
+            console.warn(`UI art missing: ${uiHealth.missing.length} of ${uiHealth.total}: ${uiHealth.missing.join(', ')}`);
+        }
         // Sound effects: trim the encoder padding BEFORE the hand-over below, so no play meets an untrimmed buffer; then record what is missing.
         try {
             const untrimmed = trimEffects(this.game);

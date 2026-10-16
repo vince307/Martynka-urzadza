@@ -197,6 +197,7 @@ export const REGISTRY_KEYS = {
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter
     bootLoad: 'bootLoad',               // { cut: string[]; creates: number }: files the total boot limit ended and how often BootScene.create ran, set by BootScene; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)

@@ -28,6 +28,7 @@ export interface SettingsPanelOptions {
     offline?: OfflineView;
     artHealth?: ArtHealthView;
     roomArtHealth?: ArtHealthView;
+    uiArtHealth?: ArtHealthView;
     /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
     sound?: { prefs: SoundPrefs; missing: number };
     /** Takes the pending choices; the caller applies them through core. */
@@ -52,7 +53,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, sound, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, uiArtHealth, sound, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -165,7 +166,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;
