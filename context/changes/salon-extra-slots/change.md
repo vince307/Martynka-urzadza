@@ -1,7 +1,7 @@
 ---
 change_id: salon-extra-slots
 title: Five new salon slots (curtains, shelf, lamp, left plant, pouf) with 3 variants each
-status: implemented
+status: impl_reviewed
 created: 2026-10-16
 updated: 2026-10-16
 archived_at: null

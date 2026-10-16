@@ -694,7 +694,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Manual
 
-- [ ] 1.5 [reviewer] `src/core/rooms.ts` and `src/core/roomHit.ts` have no Phaser or browser globals; no number in `core` that belongs in `balance`/`layout`
+- [x] 1.5 [reviewer] `src/core/rooms.ts` and `src/core/roomHit.ts` have no Phaser or browser globals; no number in `core` that belongs in `balance`/`layout` — impl review (reviews/impl-review.md)
 
 ### Phase 2: Room drawing and the hook follow the rule; shadows under every piece
 
@@ -706,7 +706,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Manual
 
-- [ ] 2.4 [reviewer] No number or Polish text added to the widget or the scene; the decor loop still draws `plant-right`
+- [x] 2.4 [reviewer] No number or Polish text added to the widget or the scene; the decor loop still draws `plant-right` — impl review (reviews/impl-review.md)
 
 ### Phase 3: Five slots in the salon — data, copy, art and tables
 
@@ -720,7 +720,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Manual
 
-- [ ] 3.6 [reviewer] Teacher read recorded; `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` unchanged; nothing from `designs/` staged
+- [x] 3.6 [reviewer] Teacher read recorded; `SALON_V3_TARGET`, `LEGACY_SALON_V2` and `tests/fixtures/` unchanged; nothing from `designs/` staged — impl review (reviews/impl-review.md)
 - [ ] 3.7 [visual] Salon at 1440 and 1024: default look, bare window, curtains above the shadows, shelf behind the cabinet, five panels, pouf under the tray, done-card miniature at task 12
 
 ### Phase 4: Deploy smoke counts the room art (M-6 first half)
@@ -733,7 +733,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Manual
 
-- [ ] 4.4 [reviewer] `scripts/check-deploy.ts` still runs as `node --import tsx`; no production command run
+- [x] 4.4 [reviewer] `scripts/check-deploy.ts` still runs as `node --import tsx`; no production command run — impl review (reviews/impl-review.md)
 
 ### Phase 5: Documentation and follow-ups
 
@@ -744,7 +744,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Manual
 
-- [ ] 5.3 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; `docs/human-checklist.md` untouched
+- [x] 5.3 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; `docs/human-checklist.md` untouched — impl review (reviews/impl-review.md)
 
 ### Phase 6: Five new purchases by touch with the variant panel — e2e (#16)
 
