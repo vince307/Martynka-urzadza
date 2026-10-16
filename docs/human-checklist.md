@@ -289,3 +289,27 @@ Bieg po dostawie paczki `designs/martynka-salon-v2` i decyzjach z PR #68. Wysła
 - [ ] S-16b: efekty domyślnie włączone, muzyka wyłączona i ładowana dopiero po włączeniu; ustawienie dźwięku w `localStorage` poza zapisem (przeżywa reset i import); kolejność formatów M4A potem OGG; oba formaty w pamięci offline (~1,1 MB); dźwięk zakupu także przy darmowej zmianie wariantu.
 - [ ] S-16c: portfel mieści 6 monet zamiast 10 (zmienia się tylko wariant „zapłać” E1.11/E2.2 — portfele 7–10 monet odrzucane); karta „Pokój gotowy!” pokazuje salon dziecka, miniatura z paczki tylko jako zapas (bez miniatury „przed”); ikona aplikacji z paczki.
 - [ ] S-16d: koszty 8, 10, 12, 13, 15 (salon 129 gwiazdek zamiast 71); limit ładowania 50 s; ukończone salony wracają do remontu do 12. zakupu (bez cieni, bez „Zmień wygląd”) i drugi raz dostają kartę „Pokój gotowy!”; etykiety „Powieś zasłony”, „Powieś półkę”, „Wymień lampę/roślinę/pufę”.
+
+## Bieg 2026-10-16-fix-stale-tab-health (poprawka po audycie #73: B-1, G-1, S-1, P-1)
+
+Bieg uruchomiony 2026-10-16 („fix:stale-tab-and-health”, pełna wysyłka). Wysłane: #75 (merge 1a3edb4, Deploy 38899186902 zielony). Format zapisu v3 → v4 (zaakceptowany w czacie: „akceptuje v4, kontynuuj”). `main` 1a3edb4: 3139 testów jednostkowych, 125 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #76 (nie scalać w biegu): 0 CRITICAL, 0 HIGH, 7 MEDIUM, 8 LOW. Najważniejsze: T-1 (`src/core/save.ts` `writeVerdict` — okno z buildu sprzed #69 nadal pisze v3 na v4 bez śladu; okno #69–#72 dostaje odmowę `NewerSave` bez karty), O-1 (`src/core/swStatus.ts` `INSTALL_FAILED` — przyczyna nieudanej instalacji SW ginie; smoke deployu nie sprawdza, że pliki z precache są serwowane, P-3), O-2 (`stepSw` — po nieudanej aktualizacji za aktywnym SW panel mówi „gotowa offline”, a urządzenie zostaje na starym buildzie).
+- [ ] Starszy audyt PR #73 (2026-10-16_0915) — zamknięte przez #75: B-1, B-2, B-7, G-1, S-1, S-3, S-6, S-8, S-11; częściowo P-1 i B-8. Zdecyduj, czy PR #73 scalić jako historię, czy zamknąć.
+
+### P1 — na tablecie
+
+- [ ] stale-tab-and-health 11.4 — iPad: czy karta „Zacznijmy grę jeszcze raz” czyta się spokojnie dla 6–8-latka i czy „Zacznij od nowa” przywraca najnowsze gwiazdki (dwie karty Safari albo karta + ikona PWA).
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-16-stale-tab-and-health/follow-ups/review-fixes.md` (16 wpisów + VG-1 z bramki wizualnej): m.in. P-8 „zachowaj pierwszą kopię”, e2e na dwóch prawdziwych buildach, kolejność kart `future`/`newer`, `takenOver` widoczne dopiero po jawnym `registration.update()` (VG-1), test #2 P-5 czerwony tylko w izolacji.
+- [ ] Wycofanie poniżej buildu v4 pokazuje kartę `future` do ponownego wdrożenia (notatka w `deploy/README.md`).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Karta odmowy zapisu pojawia się przy `otherTab` I `newer` i trzyma wejście, więc w tej karcie rodzic nie otworzy ustawień ani nie przeczyta powodu w „Zapis gry” (follow-up z wyzwalaczem; przegląd uznał to za zgodne z FR-003/FR-020).
+- [ ] Edycja tylko dokumentacji `deploy/README.md` w biegu (precedens 27406ab, #65); profil § 5 doprecyzowany w tym PR.
+- [ ] Bazowa linia po wysyłce wzięta z CI 38898544137 + bramki orkiestratora (drzewo merge = głowa gałęzi), bez ponownego `baseline.sh`.
