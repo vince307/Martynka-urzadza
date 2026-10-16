@@ -1,28 +1,28 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-plan` step of run 2026-10-16-audit-sweep (slice 1 of 3). `plan.md` (14 phases, `## Progress`
-72 rows, all pending) and `plan-brief.md` are written; nothing is implemented. The next agent must not let any phase
-change the save format (v4) or the rng consumption of a successful generator draw. The only seeded-round changes
-allowed are those the plan lists under Critical Implementation Details.
+Written by the `/10x-plan-review` step of run 2026-10-16-audit-sweep (slice 1 of 3). The plan is reviewed (verdict
+PROCEED, 1 critical + 1 warning fixed in `plan.md`); nothing is implemented. The next agent must not let any phase change
+the save format (v4) or the rng consumption of a successful generator draw, and in phase 4 the `variantCounted` reset
+belongs in `TaskScene.applyRound`, not `beginRound` (review F1).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | 3 on the branch: change identity, research, `docs(child-flow-guards): plan` (this step) |
+| Commits | 4 on the branch: change identity, research, plan, `docs(child-flow-guards): plan review` (this step) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 72 (`grep -c '^- \[ \]' plan.md`): 50 automated, 14 `[reviewer]`, 5 `[visual]`, 3 `[human]` |
+| `change.md` status | `plan_reviewed` |
+| `## Progress` rows remaining | 74 (`grep -c '^- \[ \]' plan.md`): 50 automated, 14 `[reviewer]`, 5 `[visual]`, 5 `[human]` |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/child-flow-guards/plan.md` | the plan: 14 phases with Driver lines, Critical Implementation Details, Known risks, `## Autonomous decisions` (15), `## Progress` |
-| `context/changes/child-flow-guards/plan-brief.md` | two-page brief with the key decisions table |
-| `context/changes/child-flow-guards/change.md` | status `preparing` → `planned` (frontmatter only) |
+| `context/changes/child-flow-guards/reviews/plan-review.md` | the review: 6 findings (F1 critical, F2 warning, F3-F6 observations), all FIXED, `VERDICT: PROCEED` |
+| `context/changes/child-flow-guards/plan.md` | edited by triage: SV2-10 reset in `applyRound` (CID + phase 4), `[human]` rows 2.7 and 6.7, phase 3 legacy `number[]` answer test, phase 1 frames excluded from `visualArtIds`, phase 7 break by assertion, Known risks entry for the `CLAUDE.md` spec name |
+| `context/changes/child-flow-guards/change.md` | status `planned` → `plan_reviewed` (frontmatter only) |
 | `context/changes/child-flow-guards/handoff.md` | this file |
 
 ## 3. Verification
@@ -30,23 +30,23 @@ allowed are those the plan lists under Critical Implementation Details.
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/child-flow-guards` |
-| plan structure: `grep -c '^## Phase'` / `'^### Phase'` / `Driver:` after each phase heading / `Driver why:` | 14 / 14 / 14 / 14 |
-| oracle probe (scratch `probe.ts`, `node --import tsx`, every generator skill, 20 seeds × 50 draws) | tiles 64 999 tasks, keypad 108 000: **0** skills where no tile passes or the keypad answer is not a non-negative integer of at most 7 digits or is refused by `check` (TXT-03 is safe to tighten) |
-| `ls tests/` for every test file the plan names as existing | all present; `tests/retry.test.ts`, `tests/dragEvents.test.ts`, `tests/numberLine.test.ts`, `tests/drawingFit.test.ts`, `tests/variantCountWiring.test.ts` are marked new |
-| `metadata-guard.mjs inspect` then `mark-planned` | `changed: true` |
-| lint / typecheck / tests / build / e2e | not run: planning step, no code changed (baseline main 9b7fe37: unit 3139, e2e 125; inherited, unverified) |
+| path grounding (`ls` of every `src/` and test path the plan calls existing) | 37/37 present |
+| code checks (read, not inherited) | `buildAdaptiveRound` picture threshold from `afterArt`; review branch `earlier: []`; `unlockReady`; `captureFirstWrong` number/string only; `validExample` accepts string `given`/`answer`; `Task.check` boolean; `canonicalInput` used by tests only; four pointer listeners with id-less `cancel`; `applyRound` called from `create`, `beginRound`, `applyParentStage`; `nextRoundKind` keeps the day rule under `forced: 'puzzle'` |
+| Progress↔Phase | 14 `## Phase` / 14 `### Phase`; every success-criteria bullet has a row; `Driver:` on every phase |
+| lint / typecheck / tests / build / e2e | not run: review step, no code changed (baseline main 9b7fe37: unit 3139, e2e 125; inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-plan-review child-flow-guards`
+`/10x-tdd child-flow-guards phase 1`
 
 ## 5. Open
 
-- Manual rows (human checklist): 5.7 `[human]` accept the wallet line wording (gap 124); 9.5 `[human]` tablet check that
-  "OK" is inert while a coin or a clock hand is held; 14.4 `[human]` puzzle closed before "Dalej" is not paid again;
+- Manual rows (human checklist): 2.7 `[human]` accept the E6.11 review share 90/10; 5.7 `[human]` accept the wallet line
+  wording (gap 124); 6.7 `[human]` accept the COMPARE_QTY tile order (gap 125); 9.5 `[human]` tablet check that "OK" is
+  inert while a coin or a clock hand is held; 14.4 `[human]` puzzle closed before "Dalej" is not paid again;
   `[visual]` 2.6, 3.6, 5.6, 6.6, 10.5 at 1440 (1920×1080 fit) and 1024×768.
-- DESIGN-GAP rows to add during implementation: 122 (`src/core/progress.ts` `progressView` previous stage), 123
-  (`src/core/round.ts` `exampleValue`), 124 (`src/data/pl.ts` wallet line), 125 (`compareQty.ts` `generateCompareQty` order).
+- DESIGN-GAP rows to add during implementation: 122 (progress preview previous stage), 123 (list answers as text),
+  124 (wallet line), 125 (COMPARE_QTY order).
 - Teacher read rows: 5.3 (E1.11, E2.2), 6.3 (COMPARE_QTY, E3.10 HALF), 7.3 (every stage with a changed generator type).
 - Follow-ups to write in phase 13 (`follow-ups/review-fixes.md`): GRD-09, WNA-08, WNA-09, TXT-06, F4 two-finger note,
   letterbox thumb, placeValue/clockElapsed dedup, `ArtPool`/`fitRect`, `grosze(id)` lookup, VO3 wallet look, any
@@ -55,19 +55,15 @@ allowed are those the plan lists under Critical Implementation Details.
 
 ## 6. Autonomous decisions
 
-- **TXT-01 90/10 (easing 70/30)**: chosen per `docs/ZADANIA.md`; rejected: keep 14 %. Would change: maintainer says 14 % was intended.
-- **WNA-04 measured overflow signal** (existing `SolutionSteps.fits`), not a heuristic `linesFit`. Would change: a need
-  for unit-level text-fit proof per skill.
-- **GRD-04 checks each task's real layout rect**; failures go to `KNOWN_SMALL` + follow-up, never a lower `minCell`.
-  Would change: the visual gate showing a listed skill unreadable.
-- **TXT-03 strict oracle kept in scope**: the probe found no offender. Would change: an offender at implementation time.
-- **GRD-02 clock and tray stay different** (clock ignores a second pointer's `down`; tray keeps its pinned cancel).
-  Would change: a device report of a lost coin carry.
-- **Progress preview shows previous-stage skills on every step**, not only on review. Would change: the visual gate
-  finding it confusing.
-- **Design gaps numbered by phase order** (122-125), not research's 122-for-wallet. Would change: nothing material.
-- **Phase drivers**: 1-10 and 12 `tdd`, 11 and 13 `impl`, 14 `e2e` (risks #2, #11); phase 13 holds the seam sweep and
-  `CLAUDE.md`. Would change: plan review splitting or merging phases.
-- **No `[human]` row for TXT-01, PIC-06 or HALF**: none decides against the design docs' literal text (ZADANIA backs
-  90/10; the kit is silent on tile order; HALF is a reorder). Would change: the reviewer reading ZADANIA differently.
-- **Skill's roadmap sync**: `roadmap.md` has no item `child-flow-guards` (non-roadmap), so it was not touched.
+- **Triage without asking** (contract rule 1): every finding fixed in place, none skipped. Would change: nothing.
+- **F1 as CRITICAL**: the plan's reset point would reintroduce SV2-10 after a parent stage change; fixed to `applyRound`.
+  Would change: `applyParentStage` no longer opening a round.
+- **TXT-01 90/10 kept, not overturned**: ZADANIA l.37 backs ~10 % for steps but does not name the review step; added
+  `[human]` 2.7 instead. Would change: the maintainer confirming 14 %.
+- **PIC-06 order kept, `[human]` 6.7 added**: kit silent. Would change: a kit view.
+- **Wallet line**: existing `[human]` 5.7 suffices.
+- **No phase split/merge**: each phase is one rule cluster plus one call site. Would change: an implementing agent running
+  out of context in phase 1, 9 or 10.
+- **Drivers unchanged**: all 14 verified right (tdd where a failing test leads new or changed rules; impl for 11, 13;
+  e2e 14 after the seam sweep). Next command follows phase 1's `tdd`.
+- **Shared frames excluded from `visualArtIds`** (F4): a redraw cannot avoid them. Would change: a per-task frame choice.

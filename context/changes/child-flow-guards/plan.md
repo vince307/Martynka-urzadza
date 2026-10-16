@@ -120,8 +120,10 @@ seams and updates `CLAUDE.md`; phase 14 proves the two browser-level risks.
   consume the rng exactly as today when the draw succeeds within the cap — the 1000-draw replay tests prove it. Any other
   seeded-test diff is a regression.
 - **SV2-10 ordering.** `afterRound` is not idempotent (it would append the puzzle id twice): the count at the last answer
-  sets a per-round `variantCounted` flag that `finishVariant` honours, and the flag resets where `beginRound` sets
-  `this.kind`.
+  sets a per-round `variantCounted` flag that `finishVariant` honours, and the flag resets in `applyRound` — the one
+  place a built round becomes the open one (called from `create`, `beginRound` and `applyParentStage`; a reset in
+  `beginRound` alone would leave the flag set when a parent changes the stage after the last answer, and the next
+  variant round would never be counted — plan review F1).
 - **Cancel shape.** `ClockSetEvent` and `TrayDragEvent` (aliased by `BlockDragEvent`) change their `cancel` together
   (`{ type: 'cancel'; pointerId?: number }`); scene-internal cancels (drag off, input suspend) keep no id and still
   cancel any carry.
@@ -159,7 +161,9 @@ empty `missingIds` keeps the early return (no rng change).
 
 **File**: `src/core/tasks/visual.ts` (new `visualArtIds(v: TaskVisual): readonly string[]` beside `visualKey`, a `switch`
 with a `never` default: `icons.icon`, `row.icons`, `scale.item`/`scale.weights`, `money.items`, `pay.tray`, `jugs`;
-drawn-in-code kinds return `[]`); `src/core/curriculum.ts` (`buildAdaptiveRound` `generate` closure);
+drawn-in-code kinds return `[]`; the shared frames `balance-scale` and `thermometer-frame` are NOT listed — every
+scale/thermometer task uses them, so a redraw cannot avoid them and would only burn the retries; their loss stays with
+the existing stand-in and the "Obrazki" line); `src/core/curriculum.ts` (`buildAdaptiveRound` `generate` closure);
 `src/data/balance.ts` (`round.artRetries: 8` with a comment)
 
 **Intent**: When `missing.size > 0`, a drawn task whose `visualArtIds` (and `hintVisual`'s) meet `missing` is redrawn up
@@ -248,6 +252,7 @@ current stage only").
 
 - [reviewer] DESIGN-GAP 122 row and comment present; no Polish text in `src/core`
 - [visual] Parent progress preview with a weak E5 skill while on E6.11 (hook build, `?e2eSkills` rounds), at 1440 (1920×1080 fit) and 1024×768
+- [human] Accept the E6.11 review share 90/10 (easing 70/30) instead of S-14c's ≈ 14 % (`docs/ZADANIA.md` gives ~10 % for ordinary steps and is silent on the review step)
 
 ---
 
@@ -278,7 +283,8 @@ as today; DESIGN-GAP 123 ("the kit shows no list answer in the progress preview"
 **File**: `tests/round.test.ts`, `tests/save.test.ts`, `tests/progress.test.ts`
 
 **Contract**: wrong wallet `[100, 200, 200]` → `'2 zł, 2 zł, 1 zł'`; wrong select → face words; a v4 save with such an
-example round-trips; an old numeric example still renders.
+example round-trips; an old numeric example still renders, and so does an old wallet example whose `answer` is the
+legacy `number[]` of grosze (already-saved v4 data keeps that shape; only new examples carry the string).
 
 ### Success Criteria:
 
@@ -316,11 +322,12 @@ before "Dalej" cannot replay the ×2 puzzle the same day.
 
 #### 2. Scene wiring
 
-**File**: `src/scenes/TaskScene.ts` (`submit`, `finishVariant`, `beginRound`; new private `variantCounted`)
+**File**: `src/scenes/TaskScene.ts` (`submit`, `finishVariant`, `applyRound`; new private `variantCounted`)
 
 **Intent**: In `submit`, a variant round (`this.kind !== 'round'`) whose last task just settled calls `countRound(this.kind)`
 once, sets `variantCounted` and asks the saver for `flush('now')`; `finishVariant` skips `countRound` when counted (still
-flushes); `beginRound` resets the flag and clears `reported` (fired follow-up "reported never cleared at a new round").
+flushes); `applyRound` (not `beginRound`: `create` and `applyParentStage` also open a round through it) resets the flag
+and clears `reported` (fired follow-up "reported never cleared at a new round").
 
 **Contract**: ordinary rounds and the warm-up unchanged; `afterRound` called exactly once per variant round.
 
@@ -328,7 +335,7 @@ flushes); `beginRound` resets the flag and clears `reported` (fired follow-up "r
 
 **File**: `tests/round.test.ts` (`lastTaskSettled`: first-try, after hint, retype, not last task, already done); new
 `tests/variantCountWiring.test.ts` (source test: `submit` calls `countRound` behind `lastTaskSettled`, `finishVariant`
-checks the flag, `beginRound` resets flag and `reported`)
+checks the flag, `applyRound` resets flag and `reported`)
 
 ### Success Criteria:
 
@@ -438,6 +445,7 @@ części." / the existing method line, the computed line `${n} : 2 = ${half}` af
 
 - [reviewer] DESIGN-GAP 125 row and comment present; `SUPPRESSED_OK` holds only the three phrasing cases with a reason
 - [visual] COMPARE_QTY task (tiles in the new order) and an E3.10 HALF task after one miss (first hint), at 1440 (1920×1080 fit) and 1024×768
+- [human] Accept the fixed COMPARE_QTY tile order "Po lewej · Tyle samo · Po prawej" (gap 125; the kit is silent on the order)
 
 ---
 
@@ -481,7 +489,7 @@ borrow → throw); `tests/clockElapsed.test.ts` (data test over `src/data/elapse
 #### Automated Verification:
 
 - New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`; every existing 1000-draw replay test unchanged and green (same rng consumption)
-- Deliberate break: `drawUntil` without the cap → its test times out red; `shapes` `all` without the throw → its test red; each restored; meta-check: the replay tests prove unchanged draws, the new tests prove the bound
+- Deliberate break: `drawUntil` without the cap → its test red (the test counts `draw` calls with a never-ok predicate and a draw that throws after `max + 1` calls, so the break fails by assertion, not by a hang); `shapes` `all` without the throw → its test red; each restored; meta-check: the replay tests prove unchanged draws, the new tests prove the bound
 - Teacher read: `npm run sample -- <stage> --count 6` for every stage with a skill of a changed type (E1–E6), every task of the changed steps read; drawn tasks unchanged; recorded in the phase commit message body
 - Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
@@ -870,6 +878,8 @@ Details.
   `input.activePointers ≥ 2`).
 - **`drawingFit` may find a real skill too small**; it is listed, followed up and screenshotted, not hidden.
 - **Variant counted at the last answer**: closing on the minigame card no longer replays the minigame (intended).
+- **`CLAUDE.md` written before the last spec** (plan review F6): phase 13 writes the paragraph, phase 14 adds
+  `tests/e2e/child-flow-guards.spec.ts`; phase 14 appends the spec name to that paragraph in its own commit.
 - **e2e load sensitivity** (profile § 8): the full suite runs ~10-12 min at 4 workers; a single flaky spec is re-run alone
   before it counts.
 
@@ -886,8 +896,8 @@ Details.
 ## Autonomous decisions
 
 1. **TXT-01: review step 90/10 (easing 70/30)** by folding `earlier` into `current`. Rejected: keeping S-14c's 14 % pin
-   (contradicts `docs/ZADANIA.md` "~10% powtórka"; under easing E5 becomes the majority). Follows the design docs, so no
-   `[human]` row. Would change: the maintainer confirming 14 % was intended.
+   (contradicts `docs/ZADANIA.md` "~10% powtórka"; under easing E5 becomes the majority). ZADANIA does not name the
+   review step itself, so plan review added `[human]` row 2.7. Would change: the maintainer confirming 14 % was intended.
 2. **Progress preview includes previous-stage skills on every step** (misses dated since the current stage began),
    not only on the review step. Rejected: review-only (previous-stage skills are drawn on every step at ~10 %). Would
    change: a parent finding the list confusing at the visual gate.
@@ -907,7 +917,7 @@ Details.
 8. **PIC-05 via `Task.feedback` + `RoundState.note`**, `check` stays boolean; draft copy "Kwota się zgadza. Spróbuj
    zapłacić mniejszą liczbą monet." with a `[human]` acceptance row (no kit copy). Would change: the author's wording.
 9. **PIC-06 order `[left, same, right]`** (each side's tile under its group). Rejected: keeping the shuffle (position
-   carries no meaning for a non-reader). Design docs silent → gap 125, no `[human]` row. Would change: a kit view.
+   carries no meaning for a non-reader). Design docs silent → gap 125; plan review added `[human]` row 6.7. Would change: a kit view.
 10. **HALF hint fixed in this slice** (method line first), teacher read automated; no `[human]` row (no wording decision
     beyond reordering and the existing method phrasing). Would change: the teacher read finding the method line wrong.
 11. **SV2-10 counts every variant at its last answer** (puzzle and minigames) with a once-flag; `reported` cleared at a
@@ -950,6 +960,7 @@ Details.
 
 - [ ] 2.5 [reviewer] DESIGN-GAP 122 row and comment present; no Polish text in `src/core`
 - [ ] 2.6 [visual] Parent progress preview with a weak E5 skill while on E6.11, at 1440 (1920×1080 fit) and 1024×768
+- [ ] 2.7 [human] Accept the E6.11 review share 90/10 (easing 70/30) instead of S-14c's ≈ 14 %
 
 ### Phase 3: Mistake examples for list answers (PIC-04, S13-06)
 
@@ -1005,6 +1016,7 @@ Details.
 
 - [ ] 6.5 [reviewer] DESIGN-GAP 125 row and comment present; `SUPPRESSED_OK` holds only the three phrasing cases with a reason
 - [ ] 6.6 [visual] COMPARE_QTY tiles in the new order and an E3.10 HALF first hint, at 1440 (1920×1080 fit) and 1024×768
+- [ ] 6.7 [human] Accept the fixed COMPARE_QTY tile order "Po lewej · Tyle samo · Po prawej" (gap 125)
 
 ### Phase 7: Bounded generator loops and parser bounds (GRD-05, S13-12, F9, SHAPES `all`, WNA-06, TXT-07, TXT-08)
 
