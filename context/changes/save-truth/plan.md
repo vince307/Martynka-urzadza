@@ -1147,10 +1147,10 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 4.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 4.2 Deliberate break: `backup` without the `count` check → "a second backup keeps the first" red; restored; meta-check (fake-indexeddb)
-- [ ] 4.3 `SAVE_VERSION` still 4; `git diff --stat tests/fixtures` empty
-- [ ] 4.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts` and `save-migration.spec.ts` green
+- [x] 4.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 0eb15a2
+- [x] 4.2 Deliberate break: `backup` without the `count` check → "a second backup keeps the first" red; restored; meta-check (fake-indexeddb) — 0eb15a2
+- [x] 4.3 `SAVE_VERSION` still 4; `git diff --stat tests/fixtures` empty — 0eb15a2
+- [x] 4.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts` and `save-migration.spec.ts` green — 0eb15a2
 
 #### Manual
 
