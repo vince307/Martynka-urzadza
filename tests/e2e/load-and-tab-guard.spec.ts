@@ -6,8 +6,8 @@
 // ?e2eArt=stallall seam switches the per-file limit off and shortens the total limit, so only the total limit can end the load.
 // Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Route } from '@playwright/test';
-import { openSettings, passWelcome } from './support/welcome';
-import { playTaskRight, screenIs, silenceSpeech, snapshot } from './support/hook';
+import { passWelcome } from './support/welcome';
+import { answerRight, screenIs, silenceSpeech, snapshot } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { FONT_KEY } from '../../src/data/layout';
 import { SAVE_VERSION } from '../../src/core/save';
@@ -77,18 +77,21 @@ test.describe('files that never answer', () => {
 test('#2 P-5 a newer save written by another tab is not overwritten', async ({ page }) => {
     await silenceSpeech(page);
     await passWelcome(page, { e2eSave: 'newer', e2eVariant: 'off' });
-    // One answered task changes the state; the first write succeeded at start, the next is refused as NewerSave.
-    await playTaskRight(page);
+    // The first write succeeded at start. Answering one task earns a star, a change to the state: the next write is refused as
+    // NewerSave, and the child sees the calm card at once (change stale-tab-and-health, B-2), which holds the game's input.
+    await expect.poll(async () => (await snapshot(page)).phase).toBe('first');
+    await answerRight(page);
     await expect.poll(async () => (await snapshot(page)).save?.blockedBy).toBe('newer');
+    await expect(page.getByRole('alertdialog').getByText(pl.saveRefused.title)).toBeVisible();
     const blocked = (await snapshot(page)).save!;
     expect(blocked.store!.writtenVersion).toBe(SAVE_VERSION + 1);
     const writesAtBlock = blocked.store!.ops.filter((op) => op === 'write').length;
-    // The block holds: more play does not write again (at most the one refused attempt was logged).
-    await playTaskRight(page);
+    // The block holds: nothing writes again, however long the page waits.
+    await page.waitForTimeout(1500);
     const later = (await snapshot(page)).save!;
     expect(later.blockedBy).toBe('newer');
     expect(later.store!.writtenVersion).toBe(SAVE_VERSION + 1);
     expect(later.store!.ops.filter((op) => op === 'write').length).toBe(writesAtBlock);
-    const panel = await openSettings(page);
-    await expect(panel.locator('section.parent-save').getByText(pl.settings.saveOff.newer)).toBeVisible();
+    // One card per page load.
+    await expect(page.getByRole('alertdialog')).toHaveCount(1);
 });
