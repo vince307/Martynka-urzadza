@@ -1,57 +1,53 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Phase 6 (offline status section in the parent's panel) written by `/10x-implement` in run `2026-10-16-fix-stale-tab-health`; code commit `05d13c6`. The next agent must not get wrong: the section is proved only in unit tests here; the browser proof (real service worker states in the panel) is phase 12, and `e2e-break-p12a.patch` is for that phase.
+Phase 7 (screen pictures in "Obrazki") written by `/10x-tdd` in run `2026-10-16-fix-stale-tab-health`; code commit `8c2e3e2`. The next agent must not get wrong: `uiArtHealth` is a separate registry key and never feeds `artFilter`; the section `data-state` is now the worst of its lines.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | ..., `aed4d29` (p5), `781dbda` (p5 docs), `05d13c6` (p6 code), then a docs commit with this handoff and the ticks |
+| Commits | ..., `05d13c6` (p6), `c43f201` (p6 docs), `8c2e3e2` (p7 code), then a docs commit with this handoff and the ticks |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 6.2 (orchestrator e2e), 6.4 [reviewer], 5.5 [reviewer], 4.4 [reviewer], 3.5, 2.5, 1.6 [reviewer], phases 7-12 |
+| `## Progress` rows remaining | 7.4 (orchestrator e2e), 7.5 [reviewer], 6.4, 5.5, 4.4 [reviewer], 3.5, 2.5, 1.6 [reviewer], phases 8-12 |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/swStatus.ts` | `offlineView(status)` -> `{ line, code, takenOver }` (`registering` maps to `installing`; a failed update behind an active worker stays `ready` with a code) |
-| `src/ui/dom/offlineView.ts` | `createOfflineView`, section `.parent-offline`, `data-state` = line |
-| `src/ui/dom/settingsPanel.ts`, `src/scenes/UIScene.ts` | `offline?` option; `openSettings` reads `REGISTRY_KEYS.swStatus` once; section after "Zapis gry", before "Obrazki"; absent without the key |
-| `src/data/pl.ts`, `src/style.css`, `docs/design-gaps.md` | `settings.offline.*` strings, shared section style, DESIGN-GAP 118 row |
-| `tests/swStatus.test.ts` | +3 view tests (12 total) |
-| `context/changes/stale-tab-and-health/e2e-break-p12a.patch` | `offlineView` never `ready`; applies to the p6 commit (`git apply --check` OK) |
+| `src/core/artHealth.ts` | `sectionState(views)`: `missing` if any line is missing, else `ok` (`unknown`/absent ignored) |
+| `src/scenes/BootScene.ts`, `src/data/layout.ts` | `REGISTRY_KEYS.uiArtHealth` = `artHealth(UI_ART ...)` + one `console.warn`; not in `SAVE_KEYS` |
+| `src/ui/dom/artHealthView.ts`, `settingsPanel.ts`, `UIScene.ts` | third line `.parent-ui-art`; section `data-state` from `sectionState` |
+| `src/data/pl.ts`, `docs/design-gaps.md` | `settings.uiArtOk`, `uiArtMissing` (verb agreement), DESIGN-GAP 119 |
+| `tests/artHealth.test.ts`, `tests/artHealthText.test.ts` | `sectionState` (5 cases), `uiArtMissing` for 1, 2, 5 |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (stub `offlineView` always `installing`) | `AssertionError: expected 'installing' to be 'ready'`, `expected null to be 'SecurityError'` (3 of 12 red) |
-| GREEN | `npx vitest run tests/swStatus.test.ts`: 12 passed |
-| `npm run lint`, `npm run typecheck` | OK |
-| `npm test` + deploy scripts + `sample` E1-E6 | OK; unit 3125 = branch baseline 3122 + 3 |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `parent-settings.spec.ts` (single spec, sandbox off) | 4 passed; full suite is the orchestrator's |
-| Deliberate break | `LINES.ready = 'installing'`: "maps each phase to a line" and "keeps a failed update ... as ready" red; restored, green |
-| Meta-check | proves the phase-to-line mapping, not that the panel shows the section or that the browser reports `ready` (phase 12 applies the patch against the real service worker) |
+| RED (stub `sectionState` always `ok`, stub `uiArtMissing`) | `AssertionError: expected 'ok' to be 'missing'`, `expected false to be true` (6 red) |
+| GREEN | `tests/artHealth.test.ts`, `tests/artHealthText.test.ts` green |
+| `npm run lint`, `typecheck`, `npm test`, `npm run build` | OK; unit 3133 = branch baseline 3125 + 8; build `e2e hook: absent (2 chunks checked)`; deploy scripts and `sample` E1-E6 ran OK in the first full pass |
+| `grep uiArtHealth` in `TaskScene.ts`, `artFilter.ts` | empty |
+| e2e | not run by me (orchestrator gate) |
+| Deliberate break | `views.slice(0, 1).some(...)` (task line only): "only UI missing" and "only room missing" red; restored, green |
+| Meta-check | proves the view rule, not that the loader records UI textures (phase 12) |
 
 ## 4. Next command
 
-`/10x-implement stale-tab-and-health phase 7`
+`/10x-tdd stale-tab-and-health phase 8`
 
 ## 5. Open
 
-- Rows: 6.2 e2e (orchestrator), 6.4 [reviewer]; 5.5, 4.4, 1.6 [reviewer]; 3.5, 2.5.
-- Specs to watch at the gate: `parent-settings.spec.ts` (green alone), `save-backup-health.spec.ts`, `save-restart.spec.ts`, `save-transfer*.spec.ts`, `art-stand-in.spec.ts`, `salon-load-health.spec.ts`: they read the panel by section class (`section.parent-save`, `.parent-art`), the new section has its own class `.parent-offline`, so none should shift.
-- Not unit-tested: `createOfflineView` DOM (no DOM harness, as for the other views) and the `UIScene` wiring; phase 12 covers them.
-- Carried: [human] rows 10.6, 11.4; [visual] 12.4; [reviewer] 10.7; DESIGN-GAPs 119-121 later; e2e phases 11-12 use the request-file protocol.
+- Rows: 7.4 e2e (orchestrator), 7.5 [reviewer]; 6.4, 5.5, 4.4, 1.6 [reviewer]; 3.5, 2.5.
+- Spec to watch: `art-stand-in.spec.ts` reads only the "Obrazki" heading text (unaffected); `salon-load-health.spec.ts` no `parent-art` reads found by grep.
+- Carried: [human] 10.6, 11.4; [visual] 12.4; [reviewer] 10.7; DESIGN-GAPs 120-121 later.
 
 ## 6. Autonomous decisions
 
-- **Takeover line placement**: shown as a second sentence in the same section (not a separate section), after the code line.
-- **Code line** reuses `pl.saveFailed.detail` (`Kod: ... · Wersja ...`) as `saveHealthView` does, shown whenever `code` is set, including a failed update behind a ready worker.
-- **Wording** of the six strings is provisional (row 118), written in the calm style of the neighbouring sections.
-- **Break patch** is the one-line `ready: 'installing'` change, written after the commit so it applies cleanly.
-- Row 5.4 ticked with the orchestrator gate result. Commit message taken as proposed (Polish).
+- Wording of `uiArtOk`/`uiArtMissing` provisional (row 119), same style as the salon line.
+- Third line is hidden when the record is absent (like the salon line).
+- Row 6.2 ticked with the orchestrator gate; 7.4 left for the orchestrator's e2e.
+- A mistaken `git checkout` of `src/core/artHealth.ts` during the break dropped the uncommitted helper; rewritten identically before the commit.

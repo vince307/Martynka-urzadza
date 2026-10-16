@@ -905,7 +905,7 @@ migrates that save again.
 #### Automated
 
 - [x] 6.1 New view tests red before the change, green after; full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — 05d13c6
-- [ ] 6.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `parent-settings.spec.ts` green
+- [x] 6.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `parent-settings.spec.ts` green — orchestrator gate c43f201 (121 passed)
 - [x] 6.3 Deliberate break: patch `e2e-break-p12a.patch` written; meta-check in the handoff — 05d13c6
 
 #### Manual
@@ -916,9 +916,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 7.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 7.2 Deliberate break: section state from the task line only → red; restored; meta-check (view rule, not the loader)
-- [ ] 7.3 `grep -n "uiArtHealth" src/scenes/TaskScene.ts src/core/round/artFilter.ts` empty
+- [x] 7.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 8c2e3e2
+- [x] 7.2 Deliberate break: section state from the task line only → red; restored; meta-check (view rule, not the loader) — 8c2e3e2
+- [x] 7.3 `grep -n "uiArtHealth" src/scenes/TaskScene.ts src/core/round/artFilter.ts` empty — 8c2e3e2
 - [ ] 7.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
