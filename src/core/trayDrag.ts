@@ -9,7 +9,7 @@ export type TrayDragEvent =
     | { type: 'down'; pointerId: number; x: number; y: number }
     | { type: 'move'; pointerId: number; x: number; y: number }
     | { type: 'up'; pointerId: number; x: number; y: number }
-    | { type: 'cancel' }
+    | { type: 'cancel'; pointerId?: number }
     | { type: 'reset' };
 export interface TrayDragGeo<K extends string> {
     trayAt: (x: number, y: number) => K | null;
@@ -54,8 +54,12 @@ const grab = <K extends string>(
 export const stepTrayDrag = <K extends string>(
     state: TrayDragState<K>, event: TrayDragEvent, geo: TrayDragGeo<K>, rules: TrayDragRules,
 ): TrayDragState<K> => {
-    if (event.type === 'cancel' || event.type === 'reset') return idle(state);
     const carrying = state.carrying;
+    // GRD-03: a cancel that names another finger is not this carry's; one without an id (scene-internal) cancels any.
+    if (event.type === 'cancel') {
+        return event.pointerId !== undefined && carrying && event.pointerId !== carrying.pointerId ? state : idle(state);
+    }
+    if (event.type === 'reset') return idle(state);
     if (event.type === 'down') {
         if (carrying && event.pointerId !== carrying.pointerId) return idle(state);
         return grab(state, event, geo);
@@ -71,3 +75,6 @@ export const stepTrayDrag = <K extends string>(
     if (from === 'tray') return { mat: over ? put(state.mat, kind, rules) : state.mat, carrying: null };
     return { mat: over ? state.mat : take(state.mat, kind), carrying: null };
 };
+
+/** PIC-02: "OK" does nothing while a coin, block or clock hand is still held (the pose is not settled). */
+export const canSubmit = (state: { carrying: unknown }): boolean => state.carrying === null;

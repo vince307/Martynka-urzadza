@@ -1,7 +1,7 @@
 // Generic tray-to-mat reducer (S-14d phase 6). Oracle: the plan's "Wspolny reduktor" and the block-drag rules; the
 // kinds are made up ('a', 'b') so nothing here depends on blocks or coins. Thresholds are written out, not imported.
 import { describe, expect, it } from 'vitest';
-import { stepTrayDrag, type Counts, type TrayDragEvent, type TrayDragGeo, type TrayDragRules, type TrayDragState } from '../src/core/trayDrag';
+import { canSubmit, stepTrayDrag, type Counts, type TrayDragEvent, type TrayDragGeo, type TrayDragRules, type TrayDragState } from '../src/core/trayDrag';
 
 type K = 'a' | 'b';
 // Tray: a at x 0-99, b at x 100-199 (y 0-99). Mat: x 300-599, y 0-299. Mat items: a at x 300-399, b at x 400-499 while present.
@@ -103,5 +103,23 @@ describe('stepTrayDrag', () => {
         const r = run([down(50, 50), move(450, 150), { type: 'reset' }], plain, start({ b: 3 }));
         expect(r.carrying).toBeNull();
         expect(r.mat.b).toBe(3);
+    });
+});
+
+describe('GRD-03 cancel with a pointer id, PIC-02 canSubmit', () => {
+    const carrying = (): TrayDragState<K> => run([down(50, 50, 1), move(450, 150, 1)], plain);
+
+    it('a cancel naming another finger is ignored; its own id or none ends the carry', () => {
+        const held = carrying();
+        expect(stepTrayDrag(held, { type: 'cancel', pointerId: 2 }, geo, plain)).toBe(held);
+        expect(stepTrayDrag(held, { type: 'cancel', pointerId: 1 }, geo, plain).carrying).toBeNull();
+        expect(stepTrayDrag(held, { type: 'cancel' }, geo, plain).carrying).toBeNull();
+    });
+
+    it('canSubmit is false while something is carried and true otherwise', () => {
+        expect(canSubmit(carrying())).toBe(false);
+        expect(canSubmit(start())).toBe(true);
+        expect(canSubmit({ carrying: 'hour' })).toBe(false);
+        expect(canSubmit({ carrying: null })).toBe(true);
     });
 });

@@ -150,16 +150,31 @@ describe('stepClockSet: cancel, reset, other fingers', () => {
         expect(end.carrying).toBe('hour');
     });
 
-    it('a new touch while carrying starts a new grab (not the stuck state of a lost up): the old pose returns first', () => {
+    it('a new touch of the SAME finger while carrying starts a new grab (the up was lost): the old pose returns first', () => {
         const start = initialClockSet({ hour: 9, minute: 30 });
         const mid = run(start, 5, [{ type: 'down', pointerId: 1, ...hourTip(9, 30) }, { type: 'move', pointerId: 1, ...at(105, layout.hourLength) }]);
         expect(clockValue(mid)).toBe('3.30');
-        const next = stepClockSet(mid, { type: 'down', pointerId: 2, ...minuteTip(30) }, geo, rules(5));
+        const next = stepClockSet(mid, { type: 'down', pointerId: 1, ...minuteTip(30) }, geo, rules(5));
         expect(next.carrying).toBe('minute');
-        expect(next.pointerId).toBe(2);
+        expect(next.pointerId).toBe(1);
         expect(clockValue(next)).toBe('9.30');
         // and a cancel of that second grab returns to the pose before it, not to the very first one
         expect(clockValue(stepClockSet(next, { type: 'cancel' }, geo, rules(5)))).toBe('9.30');
+    });
+
+    it('GRD-02: a down of ANOTHER finger while a hand is held changes nothing (the pose stays)', () => {
+        const held = grabbed();
+        const end = stepClockSet(held, { type: 'down', pointerId: 2, ...minuteTip(0) }, geo, rules(60));
+        expect(end).toBe(held);
+        expect(clockValue(end)).toBe('3.00');
+        expect(end.pointerId).toBe(1);
+    });
+
+    it('GRD-03: a cancel naming another finger keeps the carry; its own id or none cancels', () => {
+        const held = grabbed();
+        expect(stepClockSet(held, { type: 'cancel', pointerId: 2 }, geo, rules(60))).toBe(held);
+        expect(clockValue(stepClockSet(held, { type: 'cancel', pointerId: 1 }, geo, rules(60)))).toBe('9.00');
+        expect(clockValue(stepClockSet(held, { type: 'cancel' }, geo, rules(60)))).toBe('9.00');
     });
 });
 

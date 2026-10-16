@@ -32,7 +32,8 @@ import type { KeypadKey } from '../core/round/keypad';
 import { columnMarks } from '../core/tasks/written';
 import { dragMode, type DragMode } from '../core/tasks/dragMode';
 import { emptyWallet, walletCoins } from '../core/coins';
-import { stepTrayDrag, type TrayDragGeo, type TrayDragState } from '../core/trayDrag';
+import { rawToDragEvent, type RawPointer } from '../core/dragEvents';
+import { canSubmit, stepTrayDrag, type TrayDragGeo, type TrayDragState } from '../core/trayDrag';
 import type { MoneyId } from '../data/measures';
 import { coinGeometry, coinLayout, dragGeometry, dragKinds, dragLayout } from '../core/round/dragLayout';
 import { answerSpans, belowPrompt, fitSize, hintPictureLayout, pictureLayout } from '../core/round/pictureLayout';
@@ -251,7 +252,7 @@ export class TaskScene extends Scene {
         // "OK" under a second finger while a hand is still held is ignored: the held pose is not settled yet, and
         // ending the task would cancel the grab and draw the hands back to the pose before it (impl review).
         this.clockSet = new ClockSet(this, (value) => {
-            if (this.clockState.carrying === null) this.submit(value);
+            if (canSubmit(this.clockState)) this.submit(value);
         });
         this.clockState = initialClockSet(this.clockStart);
         this.dragKind = null;
@@ -259,13 +260,11 @@ export class TaskScene extends Scene {
         this.coinState = { mat: emptyWallet(), carrying: null };
         this.dragLive = false;
         // The whole scene feeds raw pointer events to the drag reducer of the task (core/blockDrag, core/clockSet or the coin wallet over core/trayDrag, chosen by dragMode); it acts only while a 'drag' task takes touches.
-        type Raw = { id: number; x: number; y: number; wasCanceled?: boolean };
-        const lift = (p: Raw): BlockDragEvent => (p.wasCanceled ? { type: 'cancel' } : { type: 'up', pointerId: p.id, x: p.x, y: p.y });
-        this.input.on('pointerdown', (p: Raw) => this.feedDrag({ type: 'down', pointerId: p.id, x: p.x, y: p.y }));
-        this.input.on('pointermove', (p: Raw) => this.feedDrag({ type: 'move', pointerId: p.id, x: p.x, y: p.y }));
-        this.input.on('pointerup', (p: Raw) => this.feedDrag(lift(p)));
+        this.input.on('pointerdown', (p: RawPointer) => this.feedDrag(rawToDragEvent('down', p)));
+        this.input.on('pointermove', (p: RawPointer) => this.feedDrag(rawToDragEvent('move', p)));
+        this.input.on('pointerup', (p: RawPointer) => this.feedDrag(rawToDragEvent('up', p)));
         // A finger lifted outside the canvas (the letterbox) is not a drop: like a system cancel it leaves the mat as it was.
-        this.input.on('pointerupoutside', () => this.feedDrag({ type: 'cancel' }));
+        this.input.on('pointerupoutside', (p: RawPointer) => this.feedDrag(rawToDragEvent('upoutside', p)));
         const onSleep = (): void => this.feedDrag({ type: 'reset' });
         this.events.on('sleep', onSleep);
         this.bar = new FeedbackBar(this, () => this.advance());

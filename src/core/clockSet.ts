@@ -20,7 +20,7 @@ export type ClockSetEvent =
     | { type: 'down'; pointerId: number; x: number; y: number }
     | { type: 'move'; pointerId: number; x: number; y: number }
     | { type: 'up'; pointerId: number; x: number; y: number }
-    | { type: 'cancel' }
+    | { type: 'cancel'; pointerId?: number }
     | { type: 'reset' };
 /** The dial in scene pixels: where it is and how long the drawn hands are. */
 export interface ClockSetGeo { centre: { x: number; y: number }; hourLength: number; minuteLength: number }
@@ -111,11 +111,15 @@ const follow = (state: ClockSetState, x: number, y: number, geo: ClockSetGeo, ru
  * Rules: a touch within `grabRadius` of a hand tip holds that hand (the minute hand of a full-hour clock cannot be held);
  * with both tips in reach the hand nearer in angle wins, an exact tie goes to the radius. The held hand follows the finger's
  * angle, snapped, once the finger has travelled `startDistance`. `up` leaves the pose; `cancel` and `reset` restore the pose
- * from before the grab. A new `down` while a hand is held drops that grab (pose restored) and starts afresh.
+ * from before the grab. A `down` of the same finger while a hand is held drops that grab (pose restored) and starts afresh; a `down` of another finger is ignored.
  */
 export const stepClockSet = (state: ClockSetState, event: ClockSetEvent, geo: ClockSetGeo, rules: ClockSetRules): ClockSetState => {
-    if (event.type === 'cancel' || event.type === 'reset') return idle(state);
-    if (event.type === 'down') return grab(idle(state), event, geo, rules);
+    if (event.type === 'cancel') {
+        return event.pointerId !== undefined && state.pointerId !== null && event.pointerId !== state.pointerId ? state : idle(state);
+    }
+    if (event.type === 'reset') return idle(state);
+    // GRD-02: another finger's touch must not undo the pose the child is holding; the same finger's `down` is a lost `up` (S13-09).
+    if (event.type === 'down') return state.carrying !== null && event.pointerId !== state.pointerId ? state : grab(idle(state), event, geo, rules);
     if (state.carrying === null || event.pointerId !== state.pointerId) return state;
     const next = follow(state, event.x, event.y, geo, rules);
     return event.type === 'move' ? next : { ...next, carrying: null, pointerId: null, before: null, moved: false };
