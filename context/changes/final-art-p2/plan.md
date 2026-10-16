@@ -762,7 +762,7 @@ None: save format v3 unchanged; no new storage key.
 - [x] 1.1 New/changed tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — afac8e1
 - [x] 1.2 Deliberate break: `maxTotal` 10 / box without `coinGap` / `liftedSlot` always `lastIndexOf` → red; restored; meta-check (geometry, not drawing) — afac8e1
 - [x] 1.3 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — afac8e1
-- [ ] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `money-pay.spec.ts` green
+- [x] 1.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `money-pay.spec.ts` green — orchestrator note: full e2e after afac8e1, 109 passed (--workers=4)
 
 #### Manual
 
@@ -772,10 +772,10 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 2.1 New/changed tests red before conversion (assertion on missing file / length), green after; unit `<branch baseline> + N`
-- [ ] 2.2 `npm run art` twice → `git status --porcelain public/` unchanged after the second run
-- [ ] 2.3 Deliberate break: delete `wallet-open.webp` / drop `sticker` from `ICONS` → red; restored; meta-check (tables vs files)
-- [ ] 2.4 Full local gate green; `dist/sw.js` lists `assets/ui/loading-background.webp` and `assets/tasks/icons/plate.webp`
+- [x] 2.1 New/changed tests red before conversion (assertion on missing file / length), green after; unit `<branch baseline> + N` — 1dd8fb1
+- [x] 2.2 `npm run art` twice → `git status --porcelain public/` unchanged after the second run — 1dd8fb1
+- [x] 2.3 Deliberate break: delete `wallet-open.webp` / drop `sticker` from `ICONS` → red; restored; meta-check (tables vs files) — 1dd8fb1
+- [x] 2.4 Full local gate green; `dist/sw.js` lists `assets/ui/loading-background.webp` and `assets/tasks/icons/plate.webp` — 1dd8fb1
 
 #### Manual
 
