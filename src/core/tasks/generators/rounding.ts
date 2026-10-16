@@ -3,6 +3,7 @@
 // because the catalogue does not settle the tie rule yet.
 import { pl } from '../../../data/pl';
 import { formatNumber } from '../../text/formatNumber';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 
 export interface RoundingParams {
@@ -34,10 +35,7 @@ export const generateRounding: Generator = (skill, rng): Task => {
     const p = parseRoundingParams(skill.params);
     const { to } = p;
     const first = to === 10 ? 11 : to + 1;
-    let n = rng.int(first, p.max - 1);
-    while (n % to === 0 || n % to === to / 2) {
-        n = rng.int(first, p.max - 1);
-    }
+    const n = drawUntil(`ROUNDING to ${to} max ${p.max}`, () => rng.int(first, p.max - 1), (x) => x % to !== 0 && x % to !== to / 2);
     const low = n - (n % to);
     const high = low + to;
     const nearest = n % to < to / 2 ? low : high;

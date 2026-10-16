@@ -51,8 +51,14 @@ const clock = (minutes: number): string => formatTime(Math.floor((minutes % DAY)
 const spoken = (minutes: number): string => spokenTime(Math.floor((minutes % DAY) / 60), minutes % 60);
 
 /** Fills {a} {b} {d}; the spoken version swaps the times for their spoken form. */
-const fill = (template: string, written: Record<string, string>, spokenForm: Record<string, string>): { prompt: string; speak: string } => {
-    const swap = (values: Record<string, string>): string => template.replace(/\{(\w)\}/g, (_, key: string) => values[key] ?? '');
+export const fill = (template: string, written: Record<string, string>, spokenForm: Record<string, string>): { prompt: string; speak: string } => {
+    const swap = (values: Record<string, string>): string => template.replace(/\{(\w)\}/g, (_, key: string) => {
+            const value = values[key];
+            if (value === undefined) {
+                throw new RangeError(`CLOCK_ELAPSED: no value for {${key}} in "${template}"`);
+            }
+            return value;
+        });
     return { prompt: swap(written), speak: swap({ ...written, ...spokenForm }) };
 };
 

@@ -4,6 +4,7 @@
 import { pl } from '../../../data/pl';
 import type { Rng } from '../../rng';
 import { MINUS } from '../symbols';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 
 export type PuzzleGridVariant = 'magic' | 'pyramid';
@@ -75,10 +76,11 @@ const magic = (skill: { id: string }, p: PuzzleGridParams, rng: Rng): Task => {
 // Pyramid cells: [top, middle left, middle right, base 0, base 1, base 2]; top = left + right, left = base0 + base1, right = base1 + base2.
 const pyramid = (skill: { id: string }, p: PuzzleGridParams, rng: Rng): Task => {
     const cap = Math.min(9, Math.floor(p.max / 3));
-    let b: [number, number, number];
-    do {
-        b = [rng.int(1, cap), rng.int(1, cap), rng.int(1, cap)];
-    } while (b[0] + 2 * b[1] + b[2] > p.max);
+    const b = drawUntil<[number, number, number]>(
+        `PUZZLE_GRID pyramid max ${p.max}`,
+        () => [rng.int(1, cap), rng.int(1, cap), rng.int(1, cap)],
+        (t) => t[0] + 2 * t[1] + t[2] <= p.max,
+    );
     const full = [b[0] + 2 * b[1] + b[2], b[0] + b[1], b[1] + b[2], b[0], b[1], b[2]];
     const empty = rng.int(0, 5);
     const answer = full[empty];

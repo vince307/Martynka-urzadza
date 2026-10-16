@@ -132,3 +132,17 @@ describe('SHAPES texts', () => {
         }
     });
 });
+
+describe('SHAPES "all" with too few distinct wrong faces (GRD-05)', () => {
+    it('throws instead of returning a task with fewer wrong tiles', () => {
+        // An rng that always answers the same: every wrong face is the same one, so the distinct faces run out.
+        const stuck = {
+            next: () => 0,
+            int: (min: number) => min,
+            pick: <T,>(items: readonly T[]): T => items[0],
+            shuffle: <T,>(items: readonly T[]): T[] => [...items],
+            chance: () => false,
+        };
+        expect(() => generateShapes(skill(['all'], 'tiles', ['circle', 'square', 'triangle']), stuck)).toThrow(RangeError);
+    });
+});

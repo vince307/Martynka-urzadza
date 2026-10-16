@@ -5,6 +5,7 @@
 import { pl } from '../../../data/pl';
 import type { Rng } from '../../rng';
 import { DIVIDE, MINUS } from '../symbols';
+import { drawUntil } from '../retry';
 import type { Generator, Task } from '../types';
 
 export type PerimeterVariant = 'rect' | 'triangle' | 'sideSquare' | 'sideRect' | 'composite';
@@ -75,10 +76,11 @@ const rect = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => {
 
 const triangle = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => {
     const top = Math.min(SIDE.max, p.max - 2 * SIDE.min);
-    let s: [number, number, number];
-    do {
-        s = [rng.int(SIDE.min, top), rng.int(SIDE.min, top), rng.int(SIDE.min, top)];
-    } while (sum(s) > p.max || s[0] + s[1] <= s[2] || s[0] + s[2] <= s[1] || s[1] + s[2] <= s[0]);
+    let s = drawUntil<[number, number, number]>(
+        `PERIMETER triangle max ${p.max}`,
+        () => [rng.int(SIDE.min, top), rng.int(SIDE.min, top), rng.int(SIDE.min, top)],
+        (t) => sum(t) <= p.max && t[0] + t[1] > t[2] && t[0] + t[2] > t[1] && t[1] + t[2] > t[0],
+    );
     // The longest side becomes the base, so the apex stands over it and the labels go round in the drawn order.
     const longest = s.indexOf(Math.max(...s));
     s = [s[longest], s[(longest + 1) % 3], s[(longest + 2) % 3]];
@@ -106,12 +108,14 @@ const sideSquare = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task =
 
 const sideRect = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => {
     const half = Math.floor(p.max / 2);
-    let given: number;
-    let other: number;
-    do {
-        given = rng.int(SIDE.min, Math.min(SIDE.max, half - SIDE.min));
-        other = rng.int(SIDE.min, Math.min(SIDE.max, half - given));
-    } while (given === other);
+    const [given, other] = drawUntil<[number, number]>(
+        `PERIMETER side of a rectangle max ${p.max}`,
+        () => {
+            const g = rng.int(SIDE.min, Math.min(SIDE.max, half - SIDE.min));
+            return [g, rng.int(SIDE.min, Math.min(SIDE.max, half - g))];
+        },
+        ([g, o]) => g !== o,
+    );
     const halfTotal = given + other;
     return {
         skillId: skill.id,
@@ -161,10 +165,11 @@ const edges = (vs: readonly Vertex[]): number[] =>
     });
 
 const composite = (skill: { id: string }, p: PerimeterParams, rng: Rng): Task => {
-    let vs: Vertex[];
-    do {
-        vs = shapeVertices(rng.pick<Shape>(['L', 'U', 'stairs']), rng);
-    } while (sum(edges(vs)) > p.max || Math.max(...vs.map((v) => v[1])) > COMPOSITE_MAX_ROWS);
+    const vs = drawUntil(
+        `PERIMETER composite figure max ${p.max}`,
+        () => shapeVertices(rng.pick<Shape>(['L', 'U', 'stairs']), rng),
+        (v) => sum(edges(v)) <= p.max && Math.max(...v.map((x) => x[1])) <= COMPOSITE_MAX_ROWS,
+    );
     const maxX = Math.max(...vs.map((v) => v[0]));
     const maxY = Math.max(...vs.map((v) => v[1]));
     const flipX = rng.chance(0.5);

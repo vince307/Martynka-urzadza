@@ -5,7 +5,7 @@ import { createRng } from '../src/core/rng';
 import { firstHint } from '../src/core/round/hints';
 import { generateWritten, parseWrittenParams } from '../src/core/tasks/generators/written';
 import { generators, parsers } from '../src/core/tasks/registry';
-import { columnMarks } from '../src/core/tasks/written';
+import { columnMarks, columnSteps } from '../src/core/tasks/written';
 import type { TaskVisual } from '../src/core/tasks/visual';
 import { validateTask } from '../src/core/tasks/validate';
 import type { SkillDef } from '../src/core/types';
@@ -139,5 +139,16 @@ describe('columnMarks', () => {
     });
     it('marks nothing for a subtraction without borrow', () => {
         expect(columnMarks(col('−', 98, 45, 2), 'all')).toEqual({ carries: [], borrows: [] });
+    });
+});
+
+describe('columnSteps (WNA-06)', () => {
+    const col = (op: '+' | '−', a: number, b: number, columns: number): Column => ({ kind: 'column', op, a, b, columns });
+    it('throws when a borrow passes the top column (a < b)', () => {
+        expect(() => columnSteps(col('−', 100, 200, 3))).toThrow(RangeError);
+        expect(() => columnSteps(col('−', 45, 65, 2))).toThrow(RangeError);
+    });
+    it('still works for a ≥ b', () => {
+        expect(() => columnSteps(col('−', 500, 284, 3))).not.toThrow();
     });
 });

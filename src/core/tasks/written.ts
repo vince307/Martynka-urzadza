@@ -43,10 +43,13 @@ export const columnSteps = (v: ColumnVisual): ColumnStep[] => {
         } else if (m[col] < b[col]) {
             const lenders: { col: number; struck: number; now: number }[] = [];
             let j = col + 1;
-            while (m[j] === 0) {
+            while (j < v.columns && m[j] === 0) {
                 lenders.push({ col: j, struck: 0, now: 9 });
                 m[j] = 9;
                 j += 1;
+            }
+            if (j >= v.columns) {
+                throw new RangeError(`columnSteps: ${v.a} ${v.op} ${v.b} borrows past the top column (a < b)`);
             }
             lenders.push({ col: j, struck: m[j], now: m[j] - 1 });
             const current = m[col];
