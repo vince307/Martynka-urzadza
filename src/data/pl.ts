@@ -89,6 +89,16 @@ export const pl = {
             // DESIGN-GAP 116: the kit has no line for a save refused because another window of the game saved later.
             otherTab: 'Zapis jest wyłączony: inne okno gry zapisało postępy później niż to. Zamknij pozostałe okna i uruchom grę ponownie.',
         },
+        // Offline readiness (DESIGN-GAP 118): the kit has no such line; provisional wording, to be read by a teacher.
+        offline: {
+            heading: 'Gra bez internetu',
+            ready: 'Gra jest gotowa do działania bez internetu.',
+            installing: 'Gra przygotowuje się do działania bez internetu. Poczekaj chwilę.',
+            failed: 'Nie udało się przygotować gry do działania bez internetu. Uruchom grę ponownie, gdy będzie internet.',
+            registerFailed: 'Gra nie przygotuje się do działania bez internetu na tym urządzeniu.',
+            unsupported: 'Ta przeglądarka nie pozwala grać bez internetu.',
+            takenOver: 'Nowsza wersja gry jest gotowa. Zacznie działać przy następnym uruchomieniu.',
+        },
         // Task pictures (DESIGN-GAP 67): the kit has no parent line for pictures that failed to load. The verb agrees with the count (1 nie wczytał się, 2-4 nie wczytały się, 5+ nie wczytało się).
         artHeading: 'Obrazki',
         artOk: 'Wszystkie obrazki zadań są wczytane.',

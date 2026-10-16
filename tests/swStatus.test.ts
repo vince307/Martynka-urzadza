@@ -1,7 +1,7 @@
 // Origin: stale-tab-and-health phase 5, audit P-1 / B-8: a parent must learn whether offline play is ready,
 // and a child's tab must know a newer build took over. Oracle: the phase table of the plan, decided on plain events.
 import { describe, expect, it } from 'vitest';
-import { initialSwStatus, stepSw, type SwEvent, type SwStatus } from '../src/core/swStatus';
+import { initialSwStatus, offlineView, stepSw, type SwEvent, type SwStatus } from '../src/core/swStatus';
 
 const run = (events: SwEvent[], from: SwStatus = initialSwStatus): SwStatus => events.reduce(stepSw, from);
 const view = (s: SwStatus): Pick<SwStatus, 'phase' | 'error' | 'takenOver'> => ({ phase: s.phase, error: s.error, takenOver: s.takenOver });
@@ -61,5 +61,26 @@ describe('stepSw', () => {
 
     it('unsupported is its own phase', () => {
         expect(view(run([{ type: 'unsupported' }]))).toEqual({ phase: 'unsupported', error: null, takenOver: false });
+    });
+});
+
+describe('offlineView', () => {
+    const base = initialSwStatus;
+    it('maps each phase to a line', () => {
+        expect(offlineView({ ...base, phase: 'ready' }).line).toBe('ready');
+        expect(offlineView({ ...base, phase: 'registering' }).line).toBe('installing');
+        expect(offlineView({ ...base, phase: 'installing' }).line).toBe('installing');
+        expect(offlineView({ ...base, phase: 'install-failed', error: 'InstallFailed' }).line).toBe('failed');
+        expect(offlineView({ ...base, phase: 'register-failed', error: 'SecurityError' }).line).toBe('registerFailed');
+        expect(offlineView({ ...base, phase: 'unsupported' }).line).toBe('unsupported');
+    });
+    it('carries the error name as the code and the takeover flag', () => {
+        expect(offlineView({ ...base, phase: 'register-failed', error: 'SecurityError' }).code).toBe('SecurityError');
+        expect(offlineView({ ...base, phase: 'ready' }).code).toBeNull();
+        expect(offlineView({ ...base, phase: 'ready', takenOver: true }).takenOver).toBe(true);
+        expect(offlineView({ ...base, phase: 'ready' }).takenOver).toBe(false);
+    });
+    it('keeps a failed update behind an active worker as ready with a code', () => {
+        expect(offlineView({ ...base, phase: 'ready', error: 'InstallFailed' })).toEqual({ line: 'ready', code: 'InstallFailed', takenOver: false });
     });
 });

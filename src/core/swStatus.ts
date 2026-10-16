@@ -53,3 +53,22 @@ export const stepSw = (status: SwStatus, event: SwEvent): SwStatus => {
             return status.hadController ? { ...status, takenOver: true } : status;
     }
 };
+
+export type OfflineLine = 'ready' | 'installing' | 'failed' | 'registerFailed' | 'unsupported';
+export interface OfflineView {
+    line: OfflineLine;
+    code: string | null;
+    takenOver: boolean;
+}
+
+const LINES: Record<SwPhase, OfflineLine> = {
+    unsupported: 'unsupported',
+    registering: 'installing',
+    installing: 'installing',
+    ready: 'ready',
+    'install-failed': 'failed',
+    'register-failed': 'registerFailed',
+};
+
+/** What the parent's panel shows: the line for the phase, the error name as the code, and whether a newer build took over. */
+export const offlineView = (status: SwStatus): OfflineView => ({ line: LINES[status.phase], code: status.error, takenOver: status.takenOver });
