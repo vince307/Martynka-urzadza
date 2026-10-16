@@ -1,10 +1,10 @@
 ---
 change_id: final-art-p2
 title: P2 art from the salon-v2 pack (app icon, loading screen, room thumbnails, wallet, notebook, counting icons)
-status: impl_reviewed
+status: archived
 created: 2026-10-16
 updated: 2026-10-16
-archived_at: null
+archived_at: 2026-10-16T05:01:56Z
 ---
 
 ## Notes
