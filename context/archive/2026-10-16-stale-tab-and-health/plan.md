@@ -962,7 +962,7 @@ migrates that save again.
 
 - [x] 10.5 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper or stale "v3" comment; gap rows 116-121 match the code comments — impl-review 2026-10-16
 - [x] 10.6 [human] Accept or reverse save format v4 (one-way door; rollback below this build shows the `future` card) — accepted by the maintainer in the run session 2026-10-16
-- [ ] 10.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches the regex `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed`
+- [x] 10.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches the regex `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` — CI run 38898544137 (job 116964813604, PR #75 merge of d0d3956: step `npm run build` `e2e hook: absent (2 chunks checked)`, step `npm test` `Tests  3139 passed (3139)` after stripping ANSI colour codes)
 
 ### Phase 11: A stale tab never overwrites newer progress — e2e (#2)
 
