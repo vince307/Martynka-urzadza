@@ -896,8 +896,8 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [x] 8.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — SHA8
-- [x] 8.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona — SHA8
+- [x] 8.1 `validate-rule-files.sh` PASS; deliberate break w `CLAUDE.md` → FAIL; przywrócone — 2d8ef9f
+- [x] 8.2 Każdy wpis w `follow-ups/review-fixes.md` ma `Trigger:`; pełna bramka lokalna zielona — 2d8ef9f
 
 #### Manual
 
