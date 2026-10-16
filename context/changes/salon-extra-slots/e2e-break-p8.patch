@@ -1,0 +1,13 @@
+diff --git a/src/core/roomHit.ts b/src/core/roomHit.ts
+index 75b25ab..b6bc394 100644
+--- a/src/core/roomHit.ts
++++ b/src/core/roomHit.ts
+@@ -48,7 +48,7 @@ export function holdPoint(
+     const full = slotBox(slot);
+     const sc = ROOM_LAYOUT.scene;
+     const box: Box = {
+-        left: Math.max(full.left, sc.left + m), top: Math.max(full.top, sc.top + m),
++        left: Math.max(full.left, sc.left + m), top: full.top,
+         right: Math.min(full.right, sc.left + sc.width - m), bottom: Math.min(full.bottom, sc.top + sc.height - m),
+     };
+     const near = [-m, 0, m];

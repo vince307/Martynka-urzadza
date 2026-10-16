@@ -4,9 +4,10 @@
 // chromium-hook project; stars come from the e2e-only ?e2eStars seam, ?e2eVariant=off keeps a puzzle or minigame out.
 import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
-import { answerRight, answerWrong, phaseIs, readHook, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
+import { answerRight, answerWrong, holdTouch, phaseIs, readHook, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { SALON } from '../../src/data/rooms';
 import { pl } from '../../src/data/pl';
+import { balance } from '../../src/data/balance';
 
 test.setTimeout(180_000);
 test.use({ serviceWorkers: 'block' });
@@ -157,4 +158,36 @@ test('#2 FR-019 S-16d a salon finished with seven tasks gets the five new ones a
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).toBeNull();
     await expect.poll(async () => (await room(page)).modeText, { timeout: 15_000 }).toBe(pl.room.change.enter);
+});
+
+test('#16 S-16d the curtains reaching above the scene are held for a free change', async ({ page }) => {
+    await salonWithOldTasks(page);
+    await buy(page, 0);
+    const bought = await room(page);
+    expect(bought.chosen.curtains).toBe(0);
+    const starsBefore = (await snapshot(page)).stars;
+
+    // The curtains picture starts above the canvas: the hold target must lie on the canvas, in the band only they cover.
+    const at = (await targets(page)).slots?.curtains;
+    expect(at).toBeDefined();
+    expect(at!.y).toBeGreaterThan(0);
+    expect(at!.y).toBeLessThan(200);
+
+    await holdTouch(page, at!, balance.roomHold.holdMs + 400);
+    await expect.poll(async () => (await room(page)).panel, { timeout: 15_000 }).toMatchObject({ kind: 'open', mode: 'change', slot: 'curtains' });
+    expect((await snapshot(page)).stars).toBe(starsBefore);
+
+    const thumbs = (await targets(page)).thumbs ?? [];
+    expect(thumbs.length).toBe(3);
+    await tapScene(page, thumbs[2]);
+    await expect.poll(async () => {
+        const panel = (await room(page)).panel;
+        return panel.kind === 'open' ? panel.preview : null;
+    }, { timeout: 15_000 }).toBe(2);
+    await tapTarget(page, 'choose');
+    await expect.poll(async () => (await room(page)).chosen.curtains, { timeout: 15_000 }).toBe(2);
+    const after = await room(page);
+    expect(after.shown.curtains).toBe(2);
+    expect(after.tasksDone).toBe(bought.tasksDone);
+    expect((await snapshot(page)).stars).toBe(starsBefore);
 });
