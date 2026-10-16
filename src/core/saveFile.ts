@@ -76,11 +76,11 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
 export type DeviceSaveView =
     | { kind: 'summary'; summary: SaveSummary }
     | { kind: 'unreadable' }
-    | { kind: 'blocked'; cause: 'future' | 'unreadable' | 'timeout' | 'unavailable' | 'fatal' | 'newer' | 'otherTab'; forceable: boolean }
+    | { kind: 'blocked'; cause: 'future' | 'unreadable' | 'timeout' | 'unavailable' | 'unavailable-first' | 'fatal' | 'newer' | 'otherTab'; forceable: boolean }
     | { kind: 'broken' };
 
 export function deviceSaveView(
-    status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'> & { loadFrom?: number | null },
+    status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'> & { loadFrom?: number | null; unavailableStarts?: number },
     current: SaveState,
     rooms: Readonly<Record<string, RoomDef>>,
 ): DeviceSaveView {
@@ -88,8 +88,10 @@ export function deviceSaveView(
     // A plain corrupt save (not migrated) has nothing to keep; the others need the second step (SRR-09).
     if (blockedBy === 'unreadable' && loadReason !== 'future' && !keepsOldSave(loadReason, loadFrom)) return { kind: 'unreadable' };
     if (blockedBy !== null) {
-        const cause = blockedBy === 'unreadable' ? (loadReason === 'future' ? 'future' : 'unreadable') : blockedBy === 'unavailable' && isTimeoutError(loadError) ? 'timeout' : blockedBy;
-        return { kind: 'blocked', cause, forceable: replaceGate(status, true) === 'ok' };
+        const forceable = replaceGate(status, true) === 'ok';
+        const unavailableCause = isTimeoutError(loadError) ? 'timeout' : forceable ? 'unavailable' : 'unavailable-first';
+        const cause = blockedBy === 'unreadable' ? (loadReason === 'future' ? 'future' : 'unreadable') : blockedBy === 'unavailable' ? unavailableCause : blockedBy;
+        return { kind: 'blocked', cause, forceable };
     }
     const decoded = decodeSave(current);
     return decoded.kind === 'ok' ? { kind: 'summary', summary: saveSummary(decoded.session, rooms) } : { kind: 'broken' };

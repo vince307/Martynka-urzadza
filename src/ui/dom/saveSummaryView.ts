@@ -4,8 +4,8 @@ import { pl } from '../../data/pl';
 import { createText } from './overlay';
 
 /** The sentence for a device save that cannot be replaced, one place for the import and reset dialogs. */
-export const blockedText = (cause: 'future' | 'unreadable' | 'timeout' | 'unavailable' | 'fatal' | 'newer' | 'otherTab'): string =>
-    ({ future: pl.saveTransfer.deviceFuture, unreadable: pl.saveTransfer.deviceUnreadable, timeout: pl.saveTransfer.deviceTimeout, unavailable: pl.saveTransfer.deviceUnavailable, fatal: pl.saveTransfer.deviceFatal, newer: pl.saveTransfer.deviceNewer, otherTab: pl.saveTransfer.deviceOtherTab })[cause];
+export const blockedText = (cause: 'future' | 'unreadable' | 'timeout' | 'unavailable' | 'unavailable-first' | 'fatal' | 'newer' | 'otherTab'): string =>
+    ({ future: pl.saveTransfer.deviceFuture, unreadable: pl.saveTransfer.deviceUnreadable, timeout: pl.saveTransfer.deviceTimeout, unavailable: pl.saveTransfer.deviceUnavailable, 'unavailable-first': pl.saveTransfer.deviceUnavailableFirst, fatal: pl.saveTransfer.deviceFatal, newer: pl.saveTransfer.deviceNewer, otherTab: pl.saveTransfer.deviceOtherTab })[cause];
 
 /** The three lines a parent compares before a save is overwritten (stars, stage, rooms); shared by the import and reset dialogs. */
 export const createSummaryList = (title: string, summary: SaveSummary, roomName: (id: string) => string): HTMLElement => {

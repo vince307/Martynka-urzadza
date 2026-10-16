@@ -170,7 +170,7 @@ describe('exportFileText', () => {
 describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory session as the device save', () => {
     const rooms = { living: ((): RoomDef => ({ id: 'living', tasks: new Array(10).fill(null) }) as unknown as RoomDef)() };
 
-    const st = (blockedBy: BlockReason | null, loadReason: AutosaveStatus['loadReason'] = null, loadError: string | null = null) => ({ blockedBy, loadReason, loadError });
+    const st = (blockedBy: BlockReason | null, loadReason: AutosaveStatus['loadReason'] = null, loadError: string | null = null, unavailableStarts = 2) => ({ blockedBy, loadReason, loadError, unavailableStarts });
 
     it('a healthy save gives the summary', () => {
         const view = deviceSaveView(st(null), v3(), rooms);
@@ -202,6 +202,14 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
         expect(deviceSaveView(st('unavailable', null, 'TimeoutError'), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'timeout', forceable: false });
     });
 
+    it('a refused read on the first start is named unavailable-first and not forceable; from the second start it is forceable (SRR-08)', () => {
+        expect(deviceSaveView(st('unavailable', null, 'SecurityError', 1), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable-first', forceable: false });
+        expect(deviceSaveView(st('unavailable', null, 'SecurityError', 0), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable-first', forceable: false });
+        expect(deviceSaveView(st('unavailable', null, 'SecurityError', 2), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable', forceable: true });
+        // A timeout keeps its own cause whatever the count.
+        expect(deviceSaveView(st('unavailable', null, 'timeout', 1), v3(), rooms)).toMatchObject({ cause: 'timeout' });
+    });
+
     it('a refused read is blocked and forceable; fatal is not', () => {
         expect(deviceSaveView(st('unavailable', null, 'SecurityError'), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'unavailable', forceable: true });
         expect(deviceSaveView(st('fatal'), v3(), rooms)).toEqual({ kind: 'blocked', cause: 'fatal', forceable: false });
@@ -212,7 +220,8 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
         const errors = [null, 'timeout', 'TimeoutError', 'SecurityError'] as const;
         for (const blockedBy of ['unreadable', 'unavailable', 'fatal'] as const)
             for (const loadReason of reasons)
-                for (const loadError of errors) {
+                for (const loadError of errors)
+                  for (const unavailableStarts of [1, 2]) {
                     const writes: SaveState[] = [];
                     const saver = createAutosaver({
                         store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: (v) => (writes.push(v), Promise.resolve()) },
@@ -227,13 +236,14 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
                         log: () => undefined,
                         ...(loadReason ? { loadReason } : {}),
                         ...(loadError ? { loadError } : {}),
+                        unavailableStarts,
                     });
                     const view = deviceSaveView(saver.status(), v3(), rooms);
                     await saver.replace(v3(), { force: true });
                     const wrote = writes.length === 1;
                     const forceable = view.kind === 'blocked' && view.forceable;
                     const open = view.kind === 'unreadable';
-                    expect(wrote, JSON.stringify({ blockedBy, loadReason, loadError })).toBe(forceable || open);
+                    expect(wrote, JSON.stringify({ blockedBy, loadReason, loadError, unavailableStarts })).toBe(forceable || open);
                 }
     });
 });

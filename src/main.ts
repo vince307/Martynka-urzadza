@@ -2,7 +2,7 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
-import { createAutosaver, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
+import { createAutosaver, isTimeoutError, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { repairCurrentRoom } from './core/rooms';
@@ -36,6 +36,7 @@ import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountSaveRefusedCard } from './ui/dom/saveRefusedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createSoundService } from './ui/sound';
+import { createStartCounter } from './storage/startCounter';
 import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
 import type { SoundPrefs } from './core/sound';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
@@ -172,6 +173,14 @@ const start = async (): Promise<void> => {
             });
         });
     const outcome = first.kind === 'unavailable' && first.waitLonger ? await slowCard(first) : first;
+    // SRR-08: a refused read (not a timeout) counts consecutive starts on this device; a read that worked starts again from zero.
+    const startCounter = createStartCounter(deviceStorage());
+    let unavailableStarts = 0;
+    if (outcome.kind === 'unavailable') {
+        if (!isTimeoutError(outcome.error)) unavailableStarts = startCounter.bump();
+    } else if (outcome.kind === 'loaded' || outcome.kind === 'fresh') {
+        startCounter.reset();
+    }
     const playedOnFirst = outcome === first && first.kind === 'unavailable' && first.waitLonger !== undefined;
     if (outcome.kind === 'unavailable') {
         console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
@@ -271,6 +280,7 @@ const start = async (): Promise<void> => {
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         loadFrom: outcome.kind === 'unreadable' ? outcome.from : undefined,
+        unavailableStarts,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
         // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).

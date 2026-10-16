@@ -45,7 +45,9 @@ test('#2 an unavailable save is not overwritten by import or reset without a sec
     let panel = await openSettings(page);
     await panel.getByRole('button', { name: pl.saveTransfer.importButton, exact: true }).tap();
     const importDialog = page.getByRole('dialog', { name: pl.saveTransfer.importTitle });
-    await expect(importDialog.getByText(pl.saveTransfer.deviceUnavailable)).toBeVisible();
+    // SRR-08: the first start promises nothing and offers no overwrite.
+    await expect(importDialog.getByText(pl.saveTransfer.deviceUnavailableFirst)).toBeVisible();
+    await expect(importDialog.getByRole('button', { name: pl.saveTransfer.force, exact: true })).toHaveCount(0);
     await expect(importDialog.getByRole('button', { name: pl.saveTransfer.choose, exact: true })).toHaveCount(0);
     await expect(importDialog.getByRole('button', { name: pl.saveTransfer.chooseOther, exact: true })).toHaveCount(0);
     await expect(importDialog.getByRole('heading', { name: pl.saveTransfer.now })).toHaveCount(0);
@@ -56,7 +58,7 @@ test('#2 an unavailable save is not overwritten by import or reset without a sec
     panel = await openSettings(page);
     await panel.getByRole('button', { name: pl.saveTransfer.resetButton, exact: true }).tap();
     const resetDialog = page.getByRole('dialog', { name: pl.saveTransfer.resetTitle });
-    await expect(resetDialog.getByText(pl.saveTransfer.deviceUnavailable)).toBeVisible();
+    await expect(resetDialog.getByText(pl.saveTransfer.deviceUnavailableFirst)).toBeVisible();
     await expect(resetDialog.getByRole('button', { name: pl.saveTransfer.resetConfirm, exact: true })).toHaveCount(0);
     await resetDialog.getByRole('button', { name: pl.saveTransfer.close, exact: true }).tap();
     await expect(resetDialog).toBeHidden();
@@ -126,6 +128,9 @@ test('#2 SIR-01 a save from a newer version is never offered for overwrite', asy
 });
 
 test('#2 SIR-02 a save the browser never gives can be replaced after a second confirmation', async ({ page }) => {
+    // SRR-08: the first refused start is not forceable; the counter (localStorage) survives the reload, so the second start is.
+    await page.goto('/?e2eSave=unavailable');
+    await expect(page.getByRole('alertdialog', { name: pl.saveUnavailable.title })).toBeVisible();
     await playOnWithBlockedSave(page, 'unavailable', pl.saveUnavailable);
     // A marker on this page load: it is gone only if the page really reloaded.
     await page.evaluate(() => {

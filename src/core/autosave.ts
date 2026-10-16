@@ -1,6 +1,7 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
 import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
+import { balance } from '../data/balance';
 
 export interface SaveStore {
     read(): Promise<unknown>;
@@ -57,6 +58,8 @@ export interface AutosaveStatus {
     loadError: string | null;
     /** Runtime only (never saved): the version an unreadable (corrupt) save was migrated from, or null; fixed at start. */
     loadFrom: number | null;
+    /** Runtime only (never saved): consecutive starts (this one included) on which the store would not answer; 0 when the read worked. */
+    unavailableStarts: number;
     /**
      * Runtime only (never saved): the copy of the raw older save. `none` without a migration, `pending` before the first
      * try, `failed` after at least one failed try (still owed), `done` once kept, `skipped` when the new version was written without it.
@@ -90,6 +93,8 @@ export interface AutosaverOptions {
     loadReason?: LoadReason;
     /** Version the unreadable save was migrated from (`LoadOutcome.unreadable.from`). */
     loadFrom?: number | null;
+    /** Consecutive `unavailable` starts, this one included (device counter outside the save). */
+    unavailableStarts?: number;
     log: (...args: unknown[]) => void;
     onFirstWrite?: () => Promise<Persistence> | void;
     /** Called once, when a write is first refused because a newer version or another window of the game saved here (never for load blocks or `replace`). */
@@ -109,17 +114,18 @@ export const keepsOldSave = (loadReason: LoadReason | null, loadFrom: number | n
 /**
  * The one rule for overwriting the device save, shared by `replace` and the dialogs' `forceable` (plan decision 3).
  * `future` is a healthy save from a newer build and a `timeout` read may be a healthy slow one: neither is ever replaced.
- * A read the browser refused (`unavailable`) is replaced only on an explicit `force`.
+ * A read the browser refused (`unavailable`) is replaced only on an explicit `force` from the
+ * `balance.save.forceAfterStarts`-th consecutive such start (SRR-08): the first start asks for a restart.
  */
-export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'> & { loadFrom?: number | null }, force: boolean): 'ok' | 'Blocked' {
-    const { blockedBy, loadReason, loadError, loadFrom } = status;
+export function replaceGate(status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'> & { loadFrom?: number | null; unavailableStarts?: number }, force: boolean): 'ok' | 'Blocked' {
+    const { blockedBy, loadReason, loadError, loadFrom, unavailableStarts = 0 } = status;
     if (blockedBy === 'fatal' || blockedBy === 'newer' || blockedBy === 'otherTab') return 'Blocked';
     if (blockedBy === 'unreadable') {
         if (loadReason === 'future') return 'Blocked';
         // A save the game could not migrate or does not know is kept until the parent confirms twice (FR-021); only a plain corrupt one is free.
         return keepsOldSave(loadReason, loadFrom) && !force ? 'Blocked' : 'ok';
     }
-    if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force ? 'ok' : 'Blocked';
+    if (blockedBy === 'unavailable') return !isTimeoutError(loadError) && force && unavailableStarts >= balance.save.forceAfterStarts ? 'ok' : 'Blocked';
     return 'ok';
 }
 
@@ -342,7 +348,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             return { ok: false, error: 'Busy' };
         }
         // One rule for the dialogs and for this refusal: see `replaceGate`.
-        const gate = replaceGate({ blockedBy, loadReason: options.loadReason ?? null, loadError: options.loadError ?? null, loadFrom: options.loadFrom ?? null }, replaceOptions.force === true);
+        const gate = replaceGate({ blockedBy, loadReason: options.loadReason ?? null, loadError: options.loadError ?? null, loadFrom: options.loadFrom ?? null, unavailableStarts: options.unavailableStarts ?? 0 }, replaceOptions.force === true);
         if (gate === 'Blocked') {
             log('autosave: replace refused', { blockedBy, loadReason: options.loadReason ?? null, force: replaceOptions.force === true });
             return { ok: false, error: 'Blocked' };
@@ -437,6 +443,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             loadReason: options.loadReason ?? null,
             loadError: options.loadError ?? null,
             loadFrom: options.loadFrom ?? null,
+            unavailableStarts: options.unavailableStarts ?? 0,
             backup,
             backupError,
             migrationWrittenAt,

@@ -227,6 +227,8 @@ export const pl = {
         // DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read; for the adult, calm, no codes.
         // DESIGN-GAP 71 (docs/design-gaps.md): the kit has no way out of a save the browser never gives; second confirmation and a last-resort advice, texts are ours.
         deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Jeśli to się powtarza przy każdym uruchomieniu, możesz go zastąpić. Postępy zapisane wcześniej na tym urządzeniu wtedy znikną.',
+        // DESIGN-GAP 126: the kit has no line for the first start on which the browser would not give the save; the text is ours, to be read by a teacher.
+        deviceUnavailableFirst: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Uruchom grę ponownie. Zapis zostaje bez zmian.',
         force: 'Zastąp mimo to',
         forcedWarning: 'Zapisu z tego urządzenia nie udało się odczytać. Zostanie zastąpiony.',
         siteDataAdvice: 'Nie udało się zapisać na tym urządzeniu. Ostatnie wyjście: usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.',

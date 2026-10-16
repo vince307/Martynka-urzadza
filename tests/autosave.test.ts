@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
+import { balance } from '../src/data/balance';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const settle = (): Promise<void> => new Promise((r) => setImmediate(r));
@@ -625,8 +626,13 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         expect(v.logs.some((l) => String(l[0]).includes('InvalidSave') && JSON.stringify(l).includes('version'))).toBe(true);
     });
 
-    it('unavailable needs force: without it nothing is written, with it the write happens and is logged', async () => {
-        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+    it('unavailable needs force AND a second consecutive start: the first start is never replaced (SRR-08)', async () => {
+        const first = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: 1 });
+        expect(first.saver.status().unavailableStarts).toBe(1);
+        expect(await first.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
+        expect(first.state.writes).toEqual([]);
+
+        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: balance.save.forceAfterStarts });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
         expect(t.state.writes).toEqual([]);
         expect(await t.saver.replace(encodeSave(session(6)), { force: true })).toEqual({ ok: true });
@@ -639,7 +645,7 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         expect(await t.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
         expect(t.state.writes).toEqual([]);
 
-        const u = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+        const u = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: 2 });
         u.state.fail = true;
         expect(await u.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Error' });
         expect(u.saver.status().lastError).toBe('Error');
@@ -660,15 +666,16 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
             for (const loadReason of reasons)
                 for (const loadError of errors)
                     for (const force of [false, true])
+                      for (const unavailableStarts of [0, 1, 2, 3])
                       for (const loadFrom of [null, SAVE_VERSION, 2]) {
                         // save-truth phase 2: the kept-old-save reasons need force (corrupt only after a migration step).
                         const keeps = loadReason === 'unknown-version' || loadReason === 'migration-failed' || (loadReason === 'corrupt' && loadFrom === 2);
                         const expected =
                             blockedBy === 'fatal' ? 'Blocked'
                             : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : keeps && !force ? 'Blocked' : 'ok')
-                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force ? 'Blocked' : 'ok')
+                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force || unavailableStarts < balance.save.forceAfterStarts ? 'Blocked' : 'ok')
                             : 'ok';
-                        expect(replaceGate({ blockedBy, loadReason, loadError, loadFrom }, force), JSON.stringify({ blockedBy, loadReason, loadError, loadFrom, force })).toBe(expected);
+                        expect(replaceGate({ blockedBy, loadReason, loadError, loadFrom, unavailableStarts }, force), JSON.stringify({ blockedBy, loadReason, loadError, loadFrom, unavailableStarts, force })).toBe(expected);
                     }
     });
 });
