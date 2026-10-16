@@ -136,7 +136,7 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
- * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
+ * future version), `corrupt` (a save of the current version whose stars field is bad; the migrated-corrupt path is covered by unit tests), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
  * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
@@ -158,7 +158,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
         seam === 'unreadable'
             ? { version: 99, profileId: 'default', stars: 7 }
             : seam === 'corrupt'
-              ? { version: 1, profileId: 'default', stars: 'many' }
+              ? { version: SAVE_VERSION, profileId: 'default', stars: 'many' } // corrupt in its OWN version (a bad stars field), so the card reads corrupt/stars
               : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : seam === 'legacy-salon'

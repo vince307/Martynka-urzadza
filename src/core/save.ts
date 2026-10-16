@@ -51,7 +51,10 @@ export interface SessionSave {
 
 export type DecodeResult =
     | { kind: 'ok'; session: SessionSave; migratedFrom: number | null }
-    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' }
+    | { kind: 'unreadable'; reason: 'future' | 'unknown-version' }
+    // `from`: the version read (null when the shape check failed); `problem`: the first broken top-level key after the migrations,
+    // `exception:<Name>` when the check itself threw, null at the shape check. Names only, never values.
+    | { kind: 'unreadable'; reason: 'corrupt'; from: number | null; problem: string | null }
     // A migration step threw: the save may be healthy, so it is named apart from `corrupt`; `step` is the version it lifts from.
     | { kind: 'unreadable'; reason: 'migration-failed'; step: number };
 
@@ -234,8 +237,13 @@ function toSession(save: SaveState): SessionSave {
 }
 
 /** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
+const errorNameOf = (e: unknown): string => {
+    const name = typeof e === 'object' && e !== null ? (e as { name?: unknown }).name : undefined;
+    return typeof name === 'string' && name !== '' ? name : 'Error';
+};
+
 export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Migration>> = MIGRATIONS): DecodeResult {
-    if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt' };
+    if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt', from: null, problem: null };
     const from = raw.version;
     if (from > SAVE_VERSION) return { kind: 'unreadable', reason: 'future' };
     let current: unknown = raw;
@@ -249,10 +257,11 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
         }
     }
     try {
-        if (!validateSave(current)) return { kind: 'unreadable', reason: 'corrupt' };
-        return { kind: 'ok', session: toSession(current), migratedFrom: from < SAVE_VERSION ? from : null };
-    } catch {
-        return { kind: 'unreadable', reason: 'corrupt' };
+        const problem = saveProblem(current);
+        if (problem !== null) return { kind: 'unreadable', reason: 'corrupt', from, problem };
+        return { kind: 'ok', session: toSession(current as SaveState), migratedFrom: from < SAVE_VERSION ? from : null };
+    } catch (e) {
+        return { kind: 'unreadable', reason: 'corrupt', from, problem: `exception:${errorNameOf(e)}` };
     }
 }
 

@@ -30,9 +30,9 @@ describe('e2eSaveStore', () => {
         await expect(e2eSaveStore('unreadable').read()).resolves.toMatchObject({ version: 99 });
     });
 
-    it('corrupt decodes as corrupt', async () => {
+    it('corrupt decodes as corrupt in its own version (a bad stars field of a v4 shape)', async () => {
         const store = e2eSaveStore('corrupt');
-        expect(decodeSave(await store.read())).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(await store.read())).toEqual({ kind: 'unreadable', reason: 'corrupt', from: SAVE_VERSION, problem: 'stars' });
     });
 
     it('unavailable rejects the read with an UnknownError', async () => {

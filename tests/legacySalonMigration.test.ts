@@ -65,6 +65,16 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         expect(raw).toEqual(snapshot);
     });
 
+    it('C-2r: a frozen v1 save with the old salon goes v1 -> v4 and keeps what was bought', () => {
+        const r = decodeSave(fixture('save-v1-legacy-salon.json'));
+        expect(r).toMatchObject({ kind: 'ok', migratedFrom: 1 });
+        if (r.kind !== 'ok') return;
+        expect(r.session.stars).toBe(7);
+        expect(r.session.rooms.salon).toEqual({ tasksDone: 6, chosen: { sofa: 1, rug: 2, 'coffee-table': 0, cabinet: 0, armchair: 0 } });
+        const encoded = encodeSave(r.session);
+        expect(encoded).toMatchObject({ version: 4, generation: 0, writer: '' });
+    });
+
     it('a salon already in the new shape only gets the new version', () => {
         const salon = { tasksDone: 3, chosen: { sofa: 2, rug: 1 } };
         expect(salonOf(v2With(salon))).toEqual(salon);
@@ -100,7 +110,7 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         ['tasksDone is 1.5', v2With({ tasksDone: 1.5, chosen: { floor: 0 } })],
     ])('the step is total: %s gives corrupt, never migration-failed', (_name, raw) => {
         expect(() => LIFT_V2_SALON(raw)).not.toThrow();
-        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: 2, problem: expect.any(String) as string });
     });
 
     it('is idempotent', () => {

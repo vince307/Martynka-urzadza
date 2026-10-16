@@ -128,6 +128,9 @@ describe('loadSave', () => {
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
 
+        const bad = { ...(fixture('save-v4.json') as Record<string, unknown>), stars: 'x' };
+        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 4, problem: 'stars' });
+
         const broken = makeStore(fixture('save-v1.json'));
         broken.state.readFails = true;
         expect(await loadSave(broken.store)).toEqual({ kind: 'unavailable', error: 'Error' });

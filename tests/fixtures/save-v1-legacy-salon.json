@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "profileId": "default",
+  "stars": 7,
+  "rooms": {
+    "salon": {
+      "tasksDone": 6,
+      "chosen": {
+        "floor": 1,
+        "walls": 2,
+        "curtains": 0,
+        "sofa": 1,
+        "rug": 2,
+        "table": 0
+      }
+    }
+  },
+  "currentRoom": "salon",
+  "settings": {
+    "autoRead": false
+  },
+  "learner": {
+    "age": 8,
+    "stage": "E3",
+    "stageOverriddenByParent": false,
+    "warmupPending": false,
+    "unlockedStep": {
+      "E1": 5,
+      "E2": 6,
+      "E3": 3,
+      "E4": 2,
+      "E5": 2,
+      "E6": 2
+    },
+    "mastery": {
+      "E3.add.100": 4,
+      "E3.mult.table": 2
+    },
+    "streak": {
+      "E3.add.100": 0,
+      "E3.mult.table": 1
+    },
+    "history": [
+      {
+        "skillId": "E3.add.100",
+        "ok": true,
+        "firstTry": true,
+        "at": 1760000000000
+      },
+      {
+        "skillId": "E3.mult.table",
+        "ok": true,
+        "firstTry": false,
+        "at": 1760000001000,
+        "example": {
+          "prompt": "6 · 7 = ?",
+          "given": 36,
+          "answer": 42
+        }
+      }
+    ],
+    "weakStreak": 1,
+    "easedRounds": 0,
+    "pendingUnlock": {
+      "stage": "E3",
+      "step": 3
+    }
+  }
+}

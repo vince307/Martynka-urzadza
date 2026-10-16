@@ -2,7 +2,8 @@
 // Oracle: audit C-2 / M-S5: a parent must see whether saving is off (and why), failing, or fine.
 import { describe, expect, it } from 'vitest';
 import type { AutosaveStatus } from '../src/core/autosave';
-import { cardCopyFor, saveHealthView } from '../src/core/saveHealth';
+import { SAVE_VERSION } from '../src/core/save';
+import { cardCopyFor, saveHealthView, unreadableCode } from '../src/core/saveHealth';
 
 const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     load: 'fresh',
@@ -101,6 +102,13 @@ describe('cardCopyFor', () => {
         expect(cardCopyFor('unavailable', null, 'UnknownError')).toBe('unavailable');
     });
 
+    it('a save that failed AFTER its migration gets the migration card, not the generic one (C-2r)', () => {
+        expect(cardCopyFor('unreadable', 'corrupt', null, 1)).toBe('migrationFailed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, 3)).toBe('migrationFailed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, SAVE_VERSION)).toBe('failed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, null)).toBe('failed');
+    });
+
     it('a read that timed out gets the slow card (SRR-12)', () => {
         expect(cardCopyFor('unavailable', null, 'timeout')).toBe('slow');
         expect(cardCopyFor('unavailable', null, 'TimeoutError')).toBe('slow');
@@ -151,5 +159,17 @@ describe('saveHealthView newer (P-5)', () => {
 describe('saveHealthView otherTab (stale tab)', () => {
     it('an other-writer block is off with cause otherTab and the code OtherWriterSave', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'otherTab', lastError: 'OtherWriterSave', lastFailure: { stage: 'write', error: 'OtherWriterSave' } }))).toMatchObject({ kind: 'off', cause: 'otherTab', code: 'OtherWriterSave' });
+    });
+});
+
+describe('unreadableCode (V-1, SV2-07)', () => {
+    it('names the broken field of a corrupt save, the step of a failed migration, else the reason', () => {
+        expect(unreadableCode({ reason: 'corrupt', problem: 'stars' })).toBe('corrupt/stars');
+        expect(unreadableCode({ reason: 'corrupt', problem: 'exception:RangeError' })).toBe('corrupt/exception:RangeError');
+        expect(unreadableCode({ reason: 'corrupt', problem: null })).toBe('corrupt');
+        expect(unreadableCode({ reason: 'corrupt' })).toBe('corrupt');
+        expect(unreadableCode({ reason: 'migration-failed', step: 2 })).toBe('migration-failed/2');
+        expect(unreadableCode({ reason: 'future' })).toBe('future');
+        expect(unreadableCode({ reason: 'unknown-version' })).toBe('unknown-version');
     });
 });

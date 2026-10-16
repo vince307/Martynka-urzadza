@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 
 export interface SaveStore {
@@ -13,7 +13,7 @@ export interface SaveStore {
 export type LoadOutcome =
     | { kind: 'fresh' }
     | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; raw: unknown }
-    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown }
+    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown; from?: number | null; problem?: string | null; step?: number }
     | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
 /** `newer` (runtime only, never saved): the store refused a write because it holds a save of a newer format (P-5). */
@@ -159,6 +159,8 @@ export async function loadSave(
         if (raw === undefined) return { kind: 'fresh' };
         const result = decodeSave(raw);
         if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
+        if (result.reason === 'corrupt') return { kind: 'unreadable', reason: 'corrupt', raw, from: result.from, problem: result.problem };
+        if (result.reason === 'migration-failed') return { kind: 'unreadable', reason: 'migration-failed', raw, step: result.step };
         return { kind: 'unreadable', reason: result.reason, raw };
     };
     return settle(limit?.timeoutMs, true);
@@ -209,7 +211,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         let stage: FailureStage = 'encode';
         try {
             const encoded = encodeSave(snapshot());
-            if (!validateSave(encoded)) throw Object.assign(new Error('autosave: encoded state does not validate'), { name: 'InvalidSave' });
+            if (!validateSave(encoded)) throw Object.assign(new Error(`autosave: encoded state does not validate (${saveProblem(encoded) ?? 'unknown'})`), { name: 'InvalidSave' });
             dirty = false;
             // The old save is copied before it can be overwritten; a failed copy fails this attempt and the next one retries it.
             // After `backupAttempts` failed copies in a session, or when the page is hiding after a failed copy, or when hiding is

@@ -1,5 +1,6 @@
 // What a parent sees about saving (audit C-2, M-S5, N-8, M-S2). Pure: words live in data/pl.ts.
 import { isTimeoutError, type AutosaveStatus, type BlockReason, type FailureStage, type Persistence } from './autosave';
+import { SAVE_VERSION } from './save';
 
 export type SaveHealthState =
     | { kind: 'off'; cause: BlockReason | 'future' | 'timeout' | 'migration-failed'; code: string | null }
@@ -57,9 +58,18 @@ export function saveHealthView(status: AutosaveStatus): SaveHealthView {
 export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable' | 'slow';
 
 /** Which card copy a save that could not be read gets: the reason decides, never the order of the checks (SIR-01). */
-export function cardCopyFor(kind: 'unreadable' | 'unavailable', reason: string | null, error?: string | null): SaveCardKey {
+export function cardCopyFor(kind: 'unreadable' | 'unavailable', reason: string | null, error?: string | null, from?: number | null): SaveCardKey {
     if (kind === 'unavailable') return isTimeoutError(error ?? null) ? 'slow' : 'unavailable';
     if (reason === 'future') return 'future';
     if (reason === 'migration-failed') return 'migrationFailed';
+    // A save read at an older version that fails the check after its migration is a migration problem, not damage (C-2r).
+    if (reason === 'corrupt' && typeof from === 'number' && from < SAVE_VERSION) return 'migrationFailed';
     return 'failed';
+}
+
+/** The `Kod:` text of the unreadable-save card: the broken field of a corrupt save, the step of a failed migration, else the reason (V-1, SV2-07). */
+export function unreadableCode(outcome: { reason: string; problem?: string | null; step?: number }): string {
+    if (outcome.reason === 'corrupt' && outcome.problem) return `corrupt/${outcome.problem}`;
+    if (outcome.reason === 'migration-failed' && outcome.step !== undefined) return `migration-failed/${outcome.step}`;
+    return outcome.reason;
 }

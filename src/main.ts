@@ -29,7 +29,7 @@ import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
 import { exportFileText } from './core/saveFile';
-import { cardCopyFor } from './core/saveHealth';
+import { cardCopyFor, unreadableCode } from './core/saveHealth';
 import { openSaveExportDialog } from './ui/dom/saveExportDialog';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
@@ -181,12 +181,14 @@ const start = async (): Promise<void> => {
         // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
         const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         const reason = outcome.kind === 'unreadable' ? outcome.reason : null;
+        // The code is a field name or a step number only (never a value).
+        const code = outcome.kind === 'unreadable' ? unreadableCode(outcome) : null;
         const cardCopies = { future: pl.saveFuture, migrationFailed: pl.saveMigrationFailed, failed: pl.saveFailed, unavailable: pl.saveUnavailable, slow: pl.saveSlow };
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                copy: cardCopies[cardCopyFor(outcome.kind, reason, outcome.kind === 'unavailable' ? outcome.error : null)],
+                copy: cardCopies[cardCopyFor(outcome.kind, reason, outcome.kind === 'unavailable' ? outcome.error : null, outcome.kind === 'unreadable' ? outcome.from : null)],
                 // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
-                detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
+                detail: pl.saveFailed.detail(code ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:
                     raw === null
                         ? undefined
@@ -236,7 +238,7 @@ const start = async (): Promise<void> => {
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
         session = freshSession(FIRST_ROOM, seeded ?? 0);
         if (outcome.kind === 'unreadable') {
-            console.warn(`Save unreadable (${outcome.reason}); playing without saving this session`);
+            console.warn(`Save unreadable (${unreadableCode(outcome)}); playing without saving this session`);
         }
     }
     // The calendar day of the daily puzzle: local fields, read at each round start. The e2e build may pin it with ?e2eDay=YYYY-MM-DD.
