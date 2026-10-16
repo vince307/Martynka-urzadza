@@ -1007,10 +1007,10 @@ Details.
 
 #### Automated
 
-- [ ] 6.1 New hint test red on `E3.10.half_30` before the HALF fix (assertion), green after; unit `<branch baseline> + N`
-- [ ] 6.2 Deliberate break: shuffle re-added / HALF result line first → red; restored; meta-check (generated content)
-- [ ] 6.3 Teacher read: `npm run sample -- E1 --count 6` (COMPARE_QTY) and `-- E3 --count 6` (E3.10), every task of the changed steps read; recorded in the commit body
-- [ ] 6.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `picture-tasks.spec.ts` green
+- [x] 6.1 New hint test red on `E3.10.half_30` before the HALF fix (assertion), green after; unit `<branch baseline> + N` — f6abb19
+- [x] 6.2 Deliberate break: shuffle re-added / HALF result line first → red; restored; meta-check (generated content) — f6abb19
+- [x] 6.3 Teacher read: `npm run sample -- E1 --count 6` (COMPARE_QTY) and `-- E3 --count 6` (E3.10), every task of the changed steps read; recorded in the commit body — f6abb19
+- [x] 6.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `picture-tasks.spec.ts` green — f6abb19
 
 #### Manual
 
