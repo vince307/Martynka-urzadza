@@ -839,10 +839,10 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `MIGRATIONS[3]` without the fields / `writeVerdict` ignoring `writer` → red; restored; meta-check (format and rule on data)
-- [ ] 1.3 `git diff --stat tests/fixtures` shows only `save-v4.json` added; v1–v3 fixtures byte-identical
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`)
+- [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — c0d8343
+- [x] 1.2 Deliberate break: `MIGRATIONS[3]` without the fields / `writeVerdict` ignoring `writer` → red; restored; meta-check (format and rule on data) — c0d8343
+- [x] 1.3 `git diff --stat tests/fixtures` shows only `save-v4.json` added; v1–v3 fixtures byte-identical — c0d8343
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — c0d8343
 - [ ] 1.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual

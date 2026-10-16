@@ -1,58 +1,59 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Written by the `/10x-plan-review` step of run `2026-10-16-fix-stale-tab-health`. Verdict PROCEED: the v4 `generation`/`writer` compare-and-set holds on every single-tab path checked against the code; four warnings were fixed in `plan.md` (phases 2, 3, 5, 11, 12) and three observations recorded. The next agent must not get wrong: the store's default `writer` is a fresh random id per `createIdbSaveStore` call (never a shared constant), and `onBlocked` is called only from `attempt`, wrapped in `try`/`catch`.
+Written by the `/10x-tdd` step for phase 1 of run `2026-10-16-fix-stale-tab-health`. Phase 1 (save format v4 and the pure `writeVerdict`) is committed as `c0d8343`; the store does not call `writeVerdict` yet. The next agent must not get wrong: `generation`/`writer` are stamped by the STORE inside its transaction (`encodeSave` emits placeholders `0`/`''`), the default `writer` is a fresh random id per `createIdbSaveStore` call, and `base` moves only when a put's transaction completes.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | 4 on this branch: change identity, research, plan, `docs(stale-tab-and-health): plan review` (this step) |
+| Commits | identity, research, plan, plan review, `c0d8343` (phase 1 code+tests), then a docs commit with this handoff and the plan ticks |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 57 (`grep -c '^- \[ \]' plan.md`; no rows added or renamed) |
-| Working tree | clean after the commit |
+| `change.md` status | `implementing` is NOT yet set by this step (left as `plan_reviewed`; phase 2 agent sets it) |
+| `## Progress` rows remaining | 53 |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/stale-tab-and-health/reviews/plan-review.md` | review report: B-1 special check, findings F1-F7 with decisions, drivers, verdict |
-| `context/changes/stale-tab-and-health/plan.md` | triage edits: phase 2 `IdbSaveStoreOptions.writer` default; phase 3 `onBlocked` guarded, attempt-only; phase 5 active worker keeps `ready`; phase 11 "finishes a round" + `bringToFront`; phase 12 (b) under `serviceWorkers: 'block'`; Known risks F4/F5/F6 |
-| `context/changes/stale-tab-and-health/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/stale-tab-and-health/handoff.md` | this file |
+| `src/core/save.ts` | `SAVE_VERSION` 4, `MIGRATIONS[3]`, `saveProblem` checks `generation`/`writer`, `encodeSave` placeholders, `OTHER_WRITER_SAVE`, `WriteVerdict`, `writeVerdict` |
+| `src/core/types.ts` | `SaveV4`, `SaveState = SaveV4` |
+| `tests/saveV4.test.ts` | new, 20 tests (format, migration on populated fixtures, `writeVerdict` table) |
+| `tests/fixtures/save-v4.json` | new frozen v4 fixture (generation 5, writer `fixture-writer`); v1-v3 untouched |
+| `tests/{save,saveFile,autosave,e2eSave,legacySalonMigration,idbStore}.test.ts` | version literals to 4 / `SAVE_VERSION`, v3 fixture decodes to v4 (`migratedFrom 3`), `backup-v3` store test, "v5 is future" |
+| `tests/e2e/{salon-load-health,save-backup-health,salon-art,save-migration}.spec.ts` | `writtenVersion` compares to `SAVE_VERSION`; titles say v4 |
+| `context/changes/stale-tab-and-health/plan.md` | rows 1.1-1.4 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `git branch --show-current` | `feat/stale-tab-and-health` |
-| Code reads (claims checked) | `guardedPut`/`createIdbSaveStore` (`src/storage/idb.ts`), `attempt`/`replace`/`replaceGate`/`loadSave` (`src/core/autosave.ts`: one `store.read()` per page), `e2eSaveStore` (`src/testing/e2eHook.ts`), `SAVE_KEYS` + autosaver wiring (`src/main.ts`, `src/data/layout.ts`), `registerServiceWorker`, `ROUND_SPEC`, `serviceWorkers: 'block'` in routing specs, `writtenVersion` 3 in exactly the four named specs, no console-warning assertions in `tests/e2e` |
-| Plan structure | 12 `## Phase N` ↔ 12 `### Phase N`; every phase keeps `Driver:` + `Driver why:`; edits left Progress rows unchanged |
-| lint / typecheck / tests / build / e2e | not run: docs-only step, no code changed (baseline on main 9a64fd6 per contract: unit 3076, e2e 121 — inherited, unverified) |
-
-No deliberate break (no test written in this step).
+| RED (first run, with a `writeVerdict` stub that throws, v3 code) | `tests/saveV4.test.ts`: 15 of 20 failed; first assertion `AssertionError: expected 3 to be 4` (`is the current version`); then `MIGRATIONS[3] is not a function`, `expected null to be 3` (migratedFrom) |
+| GREEN | `tests/saveV4.test.ts` 20/20; full `npm test` 171 files, 3098 passed |
+| `npm run lint`, `npm run typecheck` | OK |
+| `npm test` + deploy scripts + `sample` E1-E6 | OK; unit 3098 = baseline 3076 + 22 |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| e2e | ran ONCE outside the sandbox: Chromium starts; the four touched specs (`save-migration`, `salon-load-health`, `save-backup-health`, `salon-art`) 14 passed. Full `--workers=4` suite NOT run here: left to the orchestrator gate (row 1.5) |
+| `git diff --stat HEAD~1 -- tests/fixtures` | only `save-v4.json` added (+77); v1-v3 byte-identical |
+| Deliberate break 1 | `MIGRATIONS[3]` returning `{ ...raw, version: 4 }`: 7 tests red (lift test, every `migratedFrom` fixture row, populated-v3 game, import of v3); restored, green |
+| Deliberate break 2 | `writeVerdict` ignoring `writer`: `puts after its own write that is ahead` red; restored, green |
+| Meta-check | both breaks prove the format and the pure rule on frozen data (fixtures, table), not the IDB transaction (phase 2) |
 
 ## 4. Next command
 
-`/10x-tdd stale-tab-and-health phase 1`
+`/10x-tdd stale-tab-and-health phase 2`
 
 ## 5. Open
 
-- **[human] rows**: 10.6 accept or reverse save format v4; 11.4 iPad: the restart card reads calmly and brings back the newest stars.
-- **[visual] row**: 12.4 settings panel at 1440 and 1024 in every new state plus the child card.
-- **[reviewer] (CI at ship)** 10.7: CI `check` log regex `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed`.
-- **Known risks added by the review** (plan `## Known risks`): reload race (old document's late write → card on a legitimate reload, no loss; watch the e2e `+ 0` gate from phase 2 on); stale-window `replace` summary; `register-failed` + `console.warn` in specs that block workers.
-- **DESIGN-GAPs to add** in the phases: 116 `otherTab` line (p3), 117 child card (p4), 118 offline section (p6), 119 UI-art line (p7), 120 music status (p8), 121 prefs not kept (p9).
-- **E2E phases 11-12** use the request-file protocol (profile § 8): patches `e2e-break-p11a/p11b/p12a/p12b.patch`; p11a is written in phase 4, p12a in phase 6.
-- **Follow-ups** to write in phase 10 (`context/changes/stale-tab-and-health/follow-ups/review-fixes.md`): list in plan phase 10 § 2.
-- **Phase 1 watch**: four e2e specs assert `writtenVersion` 3 (`salon-load-health`, `save-backup-health`, `salon-art`, `save-migration`). Phase 4: `load-and-tab-guard.spec.ts` (`?e2eSave=newer`) now meets the child card.
+- **Rows left in phase 1**: 1.5 e2e full suite (orchestrator, `baseline + 0`); 1.6 [reviewer] `save.ts` has no browser globals, `MIGRATIONS[3]` total, older fixtures untouched.
+- Phase 2 must make `createIdbSaveStore` call `writeVerdict` inside `guardedPut` (store default `writer` random per call; `base` from `read()`); `replace` uses mode `'replace'`; the e2e seam store `e2eSaveStore` (`src/testing/e2eHook.ts`) still uses `storedVersionNewer`.
+- Carried from the plan review (unchanged): [human] rows 10.6, 11.4; [visual] 12.4; [reviewer] 10.7; Known risks (reload race, stale-window `replace` summary, `register-failed` + `console.warn`); DESIGN-GAPs 116-121 in phases 3, 4, 6, 7, 8, 9; e2e phases 11-12 use the request-file protocol; follow-ups listed in plan phase 10 § 2.
 
 ## 6. Autonomous decisions
 
-- **Review run without a sub-agent** (the skill's Step 3 suggests one): the risky claims were few and in five files; direct reads gave file-level evidence. Would change: a plan touching many modules.
-- **Triage done in place, no AskUserQuestion** (contract rule 1): every warning had one obvious fix → applied (F1, F2, F3, F5, F7); F4 and F6 accepted as Known risks. Would change: a fix needing a product choice (none did).
-- **F4 reload race accepted, not engineered away**: no way to tell a dead document's late write from another tab's without a browser API the plan defers (Web Locks); no data loss. Would change: phase-2+ e2e flakes showing the card after `page.reload`.
-- **Drivers unchanged**: phases 6 and 9 keep `impl` though they add small pure helpers with red-first tests — the phase body is DOM glue. Would change: a phase agent finding the pure part dominant (then `impl → tdd` noted in the plan).
-- **12 phases kept** (merging 8+9 rejected: different sound-section files, each small). Would change: a phase agent hitting context limits.
-- **Orchestrator decisions not re-opened**: v4 ships (Step 0), docs-only `deploy/README.md` note.
+- **Mixed phase gate**: phase 1 is TDD (pure format and rule) plus mechanical version-literal edits in existing tests and four e2e specs; TDD'd the pure part, edited literals inline; the phase keeps `Driver: tdd`. Would change: nothing.
+- **RED via stub**: `writeVerdict` and `OTHER_WRITER_SAVE` stubbed first so the quoted RED is an assertion; the `writeVerdict` rows went red on the stub throw, the format rows on `expected 3 to be 4`.
+- **Tests that used `save-v3.json` as "the current valid save"** (strict-validation, `saveProblem` agreement, broken-field cases) now use `save-v4.json`; v3 is kept where the point is migration (`migratedFrom 3`).
+- **Commit message** taken as proposed; stage by path; ticks written in a second docs commit with the sha. `change.md` status left for the next phase (not touched by this step).
+- **Full e2e not run** (4 touched specs only): the orchestrator runs it at the gate.
