@@ -1,0 +1,13 @@
+diff --git a/src/core/errorSignal.ts b/src/core/errorSignal.ts
+index dcdf684..da0c8e7 100644
+--- a/src/core/errorSignal.ts
++++ b/src/core/errorSignal.ts
+@@ -9,7 +9,7 @@ export interface ErrorSignal {
+ 
+ // EncodingError and NotSupportedError: Phaser drops the promise of decodeAudioData, so a bad sound file rejects unhandled.
+ // The game plays on without that sound (follow-up audio.noAudio); only rejections are quiet, `error` events stay fatal.
+-const QUIET_REJECTIONS = new Set(['AbortError', 'NotAllowedError', 'EncodingError', 'NotSupportedError']);
++const QUIET_REJECTIONS = new Set(['AbortError', 'NotAllowedError', 'NotSupportedError']);
+ 
+ /** An error event without an error object that browsers raise for harmless reasons. */
+ const isOpaqueNoise = (message: string): boolean =>

@@ -21,6 +21,14 @@ test('the game boots offline from the service worker cache', async ({ page, cont
     const servedByNetwork: string[] = [];
     const failed: string[] = [];
     let objectUrls = 0;
+    // Requested by the page itself (not by the worker's install, which fetches both formats and the music into the precache).
+    const soundRequests: string[] = [];
+    page.on('request', (request) => {
+        const path = new URL(request.url()).pathname;
+        if (path.startsWith('/assets/sounds/')) {
+            soundRequests.push(path);
+        }
+    });
     page.on('requestfailed', (request) => {
         failed.push(new URL(request.url()).pathname);
     });
@@ -50,6 +58,12 @@ test('the game boots offline from the service worker cache', async ({ page, cont
     // missing from the precache fails this by name. The decoded images show up as object URLs.
     await expect.poll(() => TASK_ART.filter((art) => !servedBySw.includes(`/${art.url}`)).map((art) => art.url)).toEqual([]);
     await expect.poll(() => objectUrls).toBeGreaterThanOrEqual(TASK_ART.length);
+
+    // The sounds (S-16b): the effects load at start, one format per effect, never the music; each came from the worker's cache.
+    const soundFiles = [...new Set(soundRequests)];
+    await expect.poll(() => new Set(soundRequests).size).toBe(12);
+    expect(soundFiles.some((path) => path.includes('music-loop'))).toBe(false);
+    await expect.poll(() => soundRequests.filter((path) => !servedBySw.includes(path))).toEqual([]);
 
     // Cleanup: back online, so nothing leaks into the next test (each test gets a fresh context anyway).
     await context.setOffline(false);
