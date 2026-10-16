@@ -716,7 +716,7 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 - [x] 3.2 `npm run art` twice → `git status --porcelain public/` unchanged after the second run; only the two architecture files modified — 0bc3fec
 - [x] 3.3 Deliberate break: swapped task order / `pouf` without `shownBeforePurchase` / curtains y −700 → red; restored; meta-check (data and files, not drawing) — 0bc3fec
 - [x] 3.4 Full local gate green; build prints `e2e hook: absent (`; `dist/sw.js` lists `assets/rooms/salon/curtains-leaf.webp` (e2e part: orchestrator, 3.5) — 0bc3fec
-- [ ] 3.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `salon-art`, `room-change`, `final-art-room-done` green
+- [x] 3.5 e2e (orchestrator note: 117 passed after 0bc3fec; orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `salon-art`, `room-change`, `final-art-room-done` green
 
 #### Manual
 
@@ -727,9 +727,9 @@ Rollback to the S-16c build reads `tasksDone` 8..12 as done and ignores unknown 
 
 #### Automated
 
-- [ ] 4.1 New tests red before the function exists (assertion via a stub, not an import error), green after; unit `<branch baseline> + N`
-- [ ] 4.2 Deliberate break: `roomArtCheck` always ok → "one missing" red; restored; meta-check (comparison, not production)
-- [ ] 4.3 Full local gate green; `bash deploy/test-martynka-deploy.sh` unchanged and green
+- [x] 4.1 New tests red before the function exists (assertion via a stub, not an import error), green after; unit `<branch baseline> + N`
+- [x] 4.2 Deliberate break: `roomArtCheck` always ok → "one missing" red; restored; meta-check (comparison, not production)
+- [x] 4.3 Full local gate green; `bash deploy/test-martynka-deploy.sh` unchanged and green
 
 #### Manual
 

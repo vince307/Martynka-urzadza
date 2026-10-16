@@ -3,6 +3,7 @@
 // `switch` and by the agent from its session.
 // Usage: npm run check:deploy -- <baseUrl> [sha7]
 // Exit codes: 0 all checks ok, 1 some check failed, 2 usage.
+import { ROOM_ART } from '../src/data/roomArt';
 import {
     bundlesFromHtml,
     cacheControlCheck,
@@ -10,6 +11,7 @@ import {
     contentTypeCheck,
     hasBuildId,
     precacheFromSw,
+    roomArtCheck,
     type CheckResult,
 } from './deploy-check/parse';
 
@@ -77,6 +79,11 @@ const main = async (): Promise<number> => {
     const precache = precacheFromSw(swText);
     record({ name: 'GET /sw.js', ok: sw.status === 200 && precache.length > 0, detail: `${sw.status}, ${precache.length} precache entries` });
     record(cacheControlCheck('/sw.js', sw.headers.get('cache-control'), 'no-cache'));
+
+    record(roomArtCheck(precache, ROOM_ART.map((a) => a.url)));
+    const scene = await get('/assets/rooms/salon/architecture-after.webp');
+    record({ name: 'GET /assets/rooms/salon/architecture-after.webp', ok: scene.status === 200, detail: `${scene.status}` });
+    record(contentTypeCheck('/assets/rooms/salon/architecture-after.webp', scene.headers.get('content-type'), 'image/webp'));
 
     const bundles = bundlesFromHtml(html);
     record(compareBundles(bundles, precache));

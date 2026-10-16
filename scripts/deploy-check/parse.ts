@@ -37,6 +37,18 @@ export const compareBundles = (fromHtml: string[], precache: string[]): CheckRes
     };
 };
 
+/** Every expected room picture must be in the precache; a leading slash on either side is ignored. */
+export const roomArtCheck = (precache: readonly string[], expectedUrls: readonly string[]): CheckResult => {
+    const have = new Set(precache.map((u) => u.replace(/^\//, '')));
+    const missing = expectedUrls.filter((u) => !have.has(u.replace(/^\//, '')));
+    const found = expectedUrls.length - missing.length;
+    return {
+        name: 'precache covers room pictures',
+        ok: expectedUrls.length > 0 && missing.length === 0,
+        detail: `${found} of ${expectedUrls.length} room pictures precached${missing.length > 0 ? `; first missing: ${missing[0]}` : ''}`,
+    };
+};
+
 export const cacheControlCheck = (name: string, header: string | null, expected: 'no-cache' | 'immutable'): CheckResult => {
     const value = header ?? '';
     const ok = expected === 'no-cache' ? /\bno-cache\b/.test(value) : /\bimmutable\b/.test(value) && /max-age=\d{6,}/.test(value);
