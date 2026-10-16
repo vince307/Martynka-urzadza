@@ -54,7 +54,7 @@ export const JUG_VISIBLE_RECT = { x: 32, y: 78, width: 448, height: 356 } as con
 /** How many pieces one drawing may hold: validateVisual enforces it and each widget pools exactly that many images. */
 export const ART_LIMITS = { moneyItems: 10, trayKinds: 4, weights: 6, jugs: 10, icons: 30, rowMinIcons: 3, rowIcons: 10 } as const;
 
-/** The 12 icons of the kit with the dictionary noun (src/data/nouns.ts) a prompt uses; the dictionary wins over the kit label. */
+/** The 15 icons of the kits with the dictionary noun (src/data/nouns.ts) a prompt uses; the dictionary wins over the kit label. */
 export const ICONS = [
     { id: 'cup', noun: 'filiżanka' },
     { id: 'croissant', noun: 'rogalik' },
@@ -68,6 +68,9 @@ export const ICONS = [
     { id: 'pencil', noun: 'kredka' },
     { id: 'key', noun: 'klucz' },
     { id: 'yarn', noun: 'kłębek' },
+    { id: 'plate', noun: 'talerz' },
+    { id: 'box', noun: 'pudełko' },
+    { id: 'sticker', noun: 'naklejka' },
 ] as const;
 /** The icons that can lie on a plate (a MULT_GROUPS group is drawn in a frame that stands for a plate). */
 export const PLATE_ICONS: readonly IconId[] = ['apple', 'pear', 'croissant'];

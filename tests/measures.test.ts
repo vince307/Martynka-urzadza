@@ -1,6 +1,6 @@
 // The art kit's ids and values (S-14). The expected tables are copied from the kit's manifest.json, not derived from the data.
 import { describe, expect, it } from 'vitest';
-import { ICONS, JUG_VISIBLE_RECT, JUGS, MONEY, SCALE_ITEMS, THERMOMETER, WEIGHTS } from '../src/data/measures';
+import { ICONS, JUG_VISIBLE_RECT, JUGS, MONEY, PLATE_ICONS, SCALE_ITEMS, THERMOMETER, WEIGHTS } from '../src/data/measures';
 import { nouns } from '../src/data/nouns';
 
 describe('measures data', () => {
@@ -20,14 +20,20 @@ describe('measures data', () => {
         expect(JUG_VISIBLE_RECT).toEqual({ x: 32, y: 78, width: 448, height: 356 });
     });
 
-    it('has the 12 icons of the kit, each with a dictionary noun (the dictionary wins over the kit label)', () => {
+    it('has the 15 icons of the kits, each with a dictionary noun (the dictionary wins over the kit label)', () => {
         expect(ICONS.map((i) => i.id).sort()).toEqual(
-            ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'],
+            ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn', 'plate', 'box', 'sticker'].sort(),
         );
+        expect(ICONS).toHaveLength(15);
         for (const icon of ICONS) {
             expect(nouns[icon.noun], icon.id).toBeDefined();
         }
         expect(ICONS.find((i) => i.id === 'pencil')?.noun).toBe('kredka');
+        expect(ICONS.filter((i) => ['plate', 'box', 'sticker'].includes(i.id)).map((i) => i.noun)).toEqual(['talerz', 'pudełko', 'naklejka']);
+        for (const id of ['plate', 'box', 'sticker']) {
+            expect(PLATE_ICONS as readonly string[], id).not.toContain(id);
+            expect(SCALE_ITEMS.map((item) => item.icon) as string[], id).not.toContain(id);
+        }
     });
 
     it('every scale item mass can be built from at most 6 weights (subset-sum over the kit weights, repeats allowed)', () => {

@@ -2,11 +2,12 @@
 import type { GameObjects, Scene } from 'phaser';
 import { ART_STAND_IN } from '../../data/layout';
 import { TASK_ART } from '../../data/taskArt';
+import { UI_ART } from '../../data/uiArt';
 import { standInLabelFit } from './artLayout';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
 
-const SIZES = new Map(TASK_ART.map((entry) => [entry.key, entry]));
+const SIZES = new Map([...TASK_ART, ...UI_ART].map((entry) => [entry.key, entry]));
 
 /**
  * One drawing of the art kit (a coin, a jug, an icon...) placed in a rectangle with its proportions kept. When the
