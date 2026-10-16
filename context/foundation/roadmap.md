@@ -68,7 +68,7 @@ Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi
 | S-16a | final-art-salon             | M7   | dziecko remontuje salon z docelowej grafiki (tło przed → po, 6 mebli × 3), widzi animacje i ekran ładowania | S-14, S-15 | FR-026 | done |
 | S-16b | final-sound                 | M7   | dziecko słyszy dźwięki gry po pierwszym dotknięciu; gra grywalna bez dźwięku       | S-16a                | FR-017, FR-026                  | done |
 | S-16c | final-art-p2                | M7   | dziecko widzi docelową ikonę aplikacji, ekran ładowania, miniaturę salonu, portfel i zeszyt z paczki salon-v2 | S-16a | FR-026 | done |
-| S-16d | salon-extra-slots           | M7   | dziecko urządza w salonie 5 nowych miejsc (zasłony, półka, lampa, roślina, pufa) po 3 warianty | S-16a | FR-016, FR-019 | proposed |
+| S-16d | salon-extra-slots           | M7   | dziecko urządza w salonie 5 nowych miejsc (zasłony, półka, lampa, roślina, pufa) po 3 warianty | S-16a | FR-016, FR-019 | planning |
 | S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
 
 ## Streams
@@ -425,7 +425,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Decyzje autora (2026-10-15):** nowe czynności dopisane NA KOŃCU listy (stary `tasksDone` zostaje poprawny, format zapisu zostaje v3; zamrożona tabela celu migracji v2→v3 zostaje, jej test-przypięcie do danych aktualizuje się świadomie); kolejność: zasłony, półka, lampa, roślina, pufa; koszty 8–15 (S-17 stroi); lampa, lewa roślina i pufa do zakupu pokazują swój dotychczasowy wygląd (wariant 0) jako dekoracja, a czynność brzmi np. „Wymień lampę” z panelem wariantów; zasłony i półka przed zakupem nie istnieją (gołe okno, pusta ściana); salony już ukończone dostają nowe czynności i drugi raz kartę „Pokój gotowy!”.
 - **Unknowns:** —
 - **Risk:** zmiana listy czynności na żywych zapisach (dopisanie na końcu); prawa roślina zostaje stałą dekoracją.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-17: Balans po testach z graczem
 
