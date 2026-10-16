@@ -1186,9 +1186,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 7.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; existing `writeVerdict` and B-1 tests green unchanged
-- [ ] 7.2 Deliberate break: ended-list check on `tabId` alone / ended nonce turned into a put / `olderWriter` without `base > 0` → red; restored; meta-check (verdict, not the reload race)
-- [ ] 7.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` and `load-and-tab-guard.spec.ts` green
+- [x] 7.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; existing `writeVerdict` and B-1 tests green unchanged — 4801d61
+- [x] 7.2 Deliberate break: ended-list check on `tabId` alone / ended nonce turned into a put / `olderWriter` without `base > 0` → red; restored; meta-check (verdict, not the reload race) — 4801d61
+- [x] 7.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` and `load-and-tab-guard.spec.ts` green — 4801d61
 
 #### Manual
 
