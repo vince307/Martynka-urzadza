@@ -1,63 +1,57 @@
 # Handoff — `save-truth` (slice fix:save-truth, audit sweep 2 of 3)
 
-Written by the `/10x-tdd save-truth phase 1` step. Phase 1 (decode truth) is committed as 66c6989 and green. The next agent must not get two things wrong: the save format stays v4 (`SAVE_VERSION` 4, `tests/fixtures/` only gained a new file), and the deliberate reversals listed in §5 are the only tests allowed to change.
+Written by the `/10x-tdd save-truth phase 2` step. Phases 1 (66c6989) and 2 (739d10c) are committed and green. The next agent must not get two things wrong: the save format stays v4 (`SAVE_VERSION` 4, existing `tests/fixtures/` never edited), and only the reversals listed in §5 may change existing tests.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-truth`, cut from `main` at `24b3e4b` |
-| Commits | 5 on the branch; phase 1 = 66c6989 (`feat(save-truth): decode truth (p1)`), plus `docs(save-truth): handoff p1` |
+| Commits | phase 1 = 66c6989, phase 2 = 739d10c (`feat(save-truth): replace gate for saves that cannot be read (p2)`), plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows remaining | 77 (`grep -c '^- \[ \]' plan.md`); 1.1–1.5 ticked, 1.6 [reviewer] and 1.7 [visual] left |
+| `## Progress` rows remaining | 73 (`grep -c '^- \[ \]' plan.md`); 2.1–2.4 ticked, 2.5 [reviewer] and 2.6 [visual] left |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/save.ts` | `DecodeResult` corrupt variant carries `from` and `problem`; `decodeSave` fills them (`saveProblem` after the migration loop, `exception:<Name>` in the catch) |
-| `src/core/autosave.ts` | `LoadOutcome.unreadable` carries optional `from`/`problem`/`step`; `loadSave` copies them; the `InvalidSave` message names `saveProblem` |
-| `src/core/saveHealth.ts` | `cardCopyFor(kind, reason, error, from)` gives `migrationFailed` for corrupt with `from < SAVE_VERSION`; new `unreadableCode` |
-| `src/main.ts` | card `Kod:` uses `unreadableCode`; card copy gets `from`; the start warn names the code |
-| `src/testing/e2eHook.ts` | `e2eSaveStore` seam `corrupt` is now `{ version: SAVE_VERSION, stars: 'many' }` |
-| `tests/save.test.ts`, `tests/e2eSave.test.ts`, `tests/legacySalonMigration.test.ts`, `tests/saveHealth.test.ts`, `tests/autosave.test.ts` | corrupt cases now carry `from`/`problem`; new cases: v4 bad stars, throwing getter, `cardCopyFor` with `from`, `unreadableCode`, `loadSave` corrupt, v1 old-salon fixture to v4 |
-| `tests/fixtures/save-v1-legacy-salon.json` | new frozen v1 save with the old salon (tasksDone 6) |
-| `context/changes/save-truth/plan.md` | rows 1.1–1.5 ticked with 66c6989 |
-| `context/changes/save-truth/handoff.md` | this file |
+| `src/core/autosave.ts` | `keepsOldSave(loadReason, loadFrom)`; `replaceGate` takes optional `loadFrom` and blocks `migration-failed`, `unknown-version` and migrated `corrupt` (`loadFrom < SAVE_VERSION`) without force; `AutosaveStatus.loadFrom` and `AutosaverOptions.loadFrom` (runtime only); `replace` logs `Busy` and `InvalidSave` (with `saveProblem`) refusals |
+| `src/core/saveFile.ts` | `deviceSaveView`: those three map to `{kind:'blocked', cause:'unreadable', forceable:true}`; plain `corrupt` stays `{kind:'unreadable'}` |
+| `src/ui/dom/saveSummaryView.ts` | `blockedText` has the `unreadable` cause, reusing `pl.saveTransfer.deviceUnreadable` (no new pl string) |
+| `src/main.ts` | passes `loadFrom: outcome.from` to the autosaver |
+| `tests/autosave.test.ts`, `tests/saveFile.test.ts`, `tests/saveHealth.test.ts` | reversed and new gate cases (see §3), `status()` helper has `loadFrom: null` |
+| `context/changes/save-truth/plan.md` | rows 2.1–2.4 ticked with 739d10c |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (before the change, stub `unreadableCode`) | 38 failures in the 5 files, all assertions, e.g. `tests/save.test.ts` "corrupt: null": `AssertionError: expected { kind: 'unreadable', …(1) } to deeply equal { kind: 'unreadable', …(3) }`; `tests/saveHealth.test.ts` cardCopyFor: `expected 'failed' to be 'migrationFailed'` |
-| GREEN | targeted suites green after the change |
-| `npm run lint` / `npm run typecheck` | OK (one `no-unsafe-assignment` in my test fixed with a cast) |
-| `npm test` | 3421 passed (baseline 3416, +5) |
-| deploy scripts, `sample` E1–E6, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --workers=4` | 126 passed + 1 known flake (final-art-loading #15), which passed alone (2 passed); baseline 127, so 127 + 0; `save-restart` and `save-transfer-blocked` green with the new `corrupt` seam |
-| `git diff --stat tests/fixtures` | no edit of an existing fixture; one new file |
-| Deliberate break 1 | `problem` forced to null after the loop: 19 tests red (bad stars/variants cases, e2eSave corrupt); restored. Meta-check: proves the decode report only, not the card rendering (rows 1.7 and phase 15) |
-| Deliberate break 2 | removed the `from < SAVE_VERSION` branch in `cardCopyFor`: its C-2r case red; restored |
+| RED (before the change, no stub needed: no new symbols) | 9 failures, all assertions, e.g. `tests/autosave.test.ts` "a unknown-version save (from undefined) is refused without force and replaced with it": `AssertionError: expected { ok: true } to deeply equal { ok: false, error: 'Blocked' }`; `tests/saveFile.test.ts`: `expected { kind: 'unreadable' } to deeply equal { kind: 'blocked', …(2) }`; `replace logs every refusal`: `expected false to be true` |
+| Deliberately reversed existing tests | `autosave.test.ts` "a %s save is still replaced (the way out)" (split: plain corrupt stays free), "a migration-failed load is replaceable like corrupt…" and the "replaceGate covers every combination" oracle (same reversal, gained a `loadFrom` dimension); `saveFile.test.ts` "an unreadable (%s) save is named, never summarised…" (split). The first and last are named by the plan; the middle two are the same rule in other tests |
+| GREEN | 3426 passed after the change |
+| `npm run lint` / `typecheck` | OK |
+| `npm test` | 3426 passed (branch baseline after p1: 3421, +5); deploy scripts and `sample` E1–E6 OK; `npm run build` prints `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --workers=4` | 126 passed + 1 failure, `child-flow-guards.spec.ts` #2 SV2-10 (puzzle not paid twice the same day); rerun alone: 2 passed. Not in the known-flake list; it is outside the changed code (puzzle/day), so recorded as a load flake. `save-transfer-blocked.spec.ts` green in the full run |
+| Deliberate break | `replaceGate` unreadable branch back to `return 'ok'`: 5 tests red (the three refusal cases, the combination oracle, the migration-failed gate case); restored. Meta-check: proves the one gate used by `replace`; `deviceSaveView.forceable` calls the same gate with force, so it cannot see this break, and the dialog wiring is only proven by the e2e spec (plain corrupt keeps step one) |
 
 ## 4. Next command
 
-`/10x-tdd save-truth phase 2`
+`/10x-tdd save-truth phase 3`
 
 ## 5. Open
 
-- Rows 1.6 [reviewer] and 1.7 [visual] (card `Kod: corrupt/stars` at 1440 and 1024×768) are not ticked.
-- Phase 2 deliberately reverses: `tests/autosave.test.ts` "a %s save is still replaced (the way out)" and `tests/saveFile.test.ts` "an unreadable (%s) save is named, never summarised (overwriting stays allowed)"; the other reversals of the earlier handoff stand (phases 3, 5, 10, 11).
-- The plan's review fixes F1–F6 (phases 4–9) are unchanged and still apply; plan.md is the source.
-- `LoadOutcome.unreadable` uses optional `from`/`problem`/`step` so the `future` case keeps its exact shape; phase 2's gate can read `loadReason` and `from` from the status.
+- Rows 2.5 [reviewer] and 2.6 [visual] (reset dialog over a `migration-failed` save at 1440 and 1024×768) are not ticked. Dialog code was not changed beyond the new `unreadable` cause text: the force step reuses the existing `forceable` branch and `forcedWarning`.
+- Phase 3 deliberately reverses the "unavailable needs force…" test in `tests/autosave.test.ts` (gets a count); it adds `AutosaveStatus.unavailableStarts` next to the new `loadFrom`, and `replaceGate`'s status type already takes an optional field, so extend it the same way.
+- Phases 5, 10, 11 keep their listed reversals; the review fixes F1–F6 (phases 4–9) apply; plan.md is the source.
 - Follow-ups: phase 13 writes `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-1. Mixed phase question: none arose; the whole phase was TDD, the seam change in `e2eHook.ts` and `main.ts` wiring were done inline after RED (Driver stays `tdd`).
-2. Shape-check failures (`!isRecord`, bad version) report `from: null, problem: null`, so the card code is plain `corrupt`. Rejected: `problem: 'version'`. Why: plan says null at the shape check. Would change: a wish for a field name there.
-3. Kept the `future` and `unknown-version` outcomes unchanged (no `from`), so existing exact `toEqual` tests stay. Would change: a later phase needing `from` for those.
-4. `cardCopyFor` takes `from` as a fourth optional parameter instead of changing the existing signature. Would change: a caller needing an object argument.
-5. e2e #15 flaked once and passed alone, per the contract rule; recorded, not treated as a regression.
-6. Commit message and next-phase prompts decided in place: the planned set was committed and the run stops after this phase.
+1. No mixed-phase question: the whole phase was TDD (Driver stays `tdd`); `main.ts` wiring (`loadFrom`) and the `blockedText` cause were done inline after RED.
+2. `keepsOldSave` is exported from `autosave.ts` and used by both `replaceGate` and `deviceSaveView`, so there is one rule. Rejected: a copy in `saveFile.ts`. Would change: a layering rule against `saveFile` importing it.
+3. `loadFrom` in the gate status is optional (`loadFrom?: number | null`) so existing callers and `Pick<AutosaveStatus,…>` objects keep compiling. Would change: wanting it mandatory.
+4. Refusal logs for `Busy` and `InvalidSave` put the error in the message (`autosave: replace refused (Busy)`) so tests and the log read alike. Would change: a structured log field wish.
+5. The extra reversed test and oracle (not named in the plan) were updated, not left red; recorded here as the same rule.
+6. e2e `child-flow-guards` #2 failed once under load and passed alone; recorded, not treated as a regression. Commit message and next-phase prompts decided in place; the run stops after this phase.

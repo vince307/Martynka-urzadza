@@ -1117,10 +1117,10 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 2.1 Reversed and new tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 2.2 Deliberate break: `replaceGate` back to `future ? Blocked : ok` → reversed cases red; restored; meta-check (one gate)
-- [ ] 2.3 Full local gate green; build prints `e2e hook: absent (`
-- [ ] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; "#2 an unreadable save warns instead of showing the fresh session" green
+- [x] 2.1 Reversed and new tests red before the change (assertion), green after; unit `<branch baseline> + N` — 739d10c
+- [x] 2.2 Deliberate break: `replaceGate` back to `future ? Blocked : ok` → reversed cases red; restored; meta-check (one gate) — 739d10c
+- [x] 2.3 Full local gate green; build prints `e2e hook: absent (` — 739d10c
+- [x] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; "#2 an unreadable save warns instead of showing the fresh session" green — 739d10c
 
 #### Manual
 
