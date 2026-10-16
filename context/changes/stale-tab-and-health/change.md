@@ -1,7 +1,7 @@
 ---
 change_id: stale-tab-and-health
 title: Stale-tab save guard, UI art health, music status and service-worker install signal
-status: planned
+status: plan_reviewed
 created: 2026-10-16
 updated: 2026-10-16
 archived_at: null

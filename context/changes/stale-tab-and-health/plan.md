@@ -209,7 +209,7 @@ per-page `writer`. The autosaver does not know the new error yet (it counts as a
 
 **Intent**: Refuse a stale page's write atomically and stamp the winner.
 
-**Contract**: `IdbSaveStoreOptions.writer?: string` (default a constant only tests rely on); `guardedPut(os, key, value,
+**Contract**: `IdbSaveStoreOptions.writer?: string` (default: a fresh random id per `createIdbSaveStore` call, never a shared constant — a forgotten option must not make two tabs the same writer and silently switch the guard off; tests pass explicit writers); `guardedPut(os, key, value,
 page, mode)` calls `writeVerdict` on the read result, rejects with an error whose `name` is the verdict's error, or puts
 `{ ...value, generation, writer }`; resolves with the written generation on `tx.oncomplete`. B-7: `os.put` in
 `try`/`catch` → reject with the thrown value. A failed read keeps today's write-through. `createIdbSaveStore`:
@@ -272,7 +272,9 @@ parent panel names it.
 
 **Contract**: `BlockReason` adds `'otherTab'` (runtime only); `attempt` maps `OTHER_WRITER_SAVE` → `blockedBy ??=
 'otherTab'`, cancels the timer, no retry; `onBlocked?: (reason: 'newer' | 'otherTab') => void` called once, when a
-write refusal first sets `blockedBy` (never for load blocks); `replaceGate` returns `Blocked` for `'otherTab'`
+write refusal in `attempt` first sets `blockedBy` (never for load blocks, never from `replace`: the import/reset dialog
+already reports its own refusal to the parent); the call is wrapped in `try`/`catch` + `log` so a throwing listener can
+never break `attempt`'s "never throws" contract; `replaceGate` returns `Blocked` for `'otherTab'`
 (decision 4).
 
 #### 2. Parent views and copy
@@ -373,7 +375,9 @@ A runtime record of the worker's state, kept in the registry, readable by the pa
 `SwStatus = { phase: SwPhase; error: string | null; takenOver: boolean }`; events `{ type: 'unsupported' } |
 { type: 'register' ; hadController: boolean } | { type: 'registerFailed'; error: string } | { type: 'installing'; id: number } |
 { type: 'state'; id: number; state: 'installed' | 'activating' | 'activated' | 'redundant' } | { type: 'active'; id: number } |
-{ type: 'controllerChange' }`; `stepSw(status, event)` pure. Tests: first install → `ready`; tracked installing →
+{ type: 'controllerChange' }`; `stepSw(status, event)` pure. An already active worker keeps the phase `ready` while an update installs, and a failed
+update with an active worker stays `ready` (offline play still works; the error name is kept in `error`). Tests: first install → `ready`;
+active worker + failed update → `ready`; tracked installing →
 `redundant` with no other active → `install-failed`; replaced by a newer installing worker → not failed; an already
 active worker at registration → `ready`; `registerFailed` keeps the name; `controllerChange` sets `takenOver` only
 when `hadController`; `unsupported`.
@@ -659,11 +663,12 @@ New spec `tests/e2e/stale-tab.spec.ts` in the `chromium-hook` project (`stale-ta
 **Intent**:
 (a) "#2 B-1 a second window that saved later wins; the stale one stops and shows the card": page A passes the welcome
 and finishes a round (stars `s1`, written); page B = `page.context().newPage()` on the same URL loads A's save, earns
-more stars and flushes (`s2 > s1`); A answers a task → A's `save.blockedBy === 'otherTab'` and the card text
+more stars and flushes (`s2 > s1`); A (`bringToFront`) finishes a round (answering one task changes no `SAVE_KEYS`
+value, so it would trigger no write) → A's `save.blockedBy === 'otherTab'` and the card text
 `pl.saveRefused.title` is visible; B's stars unchanged in B's `save` status; a new page C in the same context loads
 `s2`.
 (b) "#2 B-1 a reset in one window is not undone by the other": A and B loaded; A resets through the settings dialog
-(helpers in `tests/e2e/support/saveImport.ts`), reloads fresh; B answers a task → B blocked `otherTab`; a new page loads
+(helpers in `tests/e2e/support/saveImport.ts`), reloads fresh; B finishes a round (a change to a `SAVE_KEYS` value) → B blocked `otherTab`; a new page loads
 the fresh game.
 
 **Contract**: `.claude/skills/10x-e2e/references/e2e-quality-rules.md`; hook read-only (`readHook`/`snapshot` polls);
@@ -707,7 +712,9 @@ open settings (`openSettings` in `support/welcome.ts`), the offline section show
 wallet) before the first load; settings → the UI-art line shows `pl.settings.uiArtMissing(1, total)`; the task line
 still says all task pictures loaded (`artFilter` untouched).
 
-**Contract**: as phase 11; patches `e2e-break-p12a.patch` (phase 6: `offlineView` never `ready` → (a) red) and
+**Contract**: as phase 11; (b) sits in its own `test.describe` with `test.use({ serviceWorkers: 'block' })` like
+`final-art-wallet.spec.ts` (a worker that claims the page bypasses `page.route`), (a) runs with workers allowed;
+patches `e2e-break-p12a.patch` (phase 6: `offlineView` never `ready` → (a) red) and
 `e2e-break-p12b.patch` (BootScene not setting `uiArtHealth` → (b) red); request-file protocol.
 
 ### Success Criteria:
@@ -768,6 +775,15 @@ migrates that save again.
 - **Already-running v3 tabs** (S-16b/c/d builds) are stopped by `storedVersionNewer` but show no card (old code);
   pre-#69 builds are not reachable at all.
 - **A second migration overwrites `backup-v3`** (P-8, decision 6) when a pre-#69 build rewrote v3 over v4.
+- **Reload race (plan review F4)**: a write of the previous document of the same tab that lands AFTER the new
+  document's read (e.g. a pagehide flush stuck behind a backup copy) makes the new document's first write refused and
+  shows the card on a legitimate reload; the restart then loads that late write, so nothing is lost. Rare; the e2e gate
+  `+ 0` from phase 2 on is the detector (many specs reload).
+- **Stale-window replace (plan review F6)**: import/reset from a window that has not yet been refused uses `replace`
+  (no generation check) and its summary shows that window's loaded save, not the newer stored one. The parent asked to
+  replace anyway; recorded, not changed.
+- **Blocked worker registration in e2e (plan review F5)**: specs with `serviceWorkers: 'block'` now produce a
+  `register-failed` status and one `console.warn`; no spec fails on warnings today, the phase-5 e2e gate confirms.
 - **iPadOS home-screen storage** may be separate from Safari (unverified); does not change the rule.
 - **Real worker install in e2e** depends on Chromium installing a ~5.3 MiB precache within the test limit; the seed
   spec already does this on 4398.
