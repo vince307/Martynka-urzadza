@@ -91,6 +91,18 @@ describe('e2eSaveStore', () => {
         expect(outcome).toBe('silent');
     });
 
+    it('the seam store keeps the first copy, lists copies and holds the record', async () => {
+        const store = e2eSaveStore('v1');
+        expect(await store.backupRecord()).toBeNull();
+        expect(await store.backup({ n: 1 }, 1)).toBe('written');
+        expect(await store.backup({ n: 2 }, 1)).toBe('kept');
+        expect(await store.readBackups()).toEqual([{ from: 1, raw: { n: 1 } }]);
+        expect(await store.backupRecord()).toMatchObject({ from: 1, result: 'kept' });
+        await store.noteBackup({ from: 1, result: 'lost', error: 'X', at: 1 });
+        expect(await store.backupRecord()).toMatchObject({ result: 'lost' });
+        expect(await store.read()).toMatchObject({ version: 1 });
+    });
+
     it('slow answers late with a current-version save of 7 stars', async () => {
         const raw = await e2eSaveStore('slow').read();
         expect(decodeSave(raw)).toMatchObject({ kind: 'ok', migratedFrom: null, session: { stars: 7 } });

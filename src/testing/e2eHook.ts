@@ -1,7 +1,7 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import type { Game } from 'phaser';
-import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
+import type { Autosaver, AutosaveStatus, BackupRecord, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SwStatus } from '../core/swStatus';
 import type { SoundService, SoundStatus } from '../ui/sound';
@@ -165,6 +165,8 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
+    const copies = new Map<number, unknown>();
+    let record: BackupRecord | null = null;
     seamStoreLog = log;
     return {
         read: () =>
@@ -175,10 +177,19 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   : seam === 'slow'
                     ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_ROOM, 7))), E2E_SLOW_READ_MS))
                     : Promise.resolve(value),
-        backup: () => {
+        backup: (raw, from) => {
             log.ops.push('backup');
             if (seam === 'backupfail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
-            if (seam === 'backuphang') return new Promise<void>(() => undefined);
+            if (seam === 'backuphang') return new Promise<'written'>(() => undefined);
+            const kept = copies.has(from);
+            if (!kept) copies.set(from, raw);
+            record = { from, result: 'kept', error: null, at: Date.now() };
+            return Promise.resolve(kept ? ('kept' as const) : ('written' as const));
+        },
+        readBackups: () => Promise.resolve([...copies].sort(([a], [b]) => a - b).map(([from, raw]) => ({ from, raw }))),
+        backupRecord: () => Promise.resolve(record),
+        noteBackup: (next) => {
+            record = next;
             return Promise.resolve();
         },
         write: (next) => {

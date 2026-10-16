@@ -31,3 +31,10 @@ export const forEachDraw = (
 
 export const skillsOfType = (stage: { steps: { skills: SkillDef[] }[] }, type: string): SkillDef[] =>
     stage.steps.flatMap((step) => step.skills).filter((s) => s.type === type);
+
+/** The store methods of the backup record that most test stores do not care about (a store must have all of them). */
+export const backupExtras = {
+    readBackups: () => Promise.resolve([] as { from: number; raw: unknown }[]),
+    backupRecord: () => Promise.resolve(null),
+    noteBackup: () => Promise.resolve(),
+};

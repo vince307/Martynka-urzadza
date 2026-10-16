@@ -102,6 +102,56 @@ describe('IndexedDB backup copy (S-15 phase 2)', () => {
         expect(await freshStore('default:backup-v3', dbName).read()).toEqual({ a: 3 });
     });
 
+    // save-truth phase 4 (FU-3/P-8, SV2-04, SVB-01): the copy is write-once, readable, and has a record.
+    it('a second backup for the same version keeps the first bytes and answers kept', async () => {
+        const dbName = `bk-${++counter}`;
+        const store = freshStore(undefined, dbName);
+        expect(await store.backup({ n: 1 }, 1)).toBe('written');
+        expect(await store.backup({ n: 2 }, 1)).toBe('kept');
+        expect(await freshStore('default:backup-v1', dbName).read()).toEqual({ n: 1 });
+    });
+
+    it('a copy written now stores the record kept in the same call', async () => {
+        const dbName = `bk-${++counter}`;
+        const store = freshStore(undefined, dbName);
+        expect(await store.backupRecord()).toBeNull();
+        await store.backup({ n: 1 }, 3);
+        expect(await store.backupRecord()).toEqual({ from: 3, result: 'kept', error: null, at: expect.any(Number) as number });
+    });
+
+    it('a copy made earlier (no record yet) gets the record kept and stays untouched', async () => {
+        const dbName = `bk-${++counter}`;
+        const real = await vi.importActual<typeof import('idb-keyval')>('idb-keyval');
+        await real.set('profile:default:backup-v2', { old: true }, real.createStore(dbName, 'saves'));
+        const store = freshStore(undefined, dbName);
+        expect(await store.backup({ n: 9 }, 2)).toBe('kept');
+        expect(await freshStore('default:backup-v2', dbName).read()).toEqual({ old: true });
+        expect(await store.backupRecord()).toMatchObject({ from: 2, result: 'kept' });
+    });
+
+    it('readBackups returns only the versions present, below the current one', async () => {
+        const dbName = `bk-${++counter}`;
+        const store = freshStore(undefined, dbName);
+        expect(await store.readBackups()).toEqual([]);
+        await store.backup({ n: 1 }, 1);
+        await store.backup({ n: 3 }, 3);
+        expect(await store.readBackups()).toEqual([
+            { from: 1, raw: { n: 1 } },
+            { from: 3, raw: { n: 3 } },
+        ]);
+    });
+
+    it('noteBackup stores the record and never touches the main key or a copy', async () => {
+        const dbName = `bk-${++counter}`;
+        const store = freshStore(undefined, dbName);
+        await store.write(fixture);
+        await store.backup({ n: 1 }, 1);
+        await store.noteBackup({ from: 1, result: 'lost', error: 'QuotaExceededError', at: 5 });
+        expect(await store.backupRecord()).toEqual({ from: 1, result: 'lost', error: 'QuotaExceededError', at: 5 });
+        expect(await store.read()).toMatchObject({ ...fixture, generation: 1 });
+        expect(await freshStore('default:backup-v1', dbName).read()).toEqual({ n: 1 });
+    });
+
     // plan-review F1: an abandoned write must not land after a newer one.
     // The first store call goes to `first`; every later call (also the next store) goes to the real store.
     const faultyFirstCall = async (first: (real: idbKeyval.UseStore) => Promise<unknown>) => {

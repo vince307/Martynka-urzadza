@@ -3,6 +3,7 @@
 // Implementation Details (never write what was not read, never write what cannot be read, never an unhandled rejection).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { backupExtras } from './helpers';
 import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
@@ -32,12 +33,13 @@ const makeStore = (initial?: unknown) => {
     const pending: (() => void)[] = [];
     const store: SaveStore = {
         read: () => (state.readFails ? Promise.reject(new Error('lost')) : Promise.resolve(state.value)),
+        ...backupExtras,
         backup: (raw, from) => {
             state.ops.push('backup');
-            if (state.backupHangs) return new Promise<void>(() => undefined);
+            if (state.backupHangs) return new Promise<'written'>(() => undefined);
             if (state.backupFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
             state.backups.push({ raw, from });
-            return Promise.resolve();
+            return Promise.resolve('written' as const);
         },
         write: (v) => {
             state.ops.push('write');
@@ -142,13 +144,13 @@ describe('loadSave', () => {
 
 describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
     const limitOf = (clock: ReturnType<typeof makeClock>) => ({ timers: clock.timers, timeoutMs: 5000 });
-    const never = (): SaveStore => ({ read: () => new Promise<unknown>(() => undefined), backup: () => Promise.resolve(), write: () => Promise.resolve() });
+    const never = (): SaveStore => ({ read: () => new Promise<unknown>(() => undefined), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() });
 
     it('names the error of a rejected read and falls back to Error for a thrown string', async () => {
-        const named: SaveStore = { read: () => Promise.reject(Object.assign(new Error('x'), { name: 'UnknownError' })), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const named: SaveStore = { read: () => Promise.reject(Object.assign(new Error('x'), { name: 'UnknownError' })), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(named)).toEqual({ kind: 'unavailable', error: 'UnknownError' });
         // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a non-Error rejection is the case under test
-        const text: SaveStore = { read: () => Promise.reject('boom'), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const text: SaveStore = { read: () => Promise.reject('boom'), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(text)).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 
@@ -180,7 +182,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
     it('a read that rejects after the limit stays a timeout and raises no unhandled rejection', async () => {
         const clock = makeClock();
         let fail!: (e: unknown) => void;
-        const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
         expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
@@ -195,7 +197,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
         const clock = makeClock();
         const f = makeStore(fixture('save-v1.json'));
         let resolve!: (v: unknown) => void;
-        const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), backup: () => Promise.resolve(), write: (v) => f.store.write(v) };
+        const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), ...backupExtras, backup: () => Promise.resolve('written' as const), write: (v) => f.store.write(v) };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
         expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
@@ -499,7 +501,7 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
 
     it('names a thrown QuotaExceededError', async () => {
         const saver = createAutosaver({
-            store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: () => Promise.reject(Object.assign(new Error('q'), { name: 'QuotaExceededError' })) },
+            store: { read: () => Promise.resolve(undefined), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.reject(Object.assign(new Error('q'), { name: 'QuotaExceededError' })) },
             snapshot: () => session(1),
             timers: makeClock().timers,
             delayMs: 500,
@@ -1029,7 +1031,7 @@ describe('loadSave waitLonger (SRR-02)', () => {
                 calls.reads += 1;
                 return new Promise<unknown>((resolve) => (answer = resolve));
             },
-            backup: () => Promise.resolve(),
+            ...backupExtras, backup: () => Promise.resolve('written' as const),
             write: () => Promise.resolve(),
         };
         return { store, calls, answer: (v: unknown) => answer(v) };
@@ -1078,7 +1080,7 @@ describe('loadSave waitLonger (SRR-02)', () => {
     });
 
     it('only a timeout carries waitLonger', async () => {
-        const broken: SaveStore = { read: () => Promise.reject(new Error('x')), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const broken: SaveStore = { read: () => Promise.reject(new Error('x')), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(broken, { timers: makeClock().timers, timeoutMs: 5000 })).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 });

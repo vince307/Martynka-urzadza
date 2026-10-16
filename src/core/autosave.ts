@@ -7,8 +7,25 @@ export interface SaveStore {
     read(): Promise<unknown>;
     /** `replace` skips the other-writer check (the parent's explicit overwrite); a normal write is refused when another tab wrote first. */
     write(value: SaveState, mode?: 'normal' | 'replace'): Promise<void>;
-    /** Keeps a copy of the raw save of version `from` under its own key; required, so a store can never skip it. Never touches the main key. */
-    backup(raw: unknown, from: number): Promise<void>;
+    /**
+     * Keeps a copy of the raw save of version `from` under its own key; required, so a store can never skip it. Never touches the main key.
+     * Write-once: an existing copy is never overwritten (`'kept'`), a new one is `'written'`. The record `kept` is stored with it.
+     */
+    backup(raw: unknown, from: number): Promise<'written' | 'kept'>;
+    /** The raw copies present in the store (`backup-v1`..`backup-v{SAVE_VERSION-1}`); absent versions are skipped. */
+    readBackups(): Promise<{ from: number; raw: unknown }[]>;
+    /** The last record of what became of the old-version copy, or null. Runtime information: `decodeSave` never reads it. */
+    backupRecord(): Promise<BackupRecord | null>;
+    /** Stores the record (best effort for the caller). Touches neither the main key nor a `backup-v<N>` key. */
+    noteBackup(record: BackupRecord): Promise<void>;
+}
+
+/** What became of the copy of an old-version save (`kept`: present in the store, `lost`: given up, `uncertain`: the store never answered). */
+export interface BackupRecord {
+    from: number;
+    result: 'kept' | 'lost' | 'uncertain';
+    error: string | null;
+    at: number;
 }
 
 export type LoadOutcome =

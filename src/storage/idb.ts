@@ -1,8 +1,8 @@
 // The only module that touches IndexedDB, and the only importer of idb-keyval (eslint.config.mjs enforces it).
 // One key holds the whole save, so an interrupted transaction leaves the previous save intact.
 import { createStore, get, set, type UseStore } from 'idb-keyval';
-import { writeVerdict } from '../core/save';
-import { errorName, type Persistence, type SaveStore } from '../core/autosave';
+import { SAVE_VERSION, writeVerdict } from '../core/save';
+import { errorName, type BackupRecord, type Persistence, type SaveStore } from '../core/autosave';
 import type { SaveState } from '../core/types';
 
 export const SAVE_KEY_PREFIX = 'profile:';
@@ -76,6 +76,42 @@ export function guardedPut(
     });
 }
 
+const request = <T>(req: IDBRequest<T>): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error ?? new DOMException('failed', 'UnknownError'));
+    });
+
+/**
+ * Write-once copy of a raw old-version save, with the record `kept`, in ONE readwrite transaction. `count`, not `getKey`
+ * (build target safari14). A copy that already exists (an older build, an earlier session, an earlier migration) is never
+ * overwritten or deleted: only the record is written, so the stored line is true across launches. Resolves on `oncomplete`.
+ * A failure to put the record aborts the copy too (accepted, plan review F4): the caller counts it as a failed copy.
+ */
+export function putBackupOnce(os: IDBObjectStore, copyKey: string, recordKey: string, raw: unknown, from: number, at: number): Promise<'written' | 'kept'> {
+    return new Promise<'written' | 'kept'>((resolve, reject) => {
+        const tx = os.transaction;
+        let result: 'written' | 'kept' = 'kept';
+        tx.oncomplete = () => resolve(result);
+        tx.onabort = () => reject(tx.error ?? new DOMException('aborted', 'AbortError'));
+        request(os.count(copyKey)).then(
+            (count) => {
+                try {
+                    if (count === 0) {
+                        result = 'written';
+                        os.put(raw, copyKey);
+                    }
+                    const record: BackupRecord = { from, result: 'kept', error: null, at };
+                    os.put(record, recordKey);
+                } catch (e) {
+                    reject(e instanceof Error ? e : new DOMException('put failed', 'UnknownError'));
+                }
+            },
+            (e: unknown) => reject(e instanceof Error ? e : new DOMException('count failed', 'UnknownError')),
+        );
+    });
+}
+
 /** One id per store, so one per page load: the store stamps it in the record so a second tab can be told apart (B-1). */
 const randomWriter = (): string =>
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -83,6 +119,7 @@ const randomWriter = (): string =>
 export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore {
     const { dbName = 'martynka', storeName = 'saves', profileId = 'default', writer = randomWriter() } = options;
     const key = `${SAVE_KEY_PREFIX}${profileId}`;
+    const recordKey = `${key}:backup-status`;
     let store: UseStore | undefined;
     let base = 0; // the generation this page last saw stored (read) or wrote
 
@@ -115,7 +152,21 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
             const generation = await run((s) => s('readwrite', (os) => guardedPut(os, key, value, { version: value.version, base, writer }, mode)), () => mine === writeSeq);
             base = Math.max(base, generation);
         },
-        backup: (raw: unknown, from: number) => run((s) => set(`${key}:backup-v${from}`, raw, s)),
+        backup: (raw: unknown, from: number) =>
+            run((s) => s('readwrite', (os) => putBackupOnce(os, `${key}:backup-v${from}`, recordKey, raw, from, Date.now()))),
+        readBackups: async () => {
+            const found: { from: number; raw: unknown }[] = [];
+            for (let from = 1; from < SAVE_VERSION; from += 1) {
+                const raw = await run((s) => get<unknown>(`${key}:backup-v${from}`, s));
+                if (raw !== undefined) found.push({ from, raw });
+            }
+            return found;
+        },
+        backupRecord: async () => {
+            const record = await run((s) => get<BackupRecord>(recordKey, s));
+            return record ?? null;
+        },
+        noteBackup: (record: BackupRecord) => run((s) => set(recordKey, record, s)),
     };
 }
 

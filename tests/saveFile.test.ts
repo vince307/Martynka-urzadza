@@ -1,6 +1,7 @@
 // Origin: S-12 phase 2, test-plan risk #7 (an imported file is validated before it replaces the save).
 // Oracle: research section 2 of save-export-import-reset: a parsable but wrong file must never be accepted
 // ("JSON.parse succeeded" is not a valid file); frozen fixtures tests/fixtures/save-v1*.json are the valid inputs.
+import { backupExtras } from './helpers';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
@@ -224,7 +225,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
                   for (const unavailableStarts of [1, 2]) {
                     const writes: SaveState[] = [];
                     const saver = createAutosaver({
-                        store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: (v) => (writes.push(v), Promise.resolve()) },
+                        store: { read: () => Promise.resolve(undefined), ...backupExtras, backup: () => Promise.resolve('written' as const), write: (v) => (writes.push(v), Promise.resolve()) },
                         snapshot: () => decoded(),
                         timers: { setTimeout: () => 0, clearTimeout: () => undefined },
                         delayMs: 500,
