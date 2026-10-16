@@ -40,6 +40,12 @@ export const pl = {
         // The verb and the pronoun agree with the count (1 nie wczytał się … bez niego, 2-4 nie wczytały się, 5+ nie wczytało się).
         soundMissing: (n: number) =>
             `Nie ${inflect(n, ['wczytał', 'wczytały', 'wczytało'])} się ${countNoun(n, ['dźwięk', 'dźwięki', 'dźwięków'])}. Gra działa dalej bez ${inflect(n, ['niego', 'nich', 'nich'])}.`,
+        // DESIGN-GAP 120: the kit has no line for music that is on but not playing; the text is ours, to be read by a teacher.
+        musicStatus: {
+            loading: 'Muzyka się wczytuje.',
+            waitingUnlock: 'Muzyka ruszy po pierwszym dotknięciu ekranu.',
+            missing: 'Muzyka nie wczytała się. Gra działa dalej bez niej.',
+        },
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',

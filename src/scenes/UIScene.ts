@@ -169,7 +169,7 @@ export class UIScene extends Scene {
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                     uiArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined),
-                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length } } : {}),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),

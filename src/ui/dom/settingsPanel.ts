@@ -2,7 +2,7 @@ import type { ArtHealthView } from '../../core/artHealth';
 import type { OfflineView } from '../../core/swStatus';
 import type { SaveHealthView } from '../../core/saveHealth';
 import type { ProgressView } from '../../core/progress';
-import type { SoundPrefs } from '../../core/sound';
+import { musicLine, type MusicState, type SoundPrefs } from '../../core/sound';
 import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog } from './dialog';
@@ -30,7 +30,7 @@ export interface SettingsPanelOptions {
     roomArtHealth?: ArtHealthView;
     uiArtHealth?: ArtHealthView;
     /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
-    sound?: { prefs: SoundPrefs; missing: number };
+    sound?: { prefs: SoundPrefs; missing: number; music: MusicState };
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null; sound: SoundPrefs | null }) => void;
     onCancel: () => void;
@@ -110,6 +110,11 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     const soundHeading = createText('h2', pl.settings.soundHeading);
     const soundMissing = createText('p', sound ? pl.settings.soundMissing(sound.missing) : '', 'overlay-muted');
     soundMissing.hidden = !sound || sound.missing <= 0;
+    // DESIGN-GAP 120: one muted line under the music group while music is on and not playing.
+    const line = sound ? musicLine(sound.prefs, sound.music) : null;
+    const musicStatus = createText('p', line ? pl.settings.musicStatus[line] : '', 'overlay-muted');
+    musicStatus.hidden = line === null;
+    musicStatus.className += ' parent-music-status';
 
     const noVoice = createText('p', pl.settings.noVoice, 'overlay-muted');
     noVoice.hidden = watchVoice !== undefined;
@@ -166,7 +171,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

@@ -1,5 +1,5 @@
 import type { Game, Loader } from 'phaser';
-import { cueDelayMs, soundOutcome, trimFrameCount, type Cue, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
+import { cueDelayMs, soundOutcome, trimFrameCount, type Cue, type MusicState, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
 import { balance } from '../data/balance';
 import { REGISTRY_KEYS } from '../data/layout';
 import { SOUNDS } from '../data/sounds';
@@ -10,7 +10,7 @@ export interface SoundStatus {
     log: readonly { id: SoundId; outcome: SoundOutcome }[];
     /** Cache keys of effects that did not load or decode. */
     missing: readonly string[];
-    music: 'off' | 'loading' | 'playing' | 'missing';
+    music: MusicState;
 }
 
 export interface SoundService {
@@ -46,9 +46,9 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
     const musicDef = SOUNDS.find((s) => s.id === 'music-loop');
     const locked = (): boolean => ('locked' in game.sound ? Boolean((game.sound as { locked?: boolean }).locked) : false);
     const stopMusic = (): void => {
-        // A sound that exists was only waiting for the unlock ("loading" without a download): it ends as off. A download
-        // in flight (no sound yet) stays "loading" so a second "on" does not queue the file twice.
-        const waitingForUnlock = musicSound !== undefined;
+        // A sound that exists was only waiting for the unlock: it ends as off. A download in flight (no sound yet)
+        // stays "loading" so a second "on" does not queue the file twice.
+        const waitingForUnlock = musicState === 'waiting-unlock';
         try {
             musicSound?.stop();
             musicSound?.destroy();
@@ -66,11 +66,16 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
             musicSound = sound;
             const start = (): void => {
                 if (musicSound !== sound || !current.music) return;
-                sound.play();
-                musicState = 'playing';
+                try {
+                    sound.play();
+                    musicState = 'playing';
+                } catch (error) {
+                    console.warn('Music failed to start', (error as Error).name);
+                    musicState = 'missing';
+                }
             };
             if (locked()) {
-                musicState = 'loading';
+                musicState = 'waiting-unlock';
                 game.sound.once('unlocked', start);
             } else start();
         } catch (error) {
