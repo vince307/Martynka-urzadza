@@ -919,7 +919,7 @@ migrates that save again.
 - [x] 7.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 8c2e3e2
 - [x] 7.2 Deliberate break: section state from the task line only → red; restored; meta-check (view rule, not the loader) — 8c2e3e2
 - [x] 7.3 `grep -n "uiArtHealth" src/scenes/TaskScene.ts src/core/round/artFilter.ts` empty — 8c2e3e2
-- [ ] 7.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 7.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate 1d835ac (unit line OK, 121 e2e passed)
 
 #### Manual
 
@@ -929,8 +929,8 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 8.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 8.2 Deliberate break: `musicLine` ignoring `prefs.music` → red; restored; meta-check (rule, not Phaser's unlock)
+- [x] 8.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — ae33f85
+- [x] 8.2 Deliberate break: `musicLine` ignoring `prefs.music` → red; restored; meta-check (rule, not Phaser's unlock) — ae33f85
 - [ ] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound` specs green
 
 #### Manual
