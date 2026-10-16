@@ -1,57 +1,50 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The `/10x-tdd final-art-p2 phase 2` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 2 (art files and tables) is committed in `dd8fb1`. Row 1.4 is ticked from the orchestrator's e2e note. Next is phase 3 (`Driver: tdd`).
+The `/10x-tdd final-art-p2 phase 3` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 3 (fallback decisions, pure logic) is committed in `59ebc25`. Rows 3.3 and the e2e parts of phases 2 and 3 stay open for the orchestrator's e2e run. Next is phase 4 (`Driver: impl`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/final-art-p2`, cut from `main` at `c16734d` |
-| Commits | phase 1 `afac8e1`, phase 2 `dd8fb1`, plus handoff commits |
+| Commits | phase 1 `afac8e1`, phase 2 `dd8fb1`, phase 3 `59ebc25`, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | 38 (`grep -c '^- \[ \]' plan.md`): 2.5 [reviewer] open among them |
+| `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` (3.3 and 3.4 [reviewer] open among them) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `scripts/make-task-art.mjs` | third source dir `designs/martynka-salon-v2`; `UI_JOBS` (5 files to `public/assets/ui/`) and `V2_ICONS` (plate, box, sticker to `tasks/icons/`) |
-| `public/assets/ui/*.webp` (5), `public/assets/tasks/icons/{plate,box,sticker}.webp` | converted art, committed; existing files byte-identical after the run |
-| `src/data/uiArt.ts` | `UI_ART`, `UI_ART_KEYS`, `UiArtId`, Polish stand-in labels (portfel, zeszyt, salon) |
-| `src/data/measures.ts` | `ICONS` 15 (plate/talerz, box/pudełko, sticker/naklejka); `PLATE_ICONS`, `SCALE_ITEMS` unchanged |
-| `src/ui/widgets/ArtImage.ts` | `SIZES` from `TASK_ART` + `UI_ART` |
-| `tests/uiArt.test.ts` (new), `tests/taskArt.test.ts` (41 entries), `tests/measures.test.ts` (15 ids, nouns, not in plate/scale lists) | file-vs-table oracles |
+| `src/core/artPick.ts` | `firstLoaded`, `miniatureMode`, `neededMiniatureKeys`, type `MiniatureMode`; pure, injected `exists` |
+| `tests/artPick.test.ts` | 7 tests: order and null of `firstLoaded`, three `miniatureMode` branches, alpha-0 skip, a `SALON` state with one furniture key missing gives `thumbnail` |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (tables in place, files missing) | `ENOENT ... public/assets/tasks/icons/plate.webp`, `ENOENT ... public/assets/ui/loading-background.webp`, and `AssertionError: expected [ 'icons/apple.webp', …(37) ] to deeply equal [ 'icons/apple.webp', …(40) ]` (4 failed) |
+| RED (stubbed exports) | `AssertionError: expected '' to be 'b'`, `expected 'drawn' to be 'live'`, `expected 'drawn' to be 'thumbnail'` (6 failed) |
 | `npm run lint`, `npm run typecheck` | OK |
-| `npm test` | 3047 passed (branch baseline 3043, +4); both deploy scripts OK |
+| `npm test` | 3054 passed (branch baseline 3047, +7); both deploy scripts OK |
 | `npm run sample -- E1..E6` | exit 0 each |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `dist/sw.js` lists `assets/ui/loading-background.webp` and `assets/tasks/icons/plate.webp` |
-| `npm run art` twice | `git status --porcelain public/` identical, md5 of the 8 new files equal across runs |
-| e2e | phase 1 gate by orchestrator (109 passed); phase 2 changes no drawing code, not rerun |
-| Break 1: `wallet-open.webp` removed | `tests/uiArt.test.ts` red (ENOENT); restored |
-| Break 2: `sticker` dropped from `ICONS` | 3 red (`measures` 15 ids, `taskArt` untabled file, 41 count); restored. Meta-check: proves tables and files agree, not that a widget shows them |
-| Teacher read | `sample -- E1/E2/E3 --count 6`: ORDINAL ("Na którym miejscu od lewej jest talerz/pudełko?"), COUNT ("Ile jest pudełek? ... 4 pudełka", "Ile jest naklejek?"), COMPARE_QTY ("Gdzie jest więcej naklejek?", "4 naklejki"), CHOOSE_OP ("kupił jeszcze 2 naklejki", "4 talerze"), money ("kupił naklejkę za 2 zł"), division/mult word problems ("6 talerzy", "3 pudełka"). Agreement, accusative and past-tense gender all correct; hints do not give the result in the first step; no new noun needed (talerz, pudełko, naklejka were already in `nouns.ts`). |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| e2e | not run: no drawing code changed, orchestrator gate (rows 3.3 e2e part, phase 2 e2e part left open) |
+| Break: `miniatureMode` `every` to `some` | 4 red (`expected 'drawn' to be 'live'`, `'live' to be 'thumbnail'`, `'live' to be 'drawn'`); restored. Meta-check: proves the rule only, the tile is proven in phase 11 |
+| Teacher read | not needed: no `src/data/` or generator change |
 
 ## 4. Next command
 
-`/10x-tdd final-art-p2 phase 3` (phase 3: Fallback decisions - which picture to show, pure logic, `Driver: tdd`)
+`/10x-implement final-art-p2 phase 4` (phase 4: Wallet widget with the pack art, `Driver: impl`)
 
 ## 5. Open
 
-- Row 2.5 [reviewer]: nothing from `designs/` staged (only converted WebP); `salon-before` not converted.
-- Nothing loads `UI_ART` yet (BootScene wiring is a later phase); the icons are already drawn by the icon generators via `ICONS` and `TASK_ART`, which `BootScene` already loads.
-- Earlier open items (visual rows, gap 115, follow-ups, `holdTouch` in phase 10) stand as in the plan-review handoff.
+- Row 3.4 [reviewer]; row 3.3 and phase 2's e2e part wait for the orchestrator's full e2e.
+- Nothing calls `artPick` yet; phases 4-6 wire it (`firstLoaded` for the notebook, `miniatureMode` for the room-done tile).
+- Earlier open items (visual rows, gap 115, follow-ups, `holdTouch` in phase 10) stand as in the earlier handoffs.
 
 ## 6. Autonomous decisions
 
-- **RED form**: tables and `ICONS` were written first as data (no logic), so the red assertions are the file-missing ENOENT and the file-list mismatch. Would change: nothing.
-- **Stand-in labels** ("portfel", "zeszyt", "salon") live in `uiArt.ts` (Polish data file), as `TASK_ART` labels do; the loading pictures have none.
-- **Accidental revert**: a `git checkout` during break 2 reverted the uncommitted `ICONS` edit; redone before the commit (no effect on the result).
+- **Break form**: `every` to `some` instead of the plan's wording "live when any key exists"; same mutation, red in 4 tests.
+- **Rows**: ticked 3.1, 3.2 only; 3.3 left open because its e2e part is the orchestrator's (note in the prompt).
 - Mixed phase: none.

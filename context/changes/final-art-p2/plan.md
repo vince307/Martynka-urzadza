@@ -785,8 +785,8 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [ ] 3.1 New tests red before implementation (assertion), green after; unit `<branch baseline> + N`
-- [ ] 3.2 Deliberate break: `miniatureMode` `live` when any key exists → red; restored; meta-check (rule only)
+- [x] 3.1 New tests red before implementation (assertion), green after; unit `<branch baseline> + N` — 59ebc25
+- [x] 3.2 Deliberate break: `miniatureMode` `live` when any key exists → red; restored; meta-check (rule only) — 59ebc25
 - [ ] 3.3 Full local gate green; build prints `e2e hook: absent (`
 
 #### Manual
