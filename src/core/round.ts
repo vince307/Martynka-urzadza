@@ -5,6 +5,7 @@
 import { solutionSteps } from './round/hints';
 import type { SkillResult } from './mastery';
 import { faceText } from './tasks/faces';
+import { formatMoney } from './text/measure';
 import type { Task } from './tasks/types';
 
 export type RoundPhase = 'first' | 'second' | 'solution' | 'retype' | 'done';
@@ -63,10 +64,33 @@ const settle = (state: RoundState, outcome: Outcome): RoundState => {
     return { ...state, phase: 'done', outcomes, starsEarned: state.starsEarned + paid };
 };
 
-const captureFirstWrong = (state: RoundState, input: unknown): RoundState['firstWrong'] =>
-    typeof input === 'number' || typeof input === 'string'
-        ? state.firstWrong.map((w, i) => (i === state.index ? input : w))
-        : state.firstWrong;
+const isWallet = (task: Task): boolean => task.visual?.kind === 'money' && task.visual.pay !== undefined;
+
+/** A wallet as text: each coin as money, largest first ("2 zł, 2 zł, 1 zł"). */
+const walletText = (coins: readonly number[]): string =>
+    [...coins].sort((a, b) => b - a).map(formatMoney).join(', ');
+
+/**
+ * What the parent's example keeps of a wrong try: a number or a text stays as it is, a wallet becomes money, a select
+ * answer becomes the words of its tiles in the order of `task.choices`; anything else leaves no example (null).
+ * The saved field stays a number or a string (save format v4).
+ * DESIGN-GAP 123: the kit's progress preview shows no list answer, so it is one line of text.
+ */
+export const exampleValue = (task: Task, value: unknown): number | string | null => {
+    if (typeof value === 'number' || typeof value === 'string') return value;
+    if (!Array.isArray(value) || value.length === 0) return null;
+    if (isWallet(task) && value.every((c) => typeof c === 'number')) return walletText(value);
+    if (task.input === 'select' && value.every((v) => typeof v === 'number' || typeof v === 'string')) {
+        const chosen = task.choices ? task.choices.filter((c) => value.includes(c)) : (value);
+        return chosen.map((c) => String(faceText(c))).join(', ');
+    }
+    return null;
+};
+
+const captureFirstWrong = (state: RoundState, input: unknown): RoundState['firstWrong'] => {
+    const value = exampleValue(state.tasks[state.index], input);
+    return value === null ? state.firstWrong : state.firstWrong.map((w, i) => (i === state.index ? value : w));
+};
 
 /** A child's answer: in `first`, `second` and `retype` only; any other phase returns the same state. */
 export const answer = (state: RoundState, input: unknown): RoundState => {
@@ -111,8 +135,11 @@ export const next = (state: RoundState): RoundState => {
 };
 
 /** The parent reads the answer in words: faces become their description, a list of faces one line (the saved shape stays v2). */
-const exampleAnswer = (answer: Task['answer']): number | string | number[] =>
-    Array.isArray(answer) && answer.some((a) => typeof a === 'string') ? answer.map((a) => String(faceText(a))).join(', ') : typeof answer === 'string' ? String(faceText(answer)) : (answer as number | number[]);
+const exampleAnswer = (task: Task): number | string | number[] => {
+    const answer = task.answer;
+    if (isWallet(task) && Array.isArray(answer)) return walletText(answer as number[]);
+    return Array.isArray(answer) && answer.some((a) => typeof a === 'string') ? answer.map((a) => String(faceText(a))).join(', ') : typeof answer === 'string' ? String(faceText(answer)) : (answer as number | number[]);
+};
 
 /** Per-task results of a round for `recordRound`; a miss carries its first wrong try as the parent's example. */
 export const roundResults = (state: RoundState): SkillResult[] =>
@@ -120,6 +147,6 @@ export const roundResults = (state: RoundState): SkillResult[] =>
         const outcome = state.outcomes[i];
         const given = state.firstWrong[i];
         return outcome !== null && outcome !== 'first' && given !== null
-            ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given: faceText(given), answer: exampleAnswer(task.answer) } }
+            ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given: faceText(given), answer: exampleAnswer(task) } }
             : { skillId: task.skillId, outcome };
     });

@@ -295,6 +295,38 @@ describe('first wrong try (S-08, parent preview)', () => {
         expect(roundResults(s)[0].example).toEqual({ prompt: 'Dotknij trójkąta.', given: 'mały niebieski kwadrat', answer: 'duży czerwony trójkąt' });
     });
 
+    // PIC-04 / S13-06: a list answer (wallet, select) leaves an example in the existing `given` string.
+    it('roundResults reads a wrong wallet as money, largest first, and the model wallet as money too (PIC-04)', () => {
+        const wallet: Task = {
+            skillId: 'E1.11.money_pay_10',
+            prompt: 'Zapłać 5 zł.',
+            input: 'drag',
+            visual: { kind: 'money', items: [], pay: { tray: ['coin-1zl', 'coin-2zl', 'coin-5zl'], fewest: false } },
+            answer: [500],
+            hint: ['5 zł to jedna moneta.'],
+        };
+        let s = startRound([wallet], RULES);
+        s = answer(s, [100, 200, 200]);
+        expect(s.firstWrong[0]).toBe('2 zł, 2 zł, 1 zł');
+        s = next(answer(s, [500]));
+        expect(roundResults(s)[0].example).toEqual({ prompt: 'Zapłać 5 zł.', given: '2 zł, 2 zł, 1 zł', answer: '5 zł' });
+    });
+
+    it('roundResults reads a wrong select answer as the faces words in choices order (S13-06)', () => {
+        const tri = 'shape:triangle:red:big';
+        const sq = 'shape:square:blue:small';
+        const cir = 'shape:circle:green:big';
+        const pickAll: Task = { skillId: 'E1.1.shapes_all', prompt: 'Zaznacz trójkąty.', input: 'select', answer: [tri], choices: [tri, sq, cir], hint: ['Trójkąt ma 3 rogi.'] };
+        let s = startRound([pickAll], RULES);
+        s = answer(s, [cir, sq]);
+        s = next(answer(s, [tri]));
+        expect(roundResults(s)[0].example).toEqual({
+            prompt: 'Zaznacz trójkąty.',
+            given: 'mały niebieski kwadrat, duże zielone koło',
+            answer: 'duży czerwony trójkąt',
+        });
+    });
+
     it('roundResults has no example for a first-try solve or an unplayed task', () => {
         const s = solveFirst(startRound(tasks(), RULES));
         const r = roundResults(s);
