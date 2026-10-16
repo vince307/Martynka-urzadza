@@ -1,43 +1,44 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-tdd` step for phase 12 (after phase 11 `efaa4d5`; phase 10 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) 9 (`843a462`) and 10 (`7ac58d2`) and 11 (`efaa4d5`) and 12 (`8e19a7e`) are
-committed; phases 13-14 are open. Keep the save format v4.
+Written by the `/10x-implement` step for phase 13 (after phase 12 `8e19a7e`; the last impl phase of run 2026-10-16-audit-sweep). Phases 1-13 are committed (p13 `9635c99`); phase 14 (e2e) is open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` + p10 `7ac58d2` + p11 `efaa4d5` + p12 `8e19a7e` `feat(child-flow-guards): One dial geometry and the set-clock type (p12)` + handoffs |
+| Commits | docs + p1-p12 (see git log) + p13 `9635c99` `feat(child-flow-guards): Mode widgets, e2e skills seam, docs and seam sweep (p13)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 12: 12.4 `[reviewer]`; phase 11: 11.4 `[reviewer]`; phase 10: 10.4 `[reviewer]`, 10.5 `[visual]`; phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 13-14 open |
+| `## Progress` rows remaining | phase 13: 13.6, 13.7 `[reviewer]`; phase 12: 12.4 `[reviewer]`; phase 11: 11.4; phase 10: 10.4, 10.5 `[visual]`; phase 9: 9.4, 9.5 `[human]`; 8.4; 7.5; 6.5-6.7; 5.5-5.7; 4.4; 3.5, 3.6; 2.5-2.7; phase 14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/round/pictureLayout.ts` | `dialGeometry(rect, dial)` (centre, scale, `polar`), used by `clockSetLayout` |
-| `src/ui/widgets/ClockFace.ts` | `render` uses `dialGeometry` |
-| `src/core/tasks/visual.ts` | clock visual is a union: plain, or `set: true` with a required `snap`; the "snap without set" rule is gone |
-| `src/core/tasks/dragMode.ts`, `canonicalInput.ts`, `src/scenes/TaskScene.ts` | a non-set clock in drag throws; no `snap ?? 60` left |
-| tests | `tests/pictureLayout.test.ts` (`dialGeometry`: same centre/scale as the layout, hand tips of every `reachableTimes(5)` time on the rings), `tests/solvableInMode.test.ts` (`dragMode` clock branch with a set clock; non-set clock throws), `tests/visual.test.ts` (cast for the invalid-data case) |
+| `src/core/round/view.ts` | new pure `modeWidgets(input)` (exhaustive `switch`, `never` default); `TaskScene` calls it (the private `widgetsOf` is gone) |
+| `src/testing/e2eHook.ts` | `forcedSkills` throws naming an id no stage has or an unplayable one; an id of ANOTHER stage still gives null (parent-settings #14 pins an E3 skill and changes the stage) |
+| `CLAUDE.md` | one "Child-flow guards" paragraph in "Current state" |
+| `context/changes/child-flow-guards/follow-ups/review-fixes.md` | 12 entries, 12 `Trigger:` lines |
+| tests | `tests/answerModes.test.ts` (one widget per mode), `tests/e2eSkills.test.ts` (throws / null cases) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED | with a `dialGeometry` stub: `AssertionError: expected { x: +0, y: +0 } to deeply equal { x: 708, y: 610 }`; tips test `AssertionError: 1.00: expected +0 to be close to 767.01...`; `dragMode > throws for a clock that is not a clock to set`: `AssertionError: expected [Function] to throw an error` |
-| Break | `polar` radius scaled by 0.9 in `dialGeometry`: the tips test red (1 failed), restored from a copy |
-| Meta-check | proves the shared geometry and the rings agree (one source), not the drawn pixels; ClockFace wiring covered by clock-set / drawn-tasks e2e (green) |
-| unit | Tests 3413 passed (p11 3410, +3) |
+| RED | `modeWidgets` / throwing `forcedSkills` tests written with the code in one step (all pure); break below proves the map test |
+| Break | `modeWidgets('select')` returning tiles: `answerModes > shows exactly one input widget per mode` red (1 failed), restored |
+| Meta-check | proves the map only; the scene wiring is proven by the e2e gate. First e2e run caught that a strict throw on another-stage ids broke parent-settings #14, so cross-stage ids stay null |
+| `validate-rule-files.sh` | PASS; a broken path in `CLAUDE.md` gave `missing: 1` FAIL; restored, PASS |
+| unit | Tests 3416 passed (p12 3413, +3) |
 | lint / typecheck / deploy scripts / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.9m) = baseline + 0, after the last code edit |
+| e2e `--workers=4` | 125 passed (10.2m) = baseline + 0, after the last code edit |
+| Seam sweep | one `canSubmit`, `drawUntil`, `dialGeometry`, `cellPositions`; no `snap ?? `, no `?.show` on a missing pool, no "14 %" outside the test that explains the change; every `MAX_ATTEMPTS` still used; gap rows 122-125 match the DESIGN-GAP comments and are in order; every name in the `CLAUDE.md` paragraph exists in `src/` |
 
 ## 4. Next command
 
-`/10x-implement child-flow-guards phase 13`
+`/10x-e2e child-flow-guards phase 14`
 
 ## 5. Open
 
@@ -48,13 +49,15 @@ committed; phases 13-14 are open. Keep the save format v4.
   `[visual]` 2.6, 3.6, 5.6, 6.6, 10.5 at 1440 (1920×1080 fit) and 1024×768; `[reviewer]` 1.5, 2.5, 3.5; `[visual]` 3.6.
 - DESIGN-GAP rows: 122-125 are done.
 - Manual row 7.5 `[reviewer]`: remaining `while` in generators are `addSub` (digit loop, `x > 0`) and `compareNum` (now bounded); E6 `thousands` is 10000.
-- Follow-ups to write in phase 13 (`follow-ups/review-fixes.md`): GRD-09, WNA-08, WNA-09, TXT-06, F4 two-finger note,
+- Follow-ups written in phase 13 (`follow-ups/review-fixes.md`): GRD-09, WNA-08, WNA-09, TXT-06, F4 two-finger note,
   letterbox thumb, placeValue/clockElapsed dedup, `ArtPool`/`fitRect`, `grosze(id)` lookup, VO3 wallet look, any
   `KNOWN_SMALL` entry from phase 10.
 - Risk carried: TXT-01 rewrote the S-14c "about 14 % E5" test on purpose (now 10 %).
 - Phase 4 `[reviewer]` 4.4: `afterRound` reachable once per variant round (submit counts, `finishVariant` skips); the 3.x flaky `final-art-loading #15` did not fail this time.
 
 ## 6. Autonomous decisions
+
+- **Phase 13 impl scope**: `widgetsOf` moved verbatim to core as `modeWidgets`. `forcedSkills` throws only for ids no stage has or unplayable ones; an id of another stage stays an ordinary round (deviation from the plan's "unknown id throws", forced by parent-settings #14). `KNOWN_SMALL` needed no follow-up (no entry). Seam sweep found nothing to fix; leftovers are recorded as the last follow-up. Would change: a spec that wants a cross-stage id to fail loudly.
 
 - **Phase 12 test-first scope**: all pure `core`; inline: `ClockFace`/`TaskScene` wiring and the type change. The hand-tip test uses `dialGeometry.polar` against the layout rings (the widget draws through the same `polar`), so the break scales `polar`, not the widget. Union uses `set?: undefined; snap?: undefined` for the plain clock. Manual 12.4 `[reviewer]` left open (`grep "snap ?? " src/` is empty). Would change: a reviewer wanting a test that renders ClockFace in Phaser.
 
