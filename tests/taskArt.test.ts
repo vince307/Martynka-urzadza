@@ -61,7 +61,7 @@ describe('task art table', () => {
             'tasks/measuring/balance-scale',
             'tasks/measuring/thermometer-frame',
         ];
-        expect(TASK_ART).toHaveLength(38);
+        expect(TASK_ART).toHaveLength(41);
         for (const id of ids) {
             expect(keys.has(id), id).toBe(true);
         }

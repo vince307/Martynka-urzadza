@@ -2,11 +2,12 @@
 import type { GameObjects, Scene } from 'phaser';
 import { ART_STAND_IN } from '../../data/layout';
 import { TASK_ART } from '../../data/taskArt';
+import { UI_ART } from '../../data/uiArt';
 import { standInLabelFit } from './artLayout';
 import type { Rect } from './geometry';
 import { textStyle } from './textStyle';
 
-const SIZES = new Map(TASK_ART.map((entry) => [entry.key, entry]));
+const SIZES = new Map([...TASK_ART, ...UI_ART].map((entry) => [entry.key, entry]));
 
 /**
  * One drawing of the art kit (a coin, a jug, an icon...) placed in a rectangle with its proportions kept. When the
@@ -66,6 +67,13 @@ export class ArtImage {
             .setPosition(box.x + box.width / 2, box.y + box.height / 2)
             .setScale(fit.scale > 0 ? fit.scale : 1)
             .setVisible(text !== '');
+    }
+
+    /** Fades the picture or its stand-in; `show` leaves the value as it is. */
+    setAlpha(alpha: number): void {
+        this.image.setAlpha(alpha);
+        this.box.setAlpha(alpha);
+        this.label.setAlpha(alpha);
     }
 
     hide(): void {

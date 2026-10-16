@@ -41,6 +41,7 @@ export interface RoomSnapshot {
     stageDone: boolean;
     mode: 'normal' | 'change';
     card: { title: string; items: RoomListItem[] } | null;
+    doneMiniature: 'live' | 'thumbnail' | 'drawn' | null;
     modeText: string | null;
 }
 
@@ -462,6 +463,7 @@ export class RoomScene extends Scene {
             stageDone: stagesDone(room, state) > 0,
             mode: this.mode,
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems() } : null,
+            doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
     }

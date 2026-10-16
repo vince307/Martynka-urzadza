@@ -308,15 +308,17 @@ export const TASK_LAYOUT = {
         solutionLines: DRAG_SOLUTION_LINES,   // the solution steps take the tray's place
     },
     // Paying with coins (S-14d phase 6): the tray holds up to 4 kinds, one row up to 3 (3 x 136 px) and a 2 x 2 grid for 4 (212 x 142 px, above MIN_TOUCH_TARGET);
-    // the wallet is the block mat, 5 x 2 cells of 188 x 230 hold balance.coinDrag.maxTotal (10) coins. Provisional, screenshots at the visual gate.
+    // the wallet is the pack wallet art (640 x 420, six drop centres from the pack manifest = balance.coinDrag.maxTotal) scaled 1.25 into the notebook;
+    // a placed coin's box is the drop-centre pitch scaled minus coinGap (144 x 104 px). DESIGN-GAP 104, screenshots at the visual gate.
     coinDrag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        wallet: DRAG_MAT,
+        wallet: { x: 308, y: 380, width: 800, height: 525 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
-        columns: 5, rows: 2, cellInset: 8, rowKinds: 3, maxKinds: 4,
+        art: { width: 640, height: 420, dropCenters: [[200, 160], [320, 160], [440, 160], [200, 248], [320, 248], [440, 248]] },
+        coinGap: 6, rowKinds: 3, maxKinds: 4,
     },
     // Coin pictures inside tray tiles and wallet cells (S-14d phase 8): inset from the tile, size under the finger. Provisional, DESIGN-GAP 104, screenshots at the visual gate.
-    coinPay: { trayInset: 14, coinInset: 10, carriedSize: 120 },
+    coinPay: { trayInset: 14, coinInset: 10, carriedSize: 120, fullTrayAlpha: 0.45 },   // fullTrayAlpha: DESIGN-GAP 115, the full-wallet signal is ours
     // Base-ten blocks (kit reference/base-ten.svg, own units): a 100 flat is 180 square, a 10 rod 22 x 180, a 1 cube 22 square; blocks of one kind
     // are `gap` apart, kinds `groupGap`, wrapped rows `rowGap`. `maxScale` stops a few blocks from growing huge.
     blocks: {
@@ -430,7 +432,7 @@ export const SUMMARY_LAYOUT = {
  * "Nowa umiejętność!" card (kit unlock.png, screen.css .unlock-card, .unlock-art, .unlock-name, .page-button inside it), on the notebook.
  * Absolute scene coordinates: card left 388 / top 284 (kit), title top = card top + border + 56, art 200 x 200 centred 34 px under the title line,
  * name 10 px under the art, button 450 x 108 centred, 36 px above the card's inner bottom.
- * DESIGN-GAP (docs/design-gaps.md row 22): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
+ * The art is the pack notebook (`UI_ART` `notebook`, S-16c; design gap 22 closed), the book icon and its stand-in box as fallbacks.
  */
 export const UNLOCK_LAYOUT = {
     card: { left: 388, top: 284, width: 1144, height: 660, border: 7, radius: 46 },
@@ -440,11 +442,14 @@ export const UNLOCK_LAYOUT = {
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
-/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. DESIGN-GAP: no brand art yet (designer brief P2.2). */
+/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. S-16c: the pack background and emblem are drawn over it when they arrive (design gap 105 closed). */
 export const LOADING_LAYOUT = {
+    background: { width: 1920, height: 1080 },   // the pack's loading background fills the canvas
+    emblem: { x: 960, y: 270, size: 300 },       // the pack's emblem, 300 square, above the title
     title: { x: 960, y: 450 },
     bar: { left: 560, top: 580, width: 800, height: 36, radius: 18, border: 5 },
     slow: { x: 960, y: 680, maxWidth: 800 },   // DESIGN-GAP 112: the "still loading" line under the bar, centred like the title, wrapped within the bar width
+    textStroke: { title: 12, slow: 8 },   // visual gate S-16c: over the pack background the title and the slow line get an ivory outline (pack screenshots/loading-screen.png outlines its title), the deep teal ran into the turquoise sofa
 } as const;
 
 /**

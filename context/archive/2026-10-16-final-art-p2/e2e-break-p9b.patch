@@ -1,0 +1,21 @@
+diff --git a/src/scenes/BootScene.ts b/src/scenes/BootScene.ts
+index 3ed7576..f41d72f 100644
+--- a/src/scenes/BootScene.ts
++++ b/src/scenes/BootScene.ts
+@@ -48,6 +48,7 @@ export class BootScene extends Scene {
+         // The loading screen is drawn first and removed in create(); a bar that fails to draw must not stop the game from starting.
+         this.loading = new LoadingScreen(this);
+         const startedAt = this.time.now;
++        const totalForBreak = balance.loader.totalMs + 1000;   // BREAK p9b
+         const onProgress = (value: number): void => {
+             try {
+                 this.loading?.progress(value);
+@@ -77,7 +78,7 @@ export class BootScene extends Scene {
+             };
+             artEvents.push([event, show]);
+             this.load.on(event, show);
+-            this.load.image(art.key, art.url);
++            this.time.delayedCall(totalForBreak, () => this.load.image(art.key, art.url));
+         }
+         // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,
+         // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).

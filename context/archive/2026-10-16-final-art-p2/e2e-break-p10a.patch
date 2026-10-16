@@ -1,0 +1,22 @@
+diff --git a/src/ui/widgets/CoinWallet.ts b/src/ui/widgets/CoinWallet.ts
+index ac75363..8916fdf 100644
+--- a/src/ui/widgets/CoinWallet.ts
++++ b/src/ui/widgets/CoinWallet.ts
+@@ -106,7 +106,7 @@ export class CoinWallet {
+             }
+         }
+         const list = walletList(this.state.mat);
+-        const lifted = liftedSlot(layout, list, this.state.carrying);
++        const lifted = this.state.carrying?.from === 'mat' ? list.lastIndexOf(this.state.carrying.kind) : -1;
+         const coins = list.flatMap((id, i) => (i === lifted ? [] : [{ id, ...interiorPoint(layout.coin(i)) }]));
+         return {
+             tray, wallet: interiorPoint(layout.wallet), ok: this.ok.target(), coins,
+@@ -147,7 +147,7 @@ export class CoinWallet {
+ 
+         // Placed coins, one cell each; a coin lifted from the wallet is drawn under the finger instead.
+         const list = walletList(state.mat);
+-        const lifted = liftedSlot(layout, list, state.carrying);
++        const lifted = state.carrying?.from === 'mat' ? list.lastIndexOf(state.carrying.kind) : -1;
+         let slot = 0;
+         list.forEach((id, i) => {
+             if (i === lifted) return;

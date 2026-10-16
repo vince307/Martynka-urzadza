@@ -1,7 +1,9 @@
 // Geometry of the coin tray and wallet (S-14d phase 6). Oracle: MIN_TOUCH_TARGET 96, at most 4 kinds on a tray
-// (3 in one row, 4 in a 2 x 2 grid), and the wallet holds balance.coinDrag.maxTotal coins.
+// (3 in one row, 4 in a 2 x 2 grid), and the wallet holds balance.coinDrag.maxTotal (6) coins, each on a drop centre of the pack wallet art.
 import { describe, expect, it } from 'vitest';
-import { coinGeometry, coinLayout, interiorPoint, type Rect } from '../src/core/round/dragLayout';
+import { coinGeometry, coinLayout, interiorPoint, liftedSlot, walletFull, type Rect } from '../src/core/round/dragLayout';
+import { emptyWallet } from '../src/core/coins';
+import type { Carrying } from '../src/core/trayDrag';
 import type { MoneyId } from '../src/data/measures';
 import { balance } from '../src/data/balance';
 import { MIN_TOUCH_TARGET, TASK_LAYOUT } from '../src/data/layout';
@@ -69,8 +71,38 @@ describe('coinLayout', () => {
         expect(() => coinLayout(spec, five)).toThrow();
     });
 
-    it('the wallet capacity matches the reducer cap', () => {
-        expect(spec.columns * spec.rows).toBeGreaterThanOrEqual(balance.coinDrag.maxTotal);
+    it('the wallet has one drop centre per coin the reducer takes', () => {
+        expect(spec.art.dropCenters.length).toBe(balance.coinDrag.maxTotal);
+    });
+
+    it('the wallet rect keeps the art proportions (width and height scale agree within 1 %)', () => {
+        const sx = spec.wallet.width / spec.art.width;
+        const sy = spec.wallet.height / spec.art.height;
+        expect(Math.abs(sx - sy) / sx).toBeLessThan(0.01);
+    });
+
+    it('placed coins keep a gap of coinGap between neighbours, so two coins never touch', () => {
+        const layout = coinLayout(spec, sets[2]);
+        expect(spec.coinGap).toBeGreaterThan(0);
+        const coins = spec.art.dropCenters.map((_, i) => layout.coin(i));
+        for (let i = 0; i < coins.length; i += 1) {
+            for (let j = i + 1; j < coins.length; j += 1) {
+                const gapX = Math.max(coins[j].x - (coins[i].x + coins[i].width), coins[i].x - (coins[j].x + coins[j].width));
+                const gapY = Math.max(coins[j].y - (coins[i].y + coins[i].height), coins[i].y - (coins[j].y + coins[j].height));
+                expect(Math.max(gapX, gapY), `${i} and ${j}`).toBeGreaterThanOrEqual(spec.coinGap - 0.01);
+            }
+        }
+    });
+
+    it('coin i is centred on its scaled drop centre (+-1 px), and a seventh coin has no place', () => {
+        const layout = coinLayout(spec, sets[2]);
+        const s = spec.wallet.width / spec.art.width;
+        spec.art.dropCenters.forEach(([cx, cy], i) => {
+            const c = layout.coin(i);
+            expect(Math.abs(c.x + c.width / 2 - (spec.wallet.x + cx * s))).toBeLessThanOrEqual(1);
+            expect(Math.abs(c.y + c.height / 2 - (spec.wallet.y + cy * s))).toBeLessThanOrEqual(1);
+        });
+        expect(() => layout.coin(spec.art.dropCenters.length)).toThrow();
     });
 });
 
@@ -92,5 +124,36 @@ describe('coinGeometry', () => {
         expect(geo.matAt(cell(1).x, cell(1).y, mat)).toBe('coin-5zl');
         expect(geo.matAt(cell(2).x, cell(2).y, mat)).toBe('coin-1zl');
         expect(geo.matAt(cell(3).x, cell(3).y, mat)).toBeNull();
+    });
+});
+
+describe('liftedSlot', () => {
+    const kinds: MoneyId[] = ['coin-1zl', 'coin-2zl', 'coin-5zl'];
+    const layout = coinLayout(spec, kinds);
+    const list: MoneyId[] = ['coin-2zl', 'coin-2zl', 'coin-1zl'];
+    const carrying = (kind: MoneyId, cell: number | null): Carrying<MoneyId> => {
+        const p = interiorPoint(layout.coin(cell ?? 0));
+        return { pointerId: 1, kind, from: cell === null ? 'tray' : 'mat', x: p.x, y: p.y, startX: p.x, startY: p.y, moved: true };
+    };
+    it('is the touched cell: the FIRST of two equal coins when that one was grabbed (lastIndexOf would say 1)', () => {
+        expect(liftedSlot(layout, list, carrying('coin-2zl', 0))).toBe(0);
+        expect(liftedSlot(layout, list, carrying('coin-2zl', 1))).toBe(1);
+        expect(liftedSlot(layout, list, carrying('coin-1zl', 2))).toBe(2);
+    });
+    it('falls back to the last coin of the kind when the start point is in a cell of another kind', () => {
+        const wrong = { ...carrying('coin-2zl', 2) };
+        expect(liftedSlot(layout, list, wrong)).toBe(1);
+    });
+    it('is -1 for nothing carried or a coin carried from the tray', () => {
+        expect(liftedSlot(layout, list, null)).toBe(-1);
+        expect(liftedSlot(layout, list, carrying('coin-1zl', null))).toBe(-1);
+    });
+});
+
+describe('walletFull', () => {
+    const wallet = (n: number) => ({ ...emptyWallet(), 'coin-1zl': n });
+    it('is true from the cap on, false below it', () => {
+        expect(walletFull(wallet(balance.coinDrag.maxTotal - 1), balance.coinDrag.maxTotal)).toBe(false);
+        expect(walletFull(wallet(balance.coinDrag.maxTotal), balance.coinDrag.maxTotal)).toBe(true);
     });
 });

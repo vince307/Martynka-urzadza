@@ -256,7 +256,7 @@ export const installE2EHook = (game: Game): void => {
                 // While BootScene shows the loading screen there is no other scene to read (audit A-1: the load can hang for seconds).
                 const loadingScene = boot();
                 if (loadingScene?.isLoading()) {
-                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase() }), save: save(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase(), art: Object.freeze(loadingScene.loadingArt()) }), save: save(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {

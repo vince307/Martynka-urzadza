@@ -51,13 +51,13 @@ export interface Snapshot {
     counterText: string;
     screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
     /** The boot loading screen (BootScene still loading): its phase. */
-    loading?: { phase: 'loading' | 'slow' | 'over' };
+    loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
     /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
     bootLoad?: { cut: string[]; creates: number } | null;
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; modeText: string | null } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -94,7 +94,7 @@ export interface Targets {
     /** Interior points of the 'drag' mode: tray blocks per kind, the mat, "OK" and the blocks lying on the mat. */
     drag?: { tray: Partial<Record<BlockKind, Point>>; mat: Point | null; ok: Point | null; matBlocks: (Point & { kind: BlockKind })[] };
     /** Interior points of a payment task: tray tiles per money id, the wallet, "OK" and the placed coins; null for another task. */
-    coins?: { tray: Partial<Record<MoneyKind, Point>>; wallet: Point | null; ok: Point | null; coins: (Point & { id: MoneyKind })[] } | null;
+    coins?: { tray: Partial<Record<MoneyKind, Point>>; wallet: Point | null; ok: Point | null; coins: (Point & { id: MoneyKind })[]; walletArt: 'art' | 'drawn'; full: boolean } | null;
     /** Hand tips (the minute tip is null on a full-hour clock), centre, "OK" and the grab radius of a clock to set; null for another task. */
     clock?: { centre: Point; hourTip: Point; minuteTip: Point | null; ok: Point | null; radius: number } | null;
     next: Point | null;
@@ -190,6 +190,37 @@ export const holdTouch = async (page: Page, point: Point, ms: number, drift = 0)
  */
 export const dragTouch = async (page: Page, from: Point, to: Point, steps = 8): Promise<void> => {
     await dragGesture(page, from, to, steps, 'touchEnd');
+};
+
+/**
+ * A finger that starts on `from`, travels to `to` (scene space) and STAYS DOWN: the gesture is mid-way while the caller reads the hook.
+ * `release(end)` moves to `end`, lifts the finger and detaches. (Not `holdTouch`, which is the long press of the room.)
+ */
+export const holdDrag = async (page: Page, from: Point, to: Point, steps = 4): Promise<{ release(end: Point): Promise<void> }> => {
+    const cdp = await page.context().newCDPSession(page);
+    try {
+        const start = await toPage(page, from);
+        const stop = await toPage(page, to);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+        for (let step = 1; step <= steps; step++) {
+            const at = { x: start.x + ((stop.x - start.x) * step) / steps, y: start.y + ((stop.y - start.y) * step) / steps };
+            await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+        }
+    } catch (error) {
+        await cdp.detach();
+        throw error;
+    }
+    return {
+        release: async (end: Point): Promise<void> => {
+            try {
+                const at = await toPage(page, end);
+                await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
+                await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            } finally {
+                await cdp.detach();
+            }
+        },
+    };
 };
 
 /** The same drag, but the system cancels the touch (touchCancel) instead of lifting the finger. */

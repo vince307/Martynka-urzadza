@@ -1,0 +1,13 @@
+diff --git a/src/ui/widgets/CoinWallet.ts b/src/ui/widgets/CoinWallet.ts
+index ac75363..badcf9d 100644
+--- a/src/ui/widgets/CoinWallet.ts
++++ b/src/ui/widgets/CoinWallet.ts
+@@ -119,7 +119,7 @@ export class CoinWallet {
+     }
+ 
+     private walletArtLoaded(): boolean {
+-        return this.walletImage.scene.textures.exists(UI_ART_KEYS.wallet);
++        return true;
+     }
+ 
+     private paint(state: TrayDragState<MoneyId>): void {

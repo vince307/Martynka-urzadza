@@ -1,19 +1,22 @@
 import type { GameObjects, Scene } from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, LOADING_LAYOUT, PLACEHOLDER_COLORS } from '../../data/layout';
+import { GAME_HEIGHT, GAME_WIDTH, LOADING_LAYOUT, PAGE_BACKGROUND, PLACEHOLDER_COLORS } from '../../data/layout';
+import { UI_ART_KEYS } from '../../data/uiArt';
 import { pl } from '../../data/pl';
 import { textStyle } from './textStyle';
 
 /**
  * The screen shown while BootScene loads the font and the pictures: the page colour, the title and a progress bar.
  * It draws a value 0-1 it is given and decides nothing; `destroy` removes it when loading is over.
- * DESIGN-GAP (docs/design-gaps.md, designer brief P2.2): the brand's loading art does not exist yet, so this is drawn in code;
- * the title uses the fallback font until the task font has loaded.
+ * The pack's background and emblem join through `showArt` as their files arrive (S-16c, gap 105 closed); until then, or when a
+ * file never arrives, the drawn screen stays. The title uses the fallback font until the task font has loaded.
  */
 export class LoadingScreen {
     private readonly back: GameObjects.Rectangle;
     private readonly title: GameObjects.Text;
     private readonly bar: GameObjects.Graphics;
     private note: GameObjects.Text | null = null;
+    private background: GameObjects.Image | null = null;
+    private emblem: GameObjects.Image | null = null;
     private readonly scene: Scene;
 
     constructor(scene: Scene) {
@@ -53,9 +56,43 @@ export class LoadingScreen {
         this.note = this.scene.add
             .text(slow.x, slow.y, pl.loading.slow, { ...textStyle('bar'), align: 'center', wordWrap: { width: slow.maxWidth } })
             .setOrigin(0.5, 0);
+        if (this.background) {
+            this.note.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.slow);
+        }
+    }
+
+    /**
+     * Draws a loading picture once its texture exists (a second call or a missing texture changes nothing). The background fills the
+     * canvas and hides the page-colour rectangle; both sit behind the title and the bar.
+     */
+    showArt(id: 'loadingBackground' | 'loadingEmblem'): void {
+        const key = UI_ART_KEYS[id];
+        if (!this.scene.textures.exists(key)) {
+            return;
+        }
+        if (id === 'loadingBackground' && !this.background) {
+            const { background } = LOADING_LAYOUT;
+            this.background = this.scene.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, key).setDisplaySize(background.width, background.height).setDepth(-2);
+            this.back.setVisible(false);
+            // Over the busy background the texts get an ivory outline, as the pack's title has; the drawn screen keeps plain text.
+            this.title.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.title);
+            this.note?.setStroke(PAGE_BACKGROUND, LOADING_LAYOUT.textStroke.slow);
+        } else if (id === 'loadingEmblem' && !this.emblem) {
+            const { emblem } = LOADING_LAYOUT;
+            this.emblem = this.scene.add.image(emblem.x, emblem.y, key).setDisplaySize(emblem.size, emblem.size).setDepth(-1);
+        }
+    }
+
+    /** Which pictures are on the screen (read-only; the e2e hook reads it). */
+    artShown(): { background: boolean; emblem: boolean } {
+        return { background: this.background !== null, emblem: this.emblem !== null };
     }
 
     destroy(): void {
+        this.background?.destroy();
+        this.emblem?.destroy();
+        this.background = null;
+        this.emblem = null;
         this.note?.destroy();
         this.note = null;
         this.back.destroy();

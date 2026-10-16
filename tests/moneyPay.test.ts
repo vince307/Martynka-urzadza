@@ -2,6 +2,7 @@
 // coins up to the wallet limit), independent of `fewestCoins` and of the generator's own answer.
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../src/core/rng';
+import { fewestCoins } from '../src/core/coins';
 import { canonicalInput } from '../src/core/round/canonicalInput';
 import { artBlocked } from '../src/core/round/artFilter';
 import { answer, startRound } from '../src/core/round';
@@ -113,6 +114,25 @@ describe('generateMoneyPay', () => {
             });
         }
     }, 30_000); // wallet enumeration: ~1.5 s locally, over 5 s on a loaded CI runner
+
+    it('S-16c: every amount of every MONEY_PAY skill is payable in at most 4 pieces, within the six places of the wallet', () => {
+        const pay = Object.values(stages).flatMap((st) => st.steps.flatMap((step) => step.skills)).filter((sk) => sk.type === 'MONEY_PAY');
+        expect(pay.length).toBeGreaterThan(0);
+        for (const sk of pay) {
+            const p = sk.params as { tray: MoneyId[]; min: number; max: number };
+            for (let zl = p.min; zl <= p.max; zl += 1) {
+                const best = fewestCoins(zl * 100, p.tray);
+                expect(best.length, `${sk.id} ${zl} zł`).toBeLessThanOrEqual(4);
+                expect(best.length, `${sk.id} ${zl} zł`).toBeLessThanOrEqual(balance.coinDrag.maxTotal);
+            }
+        }
+    });
+
+    it('S-16c: the pay check refuses seven 1 zł coins for 7 zł (the wallet takes six) and accepts 5 + 2', () => {
+        const task = generateMoneyPay(skill(E1_TRAY, 7, 7, ['pay']), createRng(3));
+        expect(task.check?.(Array.from({ length: 7 }, () => 100))).toBe(false);
+        expect(task.check?.([500, 200])).toBe(true);
+    });
 
     it('[200, 200, 100] pays 5 zł in the plain task and is refused when the fewest coins are asked', () => {
         const draw = (fewest: boolean): Task => generateMoneyPay(skill(E1_TRAY, 5, 5, [fewest ? 'fewest' : 'pay']), createRng(1));

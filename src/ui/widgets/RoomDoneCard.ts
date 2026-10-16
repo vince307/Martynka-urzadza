@@ -1,23 +1,26 @@
 import type { GameObjects, Scene } from 'phaser';
+import { miniatureMode, neededMiniatureKeys, type MiniatureMode } from '../../core/artPick';
 import type { RoomListItem } from '../../core/rooms';
 import type { RoomDef, RoomState } from '../../core/types';
 import { PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
+import { UI_ART_KEYS } from '../../data/uiArt';
 import { PageButton } from './PageButton';
-import { drawRoomMiniature } from './RoomView';
+import { drawRoomMiniature, miniaturePieces } from './RoomView';
 import { textStyle } from './textStyle';
 
 /**
  * The "Pokój gotowy!" card over the finished room: the title, the list of rooms (a tile with a miniature and a check mark for a room,
  * a faded dashed tile "Wkrótce" for the next one, with a padlock while it is locked) and "Dalej". The tiles are not buttons.
  * It draws what it is given and decides nothing.
- * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card and its miniature is the room's own pictures in scale (S-16a).
+ * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card. The miniature is the room's own pictures in scale; when a piece texture is missing it is the pack's `salon-after` thumbnail, and drawn stand-ins only when that is missing too (docs/design-gaps.md row 108).
  */
 export class RoomDoneCard {
     private readonly graphics: GameObjects.Graphics;
     private readonly title: GameObjects.Text;
     private captions: GameObjects.Text[] = [];
     private pictures: GameObjects.Image[] = [];
+    private mode: MiniatureMode | null = null;
     private readonly next: PageButton;
 
     constructor(private readonly scene: Scene, onNext: () => void) {
@@ -54,7 +57,13 @@ export class RoomDoneCard {
         this.graphics.setVisible(false);
         this.title.setVisible(false);
         this.clearCaptions();
+        this.mode = null;
         this.next.hide();
+    }
+
+    /** Which miniature the tile shows, for the e2e hook; null while the card is hidden. */
+    miniature(): MiniatureMode | null {
+        return this.mode;
     }
 
     /** Centre of "Dalej" in scene space, for the e2e hook; null while hidden. */
@@ -82,7 +91,18 @@ export class RoomDoneCard {
         g.lineStyle(tiles.border, PLACEHOLDER_COLORS.nextBorder, 1);
         g.strokeRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
         const thumbWidth = ROOM_LAYOUT.scene.width * tiles.thumbScale;
-        this.pictures.push(...drawRoomMiniature(this.scene, g, room, state, left + (tiles.width - thumbWidth) / 2, top + tiles.thumbTop, tiles.thumbScale, ROOM_LAYOUT.depth.card + 1));
+        const exists = (key: string): boolean => this.scene.textures.exists(key);
+        const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, UI_ART_KEYS.salonAfter);
+        this.mode = mode;
+        const thumbLeft = left + (tiles.width - thumbWidth) / 2;
+        if (mode === 'thumbnail') {
+            this.pictures.push(
+                this.scene.add.image(thumbLeft, top + tiles.thumbTop, UI_ART_KEYS.salonAfter).setOrigin(0, 0)
+                    .setDisplaySize(thumbWidth, ROOM_LAYOUT.scene.height * tiles.thumbScale).setDepth(ROOM_LAYOUT.depth.card + 1),
+            );
+        } else {
+            this.pictures.push(...drawRoomMiniature(this.scene, g, room, state, thumbLeft, top + tiles.thumbTop, tiles.thumbScale, ROOM_LAYOUT.depth.card + 1));
+        }
         this.caption(pl.room.name, left + tiles.width / 2, top + tiles.captionY);
         if (done) {
             // A check mark in a circle: the "done" sign is a shape, not only a colour.

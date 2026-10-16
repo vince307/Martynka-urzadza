@@ -38,8 +38,9 @@ test.describe('files that never answer', () => {
         // The slow line comes before the cut: the screen is still the loading screen.
         await expect.poll(async () => (await snapshot(page)).loading?.phase).toBe('slow');
         expect((await snapshot(page)).screen).toBe('loading');
-        // Then the total limit ends the load and the welcome screen shows.
-        await screenIs(page, 'welcome');
+        // Then the total limit ends the load and the welcome screen shows. The cut runs on the game clock, which falls behind
+        // under 4 workers: wait past it like the next test, not the default 5 s (impl-review S-16c, one red run).
+        await expect.poll(async () => (await snapshot(page)).screen, { timeout: 15_000 }).toBe('welcome');
         const after = await snapshot(page);
         expect(after.artHealth!.missing).toBeGreaterThanOrEqual(1);
         expect(after.bootLoad!.cut).toContain(FONT_KEY);
