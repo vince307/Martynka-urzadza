@@ -56,7 +56,7 @@ describe('a clock to set (S-13b)', () => {
         expect(validateVisual(set(4, 14, 5))).not.toEqual([]);
         expect(validateVisual(set(0, 0, 60))).not.toEqual([]);
         expect(validateVisual(set(13, 0, 60))).not.toEqual([]);
-        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true })).not.toEqual([]);
+        expect(validateVisual({ kind: 'clock', hour: 3, minute: 0, set: true } as unknown as TaskVisual)).not.toEqual([]);   // the type forbids it; data from outside might not
     });
 
     it('is wide', () => {

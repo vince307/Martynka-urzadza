@@ -34,8 +34,8 @@ export const canonicalInput = (task: Task): TaskAnswer => {
     if (mode === 'drag') {
         if (dragMode(task) === 'clock') {
             const visual = task.visual;
-            const snap = visual?.kind === 'clock' ? visual.snap : undefined;
-            if (snap === undefined) throw new Error(`clock to set without a snap (skill ${task.skillId})`);
+            if (visual?.kind !== 'clock' || !visual.set) throw new Error(`clock to set without a snap (skill ${task.skillId})`);   // dragMode already guarantees it
+            const snap = visual.snap;
             if (typeof task.answer !== 'string' || !reachableTimes(snap).includes(task.answer)) {
                 throw new Error(`clock answer ${String(task.answer)} not in the reachable set of snap ${snap} (skill ${task.skillId})`);
             }

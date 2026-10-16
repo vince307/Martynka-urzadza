@@ -444,9 +444,9 @@ export class TaskScene extends Scene {
             this.dragState = initialBlockDrag();
             this.coinState = { mat: emptyWallet(), carrying: null };
             this.dragKind = view.input === 'drag' ? dragMode(task0) : null;
-            if (this.clockTask && task0.visual?.kind === 'clock') {
+            if (this.clockTask && task0.visual?.kind === 'clock' && task0.visual.set) {
                 this.clockStart = { hour: task0.visual.hour, minute: task0.visual.minute };
-                this.clockSnap = task0.visual.snap ?? 60;
+                this.clockSnap = task0.visual.snap;
                 this.clockState = initialClockSet(this.clockStart);
             }
             // Only the blocks branch of 'drag' has a tray; the branch comes from the drawing (core/tasks/dragMode), not from the answer's type.

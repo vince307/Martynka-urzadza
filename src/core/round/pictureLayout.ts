@@ -135,11 +135,27 @@ export interface ClockSetLayout {
     lines: Rect;
 }
 
+export interface DialGeometry { centre: { x: number; y: number }; scale: number; polar: (angle: number, radius: number) => { x: number; y: number } }
+
+/** The one dial geometry: centred in `rect`, as large as fits; `polar` maps an angle (degrees clockwise from 12) and a radius in dial units to scene pixels. Shared by the ClockFace widget and the set-clock layout. */
+export const dialGeometry = (rect: Rect, dial: DialSpec): DialGeometry => {
+    const scale = Math.min(rect.width, rect.height) / (2 * dial.outer + dial.border);
+    const centre = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    return {
+        centre,
+        scale,
+        polar: (angle, radius) => {
+            const rad = (angle * Math.PI) / 180;
+            return { x: centre.x + Math.sin(rad) * radius * scale, y: centre.y - Math.cos(rad) * radius * scale };
+        },
+    };
+};
+
 /** Where the dial of a clock to set sits (same scale rule as the ClockFace widget) and what shares the screen with it. */
 export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect }, dial: DialSpec): ClockSetLayout => {
-    const scale = Math.min(drag.mat.width, drag.mat.height) / (2 * dial.outer + dial.border);
+    const { centre, scale } = dialGeometry(drag.mat, dial);
     return {
-        centre: { x: drag.mat.x + drag.mat.width / 2, y: drag.mat.y + drag.mat.height / 2 },
+        centre,
         scale,
         hourLength: dial.hourLength * scale,
         minuteLength: dial.minuteLength * scale,

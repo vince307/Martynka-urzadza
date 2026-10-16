@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, fitSize, hintPictureLayout, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
+import { answerSpans, belowPrompt, clockHandAngles, clockSetLayout, dialGeometry, fitSize, hintPictureLayout, pictureLayout, type PictureRect } from '../src/core/round/pictureLayout';
 import { FONT_SIZES, TASK_LAYOUT } from '../src/data/layout';
 import { visualShape } from '../src/core/tasks/visual';
+import { reachableTimes } from '../src/core/clockSet';
 
 const spec = TASK_LAYOUT.picture;
 const apart = (a: PictureRect, b: PictureRect): boolean =>
@@ -289,5 +290,30 @@ describe('layout errors name the skill (WNA-02)', () => {
     });
     it('keeps the message without a skill id', () => {
         expect(() => pictureLayout(spec, 'drag', false, 'tall')).toThrow(/no tall drawing for the drag mode/);
+    });
+});
+
+describe('dialGeometry', () => {
+    const { dial } = TASK_LAYOUT.clockSet;
+    const mat = TASK_LAYOUT.drag.mat;
+    const layout = clockSetLayout(TASK_LAYOUT.drag, dial);
+    const geo = dialGeometry(mat, dial);
+
+    it('is the one geometry of the set-clock layout (centre and scale)', () => {
+        expect(geo.centre).toEqual(layout.centre);
+        expect(geo.scale).toBeCloseTo(layout.scale, 9);
+    });
+
+    it('puts the drawn hand tips of every reachable time on the rings the reducer grabs', () => {
+        for (const time of reachableTimes(5)) {
+            const [h, m] = time.split('.').map(Number) as [number, number];
+            const angles = clockHandAngles(h, m);
+            for (const [angle, drawn, ring] of [[angles.hour, dial.hourLength, layout.hourLength], [angles.minute, dial.minuteLength, layout.minuteLength]] as const) {
+                const tip = geo.polar(angle, drawn);
+                const rad = (angle * Math.PI) / 180;
+                expect(tip.x, time).toBeCloseTo(layout.centre.x + Math.sin(rad) * ring, 6);
+                expect(tip.y, time).toBeCloseTo(layout.centre.y - Math.cos(rad) * ring, 6);
+            }
+        }
     });
 });

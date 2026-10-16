@@ -40,7 +40,10 @@ describe('every skill is solvable in its answer mode', () => {
 
 describe('dragMode', () => {
     it('picks the clock branch from the drawing, not from the answer type', () => {
-        expect(dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0 } })).toBe('clock');
+        expect(dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0, set: true, snap: 60 } })).toBe('clock');
+    });
+    it('throws for a clock that is not a clock to set', () => {
+        expect(() => dragMode({ ...base, answer: '3.00', visual: { kind: 'clock', hour: 9, minute: 0 } })).toThrow(/set/);
     });
     it('keeps blocks for no drawing or a blocks drawing', () => {
         expect(dragMode({ ...base, answer: 42 })).toBe('blocks');
