@@ -27,4 +27,17 @@ describe('phaser loader pin', () => {
         expect(events, hint).toContain("'filecomplete-'");
         expect(fileKeyCompleteEvent('filecomplete-', 'image', 'ui/loading-background')).toBe('filecomplete-image-ui/loading-background');
     });
+
+    it('copies the per-file limit in an ADD listener registered before BootScene queues its first file', () => {
+        // Phaser emits ADD synchronously from addFile, so a file queued before the listener keeps the xhr timeout of 0
+        // (impl-review S-16c: the two loading pictures were queued first and had no per-file limit).
+        const plugin = readFileSync('node_modules/phaser/src/loader/LoaderPlugin.js', 'utf8');
+        expect(plugin, 're-verify that ADD is still emitted inside addFile').toMatch(/addFile: function[\s\S]*?this\.emit\(Events\.ADD/);
+        const boot = readFileSync('src/scenes/BootScene.ts', 'utf8');
+        const listener = boot.indexOf('this.load.on(Loader.Events.ADD');
+        const firstQueued = boot.search(/this\.load\.(image|font|audio|spritesheet)\(/);
+        expect(listener).toBeGreaterThan(-1);
+        expect(firstQueued).toBeGreaterThan(-1);
+        expect(listener, 'register the ADD listener before the first this.load.<type>() call in BootScene.preload').toBeLessThan(firstQueued);
+    });
 });

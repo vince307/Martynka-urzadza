@@ -57,6 +57,15 @@ export class BootScene extends Scene {
             }
         };
         this.load.on('progress', onProgress);
+        // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,
+        // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).
+        // Registered before ANY file is queued: Phaser emits ADD synchronously, so the loading pictures below get the limit too.
+        const limitMs = this.load.xhr.timeout;
+        this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
+            if (typeof limitMs === 'number' && limitMs > 0) {
+                file.xhrSettings.timeout = limitMs;
+            }
+        });
         // The two loading pictures are queued FIRST (same queue, same limits) and drawn the moment each arrives; a file the cut ends never fires this.
         const artEvents: [string, () => void][] = [];
         let artWarned = false;
@@ -80,14 +89,6 @@ export class BootScene extends Scene {
             this.load.on(event, show);
             this.load.image(art.key, art.url);
         }
-        // Phaser gives every file its own xhr timeout of 0, which overrides the `loader.timeout` of the game config,
-        // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).
-        const limitMs = this.load.xhr.timeout;
-        this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
-            if (typeof limitMs === 'number' && limitMs > 0) {
-                file.xhrSettings.timeout = limitMs;
-            }
-        });
         // One limit for the WHOLE boot load (audit A-1): the per-file limit above does not bound a loader with many
         // stalled files or a pending font promise. Past it every unfinished file ends as a load error and the game starts with what loaded.
         const seamEarly = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;

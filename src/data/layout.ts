@@ -432,7 +432,7 @@ export const SUMMARY_LAYOUT = {
  * "Nowa umiejętność!" card (kit unlock.png, screen.css .unlock-card, .unlock-art, .unlock-name, .page-button inside it), on the notebook.
  * Absolute scene coordinates: card left 388 / top 284 (kit), title top = card top + border + 56, art 200 x 200 centred 34 px under the title line,
  * name 10 px under the art, button 450 x 108 centred, 36 px above the card's inner bottom.
- * DESIGN-GAP (docs/design-gaps.md row 22): the kit's book art (assets/icons/book.png) waits for S-16; a book is drawn in code.
+ * The art is the pack notebook (`UI_ART` `notebook`, S-16c; design gap 22 closed), the book icon and its stand-in box as fallbacks.
  */
 export const UNLOCK_LAYOUT = {
     card: { left: 388, top: 284, width: 1144, height: 660, border: 7, radius: 46 },
@@ -442,7 +442,7 @@ export const UNLOCK_LAYOUT = {
     button: { left: 735, top: 793, width: 450, height: 108, radius: 32, border: 5 },
 } as const;
 
-/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. DESIGN-GAP: no brand art yet (designer brief P2.2). */
+/** Loading screen of BootScene (S-16a): the title and the progress bar, centred. S-16c: the pack background and emblem are drawn over it when they arrive (design gap 105 closed). */
 export const LOADING_LAYOUT = {
     background: { width: 1920, height: 1080 },   // the pack's loading background fills the canvas
     emblem: { x: 960, y: 270, size: 300 },       // the pack's emblem, 300 square, above the title
