@@ -1047,9 +1047,9 @@ Details.
 
 #### Automated
 
-- [ ] 9.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 9.2 Deliberate break: `canSubmit` always true / clock `down` back to `grab(idle(state))` → red; restored; meta-check (reducers and source wiring, not Phaser delivery)
-- [ ] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `clock-set.spec.ts` and `money-pay.spec.ts` green
+- [x] 9.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 843a462
+- [x] 9.2 Deliberate break: `canSubmit` always true / clock `down` back to `grab(idle(state))` → red; restored; meta-check (reducers and source wiring, not Phaser delivery) — 843a462
+- [x] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `clock-set.spec.ts` and `money-pay.spec.ts` green — 843a462
 
 #### Manual
 

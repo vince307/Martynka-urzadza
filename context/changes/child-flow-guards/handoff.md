@@ -1,43 +1,43 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-tdd` step for phase 8 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) and 8 (`9bbde57`) are
-committed; phases 9-14 are open. Keep the save format v4.
+Written by the `/10x-tdd` step for phase 9 of run 2026-10-16-audit-sweep. Phases 1 (`d3ba8bb`), 2 (`ae03a52`), 3 (`b4b6076`), 4 (`7fad790`), 5 (`fbee812`), 6 (`f6abb19`) 7 (`1be8a78`) 8 (`9bbde57`) and 9 (`843a462`) are
+committed; phases 10-14 are open. Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` `feat(child-flow-guards): Answer-mode oracle and validator rules (p8)` + handoffs |
+| Commits | docs + p1 `d3ba8bb` + p2 `ae03a52` + p3 `b4b6076` + p4 `7fad790` + p5 `fbee812` + p6 `f6abb19` + p7 `1be8a78` + p8 `9bbde57` + p9 `843a462` `feat(child-flow-guards): Gesture guards (p9)` + handoffs |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 9-14 open |
+| `## Progress` rows remaining | phase 9: 9.4 `[reviewer]`, 9.5 `[human]`; phase 8: 8.4 `[reviewer]`; phase 7: 7.5 `[reviewer]`; phase 6: 6.5-6.7; phase 5: 5.5-5.7; phase 4: `[reviewer]` 4.4; phase 3: 3.5, 3.6; phase 2: 2.5-2.7; phases 10-14 open |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/round/canonicalInput.ts` | tiles: first choice passing `check` or equal to the answer, else throw naming the skill; keypad: non-negative integer, at most `balance.keypad.maxDigits` digits, `check` not refusing; `undefined` by `choices`; `never` default kept |
-| `src/core/tasks/visual.ts` | `TALL_MODES = ['tiles','keypad']` beside `visualShape` |
-| `src/core/tasks/validate.ts` | one `switch` over the mode with a `never` default (digits column rule and drag rule moved into it); rule `mode` for a tall drawing outside `TALL_MODES`; new rule `hintVisual` (`ViolationRule`) for a hint drawing on a task with its own drawing |
-| `src/core/round/pictureLayout.ts`, `src/scenes/TaskScene.ts` | optional `skillId` on `pictureLayout`, `answerSpans`, `hintPictureLayout`, `tallOf` (message suffix ` (skill X)`); `render` passes `task.skillId` |
-| tests | `tests/answerModes.test.ts` (8 canonicalInput cases), `tests/solvableInMode.test.ts` (tall drawing modes, 2), `tests/hintVisual.test.ts` (hint drawing + own drawing), `tests/pictureLayout.test.ts` (skill id, 2); `tests/moneyPay.test.ts` two draws now set `input: 'drag'` as `generateTask` does |
+| `src/core/trayDrag.ts` | `canSubmit(state)` (false while `carrying`); `TrayDragEvent` cancel has optional `pointerId`, a mismatched id is ignored |
+| `src/core/clockSet.ts` | same cancel shape; `down` of another pointer while a hand is held returns the state unchanged; same pointer keeps the S13-09 restart |
+| `src/core/dragEvents.ts` | `rawToDragEvent(kind, p)` for down/move/up/upoutside, `wasCanceled` and upoutside give `cancel` with `p.id`; `never` default |
+| `src/scenes/TaskScene.ts`, `src/ui/widgets/CoinWallet.ts` | four listeners use `rawToDragEvent`; clock "OK" and wallet "OK" ask `canSubmit` |
+| tests | `tests/clockSet.test.ts` (GRD-02, GRD-03; the old other-finger-restart test now uses the same pointer), `tests/trayDrag.test.ts` (cancel id, `canSubmit`), `tests/dragEvents.test.ts`, `tests/gestureWiring.test.ts` (source reads) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (before any production edit) | `AssertionError: expected [Function] to throw an error` (tiles not among choices, tiles check, keypad check, no-mode cases); `AssertionError: -1: expected [Function] to throw an error`; `AssertionError: expected [] to include 'hintVisual'`; `AssertionError: select: expected [] to include 'mode'`; `expected [Function] to throw error matching /E9\.1\.x/ but got 'no tall drawing for the select mode'`; 8 failed, 265 passed |
-| GREEN | full suite Tests 3199 passed (p7 3186, +13); `solvableInMode` green for every skill (the stricter oracle exposes no current skill, as the plan-time probe said); two `moneyPay` tests called `canonicalInput` on generator output without `input` and were fixed to set `input: 'drag'` |
-| Break | keypad branch back to `return task.answer` + `TALL_MODES` with `select`: 3 red by assertion (`-1: expected [Function] to throw an error`, keypad check, `select: expected [] to include 'mode'`); both restored |
-| Meta-check | the break proves the oracle and the validator rule on hand-built tasks, not the widgets; the layout message change is covered by its own test |
+| RED | stubs (`canSubmit` true, `rawToDragEvent` throws): `AssertionError: expected { hour: 9, minute: +0, ... } to be { hour: 3, minute: +0, ... }` (clock GRD-02/03); `canSubmit` and tray cancel-id assertions failed; wiring `AssertionError: expected 'import { Scene ...' to match /rawToDragEvent\('down'/`; dragEvents failed with the stub's `Error: todo` |
+| GREEN | full suite Tests 3208 passed (p8 3199, +9) |
+| Break | `canSubmit` always true + clock `down` back to `grab(idle(state))`: 2 red (`canSubmit is false while something is carried`, `GRD-02 ... ANOTHER finger`); restored |
+| Meta-check | proves reducers and source wiring, not Phaser pointer delivery (one touch pointer) |
 | lint / typecheck | OK / OK; deploy scripts OK; `sample` E1-E6 OK; build OK, `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (9.9m) = baseline + 0, run after the last code edit |
+| e2e `--workers=4` | 125 passed (10.2m) = baseline + 0, after the last code edit |
 
 ## 4. Next command
 
-`/10x-tdd child-flow-guards phase 9`
+`/10x-tdd child-flow-guards phase 10`
 
 ## 5. Open
 
@@ -75,3 +75,5 @@ committed; phases 9-14 are open. Keep the save format v4.
 - **Phase 7 test-first scope**: all pure `core`; inline: `fill` exported for its test, `compareNum` guard (no test, unreachable). `drawUntil` also replaced `factFamily` swap (extra unbounded loop). Error class for the unknown placeholder is `RangeError`. Would change: a reviewer wanting a `TypeError` for template data.
 
 - **Phase 8 test-first scope**: all pure `core`; inline: the `TaskScene` argument passing. New rule name `hintVisual` (plan). The `moneyPay` tests were edited because they depended on the unchecked oracle. Would change: none. Manual 8.4 `[reviewer]` left open: every mode `switch` ends in `never` (canonicalInput, validateTask, pictureLayout, answerSpans, hintPictureLayout, tallOf); `canonicalInput` is called only from tests.
+
+- **Phase 9 test-first scope**: all pure `core`; inline: the `TaskScene`/`CoinWallet` wiring (covered by `gestureWiring.test.ts`). The old clock test with pointer 2 restarting the grab encoded the bug and was changed to pointer 1. Gestures proven by unit tests only (one Phaser touch pointer). Would change: a device report of a lost carry.
