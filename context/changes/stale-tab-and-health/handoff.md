@@ -1,16 +1,16 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Written by the visual-gate step of run `2026-10-16-fix-stale-tab-health`. The change is `impl_reviewed` with the visual gate passed (`VISUAL: PASS`, no code fix); the next step is the archive, then ship. Do not tick 10.7 (CI at ship) or 11.4 [human] without observing them.
+Written by the visual-gate step of run `2026-10-16-fix-stale-tab-health`, final pre-merge state written by the ship step. The change is archived (`context/archive/2026-10-16-stale-tab-and-health/`); 10.7 (CI at ship) is ticked by the ship step from the CI log; 11.4 [human] stays open as a post-run checklist item.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | phases 1–12 up to `10de24c`, `cc1621d` (impl-review fix), `3e0636b` (impl review), then this visual-gate commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 2: 10.7 [reviewer] (CI at ship), 11.4 [human] |
+| Commits | phases 1–12 up to `10de24c`, `cc1621d` (impl-review fix), `3e0636b` (impl review), `de28c3d` (visual gate), then the ship step's handoff, archive and CI-evidence commits |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-16-fix-stale-tab-health/run-log.md |
+| `change.md` status | `archived` |
+| `## Progress` rows remaining | 11.4 [human] (post-run checklist); 10.7 ticked at ship from the CI log |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
@@ -37,7 +37,7 @@ Written by the visual-gate step of run `2026-10-16-fix-stale-tab-health`. The ch
 
 ## 4. Next command
 
-`/10x-archive stale-tab-and-health` then ship
+`none — shipped`
 
 ## 5. Open
 
