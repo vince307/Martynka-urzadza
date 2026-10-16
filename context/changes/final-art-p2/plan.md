@@ -847,8 +847,8 @@ None: save format v3 unchanged; no new storage key.
 
 #### Automated
 
-- [x] 8.1 `validate-rule-files.sh` PASS; deliberate break in `CLAUDE.md` → FAIL; restored — SHA
-- [x] 8.2 Every follow-up entry has a `Trigger:` line; full local gate green (lint, typecheck, unit 3061; docs only, no build/e2e change) — SHA
+- [x] 8.1 `validate-rule-files.sh` PASS; deliberate break in `CLAUDE.md` → FAIL; restored — 4d9dd7b
+- [x] 8.2 Every follow-up entry has a `Trigger:` line; full local gate green (lint, typecheck, unit 3061; docs only, no build/e2e change) — 4d9dd7b
 
 #### Manual
 

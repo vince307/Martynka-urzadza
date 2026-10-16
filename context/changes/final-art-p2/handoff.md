@@ -1,6 +1,6 @@
 # Handoff — `final-art-p2` (slice S-16c)
 
-The `/10x-implement final-art-p2 phase 7` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 7 (app icons from the pack) is committed (fcaa3dc). Next is phase 8 (`Driver: impl`); rows 7.3 (e2e part) and 7.4 [human] stay open.
+The `/10x-implement final-art-p2 phase 8` step of autonomous run `2026-10-15-fix-s16bcd` wrote this. Phase 8 (docs) is committed (4d9dd7b). Next is phase 9 (`Driver: e2e`); rows 7.3 (e2e part), 7.4 [human] and 8.3 [reviewer] stay open.
 
 ## 1. State
 
@@ -17,35 +17,28 @@ The `/10x-implement final-art-p2 phase 7` step of autonomous run `2026-10-15-fix
 
 | path | what it is |
 |---|---|
-| `scripts/make-icons.mjs` | rewritten converter: cwebp lossless resize then dwebp PNG from `designs/martynka-salon-v2/assets/app`; exits 1 when pack or binary is missing |
-| `public/icons/*.png`, `public/favicon.png` | the five pack icons (192, 512, maskable 512, apple-touch 180, favicon 48) |
-| `tests/appIcons.test.ts` | IHDR sizes, icon-512 over 100 KB, every manifest icon src exists under public/ |
+| `CLAUDE.md` | icons sentence now names the pack converter (cwebp, dwebp, local `designs/`); S-16c paragraph; `npm run icons` command line |
+| `docs/design-gaps.md` | row 104 narrowed (pack wallet, 6 places); rows 22, 105, 108, 115 were already closed/new from phases 4-6 |
+| `context/changes/final-art-p2/follow-ups/review-fixes.md` | carried, fired-deferred and closed follow-ups, each with `Trigger:` |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npm run lint`, `npm run typecheck` | OK |
-| `npm test` | 3061 passed (branch baseline 3054, +7); both deploy scripts OK |
-| `npm run sample -- E1..E6` | exit 0 each |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `dist/sw.js` lists `icons/icon-512.png`; manifest icon paths unchanged |
-| `npm run icons` twice | identical md5 on all five files (7.1) |
-| Break | `icon-192.png` replaced by the 512 file: `AssertionError: expected [ 512, 512 ] to deeply equal [ 192, 192 ]`; restored. Meta-check: proves sizes and manifest paths, not launcher crop |
-| e2e | not runnable in this session — orchestrator gate (Chromium MachPortRendezvous Permission denied); no code path of the game changed, only PNG files |
-| Deploy smoke | not run: plan does not name it; manifest and precache unchanged |
+| `validate-rule-files.sh` | PASS; break (`src/data/uiArt.ts` -> `nope.ts`) FAIL (missing: 1); restored, PASS |
+| `npm run lint`, `typecheck`, `npm test` | OK; 3061 passed (baseline 3061, +0) |
+| build / e2e | not rerun: docs only, no code changed since p7 |
 
 ## 4. Next command
 
-`/10x-implement final-art-p2 phase 8` (phase 8: Documentation, design gaps, follow-ups, `Driver: impl`)
+`/10x-e2e final-art-p2 phase 9` (phase 9: loading screen art and its drawn fallback when cut, `Driver: e2e`)
 
 ## 5. Open
 
-- 7.3 e2e part, 7.4 [human], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
-- Phase 8 must update the CLAUDE.md line about placeholder icons / `npm run icons` (now a pack converter needing cwebp and dwebp and the local `designs/` folder).
+- 7.3 e2e part (orchestrator), 7.4 [human], 8.3 [reviewer], 6.3 [visual], 6.4 [reviewer], 5.4, 5.5, 4.4, 4.5 and earlier manual rows.
 - Phase 11 must still add the `?e2eArt=room` spec and apply the p11a break.
 
 ## 6. Autonomous decisions
 
-- apple-touch 180 and favicon 48 come from the regular full-bleed icon; maskable only feeds the maskable file. Manifest and `index.html` untouched (no `purpose: any` added).
-- Row 7.3 left unticked until the orchestrator runs e2e.
+- CLAUDE.md names the follow-ups file generically ("`follow-ups/review-fixes.md` of the final-art-p2 change") because the archive path is not known yet.
 - Mixed phase: none.
