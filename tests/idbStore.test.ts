@@ -310,6 +310,17 @@ describe('IndexedDB stale-writer guard', () => {
         expect(await named(a.write(v(3)))).toBe('ok');
     });
 
+    it('an own write that lands after a later own write started (an abandoned, timed-out write) is never refused', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        await a.read();
+        // Both start before either completes, so `base` is still 0 for both: the second meets the first's record (writer A).
+        const results = await Promise.all([named(a.write(v(1))), named(a.write(v(2)))]);
+        expect(results).toEqual(['ok', 'ok']);
+        expect(await stored(db)).toMatchObject({ generation: 2, writer: 'A', stars: 2 });
+        expect(await named(a.write(v(3)))).toBe('ok');
+    });
+
     it('an old build (version below the stored one) is refused NewerSave and the record is unchanged', async () => {
         const db = `stale-${++counter}`;
         const a = tab('A', db);
