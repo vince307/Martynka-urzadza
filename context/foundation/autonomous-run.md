@@ -3,7 +3,7 @@ title: Autonomous run profile — Martynka urządza
 status: confirmed        # draft → confirmed (only `references/setup.md` § Prove flips it)
 skill_version: 6
 created: 2026-10-12
-updated: 2026-10-15
+updated: 2026-10-16
 env: context/foundation/autonomous-run.env
 ---
 
@@ -38,7 +38,7 @@ The same steps as `.github/workflows/ci.yml` (the required PR check).
 | build | `npm run build` (also checks that the production bundle has no e2e hook: prints `e2e hook: absent (N chunks checked)`, fails the build otherwise) | 5 s | pass/fail |
 | database tests | none | | none |
 | smoke (against the gate server) | none (the content smoke `sample` E1–E6 needs no server and runs in the unit gate) | | none |
-| e2e (only when § 11 says E2E=on) | `npx playwright test --workers=4` (4 workers since run 2026-10-14-save-s13b-s15-s14b: 6 workers flaked on load-sensitive tests; two servers, both started by Playwright through `webServer` in `playwright.config.ts`: the production build on the gate port 4398 for the seed (risk #8) and the e2e-hook build on 4397 for the round spec (risk #11); never start a server for it, never 4173) | 15 s | `[0-9]+ passed` |
+| e2e (only when § 11 says E2E=on) | `npx playwright test --workers=4` (4 workers since run 2026-10-14-save-s13b-s15-s14b: 6 workers flaked on load-sensitive tests; two servers, both started by Playwright through `webServer` in `playwright.config.ts`: the production build on the gate port 4398 for the seed (risk #8) and the e2e-hook build on 4397 for the round spec (risk #11); never start a server for it, never 4173) | ~10 min | `[0-9]+ passed` |
 
 After a migration: none. Migration on data (`POST_MIGRATION_ON_DATA_CMD`): none (no database; the save format and its
 migrations arrive with roadmap S-11 and are tested as unit tests, test-plan.md rollout phase 4).
@@ -95,7 +95,7 @@ Note: the service worker is registered only in production builds; checks of `sw.
 | Verify production after the deploy (`PROD_VERIFY_CMD`, `{sha}`) | none — the Deploy job's smoke step already verifies; a manual re-check is `npm run check:deploy -- https://martynka-urzadza.pl <sha7>` (`NODE_USE_ENV_PROXY=1` in the agent sandbox) |
 | Rollback (`PROD_ROLLBACK_CMD`, `{prev_sha}`) | none — human only: Actions → Deploy → Run workflow → `rollback` (or `ssh martynka-ops rollback`) |
 | Standing authorisation | granted 2026-10-12 by the maintainer (vince307): push `feat/*` and `docs/*` branches, open PRs, merge to `main` (= deploy) and watch the Deploy run — no hosted DB (none exists). Each run's Step 0 still asks "full ship or stop at open PR"; the first run stops at the PR |
-| Limits that always hold | no force-push, no direct push to main, no `--no-verify`, no merge on red/pending, no production-only commands (`gh workflow run deploy.yml`, `ssh martynka-ops rollback`, `ssh martynka-ops switch`, `ssh martynka-ops bootstrap`, `ssh martynka-ops sync`, `ssh cs-ops *` — every production command), no hosted reset, no rollback; changes under `deploy/` are never shipped by a run (they need `sync` + `bootstrap` with the CoiledSpring checklist, a human step) |
+| Limits that always hold | no force-push, no direct push to main, no `--no-verify`, no merge on red/pending, no production-only commands (`gh workflow run deploy.yml`, `ssh martynka-ops rollback`, `ssh martynka-ops switch`, `ssh martynka-ops bootstrap`, `ssh martynka-ops sync`, `ssh cs-ops *` — every production command), no hosted reset, no rollback; changes to deploy scripts, the Caddyfile or bootstrap under `deploy/` (anything that needs `sync` + `bootstrap` with the CoiledSpring checklist) are never shipped by a run — a docs-only edit of `deploy/README.md` may ship (precedent 27406ab, #65, #75) |
 
 ## 6. Design source of truth
 
@@ -135,6 +135,7 @@ Note: the service worker is registered only in production builds; checks of `sw.
 - Run 2026-10-14-fix-art-stand-in: phase agents (sonnet) could not launch Chromium in 9 of 9 sessions; the two review agents (impl-review, visual) could. The orchestrator ran e2e at every gate and committed both e2e phases from their request files. An e2e spec in `test.describe.configure({ mode: 'serial' })` stops at the first failure, so a break expected to turn several tests red must be checked by running each expected-red test alone (`-g "<title>"`). The full suite takes ~3.7 min (52 tests).
 - Run 2026-10-13-s09-s11: subagent sessions could not launch Chromium in 16 of 18 tries (MachPort); the request-file protocol (agent writes spec + `git apply` break patches, the orchestrator runs them, a finishing agent commits) carried every e2e phase. A sandboxed `npm install` with `allowed_domains: ["registry.npmjs.org"]` worked in a subagent.
 - Run 2026-10-14-save-s13b-s15-s14b: the full e2e suite (63–77 tests) under 6 workers failed in 4 of ~10 orchestrator runs on load-sensitive tests (adaptive #13 180 s limit, parent-settings #14 random drag/hold timing — now pinned via `?e2eSkills`, `openWelcome` timeouts), each green alone or on re-run. From S-15 p4 every gate ran `npx playwright test --config=<abs> --workers=4` (~5 min, 0 flakes in ~20 runs). Phase agents (sonnet) launched Chromium in ~6 of ~35 sessions; the request-file protocol carried every e2e phase, and the orchestrator fixed 3 spec defects at the green run (wrong dialog button, retype paying a star, a proposed stage's "(propozycja)" label). An archive move can leave a CLAUDE.md path into `context/changes/` — run `validate-rule-files.sh` after the archive.
+- Run 2026-10-16-fix-stale-tab-health: the full e2e suite (125 tests) takes ~9.5–12 min with `--workers=4`; `money-pay.spec.ts` #11 failed once under load (green alone). `baseline.sh` exceeds the 600 s foreground limit — run it in the background. Phase agents (sonnet) launched Chromium in most sessions (p1, p4 fix, p6, p11, p12, reviewers): the request-file protocol was not needed. The gate's stray-waiter `ps` line matched a `sleep` of ANOTHER macOS user's Claude session (uid 502) — filter it with `ps -U $(id -u)`, never kill another user's process. `load-and-tab-guard.spec.ts` #2 P-5 fails when run alone (green in the full run; follow-up).
 - Hooks: a per-edit ESLint + related-tests hook and an end-of-turn gate (lint, tsc, vitest) send the agent back once.
 
 ## 9. Screenshots (visual gate)

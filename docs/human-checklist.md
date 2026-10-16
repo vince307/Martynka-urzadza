@@ -236,3 +236,80 @@ Bieg po decyzjach autora z 2026-10-15 (PR #59: 6 mebli + etap tła, koszty 5–1
 - [ ] S-16a — przed etapem widać cały zniszczony salon (jedna wspólna warstwa „meble przed”), po etapie tylko kupione meble; cienie dopiero w gotowym pokoju; lampa, rośliny i pufa jako stała dekoracja.
 - [ ] S-16a — grafika jako 26 osobnych plików WebP w pełnej rozdzielczości (1,23 MB w pamięci offline), bez atlasu; ekran ładowania rysowany kodem.
 - [ ] S-16a — w minigrze Hasło słowa z nowych podpisów mebli (OBRAZKI ma 7 liter → runda 7 zadań).
+
+## Bieg 2026-10-15-fix-salon-load-health (poprawka po audycie #63: H-1, H-2, M-3, M-2)
+
+Bieg po audycie #63, decyzje na starcie: pełna wysyłka, **zapis v3 z migracją**. Wysłane: #65 (`salon-load-health`, merge e369b19, Deploy 38800281299). `main` e369b19: 2925 testów jednostkowych (−62 usuniętego testu przeliczenia, przeniesionego do migracji), 101 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #66 (nie scalać w biegu): 0 CRITICAL, 1 HIGH. A-1: limit czasu działa na każdy plik, nie na całe ładowanie — Android pobiera 6 plików naraz, więc przy serwerze, który nie odpowiada, pasek może stać ok. 4 minuty bez sygnału (brak linii „jeszcze się ładuje”, A-2). P-5: stara karta/instancja PWA może po cichu nadpisać zapis v3 zapisem v2 (autozapis nie sprawdza wersji w magazynie; rozszerza znany follow-up „dwie karty”). Także: czcionka gry bez limitu ładowania (Phaser `FontFile` nie używa XHR), przyczyna błędu obrazka nie jest rozróżniana.
+- [ ] Poprawka 1.6 — drzwi jednokierunkowe v3: urządzenie, które wczytało v3, po cofnięciu wdrożenia do buildu z v2 pokaże kartę „zapis z nowszej wersji” i zagra bez zapisu (`deploy/README.md` ma notatkę). Zaakceptowane na starcie biegu — potwierdź.
+
+### P1 — na tablecie
+
+- [ ] Poprawka 3.5 — na iPadzie zawieszony obrazek kończy ładowanie w ≤ 24 s (12 s × 2 próby) i pokazuje zastępnik; sprawdzić przy słabym Wi-Fi przy pierwszym uruchomieniu.
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-15-salon-load-health/follow-ups/review-fixes.md` (20): m.in. limit ładowania czcionki, zapis v3 po nieudanej kopii czeka na następną zmianę (F8), `isRecord` skopiowany 3 razy w `src/core`.
+- [ ] Narzędzia testów na urządzeniach (rozmowa 2026-10-15): projekt WebKit z profilem iPada w Playwright, Android przez ADB/emulator, iPad przez symulator + Appium/WebdriverIO — kandydat na `/10x-test-plan --refresh`.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Każdy zapis v2 (nie tylko ze starym salonem) dostaje kopię `backup-v2` przed pierwszym zapisem v3; zapis v1 przechodzi v1→v2→v3 w jednym odczycie z jedną kopią `backup-v1`.
+- [ ] Zmigrowany zapis zapisuje się przy starcie sam (bez akcji dziecka), po udanej kopii.
+- [ ] Limit ładowania 12 s na plik i 1 ponowienie (`balance.loader`); limit z konfiguracji Phasera był martwy w 4.2.1, więc gra ustawia go na każdym pliku w `BootScene`.
+- [ ] Nieznane klucze w starym salonie, które nie są starymi slotami, są zachowywane (M-2).
+
+## Bieg 2026-10-15-fix-s16bcd (poprawka A-1/A-2/P-5, S-16b dźwięki, S-16c grafika P2, S-16d pięć nowych miejsc)
+
+Bieg po dostawie paczki `designs/martynka-salon-v2` i decyzjach z PR #68. Wysłane: #69 (`load-and-tab-guard`, a1625be), #70 (S-16b `final-sound`, c16734d), #71 (S-16c `final-art-p2`, a06795b), #72 (S-16d `salon-extra-slots`, 9a64fd6). `main` 9a64fd6: 3076 testów jednostkowych, 121 e2e. Zapis zostaje v3.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #73 (nie scalać w biegu): 0 CRITICAL, 4 HIGH. B-1: karta przeglądarki otwarta na starszym buildzie z tym samym formatem v3 (np. sprzed S-16d) może nadpisać nowsze zakupy i gwiazdki — strażnik zapisu odrzuca tylko wyższą wersję, nie równą (dwóch auditorów oceniło to jako CRITICAL). G-1: brak grafik UI (portfel, zeszyt, miniatura, ekran ładowania) nie jest liczony w „Obrazki”. S-1: muzyka, która się nie wczytała, albo dźwięk nieodblokowany nadal pokazuje „Muzyka: Włączone”. P-1: nieudana instalacja service workera (precache ok. 5,9 MB) po cichu wyłącza grę offline.
+
+### P1 — na tablecie
+
+- [ ] Dźwięki (S-16b 9.7, 10.6): odblokowanie po pierwszym dotknięciu na iPadzie, efekty razem z lektorem, punkt zapętlenia muzyki, głośność, przełącznik wyciszenia iPada; dźwięki offline.
+- [ ] Start (poprawka 2.5, 7.7): Android na wolnym łączu startuje najpóźniej po limicie z zastępnikami; iPad pokazuje linię „Jeszcze chwilka” po ok. 8 s, bez karty błędu.
+- [ ] S-16c 7.4, 10.4: ikona aplikacji na ekranie głównym iPada i Androida (maskable), płacenie w portfelu na 6 monet palcem 6-latka.
+- [ ] S-16d 6.4, 8.4: zakup pięciu nowych rzeczy palcem, przytrzymanie zasłon przy górnej krawędzi.
+
+### P2 — później
+
+- [ ] Follow-upy w `context/archive/2026-10-15-load-and-tab-guard/`, `…/2026-10-16-final-sound/`, `…/2026-10-16-final-art-p2/`, `…/2026-10-16-salon-extra-slots/` (`follow-ups/review-fixes.md`): m.in. kółka zasłon ok. 5 px nad miniaturą (VG-1), obrys przytrzymania zasłon wychodzi poza ekran (VG-2), monety w portfelu mniejsze niż na tacy, niestabilny test money-pay #11 pod obciążeniem (2× w biegu).
+- [ ] Wcześniejsze audyty nadal otwarte: #42, #45, #52, #57, #63, #66.
+- [ ] Testy na urządzeniach (rozmowa 2026-10-15): projekt WebKit z profilem iPada w Playwright, Android przez ADB — kandydat na `/10x-test-plan --refresh`.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Poprawka: łączny limit ładowania (przy starcie odcina niedokończone pliki, gra rusza z zastępnikami), linia „Jeszcze chwilka, wczytuję obrazki.” po 8 s; strażnik zapisu odmawia nadpisania WYŻSZEJ wersji (blokada `newer`, linia w panelu rodzica, bez karty dla dziecka).
+- [ ] S-16b: efekty domyślnie włączone, muzyka wyłączona i ładowana dopiero po włączeniu; ustawienie dźwięku w `localStorage` poza zapisem (przeżywa reset i import); kolejność formatów M4A potem OGG; oba formaty w pamięci offline (~1,1 MB); dźwięk zakupu także przy darmowej zmianie wariantu.
+- [ ] S-16c: portfel mieści 6 monet zamiast 10 (zmienia się tylko wariant „zapłać” E1.11/E2.2 — portfele 7–10 monet odrzucane); karta „Pokój gotowy!” pokazuje salon dziecka, miniatura z paczki tylko jako zapas (bez miniatury „przed”); ikona aplikacji z paczki.
+- [ ] S-16d: koszty 8, 10, 12, 13, 15 (salon 129 gwiazdek zamiast 71); limit ładowania 50 s; ukończone salony wracają do remontu do 12. zakupu (bez cieni, bez „Zmień wygląd”) i drugi raz dostają kartę „Pokój gotowy!”; etykiety „Powieś zasłony”, „Powieś półkę”, „Wymień lampę/roślinę/pufę”.
+
+## Bieg 2026-10-16-fix-stale-tab-health (poprawka po audycie #73: B-1, G-1, S-1, P-1)
+
+Bieg uruchomiony 2026-10-16 („fix:stale-tab-and-health”, pełna wysyłka). Wysłane: #75 (merge 1a3edb4, Deploy 38899186902 zielony). Format zapisu v3 → v4 (zaakceptowany w czacie: „akceptuje v4, kontynuuj”). `main` 1a3edb4: 3139 testów jednostkowych, 125 e2e.
+
+### P0 — przed kolejnym biegiem
+
+- [ ] Audyt po biegu, PR #76 (nie scalać w biegu): 0 CRITICAL, 0 HIGH, 7 MEDIUM, 8 LOW. Najważniejsze: T-1 (`src/core/save.ts` `writeVerdict` — okno z buildu sprzed #69 nadal pisze v3 na v4 bez śladu; okno #69–#72 dostaje odmowę `NewerSave` bez karty), O-1 (`src/core/swStatus.ts` `INSTALL_FAILED` — przyczyna nieudanej instalacji SW ginie; smoke deployu nie sprawdza, że pliki z precache są serwowane, P-3), O-2 (`stepSw` — po nieudanej aktualizacji za aktywnym SW panel mówi „gotowa offline”, a urządzenie zostaje na starym buildzie).
+- [ ] Starszy audyt PR #73 (2026-10-16_0915) — zamknięte przez #75: B-1, B-2, B-7, G-1, S-1, S-3, S-6, S-8, S-11; częściowo P-1 i B-8. Zdecyduj, czy PR #73 scalić jako historię, czy zamknąć.
+
+### P1 — na tablecie
+
+- [ ] stale-tab-and-health 11.4 — iPad: czy karta „Zacznijmy grę jeszcze raz” czyta się spokojnie dla 6–8-latka i czy „Zacznij od nowa” przywraca najnowsze gwiazdki (dwie karty Safari albo karta + ikona PWA).
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami w `context/archive/2026-10-16-stale-tab-and-health/follow-ups/review-fixes.md` (16 wpisów + VG-1 z bramki wizualnej): m.in. P-8 „zachowaj pierwszą kopię”, e2e na dwóch prawdziwych buildach, kolejność kart `future`/`newer`, `takenOver` widoczne dopiero po jawnym `registration.update()` (VG-1), test #2 P-5 czerwony tylko w izolacji.
+- [ ] Wycofanie poniżej buildu v4 pokazuje kartę `future` do ponownego wdrożenia (notatka w `deploy/README.md`).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Karta odmowy zapisu pojawia się przy `otherTab` I `newer` i trzyma wejście, więc w tej karcie rodzic nie otworzy ustawień ani nie przeczyta powodu w „Zapis gry” (follow-up z wyzwalaczem; przegląd uznał to za zgodne z FR-003/FR-020).
+- [ ] Edycja tylko dokumentacji `deploy/README.md` w biegu (precedens 27406ab, #65); profil § 5 doprecyzowany w tym PR.
+- [ ] Bazowa linia po wysyłce wzięta z CI 38898544137 + bramki orkiestratora (drzewo merge = głowa gałęzi), bez ponownego `baseline.sh`.
