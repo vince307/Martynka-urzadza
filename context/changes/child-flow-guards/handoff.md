@@ -1,45 +1,50 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-plan-review` step of run 2026-10-16-audit-sweep (slice 1 of 3). The plan is reviewed (verdict
-PROCEED, 1 critical + 1 warning fixed in `plan.md`); nothing is implemented. The next agent must not let any phase change
-the save format (v4) or the rng consumption of a successful generator draw, and in phase 4 the `variantCounted` reset
-belongs in `TaskScene.applyRound`, not `beginRound` (review F1).
+Written by the `/10x-tdd` step for phase 1 of run 2026-10-16-audit-sweep. Phase 1 (art-aware round draw) is committed
+`d3ba8bb`; phases 2-14 are open. Keep the save format v4 and the rng use of a successful draw unchanged; in phase 4 the
+`variantCounted` reset belongs in `TaskScene.applyRound` (review F1).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | 4 on the branch: change identity, research, plan, `docs(child-flow-guards): plan review` (this step) |
+| Commits | 4 docs + `d3ba8bb` `feat(child-flow-guards): Art-aware round draw (p1)` + this handoff commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 74 (`grep -c '^- \[ \]' plan.md`): 50 automated, 14 `[reviewer]`, 5 `[visual]`, 5 `[human]` |
-| Working tree | clean after the commit |
+| `change.md` status | `implementing` is NOT set by this step (left `plan_reviewed`) |
+| `## Progress` rows remaining | phase 1: only `[reviewer]` 1.5 left; phases 2-14 open |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/child-flow-guards/reviews/plan-review.md` | the review: 6 findings (F1 critical, F2 warning, F3-F6 observations), all FIXED, `VERDICT: PROCEED` |
-| `context/changes/child-flow-guards/plan.md` | edited by triage: SV2-10 reset in `applyRound` (CID + phase 4), `[human]` rows 2.7 and 6.7, phase 3 legacy `number[]` answer test, phase 1 frames excluded from `visualArtIds`, phase 7 break by assertion, Known risks entry for the `CLAUDE.md` spec name |
-| `context/changes/child-flow-guards/change.md` | status `planned` → `plan_reviewed` (frontmatter only) |
-| `context/changes/child-flow-guards/handoff.md` | this file |
+| `src/core/tasks/visual.ts` | new `visualArtIds` (switch with `never` guard) |
+| `src/core/round/artFilter.ts` | `case 'ORDINAL'` in `artBlocked` |
+| `src/core/curriculum.ts` | picture threshold from `buckets.current`; `generate` closure redraws up to `balance.round.artRetries` |
+| `src/data/balance.ts` | `round.artRetries: 8` |
+| `tests/artFilter.test.ts`, `tests/visual.test.ts`, `tests/round.test.ts` | 5 new tests (4 + 1), balance pin updated |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/child-flow-guards` |
-| path grounding (`ls` of every `src/` and test path the plan calls existing) | 37/37 present |
-| code checks (read, not inherited) | `buildAdaptiveRound` picture threshold from `afterArt`; review branch `earlier: []`; `unlockReady`; `captureFirstWrong` number/string only; `validExample` accepts string `given`/`answer`; `Task.check` boolean; `canonicalInput` used by tests only; four pointer listeners with id-less `cancel`; `applyRound` called from `create`, `beginRound`, `applyParentStage`; `nextRoundKind` keeps the day rule under `forced: 'puzzle'` |
-| Progress↔Phase | 14 `## Phase` / 14 `### Phase`; every success-criteria bullet has a row; `Driver:` on every phase |
-| lint / typecheck / tests / build / e2e | not run: review step, no code changed (baseline main 9b7fe37: unit 3139, e2e 125; inherited, unverified) |
+| RED (first run, stub `visualArtIds` returning []) | `AssertionError: expected false to be true` (ORDINAL blocked), `expected 2 to be greater than or equal to 3` (E1.11 distinct skills), `expected [] to deeply equal [ 'key' ]` (visualArtIds) |
+| GREEN | tests/artFilter.test.ts + tests/visual.test.ts 94 passed |
+| Break 1: threshold back to `afterArt.current.length` | red: `expected 2 to be greater than or equal to 3` (E1.11 test); restored |
+| Break 2: redraw guard removed | red: `seed 2 E1.2.ordinal_5: expected [ 'pear', 'flower', 'yarn', ... ] to not include 'key'`; restored |
+| Meta-check | both breaks hit the draw rule over seeds, not the loader that fills `missingIds` |
+| lint / typecheck | OK / OK |
+| unit | Tests 3144 passed = baseline 3139 + 5; deploy scripts OK; `sample` E1-E6 OK |
+| build | OK, `e2e hook: absent (2 chunks checked)` |
+| e2e `--workers=4` | 125 passed = baseline 125 + 0 |
 
 ## 4. Next command
 
-`/10x-tdd child-flow-guards phase 1`
+`/10x-tdd child-flow-guards phase 2`
 
 ## 5. Open
+
 
 - Manual rows (human checklist): 2.7 `[human]` accept the E6.11 review share 90/10; 5.7 `[human]` accept the wallet line
   wording (gap 124); 6.7 `[human]` accept the COMPARE_QTY tile order (gap 125); 9.5 `[human]` tablet check that "OK" is
@@ -55,15 +60,10 @@ belongs in `TaskScene.applyRound`, not `beginRound` (review F1).
 
 ## 6. Autonomous decisions
 
-- **Triage without asking** (contract rule 1): every finding fixed in place, none skipped. Would change: nothing.
-- **F1 as CRITICAL**: the plan's reset point would reintroduce SV2-10 after a parent stage change; fixed to `applyRound`.
-  Would change: `applyParentStage` no longer opening a round.
-- **TXT-01 90/10 kept, not overturned**: ZADANIA l.37 backs ~10 % for steps but does not name the review step; added
-  `[human]` 2.7 instead. Would change: the maintainer confirming 14 %.
-- **PIC-06 order kept, `[human]` 6.7 added**: kit silent. Would change: a kit view.
-- **Wallet line**: existing `[human]` 5.7 suffices.
-- **No phase split/merge**: each phase is one rule cluster plus one call site. Would change: an implementing agent running
-  out of context in phase 1, 9 or 10.
-- **Drivers unchanged**: all 14 verified right (tdd where a failing test leads new or changed rules; impl for 11, 13;
-  e2e 14 after the seam sweep). Next command follows phase 1's `tdd`.
-- **Shared frames excluded from `visualArtIds`** (F4): a redraw cannot avoid them. Would change: a per-task frame choice.
+- Earlier decisions of the plan review stand (see plan `## Autonomous decisions`).
+- **Test-first scope**: all of phase 1 is pure `core` logic; no inline scaffolding. The one extra edit is the pin in
+  `tests/round.test.ts` (`balance.round` toEqual) for the new `artRetries` key. Would change: nothing.
+- **`change.md` status left `plan_reviewed`**: not touched by this step (frontmatter is the orchestrator's). Would change: the contract asking for `implementing`.
+- **Redraw closure placement**: inside `buildAdaptiveRound`'s `generate` argument of `distinctTasks`; `pick.ts` and `unique.ts` untouched. Rng use is unchanged when `missing` is empty or no drawn task names a missing id.
+- The `key` test was green against the stub (trivially); it turned red only with the real `visualArtIds` plus the redraw removed, which is Break 2.
+- Note: the e2e log of an unsandboxed command lands in a different `$TMPDIR` than the sandbox's.
