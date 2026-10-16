@@ -880,7 +880,7 @@ migrates that save again.
 #### Automated
 
 - [x] 4.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — e7184c0
-- [ ] 4.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `load-and-tab-guard.spec.ts` still green
+- [x] 4.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `load-and-tab-guard.spec.ts` still green — orchestrator gate 66f1186 (121 passed)
 - [x] 4.3 Deliberate break: patch `e2e-break-p11a.patch` written; meta-check in the handoff — e7184c0
 
 #### Manual
@@ -891,9 +891,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 5.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 5.2 Deliberate break: `redundant` always failed / `takenOver` ignoring `hadController` → red; restored; meta-check (events, not Chromium)
-- [ ] 5.3 Full local gate green; build prints `e2e hook: absent (`
+- [x] 5.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — aed4d29
+- [x] 5.2 Deliberate break: `redundant` always failed / `takenOver` ignoring `hadController` → red; restored; meta-check (events, not Chromium) — aed4d29
+- [x] 5.3 Full local gate green; build prints `e2e hook: absent (` — aed4d29
 - [ ] 5.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `seed.spec.ts` green
 
 #### Manual
