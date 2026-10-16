@@ -116,3 +116,22 @@ export function repairCurrentRoom(
         : { ...session.rooms, [firstRoom]: emptyRoomState() };
     return { session: { ...session, currentRoom: firstRoom, rooms }, repairedFrom: session.currentRoom };
 }
+
+/** The variant a slot shows: the bought one; else its `shownBeforePurchase` once a stage task is done; else null (nothing). */
+export function shownVariant(room: RoomDef, state: RoomState, slotId: string): Variant | null {
+    const bought = state.chosen[slotId];
+    if (bought === 0 || bought === 1 || bought === 2) return bought;
+    const slot = room.slots.find((s) => s.id === slotId);
+    if (slot?.shownBeforePurchase === undefined || stagesDone(room, state) === 0) return null;
+    return slot.shownBeforePurchase;
+}
+
+/** Every slot that shows something, keyed by slot id. */
+export function shownVariants(room: RoomDef, state: RoomState): Record<string, Variant> {
+    const out: Record<string, Variant> = {};
+    for (const slot of room.slots) {
+        const v = shownVariant(room, state, slot.id);
+        if (v !== null) out[slot.id] = v;
+    }
+    return out;
+}
