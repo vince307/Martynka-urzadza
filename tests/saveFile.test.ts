@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
-import { decodeSave, encodeSave, freshSession, saveProblem, validateSave, type SessionSave } from '../src/core/save';
+import { SAVE_VERSION, decodeSave, encodeSave, freshSession, saveProblem, validateSave, type SessionSave } from '../src/core/save';
 import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
 import type { RoomDef, SaveState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
@@ -181,8 +181,15 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
         expect(deviceSaveView(st(null), { version: 1 } as unknown as SaveState, rooms)).toEqual({ kind: 'broken' });
     });
 
-    it.each(['corrupt', 'unknown-version', 'migration-failed'] as const)('an unreadable (%s) save is named, never summarised (overwriting stays allowed)', (reason) => {
-        expect(deviceSaveView(st('unreadable', reason), v3(), rooms)).toEqual({ kind: 'unreadable' });
+    it('a plain corrupt save is named, never summarised (overwriting stays allowed)', () => {
+        expect(deviceSaveView(st('unreadable', 'corrupt'), v3(), rooms)).toEqual({ kind: 'unreadable' });
+        expect(deviceSaveView({ ...st('unreadable', 'corrupt'), loadFrom: SAVE_VERSION }, v3(), rooms)).toEqual({ kind: 'unreadable' });
+    });
+
+    // save-truth phase 2 (SRR-09, deliberate reversal): these keep the old save until a second confirmation.
+    it.each([['unknown-version', undefined], ['migration-failed', undefined], ['corrupt', 2]] as const)('an unreadable (%s, from %s) save is blocked and forceable', (reason, loadFrom) => {
+        const status = loadFrom === undefined ? st('unreadable', reason) : { ...st('unreadable', reason), loadFrom };
+        expect(deviceSaveView(status, v3(), rooms)).toEqual({ kind: 'blocked', cause: 'unreadable', forceable: true });
     });
 
     it('a future save is blocked, never forceable', () => {

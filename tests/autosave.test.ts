@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
-import { decodeSave, encodeSave, type SessionSave } from '../src/core/save';
+import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
@@ -579,10 +579,50 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         expect(t.logs.length).toBe(2);
     });
 
-    it.each(['corrupt', 'unknown-version', 'migration-failed'] as const)('a %s save is still replaced (the way out)', async (loadReason) => {
-        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason });
+    it('a plain corrupt save (not migrated) is still replaced without force (the way out)', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt' });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
         expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
+    });
+
+    // save-truth phase 2 (SRR-09, deliberate reversal of "a %s save is still replaced"): FR-021 keeps the old save until the parent confirms twice.
+    it.each([
+        ['unknown-version', undefined],
+        ['migration-failed', undefined],
+        ['corrupt', 3],
+    ] as const)('a %s save (from %s) is refused without force and replaced with it', async (loadReason, loadFrom) => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason, ...(loadFrom === undefined ? {} : { loadFrom }) });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+        expect(await t.saver.replace(encodeSave(session(6)), { force: true })).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([6]);
+    });
+
+    it('the loadFrom of a migrated corrupt save is in the status, runtime only', () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt', loadFrom: 2 });
+        expect(t.saver.status().loadFrom).toBe(2);
+        expect(setup().saver.status().loadFrom).toBeNull();
+    });
+
+    it('a corrupt save already at the current version is not "migrated": loadFrom = SAVE_VERSION is replaced freely', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt', loadFrom: SAVE_VERSION });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+    });
+
+    it('replace logs every refusal and a busy call (SRR-10)', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'future' });
+        await t.saver.replace(encodeSave(session(5)));
+        expect(t.logs.length).toBe(1);
+
+        const u = setup();
+        const first = u.saver.replace(encodeSave(session(5)));
+        expect(await u.saver.replace(encodeSave(session(6)))).toEqual({ ok: false, error: 'Busy' });
+        expect(u.logs.some((l) => String(l[0]).includes('Busy'))).toBe(true);
+        await first;
+
+        const v = setup();
+        expect(await v.saver.replace({ version: 1 } as unknown as SaveState)).toEqual({ ok: false, error: 'InvalidSave' });
+        expect(v.logs.some((l) => String(l[0]).includes('InvalidSave') && JSON.stringify(l).includes('version'))).toBe(true);
     });
 
     it('unavailable needs force: without it nothing is written, with it the write happens and is logged', async () => {
@@ -619,13 +659,16 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         for (const blockedBy of blocks)
             for (const loadReason of reasons)
                 for (const loadError of errors)
-                    for (const force of [false, true]) {
+                    for (const force of [false, true])
+                      for (const loadFrom of [null, SAVE_VERSION, 2]) {
+                        // save-truth phase 2: the kept-old-save reasons need force (corrupt only after a migration step).
+                        const keeps = loadReason === 'unknown-version' || loadReason === 'migration-failed' || (loadReason === 'corrupt' && loadFrom === 2);
                         const expected =
                             blockedBy === 'fatal' ? 'Blocked'
-                            : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : 'ok')
+                            : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : keeps && !force ? 'Blocked' : 'ok')
                             : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force ? 'Blocked' : 'ok')
                             : 'ok';
-                        expect(replaceGate({ blockedBy, loadReason, loadError }, force), JSON.stringify({ blockedBy, loadReason, loadError, force })).toBe(expected);
+                        expect(replaceGate({ blockedBy, loadReason, loadError, loadFrom }, force), JSON.stringify({ blockedBy, loadReason, loadError, loadFrom, force })).toBe(expected);
                     }
     });
 });
@@ -783,8 +826,11 @@ describe('backup before the first write after a migration', () => {
         expect(t.saver.status()).toMatchObject({ backup: 'done', writes: 1 });
     });
 
-    it('a migration-failed load is replaceable like corrupt, never like future', () => {
-        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('ok');
+    // save-truth phase 2: reversed, a migration-failed load is no longer replaceable without force (it keeps the old save).
+    it('a migration-failed load needs force, like unknown-version, and a future one never', () => {
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('Blocked');
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, true)).toBe('ok');
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'future', loadError: null }, true)).toBe('Blocked');
     });
 });
 

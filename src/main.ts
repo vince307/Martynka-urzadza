@@ -270,6 +270,7 @@ const start = async (): Promise<void> => {
         migrated: outcome.kind === 'loaded' && outcome.migratedFrom !== null ? { from: outcome.migratedFrom, raw: outcome.raw } : undefined,
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
+        loadFrom: outcome.kind === 'unreadable' ? outcome.from : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
         // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).

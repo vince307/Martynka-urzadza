@@ -21,6 +21,7 @@ const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     migratedFrom: null,
     loadReason: null,
     loadError: null,
+    loadFrom: null,
     backup: 'none',
     backupError: null,
     migrationWrittenAt: null,
