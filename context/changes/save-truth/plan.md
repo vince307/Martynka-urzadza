@@ -1173,9 +1173,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 6.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 6.2 Deliberate break: `migrationOf` reading `writes` / `onLate` changing the race result → red; restored; meta-check (view and observer)
-- [ ] 6.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts`, `save-migration.spec.ts`, `health-lines.spec.ts` and `save-restart.spec.ts` "#2 C-2 …" green
+- [x] 6.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — fc0f7f7
+- [x] 6.2 Deliberate break: `migrationOf` reading `writes` / `onLate` changing the race result → red; restored; meta-check (view and observer) — fc0f7f7
+- [x] 6.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-backup-health.spec.ts`, `save-migration.spec.ts`, `health-lines.spec.ts` and `save-restart.spec.ts` "#2 C-2 …" green — fc0f7f7
 
 #### Manual
 
