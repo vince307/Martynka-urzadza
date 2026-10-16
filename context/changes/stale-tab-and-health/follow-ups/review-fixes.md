@@ -14,8 +14,8 @@ Trigger: the next save-format change (v5)
 Trigger: a parent report of two cards in a row, or a change to `onBlocked` in `src/main.ts`
 - **Settings panel is unreachable while the refusal card holds the one input switch**: the parent cannot open "Zapis gry" to read the `otherTab` line until the card's "Zacznij od nowa" reload.
 Trigger: a parent report of a refusal card with no way to read the reason, or a change to `saveRefusedCard`
-- **Panel heading alignment** of the new sections ("Gra bez internetu", the third "Obrazki" line) against the older headings.
-Trigger: the next visual pass over `settingsPanel.ts`
+- **VG-1 (visual gate) service-worker update discovery**: in the visual gate Chromium did not run its navigation soft update within 16 s after a reload onto a newer deployed `sw.js`; `takenOver` appeared only after an explicit `registration.update()`. `registerServiceWorker` never calls `update()`, so a newer build is found whenever the browser decides (pre-existing behaviour, not a defect of this change).
+Trigger: a report that a deployed build does not arrive at the next launch, or the next change to `registerServiceWorker`
 - **Reload race (plan review F4)**: a write of the previous document of the same tab that lands after the new document's read refuses the first write of the new one and shows the card on a legitimate reload (the restart loses nothing).
 Trigger: a parent report of the card after a plain reload, or an e2e spec that reloads and fails on it
 - **Stale-window replace (plan review F6)**: import or reset from a window not yet refused uses `replace` (no generation check) and shows that window's loaded save, not the newer stored one.
@@ -36,5 +36,7 @@ Trigger: a parent report of two copies of the game with different progress, or a
 Trigger: the next change to `applySettings`
 
 ## Closed by this change
+
+- **Panel heading alignment** of the new sections: checked in the visual gate (`reviews/visual-review.md`); "Gra bez internetu" and the third "Obrazki" line use the same left-aligned heading and paragraph style as "Zapis gry" and "Obrazki"; nothing to do.
 
 - `mountInstallHint` tap-through: already holds the input switch (checked in the change, nothing to do).

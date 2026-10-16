@@ -986,4 +986,4 @@ migrates that save again.
 
 #### Manual
 
-- [ ] 12.4 [visual] Settings panel at 1440 and 1024 in every new state (otherTab; offline ready/installing/install-failed/unsupported/takenOver; UI art ok/missing; music loading/waiting-unlock/missing; prefs not kept) and the child card over the task screen
+- [x] 12.4 [visual] Settings panel at 1440 and 1024 in every new state (otherTab; offline ready/installing/install-failed/unsupported/takenOver; UI art ok/missing; music loading/waiting-unlock/missing; prefs not kept) and the child card over the task screen — visual gate on 3e0636b, `reviews/visual-review.md` VISUAL: PASS; all captured at both widths except the panel's otherTab line (unreachable by design under the card: code-reviewed only)

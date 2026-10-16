@@ -1,57 +1,56 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Written by the `/10x-impl-review` step of run `2026-10-16-fix-stale-tab-health`. The change is `impl_reviewed`, MERGE: CLEAR; the next step is the visual gate (row 12.4). Do not tick 10.7 (CI at ship) or 11.4 [human] without observing them.
+Written by the visual-gate step of run `2026-10-16-fix-stale-tab-health`. The change is `impl_reviewed` with the visual gate passed (`VISUAL: PASS`, no code fix); the next step is the archive, then ship. Do not tick 10.7 (CI at ship) or 11.4 [human] without observing them.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | phases 1–12 up to `10de24c`, then `cc1621d` (impl-review fix: one store test), then this review commit |
+| Commits | phases 1–12 up to `10de24c`, `cc1621d` (impl-review fix), `3e0636b` (impl review), then this visual-gate commit |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 3: 10.7 [reviewer] (CI at ship), 11.4 [human], 12.4 [visual] |
+| `## Progress` rows remaining | 2: 10.7 [reviewer] (CI at ship), 11.4 [human] |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/stale-tab-and-health/reviews/impl-review.md` | full-plan review, phases 1–12: 0 critical, 1 warning (fixed), 4 observations; ends with `MERGE: CLEAR` |
-| `tests/idbStore.test.ts` | new test "an own write that lands after a later own write started (an abandoned, timed-out write) is never refused" (commit `cc1621d`) |
-| `context/changes/stale-tab-and-health/plan.md` | ticked [reviewer] rows 1.6, 2.5, 3.5, 4.4, 5.5, 6.4, 7.5, 8.4, 9.4, 10.5; 12.1 and 12.3 with the orchestrator gate (`10de24c`, 125 passed) |
-| `context/changes/stale-tab-and-health/change.md` | status `impl_reviewed` |
+| `context/changes/stale-tab-and-health/reviews/visual-review.md` | visual review of row 12.4: states, copy, focus, input switch, hand-checked numbers; ends with `VISUAL: PASS — …` |
+| `context/changes/stale-tab-and-health/screenshots/README.md` | table state · desktop · tablet · how reached |
+| `context/changes/stale-tab-and-health/screenshots/*.jpg` | 32 frames (16 states × 1440×900 and 1024×768), JPEG q 80, about 2.7 MB |
+| `context/changes/stale-tab-and-health/plan.md` | 12.4 [visual] ticked (otherTab panel line noted as code-reviewed only) |
+| `context/changes/stale-tab-and-health/follow-ups/review-fixes.md` | new VG-1 (service-worker update discovery, with `Trigger:`); "Panel heading alignment" moved to "Closed by this change" |
 | `context/changes/stale-tab-and-health/handoff.md` | this file |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| `npm run lint`, `npm run typecheck` | OK (on `10de24c` and again after `cc1621d`) |
-| `npm test` | `10de24c`: 3138 = baseline 3076 + 62; after `cc1621d`: 3139 = 3076 + 63 |
-| deploy scripts, `npm run sample -- E1`..`E6` | OK |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --workers=4` (from this session, sandbox disabled) | 125 passed (10.9 min) = baseline 121 + 4; ports 4397/4398 free afterwards |
-| `validate-rule-files.sh` | PASS (430 paths) |
-| break: `writeVerdict` without `writer !== page.writer` | red: `saveV4.test.ts` "puts after its own write that is ahead" and the new store test; restored. Meta-check: the older store test "own writes in a row" stayed green under it, which is why the new test was added |
-| break: `git apply e2e-break-p11b.patch`, `tests/e2e/stale-tab.spec.ts` | both tests red on `expect.poll(... save?.blockedBy).toBe('otherTab')` (received `null`); `git apply -R`, `src` diff empty |
-| e2e after `cc1621d` | not re-run: the fix adds one unit test, no source change |
+| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | OK, `e2e hook: present (2 chunks checked)` (hook build, expected) |
+| throwaway Playwright spec (`tests/e2e/visual.local/`, own config, 4399, projects 1440×900 and 1024×768), sandbox disabled | 22 passed (all states but takenOver), then takenOver passed per project in its own run (server swapped to a second hook build with `GITHUB_SHA=feedface…`) |
+| hook facts observed | panel focus on "Klasa 1, I półrocze"; `inputEnabled` false with panel/card up, true after "Zatwierdź" and after the card's restart; card focus on "Zacznij od nowa"; gear hold under the card opens 0 gate dialogs; stars after restart 14 = other window's 14 |
+| copy | every visible new line string-compared with `src/data/pl.ts` (`uiArtMissing(1, 5)` exactly) |
+| local gate | not re-run: no source change in this step (impl-review observed it green on `cc1621d`; e2e 125 on `10de24c`, inherited) |
+| ports | 4399 not listening at the end; 4397/4398 not used |
 
 ## 4. Next command
 
-`visual gate (settings panel + child refusal card)`
+`/10x-archive stale-tab-and-health` then ship
 
 ## 5. Open
 
-- 12.4 [visual]: settings panel at 1440 and 1024 in every new state ("Zapis gry" `otherTab`; "Gra bez internetu" ready, installing, install-failed with `Kod:`, unsupported, takenOver; "Obrazki" UI line ok and missing; "Dźwięki" music loading, waiting-unlock, missing, and `soundPrefsNotKept`) and the child card `saveRefused` over the task screen.
 - 11.4 [human]: iPad, the card reads calmly to a 6–8-year-old and "Zacznij od nowa" brings back the newest stars.
 - 10.7 (CI at ship): workflow `CI`, job `check`, log lines `e2e hook: absent \([0-9]+ chunks checked\)` (step `npm run build`) and `Tests +[0-9]+ passed` (step `npm test`).
-- Observations recorded in the review: the refusal card hides the parent's reason line in that window (`src/main.ts` `onBlocked`, follow-up with `Trigger:` already present); `registerServiceWorker` names a throw in its `.then` as `register-failed`; the raw-save export carries the random `writer` id; a comment-only edit in `src/data/balance.ts` `balance.save`.
-- Follow-ups: `follow-ups/review-fixes.md` unchanged (every entry has a `Trigger:` line). DESIGN-GAP rows 116–121 checked against the code comments.
+- Not captured: the panel's "Zapis gry" `otherTab` line (`saveHealthView` → `pl.settings.saveOff.otherTab`) — unreachable by design while `mountSaveRefusedCard` holds the input; existing follow-up "refusal card hides the parent's reason" covers it.
+- Follow-up VG-1 in `follow-ups/review-fixes.md` (`registerServiceWorker` never calls `update()`; trigger: a deployed build not arriving at the next launch).
+- DESIGN-GAP rows 116–121 unchanged (the kit has no settings panel or refusal card).
 
 ## 6. Autonomous decisions
 
-- **Phase-4 decision kept** (card on `newer` and `otherTab`, holds the input switch). Rejected: a parent-only signal or a card that lets the panel open. Why: the reload is the only useful action, it makes PRD FR-020 true again, it is not an update prompt (FR-003), and import/reset are refused in that window anyway (`replaceGate`). Would change: a parent report of a refusal card with no way to read the reason (the existing follow-up's trigger).
-- **F1 fixed with a test, not a code change**: the code was right; the plan's "late own write accepted" row had no store-level proof. Would change: nothing.
-- **e2e not re-run after `cc1621d`**: the commit touches only `tests/idbStore.test.ts`. Would change: any source change after this step.
-- **Unit RED re-executed by hand** (copy, `sed`, restore from the copy) instead of a patch file; `git diff` confirmed clean afterwards.
+- **Playwright, not Claude in Chrome**: the gear needs a canvas long press and the card needs rounds played on the canvas (profile § 8). Would change: a Chrome tool able to drive canvas touches.
+- **Browser conditions simulated in the browser only** (held/aborted worker request via `context.route` with `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1`, `serviceWorker` removed, a never-resuming `AudioContext`, a throwing `localStorage.setItem` for `martynka:sound`); the app runs unchanged and no seam was added. Would change: an app seam for these states.
+- **`takenOver` via an explicit `registration.update()`** after the reload, because Chromium's navigation soft update did not fire within 16 s; recorded as VG-1. Would change: evidence that real devices also miss the update.
+- **12.4 ticked with one state code-reviewed** (otherTab panel line, unreachable on purpose); verdict PASS rather than NOT-CAPTURED because every reachable state was captured and matched. Would change: a decision to let the panel open over the card.
+- **"Panel heading alignment" follow-up closed**: its trigger was this visual pass; the new sections match "Zapis gry"/"Obrazki". Would change: an author request to centre section headings like "Dźwięki".
