@@ -118,6 +118,12 @@ export const pl = {
         restart: 'Zacznij od nowa',
         build: (id: string) => `Wersja ${id}`,
     },
+    // DESIGN-GAP 117: the kit has no card for a save refused because a newer version or another window saved; calm, for the child, one button.
+    saveRefused: {
+        title: 'Zacznijmy grę jeszcze raz',
+        body: 'Dotknij przycisku, a gra uruchomi się od nowa i zachowa najnowsze postępy.',
+        restart: 'Zacznij od nowa',
+    },
     // DESIGN-GAP 42: the kit has no copy for a save that cannot be read; the parent sees it, the child only taps "Graj dalej".
     saveFailed: {
         title: 'Nie udało się wczytać zapisu',

@@ -101,6 +101,16 @@ canvas {
     z-index: 18;
 }
 
+/* Refused-save card (DESIGN-GAP 117): same layer as the unreadable-save card. */
+.overlay-save-refused {
+    display: flex;
+    z-index: 10;
+}
+
+.overlay-save-refused button {
+    min-height: 96px;
+}
+
 /* Unreadable-save card (DESIGN-GAP 42): below the parent dialogs (15) so the adult check opens over it. */
 .overlay-save-failed {
     display: flex;

@@ -32,6 +32,7 @@ import { cardCopyFor } from './core/saveHealth';
 import { openSaveExportDialog } from './ui/dom/saveExportDialog';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
+import { mountSaveRefusedCard } from './ui/dom/saveRefusedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createSoundService } from './ui/sound';
 import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
@@ -246,6 +247,7 @@ const start = async (): Promise<void> => {
     const today = (): string => pinnedDay ?? localDay(new Date());
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
+    let refusedCardUp = false;
     // DESIGN-GAP 43 (docs/design-gaps.md): the child sees no save indicator; the parent's settings panel shows the saver's health (saveHealthView).
     const saver = createAutosaver({
         store,
@@ -269,6 +271,12 @@ const start = async (): Promise<void> => {
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
+        // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).
+        onBlocked: () => {
+            if (refusedCardUp) return;
+            refusedCardUp = true;
+            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
+        },
     });
     booted.saver = saver;
     game.registry.set(REGISTRY_KEYS.saver, saver);
