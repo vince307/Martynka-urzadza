@@ -8,7 +8,7 @@ import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
 import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
-import { answer, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
+import { answer, lastTaskSettled, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
 import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
@@ -150,6 +150,7 @@ export class TaskScene extends Scene {
     private state!: RoundState;
     private dots!: ProgressDots;
     private tiles!: AnswerTiles;
+    private variantCounted = false;   // this variant round already went through countRound (at its last answer)
     private reported: { index: number; value: unknown } | null = null;   // the right value the child gave for the open task (several right tiles)
     private select!: SelectTiles;
     private blockMat!: BlockMat;
@@ -732,6 +733,12 @@ export class TaskScene extends Scene {
         this.state = answer(this.state, value);
         this.playRoundCues(prior);
         this.syncStars(before, this.answerSpot(value));
+        if (this.kind !== 'round' && !this.variantCounted && lastTaskSettled(prior, this.state)) {
+            // A variant is counted with its last stars, so closing before "Dalej" cannot replay it (SV2-10).
+            this.countRound(this.kind);
+            this.variantCounted = true;
+            void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+        }
         if (this.state.phase !== 'done') {
             this.keypad.reset();   // a wrong number is cleared; the tiles keep their place
             this.boxes = startDigitBoxes(this.boxes.count);   // and wrong digits: every box is emptied, so the right ones are not given away
@@ -836,6 +843,8 @@ export class TaskScene extends Scene {
     /** The one place a built round becomes the open one: freshRound() commits nothing, so a throw while building leaves the old round whole. */
     private applyRound(round: { kind: RoundKind; state: RoundState; puzzleId?: string; word?: string; dice?: DiceThrow[] }): void {
         this.state = round.state;
+        this.variantCounted = false;
+        this.reported = null;
         this.kind = round.kind;
         this.puzzleId = round.puzzleId ?? null;
         this.word = round.word ?? null;
@@ -968,7 +977,7 @@ export class TaskScene extends Scene {
      * No endRound: the variant never touches mastery, unlocks or the easing counters. One registry write, then the save.
      */
     private finishVariant(kind: VariantKind): void {
-        this.countRound(kind);
+        if (!this.variantCounted) this.countRound(kind);   // normally counted already at the last answer (submit)
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
     }
 

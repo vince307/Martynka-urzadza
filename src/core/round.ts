@@ -150,3 +150,7 @@ export const roundResults = (state: RoundState): SkillResult[] =>
             ? { skillId: task.skillId, outcome, example: { prompt: task.prompt, given: faceText(given), answer: exampleAnswer(task) } }
             : { skillId: task.skillId, outcome };
     });
+
+/** True when `after` is the moment the LAST task of the round just settled (SV2-10): the variant is counted there, not at "Dalej". */
+export const lastTaskSettled = (prior: RoundState, after: RoundState): boolean =>
+    after.phase === 'done' && prior.phase !== 'done' && after.index === after.tasks.length - 1;

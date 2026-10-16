@@ -3,7 +3,7 @@
 // mistake, 0 for a retyped result, stars never decrease. Expected values come
 // from the PRD, not from the implementation.
 import { describe, expect, it } from 'vitest';
-import { answer, next, nextSolutionStep, roundResults, startRound, type RoundRules, type RoundState } from '../src/core/round';
+import { answer, lastTaskSettled, next, nextSolutionStep, roundResults, startRound, type RoundRules, type RoundState } from '../src/core/round';
 import { createRng } from '../src/core/rng';
 import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
@@ -376,5 +376,49 @@ describe('round with several right tiles (Task.check)', () => {
         for (let i = 0; i < 10 && r.phase === 'solution'; i += 1) r = nextSolutionStep(r);
         expect(r.phase).toBe('retype');
         expect(answer(r, otherRight).phase).toBe('done');
+    });
+});
+
+describe('lastTaskSettled (SV2-10)', () => {
+    const toLast = (): RoundState => {
+        let s = startRound(tasks(), RULES);
+        for (let i = 0; i < 4; i += 1) s = solveFirst(s);
+        return s;
+    };
+
+    it('is true when the last task is solved on the first try', () => {
+        const prior = toLast();
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[4].answer))).toBe(true);
+    });
+
+    it('is true when the last task is solved on the second try', () => {
+        const prior = answer(toLast(), WRONG);
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[4].answer))).toBe(true);
+    });
+
+    it('is true at the retype of the last task, not before', () => {
+        let s = answer(answer(toLast(), WRONG), WRONG);
+        for (let i = 0; i < 10 && s.phase === 'solution'; i += 1) s = nextSolutionStep(s);
+        expect(s.phase).toBe('retype');
+        const wrongRetype = answer(s, WRONG);
+        expect(lastTaskSettled(s, wrongRetype)).toBe(false);
+        expect(lastTaskSettled(s, answer(s, s.tasks[4].answer))).toBe(true);
+    });
+
+    it('is false for a wrong answer that leaves the last task open', () => {
+        const prior = toLast();
+        expect(lastTaskSettled(prior, answer(prior, WRONG))).toBe(false);
+    });
+
+    it('is false when an earlier task settles', () => {
+        const prior = startRound(tasks(), RULES);
+        expect(lastTaskSettled(prior, answer(prior, prior.tasks[0].answer))).toBe(false);
+    });
+
+    it('is false once the last task was already done (Dalej, a second call)', () => {
+        const prior = toLast();
+        const done = answer(prior, prior.tasks[4].answer);
+        expect(lastTaskSettled(done, answer(done, done.tasks[4].answer))).toBe(false);
+        expect(lastTaskSettled(done, next(done))).toBe(false);
     });
 });
