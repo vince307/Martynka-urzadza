@@ -13,6 +13,10 @@ export interface IdbSaveStoreOptions {
     profileId?: string;
     /** Id of this page load in the stored record; default a fresh random one per store, so two tabs are never the same writer. */
     writer?: string;
+    /** Writers of earlier documents of this tab (T-3): a record of theirs that this page never read is refused, never overwritten. */
+    endedWriters?: readonly string[];
+    /** Called when a put went over a record of an older format (an older build wrote after this page's own save). */
+    onOlderWriter?: () => void;
 }
 
 // iOS Safari can lose the connection to the database (WebKit bug 197050); a fresh store reconnects.
@@ -32,15 +36,28 @@ export function guardedPut(
     os: IDBObjectStore,
     key: string,
     value: SaveState,
-    page: { version: number; base: number; writer: string },
+    page: { version: number; base: number; writer: string; endedWriters?: readonly string[] },
     mode: 'normal' | 'replace',
+    onOlderWriter?: () => void,
 ): Promise<number> {
     return new Promise<number>((resolve, reject) => {
         const tx = os.transaction as IDBTransaction | undefined;
         let refused = false;
         let written = 0;
+        let older = false;
+        // Told only when the put landed: a refused or aborted write found nothing to report.
+        const done = (generation: number): void => {
+            resolve(generation);
+            if (older) {
+                try {
+                    onOlderWriter?.();
+                } catch (e) {
+                    console.warn('save: older-writer listener failed', errorName(e));
+                }
+            }
+        };
         if (tx) {
-            tx.oncomplete = () => (refused ? undefined : resolve(written));
+            tx.oncomplete = () => (refused ? undefined : done(written));
             // No tx.onerror: request errors bubble to the transaction, so the prevented read error would reject a write that
             // lands. A put error that is not prevented aborts the transaction, and tx.error then carries its own name
             // (e.g. QuotaExceededError), not a made-up UnknownError that `run` would retry as a lost connection.
@@ -51,7 +68,7 @@ export function guardedPut(
             try {
                 const req = os.put({ ...value, generation, writer: page.writer }, key);
                 if (!tx) {
-                    req.onsuccess = () => resolve(generation);
+                    req.onsuccess = () => done(generation);
                     req.onerror = () => reject(req.error ?? new DOMException('failed', 'UnknownError'));
                 }
             } catch (e) {
@@ -67,6 +84,7 @@ export function guardedPut(
                 reject(Object.assign(new Error('the stored save is not this page\'s to overwrite'), { name: verdict.error }));
                 return;
             }
+            older = verdict.olderWriter === true;
             put(verdict.generation);
         };
         read.onerror = (event) => {
@@ -117,7 +135,7 @@ const randomWriter = (): string =>
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
 export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore {
-    const { dbName = 'martynka', storeName = 'saves', profileId = 'default', writer = randomWriter() } = options;
+    const { dbName = 'martynka', storeName = 'saves', profileId = 'default', writer = randomWriter(), endedWriters, onOlderWriter } = options;
     const key = `${SAVE_KEY_PREFIX}${profileId}`;
     const recordKey = `${key}:backup-status`;
     let store: UseStore | undefined;
@@ -149,7 +167,7 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
         },
         write: async (value: SaveState, mode: 'normal' | 'replace' = 'normal') => {
             const mine = ++writeSeq;
-            const generation = await run((s) => s('readwrite', (os) => guardedPut(os, key, value, { version: value.version, base, writer }, mode)), () => mine === writeSeq);
+            const generation = await run((s) => s('readwrite', (os) => guardedPut(os, key, value, { version: value.version, base, writer, endedWriters }, mode, onOlderWriter)), () => mine === writeSeq);
             base = Math.max(base, generation);
         },
         backup: (raw: unknown, from: number) =>

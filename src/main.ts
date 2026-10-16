@@ -13,6 +13,7 @@ import type { Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
+import { createWriterId } from './storage/writerId';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
@@ -137,7 +138,12 @@ installErrorBoundary(window, (error) => {
 const start = async (): Promise<void> => {
     // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail|writehang|v1|backupfail|backuphang|slow); never IndexedDB.
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
-    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
+    // One writer id per page load that also knows this tab's earlier documents (T-3); the store tells the saver when an older build wrote here (T-1).
+    const writerId = createWriterId();
+    const store =
+        __E2E_HOOK__ && seam
+            ? e2eSaveStore(seam)
+            : createIdbSaveStore({ writer: writerId.writer, endedWriters: writerId.endedWriters, onOlderWriter: () => booted.saver?.noteOlderWriter() });
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
     const first = await loadSave(store, {
         timers,
@@ -319,7 +325,10 @@ const start = async (): Promise<void> => {
             void saver.flush('hidden');
         }
     });
-    window.addEventListener('pagehide', () => void saver.flush('hidden'));
+    window.addEventListener('pagehide', () => {
+        void saver.flush('hidden');
+        writerId.end();
+    });
     if (__E2E_HOOK__) {
         installE2EHook(game);   // e2e build only: stripped from production, checked by vite/e2eHookGuard.mjs
     }

@@ -36,6 +36,7 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
         section.append(createText('p', pl.settings.saveMigrated[view.migration.copy](view.migration.from)));
         if (view.migration.code !== null) section.append(createText('p', pl.saveFailed.detail(view.migration.code, __BUILD_ID__), 'overlay-muted'));
     }
+    if (view.olderWriter) section.append(createText('p', pl.settings.olderWriter));
     if (view.persistence !== 'unknown') section.append(createText('p', pl.settings.savePersist[view.persistence]));
     return section;
 };

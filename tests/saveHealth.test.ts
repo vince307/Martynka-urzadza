@@ -31,9 +31,18 @@ const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     lastWriteError: null,
     lateWrite: null,
     fatalError: null,
+    olderWriterSeen: false,
     replace: 'idle',
     persistence: 'unknown',
     ...over,
+});
+
+describe('saveHealthView: an older build wrote here (save-truth p7)', () => {
+    it('olderWriter follows the status, in every state', () => {
+        expect(saveHealthView(status({ writes: 1 })).olderWriter).toBe(false);
+        expect(saveHealthView(status({ writes: 1, olderWriterSeen: true })).olderWriter).toBe(true);
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal', olderWriterSeen: true })).olderWriter).toBe(true);
+    });
 });
 
 describe('saveHealthView', () => {

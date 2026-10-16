@@ -407,3 +407,54 @@ describe('IndexedDB stale-writer guard', () => {
         await expect(guardedPut(os, 'profile:default', v(1), { version: SAVE_VERSION, base: 0, writer: 'A' }, 'normal')).rejects.toMatchObject({ name: 'DataError' });
     });
 });
+
+// save-truth phase 7 (T-3, T-1): the store hands the ended writers to the verdict and surfaces an older build's write.
+describe('IndexedDB store: previous page and older writer (save-truth p7)', () => {
+    const v = (stars: number): SaveState => ({ ...fixture, version: SAVE_VERSION, stars }) as unknown as SaveState;
+    const named = async (p: Promise<unknown>): Promise<string> => p.then(() => 'ok', (e: unknown) => (e as Error).name);
+    const raw = async (dbName: string) => (await createIdbSaveStore({ dbName, storeName: 'saves', writer: 'probe' }).read()) as { generation: number; writer: string; stars: number; version: number };
+
+    it('a late write of the ended document refuses the reloaded page, and the record stays (never overwritten)', async () => {
+        const db = `prev-${++counter}`;
+        const before = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'T:n1' });
+        const after = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'T:n2', endedWriters: ['T:n1'] });
+        await after.read();   // read before the late write landed
+        await before.write(v(10));
+        expect(await named(after.write(v(99)))).toBe('PreviousPageSave');
+        expect(await raw(db)).toMatchObject({ generation: 1, writer: 'T:n1', stars: 10 });
+    });
+
+    it('without the ended list the same write is an OtherWriterSave', async () => {
+        const db = `prev-${++counter}`;
+        const before = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'T:n1' });
+        const after = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'T:n2' });
+        await after.read();
+        await before.write(v(10));
+        expect(await named(after.write(v(99)))).toBe(OTHER_WRITER_SAVE);
+    });
+
+    it('a record of an older format over this page\'s own save reaches onOlderWriter once per such put', async () => {
+        const db = `older-${++counter}`;
+        let told = 0;
+        const store = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'W', onOlderWriter: () => void told++ });
+        await store.read();
+        await store.write(v(1));
+        expect(told).toBe(0);
+        await idbKeyval.set('profile:default', { ...v(5), version: SAVE_VERSION - 1 }, idbKeyval.createStore(db, 'saves'));
+        await store.write(v(2));
+        expect(told).toBe(1);
+        expect(await raw(db)).toMatchObject({ version: SAVE_VERSION, stars: 2, writer: 'W' });
+        await store.write(v(3));
+        expect(told).toBe(1);
+    });
+
+    it('the first write after a migration (the page read the old record, base 0) is not an older writer', async () => {
+        const db = `older-${++counter}`;
+        await idbKeyval.set('profile:default', { ...v(5), version: SAVE_VERSION - 1 }, idbKeyval.createStore(db, 'saves'));
+        let told = 0;
+        const store = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'W', onOlderWriter: () => void told++ });
+        await store.read();
+        await store.write(v(6));
+        expect(told).toBe(0);
+    });
+});

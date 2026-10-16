@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 import { balance } from '../data/balance';
 
@@ -96,6 +96,8 @@ export interface AutosaveStatus {
     lateWrite: 'landed' | 'failed' | null;
     /** Runtime only (never saved): the error name behind a fatal block, or null. */
     fatalError: string | null;
+    /** Runtime only (never saved): a record of an older format was found over this page's own save (an older build wrote after it). */
+    olderWriterSeen: boolean;
     /** Runtime only (never saved): a replace of the whole save is writing or has replaced it for this page load. */
     replace: 'idle' | 'writing' | 'done';
     /** Runtime only (never saved): what the browser answered to the persistence request after the first write. */
@@ -181,6 +183,8 @@ export interface Autosaver {
     current(): SaveState;
     flush(reason: 'now' | 'hidden'): Promise<void>;
     block(reason: BlockReason, error?: string): void;
+    /** The store found a record of an older format over this page's save: noted for the parent view, one log. */
+    noteOlderWriter(): void;
     status(): AutosaveStatus;
 }
 
@@ -248,6 +252,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     let lastWriteError: string | null = null;
     let lateWrite: AutosaveStatus['lateWrite'] = null;
     let fatalError: string | null = null;
+    let olderWriterSeen = false;
     const backupOwed = (): boolean => backup === 'pending' || backup === 'failed';
     const writesOff = (): boolean => blockedBy !== null || replacing || replaced;
 
@@ -363,9 +368,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastFailure = { stage, error: lastError };
             dirty = true;
             log(`autosave: ${stage} failed`, e);
-            if (lastError === NEWER_SAVE || lastError === OTHER_WRITER_SAVE) {
+            if (lastError === NEWER_SAVE || lastError === OTHER_WRITER_SAVE || lastError === PREVIOUS_PAGE_SAVE) {
                 // A newer page or another window saved here: never retry, never overwrite it (P-5).
                 const reason = lastError === NEWER_SAVE ? 'newer' : 'otherTab';
+                // The same card and block as another window, named apart in the log: the previous page of this tab saved after this one loaded.
+                if (lastError === PREVIOUS_PAGE_SAVE) log('autosave: refused, the previous page of this tab saved later (previous page)');
                 const first = blockedBy === null;
                 blockedBy ??= reason;
                 cancelTimer();
@@ -490,6 +497,11 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         flush: (reason) => save(reason),
         replace,
         current: () => encodeSave(snapshot()),
+        noteOlderWriter: () => {
+            if (olderWriterSeen) return;
+            olderWriterSeen = true;
+            log('autosave: a record of an older format was found over this save (older build wrote)');
+        },
         block: (reason, error) => {
             if (blockedBy === null && reason === 'fatal') fatalError = error ?? null;
             blockedBy ??= reason;
@@ -522,6 +534,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastWriteError,
             lateWrite,
             fatalError,
+            olderWriterSeen,
             replace: replacing ? 'writing' : replaced ? 'done' : 'idle',
         }),
     };

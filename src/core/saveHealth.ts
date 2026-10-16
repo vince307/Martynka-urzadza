@@ -11,7 +11,7 @@ export type SaveHealthState =
 // The save moved from an older format: `pending` until the new version is written, then the fate of the old copy (kept, lost, or not known).
 export type SaveMigration = { from: number; copy: 'pending' | 'kept' | 'lost' | 'uncertain'; code: string | null };
 
-export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null };
+export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null; olderWriter: boolean };
 
 // The session that migrated knows its own copy state (it can be still retried); later launches read the stored record (SVB-01).
 const migrationOf = (status: AutosaveStatus): SaveMigration | null => {
@@ -63,7 +63,7 @@ const stateOf = (status: AutosaveStatus): SaveHealthState => {
 };
 
 export function saveHealthView(status: AutosaveStatus): SaveHealthView {
-    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status) };
+    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status), olderWriter: status.olderWriterSeen };
 }
 
 export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable' | 'slow';

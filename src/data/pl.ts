@@ -69,6 +69,8 @@ export const pl = {
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
         // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
+        // DESIGN-GAP 130 (docs/design-gaps.md): the kit has no line for an older build that saved over this game's progress.
+        olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
         saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.

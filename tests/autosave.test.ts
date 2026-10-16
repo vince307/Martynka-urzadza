@@ -1352,6 +1352,43 @@ describe('a store that refuses with NewerSave blocks saving for good (P-5)', () 
 
 const otherWriterError = (): Error => Object.assign(new Error('another page saved later'), { name: 'OtherWriterSave' });
 
+const previousPageError = (): Error => Object.assign(new Error('an earlier document of this tab saved later'), { name: 'PreviousPageSave' });
+
+// save-truth p7 (T-3, T-1)
+describe('a PreviousPageSave refusal and an older-writer note (save-truth p7)', () => {
+    it('PreviousPageSave blocks as otherTab like OtherWriterSave, tells the listener once, and the log names the previous page', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        let calls = 0;
+        t.store.write = () => (calls++, Promise.reject(previousPageError()));
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(calls).toBe(1);
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'otherTab', lastFailure: { stage: 'write', error: 'PreviousPageSave' } });
+        expect(told).toEqual(['otherTab']);
+        expect(JSON.stringify(t.logs)).toContain('previous page');
+    });
+
+    it('noteOlderWriter sets the runtime flag and logs once, however often it is told', () => {
+        const t = setup();
+        expect(t.saver.status().olderWriterSeen).toBe(false);
+        t.saver.noteOlderWriter();
+        t.saver.noteOlderWriter();
+        expect(t.saver.status().olderWriterSeen).toBe(true);
+        expect(t.logs.filter((l) => String(l[0]).includes('older'))).toHaveLength(1);
+    });
+
+    it('the flag is runtime only: the encoded save has no such key', () => {
+        const t = setup();
+        t.saver.noteOlderWriter();
+        expect(JSON.stringify(t.saver.current())).not.toContain('olderWriter');
+    });
+});
+
 describe('a store that refuses with OtherWriterSave blocks saving for good (stale tab)', () => {
     it('blocks with the runtime reason otherTab, tries once, never again, and tells the listener once', async () => {
         const told: string[] = [];
