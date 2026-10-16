@@ -33,6 +33,11 @@ export const pl = {
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',
         autoReadOff: 'Wyłączone',
+        // Sounds (S-16b, DESIGN-GAP 114).
+        soundHeading: 'Dźwięki',
+        effectsHeading: 'Efekty dźwiękowe',
+        musicHeading: 'Muzyka',
+        soundMissing: (n: number) => `Nie wczytało się ${countNoun(n, ['dźwięk', 'dźwięki', 'dźwięków'])}. Gra działa dalej bez nich.`,
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',

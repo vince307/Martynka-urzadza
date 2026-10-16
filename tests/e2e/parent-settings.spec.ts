@@ -87,7 +87,7 @@ test('#14 (proposed) a parent stage change replaces the open round with the new 
     // First change: E4 with reading switched on (E4 does not read aloud by default).
     let panel = await openSettings(page);
     await panel.getByRole('button', { name: 'Klasa 2, II półrocze', exact: true }).tap();
-    await panel.getByRole('button', { name: 'Włączone', exact: true }).tap();
+    await panel.getByRole('group', { name: 'Czytanie poleceń na głos', exact: true }).getByRole('button', { name: 'Włączone', exact: true }).tap();   // pl.settings.autoReadHeading: the sound groups carry the same button labels (S-16b)
     await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
     await expect(panel).toHaveCount(0);
     await expect.poll(async () => (await snapshot(page)).stage).toBe('E4');

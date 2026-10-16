@@ -1,4 +1,4 @@
-import type { Game } from 'phaser';
+import type { Game, Loader } from 'phaser';
 import { cueDelayMs, soundOutcome, trimFrameCount, type Cue, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
 import { balance } from '../data/balance';
 import { REGISTRY_KEYS } from '../data/layout';
@@ -20,6 +20,11 @@ export interface SoundService {
     status(): SoundStatus;
     /** Called once by BootScene with the effects that are not in the cache. */
     setMissing(keys: readonly string[]): void;
+    /**
+     * Gives the service a loader that lives for the whole session (the HUD scene's). The music is fetched through it, and
+     * only when the parent turned it on: at once when the saved preference already says on, otherwise at the toggle.
+     */
+    attachLoader(load: Loader.LoaderPlugin): void;
 }
 
 /**
@@ -35,7 +40,70 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
         if (log.length > balance.sound.logSize) log.shift();
         return outcome;
     };
+    let musicState: SoundStatus['music'] = 'off';
+    let loader: Loader.LoaderPlugin | undefined;
+    let musicSound: { play(): unknown; stop(): unknown; destroy(): unknown } | undefined;
+    const musicDef = SOUNDS.find((s) => s.id === 'music-loop');
     const locked = (): boolean => ('locked' in game.sound ? Boolean((game.sound as { locked?: boolean }).locked) : false);
+    const stopMusic = (): void => {
+        try {
+            musicSound?.stop();
+            musicSound?.destroy();
+        } catch (error) {
+            console.warn('Music did not stop cleanly', error);
+        }
+        musicSound = undefined;
+        if (musicState !== 'loading') musicState = 'off';
+    };
+    /** Starts the loop once the audio context allows it (a preference saved as on waits for the first gesture). */
+    const playMusic = (): void => {
+        if (!musicDef || !current.music || musicSound) return;
+        try {
+            const sound = game.sound.add(musicDef.key, { loop: true, volume: balance.sound.masterVolume * balance.sound.musicVolume });
+            musicSound = sound;
+            const start = (): void => {
+                if (musicSound !== sound || !current.music) return;
+                sound.play();
+                musicState = 'playing';
+            };
+            if (locked()) {
+                musicState = 'loading';
+                game.sound.once('unlocked', start);
+            } else start();
+        } catch (error) {
+            console.warn('Music failed to play', error);
+            musicSound = undefined;
+            musicState = 'missing';
+        }
+    };
+    const startMusic = (): void => {
+        if (!musicDef || !loader || !current.music || musicSound || musicState === 'loading') return;
+        if (game.cache.audio.exists(musicDef.key)) {
+            playMusic();
+            return;
+        }
+        musicState = 'loading';
+        const done = (): void => {
+            // A decode failure fires no loaderror: the cache says whether the file is usable.
+            if (!game.cache.audio.exists(musicDef.key) || trimOne(game, musicDef.key, musicDef.durationS)) {
+                console.warn(`Music missing: ${musicDef.key}`);
+                musicState = 'missing';
+                return;
+            }
+            musicState = 'off';
+            playMusic();
+        };
+        try {
+            // Phaser gives each file its own xhr timeout of 0: the music's own limit is set as the file is queued.
+            loader.once('addfile', (_key: string, _type: string, _loader: unknown, file: Loader.File) => { file.xhrSettings.timeout = balance.sound.musicLoadTimeoutMs; });
+            loader.audio(musicDef.key, [...musicDef.urls]);
+            loader.once('complete', done);
+            loader.start();
+        } catch (error) {
+            console.warn('Music could not be queued', error);
+            musicState = 'missing';
+        }
+    };
     return {
         play: (id) => {
             const def = SOUNDS.find((s) => s.id === id);
@@ -49,9 +117,18 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
                 return record(id, 'missing');
             }
         },
-        setPrefs: (prefs) => { current = { ...prefs }; },
+        setPrefs: (prefs) => {
+            const wasOn = current.music;
+            current = { ...prefs };
+            if (wasOn && !current.music) stopMusic();
+            if (!wasOn && current.music) startMusic();
+        },
+        attachLoader: (load) => {
+            loader = load;
+            startMusic();
+        },
         prefs: () => ({ ...current }),
-        status: () => ({ prefs: { ...current }, locked: locked(), log: [...log], missing, music: 'off' }),
+        status: () => ({ prefs: { ...current }, locked: locked(), log: [...log], missing, music: musicState }),
         setMissing: (keys) => { missing = [...keys]; },
     };
 };
@@ -62,26 +139,31 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
  */
 export const trimEffects = (game: Game): string[] => {
     const failed: string[] = [];
-    const context = (game.sound as { context?: AudioContext }).context;
     for (const def of SOUNDS) {
-        if (!def.boot || !game.cache.audio.exists(def.key)) continue;
-        try {
-            const buffer = game.cache.audio.get(def.key) as AudioBuffer | undefined;
-            if (!context || !buffer || typeof buffer.getChannelData !== 'function') continue;   // no Web Audio: nothing to trim
-            const frames = trimFrameCount(def.durationS, buffer.sampleRate, buffer.length);
-            if (frames >= buffer.length) continue;
-            const cut = context.createBuffer(buffer.numberOfChannels, frames, buffer.sampleRate);
-            for (let c = 0; c < buffer.numberOfChannels; c += 1) {
-                cut.copyToChannel(buffer.getChannelData(c).subarray(0, frames), c);
-            }
-            game.cache.audio.add(def.key, cut);
-        } catch (error) {
-            console.warn(`Sound trim failed: ${def.key}`, error);
-            game.cache.audio.remove(def.key);   // an untrimmed effect would click; better none
-            failed.push(def.key);
-        }
+        if (def.boot && game.cache.audio.exists(def.key) && trimOne(game, def.key, def.durationS)) failed.push(def.key);
     }
     return failed;
+};
+
+/** Trims one cached buffer to its logical length. Returns true when it failed (the key is then removed from the cache). */
+const trimOne = (game: Game, key: string, durationS: number): boolean => {
+    try {
+        const context = (game.sound as { context?: AudioContext }).context;
+        const buffer = game.cache.audio.get(key) as AudioBuffer | undefined;
+        if (!context || !buffer || typeof buffer.getChannelData !== 'function') return false;   // no Web Audio: nothing to trim
+        const frames = trimFrameCount(durationS, buffer.sampleRate, buffer.length);
+        if (frames >= buffer.length) return false;
+        const cut = context.createBuffer(buffer.numberOfChannels, frames, buffer.sampleRate);
+        for (let c = 0; c < buffer.numberOfChannels; c += 1) {
+            cut.copyToChannel(buffer.getChannelData(c).subarray(0, frames), c);
+        }
+        game.cache.audio.add(key, cut);
+        return false;
+    } catch (error) {
+        console.warn(`Sound trim failed: ${key}`, error);
+        game.cache.audio.remove(key);   // an untrimmed effect would click; better none
+        return true;
+    }
 };
 
 /** The game's sound service, or undefined where none was made (tests, a failed start): callers then stay silent. */
