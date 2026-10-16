@@ -942,7 +942,7 @@ migrates that save again.
 #### Automated
 
 - [x] 9.1 Full local gate green; unit `<branch baseline> + N`; build prints `e2e hook: absent (` — 6b6365d (unit 3136 + 2; build absent, 2 chunks)
-- [ ] 9.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 9.2 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate d8336f1 (121 passed)
 - [x] 9.3 Deliberate break: `allEffectKeys` returning the music key or nothing → red; restored; meta-check recorded — 6b6365d
 
 #### Manual
@@ -953,15 +953,15 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 10.1 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
-- [ ] 10.2 Every follow-up entry has a `Trigger:` line
-- [ ] 10.3 `git diff --stat main -- deploy/` shows only `deploy/README.md`
+- [x] 10.1 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored — aa68062
+- [x] 10.2 Every follow-up entry has a `Trigger:` line — aa68062
+- [x] 10.3 `git diff --stat main -- deploy/` shows only `deploy/README.md` — aa68062
 - [ ] 10.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 
 - [ ] 10.5 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper or stale "v3" comment; gap rows 116-121 match the code comments
-- [ ] 10.6 [human] Accept or reverse save format v4 (one-way door; rollback below this build shows the `future` card)
+- [x] 10.6 [human] Accept or reverse save format v4 (one-way door; rollback below this build shows the `future` card) — accepted by the maintainer in the run session 2026-10-16
 - [ ] 10.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches the regex `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed`
 
 ### Phase 11: A stale tab never overwrites newer progress — e2e (#2)
