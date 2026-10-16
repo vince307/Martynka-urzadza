@@ -1,6 +1,7 @@
 import { Loader, Scene, type Time } from 'phaser';
 import { artHealth } from '../core/artHealth';
 import { bootLoadPhase, checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
+import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
@@ -64,7 +65,7 @@ export class BootScene extends Scene {
             if (!art) {
                 continue;
             }
-            const event = `${Loader.Events.FILE_KEY_COMPLETE}-image-${art.key}`;
+            const event = fileKeyCompleteEvent(Loader.Events.FILE_KEY_COMPLETE, 'image', art.key);
             const show = (): void => {
                 try {
                     this.loading?.showArt(id);

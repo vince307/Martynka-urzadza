@@ -1,3 +1,4 @@
+import { fileKeyCompleteEvent } from '../src/core/loaderEvent';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -16,5 +17,14 @@ describe('phaser loader pin', () => {
         expect(audio, hint).toContain('_this.onProcessComplete()');
         expect(audio, hint).toContain('_this.onProcessError()');
         expect(file, hint).toMatch(/onProcessError: function \(\)[\s\S]*?this\.loader\.fileProcessComplete\(this\)/);
+    });
+
+    it('emits the per-file event as FILE_KEY_COMPLETE + type + "-" + key, which fileKeyCompleteEvent mirrors', () => {
+        const file = readFileSync('node_modules/phaser/src/loader/File.js', 'utf8');
+        const events = readFileSync('node_modules/phaser/src/loader/events/FILE_KEY_COMPLETE_EVENT.js', 'utf8');
+        const hint = 're-verify src/core/loaderEvent.ts against File.pendingDestroy';
+        expect(file, hint).toContain("Events.FILE_KEY_COMPLETE + type + '-' + key");
+        expect(events, hint).toContain("'filecomplete-'");
+        expect(fileKeyCompleteEvent('filecomplete-', 'image', 'ui/loading-background')).toBe('filecomplete-image-ui/loading-background');
     });
 });
