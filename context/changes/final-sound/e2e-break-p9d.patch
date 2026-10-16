@@ -1,0 +1,13 @@
+diff --git a/src/scenes/RoomScene.ts b/src/scenes/RoomScene.ts
+index b3851e7..696dea8 100644
+--- a/src/scenes/RoomScene.ts
++++ b/src/scenes/RoomScene.ts
+@@ -207,7 +207,7 @@ export class RoomScene extends Scene {
+         const { room, state } = this.resolve();
+         const step = stepPanel(this.panel, event, { room, state, stars: this.stars() });
+         // One cue per tap: opening, previewing, "Wybieram" (a purchase or a free change); "Zamknij" is a navigation tap.
+-        const cue = panelCue(this.panel, step, event);
++        const cue = null as ReturnType<typeof panelCue>;   void panelCue;
+         playCues(this, soundOf(this.registry), cue ? [{ id: cue, delayMs: 0 }] : event.type === 'close' && this.panel.kind !== 'closed' ? [{ id: 'tap', delayMs: 0 }] : []);
+         this.panel = step.panel;
+         if (this.panel.kind === 'open') {
