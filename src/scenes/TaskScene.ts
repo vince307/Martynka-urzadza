@@ -26,7 +26,7 @@ import type { ArtHealth } from '../core/artHealth';
 import { artBlocked } from '../core/round/artFilter';
 import { buildWarmup, warmupResult } from '../core/round/warmup';
 import { summaryView, type SummaryView } from '../core/round/summary';
-import { roundView } from '../core/round/view';
+import { modeWidgets, roundView } from '../core/round/view';
 import { digitBoxCount, startDigitBoxes, stepDigitBoxes, type DigitBoxes } from '../core/round/digitBoxes';
 import type { KeypadKey } from '../core/round/keypad';
 import { columnMarks } from '../core/tasks/written';
@@ -471,7 +471,7 @@ export class TaskScene extends Scene {
         const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input, task.skillId) : null;
         this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';
-        const shows = this.widgetsOf(view.input);
+        const shows = modeWidgets(view.input);
         this.tiles.setVisible(shows.tiles && !diceRound);
         this.keypad.setKeyMode(view.input === 'digits');
         this.keypad.setVisible(shows.keypad);
@@ -638,7 +638,7 @@ export class TaskScene extends Scene {
         const wordRound = this.kind === 'word';
         const promptY = task.visual ? TASK_LAYOUT.picture.promptY : wordRound ? MINIGAME_LAYOUT.promptY : undefined;
         const prompt = { ...TASK_LAYOUT.prompt, y: promptY ?? TASK_LAYOUT.prompt.y };
-        const beside = this.widgetsOf(input).keypad;   // the keypad sits right of the prompt
+        const beside = modeWidgets(input).keypad;   // the keypad sits right of the prompt
         const sentence = !beside ? prompt : { ...TASK_LAYOUT.promptBeside, y: promptY ?? TASK_LAYOUT.promptBeside.y };
         const expression = wordRound ? { ...TASK_LAYOUT.expressionWide, y: MINIGAME_LAYOUT.expressionY } : !beside ? TASK_LAYOUT.expressionWide : TASK_LAYOUT.expression;
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
@@ -1038,17 +1038,6 @@ export class TaskScene extends Scene {
                 }
             case 'keypad': case 'digits': return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
             default: { const unreachable: never = view.input; return unreachable; }
-        }
-    }
-
-    /** Which input widgets an answer mode shows; the one place that maps a mode to its widgets (the switch is exhaustive). */
-    private widgetsOf(input: AnswerMode): { tiles: boolean; keypad: boolean; select: boolean } {
-        switch (input) {
-            case 'tiles': return { tiles: true, keypad: false, select: false };
-            case 'keypad': case 'digits': return { tiles: false, keypad: true, select: false };
-            case 'select': return { tiles: false, keypad: false, select: true };
-            case 'drag': return { tiles: false, keypad: false, select: false };
-            default: { const unreachable: never = input; return unreachable; }
         }
     }
 

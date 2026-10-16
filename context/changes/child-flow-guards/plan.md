@@ -1097,11 +1097,11 @@ Details.
 
 #### Automated
 
-- [ ] 13.1 New `modeWidgets` and `forcedSkills` tests red before, green after; unit `<branch baseline> + N`
-- [ ] 13.2 Deliberate break: `modeWidgets('select')` returning tiles → red; restored; meta-check (the map)
-- [ ] 13.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
-- [ ] 13.4 Every follow-up entry has a `Trigger:` line
-- [ ] 13.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 13.1 New `modeWidgets` and `forcedSkills` tests red before, green after; unit `<branch baseline> + N`
+- [x] 13.2 Deliberate break: `modeWidgets('select')` returning tiles → red; restored; meta-check (the map)
+- [x] 13.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
+- [x] 13.4 Every follow-up entry has a `Trigger:` line
+- [x] 13.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 

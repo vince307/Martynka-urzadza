@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { canonicalInput } from '../src/core/round/canonicalInput';
 import { pictureLayout } from '../src/core/round/pictureLayout';
 import { playable } from '../src/core/round/pick';
+import { modeWidgets } from '../src/core/round/view';
 import type { Task } from '../src/core/tasks/types';
 import { validateTask } from '../src/core/tasks/validate';
 import { ANSWER_MODES, type SkillDef } from '../src/core/types';
@@ -10,6 +11,14 @@ import { FONT_SIZES, TASK_LAYOUT } from '../src/data/layout';
 const skill = (answer: SkillDef['answer']): SkillDef => ({ id: 'T.1', stage: 'E1', step: 1, type: 'ADD_SUB', params: {}, answer });
 
 describe('answer modes', () => {
+    it('shows exactly one input widget per mode, drag none of the three (its widgets are the mat, clock and wallet)', () => {
+        const shown = (m: SkillDef['answer']) => Object.entries(modeWidgets(m)).filter(([, on]) => on).map(([k]) => k);
+        expect(shown('tiles')).toEqual(['tiles']);
+        expect(shown('keypad')).toEqual(['keypad']);
+        expect(shown('digits')).toEqual(['keypad']);
+        expect(shown('select')).toEqual(['select']);
+        expect(shown('drag')).toEqual([]);
+    });
     it('lists five modes, digits among them', () => {
         expect([...ANSWER_MODES].sort()).toEqual(['digits', 'drag', 'keypad', 'select', 'tiles']);
     });
