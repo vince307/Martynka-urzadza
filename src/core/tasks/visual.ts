@@ -49,6 +49,9 @@ export type TaskVisual =
  */
 export type VisualShape = 'wide' | 'tall' | 'long';
 
+/** The answer modes with a layout for a tall drawing (`pictureLayout` `tallOf`). */
+export const TALL_MODES = ['tiles', 'keypad'] as const;
+
 export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */

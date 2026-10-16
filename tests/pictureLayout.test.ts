@@ -280,3 +280,14 @@ describe('the hint number line beside the keypad (visual gate S-14b: a 0..30 lin
         expect(picture.x).toBeGreaterThanOrEqual(notebook.left + notebook.border);
     });
 });
+
+describe('layout errors name the skill (WNA-02)', () => {
+    it('pictureLayout, answerSpans and hintPictureLayout put the skill id in the message', () => {
+        expect(() => pictureLayout(spec, 'select', false, 'tall', 'E9.1.x')).toThrow(/E9\.1\.x/);
+        expect(() => answerSpans(spec, 'tiles', 'tall', 'E9.1.x')).not.toThrow();
+        expect(() => hintPictureLayout(spec, 'tiles', 'E9.1.x')).toThrow(/E9\.1\.x/);
+    });
+    it('keeps the message without a skill id', () => {
+        expect(() => pictureLayout(spec, 'drag', false, 'tall')).toThrow(/no tall drawing for the drag mode/);
+    });
+});

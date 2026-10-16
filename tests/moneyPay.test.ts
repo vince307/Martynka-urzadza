@@ -193,7 +193,8 @@ describe('generateMoneyPay', () => {
     });
 
     it('a 6-year-old can solve it: the right wallet reaches done at the first try through the round', () => {
-        forEachDraw(generateMoneyPay, skill(E2_TRAY, 3, 20, ['pay', 'fewest']), {}, (task, where) => {
+        forEachDraw(generateMoneyPay, skill(E2_TRAY, 3, 20, ['pay', 'fewest']), {}, (generated, where) => {
+            const task = { ...generated, input: 'drag' as const };   // generateTask stamps the skill's mode
             const s = answer(startRound([task], balance.round), canonicalInput(task));
             expect(s.phase, where).toBe('done');
             expect(s.outcomes[0], where).toBe('first');
@@ -276,7 +277,8 @@ describe('MONEY_PAY in the programme (phase 8)', () => {
     });
     it('every programme draw is a coins task a wallet of tray coins can answer', () => {
         for (const sk of pay) {
-            forEachDraw(generateMoneyPay, sk, {}, (task, where) => {
+            forEachDraw(generateMoneyPay, sk, {}, (generated, where) => {
+                const task = { ...generated, input: 'drag' as const };   // generateTask stamps the skill's mode
                 expect(dragMode(task), where).toBe('coins');
                 expect(canonicalInput(task), where).toEqual(task.answer);
             });

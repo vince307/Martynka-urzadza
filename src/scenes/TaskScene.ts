@@ -434,7 +434,7 @@ export class TaskScene extends Scene {
                 this.diceView.show({ a: thrown.a, b: thrown.b, op: thrown.op });
             }
             if (view.input === 'tiles' && !diceRound) {
-                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide').tiles ?? undefined);
+                this.tiles.setChoices(view.choices, answerSpans(TASK_LAYOUT.picture, view.input, task0.visual ? visualShape(task0.visual) : 'wide', task0.skillId).tiles ?? undefined);
             }
             if (view.input === 'select') {
                 this.select.setChoices(view.choices);
@@ -461,13 +461,13 @@ export class TaskScene extends Scene {
         const task = this.state.tasks[this.state.index];
         // DESIGN-GAP 52 and 57 (docs/design-gaps.md): the picture area and the solution lines beside it come from pictureLayout.
         const solutionShown = view.bar.kind === 'solution';
-        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide');
+        const layout = pictureLayout(TASK_LAYOUT.picture, view.input, solutionShown, view.visual ? visualShape(view.visual) : 'wide', task.skillId);
         // A prompt too long for its room never runs over the drawing: the drawing gives way under it (visual gate S-13).
         const pictureRect = view.visual ? belowPrompt(layout.picture, this.promptBottom(), TASK_LAYOUT.picture.promptGap, TASK_LAYOUT.picture.minHeight) : layout.picture;
         const columnState = view.visual?.kind === 'column' ? { marks: columnMarks(view.visual, this.marksShown()), boxes: this.boxes, mode: this.state.phase === 'done' ? ('correct' as const) : view.inputActive ? ('active' as const) : ('locked' as const) } : undefined;
         this.picture.render(this.dragKind === 'clock' || this.dragKind === 'coins' ? null : view.visual, pictureRect, columnState);   // a clock to set is drawn by ClockSet, a payment by CoinWallet
         // S-14b: after a first miss a keypad task with a hint drawing shows it under the expression (DESIGN-GAP 92, docs/design-gaps.md).
-        const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input) : null;
+        const hintLayout = view.hintPicture && !view.visual ? hintPictureLayout(TASK_LAYOUT.picture, view.input, task.skillId) : null;
         this.hintPicture.render(view.hintPicture && hintLayout ? view.hintPicture : null, hintLayout ? hintLayout.picture : pictureRect);
         const finishedTask = this.state.phase === 'done';
         const shows = this.widgetsOf(view.input);
@@ -511,7 +511,7 @@ export class TaskScene extends Scene {
         }
         this.tiles.markHint(view.bar.kind === 'retype' && view.input === 'tiles' && !diceRound ? (task.answer as number | string) : null);
         this.select.markHint(view.bar.kind === 'retype' && view.input === 'select' ? (task.answer as number[]) : []);
-        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide').bar ?? undefined);
+        this.bar.update(view.bar, view.input, answerSpans(TASK_LAYOUT.picture, view.input, view.visual ? visualShape(view.visual) : 'wide', task.skillId).bar ?? undefined);
         if (view.bar.kind === 'solution') {
             // Steps sit under the expression, on its centre line (kit .equation holds the solution lines).
             // A drawing keeps its place and the lines take the rectangle beside or below it (DESIGN-GAP 57).

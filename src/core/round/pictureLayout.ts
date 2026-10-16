@@ -42,11 +42,13 @@ export interface TallSpec {
     answers?: Span;
 }
 
-const tallOf = (spec: PictureSpec, input: AnswerMode): TallSpec => {
+const forSkill = (skillId?: string): string => (skillId ? ` (skill ${skillId})` : '');
+
+const tallOf = (spec: PictureSpec, input: AnswerMode, skillId?: string): TallSpec => {
     switch (input) {
         case 'keypad': return spec.tall.keypad;
         case 'tiles': return spec.tall.tiles;
-        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode`);
+        case 'drag': case 'select': case 'digits': throw new Error(`no tall drawing for the ${input} mode${forSkill(skillId)}`);
         default: { const _exhaustive: never = input; return _exhaustive; }
     }
 };
@@ -62,9 +64,10 @@ export const pictureLayout = (
     input: AnswerMode,
     solution: boolean,
     shape: VisualShape,
+    skillId?: string,
 ): { picture: PictureRect; lines: PictureRect | null } => {
     if (shape === 'tall') {
-        const tall = tallOf(spec, input);
+        const tall = tallOf(spec, input, skillId);
         return { picture: tall.picture, lines: solution ? tall.lines : null };
     }
     if (shape === 'long' && input === 'tiles') {
@@ -84,11 +87,11 @@ export const pictureLayout = (
  * Where the answers and the bar go beside a drawing: null keeps the default (the notebook's tiles row, `TASK_LAYOUT.barSpan`).
  * A tall drawing moves the tiles row and the bar right of its column.
  */
-export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape): { tiles: Span | null; bar: Span | null } => {
+export const answerSpans = (spec: PictureSpec, input: AnswerMode, shape: VisualShape, skillId?: string): { tiles: Span | null; bar: Span | null } => {
     switch (input) {
         case 'tiles': case 'keypad': {
             if (shape !== 'tall') return { tiles: null, bar: null };
-            const tall = tallOf(spec, input);
+            const tall = tallOf(spec, input, skillId);
             return { tiles: tall.answers ?? null, bar: tall.bar };
         }
         case 'drag': case 'select': case 'digits': return { tiles: null, bar: null };
@@ -146,10 +149,10 @@ export const clockSetLayout = (drag: { mat: Rect; ok: Rect; solutionLines: Rect 
 };
 
 /** The hint number line and the solution lines under it; only the keypad task has room for them. */
-export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode): { picture: PictureRect; lines: PictureRect } => {
+export const hintPictureLayout = (spec: PictureSpec, input: AnswerMode, skillId?: string): { picture: PictureRect; lines: PictureRect } => {
     switch (input) {
         case 'keypad': return spec.hint.keypad;
-        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode`);
+        case 'tiles': case 'drag': case 'select': case 'digits': throw new Error(`no hint drawing for the ${input} mode${forSkill(skillId)}`);
         default: { const _exhaustive: never = input; return _exhaustive; }
     }
 };

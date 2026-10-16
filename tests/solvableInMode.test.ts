@@ -60,6 +60,18 @@ describe('validateTask is aware of the answer mode', () => {
         const t: Task = { ...base, input: 'drag', visual: { kind: 'thermometer', celsius: 3 } };
         expect(validateTask(t).map((v) => v.rule)).toContain('mode');
     });
+    it('flags a tall drawing in a mode that has no tall layout (select, drag, digits)', () => {
+        for (const input of ['select', 'drag', 'digits'] as const) {
+            const t: Task = { ...base, input, answer: input === 'select' ? [1] : 1, choices: input === 'select' ? [1, 2] : undefined, visual: { kind: 'thermometer', celsius: 3 } };
+            expect(validateTask(t, { allowNegative: true }).map((v) => v.rule), input).toContain('mode');
+        }
+    });
+    it('accepts a tall drawing with tiles or keypad', () => {
+        for (const input of ['tiles', 'keypad'] as const) {
+            const t: Task = { ...base, input, answer: 3, choices: input === 'tiles' ? [3, 4] : undefined, visual: { kind: 'thermometer', celsius: 3 } };
+            expect(validateTask(t, { allowNegative: true }).map((v) => v.rule), input).not.toContain('mode');
+        }
+    });
     it('accepts a drag task with a blocks drawing', () => {
         const t: Task = { ...base, input: 'drag', answer: 42, visual: { kind: 'blocks', hundreds: 0, tens: 4, ones: 2 } };
         expect(validateTask(t)).toEqual([]);
