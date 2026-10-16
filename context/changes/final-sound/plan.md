@@ -817,7 +817,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 1.4 [reviewer] `src/core/sound.ts` bez Phasera i globali; `src/data/sounds.ts` tylko typy z `core`; liczby tylko w `balance.ts`
+- [x] 1.4 [reviewer] `src/core/sound.ts` bez Phasera i globali; `src/data/sounds.ts` tylko typy z `core`; liczby tylko w `balance.ts` — impl review 2026-10-16 (PASS)
 
 ### Phase 2: Reguły cue dla rundy, panelu i przeciągania (czysta logika)
 
@@ -829,7 +829,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 2.4 [reviewer] Każdy z 12 efektów ma regułę albo nazwane miejsce; brak `music-loop` w regułach cue
+- [x] 2.4 [reviewer] Każdy z 12 efektów ma regułę albo nazwane miejsce; brak `music-loop` w regułach cue — impl review 2026-10-16 (PASS)
 
 ### Phase 3: Dźwięk nie zatrzymuje gry — cicha granica błędów i cięcie dekodującego audio
 
@@ -841,7 +841,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 3.4 [reviewer] Tylko dwie nazwy audio dodane; zdarzenia `error` bez zmian; wnętrze loadera tylko w `loaderCut.ts`
+- [x] 3.4 [reviewer] Tylko dwie nazwy audio dodane; zdarzenia `error` bez zmian; wnętrze loadera tylko w `loaderCut.ts` — impl review 2026-10-16 (PASS)
 
 ### Phase 4: Pliki dźwięku w `public/assets/sounds` i tabela równa plikom
 
@@ -853,7 +853,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 4.4 [reviewer] Nic z `designs/` ani `audio/wav` w commicie; rozmiary równe paczce
+- [x] 4.4 [reviewer] Nic z `designs/` ani `audio/wav` w commicie; rozmiary równe paczce — impl review 2026-10-16 (PASS)
 
 ### Phase 5: Ładowanie efektów, usługa dźwięku, magazyn preferencji i odczyt w haku
 
@@ -866,7 +866,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 5.5 [reviewer] `cache.audio.exists` przed `play`; przycięcie przed `delayedCall(0)`; `localStorage` tylko w `soundPrefs.ts`; klucze poza `SAVE_KEYS`
+- [x] 5.5 [reviewer] `cache.audio.exists` przed `play`; przycięcie przed `delayedCall(0)`; `localStorage` tylko w `soundPrefs.ts`; klucze poza `SAVE_KEYS` — impl review 2026-10-16 (PASS)
 
 ### Phase 6: Cue w zdarzeniach gry i mowa po cue
 
@@ -877,7 +877,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 6.3 [reviewer] Każde `play` z reguły `core` albo nazwanego miejsca; brak `narrator.cancel()`; luka 35 zamknięta
+- [x] 6.3 [reviewer] Każde `play` z reguły `core` albo nazwanego miejsca; brak `narrator.cancel()`; luka 35 zamknięta — impl review 2026-10-16 (PASS)
 
 ### Phase 7: Sekcja „Dźwięki” w panelu rodzica i muzyka
 
@@ -890,7 +890,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 #### Manual
 
 - [ ] 7.4 [visual] Panel 1440 i 1024: sekcja „Dźwięki” czytelna, wzór jak czytanie, linia braków ukryta przy zdrowym starcie
-- [ ] 7.5 [reviewer] Teksty tylko w `pl.ts`; DESIGN-GAP 114 w trzech miejscach; `localStorage` tylko przez `soundPrefs.ts`
+- [x] 7.5 [reviewer] Teksty tylko w `pl.ts`; DESIGN-GAP 114 w trzech miejscach; `localStorage` tylko przez `soundPrefs.ts` — impl review 2026-10-16 (PASS)
 
 ### Phase 8: Dokumentacja i follow-upy
 
@@ -901,7 +901,7 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Manual
 
-- [ ] 8.3 [reviewer] Seam sweep: nazwy w `CLAUDE.md` istnieją; brak zmian w `vite/config.shared.mjs` i `deploy/`
+- [x] 8.3 [reviewer] Seam sweep: nazwy w `CLAUDE.md` istnieją; brak zmian w `vite/config.shared.mjs` i `deploy/` — impl review 2026-10-16 (PASS)
 
 ### Phase 9: Cue we właściwych zdarzeniach, przełączniki rodzica i leniwa muzyka — e2e (#11, #14, #16)
 
