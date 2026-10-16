@@ -1,16 +1,16 @@
 # Handoff — `child-flow-guards` (slice fix:child-flow-guards)
 
-Written by the `/10x-implement` step for phase 13 (after phase 12 `8e19a7e`; the last impl phase of run 2026-10-16-audit-sweep). Phases 1-13 are committed (p13 `9635c99`); phase 14 (e2e) is open. Keep the save format v4.
+Written by the `/10x-e2e` step for phase 14 (the last phase of run 2026-10-16-audit-sweep). Phases 1-14 are committed (p14 `18b490c`). Keep the save format v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/child-flow-guards`, cut from `main` at `9b7fe37` |
-| Commits | docs + p1-p12 (see git log) + p13 `9635c99` `feat(child-flow-guards): Mode widgets, e2e skills seam, docs and seam sweep (p13)` + handoffs |
+| Commits | docs + p1-p12 (see git log) + p14 `18b490c` `test(child-flow-guards): puzzle paid once, solution fits (p14)` + p13 `9635c99` `feat(child-flow-guards): Mode widgets, e2e skills seam, docs and seam sweep (p13)` + handoffs |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | left `plan_reviewed` (orchestrator's) |
-| `## Progress` rows remaining | phase 13: 13.6, 13.7 `[reviewer]`; phase 12: 12.4 `[reviewer]`; phase 11: 11.4; phase 10: 10.4, 10.5 `[visual]`; phase 9: 9.4, 9.5 `[human]`; 8.4; 7.5; 6.5-6.7; 5.5-5.7; 4.4; 3.5, 3.6; 2.5-2.7; phase 14 open |
+| `change.md` status | `implemented` (epilogue, rows `[reviewer]`/`[visual]`/`[human]` still open) |
+| `## Progress` rows remaining | phase 13: 13.6, 13.7 `[reviewer]`; phase 12: 12.4 `[reviewer]`; phase 11: 11.4; phase 10: 10.4, 10.5 `[visual]`; phase 9: 9.4, 9.5 `[human]`; 8.4; 7.5; 6.5-6.7; 5.5-5.7; 4.4; 3.5, 3.6; 2.5-2.7; phase 14: 14.4 `[human]` |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
@@ -27,18 +27,16 @@ Written by the `/10x-implement` step for phase 13 (after phase 12 `8e19a7e`; the
 
 | command | result |
 |---|---|
-| RED | `modeWidgets` / throwing `forcedSkills` tests written with the code in one step (all pure); break below proves the map test |
-| Break | `modeWidgets('select')` returning tiles: `answerModes > shows exactly one input widget per mode` red (1 failed), restored |
-| Meta-check | proves the map only; the scene wiring is proven by the e2e gate. First e2e run caught that a strict throw on another-stage ids broke parent-settings #14, so cross-stage ids stay null |
-| `validate-rule-files.sh` | PASS; a broken path in `CLAUDE.md` gave `missing: 1` FAIL; restored, PASS |
-| unit | Tests 3416 passed (p12 3413, +3) |
-| lint / typecheck / deploy scripts / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 125 passed (10.2m) = baseline + 0, after the last code edit |
-| Seam sweep | one `canSubmit`, `drawUntil`, `dialGeometry`, `cellPositions`; no `snap ?? `, no `?.show` on a missing pool, no "14 %" outside the test that explains the change; every `MAX_ATTEMPTS` still used; gap rows 122-125 match the DESIGN-GAP comments and are in order; every name in the `CLAUDE.md` paragraph exists in `src/` |
+| Spec | `tests/e2e/child-flow-guards.spec.ts` (chromium-hook, added to `ROUND_SPEC`): `#2 SV2-10 a puzzle answered and closed before Dalej is not paid again the same day`, `#11 WNA-04 the solution lines of a drawn task fit on the screen` (E6.3.perimeter_composite, every solution step reads `solutionOverflow === false`); `Snapshot.solutionOverflow` added to `support/hook.ts` |
+| Break a | `TaskScene.submit`: the `countRound(this.kind)` call removed -> `#2` red on `Expected: not "puzzle"`; restored |
+| Break b | `SolutionSteps.overflowed()` returns `true` -> `#11` red `Expected: false / Received: true`; restored |
+| Meta-check | (a) proves the write timing on real IndexedDB; (b) proves the measured flag reaches the hook, not that every skill fits |
+| lint / typecheck / unit / deploy scripts / sample E1-E6 / build | OK; Tests 3416 passed; `e2e hook: absent (2 chunks checked)`; `validate-rule-files.sh` PASS |
+| e2e `--workers=4` | 127 passed (10.1m) = baseline 125 + 2; no flake |
 
 ## 4. Next command
 
-`/10x-e2e child-flow-guards phase 14`
+`/10x-impl-review child-flow-guards`
 
 ## 5. Open
 
@@ -56,6 +54,8 @@ Written by the `/10x-implement` step for phase 13 (after phase 12 `8e19a7e`; the
 - Phase 4 `[reviewer]` 4.4: `afterRound` reachable once per variant round (submit counts, `finishVariant` skips); the 3.x flaky `final-art-loading #15` did not fail this time.
 
 ## 6. Autonomous decisions
+
+- **Phase 14 e2e scope**: both risks are browser-level, no mixed phase. (b) uses the E6 stage (age 8 path, since age 10 proposes E6) because `?e2eSkills` of another stage is ignored. No clipboard hand-off. Would change: a reviewer wanting a second skill (PUZZLE_GRID) for (b).
 
 - **Phase 13 impl scope**: `widgetsOf` moved verbatim to core as `modeWidgets`. `forcedSkills` throws only for ids no stage has or unplayable ones; an id of another stage stays an ordinary round (deviation from the plan's "unknown id throws", forced by parent-settings #14). `KNOWN_SMALL` needed no follow-up (no entry). Seam sweep found nothing to fix; leftovers are recorded as the last follow-up. Would change: a spec that wants a cross-stage id to fail loudly.
 

@@ -1112,9 +1112,9 @@ Details.
 
 #### Automated
 
-- [x] 14.1 `npx playwright test tests/e2e/child-flow-guards.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [x] 14.2 Deliberate break p14a → (a) red; p14b → (b) red; each restored; meta-check
-- [x] 14.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 14.1 `npx playwright test tests/e2e/child-flow-guards.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2` — 18b490c
+- [x] 14.2 Deliberate break p14a → (a) red; p14b → (b) red; each restored; meta-check — 18b490c
+- [x] 14.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — 18b490c
 
 #### Manual
 

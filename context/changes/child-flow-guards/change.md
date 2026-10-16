@@ -1,7 +1,7 @@
 ---
 change_id: child-flow-guards
 title: Child-flow guards for tasks, widgets and gestures (audit sweep slice 1)
-status: plan_reviewed
+status: implemented
 created: 2026-10-16
 updated: 2026-10-16
 archived_at: null
