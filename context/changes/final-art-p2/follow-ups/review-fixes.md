@@ -38,3 +38,12 @@ Each item has a `Trigger:` line; later slices grep for them. Nothing from earlie
 
 - S14-09 (a key outside `TASK_ART` drawn 1:1): closed for `UI_ART` keys by the `SIZES` lookup.
 - Impl-review F3 (slow timer elapsed), `progress` listener, A-10 (log once), F2 (miniature, by the thumbnail fallback), `CoinWallet.paint` lifted cell, wallet art (gap 104 narrowed), loading art (gap 105), notebook (gap 22), room-list miniature fallback (gap 108).
+
+## From the implementation review (2026-10-16)
+
+- F4: `BootScene.preload` reads `startedAt = this.time.now` before the scene clock's first update, so the elapsed time of the slow timer can overestimate (the re-arm branch is mostly inert; behaviour equals main).
+  Trigger: the next change to the `BootScene.preload` slow timer, or a report of the slow line appearing too early
+- F5: app icons are unoptimised 24-bit PNG from `dwebp` (`icon-512.png` 323 406 B, all icons 530 114 B in the precache); `tests/appIcons.test.ts` floor `> 100 KB` would block an optimised file.
+  Trigger: precache over budget, or a PNG optimiser available without a new npm dependency
+- F6: `scripts/make-icons.mjs` `fail()` exits inside `try`, leaving the temp dir; a missing binary prints `ENOENT` instead of the "is cwebp installed?" text of `make-task-art.mjs`.
+  Trigger: the next change to `scripts/make-icons.mjs`

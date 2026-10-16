@@ -766,7 +766,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 1.5 [reviewer] Teacher read of E1.11 / E2.2 recorded; `ART_LIMITS.moneyItems` still 10; no number in `core` that belongs in `balance`/`layout`
+- [x] 1.5 [reviewer] Teacher read of E1.11 / E2.2 recorded; `ART_LIMITS.moneyItems` still 10; no number in `core` that belongs in `balance`/`layout` — impl-review: teacher read recorded; moneyItems 10
 
 ### Phase 2: Art files and tables — UI art, three counting icons
 
@@ -779,7 +779,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Nothing from `designs/` staged; `salon-before` not converted; teacher read E1–E3 recorded
+- [x] 2.5 [reviewer] Nothing from `designs/` staged; `salon-before` not converted; teacher read E1–E3 recorded — impl-review: nothing from designs/, no salon-before, teacher read E1-E3
 
 ### Phase 3: Fallback decisions — which picture to show (pure logic)
 
@@ -791,7 +791,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 3.4 [reviewer] `src/core/artPick.ts` has no Phaser or browser globals (ESLint boundary)
+- [x] 3.4 [reviewer] `src/core/artPick.ts` has no Phaser or browser globals (ESLint boundary) — impl-review: no Phaser/browser globals
 
 ### Phase 4: Wallet widget with the pack art
 
@@ -804,7 +804,7 @@ None: save format v3 unchanged; no new storage key.
 #### Manual
 
 - [ ] 4.4 [visual] MONEY_PAY E1 and E2 at 1440 and 1024: wallet art, six coins centred, 10 zł note fits, full wallet dims the tray, coins ≥ touch size; feedback bar above the wallet's lower edge
-- [ ] 4.5 [reviewer] No number or text in the widget; DESIGN-GAP 115 row and comment
+- [x] 4.5 [reviewer] No number or text in the widget; DESIGN-GAP 115 row and comment — impl-review: no number/text in CoinWallet; gap 115 row and comment
 
 ### Phase 5: Loading screen with background and emblem
 
@@ -817,7 +817,7 @@ None: save format v3 unchanged; no new storage key.
 #### Manual
 
 - [ ] 5.4 [visual] Loading screen at 1440 and 1024: background, emblem, title readable, bar and slow line
-- [ ] 5.5 [reviewer] `progress` listener removed; `loaderror` listener untouched; `totalMs` comment numbers match the files
+- [x] 5.5 [reviewer] `progress` listener removed; `loaderror` listener untouched; `totalMs` comment numbers match the files — impl-review: listener removed, loaderror untouched; totalMs comment fixed in 04863b9
 
 ### Phase 6: Notebook on the unlock card, salon thumbnail fallback on "Pokój gotowy!"
 
@@ -829,7 +829,7 @@ None: save format v3 unchanged; no new storage key.
 #### Manual
 
 - [ ] 6.3 [visual] Unlock card with the notebook; "Pokój gotowy!" live and (with `?e2eArt=room`) thumbnail, at 1440 and 1024
-- [ ] 6.4 [reviewer] `drawRoomMiniature` untouched for the live path; no new text or numbers in widgets
+- [x] 6.4 [reviewer] `drawRoomMiniature` untouched for the live path; no new text or numbers in widgets — impl-review: RoomView.ts unchanged
 
 ### Phase 7: App icons from the pack
 
@@ -852,7 +852,7 @@ None: save format v3 unchanged; no new storage key.
 
 #### Manual
 
-- [ ] 8.3 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; `docs/human-checklist.md` untouched
+- [x] 8.3 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; `docs/human-checklist.md` untouched — impl-review: CLAUDE.md name fixed in 04863b9; human-checklist unchanged
 
 ### Phase 9: Loading screen art and its drawn fallback when cut — e2e (#15)
 
