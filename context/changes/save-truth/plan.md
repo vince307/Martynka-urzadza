@@ -1102,11 +1102,11 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `problem` null after the loop / `cardCopyFor` without the `from` branch → red; restored; meta-check (decode report, not rendering)
-- [ ] 1.3 `git diff --stat tests/fixtures` shows only the new `save-v1-legacy-salon.json`; `SAVE_VERSION` still 4; every v1–v4 fixture test green
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`)
-- [ ] 1.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-restart.spec.ts` and `save-transfer-blocked.spec.ts` green with the changed `corrupt` seam
+- [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 66c6989
+- [x] 1.2 Deliberate break: `problem` null after the loop / `cardCopyFor` without the `from` branch → red; restored; meta-check (decode report, not rendering) — 66c6989
+- [x] 1.3 `git diff --stat tests/fixtures` shows only the new `save-v1-legacy-salon.json`; `SAVE_VERSION` still 4; every v1–v4 fixture test green — 66c6989
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — 66c6989
+- [x] 1.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-restart.spec.ts` and `save-transfer-blocked.spec.ts` green with the changed `corrupt` seam — 66c6989
 
 #### Manual
 
