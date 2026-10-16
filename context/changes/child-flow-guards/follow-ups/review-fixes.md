@@ -32,7 +32,8 @@ Trigger: the next change to a generator that loops
 - **`modeWidgets` not yet the only mode switch in `TaskScene.render`** (impl review F2): phase 13 moved the private `widgetsOf` to `src/core/round/view.ts` `modeWidgets`, but the boolean `view.input === '…'` checks in `TaskScene.render`/`snapshot` stay (same count as main); the plan wanted `render` to ask the map instead.
 Trigger: the next change to `TaskScene.render`, or a new answer mode
 - **Cell floor checked only in tests** (impl review F3): `drawingFit` (`src/core/round/drawingFit.ts`) is asserted over `pictureLayout` rects in `tests/drawingFit.test.ts`, but at runtime `belowPrompt(..., TASK_LAYOUT.picture.minHeight)` in `TaskScene.render` can shrink the rect under a long prompt, and `NumberCells`/`CoordGrid` do not clamp (no `minScale` in `TASK_LAYOUT.cells`/`coord`, p10 deviation).
-Trigger: visual gate row 10.5 of this change, or a GRID/PUZZLE_GRID skill with a prompt longer than two lines
+  Visual gate 2026-10-16 (row 10.5): with a three-line prompt the E3.5 pyramid cells measure about 63 game px at 1440 and at 1024 (47 and 34 screen px), the E6.3 composite lattice of 7 x 5 about 36.7 game px at 1024 (137 screen px / 7): the floor of 36 holds in these frames, with no margin on a wide lattice.
+Trigger: a GRID/PUZZLE_GRID/PERIMETER skill with a prompt longer than three lines or a lattice wider than 7 cells
 - **A lost `up` of one pointer holds the clock hand against another pointer** (impl review F4): `stepClockSet` ignores a `down` of another pointer id while a hand is carried, and `canSubmit` blocks "OK"; on a touch-only tablet every touch is pointer 1 (recovers), only mixed mouse + touch can stay held until "Do pokoju".
 Trigger: a device report of a clock hand that cannot be put down, or a change of `input.activePointers`
 - **Clean-round bonus of a variant lost on a close before "Dalej"** (impl review F5): the variant is now counted at its last answer (`TaskScene.submit`), but `cleanRoundBonus` is paid in `next()` at "Dalej"; a close in between records the day's puzzle without the bonus.
@@ -40,4 +41,12 @@ Trigger: the next change to variant rounds (`src/core/variants.ts`, `TaskScene.f
 - **ORDINAL art rule counts loaded icons, the generator shuffles all `ICONS`** (impl review F6): `artBlocked` 'ORDINAL' (`src/core/round/artFilter.ts`) admits the skill with ≥ `max` icons loaded, while `generateOrdinal` draws from all 15, so with many icons missing the G-4 redraw rarely helps and stand-ins show.
 Trigger: the next change to `artFilter.ts` or `ordinal.ts`, or an "Obrazki" report with icons missing
 - **Progress preview "began" rule** (impl review F7): `progressView` counts previous-stage misses from the earliest current-stage history entry, so warm-up misses show and a stage the parent just raised shows none.
-Trigger: visual gate row 2.6 of this change, or a parent finding the list confusing
+  Visual gate 2026-10-16 (row 2.6): on E6.11 the E5 skill heads the list under its own E5 step title ("Dzielenie do 100, …", "Liczby słowami do 100; …"), with no stage name; the list reads clearly, but nothing tells the parent that the skill is from the previous half-year.
+Trigger: a parent finding the list confusing, or the next change to `progressView`
+
+## From the visual gate (2026-10-16)
+
+- **E3.5 pyramid solution overflows at its third step** (VG-1): a pyramid with the base cell missing (`E3.5.pyramid_30`, e.g. values 10/7 3/6 1 ?) has three solution lines (method, reverse rule, `3 − 1 = 2`); at the third step `SolutionSteps` is clamped to `minScale` 0.6 and the hook's `solutionOverflow` is true (observed at 1440 and 1024, frames `*-pyramid-solution-step2.jpg`). Every line is still on screen above "Już wiem", but at 1024 the text is about 10 px tall. The perimeter composite (e2e #11) does not overflow.
+Trigger: the next change to the PUZZLE_GRID hint lines (`src/core/tasks/generators/puzzleGrid.ts`) or to `TASK_LAYOUT.keypadSolution`, or a console report `Solution lines overflow at the smallest scale: E3.5.pyramid_30`
+- **Money in a wrapped example breaks between the number and "zł"** (VG-2): the progress preview prints a wallet as "5 zł, 2 zł, 2 zł" with plain spaces, so the panel can wrap "2 / zł" (frame `desktop-progress-e1.jpg`).
+Trigger: the next change to `src/ui/dom/progressView.ts` or `formatMoney`

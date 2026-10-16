@@ -959,7 +959,7 @@ Details.
 #### Manual
 
 - [x] 2.5 [reviewer] DESIGN-GAP 122 row and comment present; no Polish text in `src/core` — impl review
-- [ ] 2.6 [visual] Parent progress preview with a weak E5 skill while on E6.11, at 1440 (1920×1080 fit) and 1024×768
+- [x] 2.6 [visual] Parent progress preview with a weak E5 skill while on E6.11, at 1440 (1920×1080 fit) and 1024×768 — visual gate (reviews/visual-review.md)
 - [ ] 2.7 [human] Accept the E6.11 review share 90/10 (easing 70/30) instead of S-14c's ≈ 14 %
 
 ### Phase 3: Mistake examples for list answers (PIC-04, S13-06)
@@ -974,7 +974,7 @@ Details.
 #### Manual
 
 - [x] 3.5 [reviewer] DESIGN-GAP 123 row and comment present; `validExample` in `src/core/save.ts` unchanged — impl review
-- [ ] 3.6 [visual] Parent progress preview with a wallet example and a shapes example, at 1440 (1920×1080 fit) and 1024×768
+- [x] 3.6 [visual] Parent progress preview with a wallet example and a shapes example, at 1440 (1920×1080 fit) and 1024×768 — visual gate (reviews/visual-review.md)
 
 ### Phase 4: A variant round is counted at its last answer (SV2-10)
 
@@ -1000,7 +1000,7 @@ Details.
 #### Manual
 
 - [x] 5.5 [reviewer] `Task.check` still boolean in all five readers; DESIGN-GAP 124 row and comment present — impl review
-- [ ] 5.6 [visual] MONEY_PAY "fewest" task after a same-sum longer wallet, bar with the new line, at 1440 (1920×1080 fit) and 1024×768
+- [x] 5.6 [visual] MONEY_PAY "fewest" task after a same-sum longer wallet, bar with the new line, at 1440 (1920×1080 fit) and 1024×768 — visual gate (reviews/visual-review.md)
 - [ ] 5.7 [human] Accept the wording of the new wallet line (gap 124; the kit has no such copy)
 
 ### Phase 6: COMPARE_QTY tile order and a first hint for every skill (PIC-06, TXT-02, HALF)
@@ -1015,7 +1015,7 @@ Details.
 #### Manual
 
 - [x] 6.5 [reviewer] DESIGN-GAP 125 row and comment present; `SUPPRESSED_OK` holds only the three phrasing cases with a reason — impl review
-- [ ] 6.6 [visual] COMPARE_QTY tiles in the new order and an E3.10 HALF first hint, at 1440 (1920×1080 fit) and 1024×768
+- [x] 6.6 [visual] COMPARE_QTY tiles in the new order and an E3.10 HALF first hint, at 1440 (1920×1080 fit) and 1024×768 — visual gate (reviews/visual-review.md)
 - [ ] 6.7 [human] Accept the fixed COMPARE_QTY tile order "Po lewej · Tyle samo · Po prawej" (gap 125)
 
 ### Phase 7: Bounded generator loops and parser bounds (GRD-05, S13-12, F9, SHAPES `all`, WNA-06, TXT-07, TXT-08)
@@ -1067,7 +1067,7 @@ Details.
 #### Manual
 
 - [x] 10.4 [reviewer] `KNOWN_SMALL` empty or each entry has a follow-up; `minCell` read in one place — impl review
-- [ ] 10.5 [visual] PERIMETER composite and PUZZLE_GRID pyramid in the solution phase, at 1440 (1920×1080 fit) and 1024×768
+- [x] 10.5 [visual] PERIMETER composite and PUZZLE_GRID pyramid in the solution phase, at 1440 (1920×1080 fit) and 1024×768 — visual gate (reviews/visual-review.md)
 
 ### Phase 11: Widget pool guards and types (S13-11, S14-10, S14-09, GRD-06, WNA-05, WNA-07)
 
