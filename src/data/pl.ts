@@ -37,7 +37,9 @@ export const pl = {
         soundHeading: 'Dźwięki',
         effectsHeading: 'Efekty dźwiękowe',
         musicHeading: 'Muzyka',
-        soundMissing: (n: number) => `Nie wczytało się ${countNoun(n, ['dźwięk', 'dźwięki', 'dźwięków'])}. Gra działa dalej bez nich.`,
+        // The verb and the pronoun agree with the count (1 nie wczytał się … bez niego, 2-4 nie wczytały się, 5+ nie wczytało się).
+        soundMissing: (n: number) =>
+            `Nie ${inflect(n, ['wczytał', 'wczytały', 'wczytało'])} się ${countNoun(n, ['dźwięk', 'dźwięki', 'dźwięków'])}. Gra działa dalej bez ${inflect(n, ['niego', 'nich', 'nich'])}.`,
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
         // Progress preview (S-08 phase 8). Numbers only, no nouns, so no numeral agreement is needed; the step name is the author-facing step title.
         progressHeading: 'Postępy',

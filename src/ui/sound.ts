@@ -46,6 +46,9 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
     const musicDef = SOUNDS.find((s) => s.id === 'music-loop');
     const locked = (): boolean => ('locked' in game.sound ? Boolean((game.sound as { locked?: boolean }).locked) : false);
     const stopMusic = (): void => {
+        // A sound that exists was only waiting for the unlock ("loading" without a download): it ends as off. A download
+        // in flight (no sound yet) stays "loading" so a second "on" does not queue the file twice.
+        const waitingForUnlock = musicSound !== undefined;
         try {
             musicSound?.stop();
             musicSound?.destroy();
@@ -53,7 +56,7 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
             console.warn('Music did not stop cleanly', error);
         }
         musicSound = undefined;
-        if (musicState !== 'loading') musicState = 'off';
+        if (waitingForUnlock || musicState !== 'loading') musicState = 'off';
     };
     /** Starts the loop once the audio context allows it (a preference saved as on waits for the first gesture). */
     const playMusic = (): void => {

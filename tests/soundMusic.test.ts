@@ -83,6 +83,20 @@ describe('music through the sound service', () => {
         expect(service.status().music).toBe('playing');
     });
 
+    // S-16b impl review: a music waiting for the unlock and turned off must not stay "loading" and block the next "on".
+    it('turned off while waiting for the unlock, the music is off and starts again at the next on', () => {
+        const r = rig({ locked: true });
+        const service = createSoundService(r.game, { effects: true, music: true });
+        service.attachLoader(r.load);
+        r.finish();
+        service.setPrefs({ effects: true, music: false });
+        expect(service.status().music).toBe('off');
+        service.setPrefs({ effects: true, music: true });
+        r.unlock();
+        expect(service.status().music).toBe('playing');
+        expect(r.played.filter((p) => p === 'play')).toHaveLength(1);
+    });
+
     it('turning the music off stops and destroys it; a music turned off while loading does not start', () => {
         const r = rig();
         const service = createSoundService(r.game, { effects: true, music: true });
