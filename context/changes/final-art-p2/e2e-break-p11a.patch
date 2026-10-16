@@ -1,0 +1,12 @@
+diff --git a/src/ui/widgets/RoomDoneCard.ts b/src/ui/widgets/RoomDoneCard.ts
+--- a/src/ui/widgets/RoomDoneCard.ts
++++ b/src/ui/widgets/RoomDoneCard.ts
+@@ -92,7 +92,7 @@
+         g.strokeRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
+         const thumbWidth = ROOM_LAYOUT.scene.width * tiles.thumbScale;
+         const exists = (key: string): boolean => this.scene.textures.exists(key);
+-        const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, UI_ART_KEYS.salonAfter);
++        const mode: MiniatureMode = (miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, UI_ART_KEYS.salonAfter), 'live');
+         this.mode = mode;
+         const thumbLeft = left + (tiles.width - thumbWidth) / 2;
+         if (mode === 'thumbnail') {
