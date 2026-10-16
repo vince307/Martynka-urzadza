@@ -907,12 +907,12 @@ Brak zmiany formatu (v3). Nowy klucz `localStorage` `martynka:sound`; jego brak 
 
 #### Automated
 
-- [ ] 9.1 `npx playwright test tests/e2e/final-sound.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N`
-- [ ] 9.2 Deliberate break p9a (bez cue w `submit`) → (a) czerwony; przywrócone; meta-check
-- [ ] 9.3 Deliberate break p9b (panel bez `setPrefs`/zapisu) → (c) czerwony
-- [ ] 9.4 Deliberate break p9c (muzyka w kolejce startu) → (c) czerwony; meta-check
-- [ ] 9.5 Deliberate break p9d (pokój bez `panelCue`) → (b) czerwony
-- [ ] 9.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite
+- [x] 9.1 `npx playwright test tests/e2e/final-sound.spec.ts` zielone; pełne `--workers=4`: `<baseline gałęzi e2e> + N` — 54b1ee4
+- [x] 9.2 Deliberate break p9a (bez cue w `submit`) → (a) czerwony; przywrócone; meta-check — 54b1ee4
+- [x] 9.3 Deliberate break p9b (panel bez `setPrefs`/zapisu) → (c) czerwony — 54b1ee4
+- [x] 9.4 Deliberate break p9c (muzyka w kolejce startu) → (c) czerwony; meta-check — 54b1ee4
+- [x] 9.5 Deliberate break p9d (pokój bez `panelCue`) → (b) czerwony — 54b1ee4
+- [x] 9.6 `npm run build` drukuje `e2e hook: absent (`; pełna bramka lokalna zielona; serwery 4397/4398 zabite — 54b1ee4
 
 #### Manual
 
