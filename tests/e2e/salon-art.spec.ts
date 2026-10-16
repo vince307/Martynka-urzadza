@@ -138,7 +138,7 @@ test('#16 with the salon pictures missing the room stays playable on stand-ins a
     await expect.poll(async () => (await snapshot(page)).roomArtHealth?.total ?? 0).toBeGreaterThan(0);
     const health = (await snapshot(page)).roomArtHealth!;
     expect(health.missing).toBe(health.total);
-    expect(health.total).toBe(26);
+    expect(health.total).toBe(38);
 
     await tapTarget(page, 'taskButton');
     await expect.poll(async () => (await room(page)).room.tasksDone).toBe(1);

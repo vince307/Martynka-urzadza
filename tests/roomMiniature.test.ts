@@ -15,6 +15,7 @@ describe('miniaturePieces', () => {
         const k = keys({ tasksDone: 1, chosen: {} });
         expect(k[0]).toBe(SALON.scene.after);
         expect(k).toContain(SALON.decor[0].key);
+        for (const id of ['lamp-table', 'plant-left', 'pouf']) expect(k).toContain(SALON.slots.find((s) => s.id === id)!.variants[0]);
         expect(k).not.toContain(SALON.scene.furnishingsBefore);
         expect(k).not.toContain(SALON.scene.shadows);
     });

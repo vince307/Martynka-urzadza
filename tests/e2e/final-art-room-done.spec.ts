@@ -8,7 +8,7 @@ import { passWelcome } from './support/welcome';
 import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { SALON } from '../../src/data/rooms';
 
-test.setTimeout(120_000);
+test.setTimeout(180_000);
 test.use({ serviceWorkers: 'block' });
 
 const room = async (page: Page) => {

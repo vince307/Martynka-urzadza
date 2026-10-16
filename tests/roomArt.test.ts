@@ -32,8 +32,8 @@ const filesUnder = (dir: string, base = ''): string[] =>
     );
 
 describe('room art table', () => {
-    it('has 26 entries, each a WebP file of the tabled size', () => {
-        expect(ROOM_ART).toHaveLength(26);
+    it('has 38 entries, each a WebP file of the tabled size', () => {
+        expect(ROOM_ART).toHaveLength(38);
         for (const art of ROOM_ART) {
             expect(webpSize(readFileSync(join(PUBLIC, art.url))), art.url).toEqual({ width: art.width, height: art.height });
         }
@@ -62,8 +62,8 @@ describe('room art table', () => {
         }
     });
 
-    it('weighs at most 1 400 000 bytes in total', () => {
+    it('weighs at most 1 550 000 bytes in total', () => {
         const total = ROOM_ART.reduce((sum, art) => sum + statSync(join(PUBLIC, art.url)).size, 0);
-        expect(total).toBeLessThanOrEqual(1_400_000);
+        expect(total).toBeLessThanOrEqual(1_550_000);
     });
 });
