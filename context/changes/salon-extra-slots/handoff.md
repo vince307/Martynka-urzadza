@@ -1,23 +1,24 @@
 # Handoff — `salon-extra-slots` (slice S-16d)
 
-Written by the `/10x-new` step of autonomous run `2026-10-15-fix-s16bcd`: the change identity exists with the roadmap claims checked against the repo, the fired follow-ups and six autonomous decisions. Nothing is implemented. The next agent must not get this wrong: the 5 new tasks are APPENDED after the 7 existing ones (order curtains, shelf, lamp, plant-left, pouf) and the save format stays v3 — `SALON_V3_TARGET` in `src/core/migrations/legacySalon.ts` is never edited.
+Written by the `/10x-research` step of autonomous run `2026-10-15-fix-s16bcd`: `research.md` answers every unknown of `change.md` with file + symbol anchors and measured art weights; nothing is implemented. The next agent must not get this wrong: two existing invariants in `tests/roomsData.test.ts` (non-decreasing costs, every piece inside the scene) contradict the author's data (costs 8–15 appended after 15; curtains at y −70) and must be changed deliberately, not worked around; `SALON_V3_TARGET` stays untouched and the save stays v3.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-extra-slots`, cut from `main` at `a06795b` |
-| Commits | 1 on top of main: `docs(salon-extra-slots): change identity (autonomous run)` |
+| Commits | 2 on top of main: `docs(salon-extra-slots): change identity (autonomous run)`, `docs(salon-extra-slots): research` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | Progress rows remaining | no `plan.md` yet |
-| Working tree | clean after the commit (the maintainer's gitignored `designs/`, `.claude/`, `context/runs/` untouched) |
+| Working tree | clean after the commit (gitignored `designs/`, `.claude/`, `context/runs/` untouched; WebP measurements written only to `$TMPDIR/s16d-webp`) |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `context/changes/salon-extra-slots/change.md` | change identity: outcome, binding author decisions, why no save migration, roadmap claim → repo now → correction table, fired follow-ups with scope takes, `## Autonomous decisions` |
+| `context/changes/salon-extra-slots/research.md` | research: data model for the pre-purchase look, curtains above the scene, depth, art switch + measured sizes, live saves, `curtains` v2 key, miniature, minigame words, tests/specs to change, M-6 |
+| `context/changes/salon-extra-slots/change.md` | frontmatter only: `status: new → preparing`, `updated` |
 | `context/changes/salon-extra-slots/handoff.md` | this file |
 
 ## 3. Verification
@@ -25,30 +26,38 @@ Written by the `/10x-new` step of autonomous run `2026-10-15-fix-s16bcd`: the ch
 | Command | Result |
 |---|---|
 | `git branch --show-current` | `feat/salon-extra-slots` (observed) |
-| Code gates (lint, typecheck, unit, build, e2e) | not run: docs-only step, no code changed. Baseline on main at a06795b per the contract (inherited, unverified): unit 3063 passed, e2e 117 passed |
-| Repo facts in the claim table | observed in this step: `SALON` 6 slots / 4 decor / 7 tasks (`src/data/rooms.ts`); pin test `tests/legacySalonMigration.test.ts` "L-1: the v3 target is the first 7 tasks…" uses `SALON.tasks.slice(0, 7)`; pack manifest has 11 slots (`curtains` y -70 z 3, `wall-shelf` z 18), `layers` = `plant-right` only; `scripts/make-task-art.mjs` reads the room from `designs/martynka-expansion-v1`; `validateSave` checks `chosen` values only |
+| `cwebp -q 85 -alpha_q 100 -m 6` on the 12 new PNGs + 2 architecture PNGs into `$TMPDIR` | new 12 files 261 428 B; architecture 170 408 → 165 426 B; room folder 1 233 242 → 1 489 688 B (observed) |
+| `cmp` expansion-v1 vs salon-v2 | all 22 furniture PNGs, `furnishings-before.png`, `shadows.png` identical (observed) |
+| re-encode `sofa-morska` from salon-v2 vs committed WebP | byte-identical: `cwebp` deterministic (observed) |
+| Code gates (lint, typecheck, unit, build, e2e) | not run: research step, no product code changed. Baseline on main at a06795b (contract, inherited, unverified): unit 3063, e2e 117 |
+| `metadata-guard.mjs mark-researched` | `changed: true` (observed) |
 
 ## 4. Next command
 
-`/10x-research salon-extra-slots`
+`/10x-plan salon-extra-slots`
 
 ## 5. Open
 
-Research questions (from `change.md` table):
-- Does `designs/martynka-salon-v2/assets/room/furnishings-before.png` (inherited from v1) still show old curtains/lamp/plant/pouf in the "before" look, and is that consistent with the curtain-less `architecture-before`?
-- Data model for "shown as variant 0 until bought" (`SlotDef` field vs keeping a `LayerDef`), and its effect on `RoomView.render`, `RoomView.drawRoomMiniature` (is it still used after S-16c's thumbnail?), `roomHit.slotAt`/`holdPoint`, `RoomScene.snapshot`, `src/testing/e2eHook.ts`.
-- Negative `y` of the curtains slot in drawing, hit test and thumbnails (`ROOM_LAYOUT.thumbs`).
-- `curtains` is also an old v2-only key (`OLD_ONLY_KEYS` in `legacySalon.ts`): confirm `LIFT_V2_SALON` runs only on v2 saves, pin with a test.
-- Copy: 5 task labels (accusative), 5 slot captions, 15 variant names from the manifest, `pl.room.decor` entries for moved ids; teacher read of the copy.
-- Precache delta of 12 new WebP + 2 replaced scene pictures.
-- Side effects on a previously done salon: mode button "Zmień wygląd" hidden and teaser locked until the 12th task.
-
-Follow-ups fired (detail in `change.md` § "Open follow-ups whose trigger this slice fires"): final-art-salon "append at the end" (in scope), M-R4 order guard (in scope), M-6 `check:deploy` room-art count (first half in scope), texture atlas (conditional on budget), F2 / L-4 / L-7 / L-R8 / L-R11 / F1 (conditional on touching their symbols), VO2 / VO1 / VO3 / costs (out, re-triggered). The plan writes the carried ones to `follow-ups/review-fixes.md`.
+Choices for the plan (research.md "Open Questions"), with the research recommendation:
+- Costs: (a) 8, 10, 12, 13, 15 (total 129, recommended) vs (b) all 15 (total 146); edit `tests/roomsData.test.ts` "has one furniture task per slot, whole costs of 5-15 stars that never fall" accordingly.
+- Pre-purchase look: optional `SlotDef` field on `lamp-table`, `plant-left`, `pouf` + one pure helper in `src/core/rooms.ts` used by `RoomView.render` and `miniaturePieces`; `SALON.decor` keeps only `plant-right`; `pl.room.decor` loses the moved ids.
+- Curtains y −70: clip `roomHit.holdPoint`'s scan to the scene (today it returns y ≈ −34 for curtains → off-canvas e2e target); relax "draws every piece inside the scene" in `tests/roomsData.test.ts` for a piece extending above the top.
+- `ROOM_LAYOUT.depth.shadows` 4 → 2 so curtains (z 3) sit above the shadows (pack draw order).
+- `balance.loader.totalMs` 45 000: boot queue grows to ≈ 2 329 739 B ≈ 46.6 s at 50 KB/s; raise (≤ 60 000 per `tests/loaderBalance.test.ts`) or accept, and rewrite the comment.
+- `tests/roomArt.test.ts`: "has 26 entries" → 38; "weighs at most 1 400 000 bytes" → a budget ≥ 1 489 688.
+- `scripts/make-task-art.mjs` `ROOM_JOBS`: source `SALON_V2`, add 12 ids; `EXPANSION` can go.
+- E2E: `tests/e2e/salon-art.spec.ts` `health.total` 26 → 38; `room-change.spec.ts` FR-019 and `final-art-room-done.spec.ts` `finishSalon` grow to 12 purchases by data (120 s limits). Optional new seam `?e2eSave=done-salon` (new fixture, marker in `vite/e2eHookGuard.mjs`) and L-7 per-layer state in `RoomScene.snapshot`.
+- Pins: `tests/legacySalonMigration.test.ts` explicit 7-of-12 prefix, M-R4 append-only task-id guard, `curtains` (v3 save keeps `chosen.curtains`; lifted v2 drops it).
+- Visual-gate notes: an old done salon loses its shadows, mode button and teaser until task 12 (follows `roomDone`); "Wymień …" offers variant 0 = current look (S-17); pouf under the panel tray (VO1); curtains rectangle overlaps shelf/cabinet in the hold outline (VO3).
+- Follow-ups to carry/re-trigger in the plan: texture atlas (boot load now ≈ 2.33 MB, past the "about 2.2 MB" trigger; out, needs a packer), F2, VO1–VO3, L-4, L-R8, L-R11, F1, M-6 second half (P-6), costs (S-17), `MINIGAME_WORDS` (unchanged; the `pl.room.slots` comment claiming they are the minigame words is stale).
 
 No DESIGN-GAP added in this step.
 
 ## 6. Autonomous decisions
 
-See `change.md` `## Autonomous decisions` (1–6): pack slot ids (`curtains`, `wall-shelf`, `lamp-table`, `plant-left`, `pouf`) — would change if `curtains` is misread on a v3 save; no migration, v3 — would change if a new saved field is needed (then stop at an open PR); pin test made explicit, `SALON_V3_TARGET` untouched — changes only with v4; unbought decoration not holdable — would change if the author expects a tap on the piece; research before plan — fixed by the orchestrator; `MINIGAME_WORDS` unchanged — would change on the author's request.
-
-Also decided here: `/10x-new` would suggest `/10x-plan` by default; the run contract fixes `/10x-research` as the next step (step prompt overrides the skill default). Clipboard copy skipped (unattended).
+1. **Research done locally, no sub-agents** (skill default is 2–4 parallel workers): the scope was ~15 small files already named by `change.md`; reading them directly was cheaper and kept one source of truth. Would change: a wider unknown (e.g. a second room).
+2. **Recommended cost ramp (a) 8, 10, 12, 13, 15** over flat 15: reads the author's "8–15" literally in the stated order; the non-decreasing rule is a S-09 agent choice, not an author rule. Would change: the author or the plan-review preferring the old invariant.
+3. **Shelf label "Powieś półkę"** instead of the prompt's "Postaw półkę": the pack slot is a wall shelf ("Półka jest na ścianie okiennej"). Would change: the author's wording.
+4. **Shadows depth 2 recommended** (pack README draw order) rather than leaving curtains under the shadows. Would change: the visual gate showing the shadows picture needs to cover the curtains.
+5. **Atlas stays out** although the boot load passes ≈ 2.2 MB: it needs a packer and `ArtImage` changes; the loader degrades to stand-ins. Would change: a field report of slow first starts.
+6. Clipboard/AskUserQuestion steps of the skill skipped (unattended run).
