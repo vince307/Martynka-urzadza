@@ -968,9 +968,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 11.1 `npx playwright test tests/e2e/stale-tab.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
+- [x] - [ ] 11.1 `npx playwright test tests/e2e/stale-tab.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2` — orchestrator gate 5867533 (123 passed)
 - [x] 11.2 Deliberate break p11a → (a) red; p11b → (a) and (b) red; each restored; meta-check — 12347a5
-- [ ] 11.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] - [ ] 11.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — orchestrator gate 5867533 (123 passed)
 
 #### Manual
 
