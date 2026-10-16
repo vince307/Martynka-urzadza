@@ -1,59 +1,57 @@
 # Handoff — `stale-tab-and-health` (slice fix:stale-tab-and-health)
 
-Written by the `/10x-tdd` step for phase 1 of run `2026-10-16-fix-stale-tab-health`. Phase 1 (save format v4 and the pure `writeVerdict`) is committed as `c0d8343`; the store does not call `writeVerdict` yet. The next agent must not get wrong: `generation`/`writer` are stamped by the STORE inside its transaction (`encodeSave` emits placeholders `0`/`''`), the default `writer` is a fresh random id per `createIdbSaveStore` call, and `base` moves only when a put's transaction completes.
+Written by the `/10x-tdd` step for phase 2 of run `2026-10-16-fix-stale-tab-health`. Phase 2 (compare-and-set inside `guardedPut`) is committed as `4342650`; the autosaver does not know `OtherWriterSave` yet (it counts as an ordinary failed write until phase 3). The next agent must not get wrong: `guardedPut` now takes `(os, key, value, page, mode)` and resolves with the written generation; `replace` passes mode `'replace'`; a failed read still writes through (`base + 1`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/stale-tab-and-health`, cut from `main` at `9a64fd6` |
-| Commits | identity, research, plan, plan review, `c0d8343` (phase 1 code+tests), then a docs commit with this handoff and the plan ticks |
+| Commits | ..., `c0d8343` (p1), `4342650` (p2 code+tests), then a docs commit with this handoff and the ticks |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implementing` is NOT yet set by this step (left as `plan_reviewed`; phase 2 agent sets it) |
-| `## Progress` rows remaining | 53 |
+| `change.md` status | `implementing` |
+| `## Progress` rows remaining | 49 (2.4 orchestrator e2e, 2.5 reviewer, 1.6 reviewer among them) |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | Path | What it is |
 |---|---|
-| `src/core/save.ts` | `SAVE_VERSION` 4, `MIGRATIONS[3]`, `saveProblem` checks `generation`/`writer`, `encodeSave` placeholders, `OTHER_WRITER_SAVE`, `WriteVerdict`, `writeVerdict` |
-| `src/core/types.ts` | `SaveV4`, `SaveState = SaveV4` |
-| `tests/saveV4.test.ts` | new, 20 tests (format, migration on populated fixtures, `writeVerdict` table) |
-| `tests/fixtures/save-v4.json` | new frozen v4 fixture (generation 5, writer `fixture-writer`); v1-v3 untouched |
-| `tests/{save,saveFile,autosave,e2eSave,legacySalonMigration,idbStore}.test.ts` | version literals to 4 / `SAVE_VERSION`, v3 fixture decodes to v4 (`migratedFrom 3`), `backup-v3` store test, "v5 is future" |
-| `tests/e2e/{salon-load-health,save-backup-health,salon-art,save-migration}.spec.ts` | `writtenVersion` compares to `SAVE_VERSION`; titles say v4 |
-| `context/changes/stale-tab-and-health/plan.md` | rows 1.1-1.4 ticked |
+| `src/storage/idb.ts` | `guardedPut` with `writeVerdict`, stamping, B-7 try/catch; `IdbSaveStoreOptions.writer` (default random per store), `base` tracked in `read()`/`write()` |
+| `src/core/autosave.ts` | `SaveStore.write(value, mode?)`; `replace` passes `'replace'` |
+| `src/main.ts` | `pageWriterId()` passed to `createIdbSaveStore({ writer })` |
+| `tests/idbStore.test.ts` | new `describe('IndexedDB stale-writer guard')` (7 tests); existing tests updated to the stamped record (`toMatchObject`, `guardedPut` resolves `1`, puts carry `generation`/`writer`) |
+| `context/changes/stale-tab-and-health/plan.md` | rows 1.5, 2.1-2.3 ticked |
 
 ## 3. Verification
 
 | Command | Result |
 |---|---|
-| RED (first run, with a `writeVerdict` stub that throws, v3 code) | `tests/saveV4.test.ts`: 15 of 20 failed; first assertion `AssertionError: expected 3 to be 4` (`is the current version`); then `MIGRATIONS[3] is not a function`, `expected null to be 3` (migratedFrom) |
-| GREEN | `tests/saveV4.test.ts` 20/20; full `npm test` 171 files, 3098 passed |
+| RED (first run, before `idb.ts` change) | 7 of 7 new tests failed; first assertion `AssertionError: expected { version: 4, …(6) } to match object { generation: 1, writer: 'A', …(1) }` (no stamp), the B-7 test timed out |
+| GREEN | `tests/idbStore.test.ts` 27/27 |
 | `npm run lint`, `npm run typecheck` | OK |
-| `npm test` + deploy scripts + `sample` E1-E6 | OK; unit 3098 = baseline 3076 + 22 |
+| `npm test` + deploy scripts + `sample` E1-E6 | OK; unit 3105 = baseline 3076 + 29 (phase 1 +22, phase 2 +7) |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e | ran ONCE outside the sandbox: Chromium starts; the four touched specs (`save-migration`, `salon-load-health`, `save-backup-health`, `salon-art`) 14 passed. Full `--workers=4` suite NOT run here: left to the orchestrator gate (row 1.5) |
-| `git diff --stat HEAD~1 -- tests/fixtures` | only `save-v4.json` added (+77); v1-v3 byte-identical |
-| Deliberate break 1 | `MIGRATIONS[3]` returning `{ ...raw, version: 4 }`: 7 tests red (lift test, every `migratedFrom` fixture row, populated-v3 game, import of v3); restored, green |
-| Deliberate break 2 | `writeVerdict` ignoring `writer`: `puts after its own write that is ahead` red; restored, green |
-| Meta-check | both breaks prove the format and the pure rule on frozen data (fixtures, table), not the IDB transaction (phase 2) |
+| e2e (touched specs, sandbox off) | `save-migration` passed; `load-and-tab-guard` "#2 P-5 a newer save written by another tab" FAILED (`blockedBy` null, expected `newer`) both with my change AND on the stashed phase-1 tree when run in isolation; the orchestrator's full run on 94f7a38 was green, so it looks order/timing dependent, not caused by phase 2 (that spec uses the in-memory seam store, not `guardedPut`). Orchestrator: watch it at the gate |
+| Deliberate break 1 | `guardedPut` ignoring the verdict's refusal: 6 red (stale-tab refusal, replace-then-refused, old build NewerSave, default writers, two older NewerSave tests); restored, green |
+| Deliberate break 2 | `read()` not setting `base`: `a page that is created again reads the record and writes` red; restored, green |
+| Meta-check | both prove the transaction rule on fake-indexeddb (two stores on one DB), not real browser tabs (phase 11) |
 
 ## 4. Next command
 
-`/10x-tdd stale-tab-and-health phase 2`
+`/10x-tdd stale-tab-and-health phase 3`
 
 ## 5. Open
 
-- **Rows left in phase 1**: 1.5 e2e full suite (orchestrator, `baseline + 0`); 1.6 [reviewer] `save.ts` has no browser globals, `MIGRATIONS[3]` total, older fixtures untouched.
-- Phase 2 must make `createIdbSaveStore` call `writeVerdict` inside `guardedPut` (store default `writer` random per call; `base` from `read()`); `replace` uses mode `'replace'`; the e2e seam store `e2eSaveStore` (`src/testing/e2eHook.ts`) still uses `storedVersionNewer`.
-- Carried from the plan review (unchanged): [human] rows 10.6, 11.4; [visual] 12.4; [reviewer] 10.7; Known risks (reload race, stale-window `replace` summary, `register-failed` + `console.warn`); DESIGN-GAPs 116-121 in phases 3, 4, 6, 7, 8, 9; e2e phases 11-12 use the request-file protocol; follow-ups listed in plan phase 10 § 2.
+- **Rows left in phase 2**: 2.4 e2e full suite (orchestrator, `baseline + 0`; check the P-5 spec flake above); 2.5 [reviewer].
+- Phase 1 row 1.6 [reviewer] still open.
+- Phase 3 must map `OtherWriterSave` to the runtime `blockedBy 'otherTab'`; `e2eSaveStore` (`src/testing/e2eHook.ts`) still uses `storedVersionNewer` and ignores `mode`.
+- Carried from the plan review (unchanged): [human] rows 10.6, 11.4; [visual] 12.4; [reviewer] 10.7; Known risks (reload race, stale-window `replace` summary, `register-failed` + `console.warn`); DESIGN-GAPs 116-121 in phases 3, 4, 6, 7, 8, 9; e2e phases 11-12 use the request-file protocol.
 
 ## 6. Autonomous decisions
 
-- **Mixed phase gate**: phase 1 is TDD (pure format and rule) plus mechanical version-literal edits in existing tests and four e2e specs; TDD'd the pure part, edited literals inline; the phase keeps `Driver: tdd`. Would change: nothing.
-- **RED via stub**: `writeVerdict` and `OTHER_WRITER_SAVE` stubbed first so the quoted RED is an assertion; the `writeVerdict` rows went red on the stub throw, the format rows on `expected 3 to be 4`.
-- **Tests that used `save-v3.json` as "the current valid save"** (strict-validation, `saveProblem` agreement, broken-field cases) now use `save-v4.json`; v3 is kept where the point is migration (`migratedFrom 3`).
-- **Commit message** taken as proposed; stage by path; ticks written in a second docs commit with the sha. `change.md` status left for the next phase (not touched by this step).
-- **Full e2e not run** (4 touched specs only): the orchestrator runs it at the gate.
+- **Driver stays `tdd`**: no implementation existed (`guardedPut` had no verdict); no redirect.
+- **RED without a stub**: the new tests drive the existing API (`createIdbSaveStore({ writer })`, extra args to `guardedPut`), so the first run failed on assertions, not on missing modules.
+- **`guardedPut` signature**: `(os, key, value, page, mode)` required args, returns the generation; the old 3-arg tests were updated rather than keeping an optional `page`, so no path can skip the rule.
+- **Non-Error put throw** is wrapped in a `DOMException` (lint `prefer-promise-reject-errors`); an `Error` is passed through unchanged.
+- **Commit message** taken as proposed (Polish); ticks in a second docs commit. Full e2e left to the orchestrator.

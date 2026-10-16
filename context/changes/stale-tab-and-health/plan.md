@@ -843,7 +843,7 @@ migrates that save again.
 - [x] 1.2 Deliberate break: `MIGRATIONS[3]` without the fields / `writeVerdict` ignoring `writer` → red; restored; meta-check (format and rule on data) — c0d8343
 - [x] 1.3 `git diff --stat tests/fixtures` shows only `save-v4.json` added; v1–v3 fixtures byte-identical — c0d8343
 - [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`) — c0d8343
-- [ ] 1.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.5 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate 94f7a38 (121 passed)
 
 #### Manual
 
@@ -853,9 +853,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 2.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 2.2 Deliberate break: refusal skipped / `base` not set on read → red; restored; meta-check (transaction rule on fake-indexeddb)
-- [ ] 2.3 Full local gate green; build prints `e2e hook: absent (`
+- [x] 2.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 4342650
+- [x] 2.2 Deliberate break: refusal skipped / `base` not set on read → red; restored; meta-check (transaction rule on fake-indexeddb) — 4342650
+- [x] 2.3 Full local gate green; build prints `e2e hook: absent (` — 4342650
 - [ ] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
