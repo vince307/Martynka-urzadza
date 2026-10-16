@@ -856,7 +856,7 @@ migrates that save again.
 - [x] 2.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 4342650
 - [x] 2.2 Deliberate break: refusal skipped / `base` not set on read → red; restored; meta-check (transaction rule on fake-indexeddb) — 4342650
 - [x] 2.3 Full local gate green; build prints `e2e hook: absent (` — 4342650
-- [ ] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 2.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator gate 8204b35 (121 passed)
 
 #### Manual
 
@@ -866,9 +866,9 @@ migrates that save again.
 
 #### Automated
 
-- [ ] 3.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 3.2 Deliberate break: `OtherWriterSave` as ordinary failure / `onBlocked` on every refusal → red; restored; meta-check (state machine, not the card)
-- [ ] 3.3 Full local gate green; build prints `e2e hook: absent (`
+- [x] 3.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N` — 032adb1
+- [x] 3.2 Deliberate break: `OtherWriterSave` as ordinary failure / `onBlocked` on every refusal → red; restored; meta-check (state machine, not the card) — 032adb1
+- [x] 3.3 Full local gate green; build prints `e2e hook: absent (` — 032adb1
 - [ ] 3.4 e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
