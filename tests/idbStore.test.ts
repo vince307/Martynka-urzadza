@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import * as idbKeyval from 'idb-keyval';
-import { decodeSave, NEWER_SAVE, SAVE_VERSION } from '../src/core/save';
+import { decodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, SAVE_VERSION } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 import { createIdbSaveStore, guardedPut, requestPersistence } from '../src/storage/idb';
 
@@ -28,7 +28,7 @@ describe('IndexedDB save store', () => {
         const store = freshStore();
         await store.write(fixture);
         const back = await store.read();
-        expect(back).toEqual(fixture);
+        expect(back).toMatchObject({ ...fixture, generation: 1 });
         expect(decodeSave(back).kind).toBe('ok');
     });
 
@@ -45,7 +45,7 @@ describe('IndexedDB save store', () => {
         const b = freshStore('b', dbName);
         await a.write(fixture);
         expect(await b.read()).toBeUndefined();
-        expect(await a.read()).toEqual(fixture);
+        expect(await a.read()).toMatchObject(fixture);
     });
 
     it('a value that cannot be cloned rejects', async () => {
@@ -84,7 +84,7 @@ describe('IndexedDB backup copy (S-15 phase 2)', () => {
         await main.write(fixture);
         const raw = { ...fixture, stars: 123 };
         await main.backup(raw, 1);
-        expect(await main.read()).toEqual(fixture);
+        expect(await main.read()).toMatchObject(fixture);
         // The copy lives under the key `profile:default:backup-v1`: a store whose profile id is `default:backup-v1` reads it.
         expect(await freshStore('default:backup-v1', dbName).read()).toEqual(raw);
     });
@@ -192,6 +192,8 @@ describe('IndexedDB newer-save guard', () => {
     });
 });
 
+const PAGE = { version: SAVE_VERSION, base: 0, writer: 'A' };
+
 describe('guardedPut on a raw object store', () => {
     // A stand-in whose get fails (an unreadable record) and which records what was put.
     const brokenGet = () => {
@@ -217,8 +219,8 @@ describe('guardedPut on a raw object store', () => {
     it('puts anyway when the get itself fails, after preventing the abort', async () => {
         const { os, puts, wasPrevented } = brokenGet();
         const value = { ...fixture, version: SAVE_VERSION } as unknown as SaveState;
-        await expect(guardedPut(os, 'profile:default', value)).resolves.toBeUndefined();
-        expect(puts).toEqual([value]);
+        await expect(guardedPut(os, 'profile:default', value, PAGE, 'normal')).resolves.toBe(1);
+        expect(puts).toEqual([{ ...value, generation: 1, writer: 'A' }]);
         expect(wasPrevented()).toBe(true);
     });
 
@@ -247,7 +249,100 @@ describe('guardedPut on a raw object store', () => {
             },
         } as unknown as IDBObjectStore;
         const value = { ...fixture, version: SAVE_VERSION } as unknown as SaveState;
-        await expect(guardedPut(os, 'profile:default', value)).resolves.toBeUndefined();
-        expect(puts).toEqual([value]);
+        await expect(guardedPut(os, 'profile:default', value, PAGE, 'normal')).resolves.toBe(1);
+        expect(puts).toEqual([{ ...value, generation: 1, writer: 'A' }]);
+    });
+});
+
+// stale-tab-and-health phase 2 (B-1): a page that did not see another tab's write is refused inside the transaction.
+// Two stores on ONE fake database stand for two tabs; each has its own writer id.
+describe('IndexedDB stale-writer guard', () => {
+    const v = (stars: number): SaveState => ({ ...fixture, version: SAVE_VERSION, stars }) as unknown as SaveState;
+    const tab = (writer: string, dbName: string) => createIdbSaveStore({ dbName, storeName: 'saves', writer });
+    const named = async (p: Promise<unknown>): Promise<string> => p.then(() => 'ok', (e: unknown) => (e as Error).name);
+    const stored = async (dbName: string) => (await tab('probe', dbName).read()) as { generation: number; writer: string; stars: number };
+
+    it('the first write stamps generation 1 and its writer; a stale tab is refused and the record stays', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        const b = tab('B', db);
+        await a.read();
+        await b.read();
+        await a.write(v(10));
+        expect(await stored(db)).toMatchObject({ generation: 1, writer: 'A', stars: 10 });
+        expect(await named(b.write(v(99)))).toBe(OTHER_WRITER_SAVE);
+        expect(await stored(db)).toMatchObject({ generation: 1, writer: 'A', stars: 10 });
+    });
+
+    it('a replace lands over another writer; the replaced tab is then refused', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        const b = tab('B', db);
+        await a.read();
+        await b.read();
+        await a.write(v(10));
+        await b.write(v(50), 'replace');
+        expect(await stored(db)).toMatchObject({ generation: 2, writer: 'B', stars: 50 });
+        expect(await named(a.write(v(11)))).toBe(OTHER_WRITER_SAVE);
+    });
+
+    it('a page that is created again reads the record and writes', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        await a.read();
+        await a.write(v(10));
+        const b = tab('B', db);
+        await b.read();
+        await b.write(v(20));
+        const a2 = tab('A', db);
+        await a2.read();
+        expect(await named(a2.write(v(30)))).toBe('ok');
+        expect(await stored(db)).toMatchObject({ generation: 3, writer: 'A', stars: 30 });
+    });
+
+    it('own writes in a row climb 1, 2 and are never refused', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        await a.read();
+        await a.write(v(1));
+        await a.write(v(2));
+        expect(await stored(db)).toMatchObject({ generation: 2, writer: 'A', stars: 2 });
+        expect(await named(a.write(v(3)))).toBe('ok');
+    });
+
+    it('an old build (version below the stored one) is refused NewerSave and the record is unchanged', async () => {
+        const db = `stale-${++counter}`;
+        const a = tab('A', db);
+        await a.read();
+        await a.write(v(10));
+        const old = tab('old', db);
+        await old.read();
+        const oldValue = { ...v(5), version: SAVE_VERSION - 1 } as unknown as SaveState;
+        expect(await named(old.write(oldValue))).toBe(NEWER_SAVE);
+        expect(await stored(db)).toMatchObject({ generation: 1, writer: 'A', stars: 10 });
+    });
+
+    it('a store without an explicit writer gets its own random id (two default stores are different writers)', async () => {
+        const db = `stale-${++counter}`;
+        const a = createIdbSaveStore({ dbName: db, storeName: 'saves' });
+        const b = createIdbSaveStore({ dbName: db, storeName: 'saves' });
+        await a.read();
+        await b.read();
+        await a.write(v(1));
+        expect(await named(b.write(v(2)))).toBe(OTHER_WRITER_SAVE);
+    });
+
+    it('a put that throws rejects the write (B-7)', async () => {
+        const os = {
+            get: () => {
+                const req = {} as { onsuccess?: () => void; result: unknown };
+                queueMicrotask(() => req.onsuccess?.());
+                return req;
+            },
+            put: () => {
+                throw new DOMException('too big', 'DataError');
+            },
+        } as unknown as IDBObjectStore;
+        await expect(guardedPut(os, 'profile:default', v(1), { version: SAVE_VERSION, base: 0, writer: 'A' }, 'normal')).rejects.toMatchObject({ name: 'DataError' });
     });
 });

@@ -4,7 +4,8 @@ import type { SaveState } from './types';
 
 export interface SaveStore {
     read(): Promise<unknown>;
-    write(value: SaveState): Promise<void>;
+    /** `replace` skips the other-writer check (the parent's explicit overwrite); a normal write is refused when another tab wrote first. */
+    write(value: SaveState, mode?: 'normal' | 'replace'): Promise<void>;
     /** Keeps a copy of the raw save of version `from` under its own key; required, so a store can never skip it. Never touches the main key. */
     backup(raw: unknown, from: number): Promise<void>;
 }
@@ -338,7 +339,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
                     giveUpCopy = true;
                 }
             }
-            await limited(store.write(state));
+            await limited(store.write(state, 'replace'));
             if (giveUpCopy) skipBackup();
         } catch (e) {
             replacing = false;

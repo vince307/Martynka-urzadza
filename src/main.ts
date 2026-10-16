@@ -129,12 +129,16 @@ installErrorBoundary(window, () => {
     attempt(() => booted.saver?.block('fatal'));
 });
 
+/** One id per page load; the store stamps it in the record so a second tab can be told apart (B-1). */
+const pageWriterId = (): string =>
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
     // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail|writehang|v1|backupfail|backuphang|slow); never IndexedDB.
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
-    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
+    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore({ writer: pageWriterId() });
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
     const first = await loadSave(store, {
         timers,
