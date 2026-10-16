@@ -11,7 +11,6 @@ import { forEachDraw } from './helpers';
 const skill = (id: string, params: Record<string, unknown>): SkillDef => ({ id, stage: 'E1', step: 1, type: 'COMPARE_QTY', params, answer: 'tiles' });
 const Q5 = skill('E1.1.compare_qty_5', { max: 5, ask: ['more', 'less'], equalShare: 0.2 });
 const Q10 = skill('E1.1.compare_qty_10', { max: 10, ask: ['more', 'less'], equalShare: 0.2 });
-const TILES = ['Po lewej', 'Po prawej', 'Tyle samo'];
 
 const expected = (ask: string, l: number, r: number): string => (l === r ? 'Tyle samo' : (ask === 'more') === l > r ? 'Po lewej' : 'Po prawej');
 
@@ -57,7 +56,8 @@ describe('generateCompareQty', () => {
                 asks.add(ask);
                 expect(m![2], where).toBe(nouns[noun][2]);
                 expect(task.answer, where).toBe(expected(ask, l, r));
-                expect([...(task.choices ?? [])].sort(), where).toEqual([...TILES].sort());
+                // PIC-06: a fixed spatial order, each side's tile under its group, "Tyle samo" in the middle.
+                expect(task.choices, where).toEqual(['Po lewej', 'Tyle samo', 'Po prawej']);
                 if (l === r) equal += 1;
                 else sides[task.answer as 'Po lewej' | 'Po prawej'] += 1;
                 // Hints: the first one teaches counting, the second gives both counts, only the last names the tile.

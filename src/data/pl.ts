@@ -461,6 +461,7 @@ export const pl = {
             `${n} jest między ${low} a ${high}`,
             `${n} jest bliżej ${nearest}`,
         ],
+        halfMethodHint: 'Połowa to jedna z dwóch równych części.',
         half: (n: number) => `Ile to jest połowa liczby ${n}?`,
         compareHint: (n: number, parts: string) => `${n} to ${parts}`,
         compareDigitsHint: (n: string, digits: string) => `${n} ma ${digits}`,

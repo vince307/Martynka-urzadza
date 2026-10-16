@@ -49,7 +49,8 @@ export const generateCompareQty: Generator = (skill, rng): Task => {
         // The tiles say left and right, so the groups stand side by side (visual gate S-14d: stacked rows had no left or right).
         visual: { kind: 'icons', icon: icon.id, groups: [left, right], framed: false, sides: true },
         answer,
-        choices: rng.shuffle([tiles.left, tiles.right, tiles.same]),
+        // DESIGN-GAP 125: a fixed spatial order, each side's tile under its group, "Tyle samo" in the middle (the kit is silent on the order).
+        choices: [tiles.left, tiles.same, tiles.right],
         hint: [pl.tasks.compareQtyCountHint, pl.tasks.compareQtyCountsHint(countNoun(left, forms), countNoun(right, forms)), pl.tasks.compareQtyAnswerHint(answer)],
     };
 };
