@@ -47,6 +47,7 @@ describe('frozen v1 fixtures migrate to the expected v2 session state', () => {
         expect(result).toEqual({
             kind: 'ok',
             migratedFrom: 1,
+            salonCarried: null,
             session: {
                 variants: START_VARIANTS,
                 stars: 7,
@@ -77,6 +78,7 @@ describe('frozen v1 fixtures migrate to the expected v2 session state', () => {
         expect(decodeSave(fixture('save-v1-fresh.json'))).toEqual({
             kind: 'ok',
             migratedFrom: 1,
+            salonCarried: null,
             session: { variants: START_VARIANTS, stars: 0, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
         });
     });
@@ -124,7 +126,7 @@ describe('round trip of a session built with the real core functions', () => {
 
     it('decodes to the same state after a structured clone (what IndexedDB does)', () => {
         const result = decodeSave(clone(encodeSave(session)));
-        expect(result).toEqual({ kind: 'ok', migratedFrom: null, session });
+        expect(result).toEqual({ kind: 'ok', migratedFrom: null, salonCarried: null, session });
     });
 
     it('a list-answer example (PIC-04) is a plain string and round-trips in the same v4 shape', () => {
@@ -136,7 +138,7 @@ describe('round trip of a session built with the real core functions', () => {
             },
         };
         const result = decodeSave(clone(encodeSave(withExample)));
-        expect(result).toEqual({ kind: 'ok', migratedFrom: null, session: withExample });
+        expect(result).toEqual({ kind: 'ok', migratedFrom: null, salonCarried: null, session: withExample });
         expect(SAVE_VERSION).toBe(4);
     });
 
@@ -145,7 +147,7 @@ describe('round trip of a session built with the real core functions', () => {
         const encoded = encodeSave(fresh);
         expect(encoded.version).toBe(SAVE_VERSION);
         expect(encoded.profileId).toBe(DEFAULT_PROFILE);
-        expect(decodeSave(clone(encoded))).toEqual({ kind: 'ok', migratedFrom: null, session: fresh });
+        expect(decodeSave(clone(encoded))).toEqual({ kind: 'ok', migratedFrom: null, salonCarried: null, session: fresh });
     });
 
     it('does not save a session-only field added to the learner', () => {
@@ -237,6 +239,7 @@ describe('the migration chain', () => {
         expect(decodeSave(v0, { 0: step0, 1: MIGRATIONS[1], 2: MIGRATIONS[2], 3: MIGRATIONS[3] })).toEqual({
             kind: 'ok',
             migratedFrom: 0,
+            salonCarried: null,
             session: { variants: START_VARIANTS, stars: 4, rooms: { living: { tasksDone: 0, chosen: {} } }, currentRoom: 'living', settings: { autoRead: null }, learner: null },
         });
     });
@@ -324,6 +327,8 @@ describe('the v3 format (salon-load-health): frozen fixtures decode and encode a
         expect(asRecord(raw).version).toBe(2);
         const r = decodeSave(raw);
         expect(r).toMatchObject({ kind: 'ok', migratedFrom: 2 });
+        // M-4: the load that carried the salon says so (runtime note: tasksDone under the old list, then under the new).
+        expect(r.kind === 'ok' && r.salonCarried).toEqual({ from: asRecord(asRecord(asRecord(raw).rooms).salon).tasksDone, to: 4 });
         expect(r.kind === 'ok' && r.session.rooms.salon).toEqual({ tasksDone: 4, chosen: { sofa: 2, rug: 0, 'coffee-table': 0 } });
         expect(r.kind === 'ok' && r.session.stars).toBe(3);
     });

@@ -30,6 +30,7 @@ export const SALON: RoomDef = {
     slots,
     // New tasks go at the END of this list only (later slots of the art pack): `RoomState.tasksDone` counts positions in it,
     // so inserting or reordering would move every saved room.
+    formerTaskCounts: [7],   // S-16a left a 7-task salon; S-16d appended five tasks (R-2)
     tasks: [
         { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
         { kind: 'slot', id: 'add-sofa', slot: 'sofa', label: 'addSofa', cost: 7 },

@@ -38,6 +38,8 @@ export const createSaveHealthView = (view: SaveHealthView): HTMLElement => {
     }
     // DESIGN-GAP 137: report only; the saved rooms are never changed.
     if (view.roomMismatch) section.append(createText('p', pl.settings.roomMismatch));
+    // DESIGN-GAP 150: told on the load that moved the salon only; the bought pieces stay.
+    if (view.salonCarried) section.append(createText('p', pl.settings.salonCarried));
     if (view.olderWriter) section.append(createText('p', pl.settings.olderWriter));
     if (view.persistence !== 'unknown') section.append(createText('p', pl.settings.savePersist[view.persistence]));
     return section;

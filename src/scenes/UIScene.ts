@@ -17,7 +17,7 @@ import { artHealthLines, type ArtHealth } from '../core/artHealth';
 import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
-import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
+import { encodeSave, freshSession, saveProblem, type SalonCarried, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { ROOM_ART } from '../data/roomArt';
@@ -179,7 +179,7 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
-                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? []) : undefined,
+                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? [], (this.registry.get(REGISTRY_KEYS.salonCarried) as SalonCarried | null | undefined) ?? null) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artLines: artHealthLines({
                         task: this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined,

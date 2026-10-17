@@ -171,3 +171,19 @@ export function roomStateProblems(rooms: Readonly<Record<string, RoomState>>, ca
 export function parentVisible(problem: RoomProblem): boolean {
     return problem.kind !== 'unknown-room';
 }
+
+/**
+ * R-2: a room whose task list grew since the save was written. A saved `tasksDone` equal to a length the list once had
+ * (`RoomDef.formerTaskCounts`) while the list is now longer means the child meets new tasks. Log only: it is not a
+ * `RoomProblemKind`, nothing is repaired or shown to a parent. It also names a child who really bought exactly that many under the new list.
+ */
+export function roomGrowth(rooms: Readonly<Record<string, RoomState>>, catalogue: Readonly<Record<string, RoomDef>>): { room: string; from: number; to: number }[] {
+    const out: { room: string; from: number; to: number }[] = [];
+    for (const [id, state] of Object.entries(rooms)) {
+        const def = Object.prototype.hasOwnProperty.call(catalogue, id) ? catalogue[id] : undefined;
+        if (def && state.tasksDone < def.tasks.length && (def.formerTaskCounts ?? []).includes(state.tasksDone)) {
+            out.push({ room: id, from: state.tasksDone, to: def.tasks.length });
+        }
+    }
+    return out;
+}

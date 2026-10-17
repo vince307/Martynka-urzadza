@@ -1,7 +1,7 @@
 // What a parent sees about saving (audit C-2, M-S5, N-8, M-S2). Pure: words live in data/pl.ts.
 import { isTimeoutError, type AutosaveStatus, type BlockReason, type FailureStage, type Persistence } from './autosave';
 import { parentVisible, type RoomProblem } from './rooms';
-import { SAVE_VERSION } from './save';
+import { SAVE_VERSION, type SalonCarried } from './save';
 
 export type SaveHealthState =
     | { kind: 'off'; cause: BlockReason | 'future' | 'timeout' | 'migration-failed'; code: string | null }
@@ -12,7 +12,7 @@ export type SaveHealthState =
 // The save moved from an older format: `pending` until the new version is written, then the fate of the old copy (kept, lost, or not known).
 export type SaveMigration = { from: number; copy: 'pending' | 'kept' | 'lost' | 'uncertain'; code: string | null };
 
-export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null; olderWriter: boolean; roomMismatch: boolean };
+export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null; olderWriter: boolean; roomMismatch: boolean; salonCarried: boolean };
 
 // The session that migrated knows its own copy state (it can be still retried); later launches read the stored record (SVB-01).
 const migrationOf = (status: AutosaveStatus, copies: readonly number[]): SaveMigration | null => {
@@ -71,9 +71,10 @@ const stateOf = (status: AutosaveStatus): SaveHealthState => {
 };
 
 /** `copies`: the versions of the old-version copies found in the store when the panel opened (empty when none or not read).
- * `roomProblems`: the load-time check of the saved rooms (R-4), report only. */
-export function saveHealthView(status: AutosaveStatus, copies: readonly number[] = [], roomProblems: readonly RoomProblem[] = []): SaveHealthView {
-    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status, copies), olderWriter: status.olderWriterSeen, roomMismatch: roomProblems.some(parentVisible) };
+ * `roomProblems`: the load-time check of the saved rooms (R-4), report only.
+ * `salonCarried`: this load moved the old salon to the new look (M-4), a runtime note, never saved. */
+export function saveHealthView(status: AutosaveStatus, copies: readonly number[] = [], roomProblems: readonly RoomProblem[] = [], salonCarried: SalonCarried | null = null): SaveHealthView {
+    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status, copies), olderWriter: status.olderWriterSeen, roomMismatch: roomProblems.some(parentVisible), salonCarried: salonCarried !== null };
 }
 
 export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable' | 'slow';

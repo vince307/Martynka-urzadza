@@ -145,7 +145,7 @@ export const buildAdaptiveRound = (
     rng: Rng,
     rules: { readonly length: number; readonly uniqueRetries: number },
     tileCount: number,
-    art?: { readonly missingIds: ReadonlySet<string>; readonly unlockShare: number },
+    art?: { readonly missingIds: ReadonlySet<string>; readonly unlockShare: number; readonly onFallback?: (kind: 'current' | 'all') => void },
     options?: { readonly picture?: boolean },
 ): Task[] => {
     const unlocked = adaptation.unlockedStep[stage.id] ?? 1;
@@ -154,14 +154,17 @@ export const buildAdaptiveRound = (
     const buckets = skillBuckets(stage, previous, unlocked);
     const missing = art?.missingIds;
     // Nothing missing: the buckets and the rng use stay exactly as without the argument.
-    const afterArt =
-        art && missing && missing.size > 0
-            ? withoutArtBlocked(
-                  buckets,
-                  (skill) => artBlocked(skill, missing),
-                  buckets.currentGroups ? 1 : unlockThreshold(buckets.current.length, art.unlockShare),
-              )
-            : buckets;
+    let afterArt: SkillBuckets = buckets;
+    if (art && missing && missing.size > 0) {
+        const { fallback, ...filtered } = withoutArtBlocked(
+            buckets,
+            (skill) => artBlocked(skill, missing),
+            buckets.currentGroups ? 1 : unlockThreshold(buckets.current.length, art.unlockShare),
+        );
+        afterArt = filtered;
+        // ASL-04: told, never acted on: a fallback changes no draw and no mastery.
+        if (fallback !== 'none') art.onFallback?.(fallback);
+    }
     // Picture mode (E1, S-14d): after the art filter, so a missing picture never leaves a bucket full of unplayable skills.
     const pools = options?.picture === true ? withPictures(afterArt, hasPicture, afterArt.currentGroups ? 1 : unlockThreshold(buckets.current.length, balance.curriculum.unlockShare)) : afterArt;
     if (pools.current.length + pools.earlier.length + pools.previous.length === 0) {

@@ -212,6 +212,7 @@ export const REGISTRY_KEYS = {
     artFallbacks: 'artFallbacks',       // FallbackRecord (core/artPick): which drawn fallback the child saw instead of a screen picture, written by the widgets and BootScene; runtime only, not in SAVE_KEYS
     soundHealth: 'soundHealth',         // ArtHealth of the sound effects (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     roomProblems: 'roomProblems',       // RoomProblem[] (core/rooms): where the saved rooms disagreed with the salon at load, set in main.ts; runtime only, not in SAVE_KEYS, nothing is repaired
+    salonCarried: 'salonCarried',       // SalonCarried | null (core/save): this load moved the old salon to the new look, set in main.ts; runtime only, not in SAVE_KEYS
     swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;

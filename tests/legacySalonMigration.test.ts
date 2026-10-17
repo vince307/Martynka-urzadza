@@ -3,7 +3,7 @@
 // IndexedDB would hand it over, and every case goes through `decodeSave` (the real migration chain), not a bare call.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { LEGACY_SALON_V2, LIFT_V2_SALON, SALON_V3_TARGET } from '../src/core/migrations/legacySalon';
+import { LEGACY_SALON_V2, LIFT_V2_SALON, SALON_V3_TARGET, carryV2Salon } from '../src/core/migrations/legacySalon';
 import { MIGRATIONS, decodeSave, encodeSave, freshSession } from '../src/core/save';
 import { SALON } from '../src/data/rooms';
 
@@ -150,5 +150,46 @@ describe('the frozen tables', () => {
             const salon = salonOf(v2With(oldSalon(n))) as { chosen: Record<string, number> };
             expect(Object.keys(salon.chosen), String(n)).not.toContain('curtains');
         }
+    });
+});
+
+describe('M-4 / R-3: the load that moved the salon says so (runtime note, nothing saved)', () => {
+    it.each(EXPECTED)('old tasksDone %i: carried from %i to the new prefix, the lifted value is the same as MIGRATIONS[2]', (n, done) => {
+        const raw = v2With(oldSalon(n));
+        const r = carryV2Salon(raw);
+        expect(r.carried).toEqual({ from: n, to: done });
+        expect(r.value).toEqual(LIFT_V2_SALON(raw));
+    });
+
+    it('says nothing for a salon already in the new shape, an untouched one, and anything it does not recognise', () => {
+        expect(carryV2Salon(v2With({ tasksDone: 3, chosen: { sofa: 1, rug: 0 } })).carried).toBeNull();
+        expect(carryV2Salon(v2With({ tasksDone: 0, chosen: {} })).carried).toBeNull();
+        expect(carryV2Salon(v2With('nope')).carried).toBeNull();
+        expect(carryV2Salon(null).carried).toBeNull();
+        expect(carryV2Salon(fixture('save-v2-fresh.json')).carried).toBeNull();
+    });
+
+    it('MIGRATIONS[2] output is byte-identical to the value of carryV2Salon for every v2 fixture', () => {
+        for (const name of ['save-v2.json', 'save-v2-fresh.json', 'save-v2-legacy-salon.json']) {
+            const raw = fixture(name);
+            expect(JSON.stringify(MIGRATIONS[2](raw)), name).toBe(JSON.stringify(carryV2Salon(raw).value));
+        }
+    });
+
+    it('decodeSave reports the note for v2 and v1 saves with the old salon, and null for the rest', () => {
+        const v2 = decodeSave(v2With(oldSalon(6)));
+        expect(v2.kind === 'ok' && v2.salonCarried).toEqual({ from: 6, to: 6 });
+        const v1 = decodeSave(fixture('save-v1-legacy-salon.json'));
+        expect(v1.kind === 'ok' && v1.salonCarried).toEqual({ from: 6, to: 6 });
+        for (const name of ['save-v2-fresh.json', 'save-v3.json', 'save-v4.json', 'save-v1.json']) {
+            const r = decodeSave(fixture(name));
+            expect(r.kind === 'ok' && r.salonCarried, name).toBeNull();
+        }
+    });
+
+    it('the note is not part of what is saved: encodeSave of the carried session has no such key', () => {
+        const r = decodeSave(v2With(oldSalon(6)));
+        if (r.kind !== 'ok') throw new Error('unreadable');
+        expect(JSON.stringify(encodeSave(r.session))).not.toContain('salonCarried');
     });
 });

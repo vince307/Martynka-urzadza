@@ -697,6 +697,13 @@ describe('backup before the first write after a migration', () => {
     const v1 = fixture('save-v1.json');
     const migrated = { from: 1, raw: v1 };
 
+    it('M-4: loadSave carries the salon note of the decode, null when nothing moved', async () => {
+        const legacy = JSON.parse(readFileSync(new URL('./fixtures/save-v2-legacy-salon.json', import.meta.url), 'utf8')) as { rooms: { salon: { tasksDone: number } } };
+        const moved = await loadSave(makeStore(legacy).store);
+        expect(moved).toMatchObject({ kind: 'loaded', salonCarried: { from: legacy.rooms.salon.tasksDone, to: 4 } });
+        expect(await loadSave(makeStore(v1).store)).toMatchObject({ kind: 'loaded', salonCarried: null });
+    });
+
     it('loadSave hands the raw value over with a migrated save, and names a throwing step migration-failed', async () => {
         const loaded = await loadSave(makeStore(v1).store);
         expect(loaded).toMatchObject({ kind: 'loaded', migratedFrom: 1, raw: v1 });

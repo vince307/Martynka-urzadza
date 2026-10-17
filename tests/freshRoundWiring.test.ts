@@ -39,6 +39,7 @@ describe('freshRound art wiring (ASL-01)', () => {
         const options = call?.arguments.find(ts.isObjectLiteralExpression);
         const names = options?.properties.map((p) => p.name?.getText(source) ?? '');
         expect(names).toContain('missingIds');
+        expect(names).toContain('onFallback');   // ASL-04
     });
 
     it('passes the blocked predicate to buildWarmup', () => {

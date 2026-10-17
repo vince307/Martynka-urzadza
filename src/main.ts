@@ -5,7 +5,7 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { parentVisible, repairCurrentRoom, roomStateProblems, type RoomProblem } from './core/rooms';
+import { parentVisible, repairCurrentRoom, roomGrowth, roomStateProblems, type RoomProblem } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { channelVerdict, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
@@ -266,8 +266,15 @@ const start = async (): Promise<void> => {
         if (roomProblems.length > 0) {
             console.warn(`Save rooms do not match the game: ${roomProblems.map((p) => `${p.room}/${p.kind}${parentVisible(p) ? '' : ' (hidden)'}`).join(', ')}`);
         }
+        // R-2: log only. A room whose task list grew since the save meets new tasks; nothing is repaired or shown.
+        for (const grown of roomGrowth(session.rooms, ROOMS)) {
+            console.info(`Room ${grown.room} has grown: ${grown.from} of ${grown.to} tasks done in the save`);
+        }
         if (outcome.migratedFrom !== null) {
             console.warn(`Save migrated from v${outcome.migratedFrom}`);
+        }
+        if (outcome.salonCarried !== null) {
+            console.info(`Salon carried to the new look: ${outcome.salonCarried.from} tasks done became ${outcome.salonCarried.to}`);
         }
         if (repaired.repairedFrom !== null) {
             roomRepaired = true;
@@ -296,6 +303,7 @@ const start = async (): Promise<void> => {
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, soundPrefStore.read(), soundPrefStore.probe());
     booted.game = game;
     game.registry.set(REGISTRY_KEYS.roomProblems, roomProblems);
+    game.registry.set(REGISTRY_KEYS.salonCarried, outcome.kind === 'loaded' ? outcome.salonCarried : null);
     swTarget = game;
     if (lastSwStatus) game.registry.set(REGISTRY_KEYS.swStatus, lastSwStatus);
     let refusedCardUp = false;

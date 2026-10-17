@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, errorName, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, errorName, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, saveProblem, validateSave, type SalonCarried, type SessionSave } from './save';
 import type { SaveState } from './types';
 import { balance } from '../data/balance';
 
@@ -30,7 +30,7 @@ export interface BackupRecord {
 
 export type LoadOutcome =
     | { kind: 'fresh' }
-    | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; raw: unknown }
+    | { kind: 'loaded'; session: SessionSave; migratedFrom: number | null; salonCarried: SalonCarried | null; raw: unknown }
     | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed'; raw: unknown; from?: number | null; problem?: string | null; step?: number }
     | { kind: 'unavailable'; error: string; waitLonger?: (timeoutMs: number) => Promise<LoadOutcome> };
 
@@ -220,7 +220,7 @@ export async function loadSave(
         }
         if (raw === undefined) return { kind: 'fresh' };
         const result = decodeSave(raw);
-        if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, raw };
+        if (result.kind === 'ok') return { kind: 'loaded', session: result.session, migratedFrom: result.migratedFrom, salonCarried: result.salonCarried, raw };
         if (result.reason === 'corrupt') return { kind: 'unreadable', reason: 'corrupt', raw, from: result.from, problem: result.problem };
         if (result.reason === 'migration-failed') return { kind: 'unreadable', reason: 'migration-failed', raw, step: result.step };
         return { kind: 'unreadable', reason: result.reason, raw };

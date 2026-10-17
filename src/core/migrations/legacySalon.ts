@@ -48,14 +48,20 @@ const own = (o: Record<string, unknown>, key: string): boolean => Object.prototy
  * shortest prefix of its tasks that costs at least what the child spent (capped at the whole room), every furniture piece
  * keeps its variant (renamed slots included), a piece the rounding gifts gets variant 0 and a key unknown to both lists is kept. Stars and other rooms are not
  * touched. Reads and never mutates its input; running it on its own result changes nothing.
+ *
+ * `carried` is the runtime note of the load (M-4): the salon moved from `from` to `to` tasks done, or null when nothing was
+ * carried. It is never saved; `LIFT_V2_SALON` below is the same step without the note, so MIGRATIONS[2] output is unchanged.
  */
-export const LIFT_V2_SALON = (raw: unknown): unknown => {
-    const lifted = (input: Record<string, unknown>, rooms?: Record<string, unknown>): Record<string, unknown> => ({
-        ...input,
-        ...(rooms ? { rooms } : {}),
-        version: 3,
+export const carryV2Salon = (raw: unknown): { value: unknown; carried: { from: number; to: number } | null } => {
+    const lifted = (input: Record<string, unknown>, rooms?: Record<string, unknown>): { value: unknown; carried: null } => ({
+        value: {
+            ...input,
+            ...(rooms ? { rooms } : {}),
+            version: 3,
+        },
+        carried: null,
     });
-    if (!isRecord(raw)) return raw;
+    if (!isRecord(raw)) return { value: raw, carried: null };
     const rooms = raw.rooms;
     if (!isRecord(rooms) || !own(rooms, SALON_ID)) return lifted(raw);
     const salon = rooms[SALON_ID];
@@ -84,5 +90,9 @@ export const LIFT_V2_SALON = (raw: unknown): unknown => {
     for (const task of SALON_V3_TARGET.slice(0, prefix)) {
         if (task.slot !== null) chosen[task.slot] = carried.has(task.slot) ? carried.get(task.slot) : 0;
     }
-    return lifted(raw, { ...rooms, [SALON_ID]: { ...salon, tasksDone: prefix, chosen } });
+    const moved = lifted(raw, { ...rooms, [SALON_ID]: { ...salon, tasksDone: prefix, chosen } });
+    return { value: moved.value, carried: { from: done, to: prefix } };
 };
+
+export const LIFT_V2_SALON = (raw: unknown): unknown => carryV2Salon(raw).value;
+

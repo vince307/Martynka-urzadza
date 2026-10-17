@@ -1105,10 +1105,10 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 10.1 New and widened tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 10.2 Deliberate break: note dropped / `fallback` `none` on the all-empty fallback → red; restored; meta-check (note and rules)
-- [ ] 10.3 `SAVE_VERSION` still 4; `git diff --stat main -- tests/fixtures` empty; v1–v4 fixture tests green; `salonCarried` absent from `SAVE_KEYS`
-- [ ] 10.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-migration`, `salon-extra-slots`, `art-stand-in` green
+- [x] 10.1 New and widened tests red before the change (assertion), green after; unit `<branch baseline> + N`
+- [x] 10.2 Deliberate break: note dropped / `fallback` `none` on the all-empty fallback → red; restored; meta-check (note and rules)
+- [x] 10.3 `SAVE_VERSION` still 4; `git diff --stat main -- tests/fixtures` empty; v1–v4 fixture tests green; `salonCarried` absent from `SAVE_KEYS`
+- [x] 10.4 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `save-migration`, `salon-extra-slots`, `art-stand-in` green
 
 #### Manual
 

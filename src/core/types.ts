@@ -68,6 +68,8 @@ export interface RoomDef {
     decor: LayerDef[];        // shown once a stage task is done
     slots: SlotDef[];
     tasks: RoomTaskDef[];     // completed in order
+    /** Lengths the task list had in earlier builds (the list only grows at its end): a saved `tasksDone` equal to one of them has a room that grew since. Log only. */
+    formerTaskCounts?: readonly number[];
 }
 
 /** One entry of the room list shown on the "Pokój gotowy!" card: a room, or a teaser for a room that does not exist yet. */

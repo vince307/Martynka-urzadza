@@ -83,6 +83,8 @@ export const pl = {
         olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
         // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
         roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
+        // DESIGN-GAP 150: the kit has no line for a salon moved to the new look on this launch; the text is ours, to be read by a teacher.
+        salonCarried: 'Pokój przeniesiony na nowy wygląd. Kupione rzeczy zostały.',
         // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
         saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
