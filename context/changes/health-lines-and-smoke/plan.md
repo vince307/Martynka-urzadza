@@ -1135,9 +1135,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [x] 12.1 The two specs green (one new test + one assertion in room-change); full `--workers=4`: 133 = 132 + 1
-- [x] 12.2 Deliberate break p12a → (a) red; p12b → (b) red; each restored; meta-check
-- [x] 12.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 12.1 The two specs green (one new test + one assertion in room-change); full `--workers=4`: 133 = 132 + 1 — 887fd36
+- [x] 12.2 Deliberate break p12a → (a) red; p12b → (b) red; each restored; meta-check — 887fd36
+- [x] 12.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — 887fd36
 
 ### Phase 13: A stalled or broken picture and a missing font in the browser — e2e (#15, #14)
 

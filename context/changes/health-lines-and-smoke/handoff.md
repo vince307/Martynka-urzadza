@@ -1,58 +1,56 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-implement` phase 11 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-11 are committed. Do not get wrong: save format stays v4 (fixtures, `deploy/`, `.github/` untouched); the hook field `unreachable` is read-only e2e state; phases 12-14 are `Driver: e2e` and prove browser-level risks.
+Written by the `/10x-e2e` phase 12 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-12 are committed. Do not get wrong: save format stays v4; phases 13-14 are `Driver: e2e`; the plan asked for "+2" but (b) is an assertion inside an existing test, so the suite grew by +1.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | identity, research, plan, plan-review, phases 1-10 with handoffs, phase 11 (`feat(health-lines-and-smoke): Unreachable slots in the hook, docs and seam sweep (p11)`, sha in `git log`) |
+| Commits | identity, research, plan, plan-review, phases 1-11 with handoffs, phase 12 `887fd36` (`test(health-lines-and-smoke): Purchase under a failing store, slots reachable (p12)`) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (rows 11.1-11.5 ticked; 11.6 and 11.7 [reviewer], 11.8 [human] left) |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (12.1-12.3 ticked with sha) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/roomHit.ts` | `unreachableSlots(room, chosen, alphaAt?)` pure; `src/scenes/RoomScene.ts` `RoomSnapshot.unreachable` (e2e hook reads it through `room.snapshot`) |
-| `src/pwa/registerServiceWorker.ts` | seam sweep: one `nameOf(error)` instead of three inline copies |
-| `CLAUDE.md` | one "Health lines and deploy smoke" paragraph at the end of "Current state"; every name checked with grep in `src/`, `scripts/`, `vite/` |
-| `context/changes/health-lines-and-smoke/follow-ups/review-fixes.md` | 14 deferred items, 14 `Trigger:` lines (incl. O-1(b), the `deploy/` half of 2217 P-4, A-6, A-8, L-7, `FontFace`, VO3, O-3 on return, B-6 measurement) |
-| `tests/roomHit.test.ts` | `unreachableSlots` case |
+| `tests/e2e/save-restart.spec.ts` | new test `#2 M-5 a stage and a sofa bought while the store refuses keep the stars and say so` (writefail seam, stars 12 - 5 - 7, failure count grows, "Zapis gry" `data-state=failing`, no alertdialog) |
+| `tests/e2e/room-change.spec.ts` | in `FR-019 …` test: `room.unreachable` equals `[]` after all purchases (risk #16 R-6) |
+| `tests/e2e/support/hook.ts` | `room` snapshot type gained `unreachable: string[]` |
+| `context/changes/health-lines-and-smoke/plan.md` | rows 12.1-12.3 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | lint / typecheck | OK / OK |
-| `npm test` + deploy scripts + sample E1-E6 | Tests 3653 passed = 3652 + 1; deploy scripts OK; samples exit 0 |
-| first RED | new case imports a function that did not exist (red by import before the change) |
-| break | `unreachableSlots` filter made `false &&` (always empty): `AssertionError: expected [] to deeply equal [ 'armchair', 'cabinet', …(9) ]`, 1 red; restored, 25 green |
-| meta-check | proves the field logic over an alpha that hits nothing; the real salon gives `[]` in the same case, the browser assertion is phase 12 |
-| `validate-rule-files.sh` | PASS; a broken path in `CLAUDE.md` (`roomHitX.ts`) gave FAIL (missing: 1); restored, PASS |
-| follow-ups | 14 entries = 14 `Trigger:` lines |
-| save invariants | `SAVE_VERSION` 4; `git diff --stat main -- tests/fixtures deploy .github` empty |
+| `npm test` + deploy scripts + sample E1-E6 | Tests 3653 passed (baseline 3653, +0); deploy scripts OK; samples OK |
 | `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 131 passed + known flake final-art-loading #15 (red once under load, green alone: 2 passed); total 132 = `playwright --list` 132; baseline 132 + 0; `playwright --list` 132 |
+| e2e `--workers=4` | 133 passed; `playwright --list` 133; baseline 132, +1 (one new test; (b) is an assertion) |
+| break p12a-1 (plan's: comment out `flush('now')` in `RoomScene` purchase) | stayed GREEN: the debounced write also fails and bumps the count. Not used as a break; the test was kept because other breaks turn it red |
+| break p12a-2 (`saveHealth.ts` failing threshold `> 0` to `> 99`) | RED by assertion: `expect(locator).toHaveAttribute` Expected "failing", Received "notYet"; restored |
+| break p12a-3 (`autosave.ts` `consecutiveFailures++` removed in the write catch) | RED by assertion: `expect(received).toBeGreaterThan(expected)` Expected > 0, Received 0; restored |
+| break p12b (`holdPoint` returns null for `sofa`) | RED by assertion in `FR-019`: `toEqual` Expected `[]`, Received `["sofa"]`; restored (the related-tests hook also showed 3 unit reds meanwhile) |
+| meta-check | (a) reaches the purchase path, the failing store and the parent panel (no Safari IndexedDB errors involved); the flush-to-now ordering is not provable in the browser because the debounce hides it, so that claim stays with the unit tests of `RoomScene` wiring. (b) proves `unreachable` over the real salon alpha, which unit tests only fake |
+| restored | `git status` shows only the three test files and plan before the commit; `src/` diff empty |
 | stray processes | `ps` grep for sleep/until/while/tail -f/playwright/vite (sandbox disabled), after the run: empty |
-
-Seam sweep (phases 1-10, `git diff main...HEAD`): one `isLocalHost`, one `errorName` in `save.ts` (the service-worker file had three inline copies, now `nameOf`); no "Task art failed to load" or "Music missing as the only cause" left (music warns carry the cause); the only `delayedCall` in `BootScene` is the hand-over to the next scene, not a limit; gap rows 139-150 are in order and present; every new registry key carries "runtime only, not in SAVE_KEYS"; the Phaser-internal use (`AudioFile.onProcess`, loader paths) is pinned by `tests/phaserLoaderPin.test.ts`. Recorded, not changed: the "Uruchom grę ponownie" strings that remain in `src/data/pl.ts` belong to the save and card sections, not to "Obrazki".
 
 ## 4. Next command
 
-`/10x-e2e health-lines-and-smoke phase 12`
+`/10x-e2e health-lines-and-smoke phase 13`
 
 ## 5. Open
 
 - [reviewer] rows 1.6, 1.7, 2.4, 3.4, 4.5, 5.4, 6.4, 7.4, 8.4, 9.4, 10.5, 11.6, 11.7; [visual] 2.5, 5.5, 6.5, 7.5, 8.5, 10.6; [human] 2.6, 4.6, 8.6, 11.8 not mine.
-- Phases 12-14 (e2e): write-fail purchase and every chosen slot reachable (use `room.unreachable` from the snapshot), stalled/broken picture and missing font, sound lines.
+- Phases 13-14 (e2e): stalled/broken picture and missing font, screen fallback in the panel.
+- Follow-ups: `context/changes/health-lines-and-smoke/follow-ups/review-fixes.md` (14 entries). New: no browser test proves `flush('now')` after a purchase while the store fails (debounce masks it); trigger: a change touching `RoomScene` purchase saving.
 
 ## 6. Autonomous decisions
 
-1. **Hook field as a pure `unreachableSlots` in `roomHit.ts`** (not a scene-only method), so a unit test proves it. Would change: reviewer wants it beside `slotTargets`.
-2. **Follow-ups file has 14 entries**, adding one for the two phase-10 decisions (import preview note, `roomGrowth` range). Would change: reviewer drops it.
-3. **CLAUDE.md paragraph appended to the "Current state" line** rather than a new line, matching the neighbours. Would change: nothing.
-4. **Commit message proposed as given**, one commit for the phase plus a separate handoff commit. Would change: nothing.
+1. **Plan break p12a replaced** by two breaks on `saveHealth.ts` and `autosave.ts`: the planned `flush('now')` removal stayed green. Chosen: breaks that protect what the test asserts. Would change: a seam making the debounce inert in the hook build.
+2. **Kept the test** despite the first break staying green, because the test is not green through every break of the rule it names (count and panel line). Would change: reviewer wants the flush ordering proven.
+3. **Delta +1 not +2**: (b) lives as an assertion in the existing `FR-019` test, matching the plan's "an assertion in room-change". Would change: a separate test is wanted.
+4. **Commit message proposed as given**, handoff in a separate commit.
