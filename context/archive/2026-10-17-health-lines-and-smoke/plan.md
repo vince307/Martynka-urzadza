@@ -994,7 +994,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 1.6 [reviewer] Every new assertion satisfied by the live observations quoted in research; every table check under `if (sha7)` — impl review: live rollback-mode run `precache served: 121/121`, `all 17 checks ok`
-- [ ] 1.7 [reviewer] (CI at ship) workflow `Deploy` job `deploy` step `Smoke check (deploy)` log matches `all [0-9]+ checks ok` (seen in Deploy run 38995649135: `all 20 checks ok`) and contains `precache served: ` with n = N
+- [x] 1.7 [reviewer] (CI at ship) workflow `Deploy` job `deploy` step `Smoke check (deploy)` log matches `all [0-9]+ checks ok` (seen in Deploy run 38995649135: `all 20 checks ok`) and contains `precache served: ` with n = N — Deploy run 39016785086 (smoke: `precache served: 121/121`, `all 22 checks ok`)
 
 ### Phase 2: "Gra bez internetu" names a failed update (O-2, O-4, O-3, O-5)
 
