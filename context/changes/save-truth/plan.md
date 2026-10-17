@@ -1110,7 +1110,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 1.6 [reviewer] `decodeSave` still never throws; `validateSave`/`saveProblem` rules unchanged; the new fixture is not referenced by any write path
+- [x] 1.6 [reviewer] `decodeSave` still never throws; `validateSave`/`saveProblem` rules unchanged; the new fixture is not referenced by any write path — impl review 2026-10-17
 - [ ] 1.7 [visual] The unreadable-save card with `Kod: corrupt/stars` (seam `corrupt`), at 1440 (1920×1080 fit) and 1024×768
 
 ### Phase 2: Replace gate for saves that cannot be read (SRR-09, SRR-01 gate, SRR-10)
@@ -1124,7 +1124,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 2.5 [reviewer] No second gate in the dialogs: `force` offered only through `deviceSaveView.forceable`
+- [x] 2.5 [reviewer] No second gate in the dialogs: `force` offered only through `deviceSaveView.forceable` — impl review 2026-10-17
 - [ ] 2.6 [visual] Reset dialog over a `migration-failed` save: step one without "Zacznij od nowa", then "Zastąp mimo to" + warning, at 1440 and 1024×768
 
 ### Phase 3: Unavailable starts counter (SRR-08)
@@ -1139,7 +1139,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 3.6 [reviewer] DESIGN-GAP 126 row and comment present; `src/core` reads no `localStorage`
+- [x] 3.6 [reviewer] DESIGN-GAP 126 row and comment present; `src/core` reads no `localStorage` — impl review 2026-10-17
 - [ ] 3.7 [visual] Import dialog on the first `unavailable` start and on the second (with "Zastąp mimo to"), at 1440 and 1024×768
 - [ ] 3.8 [human] Accept that a save the browser refuses can be overwritten only after a second start, and the wording of gap 126
 
@@ -1154,7 +1154,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 4.5 [reviewer] No code path deletes or overwrites a `backup-v<N>` key; the record is never read by `decodeSave` or `read`
+- [x] 4.5 [reviewer] No code path deletes or overwrites a `backup-v<N>` key; the record is never read by `decodeSave` or `read` — impl review 2026-10-17
 - [ ] 4.6 [human] Accept that a later migration keeps the FIRST old copy (reverses `stale-tab-and-health` "a later migration overwrites `backup-v3`")
 
 ### Phase 5: Copy after the write, bounded retry of the first write (SVB-01, V-6, V-7, P-1)
@@ -1167,7 +1167,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 5.4 [reviewer] The copy is never taken from the stored key; `noteBackup` failure never blocks a write; the retry is bounded
+- [x] 5.4 [reviewer] The copy is never taken from the stored key; `noteBackup` failure never blocks a write; the retry is bounded — impl review 2026-10-17
 
 ### Phase 6: "Zapis gry" tells the truth across launches (SVB-01 line, P-1 line, SVB-03, SRR-11, visual V1)
 
@@ -1179,7 +1179,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 6.4 [reviewer] DESIGN-GAP 127–129 rows and comments present; `backupRecord`, `lateWrite`, `fatalError` absent from `encodeSave` and `SAVE_KEYS`
+- [x] 6.4 [reviewer] DESIGN-GAP 127–129 rows and comments present; `backupRecord`, `lateWrite`, `fatalError` absent from `encodeSave` and `SAVE_KEYS` — impl review 2026-10-17
 - [ ] 6.5 [visual] "Zapis gry" with the `pending` line, the `lost` line and the timeout line, at 1440 and 1024×768
 
 ### Phase 7: Writer identity and an older build's write (T-3, T-1)
@@ -1192,7 +1192,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 7.4 [reviewer] DESIGN-GAP 130 row and comment present; `writer`/`generation` stamping unchanged (format v4)
+- [x] 7.4 [reviewer] DESIGN-GAP 130 row and comment present; `writer`/`generation` stamping unchanged (format v4) — impl review 2026-10-17
 - [ ] 7.5 [visual] "Zapis gry" with the older-writer line, at 1440 and 1024×768
 
 ### Phase 8: Early stale signal and the refusal code line (T-2, T-5)
@@ -1205,7 +1205,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 8.4 [reviewer] `writeVerdict` remains the authority; no `BroadcastChannel` outside `src/storage/`
+- [x] 8.4 [reviewer] `writeVerdict` remains the authority; no `BroadcastChannel` outside `src/storage/` — impl review 2026-10-17
 - [ ] 8.5 [visual] Refusal card with the `Kod:` line, at 1440 and 1024×768
 
 ### Phase 9: Keep a copy of the old save from "Zapis gry" (SV2-04 UI)
@@ -1218,7 +1218,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 9.4 [reviewer] DESIGN-GAP 131 row and comment present; no read of backups outside the panel open
+- [x] 9.4 [reviewer] DESIGN-GAP 131 row and comment present; no read of backups outside the panel open — impl review 2026-10-17
 - [ ] 9.5 [visual] "Zapis gry" with the "Zachowaj kopię starego zapisu" button after a v1 migration, at 1440 and 1024×768
 
 ### Phase 10: Export says what happened (S12-07, S12-04, O4)
@@ -1231,7 +1231,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 10.4 [reviewer] DESIGN-GAP 132–133 rows and comments present; the share-sheet path unchanged
+- [x] 10.4 [reviewer] DESIGN-GAP 132–133 rows and comments present; the share-sheet path unchanged — impl review 2026-10-17
 - [ ] 10.5 [visual] Export dialog after "Zapisz plik" with the `downloadStarted` line, at 1440 and 1024×768
 
 ### Phase 11: Import and reset say what happened (SVB-04, S12-08, S12-05, O2, V2)
@@ -1244,7 +1244,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 11.4 [reviewer] DESIGN-GAP 134–136 rows and comments present; `rejected` stays an exhaustive record
+- [x] 11.4 [reviewer] DESIGN-GAP 134–136 rows and comments present; `rejected` stays an exhaustive record — impl review 2026-10-17
 - [ ] 11.5 [visual] Reset dialog after a `writehang` timeout with `replaceUnconfirmed`, at 1440 and 1024×768
 - [ ] 11.6 [human] Accept the wording of gaps 127–136 as one read of the parent's save copy
 
@@ -1258,7 +1258,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 12.4 [reviewer] DESIGN-GAP 137–138 rows and comments present; no repair of `rooms`; `REGISTRY_KEYS.roomProblems` absent from `SAVE_KEYS`
+- [x] 12.4 [reviewer] DESIGN-GAP 137–138 rows and comments present; no repair of `rooms`; `REGISTRY_KEYS.roomProblems` absent from `SAVE_KEYS` — impl review 2026-10-17
 - [ ] 12.5 [visual] Import preview of a file whose salon has an over-count, at 1440 and 1024×768
 
 ### Phase 13: Late read error, word round warn, docs and seam sweep (SVB-02, SV2-11)
@@ -1273,7 +1273,7 @@ line then falls back to the session status, as today).
 
 #### Manual
 
-- [ ] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 126–138 match the code comments; `SAVE_VERSION` 4 and only `save-v1-legacy-salon.json` added under `tests/fixtures`
+- [x] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 126–138 match the code comments; `SAVE_VERSION` 4 and only `save-v1-legacy-salon.json` added under `tests/fixtures` — impl review 2026-10-17
 - [ ] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932)
 
 ### Phase 14: Another window's save stops this one at once — e2e (#2)
