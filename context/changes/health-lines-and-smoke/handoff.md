@@ -1,28 +1,28 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-plan` step of run `2026-10-16-audit-sweep` (slice 3 of 3). The plan is written (14 phases, 71
-Progress rows) and no code has changed yet. Do not get wrong: `src/core` never imports `src/data/pl.ts`, so the
-panel builders return line keys and the renderers map them to text. Also, `registration.update()` runs **once per
-launch only**, never on return from the background.
+Written by the `/10x-plan-review` step of run `2026-10-16-audit-sweep` (slice 3 of 3). The plan is reviewed (PROCEED,
+3 warnings fixed in plan.md) and no code has changed yet. Do not get wrong: `src/core` never imports `src/data/pl.ts`
+(builders return line keys), `registration.update()` runs once per launch only, and an `xhrLoader.status` 0 is the
+`network` cause, never "not on the server".
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | 3 (`af4ddec` identity, `58b6ea7` research, + this plan commit) |
+| Commits | 4 (`af4ddec` identity, `58b6ea7` research, `edebf8e` plan, + this plan-review commit) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 71 (`grep -c '^- \[ \]' plan.md`): 48 automated, 13 `[reviewer]`, 6 `[visual]`, 4 `[human]` |
+| `change.md` status | `plan_reviewed` |
+| `## Progress` rows remaining | 71 (`grep -c '^- \[ \]' plan.md`), unchanged by the review |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/health-lines-and-smoke/plan.md` | 14 phases with `Driver:` lines (1–6 and 8–10 `tdd`; 7 and 11 `impl`; 12–14 `e2e`), Critical Implementation Details, Known risks, 15 Autonomous decisions, `## Progress` |
-| `context/changes/health-lines-and-smoke/plan-brief.md` | two-page brief: key decisions table, phases at a glance |
-| `context/changes/health-lines-and-smoke/change.md` | status `preparing` → `planned` |
+| `context/changes/health-lines-and-smoke/reviews/plan-review.md` | review report: 0 critical, 3 warnings (fixed), 4 observations; the four production risks (a)–(d) checked with evidence |
+| `context/changes/health-lines-and-smoke/plan.md` | F1: per-HEAD `AbortSignal.timeout(HEAD_TIMEOUT_MS)` in Critical Implementation Details + Phase 1; F2: `ArtCause` `network` (status 0) with its own copy in Phases 3, 5, 6, 13; F3: decode-seam guards in Critical Implementation Details + Phase 9 tests; F4/F5 in `## Known risks` |
+| `context/changes/health-lines-and-smoke/change.md` | status `planned` → `plan_reviewed` |
 | `context/changes/health-lines-and-smoke/handoff.md` | this file |
 
 ## 3. Verification
@@ -30,46 +30,39 @@ launch only**, never on return from the background.
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/health-lines-and-smoke` |
-| `gh run view 38995649135 --log` (Deploy, read-only) | step `Smoke check (deploy)`: `ok   GET /sw.js — 200, 121 precache entries`, `all 20 checks ok` (quoted in plan rows 1.7) |
-| Criteria ↔ Progress mapping (awk over plan.md) | 1:1 for all 14 phases (7/6/4/6/5/5/5/6/4/6/8/3/3/3) |
-| `metadata-guard.mjs inspect` + `mark-planned` | `changed: true`, status `planned` |
-| roadmap sync | `context/foundation/roadmap.md` has no `health-lines-and-smoke` row; untouched (non-roadmap) |
+| script over `TASK_ART`, `UI_ART`, `ROOM_ART`, `SOUNDS` urls vs `public/` | `110 missing []` — `precacheCovers` cannot go red on today's build |
+| `grep -n timeout-minutes .github/workflows/deploy.yml` | none — basis of F1 |
+| `node_modules/phaser/src/loader/filetypes/AudioFile.js` `onProcess`; `LoaderPlugin.js` `addFile` / `nextFile`; `File.js` `onProcessError`; `FontFile.js` | seam real; decode failure has no `loaderror`; font 404 → `onProcessComplete`, face not added to `document.fonts` |
+| `grep` in `src/` for `url(`, `new Image`, `.src =`, `fetch(` | empty — no lazy fetch of a hashed file after a takeover |
+| `tests/phaserLoaderPin.test.ts` | pins `version` 4.2.1 + source text (read, not run) |
+| Progress rows | 71, unchanged; Progress↔Phase 1:1 |
 | Gate (lint, typecheck, tests, build, e2e) | not run: docs only, no code changed |
 
 ## 4. Next command
 
-`/10x-plan-review health-lines-and-smoke`
+`/10x-tdd health-lines-and-smoke phase 1`
 
 ## 5. Open
 
-- [human] rows: 2.6 (accept a launch-only `update()`), 4.6 (optional throttled Android cold start against
-  `balance.loader.totalMs`), 8.6 (real iPad with a never-unlocking audio context: `soundBlocked` after 3 touches),
-  11.8 (wording of gaps 139–150).
-- [reviewer] (CI at ship) rows: 1.7 (Deploy `Smoke check (deploy)` `all [0-9]+ checks ok` + `precache served: `);
-  11.7 (CI `check`: `e2e hook: absent (` and `Tests +[0-9]+ passed`).
-- DESIGN-GAP rows 139–150 will be added in phases 2, 5, 6, 7, 8 and 10. Gaps 66, 67, 114, 119 and 120 get notes.
-- Follow-ups (written in phase 11, `follow-ups/review-fixes.md`): O-1(b), the 2217 P-4 `deploy/` half, G-3, G-6,
-  ASL-05, ASL-08, A-6, A-8 (unless phase 13 takes it), L-7, the `FontFace` limit, VO3, O-3 on return from the
-  background, and the B-6 measurement.
-- Phase 5 may change the wording of existing "Obrazki" lines. e2e texts in `health-lines.spec.ts`,
-  `art-stand-in.spec.ts` and `salon-load-health.spec.ts` may then need edits, each named in the commit.
-- Plan-review watch items: phase 1 local proof against `vite preview` (`isLocalHost` skips the immutable check). The
-  phase 9 seam (`AudioFile.onProcess` → `this.config.context.decodeAudioData`, pinned). Phase 4 timers are cleared on
-  `COMPLETE` and `shutdown`.
+- [human] rows: 2.6 (launch-only `update()`), 4.6 (optional throttled Android cold start), 8.6 (real iPad,
+  `soundBlocked` after 3 touches), 11.8 (wording of gaps 139–150, now including the `network` cause line in gap 141).
+- [reviewer] (CI at ship) rows 1.7 and 11.7.
+- DESIGN-GAP rows 139–150 added in phases 2, 5, 6, 7, 8, 10; notes on gaps 66, 67, 114, 119, 120.
+- Follow-ups written in phase 11 (`follow-ups/review-fixes.md`): list in plan § What We're NOT Doing.
+- Known risks added by review: wall-clock boot limits run while hidden (`BootScene` timers, F4); offline launch warns
+  `Service worker update check failed` (`registerServiceWorker`, F5).
+- Phase 1 local proof: against `vite preview`, `isLocalHost` skips the immutable check; a missing file there is 200
+  `text/html`, caught by the type assertion.
 - Known e2e load flakes: `money-pay` #11, `final-art-loading` #15, `child-flow-guards` #2.
 
 ## 6. Autonomous decisions
 
-1. **No interview** (contract rule 1). The complexity, the question budget and the phase approval were decided in
-   place. Would change: nothing.
-2. **O-3 launch-only `update()`** (plan decision 2). Rejected `update()` on `visibilitychange` because the step prompt
-   says no new worker may take over an open page mid-round. This follows `Martynka-urzadza.md` § 9 and departs from
-   part of the audit, so it gets `[human]` row 2.6. Would change: a device that keeps an old build for days.
-3. **S-2 source catch taken behind the pin** (step prompt; plan decision 4). Would change: a Phaser upgrade.
-4. **Localhost skips the immutable check** (research Open Question 1; plan decision 3). Would change: none.
-5. **Phase 5 contract corrected during writing.** No `src/core` module imports `pl` (checked by grep), so the lines
-   builder returns keys. Would change: a boundary rule that allows `pl` in `core`.
-6. **14 phases**, at the limit change.md decision 2 named; nothing more deferred. Would change: plan-review asking for
-   fewer phases. The next items to defer are R-6, ASL-04 and S-7.
-7. **No plan text against the design docs' literal text** (plan decision 14). Would change: a reviewer reading § 9
-   differently.
+1. **Triage done in place** (contract rule 1): all three warnings fixed in plan.md, observations recorded. Would
+   change: nothing.
+2. **F1 timeout 15 s per HEAD, not a workflow `timeout-minutes`.** Rejected: editing `.github/workflows/deploy.yml`
+   (out of scope by the plan). Would change: a maintainer change to the workflow.
+3. **F2 new `network` cause rather than rewording `fetch`.** Why: restart advice and copy differ for 404 vs timeout.
+   Would change: Phaser exposing a distinct timeout event.
+4. **(b) no change to plan decision 2.** Evidence: no lazy hashed fetches, unhashed sound/font URLs in both precaches.
+   Would change: a lazy chunk or a CSS `url()` to an `_app/` file appearing in `src/`.
+5. **No phase split/merge**; drivers kept as written. Would change: a phase agent hitting the context limit.

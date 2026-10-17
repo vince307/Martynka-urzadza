@@ -137,7 +137,9 @@ browser-level risks.
   extension (e.g. `woff2`, none today) is status-only. Never assert `content-length`, `Cache-Control` or
   `Content-Encoding` per entry. `index.html`: 200 expected (observed); a 301/308 to `/` or `./` is tolerated for that
   entry only. HEAD with `redirect: 'manual'`, a fixed pool (8, a constant in `scripts/`), one retry per entry after
-  `RETRY_DELAY_MS` on a network error only.
+  `RETRY_DELAY_MS` on a network error only. Every per-entry HEAD carries `signal: AbortSignal.timeout(HEAD_TIMEOUT_MS)`
+  (15 000, a constant in `scripts/`); an abort counts as a network error (one retry, then a failed verdict with reason
+  `timeout`), so a hung request can never hold the Deploy job (the job has no `timeout-minutes`; plan-review F1).
 - **Rollback safety.** The per-entry check reads the list from the served `sw.js`, so it is right for any release;
   every check that reads HEAD's tables (`TASK_ART`, `UI_ART`, `ROOM_ART`, `SOUNDS`) runs only under `if (sha7)`. The
   Deploy workflow passes the SHA on deploy and omits it on rollback (no workflow change).
@@ -151,7 +153,10 @@ browser-level risks.
   and on scene `shutdown`; callbacks run in `try` with a warn.
 - **S-2 seam.** In an `addfile` listener for `audio` files, `file.config.context` is replaced by a per-file object
   whose `decodeAudioData(buf, ok, err)` calls the real context and attaches `.catch` (named warn `Sound decode failed:
-  <key> (<name>)`) to a returned promise; the real context is never mutated. Pinned: `AudioFile.onProcess` still calls
+  <key> (<name>)`) to a returned promise; the real context is never mutated. The listener wraps only when
+  `typeof file.config?.context?.decodeAudioData === 'function'` (an `HTML5AudioFile`, chosen when Web Audio is missing,
+  has no context; a no-audio game queues no audio file) and attaches `.catch` only when the call returned a thenable
+  (old callback-only implementations return `undefined`); a test covers both guards (plan-review F3). Pinned: `AudioFile.onProcess` still calls
   `this.config.context.decodeAudioData(` with three arguments and nulls `this.config.context` after.
 
 ## Phase 1: Deploy smoke asks for every precached file (O-1a/P-3, P-2, S14-06/P-4 2217, P-4 0915)
@@ -183,7 +188,8 @@ thin wrapper so its test keeps passing); `isLocalHost(url)`; `failLine(error) �
 
 **File**: `scripts/check-deploy.ts` (`main`, `get`, final rejection handler)
 
-**Intent**: after `/sw.js`, HEAD every entry through a pool of 8 and record `precacheServed`; under `if (sha7)` record
+**Intent**: after `/sw.js`, HEAD every entry through a pool of 8 (each HEAD with `AbortSignal.timeout(HEAD_TIMEOUT_MS)`, an abort
+treated as a network error) and record `precacheServed`; under `if (sha7)` record
 `precacheCovers` for `TASK_ART` (`url`), `UI_ART` (`url`), `ROOM_ART` (`url`) and boot `SOUNDS` (flattened `urls` of
 `boot` entries); remove the hard-coded `architecture-after.webp` GET (the per-entry check covers it); `get` wraps an
 error as `new Error(\`${path}: ${msg}\`, { cause })`; the final handler prints `failLine`; the immutable check and the
@@ -197,7 +203,8 @@ error as `new Error(\`${path}: ${msg}\`, { cause })`; the final handler prints `
 
 **Contract**: recorded responses as constants (no network): a real `dist/sw.js`-shaped fragment; verdicts 200 +
 `image/webp` ok; 404 fails; `text/html` for a `.webp` fails (the local SPA-fallback case); `text/css; charset=utf-8`
-ok; `.woff2` status-only; `index.html` 301 → `/` ok, 301 → `/x` fails; `precacheServed` line text; `precacheCovers`
+ok; `.woff2` status-only; `index.html` 301 → `/` ok, 301 → `/x` fails; a timed-out entry (status 0, reason `timeout`)
+fails and is listed; `precacheServed` line text; `precacheCovers`
 for each table; `isLocalHost`; `failLine` names the path and "already live".
 
 ### Success Criteria:
@@ -285,7 +292,8 @@ never started; a texture whose size differs from its table is reported, never dr
 
 **File**: `src/core/artHealth.ts` (new `ArtTable = 'task' | 'room' | 'ui' | 'sound'`; `tableOf(key, tables)`;
 `loadErrorLine(table, key, src, status) → string` (`<Table> file failed to load: <key> <src> (HTTP <status> | timeout
-or network)`); `ArtCause = 'fetch' | 'decode' | 'cut' | 'never'`; `artCauses(missingKeys, seen: { loaded: Set; failed:
+or network)`); `ArtCause = 'fetch' | 'network' | 'decode' | 'cut' | 'never'` (`fetch` = an HTTP status ≥ 400, `network` = status 0:
+timeout or no connection — never told to the parent as "not on the server", plan-review F2); `artCauses(missingKeys, seen: { loaded: Set; failed:
 Map<key,status> ; cut: Set }) → Record<key, ArtCause>`; `ArtHealth` gains additive `causes` and `wrongSize: string[]`)
 
 #### 2. Wiring
@@ -303,7 +311,8 @@ has them; one `console.warn` per table with the causes)
 #### 4. Tests
 
 **File**: `tests/artHealth.test.ts` (`loadErrorLine` per table, status 0 → "timeout or network"; `artCauses`: loaded
-but no texture → `decode`, failed → `fetch`, in cut → `cut`, none → `never`; `wrongSize`)
+but no texture → `decode`, failed with 404 → `fetch`, failed with status 0 → `network`, in cut → `cut`, none →
+`never`; `wrongSize`)
 
 ### Success Criteria:
 
@@ -403,7 +412,7 @@ passes the registry records and `__BUILD_ID__`)
 #### 3. Copy
 
 **File**: `src/data/pl.ts` (`settings.artCut`: "Część obrazków nie zdążyła się wczytać. Przy lepszym internecie
-uruchom grę ponownie." — gap 140; `settings.artCause`: record `fetch` "Tych plików nie ma na serwerze.", `decode`
+uruchom grę ponownie." — gap 140; `settings.artCause`: record `fetch` "Tych plików nie ma na serwerze.", `network` "Tych plików nie udało się pobrać. Internet był zbyt wolny albo się rozłączył.", `decode`
 "Tych plików nie da się otworzyć.", `cut` → `artCut`, `never` "Tych plików gra nie zaczęła wczytywać." — gap 141);
 `docs/design-gaps.md` rows 140–141; gaps 67 and 119 get a "see 140–141" note
 
@@ -436,7 +445,7 @@ Driver why: extends the phase-5 builder with exact new lines — failing cases l
 
 Per-folder counts instead of one count, a sentence that the tasks with these pictures are skipped, up to N labels of
 missing room pieces, a line for the fallback font, and the restart advice only when the cause can change on a restart
-(`cut`, `fetch` with status 0).
+(`cut`, `network`).
 
 ### Changes Required:
 
@@ -458,7 +467,7 @@ zastępczym kroju pisma." — gap 146); folder names from `pl` (`settings.artFol
 #### 3. Tests
 
 **File**: `tests/artHealthLines.test.ts` (folders, skipped sentence only for task art, cap of labels, font line,
-`artNoRestart` for `fetch` with a 404 vs restart advice for `cut`); `tests/plural.test.ts` unchanged and green
+`artNoRestart` for `fetch` (a 404) and `decode` vs restart advice for `cut` and `network`); `tests/plural.test.ts` unchanged and green
 
 ### Success Criteria:
 
@@ -619,7 +628,8 @@ with three arguments and sets `this.config.context = null` after; `LoaderPlugin`
 **File**: `tests/errorSignal.test.ts` (`noiseLine`); `tests/soundPrefsStore.test.ts` (warn on `"{bad"`, no warn on null;
 `probe` with a throwing storage → false); new `tests/soundPrefsApply.test.ts` (refused write → `kept: false` and the
 registry set; FU-16); new `tests/decodeSeam.test.ts` (the wrapper over a fake context whose promise rejects: one named
-warn, no unhandled rejection; callback form still called)
+warn, no unhandled rejection; callback form still called; a file without a context left untouched; a context whose
+`decodeAudioData` returns `undefined` → no throw)
 
 ### Success Criteria:
 
@@ -803,7 +813,7 @@ New tests in `tests/e2e/load-and-tab-guard.spec.ts` and `tests/e2e/health-lines.
 **Intent**:
 (a) "#15 A-9 one stalled money picture ends by its own limit and its skill is skipped": `?e2eArt=stall`, `page.route`
 hangs one `assets/tasks/money/*` file, `?e2eSkills=` forcing one money skill and one plain skill; the game starts, the
-round has no task of the stalled skill, "Obrazki" shows the money folder line with the `fetch` (timeout) cause and the
+round has no task of the stalled skill, "Obrazki" shows the money folder line with the `network` (timeout) cause and the
 restart advice.
 (b) "#14 B-4 a cut start says some pictures did not finish": `?e2eArt=stallall` (existing hang routing), "Obrazki"
 shows `pl.settings.artCut`; hook `bootLoad.elapsedMs` ≥ the e2e total limit.
@@ -904,6 +914,11 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 - **`document.fonts` status differs in WebKit**: phase 13 (c) proves Chromium only.
 - **Reversed test** in phase 2 (`swStatus`); e2e text assertions in phase 5 updated only where an existing line's
   wording changed — any other red test is a regression.
+- **Boot limits now run while the tab is hidden** (phase 4, B-3): on the wall clock a first start sent to the background
+  can be cut while the browser keeps downloading; before, `Game.onHidden` paused the cut with the loop. Accepted: the
+  limit exists so a start never freezes, and the stand-in path is the designed outcome (plan-review F4).
+- **An offline launch warns `Service worker update check failed (TypeError)`** once (phase 2): console only, no panel
+  line, no status change; accepted as truthful noise (plan-review F5).
 - **e2e load sensitivity** (profile § 8): full suite ~10–12 min at 4 workers; known flakes `money-pay` #11,
   `final-art-loading` #15, `child-flow-guards` #2 — re-run alone before they count.
 
