@@ -184,6 +184,9 @@ test('FR-019 the last purchase shows »Pokój gotowy!« and the change mode of t
     const done = await room(page);
     expect(done.state.stars).toBe(0);
     expect(done.room.done).toBe(true);
+    // #16 R-6: every slot the child chose has a hold point on a visible pixel (a hold opens its change panel).
+    expect(Object.keys(done.room.chosen).length).toBeGreaterThan(5);
+    expect(done.room.unreachable).toEqual([]);
     expect(done.room.card?.items).toHaveLength(2);
     expect(done.room.card?.items[0]).toMatchObject({ kind: 'room', id: 'salon', done: true });
     expect(done.room.card?.items[1]).toMatchObject({ kind: 'teaser', unlocked: true });

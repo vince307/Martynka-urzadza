@@ -224,7 +224,39 @@ test('#2 C-2 failed writes show in the parent panel', async ({ page }) => {
     await expect(section.getByText(pl.settings.saveFailing)).toBeVisible();
 });
 
-test('#2 C-2 the parent panel says the game saves after a normal write', async ({ page }) => {
+// Risk #2 (progress lost) x #16 (purchase): a purchase made while the store refuses every write keeps its stars and the
+// panel says the game is not saving. origin: audit M-5; the failure comes from the writefail seam, never real IndexedDB.
+test('#2 M-5 a stage and a sofa bought while the store refuses keep the stars and say so', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eSave: 'writefail', e2eStars: '12', e2eVariant: 'off', e2eMonth: '10' });
+    await finishTaskWithoutStars(page);
+    await tapTarget(page, 'roomSwitch');
+    await screenIs(page, 'room');
+    const failuresBefore = (await snapshot(page)).save?.consecutiveFailures ?? 0;
+
+    await tapTarget(page, 'taskButton');
+    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(1);
+    await tapTarget(page, 'taskButton');
+    await expect.poll(async () => (await snapshot(page)).room?.panel.kind).toBe('open');
+    const thumbs = (await targets(page)).thumbs ?? [];
+    await tapScene(page, thumbs[0]);
+    await tapTarget(page, 'choose');
+    await expect.poll(async () => (await snapshot(page)).room?.tasksDone).toBe(2);
+
+    // The purchase asked for a save at once and the store refused it: the failure count grew.
+    await expect.poll(async () => (await snapshot(page)).save?.consecutiveFailures ?? 0).toBeGreaterThan(failuresBefore);
+    const bought = await snapshot(page);
+    expect(bought.save?.lastError).toBe('QuotaExceededError');
+    expect(bought.save?.blockedBy).toBeNull();
+    expect(bought.stars).toBe(12 - 5 - 7);
+    expect(bought.room!.chosen.sofa).toBe(0);
+
+    const panel = await openSettings(page);
+    await expect(panel.locator('section.parent-save')).toHaveAttribute('data-state', 'failing');
+    await expect(page.getByRole('alertdialog')).toHaveCount(0); // no fatal card
+});
+
+test('#2 C-2 the parent panel says the game saves after a normal write',async ({ page }) => {
     await silenceSpeech(page);
     await passWelcome(page);
     await expect.poll(async () => (await snapshot(page)).save?.writes ?? 0).toBeGreaterThanOrEqual(1);
