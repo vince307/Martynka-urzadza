@@ -1,7 +1,7 @@
 ---
 change_id: health-lines-and-smoke
 title: What the parent panel and the deploy smoke say about pictures, sound and offline (audit sweep slice 3)
-status: new
+status: preparing
 created: 2026-10-17
 updated: 2026-10-17
 archived_at: null
