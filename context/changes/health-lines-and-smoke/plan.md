@@ -1093,9 +1093,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 9.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 9.2 Deliberate break: wrapper without `.catch` / `applySoundPrefs` ignoring a refused write → red; restored; meta-check (seam over a fake context)
-- [ ] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound-failure`, `error-boundary` green
+- [x] 9.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 101772a
+- [x] 9.2 Deliberate break: wrapper without `.catch` / `applySoundPrefs` ignoring a refused write → red; restored; meta-check (seam over a fake context) — 101772a
+- [x] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound-failure`, `error-boundary` green — 101772a
 
 #### Manual
 
