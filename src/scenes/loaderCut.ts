@@ -7,14 +7,25 @@ import { Loader } from 'phaser';
  * `nextFile`, `fileProcessComplete`, `File.resetXHR`); re-run e2e #15 `stallall` on any Phaser upgrade
  * (tests/phaserLoaderPin.test.ts is the tripwire).
  */
+/**
+ * The keys `cutLoad` would end now (the same sets, in the same order). Read it BEFORE the cut: ending the last file
+ * completes the load and runs the scene's `create()` synchronously, inside `cutLoad` (visual gate VG-1).
+ */
+export function pendingKeys(load: Loader.LoaderPlugin): string[] {
+    if (!load.isLoading()) {
+        return [];
+    }
+    return [...load.list, ...load.inflight, ...load.queue].map((file) => file.key);
+}
+
 export function cutLoad(load: Loader.LoaderPlugin): string[] {
     if (!load.isLoading()) {
         return [];
     }
+    const keys = pendingKeys(load);
     const waiting = [...load.list];
     const flying = [...load.inflight];
     const decoding = [...load.queue];
-    const keys = [...waiting, ...flying, ...decoding].map((file) => file.key);
 
     // A file still in the list never started: no xhr to stop. Move it to inflight so nextFile can finish it.
     for (const file of waiting) {

@@ -6,7 +6,7 @@ import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE, UI_MISSING_URL } from '../testing/e2eHook';
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
-import { cutLoad } from './loaderCut';
+import { cutLoad, pendingKeys } from './loaderCut';
 import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
 import { recordFallback } from '../ui/artFallbacks';
@@ -160,7 +160,10 @@ export class BootScene extends Scene {
             if (bootLimitDue(schedule, performance.now()) !== 'cut') {
                 return;
             }
-            this.cut = cutLoad(this.load);
+            // Recorded BEFORE the cut: failing the last file ends the load and runs create() synchronously inside cutLoad, and
+            // create() reads this.cut for the cause of each missing picture (`cut`, not the `network` of the aborted request).
+            this.cut = pendingKeys(this.load);
+            cutLoad(this.load);
             this.phase = 'over';
             this.publish();
             console.warn(`Boot load cut after ${Math.round(performance.now() - this.startedAt)} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);

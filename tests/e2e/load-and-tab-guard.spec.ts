@@ -109,6 +109,11 @@ test.describe('a picture that stalls, alone and with all', () => {
 
         const panel = await openSettings(page);
         await expect(panel.getByText(pl.settings.artCut, { exact: true })).toBeVisible();
+        // The files the limit cut have the cause `cut` (visual gate VG-1): the cut line says it all, no second
+        // connection line and no second restart advice, and the code is `cut`.
+        await expect(panel.getByText(pl.settings.artCause.network, { exact: true })).toHaveCount(0);
+        await expect(panel.getByText(pl.settings.artRestart, { exact: true })).toHaveCount(0);
+        await expect(panel.locator('section.parent-art').getByText(/^Kod: cut /)).toBeVisible();
     });
 });
 
