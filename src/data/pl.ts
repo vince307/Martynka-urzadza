@@ -115,6 +115,8 @@ export const pl = {
             ready: 'Gra jest gotowa do działania bez internetu.',
             installing: 'Gra przygotowuje się do działania bez internetu. Poczekaj chwilę.',
             failed: 'Nie udało się przygotować gry do działania bez internetu. Uruchom grę ponownie, gdy będzie internet.',
+            // DESIGN-GAP 139: the kit has no line for a newer version that could not be downloaded while the old one works.
+            updateFailed: 'Nowej wersji gry nie udało się pobrać. Ta wersja działa dalej bez internetu.',
             registerFailed: 'Gra nie przygotuje się do działania bez internetu na tym urządzeniu.',
             unsupported: 'Ta przeglądarka nie pozwala grać bez internetu.',
             takenOver: 'Nowsza wersja gry jest gotowa. Zacznie działać przy następnym uruchomieniu.',

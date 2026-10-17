@@ -13,8 +13,9 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
         status = stepSw(status, event);
         try {
             onStatus(status);
-        } catch {
+        } catch (error: unknown) {
             // the signal is advisory only
+            console.warn(`Service worker status listener failed (${error instanceof Error ? error.name : 'Error'})`);
         }
     };
     if (import.meta.env.DEV || !('serviceWorker' in navigator)) {
@@ -35,6 +36,9 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
     const track = (worker: ServiceWorker): void => {
         const id = idOf(worker);
         emit({ type: 'installing', id });
+        trackStates(worker, id);
+    };
+    const trackStates = (worker: ServiceWorker, id: number): void => {
         worker.addEventListener('statechange', () => {
             if (worker.state === 'installed' || worker.state === 'activating' || worker.state === 'activated' || worker.state === 'redundant') {
                 emit({ type: 'state', id, state: worker.state });
@@ -50,7 +54,17 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
             .register('/sw.js', { scope: '/' })
             .then((registration) => {
                 if (registration.active) emit({ type: 'active', id: idOf(registration.active) });
+                if (registration.waiting) {
+                    const id = idOf(registration.waiting);
+                    emit({ type: 'waiting', id });
+                    trackStates(registration.waiting, id);
+                }
                 if (registration.installing) track(registration.installing);
+                // One update check per launch, nowhere else (autonomous decision 2: no visibility or timer trigger,
+                // so a new worker never claims a page in the middle of a round).
+                registration.update().catch((error: unknown) => {
+                    console.warn(`Service worker update check failed (${error instanceof Error ? error.name : 'Error'})`);
+                });
                 registration.addEventListener('updatefound', () => {
                     if (registration.installing) track(registration.installing);
                 });

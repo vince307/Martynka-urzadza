@@ -1000,9 +1000,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 2.1 Reversed and new tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 2.2 Deliberate break: `offlineView` without the `error` branch / `waiting` ignored → red; restored; meta-check (view and reducer)
-- [ ] 2.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `seed.spec.ts` and `health-lines.spec.ts` "#8 P-1 …" green
+- [x] 2.1 Reversed and new tests red before the change (assertion), green after; unit `<branch baseline> + N`
+- [x] 2.2 Deliberate break: `offlineView` without the `error` branch / `waiting` ignored → red; restored; meta-check (view and reducer)
+- [x] 2.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `seed.spec.ts` and `health-lines.spec.ts` "#8 P-1 …" green
 
 #### Manual
 
