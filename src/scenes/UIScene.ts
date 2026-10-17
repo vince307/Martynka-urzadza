@@ -12,7 +12,7 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
-import { artHealthView, type ArtHealth } from '../core/artHealth';
+import { artHealthLines, type ArtHealth } from '../core/artHealth';
 import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
@@ -174,9 +174,13 @@ export class UIScene extends Scene {
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
                     saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? []) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
-                    artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
-                    roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
-                    uiArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined),
+                    artLines: artHealthLines({
+                        task: this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined,
+                        room: this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
+                        ui: this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined,
+                        cut: (this.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[] } | undefined)?.cut.length ?? 0,
+                        build: __BUILD_ID__,
+                    }),
                     ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),

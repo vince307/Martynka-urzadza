@@ -101,3 +101,60 @@ export const cutByTable = (
     for (const key of cut) grouped[tableOf(key, tables) ?? 'font'].push(key);
     return grouped;
 };
+
+export type ArtLineTable = 'task' | 'room' | 'ui';
+/** One line of the parent's "Obrazki" section; the renderer maps each kind to Polish text (no text in core). */
+export type ArtHealthLine =
+    | { kind: 'ok' | 'missing'; table: ArtLineTable; count: number; total: number }
+    | { kind: 'cut'; count: number }
+    | { kind: 'cause'; cause: ArtCause }
+    | { kind: 'code'; code: ArtCause; build: string };
+
+export interface ArtHealthLinesInput {
+    readonly task: ArtHealth | undefined;
+    readonly room: ArtHealth | undefined;
+    readonly ui: ArtHealth | undefined;
+    /** How many files the boot limit cut. */
+    readonly cut: number;
+    readonly build: string;
+}
+
+const CAUSE_ORDER: readonly ArtCause[] = ['fetch', 'network', 'decode', 'cut', 'never'];
+
+/** The cause most keys share (a tie goes to the earlier in `CAUSE_ORDER`); undefined when no cause is recorded. */
+const mainCause = (healths: readonly ArtHealth[]): ArtCause | undefined => {
+    const counts = new Map<ArtCause, number>();
+    for (const health of healths) {
+        for (const key of health.missing) {
+            const cause = health.causes?.[key];
+            if (cause) counts.set(cause, (counts.get(cause) ?? 0) + 1);
+        }
+    }
+    let best: ArtCause | undefined;
+    for (const cause of CAUSE_ORDER) {
+        if ((counts.get(cause) ?? 0) > (best ? (counts.get(best) ?? 0) : 0)) best = cause;
+    }
+    return best;
+};
+
+/**
+ * Lines of "Obrazki": each known table (an unknown one says nothing, the others still show), the cut line, and for missing
+ * pictures the main cause with its code. When the cut is the cause, the cut line already says it.
+ */
+export const artHealthLines = ({ task, room, ui, cut, build }: ArtHealthLinesInput): ArtHealthLine[] => {
+    const lines: ArtHealthLine[] = [];
+    const known: ArtHealth[] = [];
+    for (const [table, health] of [['task', task], ['room', room], ['ui', ui]] as const) {
+        const view = artHealthView(health);
+        if (view.kind === 'unknown' || !health) continue;
+        known.push(health);
+        lines.push({ kind: view.kind, table, count: view.kind === 'missing' ? view.count : 0, total: health.total });
+    }
+    if (cut > 0) lines.push({ kind: 'cut', count: cut });
+    const cause = mainCause(known);
+    if (cause) {
+        if (!(cause === 'cut' && cut > 0)) lines.push({ kind: 'cause', cause });
+        lines.push({ kind: 'code', code: cause, build });
+    }
+    return lines;
+};

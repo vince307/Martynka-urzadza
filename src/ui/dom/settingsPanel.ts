@@ -1,4 +1,4 @@
-import type { ArtHealthView } from '../../core/artHealth';
+import type { ArtHealthLine } from '../../core/artHealth';
 import type { OfflineView } from '../../core/swStatus';
 import type { SaveHealthView } from '../../core/saveHealth';
 import type { ProgressView } from '../../core/progress';
@@ -26,9 +26,8 @@ export interface SettingsPanelOptions {
     saveHealth?: SaveHealthView;
     /** Service worker record taken when the panel opens; absent = no section. */
     offline?: OfflineView;
-    artHealth?: ArtHealthView;
-    roomArtHealth?: ArtHealthView;
-    uiArtHealth?: ArtHealthView;
+    /** Lines of "Obrazki" built by `artHealthLines` when the panel opens; empty or absent = no section. */
+    artLines?: readonly ArtHealthLine[];
     /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
     sound?: { prefs: SoundPrefs; missing: number; music: MusicState; prefsKept?: boolean };
     /** Takes the pending choices; the caller applies them through core. */
@@ -55,7 +54,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, uiArtHealth, sound, onConfirm, onCancel, onExport, onImport, onBackupExport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artLines, sound, onConfirm, onCancel, onExport, onImport, onBackupExport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -184,7 +183,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onBackupExport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artLines && artLines.length > 0 ? [createArtHealthView(artLines)] : []), ...(onExport || onImport || onBackupExport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

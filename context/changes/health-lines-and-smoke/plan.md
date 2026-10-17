@@ -1040,9 +1040,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 5.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; `sectionState` tests green unchanged
-- [ ] 5.2 Deliberate break: lines dropped while task art is `unknown` → F4 case red; restored; meta-check (builder)
-- [ ] 5.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `health-lines` "#14 G-1 …", `art-stand-in`, `salon-load-health` green (changed wording named in the commit)
+- [x] 5.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; `sectionState` tests green unchanged
+- [x] 5.2 Deliberate break: lines dropped while task art is `unknown` → F4 case red; restored; meta-check (builder)
+- [x] 5.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `health-lines` "#14 G-1 …", `art-stand-in`, `salon-load-health` green (changed wording named in the commit)
 
 #### Manual
 

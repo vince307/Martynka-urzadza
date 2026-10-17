@@ -134,6 +134,16 @@ export const pl = {
         uiArtOk: 'Wszystkie obrazki ekranów są wczytane.',
         uiArtMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek. Uruchom grę ponownie.`,
+        // DESIGN-GAP 140: the kit has no line for pictures that did not finish loading in time (a slow connection); calm, says what to do.
+        artCut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
+        // DESIGN-GAP 141: the kit has no line for why pictures are missing; one calm sentence per cause, "Kod:" follows from saveFailed.detail.
+        artCause: {
+            fetch: 'Tych plików nie ma na serwerze.',
+            network: 'Tych plików nie udało się pobrać. Internet był zbyt wolny albo się rozłączył.',
+            decode: 'Tych plików nie da się otworzyć.',
+            cut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
+            never: 'Tych plików gra nie zaczęła wczytywać.',
+        },
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
