@@ -1,9 +1,9 @@
 ---
 change_id: save-truth
 title: What the parent is told about save, import/reset and a stale tab (audit sweep slice 2)
-status: plan_reviewed
+status: implemented
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 archived_at: null
 ---
 
