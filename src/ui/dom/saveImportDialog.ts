@@ -88,7 +88,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
         actions.append(load, cancel);
         show(pl.saveTransfer.importTitle, [
             device.kind === 'summary' ? createSummaryList(pl.saveTransfer.now, device.summary, roomName) : createText('p', unreadableLine(forced), 'overlay-muted'),
-            createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName),
+            createSummaryList(pl.saveTransfer.fromFile, summarize(session), roomName, pl.saveTransfer.roomMismatch),
             ...fileInfoLine(file),
             message,
             actions,

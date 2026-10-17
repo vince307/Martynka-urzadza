@@ -2,6 +2,7 @@
 // the build id and the rooms come in as parameters. A file is never trusted because it parses: every import goes through
 // decodeSave (migrations + strict validation), so the file can only ever become a save the game itself could have written.
 import { isTimeoutError, keepsOldSave, replaceGate, type AutosaveStatus } from './autosave';
+import { parentVisible, roomStateProblems } from './rooms';
 import { decodeSave, importProblem, type SessionSave } from './save';
 import type { RoomDef, SaveState, StageId } from './types';
 
@@ -21,6 +22,8 @@ export interface SaveSummary {
     stars: number;
     stage: StageId | null;
     rooms: { id: string; done: number; total: number }[];
+    /** The saved salon disagrees with this game in a way a parent can see (R-4); an unknown room does not count. */
+    mismatch: boolean;
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -68,7 +71,7 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
         if (!state) continue;
         list.push({ id, done: Math.min(state.tasksDone, def.tasks.length), total: def.tasks.length });
     }
-    return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list };
+    return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list, mismatch: roomStateProblems(session.rooms, rooms).some(parentVisible) };
 }
 
 /** What an import or reset dialog shows in the place of "Teraz" (S12-01); `blocked` and `unreadable` never carry the in-memory fresh session;

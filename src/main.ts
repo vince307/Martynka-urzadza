@@ -5,7 +5,7 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, errorName, isTimeoutError, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { repairCurrentRoom } from './core/rooms';
+import { parentVisible, repairCurrentRoom, roomStateProblems, type RoomProblem } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { channelVerdict, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
@@ -250,6 +250,7 @@ const start = async (): Promise<void> => {
     }
     let session: SessionSave;
     let roomRepaired = false;
+    let roomProblems: RoomProblem[] = [];
     if (outcome.kind === 'loaded') {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
@@ -257,6 +258,11 @@ const start = async (): Promise<void> => {
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
         // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
+        // R-4: report only. The rooms stay exactly as saved; an unknown room is logged but not shown to a parent.
+        roomProblems = roomStateProblems(session.rooms, ROOMS);
+        if (roomProblems.length > 0) {
+            console.warn(`Save rooms do not match the game: ${roomProblems.map((p) => `${p.room}/${p.kind}${parentVisible(p) ? '' : ' (hidden)'}`).join(', ')}`);
+        }
         if (outcome.migratedFrom !== null) {
             console.warn(`Save migrated from v${outcome.migratedFrom}`);
         }
@@ -285,6 +291,7 @@ const start = async (): Promise<void> => {
     const today = (): string => pinnedDay ?? localDay(new Date());
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
+    game.registry.set(REGISTRY_KEYS.roomProblems, roomProblems);
     swTarget = game;
     if (lastSwStatus) game.registry.set(REGISTRY_KEYS.swStatus, lastSwStatus);
     let refusedCardUp = false;

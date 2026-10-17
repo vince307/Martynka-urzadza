@@ -73,6 +73,8 @@ export const pl = {
         // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
         // DESIGN-GAP 130 (docs/design-gaps.md): the kit has no line for an older build that saved over this game's progress.
         olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
+        // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
+        roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
         saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
@@ -186,6 +188,8 @@ export const pl = {
     },
     // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
     saveTransfer: {
+        // DESIGN-GAP 138: the kit has no line for a file whose salon does not match the game.
+        roomMismatch: 'Stan salonu w tym pliku nie pasuje do gry.',
         exportButton: 'Zapisz kopię',
         exportTitle: 'Kopia zapisu',
         exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',

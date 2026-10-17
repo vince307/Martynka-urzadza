@@ -13,6 +13,7 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { artHealthView, type ArtHealth } from '../core/artHealth';
+import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
@@ -171,7 +172,7 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
-                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from)) : undefined,
+                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? []) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),

@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AutosaveStatus } from '../src/core/autosave';
 import { SAVE_VERSION } from '../src/core/save';
+import type { RoomProblem } from '../src/core/rooms';
 import { cardCopyFor, newestBackup, saveHealthView, unreadableCode } from '../src/core/saveHealth';
 
 const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
@@ -235,5 +236,20 @@ describe('old-version copy on the panel (save-truth p9)', () => {
     it('newestBackup picks the highest version, null when there is none', () => {
         expect(newestBackup([{ from: 1 }, { from: 3 }, { from: 2 }])).toEqual({ from: 3 });
         expect(newestBackup([])).toBeNull();
+    });
+});
+
+describe('saveHealthView: the salon does not match the game (save-truth p12, R-4)', () => {
+    const over: RoomProblem = { room: 'salon', kind: 'tasks-overflow' };
+    const unknown: RoomProblem = { room: 'living', kind: 'unknown-room' };
+
+    it('is false with no problem and for an unknown room only', () => {
+        expect(saveHealthView(status({ writes: 1 })).roomMismatch).toBe(false);
+        expect(saveHealthView(status({ writes: 1 }), [], [unknown]).roomMismatch).toBe(false);
+    });
+
+    it('is true when a problem a parent can see exists, in any save state', () => {
+        expect(saveHealthView(status({ writes: 1 }), [], [unknown, over]).roomMismatch).toBe(true);
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }), [], [over]).roomMismatch).toBe(true);
     });
 });

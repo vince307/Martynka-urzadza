@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
 import { SAVE_VERSION, decodeSave, encodeSave, freshSession, saveProblem, validateSave, type SessionSave } from '../src/core/save';
 import { SAVE_FILE_APP, deviceSaveView, exportFileText, parseImport, saveSummary } from '../src/core/saveFile';
+import { ROOMS } from '../src/data/rooms';
 import type { RoomDef, SaveState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
 
@@ -141,7 +142,7 @@ describe('saveSummary', () => {
     it('reports stars, stage and rooms in the order of the rooms parameter', () => {
         const s = decoded();
         s.rooms = { ...s.rooms, bedroom: { tasksDone: 2, chosen: {} } };
-        expect(saveSummary(s, rooms)).toEqual({
+        expect(saveSummary(s, rooms)).toMatchObject({
             stars: 7,
             stage: 'E3',
             rooms: [{ id: 'living', done: 3, total: 10 }, { id: 'bedroom', done: 2, total: 8 }],
@@ -152,6 +153,19 @@ describe('saveSummary', () => {
         const s = decoded();
         s.rooms = { living: { tasksDone: 99, chosen: {} }, ghost: { tasksDone: 1, chosen: {} } };
         expect(saveSummary(s, rooms).rooms).toEqual([{ id: 'living', done: 10, total: 10 }]);
+    });
+
+    it('mismatch: a salon that fits the game is false, an over-count is true (R-4)', () => {
+        const fits = { ...decoded(), rooms: { salon: { tasksDone: 3, chosen: { sofa: 0 as const } } } };
+        expect(saveSummary(fits, ROOMS).mismatch).toBe(false);
+        const over = { ...decoded(), rooms: { salon: { tasksDone: 99, chosen: {} } } };
+        expect(saveSummary(over, ROOMS).mismatch).toBe(true);
+        expect(saveSummary({ ...decoded(), rooms: { salon: { tasksDone: 7, chosen: { curtains: 1 as const } } } }, ROOMS).mismatch).toBe(true);
+    });
+
+    it('mismatch: a room this build does not know is not shown to a parent', () => {
+        const old = { ...decoded(), rooms: { living: { tasksDone: 3, chosen: { sofa: 0 as const } } } };
+        expect(saveSummary(old, ROOMS).mismatch).toBe(false);
     });
 
     it('no learner means no stage', () => {
@@ -169,7 +183,7 @@ describe('exportFileText', () => {
 });
 
 describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory session as the device save', () => {
-    const rooms = { living: ((): RoomDef => ({ id: 'living', tasks: new Array(10).fill(null) }) as unknown as RoomDef)() };
+    const rooms = { living: ((): RoomDef => ({ id: 'living', slots: [], tasks: new Array(10).fill(null) }) as unknown as RoomDef)() };
 
     const st = (blockedBy: BlockReason | null, loadReason: AutosaveStatus['loadReason'] = null, loadError: string | null = null, unavailableStarts = 2) => ({ blockedBy, loadReason, loadError, unavailableStarts });
 

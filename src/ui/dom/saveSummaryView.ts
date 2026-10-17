@@ -8,7 +8,7 @@ export const blockedText = (cause: 'future' | 'unreadable' | 'timeout' | 'unavai
     ({ future: pl.saveTransfer.deviceFuture, unreadable: pl.saveTransfer.deviceUnreadable, timeout: pl.saveTransfer.deviceTimeout, unavailable: pl.saveTransfer.deviceUnavailable, 'unavailable-first': pl.saveTransfer.deviceUnavailableFirst, fatal: pl.saveTransfer.deviceFatal, newer: pl.saveTransfer.deviceNewer, otherTab: pl.saveTransfer.deviceOtherTab, broken: pl.saveTransfer.deviceBroken })[cause];
 
 /** The three lines a parent compares before a save is overwritten (stars, stage, rooms); shared by the import and reset dialogs. */
-export const createSummaryList = (title: string, summary: SaveSummary, roomName: (id: string) => string): HTMLElement => {
+export const createSummaryList = (title: string, summary: SaveSummary, roomName: (id: string) => string, mismatchLine?: string): HTMLElement => {
     const box = document.createElement('div');
     box.className = 'import-summary';
     const lines = [
@@ -17,6 +17,8 @@ export const createSummaryList = (title: string, summary: SaveSummary, roomName:
         ...summary.rooms.map((r) => pl.saveTransfer.room(roomName(r.id), r.done, r.total)),
     ];
     box.append(createText('h2', title), ...lines.map((line) => createText('p', line)));
+    // DESIGN-GAP 138: one more line when the saved salon does not match the game (R-4); the file is still importable.
+    if (summary.mismatch && mismatchLine !== undefined) box.append(createText('p', mismatchLine, 'overlay-muted'));
     return box;
 };
 
