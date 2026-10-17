@@ -3,7 +3,7 @@
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { currentTask, emptyRoomState, nextTaskCost, purchase, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
+import { currentTask, emptyRoomState, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
@@ -219,4 +219,64 @@ describe('background stage task (S-16a)', () => {
         expect(stagesDone(staged, { tasksDone: 2, chosen: {} })).toBe(1);
         expect(stagesDone(staged, { tasksDone: 99, chosen: {} })).toBe(1);
     });
+});
+
+
+describe('roomStateProblems (R-4)', () => {
+    const salon = ROOMS.salon;
+    const at = (tasksDone: number, chosen: RoomState['chosen'] = {}): Record<string, RoomState> => ({ salon: { tasksDone, chosen } });
+
+    it('a state the game could have written has no problem', () => {
+        expect(roomStateProblems(at(0), ROOMS)).toEqual([]);
+        expect(roomStateProblems(at(2, { sofa: 1 }), ROOMS)).toEqual([]);
+        expect(roomStateProblems(at(salon.tasks.length, { sofa: 0, rug: 2 }), ROOMS)).toEqual([]);
+    });
+
+    it('names a room the catalogue does not have', () => {
+        expect(roomStateProblems({ living: { tasksDone: 3, chosen: {} } }, ROOMS)).toEqual([{ room: 'living', kind: 'unknown-room' }]);
+    });
+
+    it('names more tasks done than the room has', () => {
+        expect(roomStateProblems(at(salon.tasks.length + 1), ROOMS)).toEqual([{ room: 'salon', kind: 'tasks-overflow' }]);
+    });
+
+    it('names a chosen slot the room does not have', () => {
+        expect(roomStateProblems(at(3, { sofa: 0, ghost: 1 }), ROOMS)).toEqual([{ room: 'salon', kind: 'unknown-slot' }]);
+    });
+
+    it('names the audit case: curtains chosen with 7 tasks done (curtains is the 8th task)', () => {
+        expect(roomStateProblems(at(7, { curtains: 1 }), ROOMS)).toEqual([{ room: 'salon', kind: 'chosen-not-bought' }]);
+        expect(roomStateProblems(at(8, { curtains: 1 }), ROOMS)).toEqual([]);
+    });
+
+    it('names a variant beyond the slot variants', () => {
+        const odd = JSON.parse('{"salon":{"tasksDone":3,"chosen":{"sofa":3}}}') as Record<string, RoomState>;
+        expect(roomStateProblems(odd, ROOMS)).toEqual([{ room: 'salon', kind: 'variant-out-of-range' }]);
+    });
+
+    it('does not change its input', () => {
+        const input = at(99, { ghost: 1 });
+        const before = structuredClone(input);
+        roomStateProblems(input, ROOMS);
+        expect(input).toEqual(before);
+    });
+
+    it('only an unknown room is hidden from a parent', () => {
+        expect(parentVisible({ room: 'living', kind: 'unknown-room' })).toBe(false);
+        for (const kind of ['tasks-overflow', 'unknown-slot', 'chosen-not-bought', 'variant-out-of-range'] as const) {
+            expect(parentVisible({ room: 'salon', kind })).toBe(true);
+        }
+    });
+
+    it.each(['save-v1.json', 'save-v1-fresh.json', 'save-v1-legacy-salon.json', 'save-v2.json', 'save-v2-fresh.json', 'save-v2-legacy-salon.json', 'save-v3.json', 'save-v4.json'])(
+        'the frozen fixture %s gives nothing a parent would see',
+        (name) => {
+            const raw: unknown = JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+            const decoded = decodeSave(raw);
+            if (decoded.kind !== 'ok') throw new Error('fixture must decode');
+            const problems = roomStateProblems(decoded.session.rooms, ROOMS);
+            expect(problems.filter(parentVisible)).toEqual([]);
+            if ('living' in decoded.session.rooms) expect(problems).toContainEqual({ room: 'living', kind: 'unknown-room' });
+        },
+    );
 });

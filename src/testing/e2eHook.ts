@@ -1,7 +1,7 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import type { Game } from 'phaser';
-import type { Autosaver, AutosaveStatus, SaveStore } from '../core/autosave';
+import type { Autosaver, AutosaveStatus, BackupRecord, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
 import type { SwStatus } from '../core/swStatus';
 import type { SoundService, SoundStatus } from '../ui/sound';
@@ -119,8 +119,8 @@ export const E2E_LOADER_TIMEOUT_MS = 2000;
 /** The boot limits under `?e2eArt=stallall`: the slow line after 0.5 s, the total cut after 3 s. */
 export const E2E_BOOT_LIMITS = { slowAfterMs: 500, totalMs: 3000 } as const;
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'legacy-salon' | 'newer';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon', 'newer'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -128,7 +128,7 @@ export const E2E_LOAD_TIMEOUT_MS = 300;
 /** Under `?e2eSave=slow` the read answers (a current-version save with 7 stars) after this long: past the first limit (`E2E_LOAD_TIMEOUT_MS`) and inside the second. */
 export const E2E_SLOW_READ_MS = 2500;
 
-/** The second (longer) read limit under `?e2eSave=hang|slow`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
+/** The second (longer) read limit under `?e2eSave=hang|slow|slowfail`, so a run does not wait the real 20 s; `hang` never answers, so it reaches `stillSlow`. */
 export const E2E_SLOWER_LOAD_TIMEOUT_MS = 5000;
 
 /** The write limit under `?e2eSave=writehang`, so the e2e run does not wait the real 5 s. */
@@ -136,8 +136,8 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
- * future version), `corrupt` (a v1 save that migrates and then fails validation), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
+ * future version), `corrupt` (a save of the current version whose stars field is bad; the migrated-corrupt path is covered by unit tests), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `slowfail` (the read rejects with UnknownError after `E2E_SLOW_READ_MS`, past the first limit: the late read error behind the slow card), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -158,13 +158,15 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
         seam === 'unreadable'
             ? { version: 99, profileId: 'default', stars: 7 }
             : seam === 'corrupt'
-              ? { version: 1, profileId: 'default', stars: 'many' }
+              ? { version: SAVE_VERSION, profileId: 'default', stars: 'many' } // corrupt in its OWN version (a bad stars field), so the card reads corrupt/stars
               : seam === 'v1' || seam === 'backupfail' || seam === 'backuphang'
                 ? structuredClone(saveV1Fixture)
                 : seam === 'legacy-salon'
                   ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null };
+    const copies = new Map<number, unknown>();
+    let record: BackupRecord | null = null;
     seamStoreLog = log;
     return {
         read: () =>
@@ -172,13 +174,24 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                 ? Promise.reject(new DOMException('e2e', 'UnknownError'))
                 : seam === 'hang'
                   ? new Promise<unknown>(() => undefined)
-                  : seam === 'slow'
+                  : seam === 'slowfail'
+                    ? new Promise<unknown>((_resolve, reject) => setTimeout(() => reject(new DOMException('e2e', 'UnknownError')), E2E_SLOW_READ_MS))
+                    : seam === 'slow'
                     ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_ROOM, 7))), E2E_SLOW_READ_MS))
                     : Promise.resolve(value),
-        backup: () => {
+        backup: (raw, from) => {
             log.ops.push('backup');
             if (seam === 'backupfail') return Promise.reject(new DOMException('e2e', 'QuotaExceededError'));
-            if (seam === 'backuphang') return new Promise<void>(() => undefined);
+            if (seam === 'backuphang') return new Promise<'written'>(() => undefined);
+            const kept = copies.has(from);
+            if (!kept) copies.set(from, raw);
+            record = { from, result: 'kept', error: null, at: Date.now() };
+            return Promise.resolve(kept ? ('kept' as const) : ('written' as const));
+        },
+        readBackups: () => Promise.resolve([...copies].sort(([a], [b]) => a - b).map(([from, raw]) => ({ from, raw }))),
+        backupRecord: () => Promise.resolve(record),
+        noteBackup: (next) => {
+            record = next;
             return Promise.resolve();
         },
         write: (next) => {

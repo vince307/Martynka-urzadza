@@ -3,9 +3,11 @@
 // Implementation Details (never write what was not read, never write what cannot be read, never an unhandled rejection).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type LoadOutcome, type SaveStore } from '../src/core/autosave';
-import { decodeSave, encodeSave, type SessionSave } from '../src/core/save';
+import { backupExtras } from './helpers';
+import { createAutosaver, errorName, lateReadVerdict, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type BackupRecord, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
+import { balance } from '../src/data/balance';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const settle = (): Promise<void> => new Promise((r) => setImmediate(r));
@@ -27,19 +29,29 @@ const session = (stars: number): SessionSave => {
 
 /** Store over a Map: counts writes, can fail, and can hold a write until the test resolves it. */
 const makeStore = (initial?: unknown) => {
-    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, writeHangs: false, backupHangs: false, lateReject: null as null | ((e: Error) => void), ops: [] as string[], backups: [] as { raw: unknown; from: number }[] };
+    const state = { value: initial, writes: [] as SaveState[], fail: false, readFails: false, hold: false, backupFails: false, writeHangs: false, backupHangs: false, lateReject: null as null | ((e: Error) => void), ops: [] as string[], all: [] as string[], notes: [] as BackupRecord[], noteHangs: false, noteFails: false, backups: [] as { raw: unknown; from: number }[] };
     const pending: (() => void)[] = [];
     const store: SaveStore = {
         read: () => (state.readFails ? Promise.reject(new Error('lost')) : Promise.resolve(state.value)),
+        ...backupExtras,
+        noteBackup: (record) => {
+            state.all.push('noteBackup');
+            state.notes.push(record);
+            if (state.noteHangs) return new Promise<void>(() => undefined);
+            if (state.noteFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
+            return Promise.resolve();
+        },
         backup: (raw, from) => {
             state.ops.push('backup');
-            if (state.backupHangs) return new Promise<void>(() => undefined);
+            state.all.push('backup');
+            if (state.backupHangs) return new Promise<'written'>(() => undefined);
             if (state.backupFails) return Promise.reject(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
             state.backups.push({ raw, from });
-            return Promise.resolve();
+            return Promise.resolve('written' as const);
         },
         write: (v) => {
             state.ops.push('write');
+            state.all.push('write');
             if (state.writeHangs) return new Promise<void>((_, reject) => void (state.lateReject = reject));
             if (state.fail) return Promise.reject(new Error('quota'));
             const commit = () => {
@@ -128,6 +140,9 @@ describe('loadSave', () => {
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
 
+        const bad = { ...(fixture('save-v4.json') as Record<string, unknown>), stars: 'x' };
+        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 4, problem: 'stars' });
+
         const broken = makeStore(fixture('save-v1.json'));
         broken.state.readFails = true;
         expect(await loadSave(broken.store)).toEqual({ kind: 'unavailable', error: 'Error' });
@@ -138,13 +153,13 @@ describe('loadSave', () => {
 
 describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
     const limitOf = (clock: ReturnType<typeof makeClock>) => ({ timers: clock.timers, timeoutMs: 5000 });
-    const never = (): SaveStore => ({ read: () => new Promise<unknown>(() => undefined), backup: () => Promise.resolve(), write: () => Promise.resolve() });
+    const never = (): SaveStore => ({ read: () => new Promise<unknown>(() => undefined), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() });
 
     it('names the error of a rejected read and falls back to Error for a thrown string', async () => {
-        const named: SaveStore = { read: () => Promise.reject(Object.assign(new Error('x'), { name: 'UnknownError' })), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const named: SaveStore = { read: () => Promise.reject(Object.assign(new Error('x'), { name: 'UnknownError' })), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(named)).toEqual({ kind: 'unavailable', error: 'UnknownError' });
         // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a non-Error rejection is the case under test
-        const text: SaveStore = { read: () => Promise.reject('boom'), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const text: SaveStore = { read: () => Promise.reject('boom'), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(text)).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 
@@ -176,7 +191,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
     it('a read that rejects after the limit stays a timeout and raises no unhandled rejection', async () => {
         const clock = makeClock();
         let fail!: (e: unknown) => void;
-        const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const store: SaveStore = { read: () => new Promise<unknown>((_, rej) => (fail = rej)), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
         expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
@@ -191,7 +206,7 @@ describe('loadSave failure cause and read limit (audit C-1, M-S4)', () => {
         const clock = makeClock();
         const f = makeStore(fixture('save-v1.json'));
         let resolve!: (v: unknown) => void;
-        const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), backup: () => Promise.resolve(), write: (v) => f.store.write(v) };
+        const store: SaveStore = { read: () => new Promise<unknown>((r) => (resolve = r)), ...backupExtras, backup: () => Promise.resolve('written' as const), write: (v) => f.store.write(v) };
         const pending = loadSave(store, limitOf(clock));
         clock.advance(5000);
         expect(await pending).toMatchObject({ kind: 'unavailable', error: 'timeout' });
@@ -495,7 +510,7 @@ describe('Autosaver.replace (S-12, test-plan risks #2 and #10): a replaced save 
 
     it('names a thrown QuotaExceededError', async () => {
         const saver = createAutosaver({
-            store: { read: () => Promise.resolve(undefined), backup: () => Promise.resolve(), write: () => Promise.reject(Object.assign(new Error('q'), { name: 'QuotaExceededError' })) },
+            store: { read: () => Promise.resolve(undefined), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.reject(Object.assign(new Error('q'), { name: 'QuotaExceededError' })) },
             snapshot: () => session(1),
             timers: makeClock().timers,
             delayMs: 500,
@@ -576,14 +591,59 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         expect(t.logs.length).toBe(2);
     });
 
-    it.each(['corrupt', 'unknown-version', 'migration-failed'] as const)('a %s save is still replaced (the way out)', async (loadReason) => {
-        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason });
+    it('a plain corrupt save (not migrated) is still replaced without force (the way out)', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt' });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
         expect(t.state.writes.map((w) => w.stars)).toEqual([5]);
     });
 
-    it('unavailable needs force: without it nothing is written, with it the write happens and is logged', async () => {
-        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+    // save-truth phase 2 (SRR-09, deliberate reversal of "a %s save is still replaced"): FR-021 keeps the old save until the parent confirms twice.
+    it.each([
+        ['unknown-version', undefined],
+        ['migration-failed', undefined],
+        ['corrupt', 3],
+    ] as const)('a %s save (from %s) is refused without force and replaced with it', async (loadReason, loadFrom) => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason, ...(loadFrom === undefined ? {} : { loadFrom }) });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
+        expect(t.state.writes).toEqual([]);
+        expect(await t.saver.replace(encodeSave(session(6)), { force: true })).toEqual({ ok: true });
+        expect(t.state.writes.map((w) => w.stars)).toEqual([6]);
+    });
+
+    it('the loadFrom of a migrated corrupt save is in the status, runtime only', () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt', loadFrom: 2 });
+        expect(t.saver.status().loadFrom).toBe(2);
+        expect(setup().saver.status().loadFrom).toBeNull();
+    });
+
+    it('a corrupt save already at the current version is not "migrated": loadFrom = SAVE_VERSION is replaced freely', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'corrupt', loadFrom: SAVE_VERSION });
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+    });
+
+    it('replace logs every refusal and a busy call (SRR-10)', async () => {
+        const t = setup({ blockedBy: 'unreadable', load: 'unreadable', loadReason: 'future' });
+        await t.saver.replace(encodeSave(session(5)));
+        expect(t.logs.length).toBe(1);
+
+        const u = setup();
+        const first = u.saver.replace(encodeSave(session(5)));
+        expect(await u.saver.replace(encodeSave(session(6)))).toEqual({ ok: false, error: 'Busy' });
+        expect(u.logs.some((l) => String(l[0]).includes('Busy'))).toBe(true);
+        await first;
+
+        const v = setup();
+        expect(await v.saver.replace({ version: 1 } as unknown as SaveState)).toEqual({ ok: false, error: 'InvalidSave' });
+        expect(v.logs.some((l) => String(l[0]).includes('InvalidSave') && JSON.stringify(l).includes('version'))).toBe(true);
+    });
+
+    it('unavailable needs force AND a second consecutive start: the first start is never replaced (SRR-08)', async () => {
+        const first = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: 1 });
+        expect(first.saver.status().unavailableStarts).toBe(1);
+        expect(await first.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
+        expect(first.state.writes).toEqual([]);
+
+        const t = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: balance.save.forceAfterStarts });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'Blocked' });
         expect(t.state.writes).toEqual([]);
         expect(await t.saver.replace(encodeSave(session(6)), { force: true })).toEqual({ ok: true });
@@ -596,7 +656,7 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         expect(await t.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Blocked' });
         expect(t.state.writes).toEqual([]);
 
-        const u = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError' });
+        const u = setup({ blockedBy: 'unavailable', load: 'unavailable', loadError: 'SecurityError', unavailableStarts: 2 });
         u.state.fail = true;
         expect(await u.saver.replace(encodeSave(session(5)), { force: true })).toEqual({ ok: false, error: 'Error' });
         expect(u.saver.status().lastError).toBe('Error');
@@ -616,13 +676,17 @@ describe('Autosaver.replace gate (plan save-reason-and-recovery phase 1): SIR-01
         for (const blockedBy of blocks)
             for (const loadReason of reasons)
                 for (const loadError of errors)
-                    for (const force of [false, true]) {
+                    for (const force of [false, true])
+                      for (const unavailableStarts of [0, 1, 2, 3])
+                      for (const loadFrom of [null, SAVE_VERSION, 2]) {
+                        // save-truth phase 2: the kept-old-save reasons need force (corrupt only after a migration step).
+                        const keeps = loadReason === 'unknown-version' || loadReason === 'migration-failed' || (loadReason === 'corrupt' && loadFrom === 2);
                         const expected =
                             blockedBy === 'fatal' ? 'Blocked'
-                            : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : 'ok')
-                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force ? 'Blocked' : 'ok')
+                            : blockedBy === 'unreadable' ? (loadReason === 'future' ? 'Blocked' : keeps && !force ? 'Blocked' : 'ok')
+                            : blockedBy === 'unavailable' ? (loadError === 'timeout' || loadError === 'TimeoutError' || !force || unavailableStarts < balance.save.forceAfterStarts ? 'Blocked' : 'ok')
                             : 'ok';
-                        expect(replaceGate({ blockedBy, loadReason, loadError }, force), JSON.stringify({ blockedBy, loadReason, loadError, force })).toBe(expected);
+                        expect(replaceGate({ blockedBy, loadReason, loadError, loadFrom, unavailableStarts }, force), JSON.stringify({ blockedBy, loadReason, loadError, loadFrom, unavailableStarts, force })).toBe(expected);
                     }
     });
 });
@@ -645,96 +709,111 @@ describe('backup before the first write after a migration', () => {
         }
     });
 
-    it('copies the raw v1 once, BEFORE the first write, and never again', async () => {
+    // save-truth phase 5: reversed (copy BEFORE the write became copy AFTER it: the progress never waits on the old bytes).
+    it('copies the raw v1 once, AFTER the first write, and never again', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.set(2);
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
         t.set(3);
         t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'write', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
         expect(t.state.backups).toEqual([{ raw: v1, from: 1 }]);
         expect(t.state.writes).toHaveLength(2);
     });
 
-    it('a failing copy before the attempt limit writes nothing, counts as a failure with the copy error, and stays retryable', async () => {
+    // save-truth phase 5: reversed. A failing copy no longer blocks the progress write; it is counted once per try and retried after later writes.
+    it('a failing copy before the attempt limit does not hold the write, counts once per try, and stays retryable', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.writes).toHaveLength(0);
-        expect(t.state.value).toBeUndefined();
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 0, dirty: true, backup: 'failed', backupError: 'QuotaExceededError' });
-        await t.saver.flush('now');
-        expect(t.saver.status().consecutiveFailures).toBe(2);
-        expect(t.state.writes).toHaveLength(0);
-        t.state.backupFails = false;
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
+        await settle();
         expect(t.state.writes).toHaveLength(1);
-        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, writes: 1, backup: 'done' });
-    });
-
-    it('the third failed copy in a session writes v2 without the copy, once, and says so in the log (SV2-01)', async () => {
-        const t = setup({ migrated, load: 'loaded' });
-        t.state.backupFails = true;
-        t.set(4);
+        expect(t.saver.status()).toMatchObject({ consecutiveFailures: 0, failures: 1, lastError: 'QuotaExceededError', blockedBy: null, writes: 1, dirty: false, backup: 'failed', backupError: 'QuotaExceededError' });
+        t.set(2);
         t.saver.markDirty();
         await t.saver.flush('now');
-        await t.saver.flush('now');
-        expect(t.state.writes).toHaveLength(0);
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write']);
-        expect(t.state.writes.map((w) => w.stars)).toEqual([4]);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', writes: 1, consecutiveFailures: 0, dirty: false });
-        expect(t.logs.filter((l) => String(l[0]).includes('without the v1 copy'))).toHaveLength(1);
-        // later changes write plainly and never ask for the copy again
-        t.set(5);
-        t.saver.markDirty();
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'backup', 'write', 'write']);
-    });
-
-    it('a copy that fails once and then works still comes before the first v2 write', async () => {
-        const t = setup({ migrated, load: 'loaded' });
-        t.state.backupFails = true;
-        t.saver.markDirty();
-        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status().failures).toBe(2);
         t.state.backupFails = false;
+        t.set(3);
+        t.saver.markDirty();
         await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'write']);
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup', 'write', 'backup']);
+        expect(t.state.writes).toHaveLength(3);
+        expect(t.saver.status()).toMatchObject({ writes: 3, backup: 'done' });
+    });
+
+    it('the third failed copy in a session gives the copy up, once, and says so in the log (SV2-01); the progress was written every time', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        for (const stars of [4, 5, 6, 7]) {
+            t.set(stars);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup', 'write', 'backup', 'write']);
+        expect(t.state.writes.map((w) => w.stars)).toEqual([4, 5, 6, 7]);
+        expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', writes: 4, consecutiveFailures: 0, dirty: false });
+        expect(t.logs.filter((l) => String(l[0]).includes('without the v1 copy'))).toHaveLength(1);
+    });
+
+    it('a copy that fails once and then works comes after the first v2 write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.state.backupFails = false;
+        t.set(2);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup']);
         expect(t.saver.status().backup).toBe('done');
     });
 
-    it('after a failed copy the page-hide flush writes v2 without trying the copy again', async () => {
+    // save-truth phase 5: reversed ("writes v2 without trying the copy again" gave the copy up at the first hidden flush; now it stays owed).
+    it('after a failed copy the page-hide flush writes progress and keeps the copy owed', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
+        t.set(2);
+        t.saver.markDirty();
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 2 });
     });
 
-    it('a page-hide flush that is the first attempt still tries the copy, and writes v2 even when it fails', async () => {
+    it('a page-hide flush that is the first attempt writes first, then tries the copy', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.saver.markDirty();
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
-        expect(t.saver.status()).toMatchObject({ backup: 'skipped', writes: 1 });
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 1 });
     });
 
-    it('a copy that hangs counts as a timeout failure of the copy', async () => {
+    it('a copy that hangs counts as a timeout failure of the copy, and the write was not held', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupHangs = true;
         t.saver.markDirty();
-        const flushed = t.saver.flush('now');
+        await t.saver.flush('now');
         await settle();
+        expect(t.saver.status()).toMatchObject({ backup: 'pending', writes: 1 });
         t.clock.advance(5000);
-        await flushed;
-        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'timeout', writes: 0 });
+        await settle();
+        await settle();
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'timeout', writes: 1 });
     });
 
     it('a save that was not migrated is written without a copy', async () => {
@@ -747,7 +826,7 @@ describe('backup before the first write after a migration', () => {
     it('replace takes the pending copy once and never waits on a failing one', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.state.backups).toEqual([{ raw: v1, from: 1 }]);
         expect(t.saver.status().backup).toBe('done');
     });
@@ -756,7 +835,7 @@ describe('backup before the first write after a migration', () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.saver.status()).toMatchObject({ backup: 'skipped', backupError: 'QuotaExceededError', replace: 'done' });
     });
 
@@ -772,16 +851,20 @@ describe('backup before the first write after a migration', () => {
         expect(setup().saver.status().migratedFrom).toBeNull();
     });
 
-    it('the copy is a fact only after the write: pending at the start, done once v2 is written (SV2-03)', async () => {
+    it('the copy is a fact only after the write: pending at the start, done once v2 and the copy are written (SV2-03)', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(t.saver.status().backup).toBe('pending');
         t.saver.markDirty();
         await t.saver.flush('now');
+        await settle();
         expect(t.saver.status()).toMatchObject({ backup: 'done', writes: 1 });
     });
 
-    it('a migration-failed load is replaceable like corrupt, never like future', () => {
-        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('ok');
+    // save-truth phase 2: reversed, a migration-failed load is no longer replaceable without force (it keeps the old save).
+    it('a migration-failed load needs force, like unknown-version, and a future one never', () => {
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, false)).toBe('Blocked');
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'migration-failed', loadError: null }, true)).toBe('ok');
+        expect(replaceGate({ blockedBy: 'unreadable', loadReason: 'future', loadError: null }, true)).toBe('Blocked');
     });
 });
 
@@ -790,14 +873,14 @@ describe('write at start after a migration (audit M-3)', () => {
     const v2 = fixture('save-v2.json');
     const migrated = { from: 2, raw: v2 };
 
-    it('a migrated start writes without a change: the copy first, then the save, reason migration', async () => {
+    it('a migrated start writes without a change: the save first, then the copy, reason migration', async () => {
         const t = setup({ migrated, load: 'loaded' });
         expect(t.state.ops).toEqual([]);
         expect(t.saver.status()).toMatchObject({ migrationWrittenAt: null, dirty: true });
         t.clock.advance(500);
         await settle();
         await settle();
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.state.backups).toEqual([{ raw: v2, from: 2 }]);
         expect(t.saver.status()).toMatchObject({ lastReason: 'migration', migrationWrittenAt: t.clock.now(), backup: 'done', dirty: false, writes: 1 });
     });
@@ -816,19 +899,23 @@ describe('write at start after a migration (audit M-3)', () => {
         expect(t.clock.pending()).toBe(0);
     });
 
-    it('a failed copy keeps the device save untouched and migrationWrittenAt null; the next tries go on as before', async () => {
+    // save-truth phase 5: reversed. A failed copy no longer keeps the device save untouched; the progress write comes first.
+    it('a failed copy does not hold the start write: migrationWrittenAt is set, the copy stays owed and is retried', async () => {
         const t = setup({ migrated, load: 'loaded', initial: v2 });
         t.state.backupFails = true;
         t.clock.advance(500);
         await settle();
         await settle();
-        expect(t.state.ops).toEqual(['backup']);
-        expect(t.state.value).toBe(v2);
-        expect(t.saver.status()).toMatchObject({ migrationWrittenAt: null, backup: 'failed', writes: 0, dirty: true });
-        t.state.backupFails = false;
-        await t.saver.flush('now');
-        expect(t.state.ops).toEqual(['backup', 'backup', 'write']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 1 });
         expect(t.saver.status().migrationWrittenAt).not.toBeNull();
+        t.state.backupFails = false;
+        t.set(2);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup', 'write', 'backup']);
+        expect(t.saver.status().backup).toBe('done');
     });
 
     it('a failed write leaves migrationWrittenAt null', async () => {
@@ -843,30 +930,38 @@ describe('write at start after a migration (audit M-3)', () => {
     it('a hidden flush before the timer writes at once', async () => {
         const t = setup({ migrated, load: 'loaded' });
         await t.saver.flush('hidden');
-        expect(t.state.ops).toEqual(['backup', 'write']);
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup']);
         expect(t.saver.status().migrationWrittenAt).not.toBeNull();
     });
 
     it('a v2 copy and the log name the real versions (F4)', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
-        await t.saver.flush('hidden');
+        for (const stars of [2, 3, 4]) {
+            t.set(stars);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
         expect(line?.[0]).toBe('autosave: writing v4 without the v2 copy');
-        expect(line?.[1]).toMatchObject({ from: 2, attempts: 1 });
+        expect(line?.[1]).toMatchObject({ from: 2, attempts: 3 });
     });
 
-    it('F3: a replace whose copy fails and whose own write fails leaves the copy owed and counted', async () => {
+    // save-truth phase 5: reversed. A replace whose own write fails never reaches the copy; the copy stays owed for a later write.
+    it('F3: a replace whose own write fails leaves the copy owed and untried', async () => {
         const t = setup({ migrated, load: 'loaded' });
         t.state.backupFails = true;
         t.state.fail = true;
         const result = await t.saver.replace(encodeSave(session(5)));
         expect(result.ok).toBe(false);
-        expect(t.saver.status()).toMatchObject({ backup: 'failed', backupError: 'QuotaExceededError', replace: 'idle' });
+        expect(t.saver.status()).toMatchObject({ backup: 'pending', replace: 'idle' });
         expect(t.logs.some((l) => String(l[0]).includes('without the v2 copy'))).toBe(false);
         t.state.fail = false;
         await t.saver.flush('now');
-        expect(t.state.ops.filter((o) => o === 'backup').length).toBeGreaterThanOrEqual(2);
+        await settle();
+        expect(t.state.ops.filter((o) => o === 'backup').length).toBeGreaterThanOrEqual(1);
     });
 
     it('F4: a copy that fails and a save that is written is skipped with the real attempt count in the log', async () => {
@@ -875,6 +970,158 @@ describe('write at start after a migration (audit M-3)', () => {
         expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
         expect(t.saver.status().backup).toBe('skipped');
         expect(t.logs.find((l) => String(l[0]).includes('without the v2 copy'))?.[1]).toMatchObject({ attempts: 1 });
+    });
+});
+
+// save-truth phase 5 (SVB-01, V-6, V-7, P-1): the progress is written first, the copy follows and is bounded.
+describe('copy after the write, bounded retry of the first write (save-truth p5)', () => {
+    const v2 = fixture('save-v2.json');
+    const migrated = { from: 2, raw: v2 };
+
+    it('a hidden flush after a failed copy writes progress and keeps the copy owed', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.set(4);
+        t.saver.markDirty();
+        await t.saver.flush('hidden');
+        await settle();
+        expect(t.state.writes.map((w) => w.stars)).toEqual([1, 4]);
+        expect(t.saver.status()).toMatchObject({ backup: 'failed', writes: 2 });
+        expect(t.state.ops).toEqual(['write', 'backup', 'write']);
+    });
+
+    it('a failed first write after a migration is retried without markDirty, at most migrationWriteRetries times', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.fail = true;
+        for (let i = 0; i < 12; i++) {
+            t.clock.advance(500);
+            await settle();
+            await settle();
+        }
+        expect(t.state.ops.filter((o) => o === 'write')).toHaveLength(1 + balance.save.migrationWriteRetries);
+        t.state.fail = false;
+        t.clock.advance(5000);
+        await settle();
+        expect(t.state.writes).toHaveLength(0);
+        // a store that works again, once a change arms the saver, writes
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+    });
+
+    it('a retried first write that works stops the retries', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.fail = true;
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.state.fail = false;
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.clock.advance(5000);
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+        expect(t.saver.status().migrationWrittenAt).not.toBeNull();
+    });
+
+    it('a write that leaves the copy owed notes `lost` first, and a later copy is attempted after the write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.all).toEqual(['noteBackup', 'write', 'backup']);
+        expect(t.state.notes[0]).toMatchObject({ from: 2, result: 'lost' });
+        // the copy is tried after later writes, never again before them, and the note is made once
+        t.state.backupFails = false;
+        t.set(3);
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.all).toEqual(['noteBackup', 'write', 'backup', 'write', 'backup']);
+        expect(t.saver.status().backup).toBe('done');
+    });
+
+    it('a hanging noteBackup does not hold the write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.noteHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.state.writes).toHaveLength(1);
+        expect(t.saver.status().writes).toBe(1);
+    });
+
+    it('a failing noteBackup does not hold the write either, and an unhandled rejection never escapes', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.noteFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.writes).toHaveLength(1);
+        expect(rejections).toEqual([]);
+    });
+
+    it('a hanging copy does not hold the next progress write', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        t.set(6);
+        t.saver.markDirty();
+        await t.saver.flush('hidden');
+        expect(t.state.writes.map((w) => w.stars)).toEqual([1, 6]);
+    });
+
+    it('the copy is given up once at backupAttempts, with a lost record, and never asked for again (V-6, V-7)', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        for (let i = 2; i < 8; i++) {
+            t.set(i);
+            t.saver.markDirty();
+            await t.saver.flush('now');
+            await settle();
+        }
+        expect(t.state.ops.filter((o) => o === 'backup')).toHaveLength(3);
+        const status = t.saver.status();
+        expect(status).toMatchObject({ backup: 'skipped', failures: 3 });
+        expect(t.logs.filter((l) => String(l[0]).includes('without the v2 copy'))).toHaveLength(1);
+        expect(t.state.notes.at(-1)).toMatchObject({ from: 2, result: 'lost', error: 'QuotaExceededError' });
+    });
+
+    it('a copy that timed out is given up as `uncertain`', async () => {
+        const t = setup({ migrated, load: 'loaded', backupAttempts: 1 });
+        t.state.backupHangs = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await settle();
+        await settle();
+        expect(t.saver.status().backup).toBe('skipped');
+        expect(t.state.notes.at(-1)).toMatchObject({ result: 'uncertain', error: 'timeout' });
+    });
+
+    it('replace over an owed failing copy notes `lost` first, writes, then gives the copy up', async () => {
+        const t = setup({ migrated, load: 'loaded' });
+        t.state.backupFails = true;
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: true });
+        expect(t.state.all.slice(0, 3)).toEqual(['noteBackup', 'write', 'backup']);
+        expect(t.state.notes[0]).toMatchObject({ result: 'lost' });
+        expect(t.saver.status().backup).toBe('skipped');
+    });
+
+    it('the copy source is the loaded raw value, never the stored one', async () => {
+        const t = setup({ migrated, load: 'loaded', initial: { version: 99, other: true } });
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.state.backups).toEqual([{ raw: v2, from: 2 }]);
     });
 });
 
@@ -907,16 +1154,18 @@ describe('createAutosaver time limit (save-v2-backup-health, SV2-02)', () => {
         expect(t.state.writes).toHaveLength(1);
     });
 
-    it('a hung copy of a migrated save is a timeout failure at the backup stage and writes nothing', async () => {
+    // save-truth phase 5: reversed ("writes nothing" became "the write goes first, the copy times out beside it").
+    it('a hung copy of a migrated save is a timeout failure at the backup stage, after the write', async () => {
         const t = setup({ migrated: { from: 1, raw: fixture('save-v1.json') } });
         t.state.backupHangs = true;
         t.saver.markDirty();
-        const flushed = t.saver.flush('now');
+        await t.saver.flush('now');
         await settle();
         t.clock.advance(5000);
-        await flushed;
+        await settle();
+        await settle();
         expect(t.saver.status().lastFailure).toEqual({ stage: 'backup', error: 'timeout' });
-        expect(t.state.ops).toEqual(['backup']);
+        expect(t.state.ops).toEqual(['write', 'backup']);
     });
 
     it('replace behind a write that never answers settles within two limits as a timeout', async () => {
@@ -973,7 +1222,7 @@ describe('loadSave waitLonger (SRR-02)', () => {
                 calls.reads += 1;
                 return new Promise<unknown>((resolve) => (answer = resolve));
             },
-            backup: () => Promise.resolve(),
+            ...backupExtras, backup: () => Promise.resolve('written' as const),
             write: () => Promise.resolve(),
         };
         return { store, calls, answer: (v: unknown) => answer(v) };
@@ -1022,7 +1271,7 @@ describe('loadSave waitLonger (SRR-02)', () => {
     });
 
     it('only a timeout carries waitLonger', async () => {
-        const broken: SaveStore = { read: () => Promise.reject(new Error('x')), backup: () => Promise.resolve(), write: () => Promise.resolve() };
+        const broken: SaveStore = { read: () => Promise.reject(new Error('x')), ...backupExtras, backup: () => Promise.resolve('written' as const), write: () => Promise.resolve() };
         expect(await loadSave(broken, { timers: makeClock().timers, timeoutMs: 5000 })).toEqual({ kind: 'unavailable', error: 'Error' });
     });
 });
@@ -1103,6 +1352,43 @@ describe('a store that refuses with NewerSave blocks saving for good (P-5)', () 
 
 const otherWriterError = (): Error => Object.assign(new Error('another page saved later'), { name: 'OtherWriterSave' });
 
+const previousPageError = (): Error => Object.assign(new Error('an earlier document of this tab saved later'), { name: 'PreviousPageSave' });
+
+// save-truth p7 (T-3, T-1)
+describe('a PreviousPageSave refusal and an older-writer note (save-truth p7)', () => {
+    it('PreviousPageSave blocks as otherTab like OtherWriterSave, tells the listener once, and the log names the previous page', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        let calls = 0;
+        t.store.write = () => (calls++, Promise.reject(previousPageError()));
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(calls).toBe(1);
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'otherTab', lastFailure: { stage: 'write', error: 'PreviousPageSave' } });
+        expect(told).toEqual(['otherTab']);
+        expect(JSON.stringify(t.logs)).toContain('previous page');
+    });
+
+    it('noteOlderWriter sets the runtime flag and logs once, however often it is told', () => {
+        const t = setup();
+        expect(t.saver.status().olderWriterSeen).toBe(false);
+        t.saver.noteOlderWriter();
+        t.saver.noteOlderWriter();
+        expect(t.saver.status().olderWriterSeen).toBe(true);
+        expect(t.logs.filter((l) => String(l[0]).includes('older'))).toHaveLength(1);
+    });
+
+    it('the flag is runtime only: the encoded save has no such key', () => {
+        const t = setup();
+        t.saver.noteOlderWriter();
+        expect(JSON.stringify(t.saver.current())).not.toContain('olderWriter');
+    });
+});
+
 describe('a store that refuses with OtherWriterSave blocks saving for good (stale tab)', () => {
     it('blocks with the runtime reason otherTab, tries once, never again, and tells the listener once', async () => {
         const told: string[] = [];
@@ -1170,5 +1456,189 @@ describe('a store that refuses with OtherWriterSave blocks saving for good (stal
     it('replaceGate says Blocked for otherTab with and without force', () => {
         expect(replaceGate({ blockedBy: 'otherTab', loadReason: null, loadError: null }, true)).toBe('Blocked');
         expect(replaceGate({ blockedBy: 'otherTab', loadReason: null, loadError: null }, false)).toBe('Blocked');
+    });
+});
+
+describe('what the status keeps for the parent view (save-truth p6: SVB-01 line, SVB-03, SRR-11, V1)', () => {
+    const v2 = fixture('save-v2.json');
+    const record: BackupRecord = { from: 2, result: 'lost', error: 'QuotaExceededError', at: 7 };
+
+    it('withTimeLimit tells an observer how a write that answered after the limit ended, and never changes the result', async () => {
+        const clock = makeClock();
+        const seen: string[] = [];
+        let landLate: () => void = () => undefined;
+        const lands = withTimeLimit(new Promise<void>((resolve) => void (landLate = resolve)), clock.timers, 100, (outcome) => void seen.push(outcome));
+        const landed = lands.then(() => 'ok', (e: unknown) => errorName(e));
+        clock.advance(100);
+        expect(await landed).toBe('timeout');
+        expect(seen).toEqual([]);
+        landLate();
+        await settle();
+        expect(seen).toEqual(['landed']);
+
+        let failLate: (e: Error) => void = () => undefined;
+        const fails = withTimeLimit(new Promise<void>((_, reject) => void (failLate = reject)), clock.timers, 100, (outcome) => void seen.push(outcome));
+        const failed = fails.then(() => 'ok', (e: unknown) => errorName(e));
+        clock.advance(100);
+        expect(await failed).toBe('timeout');
+        failLate(new Error('late'));
+        await settle();
+        expect(seen).toEqual(['landed', 'failed']);
+
+        // work that answers in time never reaches the observer
+        await withTimeLimit(Promise.resolve(1), clock.timers, 100, (outcome) => void seen.push(outcome));
+        await settle();
+        expect(seen).toEqual(['landed', 'failed']);
+    });
+
+    it('a write that answers after the limit is lateWrite landed, a late rejection is failed, the next good write clears it', async () => {
+        const t = setup();
+        let landLate: () => void = () => undefined;
+        t.store.write = () => new Promise<void>((resolve) => void (landLate = resolve));
+        t.saver.markDirty();
+        const flushed = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await flushed;
+        expect(t.saver.status()).toMatchObject({ lastFailure: { stage: 'write', error: 'timeout' }, lateWrite: null });
+        landLate();
+        await settle();
+        expect(t.saver.status().lateWrite).toBe('landed');
+
+        let failLate: (e: Error) => void = () => undefined;
+        t.store.write = () => new Promise<void>((_, reject) => void (failLate = reject));
+        t.saver.markDirty();
+        const again = t.saver.flush('now');
+        await settle();
+        t.clock.advance(5000);
+        await again;
+        failLate(Object.assign(new Error('late'), { name: 'QuotaExceededError' }));
+        await settle();
+        expect(t.saver.status().lateWrite).toBe('failed');
+        t.store.write = () => Promise.resolve();
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(t.saver.status().lateWrite).toBeNull();
+    });
+
+    it('a fatal block keeps the error name it was given (first block wins), and none when it got none', () => {
+        const a = setup();
+        a.saver.block('fatal', 'TypeError');
+        a.saver.block('fatal', 'RangeError');
+        expect(a.saver.status()).toMatchObject({ blockedBy: 'fatal', fatalError: 'TypeError' });
+        const b = setup();
+        b.saver.block('fatal');
+        expect(b.saver.status().fatalError).toBeNull();
+        const c = setup({ blockedBy: 'unreadable' });
+        c.saver.block('fatal', 'TypeError');
+        expect(c.saver.status()).toMatchObject({ blockedBy: 'unreadable', fatalError: null });
+    });
+
+    it('the stored record of the copy is carried into the status, null without one', () => {
+        expect(setup({ backupRecord: record }).saver.status().backupRecord).toEqual(record);
+        expect(setup().saver.status().backupRecord).toBeNull();
+    });
+
+    it('failed copies are counted apart, and the last error of a write stays the last write error', async () => {
+        const t = setup({ migrated: { from: 2, raw: v2 }, load: 'loaded' });
+        t.state.backupFails = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status()).toMatchObject({ backupFailures: 1, lastError: 'QuotaExceededError', lastWriteError: null });
+        t.state.fail = true;
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        await settle();
+        expect(t.saver.status()).toMatchObject({ lastWriteError: 'Error' });
+    });
+});
+
+// save-truth p8 (T-2, T-5)
+describe('noticeOtherWriter and the refusal code (save-truth p8)', () => {
+    it('blocks as otherTab, tells the listener once with OtherWriterSave, and a later markDirty writes nothing', async () => {
+        const told: [string, string][] = [];
+        const t = setup({ onBlocked: (reason, error) => void told.push([reason, error]) });
+        t.saver.noticeOtherWriter();
+        t.saver.noticeOtherWriter();
+        expect(t.saver.status()).toMatchObject({ blocked: true, blockedBy: 'otherTab' });
+        expect(told).toEqual([['otherTab', 'OtherWriterSave']]);
+        const before = t.saver.status().writes;
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await t.saver.flush('now');
+        expect(t.saver.status().writes).toBe(before);
+    });
+
+    it('a notice after another block does not tell the listener a second time', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        t.store.write = () => Promise.reject(otherWriterError());
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        t.saver.noticeOtherWriter();
+        expect(told).toEqual(['otherTab']);
+    });
+
+    it('a refused write passes the error name of the refusal to the listener', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (_reason, error) => void told.push(error) });
+        t.store.write = () => Promise.reject(previousPageError());
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(told).toEqual(['PreviousPageSave']);
+    });
+});
+
+describe('readBackups pass-through (save-truth p9)', () => {
+    it('returns the store copies and never rejects when the read fails', async () => {
+        const t = setup();
+        t.store.readBackups = () => Promise.resolve([{ from: 1, raw: { n: 1 } }]);
+        expect(await t.saver.readBackups()).toEqual([{ from: 1, raw: { n: 1 } }]);
+        t.store.readBackups = () => Promise.reject(new Error('boom'));
+        expect(await t.saver.readBackups()).toEqual([]);
+    });
+
+    it('a store that never answers gives no copies after the write limit, so the settings panel still opens (impl review)', async () => {
+        const t = setup();
+        t.store.readBackups = () => new Promise(() => undefined);
+        const read = t.saver.readBackups();
+        t.clock.advance(5000);
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(await Promise.race([read, Promise.resolve('still waiting')])).toEqual([]);
+    });
+});
+
+describe('replace after an in-flight write (impl review)', () => {
+    it('a write refused by another window while the parent confirmed blocks the replace too', async () => {
+        const t = setup();
+        let refuse: (e: Error) => void = () => undefined;
+        const modes: string[] = [];
+        t.store.write = (_value, mode = 'normal') => {
+            modes.push(mode);
+            return modes.length === 1 ? new Promise<void>((_resolve, reject) => void (refuse = reject)) : Promise.resolve();
+        };
+        t.saver.markDirty();
+        const writing = t.saver.flush('now');
+        const replacing = t.saver.replace(encodeSave(session(9)));
+        refuse(Object.assign(new Error('other'), { name: 'OtherWriterSave' }));
+        await writing;
+        expect(await replacing).toEqual({ ok: false, error: 'Blocked' });
+        expect(modes).toEqual(['normal']);   // the replace never wrote over the other window's save
+        expect(t.saver.status().blockedBy).toBe('otherTab');
+    });
+});
+
+describe('lateReadVerdict (SVB-02)', () => {
+    it('stays slow only for a read that timed out again', () => {
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'timeout' })).toBe('still-slow');
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'TimeoutError' })).toBe('still-slow');
+    });
+
+    it('settles for a read refused with a named error, and for every other outcome', () => {
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'UnknownError' })).toBe('settle');
+        expect(lateReadVerdict({ kind: 'fresh' })).toBe('settle');
+        expect(lateReadVerdict({ kind: 'unreadable', reason: 'corrupt', raw: null })).toBe('settle');
     });
 });

@@ -2,7 +2,9 @@
 // Oracle: audit C-2 / M-S5: a parent must see whether saving is off (and why), failing, or fine.
 import { describe, expect, it } from 'vitest';
 import type { AutosaveStatus } from '../src/core/autosave';
-import { cardCopyFor, saveHealthView } from '../src/core/saveHealth';
+import { SAVE_VERSION } from '../src/core/save';
+import type { RoomProblem } from '../src/core/rooms';
+import { cardCopyFor, newestBackup, saveHealthView, unreadableCode } from '../src/core/saveHealth';
 
 const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     load: 'fresh',
@@ -20,12 +22,28 @@ const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     migratedFrom: null,
     loadReason: null,
     loadError: null,
+    loadFrom: null,
+    unavailableStarts: 0,
     backup: 'none',
     backupError: null,
     migrationWrittenAt: null,
+    backupRecord: null,
+    backupFailures: 0,
+    lastWriteError: null,
+    lateWrite: null,
+    fatalError: null,
+    olderWriterSeen: false,
     replace: 'idle',
     persistence: 'unknown',
     ...over,
+});
+
+describe('saveHealthView: an older build wrote here (save-truth p7)', () => {
+    it('olderWriter follows the status, in every state', () => {
+        expect(saveHealthView(status({ writes: 1 })).olderWriter).toBe(false);
+        expect(saveHealthView(status({ writes: 1, olderWriterSeen: true })).olderWriter).toBe(true);
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal', olderWriterSeen: true })).olderWriter).toBe(true);
+    });
 });
 
 describe('saveHealthView', () => {
@@ -85,8 +103,8 @@ describe('saveHealthView', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'unavailable', loadError: 'UnknownError', lastError: 'Other' }))).toMatchObject({ cause: 'unavailable', code: 'UnknownError' });
     });
 
-    it('a fatal block carries lastError as code, or null', () => {
-        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal', lastError: 'TypeError' }))).toMatchObject({ cause: 'fatal', code: 'TypeError' });
+    it('a fatal block carries its own error name as code, not whatever failed last, or null (SRR-11, rewritten)', () => {
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal', fatalError: 'TypeError', lastError: 'QuotaExceededError' }))).toMatchObject({ cause: 'fatal', code: 'TypeError' });
         expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }))).toMatchObject({ cause: 'fatal', code: null });
     });
 });
@@ -101,6 +119,13 @@ describe('cardCopyFor', () => {
         expect(cardCopyFor('unavailable', null, 'UnknownError')).toBe('unavailable');
     });
 
+    it('a save that failed AFTER its migration gets the migration card, not the generic one (C-2r)', () => {
+        expect(cardCopyFor('unreadable', 'corrupt', null, 1)).toBe('migrationFailed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, 3)).toBe('migrationFailed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, SAVE_VERSION)).toBe('failed');
+        expect(cardCopyFor('unreadable', 'corrupt', null, null)).toBe('failed');
+    });
+
     it('a read that timed out gets the slow card (SRR-12)', () => {
         expect(cardCopyFor('unavailable', null, 'timeout')).toBe('slow');
         expect(cardCopyFor('unavailable', null, 'TimeoutError')).toBe('slow');
@@ -113,16 +138,17 @@ describe('saveHealthView migration lines', () => {
     });
 
     // SV2-03: the move is a fact only after a v2 write in this session; the intent from the start is not.
-    it('no migration line before the first write, even when the save was moved from v1 at the start', () => {
-        expect(saveHealthView(status({ migratedFrom: 1, backup: 'pending', writes: 0 })).migration).toBeNull();
-        // The write count alone gates the line, whatever the copy state says.
-        expect(saveHealthView(status({ migratedFrom: 1, backup: 'done', writes: 0 })).migration).toBeNull();
+    it('before the first write of the new version the line says the move is in progress, never kept or lost (SVB-01, reversed from "no line")', () => {
+        const pending = { from: 1, copy: 'pending', code: null };
+        expect(saveHealthView(status({ migratedFrom: 1, backup: 'pending', writes: 0 })).migration).toEqual(pending);
+        // The write of the new version gates the line, whatever the copy state says.
+        expect(saveHealthView(status({ migratedFrom: 1, backup: 'done', writes: 0 })).migration).toEqual(pending);
         expect(saveHealthView(status({ migratedFrom: null, writes: 2 })).migration).toBeNull();
     });
 
     it('after a write the line says whether the v1 copy was kept, or lost with its code', () => {
-        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, backup: 'done' })).migration).toEqual({ from: 1, copy: 'kept', code: null });
-        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, backup: 'skipped', backupError: 'QuotaExceededError' })).migration).toEqual({
+        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, migrationWrittenAt: 5, backup: 'done' })).migration).toEqual({ from: 1, copy: 'kept', code: null });
+        expect(saveHealthView(status({ migratedFrom: 1, writes: 1, migrationWrittenAt: 5, backup: 'skipped', backupError: 'QuotaExceededError' })).migration).toEqual({
             from: 1,
             copy: 'lost',
             code: 'QuotaExceededError',
@@ -151,5 +177,79 @@ describe('saveHealthView newer (P-5)', () => {
 describe('saveHealthView otherTab (stale tab)', () => {
     it('an other-writer block is off with cause otherTab and the code OtherWriterSave', () => {
         expect(saveHealthView(status({ blocked: true, blockedBy: 'otherTab', lastError: 'OtherWriterSave', lastFailure: { stage: 'write', error: 'OtherWriterSave' } }))).toMatchObject({ kind: 'off', cause: 'otherTab', code: 'OtherWriterSave' });
+    });
+});
+
+describe('unreadableCode (V-1, SV2-07)', () => {
+    it('names the broken field of a corrupt save, the step of a failed migration, else the reason', () => {
+        expect(unreadableCode({ reason: 'corrupt', problem: 'stars' })).toBe('corrupt/stars');
+        expect(unreadableCode({ reason: 'corrupt', problem: 'exception:RangeError' })).toBe('corrupt/exception:RangeError');
+        expect(unreadableCode({ reason: 'corrupt', problem: null })).toBe('corrupt');
+        expect(unreadableCode({ reason: 'corrupt' })).toBe('corrupt');
+        expect(unreadableCode({ reason: 'migration-failed', step: 2 })).toBe('migration-failed/2');
+        expect(unreadableCode({ reason: 'future' })).toBe('future');
+        expect(unreadableCode({ reason: 'unknown-version' })).toBe('unknown-version');
+    });
+});
+
+describe('saveHealthView across launches (save-truth p6)', () => {
+    const rec = (result: 'kept' | 'lost' | 'uncertain', error: string | null = null) => ({ from: 2, result, error, at: 9 });
+
+    it('a later launch tells the fate of the old copy from the stored record', () => {
+        expect(saveHealthView(status({ writes: 1, backupRecord: rec('kept') })).migration).toEqual({ from: 2, copy: 'kept', code: null });
+        expect(saveHealthView(status({ writes: 1, backupRecord: rec('lost', 'QuotaExceededError') })).migration).toEqual({ from: 2, copy: 'lost', code: 'QuotaExceededError' });
+        expect(saveHealthView(status({ writes: 1, backupRecord: rec('uncertain', 'timeout') })).migration).toEqual({ from: 2, copy: 'uncertain', code: 'timeout' });
+        expect(saveHealthView(status({ writes: 1 })).migration).toBeNull();
+    });
+
+    it('the session that migrated knows more than the record: its own copy state wins', () => {
+        const old = rec('lost', 'QuotaExceededError');
+        expect(saveHealthView(status({ migratedFrom: 2, writes: 1, migrationWrittenAt: 5, backup: 'done', backupRecord: old })).migration).toEqual({ from: 2, copy: 'kept', code: null });
+        expect(saveHealthView(status({ migratedFrom: 2, writes: 1, migrationWrittenAt: 5, backup: 'skipped', backupError: 'timeout', backupRecord: null })).migration).toEqual({ from: 2, copy: 'uncertain', code: 'timeout' });
+        // a copy that is still being retried claims nothing yet
+        expect(saveHealthView(status({ migratedFrom: 2, writes: 1, migrationWrittenAt: 5, backup: 'failed', backupError: 'QuotaExceededError', backupRecord: old })).migration).toBeNull();
+    });
+
+    it('a write that timed out says it may have worked, unless its late answer was a failure', () => {
+        const base = { consecutiveFailures: 1, failures: 1, lastError: 'timeout', lastFailure: { stage: 'write' as const, error: 'timeout' } };
+        expect(saveHealthView(status(base))).toMatchObject({ kind: 'failing', slow: true });
+        expect(saveHealthView(status({ ...base, lateWrite: 'landed' }))).toMatchObject({ kind: 'failing', slow: true });
+        expect(saveHealthView(status({ ...base, lateWrite: 'failed' }))).toMatchObject({ kind: 'failing', slow: false });
+        expect(saveHealthView(status({ ...base, lastError: 'QuotaExceededError', lastFailure: { stage: 'write', error: 'QuotaExceededError' } }))).toMatchObject({ slow: false });
+    });
+
+    it('a failed copy is not repeated among the earlier failures (V1)', () => {
+        const onlyCopy = status({ writes: 1, failures: 3, backupFailures: 3, lastError: 'QuotaExceededError', lastFailure: { stage: 'backup', error: 'QuotaExceededError' } });
+        expect(saveHealthView(onlyCopy)).toMatchObject({ kind: 'ok', earlierFailures: null });
+        const mixed = status({ writes: 1, failures: 3, backupFailures: 2, lastWriteError: 'AbortError', lastError: 'QuotaExceededError', lastFailure: { stage: 'backup', error: 'QuotaExceededError' } });
+        expect(saveHealthView(mixed)).toMatchObject({ kind: 'ok', earlierFailures: { count: 1, error: 'AbortError' } });
+    });
+});
+
+describe('old-version copy on the panel (save-truth p9)', () => {
+    const record = (result: 'kept' | 'lost' | 'uncertain') => ({ from: 1, result, error: result === 'kept' ? null : 'timeout', at: 1 });
+    it('an uncertain record with the copy present reads as kept, without a code', () => {
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('uncertain') }), [1]).migration).toEqual({ from: 1, copy: 'kept', code: null });
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('uncertain') }), []).migration?.copy).toBe('uncertain');
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('lost') }), [1]).migration?.copy).toBe('lost');
+    });
+    it('newestBackup picks the highest version, null when there is none', () => {
+        expect(newestBackup([{ from: 1 }, { from: 3 }, { from: 2 }])).toEqual({ from: 3 });
+        expect(newestBackup([])).toBeNull();
+    });
+});
+
+describe('saveHealthView: the salon does not match the game (save-truth p12, R-4)', () => {
+    const over: RoomProblem = { room: 'salon', kind: 'tasks-overflow' };
+    const unknown: RoomProblem = { room: 'living', kind: 'unknown-room' };
+
+    it('is false with no problem and for an unknown room only', () => {
+        expect(saveHealthView(status({ writes: 1 })).roomMismatch).toBe(false);
+        expect(saveHealthView(status({ writes: 1 }), [], [unknown]).roomMismatch).toBe(false);
+    });
+
+    it('is true when a problem a parent can see exists, in any save state', () => {
+        expect(saveHealthView(status({ writes: 1 }), [], [unknown, over]).roomMismatch).toBe(true);
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }), [], [over]).roomMismatch).toBe(true);
     });
 });

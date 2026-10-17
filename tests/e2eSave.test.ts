@@ -4,7 +4,7 @@ import { e2eArt, e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon', 'newer']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -30,9 +30,9 @@ describe('e2eSaveStore', () => {
         await expect(e2eSaveStore('unreadable').read()).resolves.toMatchObject({ version: 99 });
     });
 
-    it('corrupt decodes as corrupt', async () => {
+    it('corrupt decodes as corrupt in its own version (a bad stars field of a v4 shape)', async () => {
         const store = e2eSaveStore('corrupt');
-        expect(decodeSave(await store.read())).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(await store.read())).toEqual({ kind: 'unreadable', reason: 'corrupt', from: SAVE_VERSION, problem: 'stars' });
     });
 
     it('unavailable rejects the read with an UnknownError', async () => {
@@ -91,9 +91,25 @@ describe('e2eSaveStore', () => {
         expect(outcome).toBe('silent');
     });
 
+    it('the seam store keeps the first copy, lists copies and holds the record', async () => {
+        const store = e2eSaveStore('v1');
+        expect(await store.backupRecord()).toBeNull();
+        expect(await store.backup({ n: 1 }, 1)).toBe('written');
+        expect(await store.backup({ n: 2 }, 1)).toBe('kept');
+        expect(await store.readBackups()).toEqual([{ from: 1, raw: { n: 1 } }]);
+        expect(await store.backupRecord()).toMatchObject({ from: 1, result: 'kept' });
+        await store.noteBackup({ from: 1, result: 'lost', error: 'X', at: 1 });
+        expect(await store.backupRecord()).toMatchObject({ result: 'lost' });
+        expect(await store.read()).toMatchObject({ version: 1 });
+    });
+
     it('slow answers late with a current-version save of 7 stars', async () => {
         const raw = await e2eSaveStore('slow').read();
         expect(decodeSave(raw)).toMatchObject({ kind: 'ok', migratedFrom: null, session: { stars: 7 } });
+    });
+
+    it('slowfail rejects its read with UnknownError after the slow delay', async () => {
+        await expect(e2eSaveStore('slowfail').read()).rejects.toMatchObject({ name: 'UnknownError' });
     });
 
     it('hang never settles its read', async () => {

@@ -35,7 +35,7 @@ test('#10 a v1 save loads in the v4 build with the same stars, stage and learner
     expect(loaded.learner?.pendingUnlock).toBe(saveV1.learner.pendingUnlock.step);
 });
 
-test('#2 after a round the migrated save is written as v4 with a v1 backup first', async ({ page }) => {
+test('#2 after a round the migrated save is written as v4 with the v1 backup right after it', async ({ page }) => {
     await silenceSpeech(page);
     await page.goto(OPEN);
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
@@ -43,7 +43,7 @@ test('#2 after a round the migrated save is written as v4 with a v1 backup first
     await playRoundRight(page, 5);
     await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
     const store = (await snapshot(page)).save!.store!;
-    expect(store.ops.slice(0, 2)).toEqual(['backup', 'write']);
+    expect(store.ops.slice(0, 2)).toEqual(['write', 'backup']);
     expect(store.ops.filter((op) => op === 'backup')).toHaveLength(1);
     // The write carried the balance the round earned on top of the migrated stars.
     expect((await snapshot(page)).stars).toBeGreaterThan(saveV1.stars);

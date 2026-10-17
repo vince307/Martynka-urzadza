@@ -59,6 +59,8 @@ export const pl = {
         saveHeading: 'Zapis gry',
         saveOk: 'Postępy zapisują się na tym urządzeniu.',
         saveLast: (time: string) => `Ostatni zapis: ${time}`,
+        // DESIGN-GAP 131: the kit has no button for the copy of the save from before a format change; the text is ours, to be read by a teacher.
+        backupExport: 'Zachowaj kopię starego zapisu',
         // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
         saveNotYet: 'Gra jeszcze niczego nie zapisała. Zapis nastąpi po pierwszej zmianie.',
         saveEarlier: (count: number, error: string) => `Wcześniej: ${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} (${error}).`,
@@ -68,6 +70,12 @@ export const pl = {
             unsupported: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
+        // DESIGN-GAP 130 (docs/design-gaps.md): the kit has no line for an older build that saved over this game's progress.
+        olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
+        // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
+        roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
+        // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
+        saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
         saveFailingDetail: (count: number, stage: FailureStage, error: string) =>
@@ -83,6 +91,10 @@ export const pl = {
         saveMigrated: {
             kept: (from: number) => `Zapis przeniesiono z wersji ${from}. Stara kopia została na tym urządzeniu.`,
             lost: (from: number) => `Zapis przeniesiono z wersji ${from}, ale starej kopii nie udało się zachować.`,
+            // DESIGN-GAP 127: the store never answered about the copy, so it is neither kept nor lost.
+            uncertain: (from: number) => `Zapis przeniesiono z wersji ${from}. Nie wiadomo, czy stara kopia została zachowana.`,
+            // DESIGN-GAP 128: shown until the first write of the new version.
+            pending: (from: number) => `Zapis jest przenoszony z wersji ${from}. Poczekaj chwilę.`,
         },
         saveOff: {
             unreadable: 'Zapis jest wyłączony: starego zapisu nie udało się wczytać.',
@@ -176,6 +188,8 @@ export const pl = {
     },
     // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
     saveTransfer: {
+        // DESIGN-GAP 138: the kit has no line for a file whose salon does not match the game.
+        roomMismatch: 'Stan salonu w tym pliku nie pasuje do gry.',
         exportButton: 'Zapisz kopię',
         exportTitle: 'Kopia zapisu',
         exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
@@ -186,10 +200,13 @@ export const pl = {
         close: 'Zamknij',
         exportOutcome: {
             shared: 'Kopia została przekazana wybranej aplikacji.',
-            downloaded: 'Plik został pobrany na to urządzenie.',
+            // DESIGN-GAP 132 (docs/design-gaps.md): a link-click download is never confirmed by the browser; the text is ours.
+            downloadStarted: 'Pobieranie pliku się zaczęło. Sprawdź folder Pobrane.',
             cancelled: 'Anulowano. Kopia nie powstała.',
             failed: 'Nie udało się zapisać pliku. Spróbuj jeszcze raz.',
         },
+        // DESIGN-GAP 133 (docs/design-gaps.md): the kit has no line for a state that cannot be exported; the text is ours.
+        exportInvalid: 'Tej kopii nie da się zapisać: stan gry jest uszkodzony.',
         fileName: (date: string) => `martynka-zapis-${date}.txt`,
         // DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; texts are ours. Every refusal says the current save is untouched.
         importButton: 'Wczytaj z pliku',
@@ -216,6 +233,8 @@ export const pl = {
             future: 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę i spróbuj ponownie. Obecne postępy zostały bez zmian.',
             'unknown-version': 'Nie można rozpoznać wersji tego zapisu. Obecne postępy zostały bez zmian.',
             'migration-failed': 'Nie udało się przenieść tego zapisu do obecnej wersji gry. Obecne postępy zostały bez zmian.',
+            // DESIGN-GAP 135 (docs/design-gaps.md): the browser would not read the chosen file; nothing is claimed about the save, the text is ours, to be read by a teacher.
+            'unreadable-file': 'Nie udało się odczytać tego pliku. Spróbuj wybrać go jeszcze raz.',
         },
         applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
         // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.
@@ -227,10 +246,16 @@ export const pl = {
         // DESIGN-GAP 68 (docs/design-gaps.md): the kit has no line for a device save that was not read; for the adult, calm, no codes.
         // DESIGN-GAP 71 (docs/design-gaps.md): the kit has no way out of a save the browser never gives; second confirmation and a last-resort advice, texts are ours.
         deviceUnavailable: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Jeśli to się powtarza przy każdym uruchomieniu, możesz go zastąpić. Postępy zapisane wcześniej na tym urządzeniu wtedy znikną.',
+        // DESIGN-GAP 126: the kit has no line for the first start on which the browser would not give the save; the text is ours, to be read by a teacher.
+        deviceUnavailableFirst: 'Gra nie mogła odczytać zapisu na tym urządzeniu. Uruchom grę ponownie. Zapis zostaje bez zmian.',
         force: 'Zastąp mimo to',
         forcedWarning: 'Zapisu z tego urządzenia nie udało się odczytać. Zostanie zastąpiony.',
         siteDataAdvice: 'Nie udało się zapisać na tym urządzeniu. Ostatnie wyjście: usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.',
         resetFailed: 'Nie udało się zacząć od nowa. Obecne postępy zostały bez zmian.',
+        // DESIGN-GAP 134 (docs/design-gaps.md): the kit has no line for a write that timed out and may still have landed; the text is ours, to be read by a teacher.
+        replaceUnconfirmed: 'Gra nie dostała potwierdzenia zapisu. Uruchom grę ponownie i sprawdź postępy.',
+        // DESIGN-GAP 136 (docs/design-gaps.md): the kit has no line for a current game state that cannot be read; the text is ours, to be read by a teacher.
+        deviceBroken: 'Obecnego stanu gry nie da się odczytać. Uruchom grę ponownie.',
         // DESIGN-GAP 70 (docs/design-gaps.md): the kit has no line per reason a device save cannot be replaced (newer version, slow read).
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
         deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',

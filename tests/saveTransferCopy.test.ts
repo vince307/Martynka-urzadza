@@ -4,6 +4,14 @@ import { describe, expect, it } from 'vitest';
 import type { ImportRejection } from '../src/core/saveFile';
 import { pl } from '../src/data/pl';
 
+describe('pl.saveTransfer export copy (save-truth p10)', () => {
+    it('a download is only said to have started; an unexportable state has its own line', () => {
+        expect(Object.keys(pl.saveTransfer.exportOutcome).sort()).toEqual(['cancelled', 'downloadStarted', 'failed', 'shared']);
+        expect(pl.saveTransfer.exportOutcome.downloadStarted).toBe('Pobieranie pliku się zaczęło. Sprawdź folder Pobrane.');
+        expect(pl.saveTransfer.exportInvalid).toBe('Tej kopii nie da się zapisać: stan gry jest uszkodzony.');
+    });
+});
+
 describe('pl.saveTransfer import copy', () => {
     it.each([
         [0, '0 gwiazdek'], [1, '1 gwiazdka'], [2, '2 gwiazdki'], [4, '4 gwiazdki'], [5, '5 gwiazdek'],
@@ -12,12 +20,16 @@ describe('pl.saveTransfer import copy', () => {
         expect(pl.saveTransfer.stars(n)).toBe(text);
     });
 
-    it('has a calm text for every rejection reason, each leaving the save untouched', () => {
-        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version', 'migration-failed'];
-        for (const reason of reasons) {
+    it('has a text for every rejection reason; a refusal of a file says the save is untouched, an unreadable file only asks to try again (SVB-04)', () => {
+        const all: Record<ImportRejection, true> = { 'too-big': true, 'not-json': true, 'not-ours': true, corrupt: true, future: true, 'unknown-version': true, 'migration-failed': true, 'unreadable-file': true };
+        expect(Object.keys(pl.saveTransfer.rejected).sort()).toEqual(Object.keys(all).sort());
+        for (const reason of Object.keys(all) as ImportRejection[]) {
+            if (reason === 'unreadable-file') continue;
             expect(pl.saveTransfer.rejected[reason]).toMatch(/Obecne postępy zostały bez zmian\.$/);
         }
+        expect(pl.saveTransfer.rejected['unreadable-file']).toBe('Nie udało się odczytać tego pliku. Spróbuj wybrać go jeszcze raz.');
         expect(pl.saveTransfer.rejected.future).toContain('Zaktualizuj grę');
+        expect(pl.saveTransfer.deviceBroken).toBe('Obecnego stanu gry nie da się odczytać. Uruchom grę ponownie.');
     });
 
     it('formats a room line', () => {
@@ -39,6 +51,10 @@ describe('pl.saveTransfer import copy', () => {
         expect(pl.saveTransfer.fileInfo('14.10.2026', null)).toBe('Kopia z 14.10.2026');
         expect(pl.settings.saveMigrated.kept(1)).toBe('Zapis przeniesiono z wersji 1. Stara kopia została na tym urządzeniu.');
         expect(pl.settings.saveMigrated.lost(1)).toBe('Zapis przeniesiono z wersji 1, ale starej kopii nie udało się zachować.');
+        expect(pl.settings.saveMigrated.uncertain(2)).toBe('Zapis przeniesiono z wersji 2. Nie wiadomo, czy stara kopia została zachowana.');
+        expect(pl.settings.saveMigrated.pending(2)).toBe('Zapis jest przenoszony z wersji 2. Poczekaj chwilę.');
+        expect(pl.settings.saveFailingTimeout).toBe('Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.');
+        expect(pl.settings.olderWriter).toBe('Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.');
         expect(pl.settings.saveFailingDetail(1, 'write', 'QuotaExceededError')).toBe('1 nieudana próba · zapis · Kod: QuotaExceededError');
         expect(pl.settings.saveFailingDetail(2, 'backup', 'X')).toBe('2 nieudane próby · kopia starego zapisu · Kod: X');
         expect(pl.settings.saveFailingDetail(5, 'replace', 'X')).toBe('5 nieudanych prób · zastąpienie zapisu · Kod: X');

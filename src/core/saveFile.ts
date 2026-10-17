@@ -1,7 +1,8 @@
 // The save file a parent exports and imports (S-12, test-plan risk #7). Pure: no Phaser, no browser globals, no data imports;
 // the build id and the rooms come in as parameters. A file is never trusted because it parses: every import goes through
 // decodeSave (migrations + strict validation), so the file can only ever become a save the game itself could have written.
-import { isTimeoutError, replaceGate, type AutosaveStatus } from './autosave';
+import { isTimeoutError, keepsOldSave, replaceGate, type AutosaveStatus } from './autosave';
+import { parentVisible, roomStateProblems } from './rooms';
 import { decodeSave, importProblem, type SessionSave } from './save';
 import type { RoomDef, SaveState, StageId } from './types';
 
@@ -11,7 +12,7 @@ export type ExportInput =
     | { kind: 'save'; build: string; exportedAt: string; save: SaveState }
     | { kind: 'raw'; build: string; exportedAt: string; reason: string; raw: unknown };
 
-export type ImportRejection = 'too-big' | 'not-json' | 'not-ours' | 'corrupt' | 'future' | 'unknown-version' | 'migration-failed';
+export type ImportRejection = 'too-big' | 'not-json' | 'not-ours' | 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | 'unreadable-file';
 
 export type ImportResult =
     | { kind: 'ok'; session: SessionSave; file: { build: string | null; exportedAt: string | null } }
@@ -21,6 +22,8 @@ export interface SaveSummary {
     stars: number;
     stage: StageId | null;
     rooms: { id: string; done: number; total: number }[];
+    /** The saved salon disagrees with this game in a way a parent can see (R-4); an unknown room does not count. */
+    mismatch: boolean;
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -68,7 +71,7 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
         if (!state) continue;
         list.push({ id, done: Math.min(state.tasksDone, def.tasks.length), total: def.tasks.length });
     }
-    return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list };
+    return { stars: session.stars, stage: session.learner ? session.learner.stage : null, rooms: list, mismatch: roomStateProblems(session.rooms, rooms).some(parentVisible) };
 }
 
 /** What an import or reset dialog shows in the place of "Teraz" (S12-01); `blocked` and `unreadable` never carry the in-memory fresh session;
@@ -76,19 +79,22 @@ export function saveSummary(session: SessionSave, rooms: Readonly<Record<string,
 export type DeviceSaveView =
     | { kind: 'summary'; summary: SaveSummary }
     | { kind: 'unreadable' }
-    | { kind: 'blocked'; cause: 'future' | 'timeout' | 'unavailable' | 'fatal' | 'newer' | 'otherTab'; forceable: boolean }
+    | { kind: 'blocked'; cause: 'future' | 'unreadable' | 'timeout' | 'unavailable' | 'unavailable-first' | 'fatal' | 'newer' | 'otherTab'; forceable: boolean }
     | { kind: 'broken' };
 
 export function deviceSaveView(
-    status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'>,
+    status: Pick<AutosaveStatus, 'blockedBy' | 'loadReason' | 'loadError'> & { loadFrom?: number | null; unavailableStarts?: number },
     current: SaveState,
     rooms: Readonly<Record<string, RoomDef>>,
 ): DeviceSaveView {
-    const { blockedBy, loadReason, loadError } = status;
-    if (blockedBy === 'unreadable' && loadReason !== 'future') return { kind: 'unreadable' };
+    const { blockedBy, loadReason, loadError, loadFrom } = status;
+    // A plain corrupt save (not migrated) has nothing to keep; the others need the second step (SRR-09).
+    if (blockedBy === 'unreadable' && loadReason !== 'future' && !keepsOldSave(loadReason, loadFrom)) return { kind: 'unreadable' };
     if (blockedBy !== null) {
-        const cause = blockedBy === 'unreadable' ? 'future' : blockedBy === 'unavailable' && isTimeoutError(loadError) ? 'timeout' : blockedBy;
-        return { kind: 'blocked', cause, forceable: replaceGate(status, true) === 'ok' };
+        const forceable = replaceGate(status, true) === 'ok';
+        const unavailableCause = isTimeoutError(loadError) ? 'timeout' : forceable ? 'unavailable' : 'unavailable-first';
+        const cause = blockedBy === 'unreadable' ? (loadReason === 'future' ? 'future' : 'unreadable') : blockedBy === 'unavailable' ? unavailableCause : blockedBy;
+        return { kind: 'blocked', cause, forceable };
     }
     const decoded = decodeSave(current);
     return decoded.kind === 'ok' ? { kind: 'summary', summary: saveSummary(decoded.session, rooms) } : { kind: 'broken' };

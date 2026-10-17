@@ -135,3 +135,39 @@ export function shownVariants(room: RoomDef, state: RoomState): Record<string, V
     }
     return out;
 }
+
+export type RoomProblemKind = 'unknown-room' | 'tasks-overflow' | 'unknown-slot' | 'chosen-not-bought' | 'variant-out-of-range';
+export interface RoomProblem { room: string; kind: RoomProblemKind }
+
+/**
+ * Where a saved room state disagrees with the catalogue (R-4). Report only: nothing here changes, drops or repairs a room.
+ */
+export function roomStateProblems(rooms: Readonly<Record<string, RoomState>>, catalogue: Readonly<Record<string, RoomDef>>): RoomProblem[] {
+    const out: RoomProblem[] = [];
+    for (const [id, state] of Object.entries(rooms)) {
+        const def = Object.prototype.hasOwnProperty.call(catalogue, id) ? catalogue[id] : undefined;
+        if (!def) {
+            out.push({ room: id, kind: 'unknown-room' });
+            continue;
+        }
+        const kinds = new Set<RoomProblemKind>();
+        if (state.tasksDone > def.tasks.length) kinds.add('tasks-overflow');
+        for (const [slotId, variant] of Object.entries(state.chosen)) {
+            const slot = def.slots.find((s) => s.id === slotId);
+            if (!slot) {
+                kinds.add('unknown-slot');
+                continue;
+            }
+            const taskIndex = def.tasks.findIndex((t) => t.kind === 'slot' && t.slot === slotId);
+            if (taskIndex < 0 || taskIndex >= state.tasksDone) kinds.add('chosen-not-bought');
+            if (!Number.isInteger(variant) || variant < 0 || variant >= slot.variants.length) kinds.add('variant-out-of-range');
+        }
+        for (const kind of kinds) out.push({ room: id, kind });
+    }
+    return out;
+}
+
+/** A room this build does not know (an older placeholder build may have saved one) is logged, never shown to a parent. */
+export function parentVisible(problem: RoomProblem): boolean {
+    return problem.kind !== 'unknown-room';
+}

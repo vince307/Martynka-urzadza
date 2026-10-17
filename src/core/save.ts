@@ -22,20 +22,42 @@ export function storedVersionNewer(stored: unknown, version: number): boolean {
 /** Error name a store write throws when another tab wrote a newer generation than the one this page last saw (B-1). */
 export const OTHER_WRITER_SAVE = 'OtherWriterSave';
 
-export type WriteVerdict = { kind: 'refuse'; error: typeof NEWER_SAVE | typeof OTHER_WRITER_SAVE } | { kind: 'put'; generation: number };
+/** Error name for a stored record written by an earlier document of this same tab that this page never read (T-3): refused too, never overwritten. */
+export const PREVIOUS_PAGE_SAVE = 'PreviousPageSave';
+
+export type WriteVerdict =
+    | { kind: 'refuse'; error: typeof NEWER_SAVE | typeof OTHER_WRITER_SAVE | typeof PREVIOUS_PAGE_SAVE }
+    | { kind: 'put'; generation: number; olderWriter?: true };
 
 /**
- * The one rule a store applies inside its write transaction. `page.base` is the generation this page last saw stored.
+ * The one rule a store applies inside its write transaction. `page.base` is the generation this page last saw stored; `endedWriters` are the full ids of this tab's earlier documents.
  * A newer format always refuses; another writer that is ahead refuses a normal write (a stale tab) and is overwritten
  * only by an explicit `replace`; otherwise the new generation is one above the highest known.
  */
-export function writeVerdict(stored: unknown, page: { version: number; base: number; writer: string }, mode: 'normal' | 'replace'): WriteVerdict {
+export function writeVerdict(stored: unknown, page: { version: number; base: number; writer: string; endedWriters?: readonly string[] }, mode: 'normal' | 'replace'): WriteVerdict {
     if (storedVersionNewer(stored, page.version)) return { kind: 'refuse', error: NEWER_SAVE };
     const rec = typeof stored === 'object' && stored !== null ? (stored as { generation?: unknown; writer?: unknown }) : null;
     const generation = rec !== null && isCount(rec.generation) ? rec.generation : 0;
     const writer = rec !== null && typeof rec.writer === 'string' ? rec.writer : '';
-    if (mode === 'normal' && generation > page.base && writer !== page.writer) return { kind: 'refuse', error: OTHER_WRITER_SAVE };
-    return { kind: 'put', generation: Math.max(generation, page.base) + 1 };
+    if (mode === 'normal' && generation > page.base && writer !== page.writer) {
+        // An earlier document of this tab (a reload) saved after this page read the record: the page never saw that write, so a put
+        // would drop the child's last progress. Refused like another window, only named apart for the log (plan review F1).
+        return { kind: 'refuse', error: page.endedWriters?.includes(writer) ? PREVIOUS_PAGE_SAVE : OTHER_WRITER_SAVE };
+    }
+    const next = Math.max(generation, page.base) + 1;
+    // A record of an older format over a page that already has a base: an older build wrote after this page saved (T-1). The base
+    // excludes the first write after a migration (base 0). Still a put; the flag only lets the store say so.
+    const stamp = rec !== null && typeof (rec as { version?: unknown }).version === 'number' ? (rec as { version: number }).version : null;
+    if (mode === 'normal' && stamp !== null && stamp < page.version && page.base > 0) return { kind: 'put', generation: next, olderWriter: true };
+    return { kind: 'put', generation: next };
+}
+/**
+ * What a message from the save channel (another window saved) means for this page. `stale` is exactly the case `writeVerdict`
+ * would refuse at the next normal write (another writer ahead of this page's base), so the channel only moves a refusal earlier
+ * and can never block a write that `writeVerdict` would allow.
+ */
+export function channelVerdict(msg: { writer: string; generation: number }, page: { writer: string; base: number }): 'stale' | 'ignore' {
+    return msg.writer !== page.writer && msg.generation > page.base ? 'stale' : 'ignore';
 }
 export const DEFAULT_PROFILE = 'default';
 
@@ -51,7 +73,10 @@ export interface SessionSave {
 
 export type DecodeResult =
     | { kind: 'ok'; session: SessionSave; migratedFrom: number | null }
-    | { kind: 'unreadable'; reason: 'corrupt' | 'future' | 'unknown-version' }
+    | { kind: 'unreadable'; reason: 'future' | 'unknown-version' }
+    // `from`: the version read (null when the shape check failed); `problem`: the first broken top-level key after the migrations,
+    // `exception:<Name>` when the check itself threw, null at the shape check. Names only, never values.
+    | { kind: 'unreadable'; reason: 'corrupt'; from: number | null; problem: string | null }
     // A migration step threw: the save may be healthy, so it is named apart from `corrupt`; `step` is the version it lifts from.
     | { kind: 'unreadable'; reason: 'migration-failed'; step: number };
 
@@ -233,9 +258,15 @@ function toSession(save: SaveState): SessionSave {
     };
 }
 
+/** Only the name of a thrown value, never its message or stack. */
+export function errorName(e: unknown): string {
+    const name = typeof e === 'object' && e !== null ? (e as { name?: unknown }).name : undefined;
+    return typeof name === 'string' && name !== '' ? name : 'Error';
+}
+
 /** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
 export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Migration>> = MIGRATIONS): DecodeResult {
-    if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt' };
+    if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt', from: null, problem: null };
     const from = raw.version;
     if (from > SAVE_VERSION) return { kind: 'unreadable', reason: 'future' };
     let current: unknown = raw;
@@ -249,10 +280,11 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
         }
     }
     try {
-        if (!validateSave(current)) return { kind: 'unreadable', reason: 'corrupt' };
-        return { kind: 'ok', session: toSession(current), migratedFrom: from < SAVE_VERSION ? from : null };
-    } catch {
-        return { kind: 'unreadable', reason: 'corrupt' };
+        const problem = saveProblem(current);
+        if (problem !== null) return { kind: 'unreadable', reason: 'corrupt', from, problem };
+        return { kind: 'ok', session: toSession(current as SaveState), migratedFrom: from < SAVE_VERSION ? from : null };
+    } catch (e) {
+        return { kind: 'unreadable', reason: 'corrupt', from, problem: `exception:${errorName(e)}` };
     }
 }
 

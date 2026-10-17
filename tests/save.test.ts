@@ -7,7 +7,7 @@ import { endRound } from '../src/core/curriculum';
 import { placeByChild, type SessionLearner } from '../src/core/placement';
 import type { SkillResult } from '../src/core/mastery';
 import { purchase } from '../src/core/rooms';
-import { DEFAULT_PROFILE, MIGRATIONS, SAVE_VERSION, storedVersionNewer, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
+import { DEFAULT_PROFILE, MIGRATIONS, SAVE_VERSION, saveProblem, storedVersionNewer, decodeSave, encodeSave, freshSession, validateSave, type SessionSave } from '../src/core/save';
 import { startLearning } from '../src/core/curriculum';
 import type { RoomDef } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -163,7 +163,7 @@ describe('round trip of a session built with the real core functions', () => {
 
 describe('what is not a readable save is unreadable, never a thrown error', () => {
     it.each([null, 'x', 7, [], {}, { version: '1' }, { version: 1.5 }])('corrupt: %j', (raw) => {
-        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: null, problem: null });
     });
 
     it('a save from a future version is left alone', () => {
@@ -193,7 +193,8 @@ describe('what is not a readable save is unreadable, never a thrown error', () =
         const raw = asRecord(clone(fixture('save-v4.json')));
         mutate(raw);
         expect(validateSave(raw)).toBe(false);
-        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: SAVE_VERSION, problem: saveProblem(raw) });
+        expect(saveProblem(raw)).not.toBeNull();
     });
 
     const badVariants: [string, (v: Record<string, unknown>) => void][] = [
@@ -207,13 +208,13 @@ describe('what is not a readable save is unreadable, never a thrown error', () =
         const raw = asRecord(clone(fixture('save-v4.json')));
         mutate(asRecord(raw.variants));
         expect(validateSave(raw)).toBe(false);
-        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: SAVE_VERSION, problem: 'variants' });
     });
 
     it('a v3 save without the variants block is corrupt', () => {
         const raw = asRecord(clone(fixture('save-v4.json')));
         delete raw.variants;
-        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: SAVE_VERSION, problem: 'variants' });
     });
 
     it('the fixtures themselves pass validation (v1 and v2 files are migrated first, so only v4 validates directly)', () => {
@@ -246,7 +247,19 @@ describe('the migration chain', () => {
     });
 
     it('a step whose output fails validation stays corrupt (the step ran)', () => {
-        expect(decodeSave(fixture('save-v1.json'), { 1: (raw) => ({ ...asRecord(raw), version: 2, variants: 'x' }), 2: MIGRATIONS[2], 3: MIGRATIONS[3] })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(fixture('save-v1.json'), { 1: (raw) => ({ ...asRecord(raw), version: 2, variants: 'x' }), 2: MIGRATIONS[2], 3: MIGRATIONS[3] })).toEqual({ kind: 'unreadable', reason: 'corrupt', from: 1, problem: 'variants' });
+    });
+
+    it('a v4 save with a bad stars names the field (V-1)', () => {
+        const raw = asRecord(clone(fixture('save-v4.json')));
+        raw.stars = 'x';
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: 4, problem: 'stars' });
+    });
+
+    it('a decode that throws after the migrations names the error, not the field (SV2-07)', () => {
+        const raw = asRecord(clone(fixture('save-v4.json')));
+        Object.defineProperty(raw, 'stars', { get: () => { throw new RangeError('boom'); }, enumerable: true });
+        expect(decodeSave(raw)).toEqual({ kind: 'unreadable', reason: 'corrupt', from: 4, problem: 'exception:RangeError' });
     });
 
     it('a missing step is an unknown version', () => {
@@ -265,7 +278,7 @@ describe('the migration chain', () => {
     });
 
     it('a step whose result is not valid v1 is corrupt', () => {
-        expect(decodeSave(v0, { 0: (raw) => ({ ...asRecord(step0(raw)), stars: -3 }), 1: MIGRATIONS[1], 2: MIGRATIONS[2], 3: MIGRATIONS[3] })).toEqual({ kind: 'unreadable', reason: 'corrupt' });
+        expect(decodeSave(v0, { 0: (raw) => ({ ...asRecord(step0(raw)), stars: -3 }), 1: MIGRATIONS[1], 2: MIGRATIONS[2], 3: MIGRATIONS[3] })).toEqual({ kind: 'unreadable', reason: 'corrupt', from: 0, problem: 'stars' });
     });
 });
 

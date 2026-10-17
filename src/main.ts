@@ -2,17 +2,19 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
-import { createAutosaver, loadSave, type Autosaver, type LoadOutcome } from './core/autosave';
+import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { repairCurrentRoom } from './core/rooms';
+import { parentVisible, repairCurrentRoom, roomStateProblems, type RoomProblem } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
-import { freshSession, type SessionSave } from './core/save';
+import { channelVerdict, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
+import { createSaveChannel } from './storage/saveChannel';
+import { createWriterId } from './storage/writerId';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { mountInstallHint } from './pwa/installHint';
 import { detectPlatform, isStandalone } from './pwa/platform';
@@ -29,13 +31,14 @@ import { mountErrorCard } from './ui/dom/errorCard';
 import { createRng } from './core/rng';
 import { openParentGate } from './ui/dom/parentGate';
 import { exportFileText } from './core/saveFile';
-import { cardCopyFor } from './core/saveHealth';
+import { cardCopyFor, unreadableCode } from './core/saveHealth';
 import { openSaveExportDialog } from './ui/dom/saveExportDialog';
 import { pl } from './data/pl';
 import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountSaveRefusedCard } from './ui/dom/saveRefusedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createSoundService } from './ui/sound';
+import { createStartCounter } from './storage/startCounter';
 import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
 import type { SoundPrefs } from './core/sound';
 import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } from './ui/narrator';
@@ -114,7 +117,7 @@ const month = (__E2E_HOOK__ ? e2eMonth(window.location.search) : null) ?? new Da
 // The error boundary goes up before the game exists (the game starts inside a font promise). When the game breaks
 // the child sees a calm card; every step is guarded on its own so the handler itself can never throw.
 const booted: { game?: Game; saver?: Autosaver; failed?: boolean } = {};   // filled once the game exists; the boundary reads it lazily
-installErrorBoundary(window, () => {
+installErrorBoundary(window, (error) => {
     booted.failed = true;   // a failure while the save is read (or the unreadable card is up) means the game never starts
     const attempt = (step: () => void): void => {
         try {
@@ -128,19 +131,39 @@ installErrorBoundary(window, () => {
     attempt(() => (booted.game?.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspend());
     attempt(() => booted.game?.loop.sleep());
     // The state at the moment of an exception is uncertain: never save it (a bad save would bring the card back at every start).
-    attempt(() => booted.saver?.block('fatal'));
+    attempt(() => booted.saver?.block('fatal', errorName(error)));
 });
 
 // The game starts only after the save is read: the first frame already shows the saved state, and nothing is
 // written before the read has an outcome (a failed read must never end in an overwrite with an empty game).
 const start = async (): Promise<void> => {
-    // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail|writehang|v1|backupfail|backuphang|slow); never IndexedDB.
+    // The e2e build may start with an in-memory store (?e2eSave=unreadable|corrupt|unavailable|hang|writefail|writehang|v1|backupfail|backuphang|slow|slowfail|…, see E2E_SAVE_SEAMS); never IndexedDB.
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
-    const store = __E2E_HOOK__ && seam ? e2eSaveStore(seam) : createIdbSaveStore();
+    // One writer id per page load that also knows this tab's earlier documents (T-3); the store tells the saver when an older build wrote here (T-1).
+    const writerId = createWriterId();
+    // The save channel (T-2) is a hint only: a message from another window moves the refusal earlier, `writeVerdict` still decides every write.
+    const saveChannel = createSaveChannel();
+    const idbStore =
+        __E2E_HOOK__ && seam
+            ? null
+            : createIdbSaveStore({
+                  writer: writerId.writer,
+                  endedWriters: writerId.endedWriters,
+                  onOlderWriter: () => booted.saver?.noteOlderWriter(),
+                  onWritten: (stamp) => saveChannel.post(stamp),
+              });
+    const store = idbStore ?? e2eSaveStore(seam as NonNullable<typeof seam>);
+    if (idbStore) {
+        saveChannel.onMessage((msg) => {
+            if (channelVerdict(msg, idbStore.stamp()) === 'stale') booted.saver?.noticeOtherWriter();
+        });
+    } else {
+        saveChannel.close();
+    }
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
     const first = await loadSave(store, {
         timers,
-        timeoutMs: __E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
+        timeoutMs: __E2E_HOOK__ && (seam === 'hang' || seam === 'slow' || seam === 'slowfail') ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
     });
     // A read that timed out gets a card with "Poczekaj dłużej" (the same read, a longer limit). One `settled` flag decides
     // the card: "Graj dalej" starts the game on the first outcome (saver blocked), and a late read after it is only logged;
@@ -158,12 +181,14 @@ const start = async (): Promise<void> => {
                     resolve(slow);
                 },
                 onWait: async () => {
-                    const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
+                    const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow' || seam === 'slowfail') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
                     if (settled) {
                         console.warn(`save: late read ignored (${late.kind})`);
                         return 'loaded';
                     }
-                    if (late.kind === 'unavailable') return 'still-slow';
+                    if (lateReadVerdict(late) === 'still-slow') return 'still-slow';
+                    // SVB-02: a late read that failed with a named error leaves for the error card (`Kod: <name>`), it is not "still slow".
+                    if (late.kind === 'unavailable') console.warn(`save: late read failed (${late.error})`);
                     settled = true;
                     card.remove();
                     resolve(late);
@@ -172,6 +197,14 @@ const start = async (): Promise<void> => {
             });
         });
     const outcome = first.kind === 'unavailable' && first.waitLonger ? await slowCard(first) : first;
+    // SRR-08: a refused read (not a timeout) counts consecutive starts on this device; a read that worked starts again from zero.
+    const startCounter = createStartCounter(deviceStorage());
+    let unavailableStarts = 0;
+    if (outcome.kind === 'unavailable') {
+        if (!isTimeoutError(outcome.error)) unavailableStarts = startCounter.bump();
+    } else if (outcome.kind === 'loaded' || outcome.kind === 'fresh') {
+        startCounter.reset();
+    }
     const playedOnFirst = outcome === first && first.kind === 'unavailable' && first.waitLonger !== undefined;
     if (outcome.kind === 'unavailable') {
         console.warn(`Save unavailable (${outcome.error}); playing without saving this session`);
@@ -181,12 +214,14 @@ const start = async (): Promise<void> => {
         // unreadable save exists to be kept: the parent may export it (behind the adult check). An unavailable store has none.
         const raw = outcome.kind === 'unreadable' ? outcome.raw : null;
         const reason = outcome.kind === 'unreadable' ? outcome.reason : null;
+        // The code is a field name or a step number only (never a value).
+        const code = outcome.kind === 'unreadable' ? unreadableCode(outcome) : null;
         const cardCopies = { future: pl.saveFuture, migrationFailed: pl.saveMigrationFailed, failed: pl.saveFailed, unavailable: pl.saveUnavailable, slow: pl.saveSlow };
         await new Promise<void>((resolve) => {
             const card = mountSaveFailedCard(document.body, {
-                copy: cardCopies[cardCopyFor(outcome.kind, reason, outcome.kind === 'unavailable' ? outcome.error : null)],
+                copy: cardCopies[cardCopyFor(outcome.kind, reason, outcome.kind === 'unavailable' ? outcome.error : null, outcome.kind === 'unreadable' ? outcome.from : null)],
                 // DESIGN-GAP 69: unreadable shows its reason, unavailable the error name (Kod: timeout / Kod: UnknownError).
-                detail: pl.saveFailed.detail(reason ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
+                detail: pl.saveFailed.detail(code ?? (outcome.kind === 'unavailable' ? outcome.error : ''), __BUILD_ID__),
                 onExport:
                     raw === null
                         ? undefined
@@ -217,6 +252,7 @@ const start = async (): Promise<void> => {
     }
     let session: SessionSave;
     let roomRepaired = false;
+    let roomProblems: RoomProblem[] = [];
     if (outcome.kind === 'loaded') {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
@@ -224,6 +260,11 @@ const start = async (): Promise<void> => {
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
         // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
+        // R-4: report only. The rooms stay exactly as saved; an unknown room is logged but not shown to a parent.
+        roomProblems = roomStateProblems(session.rooms, ROOMS);
+        if (roomProblems.length > 0) {
+            console.warn(`Save rooms do not match the game: ${roomProblems.map((p) => `${p.room}/${p.kind}${parentVisible(p) ? '' : ' (hidden)'}`).join(', ')}`);
+        }
         if (outcome.migratedFrom !== null) {
             console.warn(`Save migrated from v${outcome.migratedFrom}`);
         }
@@ -236,14 +277,23 @@ const start = async (): Promise<void> => {
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
         session = freshSession(FIRST_ROOM, seeded ?? 0);
         if (outcome.kind === 'unreadable') {
-            console.warn(`Save unreadable (${outcome.reason}); playing without saving this session`);
+            console.warn(`Save unreadable (${unreadableCode(outcome)}); playing without saving this session`);
         }
     }
+    // What became of an earlier launch's copy of an older save: shown in "Zapis gry" (SVB-01). Display only, so a failed or slow read is just no line.
+    const backupRecord =
+        outcome.kind === 'loaded' || outcome.kind === 'fresh'
+            ? await withTimeLimit(store.backupRecord(), timers, balance.save.writeTimeoutMs).catch((e: unknown) => {
+                  console.error('backup record not read', e);
+                  return null;
+              })
+            : null;
     // The calendar day of the daily puzzle: local fields, read at each round start. The e2e build may pin it with ?e2eDay=YYYY-MM-DD.
     const pinnedDay = __E2E_HOOK__ ? e2eDay(window.location.search) : null;
     const today = (): string => pinnedDay ?? localDay(new Date());
     const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
     booted.game = game;
+    game.registry.set(REGISTRY_KEYS.roomProblems, roomProblems);
     swTarget = game;
     if (lastSwStatus) game.registry.set(REGISTRY_KEYS.swStatus, lastSwStatus);
     let refusedCardUp = false;
@@ -266,15 +316,18 @@ const start = async (): Promise<void> => {
         blockedBy: outcome.kind === 'unreadable' || outcome.kind === 'unavailable' ? outcome.kind : null,
         now: () => Date.now(),
         migrated: outcome.kind === 'loaded' && outcome.migratedFrom !== null ? { from: outcome.migratedFrom, raw: outcome.raw } : undefined,
+        backupRecord,
         loadError: outcome.kind === 'unavailable' ? outcome.error : undefined,
         loadReason: outcome.kind === 'unreadable' ? outcome.reason : undefined,
+        loadFrom: outcome.kind === 'unreadable' ? outcome.from : undefined,
+        unavailableStarts,
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
         // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).
-        onBlocked: () => {
+        onBlocked: (_reason, error) => {
             if (refusedCardUp) return;
             refusedCardUp = true;
-            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
+            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined, pl.saveFailed.detail(error, __BUILD_ID__));
         },
     });
     booted.saver = saver;
@@ -297,7 +350,10 @@ const start = async (): Promise<void> => {
             void saver.flush('hidden');
         }
     });
-    window.addEventListener('pagehide', () => void saver.flush('hidden'));
+    window.addEventListener('pagehide', () => {
+        void saver.flush('hidden');
+        writerId.end();
+    });
     if (__E2E_HOOK__) {
         installE2EHook(game);   // e2e build only: stripped from production, checked by vite/e2eHookGuard.mjs
     }

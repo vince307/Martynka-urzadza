@@ -4,11 +4,12 @@ import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
-import { blockedText, createSummaryList, failureText } from './saveSummaryView';
+import type { BrokenDevice } from './saveImportDialog';
+import { blockedText, createSummaryList, failureText, resetLead } from './saveSummaryView';
 
 export interface SaveResetDialogOptions {
     /** What the device save is (S12-01): a summary of what will disappear, unreadable, or not readable at all. */
-    device: Exclude<DeviceSaveView, { kind: 'broken' }>;
+    device: Exclude<DeviceSaveView, { kind: 'broken' }> | BrokenDevice;
     roomName: (id: string) => string;
     /** The empty save to write; called only after the tap on "Zacznij od nowa". */
     fresh: () => SaveState;
@@ -57,6 +58,7 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
     const confirmStep = (forced: boolean): void => {
         const message = createText('p', '', 'overlay-muted');
         message.setAttribute('role', 'status');
+        message.tabIndex = -1;   // V2: the failure line takes the focus so it is read
         message.hidden = true;
         const cancel = createButton(pl.parent.cancel, finish);
         const confirm = createButton(pl.saveTransfer.resetConfirm, () => {
@@ -71,7 +73,7 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
                 confirm.hidden = true;
                 cancel.disabled = false;
                 cancel.textContent = pl.saveTransfer.close;
-                cancel.focus();
+                message.focus();
             };
             void apply(fresh(), forced).then((result) => (result.ok ? reload() : failed(result)), () => failed(null));
         });
@@ -79,7 +81,7 @@ export const openSaveResetDialog = ({ device, roomName, fresh, apply, onClose, r
         actions.className = 'parent-actions';
         actions.append(cancel, confirm);
         show([
-            createText('p', pl.saveTransfer.resetBody),
+            createText('p', resetLead(device.kind === 'summary')),
             device.kind === 'summary'
                 ? createSummaryList(pl.saveTransfer.now, device.summary, roomName)
                 : createText('p', forced ? pl.saveTransfer.forcedWarning : pl.saveTransfer.deviceUnreadable, 'overlay-muted'),

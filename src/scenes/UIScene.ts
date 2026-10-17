@@ -13,12 +13,13 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { artHealthView, type ArtHealth } from '../core/artHealth';
-import { saveHealthView } from '../core/saveHealth';
+import type { RoomProblem } from '../core/rooms';
+import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
-import { encodeSave, freshSession, type SessionSave } from '../core/save';
+import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
-import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
+import { openSaveImportDialog, type BrokenDevice } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import type { SoundPrefs } from '../core/sound';
@@ -150,11 +151,15 @@ export class UIScene extends Scene {
         this.closeDialog = openParentGate({
             rng: createRng(Math.floor(Math.random() * 2 ** 32)),
             onCancel: () => session.run(() => this.closeSettings()),
+            // The old-version copies are read once, here at panel open (never at game start, never again); a failed read is no copy.
             onPass: () =>
+                session.run(() => void (saver ? saver.readBackups() : Promise.resolve([])).then((copies) => {
+                if (!session.active()) return;
                 session.run(() => {
                 const settings = (this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined) ?? initialSettings();
                 const readStages = balance.narrator.autoReadStages;
                 const swStatus = this.registry.get(REGISTRY_KEYS.swStatus) as SwStatus | undefined;
+                const newest = newestBackup(copies);
                 const stage = getStage(learner.stage);
                 if (!stage) {
                     this.closeSettings();
@@ -167,7 +172,7 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
-                    saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? []) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
@@ -178,10 +183,23 @@ export class UIScene extends Scene {
                     onCancel: () => session.run(() => this.closeSettings()),
                     ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
                     ...(saver ? { onImport: () => session.run(() => this.openImport(saver, session)) } : {}),
+                    ...(newest ? { onBackupExport: () => session.run(() => this.openBackupExport(newest, session)) } : {}),
                     ...(saver ? { onReset: () => session.run(() => this.openReset(saver, session)) } : {}),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead, result.sound)),
                 });
-                }),
+                });
+                })),
+        });
+    }
+
+    /** Raw export of an old-version copy (SV2-04): same dialog and confirmation tap as the save export, `kind: 'raw'` so it imports again through `parseImport`. */
+    private openBackupExport(copy: { from: number; raw: unknown }, session: InputSession): void {
+        this.closeDialog = openSaveExportDialog({
+            file: (now) => ({
+                text: exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: `backup-v${copy.from}`, raw: copy.raw }),
+                fileName: pl.saveFailed.fileName(now.toISOString().slice(0, 10)),
+            }),
+            onClose: () => session.run(() => this.closeSettings()),
         });
     }
 
@@ -191,10 +209,18 @@ export class UIScene extends Scene {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         this.closeDialog = openSaveExportDialog({
             ...(device.kind === 'summary' ? {} : { warning: pl.saveTransfer.exportNotDevice }),
-            file: (now) => ({
-                text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
-                fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
-            }),
+            file: (now) => {
+                // S12-04: never write a copy of a state that does not validate.
+                const problem = saveProblem(saver.current());
+                if (problem !== null) {
+                    console.error('export refused: the state does not validate', { problem });
+                    return null;
+                }
+                return {
+                    text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
+                    fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
+                };
+            },
             onClose: () => session.run(() => this.closeSettings()),
         });
     }
@@ -202,12 +228,10 @@ export class UIScene extends Scene {
     /** Import step: replaces the panel in the same input session; the device save is judged by `deviceSaveView`, `apply` is the saver's replace. */
     private openImport(saver: Autosaver, session: InputSession): void {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
-        if (device.kind === 'broken') {
-            this.closeSettings();
-            return;
-        }
+        // SVB-04: a state that does not decode is named in the dialog, never a silent close of the panel.
+        const view = device.kind === 'broken' ? this.brokenView(saver) : device;
         this.closeDialog = openSaveImportDialog({
-            device,
+            device: view,
             summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
@@ -216,15 +240,18 @@ export class UIScene extends Scene {
         });
     }
 
+    private brokenView(saver: Autosaver): BrokenDevice {
+        console.error('import/reset: the current state does not decode', { problem: saveProblem(saver.current()) });
+        return { kind: 'blocked', cause: 'broken', forceable: false };
+    }
+
     /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
     private openReset(saver: Autosaver, session: InputSession): void {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
-        if (device.kind === 'broken') {
-            this.closeSettings();
-            return;
-        }
+        // SVB-04: a state that does not decode is named in the dialog, never a silent close of the panel.
+        const view = device.kind === 'broken' ? this.brokenView(saver) : device;
         this.closeDialog = openSaveResetDialog({
-            device,
+            device: view,
             roomName: (id) => ROOMS[id]?.name ?? id,
             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
             apply: (state, force) => saver.replace(state, { force }),
