@@ -191,7 +191,7 @@ export class UIScene extends Scene {
                         labelCap: balance.artHealth.labelCap,
                         fallbacks: this.registry.get(REGISTRY_KEYS.artFallbacks) as FallbackRecord | undefined,
                     }),
-                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, lockedCount: sound.status().lockedCount, device: sound.status().device, musicError: sound.status().musicError, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),

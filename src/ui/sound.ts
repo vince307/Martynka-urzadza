@@ -1,5 +1,5 @@
 import type { Game, Loader } from 'phaser';
-import { cueDelayMs, soundOutcome, trimFrameCount, type Cue, type MusicState, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
+import { cueDelayMs, musicCause, soundOutcome, trimFrameCount, type Cue, type MusicState, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
 import { balance } from '../data/balance';
 import { REGISTRY_KEYS } from '../data/layout';
 import { SOUNDS } from '../data/sounds';
@@ -11,6 +11,12 @@ export interface SoundStatus {
     /** Cache keys of effects that did not load or decode. */
     missing: readonly string[];
     music: MusicState;
+    /** Effects a locked audio context swallowed this session (audit M-1). */
+    lockedCount: number;
+    /** What the device offers: Web Audio, HTML5 audio or nothing (audit S-9). */
+    device: 'webaudio' | 'html5' | 'none';
+    /** Why the music did not arrive (audit S-5), null while there is no failure. */
+    musicError: string | null;
 }
 
 export interface SoundService {
@@ -34,10 +40,14 @@ export interface SoundService {
 export const createSoundService = (game: Game, initial: SoundPrefs): SoundService => {
     let current: SoundPrefs = { ...initial };
     let missing: readonly string[] = [];
+    let lockedCount = 0;
+    let musicError: string | null = null;
+    const warned = new Set<SoundId>();
     const log: { id: SoundId; outcome: SoundOutcome }[] = [];
     const record = (id: SoundId, outcome: SoundOutcome): SoundOutcome => {
         log.push({ id, outcome });
         if (log.length > balance.sound.logSize) log.shift();
+        if (outcome === 'locked') lockedCount += 1;
         return outcome;
     };
     let musicState: SoundStatus['music'] = 'off';
@@ -91,10 +101,24 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
             return;
         }
         musicState = 'loading';
+        musicError = null;
+        // Audit S-5: a keyed listener on the shared HUD loader names the cause; it is removed in every path of `done`.
+        const onFail = (file: Loader.File): void => {
+            if (file?.key === musicDef.key) musicError = musicCause(file);
+        };
+        const detach = (): void => { loader?.off('loaderror', onFail); };
         const done = (): void => {
+            detach();
             // A decode failure fires no loaderror: the cache says whether the file is usable.
-            if (!game.cache.audio.exists(musicDef.key) || trimOne(game, musicDef.key, musicDef.durationS)) {
-                console.warn(`Music missing: ${musicDef.key}`);
+            if (!game.cache.audio.exists(musicDef.key)) {
+                musicError ??= 'decode';
+                console.warn(`Music missing: ${musicDef.key} (${musicError})`);
+                musicState = 'missing';
+                return;
+            }
+            if (trimOne(game, musicDef.key, musicDef.durationS)) {
+                musicError = 'trim';
+                console.warn(`Music missing: ${musicDef.key} (${musicError})`);
                 musicState = 'missing';
                 return;
             }
@@ -105,9 +129,11 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
             // Phaser gives each file its own xhr timeout of 0: the music's own limit is set as the file is queued.
             loader.once('addfile', (_key: string, _type: string, _loader: unknown, file: Loader.File) => { file.xhrSettings.timeout = balance.sound.musicLoadTimeoutMs; });
             loader.audio(musicDef.key, [...musicDef.urls]);
+            loader.on('loaderror', onFail);
             loader.once('complete', done);
             loader.start();
         } catch (error) {
+            detach();
             console.warn('Music could not be queued', error);
             musicState = 'missing';
         }
@@ -121,7 +147,12 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
                 if (outcome === 'played') game.sound.play(def.key, { volume: balance.sound.masterVolume * balance.sound.effectVolume });
                 return record(id, outcome);
             } catch (error) {
-                console.warn(`Sound failed to play: ${id}`, error);
+                // Audit S-9 / S-10: the key joins the missing set once and the warning is given once per id.
+                if (!warned.has(id)) {
+                    warned.add(id);
+                    console.warn(`Sound failed to play: ${id}`, error);
+                }
+                if (!missing.includes(def.key)) missing = [...missing, def.key];
                 return record(id, 'missing');
             }
         },
@@ -136,9 +167,15 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
             startMusic();
         },
         prefs: () => ({ ...current }),
-        status: () => ({ prefs: { ...current }, locked: locked(), log: [...log], missing, music: musicState }),
+        status: () => ({ prefs: { ...current }, locked: locked(), log: [...log], missing, music: musicState, lockedCount, device: deviceAudio(game), musicError }),
         setMissing: (keys) => { missing = [...keys]; },
     };
+};
+
+/** Web Audio has a context; HTML5 audio is the fallback the device reports; neither is the no-audio manager. */
+const deviceAudio = (game: Game): SoundStatus['device'] => {
+    if ((game.sound as { context?: unknown }).context) return 'webaudio';
+    return game.device?.audio?.audioData ? 'html5' : 'none';
 };
 
 /**

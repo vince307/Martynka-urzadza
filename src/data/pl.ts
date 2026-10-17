@@ -47,7 +47,14 @@ export const pl = {
             loading: 'Muzyka się wczytuje.',
             waitingUnlock: 'Muzyka ruszy po pierwszym dotknięciu ekranu.',
             missing: 'Muzyka nie wczytała się. Gra działa dalej bez niej.',
+            blocked: 'To urządzenie nie pozwala grze odtwarzać dźwięków.',
         },
+        // DESIGN-GAP 148: the kit has no line for a device that refuses to play sounds (a locked audio context); the text is ours, to be read by a teacher.
+        soundBlocked: 'To urządzenie nie pozwala grze odtwarzać dźwięków.',
+        // DESIGN-GAP 149: the kit has no line for a device without audio; it replaces the "n sounds did not load" line.
+        soundNoDevice: 'Na tym urządzeniu gra nie ma dźwięku.',
+        // DESIGN-GAP 149: the cause code after the music line, same "Kod:" pattern as the save lines.
+        musicCode: (code: string) => `Kod: ${code}`,
         // DESIGN-GAP 121: the kit has no line for a sound choice the device would not keep; the text is ours, to be read by a teacher.
         soundPrefsNotKept: 'Ustawienie dźwięku obowiązuje tylko do zamknięcia gry.',
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',

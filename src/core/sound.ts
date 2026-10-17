@@ -35,13 +35,14 @@ export function soundOutcome(kind: 'effect' | 'music', prefs: SoundPrefs, state:
 }
 
 export type MusicState = 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing';
-export type MusicLine = 'loading' | 'waitingUnlock' | 'missing';
+export type MusicLine = 'loading' | 'waitingUnlock' | 'blocked' | 'missing';
 
 /** The one muted line under the music group: only while music is switched on and not playing. */
-export function musicLine(prefs: SoundPrefs, music: MusicState): MusicLine | null {
+export function musicLine(prefs: SoundPrefs, music: MusicState, lockedCount = 0, threshold = Infinity): MusicLine | null {
     if (!prefs.music) return null;
     if (music === 'loading') return 'loading';
-    if (music === 'waiting-unlock') return 'waitingUnlock';
+    // M-1: a context that swallowed `threshold` effects will not unlock by itself; "after the first tap" would be a false promise.
+    if (music === 'waiting-unlock') return lockedCount >= threshold ? 'blocked' : 'waitingUnlock';
     if (music === 'missing') return 'missing';
     return null;
 }
@@ -98,4 +99,19 @@ const matTotal = (mat: Readonly<Record<string, number>>): number => Object.value
 export function dragCue(before: DragShape, after: DragShape, mode: 'blocks' | 'coins' | 'clock'): SoundId | null {
     if (mode === 'clock') return null;
     return before.carrying !== null && after.carrying === null && matTotal(after.mat) > matTotal(before.mat) ? 'coin' : null;
+}
+
+export type EffectsLine = 'blocked' | 'noDevice';
+
+/** S-9 / M-1: the line under the effects group; no device beats blocked. */
+export function effectsLine(input: { lockedCount: number; threshold: number; device: 'webaudio' | 'html5' | 'none' }): EffectsLine | null {
+    if (input.device === 'none') return 'noDevice';
+    return input.lockedCount >= input.threshold ? 'blocked' : null;
+}
+
+/** S-5: why the music file did not arrive, from the loader's failed file (status 0 is a timeout or a dropped connection). */
+export function musicCause(file: { xhrLoader?: { status: number } | null } | undefined): string | null {
+    if (!file) return null;
+    const status = file.xhrLoader?.status ?? 0;
+    return status >= 400 ? `http:${status}` : 'timeout';
 }
