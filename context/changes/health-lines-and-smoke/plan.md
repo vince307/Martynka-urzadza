@@ -1007,7 +1007,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 2.4 [reviewer] DESIGN-GAP 139 row and comment present; `update()` once per page load only; `vite/config.shared.mjs` unchanged
-- [ ] 2.5 [visual] "Gra bez internetu" with the `updateFailed` line, at 1440 and 1024×768
+- [x] 2.5 [visual] "Gra bez internetu" with the `updateFailed` line, at 1440 and 1024×768
 - [ ] 2.6 [human] Accept that the update check runs only at launch (audit asked also "przy powrocie z tła"; rejected so no new worker claims an open page mid-round)
 
 ### Phase 3: Boot log names the table, URL and status; every missing texture has a cause (A-3/L-3/B-5/U-3/S14-08, A-4, ASL-07)
@@ -1047,7 +1047,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 5.4 [reviewer] DESIGN-GAP 140–141 rows and comments present; no DOM in `src/core`; the renderer adds no style
-- [ ] 5.5 [visual] "Obrazki" under `?e2eArt=missing` (cause + `Kod:`) and `?e2eArt=stallall` (cut line), at 1440 and 1024×768
+- [x] 5.5 [visual] "Obrazki" under `?e2eArt=missing` (cause + `Kod:`) and `?e2eArt=stallall` (cut line), at 1440 and 1024×768
 
 ### Phase 6: "Obrazki": folders, skipped tasks, labels, font, restart advice (ASL-02, R-5, A-7 line)
 
@@ -1060,7 +1060,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 6.4 [reviewer] DESIGN-GAP 142–146 rows and comments present; copy read of the five lines (numeral agreement, short sentences)
-- [ ] 6.5 [visual] "Obrazki" under `?e2eArt=missing` (folders, skipped, no-restart) and `?e2eArt=room` (labels), at 1440 and 1024×768
+- [x] 6.5 [visual] "Obrazki" under `?e2eArt=missing` (folders, skipped, no-restart) and `?e2eArt=room` (labels), at 1440 and 1024×768
 
 ### Phase 7: The screen fallback the child sees reaches "Obrazki" (U-1/G-2, G-3 record, G-7, G-5)
 
@@ -1073,7 +1073,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 7.4 [reviewer] DESIGN-GAP 147 row and comment present; widgets write only through the one helper; `artFallbacks` absent from `SAVE_KEYS`; child-facing look unchanged
-- [ ] 7.5 [visual] "Obrazki" under `?e2eArt=ui` after the unlock card and a wallet task, at 1440 and 1024×768
+- [x] 7.5 [visual] "Obrazki" under `?e2eArt=ui` after the unlock card and a wallet task, at 1440 and 1024×768
 
 ### Phase 8: "Dźwięki" says when the device will not play (M-1/S-4, S-9, S-10, S-5)
 
@@ -1086,7 +1086,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 8.4 [reviewer] DESIGN-GAP 148–149 rows and comments present; HUD loader listeners removed in every `done` path; effect still before the narrator
-- [ ] 8.5 [visual] "Dźwięki" with `soundNoDevice` and with the music `http:404` cause, at 1440 and 1024×768
+- [x] 8.5 [visual] "Dźwięki" with `soundNoDevice` and with the music `http:404` cause, at 1440 and 1024×768
 - [ ] 8.6 [human] Real iPad, context never unlocking: after 3 touches "Dźwięki" shows `soundBlocked` (M-1)
 
 ### Phase 9: Decode rejections named at source, prefs warn and probe (S-2, S-7, M-2, FU-16)
@@ -1113,7 +1113,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 10.5 [reviewer] DESIGN-GAP 150 row and row 66 note present; `MIGRATIONS[2]` output byte-identical; no mastery change for fallbacks
-- [ ] 10.6 [visual] "Zapis gry" with the `salonCarried` line under `?e2eSave=legacy-salon`, at 1440 and 1024×768
+- [x] 10.6 [visual] "Zapis gry" with the `salonCarried` line under `?e2eSave=legacy-salon`, at 1440 and 1024×768
 
 ### Phase 11: Unreachable slots in the hook, docs and seam sweep (R-6)
 

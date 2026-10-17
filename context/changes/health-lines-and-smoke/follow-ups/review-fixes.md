@@ -77,3 +77,11 @@ Trigger: a change to `vite/e2eHookGuard.mjs`, the minifier settings, or the `ui`
 ## 19. `startMusic` once('addfile') listener (impl review, pre-existing)
 If `loader.audio` queues no file, the `once('addfile')` listener in `src/ui/sound.ts` stays armed and wraps the next unrelated HUD file (harmless today: only audio is guarded).
 Trigger: a second file type loaded on the HUD loader, or a change to `startMusic`.
+
+## 20. "gra rysuje: zeszyt" while the card shows the book icon (visual gate)
+With the notebook missing, `UnlockCard` shows the pack's `book` icon (`artFallbacks.notebook` = `icon`), not a drawing, yet `pl.settings.artFallback` says "Zamiast obrazka gra rysuje: zeszyt." (gap 147). True for the drawn case, loose for the icon case.
+Trigger: the [human] wording read of gaps 139-150 (plan row 11.8), or a change to `artFallback` / `recordFallback` in `UnlockCard`.
+
+## 21. `?e2eArt=ui` reads `decode` under `vite preview` (visual gate)
+`vite preview` answers the missing-on-purpose URL with `200 text/html` (the SPA fallback), so the screen pictures fail to decode and the panel says "Tych plików nie da się otworzyć." with `Kod: decode`. Caddy answers 404 there, which gives `fetch`. The code reports what the server sent; only the e2e and visual frames show `decode`.
+Trigger: a spec asserting the `fetch` cause under `?e2eArt=ui`, or a change to the preview server or to `UI_MISSING_URL`.
