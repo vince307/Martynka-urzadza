@@ -1,6 +1,6 @@
 # Handoff — `save-truth` (slice fix:save-truth, audit sweep 2 of 3)
 
-The visual gate step wrote this handoff. All ten [visual] rows were captured at 1440×900 and 1024×768 and ticked, and the gate passed. No code changed. The next agent must not get two things wrong:
+The visual gate step wrote this handoff; the ship step (archive + ship) stamped the final pre-merge state. All ten [visual] rows were captured at 1440×900 and 1024×768 and ticked, and the gate passed. No code changed. The next agent must not get two things wrong:
 - The save format stays v4.
 - Three of the served states came from local seams that were reverted before any commit: `vgmigfail`, `vgv1writehang` and `vgOlder`. They must not be re-added to the source.
 
@@ -9,9 +9,9 @@ The visual gate step wrote this handoff. All ten [visual] rows were captured at 
 | | |
 |---|---|
 | Branch | `feat/save-truth`, cut from `main` at `24b3e4b` |
-| Commits | phases 1-15 + handoffs, then the impl-review fix 209afe3 and `docs(save-truth): impl review` 7aa074c, then `docs(save-truth): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (the archive step sets the next one) |
+| Commits | phases 1-15 + handoffs, then the impl-review fix 209afe3 and `docs(save-truth): impl review` 7aa074c, then `docs(save-truth): bramka wizualna` cef497b, then this handoff and `chore(archive): close save-truth` (ship step) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-16-audit-sweep/run-log.md |
+| `change.md` status | `archived` (set by `/10x-archive` in the ship step) |
 | `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 13.7 (CI at ship), [human] 3.8, 4.6, 11.6, 14.4, 15.4 |
 | Working tree | clean after the docs commit (`dist-e2e/` is gitignored) |
 
@@ -39,7 +39,7 @@ The visual gate step wrote this handoff. All ten [visual] rows were captured at 
 
 ## 4. Next command
 
-`/10x-archive save-truth then ship`
+`none — shipped`
 
 ## 5. Open
 
@@ -73,3 +73,9 @@ The visual gate step wrote this handoff. All ten [visual] rows were captured at 
 4. **`dist-e2e/` left with the patched build.**
    - Why: it is gitignored, and the e2e `webServer` always rebuilds it (`reuseExistingServer: false`). Deleting it was denied by the permission prompt.
    - Would change: any tool that serves `dist-e2e` without rebuilding.
+5. **Ship step: archived with 6 open rows (`Continue archiving`, the skill's Recommended option: 0 automated, 6 manual).**
+   - The five `[human]` rows (3.8, 4.6, 11.6, 14.4, 15.4) go to the post-run checklist; they need a tablet or the product owner and do not block the archive. The impl-review decision F2 (first old-save copy after the first v4 write) and the reversal of the stale-tab-and-health choice (backups now write-once, row 4.6) are listed for the owner in the PR body.
+   - Row 13.7 `[reviewer] (CI at ship)` is ticked in the archived plan from the PR's CI log.
+   - No SHA repointing: the slice merges with a merge commit, so every phase SHA stays in main's history (all checked as ancestors of the branch head). 23 ticked rows carry no SHA (reviewer and visual rows, by design).
+   - No roadmap row: non-roadmap change (`context/foundation/roadmap.md` has no Change ID `save-truth`).
+   - Would change: a failing CI or a reviewer asking to keep the change open.
