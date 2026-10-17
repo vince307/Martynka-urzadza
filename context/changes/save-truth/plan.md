@@ -1252,9 +1252,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 12.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 12.2 Deliberate break: `parentVisible` true for `unknown-room` → fixture case red; restored; meta-check (rule over frozen fixtures)
-- [ ] 12.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `room-*.spec.ts` and `save-transfer.spec.ts` green
+- [x] 12.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — a999819
+- [x] 12.2 Deliberate break: `parentVisible` true for `unknown-room` → fixture case red; restored; meta-check (rule over frozen fixtures) — a999819
+- [x] 12.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `room-*.spec.ts` and `save-transfer.spec.ts` green — a999819
 
 #### Manual
 
