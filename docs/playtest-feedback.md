@@ -44,3 +44,16 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Jak bardzo przeszkadza:** denerwuje
 - **Uwagi techniczne:** to dzisiejsze zachowanie domyślne, nie błąd w kodzie: `balance.narrator.autoReadStages` = `['E1', 'E2']` (`src/data/balance.ts`), więc dla etapów E1–E2 (wiek 6–7 lat) automatyczne czytanie jest włączone, dopóki rodzic nie wyłączy go w ustawieniach (`Settings.autoRead`, `effectiveAutoRead` w `src/core/narration/voice.ts`). Poprawka to zmiana domyślnej wartości (np. pusta lista etapów) — decyzja projektowa sprzeczna z planem S-05 (auto-czytanie dla młodszych), do zapisania w slice'ie.
 - **Status:** nowe
+
+### F-02 — W trakcie gry nie da się zmienić wieku ani poziomu; zębatka „wygląda na nieaktywną”
+
+- **Data:** 2026-10-17
+- **Kto:** rodzic (obserwacja gry córki)
+- **Urządzenie:** —
+- **Wersja:** —
+- **Gdzie:** ekran zadań, ikona zębatki w rogu
+- **Co się stało:** córka przy pierwszym uruchomieniu wybrała wiek 9 lat, po chwili chciała zmienić na 8 i nie znalazła jak. Zębatka jest cały czas szara, wygląda na wyłączoną; zwykłe stuknięcie nic nie robi.
+- **Czego się spodziewaliśmy:** da się zmienić wiek/poziom w trakcie gry; zębatka wygląda na klikalną.
+- **Jak bardzo przeszkadza:** blokuje (nie wiadomo, jak cofnąć zły wybór wieku)
+- **Uwagi techniczne:** zachowanie zgodne z obecnym projektem, nie błąd w kodzie: zębatka jest celowo wyciszona (S-08, `src/ui/widgets/SettingsIcon.ts`) i otwiera panel dopiero po przytrzymaniu 2 s (`balance.parentSettings.holdMs`) i rozwiązaniu bramki dla dorosłych (13–19 × 13–19, `src/core/parentGate.ts`); zmiana etapu jest w panelu rodzica (`changeStageByParent`). Wybór wieku jest tylko przy pierwszym uruchomieniu (`WelcomeScene`). Do decyzji w slice'ie: (a) podpowiedź, że zębatkę trzeba przytrzymać (wizualna lub tekstowa), (b) czy dziecko może samo poprawić wiek tuż po wyborze (np. „Wróć” na rozgrzewce), czy zmiana zostaje tylko dla dorosłego.
+- **Status:** nowe
