@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isFatalSignal, type ErrorSignal } from '../src/core/errorSignal';
+import { isFatalSignal, noiseLine, type ErrorSignal } from '../src/core/errorSignal';
 
 const sig = (over: Partial<ErrorSignal>): ErrorSignal => ({ kind: 'error', message: 'boom', hasError: true, foreign: false, ...over });
 
@@ -45,5 +45,15 @@ describe('isFatalSignal', () => {
 
     it('keeps the audio names fatal for error events (only rejections are quiet)', () => {
         expect(isFatalSignal(sig({ kind: 'error', name: 'EncodingError' }))).toBe(true);
+    });
+});
+
+describe('noiseLine', () => {
+    it('names the rejection and its message', () => {
+        expect(noiseLine(sig({ kind: 'rejection', name: 'EncodingError', message: 'Unable to decode audio data' })))
+            .toBe('Quiet rejection: EncodingError — Unable to decode audio data');
+    });
+    it('says "unnamed" when the reason has no name', () => {
+        expect(noiseLine(sig({ kind: 'rejection', message: 'x' }))).toBe('Quiet rejection: unnamed — x');
     });
 });

@@ -15,6 +15,7 @@ import { SOUNDS } from '../data/sounds';
 import { allEffectKeys } from '../core/sound';
 import type { SoundService } from '../ui/sound';
 import { trimEffects } from '../ui/sound';
+import { guardDecode } from '../ui/decodeSeam';
 import { TASK_ART } from '../data/taskArt';
 import { FONT_KEY, FONT_URL, FONT_WEIGHT_RANGE, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 
@@ -70,7 +71,14 @@ export class BootScene extends Scene {
         // Registered before ANY file is queued: Phaser emits ADD synchronously, so the loading pictures below get the limit too.
         const limitMs = this.load.xhr.timeout;
         let addWarned = false;
-        this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
+        this.load.on(Loader.Events.ADD, (_key: string, type: string, _loader: unknown, file: Loader.File) => {
+            if (type === 'audio') {
+                try {
+                    guardDecode(file, (line) => console.warn(line));   // audit S-2: a sound that cannot be decoded is named with its key
+                } catch (error) {
+                    console.warn('Sound decode guard could not be set', error);
+                }
+            }
             try {
                 if (typeof limitMs === 'number' && limitMs > 0) {
                     file.xhrSettings.timeout = limitMs;

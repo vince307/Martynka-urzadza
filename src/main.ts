@@ -45,7 +45,7 @@ import { createNarrator, type Narrator, type SynthLike, type UtteranceLike } fro
 
 // Single place for the Phaser game config. Scene size and colours come from
 // src/data; scenes are listed in draw order (UIScene last, on top; TaskScene launches it).
-const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, forcedArt: string | null, forcedVariant: string | null, today: () => string, start: SessionSave, soundPrefs: SoundPrefs): Game =>
+const createGame = (parent: string, narrator: Narrator, month: number, forcedFailure: string | null, forcedSkillIds: string[] | null, forcedArt: string | null, forcedVariant: string | null, today: () => string, start: SessionSave, soundPrefs: SoundPrefs, soundPrefsKept: boolean): Game =>
     new Game({
         type: AUTO,
         parent,
@@ -68,6 +68,7 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.month, month);
                 // The device sound preference (outside the save) and the one sound service; game.sound is created after preBoot, so the service reads it lazily.
                 booting.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
+                booting.registry.set(REGISTRY_KEYS.soundPrefsKept, soundPrefsKept);   // audit M-2: probed at start, not only after a refused write
                 booting.registry.set(REGISTRY_KEYS.sound, createSoundService(booting, soundPrefs));
                 // Session state: the saved one, or the fresh one (start is built in start() from the load outcome).
                 booting.registry.set(REGISTRY_KEYS.settings, start.settings);
@@ -291,7 +292,8 @@ const start = async (): Promise<void> => {
     // The calendar day of the daily puzzle: local fields, read at each round start. The e2e build may pin it with ?e2eDay=YYYY-MM-DD.
     const pinnedDay = __E2E_HOOK__ ? e2eDay(window.location.search) : null;
     const today = (): string => pinnedDay ?? localDay(new Date());
-    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, createSoundPrefStore(deviceStorage()).read());
+    const soundPrefStore = createSoundPrefStore(deviceStorage());
+    const game = createGame('game-container', narrator, month, __E2E_HOOK__ ? e2eFail(window.location.search) : null, __E2E_HOOK__ ? e2eSkills(window.location.search) : null, __E2E_HOOK__ ? e2eArt(window.location.search) : null, __E2E_HOOK__ ? e2eVariant(window.location.search) : null, today, session, soundPrefStore.read(), soundPrefStore.probe());
     booted.game = game;
     game.registry.set(REGISTRY_KEYS.roomProblems, roomProblems);
     swTarget = game;

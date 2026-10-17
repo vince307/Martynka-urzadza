@@ -29,6 +29,7 @@ import { createSoundPrefStore, deviceStorage } from '../storage/soundPrefs';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
+import { applySoundPrefs } from '../core/soundPrefsApply';
 import { playCues, soundOf } from '../ui/sound';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
@@ -282,10 +283,13 @@ export class UIScene extends Scene {
         const changed = changeStageByParent(learner, stage);
         this.registry.set(REGISTRY_KEYS.settings, { autoRead });
         if (soundPrefs) {
-            this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
-            soundOf(this.registry)?.setPrefs(soundPrefs);
-            const kept = createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
-            this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept);
+            // A failed write is only a warning: the choice holds for this session.
+            applySoundPrefs(soundPrefs, {
+                service: soundOf(this.registry),
+                store: createSoundPrefStore(deviceStorage()),
+                setPrefs: (prefs) => this.registry.set(REGISTRY_KEYS.soundPrefs, prefs),
+                setKept: (kept) => this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept),
+            });
         }
         this.closeSettings();
         if (changed !== learner) {

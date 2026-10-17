@@ -12,18 +12,30 @@ export interface SoundPrefs { effects: boolean; music: boolean }
 export const DEFAULT_SOUND_PREFS: SoundPrefs = { effects: true, music: false };
 export type SoundOutcome = 'played' | 'off' | 'locked' | 'missing';
 
+/** Same parse, plus the reason a stored value was not used as it was (null when it was fine or nothing was stored). */
+export function parseSoundPrefsWithProblem(raw: unknown): { prefs: SoundPrefs; problem: string | null } {
+    let value: unknown = raw;
+    if (raw === null || raw === undefined) return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: null };
+    if (typeof raw === 'string') {
+        try { value = JSON.parse(raw); } catch { return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: 'stored value is not valid JSON' }; }
+    }
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: 'stored value is not an object' };
+    }
+    const o = value as Record<string, unknown>;
+    const bad = (['effects', 'music'] as const).filter((field) => typeof o[field] !== 'boolean');
+    return {
+        prefs: {
+            effects: typeof o.effects === 'boolean' ? o.effects : DEFAULT_SOUND_PREFS.effects,
+            music: typeof o.music === 'boolean' ? o.music : DEFAULT_SOUND_PREFS.music,
+        },
+        problem: bad.length > 0 ? `stored value has no boolean ${bad.join(', ')}` : null,
+    };
+}
+
 /** Accepts a JSON string or an object; a field that is not a boolean takes its default, garbage gives the defaults. */
 export function parseSoundPrefs(raw: unknown): SoundPrefs {
-    let value: unknown = raw;
-    if (typeof raw === 'string') {
-        try { value = JSON.parse(raw); } catch { return { ...DEFAULT_SOUND_PREFS }; }
-    }
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) return { ...DEFAULT_SOUND_PREFS };
-    const o = value as Record<string, unknown>;
-    return {
-        effects: typeof o.effects === 'boolean' ? o.effects : DEFAULT_SOUND_PREFS.effects,
-        music: typeof o.music === 'boolean' ? o.music : DEFAULT_SOUND_PREFS.music,
-    };
+    return parseSoundPrefsWithProblem(raw).prefs;
 }
 
 /** Order: switched off, then not in the cache, then the audio context still locked, else played. */

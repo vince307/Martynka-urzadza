@@ -50,3 +50,18 @@ describe('phaser loader pin', () => {
         expect(image, hint).toMatch(/onProcess: function[\s\S]*?onerror = function[\s\S]*?onProcessError/);
     });
 });
+
+describe('phaser audio decode seam pin (src/ui/decodeSeam.ts)', () => {
+    it('AudioFile.onProcess calls this.config.context.decodeAudioData with three arguments and then releases the context', () => {
+        const audio = readFileSync('node_modules/phaser/src/loader/filetypes/AudioFile.js', 'utf8');
+        const hint = 'src/ui/decodeSeam.ts wraps file.config.context: re-verify the wrapper against AudioFile.onProcess, then update the pin';
+        expect(audio, hint).toMatch(/onProcess: function \(\)[\s\S]*?this\.config\.context\.decodeAudioData\(this\.xhrLoader\.response,\s*function \(audioBuffer\)[\s\S]*?function \(e\)[\s\S]*?this\.config\.context = null/);
+    });
+    it('the loader emits ADD from addFile and AudioFile.create builds its file with game.sound.context', () => {
+        const plugin = readFileSync('node_modules/phaser/src/loader/LoaderPlugin.js', 'utf8');
+        const audio = readFileSync('node_modules/phaser/src/loader/filetypes/AudioFile.js', 'utf8');
+        const hint = 'the decode seam registers on addfile for audio files: re-verify against LoaderPlugin.addFile and AudioFile.create';
+        expect(plugin, hint).toMatch(/addFile: function[\s\S]*?this\.emit\(Events\.ADD, item\.key, item\.type, this, item\)/);
+        expect(audio, hint).toContain('new AudioFile(loader, key, urlConfig, xhrSettings, game.sound.context)');
+    });
+});

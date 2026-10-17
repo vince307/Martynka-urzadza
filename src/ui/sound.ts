@@ -1,6 +1,7 @@
 import type { Game, Loader } from 'phaser';
 import { cueDelayMs, musicCause, soundOutcome, trimFrameCount, type Cue, type MusicState, type SoundId, type SoundOutcome, type SoundPrefs } from '../core/sound';
 import { balance } from '../data/balance';
+import { guardDecode } from './decodeSeam';
 import { REGISTRY_KEYS } from '../data/layout';
 import { SOUNDS } from '../data/sounds';
 
@@ -127,7 +128,10 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
         };
         try {
             // Phaser gives each file its own xhr timeout of 0: the music's own limit is set as the file is queued.
-            loader.once('addfile', (_key: string, _type: string, _loader: unknown, file: Loader.File) => { file.xhrSettings.timeout = balance.sound.musicLoadTimeoutMs; });
+            loader.once('addfile', (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
+                file.xhrSettings.timeout = balance.sound.musicLoadTimeoutMs;
+                guardDecode(file, (line) => console.warn(line));   // audit S-2
+            });
             loader.audio(musicDef.key, [...musicDef.urls]);
             loader.on('loaderror', onFail);
             loader.once('complete', done);

@@ -39,3 +39,33 @@ describe('sound preference store', () => {
         expect(createSoundPrefStore(storage).read()).toEqual(DEFAULT_SOUND_PREFS);
     });
 });
+
+describe('sound preference store: warnings and probe (audit S-7, M-2)', () => {
+    it('warns once when a stored value is garbage, and still gives the defaults', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const storage = memory();
+        storage.data.set(SOUND_PREFS_KEY, '{bad');
+        expect(createSoundPrefStore(storage).read()).toEqual(DEFAULT_SOUND_PREFS);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0]?.[0])).toContain('not used');
+        warn.mockRestore();
+    });
+    it('does not warn when nothing is stored', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        createSoundPrefStore(memory()).read();
+        expect(warn).not.toHaveBeenCalled();
+        warn.mockRestore();
+    });
+    it('probe is true when the device keeps a value, and leaves no probe key behind', () => {
+        const data = new Map<string, string>();
+        const storage = { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v), removeItem: (k: string) => void data.delete(k) };
+        expect(createSoundPrefStore(storage).probe()).toBe(true);
+        expect([...data.keys()]).toEqual([]);
+    });
+    it('probe is false when writing throws, and without storage', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const refusing = { getItem: () => null, setItem: () => { throw new Error('quota'); }, removeItem: () => undefined };
+        expect(createSoundPrefStore(refusing).probe()).toBe(false);
+        expect(createSoundPrefStore(undefined).probe()).toBe(false);
+    });
+});

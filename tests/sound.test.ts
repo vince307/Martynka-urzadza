@@ -1,6 +1,6 @@
 // Origin: change final-sound, phase 1. Oracles are typed here, not read from the code under test.
 import { describe, expect, it } from 'vitest';
-import { allEffectKeys, cueDelayMs, effectsLine, musicCause, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
+import { allEffectKeys, cueDelayMs, effectsLine, musicCause, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, parseSoundPrefsWithProblem, soundOutcome, trimFrameCount } from '../src/core/sound';
 import { balance } from '../src/data/balance';
 import { SOUNDS } from '../src/data/sounds';
 
@@ -161,5 +161,20 @@ describe('allEffectKeys', () => {
         const keys = allEffectKeys(SOUNDS);
         expect(keys).toHaveLength(SOUNDS.length - 1);
         expect(keys).not.toContain('sounds/music-loop');
+    });
+});
+
+describe('parseSoundPrefsWithProblem (audit S-7)', () => {
+    it('names why a stored value was not used', () => {
+        expect(parseSoundPrefsWithProblem('{bad').problem).toMatch(/not valid JSON/);
+        expect(parseSoundPrefsWithProblem('[1]').problem).toMatch(/not an object/);
+        expect(parseSoundPrefsWithProblem('{"effects":"yes","music":true}').problem).toMatch(/effects/);
+    });
+    it('has no problem for a good value or for nothing stored', () => {
+        expect(parseSoundPrefsWithProblem('{"effects":true,"music":false}')).toEqual({ prefs: { effects: true, music: false }, problem: null });
+        expect(parseSoundPrefsWithProblem(null).problem).toBeNull();
+    });
+    it('parseSoundPrefs gives the same prefs', () => {
+        expect(parseSoundPrefs('{"effects":"x"}')).toEqual(parseSoundPrefsWithProblem('{"effects":"x"}').prefs);
     });
 });
