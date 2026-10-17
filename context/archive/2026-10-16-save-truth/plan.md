@@ -1274,7 +1274,7 @@ line then falls back to the session status, as today).
 #### Manual
 
 - [x] 13.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists in `src/`; no duplicated helper; gap rows 126–138 match the code comments; `SAVE_VERSION` 4 and only `save-v1-legacy-salon.json` added under `tests/fixtures` — impl review 2026-10-17
-- [ ] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932)
+- [x] 13.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932): build step prints `e2e hook: absent (2 chunks checked)`, npm test prints `Tests 3545 passed (3545)` — CI run 38995328858
 
 ### Phase 14: Another window's save stops this one at once — e2e (#2)
 
