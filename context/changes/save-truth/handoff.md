@@ -7,7 +7,7 @@ Written by the `/10x-implement save-truth phase 13` step. Phases 1-13 are commit
 | | |
 |---|---|
 | Branch | `feat/save-truth`, cut from `main` at `24b3e4b` |
-| Commits | phases 1-12 as before, phase 13 = `feat(save-truth): Late read error, word round warn, docs and seam sweep (p13)` (sha in the Progress rows), plus handoff commits |
+| Commits | phases 1-12 as before, phase 13 = `feat(save-truth): Late read error, word round warn, docs and seam sweep (p13)` d7492b3, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | unchanged (`plan_reviewed`); set to `implemented` only after phase 15 |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md`; 13.1-13.5 ticked; 13.6, 13.7 [reviewer] left |
