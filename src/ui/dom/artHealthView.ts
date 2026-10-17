@@ -12,6 +12,16 @@ const textOf = (line: ArtHealthLine): string => {
             return line.table === 'task' ? pl.settings.artMissing(line.count, line.total) : line.table === 'room' ? pl.settings.roomArtMissing(line.count, line.total) : pl.settings.uiArtMissing(line.count, line.total);
         case 'cut':
             return pl.settings.artCut;
+        case 'folder':
+            return pl.settings.artFolders(line.folder, line.count);
+        case 'skipped':
+            return pl.settings.artSkipped;
+        case 'labels':
+            return pl.settings.artLabels(line.labels);
+        case 'font':
+            return pl.settings.fontFallback;
+        case 'advice':
+            return line.restart ? pl.settings.artRestart : pl.settings.artNoRestart;
         case 'cause':
             return pl.settings.artCause[line.cause];
         case 'code':
@@ -21,12 +31,12 @@ const textOf = (line: ArtHealthLine): string => {
 
 /**
  * Parent's "Obrazki" section: draws the lines the pure `artHealthLines` built (one paragraph each, no style of its own).
- * DESIGN-GAP 67, 119, 140, 141 (docs/design-gaps.md): the kit has no such section; plain heading and sentences behind the adult gate.
+ * DESIGN-GAP 67, 119, 140-146 (docs/design-gaps.md): the kit has no such section; plain heading and sentences behind the adult gate.
  */
 export const createArtHealthView = (lines: readonly ArtHealthLine[]): HTMLElement => {
     const section = document.createElement('section');
     section.className = 'parent-art';
-    section.dataset.state = lines.some((line) => line.kind === 'missing' || line.kind === 'cut') ? 'missing' : 'ok';
+    section.dataset.state = lines.some((line) => line.kind === 'missing' || line.kind === 'cut' || line.kind === 'font') ? 'missing' : 'ok';
     section.append(createText('h2', pl.settings.artHeading));
     for (const line of lines) {
         const paragraph = createText('p', textOf(line));

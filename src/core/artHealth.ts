@@ -107,6 +107,11 @@ export type ArtLineTable = 'task' | 'room' | 'ui';
 export type ArtHealthLine =
     | { kind: 'ok' | 'missing'; table: ArtLineTable; count: number; total: number }
     | { kind: 'cut'; count: number }
+    | { kind: 'folder'; folder: string; count: number }
+    | { kind: 'skipped' }
+    | { kind: 'labels'; labels: readonly string[] }
+    | { kind: 'font' }
+    | { kind: 'advice'; restart: boolean }
     | { kind: 'cause'; cause: ArtCause }
     | { kind: 'code'; code: ArtCause; build: string };
 
@@ -117,6 +122,11 @@ export interface ArtHealthLinesInput {
     /** How many files the boot limit cut. */
     readonly cut: number;
     readonly build: string;
+    /** The task font: `fallback` adds a line (the text is drawn in a system font). */
+    readonly font?: 'loaded' | 'fallback';
+    /** Polish labels of the missing room pieces (the caller reads them from the data); at most `labelCap` are listed. */
+    readonly labels?: readonly string[];
+    readonly labelCap?: number;
 }
 
 const CAUSE_ORDER: readonly ArtCause[] = ['fetch', 'network', 'decode', 'cut', 'never'];
@@ -137,11 +147,26 @@ const mainCause = (healths: readonly ArtHealth[]): ArtCause | undefined => {
     return best;
 };
 
+/** A restart can change the outcome only for a file the boot limit cut or a connection that failed; a 404 or a broken file stays so. */
+export const restartHelps = (cause: ArtCause): boolean => cause === 'cut' || cause === 'network';
+
+/** The missing task pictures per folder (`tasks/<folder>/<id>` keys), in the order the folders first appear. */
+export const folderCounts = (missing: readonly string[]): { folder: string; count: number }[] => {
+    const counts = new Map<string, number>();
+    for (const key of missing) {
+        const folder = key.split('/')[1];
+        if (folder) counts.set(folder, (counts.get(folder) ?? 0) + 1);
+    }
+    return [...counts].map(([folder, count]) => ({ folder, count }));
+};
+
 /**
- * Lines of "Obrazki": each known table (an unknown one says nothing, the others still show), the cut line, and for missing
- * pictures the main cause with its code. When the cut is the cause, the cut line already says it.
+ * Lines of "Obrazki": each known table (an unknown one says nothing, the others still show), the missing task pictures per
+ * folder with the sentence that their tasks are skipped, the cut line, the labels of missing room pieces (capped), and for
+ * missing pictures the main cause, whether a restart helps, and the code. When the cut is the cause, the cut line already
+ * says it (and the restart advice with it). A fallback font adds its own line.
  */
-export const artHealthLines = ({ task, room, ui, cut, build }: ArtHealthLinesInput): ArtHealthLine[] => {
+export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap }: ArtHealthLinesInput): ArtHealthLine[] => {
     const lines: ArtHealthLine[] = [];
     const known: ArtHealth[] = [];
     for (const [table, health] of [['task', task], ['room', room], ['ui', ui]] as const) {
@@ -150,11 +175,20 @@ export const artHealthLines = ({ task, room, ui, cut, build }: ArtHealthLinesInp
         known.push(health);
         lines.push({ kind: view.kind, table, count: view.kind === 'missing' ? view.count : 0, total: health.total });
     }
+    if (task && task.missing.length > 0) {
+        for (const { folder, count } of folderCounts(task.missing)) lines.push({ kind: 'folder', folder, count });
+        lines.push({ kind: 'skipped' });
+    }
     if (cut > 0) lines.push({ kind: 'cut', count: cut });
+    const listed = (labels ?? []).slice(0, Math.max(0, labelCap ?? 0));
+    if (listed.length > 0) lines.push({ kind: 'labels', labels: listed });
     const cause = mainCause(known);
     if (cause) {
-        if (!(cause === 'cut' && cut > 0)) lines.push({ kind: 'cause', cause });
-        lines.push({ kind: 'code', code: cause, build });
+        const cutSaysIt = cause === 'cut' && cut > 0;
+        if (!cutSaysIt) lines.push({ kind: 'cause', cause });
+        if (!cutSaysIt) lines.push({ kind: 'advice', restart: restartHelps(cause) });
     }
+    if (font === 'fallback') lines.push({ kind: 'font' });
+    if (cause) lines.push({ kind: 'code', code: cause, build });
     return lines;
 };

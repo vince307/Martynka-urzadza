@@ -34,3 +34,13 @@ describe('pl.settings.uiArtMissing', () => {
         expect(pl.settings.uiArtMissing(count, 5).startsWith(start)).toBe(true);
     });
 });
+
+describe('pl.settings.artFolders agreement (phase 6)', () => {
+    it.each([
+        [1, 'pieniądze: brak 1 obrazka.'],
+        [2, 'pieniądze: brak 2 obrazków.'],
+        [5, 'pieniądze: brak 5 obrazków.'],
+    ])('%i', (n, text) => {
+        expect(pl.settings.artFolders('money', n)).toBe(text);
+    });
+});

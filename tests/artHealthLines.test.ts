@@ -33,7 +33,9 @@ describe('artHealthLines', () => {
         const lines = artHealthLines({ task: missingHealth(10, ['network', 'fetch', 'network']), room: undefined, ui: undefined, cut: 0, build: 'abc1234' });
         expect(lines).toEqual([
             { kind: 'missing', table: 'task', count: 3, total: 10 },
+            { kind: 'skipped' },
             { kind: 'cause', cause: 'network' },
+            { kind: 'advice', restart: true },
             { kind: 'code', code: 'network', build: 'abc1234' },
         ]);
     });
@@ -45,10 +47,71 @@ describe('artHealthLines', () => {
 
     it('leaves the cause line to the cut line when the cut is the cause', () => {
         const lines = artHealthLines({ task: missingHealth(10, ['cut', 'cut']), room: undefined, ui: undefined, cut: 2, build: 'b' });
-        expect(lines.map((l) => l.kind)).toEqual(['missing', 'cut', 'code']);
+        expect(lines.map((l) => l.kind)).toEqual(['missing', 'skipped', 'cut', 'code']);
     });
 
     it('is empty when nothing is known', () => {
         expect(artHealthLines({ task: undefined, room: undefined, ui: undefined, cut: 0, build: 'b' })).toEqual([]);
+    });
+});
+
+describe('artHealthLines: folders, skipped tasks, labels, font, restart advice (phase 6)', () => {
+    const taskMissing = (keys: [string, ArtCause][], total = 38): ArtHealth => {
+        const missing = keys.map(([key]) => key);
+        return {
+            total,
+            missing,
+            missingIds: new Set(missing.map((key) => key.split('/').pop() as string)),
+            causes: Object.fromEntries(keys),
+        };
+    };
+    const base = { room: undefined, ui: undefined, cut: 0, build: 'b' } as const;
+
+    it('counts the missing task pictures per folder, in folder order of the keys', () => {
+        const task = taskMissing([['tasks/money/coin-1', 'fetch'], ['tasks/money/coin-2', 'fetch'], ['tasks/icons/apple', 'fetch']]);
+        const lines = artHealthLines({ ...base, task });
+        expect(lines.filter((l) => l.kind === 'folder')).toEqual([
+            { kind: 'folder', folder: 'money', count: 2 },
+            { kind: 'folder', folder: 'icons', count: 1 },
+        ]);
+    });
+
+    it('says the tasks with these pictures are skipped only for task art', () => {
+        const task = taskMissing([['tasks/money/coin-1', 'fetch']]);
+        expect(artHealthLines({ ...base, task }).map((l) => l.kind)).toContain('skipped');
+        const room = { total: 3, missing: ['salon/sofa'], missingIds: new Set(['salon/sofa']), causes: { 'salon/sofa': 'fetch' as const } };
+        expect(artHealthLines({ ...base, task: undefined, room }).map((l) => l.kind)).not.toContain('skipped');
+    });
+
+    it('lists at most labelCap labels of missing room pieces', () => {
+        const lines = artHealthLines({ ...base, task: undefined, labels: ['sofa', 'dywan', 'stolik', 'szafka'], labelCap: 3 });
+        expect(lines).toContainEqual({ kind: 'labels', labels: ['sofa', 'dywan', 'stolik'] });
+    });
+
+    it('has no labels line without labels', () => {
+        expect(artHealthLines({ ...base, task: okHealth(3), labels: [], labelCap: 3 }).map((l) => l.kind)).not.toContain('labels');
+    });
+
+    it('adds a font line only for the fallback font', () => {
+        expect(artHealthLines({ ...base, task: okHealth(3), font: 'fallback' })).toContainEqual({ kind: 'font' });
+        expect(artHealthLines({ ...base, task: okHealth(3), font: 'loaded' }).map((l) => l.kind)).not.toContain('font');
+    });
+
+    it('says a restart changes nothing for a 404 and for an undecodable file', () => {
+        for (const cause of ['fetch', 'decode'] as const) {
+            const lines = artHealthLines({ ...base, task: taskMissing([['tasks/money/coin-1', cause]]) });
+            expect(lines).toContainEqual({ kind: 'advice', restart: false });
+        }
+    });
+
+    it('advises a restart when the cause is the network', () => {
+        const lines = artHealthLines({ ...base, task: taskMissing([['tasks/money/coin-1', 'network']]) });
+        expect(lines).toContainEqual({ kind: 'advice', restart: true });
+        expect(lines).not.toContainEqual({ kind: 'advice', restart: false });
+    });
+
+    it('leaves the advice to the cut line when the cut is the cause', () => {
+        const lines = artHealthLines({ ...base, cut: 1, task: taskMissing([['tasks/money/coin-1', 'cut']]) });
+        expect(lines.map((l) => l.kind)).not.toContain('advice');
     });
 });

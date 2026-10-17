@@ -19,6 +19,7 @@ import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { ROOM_ART } from '../data/roomArt';
 import { openSaveImportDialog, type BrokenDevice } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
@@ -34,6 +35,10 @@ import { SpeakerButton } from '../ui/widgets/SpeakerButton';
 import { StarCounter } from '../ui/widgets/StarCounter';
 import { HudTitle } from '../ui/widgets/HudTitle';
 import type { HudTitleView } from '../core/variants';
+
+/** Labels of the salon pieces whose picture is missing (the stand-in box shows the same text); pieces with no label are left out. */
+const missingRoomLabels = (health: ArtHealth | undefined): string[] =>
+    ROOM_ART.filter((entry) => entry.label !== '' && health?.missing.includes(entry.key)).map((entry) => entry.label);
 
 /**
  * Overlay above the task and room scenes: the star counter, the speaker and the "Do pokoju" switch.
@@ -180,6 +185,9 @@ export class UIScene extends Scene {
                         ui: this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined,
                         cut: (this.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[] } | undefined)?.cut.length ?? 0,
                         build: __BUILD_ID__,
+                        font: this.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined,
+                        labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
+                        labelCap: balance.artHealth.labelCap,
                     }),
                     ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,

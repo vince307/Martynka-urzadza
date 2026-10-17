@@ -5,6 +5,8 @@ import { formatNumber } from '../core/text/formatNumber';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
+const ART_FOLDER_NAMES: Readonly<Record<string, string>> = { money: 'pieniądze', measuring: 'miary', icons: 'obrazki do liczenia' };
+
 export const pl = {
     title: 'Martynka urządza',
     welcome: {
@@ -125,15 +127,15 @@ export const pl = {
         artHeading: 'Obrazki',
         artOk: 'Wszystkie obrazki zadań są wczytane.',
         artMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis.`,
         // The salon pictures (the second line of "Obrazki"): the same verb agreement as artMissing.
         roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
         roomArtMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis.`,
         // The screen pictures (the third line of "Obrazki", DESIGN-GAP 119): the same verb agreement as artMissing.
         uiArtOk: 'Wszystkie obrazki ekranów są wczytane.',
         uiArtMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek.`,
         // DESIGN-GAP 140: the kit has no line for pictures that did not finish loading in time (a slow connection); calm, says what to do.
         artCut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
         // DESIGN-GAP 141: the kit has no line for why pictures are missing; one calm sentence per cause, "Kod:" follows from saveFailed.detail.
@@ -144,6 +146,18 @@ export const pl = {
             cut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
             never: 'Tych plików gra nie zaczęła wczytywać.',
         },
+        // DESIGN-GAP 142: the kit has no per-folder count of missing task pictures; "<folder>: brak 1 obrazka / 2 obrazków / 5 obrazków".
+        artFolders: (folder: string, count: number) =>
+            `${ART_FOLDER_NAMES[folder] ?? folder}: brak ${countNoun(count, ['obrazka', 'obrazków', 'obrazków'])}.`,
+        // DESIGN-GAP 143: the kit has no line saying that tasks with a missing picture are left out.
+        artSkipped: 'Zadania z tymi obrazkami gra na razie pomija.',
+        // DESIGN-GAP 144: the kit has no advice line for pictures; a restart is advised only when it can change the cause (cut, network).
+        artNoRestart: 'Ponowne uruchomienie tego nie zmieni. Gra działa dalej bez tych obrazków.',
+        artRestart: 'Uruchom grę ponownie, gdy internet będzie lepszy.',
+        // DESIGN-GAP 145: the kit has no list of the missing salon pieces; the labels come from the room data.
+        artLabels: (list: readonly string[]) => `Brakuje: ${list.join(', ')}.`,
+        // DESIGN-GAP 146: the kit has no line for the task font that did not load.
+        fontFallback: 'Litery w zadaniach są w zastępczym kroju pisma.',
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {
