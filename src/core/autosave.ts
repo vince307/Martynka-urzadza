@@ -1,5 +1,5 @@
 // Autosave state machine (S-11, test-plan risks #2 and #16). Pure: the store, the clock and the log are injected.
-import { decodeSave, encodeSave, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
+import { decodeSave, encodeSave, errorName, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, saveProblem, validateSave, type SessionSave } from './save';
 import type { SaveState } from './types';
 import { balance } from '../data/balance';
 
@@ -37,11 +37,7 @@ export type LoadOutcome =
 /** `newer` (runtime only, never saved): the store refused a write because it holds a save of a newer format (P-5). */
 export type BlockReason = 'unreadable' | 'unavailable' | 'fatal' | 'newer' | 'otherTab';
 
-/** Only the name of a thrown value, never its message or stack. */
-export function errorName(e: unknown): string {
-    const name = typeof e === 'object' && e !== null ? (e as { name?: unknown }).name : undefined;
-    return typeof name === 'string' && name !== '' ? name : 'Error';
-}
+export { errorName };
 
 /** Outcome of asking the browser not to evict the save (audit M-S2). Runtime only. */
 export type Persistence = 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error';
@@ -137,6 +133,13 @@ export interface AutosaverOptions {
  * healthy, so it is never forceable and the parent reads the slow-read sentence (impl-review F1).
  */
 export const isTimeoutError = (name: string | null): boolean => name === 'timeout' || name === 'TimeoutError';
+
+/**
+ * What a read that finished late (behind the slow card) does: `still-slow` only when it ran out of time again; anything else
+ * (a loaded or fresh save, an unreadable one, or a read that was refused with a named error) settles the card, so the normal
+ * card path can show its `Kod:` line (SVB-02).
+ */
+export const lateReadVerdict = (late: LoadOutcome): 'still-slow' | 'settle' => (late.kind === 'unavailable' && isTimeoutError(late.error) ? 'still-slow' : 'settle');
 
 /** An unreadable save that still holds an older child's progress: migration failed, unknown version, or corrupt after a migration step. */
 export const keepsOldSave = (loadReason: LoadReason | null, loadFrom: number | null | undefined): boolean =>

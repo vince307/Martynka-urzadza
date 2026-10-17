@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { backupExtras } from './helpers';
-import { createAutosaver, errorName, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type BackupRecord, type LoadOutcome, type SaveStore } from '../src/core/autosave';
+import { createAutosaver, errorName, lateReadVerdict, loadSave, replaceGate, withTimeLimit, type Autosaver, type AutosaverOptions, type BackupRecord, type LoadOutcome, type SaveStore } from '../src/core/autosave';
 import { SAVE_VERSION, decodeSave, encodeSave, type SessionSave } from '../src/core/save';
 import type { SaveState } from '../src/core/types';
 import { balance } from '../src/data/balance';
@@ -1598,5 +1598,18 @@ describe('readBackups pass-through (save-truth p9)', () => {
         expect(await t.saver.readBackups()).toEqual([{ from: 1, raw: { n: 1 } }]);
         t.store.readBackups = () => Promise.reject(new Error('boom'));
         expect(await t.saver.readBackups()).toEqual([]);
+    });
+});
+
+describe('lateReadVerdict (SVB-02)', () => {
+    it('stays slow only for a read that timed out again', () => {
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'timeout' })).toBe('still-slow');
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'TimeoutError' })).toBe('still-slow');
+    });
+
+    it('settles for a read refused with a named error, and for every other outcome', () => {
+        expect(lateReadVerdict({ kind: 'unavailable', error: 'UnknownError' })).toBe('settle');
+        expect(lateReadVerdict({ kind: 'fresh' })).toBe('settle');
+        expect(lateReadVerdict({ kind: 'unreadable', reason: 'corrupt', raw: null })).toBe('settle');
     });
 });

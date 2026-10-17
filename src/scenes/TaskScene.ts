@@ -921,6 +921,7 @@ export class TaskScene extends Scene {
             if (built) {
                 return { kind, state: startRound(built.tasks, variantRules(kind, built.tasks.length, balance)), word: built.word };
             }
+            console.warn(`word round not built for stage ${this.stage.id}: no word or no task pool could make a round`);
         }
         // A word round that cannot be drawn falls to the dice board when it is on (plan phase 6), so the due variant is not
         // replaced by an ordinary round that would keep the counter due and pick the word round again.

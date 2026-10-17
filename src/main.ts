@@ -2,7 +2,7 @@ import { AUTO, Game, Scale } from 'phaser';
 import './style.css';
 import { balance } from './data/balance';
 import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } from './data/layout';
-import { createAutosaver, errorName, isTimeoutError, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
+import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { parentVisible, repairCurrentRoom, roomStateProblems, type RoomProblem } from './core/rooms';
@@ -163,7 +163,7 @@ const start = async (): Promise<void> => {
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
     const first = await loadSave(store, {
         timers,
-        timeoutMs: __E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
+        timeoutMs: __E2E_HOOK__ && (seam === 'hang' || seam === 'slow' || seam === 'slowfail') ? E2E_LOAD_TIMEOUT_MS : balance.save.loadTimeoutMs,
     });
     // A read that timed out gets a card with "Poczekaj dłużej" (the same read, a longer limit). One `settled` flag decides
     // the card: "Graj dalej" starts the game on the first outcome (saver blocked), and a late read after it is only logged;
@@ -181,12 +181,14 @@ const start = async (): Promise<void> => {
                     resolve(slow);
                 },
                 onWait: async () => {
-                    const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
+                    const late = await slow.waitLonger!(__E2E_HOOK__ && (seam === 'hang' || seam === 'slow' || seam === 'slowfail') ? E2E_SLOWER_LOAD_TIMEOUT_MS : balance.save.slowLoadTimeoutMs);
                     if (settled) {
                         console.warn(`save: late read ignored (${late.kind})`);
                         return 'loaded';
                     }
-                    if (late.kind === 'unavailable') return 'still-slow';
+                    if (lateReadVerdict(late) === 'still-slow') return 'still-slow';
+                    // SVB-02: a late read that failed with a named error leaves for the error card (`Kod: <name>`), it is not "still slow".
+                    if (late.kind === 'unavailable') console.warn(`save: late read failed (${late.error})`);
                     settled = true;
                     card.remove();
                     resolve(late);

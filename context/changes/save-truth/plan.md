@@ -1265,11 +1265,11 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 13.1 New `lateReadVerdict`, seam and warn tests red before, green after; unit `<branch baseline> + N`
-- [ ] 13.2 Deliberate break: `lateReadVerdict` `still-slow` for every `unavailable` → red; restored; meta-check (verdict)
-- [ ] 13.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
-- [ ] 13.4 Every follow-up entry has a `Trigger:` line
-- [ ] 13.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 13.1 New `lateReadVerdict`, seam and warn tests red before, green after; unit `<branch baseline> + N` — @@SHA
+- [x] 13.2 Deliberate break: `lateReadVerdict` `still-slow` for every `unavailable` → red; restored; meta-check (verdict) — @@SHA
+- [x] 13.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored — @@SHA
+- [x] 13.4 Every follow-up entry has a `Trigger:` line — @@SHA
+- [x] 13.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — @@SHA
 
 #### Manual
 

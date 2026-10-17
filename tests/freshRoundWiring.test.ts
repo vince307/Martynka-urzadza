@@ -46,4 +46,11 @@ describe('freshRound art wiring (ASL-01)', () => {
         expect(call).toBeDefined();
         expect(call?.arguments.some((a) => a.getText(source) === 'blocked')).toBe(true);
     });
+
+    it('warns before the dice branch when the word round cannot be built (SV2-11)', () => {
+        expect(calls('console.warn').length).toBeGreaterThan(0);
+        const text = freshRound.getText(source);
+        expect(text.indexOf('console.warn')).toBeGreaterThan(text.indexOf('buildWordRound'));
+        expect(text.indexOf('console.warn')).toBeLessThan(text.indexOf("kind === 'dice'"));
+    });
 });

@@ -4,7 +4,7 @@ import { e2eArt, e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'legacy-salon', 'newer']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -106,6 +106,10 @@ describe('e2eSaveStore', () => {
     it('slow answers late with a current-version save of 7 stars', async () => {
         const raw = await e2eSaveStore('slow').read();
         expect(decodeSave(raw)).toMatchObject({ kind: 'ok', migratedFrom: null, session: { stars: 7 } });
+    });
+
+    it('slowfail rejects its read with UnknownError after the slow delay', async () => {
+        await expect(e2eSaveStore('slowfail').read()).rejects.toMatchObject({ name: 'UnknownError' });
     });
 
     it('hang never settles its read', async () => {

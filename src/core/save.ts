@@ -258,12 +258,13 @@ function toSession(save: SaveState): SessionSave {
     };
 }
 
-/** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
-const errorNameOf = (e: unknown): string => {
+/** Only the name of a thrown value, never its message or stack. */
+export function errorName(e: unknown): string {
     const name = typeof e === 'object' && e !== null ? (e as { name?: unknown }).name : undefined;
     return typeof name === 'string' && name !== '' ? name : 'Error';
-};
+}
 
+/** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
 export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Migration>> = MIGRATIONS): DecodeResult {
     if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt', from: null, problem: null };
     const from = raw.version;
@@ -283,7 +284,7 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
         if (problem !== null) return { kind: 'unreadable', reason: 'corrupt', from, problem };
         return { kind: 'ok', session: toSession(current as SaveState), migratedFrom: from < SAVE_VERSION ? from : null };
     } catch (e) {
-        return { kind: 'unreadable', reason: 'corrupt', from, problem: `exception:${errorNameOf(e)}` };
+        return { kind: 'unreadable', reason: 'corrupt', from, problem: `exception:${errorName(e)}` };
     }
 }
 
