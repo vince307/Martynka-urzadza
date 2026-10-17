@@ -1079,9 +1079,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 8.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 8.2 Deliberate break: `musicLine` ignoring `lockedCount` / warn-once removed → red; restored; meta-check (rules and service over fakes)
-- [ ] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound`, `final-sound-failure` green
+- [x] 8.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 7a86ab8
+- [x] 8.2 Deliberate break: `musicLine` ignoring `lockedCount` / warn-once removed → red; restored; meta-check (rules and service over fakes) — 7a86ab8
+- [x] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-sound`, `final-sound-failure` green — 7a86ab8
 
 #### Manual
 
