@@ -196,10 +196,13 @@ export const pl = {
         close: 'Zamknij',
         exportOutcome: {
             shared: 'Kopia została przekazana wybranej aplikacji.',
-            downloaded: 'Plik został pobrany na to urządzenie.',
+            // DESIGN-GAP 132 (docs/design-gaps.md): a link-click download is never confirmed by the browser; the text is ours.
+            downloadStarted: 'Pobieranie pliku się zaczęło. Sprawdź folder Pobrane.',
             cancelled: 'Anulowano. Kopia nie powstała.',
             failed: 'Nie udało się zapisać pliku. Spróbuj jeszcze raz.',
         },
+        // DESIGN-GAP 133 (docs/design-gaps.md): the kit has no line for a state that cannot be exported; the text is ours.
+        exportInvalid: 'Tej kopii nie da się zapisać: stan gry jest uszkodzony.',
         fileName: (date: string) => `martynka-zapis-${date}.txt`,
         // DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; texts are ours. Every refusal says the current save is untouched.
         importButton: 'Wczytaj z pliku',

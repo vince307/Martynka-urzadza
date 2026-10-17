@@ -61,6 +61,17 @@ describe('device save wiring (S12-01)', () => {
         const text = body.getText(source);
         expect(text).toContain('saver.status()');
         expect(text).toContain('pl.saveTransfer.exportNotDevice');
+        // O4: the argument and the warning are the real ones, not just present somewhere.
+        expect(text).toContain('deviceSaveView(saver.status(), saver.current(), ROOMS)');
+        expect(text).toMatch(/device\.kind === 'summary' \? \{\} : \{ warning: pl\.saveTransfer\.exportNotDevice \}/);
+    });
+
+    it('openExport validates the state before it builds the file and returns null when it does not (S12-04)', () => {
+        const text = method('openExport').getText(source);
+        const check = text.indexOf('saveProblem(saver.current())');
+        expect(check).toBeGreaterThan(-1);
+        expect(text.indexOf('return null')).toBeGreaterThan(check);
+        expect(text.indexOf('exportFileText(')).toBeGreaterThan(check);
     });
 });
 

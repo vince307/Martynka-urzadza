@@ -4,6 +4,14 @@ import { describe, expect, it } from 'vitest';
 import type { ImportRejection } from '../src/core/saveFile';
 import { pl } from '../src/data/pl';
 
+describe('pl.saveTransfer export copy (save-truth p10)', () => {
+    it('a download is only said to have started; an unexportable state has its own line', () => {
+        expect(Object.keys(pl.saveTransfer.exportOutcome).sort()).toEqual(['cancelled', 'downloadStarted', 'failed', 'shared']);
+        expect(pl.saveTransfer.exportOutcome.downloadStarted).toBe('Pobieranie pliku się zaczęło. Sprawdź folder Pobrane.');
+        expect(pl.saveTransfer.exportInvalid).toBe('Tej kopii nie da się zapisać: stan gry jest uszkodzony.');
+    });
+});
+
 describe('pl.saveTransfer import copy', () => {
     it.each([
         [0, '0 gwiazdek'], [1, '1 gwiazdka'], [2, '2 gwiazdki'], [4, '4 gwiazdki'], [5, '5 gwiazdek'],

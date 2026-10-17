@@ -123,7 +123,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     const downloaded = page.waitForEvent('download');
     await exportDialog.getByRole('button', { name: pl.saveTransfer.saveFile }).tap();
     const download = await downloaded;
-    await expect(exportDialog.getByText(pl.saveTransfer.exportOutcome.downloaded)).toBeVisible();
+    await expect(exportDialog.getByText(pl.saveTransfer.exportOutcome.downloadStarted)).toBeVisible();
     await exportDialog.getByRole('button', { name: pl.saveTransfer.close }).tap();
     await expect(exportDialog).toBeHidden();
     expect(download.suggestedFilename()).toMatch(/^martynka-zapis-surowy-\d{4}-\d{2}-\d{2}\.txt$/);

@@ -15,7 +15,7 @@ import type { Autosaver } from '../core/autosave';
 import { artHealthView, type ArtHealth } from '../core/artHealth';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
-import { encodeSave, freshSession, type SessionSave } from '../core/save';
+import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
@@ -208,10 +208,18 @@ export class UIScene extends Scene {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
         this.closeDialog = openSaveExportDialog({
             ...(device.kind === 'summary' ? {} : { warning: pl.saveTransfer.exportNotDevice }),
-            file: (now) => ({
-                text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
-                fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
-            }),
+            file: (now) => {
+                // S12-04: never write a copy of a state that does not validate.
+                const problem = saveProblem(saver.current());
+                if (problem !== null) {
+                    console.error('export refused: the state does not validate', { problem });
+                    return null;
+                }
+                return {
+                    text: exportFileText({ kind: 'save', build: __BUILD_ID__, exportedAt: now.toISOString(), save: saver.current() }),
+                    fileName: pl.saveTransfer.fileName(now.toISOString().slice(0, 10)),
+                };
+            },
             onClose: () => session.run(() => this.closeSettings()),
         });
     }

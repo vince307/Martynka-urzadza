@@ -4,8 +4,8 @@ import { createButton, createText } from './overlay';
 import { saveFileToDevice, type ExportOutcome } from './saveExport';
 
 export interface SaveExportDialogOptions {
-    /** Builds the file at the moment of the tap ("now" is the tap time); the caller owns the content and the name. */
-    file: (now: Date) => { text: string; fileName: string };
+    /** Builds the file at the moment of the tap ("now" is the tap time); the caller owns the content and the name. Null: the state cannot be exported (S12-04), the dialog says so and nothing leaves. */
+    file: (now: Date) => { text: string; fileName: string } | null;
     /** Called after the dialog has closed itself (Cancel, Escape or Close). */
     onClose: () => void;
     /** A muted line above "Zapisz plik" when the copy is not the device's saved progress (SIR-04). */
@@ -34,12 +34,18 @@ export const openSaveExportDialog = ({ file, onClose, warning, now = () => new D
     const save = createButton(pl.saveTransfer.saveFile, () => {
         if (busy) return;
         busy = true;
-        const { text, fileName } = file(now());
-        void saveFileToDevice(text, fileName).then((outcome: ExportOutcome) => {
+        const built = file(now());
+        if (!built) {
+            busy = false;
+            result.textContent = pl.saveTransfer.exportInvalid;
+            result.hidden = false;
+            return;
+        }
+        void saveFileToDevice(built.text, built.fileName).then((outcome: ExportOutcome) => {
             busy = false;
             result.textContent = pl.saveTransfer.exportOutcome[outcome];
             result.hidden = false;
-            if (outcome === 'shared' || outcome === 'downloaded') {
+            if (outcome === 'shared' || outcome === 'downloadStarted') {
                 save.hidden = true;
                 cancel.textContent = pl.saveTransfer.close;
                 cancel.focus();

@@ -1,11 +1,11 @@
-export type ExportOutcome = 'shared' | 'downloaded' | 'cancelled' | 'failed';
+export type ExportOutcome = 'shared' | 'downloadStarted' | 'cancelled' | 'failed';
 
 const isAbort = (error: unknown): boolean => typeof error === 'object' && error !== null && (error as { name?: string }).name === 'AbortError';
 
 /**
  * Hands a save text to the parent as a file: the share sheet when the browser can share files (iPad, Android),
  * otherwise a download. Called from the tap on "Zapisz plik" (the share sheet needs a user gesture), so the File is
- * built synchronously first. Cancelling the sheet is "cancelled"; any other failure is logged and is "failed". Never throws.
+ * built synchronously first. Cancelling the sheet is "cancelled"; a download is only "downloadStarted" (the browser never confirms it); any other failure is logged and is "failed". Never throws.
  */
 // DESIGN-GAP 44 (docs/design-gaps.md): the kit does not say how a parent keeps a copy; a .txt through the share sheet first.
 export const saveFileToDevice = async (text: string, fileName: string, nav: Navigator = navigator, doc: Document = document): Promise<ExportOutcome> => {
@@ -28,7 +28,7 @@ export const saveFileToDevice = async (text: string, fileName: string, nav: Navi
         link.click();
         link.remove();
         window.setTimeout(() => URL.revokeObjectURL(url), 0);
-        return 'downloaded';
+        return 'downloadStarted';   // a link click cannot know the file landed (S12-07)
     } catch (error) {
         console.error(error);
         return 'failed';
