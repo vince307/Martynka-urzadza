@@ -313,3 +313,40 @@ Bieg uruchomiony 2026-10-16 („fix:stale-tab-and-health”, pełna wysyłka). W
 - [ ] Karta odmowy zapisu pojawia się przy `otherTab` I `newer` i trzyma wejście, więc w tej karcie rodzic nie otworzy ustawień ani nie przeczyta powodu w „Zapis gry” (follow-up z wyzwalaczem; przegląd uznał to za zgodne z FR-003/FR-020).
 - [ ] Edycja tylko dokumentacji `deploy/README.md` w biegu (precedens 27406ab, #65); profil § 5 doprecyzowany w tym PR.
 - [ ] Bazowa linia po wysyłce wzięta z CI 38898544137 + bramki orkiestratora (drzewo merge = głowa gałęzi), bez ponownego `baseline.sh`.
+
+## Bieg 2026-10-16-audit-sweep (poprawka po 8 audytach: child-flow-guards, save-truth, health-lines-and-smoke)
+
+Bieg uruchomiony 2026-10-16 po scaleniu wszystkich PR-ów z dokumentacją (#42–#78) i przeglądzie ośmiu audytów (#42, #45, #52, #57, #63, #66, #73, #76): ~160 otwartych pozycji, 0 CRITICAL/HIGH, podzielone na trzy slice'y. Pełna wysyłka. Wysłane: #79 (merge 24b3e4b, Deploy 38966762602), #80 (dfc49ae, Deploy 38995649135), #81 (d235d0d, Deploy 39016785086, nowy smoke: „precache served: 121/121”, „all 22 checks ok”). Format zapisu bez zmian (v4). `main` d235d0d: 3656 testów jednostkowych (było 3139), 139 e2e (było 125). Awaria Hostingera (łatanie CVE jądra) 16.10 ok. 12:30 – 17.10 rano: strona niedostępna z części sieci; deploye przechodziły smoke z GitHuba.
+
+### P0 — przed następnym biegiem
+
+- [ ] Przejrzyj audyt zamykający #82 (`context/audits/observability/2026-10-17_1021-runda-zapis-linie-zdrowia-smoke.md`, PR nie scalony przez bieg): 0 CRITICAL, 1 HIGH, 17 MEDIUM, 23 LOW.
+- [ ] Audyt #82 H-1 (HIGH): limit startu liczy teraz czas zegarowy (B-3), a Phaser wstrzymuje ładowanie w ukrytej karcie — pierwsze uruchomienie schowane w tło odcina pliki, a „Obrazki” obwinia internet (`BootScene.preload`). Kandydat na następny slice naprawczy.
+- [ ] Audyt #82 Z-8: przy odmowie wymuszonego zastąpienia z `NewerSave` rodzic dostaje radę usunięcia danych witryny, co skasowałoby nowszy zapis (`saveSummaryView.failureText`).
+- [ ] Decyzja z przeglądu save-truth F2 (#80): pierwsza kopia starego zapisu (`backup-vN`) robi się zaraz PO pierwszym zapisie v4; ubicie gry w tych kilku ms gubi kopię (nie postęp), rekord mówi `lost`. Zaakceptuj albo poproś o kopię przed zapisem (odwraca kolejność z fazy 5, ~16 testów) — follow-up 23 w `context/archive/2026-10-16-save-truth/follow-ups/review-fixes.md`.
+
+### P1 — tablet (iPad / Android), przed kolejnym slice'em w tych obszarach
+
+- [ ] Zegar i portfel: „OK” przy trzymanej monecie albo wskazówce nic nie robi, wskazówka zostaje pod drugim dotykiem (child-flow-guards 9.5).
+- [ ] Dzienna zagadka: odpowiedz, zamknij przed „Dalej”, otwórz ponownie — nie ma drugiego ×2 tego dnia (child-flow-guards 14.4).
+- [ ] Dwie karty przeglądarki: zagraj w drugiej, wróć do pierwszej — od razu spokojna karta z linią `Kod:` (save-truth 14.4).
+- [ ] Po aktualizacji z migracją zapisu „Zachowaj kopię starego zapisu” zapisuje plik, który otwiera aplikacja Pliki (save-truth 15.4).
+- [ ] Prawdziwy iPad z dźwiękiem, który się nie odblokowuje: po 3 dotknięciach „Dźwięki” pokazuje „To urządzenie nie pozwala grze odtwarzać dźwięków.” (health-lines-and-smoke 8.6).
+- [ ] Opcjonalnie: zimny start na wolnym łączu (Android, 50 KB/s, worker w instalacji) wobec `balance.loader.totalMs` (health-lines-and-smoke 4.6).
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami: 20 (`context/archive/2026-10-16-child-flow-guards/follow-ups/review-fixes.md`), 28 (`context/archive/2026-10-16-save-truth/follow-ups/review-fixes.md`), 21 (`context/archive/2026-10-17-health-lines-and-smoke/follow-ups/review-fixes.md`) — m.in. blokada rollbacku poniżej v4 w `deploy/` (wymaga `sync` + `bootstrap`), wzmocnienie oczekiwań w czterech niestabilnych specach e2e, natychmiastowy zapis po zakupie nieudowodniony w przeglądarce.
+- [ ] DESIGN-GAP 122–150 w `docs/design-gaps.md`: nowe zdania dla dziecka (portfel) i rodzica (Zapis gry, Obrazki, Dźwięki, Gra bez internetu) — do odczytu przez autorkę zestawu.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Krok powtórki E6.11: 90/10 (przy łagodzeniu 70/30) zamiast dawnych ~14 % z E5 (child-flow-guards 2.7).
+- [ ] Zdanie przy portfelu „Kwota się zgadza. Spróbuj zapłacić mniejszą liczbą monet.” (gap 124, child-flow-guards 5.7).
+- [ ] Stała kolejność kafelków COMPARE_QTY „Po lewej · Tyle samo · Po prawej” (gap 125, child-flow-guards 6.7).
+- [ ] Zapis, którego przeglądarka nie daje odczytać, można zastąpić dopiero przy drugim kolejnym starcie; brzmienie gap 126 (save-truth 3.8).
+- [ ] Kopie zapasowe `backup-v1/v2/v3` zapisywane raz (pierwsza kopia zostaje) — odwraca wybór ze stale-tab-and-health (save-truth 4.6).
+- [ ] Brzmienie zdań dla rodzica: gaps 127–136 (save-truth 11.6) i 139–150 (health-lines-and-smoke 11.8).
+- [ ] Sprawdzanie aktualizacji tylko przy starcie gry, nie przy powrocie z tła — żeby nowy worker nie przejął otwartej strony w środku rundy (health-lines-and-smoke 2.6).
+- [ ] Bieg wolno było zrobić ≤30 odczytów HEAD/GET produkcji (bez zapisu) w researchu i jeden smoke w trybie rollback, by udowodnić nowe sprawdzenia przed merge'em.
+- [ ] Bazowe linie po wysyłkach wzięte z przeglądu + CI (bez ponownego `baseline.sh`).
