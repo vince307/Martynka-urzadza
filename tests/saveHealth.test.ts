@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AutosaveStatus } from '../src/core/autosave';
 import { SAVE_VERSION } from '../src/core/save';
-import { cardCopyFor, saveHealthView, unreadableCode } from '../src/core/saveHealth';
+import { cardCopyFor, newestBackup, saveHealthView, unreadableCode } from '../src/core/saveHealth';
 
 const status = (over: Partial<AutosaveStatus> = {}): AutosaveStatus => ({
     load: 'fresh',
@@ -222,5 +222,18 @@ describe('saveHealthView across launches (save-truth p6)', () => {
         expect(saveHealthView(onlyCopy)).toMatchObject({ kind: 'ok', earlierFailures: null });
         const mixed = status({ writes: 1, failures: 3, backupFailures: 2, lastWriteError: 'AbortError', lastError: 'QuotaExceededError', lastFailure: { stage: 'backup', error: 'QuotaExceededError' } });
         expect(saveHealthView(mixed)).toMatchObject({ kind: 'ok', earlierFailures: { count: 1, error: 'AbortError' } });
+    });
+});
+
+describe('old-version copy on the panel (save-truth p9)', () => {
+    const record = (result: 'kept' | 'lost' | 'uncertain') => ({ from: 1, result, error: result === 'kept' ? null : 'timeout', at: 1 });
+    it('an uncertain record with the copy present reads as kept, without a code', () => {
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('uncertain') }), [1]).migration).toEqual({ from: 1, copy: 'kept', code: null });
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('uncertain') }), []).migration?.copy).toBe('uncertain');
+        expect(saveHealthView(status({ writes: 1, backupRecord: record('lost') }), [1]).migration?.copy).toBe('lost');
+    });
+    it('newestBackup picks the highest version, null when there is none', () => {
+        expect(newestBackup([{ from: 1 }, { from: 3 }, { from: 2 }])).toEqual({ from: 3 });
+        expect(newestBackup([])).toBeNull();
     });
 });

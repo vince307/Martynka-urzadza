@@ -187,6 +187,8 @@ export interface Autosaver {
     noteOlderWriter(): void;
     /** Another window's save reached us through the save channel: blocks like an `OtherWriterSave` refusal (shown once), nothing is written. */
     noticeOtherWriter(): void;
+    /** The raw old-version copies kept in the store, for the parent's "keep a copy" button. Read-only pass-through; never rejects, `[]` when the read fails. */
+    readBackups(): Promise<{ from: number; raw: unknown }[]>;
     status(): AutosaveStatus;
 }
 
@@ -505,6 +507,14 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         replace,
         current: () => encodeSave(snapshot()),
         noticeOtherWriter: () => refuseWrites('otherTab', OTHER_WRITER_SAVE),
+        readBackups: async () => {
+            try {
+                return await store.readBackups();
+            } catch (e) {
+                log('autosave: readBackups failed', e);
+                return [];
+            }
+        },
         noteOlderWriter: () => {
             if (olderWriterSeen) return;
             olderWriterSeen = true;

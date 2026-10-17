@@ -264,3 +264,12 @@ describe('deviceSaveView otherTab (stale tab)', () => {
         expect(deviceSaveView({ blockedBy: 'otherTab', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'otherTab', forceable: false });
     });
 });
+
+describe('an exported old-version copy imports again (save-truth p9, SV2-04)', () => {
+    it('a raw backup-v1 envelope parses back to a current-format session', () => {
+        const text = exportFileText({ kind: 'raw', build: 'abc1234', exportedAt: '2026-10-17T10:00:00.000Z', reason: 'backup-v1', raw: v1() });
+        const r = parseImport(text, MAX);
+        expect(r.kind).toBe('ok');
+        if (r.kind === 'ok') expect(encodeSave(r.session).version).toBe(SAVE_VERSION);
+    });
+});

@@ -1590,3 +1590,13 @@ describe('noticeOtherWriter and the refusal code (save-truth p8)', () => {
         expect(told).toEqual(['PreviousPageSave']);
     });
 });
+
+describe('readBackups pass-through (save-truth p9)', () => {
+    it('returns the store copies and never rejects when the read fails', async () => {
+        const t = setup();
+        t.store.readBackups = () => Promise.resolve([{ from: 1, raw: { n: 1 } }]);
+        expect(await t.saver.readBackups()).toEqual([{ from: 1, raw: { n: 1 } }]);
+        t.store.readBackups = () => Promise.reject(new Error('boom'));
+        expect(await t.saver.readBackups()).toEqual([]);
+    });
+});

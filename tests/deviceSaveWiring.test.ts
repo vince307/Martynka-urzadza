@@ -63,3 +63,20 @@ describe('device save wiring (S12-01)', () => {
         expect(text).toContain('pl.saveTransfer.exportNotDevice');
     });
 });
+
+describe('keep a copy of the old save (save-truth p9, SV2-04)', () => {
+    it('the panel reads the copies once through the saver and opens the export inside the input session', () => {
+        const text = method('openSettings').getText(source);
+        expect(text.match(/saver\.readBackups\(\)/g)).toHaveLength(1);
+        expect(text).toContain('session.run(() => this.openBackupExport(newest, session))');
+        expect(text).not.toContain('REGISTRY_KEYS.store');
+    });
+    it('openBackupExport exports the raw copy behind the confirmation dialog and closes through the session', () => {
+        const body = method('openBackupExport');
+        const text = body.getText(source).replace(/\s+/g, ' ');
+        expect(callsOf(body)).toContain('openSaveExportDialog');
+        expect(text).toContain("kind: 'raw'");
+        expect(text).toContain('raw: copy.raw');
+        expect(text).toContain('session.run(() => this.closeSettings())');
+    });
+});

@@ -60,6 +60,8 @@ export const pl = {
         saveOk: 'Postępy zapisują się na tym urządzeniu.',
         saveLast: (time: string) => `Ostatni zapis: ${time}`,
         // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
+        // DESIGN-GAP 131: the kit has no button for the copy of the save from before a format change; the text is ours, to be read by a teacher.
+        backupExport: 'Zachowaj kopię starego zapisu',
         saveNotYet: 'Gra jeszcze niczego nie zapisała. Zapis nastąpi po pierwszej zmianie.',
         saveEarlier: (count: number, error: string) => `Wcześniej: ${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} (${error}).`,
         savePersist: {

@@ -37,6 +37,8 @@ export interface SettingsPanelOptions {
     /** "Zapisz kopię": the panel closes and the caller opens the export dialog. Absent = no button (no saver). */
     onExport?: () => void;
     onImport?: () => void;
+    /** "Zachowaj kopię starego zapisu": present only when the store holds an old-version copy; the caller opens the raw export. */
+    onBackupExport?: () => void;
     onReset?: () => void;
     /** Subscribes to "a Polish voice is available" (called at once and on changes); returns the unsubscribe. Absent = no narrator: the line stays visible. */
     watchVoice?: (callback: (available: boolean) => void) => () => void;
@@ -53,7 +55,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, uiArtHealth, sound, onConfirm, onCancel, onExport, onImport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, uiArtHealth, sound, onConfirm, onCancel, onExport, onImport, onBackupExport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -168,6 +170,13 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
+    if (onBackupExport) {
+        saveActions.append(createButton(pl.settings.backupExport, () => {
+            close();
+            onBackupExport();
+        }));
+    }
+
     if (onReset) {
         saveActions.append(createButton(pl.saveTransfer.resetButton, () => {
             close();
@@ -175,7 +184,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onBackupExport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

@@ -1212,9 +1212,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 9.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 9.2 Deliberate break: `kind:'save'` instead of `'raw'` → round-trip test red; restored; meta-check (envelope and wiring)
-- [ ] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `parent-settings` and `save-transfer.spec.ts` green
+- [x] 9.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
+- [x] 9.2 Deliberate break: `kind:'save'` instead of `'raw'` → round-trip test red; restored; meta-check (envelope and wiring)
+- [x] 9.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `parent-settings` and `save-transfer.spec.ts` green
 
 #### Manual
 

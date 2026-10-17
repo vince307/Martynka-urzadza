@@ -14,7 +14,7 @@ export type SaveMigration = { from: number; copy: 'pending' | 'kept' | 'lost' | 
 export type SaveHealthView = SaveHealthState & { persistence: Persistence; migration: SaveMigration | null; olderWriter: boolean };
 
 // The session that migrated knows its own copy state (it can be still retried); later launches read the stored record (SVB-01).
-const migrationOf = (status: AutosaveStatus): SaveMigration | null => {
+const migrationOf = (status: AutosaveStatus, copies: readonly number[]): SaveMigration | null => {
     if (status.migratedFrom !== null) {
         const from = status.migratedFrom;
         if (status.migrationWrittenAt === null) return { from, copy: 'pending', code: null };
@@ -24,8 +24,15 @@ const migrationOf = (status: AutosaveStatus): SaveMigration | null => {
     }
     const record = status.backupRecord;
     if (record === null) return null;
+    // An `uncertain` record with the copy actually in the store is a kept copy (the timeout was only a slow answer).
+    if (record.result === 'uncertain' && copies.includes(record.from)) return { from: record.from, copy: 'kept', code: null };
     return { from: record.from, copy: record.result, code: record.result === 'kept' ? null : record.error };
 };
+
+/** The newest old-version copy in the store (highest version), or null: the one "Zachowaj kopię starego zapisu" exports. */
+export function newestBackup<T extends { from: number }>(copies: readonly T[]): T | null {
+    return copies.reduce<T | null>((best, c) => (best === null || c.from > best.from ? c : best), null);
+}
 
 // The cause the parent reads, and a code to quote. The load reason and error are the start state (never lastError,
 // which a later failed write changes), except for a fatal block, which has no load part.
@@ -62,8 +69,9 @@ const stateOf = (status: AutosaveStatus): SaveHealthState => {
     };
 };
 
-export function saveHealthView(status: AutosaveStatus): SaveHealthView {
-    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status), olderWriter: status.olderWriterSeen };
+/** `copies`: the versions of the old-version copies found in the store when the panel opened (empty when none or not read). */
+export function saveHealthView(status: AutosaveStatus, copies: readonly number[] = []): SaveHealthView {
+    return { ...stateOf(status), persistence: status.persistence, migration: migrationOf(status, copies), olderWriter: status.olderWriterSeen };
 }
 
 export type SaveCardKey = 'future' | 'migrationFailed' | 'failed' | 'unavailable' | 'slow';

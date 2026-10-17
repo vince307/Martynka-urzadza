@@ -13,7 +13,7 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import { artHealthView, type ArtHealth } from '../core/artHealth';
-import { saveHealthView } from '../core/saveHealth';
+import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
@@ -150,11 +150,15 @@ export class UIScene extends Scene {
         this.closeDialog = openParentGate({
             rng: createRng(Math.floor(Math.random() * 2 ** 32)),
             onCancel: () => session.run(() => this.closeSettings()),
+            // The old-version copies are read once, here at panel open (never at game start, never again); a failed read is no copy.
             onPass: () =>
+                session.run(() => void (saver ? saver.readBackups() : Promise.resolve([])).then((copies) => {
+                if (!session.active()) return;
                 session.run(() => {
                 const settings = (this.registry.get(REGISTRY_KEYS.settings) as Settings | undefined) ?? initialSettings();
                 const readStages = balance.narrator.autoReadStages;
                 const swStatus = this.registry.get(REGISTRY_KEYS.swStatus) as SwStatus | undefined;
+                const newest = newestBackup(copies);
                 const stage = getStage(learner.stage);
                 if (!stage) {
                     this.closeSettings();
@@ -167,7 +171,7 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
-                    saveHealth: saver ? saveHealthView(saver.status()) : undefined,
+                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from)) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
                     artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
                     roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
@@ -178,10 +182,23 @@ export class UIScene extends Scene {
                     onCancel: () => session.run(() => this.closeSettings()),
                     ...(saver ? { onExport: () => session.run(() => this.openExport(saver, session)) } : {}),
                     ...(saver ? { onImport: () => session.run(() => this.openImport(saver, session)) } : {}),
+                    ...(newest ? { onBackupExport: () => session.run(() => this.openBackupExport(newest, session)) } : {}),
                     ...(saver ? { onReset: () => session.run(() => this.openReset(saver, session)) } : {}),
                     onConfirm: (result) => session.run(() => this.applySettings(result.stage, result.autoRead, result.sound)),
                 });
-                }),
+                });
+                })),
+        });
+    }
+
+    /** Raw export of an old-version copy (SV2-04): same dialog and confirmation tap as the save export, `kind: 'raw'` so it imports again through `parseImport`. */
+    private openBackupExport(copy: { from: number; raw: unknown }, session: InputSession): void {
+        this.closeDialog = openSaveExportDialog({
+            file: (now) => ({
+                text: exportFileText({ kind: 'raw', build: __BUILD_ID__, exportedAt: now.toISOString(), reason: `backup-v${copy.from}`, raw: copy.raw }),
+                fileName: pl.saveFailed.fileName(now.toISOString().slice(0, 10)),
+            }),
+            onClose: () => session.run(() => this.closeSettings()),
         });
     }
 
