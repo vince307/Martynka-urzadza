@@ -1293,9 +1293,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 15.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [ ] 15.2 Deliberate break p15a → (a) red; p15b → (b) red; each restored; meta-check
-- [ ] 15.3 Build prints `e2e hook: absent (` (and `slowfail` absent from `dist/`); full local gate green; servers 4397/4398 killed
+- [x] 15.1 `npx playwright test tests/e2e/save-backup-health.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
+- [x] 15.2 Deliberate break p15a → (a) red; p15b → (b) red; each restored; meta-check
+- [x] 15.3 Build prints `e2e hook: absent (` (and `slowfail` absent from `dist/`); full local gate green; servers 4397/4398 killed
 
 #### Manual
 

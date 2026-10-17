@@ -6,19 +6,23 @@
 // second read limit 5000 ms, writes 300 ms; under ?e2eSave=slow the read answers after 2500 ms (E2E_SLOW_READ_MS in
 // src/testing/e2eHook.ts; the number is repeated below because that module imports Phaser). Strings come from src/data/pl.ts.
 // Runs in the chromium-hook project.
+import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
+import { chooseFile, openImport } from './support/saveImport';
 import { fromHook, playRoundRight, playTaskRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(120_000);
 
+const V1_STARS = 7; // tests/fixtures/save-v1.json (the ?e2eSave=v1 store)
+
 const SLOW_READ_MS = 2500; // E2E_SLOW_READ_MS (room for two taps under load before the read answers)
 const SLOWER_LIMIT_MS = 5000; // E2E_SLOWER_LOAD_TIMEOUT_MS
 
 /** Loads a page whose store answers slowly or never: the start card with "Poczekaj dłużej" is on screen. */
-async function openSlowCard(page: Page, mode: 'slow' | 'hang') {
+async function openSlowCard(page: Page, mode: 'slow' | 'hang' | 'slowfail') {
     await silenceSpeech(page);
     await page.goto(`/?e2eSave=${mode}&e2eVariant=off`);
     const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
@@ -149,4 +153,55 @@ test('#2 SRR-02 continuing while the slow read is still answering never overwrit
     await expect.poll(async () => (await snapshot(page)).counterText).toBe('1');
     expect(after.save).toMatchObject({ blocked: true, blockedBy: 'unavailable', writes: 0 });
     expect(after.save!.store!.ops).not.toContain('write');
+});
+
+test('#2 SVB-02 a read that fails while the parent waits shows the error card with its code', async ({ page }) => {
+    const card = await openSlowCard(page, 'slowfail');
+    await card.getByRole('button', { name: pl.saveSlow.wait, exact: true }).tap();
+    // The same read answers with a named error: the calm unavailable card replaces the slow card, with the code to quote.
+    const failed = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
+    await expect(failed).toBeVisible({ timeout: SLOWER_LIMIT_MS + 5_000 });
+    await expect(failed.getByText(/^Kod: UnknownError · Wersja /)).toBeVisible();
+    // Never the "still slow" advice: the read did not hang, it failed.
+    await expect(page.getByText(pl.saveSlow.stillSlow)).toHaveCount(0);
+    await failed.getByRole('button', { name: pl.saveUnavailable.continue, exact: true }).tap();
+    await expect(failed).toBeHidden();
+    await startAsChild(page);
+    expect((await snapshot(page)).save).toMatchObject({ load: 'unavailable', blocked: true, blockedBy: 'unavailable', lastError: 'UnknownError' });
+});
+
+test('#2 #7 SV2-04 the kept old save can be saved and imported again', async ({ page, browser }) => {
+    await silenceSpeech(page);
+    await page.goto('/?e2eSave=v1&e2eMonth=10&e2eVariant=off');
+    await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+    await screenIs(page, 'task');
+    // Play until the v1 save was copied: the button exists only when the store holds the copy.
+    await playRoundRight(page, 5);
+    await expect.poll(async () => (await snapshot(page)).save?.backup).toBe('done');
+
+    const panel = await openSettings(page);
+    await panel.getByRole('button', { name: pl.settings.backupExport, exact: true }).tap();
+    const exportDialog = page.getByRole('dialog', { name: pl.saveTransfer.exportTitle });
+    await expect(exportDialog).toBeVisible();
+    const downloaded = page.waitForEvent('download');
+    await exportDialog.getByRole('button', { name: pl.saveTransfer.saveFile, exact: true }).tap();
+    const download = await downloaded;
+    const fileText = await readFile(await download.path(), 'utf8');
+    expect(fileText).toContain('"app": "martynka-urzadza"');
+    expect(fileText).toContain('"reason": "backup-v1"');
+
+    // Another device: the file imports, and the summary lists the stars the v1 save had, not the ones the round added.
+    const other = await browser.newContext();
+    try {
+        const second = await other.newPage();
+        await silenceSpeech(second);
+        await passWelcome(second, { e2eMonth: '10', e2eVariant: 'off' });
+        await openImport(second);
+        const dialog = second.getByRole('dialog', { name: pl.saveTransfer.importTitle });
+        await chooseFile(second, pl.saveTransfer.choose, { name: download.suggestedFilename(), mimeType: 'text/plain', buffer: Buffer.from(fileText) });
+        await expect(dialog.getByText(pl.saveTransfer.stars(V1_STARS))).toBeVisible();
+        await expect(dialog.getByRole('button', { name: pl.saveTransfer.load, exact: true })).toBeVisible();
+    } finally {
+        await other.close();
+    }
 });
