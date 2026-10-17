@@ -1,27 +1,28 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-research` step of run `2026-10-16-audit-sweep` (slice 3 of 3). Research is complete; no plan yet.
-Do not get wrong: the live server types **every** precached extension correctly (ttf/m4a/ogg included) and answers
-404 for a missing file, but local `vite preview` answers a missing file with **200 `text/html`** — the per-entry smoke
-must assert the content type, and must never assert `content-length` on HEAD (compressed HEAD reports 13).
+Written by the `/10x-plan` step of run `2026-10-16-audit-sweep` (slice 3 of 3). The plan is written (14 phases, 71
+Progress rows) and no code has changed yet. Do not get wrong: `src/core` never imports `src/data/pl.ts`, so the
+panel builders return line keys and the renderers map them to text. Also, `registration.update()` runs **once per
+launch only**, never on return from the background.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | 2 (`af4ddec` change identity, + this research commit) |
+| Commits | 3 (`af4ddec` identity, `58b6ea7` research, + this plan commit) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (via `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (`dist/` rebuilt locally, gitignored) |
+| `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 71 (`grep -c '^- \[ \]' plan.md`): 48 automated, 13 `[reviewer]`, 6 `[visual]`, 4 `[human]` |
+| Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/health-lines-and-smoke/research.md` | per-finding root cause / smallest fix / first failing test / risk for every in-scope id (smoke, SW, loader + art health, sound, save notes + room); live-server table (18 requests); Phaser 4.2.1 facts from installed source; open questions; recommended 10-phase grouping |
-| `context/changes/health-lines-and-smoke/change.md` | frontmatter only: `status: preparing`, `updated` |
+| `context/changes/health-lines-and-smoke/plan.md` | 14 phases with `Driver:` lines (1–6 and 8–10 `tdd`; 7 and 11 `impl`; 12–14 `e2e`), Critical Implementation Details, Known risks, 15 Autonomous decisions, `## Progress` |
+| `context/changes/health-lines-and-smoke/plan-brief.md` | two-page brief: key decisions table, phases at a glance |
+| `context/changes/health-lines-and-smoke/change.md` | status `preparing` → `planned` |
 | `context/changes/health-lines-and-smoke/handoff.md` | this file |
 
 ## 3. Verification
@@ -29,44 +30,46 @@ must assert the content type, and must never assert `content-length` on HEAD (co
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/health-lines-and-smoke` |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)`; `dist/sw.js` 121 precache entries |
-| live `curl` (GET `sw.js`, HEAD per extension, HEAD/GET with compression, `www`) — 18 read-only requests | all 200 with expected types; `/index.html` 200 (no redirect); missing → 404; `www` → 301 apex; table in research.md |
-| `npx vite preview --config vite/config.prod.mjs --port 4398` + HEADs, server killed (`lsof -ti tcp:4398 -sTCP:LISTEN` empty) | same types; `no-cache` everywhere; missing file → 200 `text/html` |
-| Phaser source spot-checks (`LoaderPlugin.nextFile`, `ImageFile.onProcess`, `FontFile.onProcess`, `AudioFile.onProcess`, `WebAudioSoundManager.unlock`) | worker claims confirmed |
-| Gate (lint, typecheck, tests, e2e) | not run — research only, no code changed |
+| `gh run view 38995649135 --log` (Deploy, read-only) | step `Smoke check (deploy)`: `ok   GET /sw.js — 200, 121 precache entries`, `all 20 checks ok` (quoted in plan rows 1.7) |
+| Criteria ↔ Progress mapping (awk over plan.md) | 1:1 for all 14 phases (7/6/4/6/5/5/5/6/4/6/8/3/3/3) |
+| `metadata-guard.mjs inspect` + `mark-planned` | `changed: true`, status `planned` |
+| roadmap sync | `context/foundation/roadmap.md` has no `health-lines-and-smoke` row; untouched (non-roadmap) |
+| Gate (lint, typecheck, tests, build, e2e) | not run: docs only, no code changed |
 
 ## 4. Next command
 
-`/10x-plan health-lines-and-smoke`
+`/10x-plan-review health-lines-and-smoke`
 
 ## 5. Open
 
-- Choice for the plan: O-3 `registration.update()` mid-session with `skipWaiting` + `clientsClaim` takes over the open
-  page (vs plan § 9 "silent update at the next launch") — accept or call only at launch (research Open question 2).
-- Local proof run of `check:deploy` against `vite preview` fails the existing immutable check (`check-deploy.ts` `main`
-  `cacheControlCheck(…, 'immutable')`) — plan skips it for localhost or expects it (Open question 1).
-- S-2 source catch needs the internal seam `file.config.context` (wrap `decodeAudioData`) pinned in
-  `tests/phaserLoaderPin.test.ts`; if the plan rejects it, the quiet names stay and the part is deferred (decision 8).
-- A-7 and S-2 rely on browser behaviour from spec (`document.fonts` status, unhandled decode rejection) — their e2e
-  verifies it.
-- B-6: no cold-start measurement exists (46.6 s is a byte count, unchanged at 2 329 739 B); `balance.loader.totalMs`
-  stays; a throttled measurement is a [human]/optional row.
-- [human] M-1 on a real iPad (never-unlocking audio context).
-- DESIGN-GAP rows from 139 for every new `pl.ts` line; deferred LOWs from `change.md` § Deferred go to
-  `follow-ups/review-fixes.md` in the plan.
+- [human] rows: 2.6 (accept a launch-only `update()`), 4.6 (optional throttled Android cold start against
+  `balance.loader.totalMs`), 8.6 (real iPad with a never-unlocking audio context: `soundBlocked` after 3 touches),
+  11.8 (wording of gaps 139–150).
+- [reviewer] (CI at ship) rows: 1.7 (Deploy `Smoke check (deploy)` `all [0-9]+ checks ok` + `precache served: `);
+  11.7 (CI `check`: `e2e hook: absent (` and `Tests +[0-9]+ passed`).
+- DESIGN-GAP rows 139–150 will be added in phases 2, 5, 6, 7, 8 and 10. Gaps 66, 67, 114, 119 and 120 get notes.
+- Follow-ups (written in phase 11, `follow-ups/review-fixes.md`): O-1(b), the 2217 P-4 `deploy/` half, G-3, G-6,
+  ASL-05, ASL-08, A-6, A-8 (unless phase 13 takes it), L-7, the `FontFace` limit, VO3, O-3 on return from the
+  background, and the B-6 measurement.
+- Phase 5 may change the wording of existing "Obrazki" lines. e2e texts in `health-lines.spec.ts`,
+  `art-stand-in.spec.ts` and `salon-load-health.spec.ts` may then need edits, each named in the commit.
+- Plan-review watch items: phase 1 local proof against `vite preview` (`isLocalHost` skips the immutable check). The
+  phase 9 seam (`AudioFile.onProcess` → `this.config.context.decodeAudioData`, pinned). Phase 4 timers are cleared on
+  `COMPLETE` and `shutdown`.
 - Known e2e load flakes: `money-pay` #11, `final-art-loading` #15, `child-flow-guards` #2.
 
 ## 6. Autonomous decisions
 
-1. **Scope taken from `change.md`, no interview** (contract rule 1). Would change: nothing.
-2. **Three parallel read-only workers** (smoke/SW, loader/art, sound/save); decisive Phaser claims re-checked in
-   source by the main session. Would change: a contradiction between worker and source (none found).
-3. **18 live requests** (limit ~30), read-only, one file per precached extension rather than all 121. Rejected: HEAD of
-   every entry (that is the smoke's job, and `check:deploy` is forbidden here). Would change: a type mismatch on one
-   sample (then sample the whole extension).
-4. **Decision 5 of change.md superseded by evidence**: assert content type for all nine extensions (live server types
-   ttf/m4a/ogg). Would change: a server MIME change (out of this run).
-5. **Decision 3 (O-1 b deferred) confirmed**: `vite-plugin-pwa` 2.0.0 `registerSW` exposes only register/import errors
-   and its autoUpdate reloads the page. Would change: a plugin hook for install errors.
-6. **B-6: reorder only, no `totalMs` change** (decision 7): no measurement. Would change: a throttled run over the limit.
-7. **Recommended 10 phases** (research.md end). Would change: plan-review over 14 phases → defer R-6, ASL-04, S-7.
+1. **No interview** (contract rule 1). The complexity, the question budget and the phase approval were decided in
+   place. Would change: nothing.
+2. **O-3 launch-only `update()`** (plan decision 2). Rejected `update()` on `visibilitychange` because the step prompt
+   says no new worker may take over an open page mid-round. This follows `Martynka-urzadza.md` § 9 and departs from
+   part of the audit, so it gets `[human]` row 2.6. Would change: a device that keeps an old build for days.
+3. **S-2 source catch taken behind the pin** (step prompt; plan decision 4). Would change: a Phaser upgrade.
+4. **Localhost skips the immutable check** (research Open Question 1; plan decision 3). Would change: none.
+5. **Phase 5 contract corrected during writing.** No `src/core` module imports `pl` (checked by grep), so the lines
+   builder returns keys. Would change: a boundary rule that allows `pl` in `core`.
+6. **14 phases**, at the limit change.md decision 2 named; nothing more deferred. Would change: plan-review asking for
+   fewer phases. The next items to defer are R-6, ASL-04 and S-7.
+7. **No plan text against the design docs' literal text** (plan decision 14). Would change: a reviewer reading § 9
+   differently.
