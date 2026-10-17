@@ -993,7 +993,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 1.6 [reviewer] Every new assertion satisfied by the live observations quoted in research; every table check under `if (sha7)`
+- [x] 1.6 [reviewer] Every new assertion satisfied by the live observations quoted in research; every table check under `if (sha7)` — impl review: live rollback-mode run `precache served: 121/121`, `all 17 checks ok`
 - [ ] 1.7 [reviewer] (CI at ship) workflow `Deploy` job `deploy` step `Smoke check (deploy)` log matches `all [0-9]+ checks ok` (seen in Deploy run 38995649135: `all 20 checks ok`) and contains `precache served: ` with n = N
 
 ### Phase 2: "Gra bez internetu" names a failed update (O-2, O-4, O-3, O-5)
@@ -1006,7 +1006,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 2.4 [reviewer] DESIGN-GAP 139 row and comment present; `update()` once per page load only; `vite/config.shared.mjs` unchanged
+- [x] 2.4 [reviewer] DESIGN-GAP 139 row and comment present; `update()` once per page load only; `vite/config.shared.mjs` unchanged
 - [ ] 2.5 [visual] "Gra bez internetu" with the `updateFailed` line, at 1440 and 1024×768
 - [ ] 2.6 [human] Accept that the update check runs only at launch (audit asked also "przy powrocie z tła"; rejected so no new worker claims an open page mid-round)
 
@@ -1020,7 +1020,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 3.4 [reviewer] No texture dropped for a wrong size; the pin names `FILE_LOAD`; no player text in the scene
+- [x] 3.4 [reviewer] No texture dropped for a wrong size; the pin names `FILE_LOAD`; no player text in the scene
 
 ### Phase 4: Boot limits on the wall clock, the boot record and the queue order (B-3, B-4 record, B-6, A-7 record, P-5, P-6)
 
@@ -1033,7 +1033,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 4.5 [reviewer] Both timers cleared on `COMPLETE` and `shutdown`; `fontHealth` and new `bootLoad` fields absent from `SAVE_KEYS`; `balance.loader.totalMs` unchanged
+- [x] 4.5 [reviewer] Both timers cleared on `COMPLETE` and `shutdown`; `fontHealth` and new `bootLoad` fields absent from `SAVE_KEYS`; `balance.loader.totalMs` unchanged
 - [ ] 4.6 [human] Optional: throttled cold start (50 KB/s, worker installing) on a real Android tablet against `balance.loader.totalMs`
 
 ### Phase 5: "Obrazki" lines builder: each known line, cause and cut (L-8, F4, A-5, B-4 line)
@@ -1046,7 +1046,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 5.4 [reviewer] DESIGN-GAP 140–141 rows and comments present; no DOM in `src/core`; the renderer adds no style
+- [x] 5.4 [reviewer] DESIGN-GAP 140–141 rows and comments present; no DOM in `src/core`; the renderer adds no style
 - [ ] 5.5 [visual] "Obrazki" under `?e2eArt=missing` (cause + `Kod:`) and `?e2eArt=stallall` (cut line), at 1440 and 1024×768
 
 ### Phase 6: "Obrazki": folders, skipped tasks, labels, font, restart advice (ASL-02, R-5, A-7 line)
@@ -1059,7 +1059,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 6.4 [reviewer] DESIGN-GAP 142–146 rows and comments present; copy read of the five lines (numeral agreement, short sentences)
+- [x] 6.4 [reviewer] DESIGN-GAP 142–146 rows and comments present; copy read of the five lines (numeral agreement, short sentences)
 - [ ] 6.5 [visual] "Obrazki" under `?e2eArt=missing` (folders, skipped, no-restart) and `?e2eArt=room` (labels), at 1440 and 1024×768
 
 ### Phase 7: The screen fallback the child sees reaches "Obrazki" (U-1/G-2, G-3 record, G-7, G-5)
@@ -1072,7 +1072,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 7.4 [reviewer] DESIGN-GAP 147 row and comment present; widgets write only through the one helper; `artFallbacks` absent from `SAVE_KEYS`; child-facing look unchanged
+- [x] 7.4 [reviewer] DESIGN-GAP 147 row and comment present; widgets write only through the one helper; `artFallbacks` absent from `SAVE_KEYS`; child-facing look unchanged
 - [ ] 7.5 [visual] "Obrazki" under `?e2eArt=ui` after the unlock card and a wallet task, at 1440 and 1024×768
 
 ### Phase 8: "Dźwięki" says when the device will not play (M-1/S-4, S-9, S-10, S-5)
@@ -1085,7 +1085,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 8.4 [reviewer] DESIGN-GAP 148–149 rows and comments present; HUD loader listeners removed in every `done` path; effect still before the narrator
+- [x] 8.4 [reviewer] DESIGN-GAP 148–149 rows and comments present; HUD loader listeners removed in every `done` path; effect still before the narrator
 - [ ] 8.5 [visual] "Dźwięki" with `soundNoDevice` and with the music `http:404` cause, at 1440 and 1024×768
 - [ ] 8.6 [human] Real iPad, context never unlocking: after 3 touches "Dźwięki" shows `soundBlocked` (M-1)
 
@@ -1099,7 +1099,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 9.4 [reviewer] The real `AudioContext` never mutated; the pin names the seam; `martynka:sound:probe` not a registry or save key; `QUIET_REJECTIONS` unchanged
+- [x] 9.4 [reviewer] The real `AudioContext` never mutated; the pin names the seam; `martynka:sound:probe` not a registry or save key; `QUIET_REJECTIONS` unchanged
 
 ### Phase 10: Salon carry note, grown room list, art-filter fallback count (M-4/R-3, R-2, ASL-04/S14-05, ASL-03)
 
@@ -1112,7 +1112,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 10.5 [reviewer] DESIGN-GAP 150 row and row 66 note present; `MIGRATIONS[2]` output byte-identical; no mastery change for fallbacks
+- [x] 10.5 [reviewer] DESIGN-GAP 150 row and row 66 note present; `MIGRATIONS[2]` output byte-identical; no mastery change for fallbacks
 - [ ] 10.6 [visual] "Zapis gry" with the `salonCarried` line under `?e2eSave=legacy-salon`, at 1440 and 1024×768
 
 ### Phase 11: Unreachable slots in the hook, docs and seam sweep (R-6)
@@ -1127,7 +1127,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Manual
 
-- [ ] 11.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; no duplicated helper; gap rows 139–150 match the code comments; `SAVE_VERSION` 4 and `git diff --stat main -- tests/fixtures deploy .github` empty
+- [x] 11.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; no duplicated helper; gap rows 139–150 match the code comments; `SAVE_VERSION` 4 and `git diff --stat main -- tests/fixtures deploy .github` empty
 - [ ] 11.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932: `Tests  3416 passed (3416)`, `e2e hook: absent (2 chunks checked)`)
 - [ ] 11.8 [human] Accept the wording of gaps 139–150 as one read of the parent's panel lines
 
