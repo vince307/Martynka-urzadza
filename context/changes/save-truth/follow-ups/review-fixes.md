@@ -164,3 +164,9 @@ Trigger: the tablet row 15.4 or 4.6 showing no copy, a Safari floor change, or t
 An older build that wrote over this page's v4 save (only builds before the v3 guard can) is overwritten by this page's next write; only a log line and `olderWriterSeen` remain. Same item as entry 21 seen from the verdict side.
 
 Trigger: as entry 21.
+
+## 28. "Zapis gry" code shorter than the start card's code (visual gate VG-1)
+
+For a save that failed to migrate, the start card says `Kod: migration-failed/1` and the "Zapis gry" section says `Kod: migration-failed`. For a corrupt save the card says `corrupt/stars` and the panel says `corrupt`. `offState` in `src/core/saveHealth.ts` quotes `status.loadReason`, while the card quotes `unreadableCode(outcome)`. This predates the slice. Both codes are true. The parent can still quote either one.
+
+Trigger: a parent or maintainer report that quotes a panel code that is missing its step or field, or the next change to `AutosaveStatus` load fields.

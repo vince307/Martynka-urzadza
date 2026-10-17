@@ -1,77 +1,75 @@
 # Handoff — `save-truth` (slice fix:save-truth, audit sweep 2 of 3)
 
-Written by the `/10x-impl-review save-truth` step. All 15 phases were reviewed, two warnings were fixed in 209afe3, and `change.md` is `impl_reviewed`. Verdict: MERGE CLEAR. The next agent must not get two things wrong. First, the save format stays v4 (`SAVE_VERSION` 4, no existing `tests/fixtures/` file edited). Second, the [visual] and [human] rows and the `(CI at ship)` row 13.7 belong to their owners: the visual gate, the maintainer and the ship step.
+The visual gate step wrote this handoff. All ten [visual] rows were captured at 1440×900 and 1024×768 and ticked, and the gate passed. No code changed. The next agent must not get two things wrong:
+- The save format stays v4.
+- Three of the served states came from local seams that were reverted before any commit: `vgmigfail`, `vgv1writehang` and `vgOlder`. They must not be re-added to the source.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-truth`, cut from `main` at `24b3e4b` |
-| Commits | phases 1-15 + handoffs, then `fix(save-truth): poprawki po przeglądzie implementacji` 209afe3, then `docs(save-truth): impl review` |
+| Commits | phases 1-15 + handoffs, then the impl-review fix 209afe3 and `docs(save-truth): impl review` 7aa074c, then `docs(save-truth): bramka wizualna` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 16 (`grep -c '^- \[ \]' plan.md`): 13.7 (CI at ship), [visual] 1.7, 2.6, 3.7, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, [human] 3.8, 4.6, 11.6, 14.4, 15.4 |
-| Working tree | clean after the docs commit |
+| `change.md` status | `impl_reviewed` (the archive step sets the next one) |
+| `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 13.7 (CI at ship), [human] 3.8, 4.6, 11.6, 14.4, 15.4 |
+| Working tree | clean after the docs commit (`dist-e2e/` is gitignored) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/save-truth/reviews/impl-review.md` | review report: 0 critical, 6 warnings, 4 observations, decisions per finding |
-| `src/core/autosave.ts` | `readBackups` under `limited()` (F1); `replace` asks `replaceGate` again after `await inflight` (F3) |
-| `tests/autosave.test.ts` | 2 tests: hanging `readBackups` gives `[]` after the write limit; a write refused by another window while the parent confirmed blocks the replace |
-| `tests/fixtureLoadPath.test.ts` | new: 8 frozen fixtures (v1, v1-fresh, v1-legacy-salon, v2, v2-fresh, v2-legacy-salon, v3, v4) through fake IndexedDB → `createIdbSaveStore` → `loadSave` → first write → reload, plus the write-once copy |
-| `tests/e2e/save-backup-health.spec.ts` | SV2-04: `expect(keepCopy).toBeVisible()` before the tap (F8) |
-| `CLAUDE.md`, `src/data/balance.ts`, `src/main.ts`, `src/data/pl.ts` | stale sentences and comments fixed (F4: S-15 copy order, hidden give-up, `backupAttempts`, seam list, DESIGN-GAP 129/131 placement) |
-| `context/changes/save-truth/follow-ups/review-fixes.md` | entries 23-27, each with `Trigger:` (27 entries / 27 triggers) |
-| `context/changes/save-truth/plan.md` | [reviewer] rows 1.6, 2.5, 3.6, 4.5, 5.4, 6.4, 7.4, 8.4, 9.4, 10.4, 11.4, 12.4, 13.6 ticked |
-| `context/changes/save-truth/change.md` | status `impl_reviewed` |
+| `context/changes/save-truth/screenshots/*.jpg` | 52 frames: 26 states × desktop and tablet |
+| `context/changes/save-truth/screenshots/README.md` | table of state, desktop, tablet and how each was reached, plus the three local seams |
+| `context/changes/save-truth/reviews/visual-review.md` | verdict per row, hand-checked values, focus check, decisions; ends with `VISUAL: PASS — …` |
+| `context/changes/save-truth/follow-ups/review-fixes.md` | entry 28 (VG-1: the "Zapis gry" `Kod:` is the bare reason, while the card shows step or field), with `Trigger:` |
+| `context/changes/save-truth/plan.md` | [visual] rows 1.7, 2.6, 3.7, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| lint / typecheck | OK / OK (before and after the fixes) |
-| `npm test` | before the fixes 3535 passed (baseline 3416 + 119); after 3545 passed (baseline 3416 + 129: +8 fixture load path, +2 autosave) |
-| deploy scripts, `sample` E1-E6 | OK, OK, no violation |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -r "slowfail\|e2eSave" dist/` empty |
-| `npx playwright test --workers=4` | before the fixes 132 passed (baseline 127 + 5); after the fixes 132 passed (baseline 127 + 5, 10.8 min) |
-| Break 1: `putBackupOnce` `count === 0 \|\| true` | red: `idbStore` "a second backup … keeps the first bytes" (`expected 'written' to be 'kept'`) and 7 fixture cases; restored. Meta: proves write-once on fake-indexeddb, not Safari |
-| Break 2: p15b (`settingsPanel.ts` backup button never added), with the new guard | red at `expect(keepCopy).toBeVisible()` "element(s) not found", 5 s instead of the 120 s timeout; restored |
-| New review tests before the fix | red at assertions: `expected 'still waiting' to deeply equal []`, `expected { ok: true } to deeply equal { ok: false, error: 'Blocked' }` |
-| Experiment: copy-first on the first attempt (F2) | 16 unit tests red (phase 5's planned order); reverted with `git checkout`, not committed |
-| Save format | `SAVE_VERSION` 4, `encodeSave` and `MIGRATIONS` unchanged; `tests/fixtures` only gains `save-v1-legacy-salon.json`; new keys outside `SAVE_KEYS` |
-| stray processes | `ps -U $(id -u) … sleep\|until\|while\|playwright\|vite` empty (run outside the sandbox) |
+| Throwaway Playwright spec (`tests/e2e/visual.local/`, moved out afterwards) against `dist-e2e` on 4399 | 24 passed (12 flows × 2 viewports) |
+| Hand-check: stars | 7 (v1 fixture) + 5 × 1 + clean-round bonus 2 = 14, matching the counter; the exported `backup-v1` copy holds `stars: 7` |
+| Hand-check: over-count | `tasksDone` 99 capped at the 12 salon tasks gives "Salon: 12 z 12", with the mismatch line |
+| Initial focus | never on a destructive action. After "Zastąp mimo to" in reset it is "Anuluj"; on the over-count preview it is "Anuluj"; on import of the first and second `unavailable` start it is "Zamknij" |
+| Local gate | not re-run: no source changed. Last observed green by impl review on 209afe3/7aa074c (unit baseline 3416 + 129, e2e baseline 127 + 5) |
+| Temporary patches | `git checkout -- src/main.ts src/testing/e2eHook.ts` right after the build; `git status` showed only `screenshots/` |
+| Port 4399 | not listening after the step (background preview stopped) |
 
 ## 4. Next command
 
-`visual gate ("Zapis gry" lines, export/import/reset dialogs, refusal card with Kod:, kept-copy button) then /10x-archive save-truth`
+`/10x-archive save-truth then ship`
 
 ## 5. Open
 
-- [visual] rows 1.7, 2.6, 3.7, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5 (the visual gate).
 - [human] checklist:
-  - 3.8: force only from the second `unavailable` start, and the wording of gap 126.
+  - 3.8: force only from the second `unavailable` start, and the wording of gap 126. The frames are `*-unavailable-*`.
   - 4.6: the FIRST old copy is kept.
-  - 11.6: the wording of gaps 127-136.
+  - 11.6: the wording of gaps 127-136. The frames are `*-health`, `*-reset-*` and `*-export-*`.
   - 14.4: two tablet tabs.
   - 15.4: the Files app opens the kept copy.
-  - Also decide follow-up 23 (`attempt`/`startCopy` copy-after-write window for the first copy).
-- 13.7 `(CI at ship)`: workflow `CI`, job `check`, log lines `Tests +[0-9]+ passed` and `e2e hook: absent \([0-9]+ chunks checked\)`.
-- Follow-ups 23-27 in `follow-ups/review-fixes.md`:
-  - `attempt` first-copy order.
-  - `startCounter.bump` counts restarts of one episode.
-  - `guardedPut` `read.onerror` puts in normal mode (pre-existing).
-  - `putBackupOnce` microtask put, plus no copy on a forced replace.
-  - `writeVerdict` `olderWriter` stays a put.
-- Design gaps 126-138: rows and comments match the code keys.
+  - Also decide follow-up 23.
+- 13.7 `(CI at ship)`: workflow `CI`, job `check`.
+- Follow-ups 23-28 in `follow-ups/review-fixes.md`. Entry 28 is new: `offState` in `src/core/saveHealth.ts` quotes `loadReason`, while the card quotes `unreadableCode`.
+- Design gaps 126-138 are unchanged. The frames show their copy as written.
 
 ## 6. Autonomous decisions
 
-1. **F2 accepted, not fixed.** Chosen: keep phase 5's write-then-copy order and record follow-up 23. Rejected: copy-first on the first attempt. Why: the plan accepts the risk explicitly (Known risks "Copy after write", decision 8 "copy-before-write rejected"), the stored record already says `lost` before the write, the progress itself is complete (proven by `tests/fixtureLoadPath.test.ts`), and reversing it would rewrite 16 unit tests and 2 e2e specs in a review. Would change: a [human] decision at ship, or a device report of a missing `backup-v<N>`. Severity WARNING rather than CRITICAL because no progress is lost and the loss of the copy is told to the parent.
-2. **F3 fixed although it predates the slice.** The fix is cheap, it closes an overwrite of another window's newer save, and phase 8 made `otherTab` reachable earlier.
-3. **F5 and F6 deferred** (follow-ups 24, 25). F5 still needs two parent confirmations. F6 predates the slice and needs a design choice for normal-mode read errors.
-4. **Gate fixes to CLAUDE.md** (stale sentences only) were made as part of seam-sweep row 13.6, not as a rule change.
-5. The follow-ups were appended through a shell heredoc instead of the Write tool. The content is plain Markdown and was checked with `grep -c '^Trigger:'`.
-
-MERGE: CLEAR — no open CRITICAL after the fixes, every automated criterion met, all suites green (unit baseline + 129, e2e baseline + 5); warnings are fixed or deferred with triggers.
+1. **Playwright fallback, not Claude in Chrome.**
+   - Why: every panel state needs the 2 s gear hold on the canvas and played rounds. This is the same route as the child-flow-guards gate.
+   - Would change: a Chrome tool able to drive canvas touches.
+2. **Three local seams in the served build only, reverted before any commit.**
+   - What they reached:
+     - `vgmigfail`: a v1 record whose `stars` getter throws, giving `migration-failed/1`.
+     - `vgv1writehang`: v1 with hanging writes, for the `pending` line.
+     - `vgOlder`: `saver.noteOlderWriter()` on real IndexedDB.
+   - Rejected: writing IndexedDB by hand (forbidden), and committing new seams (a code change in a visual gate).
+   - Why: plan row 2.6 names a locally patched step. The pending and older-writer states have no seam, and no pre-v4 build exists.
+   - Would change: a maintainer asking for committed seams.
+3. **VG-1 deferred** to follow-up 28, not fixed.
+   - Why: it predates the slice, both codes are true, and a fix needs a new runtime status field and changes to the unit tests.
+   - Would change: a [human] call at ship.
+4. **`dist-e2e/` left with the patched build.**
+   - Why: it is gitignored, and the e2e `webServer` always rebuilds it (`reuseExistingServer: false`). Deleting it was denied by the permission prompt.
+   - Would change: any tool that serves `dist-e2e` without rebuilding.
