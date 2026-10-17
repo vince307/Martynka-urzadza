@@ -1225,9 +1225,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 10.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 10.2 Deliberate break: `openExport` without the validation → wiring test red; restored; meta-check (source wiring)
-- [ ] 10.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the two edited specs green
+- [x] 10.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 1859bdd
+- [x] 10.2 Deliberate break: `openExport` without the validation → wiring test red; restored; meta-check (source wiring) — 1859bdd
+- [x] 10.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the two edited specs green — 1859bdd
 
 #### Manual
 
