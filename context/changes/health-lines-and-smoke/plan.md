@@ -1151,6 +1151,6 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 14.1 The two tests green; full `--workers=4`: `<branch e2e baseline> + 2`
-- [ ] 14.2 Deliberate breaks p14a, p14b → each its test red; each restored; meta-check
-- [ ] 14.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [x] 14.1 The two tests green; full `--workers=4`: `<branch e2e baseline> + 2` — 2500ae5
+- [x] 14.2 Deliberate breaks p14a, p14b → each its test red; each restored; meta-check — 2500ae5
+- [x] 14.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed — 2500ae5
