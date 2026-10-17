@@ -43,14 +43,19 @@ export const artBlocked = (skill: SkillDef, missingIds: ReadonlySet<string>): bo
  * `earlier` and `previous` lose the blocked skills; `current` only when at least `minCurrent` skills (and one) remain,
  * so the step can still unlock. If all three would be empty the original buckets come back.
  */
-export const withoutArtBlocked = (buckets: SkillBuckets, blocked: (s: SkillDef) => boolean, minCurrent: number): SkillBuckets => {
+/** What the filter did instead of filtering (ASL-04): `current` kept whole under the unlock threshold, `all` gave every original bucket back. */
+export type ArtFallback = 'none' | 'current' | 'all';
+
+export const withoutArtBlocked = (buckets: SkillBuckets, blocked: (s: SkillDef) => boolean, minCurrent: number): SkillBuckets & { fallback: ArtFallback } => {
     const keep = (skills: readonly SkillDef[]): SkillDef[] => skills.filter((s) => !blocked(s));
     const current = keep(buckets.current);
     const earlier = keep(buckets.earlier);
     const previous = keep(buckets.previous);
-    if (current.length + earlier.length + previous.length === 0) return buckets;
+    if (current.length + earlier.length + previous.length === 0) return { ...buckets, fallback: 'all' };
     const useCurrent = current.length > 0 && current.length >= minCurrent;
-    const result = { current: useCurrent ? current : buckets.current, earlier, previous };
+    // `current` is a fallback only when the filter would have removed something and the step was kept whole instead (ASL-03: `minCurrent` guards a removal, it never pads a short step).
+    const fallback: ArtFallback = !useCurrent && current.length < buckets.current.length ? 'current' : 'none';
+    const result = { current: useCurrent ? current : buckets.current, earlier, previous, fallback };
     if (!buckets.currentGroups) return result;
     // Review step: the groups follow `current` (filtered groups, empty ones dropped, or the whole unfiltered set).
     return { ...result, currentGroups: useCurrent ? buckets.currentGroups.map(keep).filter((g) => g.length > 0) : buckets.currentGroups };

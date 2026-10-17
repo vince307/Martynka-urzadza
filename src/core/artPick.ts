@@ -17,3 +17,15 @@ export function miniatureMode(needed: readonly string[], exists: (key: string) =
 export function neededMiniatureKeys(pieces: readonly { key: string; alpha: number }[]): string[] {
     return pieces.filter((p) => p.alpha !== 0).map((p) => p.key);
 }
+
+/** The screens whose picture can be replaced by a drawn fallback. */
+export type FallbackWhere = 'wallet' | 'notebook' | 'miniature' | 'loading';
+export const FALLBACK_ORDER: readonly FallbackWhere[] = ['wallet', 'notebook', 'miniature', 'loading'];
+/** Which fallback the child sees per screen (the mode is the picker's own word: 'drawn', 'icon', 'box', 'thumbnail'). Runtime only. */
+export type FallbackRecord = Readonly<Partial<Record<FallbackWhere, string>>>;
+
+/** Records that a screen shows a fallback. Pure and idempotent: the first mode noted for a screen stays. */
+export function noteFallback(record: FallbackRecord, where: FallbackWhere, mode: string): FallbackRecord {
+    if (record[where] !== undefined) return record;
+    return { ...record, [where]: mode };
+}

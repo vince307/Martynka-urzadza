@@ -5,6 +5,8 @@ import { formatNumber } from '../core/text/formatNumber';
 import { countNoun, inflect, pluralCategory } from '../core/text/plural';
 import { nouns } from './nouns';
 
+const ART_FOLDER_NAMES: Readonly<Record<string, string>> = { money: 'pieniądze', measuring: 'miary', icons: 'obrazki do liczenia' };
+
 export const pl = {
     title: 'Martynka urządza',
     welcome: {
@@ -45,7 +47,14 @@ export const pl = {
             loading: 'Muzyka się wczytuje.',
             waitingUnlock: 'Muzyka ruszy po pierwszym dotknięciu ekranu.',
             missing: 'Muzyka nie wczytała się. Gra działa dalej bez niej.',
+            blocked: 'To urządzenie nie pozwala grze odtwarzać dźwięków.',
         },
+        // DESIGN-GAP 148: the kit has no line for a device that refuses to play sounds (a locked audio context); the text is ours, to be read by a teacher.
+        soundBlocked: 'To urządzenie nie pozwala grze odtwarzać dźwięków.',
+        // DESIGN-GAP 149: the kit has no line for a device without audio; it replaces the "n sounds did not load" line.
+        soundNoDevice: 'Na tym urządzeniu gra nie ma dźwięku.',
+        // DESIGN-GAP 149: the cause code after the music line, same "Kod:" pattern as the save lines.
+        musicCode: (code: string) => `Kod: ${code}`,
         // DESIGN-GAP 121: the kit has no line for a sound choice the device would not keep; the text is ours, to be read by a teacher.
         soundPrefsNotKept: 'Ustawienie dźwięku obowiązuje tylko do zamknięcia gry.',
         noVoice: 'Na tym urządzeniu nie ma polskiego głosu. Polecenia będą czytane, gdy głos się pojawi.',
@@ -74,6 +83,8 @@ export const pl = {
         olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
         // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
         roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
+        // DESIGN-GAP 150: the kit has no line for a salon moved to the new look on this launch; the text is ours, to be read by a teacher.
+        salonCarried: 'Pokój przeniesiony na nowy wygląd. Kupione rzeczy zostały.',
         // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
         saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
@@ -115,6 +126,8 @@ export const pl = {
             ready: 'Gra jest gotowa do działania bez internetu.',
             installing: 'Gra przygotowuje się do działania bez internetu. Poczekaj chwilę.',
             failed: 'Nie udało się przygotować gry do działania bez internetu. Uruchom grę ponownie, gdy będzie internet.',
+            // DESIGN-GAP 139: the kit has no line for a newer version that could not be downloaded while the old one works.
+            updateFailed: 'Nowej wersji gry nie udało się pobrać. Ta wersja działa dalej bez internetu.',
             registerFailed: 'Gra nie przygotuje się do działania bez internetu na tym urządzeniu.',
             unsupported: 'Ta przeglądarka nie pozwala grać bez internetu.',
             takenOver: 'Nowsza wersja gry jest gotowa. Zacznie działać przy następnym uruchomieniu.',
@@ -123,15 +136,40 @@ export const pl = {
         artHeading: 'Obrazki',
         artOk: 'Wszystkie obrazki zadań są wczytane.',
         artMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W tych zadaniach zamiast obrazka jest napis.`,
         // The salon pictures (the second line of "Obrazki"): the same verb agreement as artMissing.
         roomArtOk: 'Wszystkie obrazki pokoju są wczytane.',
         roomArtMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków pokoju ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. W pokoju zamiast obrazka jest napis.`,
         // The screen pictures (the third line of "Obrazki", DESIGN-GAP 119): the same verb agreement as artMissing.
         uiArtOk: 'Wszystkie obrazki ekranów są wczytane.',
         uiArtMissing: (count: number, total: number) =>
-            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek. Uruchom grę ponownie.`,
+            `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek.`,
+        // DESIGN-GAP 140: the kit has no line for pictures that did not finish loading in time (a slow connection); calm, says what to do.
+        artCut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
+        // DESIGN-GAP 141: the kit has no line for why pictures are missing; one calm sentence per cause, "Kod:" follows from saveFailed.detail.
+        artCause: {
+            fetch: 'Tych plików nie ma na serwerze.',
+            network: 'Tych plików nie udało się pobrać. Internet był zbyt wolny albo się rozłączył.',
+            decode: 'Tych plików nie da się otworzyć.',
+            cut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
+            never: 'Tych plików gra nie zaczęła wczytywać.',
+        },
+        // DESIGN-GAP 142: the kit has no per-folder count of missing task pictures; "<folder>: brak 1 obrazka / 2 obrazków / 5 obrazków".
+        artFolders: (folder: string, count: number) =>
+            `${ART_FOLDER_NAMES[folder] ?? folder}: brak ${countNoun(count, ['obrazka', 'obrazków', 'obrazków'])}.`,
+        // DESIGN-GAP 143: the kit has no line saying that tasks with a missing picture are left out.
+        artSkipped: 'Zadania z tymi obrazkami gra na razie pomija.',
+        // DESIGN-GAP 144: the kit has no advice line for pictures; a restart is advised only when it can change the cause (cut, network).
+        artNoRestart: 'Ponowne uruchomienie tego nie zmieni. Gra działa dalej bez tych obrazków.',
+        artRestart: 'Uruchom grę ponownie, gdy internet będzie lepszy.',
+        // DESIGN-GAP 145: the kit has no list of the missing salon pieces; the labels come from the room data.
+        artLabels: (list: readonly string[]) => `Brakuje: ${list.join(', ')}.`,
+        // DESIGN-GAP 146: the kit has no line for the task font that did not load.
+        fontFallback: 'Litery w zadaniach są w zastępczym kroju pisma.',
+        // DESIGN-GAP 147: the kit has no line for screens that show a drawn picture because the pack picture is missing.
+        artFallback: (list: readonly string[]) => `Zamiast obrazka gra rysuje: ${list.join(', ')}.`,
+        artFallbackNames: { wallet: 'portfel', notebook: 'zeszyt', miniature: 'miniatura pokoju', loading: 'ekran ładowania' },
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {

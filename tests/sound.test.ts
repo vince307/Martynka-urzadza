@@ -1,6 +1,6 @@
 // Origin: change final-sound, phase 1. Oracles are typed here, not read from the code under test.
 import { describe, expect, it } from 'vitest';
-import { allEffectKeys, cueDelayMs, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, soundOutcome, trimFrameCount } from '../src/core/sound';
+import { allEffectKeys, cueDelayMs, effectsLine, musicCause, musicLine, DEFAULT_SOUND_PREFS, parseSoundPrefs, parseSoundPrefsWithProblem, soundOutcome, trimFrameCount } from '../src/core/sound';
 import { balance } from '../src/data/balance';
 import { SOUNDS } from '../src/data/sounds';
 
@@ -116,6 +116,38 @@ describe('music status line', () => {
     });
 });
 
+describe('locked context lines (audit M-1 / S-4, S-9)', () => {
+    it('music waiting for the unlock says blocked from the threshold on, not before', () => {
+        expect(musicLine(on, 'waiting-unlock', 2, 3)).toBe('waitingUnlock');
+        expect(musicLine(on, 'waiting-unlock', 3, 3)).toBe('blocked');
+        expect(musicLine(on, 'waiting-unlock', 9, 3)).toBe('blocked');
+    });
+    it('without a threshold the old line stays, and an off music shows nothing', () => {
+        expect(musicLine(on, 'waiting-unlock')).toBe('waitingUnlock');
+        expect(musicLine({ effects: true, music: false }, 'waiting-unlock', 9, 3)).toBeNull();
+    });
+    it('the effects line is blocked at the threshold and noDevice beats it', () => {
+        expect(effectsLine({ lockedCount: 2, threshold: 3, device: 'webaudio' })).toBeNull();
+        expect(effectsLine({ lockedCount: 3, threshold: 3, device: 'webaudio' })).toBe('blocked');
+        expect(effectsLine({ lockedCount: 0, threshold: 3, device: 'none' })).toBe('noDevice');
+        expect(effectsLine({ lockedCount: 7, threshold: 3, device: 'none' })).toBe('noDevice');
+        expect(effectsLine({ lockedCount: 7, threshold: 3, device: 'html5' })).toBe('blocked');
+    });
+    it('the balance threshold is 3 touches', () => {
+        expect(balance.sound.lockedTouches).toBe(3);
+    });
+});
+
+describe('musicCause (audit S-5)', () => {
+    it('names an http status, a timeout and an unknown failure', () => {
+        expect(musicCause({ xhrLoader: { status: 404 } })).toBe('http:404');
+        expect(musicCause({ xhrLoader: { status: 503 } })).toBe('http:503');
+        expect(musicCause({ xhrLoader: { status: 0 } })).toBe('timeout');
+        expect(musicCause({ xhrLoader: null })).toBe('timeout');
+        expect(musicCause(undefined)).toBeNull();
+    });
+});
+
 describe('allEffectKeys', () => {
     it('lists every effect of the table and never the music', () => {
         const table = [
@@ -129,5 +161,20 @@ describe('allEffectKeys', () => {
         const keys = allEffectKeys(SOUNDS);
         expect(keys).toHaveLength(SOUNDS.length - 1);
         expect(keys).not.toContain('sounds/music-loop');
+    });
+});
+
+describe('parseSoundPrefsWithProblem (audit S-7)', () => {
+    it('names why a stored value was not used', () => {
+        expect(parseSoundPrefsWithProblem('{bad').problem).toMatch(/not valid JSON/);
+        expect(parseSoundPrefsWithProblem('[1]').problem).toMatch(/not an object/);
+        expect(parseSoundPrefsWithProblem('{"effects":"yes","music":true}').problem).toMatch(/effects/);
+    });
+    it('has no problem for a good value or for nothing stored', () => {
+        expect(parseSoundPrefsWithProblem('{"effects":true,"music":false}')).toEqual({ prefs: { effects: true, music: false }, problem: null });
+        expect(parseSoundPrefsWithProblem(null).problem).toBeNull();
+    });
+    it('parseSoundPrefs gives the same prefs', () => {
+        expect(parseSoundPrefs('{"effects":"x"}')).toEqual(parseSoundPrefsWithProblem('{"effects":"x"}').prefs);
     });
 });

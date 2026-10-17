@@ -12,13 +12,15 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
-import { artHealthView, type ArtHealth } from '../core/artHealth';
+import type { FallbackRecord } from '../core/artPick';
+import { artHealthLines, type ArtHealth } from '../core/artHealth';
 import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
-import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
+import { encodeSave, freshSession, saveProblem, type SalonCarried, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { ROOM_ART } from '../data/roomArt';
 import { openSaveImportDialog, type BrokenDevice } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
@@ -27,6 +29,7 @@ import { createSoundPrefStore, deviceStorage } from '../storage/soundPrefs';
 import { openSettingsPanel } from '../ui/dom/settingsPanel';
 import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
+import { applySoundPrefs } from '../core/soundPrefsApply';
 import { playCues, soundOf } from '../ui/sound';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
@@ -34,6 +37,10 @@ import { SpeakerButton } from '../ui/widgets/SpeakerButton';
 import { StarCounter } from '../ui/widgets/StarCounter';
 import { HudTitle } from '../ui/widgets/HudTitle';
 import type { HudTitleView } from '../core/variants';
+
+/** Labels of the salon pieces whose picture is missing (the stand-in box shows the same text); pieces with no label are left out. */
+const missingRoomLabels = (health: ArtHealth | undefined): string[] =>
+    ROOM_ART.filter((entry) => entry.label !== '' && health?.missing.includes(entry.key)).map((entry) => entry.label);
 
 /**
  * Overlay above the task and room scenes: the star counter, the speaker and the "Do pokoju" switch.
@@ -172,12 +179,20 @@ export class UIScene extends Scene {
                     stage: learner.stage,
                     autoRead: settings.autoRead,
                     progress: progressView(stage, learner, { mastery: balance.mastery, view: balance.parentSettings }, previousDef),
-                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? []) : undefined,
+                    saveHealth: saver ? saveHealthView(saver.status(), copies.map((c) => c.from), (this.registry.get(REGISTRY_KEYS.roomProblems) as RoomProblem[] | undefined) ?? [], (this.registry.get(REGISTRY_KEYS.salonCarried) as SalonCarried | null | undefined) ?? null) : undefined,
                     ...(swStatus ? { offline: offlineView(swStatus) } : {}),
-                    artHealth: artHealthView(this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined),
-                    roomArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
-                    uiArtHealth: artHealthView(this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined),
-                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
+                    artLines: artHealthLines({
+                        task: this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined,
+                        room: this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
+                        ui: this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined,
+                        cut: (this.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[] } | undefined)?.cut.length ?? 0,
+                        build: __BUILD_ID__,
+                        font: this.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined,
+                        labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
+                        labelCap: balance.artHealth.labelCap,
+                        fallbacks: this.registry.get(REGISTRY_KEYS.artFallbacks) as FallbackRecord | undefined,
+                    }),
+                    ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, lockedCount: sound.status().lockedCount, device: sound.status().device, musicError: sound.status().musicError, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,
                     autoReadDefault: (stage) => effectiveAutoRead({ autoRead: null }, stage, readStages),
                     onCancel: () => session.run(() => this.closeSettings()),
@@ -268,10 +283,13 @@ export class UIScene extends Scene {
         const changed = changeStageByParent(learner, stage);
         this.registry.set(REGISTRY_KEYS.settings, { autoRead });
         if (soundPrefs) {
-            this.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
-            soundOf(this.registry)?.setPrefs(soundPrefs);
-            const kept = createSoundPrefStore(deviceStorage()).write(soundPrefs);   // a failed write is only a warning: the choice holds for this session
-            this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept);
+            // A failed write is only a warning: the choice holds for this session.
+            applySoundPrefs(soundPrefs, {
+                service: soundOf(this.registry),
+                store: createSoundPrefStore(deviceStorage()),
+                setPrefs: (prefs) => this.registry.set(REGISTRY_KEYS.soundPrefs, prefs),
+                setKept: (kept) => this.registry.set(REGISTRY_KEYS.soundPrefsKept, kept),
+            });
         }
         this.closeSettings();
         if (changed !== learner) {

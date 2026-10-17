@@ -4,19 +4,30 @@
 // Usage: npm run check:deploy -- <baseUrl> [sha7]
 // Exit codes: 0 all checks ok, 1 some check failed, 2 usage.
 import { ROOM_ART } from '../src/data/roomArt';
+import { SOUNDS } from '../src/data/sounds';
+import { TASK_ART } from '../src/data/taskArt';
+import { UI_ART } from '../src/data/uiArt';
 import {
     bundlesFromHtml,
     cacheControlCheck,
     compareBundles,
     contentTypeCheck,
+    entryVerdict,
+    failLine,
     hasBuildId,
+    isLocalHost,
+    precacheCovers,
     precacheFromSw,
-    roomArtCheck,
+    precacheServed,
     type CheckResult,
+    type EntryVerdict,
 } from './deploy-check/parse';
 
 const RETRIES = 6;
 const RETRY_DELAY_MS = 5000;
+const HEAD_POOL = 8;
+const HEAD_TIMEOUT_MS = 15000;
+const GET_TIMEOUT_MS = 60000;
 const TITLE = 'Martynka urządza';
 
 const [baseArg, sha7] = process.argv.slice(2);
@@ -47,14 +58,44 @@ const manifestNameOf = (text: string): string => {
 const get = async (path: string, retries = 0): Promise<Response> => {
     for (let attempt = 0; ; attempt += 1) {
         try {
-            return await fetch(new URL(path, base), { redirect: 'manual' });
+            // The limit covers the body read too: the Deploy job has no timeout of its own, a stalled answer must end.
+            return await fetch(new URL(path, base), { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
         } catch (error) {
             if (attempt >= retries) {
-                throw error;
+                throw Object.assign(new Error(`${path}: ${error instanceof Error ? error.message : String(error)}`), { cause: error });
             }
             await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
         }
     }
+};
+
+/** HEAD one precache entry; one retry after a network error or timeout, then a failed verdict (status 0). */
+const headEntry = async (url: string): Promise<EntryVerdict> => {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+            const res = await fetch(new URL(url, base), { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(HEAD_TIMEOUT_MS) });
+            return entryVerdict(url, res.status, res.headers.get('content-type'), res.headers.get('location'));
+        } catch {
+            if (attempt === 0) {
+                await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+            }
+        }
+    }
+    return entryVerdict(url, 0, null, null);
+};
+
+const headAll = async (urls: readonly string[]): Promise<EntryVerdict[]> => {
+    const out: EntryVerdict[] = new Array<EntryVerdict>(urls.length);
+    let next = 0;
+    const worker = async (): Promise<void> => {
+        while (next < urls.length) {
+            const i = next;
+            next += 1;
+            out[i] = await headEntry(urls[i]);
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(HEAD_POOL, urls.length) }, worker));
+    return out;
 };
 
 const main = async (): Promise<number> => {
@@ -80,10 +121,14 @@ const main = async (): Promise<number> => {
     record({ name: 'GET /sw.js', ok: sw.status === 200 && precache.length > 0, detail: `${sw.status}, ${precache.length} precache entries` });
     record(cacheControlCheck('/sw.js', sw.headers.get('cache-control'), 'no-cache'));
 
-    record(roomArtCheck(precache, ROOM_ART.map((a) => a.url)));
-    const scene = await get('/assets/rooms/salon/architecture-after.webp');
-    record({ name: 'GET /assets/rooms/salon/architecture-after.webp', ok: scene.status === 200, detail: `${scene.status}` });
-    record(contentTypeCheck('/assets/rooms/salon/architecture-after.webp', scene.headers.get('content-type'), 'image/webp'));
+    record(precacheServed(await headAll(precache)));
+    if (sha7) {
+        // These tables are HEAD's: after a rollback (no SHA) they may list files the older release never had.
+        record(precacheCovers('task pictures', precache, TASK_ART.map((a) => a.url)));
+        record(precacheCovers('screen pictures', precache, UI_ART.map((a) => a.url)));
+        record(precacheCovers('room pictures', precache, ROOM_ART.map((a) => a.url)));
+        record(precacheCovers('boot sounds', precache, SOUNDS.filter((s) => s.boot).flatMap((s) => [...s.urls])));
+    }
 
     const bundles = bundlesFromHtml(html);
     record(compareBundles(bundles, precache));
@@ -92,7 +137,11 @@ const main = async (): Promise<number> => {
         const res = await get(bundle);
         const text = await res.text();
         record({ name: `GET ${bundle}`, ok: res.status === 200 && text.length > 0, detail: `${res.status}, ${text.length} bytes` });
-        record(cacheControlCheck(bundle, res.headers.get('cache-control'), 'immutable'));
+        if (isLocalHost(baseArg)) {
+            record({ name: `${bundle}: cache-control immutable`, ok: true, detail: 'skipped on localhost' });
+        } else {
+            record(cacheControlCheck(bundle, res.headers.get('cache-control'), 'immutable'));
+        }
         if (/\/_app\/index-[^/]+\.js$/.test(bundle)) {
             entryJs = text;
         }
@@ -101,11 +150,11 @@ const main = async (): Promise<number> => {
         record({ name: 'build id', ok: hasBuildId(entryJs, sha7), detail: hasBuildId(entryJs, sha7) ? `"${sha7}" found in the entry bundle` : `"${sha7}" not found in the entry bundle` });
     }
 
-    if (!base.hostname.startsWith('www.') && base.hostname !== 'localhost' && base.hostname !== '127.0.0.1') {
+    if (!base.hostname.startsWith('www.') && !isLocalHost(baseArg)) {
         const www = new URL(base);
         www.hostname = `www.${base.hostname}`;
         try {
-            const res = await fetch(www, { redirect: 'manual' });
+            const res = await fetch(www, { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
             const location = res.headers.get('location') ?? '';
             record({ name: 'www redirects to apex', ok: [301, 308].includes(res.status) && location.startsWith(`${base.protocol}//${base.hostname}`), detail: `${res.status} → ${location || '(none)'}` });
         } catch (error) {
@@ -121,7 +170,7 @@ const main = async (): Promise<number> => {
 main().then(
     (code) => process.exit(code),
     (error) => {
-        console.error(`FAIL request error — ${error instanceof Error ? error.message : String(error)}`);
+        console.error(failLine(error));
         process.exit(1);
     },
 );

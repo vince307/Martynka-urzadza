@@ -57,11 +57,15 @@ export interface Snapshot {
     /** The boot loading screen (BootScene still loading): its phase. */
     loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
     /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
-    bootLoad?: { cut: string[]; creates: number } | null;
+    bootLoad?: { cut: string[]; creates: number; elapsedMs: number } | null;
+    /** Whether the task font arrived (`fallback` = drawn in a system font); null before the first create. */
+    fontHealth?: 'loaded' | 'fallback' | null;
+    /** Which drawn fallback the child saw instead of a screen picture (wallet, notebook, miniature, loading), with the mode; runtime only. */
+    artFallbacks?: Record<string, string>;
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; unreachable: string[] } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;

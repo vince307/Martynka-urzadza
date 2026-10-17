@@ -253,3 +253,12 @@ describe('saveHealthView: the salon does not match the game (save-truth p12, R-4
         expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }), [], [over]).roomMismatch).toBe(true);
     });
 });
+
+describe('saveHealthView: the salon was moved to the new look (health-lines-and-smoke p10, M-4)', () => {
+    it('is false without a note and true with one, in any save state', () => {
+        expect(saveHealthView(status({ writes: 1 })).salonCarried).toBe(false);
+        expect(saveHealthView(status({ writes: 1 }), [], [], null).salonCarried).toBe(false);
+        expect(saveHealthView(status({ writes: 1 }), [], [], { from: 8, to: 7 }).salonCarried).toBe(true);
+        expect(saveHealthView(status({ blocked: true, blockedBy: 'fatal' }), [], [], { from: 8, to: 7 }).salonCarried).toBe(true);
+    });
+});

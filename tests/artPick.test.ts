@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { firstLoaded, miniatureMode, neededMiniatureKeys } from '../src/core/artPick';
+import { firstLoaded, miniatureMode, neededMiniatureKeys, noteFallback } from '../src/core/artPick';
 import { miniaturePieces } from '../src/ui/widgets/RoomView';
 import { SALON } from '../src/data/rooms';
 
@@ -39,5 +39,22 @@ describe('neededMiniatureKeys', () => {
         expect(needed).toContain(missing);
         const exists = (key: string) => key === 'thumb' || (needed.includes(key) && key !== missing);
         expect(miniatureMode(needed, exists, 'thumb')).toBe('thumbnail');
+    });
+});
+
+describe('noteFallback', () => {
+    it('records a screen and keeps the earlier record untouched', () => {
+        const first = {};
+        const next = noteFallback(first, 'wallet', 'drawn');
+        expect(next).toEqual({ wallet: 'drawn' });
+        expect(first).toEqual({});
+    });
+    it('is idempotent and the first mode stays', () => {
+        const once = noteFallback({}, 'miniature', 'thumbnail');
+        expect(noteFallback(once, 'miniature', 'drawn')).toBe(once);
+        expect(noteFallback(once, 'miniature', 'thumbnail')).toEqual({ miniature: 'thumbnail' });
+    });
+    it('keeps other screens', () => {
+        expect(noteFallback({ wallet: 'drawn' }, 'notebook', 'icon')).toEqual({ wallet: 'drawn', notebook: 'icon' });
     });
 });

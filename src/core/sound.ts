@@ -12,18 +12,30 @@ export interface SoundPrefs { effects: boolean; music: boolean }
 export const DEFAULT_SOUND_PREFS: SoundPrefs = { effects: true, music: false };
 export type SoundOutcome = 'played' | 'off' | 'locked' | 'missing';
 
+/** Same parse, plus the reason a stored value was not used as it was (null when it was fine or nothing was stored). */
+export function parseSoundPrefsWithProblem(raw: unknown): { prefs: SoundPrefs; problem: string | null } {
+    let value: unknown = raw;
+    if (raw === null || raw === undefined) return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: null };
+    if (typeof raw === 'string') {
+        try { value = JSON.parse(raw); } catch { return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: 'stored value is not valid JSON' }; }
+    }
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        return { prefs: { ...DEFAULT_SOUND_PREFS }, problem: 'stored value is not an object' };
+    }
+    const o = value as Record<string, unknown>;
+    const bad = (['effects', 'music'] as const).filter((field) => typeof o[field] !== 'boolean');
+    return {
+        prefs: {
+            effects: typeof o.effects === 'boolean' ? o.effects : DEFAULT_SOUND_PREFS.effects,
+            music: typeof o.music === 'boolean' ? o.music : DEFAULT_SOUND_PREFS.music,
+        },
+        problem: bad.length > 0 ? `stored value has no boolean ${bad.join(', ')}` : null,
+    };
+}
+
 /** Accepts a JSON string or an object; a field that is not a boolean takes its default, garbage gives the defaults. */
 export function parseSoundPrefs(raw: unknown): SoundPrefs {
-    let value: unknown = raw;
-    if (typeof raw === 'string') {
-        try { value = JSON.parse(raw); } catch { return { ...DEFAULT_SOUND_PREFS }; }
-    }
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) return { ...DEFAULT_SOUND_PREFS };
-    const o = value as Record<string, unknown>;
-    return {
-        effects: typeof o.effects === 'boolean' ? o.effects : DEFAULT_SOUND_PREFS.effects,
-        music: typeof o.music === 'boolean' ? o.music : DEFAULT_SOUND_PREFS.music,
-    };
+    return parseSoundPrefsWithProblem(raw).prefs;
 }
 
 /** Order: switched off, then not in the cache, then the audio context still locked, else played. */
@@ -35,13 +47,14 @@ export function soundOutcome(kind: 'effect' | 'music', prefs: SoundPrefs, state:
 }
 
 export type MusicState = 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing';
-export type MusicLine = 'loading' | 'waitingUnlock' | 'missing';
+export type MusicLine = 'loading' | 'waitingUnlock' | 'blocked' | 'missing';
 
 /** The one muted line under the music group: only while music is switched on and not playing. */
-export function musicLine(prefs: SoundPrefs, music: MusicState): MusicLine | null {
+export function musicLine(prefs: SoundPrefs, music: MusicState, lockedCount = 0, threshold = Infinity): MusicLine | null {
     if (!prefs.music) return null;
     if (music === 'loading') return 'loading';
-    if (music === 'waiting-unlock') return 'waitingUnlock';
+    // M-1: a context that swallowed `threshold` effects will not unlock by itself; "after the first tap" would be a false promise.
+    if (music === 'waiting-unlock') return lockedCount >= threshold ? 'blocked' : 'waitingUnlock';
     if (music === 'missing') return 'missing';
     return null;
 }
@@ -98,4 +111,19 @@ const matTotal = (mat: Readonly<Record<string, number>>): number => Object.value
 export function dragCue(before: DragShape, after: DragShape, mode: 'blocks' | 'coins' | 'clock'): SoundId | null {
     if (mode === 'clock') return null;
     return before.carrying !== null && after.carrying === null && matTotal(after.mat) > matTotal(before.mat) ? 'coin' : null;
+}
+
+export type EffectsLine = 'blocked' | 'noDevice';
+
+/** S-9 / M-1: the line under the effects group; no device beats blocked. */
+export function effectsLine(input: { lockedCount: number; threshold: number; device: 'webaudio' | 'html5' | 'none' }): EffectsLine | null {
+    if (input.device === 'none') return 'noDevice';
+    return input.lockedCount >= input.threshold ? 'blocked' : null;
+}
+
+/** S-5: why the music file did not arrive, from the loader's failed file (status 0 is a timeout or a dropped connection). */
+export function musicCause(file: { xhrLoader?: { status: number } | null } | undefined): string | null {
+    if (!file) return null;
+    const status = file.xhrLoader?.status ?? 0;
+    return status >= 400 ? `http:${status}` : 'timeout';
 }

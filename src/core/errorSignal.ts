@@ -25,3 +25,6 @@ export const isFatalSignal = (signal: ErrorSignal): boolean => {
     }
     return signal.hasError || !isOpaqueNoise(signal.message);
 };
+
+/** The console line for a signal that is quiet noise: name and message, so the cause is in the log (audit S-2). */
+export const noiseLine = (signal: ErrorSignal): string => `Quiet rejection: ${signal.name ?? 'unnamed'} — ${signal.message}`;

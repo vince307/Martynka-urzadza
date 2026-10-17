@@ -3,7 +3,7 @@ import { balance } from '../data/balance';
 import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
 import { ROOM_GESTURE_IDLE, roomGesture, type RoomGestureState } from '../core/roomGesture';
-import { holdPoint, slotAt, type AlphaAt } from '../core/roomHit';
+import { holdPoint, slotAt, unreachableSlots, type AlphaAt } from '../core/roomHit';
 import { effectiveAutoRead } from '../core/narration/voice';
 import { panelCue } from '../core/sound';
 import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
@@ -30,6 +30,8 @@ export interface RoomSnapshot {
     roomId: string;
     tasksDone: number;
     chosen: Readonly<Record<string, number>>;
+    /** Chosen slots without a hold point (e2e hook only reads it). */
+    unreachable: string[];
     shown: Readonly<Record<string, number>>;
     currentTask: { id: string; label: string; cost: number } | null;
     taskKind: 'stage' | 'slot' | null;
@@ -453,6 +455,7 @@ export class RoomScene extends Scene {
             roomId: room.id,
             tasksDone: state.tasksDone,
             chosen: { ...state.chosen },
+            unreachable: unreachableSlots(room, state.chosen, this.alphaAt(room, state.chosen)),
             shown: this.view.shown(),
             currentTask: task ? { id: task.id, label: task.label, cost: task.cost } : null,
             taskKind: task?.kind ?? null,

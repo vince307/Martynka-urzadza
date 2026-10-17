@@ -1,4 +1,4 @@
-import { isFatalSignal, type ErrorSignal } from '../../core/errorSignal';
+import { isFatalSignal, noiseLine, type ErrorSignal } from '../../core/errorSignal';
 
 const signalOfError = (event: ErrorEvent, origin: string): ErrorSignal => ({
     kind: 'error',
@@ -33,7 +33,7 @@ export const installErrorBoundary = (win: Window, onFatal: (error: unknown) => v
     let handling = false;
     const handle = (signal: ErrorSignal, original: unknown): void => {
         if (!isFatalSignal(signal)) {
-            console.warn('Ignored browser noise:', signal.message);
+            console.warn(signal.kind === 'rejection' ? noiseLine(signal) : `Ignored browser noise: ${signal.message}`);
             return;
         }
         console.error(original);

@@ -3,7 +3,7 @@
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { currentTask, emptyRoomState, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
+import { currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
@@ -279,4 +279,31 @@ describe('roomStateProblems (R-4)', () => {
             if ('living' in decoded.session.rooms) expect(problems).toContainEqual({ room: 'living', kind: 'unknown-room' });
         },
     );
+});
+
+describe('roomGrowth (R-2): a room whose task list grew past the saved tasksDone is reported, log only', () => {
+    const grown: RoomDef = { ...room, formerTaskCounts: [1], tasks: [...room.tasks] };
+
+    it('names the room when tasksDone equals a former length and the list is now longer', () => {
+        expect(roomGrowth({ test: { tasksDone: 1, chosen: {} } }, { test: grown })).toEqual([{ room: 'test', from: 1, to: 2 }]);
+    });
+
+    it('is quiet for other counts, a finished room, an unknown room and a room with no former lengths', () => {
+        expect(roomGrowth({ test: { tasksDone: 0, chosen: {} } }, { test: grown })).toEqual([]);
+        expect(roomGrowth({ test: { tasksDone: 2, chosen: {} } }, { test: grown })).toEqual([]);
+        expect(roomGrowth({ other: { tasksDone: 1, chosen: {} } }, { test: grown })).toEqual([]);
+        expect(roomGrowth({ test: { tasksDone: 1, chosen: {} } }, { test: room })).toEqual([]);
+    });
+
+    it('the live salon: 7 done of 12 is reported, nothing else is', () => {
+        expect(roomGrowth({ salon: { tasksDone: 7, chosen: {} } }, ROOMS)).toEqual([{ room: 'salon', from: 7, to: ROOMS.salon.tasks.length }]);
+        expect(roomGrowth({ salon: { tasksDone: 6, chosen: {} } }, ROOMS)).toEqual([]);
+        expect(roomGrowth({ salon: { tasksDone: ROOMS.salon.tasks.length, chosen: {} } }, ROOMS)).toEqual([]);
+    });
+
+    it('is not a room problem and changes nothing in its input', () => {
+        const rooms = deepFreeze({ salon: { tasksDone: 7, chosen: {} } });
+        expect(roomStateProblems(rooms, ROOMS)).toEqual([]);
+        expect(() => roomGrowth(rooms, ROOMS)).not.toThrow();
+    });
 });

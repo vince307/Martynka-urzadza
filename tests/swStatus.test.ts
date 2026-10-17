@@ -33,6 +33,16 @@ describe('stepSw', () => {
         expect(s.error).toBe('InstallFailed');
     });
 
+    it('a worker found waiting at registration is tracked: redundant is a failed update, activated clears it', () => {
+        const waiting = [{ type: 'register', hadController: true }, { type: 'active', id: 7 }, { type: 'waiting', id: 8 }] as const;
+        const failed = run([...waiting, { type: 'state', id: 8, state: 'redundant' }]);
+        expect(failed.phase).toBe('ready');
+        expect(failed.error).toBe('InstallFailed');
+        const done = run([...waiting, { type: 'state', id: 8, state: 'activated' }]);
+        expect(done.error).toBeNull();
+        expect(done.tracking).toBeNull();
+    });
+
     it('a tracked installing worker that turns redundant with no active one is install-failed', () => {
         const s = run([{ type: 'register', hadController: false }, { type: 'installing', id: 1 }, { type: 'state', id: 1, state: 'redundant' }]);
         expect(view(s)).toEqual({ phase: 'install-failed', error: 'InstallFailed', takenOver: false });
@@ -80,7 +90,11 @@ describe('offlineView', () => {
         expect(offlineView({ ...base, phase: 'ready', takenOver: true }).takenOver).toBe(true);
         expect(offlineView({ ...base, phase: 'ready' }).takenOver).toBe(false);
     });
-    it('keeps a failed update behind an active worker as ready with a code', () => {
-        expect(offlineView({ ...base, phase: 'ready', error: 'InstallFailed' })).toEqual({ line: 'ready', code: 'InstallFailed', takenOver: false });
+    // Reversed on purpose (audit O-2): the line "Gra jest gotowa" used to hide a failed update behind an active worker.
+    it('names a failed update behind an active worker with its code', () => {
+        expect(offlineView({ ...base, phase: 'ready', error: 'InstallFailed' })).toEqual({ line: 'updateFailed', code: 'InstallFailed', takenOver: false });
+    });
+    it('a ready worker without an error keeps the ready line', () => {
+        expect(offlineView({ ...base, phase: 'ready', error: null }).line).toBe('ready');
     });
 });

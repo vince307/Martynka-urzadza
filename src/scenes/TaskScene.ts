@@ -197,6 +197,7 @@ export class TaskScene extends Scene {
     private puzzleId: string | null = null;
     private word: string | null = null;   // the word of an open 'word' round
     private dice: DiceThrow[] | null = null;   // the throws of an open 'dice' round, in task order
+    private artFallbackRounds = 0;  // ASL-04: rounds of this session where the art filter fell back; runtime only, log only
     private warmup = false;       // the open round is the placement warm-up (6 tasks); its end may lower the stage silently
     private flyingStars: GameObjects.Graphics[] = [];   // stars still in flight; "Do pokoju" ends them (the sleeping scene's tweens stand still)
 
@@ -945,7 +946,17 @@ export class TaskScene extends Scene {
             this.rng,
             balance.round,
             balance.tiles.count,
-            { missingIds, unlockShare: balance.curriculum.unlockShare },
+            {
+                missingIds,
+                unlockShare: balance.curriculum.unlockShare,
+                // ASL-04: log only, one line per `fallbackLogEvery` fallbacks of this session; the draw and the mastery are untouched.
+                onFallback: (fallback) => {
+                    this.artFallbackRounds += 1;
+                    if (this.artFallbackRounds % balance.artHealth.fallbackLogEvery === 0) {
+                        console.info(`Art filter fell back in ${this.artFallbackRounds} rounds this session (last: ${fallback}, stage ${this.stage.id})`);
+                    }
+                },
+            },
             { picture: month !== undefined && pictureMode(learner, month) },
         );
         return { kind: 'round', state: startRound(tasks, balance.round) };

@@ -199,7 +199,8 @@ export const REGISTRY_KEYS = {
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter
-    bootLoad: 'bootLoad',               // { cut: string[]; creates: number }: files the total boot limit ended and how often BootScene.create ran, set by BootScene; runtime only, not in SAVE_KEYS
+    bootLoad: 'bootLoad',               // { cut: string[]; cutByTable; creates: number; elapsedMs: number }: files the total boot limit ended (also by table), how often BootScene.create ran and the wall-clock load time, set by BootScene; runtime only, not in SAVE_KEYS
+    fontHealth: 'fontHealth',           // 'loaded' | 'fallback' (core/artHealth fontHealth): whether the task font arrived, set by BootScene.create; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
     today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)
@@ -208,8 +209,10 @@ export const REGISTRY_KEYS = {
     sound: 'sound',                     // the game's SoundService (src/ui/sound.ts), set in main.ts; runtime only, not in SAVE_KEYS
     soundPrefs: 'soundPrefs',           // SoundPrefs (core/sound), the device preference read from localStorage in main.ts; runtime only, not in SAVE_KEYS
     soundPrefsKept: 'soundPrefsKept',   // boolean: false when the device refused to keep the sound choice (UIScene.applySettings); runtime only, not in SAVE_KEYS
+    artFallbacks: 'artFallbacks',       // FallbackRecord (core/artPick): which drawn fallback the child saw instead of a screen picture, written by the widgets and BootScene; runtime only, not in SAVE_KEYS
     soundHealth: 'soundHealth',         // ArtHealth of the sound effects (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     roomProblems: 'roomProblems',       // RoomProblem[] (core/rooms): where the saved rooms disagreed with the salon at load, set in main.ts; runtime only, not in SAVE_KEYS, nothing is repaired
+    salonCarried: 'salonCarried',       // SalonCarried | null (core/save): this load moved the old salon to the new look, set in main.ts; runtime only, not in SAVE_KEYS
     swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;

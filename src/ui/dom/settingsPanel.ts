@@ -1,8 +1,8 @@
-import type { ArtHealthView } from '../../core/artHealth';
+import type { ArtHealthLine } from '../../core/artHealth';
 import type { OfflineView } from '../../core/swStatus';
 import type { SaveHealthView } from '../../core/saveHealth';
 import type { ProgressView } from '../../core/progress';
-import { musicLine, type MusicState, type SoundPrefs } from '../../core/sound';
+import { effectsLine, musicLine, type MusicState, type SoundPrefs } from '../../core/sound';
 import type { StageId } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog } from './dialog';
@@ -10,6 +10,7 @@ import { createButton, createText } from './overlay';
 import { createProgressView } from './progressView';
 import { createArtHealthView } from './artHealthView';
 import { createOfflineView } from './offlineView';
+import { balance } from '../../data/balance';
 import { createSaveHealthView } from './saveHealthView';
 import { createStageChoices } from './stageChoices';
 
@@ -26,11 +27,10 @@ export interface SettingsPanelOptions {
     saveHealth?: SaveHealthView;
     /** Service worker record taken when the panel opens; absent = no section. */
     offline?: OfflineView;
-    artHealth?: ArtHealthView;
-    roomArtHealth?: ArtHealthView;
-    uiArtHealth?: ArtHealthView;
+    /** Lines of "Obrazki" built by `artHealthLines` when the panel opens; empty or absent = no section. */
+    artLines?: readonly ArtHealthLine[];
     /** Sound preferences as they stand and how many effects did not load; absent = no sound service, no section. */
-    sound?: { prefs: SoundPrefs; missing: number; music: MusicState; prefsKept?: boolean };
+    sound?: { prefs: SoundPrefs; missing: number; music: MusicState; prefsKept?: boolean; lockedCount?: number; device?: 'webaudio' | 'html5' | 'none'; musicError?: string | null };
     /** Takes the pending choices; the caller applies them through core. */
     onConfirm: (result: { stage: StageId; autoRead: boolean | null; sound: SoundPrefs | null }) => void;
     onCancel: () => void;
@@ -55,7 +55,7 @@ export interface SettingsPanelOptions {
  * DESIGN-GAP (row 30): the kit has no line for a device without a Polish voice; a muted paragraph under the reading buttons while
  * the voice is missing. The toggle stays active (the parent's choice is kept for later).
  */
-export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artHealth, roomArtHealth, uiArtHealth, sound, onConfirm, onCancel, onExport, onImport, onBackupExport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
+export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, saveHealth, offline, artLines, sound, onConfirm, onCancel, onExport, onImport, onBackupExport, onReset, watchVoice, parent = document.body }: SettingsPanelOptions): (() => void) => {
     let chosenStage = stage;
     let chosenReading = autoRead;
 
@@ -111,11 +111,17 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
     const music = soundGroup(pl.settings.musicHeading, 'settings-panel-music', 'music');
     const soundHeading = createText('h2', pl.settings.soundHeading);
     const soundMissing = createText('p', sound ? pl.settings.soundMissing(sound.missing) : '', 'overlay-muted');
-    soundMissing.hidden = !sound || sound.missing <= 0;
+    // DESIGN-GAP 148-149: no device or a locked context gets its own line; "n sounds did not load" would only repeat it.
+    const deviceLine = sound ? effectsLine({ lockedCount: sound.lockedCount ?? 0, threshold: balance.sound.lockedTouches, device: sound.device ?? 'webaudio' }) : null;
+    const soundDevice = createText('p', deviceLine === 'noDevice' ? pl.settings.soundNoDevice : deviceLine === 'blocked' ? pl.settings.soundBlocked : '', 'overlay-muted');
+    soundDevice.hidden = deviceLine === null;
+    soundMissing.hidden = !sound || sound.missing <= 0 || deviceLine === 'noDevice';
     // DESIGN-GAP 120: one muted line under the music group while music is on and not playing.
-    const line = sound ? musicLine(sound.prefs, sound.music) : null;
-    const musicStatus = createText('p', line ? pl.settings.musicStatus[line] : '', 'overlay-muted');
-    musicStatus.hidden = line === null;
+    const line = sound ? musicLine(sound.prefs, sound.music, sound.lockedCount ?? 0, balance.sound.lockedTouches) : null;
+    const musicText = line === null ? '' : line === 'missing' && sound?.musicError ? `${pl.settings.musicStatus[line]} ${pl.settings.musicCode(sound.musicError)}` : pl.settings.musicStatus[line];
+    const musicStatus = createText('p', musicText, 'overlay-muted');
+    // The device line already says "blocked" once; the music line then adds nothing.
+    musicStatus.hidden = line === null || (line === 'blocked' && deviceLine === 'blocked');
     musicStatus.className += ' parent-music-status';
 
     // DESIGN-GAP 121: one muted line while the device refused to keep the sound choice; it holds for this session only.
@@ -184,7 +190,7 @@ export const openSettingsPanel = ({ stage, autoRead, autoReadDefault, progress, 
         }));
     }
 
-    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artHealth && artHealth.kind !== 'unknown' ? [createArtHealthView(artHealth, roomArtHealth, uiArtHealth)] : []), ...(onExport || onImport || onBackupExport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
+    const handle = openDialog(parent, createText('h1', pl.settings.title), [...stageChoices.elements, readingTitle, readingRow, noVoice, ...(sound ? [soundHeading, effects.title, effects.row, music.title, music.row, musicStatus, soundDevice, soundMissing, prefsNotKept] : []), ...(saveHealth ? [createSaveHealthView(saveHealth)] : []), ...(offline ? [createOfflineView(offline)] : []), ...(artLines && artLines.length > 0 ? [createArtHealthView(artLines)] : []), ...(onExport || onImport || onBackupExport || onReset ? [saveActions] : []), createProgressView(progress), actions], cancel);
     refresh();
     unwatch = watchVoice?.((available) => {
         noVoice.hidden = available;

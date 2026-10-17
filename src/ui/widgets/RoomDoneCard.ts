@@ -4,6 +4,7 @@ import type { RoomListItem } from '../../core/rooms';
 import type { RoomDef, RoomState } from '../../core/types';
 import { PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
+import { recordFallback } from '../artFallbacks';
 import { UI_ART_KEYS } from '../../data/uiArt';
 import { PageButton } from './PageButton';
 import { drawRoomMiniature, miniaturePieces } from './RoomView';
@@ -94,6 +95,7 @@ export class RoomDoneCard {
         const exists = (key: string): boolean => this.scene.textures.exists(key);
         const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, UI_ART_KEYS.salonAfter);
         this.mode = mode;
+        if (mode !== 'live') recordFallback(this.scene, 'miniature', mode);
         const thumbLeft = left + (tiles.width - thumbWidth) / 2;
         if (mode === 'thumbnail') {
             this.pictures.push(

@@ -99,7 +99,35 @@ describe('withoutArtBlocked', () => {
 
     it('returns the original buckets when every pool would be empty', () => {
         const b: SkillBuckets = { current: five, earlier: [mk('e1')], previous: [mk('p1')] };
-        expect(withoutArtBlocked(b, () => true, 3)).toBe(b);
+        const out = withoutArtBlocked(b, () => true, 3);
+        expect(out.current).toBe(b.current);
+        expect(out.earlier).toBe(b.earlier);
+        expect(out.previous).toBe(b.previous);
+    });
+
+    // ASL-04: the fallbacks are told apart so the scene can count them (the buckets are untouched by the label).
+    it('says which fallback it took: none, current (kept whole under the threshold), all (every pool empty)', () => {
+        const b: SkillBuckets = { current: five, earlier: [mk('e1')], previous: [mk('p1')] };
+        expect(withoutArtBlocked(b, () => false, 3).fallback).toBe('none');
+        expect(withoutArtBlocked(b, (s) => s.id === 's1' || s.id === 'e1', 3).fallback).toBe('none');
+        expect(withoutArtBlocked(b, (s) => s.id !== 's5' && s.id !== 's4' && s.id !== 'e1', 3).fallback).toBe('current');
+        expect(withoutArtBlocked(b, () => true, 3).fallback).toBe('all');
+    });
+
+    it('a short current step nothing was removed from is not a fallback (ASL-03: minCurrent only guards a removal)', () => {
+        const b: SkillBuckets = { current: [mk('a'), mk('b')], earlier: [mk('e1')], previous: [] };
+        const out = withoutArtBlocked(b, (s) => s.id === 'e1', 3);
+        expect(out.current).toEqual(b.current);
+        expect(out.fallback).toBe('none');
+    });
+
+    it('the fallback never lowers the current step below what it had: current is the whole step or at least minCurrent', () => {
+        const b: SkillBuckets = { current: five, earlier: [], previous: [] };
+        for (let blockedCount = 0; blockedCount <= 5; blockedCount++) {
+            const blockedIds = new Set(five.slice(0, blockedCount).map((s) => s.id));
+            const out = withoutArtBlocked(b, (s) => blockedIds.has(s.id), 3);
+            expect(out.current.length === 5 || out.current.length >= 3).toBe(true);
+        }
     });
 });
 
@@ -133,6 +161,18 @@ describe('rounds with missing art', () => {
                 expect(JSON.parse(JSON.stringify(empty))).toEqual(JSON.parse(JSON.stringify(plain)));
             }
         }
+    });
+
+    it('ASL-04: tells the caller when the art filter fell back (current kept whole), never when it did not or when nothing is missing', () => {
+        const missing = new Set(['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'note-20zl', 'container-1l']);
+        const seen: string[] = [];
+        const tasks = buildAdaptiveRound(stage('E2'), undefined, learner(2), NORMAL, createRng(3), rules, balance.tiles.count, { missingIds: missing, unlockShare: balance.curriculum.unlockShare, onFallback: (k) => seen.push(k) });
+        expect(tasks).toHaveLength(5);
+        expect(seen).toEqual(['current']);
+        const quiet: string[] = [];
+        buildAdaptiveRound(stage('E2'), undefined, learner(2), NORMAL, createRng(3), rules, balance.tiles.count, { missingIds: NONE, unlockShare: balance.curriculum.unlockShare, onFallback: (k) => quiet.push(k) });
+        buildAdaptiveRound(stage('E2'), undefined, learner(2), NORMAL, createRng(3), rules, balance.tiles.count, { missingIds: new Set(['coin-50gr']), unlockShare: balance.curriculum.unlockShare, onFallback: (k) => quiet.push(k) });
+        expect(quiet).toEqual([]);
     });
 
     it('draws no MONEY_COUNT from earlier or previous pools when coins are missing', () => {

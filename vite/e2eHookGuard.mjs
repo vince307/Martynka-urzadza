@@ -3,7 +3,7 @@
 // The e2e build must contain the required ones (otherwise the hook vanished and
 // the e2e project would fail with a confusing error).
 export const E2E_HOOK_MARKER = '__martynkaE2E';
-export const E2E_HOOK_MARKERS = [E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills', 'e2eArt', 'e2eDay', 'e2eVariant', 'legacy-salon'];
+export const E2E_HOOK_MARKERS = [E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills', 'e2eArt', 'stallall', 'e2eDay', 'e2eVariant', 'legacy-salon'];
 // Markers that must be in the e2e build: every one has a caller there, so a missing one means the hook was dropped.
 export const E2E_REQUIRED_MARKERS = [...E2E_HOOK_MARKERS];
 

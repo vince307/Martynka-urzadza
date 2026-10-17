@@ -19,6 +19,7 @@ export type SwEvent =
     | { type: 'register'; hadController: boolean }
     | { type: 'registerFailed'; error: string }
     | { type: 'installing'; id: number }
+    | { type: 'waiting'; id: number }
     | { type: 'state'; id: number; state: 'installed' | 'activating' | 'activated' | 'redundant' }
     | { type: 'active'; id: number }
     | { type: 'controllerChange' };
@@ -39,6 +40,8 @@ export const stepSw = (status: SwStatus, event: SwEvent): SwStatus => {
             return { ...status, active: true, phase: status.tracking === null || status.phase === 'registering' ? 'ready' : status.phase };
         case 'installing':
             return { ...status, tracking: event.id, phase: status.active ? 'ready' : 'installing' };
+        case 'waiting':   // a worker already installed when the page registered: tracked like an installing one
+            return { ...status, tracking: event.id, phase: status.active ? 'ready' : 'installing' };
         case 'state': {
             if (event.id !== status.tracking) return status;   // an older worker replaced by a newer one is not a failure
             if (event.state === 'activated') return { ...status, active: true, tracking: null, phase: 'ready', error: null };
@@ -54,7 +57,7 @@ export const stepSw = (status: SwStatus, event: SwEvent): SwStatus => {
     }
 };
 
-export type OfflineLine = 'ready' | 'installing' | 'failed' | 'registerFailed' | 'unsupported';
+export type OfflineLine = 'ready' | 'installing' | 'failed' | 'updateFailed' | 'registerFailed' | 'unsupported';
 export interface OfflineView {
     line: OfflineLine;
     code: string | null;
@@ -71,4 +74,9 @@ const LINES: Record<SwPhase, OfflineLine> = {
 };
 
 /** What the parent's panel shows: the line for the phase, the error name as the code, and whether a newer build took over. */
-export const offlineView = (status: SwStatus): OfflineView => ({ line: LINES[status.phase], code: status.error, takenOver: status.takenOver });
+export const offlineView = (status: SwStatus): OfflineView => ({
+    // A failed update behind an active worker is its own line (audit O-2): "ready" alone would hide it.
+    line: status.phase === 'ready' && status.error !== null ? 'updateFailed' : LINES[status.phase],
+    code: status.error,
+    takenOver: status.takenOver,
+});

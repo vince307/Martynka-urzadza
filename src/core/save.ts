@@ -3,7 +3,7 @@
 // Every version is a one-way door once it ships to children's devices. A change to the shape adds a version, a migration step
 // in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
 import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
-import { LIFT_V2_SALON } from './migrations/legacySalon';
+import { LIFT_V2_SALON, carryV2Salon } from './migrations/legacySalon';
 import { emptyRoomState } from './rooms';
 import type { RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
@@ -71,8 +71,11 @@ export interface SessionSave {
     variants: VariantState;
 }
 
+/** Runtime note of a load: the salon was moved to the new look at the v2 step, from `from` to `to` tasks done. Never saved. */
+export type SalonCarried = { from: number; to: number };
+
 export type DecodeResult =
-    | { kind: 'ok'; session: SessionSave; migratedFrom: number | null }
+    | { kind: 'ok'; session: SessionSave; migratedFrom: number | null; salonCarried: SalonCarried | null }
     | { kind: 'unreadable'; reason: 'future' | 'unknown-version' }
     // `from`: the version read (null when the shape check failed); `problem`: the first broken top-level key after the migrations,
     // `exception:<Name>` when the check itself threw, null at the shape check. Names only, never values.
@@ -270,11 +273,19 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
     const from = raw.version;
     if (from > SAVE_VERSION) return { kind: 'unreadable', reason: 'future' };
     let current: unknown = raw;
+    let salonCarried: SalonCarried | null = null;
     for (let v = from; v < SAVE_VERSION; v++) {
         const step = Object.prototype.hasOwnProperty.call(migrations, v) ? migrations[v] : undefined;
         if (!step) return { kind: 'unreadable', reason: 'unknown-version' };
         try {
-            current = step(current);
+            if (v === 2 && step === LIFT_V2_SALON) {
+                // The same step, asked for its note as well (M-4); a test's own step 2 never produces one.
+                const moved = carryV2Salon(current);
+                current = moved.value;
+                salonCarried = moved.carried;
+            } else {
+                current = step(current);
+            }
         } catch {
             return { kind: 'unreadable', reason: 'migration-failed', step: v };
         }
@@ -282,7 +293,7 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
     try {
         const problem = saveProblem(current);
         if (problem !== null) return { kind: 'unreadable', reason: 'corrupt', from, problem };
-        return { kind: 'ok', session: toSession(current as SaveState), migratedFrom: from < SAVE_VERSION ? from : null };
+        return { kind: 'ok', session: toSession(current as SaveState), migratedFrom: from < SAVE_VERSION ? from : null, salonCarried };
     } catch (e) {
         return { kind: 'unreadable', reason: 'corrupt', from, problem: `exception:${errorName(e)}` };
     }

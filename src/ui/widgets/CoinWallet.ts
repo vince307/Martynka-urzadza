@@ -8,6 +8,7 @@ import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { pl } from '../../data/pl';
 import { ART_KEYS } from '../../data/taskArt';
 import { UI_ART_KEYS } from '../../data/uiArt';
+import { recordFallback } from '../artFallbacks';
 import { ActionButton } from './ActionButton';
 import { ArtImage } from './ArtImage';
 import { dashedRect } from './dashedRect';
@@ -139,6 +140,7 @@ export class CoinWallet {
             this.walletImage.setTexture(UI_ART_KEYS.wallet).setPosition(w.x + w.width / 2, w.y + w.height / 2).setDisplaySize(w.width, w.height).setVisible(true);
         } else {
             this.walletImage.setVisible(false);
+            recordFallback(this.walletImage.scene, 'wallet', 'drawn');
             g.fillStyle(PLACEHOLDER_COLORS.field, 1);
             g.fillRoundedRect(layout.wallet.x, layout.wallet.y, layout.wallet.width, layout.wallet.height, drag.radius);
             dashedRect(g, layout.wallet, PLACEHOLDER_COLORS.deepTeal);
