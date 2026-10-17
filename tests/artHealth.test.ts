@@ -1,6 +1,6 @@
 // Origin: change art-stand-in-and-load-signal, phase 1. The record of which task pictures did not load.
 import { describe, expect, it } from 'vitest';
-import { artHealth, artHealthView, sectionState } from '../src/core/artHealth';
+import { artCauses, artHealth, artHealthView, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
 
 const entries = Array.from({ length: 38 }, (_, i) => ({ key: `art-key-${i}`, id: `id-${i}` }));
 
@@ -38,5 +38,65 @@ describe('sectionState', () => {
         ['unknown and absent lines are ignored', [ok, { kind: 'unknown' }, undefined], 'ok'],
     ] as const)('%s', (_name, views, state) => {
         expect(sectionState(views)).toBe(state);
+    });
+});
+
+// Change health-lines-and-smoke, phase 3 (A-3/L-3/B-5/U-3, A-4, ASL-07): the boot log names the table, URL and status; every missing key has a cause.
+describe('loadErrorLine', () => {
+    it('names the table, key, URL and HTTP status', () => {
+        expect(loadErrorLine('task', 'tasks/money/coin', 'assets/tasks/money/coin.webp', 404)).toBe(
+            'Task file failed to load: tasks/money/coin assets/tasks/money/coin.webp (HTTP 404)',
+        );
+        expect(loadErrorLine('room', 'rooms/salon/sofa', 'assets/rooms/salon/sofa.webp', 500)).toMatch(/^Room file failed to load: rooms\/salon\/sofa .* \(HTTP 500\)$/);
+        expect(loadErrorLine('ui', 'ui/wallet', 'assets/ui/wallet.webp', 403)).toMatch(/^Ui file failed to load: /);
+        expect(loadErrorLine('sound', 'sfx/pop', 'assets/sounds/m4a/pop.m4a', 404)).toMatch(/^Sound file failed to load: /);
+    });
+
+    it('says timeout or network for status 0, never an HTTP code', () => {
+        const line = loadErrorLine('task', 'k', 'assets/k.webp', 0);
+        expect(line).toBe('Task file failed to load: k assets/k.webp (timeout or network)');
+        expect(line).not.toContain('HTTP');
+    });
+});
+
+describe('tableOf', () => {
+    const tables = { task: new Set(['t1']), room: new Set(['r1']), ui: new Set(['u1']), sound: new Set(['s1']) };
+    it('finds the table of a key and null for an unknown one (the font)', () => {
+        expect(tableOf('t1', tables)).toBe('task');
+        expect(tableOf('r1', tables)).toBe('room');
+        expect(tableOf('u1', tables)).toBe('ui');
+        expect(tableOf('s1', tables)).toBe('sound');
+        expect(tableOf('martynka-font', tables)).toBeNull();
+    });
+});
+
+describe('artCauses', () => {
+    it('classifies a missing key from the recorded loader events', () => {
+        const seen = {
+            loaded: new Set(['decoded-bad']),
+            failed: new Map([['gone', 404], ['slow', 0], ['cut-after-fail', 404]]),
+            cut: new Set(['cut-key', 'cut-after-fail']),
+        };
+        const causes = artCauses(['decoded-bad', 'gone', 'slow', 'cut-key', 'cut-after-fail', 'untouched'], seen);
+        expect(causes).toEqual({
+            'decoded-bad': 'decode',
+            gone: 'fetch',
+            slow: 'network',
+            'cut-key': 'cut',
+            'cut-after-fail': 'cut',
+            untouched: 'never',
+        });
+    });
+});
+
+describe('wrongSizes', () => {
+    it('lists the keys whose texture differs from the table, and skips a key with no texture', () => {
+        const entries = [
+            { key: 'a', width: 100, height: 50 },
+            { key: 'b', width: 100, height: 50 },
+            { key: 'c', width: 100, height: 50 },
+        ];
+        const sizes: Record<string, { width: number; height: number }> = { a: { width: 100, height: 50 }, b: { width: 100, height: 51 } };
+        expect(wrongSizes(entries, (key) => sizes[key])).toEqual(['b']);
     });
 });

@@ -7,7 +7,59 @@ export interface ArtHealth {
     readonly missing: readonly string[];
     /** Art ids (not keys) of the missing pictures: what a skill's params name. */
     readonly missingIds: ReadonlySet<string>;
+    /** Why each missing key is missing (runtime only, set by the boot scene; absent in older records). */
+    readonly causes?: Readonly<Record<string, ArtCause>>;
+    /** Keys whose texture loaded with a size other than its table's: reported, never dropped. */
+    readonly wrongSize?: readonly string[];
 }
+
+export type ArtTable = 'task' | 'room' | 'ui' | 'sound';
+/** `fetch` = HTTP status >= 400; `network` = status 0 (timeout or no connection), never told as "not on the server". */
+export type ArtCause = 'fetch' | 'network' | 'decode' | 'cut' | 'never';
+export interface LoadSeen {
+    readonly loaded: ReadonlySet<string>;
+    readonly failed: ReadonlyMap<string, number>;
+    readonly cut: ReadonlySet<string>;
+}
+
+const TABLE_NAMES: Readonly<Record<ArtTable, string>> = { task: 'Task', room: 'Room', ui: 'Ui', sound: 'Sound' };
+
+/** Which table a loader key belongs to; null for a key in none (the font). */
+export const tableOf = (key: string, tables: Readonly<Record<ArtTable, ReadonlySet<string>>>): ArtTable | null => {
+    for (const table of ['task', 'room', 'ui', 'sound'] as const) {
+        if (tables[table].has(key)) return table;
+    }
+    return null;
+};
+
+/** The one console line of a failed file: the table, the key, the URL asked for and the HTTP status (0 = timeout or network). */
+export const loadErrorLine = (table: ArtTable, key: string, src: string, status: number): string =>
+    `${TABLE_NAMES[table]} file failed to load: ${key} ${src} (${status === 0 ? 'timeout or network' : `HTTP ${status}`})`;
+
+/** Why each missing key is missing, from the recorded loader events. A cut wins: the file never finished, whatever it did before. */
+export const artCauses = (missing: readonly string[], seen: LoadSeen): Record<string, ArtCause> => {
+    const causes: Record<string, ArtCause> = {};
+    for (const key of missing) {
+        const status = seen.failed.get(key);
+        if (seen.cut.has(key)) causes[key] = 'cut';
+        else if (status !== undefined) causes[key] = status === 0 ? 'network' : 'fetch';
+        else if (seen.loaded.has(key)) causes[key] = 'decode';
+        else causes[key] = 'never';
+    }
+    return causes;
+};
+
+/** Keys whose loaded texture differs in size from its table; a key without a texture is not listed. */
+export const wrongSizes = (
+    entries: readonly { key: string; width: number; height: number }[],
+    sizeOf: (key: string) => { width: number; height: number } | undefined,
+): string[] =>
+    entries
+        .filter((entry) => {
+            const size = sizeOf(entry.key);
+            return size !== undefined && (size.width !== entry.width || size.height !== entry.height);
+        })
+        .map((entry) => entry.key);
 
 export type ArtHealthView = { kind: 'ok'; total: number } | { kind: 'missing'; count: number; total: number } | { kind: 'unknown' };
 

@@ -1,5 +1,5 @@
 import { Loader, Scene, type Time } from 'phaser';
-import { artHealth } from '../core/artHealth';
+import { artCauses, artHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type LoadSeen } from '../core/artHealth';
 import { bootLoadPhase, checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
@@ -26,6 +26,9 @@ export class BootScene extends Scene {
     private phase: BootLoadPhase = 'loading';
     private cut: string[] = [];
     private creates = 0;
+    // What the loader reported, per file key: the cause of a missing texture is read from these in create() (runtime only).
+    private readonly loadedKeys = new Set<string>();
+    private readonly failedKeys = new Map<string, number>();
 
     constructor() {
         super(SCENE_KEYS.boot);
@@ -134,8 +137,15 @@ export class BootScene extends Scene {
         this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
-        this.load.on('loaderror', (file: { key: string; type?: string }) => {
-            console.warn(file.type === 'font' ? `Task font failed to load: ${file.key}` : file.type === 'audio' ? `Sound failed to load: ${file.key}` : `Task art failed to load: ${file.key}`);
+        // Phaser fires `loaderror` only for a failed fetch; a decode or font failure fires none (research.md), so create() reads the rest from the cache.
+        this.load.on(Loader.Events.FILE_LOAD, (file: Loader.File) => {
+            this.loadedKeys.add(file.key);
+        });
+        this.load.on('loaderror', (file: Loader.File) => {
+            const status = file.xhrLoader?.status ?? 0;
+            this.failedKeys.set(file.key, status);
+            const table = tableOf(file.key, this.tables());
+            console.warn(table ? loadErrorLine(table, file.key, file.src, status) : `Font failed to load: ${file.key}`);
         });
         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
@@ -172,6 +182,36 @@ export class BootScene extends Scene {
         }
     }
 
+    private tables(): Record<ArtTable, ReadonlySet<string>> {
+        return {
+            task: new Set(TASK_ART.map((art) => art.key)),
+            room: new Set(ROOM_ART.map((art) => art.key)),
+            ui: new Set(UI_ART.map((art) => art.key)),
+            sound: new Set(SOUNDS.map((def) => def.key)),
+        };
+    }
+
+    /** The record of a table plus the cause of each missing key and the textures whose size differs from the table (reported, never dropped). */
+    private withCauses<T extends { key: string; width: number; height: number }>(
+        label: string,
+        entries: readonly T[],
+        health: ReturnType<typeof artHealth>,
+    ): ReturnType<typeof artHealth> {
+        const seen: LoadSeen = { loaded: this.loadedKeys, failed: this.failedKeys, cut: new Set(this.cut) };
+        const causes = artCauses(health.missing, seen);
+        const wrongSize = wrongSizes(entries, (key) => {
+            const image = this.textures.exists(key) ? this.textures.get(key).source[0] : undefined;
+            return image ? { width: image.width, height: image.height } : undefined;
+        });
+        if (health.missing.length > 0) {
+            console.warn(`${label} art causes: ${health.missing.map((key) => `${key}=${causes[key]}`).join(', ')}`);
+        }
+        if (wrongSize.length > 0) {
+            console.warn(`${label} art with a size other than its table: ${wrongSize.join(', ')}`);
+        }
+        return { ...health, causes, wrongSize };
+    }
+
     private publish(): void {
         this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], creates: this.creates });
     }
@@ -186,17 +226,17 @@ export class BootScene extends Scene {
         this.loading?.destroy();
         this.loading = null;
         // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
-        const health = artHealth(TASK_ART, (key) => this.textures.exists(key));
+        const health = this.withCauses('Task', TASK_ART, artHealth(TASK_ART, (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.artHealth, health);
         if (health.missing.length > 0) {
             console.warn(`Task art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);
         }
-        const roomHealth = artHealth(ROOM_ART.map((art) => ({ key: art.key, id: art.key })), (key) => this.textures.exists(key));
+        const roomHealth = this.withCauses('Room', ROOM_ART, artHealth(ROOM_ART.map((art) => ({ key: art.key, id: art.key })), (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.roomArtHealth, roomHealth);
         if (roomHealth.missing.length > 0) {
             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);
         }
-        const uiHealth = artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key));
+        const uiHealth = this.withCauses('Ui', UI_ART, artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.uiArtHealth, uiHealth);
         if (uiHealth.missing.length > 0) {
             console.warn(`UI art missing: ${uiHealth.missing.length} of ${uiHealth.total}: ${uiHealth.missing.join(', ')}`);
