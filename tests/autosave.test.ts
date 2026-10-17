@@ -1553,3 +1553,40 @@ describe('what the status keeps for the parent view (save-truth p6: SVB-01 line,
         expect(t.saver.status()).toMatchObject({ lastWriteError: 'Error' });
     });
 });
+
+// save-truth p8 (T-2, T-5)
+describe('noticeOtherWriter and the refusal code (save-truth p8)', () => {
+    it('blocks as otherTab, tells the listener once with OtherWriterSave, and a later markDirty writes nothing', async () => {
+        const told: [string, string][] = [];
+        const t = setup({ onBlocked: (reason, error) => void told.push([reason, error]) });
+        t.saver.noticeOtherWriter();
+        t.saver.noticeOtherWriter();
+        expect(t.saver.status()).toMatchObject({ blocked: true, blockedBy: 'otherTab' });
+        expect(told).toEqual([['otherTab', 'OtherWriterSave']]);
+        const before = t.saver.status().writes;
+        t.saver.markDirty();
+        t.clock.advance(500);
+        await settle();
+        await t.saver.flush('now');
+        expect(t.saver.status().writes).toBe(before);
+    });
+
+    it('a notice after another block does not tell the listener a second time', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (reason) => void told.push(reason) });
+        t.store.write = () => Promise.reject(otherWriterError());
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        t.saver.noticeOtherWriter();
+        expect(told).toEqual(['otherTab']);
+    });
+
+    it('a refused write passes the error name of the refusal to the listener', async () => {
+        const told: string[] = [];
+        const t = setup({ onBlocked: (_reason, error) => void told.push(error) });
+        t.store.write = () => Promise.reject(previousPageError());
+        t.saver.markDirty();
+        await t.saver.flush('now');
+        expect(told).toEqual(['PreviousPageSave']);
+    });
+});

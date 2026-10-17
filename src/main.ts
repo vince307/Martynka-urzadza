@@ -7,12 +7,13 @@ import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { repairCurrentRoom } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
-import { freshSession, type SessionSave } from './core/save';
+import { channelVerdict, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
+import { createSaveChannel } from './storage/saveChannel';
 import { createWriterId } from './storage/writerId';
 import { createInputSuspender, type InputSuspender } from './core/inputSuspend';
 import { mountInstallHint } from './pwa/installHint';
@@ -140,10 +141,25 @@ const start = async (): Promise<void> => {
     const seam = __E2E_HOOK__ ? e2eSave(window.location.search) : null;
     // One writer id per page load that also knows this tab's earlier documents (T-3); the store tells the saver when an older build wrote here (T-1).
     const writerId = createWriterId();
-    const store =
+    // The save channel (T-2) is a hint only: a message from another window moves the refusal earlier, `writeVerdict` still decides every write.
+    const saveChannel = createSaveChannel();
+    const idbStore =
         __E2E_HOOK__ && seam
-            ? e2eSaveStore(seam)
-            : createIdbSaveStore({ writer: writerId.writer, endedWriters: writerId.endedWriters, onOlderWriter: () => booted.saver?.noteOlderWriter() });
+            ? null
+            : createIdbSaveStore({
+                  writer: writerId.writer,
+                  endedWriters: writerId.endedWriters,
+                  onOlderWriter: () => booted.saver?.noteOlderWriter(),
+                  onWritten: (stamp) => saveChannel.post(stamp),
+              });
+    const store = idbStore ?? e2eSaveStore(seam as NonNullable<typeof seam>);
+    if (idbStore) {
+        saveChannel.onMessage((msg) => {
+            if (channelVerdict(msg, idbStore.stamp()) === 'stale') booted.saver?.noticeOtherWriter();
+        });
+    } else {
+        saveChannel.close();
+    }
     const timers = { setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms), clearTimeout: (id: unknown) => window.clearTimeout(id as number) };
     const first = await loadSave(store, {
         timers,
@@ -299,10 +315,10 @@ const start = async (): Promise<void> => {
         log: (...args) => console.error(...args),
         onFirstWrite: requestPersistence,
         // A write refused by a newer version or another window: one calm card per page load (load blocks have their own cards).
-        onBlocked: () => {
+        onBlocked: (_reason, error) => {
             if (refusedCardUp) return;
             refusedCardUp = true;
-            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined);
+            mountSaveRefusedCard(document.body, () => window.location.reload(), game.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined, pl.saveFailed.detail(error, __BUILD_ID__));
         },
     });
     booted.saver = saver;

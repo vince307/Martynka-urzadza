@@ -17,6 +17,8 @@ export interface IdbSaveStoreOptions {
     endedWriters?: readonly string[];
     /** Called when a put went over a record of an older format (an older build wrote after this page's own save). */
     onOlderWriter?: () => void;
+    /** Called after every put that landed (a replace included) with this page's writer and the generation written. */
+    onWritten?: (stamp: { writer: string; generation: number }) => void;
 }
 
 // iOS Safari can lose the connection to the database (WebKit bug 197050); a fresh store reconnects.
@@ -134,8 +136,13 @@ export function putBackupOnce(os: IDBObjectStore, copyKey: string, recordKey: st
 const randomWriter = (): string =>
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
-export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore {
-    const { dbName = 'martynka', storeName = 'saves', profileId = 'default', writer = randomWriter(), endedWriters, onOlderWriter } = options;
+/** The store plus what the save channel verdict needs: this page's writer and the generation it last saw stored or wrote. */
+export interface IdbSaveStore extends SaveStore {
+    stamp(): { writer: string; base: number };
+}
+
+export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): IdbSaveStore {
+    const { dbName = 'martynka', storeName = 'saves', profileId = 'default', writer = randomWriter(), endedWriters, onOlderWriter, onWritten } = options;
     const key = `${SAVE_KEY_PREFIX}${profileId}`;
     const recordKey = `${key}:backup-status`;
     let store: UseStore | undefined;
@@ -169,7 +176,13 @@ export function createIdbSaveStore(options: IdbSaveStoreOptions = {}): SaveStore
             const mine = ++writeSeq;
             const generation = await run((s) => s('readwrite', (os) => guardedPut(os, key, value, { version: value.version, base, writer, endedWriters }, mode, onOlderWriter)), () => mine === writeSeq);
             base = Math.max(base, generation);
+            try {
+                onWritten?.({ writer, generation });
+            } catch (e) {
+                console.warn('save: written listener failed', errorName(e));
+            }
         },
+        stamp: () => ({ writer, base }),
         backup: (raw: unknown, from: number) =>
             run((s) => s('readwrite', (os) => putBackupOnce(os, `${key}:backup-v${from}`, recordKey, raw, from, Date.now()))),
         readBackups: async () => {

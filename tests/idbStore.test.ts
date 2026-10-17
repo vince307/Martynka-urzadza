@@ -458,3 +458,34 @@ describe('IndexedDB store: previous page and older writer (save-truth p7)', () =
         expect(told).toBe(0);
     });
 });
+
+describe('onWritten (save-truth p8)', () => {
+    const v = (stars: number): SaveState => ({ ...fixture, version: SAVE_VERSION, stars }) as unknown as SaveState;
+    const named = async (p: Promise<unknown>): Promise<string> => p.then(() => 'ok', (e: unknown) => (e as Error).name);
+    it('tells the writer and the generation after each put that landed, a replace included', async () => {
+        const told: { writer: string; generation: number }[] = [];
+        const store = createIdbSaveStore({ dbName: `written-${++counter}`, storeName: 'saves', writer: 'W', onWritten: (s) => void told.push(s) });
+        await store.read();
+        await store.write(v(1));
+        await store.write(v(2), 'replace');
+        expect(told).toEqual([
+            { writer: 'W', generation: 1 },
+            { writer: 'W', generation: 2 },
+        ]);
+    });
+
+    it('is silent for a refused write, and a throwing listener does not fail the write', async () => {
+        const db = `written-${++counter}`;
+        const told: number[] = [];
+        const a = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'A', onWritten: (s) => void told.push(s.generation) });
+        const b = createIdbSaveStore({ dbName: db, storeName: 'saves', writer: 'B' });
+        await a.read();
+        await b.read();
+        await b.write(v(5));
+        expect(await named(a.write(v(6)))).toBe(OTHER_WRITER_SAVE);
+        expect(told).toEqual([]);
+        const c = createIdbSaveStore({ dbName: `written-${++counter}`, storeName: 'saves', writer: 'C', onWritten: () => { throw new Error('boom'); } });
+        await c.read();
+        await expect(c.write(v(1))).resolves.toBeUndefined();
+    });
+});

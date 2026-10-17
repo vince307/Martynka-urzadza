@@ -2,7 +2,7 @@
 // rule the store applies inside its transaction. Oracle: the frozen fixtures in tests/fixtures/ (v1-v3 untouched, v4 new).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { MIGRATIONS, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, decodeSave, encodeSave, importProblem, saveProblem, writeVerdict } from '../src/core/save';
+import { MIGRATIONS, channelVerdict, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAGE_SAVE, SAVE_VERSION, decodeSave, encodeSave, importProblem, saveProblem, writeVerdict } from '../src/core/save';
 
 const fixture = (name: string): Record<string, unknown> => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
 const clone = <T>(v: T): T => structuredClone(v);
@@ -133,5 +133,31 @@ describe('writeVerdict: an earlier document of this tab, and an older build', ()
     it('a record of the current format is never flagged, and neither is a replace', () => {
         expect(writeVerdict(stored(2, 'tab1:n3'), page, 'normal')).toEqual({ kind: 'put', generation: 4 });
         expect(writeVerdict(stored(0, '', 3), page, 'replace')).toEqual({ kind: 'put', generation: 4 });
+    });
+});
+
+// save-truth p8 (T-2)
+describe('channelVerdict: a message from another window only moves a refusal earlier', () => {
+    const page = { writer: 'A:1', base: 3 };
+
+    it('another writer ahead of this page\'s base is stale', () => {
+        expect(channelVerdict({ writer: 'B:1', generation: 4 }, page)).toBe('stale');
+    });
+
+    it('this page\'s own writer is ignored, however high the generation', () => {
+        expect(channelVerdict({ writer: 'A:1', generation: 9 }, page)).toBe('ignore');
+    });
+
+    it('a generation at or below the base is ignored (the page already saw it)', () => {
+        expect(channelVerdict({ writer: 'B:1', generation: 3 }, page)).toBe('ignore');
+        expect(channelVerdict({ writer: 'B:1', generation: 0 }, page)).toBe('ignore');
+    });
+
+    it('agrees with writeVerdict: whenever the channel says stale, a normal write would be refused', () => {
+        for (const generation of [0, 1, 3, 4, 7]) {
+            const msg = { writer: 'B:1', generation };
+            const refused = writeVerdict({ version: SAVE_VERSION, generation, writer: msg.writer }, { version: SAVE_VERSION, ...page }, 'normal').kind === 'refuse';
+            expect(channelVerdict(msg, page) === 'stale').toBe(refused);
+        }
     });
 });

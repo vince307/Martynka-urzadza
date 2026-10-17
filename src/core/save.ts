@@ -51,6 +51,14 @@ export function writeVerdict(stored: unknown, page: { version: number; base: num
     if (mode === 'normal' && stamp !== null && stamp < page.version && page.base > 0) return { kind: 'put', generation: next, olderWriter: true };
     return { kind: 'put', generation: next };
 }
+/**
+ * What a message from the save channel (another window saved) means for this page. `stale` is exactly the case `writeVerdict`
+ * would refuse at the next normal write (another writer ahead of this page's base), so the channel only moves a refusal earlier
+ * and can never block a write that `writeVerdict` would allow.
+ */
+export function channelVerdict(msg: { writer: string; generation: number }, page: { writer: string; base: number }): 'stale' | 'ignore' {
+    return msg.writer !== page.writer && msg.generation > page.base ? 'stale' : 'ignore';
+}
 export const DEFAULT_PROFILE = 'default';
 
 /** The part of the registry state that is saved. */

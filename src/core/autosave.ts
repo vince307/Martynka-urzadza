@@ -129,7 +129,7 @@ export interface AutosaverOptions {
     log: (...args: unknown[]) => void;
     onFirstWrite?: () => Promise<Persistence> | void;
     /** Called once, when a write is first refused because a newer version or another window of the game saved here (never for load blocks or `replace`). */
-    onBlocked?: (reason: 'newer' | 'otherTab') => void;
+    onBlocked?: (reason: 'newer' | 'otherTab', error: string) => void;
 }
 
 /**
@@ -185,6 +185,8 @@ export interface Autosaver {
     block(reason: BlockReason, error?: string): void;
     /** The store found a record of an older format over this page's save: noted for the parent view, one log. */
     noteOlderWriter(): void;
+    /** Another window's save reached us through the save channel: blocks like an `OtherWriterSave` refusal (shown once), nothing is written. */
+    noticeOtherWriter(): void;
     status(): AutosaveStatus;
 }
 
@@ -320,6 +322,20 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
     };
 
     /** One write attempt; resolves true on success. Never throws. */
+    // A write refused by a newer page or another window, or a notice from the save channel: the first reason wins and the
+    // listener hears it once, with the error name (the card shows it as the `Kod:` line).
+    const refuseWrites = (reason: 'newer' | 'otherTab', error: string): void => {
+        const first = blockedBy === null;
+        blockedBy ??= reason;
+        cancelTimer();
+        if (!first) return;
+        try {
+            options.onBlocked?.(reason, error);
+        } catch (listenerError) {
+            log('autosave: onBlocked listener failed', listenerError);
+        }
+    };
+
     const attempt = async (reason: WriteReason): Promise<boolean> => {
         let stage: FailureStage = 'encode';
         try {
@@ -373,16 +389,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
                 const reason = lastError === NEWER_SAVE ? 'newer' : 'otherTab';
                 // The same card and block as another window, named apart in the log: the previous page of this tab saved after this one loaded.
                 if (lastError === PREVIOUS_PAGE_SAVE) log('autosave: refused, the previous page of this tab saved later (previous page)');
-                const first = blockedBy === null;
-                blockedBy ??= reason;
-                cancelTimer();
-                if (first) {
-                    try {
-                        options.onBlocked?.(reason);
-                    } catch (listenerError) {
-                        log('autosave: onBlocked listener failed', listenerError);
-                    }
-                }
+                refuseWrites(reason, lastError);
             }
             // The first write after a migration re-arms itself, a bounded number of times (the child may never change anything).
             if (!writesOff() && options.migrated !== undefined && migrationWrittenAt === null && migrationRetries < balance.save.migrationWriteRetries) {
@@ -497,6 +504,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         flush: (reason) => save(reason),
         replace,
         current: () => encodeSave(snapshot()),
+        noticeOtherWriter: () => refuseWrites('otherTab', OTHER_WRITER_SAVE),
         noteOlderWriter: () => {
             if (olderWriterSeen) return;
             olderWriterSeen = true;

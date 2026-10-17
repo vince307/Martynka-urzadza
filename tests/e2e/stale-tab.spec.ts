@@ -7,7 +7,7 @@
 // the "restart". Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
-import { answerRight, fromHook, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
+import { fromHook, playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 import { pl } from '../../src/data/pl';
 
 test.setTimeout(120_000);
@@ -19,12 +19,6 @@ const QUERY = '/?e2eMonth=10&e2eVariant=off';
 async function playSavedRound(page: Page): Promise<void> {
     await playRoundRight(page, 5);
     await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ lastReason: 'now', dirty: false, blockedBy: null });
-}
-
-/** The child answers one task in the stale window: a change of the saved state, whose write is refused (the card may rise at once and hold the input). */
-async function staleWork(page: Page): Promise<void> {
-    await phaseIs(page, 'first');
-    await answerRight(page);
 }
 
 /** A second window of the same browser: it loads the save the first one wrote and stands on the task screen. */
@@ -54,9 +48,8 @@ test('#2 B-1 a second window that saved later wins; the stale one stops and show
     const s2 = (await snapshot(second)).stars;
     expect(s2).toBeGreaterThan(s1);
 
-    // Window A, which never saw B's write, finishes a round: its write is refused.
+    // Window A never saw B's write, but B told it through the save channel (save-truth p8): A stops before it writes anything.
     await page.bringToFront();
-    await staleWork(page);
     await expect.poll(async () => (await snapshot(page)).save?.blockedBy).toBe('otherTab');
     await expect(page.getByRole('alertdialog').getByText(pl.saveRefused.title)).toBeVisible();
 
@@ -92,9 +85,8 @@ test('#2 B-1 a reset in one window is not undone by the other', async ({ page })
     await screenIs(page, 'welcome');
     expect((await snapshot(page)).learner).toBeNull();
 
-    // Window B still shows the old game; finishing a round there must not bring the old save back.
+    // Window B still shows the old game; A's reset told it through the save channel, so it stops and cannot bring the old save back.
     await second.bringToFront();
-    await staleWork(second);
     await expect.poll(async () => (await snapshot(second)).save?.blockedBy).toBe('otherTab');
 
     // A restart loads the fresh game: the welcome screen and no learner (the old one was not written back).
