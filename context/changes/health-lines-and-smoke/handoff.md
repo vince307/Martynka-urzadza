@@ -1,51 +1,52 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-tdd` phase 3 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-3 are committed. Do not get wrong: `src/core` never imports `src/data/pl.ts`, `registration.update()` runs once per launch only (no visibility or timer trigger), an `xhrLoader.status` 0 is the `network` cause, never "not on the server", `vite/config.shared.mjs` stays unchanged.
+Written by the `/10x-tdd` phase 4 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-4 are committed. Do not get wrong: `src/core` never imports `src/data/pl.ts`, `registration.update()` runs once per launch only (no visibility or timer trigger), an `xhrLoader.status` 0 is the `network` cause, never "not on the server", `vite/config.shared.mjs` stays unchanged.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | identity, research, plan, plan-review, phase 1, handoff p1, phase 2 (bb650cc), handoff p2, phase 3 (`feat(health-lines-and-smoke): ... (p3)` a7be75b) |
+| Commits | identity, research, plan, plan-review, phases 1-3 with handoffs, phase 4 (`feat(health-lines-and-smoke): ... (p4)` 097726f) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 60 (63 minus rows 3.1-3.3, ticked) |
+| `## Progress` rows remaining | 56 (60 minus rows 4.1-4.4, ticked) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/artHealth.ts` | `ArtTable`, `ArtCause`, `LoadSeen`, `tableOf`, `loadErrorLine`, `artCauses` (cut > failed > loaded > never), `wrongSizes`; `ArtHealth` gains optional `causes`, `wrongSize` |
-| `src/scenes/BootScene.ts` | `FILE_LOAD`/`loaderror` listeners record loaded keys and failed status; `loaderror` prints `loadErrorLine` (font keeps its own line); `withCauses` adds causes and size check per table, one warn each; no player text |
-| `tests/artHealth.test.ts`, `tests/phaserLoaderPin.test.ts` | 5 new rule tests; pin case for `nextFile` FILE_LOAD / FILE_LOAD_ERROR and `ImageFile.onProcess` onProcessError |
+| `src/core/bootLimits.ts` | `bootLimitSchedule`, `bootLimitDue`, `bootLimitWait`: slow and cut moments on an injected wall clock |
+| `src/core/artHealth.ts` | `bootQueue` (loadingArt, font, task, room, ui, sound), `fontHealth`, `cutByTable` |
+| `src/scenes/BootScene.ts` | `performance.now()` start, slow and cut on `window.setTimeout` (re-armed when early, cleared on `COMPLETE` and `shutdown`, callbacks in `try`), queue via `bootQueue`, `ADD` listener body in `try` with warn-once, `bootLoad = { cut, cutByTable, creates, elapsedMs }`, `REGISTRY_KEYS.fontHealth` from `document.fonts` |
+| `src/data/layout.ts`, `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs` | `fontHealth` key (runtime only); hook snapshot gains `cutByTable`, `elapsedMs`, `fontHealth`; `stallall` joins the markers |
+| `tests/bootLimits.test.ts`, `tests/artHealth.test.ts`, `tests/e2eHookGuard.test.ts` | 11 new tests; marker list |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| first RED (stubs returning ''/{}/[]) | `AssertionError: expected '' to be 'Task file failed to load: tasks/money…'`; `expected {} to deeply equal { 'decoded-bad': 'decode', …(5) }`; `expected [] to deeply equal [ 'b' ]` (5 failed, 8 passed) |
-| `npx vitest run tests/artHealth.test.ts` | 13 passed |
-| break: `artCauses` checks `failed` before `cut` | 1 failed (`expected { 'decoded-bad': 'decode', …(5) } to deeply equal …`); restored, 13 passed. Meta: proves the classifier over recorded events; the browser decode path is phase 13 (`?e2eArt=corrupt`) |
+| first RED (stubs) | `AssertionError: expected [ 'sound', 'ui', 'room', 'task', …(2) ] to deeply equal [ 'loadingArt', 'font', 'task', …(3) ]`; `expected 'fallback' to be 'loaded'`; cutByTable `expected { task: [], room: [], ui: [], …(2) } to deeply equal …`; bootLimits (stubbed `bootLimitDue` after the first green): `expected 'none' to be 'slow'` / `'cut'` (6 failed) |
+| breaks | sounds before room: 1 failed (artHealth); due moments +60 s (paused clock): 2 failed (bootLimits); `stallall` removed from markers: 1 failed (e2eHookGuard); each restored. Meta: prove the rules; timers under a real load are `load-and-tab-guard` #15 (green) |
 | lint / typecheck | OK / OK |
-| `npm test` + deploy scripts + sample E1-E6 | Tests 3562 passed = 3556 + 6 |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 132 passed (10.6m), 0 failed; `playwright --list` 132 |
-| stray processes | `ps` grep (sandbox disabled) printed nothing |
+| `npm test` + deploy scripts + sample E1-E6 | Tests 3573 passed = 3562 + 11 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -c stallall dist/_app/*.js` no hit |
+| e2e `--workers=4` | 132 passed (10.7m), 0 failed; `playwright --list` 132 |
+| stray processes | `ps` grep (sandbox disabled) found none of mine |
 
 ## 4. Next command
 
-`/10x-tdd health-lines-and-smoke phase 4`
+`/10x-tdd health-lines-and-smoke phase 5`
 
 ## 5. Open
 
-- [reviewer] rows 1.6, 1.7, 2.4, 3.4; [visual] 2.5; [human] 2.6, 4.6, 8.6, 11.8 not mine.
-- The phase 2 note about 125 e2e tests is moot: this run executed 132.
+- [reviewer] rows 1.6, 1.7, 2.4, 3.4, 4.5; [visual] 2.5; [human] 2.6, 4.6, 8.6, 11.8 not mine.
 
 ## 6. Autonomous decisions
 
-1. **Commit only the planned set**, stop after phase 3, message as proposed. Would change: nothing.
-2. **Cut wins over failed** in `artCauses`: a file the cut ended (a flying file errors with status 0 on the cut) is a `cut`, not `network`. Would change: a review wanting the first event to win.
-3. **`causes` and `wrongSize` are optional** on `ArtHealth` so no other record builder changes; `BootScene.withCauses` adds them. No new pl.ts string, so no DESIGN-GAP row.
-4. **Source of status**: `file.xhrLoader?.status ?? 0` in the `loaderror` listener; no `tableOf` match means the font line.
+1. **Commit only the planned set**, stop after phase 4. Would change: nothing.
+2. **Existing `src/core/bootLoad.ts` kept** (phase and limits check); the new rule is `bootLimits.ts` beside it, as the plan names. `bootLoadPhase` is now unused by the scene but its tests stay.
+3. **bootLimits tests were green on first run** (rule written with the stub-free module); the RED was observed by stubbing `bootLimitDue` afterwards. artHealth rules were red from stubs first.
+4. **Queue order**: loading pictures stay first (before the limits), then font, task, room, other UI, sounds. `cutByTable` lists the font under `font`.
+5. **Early timer** re-arms for the rest (`bootLimitWait`), so a hair-early fire never cuts early.

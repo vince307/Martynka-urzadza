@@ -1026,10 +1026,10 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [x] 4.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — SHA
-- [x] 4.2 Deliberate break: sounds before `ROOM_ART` / paused-clock schedule / `stallall` marker removed → each red; restored; meta-check (rules; timers under load = `load-and-tab-guard` #15) — SHA
-- [x] 4.3 `npm run build` prints `e2e hook: absent (` with `stallall` in the markers; `stallall` absent from `dist/` — SHA
-- [x] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `load-and-tab-guard` and `final-art-loading` specs green — SHA
+- [x] 4.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 097726f
+- [x] 4.2 Deliberate break: sounds before `ROOM_ART` / paused-clock schedule / `stallall` marker removed → each red; restored; meta-check (rules; timers under load = `load-and-tab-guard` #15) — 097726f
+- [x] 4.3 `npm run build` prints `e2e hook: absent (` with `stallall` in the markers; `stallall` absent from `dist/` — 097726f
+- [x] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `load-and-tab-guard` and `final-art-loading` specs green — 097726f
 
 #### Manual
 
