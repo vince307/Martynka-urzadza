@@ -1599,6 +1599,35 @@ describe('readBackups pass-through (save-truth p9)', () => {
         t.store.readBackups = () => Promise.reject(new Error('boom'));
         expect(await t.saver.readBackups()).toEqual([]);
     });
+
+    it('a store that never answers gives no copies after the write limit, so the settings panel still opens (impl review)', async () => {
+        const t = setup();
+        t.store.readBackups = () => new Promise(() => undefined);
+        const read = t.saver.readBackups();
+        t.clock.advance(5000);
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(await Promise.race([read, Promise.resolve('still waiting')])).toEqual([]);
+    });
+});
+
+describe('replace after an in-flight write (impl review)', () => {
+    it('a write refused by another window while the parent confirmed blocks the replace too', async () => {
+        const t = setup();
+        let refuse: (e: Error) => void = () => undefined;
+        const modes: string[] = [];
+        t.store.write = (_value, mode = 'normal') => {
+            modes.push(mode);
+            return modes.length === 1 ? new Promise<void>((_resolve, reject) => void (refuse = reject)) : Promise.resolve();
+        };
+        t.saver.markDirty();
+        const writing = t.saver.flush('now');
+        const replacing = t.saver.replace(encodeSave(session(9)));
+        refuse(Object.assign(new Error('other'), { name: 'OtherWriterSave' }));
+        await writing;
+        expect(await replacing).toEqual({ ok: false, error: 'Blocked' });
+        expect(modes).toEqual(['normal']);   // the replace never wrote over the other window's save
+        expect(t.saver.status().blockedBy).toBe('otherTab');
+    });
 });
 
 describe('lateReadVerdict (SVB-02)', () => {

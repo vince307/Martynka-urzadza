@@ -180,7 +180,9 @@ test('#2 #7 SV2-04 the kept old save can be saved and imported again', async ({ 
     await expect.poll(async () => (await snapshot(page)).save?.backup).toBe('done');
 
     const panel = await openSettings(page);
-    await panel.getByRole('button', { name: pl.settings.backupExport, exact: true }).tap();
+    const keepCopy = panel.getByRole('button', { name: pl.settings.backupExport, exact: true });
+    await expect(keepCopy).toBeVisible();   // a missing button is a named assertion, not the 120 s test timeout (impl review)
+    await keepCopy.tap();
     const exportDialog = page.getByRole('dialog', { name: pl.saveTransfer.exportTitle });
     await expect(exportDialog).toBeVisible();
     const downloaded = page.waitForEvent('download');

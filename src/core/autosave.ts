@@ -459,6 +459,13 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         cancelTimer();
         try {
             await inflight;
+            // The write that was in flight may have been refused by another window (or the page may have hit a fatal error) while
+            // the parent confirmed: the gate is asked again, so a replace never writes over a save this page now knows is newer (impl review).
+            if (replaceGate({ blockedBy, loadReason: options.loadReason ?? null, loadError: options.loadError ?? null, loadFrom: options.loadFrom ?? null, unavailableStarts: options.unavailableStarts ?? 0 }, replaceOptions.force === true) === 'Blocked') {
+                replacing = false;
+                log('autosave: replace refused after the write in flight', { blockedBy });
+                return { ok: false, error: 'Blocked' };
+            }
             // The same accounting as a normal write: the record first, the save, then the copy tried once and never waited on twice (SRR-04, V-7).
             const owed = backupOwed() && options.migrated !== undefined;
             if (owed) noteOwed();
@@ -512,7 +519,8 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
         noticeOtherWriter: () => refuseWrites('otherTab', OTHER_WRITER_SAVE),
         readBackups: async () => {
             try {
-                return await store.readBackups();
+                // Under the write limit: the settings panel waits for this read, so a store that never answers must not hold it (impl review).
+                return await limited(store.readBackups());
             } catch (e) {
                 log('autosave: readBackups failed', e);
                 return [];

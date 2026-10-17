@@ -59,9 +59,9 @@ export const pl = {
         saveHeading: 'Zapis gry',
         saveOk: 'Postępy zapisują się na tym urządzeniu.',
         saveLast: (time: string) => `Ostatni zapis: ${time}`,
-        // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
         // DESIGN-GAP 131: the kit has no button for the copy of the save from before a format change; the text is ours, to be read by a teacher.
         backupExport: 'Zachowaj kopię starego zapisu',
+        // DESIGN-GAP 50: the kit has no copy for a save that has not happened yet, earlier failures or the persistence answer.
         saveNotYet: 'Gra jeszcze niczego nie zapisała. Zapis nastąpi po pierwszej zmianie.',
         saveEarlier: (count: number, error: string) => `Wcześniej: ${countNoun(count, ['nieudana próba', 'nieudane próby', 'nieudanych prób'])} (${error}).`,
         savePersist: {
@@ -70,11 +70,11 @@ export const pl = {
             unsupported: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
             error: 'Przeglądarka może usunąć zapis, gdy zabraknie miejsca. Warto czasem zapisać kopię.',
         },
-        // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
         // DESIGN-GAP 130 (docs/design-gaps.md): the kit has no line for an older build that saved over this game's progress.
         olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
         // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
         roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
+        // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
         saveFailingTimeout: 'Zapis trwał za długo. Mógł się udać, gra spróbuje jeszcze raz.',
         saveFailing: 'Ostatnie próby zapisu się nie udały. Postępy z tej gry mogą nie zostać zachowane.',
         // DESIGN-GAP 94: the kit has no line for why saving fails; the number of tries, the stage and the code under saveFailing.
