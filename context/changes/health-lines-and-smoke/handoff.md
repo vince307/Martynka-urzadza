@@ -1,68 +1,58 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-plan-review` step of run `2026-10-16-audit-sweep` (slice 3 of 3). The plan is reviewed (PROCEED,
-3 warnings fixed in plan.md) and no code has changed yet. Do not get wrong: `src/core` never imports `src/data/pl.ts`
-(builders return line keys), `registration.update()` runs once per launch only, and an `xhrLoader.status` 0 is the
-`network` cause, never "not on the server".
+Written by the `/10x-tdd` phase 1 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phase 1 (deploy smoke asks for every
+precached file) is committed. Do not get wrong: `src/core` never imports `src/data/pl.ts`, `registration.update()` runs once
+per launch only, an `xhrLoader.status` 0 is the `network` cause, never "not on the server".
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | 4 (`af4ddec` identity, `58b6ea7` research, `edebf8e` plan, + this plan-review commit) |
+| Commits | identity, research, plan, plan-review, phase 1 (`test(health-lines-and-smoke): … (p1)`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 71 (`grep -c '^- \[ \]' plan.md`), unchanged by the review |
+| `change.md` status | `implementing` |
+| `## Progress` rows remaining | 66 (71 minus rows 1.1–1.5, ticked) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/health-lines-and-smoke/reviews/plan-review.md` | review report: 0 critical, 3 warnings (fixed), 4 observations; the four production risks (a)–(d) checked with evidence |
-| `context/changes/health-lines-and-smoke/plan.md` | F1: per-HEAD `AbortSignal.timeout(HEAD_TIMEOUT_MS)` in Critical Implementation Details + Phase 1; F2: `ArtCause` `network` (status 0) with its own copy in Phases 3, 5, 6, 13; F3: decode-seam guards in Critical Implementation Details + Phase 9 tests; F4/F5 in `## Known risks` |
-| `context/changes/health-lines-and-smoke/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/health-lines-and-smoke/handoff.md` | this file |
+| `scripts/deploy-check/parse.ts` | new pure helpers `EXPECTED_TYPES`, `entryVerdict`, `precacheServed`, `precacheCovers`, `isLocalHost`, `failLine`; `roomArtCheck` kept untouched |
+| `scripts/check-deploy.ts` | HEAD pool (8, 15 s `AbortSignal.timeout`, one retry), table checks under `if (sha7)`, hard-coded salon GET removed, `get` names the path, localhost skips the immutable check and `www` |
+| `tests/deployCheck.test.ts` | 9 new tests over recorded responses (no network) |
+| `context/changes/health-lines-and-smoke/plan.md` | rows 1.1–1.5 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/health-lines-and-smoke` |
-| script over `TASK_ART`, `UI_ART`, `ROOM_ART`, `SOUNDS` urls vs `public/` | `110 missing []` — `precacheCovers` cannot go red on today's build |
-| `grep -n timeout-minutes .github/workflows/deploy.yml` | none — basis of F1 |
-| `node_modules/phaser/src/loader/filetypes/AudioFile.js` `onProcess`; `LoaderPlugin.js` `addFile` / `nextFile`; `File.js` `onProcessError`; `FontFile.js` | seam real; decode failure has no `loaderror`; font 404 → `onProcessComplete`, face not added to `document.fonts` |
-| `grep` in `src/` for `url(`, `new Image`, `.src =`, `fetch(` | empty — no lazy fetch of a hashed file after a takeover |
-| `tests/phaserLoaderPin.test.ts` | pins `version` 4.2.1 + source text (read, not run) |
-| Progress rows | 71, unchanged; Progress↔Phase 1:1 |
-| Gate (lint, typecheck, tests, build, e2e) | not run: docs only, no code changed |
+| first RED (stubs returning wrong values) | `AssertionError: expected false to be true` (accepts 200 with the expected media type); `expected 'stub' to be 'timeout'` |
+| `npx vitest run tests/deployCheck.test.ts` | 16 passed (7 old + 9 new) |
+| break 1: `entryVerdict` ignoring the type | 1 failed (`expected true to be false`, the text/html-for-.webp case); restored |
+| break 2: `precacheCovers` ignoring the last url | 1 failed (`expected true to be false`); restored. Meta: proves the verdict over recorded responses, not that Caddy still answers so |
+| lint / typecheck | OK / OK |
+| `npm test` + deploy scripts + sample E1–E6 | Tests 3554 passed = baseline 3545 + 9 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| local smoke, `vite preview` on 4398, no SHA | `precache served: 121/121`, `all 16 checks ok`; with a fake SHA: four table lines ok (41/41, 5/5, 38/38, 24/24), only `build id` failed (fake sha); server killed |
+| live smoke, rollback mode, once, `https://martynka-urzadza.pl` | last lines: `ok www redirects to apex — 301 → https://martynka-urzadza.pl/` / `all 17 checks ok` |
+| `git diff --stat main -- deploy .github` | empty |
+| e2e `--workers=4` | 132 passed (11.0m) = baseline 132 + 0, no flakes |
+| stray processes | `ps -U $(id -u) … | grep -E 'sleep|until|while|playwright|vite'` empty; ports 4397/4398 free |
 
 ## 4. Next command
 
-`/10x-tdd health-lines-and-smoke phase 1`
+`/10x-tdd health-lines-and-smoke phase 2`
 
 ## 5. Open
 
-- [human] rows: 2.6 (launch-only `update()`), 4.6 (optional throttled Android cold start), 8.6 (real iPad,
-  `soundBlocked` after 3 touches), 11.8 (wording of gaps 139–150, now including the `network` cause line in gap 141).
-- [reviewer] (CI at ship) rows 1.7 and 11.7.
-- DESIGN-GAP rows 139–150 added in phases 2, 5, 6, 7, 8, 10; notes on gaps 66, 67, 114, 119, 120.
-- Follow-ups written in phase 11 (`follow-ups/review-fixes.md`): list in plan § What We're NOT Doing.
-- Known risks added by review: wall-clock boot limits run while hidden (`BootScene` timers, F4); offline launch warns
-  `Service worker update check failed` (`registerServiceWorker`, F5).
-- Phase 1 local proof: against `vite preview`, `isLocalHost` skips the immutable check; a missing file there is 200
-  `text/html`, caught by the type assertion.
-- Known e2e load flakes: `money-pay` #11, `final-art-loading` #15, `child-flow-guards` #2.
+- [reviewer] rows 1.6, 1.7 (CI at ship) not mine. [human] rows 2.6, 4.6, 8.6, 11.8 as before.
+- Local `vite preview` answers 200 `text/html` for a missing file; the type assertion catches it.
 
 ## 6. Autonomous decisions
 
-1. **Triage done in place** (contract rule 1): all three warnings fixed in plan.md, observations recorded. Would
-   change: nothing.
-2. **F1 timeout 15 s per HEAD, not a workflow `timeout-minutes`.** Rejected: editing `.github/workflows/deploy.yml`
-   (out of scope by the plan). Would change: a maintainer change to the workflow.
-3. **F2 new `network` cause rather than rewording `fetch`.** Why: restart advice and copy differ for 404 vs timeout.
-   Would change: Phaser exposing a distinct timeout event.
-4. **(b) no change to plan decision 2.** Evidence: no lazy hashed fetches, unhashed sound/font URLs in both precaches.
-   Would change: a lazy chunk or a CSS `url()` to an `_app/` file appearing in `src/`.
-5. **No phase split/merge**; drivers kept as written. Would change: a phase agent hitting the context limit.
+1. **Stubs before RED**: added stub helpers to `parse.ts` so the RED was an assertion failure, not an import error.
+2. **Commit only the planned set**, stop after phase 1, message accepted as proposed. Would change: nothing.
+3. **`roomArtCheck` left unchanged** next to `precacheCovers` (its test and name keep passing); the script now uses `precacheCovers('room pictures', …)`, so the old name is unused in the script. Would change: a wish to delete it.
+4. **`Error` cause via `Object.assign`** because the tsconfig lib lacks the `ErrorOptions` overload.

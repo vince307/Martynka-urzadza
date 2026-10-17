@@ -985,11 +985,11 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `entryVerdict` accepting any 200 / `precacheCovers` ignoring one URL → red; restored; meta-check (recorded responses, not Caddy)
-- [ ] 1.3 Local proof: `check:deploy` against `vite preview` on 4398 without a SHA prints `precache served: n/n` and `all N checks ok`; with a SHA adds the four table lines; server killed
-- [ ] 1.4 `git diff --stat main -- deploy .github` empty
-- [ ] 1.5 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 New tests red before the change (assertion, not import error), green after; unit `<branch baseline> + N`
+- [x] 1.2 Deliberate break: `entryVerdict` accepting any 200 / `precacheCovers` ignoring one URL → red; restored; meta-check (recorded responses, not Caddy)
+- [x] 1.3 Local proof: `check:deploy` against `vite preview` on 4398 without a SHA prints `precache served: n/n` and `all N checks ok`; with a SHA adds the four table lines; server killed
+- [x] 1.4 `git diff --stat main -- deploy .github` empty
+- [x] 1.5 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 

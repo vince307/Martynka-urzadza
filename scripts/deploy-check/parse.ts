@@ -60,3 +60,77 @@ export const contentTypeCheck = (name: string, header: string | null, prefix: st
     ok: (header ?? '').toLowerCase().startsWith(prefix),
     detail: header ?? '(no header)',
 });
+
+export interface EntryVerdict {
+    url: string;
+    ok: boolean;
+    reason: string;
+    status: number;
+    type: string;
+}
+
+/** Media type per precached extension (matched before ";"); other extensions are checked by status only. */
+export const EXPECTED_TYPES: Readonly<Record<string, string>> = {
+    js: 'text/javascript',
+    css: 'text/css',
+    html: 'text/html',
+    png: 'image/png',
+    webp: 'image/webp',
+    webmanifest: 'application/manifest+json',
+    ttf: 'font/ttf',
+    m4a: 'audio/mp4',
+    ogg: 'audio/ogg',
+};
+
+const extensionOf = (url: string): string => /\.([a-z0-9]+)$/i.exec(url)?.[1].toLowerCase() ?? '';
+
+/** Verdict for one precache entry from a HEAD response; status 0 means the request timed out or failed. */
+export const entryVerdict = (url: string, status: number, contentType: string | null, location: string | null): EntryVerdict => {
+    const type = (contentType ?? '').split(';')[0].trim().toLowerCase();
+    const result = (ok: boolean, reason: string): EntryVerdict => ({ url, ok, reason, status, type });
+    if (status === 0) {
+        return result(false, 'timeout');
+    }
+    if (url.endsWith('/index.html') && [301, 308].includes(status) && ['/', './'].includes(location ?? '')) {
+        return result(true, 'redirect to root');
+    }
+    if (status !== 200) {
+        return result(false, `status ${status}`);
+    }
+    const expected = EXPECTED_TYPES[extensionOf(url)];
+    if (expected !== undefined && type !== expected) {
+        return result(false, `type ${type || '(none)'}, expected ${expected}`);
+    }
+    return result(true, 'ok');
+};
+
+/** One aggregated line: how many precache entries the server answered correctly, and the first failures. */
+export const precacheServed = (verdicts: readonly EntryVerdict[]): CheckResult => {
+    const failed = verdicts.filter((v) => !v.ok);
+    const shown = failed.slice(0, 5).map((v) => `${v.url} ${v.status} ${v.type || v.reason}`);
+    return {
+        name: `precache served: ${verdicts.length - failed.length}/${verdicts.length}`,
+        ok: verdicts.length > 0 && failed.length === 0,
+        detail: verdicts.length === 0 ? 'no precache entries' : failed.length === 0 ? 'every entry answered with its media type' : `${shown.join('; ')}${failed.length > 5 ? `; and ${failed.length - 5} more` : ''}`,
+    };
+};
+
+/** Every expected url of one HEAD table must be in the precache; a leading slash on either side is ignored. */
+export const precacheCovers = (name: string, precache: readonly string[], urls: readonly string[]): CheckResult => {
+    const have = new Set(precache.map((u) => u.replace(/^\//, '')));
+    const missing = urls.filter((u) => !have.has(u.replace(/^\//, '')));
+    return {
+        name: `precache covers ${name}`,
+        ok: urls.length > 0 && missing.length === 0,
+        detail: `${urls.length - missing.length} of ${urls.length} ${name} precached${missing.length > 0 ? `; first missing: ${missing[0]}` : ''}`,
+    };
+};
+
+/** True for localhost and loopback, where the immutable cache check and the www redirect do not apply. */
+export const isLocalHost = (url: string): boolean => {
+    const host = new URL(url).hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+};
+
+export const failLine = (error: unknown): string =>
+    `FAIL request error — ${error instanceof Error ? error.message : String(error)} (the release is already live; roll back from Actions → Deploy if needed)`;
