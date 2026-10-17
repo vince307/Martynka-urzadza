@@ -262,10 +262,20 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
     };
-    const bootLoadSnapshot = (): { cut: string[]; creates: number } | null => {
-        const value = game.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[]; creates: number } | undefined;
-        return value ? { cut: [...value.cut], creates: value.creates } : null;
+    const bootLoadSnapshot = (): { cut: string[]; cutByTable: Record<string, string[]>; creates: number; elapsedMs: number } | null => {
+        const value = game.registry.get(REGISTRY_KEYS.bootLoad) as
+            | { cut: readonly string[]; cutByTable: Record<string, readonly string[]>; creates: number; elapsedMs: number }
+            | undefined;
+        return value
+            ? {
+                  cut: [...value.cut],
+                  cutByTable: Object.fromEntries(Object.entries(value.cutByTable).map(([table, keys]) => [table, [...keys]])),
+                  creates: value.creates,
+                  elapsedMs: value.elapsedMs,
+              }
+            : null;
     };
+    const fontHealthSnapshot = (): 'loaded' | 'fallback' | null => (game.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined) ?? null;
     const soundSnapshot = (): SoundStatus | null => {
         const value = game.registry.get(REGISTRY_KEYS.sound) as SoundService | undefined;
         return value ? deepFreeze(value.status()) : null;
@@ -281,16 +291,16 @@ export const installE2EHook = (game: Game): void => {
                 // While BootScene shows the loading screen there is no other scene to read (audit A-1: the load can hang for seconds).
                 const loadingScene = boot();
                 if (loadingScene?.isLoading()) {
-                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase(), art: Object.freeze(loadingScene.loadingArt()) }), save: save(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase(), art: Object.freeze(loadingScene.loadingArt()) }), save: save(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

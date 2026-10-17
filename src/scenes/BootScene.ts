@@ -1,6 +1,7 @@
-import { Loader, Scene, type Time } from 'phaser';
-import { artCauses, artHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type LoadSeen } from '../core/artHealth';
-import { bootLoadPhase, checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
+import { Loader, Scene } from 'phaser';
+import { artCauses, artHealth, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
+import { bootLimitDue, bootLimitSchedule, bootLimitWait, type BootLimitSchedule } from '../core/bootLimits';
+import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
 import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE } from '../testing/e2eHook';
@@ -26,6 +27,8 @@ export class BootScene extends Scene {
     private phase: BootLoadPhase = 'loading';
     private cut: string[] = [];
     private creates = 0;
+    // Wall-clock start of the boot load (performance.now): the limits and the recorded duration count real time, also while the tab is hidden (audit B-3).
+    private startedAt = 0;
     // What the loader reported, per file key: the cause of a missing texture is read from these in create() (runtime only).
     private readonly loadedKeys = new Set<string>();
     private readonly failedKeys = new Map<string, number>();
@@ -52,7 +55,7 @@ export class BootScene extends Scene {
     preload(): void {
         // The loading screen is drawn first and removed in create(); a bar that fails to draw must not stop the game from starting.
         this.loading = new LoadingScreen(this);
-        const startedAt = this.time.now;
+        this.startedAt = performance.now();
         const onProgress = (value: number): void => {
             try {
                 this.loading?.progress(value);
@@ -65,9 +68,17 @@ export class BootScene extends Scene {
         // so the limit is copied onto each file as it is queued (this.load.xhr.timeout is the configured value).
         // Registered before ANY file is queued: Phaser emits ADD synchronously, so the loading pictures below get the limit too.
         const limitMs = this.load.xhr.timeout;
+        let addWarned = false;
         this.load.on(Loader.Events.ADD, (_key: string, _type: string, _loader: unknown, file: Loader.File) => {
-            if (typeof limitMs === 'number' && limitMs > 0) {
-                file.xhrSettings.timeout = limitMs;
+            try {
+                if (typeof limitMs === 'number' && limitMs > 0) {
+                    file.xhrSettings.timeout = limitMs;
+                }
+            } catch (error) {
+                if (!addWarned) {
+                    addWarned = true;
+                    console.warn('Per-file load limit could not be set', error);
+                }
             }
         });
         // The two loading pictures are queued FIRST (same queue, same limits) and drawn the moment each arrives; a file the cut ends never fires this.
@@ -99,42 +110,58 @@ export class BootScene extends Scene {
         const limits: BootLimits = __E2E_HOOK__ && seamEarly === 'stallall' ? E2E_BOOT_LIMITS : balance.loader;
         checkBootLimits(limits);
         // After slowAfterMs a calm line appears under the bar (audit A-2); the rule decides, the widget draws.
-        // The phase is decided from the time that really passed since preload began (impl-review F3); a timer that fires a hair early waits for the rest.
-        const armSlow = (waitMs: number): Time.TimerEvent =>
-            this.time.delayedCall(waitMs, () => {
-                if (this.phase !== 'loading') {
-                    return;
-                }
-                const elapsed = this.time.now - startedAt;
-                const decided = bootLoadPhase(elapsed, limits);
-                if (decided === 'loading') {
-                    slowTimer = armSlow(Math.max(1, limits.slowAfterMs - elapsed));
-                    return;
-                }
+        // Both limits run on window timers and the wall clock (audit B-3): the game clock is smoothed and stops with a hidden tab, so a
+        // game-time timer fires late. A timer that fires a hair early waits for the rest; all timers end with the load or the scene.
+        const schedule: BootLimitSchedule = bootLimitSchedule(limits, this.startedAt);
+        const timers = new Set<number>();
+        const arm = (at: number, onDue: () => void): void => {
+            const id = window.setTimeout(() => {
+                timers.delete(id);
                 try {
-                    this.loading?.slow();
-                    this.phase = 'slow';
+                    if (performance.now() < at) {
+                        arm(at, onDue);
+                        return;
+                    }
+                    onDue();
                 } catch (error) {
-                    console.warn('Loading line failed', error);
+                    console.warn('Boot limit timer failed', error);
                 }
-            });
-        let slowTimer = armSlow(limits.slowAfterMs);
-        const cutTimer = this.time.delayedCall(limits.totalMs, () => {
+            }, bootLimitWait(at, performance.now()));
+            timers.add(id);
+        };
+        const clearTimers = (): void => {
+            for (const id of timers) window.clearTimeout(id);
+            timers.clear();
+        };
+        arm(schedule.slowAt, () => {
+            if (this.phase !== 'loading') {
+                return;
+            }
+            try {
+                this.loading?.slow();
+                this.phase = 'slow';
+            } catch (error) {
+                console.warn('Loading line failed', error);
+            }
+        });
+        arm(schedule.cutAt, () => {
+            if (bootLimitDue(schedule, performance.now()) !== 'cut') {
+                return;
+            }
             this.cut = cutLoad(this.load);
             this.phase = 'over';
             this.publish();
-            console.warn(`Boot load cut after ${limits.totalMs} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);
+            console.warn(`Boot load cut after ${Math.round(performance.now() - this.startedAt)} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);
         });
         // Nothing may call into the loading screen after the load ends: a late file after the cut must not redraw a destroyed screen.
         this.load.once(Loader.Events.COMPLETE, () => {
-            slowTimer.remove(false);
-            cutTimer.remove(false);
+            clearTimers();
             this.load.off('progress', onProgress);
             for (const [event, show] of artEvents) {
                 this.load.off(event, show);
             }
         });
-        this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
+        this.events.once('shutdown', clearTimers);
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
         // Phaser fires `loaderror` only for a failed fetch; a decode or font failure fires none (research.md), so create() reads the rest from the cache.
@@ -149,23 +176,40 @@ export class BootScene extends Scene {
         });
         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
-        for (const art of TASK_ART) {
-            if (seam === 'missing') {
-                continue;
-            }
-            this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
-        }
-        this.queueSounds();
-        // The salon pictures load the same way; a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
-        for (const art of ROOM_ART) {
-            if (seam === 'room') {
-                continue;
-            }
-            this.load.image(art.key, art.url);
-        }
-        // The other screens' pictures (wallet, notebook, salon thumbnail) join the queue after the salon; the two loading pictures are queued first by the loading screen (phase 5).
-        for (const art of UI_ART) {
-            if (art.id !== 'loadingBackground' && art.id !== 'loadingEmblem') this.load.image(art.key, art.url);
+        // Queue order (audit B-6, bootQueue): the pictures a child sees first, then the salon and the screens, the sounds last, so a slow
+        // link cuts the quiet effects before a picture. The two loading pictures were queued above, before the limits.
+        const queuers: Record<BootGroup, () => void> = {
+            loadingArt: () => undefined,
+            font: () => {
+                this.load.font(FONT_KEY, FONT_URL, 'truetype', { weight: FONT_WEIGHT_RANGE });
+            },
+            task: () => {
+                for (const art of TASK_ART) {
+                    if (seam === 'missing') {
+                        continue;
+                    }
+                    this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
+                }
+            },
+            // The salon pictures load the same way; a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
+            room: () => {
+                for (const art of ROOM_ART) {
+                    if (seam === 'room') {
+                        continue;
+                    }
+                    this.load.image(art.key, art.url);
+                }
+            },
+            // The other screens' pictures (wallet, notebook, salon thumbnail); the two loading pictures were queued first.
+            ui: () => {
+                for (const art of UI_ART) {
+                    if (art.id !== 'loadingBackground' && art.id !== 'loadingEmblem') this.load.image(art.key, art.url);
+                }
+            },
+            sound: () => this.queueSounds(),
+        };
+        for (const group of bootQueue(['loadingArt', 'font', 'task', 'room', 'ui', 'sound'])) {
+            queuers[group]();
         }
     }
 
@@ -213,7 +257,7 @@ export class BootScene extends Scene {
     }
 
     private publish(): void {
-        this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], creates: this.creates });
+        this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], cutByTable: cutByTable(this.cut, this.tables()), creates: this.creates, elapsedMs: Math.round(performance.now() - this.startedAt) });
     }
 
     create(): void {
@@ -225,6 +269,12 @@ export class BootScene extends Scene {
         }
         this.loading?.destroy();
         this.loading = null;
+        // Did the task font arrive? (A decode failure fires no loaderror, so the document's font set is read.)
+        const font = fontHealth([...document.fonts].map((face) => ({ family: face.family, status: face.status })), FONT_KEY);
+        this.registry.set(REGISTRY_KEYS.fontHealth, font);
+        if (font === 'fallback') {
+            console.warn(`Task font not loaded: ${FONT_KEY} (text is drawn in a system font)`);
+        }
         // The one record of which drawings did not make it to a texture (a failed fetch and a failed decode alike).
         const health = this.withCauses('Task', TASK_ART, artHealth(TASK_ART, (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.artHealth, health);

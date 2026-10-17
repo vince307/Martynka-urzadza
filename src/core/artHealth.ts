@@ -78,3 +78,26 @@ export const artHealthView = (health: ArtHealth | undefined): ArtHealthView => {
 export const sectionState = (views: readonly (ArtHealthView | undefined)[]): 'ok' | 'missing' => {
     return views.some((view) => view?.kind === 'missing') ? 'missing' : 'ok';
 };
+
+/** The boot queue groups, in the order the scene queues them (audit B-6): sounds last, so a slow link cuts the quiet effects first. */
+export type BootGroup = 'loadingArt' | 'font' | 'task' | 'room' | 'ui' | 'sound';
+
+const QUEUE_ORDER: readonly BootGroup[] = ['loadingArt', 'font', 'task', 'room', 'ui', 'sound'];
+
+export const bootQueue = (groups: readonly BootGroup[]): BootGroup[] => QUEUE_ORDER.filter((group) => groups.includes(group));
+
+const unquote = (family: string): string => family.replace(/^["']|["']$/g, '');
+
+/** `loaded` when a face of the family finished loading; `fallback` otherwise (the text is drawn in a system font). */
+export const fontHealth = (faces: readonly { family: string; status: string }[], family: string): 'loaded' | 'fallback' =>
+    faces.some((face) => unquote(face.family) === family && face.status === 'loaded') ? 'loaded' : 'fallback';
+
+/** The cut keys grouped by table; a key in no table (the font) is listed under `font`. */
+export const cutByTable = (
+    cut: readonly string[],
+    tables: Readonly<Record<ArtTable, ReadonlySet<string>>>,
+): Record<ArtTable | 'font', string[]> => {
+    const grouped: Record<ArtTable | 'font', string[]> = { task: [], room: [], ui: [], sound: [], font: [] };
+    for (const key of cut) grouped[tableOf(key, tables) ?? 'font'].push(key);
+    return grouped;
+};

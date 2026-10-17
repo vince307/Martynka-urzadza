@@ -199,7 +199,8 @@ export const REGISTRY_KEYS = {
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
     roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter
-    bootLoad: 'bootLoad',               // { cut: string[]; creates: number }: files the total boot limit ended and how often BootScene.create ran, set by BootScene; runtime only, not in SAVE_KEYS
+    bootLoad: 'bootLoad',               // { cut: string[]; cutByTable; creates: number; elapsedMs: number }: files the total boot limit ended (also by table), how often BootScene.create ran and the wall-clock load time, set by BootScene; runtime only, not in SAVE_KEYS
+    fontHealth: 'fontHealth',           // 'loaded' | 'fallback' (core/artHealth fontHealth): whether the task font arrived, set by BootScene.create; runtime only, not in SAVE_KEYS
     forcedArt: 'forcedArt',             // e2e build only: 'missing' | 'corrupt' (main.ts, from the page address); the name is not an e2e marker on purpose
     variants: 'variants',               // VariantState (core/types): the round-variant schedule, saved with the game (S-15)
     today: 'today',                     // () => 'YYYY-MM-DD', the local calendar day (main.ts; scenes never call Date for the day)

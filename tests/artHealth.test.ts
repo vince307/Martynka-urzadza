@@ -1,6 +1,6 @@
 // Origin: change art-stand-in-and-load-signal, phase 1. The record of which task pictures did not load.
 import { describe, expect, it } from 'vitest';
-import { artCauses, artHealth, artHealthView, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
+import { artCauses, artHealth, artHealthView, bootQueue, cutByTable, fontHealth, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
 
 const entries = Array.from({ length: 38 }, (_, i) => ({ key: `art-key-${i}`, id: `id-${i}` }));
 
@@ -98,5 +98,39 @@ describe('wrongSizes', () => {
         ];
         const sizes: Record<string, { width: number; height: number }> = { a: { width: 100, height: 50 }, b: { width: 100, height: 51 } };
         expect(wrongSizes(entries, (key) => sizes[key])).toEqual(['b']);
+    });
+});
+
+// Change health-lines-and-smoke, phase 4 (B-6, A-7 record, B-3 record): queue order, font check, cut by table.
+describe('bootQueue', () => {
+    it('queues the loading pictures, font, task, room and other screen pictures before the sounds', () => {
+        const order = bootQueue(['sound', 'ui', 'room', 'task', 'font', 'loadingArt']);
+        expect(order).toEqual(['loadingArt', 'font', 'task', 'room', 'ui', 'sound']);
+        expect(order.indexOf('sound')).toBeGreaterThan(order.indexOf('room'));
+        expect(order.indexOf('sound')).toBe(order.length - 1);
+    });
+
+    it('keeps only the groups asked for', () => {
+        expect(bootQueue(['sound', 'task'])).toEqual(['task', 'sound']);
+    });
+});
+
+describe('fontHealth', () => {
+    it('is loaded when a face of the family is loaded, quoted or not', () => {
+        expect(fontHealth([{ family: 'Arial', status: 'loaded' }, { family: '"Atk"', status: 'loaded' }], 'Atk')).toBe('loaded');
+        expect(fontHealth([{ family: 'Atk', status: 'loaded' }], 'Atk')).toBe('loaded');
+    });
+    it('is fallback when the face is absent, loading or in error', () => {
+        expect(fontHealth([], 'Atk')).toBe('fallback');
+        expect(fontHealth([{ family: 'Atk', status: 'error' }], 'Atk')).toBe('fallback');
+        expect(fontHealth([{ family: 'Atk', status: 'loading' }], 'Atk')).toBe('fallback');
+        expect(fontHealth([{ family: 'Other', status: 'loaded' }], 'Atk')).toBe('fallback');
+    });
+});
+
+describe('cutByTable', () => {
+    it('groups cut keys by table and lists the font apart', () => {
+        const tables = { task: new Set(['t1']), room: new Set(['r1', 'r2']), ui: new Set(['u1']), sound: new Set(['s1']) };
+        expect(cutByTable(['r1', 'font', 's1', 'r2'], tables)).toEqual({ task: [], room: ['r1', 'r2'], ui: [], sound: ['s1'], font: ['font'] });
     });
 });
