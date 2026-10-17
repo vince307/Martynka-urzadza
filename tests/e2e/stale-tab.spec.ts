@@ -7,7 +7,7 @@
 // the "restart". Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
-import { fromHook, playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
+import { answerRight, fromHook, playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 import { pl } from '../../src/data/pl';
 
 test.setTimeout(120_000);
@@ -96,4 +96,69 @@ test('#2 B-1 a reset in one window is not undone by the other', async ({ page })
     await third.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(third, 'welcome');
     expect((await fromHook(third, 'snapshot')).learner).toBeNull();
+});
+
+// save-truth p14. Both pages start from A's save; B plays and saves; A is then stopped.
+
+/** Window A plays one saved round and stands on the task screen; window B opens from that save. */
+async function twoWindows(page: Page): Promise<{ second: Page; s1: number }> {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
+    await playSavedRound(page);
+    const s1 = (await snapshot(page)).stars;
+    await tapTarget(page, 'nextRound');
+    await screenIs(page, 'task');
+    return { second: await openWindow(page), s1 };
+}
+
+test('#2 T-2 a second window\'s save stops the first before it writes', async ({ page }) => {
+    const { second } = await twoWindows(page);
+    const writesBefore = (await snapshot(page)).save?.writes;
+    expect(writesBefore).toBeGreaterThan(0);
+
+    await playSavedRound(second);
+
+    // No action in window A: the message from B alone stops it, and it wrote nothing meanwhile.
+    await page.bringToFront();
+    await expect.poll(async () => (await snapshot(page)).save?.blockedBy).toBe('otherTab');
+    await expect(page.getByRole('alertdialog').getByText(pl.saveRefused.title)).toBeVisible();
+    expect((await snapshot(page)).save?.writes).toBe(writesBefore);
+    expect((await snapshot(page)).save?.failures).toBe(0);
+});
+
+test('#2 T-5 the refusal card names its code', async ({ page }) => {
+    const { second } = await twoWindows(page);
+    await playSavedRound(second);
+
+    await page.bringToFront();
+    const card = page.getByRole('alertdialog');
+    await expect(card.getByText(pl.saveRefused.title)).toBeVisible();
+    const build = await page.locator('#game-container').getAttribute('data-build');
+    expect(build).toBeTruthy();
+    await expect(card.getByText(pl.saveFailed.detail('OtherWriterSave', build!))).toBeVisible();
+});
+
+// Added by the orchestrator, run 2026-10-16-audit-sweep. Without BroadcastChannel (iPadOS before 15.4) the write-time rule
+// in the store is the only guard: the stale window's own write is refused and the newer save stays.
+test('#2 B-1 without BroadcastChannel the stale window\'s own write is refused', async ({ page }) => {
+    await page.context().addInitScript(() => {
+        delete (window as unknown as { BroadcastChannel?: unknown }).BroadcastChannel;
+    });
+    const { second } = await twoWindows(page);
+    expect(await page.evaluate(() => typeof BroadcastChannel)).toBe('undefined');
+    expect(await second.evaluate(() => typeof BroadcastChannel)).toBe('undefined');
+
+    await playSavedRound(second);
+    const s2 = (await snapshot(second)).stars;
+
+    // No message reached A: it is not stopped until its own state changes and it tries to write.
+    await page.bringToFront();
+    expect((await snapshot(page)).save?.blockedBy).toBeNull();
+    await answerRight(page);
+    await expect.poll(async () => (await snapshot(page)).save?.blockedBy).toBe('otherTab');
+    await expect(page.getByRole('alertdialog').getByText(pl.saveRefused.title)).toBeVisible();
+
+    // B's progress is what the store holds: a new window loads B's stars, not A's.
+    const third = await openWindow(page);
+    expect((await snapshot(third)).stars).toBe(s2);
 });

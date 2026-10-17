@@ -1283,6 +1283,7 @@ line then falls back to the session status, as today).
 - [ ] 14.1 `npx playwright test tests/e2e/stale-tab.spec.ts` green; full `--workers=4`: `<branch e2e baseline> + 2`
 - [ ] 14.2 Deliberate break p14a → (a) red; p14b → (b) red; each restored; meta-check
 - [ ] 14.3 Build prints `e2e hook: absent (`; full local gate green; servers 4397/4398 killed
+- [ ] 14.5 Test (c) `#2 B-1 without BroadcastChannel the stale window's own write is refused` green; deliberate break (`guardedPut` ignoring the refuse verdict) → red; restored (added by the orchestrator, run 2026-10-16-audit-sweep)
 
 #### Manual
 
