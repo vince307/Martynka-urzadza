@@ -61,3 +61,12 @@ export function holdPoint(
     }
     return null;
 }
+
+/** Chosen slots that have no hold point (a finger cannot reach them), for the e2e hook and the log. */
+export function unreachableSlots(
+    room: RoomDef, chosen: Readonly<Record<string, number>>, alphaAt?: AlphaAt,
+): string[] {
+    return room.slots
+        .filter((s) => chosen[s.id] !== undefined && holdPoint(room, chosen, s.id, undefined, alphaAt) === null)
+        .map((s) => s.id);
+}

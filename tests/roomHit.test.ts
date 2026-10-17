@@ -4,7 +4,7 @@
 //   sofa 838,257 (+16,+16 803x534) z30  rug 432,441 (1079x608) z10  coffee-table 763,535 (505x365) z50
 //   cabinet 293,226 (480x331) z20      armchair 248,554 (367x329) z40  wall-frames 1055,15 (602x393) z5
 import { describe, expect, it } from 'vitest';
-import { holdPoint, slotAt, slotBox } from '../src/core/roomHit';
+import { holdPoint, slotAt, slotBox, unreachableSlots } from '../src/core/roomHit';
 import type { AlphaAt } from '../src/core/roomHit';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
@@ -164,5 +164,14 @@ describe('holdPoint inside the scene (S-16d)', () => {
     });
     it('a slot fully above the scene has no hold point', () => {
         expect(holdPoint(room, chosen, 'ceiling')).toBeNull();
+    });
+});
+
+describe('unreachableSlots', () => {
+    it('is empty for the furnished salon and names every chosen slot when nothing is hit', () => {
+        expect(unreachableSlots(SALON, all)).toEqual([]);
+        const nothing = (): number => 0;
+        expect(unreachableSlots(SALON, all, nothing).sort()).toEqual(Object.keys(all).sort());
+        expect(unreachableSlots(SALON, {}, nothing)).toEqual([]);
     });
 });

@@ -1119,11 +1119,11 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 11.1 Hook field test red before, green after; unit `<branch baseline> + N`
-- [ ] 11.2 Deliberate break: `unreachable` always empty → red; restored; meta-check (field; real salon = phase 12)
-- [ ] 11.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
-- [ ] 11.4 Every follow-up entry has a `Trigger:` line
-- [ ] 11.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 11.1 Hook field test red before, green after; unit `<branch baseline> + N`
+- [x] 11.2 Deliberate break: `unreachable` always empty → red; restored; meta-check (field; real salon = phase 12)
+- [x] 11.3 `validate-rule-files.sh` PASS; deliberate broken path in `CLAUDE.md` → FAIL; restored
+- [x] 11.4 Every follow-up entry has a `Trigger:` line
+- [x] 11.5 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 
