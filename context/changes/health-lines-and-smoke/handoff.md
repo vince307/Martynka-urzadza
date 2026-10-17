@@ -1,52 +1,51 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-tdd` phase 2 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1 and 2 are committed. Do not get wrong: `src/core` never imports `src/data/pl.ts`, `registration.update()` runs once per launch only (no visibility or timer trigger), an `xhrLoader.status` 0 is the `network` cause, never "not on the server", `vite/config.shared.mjs` stays unchanged.
+Written by the `/10x-tdd` phase 3 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-3 are committed. Do not get wrong: `src/core` never imports `src/data/pl.ts`, `registration.update()` runs once per launch only (no visibility or timer trigger), an `xhrLoader.status` 0 is the `network` cause, never "not on the server", `vite/config.shared.mjs` stays unchanged.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | identity, research, plan, plan-review, phase 1, handoff p1, phase 2 (`feat(health-lines-and-smoke): ... (p2)` bb650cc) |
+| Commits | identity, research, plan, plan-review, phase 1, handoff p1, phase 2 (bb650cc), handoff p2, phase 3 (`feat(health-lines-and-smoke): ... (p3)` a7be75b) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 63 (66 minus rows 2.1-2.3, ticked) |
+| `## Progress` rows remaining | 60 (63 minus rows 3.1-3.3, ticked) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/swStatus.ts` | `OfflineLine` + `updateFailed`; `offlineView` ready+error gives it; `SwEvent` `waiting` tracks the worker |
-| `src/pwa/registerServiceWorker.ts` | waiting worker tracked (`trackStates`), one `registration.update()` per launch with a warn, listener errors warned |
-| `src/data/pl.ts`, `docs/design-gaps.md` | `settings.offline.updateFailed` (DESIGN-GAP 139) |
-| `tests/swStatus.test.ts` | reversed "names a failed update ..." + new ready-without-error and waiting tests |
+| `src/core/artHealth.ts` | `ArtTable`, `ArtCause`, `LoadSeen`, `tableOf`, `loadErrorLine`, `artCauses` (cut > failed > loaded > never), `wrongSizes`; `ArtHealth` gains optional `causes`, `wrongSize` |
+| `src/scenes/BootScene.ts` | `FILE_LOAD`/`loaderror` listeners record loaded keys and failed status; `loaderror` prints `loadErrorLine` (font keeps its own line); `withCauses` adds causes and size check per table, one warn each; no player text |
+| `tests/artHealth.test.ts`, `tests/phaserLoaderPin.test.ts` | 5 new rule tests; pin case for `nextFile` FILE_LOAD / FILE_LOAD_ERROR and `ImageFile.onProcess` onProcessError |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| first RED (stub `waiting`, old view) | `AssertionError: expected null to be 'InstallFailed'` (waiting case); `expected { line: 'ready', ...} to deeply equal { line: 'updateFailed', ...}` |
-| `npx vitest run tests/swStatus.test.ts` | 14 passed |
-| break 1: `offlineView` without the `error` branch | 1 failed (reversed case); restored. Break 2: `waiting` ignored (the sed also hit `installing`, 5 red incl. the waiting case); restored. Meta: proves view and reducer; the registration wiring is reviewed, not unit tested |
+| first RED (stubs returning ''/{}/[]) | `AssertionError: expected '' to be 'Task file failed to load: tasks/money…'`; `expected {} to deeply equal { 'decoded-bad': 'decode', …(5) }`; `expected [] to deeply equal [ 'b' ]` (5 failed, 8 passed) |
+| `npx vitest run tests/artHealth.test.ts` | 13 passed |
+| break: `artCauses` checks `failed` before `cut` | 1 failed (`expected { 'decoded-bad': 'decode', …(5) } to deeply equal …`); restored, 13 passed. Meta: proves the classifier over recorded events; the browser decode path is phase 13 (`?e2eArt=corrupt`) |
 | lint / typecheck | OK / OK |
-| `npm test` + deploy scripts + sample E1-E6 | Tests 3556 passed = baseline 3554 + 2 |
-| `npm run build` | `e2e hook: absent (2 chunks checked)`; `git diff main -- vite deploy .github` empty |
-| e2e `--workers=4` | 125 passed (10.2m), 0 failed, no flakes; seed and `health-lines` #8 P-1 green. Note: `playwright --list` says 132 and phase 1 handoff said 132 passed; this run executed 125 (1 chromium + 124 chromium-hook) with nothing skipped or failed. Not investigated |
-| stray processes | `ps` is blocked in this sandbox (operation not permitted); no background job of mine remains (e2e run finished, `sleep 1` job finished) |
+| `npm test` + deploy scripts + sample E1-E6 | Tests 3562 passed = 3556 + 6 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| e2e `--workers=4` | 132 passed (10.6m), 0 failed; `playwright --list` 132 |
+| stray processes | `ps` grep (sandbox disabled) printed nothing |
 
 ## 4. Next command
 
-`/10x-tdd health-lines-and-smoke phase 3`
+`/10x-tdd health-lines-and-smoke phase 4`
 
 ## 5. Open
 
-- [reviewer] rows 1.6, 1.7, 2.4; [visual] 2.5; [human] 2.6, 4.6, 8.6, 11.8 not mine.
-- e2e count 125 vs 132 discrepancy (see §3) for the orchestrator to check.
+- [reviewer] rows 1.6, 1.7, 2.4, 3.4; [visual] 2.5; [human] 2.6, 4.6, 8.6, 11.8 not mine.
+- The phase 2 note about 125 e2e tests is moot: this run executed 132.
 
 ## 6. Autonomous decisions
 
-1. **Commit only the planned set**, stop after phase 2, message as proposed. Would change: nothing.
-2. **`waiting` reducer**: sets `tracking` like `installing` (ready if a worker is active), so a later `redundant` is a failed update and `activated` clears it. Would change: a review wanting a separate phase.
-3. **`trackStates` split out of `track`** so a waiting worker gets the statechange listener without a second `installing` event.
-4. **Break 2 was broader than planned** (sed matched two lines); the waiting case still went red. Would change: nothing.
+1. **Commit only the planned set**, stop after phase 3, message as proposed. Would change: nothing.
+2. **Cut wins over failed** in `artCauses`: a file the cut ended (a flying file errors with status 0 on the cut) is a `cut`, not `network`. Would change: a review wanting the first event to win.
+3. **`causes` and `wrongSize` are optional** on `ArtHealth` so no other record builder changes; `BootScene.withCauses` adds them. No new pl.ts string, so no DESIGN-GAP row.
+4. **Source of status**: `file.xhrLoader?.status ?? 0` in the `loaderror` listener; no `tableOf` match means the font line.

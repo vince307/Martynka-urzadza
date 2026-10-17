@@ -1014,9 +1014,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 3.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; `artFilter` tests green unchanged
-- [ ] 3.2 Deliberate break: `artCauses` order reversed for a cut key → red; restored; meta-check (classifier over recorded events)
-- [ ] 3.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `art-stand-in`, `salon-load-health`, `health-lines` specs green
+- [x] 3.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`; `artFilter` tests green unchanged — a7be75b
+- [x] 3.2 Deliberate break: `artCauses` order reversed for a cut key → red; restored; meta-check (classifier over recorded events) — a7be75b
+- [x] 3.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `art-stand-in`, `salon-load-health`, `health-lines` specs green — a7be75b
 
 #### Manual
 
