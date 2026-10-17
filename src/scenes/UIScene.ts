@@ -18,7 +18,7 @@ import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, saveProblem, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
-import { openSaveImportDialog } from '../ui/dom/saveImportDialog';
+import { openSaveImportDialog, type BrokenDevice } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
 import type { SoundPrefs } from '../core/sound';
@@ -227,12 +227,10 @@ export class UIScene extends Scene {
     /** Import step: replaces the panel in the same input session; the device save is judged by `deviceSaveView`, `apply` is the saver's replace. */
     private openImport(saver: Autosaver, session: InputSession): void {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
-        if (device.kind === 'broken') {
-            this.closeSettings();
-            return;
-        }
+        // SVB-04: a state that does not decode is named in the dialog, never a silent close of the panel.
+        const view = device.kind === 'broken' ? this.brokenView(saver) : device;
         this.closeDialog = openSaveImportDialog({
-            device,
+            device: view,
             summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
             roomName: (id) => ROOMS[id]?.name ?? id,
             maxBytes: balance.save.importMaxBytes,
@@ -241,15 +239,18 @@ export class UIScene extends Scene {
         });
     }
 
+    private brokenView(saver: Autosaver): BrokenDevice {
+        console.error('import/reset: the current state does not decode', { problem: saveProblem(saver.current()) });
+        return { kind: 'blocked', cause: 'broken', forceable: false };
+    }
+
     /** Reset step: replaces the panel in the same input session; the empty save is built at the tap and written by the saver's replace. */
     private openReset(saver: Autosaver, session: InputSession): void {
         const device = deviceSaveView(saver.status(), saver.current(), ROOMS);
-        if (device.kind === 'broken') {
-            this.closeSettings();
-            return;
-        }
+        // SVB-04: a state that does not decode is named in the dialog, never a silent close of the panel.
+        const view = device.kind === 'broken' ? this.brokenView(saver) : device;
         this.closeDialog = openSaveResetDialog({
-            device,
+            device: view,
             roomName: (id) => ROOMS[id]?.name ?? id,
             fresh: () => encodeSave(freshSession(FIRST_ROOM)),
             apply: (state, force) => saver.replace(state, { force }),

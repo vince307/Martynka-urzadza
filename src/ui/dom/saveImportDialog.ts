@@ -1,15 +1,18 @@
 import { parseImport, type DeviceSaveView, type ImportRejection, type SaveSummary } from '../../core/saveFile';
 import { encodeSave, type SessionSave } from '../../core/save';
-import type { ReplaceResult } from '../../core/autosave';
+import { errorName, type ReplaceResult } from '../../core/autosave';
 import type { SaveState } from '../../core/types';
 import { pl } from '../../data/pl';
 import { openDialog, type DomDialog } from './dialog';
 import { createButton, createText } from './overlay';
 import { blockedText, createSummaryList, failureText } from './saveSummaryView';
 
+/** The current game state cannot be read (SVB-04): the dialog shows `deviceBroken` and nothing else. */
+export type BrokenDevice = { kind: 'blocked'; cause: 'broken'; forceable: false };
+
 export interface SaveImportDialogOptions {
     /** What the device save is: a summary ("Teraz"), unreadable, or not readable at all (S12-01). Never a fresh session. */
-    device: Exclude<DeviceSaveView, { kind: 'broken' }>;
+    device: Exclude<DeviceSaveView, { kind: 'broken' }> | BrokenDevice;
     /** Builds the summary of the file's save ("Z pliku"); the caller owns the room data. */
     summarize: (session: SessionSave) => SaveSummary;
     roomName: (id: string) => string;
@@ -51,6 +54,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
     const stepTwo = (session: SessionSave, forced: boolean, file: { build: string | null; exportedAt: string | null }): void => {
         const message = createText('p', '', 'overlay-muted');
         message.setAttribute('role', 'status');
+        message.tabIndex = -1;   // V2: the failure line takes the focus so it is read
         message.hidden = true;
         const load = createButton(pl.saveTransfer.load, () => {
             if (busy) return;
@@ -74,7 +78,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
                 load.hidden = true;
                 cancel.disabled = false;
                 cancel.textContent = pl.saveTransfer.close;
-                cancel.focus();
+                message.focus();
             };
         });
         load.classList.add('parent-primary');
@@ -140,7 +144,7 @@ export const openSaveImportDialog = ({ device, summarize, roomName, maxBytes, ap
                     if (result.kind === 'ok') stepTwo(result.session, forced, result.file);
                     else refuse(result.reason, result.problem);
                 },
-                () => refuse('not-json', null),
+                (e: unknown) => refuse('unreadable-file', errorName(e)),
             );
         });
         const choose = createButton(rejection ? pl.saveTransfer.chooseOther : pl.saveTransfer.choose, () => input.click());

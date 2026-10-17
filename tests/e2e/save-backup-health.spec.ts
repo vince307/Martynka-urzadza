@@ -96,8 +96,8 @@ test('#2 SV2-02 a write that never answers is a named failure and the reset dial
     await page.keyboard.press('Escape');
     await expect(dialog).toBeVisible();
 
-    // The limit passes: the dialog says nothing changed and "Zamknij" is the way out; no reload.
-    await expect(dialog.getByText(pl.saveTransfer.resetFailed)).toBeVisible();
+    // The limit passes: the dialog says the game got no confirmation (not "bez zmian": the write may still land) and "Zamknij" is the way out; no reload.
+    await expect(dialog.getByText(pl.saveTransfer.replaceUnconfirmed)).toBeVisible();
     const close = dialog.getByRole('button', { name: pl.saveTransfer.close, exact: true });
     await expect(close).toBeEnabled();
     expect(await page.evaluate(() => '__beforeReset' in window)).toBe(true);

@@ -229,6 +229,8 @@ export const pl = {
             future: 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę i spróbuj ponownie. Obecne postępy zostały bez zmian.',
             'unknown-version': 'Nie można rozpoznać wersji tego zapisu. Obecne postępy zostały bez zmian.',
             'migration-failed': 'Nie udało się przenieść tego zapisu do obecnej wersji gry. Obecne postępy zostały bez zmian.',
+            // DESIGN-GAP 135 (docs/design-gaps.md): the browser would not read the chosen file; nothing is claimed about the save, the text is ours, to be read by a teacher.
+            'unreadable-file': 'Nie udało się odczytać tego pliku. Spróbuj wybrać go jeszcze raz.',
         },
         applyFailed: 'Nie udało się wczytać zapisu. Obecne postępy zostały bez zmian.',
         // DESIGN-GAP 49 (docs/design-gaps.md): the kit has no reset confirmation; texts are ours.
@@ -246,6 +248,10 @@ export const pl = {
         forcedWarning: 'Zapisu z tego urządzenia nie udało się odczytać. Zostanie zastąpiony.',
         siteDataAdvice: 'Nie udało się zapisać na tym urządzeniu. Ostatnie wyjście: usuń dane tej strony w ustawieniach przeglądarki albo usuń ikonę gry z ekranu i dodaj ją ponownie. To usuwa też zapis gry.',
         resetFailed: 'Nie udało się zacząć od nowa. Obecne postępy zostały bez zmian.',
+        // DESIGN-GAP 134 (docs/design-gaps.md): the kit has no line for a write that timed out and may still have landed; the text is ours, to be read by a teacher.
+        replaceUnconfirmed: 'Gra nie dostała potwierdzenia zapisu. Uruchom grę ponownie i sprawdź postępy.',
+        // DESIGN-GAP 136 (docs/design-gaps.md): the kit has no line for a current game state that cannot be read; the text is ours, to be read by a teacher.
+        deviceBroken: 'Obecnego stanu gry nie da się odczytać. Uruchom grę ponownie.',
         // DESIGN-GAP 70 (docs/design-gaps.md): the kit has no line per reason a device save cannot be replaced (newer version, slow read).
         deviceFuture: 'Zapis na tym urządzeniu pochodzi z nowszej wersji gry, więc ta wersja go nie zastąpi. Zaktualizuj grę: zapis wczyta się bez zmian.',
         deviceTimeout: 'Odczyt zapisu na tym urządzeniu trwał za długo, więc gra nie może go teraz zastąpić. Uruchom grę ponownie i spróbuj jeszcze raz. Jeśli to się powtarza, może pomóc usunięcie danych tej strony (to usuwa też zapis gry).',

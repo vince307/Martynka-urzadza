@@ -66,6 +66,17 @@ describe('device save wiring (S12-01)', () => {
         expect(text).toMatch(/device\.kind === 'summary' \? \{\} : \{ warning: pl\.saveTransfer\.exportNotDevice \}/);
     });
 
+    for (const name of ['openImport', 'openReset']) {
+        it(`${name} shows a broken device save in the dialog instead of closing the panel silently (SVB-04)`, () => {
+            const text = method(name).getText(source);
+            expect(text).toContain("device.kind === 'broken' ? this.brokenView(saver)");
+            expect(text.slice(0, text.indexOf('openSave'))).not.toContain('closeSettings');
+            const helper = method('brokenView').getText(source);
+            expect(helper).toContain('saveProblem(saver.current())');
+            expect(helper).toContain("cause: 'broken'");
+        });
+    }
+
     it('openExport validates the state before it builds the file and returns null when it does not (S12-04)', () => {
         const text = method('openExport').getText(source);
         const check = text.indexOf('saveProblem(saver.current())');

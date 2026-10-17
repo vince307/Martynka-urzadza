@@ -20,12 +20,16 @@ describe('pl.saveTransfer import copy', () => {
         expect(pl.saveTransfer.stars(n)).toBe(text);
     });
 
-    it('has a calm text for every rejection reason, each leaving the save untouched', () => {
-        const reasons: ImportRejection[] = ['too-big', 'not-json', 'not-ours', 'corrupt', 'future', 'unknown-version', 'migration-failed'];
-        for (const reason of reasons) {
+    it('has a text for every rejection reason; a refusal of a file says the save is untouched, an unreadable file only asks to try again (SVB-04)', () => {
+        const all: Record<ImportRejection, true> = { 'too-big': true, 'not-json': true, 'not-ours': true, corrupt: true, future: true, 'unknown-version': true, 'migration-failed': true, 'unreadable-file': true };
+        expect(Object.keys(pl.saveTransfer.rejected).sort()).toEqual(Object.keys(all).sort());
+        for (const reason of Object.keys(all) as ImportRejection[]) {
+            if (reason === 'unreadable-file') continue;
             expect(pl.saveTransfer.rejected[reason]).toMatch(/Obecne postępy zostały bez zmian\.$/);
         }
+        expect(pl.saveTransfer.rejected['unreadable-file']).toBe('Nie udało się odczytać tego pliku. Spróbuj wybrać go jeszcze raz.');
         expect(pl.saveTransfer.rejected.future).toContain('Zaktualizuj grę');
+        expect(pl.saveTransfer.deviceBroken).toBe('Obecnego stanu gry nie da się odczytać. Uruchom grę ponownie.');
     });
 
     it('formats a room line', () => {
