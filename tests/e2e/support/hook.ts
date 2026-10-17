@@ -60,6 +60,8 @@ export interface Snapshot {
     bootLoad?: { cut: string[]; creates: number; elapsedMs: number } | null;
     /** Whether the task font arrived (`fallback` = drawn in a system font); null before the first create. */
     fontHealth?: 'loaded' | 'fallback' | null;
+    /** Which drawn fallback the child saw instead of a screen picture (wallet, notebook, miniature, loading), with the mode; runtime only. */
+    artFallbacks?: Record<string, string>;
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
