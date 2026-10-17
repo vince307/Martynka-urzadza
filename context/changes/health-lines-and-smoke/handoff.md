@@ -1,15 +1,15 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the visual-gate step of run `2026-10-16-audit-sweep`. All six [visual] rows are captured and ticked: `VISUAL: PASS` in `reviews/visual-review.md`. The gate found and fixed one real defect, VG-1: the pictures the boot limit cut were reported as `network`. The fix is in commit `fix(health-lines-and-smoke): …`, and change.md status stays `impl_reviewed`. Do not get wrong: the save format stays v4, and rows 1.7 and 11.7 are proved by CI at ship. The CLAUDE.md paragraph still points into `context/changes/`, so re-point it after the archive.
+Written by the visual-gate step of run `2026-10-16-audit-sweep`; the ship step (archive + ship) stamped the final pre-merge state. All six [visual] rows are captured and ticked: `VISUAL: PASS` in `reviews/visual-review.md`. The gate found and fixed one real defect, VG-1: the pictures the boot limit cut were reported as `network`. The fix is in commit `fix(health-lines-and-smoke): …`, and change.md status stays `impl_reviewed`. Do not get wrong: the save format stays v4, and rows 1.7 and 11.7 are proved by CI at ship. The CLAUDE.md paragraph still points into `context/changes/`, so re-point it after the archive.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | everything up to `d090f0b` (impl review), then this step: `fix(health-lines-and-smoke): przyczyna „cut” dla obrazków uciętych limitem startu (VG-1)` and `docs(health-lines-and-smoke): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Commits | everything up to `d090f0b` (impl review), then the visual gate: `fix(health-lines-and-smoke): przyczyna „cut” dla obrazków uciętych limitem startu (VG-1)` 91671a4 and `docs(health-lines-and-smoke): bramka wizualna` c75033f, then the ship step: this handoff, `chore(archive): close health-lines-and-smoke` and the CLAUDE.md re-point |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-16-audit-sweep/run-log.md |
+| `change.md` status | `archived` (set by `/10x-archive` in the ship step); non-roadmap change, no roadmap row to close |
 | `## Progress` rows remaining | 6 open: [reviewer] (CI at ship) 1.7 and 11.7; [human] 2.6, 4.6, 8.6, 11.8 |
 | Working tree | clean after the docs commit |
 
@@ -43,7 +43,7 @@ Written by the visual-gate step of run `2026-10-16-audit-sweep`. All six [visual
 
 ## 4. Next command
 
-`/10x-archive health-lines-and-smoke then ship`
+`none — shipped`
 
 ## 5. Open
 
@@ -68,3 +68,4 @@ Written by the visual-gate step of run `2026-10-16-audit-sweep`. All six [visual
 3. **VG-1 fixed in the gate, not deferred.** It is a wrong parent-facing line on this slice's own path, the cause is one statement order, and the e2e assertion was red first. Would change: a fix that needed Phaser internals beyond the pinned loader paths.
 4. **Wallet and notebook fallbacks in separate sessions.** MONEY_PAY lives in E1/E2 and the unlock road in E4, and the record is runtime only, so it is lost on a reload. Would change: a seam that forces an unlock.
 5. **The notebook wording (follow-up 20) was not changed.** Copy is the [human] row 11.8's call. Would change: the maintainer's wording read.
+6. **Archived with 6 open rows (ship step).** `/10x-archive` warned: 6 Progress rows open (1.7 and 11.7 are proved by CI at ship, 2.6, 4.6, 8.6, 11.8 are [human]), and many ticked rows carry evidence text instead of a SHA suffix. Chosen: Continue archiving; the [human] rows are the post-run checklist, 11.7 is ticked from the CI log on the branch, 1.7 only by the post-merge Deploy run (the orchestrator ticks it in the run's docs PR). Rejected: Resume implementation (nothing left to implement). Would change: a red CI or a failed Deploy smoke.
