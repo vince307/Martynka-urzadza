@@ -1238,9 +1238,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 11.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 11.2 Deliberate break: timeout branch removed from `failureText` → red; restored; meta-check (text rule)
-- [ ] 11.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the edited SV2-02 spec green
+- [x] 11.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — 2483571
+- [x] 11.2 Deliberate break: timeout branch removed from `failureText` → red; restored; meta-check (text rule) — 2483571
+- [x] 11.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; the edited SV2-02 spec green — 2483571
 
 #### Manual
 
