@@ -4,9 +4,11 @@
 // (c) a newer save written by another tab is not overwritten. The ?e2eSave seam is an in-memory store with a write log
 // (snapshot.save.store); IndexedDB is never opened from here and a new test = a new browser context = a fresh device. The
 // ?e2eArt=stallall seam switches the per-file limit off and shortens the total limit, so only the total limit can end the load.
-// Strings come from src/data/pl.ts. Runs in the chromium-hook project.
+// Change health-lines-and-smoke p13 adds (d) one stalled money picture (?e2eArt=stall) named in the pictures section with its
+// cause (#15 A-9; that the round skips the skill is the unit test of artFilter: ?e2eSkills bypasses the filter) and (e) the cut line
+// after a total-limit start (#14 B-4). Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Route } from '@playwright/test';
-import { passWelcome } from './support/welcome';
+import { openSettings, passWelcome } from './support/welcome';
 import { answerRight, screenIs, silenceSpeech, snapshot } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { FONT_KEY } from '../../src/data/layout';
@@ -14,21 +16,22 @@ import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(120_000);
 
+const hold = async (page: import('@playwright/test').Page): Promise<{ font: Route[]; room: Route[] }> => {
+    const held = { font: [] as Route[], room: [] as Route[] };
+    await page.route('**/assets/tasks/money/*.webp', () => {});
+    await page.route('**/fonts/*.ttf', (route) => {
+        held.font.push(route);
+    });
+    await page.route('**/assets/rooms/salon/*.webp', (route) => {
+        held.room.push(route);
+    });
+    return held;
+};
+
 test.describe('files that never answer', () => {
     // The service worker would answer from its precache and nothing would hang.
     test.use({ serviceWorkers: 'block' });
 
-    const hold = async (page: import('@playwright/test').Page): Promise<{ font: Route[]; room: Route[] }> => {
-        const held = { font: [] as Route[], room: [] as Route[] };
-        await page.route('**/assets/tasks/money/*.webp', () => {});
-        await page.route('**/fonts/*.ttf', (route) => {
-            held.font.push(route);
-        });
-        await page.route('**/assets/rooms/salon/*.webp', (route) => {
-            held.room.push(route);
-        });
-        return held;
-    };
 
     test('#15 A-1/A-2 many hanging pictures, the font and a salon file end the loading at the total limit, with the slow line first', async ({ page }) => {
         await silenceSpeech(page);
@@ -71,6 +74,41 @@ test.describe('files that never answer', () => {
         await screenIs(page, 'welcome');
         expect((await snapshot(page)).bootLoad!.creates).toBe(1);
         await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    });
+});
+
+test.describe('a picture that stalls, alone and with all', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test('#15 A-9 one stalled money picture ends by its own limit and the panel names the folder and the cause', async ({ page }) => {
+        await silenceSpeech(page);
+        // One coin file never answers; the per-file limit of ?e2eArt=stall (2 s, no retry) ends it.
+        await page.route('**/assets/tasks/money/coin-1zl.webp', () => {});
+        await passWelcome(page, { e2eArt: 'stall', e2eVariant: 'off' });
+        await expect.poll(async () => (await snapshot(page)).artHealth?.missing).toBe(1);
+        // The game started by itself, no card.
+        await expect(page.getByRole('alertdialog')).toHaveCount(0);
+
+        const panel = await openSettings(page);
+        await expect(panel.getByText(pl.settings.artFolders('money', 1), { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.artSkipped, { exact: true })).toBeVisible();
+        // A timeout is told as a connection problem, never as "not on the server", and a restart is advised.
+        await expect(panel.getByText(pl.settings.artCause.network, { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.artCause.fetch, { exact: true })).toHaveCount(0);
+        await expect(panel.getByText(pl.settings.artRestart, { exact: true })).toBeVisible();
+    });
+
+    test('#14 B-4 a cut start says some pictures did not finish', async ({ page }) => {
+        await silenceSpeech(page);
+        await hold(page);
+        await passWelcome(page, { e2eArt: 'stallall', e2eVariant: 'off' });
+        const boot = (await snapshot(page)).bootLoad!;
+        expect(boot.cut.length).toBeGreaterThan(0);
+        // Only the total limit (3 s under this seam) can have ended the load.
+        expect(boot.elapsedMs).toBeGreaterThanOrEqual(3000);
+
+        const panel = await openSettings(page);
+        await expect(panel.getByText(pl.settings.artCut, { exact: true })).toBeVisible();
     });
 });
 

@@ -3,7 +3,8 @@
 // tests/e2e/art-stand-in.spec.ts (panel counts missing pictures) and tests/e2e/final-art-wallet.spec.ts (serviceWorkers 'block'
 // plus page.route). (a) runs with the service worker allowed: the hook build is a production build, so Chromium really installs
 // the worker and the panel's offline line reads it through the reducer. (b) blocks the worker so page.route reaches the real
-// loader: one screen picture is aborted before the first load. Strings come from src/data/pl.ts; the panel is a DOM overlay.
+// loader: one screen picture is aborted before the first load. Phase 13 adds #14 A-7: the task font answers 404 (Chromium's
+// document.fonts status, not WebKit's) and the panel names the fallback. Strings come from src/data/pl.ts; the panel is a DOM overlay.
 import { test, expect } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
 import { silenceSpeech, snapshot } from './support/hook';
@@ -37,5 +38,16 @@ test.describe('screen pictures', () => {
         await expect(panel.getByText(pl.settings.uiArtOk, { exact: true })).toHaveCount(0);
         // The task pictures are a separate count and all loaded.
         await expect(panel.getByText(pl.settings.artOk, { exact: true })).toBeVisible();
+    });
+
+    test('#14 A-7 a font that did not load is named', async ({ page }) => {
+        // The task font answers 404: the loader reports no picture problem, the document font set tells the truth.
+        await page.route('**/fonts/*.ttf', (route) => route.fulfill({ status: 404, body: 'no' }));
+        await silenceSpeech(page);
+        await passWelcome(page, { e2eMonth: '10', e2eVariant: 'off' });
+        await expect.poll(async () => (await snapshot(page)).fontHealth).toBe('fallback');
+
+        const panel = await openSettings(page);
+        await expect(panel.getByText(pl.settings.fontFallback, { exact: true })).toBeVisible();
     });
 });
