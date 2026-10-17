@@ -49,6 +49,8 @@ export const createSoundService = (game: Game, initial: SoundPrefs): SoundServic
         log.push({ id, outcome });
         if (log.length > balance.sound.logSize) log.shift();
         if (outcome === 'locked') lockedCount += 1;
+        // A sound that plays proves the context unlocked: "the device does not let the game play" would now be false.
+        if (outcome === 'played') lockedCount = 0;
         return outcome;
     };
     let musicState: SoundStatus['music'] = 'off';

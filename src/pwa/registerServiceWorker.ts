@@ -63,8 +63,9 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
                     trackStates(registration.waiting, id);
                 }
                 if (registration.installing) track(registration.installing);
-                // One update check per launch, nowhere else (autonomous decision 2: no visibility or timer trigger,
-                // so a new worker never claims a page in the middle of a round).
+                // One update check per launch, nowhere else (autonomous decision 2: no visibility or timer trigger). A worker it
+                // finds still claims this page (skipWaiting + clientsClaim) a little after the start, as the browser's own launch
+                // check already did; the page is not reloaded and every asset was loaded at start, so a round in progress goes on.
                 registration.update().catch((error: unknown) => {
                     console.warn(`Service worker update check failed (${nameOf(error)})`);
                 });

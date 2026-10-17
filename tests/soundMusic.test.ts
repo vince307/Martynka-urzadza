@@ -167,6 +167,13 @@ describe('locked touches and device', () => {
         expect(play(rig({ locked: true }), 3).status().lockedCount).toBe(3);
         expect(play(rig({ locked: false }), 3).status().lockedCount).toBe(0);
     });
+    it('forgets the swallowed effects once a sound plays: an unlocked device is no longer "blocked"', () => {
+        const r = rig({ locked: true });
+        const service = play(r, 3);
+        (r.game.sound as unknown as { locked: boolean }).locked = false;
+        service.play('tap');
+        expect(service.status().lockedCount).toBe(0);
+    });
     it('names the device audio: web audio, html5, none', () => {
         expect(createSoundService(rig().game, { effects: true, music: false }).status().device).toBe('webaudio');
         expect(createSoundService(rig({ device: 'html5' }).game, { effects: true, music: false }).status().device).toBe('html5');

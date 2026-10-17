@@ -27,6 +27,7 @@ const RETRIES = 6;
 const RETRY_DELAY_MS = 5000;
 const HEAD_POOL = 8;
 const HEAD_TIMEOUT_MS = 15000;
+const GET_TIMEOUT_MS = 60000;
 const TITLE = 'Martynka urządza';
 
 const [baseArg, sha7] = process.argv.slice(2);
@@ -57,7 +58,8 @@ const manifestNameOf = (text: string): string => {
 const get = async (path: string, retries = 0): Promise<Response> => {
     for (let attempt = 0; ; attempt += 1) {
         try {
-            return await fetch(new URL(path, base), { redirect: 'manual' });
+            // The limit covers the body read too: the Deploy job has no timeout of its own, a stalled answer must end.
+            return await fetch(new URL(path, base), { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
         } catch (error) {
             if (attempt >= retries) {
                 throw Object.assign(new Error(`${path}: ${error instanceof Error ? error.message : String(error)}`), { cause: error });
@@ -152,7 +154,7 @@ const main = async (): Promise<number> => {
         const www = new URL(base);
         www.hostname = `www.${base.hostname}`;
         try {
-            const res = await fetch(www, { redirect: 'manual' });
+            const res = await fetch(www, { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
             const location = res.headers.get('location') ?? '';
             record({ name: 'www redirects to apex', ok: [301, 308].includes(res.status) && location.startsWith(`${base.protocol}//${base.hostname}`), detail: `${res.status} → ${location || '(none)'}` });
         } catch (error) {

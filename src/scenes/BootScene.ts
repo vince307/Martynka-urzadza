@@ -133,7 +133,10 @@ export class BootScene extends Scene {
                     }
                     onDue();
                 } catch (error) {
+                    // The slow line catches its own errors; what lands here is a failed cut, which would leave the loading screen
+                    // up for good: rethrown so the error boundary shows the restart card, as the game-clock timer did before.
                     console.warn('Boot limit timer failed', error);
+                    throw error;
                 }
             }, bootLimitWait(at, performance.now()));
             timers.add(id);
@@ -279,7 +282,14 @@ export class BootScene extends Scene {
         this.loading?.destroy();
         this.loading = null;
         // Did the task font arrive? (A decode failure fires no loaderror, so the document's font set is read.)
-        const font = fontHealth([...document.fonts].map((face) => ({ family: face.family, status: face.status })), FONT_KEY);
+        // A diagnostic only: a browser without an iterable document.fonts must still start the game (the record then says fallback).
+        let faces: { family: string; status: string }[] = [];
+        try {
+            faces = [...document.fonts].map((face) => ({ family: face.family, status: face.status }));
+        } catch (error) {
+            console.warn('Font set could not be read', error);
+        }
+        const font = fontHealth(faces, FONT_KEY);
         this.registry.set(REGISTRY_KEYS.fontHealth, font);
         if (font === 'fallback') {
             console.warn(`Task font not loaded: ${FONT_KEY} (text is drawn in a system font)`);

@@ -57,3 +57,23 @@ Trigger: a throttled (about 50 KB/s, worker installing) cold start on a real And
 ## 14. Salon carry note on the import preview, and `roomGrowth` for any `tasksDone` below the length
 `saveFile.parseImport` has its own literal and carries no `salonCarried`; `roomGrowth` reports only a `tasksDone` equal to a former length.
 Trigger: a reviewer or parent asking the import dialog for the note, or a saved room found short of the new task list that the log did not name.
+
+## 15. Purchase flush proven only through the debounce (impl review)
+Phase 12's planned break (`RoomScene.dispatch` without `flush('now')` after a purchase) stayed green: the 500 ms debounce writes anyway before the spec reads the failure count, so the immediate flush after a purchase is unit-proved only.
+Trigger: a change to `RoomScene.dispatch` or the autosave debounce, or a report of a purchase lost when the tab closed at once.
+
+## 16. A-9 round skip in the browser (impl review)
+The stalled-money e2e (#15 A-9) asserts the panel line only; that the round leaves out the stalled skill is proved by `tests/artFilter.test.ts` (forced skills bypass the art filter in the hook build).
+Trigger: a change to `withoutArtBlocked`, `?e2eSkills` or the forced-skill path in `TaskScene.freshRound`.
+
+## 17. Dead helpers and one name helper (impl review)
+`roomArtCheck` (`scripts/deploy-check/parse.ts`), `bootLoadPhase` (`src/core/bootLoad.ts`), `sectionState` (`src/core/artHealth.ts`, still named in CLAUDE.md) and `parseSoundPrefs` are used by tests only; `nameOf` in `src/pwa/registerServiceWorker.ts` and an inline name read in `src/ui/decodeSeam.ts` repeat `errorName` (`src/core/save.ts`).
+Trigger: the next change touching any of these files.
+
+## 18. `UI_MISSING_URL` is not a build marker (impl review)
+`'missing-on-purpose'` stays out of `dist/` only because terser folds `seam === 'ui'` when `seam` is the constant null (checked: 0 hits in this branch's build); `vite/e2eHookGuard.mjs` does not list it.
+Trigger: a change to `vite/e2eHookGuard.mjs`, the minifier settings, or the `ui` queuer in `BootScene.preload`.
+
+## 19. `startMusic` once('addfile') listener (impl review, pre-existing)
+If `loader.audio` queues no file, the `once('addfile')` listener in `src/ui/sound.ts` stays armed and wraps the next unrelated HUD file (harmless today: only audio is guarded).
+Trigger: a second file type loaded on the HUD loader, or a change to `startMusic`.
