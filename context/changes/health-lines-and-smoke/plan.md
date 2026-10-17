@@ -1066,9 +1066,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [x] 7.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [x] 7.2 Deliberate break: orphan file / `noteFallback` overwriting → red; restored; meta-check (record and folder rule)
-- [x] 7.3 Build prints `e2e hook: absent (` (marker `e2eArt` check passes); full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-art-wallet`, `final-art-room-done`, `final-art-loading` green
+- [x] 7.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — e2de2bd
+- [x] 7.2 Deliberate break: orphan file / `noteFallback` overwriting → red; restored; meta-check (record and folder rule) — e2de2bd
+- [x] 7.3 Build prints `e2e hook: absent (` (marker `e2eArt` check passes); full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `final-art-wallet`, `final-art-room-done`, `final-art-loading` green — e2de2bd
 
 #### Manual
 
