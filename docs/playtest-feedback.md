@@ -31,3 +31,16 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 ## Wpisy
 
 <!-- Najnowsze na dole. -->
+
+### F-01 — Lektor czyta każde zadanie sam, bez naciśnięcia głośnika
+
+- **Data:** 2026-10-17
+- **Kto:** rodzic (obserwacja gry córki)
+- **Urządzenie:** —
+- **Wersja:** —
+- **Gdzie:** pierwsze uruchomienie, wybrany wiek 7 lat; ekran zadań
+- **Co się stało:** każde zadanie lektor czytał od razu po pokazaniu.
+- **Czego się spodziewaliśmy:** lektor czyta treść zadania dopiero po naciśnięciu głośnika.
+- **Jak bardzo przeszkadza:** denerwuje
+- **Uwagi techniczne:** to dzisiejsze zachowanie domyślne, nie błąd w kodzie: `balance.narrator.autoReadStages` = `['E1', 'E2']` (`src/data/balance.ts`), więc dla etapów E1–E2 (wiek 6–7 lat) automatyczne czytanie jest włączone, dopóki rodzic nie wyłączy go w ustawieniach (`Settings.autoRead`, `effectiveAutoRead` w `src/core/narration/voice.ts`). Poprawka to zmiana domyślnej wartości (np. pusta lista etapów) — decyzja projektowa sprzeczna z planem S-05 (auto-czytanie dla młodszych), do zapisania w slice'ie.
+- **Status:** nowe
