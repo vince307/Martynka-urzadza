@@ -1128,7 +1128,7 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 #### Manual
 
 - [x] 11.6 [reviewer] Seam sweep: every name `CLAUDE.md` adds exists; no duplicated helper; gap rows 139–150 match the code comments; `SAVE_VERSION` 4 and `git diff --stat main -- tests/fixtures deploy .github` empty
-- [ ] 11.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932: `Tests  3416 passed (3416)`, `e2e hook: absent (2 chunks checked)`)
+- [x] 11.7 [reviewer] (CI at ship) workflow `CI` job `check` log matches `e2e hook: absent \([0-9]+ chunks checked\)` and `Tests +[0-9]+ passed` (seen in CI run 38966095199, job 117192831932: `Tests  3416 passed (3416)`, `e2e hook: absent (2 chunks checked)`): job 117349480267 build step prints `e2e hook: absent (2 chunks checked)`, npm test prints `Tests 3656 passed (3656)` — CI run 39016460987
 - [ ] 11.8 [human] Accept the wording of gaps 139–150 as one read of the parent's panel lines
 
 ### Phase 12: A purchase that cannot be saved, and every chosen slot reachable — e2e (#2, #16)
