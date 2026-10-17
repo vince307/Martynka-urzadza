@@ -1,26 +1,26 @@
 # Handoff — `health-lines-and-smoke` (slice fix:health-lines-and-smoke)
 
-Written by the `/10x-e2e` phase 12 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-12 are committed. Do not get wrong: save format stays v4; phases 13-14 are `Driver: e2e`; the plan asked for "+2" but (b) is an assertion inside an existing test, so the suite grew by +1.
+Written by the `/10x-e2e` phase 13 step of run `2026-10-16-audit-sweep` (slice 3 of 3). Phases 1-13 are committed. Do not get wrong: save format stays v4; phase 14 is `Driver: e2e`; the plan's test (a) cannot assert "the round has no task of the stalled skill" in the browser, because `?e2eSkills` forces a round that bypasses `artFilter` (unit tests of `artFilter` keep that claim).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/health-lines-and-smoke`, cut from `main` at `dfc49ae` |
-| Commits | identity, research, plan, plan-review, phases 1-11 with handoffs, phase 12 `887fd36` (`test(health-lines-and-smoke): Purchase under a failing store, slots reachable (p12)`) |
+| Commits | identity, research, plan, plan-review, phases 1-12 with handoffs, phase 13 (`test(health-lines-and-smoke): Stalled picture, cut start and missing font in the browser (p13)`, f3ffef1) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (12.1-12.3 ticked with sha) |
+| `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` (13.1-13.3 ticked with sha) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/save-restart.spec.ts` | new test `#2 M-5 a stage and a sofa bought while the store refuses keep the stars and say so` (writefail seam, stars 12 - 5 - 7, failure count grows, "Zapis gry" `data-state=failing`, no alertdialog) |
-| `tests/e2e/room-change.spec.ts` | in `FR-019 …` test: `room.unreachable` equals `[]` after all purchases (risk #16 R-6) |
-| `tests/e2e/support/hook.ts` | `room` snapshot type gained `unreachable: string[]` |
-| `context/changes/health-lines-and-smoke/plan.md` | rows 12.1-12.3 ticked |
+| `tests/e2e/load-and-tab-guard.spec.ts` | two new tests: `#15 A-9 one stalled money picture ends by its own limit and the panel names the folder and the cause` (`?e2eArt=stall`, one coin file hangs, panel shows folder line, skipped line, network cause, restart advice, no `fetch` cause) and `#14 B-4 a cut start says some pictures did not finish` (`?e2eArt=stallall`, hook `bootLoad.elapsedMs` >= 3000, panel shows `artCut`); `hold` moved to module level |
+| `tests/e2e/health-lines.spec.ts` | new test `#14 A-7 a font that did not load is named` (font route answers 404, hook `fontHealth` is `fallback`, panel shows `fontFallback`) |
+| `tests/e2e/support/hook.ts` | snapshot type: `bootLoad.elapsedMs`, `fontHealth` |
+| `context/changes/health-lines-and-smoke/plan.md` | rows 13.1-13.3 ticked |
 
 ## 3. Verification
 
@@ -29,28 +29,27 @@ Written by the `/10x-e2e` phase 12 step of run `2026-10-16-audit-sweep` (slice 3
 | lint / typecheck | OK / OK |
 | `npm test` + deploy scripts + sample E1-E6 | Tests 3653 passed (baseline 3653, +0); deploy scripts OK; samples OK |
 | `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e `--workers=4` | 133 passed; `playwright --list` 133; baseline 132, +1 (one new test; (b) is an assertion) |
-| break p12a-1 (plan's: comment out `flush('now')` in `RoomScene` purchase) | stayed GREEN: the debounced write also fails and bumps the count. Not used as a break; the test was kept because other breaks turn it red |
-| break p12a-2 (`saveHealth.ts` failing threshold `> 0` to `> 99`) | RED by assertion: `expect(locator).toHaveAttribute` Expected "failing", Received "notYet"; restored |
-| break p12a-3 (`autosave.ts` `consecutiveFailures++` removed in the write catch) | RED by assertion: `expect(received).toBeGreaterThan(expected)` Expected > 0, Received 0; restored |
-| break p12b (`holdPoint` returns null for `sofa`) | RED by assertion in `FR-019`: `toEqual` Expected `[]`, Received `["sofa"]`; restored (the related-tests hook also showed 3 unit reds meanwhile) |
-| meta-check | (a) reaches the purchase path, the failing store and the parent panel (no Safari IndexedDB errors involved); the flush-to-now ordering is not provable in the browser because the debounce hides it, so that claim stays with the unit tests of `RoomScene` wiring. (b) proves `unreachable` over the real salon alpha, which unit tests only fake |
+| e2e `--workers=4` | 133 passed before; 136 passed after (workers=4); `playwright --list` 136; baseline 133, +3 |
+| break p13a (`artCauses` always `never`) | RED by assertion: `expect(locator).toBeVisible()` for the `artCause.network` text, element(s) not found; restored |
+| break p13b (`kind: 'cut'` line removed from `artHealthLines`) | RED by assertion: `expect(locator).toBeVisible()` for `artCut`, element(s) not found; restored |
+| break p13c (`fontHealth` always `loaded`) | RED by assertion: `expect(received).toBe(expected)` Expected "fallback", Received "loaded"; restored |
+| meta-check | (a) the break is the cause mapping, not copy; the skip-of-skill claim stays with the `artFilter` unit tests. (b) the cut line is `artCut` text shared with `artCause.cut`, but the break removes the line the test reads. (c) proves Chromium's `document.fonts` status, not WebKit's |
 | restored | `git status` shows only the three test files and plan before the commit; `src/` diff empty |
-| stray processes | `ps` grep for sleep/until/while/tail -f/playwright/vite (sandbox disabled), after the run: empty |
+| stray processes | ps grep for sleep/until/while/tail -f/playwright/vite (sandbox disabled), after the run: empty; ports 4397/4398 free |
 
 ## 4. Next command
 
-`/10x-e2e health-lines-and-smoke phase 13`
+`/10x-e2e health-lines-and-smoke phase 14`
 
 ## 5. Open
 
 - [reviewer] rows 1.6, 1.7, 2.4, 3.4, 4.5, 5.4, 6.4, 7.4, 8.4, 9.4, 10.5, 11.6, 11.7; [visual] 2.5, 5.5, 6.5, 7.5, 8.5, 10.6; [human] 2.6, 4.6, 8.6, 11.8 not mine.
-- Phases 13-14 (e2e): stalled/broken picture and missing font, screen fallback in the panel.
-- Follow-ups: `context/changes/health-lines-and-smoke/follow-ups/review-fixes.md` (14 entries). New: no browser test proves `flush('now')` after a purchase while the store fails (debounce masks it); trigger: a change touching `RoomScene` purchase saving.
+- Phase 14 (e2e): the screen fallback (wallet, notebook, miniature) reaches the panel.
+- Follow-ups: `context/changes/health-lines-and-smoke/follow-ups/review-fixes.md` (14 entries). New: no browser test proves the round skips a skill whose picture stalled (`?e2eSkills` bypasses the filter); trigger: a change touching `withoutArtBlocked` or `buildAdaptiveRound` art wiring.
 
 ## 6. Autonomous decisions
 
-1. **Plan break p12a replaced** by two breaks on `saveHealth.ts` and `autosave.ts`: the planned `flush('now')` removal stayed green. Chosen: breaks that protect what the test asserts. Would change: a seam making the debounce inert in the hook build.
-2. **Kept the test** despite the first break staying green, because the test is not green through every break of the rule it names (count and panel line). Would change: reviewer wants the flush ordering proven.
-3. **Delta +1 not +2**: (b) lives as an assertion in the existing `FR-019` test, matching the plan's "an assertion in room-change". Would change: a separate test is wanted.
+1. **Test (a) asserts the panel, not the round's skills.** Chosen: folder line, skipped line, network cause and restart advice, because forced skills skip `artFilter`. Rejected: an unforced E4 round (non-deterministic skill draw). Would change: a seam that runs the adaptive draw with a fixed seed.
+2. **Hung file is `coin-1zl.webp` only**, not the whole folder, so the folder count is exactly 1. Would change: the money folder gaining a second use of that id.
+3. **(b) uses the parent path** with `stallall` routes held, since the settings panel is not reachable from the welcome screen.
 4. **Commit message proposed as given**, handoff in a separate commit.

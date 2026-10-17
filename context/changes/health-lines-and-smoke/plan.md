@@ -1143,9 +1143,9 @@ to the next Deploy run; a rollback run (no SHA) skips the table checks and keeps
 
 #### Automated
 
-- [ ] 13.1 The three tests green; full `--workers=4`: `<branch e2e baseline> + 3`
-- [ ] 13.2 Deliberate breaks p13a, p13b, p13c → each its test red; each restored; meta-check
-- [ ] 13.3 Build prints `e2e hook: absent (` (and `stallall` absent from `dist/`); full local gate green; servers 4397/4398 killed
+- [x] 13.1 The three tests green; full `--workers=4`: `<branch e2e baseline> + 3` — f3ffef1
+- [x] 13.2 Deliberate breaks p13a, p13b, p13c → each its test red; each restored; meta-check — f3ffef1
+- [x] 13.3 Build prints `e2e hook: absent (` (and `stallall` absent from `dist/`); full local gate green; servers 4397/4398 killed — f3ffef1
 
 ### Phase 14: The screen fallback reaches the panel — e2e (#14)
 
