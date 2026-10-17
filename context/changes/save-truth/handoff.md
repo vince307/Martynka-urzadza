@@ -1,61 +1,58 @@
 # Handoff — `save-truth` (slice fix:save-truth, audit sweep 2 of 3)
 
-Written by the `/10x-tdd save-truth phase 7` step. Phases 1 (66c6989), 2 (739d10c), 3 (d3c2f4b), 4 (0eb15a2), 5 (3714f3c), 6 (fc0f7f7) and 7 (4801d61) are committed and green. The next agent must not get two things wrong: the save format stays v4 (`SAVE_VERSION` 4, existing `tests/fixtures/` never edited), and no code path may delete or overwrite a `backup-v<N>` key; also a record written by an ended document of the same tab stays REFUSED (`PreviousPageSave` -> `otherTab`), it must never be put over.
+Written by the `/10x-tdd save-truth phase 8` step. Phases 1 (66c6989), 2 (739d10c), 3 (d3c2f4b), 4 (0eb15a2), 5 (3714f3c), 6 (fc0f7f7), 7 (4801d61) and 8 (b1a01c6) are committed and green. The next agent must not get two things wrong: the save format stays v4 (`SAVE_VERSION` 4, existing `tests/fixtures/` never edited), and no code path may delete or overwrite a `backup-v<N>` key; also a BroadcastChannel message alone never blocks the only live tab's write (`channelVerdict` mirrors `writeVerdict`, which still decides).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/save-truth`, cut from `main` at `24b3e4b` |
-| Commits | phases 1-6 as before, phase 7 = 4801d61 (`feat(save-truth): writer identity and an older build's write (p7)`), plus handoff commits |
+| Commits | phases 1-6 as before, phase 7 = 4801d61, phase 8 = b1a01c6 (`feat(save-truth): early stale signal and the refusal code line (p8)`), plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows remaining | 55 (`grep -c '^- \[ \]' plan.md`); 7.1-7.3 ticked, 7.4 [reviewer] and 7.5 [visual] left |
+| `## Progress` rows remaining | 52 (`grep -c '^- \[ \]' plan.md`); 8.1-8.3 ticked, 8.4 [reviewer] and 8.5 [visual] left |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/storage/writerId.ts` | new. `createWriterId(storage?, random?)` -> `{ writer: '<tabId>:<nonce>', endedWriters: full ids, end() }`; sessionStorage key `martynka:writer` = `{ tabId, ended: nonces }` (last 8); any throw or junk -> fresh id, no ended list, `end()` never throws |
-| `src/core/save.ts` | `PREVIOUS_PAGE_SAVE = 'PreviousPageSave'`; `writeVerdict(stored, { …, endedWriters? }, mode)`: an ahead record whose writer is in `endedWriters` refuses as `PreviousPageSave` (else `OtherWriterSave`, replace still puts); a normal put over a stored `version < page.version` with `page.base > 0` returns `{ kind:'put', generation, olderWriter: true }` |
-| `src/storage/idb.ts` | `IdbSaveStoreOptions.endedWriters/onOlderWriter`; `guardedPut(…, mode, onOlderWriter?)` tells the listener only after the put landed (return value stays the generation, so existing callers and tests are unchanged) |
-| `src/core/autosave.ts` | `PreviousPageSave` blocks as `otherTab` exactly like `OtherWriterSave` (one `onBlocked`, a log line naming "previous page"); `noteOlderWriter()` + runtime `olderWriterSeen` (one log, never saved) |
-| `src/core/saveHealth.ts`, `src/ui/dom/saveHealthView.ts`, `src/data/pl.ts` | `SaveHealthView.olderWriter`; one line `pl.settings.olderWriter` under the state sentence |
-| `src/main.ts` | one `createWriterId()` per page load passed to `createIdbSaveStore`; `onOlderWriter` -> `booted.saver?.noteOlderWriter()`; `pagehide` calls `writerId.end()` after the hidden flush |
-| `docs/design-gaps.md` | row 130 |
-| tests | `tests/saveV4.test.ts` describe "writeVerdict: an earlier document of this tab, and an older build" (8) ; `tests/writerId.test.ts` (8); `tests/autosave.test.ts` describe "a PreviousPageSave refusal and an older-writer note" (3); `tests/idbStore.test.ts` describe "previous page and older writer" (4); `tests/saveHealth.test.ts` (1); `tests/saveTransferCopy.test.ts` pins the string |
+| `src/storage/saveChannel.ts` | new. `createSaveChannel(ctor?)` -> `{ post, onMessage, close }` on `BroadcastChannel('martynka-save')`; feature-detected, every call try/caught, malformed messages dropped, never stored; the only place touching BroadcastChannel |
+| `src/core/save.ts` | `channelVerdict(msg, page{writer,base})` -> `'stale'` iff `msg.writer !== page.writer && msg.generation > page.base` (exactly what `writeVerdict` would refuse next) else `'ignore'` |
+| `src/core/autosave.ts` | `refuseWrites(reason, error)` shared by the refusal branch and `noticeOtherWriter()` (blocks `otherTab`, `onBlocked` once, no writes); `onBlocked(reason, error)` now carries the error name |
+| `src/storage/idb.ts` | `IdbSaveStoreOptions.onWritten({writer, generation})` called after every landed write (replace included, listener throw only warns); `IdbSaveStore.stamp()` -> `{writer, base}` |
+| `src/main.ts` | channel created once; `onWritten` -> `post`; message -> `channelVerdict(msg, store.stamp())` -> `saver.noticeOtherWriter()`; not created for e2e save seams; card gets `pl.saveFailed.detail(error, __BUILD_ID__)` |
+| `src/ui/dom/saveRefusedCard.ts` | optional `detail` `overlay-muted` line (the `Kod:` line) |
+| tests | `tests/saveV4.test.ts` describe "channelVerdict…" (4); `tests/autosave.test.ts` "noticeOtherWriter and the refusal code" (3); `tests/idbStore.test.ts` "onWritten" (2); new `tests/saveChannel.test.ts` (5); `tests/e2e/stale-tab.spec.ts` edited |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (stubs for the new names, no logic) | 15 assertion failures, e.g. `expected { kind: 'refuse', …(1) } to deeply equal { kind: 'refuse', …(1) }` (PreviousPageSave case), `expected { kind: 'put', generation: 4 } to deeply equal { kind: 'put', generation: 4, …(1) }` (older writer), `expected 'stub' to be 'r1:r2'` (writerId), `expected false to be true` (olderWriterSeen), `expected undefined to be 'Starsza wersja gry zapisała tu postęp…'`; idb: `expected 'OtherWriterSave' to be 'PreviousPageSave'`, `expected +0 to be 1` (onOlderWriter) |
-| Deliberately reversed existing test | `tests/saveV4.test.ts` "treats a malformed stored generation as 0": its second case `writeVerdict({ version: 3 }, page base 3)` is exactly an older build's record, so it now expects `olderWriter: true` (generation 4 unchanged). Every other pre-existing `writeVerdict` / B-1 test is green unchanged |
-| GREEN | `npm test` 3481 passed (branch baseline after p6: 3456, +25) |
-| `npm run lint` / `typecheck` | OK |
-| deploy scripts, `sample` E1–E6, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --workers=4` | 127 passed (baseline 127, +0), no flakes; `stale-tab.spec.ts` and `load-and-tab-guard.spec.ts` green |
-| `SAVE_VERSION`, fixtures | 4; `git diff --stat tests/fixtures` empty |
-| Deliberate breaks | (a) ended check on `tabId` alone: 1 red (live nonce of the same tab is another writer); (b) ended writer allowed to put: 2 red (verdict case + idb store case); (c) `olderWriter` without `base > 0`: 2 red (verdict + idb "first write after a migration"); all restored (`save.ts` diffed against the backup). Meta-check: proves the verdict and the store wiring over fake-indexeddb, not the real reload race in a browser |
-| stray processes | `ps … | grep -E 'sleep|until|playwright|vite'` printed nothing (run outside the sandbox, the sandbox forbids `ps`) |
+| RED (stubs: `channelVerdict` always `ignore`, no-op `noticeOtherWriter`, no-op channel) | 7 assertion failures, e.g. `expected 'ignore' to be 'stale'`, `expected [ undefined ] to deeply equal [ 'PreviousPageSave' ]`, `expected [] to deeply equal [ { writer: 'A:1', generation: 4 } ]`, `expected undefined to be true` (close), `expected { Object (load, blocked, ...) } to match object { Object (blocked, blockedBy) }`, `expected [] to deeply equal [ Array(2) ]` (onWritten) |
+| Existing test changed | `tests/e2e/stale-tab.spec.ts` #2 (both tests): they used `staleWork` (a tap in the stale window) to provoke the refused write; the card now rises at once from the channel, the tap landed on "Zacznij od nowa" and reloaded. `staleWork` removed, the tests poll `blockedBy` instead. Not one of the plan's named reversals; a necessary consequence of T-2 (phase 14 adds the explicit specs). The refused-write path stays covered by idbStore/autosave unit tests and `load-and-tab-guard.spec.ts` |
+| GREEN | `npm test` 3495 passed (branch baseline after p7: 3481, +14) |
+| lint / typecheck / deploy scripts / sample E1-E6 / build | OK; build prints `e2e hook: absent (2 chunks checked)` |
+| `npx playwright test --workers=4` | 126 passed + 1 known flake (money-pay #11) which passed rerun alone (4 passed); baseline 127 -> same total |
+| Deliberate break | `channelVerdict` without the `generation > base` guard: 2 red (`a generation at or below the base is ignored`, `agrees with writeVerdict`); restored. Meta-check: proves the rule, not delivery between pages (phase 14) |
+| `SAVE_VERSION`, fixtures | 4; no fixture touched |
+| stray processes | `ps … | grep -E 'sleep|until|playwright|vite'` empty (outside sandbox) |
 
 ## 4. Next command
 
-`/10x-tdd save-truth phase 8`
+`/10x-implement save-truth phase 9`
 
 ## 5. Open
 
-- Row 7.4 [reviewer] and 7.5 [visual] not ticked (the older-writer line needs a state built through the hook build). Also open: 2.5, 2.6, 3.6, 3.7, 3.8, 4.5, 4.6, 5.4, 6.4, 6.5.
-- No e2e spec for the new line or for a reload race (phase 15 covers the browser path); the older-writer line is covered by unit tests only.
-- The olderWriter flag is limited to normal writes (a `replace` is the parent's explicit overwrite). A v3 written over a v3 both at base 0 stays undetected (known, research T-1).
-- `pagehide` also fires into the bfcache; the live document then counts as ended, but its own writes carry its own writer, which the verdict checks first, so nothing is refused.
+- Rows 8.4 [reviewer] and 8.5 [visual] not ticked (the `Kod:` line is verified in a browser only by phase 14). Also open: 2.5, 2.6, 3.6, 3.7, 3.8, 4.5, 4.6, 5.4, 6.4, 6.5, 7.4, 7.5.
+- Phase 14 adds the e2e for the early signal and the `Kod:` line; `stale-tab.spec.ts` #2 tests no longer exercise a refused write in a browser.
+- No unit test for the DOM card (`detail`): the vitest environment has no DOM; wiring is in `main.ts`.
+- `replace` posts too, so a reset in one window stops other windows at once (intended; checked by the edited spec).
 - Phase 13 writes `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-1. Whole phase TDD, Driver stays `tdd`, no redirect; no mixed-phase question. RED seen with stubs for the new names only (constant, types, no-op methods, stub writerId).
-2. `endedWriters` holds FULL ids (`tabId:nonce`) so the verdict is an exact `includes`; the storage keeps only nonces. Rejected: parsing ids inside the verdict. Would change: a reviewer wanting the format parsed in core.
-3. `guardedPut` keeps returning the generation and takes a sixth optional `onOlderWriter` callback instead of resolving a flag (plan wording "resolves the flag"), so existing `resolves.toBe(n)` tests stay unchanged; the callback fires only after the put landed.
-4. `olderWriter` is not raised in `replace` mode (explicit parent overwrite). Would change: a reviewer asking for the plan's literal wording.
-5. One existing test case reversed (see §3); commit message and next-phase prompts decided in place; the run stops after this phase.
+1. Whole phase TDD, Driver stays `tdd`, no redirect. RED with stubs for the new names only.
+2. `idb.ts` returns an `IdbSaveStore` with `stamp()` instead of widening core's `SaveStore`; the channel is wired in `main.ts` only for the real IndexedDB store (e2e save seams get none). Rejected: a `stamp` on `SaveStore` (core would learn the channel). Would change: a reviewer wanting the verdict inside the store.
+3. `onBlocked` error for a channel notice is `OtherWriterSave` (as the plan says).
+4. `stale-tab.spec.ts` edited minimally (see §3); commit message and next-phase prompts decided in place; the run stops after this phase.

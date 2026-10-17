@@ -1199,9 +1199,9 @@ line then falls back to the session status, as today).
 
 #### Automated
 
-- [ ] 8.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N`
-- [ ] 8.2 Deliberate break: `channelVerdict` without the `generation > base` guard → red; restored; meta-check (rule, not delivery)
-- [ ] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` green
+- [x] 8.1 New tests red before the change (assertion), green after; unit `<branch baseline> + N` — b1a01c6
+- [x] 8.2 Deliberate break: `channelVerdict` without the `generation > base` guard → red; restored; meta-check (rule, not delivery) — b1a01c6
+- [x] 8.3 Full local gate green; build prints `e2e hook: absent (`; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; `stale-tab.spec.ts` green — b1a01c6
 
 #### Manual
 
