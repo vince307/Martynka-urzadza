@@ -209,6 +209,7 @@ export const REGISTRY_KEYS = {
     sound: 'sound',                     // the game's SoundService (src/ui/sound.ts), set in main.ts; runtime only, not in SAVE_KEYS
     soundPrefs: 'soundPrefs',           // SoundPrefs (core/sound), the device preference read from localStorage in main.ts; runtime only, not in SAVE_KEYS
     soundPrefsKept: 'soundPrefsKept',   // boolean: false when the device refused to keep the sound choice (UIScene.applySettings); runtime only, not in SAVE_KEYS
+    artFallbacks: 'artFallbacks',       // FallbackRecord (core/artPick): which drawn fallback the child saw instead of a screen picture, written by the widgets and BootScene; runtime only, not in SAVE_KEYS
     soundHealth: 'soundHealth',         // ArtHealth of the sound effects (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
     roomProblems: 'roomProblems',       // RoomProblem[] (core/rooms): where the saved rooms disagreed with the salon at load, set in main.ts; runtime only, not in SAVE_KEYS, nothing is repaired
     swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS

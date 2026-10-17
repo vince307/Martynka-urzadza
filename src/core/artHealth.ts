@@ -1,5 +1,6 @@
 // Which task pictures failed to load, as a record the scenes keep for the session and a view the parent panel reads.
 // Pure: the expected entries and the "texture exists" predicate come in as arguments (no Phaser, no data import).
+import { FALLBACK_ORDER, type FallbackRecord, type FallbackWhere } from './artPick';
 
 export interface ArtHealth {
     readonly total: number;
@@ -111,6 +112,7 @@ export type ArtHealthLine =
     | { kind: 'skipped' }
     | { kind: 'labels'; labels: readonly string[] }
     | { kind: 'font' }
+    | { kind: 'fallback'; where: readonly FallbackWhere[] }
     | { kind: 'advice'; restart: boolean }
     | { kind: 'cause'; cause: ArtCause }
     | { kind: 'code'; code: ArtCause; build: string };
@@ -127,6 +129,8 @@ export interface ArtHealthLinesInput {
     /** Polish labels of the missing room pieces (the caller reads them from the data); at most `labelCap` are listed. */
     readonly labels?: readonly string[];
     readonly labelCap?: number;
+    /** The screens that showed a drawn fallback instead of their picture (core/artPick record); one muted line names them. */
+    readonly fallbacks?: FallbackRecord;
 }
 
 const CAUSE_ORDER: readonly ArtCause[] = ['fetch', 'network', 'decode', 'cut', 'never'];
@@ -166,7 +170,7 @@ export const folderCounts = (missing: readonly string[]): { folder: string; coun
  * missing pictures the main cause, whether a restart helps, and the code. When the cut is the cause, the cut line already
  * says it (and the restart advice with it). A fallback font adds its own line.
  */
-export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap }: ArtHealthLinesInput): ArtHealthLine[] => {
+export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks }: ArtHealthLinesInput): ArtHealthLine[] => {
     const lines: ArtHealthLine[] = [];
     const known: ArtHealth[] = [];
     for (const [table, health] of [['task', task], ['room', room], ['ui', ui]] as const) {
@@ -189,6 +193,8 @@ export const artHealthLines = ({ task, room, ui, cut, build, font, labels, label
         if (!cutSaysIt) lines.push({ kind: 'advice', restart: restartHelps(cause) });
     }
     if (font === 'fallback') lines.push({ kind: 'font' });
+    const shown = FALLBACK_ORDER.filter((where) => fallbacks?.[where] !== undefined);
+    if (shown.length > 0) lines.push({ kind: 'fallback', where: shown });
     if (cause) lines.push({ kind: 'code', code: cause, build });
     return lines;
 };

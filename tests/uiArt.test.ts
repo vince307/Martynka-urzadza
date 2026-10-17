@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROOM_ART } from '../src/data/roomArt';
@@ -27,6 +27,11 @@ const webpSize = (bytes: Buffer): { width: number; height: number } | null => {
 };
 
 describe('UI art table', () => {
+    it('has no orphan file in public/assets/ui that the table does not name', () => {
+        const tabled = new Set(UI_ART.map((art) => art.url.replace('assets/ui/', '')));
+        expect(readdirSync(join(PUBLIC, 'assets', 'ui')).filter((name) => !tabled.has(name))).toEqual([]);
+    });
+
     it('has a WebP file of the tabled size for every entry', () => {
         expect(UI_ART).toHaveLength(5);
         for (const art of UI_ART) {

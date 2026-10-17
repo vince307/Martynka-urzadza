@@ -128,7 +128,7 @@ describe('e2eSaveStore', () => {
 
 describe('e2eArt', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['missing', 'corrupt', 'room', 'stall', 'stallall']) {
+        for (const seam of ['missing', 'corrupt', 'room', 'stall', 'stallall', 'ui']) {
             expect(e2eArt(`?e2eArt=${seam}`), seam).toBe(seam);
             expect(e2eArt(`?a=1&e2eArt=${seam}`), seam).toBe(seam);
         }

@@ -102,16 +102,19 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui';
 
 /**
- * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=corrupt` points the coins at a file that is no image
+ * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
  * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang); `?e2eArt=stallall` switches the per-file limit off and shortens the total boot limit (E2E_BOOT_LIMITS). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' ? value : null;
 };
+
+/** The address `?e2eArt=ui` gives the screen pictures: no such file is served, so each fails with a 404. */
+export const UI_MISSING_URL = 'assets/ui/missing-on-purpose.webp';
 
 /** The loader limit under `?e2eArt=stall`, so a run does not wait the real 12 s (no retry). */
 export const E2E_LOADER_TIMEOUT_MS = 2000;
@@ -254,6 +257,7 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.swStatus) as SwStatus | undefined;
         return value ? { phase: value.phase, error: value.error, takenOver: value.takenOver } : null;
     };
+    const artFallbacksSnapshot = (): Record<string, string> => ({ ...((game.registry.get(REGISTRY_KEYS.artFallbacks) as Record<string, string> | undefined) ?? {}) });
     const artHealthSnapshot = (): { total: number; missing: number } | null => {
         const value = game.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
@@ -291,7 +295,7 @@ export const installE2EHook = (game: Game): void => {
                 // While BootScene shows the loading screen there is no other scene to read (audit A-1: the load can hang for seconds).
                 const loadingScene = boot();
                 if (loadingScene?.isLoading()) {
-                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase(), art: Object.freeze(loadingScene.loadingArt()) }), save: save(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'loading' as const, loading: Object.freeze({ phase: loadingScene.loadPhase(), art: Object.freeze(loadingScene.loadingArt()) }), save: save(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot() });
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
@@ -300,7 +304,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), speakerVisible: speaker !== null });
             },
             get targets() {
                 if (onWelcome()) {

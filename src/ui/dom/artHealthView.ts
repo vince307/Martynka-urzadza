@@ -20,6 +20,8 @@ const textOf = (line: ArtHealthLine): string => {
             return pl.settings.artLabels(line.labels);
         case 'font':
             return pl.settings.fontFallback;
+        case 'fallback':
+            return pl.settings.artFallback(line.where.map((where) => pl.settings.artFallbackNames[where]));
         case 'advice':
             return line.restart ? pl.settings.artRestart : pl.settings.artNoRestart;
         case 'cause':

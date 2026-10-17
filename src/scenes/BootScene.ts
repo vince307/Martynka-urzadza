@@ -4,12 +4,13 @@ import { bootLimitDue, bootLimitSchedule, bootLimitWait, type BootLimitSchedule 
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
-import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE } from '../testing/e2eHook';
+import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE, UI_MISSING_URL } from '../testing/e2eHook';
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { cutLoad } from './loaderCut';
 import { balance } from '../data/balance';
 import { ROOM_ART } from '../data/roomArt';
-import { UI_ART } from '../data/uiArt';
+import { recordFallback } from '../ui/artFallbacks';
+import { UI_ART, UI_ART_KEYS } from '../data/uiArt';
 import { SOUNDS } from '../data/sounds';
 import { allEffectKeys } from '../core/sound';
 import type { SoundService } from '../ui/sound';
@@ -203,7 +204,7 @@ export class BootScene extends Scene {
             // The other screens' pictures (wallet, notebook, salon thumbnail); the two loading pictures were queued first.
             ui: () => {
                 for (const art of UI_ART) {
-                    if (art.id !== 'loadingBackground' && art.id !== 'loadingEmblem') this.load.image(art.key, art.url);
+                    if (art.id !== 'loadingBackground' && art.id !== 'loadingEmblem') this.load.image(art.key, seam === 'ui' ? UI_MISSING_URL : art.url);
                 }
             },
             sound: () => this.queueSounds(),
@@ -288,6 +289,7 @@ export class BootScene extends Scene {
         }
         const uiHealth = this.withCauses('Ui', UI_ART, artHealth(UI_ART.map((art) => ({ key: art.key, id: art.id })), (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.uiArtHealth, uiHealth);
+        if (!this.textures.exists(UI_ART_KEYS.loadingBackground) || !this.textures.exists(UI_ART_KEYS.loadingEmblem)) recordFallback(this, 'loading', 'drawn');
         if (uiHealth.missing.length > 0) {
             console.warn(`UI art missing: ${uiHealth.missing.length} of ${uiHealth.total}: ${uiHealth.missing.join(', ')}`);
         }

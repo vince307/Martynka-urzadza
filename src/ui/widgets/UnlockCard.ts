@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import { firstLoaded } from '../../core/artPick';
+import { recordFallback } from '../artFallbacks';
 import { ART_KEYS } from '../../data/taskArt';
 import { UI_ART_KEYS } from '../../data/uiArt';
 import { PLACEHOLDER_COLORS, UNLOCK_LAYOUT } from '../../data/layout';
@@ -40,6 +41,7 @@ export class UnlockCard {
         this.card.lineStyle(card.border, PLACEHOLDER_COLORS.unlockBorder, 1);
         this.card.strokeRoundedRect(card.left, card.top, card.width, card.height, card.radius);
         const bookKey = firstLoaded([UI_ART_KEYS.notebook, ART_KEYS.icon('book')], (key) => this.scene.textures.exists(key)) ?? ART_KEYS.icon('book');
+        if (bookKey !== UI_ART_KEYS.notebook) recordFallback(this.scene, 'notebook', this.scene.textures.exists(bookKey) ? 'icon' : 'box');
         this.book.show(bookKey, { x: art.centerX - art.size / 2, y: art.top, width: art.size, height: art.size });
         this.title.setVisible(true);
         this.name.setText(stepName).setVisible(true);

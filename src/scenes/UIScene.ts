@@ -12,6 +12,7 @@ import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
+import type { FallbackRecord } from '../core/artPick';
 import { artHealthLines, type ArtHealth } from '../core/artHealth';
 import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
@@ -188,6 +189,7 @@ export class UIScene extends Scene {
                         font: this.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined,
                         labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                         labelCap: balance.artHealth.labelCap,
+                        fallbacks: this.registry.get(REGISTRY_KEYS.artFallbacks) as FallbackRecord | undefined,
                     }),
                     ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,

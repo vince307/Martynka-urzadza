@@ -158,6 +158,9 @@ export const pl = {
         artLabels: (list: readonly string[]) => `Brakuje: ${list.join(', ')}.`,
         // DESIGN-GAP 146: the kit has no line for the task font that did not load.
         fontFallback: 'Litery w zadaniach są w zastępczym kroju pisma.',
+        // DESIGN-GAP 147: the kit has no line for screens that show a drawn picture because the pack picture is missing.
+        artFallback: (list: readonly string[]) => `Zamiast obrazka gra rysuje: ${list.join(', ')}.`,
+        artFallbackNames: { wallet: 'portfel', notebook: 'zeszyt', miniature: 'miniatura pokoju', loading: 'ekran ładowania' },
         empty: 'Za mało odpowiedzi z błędami. Zajrzyj tu po kilku rundach.',
     },
     stages: {

@@ -115,3 +115,15 @@ describe('artHealthLines: folders, skipped tasks, labels, font, restart advice (
         expect(lines.map((l) => l.kind)).not.toContain('advice');
     });
 });
+
+describe('artHealthLines: fallback line (phase 7)', () => {
+    const base = { task: okHealth(3), room: okHealth(3), ui: okHealth(3), cut: 0, build: 'abc1234' };
+    it('names the screens that showed a fallback, in a fixed order', () => {
+        const lines = artHealthLines({ ...base, fallbacks: { loading: 'drawn', wallet: 'drawn' } });
+        expect(lines).toContainEqual({ kind: 'fallback', where: ['wallet', 'loading'] });
+    });
+    it('adds nothing when no fallback was shown', () => {
+        expect(artHealthLines({ ...base, fallbacks: {} }).some((l) => l.kind === 'fallback')).toBe(false);
+        expect(artHealthLines(base).some((l) => l.kind === 'fallback')).toBe(false);
+    });
+});
