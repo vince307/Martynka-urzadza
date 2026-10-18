@@ -83,3 +83,16 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Jak bardzo przeszkadza:** pomysł (nowa funkcja)
 - **Uwagi techniczne:** to nowa funkcja, nie poprawka. Plan (`Martynka-urzadza.md`) mówi dziś „jeden profil dziecka na urządzeniu (format zapisu zostawia miejsce na profile, UI ich nie pokazuje)” i wymienia „wiele profili dzieci (np. dla rodzeństwa)” w sekcji „Później”; zapis siedzi pod kluczem `profile:default` w IndexedDB (`src/storage/idb.ts`). Lokalne profile na urządzeniu to nie są „konta” (te plan wyklucza: bez logowania i chmury). Do decyzji: osobny slice w roadmapie (wybór/tworzenie profilu na starcie, klucz zapisu per profil, eksport/import/reset per profil, ustawienia rodzica per profil, kopie zapasowe i strażnik drugiej karty per profil), a nie część slice'a naprawczego.
 - **Status:** nowe
+
+### F-05 — Kierunek: fabuła renowatora i cały dom (kamienica) zamiast jednego pokoju
+
+- **Data:** 2026-10-18
+- **Kto:** rodzic
+- **Urządzenie:** —
+- **Wersja:** —
+- **Gdzie:** cała gra (start, pokój, postęp)
+- **Co się stało:** gra zaczyna się od razu w pokoju; brakuje sensu „po co remontuję”.
+- **Czego się spodziewaliśmy:** krótka historyjka na start: dziecko wciela się w osobę, która remontuje domy (np. dostaje dom w spadku albo po prostu taka jest rola). Widać grafikę całego domu albo kamienicy; za gwiazdki z zadań dziecko po kolei (albo z wyborem) remontuje parter, pierwsze piętro, piwnicę, poddasze, pracownię. Później horyzont się poszerza: ulica, dzielnica, kolejne domy do remontu. Na którymś etapie, do wyboru, elementy gospodarcze i ekonomiczne.
+- **Jak bardzo przeszkadza:** pomysł (kierunek projektu i fabuły)
+- **Uwagi techniczne:** to zmiana kierunku, nie poprawka. Plan (`Martynka-urzadza.md` § 12) wyklucza w v1 „fabułę i dialogi” oraz „sklep”, a CLAUDE.md zakazuje energii, timerów i zakupów — krótka historyjka na start i mapa domu wymagają świadomej zmiany planu, a elementy ekonomiczne trzeba pogodzić z zakazem zakupów (tylko w gwiazdkach, bez pieniędzy). Technicznie gra jest gotowa na kolejne pomieszczenia: pokoje to dane (`src/data/rooms.ts`, `ROOM_ORDER`), karta „Pokój gotowy!” ma już kafelki pokoi i zapowiedź „Wkrótce”. Potrzebne: grafika domu/kamienicy i pomieszczeń od projektantki (pakiety w `designs/`), ekran mapy domu, intro. Do decyzji: osobny etap roadmapy przez `/10x-shape` → `/10x-prd` (aktualizacja planu), nie slice naprawczy.
+- **Status:** nowe
