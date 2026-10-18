@@ -57,3 +57,16 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Jak bardzo przeszkadza:** blokuje (nie wiadomo, jak cofnąć zły wybór wieku)
 - **Uwagi techniczne:** zachowanie zgodne z obecnym projektem, nie błąd w kodzie: zębatka jest celowo wyciszona (S-08, `src/ui/widgets/SettingsIcon.ts`) i otwiera panel dopiero po przytrzymaniu 2 s (`balance.parentSettings.holdMs`) i rozwiązaniu bramki dla dorosłych (13–19 × 13–19, `src/core/parentGate.ts`); zmiana etapu jest w panelu rodzica (`changeStageByParent`). Wybór wieku jest tylko przy pierwszym uruchomieniu (`WelcomeScene`). Do decyzji w slice'ie: (a) podpowiedź, że zębatkę trzeba przytrzymać (wizualna lub tekstowa), (b) czy dziecko może samo poprawić wiek tuż po wyborze (np. „Wróć” na rozgrzewce), czy zmiana zostaje tylko dla dorosłego.
 - **Status:** nowe
+
+### F-03 — Ten sam typ zadania 3–4 razy z rzędu w jednej rundzie
+
+- **Data:** 2026-10-18
+- **Kto:** rodzic (obserwacja gry córki)
+- **Urządzenie:** —
+- **Wersja:** —
+- **Gdzie:** ekran zadań, jedna runda (5 zadań); etap około 8–9 lat (E3–E4)
+- **Co się stało:** w jednej rundzie córka dostała 3 albo 4 razy z rzędu zadanie tego samego typu, choć typów jest dużo.
+- **Czego się spodziewaliśmy:** w rundzie różne typy zadań, przemieszane.
+- **Jak bardzo przeszkadza:** denerwuje (nuży, wygląda jak powtórka)
+- **Uwagi techniczne:** dziś runda losuje umiejętności z wagami 60/30/10 (bieżący krok / wcześniejsze kroki / poprzedni etap, `balance.curriculum.weights`, `buildAdaptiveRound` i `skillBuckets` w `src/core/curriculum.ts`), a `distinctTasks` (`src/core/round/unique.ts`) pilnuje tylko, żeby nie powtórzyło się to samo polecenie — nie typ. Bieżący krok ma często jedną–dwie umiejętności jednego typu, więc 60 % rundy to ten sam typ. Do decyzji w slice'ie: reguła różnorodności (np. najwyżej 2 zadania tego samego typu w rundzie, nie dwa takie same typy pod rząd), z zachowaniem udziałów z `docs/ZADANIA.md` i progu odblokowania kroku.
+- **Status:** nowe
