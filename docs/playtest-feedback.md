@@ -70,3 +70,16 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Jak bardzo przeszkadza:** denerwuje (nuży, wygląda jak powtórka)
 - **Uwagi techniczne:** dziś runda losuje umiejętności z wagami 60/30/10 (bieżący krok / wcześniejsze kroki / poprzedni etap, `balance.curriculum.weights`, `buildAdaptiveRound` i `skillBuckets` w `src/core/curriculum.ts`), a `distinctTasks` (`src/core/round/unique.ts`) pilnuje tylko, żeby nie powtórzyło się to samo polecenie — nie typ. Bieżący krok ma często jedną–dwie umiejętności jednego typu, więc 60 % rundy to ten sam typ. Do decyzji w slice'ie: reguła różnorodności (np. najwyżej 2 zadania tego samego typu w rundzie, nie dwa takie same typy pod rząd), z zachowaniem udziałów z `docs/ZADANIA.md` i progu odblokowania kroku.
 - **Status:** nowe
+
+### F-04 — Kilka dzieci na jednym tablecie (osobne profile)
+
+- **Data:** 2026-10-18
+- **Kto:** rodzic
+- **Urządzenie:** —
+- **Wersja:** —
+- **Gdzie:** pierwsze uruchomienie / start gry
+- **Co się stało:** na jednym tablecie gra prowadzi tylko jedno dziecko; drugie dziecko nie może zacząć własnej gry bez skasowania postępów pierwszego.
+- **Czego się spodziewaliśmy:** każde dziecko ma swój profil (swój wiek, etap, gwiazdki, pokój); grają po kolei, jedno naraz, wybierając siebie na starcie.
+- **Jak bardzo przeszkadza:** pomysł (nowa funkcja)
+- **Uwagi techniczne:** to nowa funkcja, nie poprawka. Plan (`Martynka-urzadza.md`) mówi dziś „jeden profil dziecka na urządzeniu (format zapisu zostawia miejsce na profile, UI ich nie pokazuje)” i wymienia „wiele profili dzieci (np. dla rodzeństwa)” w sekcji „Później”; zapis siedzi pod kluczem `profile:default` w IndexedDB (`src/storage/idb.ts`). Lokalne profile na urządzeniu to nie są „konta” (te plan wyklucza: bez logowania i chmury). Do decyzji: osobny slice w roadmapie (wybór/tworzenie profilu na starcie, klucz zapisu per profil, eksport/import/reset per profil, ustawienia rodzica per profil, kopie zapasowe i strażnik drugiej karty per profil), a nie część slice'a naprawczego.
+- **Status:** nowe
