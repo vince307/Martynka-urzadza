@@ -817,6 +817,6 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 9.1 Deliberate break: show the hint on every tap → the new case red; hint on `fire` instead of `tap` → the extended case red; each restored
+- [x] 9.1 Deliberate break: show the hint on every tap → the new case red; hint on `fire` instead of `tap` → the extended case red; each restored — c8cea1a, 70229d8
 - [ ] 9.2 `npx playwright test tests/e2e/parent-settings.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 8
 - [ ] 9.3 Full local gate green
