@@ -1,6 +1,6 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-Written by the visual-gate step: rows 3.5, 5.4 and 6.5 were captured at 1440 and 1024 and verified, `VISUAL: PASS`. One focus defect (VG-1) was fixed in 9f1988d, and the full local gate is green after it. Next comes archive, then ship. At archive, rewrite the CLAUDE.md path to `follow-ups/review-fixes.md` (follow-up F5).
+Written by the archive + ship step (final pre-merge state). The visual gate passed (VG-1 fixed in 9f1988d). This step archives the change to `context/archive/2026-10-20-audit-boot-hidden-tab/`, rewrites the CLAUDE.md follow-ups path to the archive (F5), then pushes, opens the PR, watches CI, merges and watches the Deploy run.
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual-gate step: rows 3.5, 5.4 and 6.5 were captured at 1440 and
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
 | Commits | phases 1–10 (p1 e6a0b43 … p10 c5b4db4), review fix 5295e8a, visual fix 9f1988d, plus docs commits (this one: `docs(audit-boot-hidden-tab): bramka wizualna`) |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-20-playtest-boot/run-log.md |
+| `change.md` status | `archived` (folder `context/archive/2026-10-20-audit-boot-hidden-tab/`) |
 | `## Progress` rows remaining | 1: [human] 2.6 |
 | Working tree | clean after the docs commit (the throwaway spec folder `tests/e2e/visual.local/` was moved out of the repo before the lint gate; `test-results/` is gitignored and was not committed) |
 
@@ -38,7 +38,7 @@ Written by the visual-gate step: rows 3.5, 5.4 and 6.5 were captured at 1440 and
 
 ## 4. Next command
 
-`/10x-archive audit-boot-hidden-tab then ship (no hosted db push — none exists)`
+`none — shipped`
 
 ## 5. Open
 
@@ -63,4 +63,6 @@ Written by the visual-gate step: rows 3.5, 5.4 and 6.5 were captured at 1440 and
   - While the dialog is open, the card's button is covered. "Zamknij" is the dialog's one button and focus is in the dialog, so nothing is trapped.
   - Would change: a dialog step with no close button over the card.
 - D-19 **The "Obrazki" `Kod:` style is left as a follow-up**: it predates this change (health-lines-and-smoke), and fixing it would need another full e2e run. Would change: a parent report, or the next edit of `artHealthView.ts`.
+- D-20 **Archived with [human] 2.6 open**: the only pending row is a manual real-tablet check (0 automated pending), which the archive skill recommends archiving over; it is a post-run checklist item, not a blocker. Rows 3.5, 5.4 and 6.5 ([visual]) carry no SHA by design (the visual review is their evidence). No roadmap row (non-roadmap fix). Would change: an automated row still open.
+- D-21 **Triggers restated at archive**: F5 is closed by the CLAUDE.md path rewrite in this step; every other `Trigger:` line stays in `follow-ups/review-fixes.md` of the archive folder (F1 `bootLimitReached` fold, the "Obrazki" `Kod:` line, H-6, A-6/B-6, A-10, L-8, ASL-05/08/09, G-3, S12-03/11/13, FontFace limit, real-device measurement).
 - Earlier steps: D-1..D-15 are in the git history of this file (46bbd42, fa37a67).

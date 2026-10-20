@@ -62,6 +62,7 @@ Trigger: next change to `src/core/bootLimits.ts` or to the timer `arm` in `BootS
 ## CLAUDE.md points at the change folder (impl-review F5)
 The new "Boot hidden tab and error codes" sentence cites `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md`, which moves at archive.
 Trigger: `/10x-archive audit-boot-hidden-tab` (rewrite the path to `context/archive/...` and run `validate-rule-files.sh`).
+Closed at archive (2026-10-20): CLAUDE.md now cites `context/archive/2026-10-20-audit-boot-hidden-tab/follow-ups/review-fixes.md`; `validate-rule-files.sh` run after the rewrite.
 
 ## "Obrazki" `Kod:` line not muted (visual gate)
 The `code` line of `createArtHealthView` (`src/ui/dom/artHealthView.ts`) is drawn in the body style, while the `Kod:` lines of "Gra bez internetu" and "Zapis gry" use `overlay-muted`. Predates this change (health-lines-and-smoke).
