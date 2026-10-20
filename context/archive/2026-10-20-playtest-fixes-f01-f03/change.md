@@ -1,10 +1,10 @@
 ---
 change_id: playtest-fixes-f01-f03
 title: Playtest fixes F-01..F-03 (narrator off by default, gear hint and age back, round variety)
-status: impl_reviewed
+status: archived
 created: 2026-10-20
 updated: 2026-10-20
-archived_at: null
+archived_at: 2026-10-20T17:20:46Z
 ---
 
 ## Notes
