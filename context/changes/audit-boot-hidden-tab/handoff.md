@@ -1,51 +1,52 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-Phase 1 (`/10x-tdd`, test-first) is committed as e6a0b43: `src/core/bootLimits.ts` now counts visible time only (hidden-span record plus hidden-aware `bootLimitDue`/`bootLimitWait`); `BootScene` is not wired yet (phase 2).
+Phase 2 (`/10x-implement`) is committed as 2e67a1d: `BootScene` has its own `visibilitychange` listener and the boot limits count visible time; `bootLoad` carries `hiddenMs` (registry, hook, layout doc). Phase 1 is e6a0b43.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | 6 (4 docs, `test(audit-boot-hidden-tab): Boot limits count only visible time (p1)` e6a0b43, this handoff/progress docs commit) |
+| Commits | phase 1 e6a0b43, phase 2 2e67a1d, plus docs commits |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implementing` is set by the skill only if edited; unchanged here (`plan_reviewed`) |
-| `## Progress` rows remaining | 40 (phase 1 rows 1.1–1.4 ticked with e6a0b43) |
+| `change.md` status | unchanged (`plan_reviewed`) |
+| `## Progress` rows remaining | 37 (rows 1.1–1.4 and 2.1–2.3 ticked; 2.4 left open for the e2e row) |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/bootLimits.ts` | `HiddenSpan`, `noHidden`, `startHidden`, `endHidden`, `hiddenMsAt`; `bootLimitDue(schedule, wall, hiddenMs = 0)`, `bootLimitWait(at, wall, hiddenMs = 0)` |
-| `tests/bootLimits.test.ts` | rewritten hidden-minute case, never-earlier, hidden wait, 3 hidden-span cases |
-| `context/changes/audit-boot-hidden-tab/plan.md` | rows 1.1–1.4 ticked |
+| `src/scenes/BootScene.ts` | `hidden` span field seeded from `document.hidden`; `cutNow`, `armSlow`, `armCut`, `onVisibility`, `dropListener`; `arm` and the cut guard use `hiddenMsAt`; `publish` adds `hiddenMs`; cut warning prints hidden ms |
+| `src/data/layout.ts` | `REGISTRY_KEYS.bootLoad` comment lists `hiddenMs` |
+| `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | `bootLoad` snapshot carries `hiddenMs` (hook build only) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (stubs ignoring hidden time, so an assertion failure, not an import error) | `AssertionError: expected 'cut' to be 'slow'` (hidden-minute case, old assertion inverted); also `expected 1 to be 40000` (wait), `expected +0 to be 15000` / `20000` (span); 4 failed, 6 passed |
-| GREEN | `npx vitest run tests/bootLimits.test.ts`: 10 passed |
-| Deliberate break 1 | `bootLimitDue` ignores `hiddenMs`: hidden-minute case red; restored |
-| Deliberate break 2 | a second hide resets the span start: idempotence case red; restored. Meta-check: the rewritten case fails on the old code (it is the old assertion inverted) |
-| Gate | lint OK; typecheck OK; unit 3683 + 5 = 3688 passed; deploy scripts OK; sample E1–E6 OK; build OK, prints `e2e hook: absent (2 chunks checked)`; e2e: left to the orchestrator (`<baseline 141> + 0` expected) |
-| grep 1.3 | only `src/scenes/BootScene.ts` besides `bootLimits.ts` |
+| lint, typecheck | OK |
+| unit | 3688 passed (phase-1 baseline 3688 + 0; no scene unit test possible) |
+| deploy scripts, sample E1–E6 | OK |
+| build | OK, `e2e hook: absent (2 chunks checked)` |
+| grep 2.1 | one `addEventListener`, one `removeEventListener` of `visibilitychange` in BootScene; `src/main.ts` unchanged |
+| grep 2.2 | `git diff main -- src/core/save.ts src/core/migrations tests/fixtures` empty |
+| Deliberate break (2.3) | no unit test sees the scene listener; the proof is phase 8's e2e. Its valid break: `cutNow` and `arm` pass `0` instead of `hiddenMsAt(this.hidden, wall)` (no subtraction) -> red. Dropping only the clear-on-hide is NOT a valid break (A-2). Not run here (browser spec does not exist yet) |
+| e2e | left to the orchestrator: `<branch e2e baseline> + 0` (stallall specs of `load-and-tab-guard.spec.ts` must stay green) |
 
 ## 4. Next command
 
-`/10x-implement audit-boot-hidden-tab phase 2`
+`/10x-tdd audit-boot-hidden-tab phase 3`
 
 ## 5. Open
 
-- Phase 2 (impl): `BootScene` own `visibilitychange` listener, lifecycle per plan "Critical Implementation Details"; `hiddenMs` in `bootLoad`, hook, layout doc. Valid e2e break (phase 8): pass `hiddenMs` 0 to the rule.
-- BootScene call sites still use the 2-argument forms (defaults keep them compiling).
-- Manual rows unchanged: 2.6 [human], 3.5, 5.4, 6.5 [visual], 2.5, 3.4, 7.5 [reviewer].
-- e2e part of the phase-1 gate not run by this step.
+- Row 2.4 stays open until the orchestrator's e2e run; 2.5 [reviewer], 2.6 [human] not mine.
+- Other manual rows unchanged: 3.5, 5.4, 6.5 [visual]; 3.4, 7.5 [reviewer].
+- Phase 8 e2e needs the visibility fake and the `hiddenMs` break above.
 
 ## 6. Autonomous decisions
 
-- D-1 **Driver stays `tdd`**; implementation did not exist (only the old wall-clock rule). Would change: nothing.
-- D-2 **Stubs first** (exported functions ignoring hidden time) so RED is an assertion failure; real code replaced them after RED.
-- D-3 **Commit set**: only `bootLimits.ts` and its test; plan/handoff in a follow-up docs commit. Skill prompts (manual gate, commit message, next phase) decided in place: accepted proposed message, stop after this phase.
-- D-4 **Extra tests** beyond plan: "never earlier because of hidden time" as a table over wall values; `bootLimitWait` hidden case. Would change: none.
+- D-1 **Driver stays `impl`** per plan. Would change: nothing.
+- D-2 **Page starting hidden** arms no timer; the first show arms both (plan Critical Implementation Details). Would change: nothing.
+- D-3 **Commit message / next-phase prompts** decided in place: proposed message accepted, stop after phase 2.
+- D-4 **Break not run in a browser**: no spec exists before phase 8; steps recorded in §3.

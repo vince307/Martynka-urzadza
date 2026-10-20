@@ -694,9 +694,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 2.1 `grep -n "visibilitychange" src/scenes/BootScene.ts` shows one `addEventListener` and its `removeEventListener`; `git diff --stat main -- src/main.ts` shows no change to the `visibilitychange` handler (L-S3 not fired)
-- [ ] 2.2 `grep -n "bootLoad" src/data/layout.ts` shows `hiddenMs` and "not in SAVE_KEYS"; `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
-- [ ] 2.3 Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: the scene passes `hiddenMs` 0 to the rule, i.e. no subtraction → red; dropping only the clear-on-hide is NOT a valid break, the hidden-aware guard re-arms and stays green by design, A-2) plus the [reviewer] row below
+- [x] 2.1 `grep -n "visibilitychange" src/scenes/BootScene.ts` shows one `addEventListener` and its `removeEventListener`; `git diff --stat main -- src/main.ts` shows no change to the `visibilitychange` handler (L-S3 not fired) — 2e67a1d
+- [x] 2.2 `grep -n "bootLoad" src/data/layout.ts` shows `hiddenMs` and "not in SAVE_KEYS"; `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty — 2e67a1d
+- [x] 2.3 Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: the scene passes `hiddenMs` 0 to the rule, i.e. no subtraction → red; dropping only the clear-on-hide is NOT a valid break, the hidden-aware guard re-arms and stays green by design, A-2) plus the [reviewer] row below — 2e67a1d
 - [ ] 2.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (the `#15 A-1/A-2` and `#14 B-4` stallall specs in `load-and-tab-guard.spec.ts` stay green: never hidden, same timing)
 
 #### Manual
