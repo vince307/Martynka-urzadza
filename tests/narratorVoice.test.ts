@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { balance } from '../src/data/balance';
 import { defaultAutoRead, effectiveAutoRead, isPolishLang, pickPolishVoice } from '../src/core/narration/voice';
 
 const voice = (lang: string, localService: boolean, name = lang) => ({ lang, localService, name });
@@ -71,5 +72,15 @@ describe('effectiveAutoRead', () => {
         expect(effectiveAutoRead({ autoRead: true }, 'E4', stages)).toBe(true);
         expect(effectiveAutoRead({ autoRead: true }, 'E1', stages)).toBe(true);
         expect(effectiveAutoRead({ autoRead: false }, 'E6', stages)).toBe(false);
+    });
+});
+
+describe('auto-read default (F-01)', () => {
+    it('is off for every stage unless the parent turns it on', () => {
+        expect(balance.narrator.autoReadStages).toEqual([]);
+        for (const s of ['E1', 'E2', 'E3', 'E4', 'E5', 'E6']) {
+            expect(effectiveAutoRead({ autoRead: null }, s, balance.narrator.autoReadStages), s).toBe(false);
+            expect(effectiveAutoRead({ autoRead: true }, s, balance.narrator.autoReadStages), s).toBe(true);
+        }
     });
 });
