@@ -7,7 +7,7 @@ import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
 import { parentVisible, repairCurrentRoom, roomGrowth, roomStateProblems, type RoomProblem } from './core/rooms';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
-import { channelVerdict, freshSession, type SessionSave } from './core/save';
+import { channelVerdict, errorCode, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
@@ -127,7 +127,7 @@ installErrorBoundary(window, (error) => {
             console.error(failure);
         }
     };
-    attempt(() => mountErrorCard(document.body, __BUILD_ID__, () => window.location.reload()));
+    attempt(() => mountErrorCard(document.body, __BUILD_ID__, errorCode(error), () => window.location.reload()));
     // The hold is never released: the card is final, a restart reloads the page.
     attempt(() => (booted.game?.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined)?.suspend());
     attempt(() => booted.game?.loop.sleep());

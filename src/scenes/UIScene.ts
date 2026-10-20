@@ -211,6 +211,7 @@ export class UIScene extends Scene {
                         room: this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
                         ui: this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined,
                         cut: (this.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[] } | undefined)?.cut.length ?? 0,
+                        background: ((this.registry.get(REGISTRY_KEYS.bootLoad) as { hiddenMs?: number } | undefined)?.hiddenMs ?? 0) > 0,
                         build: __BUILD_ID__,
                         font: this.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined,
                         labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),

@@ -8,8 +8,8 @@
 // cause (#15 A-9; that the round skips the skill is the unit test of artFilter: ?e2eSkills bypasses the filter) and (e) the cut line
 // after a total-limit start (#14 B-4). Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Route } from '@playwright/test';
-import { openSettings, passWelcome } from './support/welcome';
-import { answerRight, screenIs, silenceSpeech, snapshot } from './support/hook';
+import { gateProblem, openSettings, passWelcome, typeIntoGate } from './support/welcome';
+import { answerRight, fromHook, screenIs, silenceSpeech, snapshot, tapScene } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { FONT_KEY } from '../../src/data/layout';
 import { SAVE_VERSION } from '../../src/core/save';
@@ -74,6 +74,59 @@ test.describe('files that never answer', () => {
         await screenIs(page, 'welcome');
         expect((await snapshot(page)).bootLoad!.creates).toBe(1);
         await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    });
+
+    // Risk #15 (a stalled start leaves the child on stand-ins), change audit-boot-hidden-tab (H-1): the total limit counts the time
+    // the tab was VISIBLE. A tab hidden during the load does not run the loader queue, so hidden time must not count toward the cut.
+    // The visibility is faked (document.hidden / visibilityState are redefined, then visibilitychange is dispatched): the rule under
+    // test is the scene's subtraction of the hidden span, not the browser's visibility, which a headless run cannot flip.
+    test('#15 H-1 a tab hidden during the load does not cut it; the cut comes when it is shown and the panel says the game was in the background', async ({ page }) => {
+        await silenceSpeech(page);
+        await hold(page);
+        await page.addInitScript(() => {
+            const state = { hidden: false };
+            Object.defineProperty(window, '__fakeTab', { value: state, configurable: true });
+            Object.defineProperty(document, 'hidden', { get: () => state.hidden, configurable: true });
+            Object.defineProperty(document, 'visibilityState', { get: () => (state.hidden ? 'hidden' : 'visible'), configurable: true });
+        });
+        const setHidden = (hidden: boolean): Promise<number> =>
+            page.evaluate((value) => {
+                (window as unknown as { __fakeTab: { hidden: boolean } }).__fakeTab.hidden = value;
+                document.dispatchEvent(new Event('visibilitychange'));
+                return performance.now();
+            }, hidden);
+        await page.goto('/?e2eArt=stallall&e2eVariant=off');
+        await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
+        // Hidden before the 3 s total limit (the e2e seam) has passed in visible time.
+        expect((await snapshot(page)).screen).toBe('loading');
+        const hiddenAt = await setHidden(true);
+        // Stay hidden for more than the total limit in wall time: polled against the page clock, never a fixed sleep.
+        await page.waitForFunction((from) => performance.now() - from > 3600, hiddenAt, { timeout: 15_000, polling: 100 });
+        const still = await snapshot(page);
+        expect(still.screen).toBe('loading');
+        expect(still.bootLoad ?? null).toBeNull();
+        // Shown again: the remaining visible time runs out and the cut comes.
+        const shownAt = await setHidden(false);
+        await expect.poll(async () => (await snapshot(page)).screen, { timeout: 15_000 }).toBe('welcome');
+        const spanMs = shownAt - hiddenAt;
+        const boot = (await snapshot(page)).bootLoad!;
+        expect(boot.hiddenMs).toBeGreaterThanOrEqual(Math.floor(spanMs) - 50);
+        expect(boot.elapsedMs).toBeGreaterThanOrEqual(3000 + boot.hiddenMs - 50);
+        expect(boot.cut.length).toBeGreaterThan(0);
+
+        // The settings panel names the background, not the plain cut line. The parent path from the screen the cut left.
+        const { parent } = await fromHook(page, 'targets');
+        await tapScene(page, parent!);
+        await typeIntoGate(page, (await gateProblem(page)).product);
+        const start = page.getByRole('dialog', { name: 'Ustawienia startowe' });
+        await expect(start).toBeVisible();
+        await start.getByRole('button', { name: '10+', exact: true }).tap();
+        await start.getByRole('button', { name: 'Klasa 2, I półrocze', exact: true }).tap();
+        await start.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
+        await screenIs(page, 'task');
+        const panel = await openSettings(page);
+        await expect(panel.getByText(pl.settings.artCutBackground, { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.artCut, { exact: true })).toHaveCount(0);
     });
 });
 

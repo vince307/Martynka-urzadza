@@ -266,9 +266,9 @@ export const installE2EHook = (game: Game): void => {
         const value = game.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined;
         return value ? { total: value.total, missing: value.missing.length } : null;
     };
-    const bootLoadSnapshot = (): { cut: string[]; cutByTable: Record<string, string[]>; creates: number; elapsedMs: number } | null => {
+    const bootLoadSnapshot = (): { cut: string[]; cutByTable: Record<string, string[]>; creates: number; elapsedMs: number; hiddenMs: number } | null => {
         const value = game.registry.get(REGISTRY_KEYS.bootLoad) as
-            | { cut: readonly string[]; cutByTable: Record<string, readonly string[]>; creates: number; elapsedMs: number }
+            | { cut: readonly string[]; cutByTable: Record<string, readonly string[]>; creates: number; elapsedMs: number; hiddenMs: number }
             | undefined;
         return value
             ? {
@@ -276,6 +276,7 @@ export const installE2EHook = (game: Game): void => {
                   cutByTable: Object.fromEntries(Object.entries(value.cutByTable).map(([table, keys]) => [table, [...keys]])),
                   creates: value.creates,
                   elapsedMs: value.elapsedMs,
+                  hiddenMs: value.hiddenMs,
               }
             : null;
     };

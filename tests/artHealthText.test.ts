@@ -44,3 +44,12 @@ describe('pl.settings.artFolders agreement (phase 6)', () => {
         expect(pl.settings.artFolders('money', n)).toBe(text);
     });
 });
+
+// Phase 3 of audit-boot-hidden-tab (H-1): a cut after time in the background must not blame the connection.
+describe('pl.settings.artCutBackground', () => {
+    it('does not blame the internet and says a restart helps', () => {
+        expect(pl.settings.artCutBackground).not.toMatch(/internet/i);
+        expect(pl.settings.artCutBackground).toMatch(/ponownie/);
+        expect(pl.settings.artCutBackground).toMatch(/tle/);
+    });
+});

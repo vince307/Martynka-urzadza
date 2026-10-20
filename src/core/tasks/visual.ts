@@ -72,6 +72,35 @@ export const lineTicks = (line: { from: number; to: number; tick: number }): num
     return ticks;
 };
 
+/**
+ * Checks a drawing against the pool limits its widget enforces at draw time (`assertPool`, `lineTicks`, `ART_LIMITS`), so a bad
+ * drawing fails at generation, with the skill id, instead of inside a scene. Pool limits only: it is not `validateVisual`.
+ */
+export const assertDrawable = (task: { visual?: TaskVisual; hintVisual?: TaskVisual }): void => {
+    for (const v of [task.visual, task.hintVisual]) {
+        if (!v) continue;
+        switch (v.kind) {
+            case 'icons':
+                assertPool(v.groups.reduce((a, b) => a + b, 0), ART_LIMITS.icons, 'icons');
+                break;
+            case 'row':
+                assertPool(v.icons.length, ART_LIMITS.rowIcons, 'icon row');
+                break;
+            case 'jugs':
+                assertPool(v.jugs.length, ART_LIMITS.jugs, 'jugs');
+                break;
+            case 'money':
+                if (!v.pay) assertPool(v.items.length, ART_LIMITS.moneyItems, 'money');
+                break;
+            case 'numberLine':
+                lineTicks(v);
+                break;
+            default:
+                break;
+        }
+    }
+};
+
 export const visualShape = (v: TaskVisual): VisualShape => (v.kind === 'thermometer' ? 'tall' : v.kind === 'numberLine' || v.kind === 'pattern' || v.kind === 'row' ? 'long' : 'wide');
 
 /** Stable identity of a drawing (fixed field order); '' for none. */

@@ -24,7 +24,9 @@ test('#15 (proposed) an exception in a frame shows the restart card instead of a
     await expect.poll(async () => (await snapshot(page)).inputEnabled).toBe(false);
     const build = await page.locator('#game-container').getAttribute('data-build');
     expect(build).toBeTruthy();
-    await expect(card(page).getByText(pl.errorCard.build(build!))).toBeVisible();
+    // The forced failure throws a plain Error: the line is the shared "Kod: Error · Wersja <build>", not the bare build.
+    await expect(card(page).getByText(pl.saveFailed.detail('Error', build!), { exact: true })).toBeVisible();
+    await expect(card(page).getByText(pl.errorCard.build(build!), { exact: true })).toHaveCount(0);
 
     // "Zacznij od nowa" reloads the page: the card is gone and the welcome screen is back.
     await Promise.all([
@@ -41,6 +43,10 @@ test('#15 (proposed) a failure while the game boots shows the card', async ({ pa
     await page.goto('/?e2eFail=boot');
     await expect(card(page)).toBeVisible();
     await expect(card(page).getByRole('button', { name: pl.errorCard.restart, exact: true })).toBeVisible();
+    const build = await page.locator('#game-container').getAttribute('data-build');
+    expect(build).toBeTruthy();
+    await expect(card(page).getByText(pl.saveFailed.detail('Error', build!), { exact: true })).toBeVisible();
+    await expect(card(page).getByText(pl.errorCard.build(build!), { exact: true })).toHaveCount(0);
 });
 
 test('#15 (proposed) an exception in the parent settings callback shows the card, not a dead screen', async ({ page }) => {

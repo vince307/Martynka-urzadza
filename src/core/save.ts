@@ -267,6 +267,12 @@ export function errorName(e: unknown): string {
     return typeof name === 'string' && name !== '' ? name : 'Error';
 }
 
+/** The name of a thrown value, plus `/<skillId>` when it carries a skill id (a task that failed while being drawn). Never throws. */
+export function errorCode(e: unknown): string {
+    const id = typeof e === 'object' && e !== null ? (e as { skillId?: unknown }).skillId : undefined;
+    return typeof id === 'string' && id !== '' ? `${errorName(e)}/${id}` : errorName(e);
+}
+
 /** Raw value -> migrations up to the current version -> strict validation -> session state. Never throws, never mutates `raw`. */
 export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Migration>> = MIGRATIONS): DecodeResult {
     if (!isRecord(raw) || typeof raw.version !== 'number' || !Number.isInteger(raw.version)) return { kind: 'unreadable', reason: 'corrupt', from: null, problem: null };

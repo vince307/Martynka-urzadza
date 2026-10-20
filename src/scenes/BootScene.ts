@@ -1,6 +1,6 @@
 import { Loader, Scene } from 'phaser';
 import { artCauses, artHealth, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
-import { bootLimitDue, bootLimitSchedule, bootLimitWait, type BootLimitSchedule } from '../core/bootLimits';
+import { bootLimitDue, bootLimitReached, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
@@ -31,6 +31,8 @@ export class BootScene extends Scene {
     private creates = 0;
     // Wall-clock start of the boot load (performance.now): the limits and the recorded duration count real time, also while the tab is hidden (audit B-3).
     private startedAt = 0;
+    // Time the tab was hidden during the boot load (audit H-1): the limits count visible time only, because the Phaser queue advances on scene updates, which stop in a hidden tab.
+    private hidden: HiddenSpan = noHidden;
     // What the loader reported, per file key: the cause of a missing texture is read from these in create() (runtime only).
     private readonly loadedKeys = new Set<string>();
     private readonly failedKeys = new Map<string, number>();
@@ -58,6 +60,8 @@ export class BootScene extends Scene {
         // The loading screen is drawn first and removed in create(); a bar that fails to draw must not stop the game from starting.
         this.loading = new LoadingScreen(this);
         this.startedAt = performance.now();
+        // A page that starts hidden opens the span at once; its first show closes it and arms the timers.
+        this.hidden = document.hidden ? startHidden(noHidden, this.startedAt) : noHidden;
         const onProgress = (value: number): void => {
             try {
                 this.loading?.progress(value);
@@ -119,15 +123,17 @@ export class BootScene extends Scene {
         const limits: BootLimits = __E2E_HOOK__ && seamEarly === 'stallall' ? E2E_BOOT_LIMITS : balance.loader;
         checkBootLimits(limits);
         // After slowAfterMs a calm line appears under the bar (audit A-2); the rule decides, the widget draws.
-        // Both limits run on window timers and the wall clock (audit B-3): the game clock is smoothed and stops with a hidden tab, so a
-        // game-time timer fires late. A timer that fires a hair early waits for the rest; all timers end with the load or the scene.
+        // Both limits run on window timers and the wall clock minus the hidden time (audits B-3, H-1): the game clock is smoothed and stops
+        // with a hidden tab, so a game-time timer fires late, and the loader queue stands still while the tab is hidden, so hidden time
+        // must not count toward the limits. A timer that fires a hair early waits for the rest; all timers end with the load or the scene.
         const schedule: BootLimitSchedule = bootLimitSchedule(limits, this.startedAt);
         const timers = new Set<number>();
         const arm = (at: number, onDue: () => void): void => {
             const id = window.setTimeout(() => {
                 timers.delete(id);
                 try {
-                    if (performance.now() < at) {
+                    const wall = performance.now();
+                    if (!bootLimitReached(at, wall, hiddenMsAt(this.hidden, wall))) {
                         arm(at, onDue);
                         return;
                     }
@@ -138,26 +144,16 @@ export class BootScene extends Scene {
                     console.warn('Boot limit timer failed', error);
                     throw error;
                 }
-            }, bootLimitWait(at, performance.now()));
+            }, bootLimitWait(at, performance.now(), hiddenMsAt(this.hidden, performance.now())));
             timers.add(id);
         };
         const clearTimers = (): void => {
             for (const id of timers) window.clearTimeout(id);
             timers.clear();
         };
-        arm(schedule.slowAt, () => {
-            if (this.phase !== 'loading') {
-                return;
-            }
-            try {
-                this.loading?.slow();
-                this.phase = 'slow';
-            } catch (error) {
-                console.warn('Loading line failed', error);
-            }
-        });
-        arm(schedule.cutAt, () => {
-            if (bootLimitDue(schedule, performance.now()) !== 'cut') {
+        const cutNow = (): void => {
+            const wall = performance.now();
+            if (bootLimitDue(schedule, wall, hiddenMsAt(this.hidden, wall)) !== 'cut') {
                 return;
             }
             // Recorded BEFORE the cut: failing the last file ends the load and runs create() synchronously inside cutLoad, and
@@ -166,17 +162,64 @@ export class BootScene extends Scene {
             cutLoad(this.load);
             this.phase = 'over';
             this.publish();
-            console.warn(`Boot load cut after ${Math.round(performance.now() - this.startedAt)} ms: ${this.cut.length} files: ${this.cut.join(', ')}`);
-        });
+            console.warn(`Boot load cut after ${Math.round(performance.now() - this.startedAt)} ms (hidden ${Math.round(hiddenMsAt(this.hidden, performance.now()))} ms): ${this.cut.length} files: ${this.cut.join(', ')}`);
+        };
+        const armSlow = (): void => {
+            arm(schedule.slowAt, () => {
+                if (this.phase !== 'loading') {
+                    return;
+                }
+                try {
+                    this.loading?.slow();
+                    this.phase = 'slow';
+                } catch (error) {
+                    console.warn('Loading line failed', error);
+                }
+            });
+        };
+        const armCut = (): void => {
+            arm(schedule.cutAt, cutNow);
+        };
+        if (!document.hidden) {
+            armSlow();
+            armCut();
+        }
+        // Hide: stop both timers and open the span. Show: close it (only if one was open), clear first so at most one timer per limit
+        // is pending, then re-arm by phase. After the load ended the listener is gone, so nothing is armed.
+        const onVisibility = (): void => {
+            const wall = performance.now();
+            if (document.hidden) {
+                this.hidden = startHidden(this.hidden, wall);
+                clearTimers();
+                return;
+            }
+            if (this.hidden.since === null) {
+                return;
+            }
+            this.hidden = endHidden(this.hidden, wall);
+            clearTimers();
+            if (this.phase === 'loading') {
+                armSlow();
+            }
+            if (this.phase !== 'over') {
+                armCut();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        const dropListener = (): void => document.removeEventListener('visibilitychange', onVisibility);
         // Nothing may call into the loading screen after the load ends: a late file after the cut must not redraw a destroyed screen.
         this.load.once(Loader.Events.COMPLETE, () => {
             clearTimers();
+            dropListener();
             this.load.off('progress', onProgress);
             for (const [event, show] of artEvents) {
                 this.load.off(event, show);
             }
         });
-        this.events.once('shutdown', clearTimers);
+        this.events.once('shutdown', () => {
+            clearTimers();
+            dropListener();
+        });
         // A missing drawing is not fatal: create() records which ones are absent (rounds skip the tasks that need them,
         // the parent panel counts them) and ArtImage draws a Polish stand-in for any that still shows. The unit test keeps the table and files equal.
         // Phaser fires `loaderror` only for a failed fetch; a decode or font failure fires none (research.md), so create() reads the rest from the cache.
@@ -272,7 +315,7 @@ export class BootScene extends Scene {
     }
 
     private publish(): void {
-        this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], cutByTable: cutByTable(this.cut, this.tables()), creates: this.creates, elapsedMs: Math.round(performance.now() - this.startedAt) });
+        this.registry.set(REGISTRY_KEYS.bootLoad, { cut: [...this.cut], cutByTable: cutByTable(this.cut, this.tables()), creates: this.creates, elapsedMs: Math.round(performance.now() - this.startedAt), hiddenMs: Math.round(hiddenMsAt(this.hidden, performance.now())) });
     }
 
     create(): void {

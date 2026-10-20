@@ -25,6 +25,16 @@ describe('failureText (SVB-04)', () => {
     });
 });
 
+describe('failureText (Z-8): a NewerSave refusal never advises deleting site data', () => {
+    it.each([false, true])('NewerSave (forced=%s) says a newer version saved', (forced) => {
+        expect(failureText({ ok: false, error: 'NewerSave' }, forced, 'plain')).toBe(pl.saveTransfer.deviceNewer);
+    });
+    it('any other forced failure is not deviceNewer, and a timeout stays unconfirmed', () => {
+        expect(failureText({ ok: false, error: 'QuotaExceededError' }, true, 'plain')).not.toBe(pl.saveTransfer.deviceNewer);
+        expect(failureText({ ok: false, error: 'timeout' }, true, 'plain')).toBe(pl.saveTransfer.replaceUnconfirmed);
+    });
+});
+
 describe('resetLead (O2)', () => {
     it('ends with a colon only when a list follows', () => {
         expect(resetLead(true)).toBe('Znikną wszystkie postępy z tego urządzenia:');

@@ -11,6 +11,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
 import { screenIs, silenceSpeech, snapshot, tapScene, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
+import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(60_000);
 
@@ -213,4 +214,39 @@ test('#2 SIR-04 a copy of a healthy save carries no such warning', async ({ page
     const exportDialog = page.getByRole('dialog', { name: pl.saveTransfer.exportTitle });
     await expect(exportDialog.getByRole('button', { name: pl.saveTransfer.saveFile, exact: true })).toBeVisible();
     await expect(exportDialog.getByText(pl.saveTransfer.exportNotDevice)).toHaveCount(0);
+});
+
+// Risk #2 (progress is never lost), change audit-boot-hidden-tab (Z-8): a reset the store refuses as NewerSave must not tell the
+// parent to clear the site data (that would delete the newer save), and must stop this page's writes and show the refusal card.
+// The existing ?e2eSave=newer seam suffices: the first write at start is accepted and stores SAVE_VERSION + 1, so the reset (before any
+// further state change) reaches store.write(..., 'replace') and gets NewerSave.
+test('#2 Z-8 a reset refused as a newer save says so, blocks writes and shows the refusal card, never the site-data advice', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eSave: 'newer', e2eVariant: 'off' });
+    await expect.poll(async () => (await snapshot(page)).save?.writes ?? 0).toBeGreaterThanOrEqual(1);
+    expect((await snapshot(page)).save?.blockedBy).toBeNull();
+
+    const panel = await openSettings(page);
+    await panel.getByRole('button', { name: pl.saveTransfer.resetButton, exact: true }).tap();
+    const resetDialog = page.getByRole('dialog', { name: pl.saveTransfer.resetTitle });
+    await resetDialog.getByRole('button', { name: pl.saveTransfer.resetConfirm, exact: true }).tap();
+
+    // The refusal is told as "a newer version saved here", not as a failure whose advice is to clear the site data.
+    await expect(resetDialog.getByText(pl.saveTransfer.deviceNewer)).toBeVisible();
+    await expect(page.getByText(pl.saveTransfer.siteDataAdvice)).toHaveCount(0);
+    await expect(page.getByText(pl.saveTransfer.resetFailed)).toHaveCount(0);
+    await expect.poll(async () => (await snapshot(page)).save?.blockedBy).toBe('newer');
+
+    // The page stops writing and the calm card names its code.
+    const card = page.getByRole('alertdialog', { name: pl.saveRefused.title });
+    await expect(card).toBeVisible();
+    const build = await page.locator('#game-container').getAttribute('data-build');
+    expect(build).toBeTruthy();
+    await expect(card.getByText(pl.saveFailed.detail('NewerSave', build!))).toBeVisible();
+    expect((await snapshot(page)).save!.store!.writtenVersion).toBe(SAVE_VERSION + 1);
+
+    // "Zamknij" leaves the card on screen with the focus on its restart button, never lost on the page (visual gate VG-1).
+    await resetDialog.getByRole('button', { name: pl.saveTransfer.close, exact: true }).tap();
+    await expect(resetDialog).toBeHidden();
+    await expect(card.getByRole('button', { name: pl.saveRefused.restart, exact: true })).toBeFocused();
 });

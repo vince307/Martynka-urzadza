@@ -704,7 +704,7 @@ export class TaskScene extends Scene {
             const { promptGap, promptMinSize, promptSizeStep } = TASK_LAYOUT.picture;
             if (task.visual) {
                 // A pictured task's prompt ends above its drawing: a long one steps its font down (visual gate S-13).
-                const limit = pictureLayout(TASK_LAYOUT.picture, input, false, visualShape(task.visual)).picture.y - promptGap;
+                const limit = pictureLayout(TASK_LAYOUT.picture, input, false, visualShape(task.visual), task.skillId).picture.y - promptGap;
                 const size = fitSize(FONT_SIZES.prompt, promptMinSize, promptSizeStep, (s) => text.setFontSize(s).getBounds().bottom <= limit);
                 text.setFontSize(size);
             } else if (input === 'keypad' || input === 'tiles') {
