@@ -731,8 +731,8 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 5.1 `grep -n "mountErrorCard" src` shows the one caller passing `errorCode(error)`; `grep -n "pictureLayout(" src/scenes/TaskScene.ts` shows `task.skillId` in every call
-- [ ] 5.2 Deliberate break: no unit test renders the card (node environment); the proof is phase 9's tightened spec (break: pass `''` as code → red) plus the [visual] row
+- [x] 5.1 `grep -n "mountErrorCard" src` shows the one caller passing `errorCode(error)`; `grep -n "pictureLayout(" src/scenes/TaskScene.ts` shows `task.skillId` in every call — 1482ff4
+- [x] 5.2 Deliberate break: no unit test renders the card (node environment); the proof is phase 9's tightened spec (break: pass `''` as code → red) plus the [visual] row — 1482ff4
 - [ ] 5.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`error-boundary.spec.ts` uses a substring match on `Wersja <id>`, which the new line still contains)
 
 #### Manual
