@@ -12,7 +12,7 @@ different number of rng calls than `pickRoundSkills` — the "shares unchanged" 
 | Commits | 3 on the branch: `fea1184` (change identity), `8a884c1` (research), this step's `docs(playtest-fixes-f01-f03): plan` |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 45 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 41 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit (only the four files below written) |
 
 ## 2. Artifacts
