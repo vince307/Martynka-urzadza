@@ -115,11 +115,14 @@ numbers; the one new player-visible line gets DESIGN-GAP row 153. Each phase is 
 
 ## Critical Implementation Details
 
-- **Visible-time lifecycle (phase 2).** Seed the hidden span from `document.hidden` at `preload` start. On hide:
-  record the span start, clear both timers. On show: close the span, re-arm the slow timer only while `phase ===
-  'loading'` and the cut timer only while `phase !== 'over'`, each with `bootLimitWait(at, now, hiddenMs)`. Every
-  due-check (`arm`'s early-fire re-check and the cut guard) uses the hidden-aware rule. The listener is removed in the
-  same two places `clearTimers` runs (`COMPLETE`, `shutdown`); a show after the load ended must arm nothing.
+- **Visible-time lifecycle (phase 2).** Seed the hidden span from `document.hidden` at `preload` start; a page that
+  starts hidden arms NO timer at `preload` (the first show arms them). On hide: record the span start, clear both
+  timers. On show: act only when a hidden span actually closed (a `visibilitychange` to visible without a prior hide —
+  a duplicate event, the e2e fake, a browser quirk — changes nothing); then `clearTimers()` FIRST and re-arm the slow
+  timer only while `phase === 'loading'` and the cut timer only while `phase !== 'over'`, each with
+  `bootLimitWait(at, now, hiddenMs)`, so at most one timer per limit is ever pending (plan review F2). Every due-check
+  (`arm`'s early-fire re-check and the cut guard) uses the hidden-aware rule. The listener is removed in the same two
+  places `clearTimers` runs (`COMPLETE`, `shutdown`); a show after the load ended must arm nothing.
 - **Refused replace order (phase 6).** In the `replace` catch keep the counters and `lastFailure` as they are, then for
   `NEWER_SAVE` call `refuseWrites('newer', NEWER_SAVE)` (first reason wins, cancels the timer, calls `onBlocked` once)
   instead of the bare `blockedBy ??= 'newer'`; return the same `{ ok: false, error: 'NewerSave' }`.
@@ -207,7 +210,7 @@ wall time); listener added once per `preload`, removed on `Loader.Events.COMPLET
 
 - `grep -n "visibilitychange" src/scenes/BootScene.ts` shows one `addEventListener` and its `removeEventListener`; `git diff --stat main -- src/main.ts` shows no change to the `visibilitychange` handler (L-S3 not fired)
 - `grep -n "bootLoad" src/data/layout.ts` shows `hiddenMs` and "not in SAVE_KEYS"; `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
-- Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: drop the clear-on-hide → red) plus the [reviewer] row below
+- Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: the scene passes `hiddenMs` 0 to the rule, i.e. no subtraction → red; dropping only the clear-on-hide is NOT a valid break, the hidden-aware guard re-arms and stays green by design, A-2) plus the [reviewer] row below
 - Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (the `#15 A-1/A-2` and `#14 B-4` stallall specs in `load-and-tab-guard.spec.ts` stay green: never hidden, same timing)
 
 #### Manual Verification:
@@ -328,8 +331,8 @@ throw also carries `skillId`; widgets keep their asserts.
 #### Automated Verification:
 
 - New tests red before the change, green after; unit `<phase-3 count> + N`
-- Seeds unchanged: `git diff --stat main -- tests/contentInvariants.test.ts tests/*Generator*.test.ts tests/solvableInMode.test.ts` shows no changed assertion (only additions), and those suites are green
-- Deliberate break: call `numberChoices` before the generator (rng order changed) → a seeded generator/contentInvariants test red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored
+- Seeds unchanged: `git diff main -- tests/generateTask.test.ts tests/contentInvariants.test.ts tests/solvableInMode.test.ts | grep '^-[^-]'` empty (only additions), and those suites are green; the rng-order oracle is the existing case "does not consume rng differently from the generator: the task text matches the bare generator" in `tests/generateTask.test.ts`
+- Deliberate break: call `numberChoices` before the generator (rng order changed) → the "does not consume rng differently" case of `tests/generateTask.test.ts` red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored
 - `npm run sample -- E1` … `E6` exit 0 (unchanged content)
 - Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
@@ -469,7 +472,9 @@ MEDIUM/LOW rows of the 2026-10-17 report (Trigger: next change to `BootScene.pre
 A-6, B-6 (Android measurement / a report of a cut boot — now diagnosable through `hiddenMs`); A-10; L-8 DOM test of
 `createArtHealthView`; ASL-05, ASL-08, ASL-09; G-3; S12-03, S12-11 (replace failures still count as autosave
 failures), S12-13; FontFace limit; refusal-card focus after a dialog closes (Trigger: visual gate shows focus lost);
-real-device hidden-tab measurement (Trigger: the phase-2 [human] row fails); TXT-06 marked closed by this change.
+real-device hidden-tab measurement (Trigger: the phase-2 [human] row fails); TXT-06 marked closed by this change;
+the stale-tab-and-health "isolation-only red of `load-and-tab-guard`" item (fired by phase 8: closed if phase 8 ran the
+spec alone green, else restated with its evidence).
 
 #### 4. Seam sweep
 
@@ -521,8 +526,8 @@ check needs) → `screen` still `loading`, `bootLoad` null; show (fake back, dis
 
 #### Automated Verification:
 
-- Spec red before (deliberate break: drop the clear-on-hide in `BootScene` → the "still loading while hidden" assertion red; pass `background: false` in `UIScene` → the line assertion red), green after; restored
-- `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
+- Spec red before (deliberate break: the scene passes `hiddenMs` 0 to `bootLimitDue`/`bootLimitWait` (the subtraction removed) → the "still loading while hidden" assertion red — this breaks the RULE, not the fake; pass `background: false` in `UIScene` → the line assertion red), green after; restored
+- `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green run ALONE (fires the stale-tab-and-health follow-up "Isolation-only red of the `load-and-tab-guard` e2e (#2, P-5)": if that red reappears, fix it in this phase or record evidence and restate it in `follow-ups/review-fixes.md`); full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
 - Full local gate green
 
 ---
@@ -576,7 +581,10 @@ One spec in `tests/e2e/save-transfer-blocked.spec.ts` (hook build) proves the di
 `siteDataAdvice`; `save.blockedBy` `newer`; close → the refusal card is visible with `Kod: NewerSave`. If an ordinary
 write is always refused before the dialog can replace (so the dialog opens already `blocked`), add the seam value
 `newer-replace` that refuses only `mode 'replace'` — inside the existing `e2eSave` marker of `vite/e2eHookGuard.mjs`
-(absent from `dist/`, the build guard proves it).
+(absent from `dist/`, the build guard proves it). Plan review: the existing seam most likely suffices — `#2 P-5` in
+`load-and-tab-guard.spec.ts` shows the first write at start succeeds and stores `SAVE_VERSION + 1`, so a reset opened
+before any further state change reaches `store.write(…, 'replace')` and gets `NewerSave`; answer no task before the
+reset.
 
 ### Success Criteria:
 
@@ -624,6 +632,12 @@ None: save format v4 unchanged (table in Overview).
   slow link who also switched apps reads "w tle" rather than "internet" — accepted (A-3).
 - The refusal card lies under the open dialog until it closes (research); its button focus after the close is a
   [visual] check, follow-up if lost.
+- (plan review F4) `Autosaver.replace` calling `refuseWrites` goes slightly beyond scope Z-8's literal text (no
+  site-data advice): kept because today the bare `blockedBy ??= 'newer'` makes the later `refuseWrites` see a non-first
+  reason, so `onBlocked` never fires and the child plays on with writes silently blocked. One line in the same catch.
+- (plan review F5) `assertDrawable` must stay a thin wrapper over `assertPool`/`lineTicks` with `ART_LIMITS` (the pool
+  limits only); it must NOT call the broader `validateVisual` at runtime (that would turn content-only problems the
+  widgets tolerate into round-build throws).
 
 ## Autonomous decisions
 
@@ -682,7 +696,7 @@ None: save format v4 unchanged (table in Overview).
 
 - [ ] 2.1 `grep -n "visibilitychange" src/scenes/BootScene.ts` shows one `addEventListener` and its `removeEventListener`; `git diff --stat main -- src/main.ts` shows no change to the `visibilitychange` handler (L-S3 not fired)
 - [ ] 2.2 `grep -n "bootLoad" src/data/layout.ts` shows `hiddenMs` and "not in SAVE_KEYS"; `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
-- [ ] 2.3 Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: drop the clear-on-hide → red) plus the [reviewer] row below
+- [ ] 2.3 Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: the scene passes `hiddenMs` 0 to the rule, i.e. no subtraction → red; dropping only the clear-on-hide is NOT a valid break, the hidden-aware guard re-arms and stays green by design, A-2) plus the [reviewer] row below
 - [ ] 2.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (the `#15 A-1/A-2` and `#14 B-4` stallall specs in `load-and-tab-guard.spec.ts` stay green: never hidden, same timing)
 
 #### Manual
@@ -708,8 +722,8 @@ None: save format v4 unchanged (table in Overview).
 #### Automated
 
 - [ ] 4.1 New tests red before the change, green after; unit `<phase-3 count> + N`
-- [ ] 4.2 Seeds unchanged: `git diff --stat main -- tests/contentInvariants.test.ts tests/*Generator*.test.ts tests/solvableInMode.test.ts` shows no changed assertion (only additions), and those suites are green
-- [ ] 4.3 Deliberate break: call `numberChoices` before the generator (rng order changed) → a seeded generator/contentInvariants test red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored
+- [ ] 4.2 Seeds unchanged: `git diff main -- tests/generateTask.test.ts tests/contentInvariants.test.ts tests/solvableInMode.test.ts | grep '^-[^-]'` empty (only additions), and those suites are green; the rng-order oracle is the existing case "does not consume rng differently from the generator: the task text matches the bare generator" in `tests/generateTask.test.ts`
+- [ ] 4.3 Deliberate break: call `numberChoices` before the generator (rng order changed) → the "does not consume rng differently" case of `tests/generateTask.test.ts` red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored
 - [ ] 4.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content)
 - [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
@@ -755,8 +769,8 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 8.1 Spec red before (deliberate break: drop the clear-on-hide in `BootScene` → the "still loading while hidden" assertion red; pass `background: false` in `UIScene` → the line assertion red), green after; restored
-- [ ] 8.2 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
+- [ ] 8.1 Spec red before (deliberate break: the scene passes `hiddenMs` 0 to `bootLimitDue`/`bootLimitWait` (the subtraction removed) → the "still loading while hidden" assertion red — this breaks the RULE, not the fake; pass `background: false` in `UIScene` → the line assertion red), green after; restored
+- [ ] 8.2 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green run ALONE (fires the stale-tab-and-health follow-up "Isolation-only red of the `load-and-tab-guard` e2e (#2, P-5)": if that red reappears, fix it in this phase or record evidence and restate it in `follow-ups/review-fixes.md`); full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
 - [ ] 8.3 Full local gate green
 
 ### Phase 9: The "Ups!" card shows `Kod:` — e2e (#15)
