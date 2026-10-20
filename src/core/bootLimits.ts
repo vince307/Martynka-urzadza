@@ -47,3 +47,6 @@ export const bootLimitDue = (schedule: BootLimitSchedule, wall: number, hiddenMs
 /** How long a timer that fired early must wait for the moment to come; at least 1 ms. */
 export const bootLimitWait = (at: number, wall: number, hiddenMs = 0): number =>
     Math.max(1, Math.ceil(at - (wall - hiddenMs)));
+
+/** True once the visible time reaches `at`; a timer that fired a hair early asks this and waits for the rest. */
+export const bootLimitReached = (at: number, wall: number, hiddenMs = 0): boolean => wall - hiddenMs >= at;

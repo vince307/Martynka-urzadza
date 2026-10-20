@@ -1,6 +1,6 @@
 import { Loader, Scene } from 'phaser';
 import { artCauses, artHealth, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
-import { bootLimitDue, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
+import { bootLimitDue, bootLimitReached, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
 import { needsPlacement, type SessionLearner } from '../core/placement';
@@ -133,7 +133,7 @@ export class BootScene extends Scene {
                 timers.delete(id);
                 try {
                     const wall = performance.now();
-                    if (wall - hiddenMsAt(this.hidden, wall) < at) {
+                    if (!bootLimitReached(at, wall, hiddenMsAt(this.hidden, wall))) {
                         arm(at, onDue);
                         return;
                     }
