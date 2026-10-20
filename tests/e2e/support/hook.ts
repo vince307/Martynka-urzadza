@@ -53,6 +53,7 @@ export interface Snapshot {
     /** The star balance of the registry (the one source; equals starsTotal). */
     stars: number;
     counterText: string;
+    settingsHint: boolean;
     screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
     /** The boot loading screen (BootScene still loading): its phase. */
     loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
@@ -117,6 +118,7 @@ export interface Targets {
     doneNext?: Point | null;
     doneRoom?: Point | null;
     unlockNext: Point | null;
+    ageBack?: Point | null;
     resume: Point | null;
     taskButton?: Point | null;
     thumbs?: Point[];

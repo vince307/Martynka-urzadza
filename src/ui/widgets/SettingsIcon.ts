@@ -8,10 +8,10 @@ export interface SettingsIconHandlers {
 }
 
 /**
- * The parent's gear in the HUD corner: muted, label-free, no feedback while pressed (the hold is meant
+ * The parent's gear in the HUD corner: full colour like the speaker button, label-free, no feedback while pressed (the hold is meant
  * for adults, a child should not be drawn to it). It only reports pointer events; the hold rule lives in
  * core/longPress and the UI scene drives it.
- * DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon and no hold feedback; the gear is ours.
+ * DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon and no hold feedback; the gear is ours.
  */
 export class SettingsIcon {
     private readonly zone: GameObjects.Zone;

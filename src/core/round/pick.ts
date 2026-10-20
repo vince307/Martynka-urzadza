@@ -1,4 +1,4 @@
-// Skill choice for the task scene (the warm-up draws uniformly, rounds by bucket weights). Only skills the scene
+// Skill choice for the task scene (bucket weights and the per-round variety rule live in variety.ts, the warm-up in warmup.ts). Only skills the scene
 // can answer ('tiles', 'keypad', 'select', 'drag' or 'digits') and that have a registered generator are played.
 // The e2e helpers (tests/e2e/support/hook.ts) must be able to answer a mode before it is listed here.
 // A caller may pass `blocked` (skills whose picture is missing, `artFilter.ts`); the skills list itself is never changed.

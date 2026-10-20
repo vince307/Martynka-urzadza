@@ -112,3 +112,35 @@ describe('longPress', () => {
         expect(r.state.kind).toBe('idle');
     });
 });
+
+describe('longPress tap outcome (F-02)', () => {
+    const step = (state: LongPressState, e: LongPressEvent) => longPress(state, e, rules);
+    const taps = (events: LongPressEvent[]) => {
+        let state: LongPressState = IDLE;
+        const out: { fire: boolean; tap: boolean }[] = [];
+        for (const e of events) {
+            const r = step(state, e);
+            state = r.state;
+            out.push({ fire: r.fire, tap: r.tap });
+        }
+        return out;
+    };
+    it('a short steady press reports a tap on up and never fires', () => {
+        const r = taps([down(), { type: 'up', id: 1 }]);
+        expect(r[1]).toEqual({ fire: false, tap: true });
+        expect(r.some((x) => x.fire)).toBe(false);
+    });
+    it('a press that drifted past the tolerance is not a tap', () => {
+        const r = taps([down(), { type: 'move', id: 1, x: 200, y: 100 }, { type: 'up', id: 1 }]);
+        expect(r.some((x) => x.tap)).toBe(false);
+    });
+    it('a full hold fires once and its release is not a tap', () => {
+        const r = taps([down(), tick(3100), { type: 'up', id: 1 }]);
+        expect(r.filter((x) => x.fire)).toHaveLength(1);
+        expect(r.some((x) => x.tap)).toBe(false);
+    });
+    it('a second finger or a cancel ends the gesture without a tap', () => {
+        expect(taps([down(), down(2), { type: 'up', id: 1 }]).some((x) => x.tap)).toBe(false);
+        expect(taps([down(), { type: 'cancel' }, { type: 'up', id: 1 }]).some((x) => x.tap)).toBe(false);
+    });
+});

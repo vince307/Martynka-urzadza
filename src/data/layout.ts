@@ -118,6 +118,7 @@ export const FONT_SIZES = {
     result: 80,             // kit .result (S-15 dice minigame)
     diceSign: 96,           // kit .dice-expression
     doneWord: 92,           // kit .success-card .final-word
+    settingsHint: 32,       // DESIGN-GAP row 151: the hint bubble next to the gear (visual gate F-02: 32 px fits the right margin in five short lines)
 } as const;
 
 /**
@@ -163,6 +164,7 @@ export const FONT_WEIGHTS = {
     result: 750,            // kit .result
     diceSign: 750,          // kit .dice-expression
     doneWord: 750,          // kit .final-word
+    settingsHint: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -214,6 +216,7 @@ export const REGISTRY_KEYS = {
     roomProblems: 'roomProblems',       // RoomProblem[] (core/rooms): where the saved rooms disagreed with the salon at load, set in main.ts; runtime only, not in SAVE_KEYS, nothing is repaired
     salonCarried: 'salonCarried',       // SalonCarried | null (core/save): this load moved the old salon to the new look, set in main.ts; runtime only, not in SAVE_KEYS
     swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS
+    settingsHintShown: 'settingsHintShown', // boolean: the hint after the first tap on the settings gear was shown in this page load; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -237,6 +240,8 @@ const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as cons
 
 export const TASK_LAYOUT = {
     notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
+    // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
+    ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
     prompt: { x: 960, y: 290, maxWidth: 1300 },
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
@@ -419,9 +424,15 @@ export const HUD_LAYOUT = {
     // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
     // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
     title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
-    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
-    // DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
-    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; full colour in the family of the
+    // speaker button (playtest F-02: a muted gear looked disabled), no feedback while held.
+    // DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 5, fill: 0xfffdf2, borderColor: 0xd3b77d, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    // Bubble with the hint after a short tap on the gear (F-02 a): above the gear, in the right margin and over the notebook's right border only
+    // (left edge 1700 = the right end of the widest bar, a tall drawing's; every answer tile, key, "Dalej", tray and room control ends left of it),
+    // five short lines at FONT_SIZES.settingsHint. Visual gate F-02: the first 380 px bubble covered "Dalej", a tile and "Wybieram".
+    // DESIGN-GAP (docs/design-gaps.md row 151): the kit has no hint for a tap on the settings icon.
+    settingsHint: { right: 1912, bottom: 936, width: 212, padding: 12, radius: 24, border: 4, fill: 0xfff0b9, borderColor: 0xd9bd73 },
 } as const;
 
 /**
@@ -566,6 +577,7 @@ export const TASK_TOUCH_TARGETS = {
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
     unlockNext: { width: UNLOCK_LAYOUT.button.width, height: UNLOCK_LAYOUT.button.height },
+    ageBack: { width: TASK_LAYOUT.ageBack.width, height: TASK_LAYOUT.ageBack.height },
 } as const;
 
 /** Interactive rectangles of the room scene, checked against MIN_TOUCH_TARGET. */

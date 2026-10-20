@@ -8,7 +8,8 @@ import { artBlocked, withoutArtBlocked } from './round/artFilter';
 import { withPictures } from './round/pictureFilter';
 import { balance } from '../data/balance';
 import { hasPicture } from '../data/pictureSkills';
-import { pickRoundSkills, playable, type SkillBuckets, type Weights } from './round/pick';
+import { playable, type SkillBuckets, type Weights } from './round/pick';
+import { variedRound } from './round/variety';
 import { recordRound, type MasteryRules, type SkillResult } from './mastery';
 import { distinctTasks } from './round/unique';
 import { generateTask } from './tasks/generateTask';
@@ -170,7 +171,7 @@ export const buildAdaptiveRound = (
     if (pools.current.length + pools.earlier.length + pools.previous.length === 0) {
         throw new RangeError(`No playable skills for stage ${stage.id} step ${currentStep(stage, unlocked)}`);
     }
-    const skills = pickRoundSkills(pools, pools.currentGroups ? reviewWeights(weights) : weights, rng, rules.length);
+    const skills = variedRound(pools, pools.currentGroups ? reviewWeights(weights) : weights, rng, rules.length, balance.round.variety);
     // Missing art: a task that draws a missing picture is redrawn (a few times); exhausted, the last one stays with its stand-in box.
     const generate = (skill: SkillDef): Task => {
         let task = generateTask(skill, rng, { tileCount });

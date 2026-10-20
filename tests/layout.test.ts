@@ -55,6 +55,34 @@ describe('task screen layout constants', () => {
         expect(settings.top).toBeGreaterThanOrEqual(roomSwitch.top + roomSwitch.height);
     });
 
+    it('keeps the gear hint bubble above the gear, inside the screen and right of every answer control and room control (visual gate F-02)', () => {
+        const { settingsHint, settings } = HUD_LAYOUT;
+        const left = settingsHint.right - settingsHint.width;
+        const { keypad, barSpan, picture, drag, coinDrag } = TASK_LAYOUT;
+        const rights = {
+            keypad: keypad.left + keypad.width,
+            barTiles: barSpan.tiles.x + barSpan.tiles.width,
+            barKeypad: barSpan.keypad.x + barSpan.keypad.width,
+            tallTilesBar: picture.tall.tiles.bar.x + picture.tall.tiles.bar.width,
+            tallTilesLines: picture.tall.tiles.lines.x + picture.tall.tiles.lines.width,
+            tallKeypadBar: picture.tall.keypad.bar.x + picture.tall.keypad.bar.width,
+            dragTray: drag.tray.x + drag.tray.width,
+            dragOk: drag.ok.x + drag.ok.width,
+            coinTray: coinDrag.tray.x + coinDrag.tray.width,
+            roomTask: ROOM_LAYOUT.taskButton.left + ROOM_LAYOUT.taskButton.width,
+            roomChoose: ROOM_LAYOUT.choose.left + ROOM_LAYOUT.choose.width,
+            roomClose: ROOM_LAYOUT.close.left + ROOM_LAYOUT.close.width,
+            roomMode: ROOM_LAYOUT.modeButton.left + ROOM_LAYOUT.modeButton.width,
+        };
+        for (const [name, right] of Object.entries(rights)) {
+            expect(left, `hint clear of ${name}`).toBeGreaterThanOrEqual(right);
+        }
+        expect(settingsHint.right).toBeLessThanOrEqual(GAME_WIDTH);
+        expect(settingsHint.bottom).toBeLessThanOrEqual(settings.top);
+        // The longest word ("Przytrzymaj," about 183 px at 32 px / 650) must fit the wrap width, or it would stick out of the bubble.
+        expect(settingsHint.width - 2 * settingsHint.padding).toBeGreaterThanOrEqual(FONT_SIZES.settingsHint * 5.8);
+    });
+
     it('keeps the summary page buttons touch targets, side by side without overlap, inside the notebook', () => {
         const { width, height, left, gap, top } = SUMMARY_LAYOUT.buttons;
         expect(TASK_TOUCH_TARGETS.pageButton).toEqual({ width, height });
@@ -316,5 +344,15 @@ describe('isExpression', () => {
         expect(isExpression('17 − 8 = □')).toBe(true);
         expect(isExpression('Ile jest filiżanek?')).toBe(false);
         expect(isExpression('Liczba 3 jest parzysta czy nieparzysta?')).toBe(false);
+    });
+});
+
+describe('"Wróć" to the age choice (F-02 b)', () => {
+    it('is a touch target inside the left margin, clear of the notebook, above the build id caption', () => {
+        const { ageBack, notebook } = TASK_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.ageBack).toEqual({ width: ageBack.width, height: ageBack.height });
+        expect(ageBack.left).toBeGreaterThanOrEqual(0);
+        expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
+        expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });

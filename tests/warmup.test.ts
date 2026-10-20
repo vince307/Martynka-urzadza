@@ -124,3 +124,71 @@ describe('buildWarmup prompt uniqueness (S-07 phase 3)', () => {
         }
     });
 });
+
+// Origin: playtest-fixes-f01-f03 phase 2 (F-03). The warm-up shares one cap over its 6 tasks and spreads the types
+// inside each half. Oracles restate the rule from the curriculum data (types per pool), not from the implementation.
+describe('buildWarmup variety (F-03)', () => {
+    const typeOfSkill = (id: StageId, skillId: string): string => {
+        const found = [stageOf(id), stageOf(previousStage(id) as StageId)].flatMap((s) => s.steps.flatMap((st) => st.skills)).find((s) => s.id === skillId);
+        return (found as SkillDef).type;
+    };
+    const typesOf = (skills: readonly SkillDef[]): Set<string> => new Set(skills.map((s) => s.type));
+    const typeNames = (id: StageId, ids: readonly string[]): string[] => ids.map((skillId) => typeOfSkill(id, skillId));
+
+    for (const id of IDS) {
+        it(`${id}: no type above 2 over the 6 tasks, no neighbours inside a half (200 seeds)`, () => {
+            const stage = stageOf(id);
+            const previous = stageOf(previousStage(id) as StageId);
+            const early = firstPlayableSteps(stage, rules.currentSteps);
+            const prevTypes = typesOf(playableSkills(previous.steps.flatMap((s) => s.skills)));
+            const earlyTypes = typesOf(playableSkills(early.flatMap((s) => s.skills)));
+            // With three types in each pool the cap can never run out of choices; fewer types may relax it.
+            const capGuaranteed = prevTypes.size >= 3 && earlyTypes.size >= 3;
+            for (let seed = 1; seed <= 200; seed += 1) {
+                const tasks = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries);
+                const types = typeNames(id, tasks.map((t) => t.skillId));
+                const where = `${id} seed=${seed} ${types.join(',')}`;
+                const tally = new Map<string, number>();
+                for (const t of types) tally.set(t, (tally.get(t) ?? 0) + 1);
+                if (capGuaranteed) expect(Math.max(...tally.values()), where).toBeLessThanOrEqual(2);
+                for (const half of [types.slice(0, rules.previousCount), types.slice(rules.previousCount)]) {
+                    const top = Math.max(...[...new Set(half)].map((t) => half.filter((x) => x === t).length));
+                    if (top <= 2) expect(half.filter((t, i) => i > 0 && half[i - 1] === t).length, where).toBe(0);
+                }
+            }
+        });
+    }
+
+    it('the cap is shared by the halves: a type both stages have appears at most twice over the 6', () => {
+        // E3 and E2 both have ADD_SUB; with one tally it can never take three places.
+        const stage = stageOf('E3');
+        const previous = stageOf('E2');
+        const both = [...typesOf(playableSkills(previous.steps.flatMap((s) => s.skills)))].filter((t) =>
+            typesOf(playableSkills(firstPlayableSteps(stage, rules.currentSteps).flatMap((s) => s.skills))).has(t),
+        );
+        expect(both.length).toBeGreaterThan(0);
+        let seen3 = 0;
+        for (let seed = 1; seed <= 400; seed += 1) {
+            const types = typeNames('E3', buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries).map((t) => t.skillId));
+            for (const t of both) {
+                const n = types.filter((x) => x === t).length;
+                expect(n, `seed=${seed} ${types.join(',')}`).toBeLessThanOrEqual(2);
+                if (n === 2) seen3 += 1;
+            }
+        }
+        expect(seen3, 'the shared type reaches the cap in some seeds, so the case can fail').toBeGreaterThan(0);
+    });
+
+    it('keeps the rng stream of the uncapped draw: same stage, a cap no type reaches gives the old lists', () => {
+        const stage = stageOf('E5');
+        const previous = stageOf('E4');
+        for (let seed = 1; seed <= 50; seed += 1) {
+            const loose = buildWarmup(stage, previous, createRng(seed), rules, balance.tiles.count, balance.round.uniqueRetries, undefined, { maxPerType: 99 });
+            const sorted = (list: readonly string[]) => [...list].sort();
+            const ids = loose.map((t) => t.skillId);
+            // 6 draws, so the same seed with the cap off draws the same multiset as the plain picker.
+            expect(ids, `seed=${seed}`).toHaveLength(rules.length);
+            expect(sorted(ids.slice(0, rules.previousCount)).every((id) => allSkillIds(previous).has(id)), `seed=${seed}`).toBe(true);
+        }
+    });
+});

@@ -31,6 +31,7 @@ export const pl = {
     },
     // DESIGN-GAP (docs/design-gaps.md rows 26-27): the kit has no settings view or progress preview; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
     settings: {
+        hint: 'Przytrzymaj, żeby otworzyć ustawienia rodzica',   // F-02 a: shown after a short tap on the gear (wording from the maintainer)
         title: 'Ustawienia rodzica',
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',
@@ -361,6 +362,7 @@ export const pl = {
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',
+        ageBack: 'Wróć',   // back to the age choice (warm-up and first round); not `resume` ("Wróć do notesu")
         tryAgain: 'Spróbuj jeszcze raz',
         nextStep: 'Następny krok',
         gotIt: 'Już wiem',
