@@ -745,9 +745,9 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [x] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N`
-- [x] 3.2 Deliberate break: `tap` true on every `up` → the drifted-press case red; `autoReadStages` back to `['E1','E2']` → the pin red; each restored; meta-check: the pin guards the data, the rule test guards `effectiveAutoRead` — both needed
-- [x] 3.3 `grep -rn "autoReadStages" src` lists only `balance.ts` and the three readers (`TaskScene`, `RoomScene`, `UIScene`)
+- [x] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N` — 9f0cb7c
+- [x] 3.2 Deliberate break: `tap` true on every `up` → the drifted-press case red; `autoReadStages` back to `['E1','E2']` → the pin red; each restored; meta-check: the pin guards the data, the rule test guards `effectiveAutoRead` — both needed — 9f0cb7c
+- [x] 3.3 `grep -rn "autoReadStages" src` lists only `balance.ts` and the three readers (`TaskScene`, `RoomScene`, `UIScene`) — 9f0cb7c
 - [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` runs on E3 and asserts silence)
 
 #### Manual
