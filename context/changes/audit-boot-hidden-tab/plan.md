@@ -710,7 +710,7 @@ None: save format v4 unchanged (table in Overview).
 
 - [x] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N`; existing `artHealthLines` cases unchanged — 9013f59
 - [x] 3.2 Deliberate break: ignore `background` in `artHealthLines` → the background case red; put "internet" in the new string → the text test red; each restored; meta-check: the view mapping has no unit test (L-8 deferred) — the [visual] row is its proof — 9013f59
-- [ ] 3.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` "a cut start says some pictures did not finish" still sees `artCut`: never hidden)
+- [x] 3.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` "a cut start says some pictures did not finish" still sees `artCut`: never hidden) — 9013f59 (e2e 141+0, orchestrator)
 
 #### Manual
 
@@ -725,7 +725,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 4.2 Seeds unchanged: `git diff main -- tests/generateTask.test.ts tests/contentInvariants.test.ts tests/solvableInMode.test.ts | grep '^-[^-]'` empty (only additions), and those suites are green; the rng-order oracle is the existing case "does not consume rng differently from the generator: the task text matches the bare generator" in `tests/generateTask.test.ts` — 511d4f1
 - [x] 4.3 Deliberate break: call `numberChoices` before the generator (rng order changed) → the "does not consume rng differently" case of `tests/generateTask.test.ts` red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored — 511d4f1
 - [x] 4.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content) — 511d4f1
-- [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — 511d4f1 (e2e 141+0, orchestrator)
 
 ### Phase 5: The "Ups!" card shows the code (I-1, C-1)
 
@@ -733,7 +733,7 @@ None: save format v4 unchanged (table in Overview).
 
 - [x] 5.1 `grep -n "mountErrorCard" src` shows the one caller passing `errorCode(error)`; `grep -n "pictureLayout(" src/scenes/TaskScene.ts` shows `task.skillId` in every call — 1482ff4
 - [x] 5.2 Deliberate break: no unit test renders the card (node environment); the proof is phase 9's tightened spec (break: pass `''` as code → red) plus the [visual] row — 1482ff4
-- [ ] 5.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`error-boundary.spec.ts` uses a substring match on `Wersja <id>`, which the new line still contains)
+- [x] 5.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`error-boundary.spec.ts` uses a substring match on `Wersja <id>`, which the new line still contains) — 1482ff4 (e2e 141+0, orchestrator)
 
 #### Manual
 
@@ -743,9 +743,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N`
-- [ ] 6.2 Deliberate break: keep `blockedBy ??= 'newer'` without `refuseWrites` → the `onBlocked` case red; remove the `NewerSave` branch in `failureText` → both text cases red; each restored; meta-check: the forced case must go red on today's code with `siteDataAdvice` (check the received value), proving the test sees the harmful text
-- [ ] 6.3 `git diff --stat main -- src/core/save.ts src/storage` shows no change to `writeVerdict`/`guardedPut`
+- [x] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N` — 814e37b
+- [x] 6.2 Deliberate break: keep `blockedBy ??= 'newer'` without `refuseWrites` → the `onBlocked` case red; remove the `NewerSave` branch in `failureText` → both text cases red; each restored; meta-check: the forced case must go red on today's code with `siteDataAdvice` (check the received value), proving the test sees the harmful text — 814e37b
+- [x] 6.3 `git diff --stat main -- src/core/save.ts src/storage` shows no change to `writeVerdict`/`guardedPut` — 814e37b
 - [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`save-transfer-blocked.spec.ts`, `stale-tab.spec.ts` green)
 
 #### Manual
