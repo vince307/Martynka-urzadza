@@ -43,7 +43,7 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Czego się spodziewaliśmy:** lektor czyta treść zadania dopiero po naciśnięciu głośnika.
 - **Jak bardzo przeszkadza:** denerwuje
 - **Uwagi techniczne:** to dzisiejsze zachowanie domyślne, nie błąd w kodzie: `balance.narrator.autoReadStages` = `['E1', 'E2']` (`src/data/balance.ts`), więc dla etapów E1–E2 (wiek 6–7 lat) automatyczne czytanie jest włączone, dopóki rodzic nie wyłączy go w ustawieniach (`Settings.autoRead`, `effectiveAutoRead` w `src/core/narration/voice.ts`). Poprawka to zmiana domyślnej wartości (np. pusta lista etapów) — decyzja projektowa sprzeczna z planem S-05 (auto-czytanie dla młodszych), do zapisania w slice'ie.
-- **Status:** nowe
+- **Status:** naprawione (#90)
 
 ### F-02 — W trakcie gry nie da się zmienić wieku ani poziomu; zębatka „wygląda na nieaktywną”
 
@@ -56,7 +56,7 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Czego się spodziewaliśmy:** da się zmienić wiek/poziom w trakcie gry; zębatka wygląda na klikalną.
 - **Jak bardzo przeszkadza:** blokuje (nie wiadomo, jak cofnąć zły wybór wieku)
 - **Uwagi techniczne:** zachowanie zgodne z obecnym projektem, nie błąd w kodzie: zębatka jest celowo wyciszona (S-08, `src/ui/widgets/SettingsIcon.ts`) i otwiera panel dopiero po przytrzymaniu 2 s (`balance.parentSettings.holdMs`) i rozwiązaniu bramki dla dorosłych (13–19 × 13–19, `src/core/parentGate.ts`); zmiana etapu jest w panelu rodzica (`changeStageByParent`). Wybór wieku jest tylko przy pierwszym uruchomieniu (`WelcomeScene`). Do decyzji w slice'ie: (a) podpowiedź, że zębatkę trzeba przytrzymać (wizualna lub tekstowa), (b) czy dziecko może samo poprawić wiek tuż po wyborze (np. „Wróć” na rozgrzewce), czy zmiana zostaje tylko dla dorosłego.
-- **Status:** nowe
+- **Status:** naprawione (#90)
 
 ### F-03 — Ten sam typ zadania 3–4 razy z rzędu w jednej rundzie
 
@@ -69,7 +69,7 @@ Statusy: `nowe` → `w slice <id>` → `naprawione (#PR)` albo `odrzucone (powó
 - **Czego się spodziewaliśmy:** w rundzie różne typy zadań, przemieszane.
 - **Jak bardzo przeszkadza:** denerwuje (nuży, wygląda jak powtórka)
 - **Uwagi techniczne:** dziś runda losuje umiejętności z wagami 60/30/10 (bieżący krok / wcześniejsze kroki / poprzedni etap, `balance.curriculum.weights`, `buildAdaptiveRound` i `skillBuckets` w `src/core/curriculum.ts`), a `distinctTasks` (`src/core/round/unique.ts`) pilnuje tylko, żeby nie powtórzyło się to samo polecenie — nie typ. Bieżący krok ma często jedną–dwie umiejętności jednego typu, więc 60 % rundy to ten sam typ. Do decyzji w slice'ie: reguła różnorodności (np. najwyżej 2 zadania tego samego typu w rundzie, nie dwa takie same typy pod rząd), z zachowaniem udziałów z `docs/ZADANIA.md` i progu odblokowania kroku.
-- **Status:** nowe
+- **Status:** naprawione (#90)
 
 ### F-04 — Kilka dzieci na jednym tablecie (osobne profile)
 
