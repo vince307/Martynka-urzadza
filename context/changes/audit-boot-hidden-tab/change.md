@@ -1,7 +1,7 @@
 ---
 change_id: audit-boot-hidden-tab
 title: Boot limit pauses while the tab is hidden, error card code, no site-data advice after NewerSave
-status: new
+status: preparing
 created: 2026-10-20
 updated: 2026-10-20
 archived_at: null

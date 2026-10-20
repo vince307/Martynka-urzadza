@@ -1,15 +1,15 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-The `/10x-new` step of run 2026-10-20-playtest-boot wrote this handoff: the change folder exists with `change.md` (identity, audit claims re-verified against the repo now, bound copy and panel sections, triggered follow-ups, pre-agreed and agent decisions). No code was touched. The next agent must not widen the scope past H-1, I-1 (with the cheap skill-id part: C-3, I-3, C-2, C-1) and Z-8: every other finding of the audit stays a follow-up (scope.md § 2), and the save format stays v4.
+The `/10x-research` step of run 2026-10-20-playtest-boot wrote `research.md`. All of change.md's unknowns are resolved from the Phaser 4.2.1 source and the repo, and no product code was touched. The next agent must not plan Z-8 around `OtherWriterSave`/`PreviousPageSave` in `replace`: only `NewerSave` can reach that catch (`writeVerdict` is `mode === 'normal'` only), so D-5 narrows to that one refusal. The scope stays H-1, I-1 (with C-1, C-2, C-3, I-3) and Z-8, and the save format stays v4.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | 1 (this step: `docs(audit-boot-hidden-tab): change identity (autonomous run)`) |
+| Commits | 2 (`docs(audit-boot-hidden-tab): change identity (autonomous run)`, `docs(audit-boot-hidden-tab): research`) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
 | Working tree | clean after the commit |
 
@@ -17,7 +17,8 @@ The `/10x-new` step of run 2026-10-20-playtest-boot wrote this handoff: the chan
 
 | path | what it is |
 |---|---|
-| `context/changes/audit-boot-hidden-tab/change.md` | change identity: Notes (source, save format v4 expected unchanged, lessons file absent, content rule), "audit claim / repo now / correction" table, design kit + copy keys + parent-panel sections bound, triggered follow-ups with scope take, Autonomous decisions PA-1..PA-5 (maintainer, pre-agreed 2026-10-20) and D-1..D-6 |
+| `context/changes/audit-boot-hidden-tab/research.md` | Research covering the Phaser loader and a hidden tab, how `BootScene` arms its limits, the hidden-time rule in `src/core/bootLimits.ts`, the panel lines, the e2e approach, the boundary to error card path and the skill id, the `replace` branches and `failureText`, plus the follow-up status table |
+| `context/changes/audit-boot-hidden-tab/change.md` | status `new` changed to `preparing` (only the metadata guard touched it) |
 | `context/changes/audit-boot-hidden-tab/handoff.md` | this file |
 
 ## 3. Verification
@@ -25,24 +26,37 @@ The `/10x-new` step of run 2026-10-20-playtest-boot wrote this handoff: the chan
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/audit-boot-hidden-tab` |
-| symbol checks (grep/read) | `BootScene.preload` `arm`/`bootLimitSchedule`/`performance.now`; `src/core/bootLimits.ts`; `REGISTRY_KEYS.bootLoad` shape in `BootScene.create`; `pl.settings.artCut`/`artCause.cut`/`artRestart`; `mountErrorCard` and the `installErrorBoundary` callback in `src/main.ts`; `generateTask` (`numberChoices` outside `try`, `new Error` drops the name); `assertPool`/`lineTicks` in 5 widgets; `drawPrompt` `pictureLayout` without `skillId`; `failureText`; `Autosaver.replace` catch (`NEWER_SAVE` only); `refuseWrites` → `onBlocked` → `mountSaveRefusedCard` with `pl.saveFailed.detail` |
-| lint, typecheck, tests, build, e2e | not run: docs-only step (step prompt: no builds, e2e or servers); nothing in `src/` changed |
+| source reads (`node_modules/phaser` 4.2.1) | `LoaderPlugin.start`/`update` are the only callers of `checkLoadQueue`; `nextFile`/`fileProcessComplete` start no file; `VisibilityHandler` reads `document.hidden`; `Game.onHidden` → `loop.pause()` (does not stop rAF); `loaderMaxParallelDownloads` 32 / Android 6; `Config` has no `disableVisibilityChange` |
+| repo greps | `writeVerdict` other-writer refusal only for `mode === 'normal'`; z-index `.overlay-save-refused` 10 < `.overlay-parent` 15; `tests/bootLimits.test.ts` pins "a tab hidden for a minute is past the cut at once"; `docs/design-gaps.md` ends at row 152 |
+| lint, typecheck, tests, build, e2e | not run: research step, no product code changed (the step prompt bans builds, e2e and servers) |
 
 ## 4. Next command
 
-`/10x-research audit-boot-hidden-tab`
+`/10x-plan audit-boot-hidden-tab`
 
 ## 5. Open
 
-- Research must confirm in `node_modules/phaser` (4.2.1) that `LoaderPlugin` advances its queue only on the scene UPDATE and whether in-flight XHRs (per-file `balance.loader.timeoutMs`) time out while hidden (D-1's reversal condition).
-- Research must check whether a generation-time pool/tick check consumes rng or changes seeded draws (D-4's reversal condition), and whether `onBlocked` from inside an open import/reset dialog collides with its input session (D-5).
-- DESIGN-GAP expected: row 153 in `docs/design-gaps.md` for the "Obrazki" line about pictures cut while the game was in the background (no copy in the kit or `src/data/pl.ts`); row 154 only if no existing refusal text fits the import/reset dialogs.
-- Follow-ups whose trigger fires (listed in `change.md` with takes): TXT-06 (in scope, closes with I-1); load-and-tab-guard A-3..A-11 and F3, stale-tab-and-health G-2/G-3/B-4/B-5/P-2..P-6, final-art-salon F3/F4, salon-load-health L-6/L-8, `FontFace` limit, ASL-02..09, S12-* replace items, save-truth § 24/§ 26 — deferred unless they are part of H-1/I-1/Z-8; research records which are already closed in code, and the plan restates the rest in this change's `follow-ups/review-fixes.md`.
-- No `[human]` rows yet.
+- **H-1 plan inputs:** add a pure hidden-time accumulator in `src/core/bootLimits.ts`, and have `bootLimitDue`/`bootLimitWait` take the hidden total. `BootScene.preload` owns a `visibilitychange` listener (or `game.events` `HIDDEN`/`VISIBLE`), removed on `COMPLETE`/`shutdown`, and both timers re-arm on show. Add `hiddenMs` to `BootScene.publish`, `bootLoadSnapshot` (`src/testing/e2eHook.ts`) and the `REGISTRY_KEYS.bootLoad` comment in `src/data/layout.ts`. Rewrite the wall-clock case in `tests/bootLimits.test.ts` on purpose. The per-file XHR limit needs no change.
+- **H-1 e2e:** use `?e2eArt=stallall` with hanging routes, plus a fake `document.hidden`/`visibilityState` and a dispatched `visibilitychange`. It proves the rule but not the real Phaser stall, because headless Chromium keeps rAF running. Real-device behaviour is inferred, not measured.
+- **DESIGN-GAP 153** (a new row in `docs/design-gaps.md`): the "Obrazki" cut line for a load that spent time hidden. This needs a flag in `ArtHealthLinesInput` (`src/core/artHealth.ts`), a variant of the `cut` line, a key in `src/data/pl.ts` and a teacher read. Row 154 is **not** needed, because `pl.saveTransfer.deviceNewer` fits Z-8.
+- **I-1 plan inputs:**
+  - a pure `errorCode` helper beside `errorName` in `src/core/save.ts` (name or `name/skillId`);
+  - `mountErrorCard` takes a reason and draws `pl.saveFailed.detail` in place of `pl.errorCard.build`;
+  - `generateTask` keeps `cause.name`, sets `skillId`, and moves the tile step and a visual pool/tick check (`assertPool`/`lineTicks`, no rng) inside the `try`;
+  - `TaskScene.drawPrompt` passes `task.skillId`;
+  - tighten `tests/e2e/error-boundary.spec.ts` to the `Kod:` line.
+- **Z-8 plan inputs:**
+  - `failureText` maps `NewerSave` to `pl.saveTransfer.deviceNewer`;
+  - `replace` calls `refuseWrites('newer', NEWER_SAVE)`;
+  - the refused card mounts under the dialog (z-index) and shows after the dialog closes, which is D-5's own fallback. Re-focusing its button after the close is a plan detail.
+- **Follow-ups** (status table in `research.md` § Historical Context): TXT-06 is in scope. A-6, A-10, G-3, L-8, ASL-05, ASL-08, ASL-09, S12-03, S12-11, S12-13, the FontFace limit and B-6 are still open or partial and deferred. The plan restates them in `follow-ups/review-fixes.md`.
+- No `[human]` rows.
 
 ## 6. Autonomous decisions
 
-- N-1 `/10x-new` "STOP and wait" / next-step choice: chosen `/10x-research` (fixed by the step prompt) over the skill's default `/10x-plan`. Why: the Phaser loader behaviour while hidden and the error path for the skill id need source-backed answers. Would change: nothing in this run (the prompt fixes it).
-- N-2 Title written from the scope, not the bare id (the skill derives it from intent). Would change: the maintainer renaming the change.
-- N-3 Clipboard copy of the next command skipped (unattended run). Would change: an interactive session.
-- The product decisions are in `change.md` § Autonomous decisions: PA-1..PA-5 pre-agreed by the maintainer 2026-10-20; agent decisions D-1 (both limits count visible time only, `hiddenMs` in `bootLoad`, background-specific "Obrazki" line; rejected `disableVisibilityChange` and record-only), D-2 (no cap on hidden time), D-3 (card build line becomes `pl.saveFailed.detail`, reason `name` or `name/skillId`, no new copy), D-4 (cheap skill-id set: I-3 keep name + `skillId` property, C-3 tiles inside `try`, C-2 checks at generation without rng, C-1 one argument), D-5 (all three named refusals `NewerSave`/`OtherWriterSave`/`PreviousPageSave` get no site-data advice and go through `refuseWrites`/`onBlocked`), D-6 (next step) — each with its reversal condition there.
+- R-1 **Question scope derived from `change.md`** (unknowns, D-1..D-5 reversal conditions, follow-ups), not asked. Would change: a maintainer question that widens scope.
+- R-2 **D-1 kept.** In-flight XHRs do keep their native timeout while hidden, but they also keep downloading, so no hidden term is added to the per-file limit. Rejected: extending the hidden term to `balance.loader.timeoutMs`. Would change: a device measurement showing hidden-tab downloads stall while their XHR timer runs.
+- R-3 **D-4 kept (cheap set).** `assertPool`/`lineTicks` are pure, use no rng and need only `Task.visual` data, and moving `numberChoices` into the `try` keeps the rng order. Would change: the plan finding a seeded-draw diff in `tests/contentInvariants.test.ts` or the generator tests.
+- R-4 **D-5 narrowed.** Only `NewerSave` reaches `replace`, so the other two refusals need no change. The card-under-dialog result is accepted as D-5's fallback, and the dialog shows `deviceNewer` inline. Rejected: raising the card's z-index above the dialog, which would cover a dialog that still holds focus. Would change: a visual gate showing the card never appears after the dialog closes.
+- R-5 **E2E via a fake visibility state** rather than a real hidden page. Headless Chromium cannot hide a page, and CDP freezing stops all JS. Would change: a Playwright API for page visibility.
+- R-6 **Workers:** 3 read-only agents (Phaser source, Z-8/I-1 paths, follow-up status). Their claims were spot-checked in source: `checkLoadQueue` callers, `writeVerdict`, z-indexes, `generateTask`.
