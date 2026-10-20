@@ -362,6 +362,7 @@ export const pl = {
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',
+        ageBack: 'Wróć',   // back to the age choice (warm-up and first round); not `resume` ("Wróć do notesu")
         tryAgain: 'Spróbuj jeszcze raz',
         nextStep: 'Następny krok',
         gotIt: 'Już wiem',

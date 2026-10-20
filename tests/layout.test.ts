@@ -318,3 +318,13 @@ describe('isExpression', () => {
         expect(isExpression('Liczba 3 jest parzysta czy nieparzysta?')).toBe(false);
     });
 });
+
+describe('"Wróć" to the age choice (F-02 b)', () => {
+    it('is a touch target inside the left margin, clear of the notebook, above the build id caption', () => {
+        const { ageBack, notebook } = TASK_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.ageBack).toEqual({ width: ageBack.width, height: ageBack.height });
+        expect(ageBack.left).toBeGreaterThanOrEqual(0);
+        expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
+        expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+    });
+});

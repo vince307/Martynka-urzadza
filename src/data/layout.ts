@@ -238,6 +238,8 @@ const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as cons
 
 export const TASK_LAYOUT = {
     notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
+    // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
+    ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
     prompt: { x: 960, y: 290, maxWidth: 1300 },
     promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
@@ -571,6 +573,7 @@ export const TASK_TOUCH_TARGETS = {
     barButton: { width: TASK_LAYOUT.bar.minWidth, height: TASK_LAYOUT.bar.height },
     pageButton: { width: SUMMARY_LAYOUT.buttons.width, height: SUMMARY_LAYOUT.buttons.height },
     unlockNext: { width: UNLOCK_LAYOUT.button.width, height: UNLOCK_LAYOUT.button.height },
+    ageBack: { width: TASK_LAYOUT.ageBack.width, height: TASK_LAYOUT.ageBack.height },
 } as const;
 
 /** Interactive rectangles of the room scene, checked against MIN_TOUCH_TARGET. */

@@ -318,6 +318,7 @@ export const installE2EHook = (game: Game): void => {
                     nextRound: inRoom() ? null : round.nextRound,
                     toRoom: inRoom() ? null : round.toRoom,
                     unlockNext: inRoom() ? null : round.unlockNext,
+                    ageBack: inRoom() ? null : round.ageBack,
                     resume: inRoom() ? room().resumeTarget() : null,
                     taskButton: inRoom() ? room().taskButtonTarget() : null,
                     thumbs: inRoom() ? room().thumbTargets() : [],
