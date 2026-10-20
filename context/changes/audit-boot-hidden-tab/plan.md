@@ -701,7 +701,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Reading `BootScene.preload` against the lifecycle: seed from `document.hidden`; hide clears both timers; show re-arms only by phase; no arm after `COMPLETE`/`shutdown`; the cut guard asks the hidden-aware rule
+- [x] 2.5 [reviewer] Reading `BootScene.preload` against the lifecycle: seed from `document.hidden`; hide clears both timers; show re-arms only by phase; no arm after `COMPLETE`/`shutdown`; the cut guard asks the hidden-aware rule — impl-review 5295e8a (lifecycle read: seed, hide clears, show re-arms by phase, listener dropped on COMPLETE/shutdown, hidden-aware guards)
 - [ ] 2.6 [human] On a real tablet (iPad Safari or Android Chrome, production build): start the game on a slow link, switch to another app for over a minute during the loading screen, come back: loading continues, no stand-in pictures; settings "Obrazki" shows no cut line
 
 ### Phase 3: "Obrazki" names the background, not the internet (H-1 panel)
@@ -714,7 +714,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 3.4 [reviewer] Teacher read of `settings.artCutBackground` (spelling, comma before "bo", calm, no blame on the internet)
+- [x] 3.4 [reviewer] Teacher read of `settings.artCutBackground` (spelling, comma before "bo", calm, no blame on the internet) — impl-review 5295e8a (teacher read OK)
 - [ ] 3.5 [visual] Settings "Obrazki" at 1440 and 1024 wide, states: cut without a hidden span (today's `artCut`), cut after a hidden span (`artCutBackground`) — reached in the hook build with `?e2eArt=stallall` and the visibility fake of phase 8
 
 ### Phase 4: An error code with the skill id (I-1 core, C-2, C-3, I-3)
@@ -763,7 +763,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 7.5 [reviewer] The CLAUDE.md sentences match the code (symbols exist: `grep` each one); save format v4 stated
+- [x] 7.5 [reviewer] The CLAUDE.md sentences match the code (symbols exist: `grep` each one); save format v4 stated — impl-review 5295e8a (symbols grepped, v4 stated)
 
 ### Phase 8: A hidden tab does not cut the boot load — e2e (#15)
 
@@ -778,14 +778,14 @@ None: save format v4 unchanged (table in Overview).
 #### Automated
 
 - [x] 9.1 Deliberate break: pass `errorName` of a fixed `'X'` or `''` as the code in `main.ts` → the tightened assertion red; restored — 48b2689
-- [ ] 9.2 `npx playwright test tests/e2e/error-boundary.spec.ts` green; full e2e (orchestrator) `<branch e2e baseline> + 0` over phase 8 (assertions tightened, no new test)
-- [ ] 9.3 Full local gate green
+- [x] 9.2 `npx playwright test tests/e2e/error-boundary.spec.ts` green; full e2e (orchestrator) `<branch e2e baseline> + 0` over phase 8 (assertions tightened, no new test) — 46bbd42 (orchestrator full e2e 143 = 141+2; impl-review: 3 changed specs 18 passed)
+- [x] 9.3 Full local gate green — 46bbd42 (orchestrator gate; impl-review re-ran: unit 3707 = 3683+24, build OK)
 
 ### Phase 10: A refused replace shows "deviceNewer" and the refusal card — e2e (#2)
 
 #### Automated
 
 - [x] 10.1 Spec red before (deliberate break: remove the `NewerSave` branch of `failureText` → the dialog text assertion red; keep the bare `blockedBy ??=` in `replace` → the card assertion red), green after; restored — c5b4db4
-- [ ] 10.2 `npx playwright test tests/e2e/save-transfer-blocked.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 9
+- [x] 10.2 `npx playwright test tests/e2e/save-transfer-blocked.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 9 — 46bbd42 (orchestrator full e2e 143 = 141+2; spec green in impl-review)
 - [x] 10.3 `npm run build` prints `e2e hook: absent (` (no seam leaked) — c5b4db4
 - [x] 10.4 Full local gate green — c5b4db4

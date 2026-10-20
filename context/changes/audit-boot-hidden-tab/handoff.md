@@ -1,59 +1,61 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-Phase 10 (`/10x-e2e`, last phase) is committed as c5b4db4: `#2 Z-8` in `tests/e2e/save-transfer-blocked.spec.ts`. All phases are implemented; `change.md` is `implemented`. Rows 9.2, 10.2 (full e2e) and 9.3 are the orchestrator's.
+Written by the impl-review step: the full plan (phases 1–10) is reviewed, APPROVED, `MERGE: CLEAR`; two cheap warnings were fixed in 5295e8a (tests + docs only, no product code). Next is the visual gate; the only open Progress rows are [visual] 3.5, 5.4, 6.5 and [human] 2.6.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | phases 1-10 (p10 c5b4db4), plus docs commits |
+| Commits | phases 1–10 (p1 e6a0b43 … p10 c5b4db4), review fix 5295e8a, plus docs commits (this one: `docs(audit-boot-hidden-tab): impl review`) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | 9.2, 9.3, 10.2 (orchestrator full suite/gate), [visual] 6.5/3.5/5.4, [reviewer] 3.4/2.5/7.5, [human] 2.6 |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 4: [visual] 3.5, 5.4, 6.5; [human] 2.6 |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/save-transfer-blocked.spec.ts` | new test `#2 Z-8 a reset refused as a newer save says so, blocks writes and shows the refusal card, never the site-data advice` (uses `?e2eSave=newer`) |
-| `context/changes/audit-boot-hidden-tab/plan.md` | rows 10.1, 10.3, 10.4 ticked |
-| `context/changes/audit-boot-hidden-tab/change.md` | status `implemented` |
+| `context/changes/audit-boot-hidden-tab/reviews/impl-review.md` | review report, ends with `MERGE: CLEAR — …` |
+| `tests/bootLimits.test.ts` | +3 cases `bootLimitReached` (agreement with `bootLimitDue`/`bootLimitWait`, NaN) — 5295e8a |
+| `docs/design-gaps.md` | row 153 cell split fixed — 5295e8a |
+| `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` | refusal-card focus entry corrected (F3); new entries F1 (`bootLimitReached` fold), F5 (CLAUDE.md path at archive); 15 `Trigger:` lines |
+| `context/changes/audit-boot-hidden-tab/plan.md` | rows 2.5, 3.4, 7.5 ([reviewer]) and 9.2, 9.3, 10.2 (gate) ticked |
+| `context/changes/audit-boot-hidden-tab/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npx playwright test --config=<abs> tests/e2e/save-transfer-blocked.spec.ts` | 8 passed (baseline 7, +1) |
-| break 1: `failureText` without the `NEWER_SAVE` branch | RED: `deviceNewer` line not visible; restored. Meta-check: the branch alone decides that line |
-| break 2: `replace` catch without `refuseWrites('newer', ...)` | RED: `blockedBy` expected `newer`, got null; restored. Meta-check: proves the replace path itself blocks writes and raises the card |
-| eslint on the spec, `npm run typecheck`, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| unit tests, full e2e | not run by me (orchestrator) |
+| `npm run lint`, `npm run typecheck` | OK / OK |
+| unit gate on 46bbd42 (`npm test` + deploy scripts + `sample` E1–E6) + `npm run build` | 3707 passed (baseline 3683, +24); all OK; `e2e hook: absent (2 chunks checked)` |
+| `npm test` after 5295e8a | 3710 passed (baseline 3683, +27) |
+| e2e `load-and-tab-guard`, `error-boundary`, `save-transfer-blocked` (abs config, sandbox off, 4 workers) | 18 passed (main 16 in these files, +2) |
+| full e2e | orchestrator on 46bbd42: 143 passed (baseline 141, +2); not re-run here (no product code changed) |
+| break: `BootScene` passes hiddenMs `0` to the three rule calls | `#15 H-1` RED (`elapsedMs` ≥ 6610 expected, 3956 received); restored. Meta: breaks the rule's subtraction, not the fake |
+| break: `skillFailure` without `name` | 3 red in `tests/generateTaskFailure.test.ts`; restored |
+| break: `bootLimitReached` ignores hiddenMs | 2 red in the new cases; restored |
+| `npm run sample -- E1..E6 --count 6`, branch vs main `generateTask.ts`/`visual.ts` | byte-identical; teacher read of `artCutBackground` OK |
+| save format | `SAVE_VERSION` 4; migrations, fixtures, storage untouched; `save.ts` gained only `errorCode` |
 
 ## 4. Next command
 
-`/10x-impl-review audit-boot-hidden-tab`
+`visual gate` (UI: "Obrazki" background line, "Ups!" card Kod line, import/reset dialog + refusal card after NewerSave)
 
 ## 5. Open
 
-- 9.2, 9.3, 10.2: orchestrator full e2e `+1` over phase 9 and the full gate.
-- [visual], [reviewer], [human] rows are not mine.
+- [visual] 3.5: settings "Obrazki" at 1440/1024 — `artCut` (no hidden span) and `artCutBackground` (after a hidden span; hook build `?e2eArt=stallall` + the visibility fake of `#15 H-1` in `tests/e2e/load-and-tab-guard.spec.ts`).
+- [visual] 5.4: "Ups!" card (`src/ui/dom/errorCard.ts` `mountErrorCard`) at 1440/1024 with `?e2eFail=step` and `?e2eFail=boot`: muted `Kod: Error · Wersja <id>`, one line at 1024, button focused.
+- [visual] 6.5: reset/import dialog after `?e2eSave=newer` shows `deviceNewer`, no site-data advice; after "Zamknij" the refusal card (`mountSaveRefusedCard`) with `Kod: NewerSave` is tappable; check focus (follow-up F3).
+- [human] 2.6: real tablet, hidden tab during loading for over a minute.
+- Follow-ups with triggers: `follow-ups/review-fixes.md` (F1 `bootLimitReached` fold, F3 focus, F5 CLAUDE.md path to rewrite at `/10x-archive`).
 
 ## 6. Autonomous decisions
 
-
-
-- D-1 **`assertDrawable` scope**: only checks the widgets already assert (icons, row, jugs, money items, number line); scale weights and coin tray left out, since widgets do not throw there and the plan (F5) forbids new round-build throws. Would change: the maintainer wanting every `ART_LIMITS` pool checked.
-- D-2 **Test seam**: `vi.mock` of the registry's `getGenerator` for a `FAKE` type (generators are a frozen const table). Rejected: adding a registration API to production code.
-- D-3 **Plan Driver** stays `tdd`; implementation did not exist at phase start.
-- D-4 **Commit message / next-phase / manual-gate prompts** decided in place: planned set only, stop after phase 4.
-- D-5 **Phase 5 decisions**: no options-object, a positional `code` parameter (one caller); `pl.errorCard.build` kept for now. Commit message and next-phase prompts decided in place, stop after phase 5.
-
-- D-6 **Phase 6 decisions**: Driver stays `tdd` (no `refuseWrites` in the replace catch at start). Commit message, manual-gate, dirty-paths and next-phase prompts decided in place: planned set only, stop after phase 6. The pre-existing test pinning a silent listener on a refused replace was changed to expect `newer` (plan review F4 reverses it). Would change: the maintainer wanting replace refusals kept silent for the listener.
-
-- D-7 **Phase 7 decisions**: Driver stays `impl`. Commit message, dirty-paths, next-phase prompts decided in place. AGENTS.md left alone (no stale sentence). Gap 153 already existed, so only rows 29, 51, 71 changed. Kept `pl.errorCard.build` for the e2e spec.
-
-- D-8 **Phase 8 decisions**: the parent path to the settings panel is typed out in the spec (passWelcome navigates itself, which would lose the hidden span). The plan's "still loading while hidden" assertion is kept but the break-1 red comes from the elapsed-time assertion (see §3). Commit message and next-phase prompts decided in place. Would change: a seam that arms the cut while hidden.
-- D-9 **Phase 9 decisions**: the boot test also asserts the exact line (build read from `#game-container`). `pl.errorCard.build` kept (grep: used by the spec). Commit message and next-phase prompts decided in place.
-- D-10 **Phase 10 decisions**: existing `?e2eSave=newer` seam sufficed (no new seam, no hook/guard change). Commit message and next-phase prompts decided in place. Last phase: epilogue done.
+- D-11 **Reviewed in one session, no subagents**: the code diff is ~480 lines in 29 files and fits one read. Would change: a larger diff.
+- D-12 **F1 fixed with tests, not a refactor**: pinned `bootLimitReached` against `bootLimitDue`/`bootLimitWait` instead of removing the export (a product-code change would need the full e2e again). Would change: the next edit of `bootLimits.ts`.
+- D-13 **F3 accepted as follow-up**: focus moving to the card behind the dialog is a keyboard/screen-reader issue on a touch-only tablet; visual row 6.5 checks it. Would change: the visual gate showing focus lost or on a hidden button.
+- D-14 **Full e2e not re-run**: review changed only tests and docs; the three changed specs were re-run (18/18) and the orchestrator's full run on 46bbd42 (143) stands. Would change: any product-code fix.
+- D-15 **Triage prompts decided in place**: "how to proceed" = done after report; warnings fixed when cheap.
+- Earlier steps: D-1..D-10 (phases 1–10) are in the git history of this file (46bbd42).

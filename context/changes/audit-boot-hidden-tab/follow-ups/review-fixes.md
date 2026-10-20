@@ -54,7 +54,7 @@ Trigger: none (closed).
 No longer used in `src`; still used by `tests/e2e/error-boundary.spec.ts` (phase 9 may drop it with the tightened assertion).
 Trigger: phase 9 of this change, or the next change to `error-boundary.spec.ts`.
 
-## `bootLimitReached` beside `bootLimitDue` / `bootLimitWait` (impl-review F2)
+## `bootLimitReached` beside `bootLimitDue` / `bootLimitWait` (impl-review F1)
 Three exports in `src/core/bootLimits.ts` compute the same `wall - hiddenMs` comparison; the review added a unit test that pins their agreement. Folding the early-fire re-check into `bootLimitDue`/`bootLimitWait` would remove one export.
 Trigger: next change to `src/core/bootLimits.ts` or to the timer `arm` in `BootScene.preload`.
 
