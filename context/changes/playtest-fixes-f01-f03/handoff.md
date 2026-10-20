@@ -1,27 +1,27 @@
 # Handoff — `playtest-fixes-f01-f03` (slice fix:playtest-fixes-f01-f03)
 
-Written by the `/10x-research` step of run `2026-10-20-playtest-boot`: `research.md` answers every research question
-of the previous handoff, `change.md` is `preparing`. The next agent must not get wrong: the warm-up ALSO writes
-`history` (`endRound(…, 'warmup')` records before its early return), so "first ordinary round finished" is derived
-from `variants` (`roundsSince` etc., research § F-02 b), not from `history` alone; save format stays v4.
+Written by the `/10x-plan` step of run 2026-10-20-playtest-boot. The plan (9 phases: 1–3, 5 `tdd`, 4, 6, 7 `impl`,
+8–9 `e2e`) is written and committed; no product code yet. The next agent must not let the variety picker consume a
+different number of rng calls than `pickRoundSkills` — the "shares unchanged" proof rests on that alignment.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/playtest-fixes-f01-f03`, cut from `main` at `64fd3ea` |
-| Commits | 2 on the branch (`fea1184` change identity; this step: `docs(playtest-fixes-f01-f03): research`) |
+| Commits | 3 on the branch: `fea1184` (change identity), `8a884c1` (research), this step's `docs(playtest-fixes-f01-f03): plan` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below were written) |
+| `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 45 (`grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the commit (only the four files below written) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/playtest-fixes-f01-f03/research.md` | source-backed research: F-01 readers and tests, F-02 (a) gear tokens + `longPress` tap path, F-02 (b) save/scene/round-lifecycle for "Wróć" with the v4 predicate, F-03 type definition, per-step type counts, draw/rng flow, tests at risk, recommended variety design; open product questions for the plan |
-| `context/changes/playtest-fixes-f01-f03/change.md` | frontmatter only: `status: new → preparing`, `updated` (via the skill's metadata guard) |
+| `context/changes/playtest-fixes-f01-f03/plan.md` | the plan: save-format table (v4 kept per piece), Critical Implementation Details (variety contract, warm-up halves, "Wróć" exit order), 9 phases with `Driver`/`Driver why`, `## Autonomous decisions` A-1..A-9, `## Progress` |
+| `context/changes/playtest-fixes-f01-f03/plan-brief.md` | two-page brief with the decision table |
+| `context/changes/playtest-fixes-f01-f03/change.md` | frontmatter `status: preparing → planned` only |
 | `context/changes/playtest-fixes-f01-f03/handoff.md` | this file |
 
 ## 3. Verification
@@ -29,47 +29,44 @@ from `variants` (`roundsSince` etc., research § F-02 b), not from `history` alo
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/playtest-fixes-f01-f03` |
-| greps of `autoReadStages|effectiveAutoRead` (src, tests), `autoRead|spoken|narrat` (tests/e2e), `HUD_LAYOUT.settings`, `longPress` callers, `docs/design-gaps.md` last row (150) | findings in research.md § F-01, § F-02 (a) |
-| sub-agent reads (two read-only agents) of `curriculum.ts`, `round/pick.ts`, `round/warmup.ts`, `round/unique.ts`, `artFilter.ts`, `mastery.ts`, `variants.ts`, `save.ts`, `TaskScene`, `WelcomeScene`, `BootScene`, fixtures; spot-checked by me: `endRound` warm-up early return after `recordRound`, `afterRound` `roundsSince + 1`, `roundView` `switchVisible` | consistent with research.md |
-| one-off `node --import tsx` scripts in `$TMPDIR/vr/` (count types per playable step; simulate 2000 seeds/step of today's draw) — not committed | 15 one-type / 17 two-type / 30 ≥3-type steps; 41.9 % rounds with > 2 of a type, 59.7 % with a same-type neighbour |
-| lint / typecheck / tests / build / e2e | not run: docs-only step; the orchestrator may run `baseline.sh` on this checkout |
+| awk over plan.md: Success Criteria bullets vs Progress rows per phase | 1:6/6, 2:3/3, 3:5/5, 4:7/7, 5:4/4, 6:5/5, 7:5/5, 8:3/3, 9:3/3 (one-to-one) |
+| `grep -c '^Driver: ' plan.md` / `'^Driver why: '` | 9 / 9 |
+| `metadata-guard.mjs inspect` then `mark-planned` | `changed: true`; roadmap has no `playtest-fixes-f01-f03` item (untouched) |
+| code reads (this step) | `src/core/round/pick.ts`, `warmup.ts`, `unique.ts`, `src/core/longPress.ts`, `src/core/rng.ts` `pick` (one `int` per call), `buildAdaptiveRound`, `TaskScene.create`/`applyParentStage`, `HUD_LAYOUT.settings`, `REGISTRY_KEYS`/`SAVE_KEYS`, `PageButton` — consistent with research |
+| lint / typecheck / tests / build / e2e | not run: docs-only step; the orchestrator may be running `baseline.sh` on this checkout |
 
 ## 4. Next command
 
-`/10x-plan playtest-fixes-f01-f03`
+`/10x-plan-review playtest-fixes-f01-f03`
 
 ## 5. Open
 
-- Product choices for the plan (research.md "Open Questions"): "Wróć" hidden for a parent-placed learner
-  (`stageOverriddenByParent`) — recommended; "Wróć" visible during the whole warm-up/first round in the left margin
-  (x 0–180) vs between tasks only; gear hint bubble placement and `balance.parentSettings` hint duration; optional
-  E1/E2 silence e2e.
-- Tests the plan must account for: add a pin of `balance.narrator.autoReadStages` = `[]` (none exists); keep
-  `pickRoundSkills`/`pickSkills` long-count share tests (`tests/curriculumPick.test.ts`, `tests/review.test.ts`,
-  `tests/reviewGuards.test.ts`) by adding the variety rule as a new per-round function; `tests/warmup.test.ts` halves;
-  `tests/longPress.test.ts` "a short tap … never fires" with an additive `tap` field (`src/core/roomGesture.ts` also
-  uses `longPress`); `tests/e2e/parent-settings.spec.ts` "#14 only a 2-second hold …" is where the hint gets asserted.
-- "Wróć" exit order (research § F-02 b): cleanup → `registry.set(learner, null)` → `saver.flush('now')` → stop UI and
-  Room scenes → `scene.start(welcome)`; never `advance`/`finishRound`.
-- DESIGN-GAPs to add from row **151** in `docs/design-gaps.md`: gear tap hint, "Wróć" to the age choice; rows 25 and
-  28 rewritten (gear no longer muted).
-- Docs to edit in the plan: `Martynka-urzadza.md` (Założenia lektor line; task-screen narrator bullet), PRD FR-009
-  (D-6), CLAUDE.md "Current state" (F-01..F-03 sentence; stale `buildWarmup` location → `src/core/round/warmup.ts`).
-- Follow-ups: audit M-1 (survives in `TaskScene.applyParentStage`), M-2, M-13, H-3, H-4 fire but stay deferred
-  (re-record in this change's `follow-ups/review-fixes.md`); F4/F6 WelcomeScene guards closed in code (per change.md).
+- **ARTIFACT GAP:** the contract's baseline line is still the placeholder `<<<BASELINE>>>`; the plan tells every phase
+  to measure its own branch baseline and report `baseline + delta`.
+- Manual rows (human checklist): 1.6 [reviewer] teacher read of printed rounds; 3.5 [reviewer] teacher read of the
+  balance change; 4.5, 4.6 [visual] gear and hint at 1440/1024 (task and room); 4.7 [reviewer] the hint string;
+  6.4 [visual] "Wróć" states at 1440/1024; 6.5 [reviewer] `TaskScene.backToAge` exit order; 7.4 **[human]** PRD FR-009
+  contradicts the new default (decision A-7); 7.5 [reviewer] `Martynka-urzadza.md` edits.
+- DESIGN-GAPs to add: row 151 (gear tap hint, phase 4), row 152 ("Wróć", phase 6); rows 25 and 28 rewritten (phase 4).
+- Follow-ups to write in phase 7 (`follow-ups/review-fixes.md`): PRD FR-009; audit M-1 (`TaskScene.applyParentStage`),
+  M-2, M-13, H-3, H-4 deferred; F4/F6 closed in code; E1/E2 silent parent path moot; hint once vs every tap; finer type
+  key.
+- Ship step (not a phase row): F-01..F-03 status "naprawione (#PR)" in `docs/playtest-feedback.md` (PA-5).
+- Risk: plan-review should check `buildWarmup`'s new `rules` argument choice (phase 2 leaves it to the implementer)
+  and the `TASK_LAYOUT.ageBack` fit in the 180 px margin (phase 6).
 
 ## 6. Autonomous decisions
 
-- R-1 Research scope taken from change.md and the previous handoff § 5 (no question asked). Would change: none.
-- R-2 "Task type" = `SkillDef.type` (generator key), not `params.variant`. Rejected: finer key (one-type steps only
-  15 → 10, and a child perceives "clock" as one kind). Would change: the maintainer counting e.g. set-the-clock and
-  read-the-clock as different types.
-- R-3 D-2 refined: "first ordinary round finished" = `variants.roundsSince > 0 || lastMinigame || puzzleDay ||
-  puzzlesDone.length > 0 || history.length > balance.warmup.length`; D-2's runtime-flag fallback not needed. Would
-  change: a variant becoming possible before the first ordinary round, or a v5 field allowed.
-- R-4 Variety rule recommended as a new per-round function (bucket roll unchanged, filtered skill pick with relax
-  cap → no-repeat → whole bucket, then an rng-free reorder; warm-up reorders within halves). Rejected: changing
-  `pickRoundSkills` in place (breaks the meaning of the 20000-draw share tests). Would change: the plan finding the
-  rng-count invariant unnecessary.
-- R-5 Recommended: hide "Wróć" for a parent-placed learner. Would change: maintainer wanting it for every first
-  round. (Plan decides.)
+- P-1 No questions asked (contract rule 1): research + scope.md settle every product choice; the remaining ones are
+  A-1..A-9 in plan.md `## Autonomous decisions`, each with its reversal condition. Would change: none.
+- P-2 A-2 "Wróć" hidden for a parent-placed learner (research recommendation). Would change: maintainer wanting it for
+  every learner.
+- P-3 A-3/A-4 "Wróć" in the left margin for the whole warm-up/first round, no confirm. Would change: playtest reports
+  of accidental taps.
+- P-4 A-5 cap only in the pick, neighbours by an rng-free reorder (rejected research's extra "not previous" filter).
+  Would change: a test showing avoidable neighbours after the reorder.
+- P-5 A-7 PRD FR-009 not hand-edited (reverses change.md D-6 by its own reversal condition: CLAUDE.md "never hand-write
+  files in `context/`"); `[human]` row 7.4 + follow-up. Would change: maintainer allowing the hand edit.
+- P-6 A-8 no E1/E2 silence e2e; unit pin instead. Would change: a reader bypassing `effectiveAutoRead`.
+- P-7 Phase split: ≤ 1 new UI component per phase (`SettingsHint` in 4; "Wróć" reuses `PageButton` in 6); seam sweep in
+  phase 7 before the e2e phases 8–9 (contract). Would change: plan-review finding a phase too large.
