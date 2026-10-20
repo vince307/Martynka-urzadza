@@ -737,8 +737,8 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged
-- [x] 2.2 Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing
+- [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged — e6b1d9c
+- [x] 2.2 Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing — e6b1d9c
 - [ ] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order)
 
 ### Phase 3: Narrator off by default and the tap outcome of the hold (F-01, F-02 a core)

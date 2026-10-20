@@ -1,6 +1,6 @@
 # Handoff — `playtest-fixes-f01-f03` (slice fix:playtest-fixes-f01-f03)
 
-Written by the `/10x-tdd` step, phase 1 (F-03 variety rule for ordinary rounds), run 2026-10-20-playtest-boot. Phase 1 is
+Written by the `/10x-tdd` step, phase 2 (F-03 variety in the warm-up), run 2026-10-20-playtest-boot. Phase 2 is
 committed test-first; local gate green; e2e left to the orchestrator.
 
 ## 1. State
@@ -8,50 +8,46 @@ committed test-first; local gate green; e2e left to the orchestrator.
 | | |
 |---|---|
 | Branch | `feat/playtest-fixes-f01-f03` |
-| Commits | plan-review commits plus `test(playtest-fixes-f01-f03): Round variety rule for ordinary rounds (F-03) (p1)` and a docs commit with this handoff |
+| Commits | phase 1 (49a682f), `test(playtest-fixes-f01-f03): Variety in the warm-up (F-03) (p2)` e6b1d9c, a docs commit with this handoff and the sha ticks |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 38 (phase 1: 1.5 [e2e part, orchestrator] and 1.6 [reviewer] open) |
+| `## Progress` rows remaining | phase 2: 2.3 (e2e part, orchestrator); phases 3-9 open; 1.6 [reviewer] open |
 | Working tree | clean after the commits |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/round/variety.ts` | `pickVariedSkills`, `spreadTypes`, `variedRound` (rng stream identical to `pickRoundSkills`) |
-| `src/data/balance.ts` | `balance.round.variety: { maxPerType: 2 }` |
-| `src/core/curriculum.ts` | `buildAdaptiveRound` now calls `variedRound` |
-| `tests/variety.test.ts` | 6 tests (synthetic buckets, real curriculum E1-E6 x 200 seeds oracles a-e, `buildAdaptiveRound` spread) |
-| `tests/round.test.ts` | line pinning `balance.round` extended with `variety` (the plan said existing keys unchanged; this deep-equal test needed the new key) |
+| `src/core/round/variety.ts` | added `pickVariedFromStage` (uniform `pickSkills` draw with a shared type tally and the cap) |
+| `src/core/round/warmup.ts` | `buildWarmup` takes an optional last argument `variety` (default `balance.round.variety`); one tally for both halves, `spreadTypes` per half, second half seeded with the last type of the first, unseeded order when seeding makes an in-half neighbour |
+| `tests/warmup.test.ts` | new `describe('buildWarmup variety (F-03)')`: per-stage E2-E6 x 200 seeds (cap over 6 when both pools have 3+ types, no neighbours in a half with top count <= 2), shared-cap case E3/E2 (ADD_SUB), cap-off case |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (stub delegating to `pickRoundSkills`, identity `spreadTypes`) | `AssertionError: seed 2 BAABA: expected 1 to be +0`; `E1.1 seed 1 draw 4: expected false to be true`; `seed 1: expected 3 to be less than or equal to 2`; `E1 seed 4 COMPARE_NUM,COMPARE_NUM,ORDINAL,SHAPES,SHAPES: expected 2 to be +0`; 4 failed, 2 passed |
-| GREEN | `tests/variety.test.ts` 6 passed |
-| break: drop cap filter | 3 red (both synthetic cases + real-curriculum oracle b), restored |
-| break: skip `spreadTypes` | 4 red (synthetic x2, real oracle c, `buildAdaptiveRound` case), restored |
-| break: extra `rng.next()` per draw | real-curriculum test red via oracle (a), others green, restored (meta-check: (a) proves the stream alignment) |
+| RED (stub `pickVariedFromStage` = `pickSkills`, call site real) | `AssertionError: E2 seed=31 ORDINAL,MONEY_PAY,ADD_SUB,ADD_SUB,MONEY_PAY,ADD_SUB: expected 3 to be less than or equal to 2`; shared case `seed=12 ADD_SUB,CALENDAR,ADD_SUB,MISSING,ADD_SUB,WORD: expected 3 to be less than or equal to 2`; 6 failed, 13 passed |
+| GREEN | `tests/warmup.test.ts` 19 passed |
+| break: own tally per half | 6 red (E2-E6 and the shared-type case; e.g. `E3 seed=12 ADD_SUB,CALENDAR,ADD_SUB,MISSING,ADD_SUB,WORD: expected 3 to be less than or equal to 2`), restored; meta-check: ADD_SUB sits in both E2 and E3 pools, so the shared case proves the tally |
+| break: no `spreadTypes` in the warm-up | 5 red (`E2 seed=3 BONDS,LENGTH,MONEY_CHANGE,MONEY_PAY,MONEY_PAY,ADD_SUB: expected 1 to be +0`), restored |
 | npm run lint / typecheck | OK / OK |
-| npm test | 3662 passed (baseline 3656, +6) |
+| npm test | 3669 passed (phase 1 3662, +7) |
 | deploy scripts, `sample` E1-E6, build | OK, exit 0 x6, `e2e hook: absent (2 chunks checked)` |
-| e2e | not run (orchestrator at the gate) |
+| e2e | not run (orchestrator at the gate; orchestrator result for phase 1: 139 passed, +0) |
 
 ## 4. Next command
 
-`/10x-tdd playtest-fixes-f01-f03 phase 2`
+`/10x-tdd playtest-fixes-f01-f03 phase 3`
 
 ## 5. Open
 
-- Manual rows: 1.6 [reviewer] teacher read of printed rounds (E1-E6 mid step); rest as in the plan (3.5, 4.5-4.7, 6.4-6.6, 7.4, 7.5).
-- Row 1.5: e2e part (`npx playwright test --workers=4`, baseline 139 + 0) is the orchestrator's.
-- DESIGN-GAPs rows 151/152, follow-ups and ship-step docs status as in the previous handoff.
+- Manual rows: 1.6 [reviewer]; rest as in the plan (3.5, 4.5-4.7, 6.4-6.6, 7.4, 7.5).
+- Row 2.3: e2e part (`npx playwright test --workers=4`, baseline 139 + 0) is the orchestrator's; local part green.
+- Tests restate the cap guarantee only for pools with 3+ types (smaller pools may relax the cap by design).
 
 ## 6. Autonomous decisions
 
-- T-1 TDD gate: implementation absent (`src/core/round/variety.ts` did not exist), pure functions: stayed `Driver: tdd`. Would change: none.
-- T-2 Manual-gate/commit-message/next-phase prompts decided in place: commit the planned set only, stop after phase 1.
-- T-3 `tests/round.test.ts` line 50 edited (adds `variety`): required by the new balance key; the plan's "existing keys unchanged" holds. Would change: none.
-- T-4 Replay oracle (b) uses its own rng copy and re-rolls the bucket; the cap-filter break turns it red inside the combined real-curriculum test (one `it` for a-e). Would change: split into separate tests if a reviewer wants isolated failures.
-- T-5 Row 1.5 left unticked: e2e not verified by me.
+- T-1 TDD gate: `pickVariedFromStage` absent, stayed `Driver: tdd`. Would change: none.
+- T-2 Manual-gate/commit-message/next-phase prompts decided in place: planned set only, stopped after phase 2.
+- T-3 `buildWarmup` got an optional trailing `variety` argument (default from `balance`) so callers compile unchanged; `warmup.ts` now imports `data/balance` like `curriculum.ts` does. Would change: pass rules from `TaskScene` if a boundary rule complains.
+- T-4 Row 1.5 ticked with the orchestrator's e2e result; row 2.3 left for the orchestrator.
