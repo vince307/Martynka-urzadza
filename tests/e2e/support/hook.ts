@@ -58,7 +58,7 @@ export interface Snapshot {
     /** The boot loading screen (BootScene still loading): its phase. */
     loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
     /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
-    bootLoad?: { cut: string[]; creates: number; elapsedMs: number } | null;
+    bootLoad?: { cut: string[]; creates: number; elapsedMs: number; hiddenMs: number } | null;
     /** Whether the task font arrived (`fallback` = drawn in a system font); null before the first create. */
     fontHealth?: 'loaded' | 'fallback' | null;
     /** Which drawn fallback the child saw instead of a screen picture (wallet, notebook, miniature, loading), with the mode; runtime only. */
