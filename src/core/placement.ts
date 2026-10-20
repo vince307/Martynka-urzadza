@@ -1,6 +1,6 @@
 // Placement of a new learner: age x month -> proposed stage (docs/ZADANIA.md section 1).
 // Pure: the month is always an argument, there is no Date here.
-import type { Adaptation, LearnerState, Settings, StageId } from './types';
+import type { Adaptation, LearnerState, Settings, StageId, VariantState } from './types';
 
 /** What placement decides: age and stage (S-06). */
 export type PlacedLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
@@ -70,4 +70,23 @@ export function changeStageByParent(learner: SessionLearner, stage: StageId): Se
         weakStreak: 0,
         easedRounds: 0,
     };
+}
+
+/**
+ * True once the child has finished a round of her own: an ordinary round counted, a variant played, or more answers
+ * than the warm-up alone holds. The warm-up length is an argument (the scene passes `balance.warmup.length`).
+ */
+export function firstRoundDone(learner: Pick<SessionLearner, 'history'>, variants: VariantState, warmupLength: number): boolean {
+    return (
+        variants.roundsSince > 0 ||
+        variants.lastMinigame !== null ||
+        variants.puzzleDay !== null ||
+        variants.puzzlesDone.length > 0 ||
+        learner.history.length > warmupLength
+    );
+}
+
+/** "Wróć" to the age choice shows only to a child-placed learner who has not finished her first round (F-02 b). */
+export function ageBackOffered(learner: Pick<SessionLearner, 'history' | 'stageOverriddenByParent'>, variants: VariantState, warmupLength: number): boolean {
+    return !learner.stageOverriddenByParent && !firstRoundDone(learner, variants, warmupLength);
 }
