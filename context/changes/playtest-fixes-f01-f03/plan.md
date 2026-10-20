@@ -782,8 +782,8 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 6.1 `grep -n "backToAge" src/scenes/TaskScene.ts` shows no call to `advance`, `finishRound`, `countRound` inside it (reviewed by reading the method)
-- [ ] 6.2 The layout touch-target test covers `TASK_LAYOUT.ageBack` (add it to the checked list; red if the box is made 80 px high, restored)
+- [x] 6.1 `grep -n "backToAge" src/scenes/TaskScene.ts` shows no call to `advance`, `finishRound`, `countRound` inside it (reviewed by reading the method) — 33772b7
+- [x] 6.2 The layout touch-target test covers `TASK_LAYOUT.ageBack` (add it to the checked list; red if the box is made 80 px high, restored) — 33772b7
 - [ ] 6.3 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (first-launch specs unaffected: they never tap the margin)
 
 #### Manual
