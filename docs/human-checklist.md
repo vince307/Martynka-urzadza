@@ -350,3 +350,36 @@ Bieg uruchomiony 2026-10-16 po scaleniu wszystkich PR-ów z dokumentacją (#42�
 - [ ] Sprawdzanie aktualizacji tylko przy starcie gry, nie przy powrocie z tła — żeby nowy worker nie przejął otwartej strony w środku rundy (health-lines-and-smoke 2.6).
 - [ ] Bieg wolno było zrobić ≤30 odczytów HEAD/GET produkcji (bez zapisu) w researchu i jeden smoke w trybie rollback, by udowodnić nowe sprawdzenia przed merge'em.
 - [ ] Bazowe linie po wysyłkach wzięte z przeglądu + CI (bez ponownego `baseline.sh`).
+
+## Bieg 2026-10-20-playtest-boot (playtest F-01..F-03 i audyt #82 H-1, I-1, Z-8)
+
+Bieg uruchomiony 2026-10-20 po scaleniu #82 i #83. Decyzje projektowe uzgodnione z góry (pre-agreed 2026-10-20). Pełna wysyłka. Wysłane: #90 playtest-fixes-f01-f03 (merge 48c2c7e, Deploy 39466017778, check:deploy 22/22), #91 audit-boot-hidden-tab (merge 1a9f661, Deploy 39486399140, check:deploy 22/22). Format zapisu bez zmian (v4). `main` 1a9f661: 3710 testów jednostkowych (było 3656), 143 e2e (było 139). Audyt zamykający #92: 0 CRITICAL, 0 HIGH, 1 MEDIUM, 5 LOW.
+
+### P0 — przed następnym biegiem
+
+- [ ] Przejrzyj audyt zamykający #92 (`context/audits/observability/2026-10-20_2151-start-runda-zebatka-ukryta-karta.md`, PR nie scalony przez bieg).
+- [ ] Audyt #92 N-1: linia „Obrazki” mówi „bo gra była w tle” zawsze, gdy `hiddenMs > 0` — po poprawce H-1 czas w tle już nie powoduje odcięcia, więc przy odcięciu po powrocie z tła zdanie wskazuje złą przyczynę (decyzja planu A-3 w `context/archive/2026-10-20-audit-boot-hidden-tab/plan.md`). Zaakceptuj albo poproś o zdanie zależne od przyczyny.
+- [ ] PRD FR-009 (`context/foundation/prd.md`) nadal mówi „auto-czytanie domyślnie włączone dla E1–E2”, a kod ma je wyłączone wszędzie (Twoja decyzja F-01): odśwież PRD przez `/10x-prd` albo zaakceptuj rozbieżność (playtest-fixes 7.4).
+
+### P1 — tablet (iPad / Android)
+
+- [ ] Ukryta karta przy starcie: wolne łącze, przełącz na inną aplikację na ponad minutę podczas ekranu ładowania, wróć — ładowanie trwa dalej, bez zastępczych obrazków; „Obrazki” bez linii o odcięciu (audit-boot-hidden-tab 2.6).
+- [ ] Zagraj z córką pierwsze uruchomienie: „Wróć” na rozgrzewce i w pierwszej rundzie, potem znika; podpowiedź przy zębatce po stuknięciu; lektor milczy, dopóki nie dotknie głośnika (F-01..F-03, playtest).
+
+### P2 — później
+
+- [ ] Follow-upy z wyzwalaczami: 9 (`context/archive/2026-10-20-playtest-fixes-f01-f03/follow-ups/review-fixes.md`), 16 (`context/archive/2026-10-20-audit-boot-hidden-tab/follow-ups/review-fixes.md`) — m.in. F3: limit 2 na typ liczony w kolejności losowania może dać 3 × ADD_SUB w E2 krok 5; F2: specy e2e z przeładowaniem czekają na `dirty false`, które zapala się na starcie zapisu (możliwa niestabilność).
+- [ ] Audyt #92 N-4 (MEDIUM): `coinLayout` i `columnSteps`/`columnMarks` rzucają przy rysowaniu bez id umiejętności, więc `Kod:` na „Ups!” nie ma umiejętności dla tych błędów.
+- [ ] Audyt #92 H-2: liczba odciętych plików w „Obrazki” liczy też dźwięki i font (`UIScene.openSettings`).
+- [ ] DESIGN-GAP 151–153 w `docs/design-gaps.md` (podpowiedź przy zębatce, „Wróć”, linia o odcięciu w tle) — do odczytu przez autorkę zestawu.
+- [ ] Zauważone przy bramce wizualnej (poza zakresem): zadanie porównania na rozgrzewce ma polecenie „Oblicz” nad „72 □ 37” z kafelkami < > = — zdanie polecenia warto poprawić na „Wstaw znak” (zrzut `context/archive/2026-10-20-playtest-fixes-f01-f03/screenshots/desktop-warmup-tiles.jpg`).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] „Wróć” ukryty, gdy etap wybrał rodzic; widoczny przez całą rozgrzewkę i pierwszą rundę (także w trakcie zadania); bez potwierdzenia (playtest-fixes 6.6).
+- [ ] „Pierwsza runda skończona” liczona z danych zapisu (`roundsSince`, minigry, zagadka, historia dłuższa niż rozgrzewka) — bez nowego pola, format v4.
+- [ ] Podpowiedź przy zębatce raz na uruchomienie strony, 3 s, wąski dymek w prawym marginesie (po poprawce z bramki wizualnej: wcześniej zasłaniał „Dalej”).
+- [ ] Reguła różnorodności: limit liczony w kolejności losowania, udziały 60/30/10 i próg odblokowania bez zmian; seedowane rundy mają inną treść niż przed zmianą.
+- [ ] Z-8 poszerzone: każda odmowa `NewerSave` przy zastąpieniu (nie tylko wymuszonym) pokazuje `deviceNewer`, blokuje zapis i pokazuje kartę odmowy; po „Zamknij” fokus przechodzi na kartę (poprawka we wspólnym `openDialog`).
+- [ ] Odliczanie czasu ukrycia: limit całego startu i linia „wolno” liczą tylko czas widocznej karty, bez górnego limitu czasu w tle; limit na pojedynczy plik bez zmian.
+- [ ] E2E przy bramkach faz uruchamiany przez orkiestratora raz na 1–3 fazy czysto logiczne (nie po każdej); bazowe linie po wysyłkach z przeglądu + CI (bez ponownego `baseline.sh`).
