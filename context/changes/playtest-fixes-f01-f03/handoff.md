@@ -8,8 +8,8 @@ The visual gate step of run 2026-10-20-playtest-boot wrote this handoff. The gat
 |---|---|
 | Branch | `feat/playtest-fixes-f01-f03`, cut from `main` at 64fd3ea |
 | Commits | fea1184 .. a7b1856 (phases 1-9, impl review). This step adds fixes e259870 and 69a2eb4, then the docs commit `docs(playtest-fixes-f01-f03): bramka wizualna` with the screenshots, the review and this handoff |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` sets the next one) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in `context/runs/2026-10-20-playtest-boot/run-log.md` (the ship step pushes, opens the PR, merges and watches the Deploy run after this archive) |
+| `change.md` status | `archived` (archive + ship step, 2026-10-20) |
 | `## Progress` rows remaining | 2, both [human]: 6.6 and 7.4 |
 | Working tree | clean after the docs commit (the throwaway `tests/e2e/visual.local/` was moved to the session scratchpad; `test-results/` and `dist-e2e/` are gitignored and not committed) |
 
@@ -47,7 +47,7 @@ The visual gate step of run 2026-10-20-playtest-boot wrote this handoff. The gat
 
 ## 4. Next command
 
-`/10x-archive playtest-fixes-f01-f03 then ship (no hosted db push — none exists)`
+`none — shipped` (archived by the ship step; no hosted db push — none exists; non-roadmap change, no roadmap row to mark)
 
 ## 5. Open
 
@@ -72,3 +72,5 @@ The visual gate step of run 2026-10-20-playtest-boot wrote this handoff. The gat
 - V-3 The "Wróć" flake was fixed in the spec (wait for finished writes), not with an in-flight flag in `autosave.ts`. Rejected: product code in a visual-gate step (follow-up F2 keeps the flag). Would change: another reload spec flaking the same way.
 - V-4 Fix commit messages are in English, like the rest of this branch's log, although profile § 1 says Polish (the same as impl-review R-4). The docs commit uses the Polish title the step prompt gave. Would change: the maintainer asking for Polish on run commits.
 - V-5 Kit frames are cited by path (`designs/martynka-maths-A-v1/screenshots/`, tracked in git), not copied into `screenshots/`. Would change: the kit leaving the repo.
+- S-1 (ship step) `/10x-archive` warned of 2 pending manual rows (6.6, 7.4 [human]) and of 23 ticked rows without a SHA suffix (reviewer/visual rows and gate rows citing their proof in words); chosen "Continue archiving" (the skill's Recommended label for manual-only pending). Rejected: Resume implementation (nothing automated is open). The [human] rows are the maintainer's post-run checklist, listed in the PR under "dla właściciela produktu". Every cited SHA is an ancestor of HEAD, so no repoint was offered. Would change: an automated row left open.
+- S-2 (ship step) Restated triggers from §5: FR-009 follow-up waits for the next `/10x-prd` refresh; impl-review F2 (`writing` flag) waits for a reload-spec flake or the next `AutosaveStatus` change; F3 waits for a playtest note of 3 tasks of one kind.
