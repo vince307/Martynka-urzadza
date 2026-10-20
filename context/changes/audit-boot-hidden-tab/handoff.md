@@ -1,45 +1,42 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-Phase 8 (`/10x-e2e`) is committed as 8b157d0: one new test in `tests/e2e/load-and-tab-guard.spec.ts` (#15 H-1). Phases 1-7 are done; the orchestrator still owes the full e2e for 6.4, 7.4 and 8.2. The next agent must not tick 8.2/8.3 without the full-suite and full-gate runs.
+Phase 9 (`/10x-e2e`) is committed as 48b2689: `tests/e2e/error-boundary.spec.ts` now asserts the exact `Kod: Error · Wersja <build>` line (frame and boot cases). Phases 1-9 done; 9.2 (full e2e `+0`) and 9.3 (full gate) are the orchestrator's.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | phases 1-8 (p8 8b157d0), plus docs commits |
+| Commits | phases 1-9 (p9 48b2689), plus docs commits |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows remaining | 6.4, 7.4, 8.2 (orchestrator full e2e), 8.3 (full gate), 6.5/3.5/5.4 [visual], 3.4/2.5/7.5 [reviewer], 2.6 [human], phases 9-10 |
+| `## Progress` rows remaining | 9.2 (full e2e +0), 9.3 (full gate), 6.5/3.5/5.4 [visual], 3.4/2.5/7.5 [reviewer], 2.6 [human], phase 10 |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/load-and-tab-guard.spec.ts` | new test "#15 H-1 a tab hidden during the load does not cut it..." (fake `document.hidden` via init script + `visibilitychange`; routes via `hold`; `?e2eArt=stallall`); imports `gateProblem`, `typeIntoGate`, `fromHook`, `tapScene` |
-| `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` | "Isolation-only red of load-and-tab-guard" closed with evidence |
-| `context/changes/audit-boot-hidden-tab/plan.md` | row 8.1 ticked |
+| `tests/e2e/error-boundary.spec.ts` | tightened: frame and boot tests assert `pl.saveFailed.detail('Error', build)` exactly and that `pl.errorCard.build(build)` alone is not on the card |
+| `context/changes/audit-boot-hidden-tab/plan.md` | rows 6.4, 7.4, 8.2, 8.3 (orchestrator gate, e2e 142) and 9.1 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npx playwright test --config=<abs> tests/e2e/load-and-tab-guard.spec.ts` (file alone, default workers) | 6 passed (34.5 s), again 6 passed (32.4 s); the isolation-only red did not reappear |
-| deliberate break 1: `BootScene` passes `0` instead of `hiddenMsAt(...)` to `bootLimitReached`/`bootLimitWait`/`bootLimitDue` | RED on `elapsedMs >= 3000 + hiddenMs - 50` (received 4175, expected >= 6735); restored. Meta-check: the "still loading while hidden" assertion did NOT catch it, because hide clears the timers (nothing fires while hidden); the damage shows at the show, when the cut fires at once instead of after the remaining visible time, and the elapsed assertion proves exactly that |
-| deliberate break 2: `UIScene` passes `background: false` | RED: `artCutBackground` line not found; restored |
-| lint, tsc on the spec | OK; unit/build/full e2e not run by me |
+| `npx playwright test --config=<abs> tests/e2e/error-boundary.spec.ts` | 4 passed (30 s), before and after the break |
+| deliberate break: `main.ts` passes `''` instead of `errorCode(error)` to `mountErrorCard` | RED: test 1 `getByText('Kod: Error · Wersja f1aa80a')` not found; restored, green again. Meta-check: the break changes exactly the code part of the line, so the assertion proves the code is shown |
+| eslint, tsc | OK; unit/build/full e2e not run by me |
 
 ## 4. Next command
 
-`/10x-e2e audit-boot-hidden-tab phase 9`
+`/10x-e2e audit-boot-hidden-tab phase 10`
 
 ## 5. Open
 
-- Rows 6.4, 7.4, 8.2 (full e2e `<baseline> + 1`) and 8.3 (full gate) for the orchestrator; 6.5, 3.5, 5.4 [visual], 3.4, 2.5, 7.5 [reviewer], 2.6 [human] not mine.
-- The spec starts hiding after the hook appears; on a very slow machine the 3 s visible-time cut could pass before the hide (then the first assertion `loading` fails, not a false green).
-- `pl.errorCard.build` is still used by `tests/e2e/error-boundary.spec.ts`; phase 9 may drop it.
-- Phase 9 is `Driver: e2e`; no implement epilogue before phase 10.
+- 9.2 (full e2e `+0`) and 9.3 (full gate) for the orchestrator; visual, reviewer and human rows not mine.
+- `pl.errorCard.build` stays: the spec uses it for the negative assertion (the boundary no longer renders it alone).
+- Phase 10 is `Driver: e2e`.
 
 ## 6. Autonomous decisions
 
@@ -55,3 +52,4 @@ Phase 8 (`/10x-e2e`) is committed as 8b157d0: one new test in `tests/e2e/load-an
 - D-7 **Phase 7 decisions**: Driver stays `impl`. Commit message, dirty-paths, next-phase prompts decided in place. AGENTS.md left alone (no stale sentence). Gap 153 already existed, so only rows 29, 51, 71 changed. Kept `pl.errorCard.build` for the e2e spec.
 
 - D-8 **Phase 8 decisions**: the parent path to the settings panel is typed out in the spec (passWelcome navigates itself, which would lose the hidden span). The plan's "still loading while hidden" assertion is kept but the break-1 red comes from the elapsed-time assertion (see §3). Commit message and next-phase prompts decided in place. Would change: a seam that arms the cut while hidden.
+- D-9 **Phase 9 decisions**: the boot test also asserts the exact line (build read from `#game-container`). `pl.errorCard.build` kept (grep: used by the spec). Commit message and next-phase prompts decided in place.

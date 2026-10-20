@@ -746,7 +746,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N` — 814e37b
 - [x] 6.2 Deliberate break: keep `blockedBy ??= 'newer'` without `refuseWrites` → the `onBlocked` case red; remove the `NewerSave` branch in `failureText` → both text cases red; each restored; meta-check: the forced case must go red on today's code with `siteDataAdvice` (check the received value), proving the test sees the harmful text — 814e37b
 - [x] 6.3 `git diff --stat main -- src/core/save.ts src/storage` shows no change to `writeVerdict`/`guardedPut` — 814e37b
-- [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`save-transfer-blocked.spec.ts`, `stale-tab.spec.ts` green)
+- [x] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`save-transfer-blocked.spec.ts`, `stale-tab.spec.ts` green) — f1aa80a (e2e 142, orchestrator)
 
 #### Manual
 
@@ -759,7 +759,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 7.1 `grep -rn "wall clock" src/core/bootLimits.ts src/scenes/BootScene.ts CLAUDE.md` shows only text that names the hidden time — e33fbff
 - [x] 7.2 `grep -c "^Trigger:" context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` ≥ 10 — e33fbff
 - [x] 7.3 `grep -rn "errorCard.build" src` empty, or the remaining use named in the phase commit — e33fbff
-- [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — f1aa80a (e2e 142, orchestrator)
 
 #### Manual
 
@@ -770,14 +770,14 @@ None: save format v4 unchanged (table in Overview).
 #### Automated
 
 - [x] 8.1 Spec red before (deliberate break: the scene passes `hiddenMs` 0 to `bootLimitDue`/`bootLimitWait` (the subtraction removed) → the "still loading while hidden" assertion red — this breaks the RULE, not the fake; pass `background: false` in `UIScene` → the line assertion red), green after; restored — 8b157d0
-- [ ] 8.2 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green run ALONE (fires the stale-tab-and-health follow-up "Isolation-only red of the `load-and-tab-guard` e2e (#2, P-5)": if that red reappears, fix it in this phase or record evidence and restate it in `follow-ups/review-fixes.md`); full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
-- [ ] 8.3 Full local gate green
+- [x] 8.2 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green run ALONE (fires the stale-tab-and-health follow-up "Isolation-only red of the `load-and-tab-guard` e2e (#2, P-5)": if that red reappears, fix it in this phase or record evidence and restate it in `follow-ups/review-fixes.md`); full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1` — f1aa80a (e2e 142, orchestrator)
+- [x] 8.3 Full local gate green — f1aa80a (e2e 142, orchestrator)
 
 ### Phase 9: The "Ups!" card shows `Kod:` — e2e (#15)
 
 #### Automated
 
-- [ ] 9.1 Deliberate break: pass `errorName` of a fixed `'X'` or `''` as the code in `main.ts` → the tightened assertion red; restored
+- [x] 9.1 Deliberate break: pass `errorName` of a fixed `'X'` or `''` as the code in `main.ts` → the tightened assertion red; restored — 48b2689
 - [ ] 9.2 `npx playwright test tests/e2e/error-boundary.spec.ts` green; full e2e (orchestrator) `<branch e2e baseline> + 0` over phase 8 (assertions tightened, no new test)
 - [ ] 9.3 Full local gate green
 
