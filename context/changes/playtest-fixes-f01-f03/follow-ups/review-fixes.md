@@ -27,3 +27,11 @@ Trigger: the maintainer counts set-the-clock and read-the-clock as different kin
 ## One predicate for playable steps
 `firstPlayableSteps` (`src/core/round/pick.ts`) and `playableSteps` (`src/core/curriculum.ts`) filter steps by the same predicate; merging them would move the warm-up pools that the "uncapped = `pickSkills`" oracle in the phase 2 tests compares against, so it stays deferred.
 Trigger: next change to the warm-up pools or to `stepPlayable`.
+
+## (impl-review F2) An e2e save barrier that means "written"
+`save.dirty` turns false when a write starts (`attempt` in `src/core/autosave.ts`), so `expect.poll(dirty false)` before `page.reload()` (`tests/e2e/first-launch.spec.ts` "Wróć" test and other reload specs) can let the reload cut an in-flight IndexedDB write. Fix: a runtime-only `writing` flag in `AutosaveStatus` and one e2e helper that waits for `!dirty && !writing`.
+Trigger: a flake of a reload spec that finds the older save, or the next change to `AutosaveStatus`.
+
+## (impl-review F3) Cap applied in draw order
+`pickVariedSkills` (`src/core/round/variety.ts`) caps in draw order, so an earlier-bucket draw can take a type slot that a later one-type current draw then exceeds (E2 step 5: 3 x ADD_SUB). Drawing the current-bucket draws first would avoid it but changes the skills drawn per seed.
+Trigger: a playtest note of 3 tasks of one kind on a step that has more than one kind in the round's other buckets.

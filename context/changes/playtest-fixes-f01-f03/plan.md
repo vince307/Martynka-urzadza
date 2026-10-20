@@ -731,7 +731,7 @@ intended behaviour change (PA-1).
 
 #### Manual
 
-- [ ] 1.6 [reviewer] A one-off script in `$TMPDIR` (not committed) prints 5 `buildAdaptiveRound` rounds per stage E1–E6 at a mid step; read as a teacher: no round with 3+ tasks of one kind unless the step is one-type (e.g. E3.3 clock), no two same-kind tasks in a row where avoidable, rounds still mostly on the current step
+- [x] 1.6 [reviewer] A one-off script in `$TMPDIR` (not committed) prints 5 `buildAdaptiveRound` rounds per stage E1–E6 at a mid step; read as a teacher: no round with 3+ tasks of one kind unless the step is one-type (e.g. E3.3 clock), no two same-kind tasks in a row where avoidable, rounds still mostly on the current step — impl-review (round print read as a teacher, 0/3000 avoidable neighbours)
 
 ### Phase 2: Variety in the warm-up (F-03)
 
@@ -752,7 +752,7 @@ intended behaviour change (PA-1).
 
 #### Manual
 
-- [ ] 3.5 [reviewer] Teacher read of the `src/data/` change: `npm run sample -- E1 --count 6` and `E2 --count 6` unchanged; the balance comment reads correctly in Polish context (no player text changed)
+- [x] 3.5 [reviewer] Teacher read of the `src/data/` change: `npm run sample -- E1 --count 6` and `E2 --count 6` unchanged; the balance comment reads correctly in Polish context (no player text changed) — impl-review (sample E1/E2 --count 6 unchanged, 0 violations)
 
 ### Phase 4: The gear looks active and answers a tap with a hint (F-02 a)
 
@@ -767,7 +767,7 @@ intended behaviour change (PA-1).
 
 - [ ] 4.5 [visual] Task screen at 1440 and 1024 wide: gear at full colour, matching the speaker button family, states: idle, hint shown after one tap, hint gone after `hintMs`
 - [ ] 4.6 [visual] Room screen at 1440 and 1024 wide: gear and hint do not cover the variant panel or a room task button
-- [ ] 4.7 [reviewer] Teacher read of the new `pl.ts` string (spelling, comma before "żeby")
+- [x] 4.7 [reviewer] Teacher read of the new `pl.ts` string (spelling, comma before "żeby") — impl-review
 
 ### Phase 5: When "Wróć" is offered (F-02 b core)
 
@@ -789,7 +789,7 @@ intended behaviour change (PA-1).
 #### Manual
 
 - [ ] 6.4 [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; the welcome screen reached by "Wróć" shows no HUD (star counter, gear); it covers no answer tile, keypad key, "Dalej" or the build id
-- [ ] 6.5 [reviewer] Reading `backToAge` against the exit order: cleanup → learner `null` → `flush('now')` → stop UI and Room → start welcome
+- [x] 6.5 [reviewer] Reading `backToAge` against the exit order: cleanup → learner `null` → `flush('now')` → stop UI and Room → start welcome — impl-review (order matches)
 - [ ] 6.6 [human] Product choices the scope left open, decided by the agent (A-2 "Wróć" hidden when a parent chose the stage, A-3 visible through the whole warm-up/first round incl. mid-task, A-4 no confirmation): the maintainer confirms or asks for a change
 
 ### Phase 7: Docs, follow-ups and seam sweep
@@ -798,25 +798,25 @@ intended behaviour change (PA-1).
 
 - [x] 7.1 `grep -n "src/core/placement.ts" CLAUDE.md` no longer claims `buildWarmup`; `grep -n "muted gear" CLAUDE.md` empty — 460a56d
 - [x] 7.2 `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 6 — 460a56d
-- [ ] 7.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 7.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — 1d0a24c (orchestrator: e2e 141 = 139 + 2; unit 3682 = 3656 + 26) and 3dd6bdf (impl-review: e2e 141 passed)
 
 #### Manual
 
 - [ ] 7.4 [human] PRD FR-009 (`context/foundation/prd.md`) still says auto-read is on for E1–E2 while the code (maintainer decision 2026-10-20) has it off everywhere — the maintainer refreshes it with `/10x-prd` or accepts the follow-up
-- [ ] 7.5 [reviewer] `Martynka-urzadza.md` edits match PA-1 and PA-3 wording; no other section changed
+- [x] 7.5 [reviewer] `Martynka-urzadza.md` edits match PA-1 and PA-3 wording; no other section changed — impl-review
 
 ### Phase 8: "Wróć" takes the child back to the age choice — e2e (#12)
 
 #### Automated
 
 - [x] 8.1 Spec red before (deliberate break: `ageBackOffered` always true → the final `null` assertion red; `backToAge` without `flush('now')` and a reload right after → the E2 assertion red, if the 500 ms debounce lets it), green after; restored — 40fbb71
-- [ ] 8.2 `npx playwright test tests/e2e/first-launch.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`
-- [ ] 8.3 Full local gate green
+- [x] 8.2 `npx playwright test tests/e2e/first-launch.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` — 1d0a24c / 3dd6bdf (spec file green; full e2e 141 = 139 + 2)
+- [x] 8.3 Full local gate green — 1d0a24c / 3dd6bdf
 
 ### Phase 9: A tap on the gear shows the hint, only a hold opens the gate — e2e (#14)
 
 #### Automated
 
 - [x] 9.1 Deliberate break: show the hint on every tap → the new case red; hint on `fire` instead of `tap` → the extended case red; each restored — c8cea1a, 70229d8
-- [ ] 9.2 `npx playwright test tests/e2e/parent-settings.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 8
-- [ ] 9.3 Full local gate green
+- [x] 9.2 `npx playwright test tests/e2e/parent-settings.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 8 — 1d0a24c / 3dd6bdf (spec file green; full e2e 141 = 139 + 2)
+- [x] 9.3 Full local gate green — 1d0a24c / 3dd6bdf
