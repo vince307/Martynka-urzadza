@@ -1,53 +1,54 @@
 # Handoff — `playtest-fixes-f01-f03` (slice fix:playtest-fixes-f01-f03)
 
-Written by the `/10x-tdd` step, phase 3 (F-01 narrator off, F-02 a tap outcome), run 2026-10-20-playtest-boot. Phase 2 is
-committed test-first; local gate green; e2e left to the orchestrator.
+Written by the `/10x-implement` step, phase 4 (F-02 a: the gear looks active, a tap shows a hint), run 2026-10-20-playtest-boot.
+Phase 4 committed; local gate green; e2e left to the orchestrator.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/playtest-fixes-f01-f03` |
-| Commits | phases 1-2 (49a682f, e6b1d9c), phase 3 `test(playtest-fixes-f01-f03): Narrator off by default and tap outcome of the hold (p3)` 9f0cb7c, a docs commit with this handoff |
+| Commits | phases 1-3 (49a682f, e6b1d9c, 9f0cb7c), phase 4 `feat(playtest-fixes-f01-f03): The gear looks active and answers a tap with a hint (p4)` 27227e3, a docs commit with this handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 3.4 (e2e, orchestrator), 2.3 e2e part, 1.6 [reviewer], 3.5 [reviewer]; phases 4-9 open |
+| `## Progress` rows remaining | 4.4 (e2e, orchestrator), 4.5, 4.6 [visual], 4.7 [reviewer], 1.6, 3.5 [reviewer]; phases 5-9 open |
 | Working tree | clean after the commits |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/longPress.ts` | result is now `{ state, fire, tap }`; `tap` true only on `up` of the held finger while `holding` |
-| `src/data/balance.ts` | `narrator.autoReadStages` is `[] as readonly string[]`, comment rewritten (F-01) |
-| `tests/longPress.test.ts` | `describe('longPress tap outcome (F-02)')`: 4 cases |
-| `tests/narratorVoice.test.ts` | `describe('auto-read default (F-01)')`: pin + `effectiveAutoRead` E1-E6 |
+| `src/ui/widgets/SettingsHint.ts` | new non-interactive bubble (`show`, `hide`, `visible`), text `pl.settings.hint` |
+| `src/data/layout.ts` | `HUD_LAYOUT.settings` full colour (alpha 1, speaker family), `HUD_LAYOUT.settingsHint`, `REGISTRY_KEYS.settingsHintShown` (outside `SAVE_KEYS`) |
+| `src/data/balance.ts` / `src/data/pl.ts` | `parentSettings.hintMs` 3000; `settings.hint` "Przytrzymaj, żeby otworzyć ustawienia rodzica" |
+| `src/scenes/UIScene.ts` | `feed` shows the hint once on `tap`; hidden on `fire`, shutdown, after `hintMs`; `settingsHintVisible()` |
+| `src/testing/e2eHook.ts` | snapshot field `settingsHint: boolean` (hook build only) |
+| `docs/design-gaps.md` | rows 25, 28 rewritten, new row 151 |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (stub `tap: false` everywhere) | `AssertionError: expected { fire: false, tap: false } to deeply equal { fire: false, tap: true }`; `AssertionError: expected [ 'E1', 'E2' ] to deeply equal []` |
-| GREEN | 30 passed in the two files |
-| break: tap on the release of a fired press | 1 red, restored; break: move tolerance ignored | 4 red (drifted press), restored; break: `autoReadStages` back to `['E1','E2']` | 1 red, restored. Meta-check: the pin guards the data, the rule test guards `effectiveAutoRead` (E1 with `autoRead: null` must be false only through the data) |
-| grep autoReadStages src | `balance.ts`, `voice.ts` (rule), RoomScene, UIScene, TaskScene: no other reader |
-| lint / typecheck / npm test | OK / OK / 3674 passed (phase 2 3669, +5) |
+| lint / typecheck / npm test | OK / OK / 3674 passed (phase 3 3674, +0: canvas-only phase) |
 | deploy scripts, sample E1-E6, build | OK, `e2e hook: absent (2 chunks checked)` |
-| teacher read | `src/data/` change is a list in `balance.ts`, no player text; sample output untouched by it |
-| e2e | not run (orchestrator) |
+| 4.1 / 4.2 greps | `alpha: 0.7` gone from layout; `settingsHintShown` only in `REGISTRY_KEYS`, not in `SAVE_KEYS` |
+| deliberate break | none possible (canvas only, per row 4.3); proof is the phase-9 e2e and the [visual] rows |
+| e2e | not run (orchestrator). Phases 2+3 gate: 138/139, SV2-10 flake green 3/3 alone; rows 2.3, 3.4 ticked for it |
+| visual | not looked at (no screenshot taken) |
 
 ## 4. Next command
 
-`/10x-implement playtest-fixes-f01-f03 phase 4`
+Phase 5 (`Driver: tdd`): `/10x-tdd playtest-fixes-f01-f03 phase 5`
 
 ## 5. Open
 
-- Manual rows: 1.6, 3.5 [reviewer]; rest as in the plan.
-- Row 3.4 and 2.3 e2e part (`npx playwright test --workers=4`, expect baseline + 0) are the orchestrator's.
-- `UIScene` ignores `tap` until phase 4.
+- Manual rows: 4.5, 4.6 [visual], 4.7 [reviewer], 1.6, 3.5 [reviewer].
+- Row 4.4 waits for the orchestrator's e2e (`parent-settings.spec.ts` "#14" must stay green).
+- Hint bubble geometry (right 1878, bottom 936, width 380, three lines) overlaps the notebook's lower right margin for 3 s; a visual check should confirm it covers no "Dalej"/keypad key and, in the room, no panel or task button.
 
 ## 6. Autonomous decisions
 
-- T-1 TDD gate: `tap` and the empty list absent, stayed `Driver: tdd`. Would change: none.
-- T-2 Manual-gate/commit-message/next-phase prompts decided in place: planned set only, stopped after phase 3.
-- T-3 Stub-first (`tap: false` on every path) so RED is an assertion, not a type error. Row 3.4 left for the orchestrator.
+- T-1..T-3 from phase 3 stand.
+- P4-1 Exec mode: implemented in this context, no subagent. Commit message: proposed one. Stopped after phase 4.
+- P4-2 No new automated test (plan row 4.3: canvas only); the deliberate break is deferred to phase 9 as the plan says.
+- P4-3 Hint position above the gear, right edge flush with it; fill `PLACEHOLDER_COLORS.hint` value, border `hintBorder` value copied as literals to match the neighbouring HUD tokens. Would change: visual gate finds an overlap.

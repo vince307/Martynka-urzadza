@@ -758,9 +758,9 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [x] 4.1 `grep -n "alpha: 0.7" src/data/layout.ts` no longer matches `HUD_LAYOUT.settings`; the HUD touch-target test (`MIN_TOUCH_TARGET`) green
-- [x] 4.2 `grep -n "settingsHintShown" src/data/layout.ts` shows it outside `SAVE_KEYS`; `tests/` save-key tests green unchanged
-- [x] 4.3 Deliberate break: show the hint on `fire` instead of `tap` → no automated test can see it here (canvas only); the break is proven in phase 9's e2e — record that the phase-4 proof is the `[visual]` rows below plus phase 9
+- [x] 4.1 `grep -n "alpha: 0.7" src/data/layout.ts` no longer matches `HUD_LAYOUT.settings`; the HUD touch-target test (`MIN_TOUCH_TARGET`) green — 27227e3
+- [x] 4.2 `grep -n "settingsHintShown" src/data/layout.ts` shows it outside `SAVE_KEYS`; `tests/` save-key tests green unchanged — 27227e3
+- [x] 4.3 Deliberate break: show the hint on `fire` instead of `tap` → no automated test can see it here (canvas only); the break is proven in phase 9's e2e — record that the phase-4 proof is the `[visual]` rows below plus phase 9 — 27227e3
 - [ ] 4.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (`parent-settings.spec.ts` "#14 only a 2-second hold …" still green: a tap shows a hint, never the gate)
 
 #### Manual
