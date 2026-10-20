@@ -383,3 +383,13 @@ Bieg uruchomiony 2026-10-20 po scaleniu #82 i #83. Decyzje projektowe uzgodnione
 - [ ] Z-8 poszerzone: każda odmowa `NewerSave` przy zastąpieniu (nie tylko wymuszonym) pokazuje `deviceNewer`, blokuje zapis i pokazuje kartę odmowy; po „Zamknij” fokus przechodzi na kartę (poprawka we wspólnym `openDialog`).
 - [ ] Odliczanie czasu ukrycia: limit całego startu i linia „wolno” liczą tylko czas widocznej karty, bez górnego limitu czasu w tle; limit na pojedynczy plik bez zmian.
 - [ ] E2E przy bramkach faz uruchamiany przez orkiestratora raz na 1–3 fazy czysto logiczne (nie po każdej); bazowe linie po wysyłkach z przeglądu + CI (bez ponownego `baseline.sh`).
+
+## Do zrobienia: statystyki odwiedzin (ustalone 2026-10-20)
+
+Bez kodu w grze i bez skryptu analitycznego (PRD zabrania telemetrii; gra działa offline, więc skrypt i tak nie widziałby uruchomień). Zmiana w `deploy/` — nie autonomicznym runem: agent przygotowuje PR, po merge'u właściciel robi `sync` + `bootstrap` z listą CoiledSpring.
+
+- [ ] Caddyfile: log dostępu tylko dla domeny martynka-urzadza.pl, format JSON, maskowanie IP (`ip_mask`, np. IPv4 /24, IPv6 /56 — składnię sprawdzić na wersji Caddy z VPS-a), rotacja z retencją surowych logów 30–90 dni.
+- [ ] GoAccess na VPS-ie: raport HTML raz na dobę, dostępny tylko przez tailnet albo za hasłem; komenda `ssh martynka-ops stats` z podsumowaniem w terminalu.
+- [ ] Miary: unikalni odwiedzający (dzień/tydzień/miesiąc, przybliżenie), nowi vs powracający (pełne pobranie gry vs samo `sw.js`), uruchomienia z siecią (`sw.js`), urządzenia (iPad/Android/komputer), źródła wejść, opcjonalnie kraje, ile urządzeń ma najnowszą wersję, błędy 404.
+- [ ] Bez danych o tym, co dziecko robi w grze (rundy, etapy, błędy w zadaniach) — to zostaje na urządzeniu.
+- [ ] Krótka strona „Prywatność” (link dla rodzica, np. z ekranu powitalnego): co jest w logach, po co, jak długo; dane dziecka nie opuszczają urządzenia.
