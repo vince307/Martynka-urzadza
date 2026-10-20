@@ -809,7 +809,7 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 8.1 Spec red before (deliberate break: `ageBackOffered` always true → the final `null` assertion red; `backToAge` without `flush('now')` and a reload right after → the E2 assertion red, if the 500 ms debounce lets it), green after; restored
+- [x] 8.1 Spec red before (deliberate break: `ageBackOffered` always true → the final `null` assertion red; `backToAge` without `flush('now')` and a reload right after → the E2 assertion red, if the 500 ms debounce lets it), green after; restored — 40fbb71
 - [ ] 8.2 `npx playwright test tests/e2e/first-launch.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`
 - [ ] 8.3 Full local gate green
 

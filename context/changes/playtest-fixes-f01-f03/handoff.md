@@ -1,7 +1,7 @@
 # Handoff — `playtest-fixes-f01-f03` (slice fix:playtest-fixes-f01-f03)
 
-Written by the `/10x-implement` step, phase 7 (docs, follow-ups, seam sweep), run 2026-10-20-playtest-boot.
-Phase 7 committed (460a56d); local gate green; e2e left to the orchestrator. Phases 8-9 are e2e (no implement epilogue yet).
+Written by the `/10x-e2e` step, phase 8 (first-launch spec for "Wróć", risk #12), run 2026-10-20-playtest-boot.
+Phase 8 committed (40fbb71). Row 7.3 and 8.2/8.3 await the orchestrator's full e2e and gate. Phase 9 is e2e.
 
 ## 1. State
 
@@ -32,16 +32,16 @@ Phase 7 committed (460a56d); local gate green; e2e left to the orchestrator. Pha
 | 7.1, 7.2 | `muted gear` count 0, `placement.ts` no longer claims `buildWarmup`; 7 `Trigger:` lines |
 | `validate-rule-files.sh` | PASS (17 files, missing 0) |
 | sweep | no duplicated tally helper (one `tally` map owned by `warmup.ts`, used by `pickVariedFromStage`); remaining `muted` in src are the DOM class `overlay-muted`, no `E1-E2` default text left in src or design-gaps |
-| deliberate break | none named for this phase |
-| e2e | not run (orchestrator) |
+| deliberate break | `ageBackOffered` returning true: new test red at the final `ageBack` null assertion (received {x:90,y:928}); restored, green. The flush-removal break was not run: the spec waits for `save.dirty` false before the reload, so the debounce would hide it. |
+| e2e | first-launch.spec.ts 7 passed (6 old + 1 new, age 9 -> E5 warm-up); lint + tsc on spec OK; ports 4397/4398 freed |
 
 ## 4. Next command
 
-`/10x-e2e playtest-fixes-f01-f03 phase 8`
+`/10x-e2e playtest-fixes-f01-f03 phase 9`
 
 ## 5. Open
 
-- Row 7.3 waits for the orchestrator's e2e (`139 + 0`).
+- Rows 7.3, 8.2 (full e2e, baseline + 1) and 8.3 (full gate) wait for the orchestrator.
 - Manual rows: 7.4 [human] PRD FR-009, 7.5 [reviewer], 6.4-6.6, 4.5-4.7, 1.6, 3.5.
 - Epilogue (status implemented) after phase 9.
 
@@ -49,4 +49,5 @@ Phase 7 committed (460a56d); local gate green; e2e left to the orchestrator. Pha
 
 - T-1..T-3, P4-1..P4-3, P5-1, P5-2, P6-1..P6-3 stand.
 - P7-1 Did not invoke the Skill tool; followed the phase plan directly. AGENTS.md absent from the repo, so only CLAUDE.md edited.
+- P8-1 Spec uses age 9 (E5) as the new age: age 7 in October maps to E1, which has no warm-up. Spec added to first-launch.spec.ts as one test.
 - P7-2 Left `pickVariedSkills`/`byType` exports (used inside `variety.ts` and tests) rather than churn the module. Rejected: removing exports. Row 7.3 not ticked until the orchestrator's e2e.
