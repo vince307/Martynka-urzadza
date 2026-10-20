@@ -765,8 +765,8 @@ intended behaviour change (PA-1).
 
 #### Manual
 
-- [ ] 4.5 [visual] Task screen at 1440 and 1024 wide: gear at full colour, matching the speaker button family, states: idle, hint shown after one tap, hint gone after `hintMs`
-- [ ] 4.6 [visual] Room screen at 1440 and 1024 wide: gear and hint do not cover the variant panel or a room task button
+- [x] 4.5 [visual] Task screen at 1440 and 1024 wide: gear at full colour, matching the speaker button family, states: idle, hint shown after one tap, hint gone after `hintMs` — e259870 (visual gate, reviews/visual-review.md)
+- [x] 4.6 [visual] Room screen at 1440 and 1024 wide: gear and hint do not cover the variant panel or a room task button — e259870 (visual gate, reviews/visual-review.md)
 - [x] 4.7 [reviewer] Teacher read of the new `pl.ts` string (spelling, comma before "żeby") — impl-review
 
 ### Phase 5: When "Wróć" is offered (F-02 b core)
@@ -788,7 +788,7 @@ intended behaviour change (PA-1).
 
 #### Manual
 
-- [ ] 6.4 [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; the welcome screen reached by "Wróć" shows no HUD (star counter, gear); it covers no answer tile, keypad key, "Dalej" or the build id
+- [x] 6.4 [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; the welcome screen reached by "Wróć" shows no HUD (star counter, gear); it covers no answer tile, keypad key, "Dalej" or the build id — e259870 (visual gate, reviews/visual-review.md)
 - [x] 6.5 [reviewer] Reading `backToAge` against the exit order: cleanup → learner `null` → `flush('now')` → stop UI and Room → start welcome — impl-review (order matches)
 - [ ] 6.6 [human] Product choices the scope left open, decided by the agent (A-2 "Wróć" hidden when a parent chose the stage, A-3 visible through the whole warm-up/first round incl. mid-task, A-4 no confirmation): the maintainer confirms or asks for a change
 

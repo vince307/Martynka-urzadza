@@ -31,6 +31,7 @@ Trigger: next change to the warm-up pools or to `stepPlayable`.
 ## (impl-review F2) An e2e save barrier that means "written"
 `save.dirty` turns false when a write starts (`attempt` in `src/core/autosave.ts`), so `expect.poll(dirty false)` before `page.reload()` (`tests/e2e/first-launch.spec.ts` "Wróć" test and other reload specs) can let the reload cut an in-flight IndexedDB write. Fix: a runtime-only `writing` flag in `AutosaveStatus` and one e2e helper that waits for `!dirty && !writing`.
 Trigger: a flake of a reload spec that finds the older save, or the next change to `AutosaveStatus`.
+Fired at the visual gate (2026-10-20): the "Wróć" test failed 4 of 6 on the base. That spec now waits on finished writes (`writesDone`/`savedSince` in `tests/e2e/first-launch.spec.ts`: `save.writes` grew and `lastReason`), with no product change. The other reload specs and the `writing` flag remain open under the same trigger.
 
 ## (impl-review F3) Cap applied in draw order
 `pickVariedSkills` (`src/core/round/variety.ts`) caps in draw order, so an earlier-bucket draw can take a type slot that a later one-type current draw then exceeds (E2 step 5: 3 x ADD_SUB). Drawing the current-bucket draws first would avoid it but changes the skills drawn per seed.
