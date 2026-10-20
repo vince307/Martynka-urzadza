@@ -36,7 +36,8 @@ Trigger: a report of a boot stuck on the font, or the next change to the font lo
 
 ## Refusal-card focus after a dialog closes
 When a refused `replace` raises the refusal card under an open import or reset dialog, `mountSaveRefusedCard` calls `restart.focus()` at mount, so focus moves from the dialog (z-index 15) to the card behind it (z-index 10) while the dialog is still up, and the dialog's own focus handling may take it back on close (impl-review F3; touch-only tablet, so low risk).
-Trigger: the visual gate shows focus on a hidden button or lost after "Zamknij", or the next change to `src/ui/dom/saveRefusedCard.ts` or the dialog focus handling.
+Closed by the visual gate (VG-1): focus stayed in the dialog while it was open but was lost on `<body>` after "Zamknij"; `openDialog` `close` now hands it to the card, pinned in `save-transfer-blocked.spec.ts` #2 Z-8.
+Trigger: none (closed).
 
 ## Real-device hidden-tab measurement
 Row 2.6 [human] checks the hidden-tab start on a device.
@@ -61,3 +62,7 @@ Trigger: next change to `src/core/bootLimits.ts` or to the timer `arm` in `BootS
 ## CLAUDE.md points at the change folder (impl-review F5)
 The new "Boot hidden tab and error codes" sentence cites `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md`, which moves at archive.
 Trigger: `/10x-archive audit-boot-hidden-tab` (rewrite the path to `context/archive/...` and run `validate-rule-files.sh`).
+
+## "Obrazki" `Kod:` line not muted (visual gate)
+The `code` line of `createArtHealthView` (`src/ui/dom/artHealthView.ts`) is drawn in the body style, while the `Kod:` lines of "Gra bez internetu" and "Zapis gry" use `overlay-muted`. Predates this change (health-lines-and-smoke).
+Trigger: next change to `src/ui/dom/artHealthView.ts` or a parent report that the code line reads as a problem sentence.

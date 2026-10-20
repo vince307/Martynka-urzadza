@@ -715,7 +715,7 @@ None: save format v4 unchanged (table in Overview).
 #### Manual
 
 - [x] 3.4 [reviewer] Teacher read of `settings.artCutBackground` (spelling, comma before "bo", calm, no blame on the internet) — impl-review 5295e8a (teacher read OK)
-- [ ] 3.5 [visual] Settings "Obrazki" at 1440 and 1024 wide, states: cut without a hidden span (today's `artCut`), cut after a hidden span (`artCutBackground`) — reached in the hook build with `?e2eArt=stallall` and the visibility fake of phase 8
+- [x] 3.5 [visual] Settings "Obrazki" at 1440 and 1024 wide, states: cut without a hidden span (today's `artCut`), cut after a hidden span (`artCutBackground`) — reached in the hook build with `?e2eArt=stallall` and the visibility fake of phase 8 — visual gate, reviews/visual-review.md
 
 ### Phase 4: An error code with the skill id (I-1 core, C-2, C-3, I-3)
 
@@ -737,7 +737,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 5.4 [visual] The "Ups!" card at 1440 and 1024 wide, states: `?e2eFail=step` (`Kod: Error · Wersja <id>`), `?e2eFail=boot`; the line is muted, one line at 1024, the button keeps focus
+- [x] 5.4 [visual] The "Ups!" card at 1440 and 1024 wide, states: `?e2eFail=step` (`Kod: Error · Wersja <id>`), `?e2eFail=boot`; the line is muted, one line at 1024, the button keeps focus — visual gate, reviews/visual-review.md
 
 ### Phase 6: A refused replace never advises deleting site data (Z-8)
 
@@ -750,7 +750,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 6.5 [visual] Import and reset dialogs at 1440 and 1024 wide after a replace refused with `NewerSave`: the dialog shows `deviceNewer`, no "usuń dane"; after "Zamknij" the refusal card with `Kod: NewerSave · Wersja <id>` is visible and its button can be tapped (reached with the phase-10 steps)
+- [x] 6.5 [visual] Import and reset dialogs at 1440 and 1024 wide after a replace refused with `NewerSave`: the dialog shows `deviceNewer`, no "usuń dane"; after "Zamknij" the refusal card with `Kod: NewerSave · Wersja <id>` is visible and its button can be tapped (reached with the phase-10 steps) — visual gate, reviews/visual-review.md
 
 ### Phase 7: Docs, follow-ups and seam sweep
 
