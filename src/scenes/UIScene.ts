@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Scene, type Time } from 'phaser';
 import { openInputSession, type InputSession, type InputSuspender } from '../core/inputSuspend';
 import { IDLE, longPress, type LongPressEvent, type LongPressState } from '../core/longPress';
 import { effectiveAutoRead } from '../core/narration/voice';
@@ -31,6 +31,7 @@ import { E2E_FORCED_FAILURE } from '../testing/e2eHook';
 import type { Narrator } from '../ui/narrator';
 import { applySoundPrefs } from '../core/soundPrefsApply';
 import { playCues, soundOf } from '../ui/sound';
+import { SettingsHint } from '../ui/widgets/SettingsHint';
 import { SettingsIcon } from '../ui/widgets/SettingsIcon';
 import { RoomSwitchButton } from '../ui/widgets/RoomSwitchButton';
 import { SpeakerButton } from '../ui/widgets/SpeakerButton';
@@ -60,6 +61,8 @@ export class UIScene extends Scene {
     private roomSwitch!: RoomSwitchButton;
     private narrator: Narrator | undefined;
     private settingsIcon!: SettingsIcon;
+    private settingsHint!: SettingsHint;
+    private hintTimer: Time.TimerEvent | undefined;
     private title!: HudTitle;
     private hold: LongPressState = IDLE;
     private closeDialog: (() => void) | undefined;
@@ -112,10 +115,13 @@ export class UIScene extends Scene {
             up: (p) => this.feed(p.wasCanceled ? { type: 'cancel' } : { type: 'up', id: p.id }),
             out: () => this.feed({ type: 'cancel' }),
         });
+        this.settingsHint = new SettingsHint(this);
+        this.hintTimer = undefined;
         this.input.on('pointermove', (p: { id: number; x: number; y: number }) => this.feed({ type: 'move', id: p.id, x: p.x, y: p.y }));
 
         this.events.once('shutdown', () => {
             this.hold = IDLE;
+            this.hideHint();
             this.closeDialog?.();
             this.closeSettings();
             this.registry.events.off(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
@@ -138,11 +144,30 @@ export class UIScene extends Scene {
         this.hold = next.state;
         if (next.fire) {
             this.openSettings();
+        } else if (next.tap) {
+            this.showHintOnce();
         }
+    }
+
+    /** The first short tap of a page load shows the hint for `hintMs`; later taps do nothing. */
+    private showHintOnce(): void {
+        if (this.registry.get(REGISTRY_KEYS.settingsHintShown) === true) {
+            return;
+        }
+        this.registry.set(REGISTRY_KEYS.settingsHintShown, true);
+        this.settingsHint.show();
+        this.hintTimer = this.time.delayedCall(balance.parentSettings.hintMs, () => this.hideHint());
+    }
+
+    private hideHint(): void {
+        this.hintTimer?.remove(false);
+        this.hintTimer = undefined;
+        this.settingsHint.hide();
     }
 
     /** Gate for an adult, then the settings panel; the game input stays off under both and the narrator is silenced. */
     private openSettings(): void {
+        this.hideHint();
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
         const suspender = this.registry.get(REGISTRY_KEYS.inputSuspender) as InputSuspender | undefined;
         if (!learner || !suspender || this.session?.active()) {
@@ -307,6 +332,11 @@ export class UIScene extends Scene {
     /** Centre of the settings gear, for the e2e hook. */
     settingsTarget(): { x: number; y: number } {
         return this.settingsIcon.target();
+    }
+
+    /** Whether the settings hint is on screen now, for the e2e hook. */
+    settingsHintVisible(): boolean {
+        return this.settingsHint.visible();
     }
 
     /** The variant title on screen (text and badge), for the e2e hook; null for an ordinary round. */

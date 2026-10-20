@@ -31,6 +31,7 @@ export const pl = {
     },
     // DESIGN-GAP (docs/design-gaps.md rows 26-27): the kit has no settings view or progress preview; the texts are ours. Stage names, "Zatwierdź" and "Anuluj" come from pl.parent / pl.stages.
     settings: {
+        hint: 'Przytrzymaj, żeby otworzyć ustawienia rodzica',   // F-02 a: shown after a short tap on the gear (wording from the maintainer)
         title: 'Ustawienia rodzica',
         autoReadHeading: 'Czytanie poleceń na głos',
         autoReadOn: 'Włączone',

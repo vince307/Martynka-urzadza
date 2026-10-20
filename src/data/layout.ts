@@ -214,6 +214,7 @@ export const REGISTRY_KEYS = {
     roomProblems: 'roomProblems',       // RoomProblem[] (core/rooms): where the saved rooms disagreed with the salon at load, set in main.ts; runtime only, not in SAVE_KEYS, nothing is repaired
     salonCarried: 'salonCarried',       // SalonCarried | null (core/save): this load moved the old salon to the new look, set in main.ts; runtime only, not in SAVE_KEYS
     swStatus: 'swStatus',               // SwStatus (core/swStatus), the service worker's runtime record, set in main.ts; runtime only, not in SAVE_KEYS
+    settingsHintShown: 'settingsHintShown', // boolean: the hint after the first tap on the settings gear was shown in this page load; runtime only, not in SAVE_KEYS
     forcedFailure: 'forcedFailure',     // e2e build only; never set in production: the site that throws on purpose (main.ts, from the page address)
 } as const;
 
@@ -419,9 +420,13 @@ export const HUD_LAYOUT = {
     // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
     // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
     title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
-    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; muted on purpose, no feedback while held.
-    // DESIGN-GAP (docs/design-gaps.md rows 25 and 28): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
-    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 4, fill: 0xfff5df, borderColor: 0xd8bd73, iconColor: 0x8fb0a8, alpha: 0.7, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; full colour in the family of the
+    // speaker button (playtest F-02: a muted gear looked disabled), no feedback while held.
+    // DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 5, fill: 0xfffdf2, borderColor: 0xd3b77d, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    // Bubble with the hint after a short tap on the gear (F-02 a): right edge level with the gear, above it, three lines of text.
+    // DESIGN-GAP (docs/design-gaps.md row 151): the kit has no hint for a tap on the settings icon.
+    settingsHint: { right: 1878, bottom: 936, width: 380, padding: 22, radius: 28, border: 4, fill: 0xfff0b9, borderColor: 0xd9bd73 },
 } as const;
 
 /**

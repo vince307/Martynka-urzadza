@@ -259,7 +259,7 @@ skills of each half are the skills `pickSkills` would draw from the same pools i
 
 - New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged
 - Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing
-- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order)
+- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order) — e6b1d9c (e2e 138/139 + SV2-10 flake green 3/3 alone, orchestrator)
 
 ---
 
@@ -310,7 +310,7 @@ no tap; cancel → no tap; existing "a short tap (down, up) never fires" stays.
 - New tests red before the change, green after; unit `<phase-2 count> + N`
 - Deliberate break: `tap` true on every `up` → the drifted-press case red; `autoReadStages` back to `['E1','E2']` → the pin red; each restored; meta-check: the pin guards the data, the rule test guards `effectiveAutoRead` — both needed
 - `grep -rn "autoReadStages" src` lists only `balance.ts` and the three readers (`TaskScene`, `RoomScene`, `UIScene`)
-- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` runs on E3 and asserts silence)
+- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` runs on E3 and asserts silence) — 9f0cb7c (e2e 138/139 + SV2-10 flake green 3/3 alone, orchestrator)
 
 #### Manual Verification:
 
@@ -739,7 +739,7 @@ intended behaviour change (PA-1).
 
 - [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged — e6b1d9c
 - [x] 2.2 Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing — e6b1d9c
-- [ ] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order)
+- [x] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order)
 
 ### Phase 3: Narrator off by default and the tap outcome of the hold (F-01, F-02 a core)
 
@@ -748,7 +748,7 @@ intended behaviour change (PA-1).
 - [x] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N` — 9f0cb7c
 - [x] 3.2 Deliberate break: `tap` true on every `up` → the drifted-press case red; `autoReadStages` back to `['E1','E2']` → the pin red; each restored; meta-check: the pin guards the data, the rule test guards `effectiveAutoRead` — both needed — 9f0cb7c
 - [x] 3.3 `grep -rn "autoReadStages" src` lists only `balance.ts` and the three readers (`TaskScene`, `RoomScene`, `UIScene`) — 9f0cb7c
-- [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` runs on E3 and asserts silence)
+- [x] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` runs on E3 and asserts silence)
 
 #### Manual
 
@@ -758,9 +758,9 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 4.1 `grep -n "alpha: 0.7" src/data/layout.ts` no longer matches `HUD_LAYOUT.settings`; the HUD touch-target test (`MIN_TOUCH_TARGET`) green
-- [ ] 4.2 `grep -n "settingsHintShown" src/data/layout.ts` shows it outside `SAVE_KEYS`; `tests/` save-key tests green unchanged
-- [ ] 4.3 Deliberate break: show the hint on `fire` instead of `tap` → no automated test can see it here (canvas only); the break is proven in phase 9's e2e — record that the phase-4 proof is the `[visual]` rows below plus phase 9
+- [x] 4.1 `grep -n "alpha: 0.7" src/data/layout.ts` no longer matches `HUD_LAYOUT.settings`; the HUD touch-target test (`MIN_TOUCH_TARGET`) green
+- [x] 4.2 `grep -n "settingsHintShown" src/data/layout.ts` shows it outside `SAVE_KEYS`; `tests/` save-key tests green unchanged
+- [x] 4.3 Deliberate break: show the hint on `fire` instead of `tap` → no automated test can see it here (canvas only); the break is proven in phase 9's e2e — record that the phase-4 proof is the `[visual]` rows below plus phase 9
 - [ ] 4.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (`parent-settings.spec.ts` "#14 only a 2-second hold …" still green: a tap shows a hint, never the gate)
 
 #### Manual
