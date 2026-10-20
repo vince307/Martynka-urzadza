@@ -721,10 +721,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 4.1 New tests red before the change, green after; unit `<phase-3 count> + N`
-- [ ] 4.2 Seeds unchanged: `git diff main -- tests/generateTask.test.ts tests/contentInvariants.test.ts tests/solvableInMode.test.ts | grep '^-[^-]'` empty (only additions), and those suites are green; the rng-order oracle is the existing case "does not consume rng differently from the generator: the task text matches the bare generator" in `tests/generateTask.test.ts`
-- [ ] 4.3 Deliberate break: call `numberChoices` before the generator (rng order changed) → the "does not consume rng differently" case of `tests/generateTask.test.ts` red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored
-- [ ] 4.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content)
+- [x] 4.1 New tests red before the change, green after; unit `<phase-3 count> + N` — 511d4f1
+- [x] 4.2 Seeds unchanged: `git diff main -- tests/generateTask.test.ts tests/contentInvariants.test.ts tests/solvableInMode.test.ts | grep '^-[^-]'` empty (only additions), and those suites are green; the rng-order oracle is the existing case "does not consume rng differently from the generator: the task text matches the bare generator" in `tests/generateTask.test.ts` — 511d4f1
+- [x] 4.3 Deliberate break: call `numberChoices` before the generator (rng order changed) → the "does not consume rng differently" case of `tests/generateTask.test.ts` red (proves the oracle sees rng order); drop `assertDrawable` from the `try` → the icon-limit case red; drop the name copy → the `RangeError` name case red; each restored — 511d4f1
+- [x] 4.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content) — 511d4f1
 - [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 ### Phase 5: The "Ups!" card shows the code (I-1, C-1)
