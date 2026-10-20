@@ -1,50 +1,48 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-Phase 6 (`/10x-tdd`) is committed as 814e37b: a replace refused with `NewerSave` blocks like an ordinary refusal and the dialogs show `deviceNewer`. Phases 1-5 are done (e6a0b43, 2e67a1d, 9013f59, 511d4f1, 1482ff4); orchestrator e2e for 3-5 was 141+0 and rows 3.3, 4.5, 5.3 are ticked.
+Phase 7 (`/10x-implement`) is committed as e33fbff: CLAUDE.md, design gaps 29/51/71, follow-ups file, seam sweep. Phases 1-6 are done (e6a0b43, 2e67a1d, 9013f59, 511d4f1, 1482ff4, 814e37b); orchestrator e2e for 3-5 was 141+0 and rows 3.3, 4.5, 5.3 are ticked.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | phases 1-6 (p6 814e37b), plus docs commits |
+| Commits | phases 1-7 (p7 e33fbff), plus docs commits |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows remaining | 6.4 e2e (orchestrator), 6.5 [visual], phases 7-10; 3.4 [reviewer], 3.5 [visual] open |
+| `## Progress` rows remaining | 6.4 and 7.4 e2e (orchestrator), 6.5 [visual], 7.5 [reviewer], phases 8-10; 3.4 [reviewer], 3.5 [visual] open |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/autosave.ts` | `replace` catch: `refuseWrites('newer', NEWER_SAVE)` instead of bare `blockedBy ??= 'newer'` (onBlocked once, timer cancelled) |
-| `src/ui/dom/saveSummaryView.ts` | `failureText`: `NewerSave` -> `pl.saveTransfer.deviceNewer` before the forced branch |
-| `tests/autosave.test.ts` | new describe "a replace refused with NewerSave blocks like an ordinary refusal (Z-8)"; the old "replace meets ... NewerSave" test now expects `['newer']` |
-| `tests/saveSummaryView.test.ts` | describe "failureText (Z-8)" |
+| `CLAUDE.md` | "Current state": boot limits on visible time with `hiddenMs`, error card `Kod:`, one new sentence for this change; AGENTS.md says nothing of these, untouched |
+| `docs/design-gaps.md` | rows 29, 51, 71 updated (gap 153 already existed from phase 3) |
+| `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` | 13 `Trigger:` lines (H-6, A-6/B-6, A-10, L-8, ASL, G-3, S12, FontFace, focus, device, TXT-06 closed, isolation red, `pl.errorCard.build`) |
+| `src/core/bootLimits.ts`, `src/scenes/BootScene.ts` | sweep: `bootLimitReached` replaces a second copy of the hidden-time subtraction |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (observed) | `expected [] to deeply equal [ [ 'newer', 'NewerSave' ] ]`; `expected 'plain' to be 'Nowsza wersja gry...'` (forced=false); forced=true Received the `siteDataAdvice` text ("usuń dane tej strony ... To usuwa też zapis gry.") |
-| Deliberate break 1 | bare `blockedBy ??= 'newer'` back -> 2 autosave tests red (new one and the updated old one); restored |
-| Deliberate break 2 | `NewerSave` branch removed from `failureText` -> both Z-8 text cases red, forced one Received `siteDataAdvice`; restored |
-| Meta-check | the forced case goes red on today's text with the harmful advice, so the test sees it; the updated old test pinned the pre-fix silent listener, changed on purpose per plan review F4 |
+| rows 7.1-7.3 | wall-clock greps show only hidden-time text; 13 triggers; `errorCard.build` absent from `src` (still used by `tests/e2e/error-boundary.spec.ts`, kept, named in the commit) |
 | lint, typecheck | OK |
-| unit | 3707 passed, 192 files (phase-5 3703 + 4) |
+| unit | 3707 passed, 192 files (phase 6 3707, delta 0) |
 | deploy scripts, sample E1-E6, build | OK; `e2e hook: absent (2 chunks checked)` |
-| row 6.3 | `git diff main -- src/core/save.ts src/storage`: only phase-4 `errorCode`; `writeVerdict`/`guardedPut` untouched |
-| e2e | left to the orchestrator (`<branch e2e baseline> + 0`; `save-transfer-blocked.spec.ts`, `stale-tab.spec.ts`) |
+| validate-rule-files.sh | PASS |
+| e2e | left to the orchestrator (`<branch e2e baseline> + 0`) |
 
 ## 4. Next command
 
-`/10x-implement audit-boot-hidden-tab phase 7`
+`/10x-e2e audit-boot-hidden-tab phase 8`
 
 ## 5. Open
 
-- Row 6.4 until the orchestrator's e2e; 6.5 [visual] (phase 10), 3.4 [reviewer], 3.5 [visual], 5.4 [visual], 2.5 [reviewer], 2.6 [human], 7.5 [reviewer] not mine.
-- `pl.errorCard.build` still used by `tests/e2e/error-boundary.spec.ts`; phase 7 row 7.3 removes it only if unused.
-- Phase 7 is `Driver: impl` (docs, follow-ups, seam sweep).
+- Rows 6.4 and 7.4 until the orchestrator's e2e; 6.5 and 3.5, 5.4 [visual], 3.4, 2.5, 7.5 [reviewer], 2.6 [human] not mine.
+- `pl.errorCard.build` is used only by `tests/e2e/error-boundary.spec.ts`; phase 9 may drop it.
+- The follow-up "isolation-only red of load-and-tab-guard" is restated in the follow-ups file; phase 8 closes or restates it with evidence.
+- Phase 8 is `Driver: e2e`; do not run the implement epilogue before phase 10.
 
 ## 6. Autonomous decisions
 
@@ -56,3 +54,5 @@ Phase 6 (`/10x-tdd`) is committed as 814e37b: a replace refused with `NewerSave`
 - D-5 **Phase 5 decisions**: no options-object, a positional `code` parameter (one caller); `pl.errorCard.build` kept for now. Commit message and next-phase prompts decided in place, stop after phase 5.
 
 - D-6 **Phase 6 decisions**: Driver stays `tdd` (no `refuseWrites` in the replace catch at start). Commit message, manual-gate, dirty-paths and next-phase prompts decided in place: planned set only, stop after phase 6. The pre-existing test pinning a silent listener on a refused replace was changed to expect `newer` (plan review F4 reverses it). Would change: the maintainer wanting replace refusals kept silent for the listener.
+
+- D-7 **Phase 7 decisions**: Driver stays `impl`. Commit message, dirty-paths, next-phase prompts decided in place. AGENTS.md left alone (no stale sentence). Gap 153 already existed, so only rows 29, 51, 71 changed. Kept `pl.errorCard.build` for the e2e spec.

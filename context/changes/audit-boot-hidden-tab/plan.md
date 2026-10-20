@@ -756,9 +756,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [x] 7.1 `grep -rn "wall clock" src/core/bootLimits.ts src/scenes/BootScene.ts CLAUDE.md` shows only text that names the hidden time
-- [x] 7.2 `grep -c "^Trigger:" context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` ≥ 10
-- [x] 7.3 `grep -rn "errorCard.build" src` empty, or the remaining use named in the phase commit
+- [x] 7.1 `grep -rn "wall clock" src/core/bootLimits.ts src/scenes/BootScene.ts CLAUDE.md` shows only text that names the hidden time — e33fbff
+- [x] 7.2 `grep -c "^Trigger:" context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md` ≥ 10 — e33fbff
+- [x] 7.3 `grep -rn "errorCard.build" src` empty, or the remaining use named in the phase commit — e33fbff
 - [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
