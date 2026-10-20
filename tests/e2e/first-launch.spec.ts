@@ -199,6 +199,8 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     expect(first.ageBack).toBeTruthy();
     await tapScene(page, first.ageBack!);
     await screenIs(page, 'welcome');
+    // "Wróć" writes at once (flush 'now' clears dirty when the write starts); a debounced write would still be pending here.
+    expect((await snapshot(page)).save?.dirty).toBe(false);
     const age9 = (await targets(page)).ages?.find((a) => a.age === 9);
     expect(age9).toBeDefined();
     await tapScene(page, age9!);
