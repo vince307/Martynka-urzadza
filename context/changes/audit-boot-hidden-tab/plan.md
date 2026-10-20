@@ -688,7 +688,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 1.1 New and rewritten tests red before the change (assertion, not import error: export stubs first), green after; unit `<branch baseline> + N` — e6a0b43
 - [x] 1.2 Deliberate break: ignore `hiddenMs` in `bootLimitDue` → the hidden-minute case red; reset the span start on a second hide → the idempotence case red; each restored; meta-check: the rewritten case must fail on today's code (it is the old assertion inverted), otherwise it proves nothing — e6a0b43
 - [x] 1.3 `grep -rn "bootLimitDue\|bootLimitWait" src` lists only `bootLimits.ts` and `BootScene.ts` — e6a0b43
-- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (e2e part left to the orchestrator) — e6a0b43
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (e2e part left to the orchestrator) — e6a0b43; e2e 141+0 orchestrator at e6a0b43/d1a827e
 
 ### Phase 2: BootScene pauses its limits while the tab is hidden and records the hidden time (H-1)
 
@@ -697,7 +697,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 2.1 `grep -n "visibilitychange" src/scenes/BootScene.ts` shows one `addEventListener` and its `removeEventListener`; `git diff --stat main -- src/main.ts` shows no change to the `visibilitychange` handler (L-S3 not fired) — 2e67a1d
 - [x] 2.2 `grep -n "bootLoad" src/data/layout.ts` shows `hiddenMs` and "not in SAVE_KEYS"; `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty — 2e67a1d
 - [x] 2.3 Deliberate break: no automated unit test can see the scene listener (canvas boot, real timers); record that the proof is phase 8's e2e (its break: the scene passes `hiddenMs` 0 to the rule, i.e. no subtraction → red; dropping only the clear-on-hide is NOT a valid break, the hidden-aware guard re-arms and stays green by design, A-2) plus the [reviewer] row below — 2e67a1d
-- [ ] 2.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (the `#15 A-1/A-2` and `#14 B-4` stallall specs in `load-and-tab-guard.spec.ts` stay green: never hidden, same timing)
+- [x] 2.4 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (the `#15 A-1/A-2` and `#14 B-4` stallall specs in `load-and-tab-guard.spec.ts` stay green: never hidden, same timing) — 2e67a1d (e2e 141+0, orchestrator)
 
 #### Manual
 
@@ -708,8 +708,8 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N`; existing `artHealthLines` cases unchanged
-- [ ] 3.2 Deliberate break: ignore `background` in `artHealthLines` → the background case red; put "internet" in the new string → the text test red; each restored; meta-check: the view mapping has no unit test (L-8 deferred) — the [visual] row is its proof
+- [x] 3.1 New tests red before the change, green after; unit `<phase-2 count> + N`; existing `artHealthLines` cases unchanged — 9013f59
+- [x] 3.2 Deliberate break: ignore `background` in `artHealthLines` → the background case red; put "internet" in the new string → the text test red; each restored; meta-check: the view mapping has no unit test (L-8 deferred) — the [visual] row is its proof — 9013f59
 - [ ] 3.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` "a cut start says some pictures did not finish" still sees `artCut`: never hidden)
 
 #### Manual
