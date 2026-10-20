@@ -118,6 +118,7 @@ export const FONT_SIZES = {
     result: 80,             // kit .result (S-15 dice minigame)
     diceSign: 96,           // kit .dice-expression
     doneWord: 92,           // kit .success-card .final-word
+    settingsHint: 32,       // DESIGN-GAP row 151: the hint bubble next to the gear (visual gate F-02: 32 px fits the right margin in five short lines)
 } as const;
 
 /**
@@ -163,6 +164,7 @@ export const FONT_WEIGHTS = {
     result: 750,            // kit .result
     diceSign: 750,          // kit .dice-expression
     doneWord: 750,          // kit .final-word
+    settingsHint: 650,
 } as const satisfies Record<keyof typeof FONT_SIZES, number>;
 
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
@@ -426,9 +428,11 @@ export const HUD_LAYOUT = {
     // speaker button (playtest F-02: a muted gear looked disabled), no feedback while held.
     // DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
     settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 5, fill: 0xfffdf2, borderColor: 0xd3b77d, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
-    // Bubble with the hint after a short tap on the gear (F-02 a): right edge level with the gear, above it, three lines of text.
+    // Bubble with the hint after a short tap on the gear (F-02 a): above the gear, in the right margin and over the notebook's right border only
+    // (left edge 1700 = the right end of the widest bar, a tall drawing's; every answer tile, key, "Dalej", tray and room control ends left of it),
+    // five short lines at FONT_SIZES.settingsHint. Visual gate F-02: the first 380 px bubble covered "Dalej", a tile and "Wybieram".
     // DESIGN-GAP (docs/design-gaps.md row 151): the kit has no hint for a tap on the settings icon.
-    settingsHint: { right: 1878, bottom: 936, width: 380, padding: 22, radius: 28, border: 4, fill: 0xfff0b9, borderColor: 0xd9bd73 },
+    settingsHint: { right: 1912, bottom: 936, width: 212, padding: 12, radius: 24, border: 4, fill: 0xfff0b9, borderColor: 0xd9bd73 },
 } as const;
 
 /**

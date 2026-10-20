@@ -14,11 +14,12 @@ export class SettingsHint {
 
     constructor(scene: Scene) {
         const { right, bottom, width, padding, radius, border, fill, borderColor } = HUD_LAYOUT.settingsHint;
-        this.label = scene.add.text(0, 0, pl.settings.hint, { ...textStyle('barButton'), wordWrap: { width: width - 2 * padding } });
+        // The box is added first so the label draws over it (display order = creation order).
+        this.box = scene.add.graphics();
+        this.label = scene.add.text(0, 0, pl.settings.hint, { ...textStyle('settingsHint'), wordWrap: { width: width - 2 * padding } });
         const height = this.label.height + 2 * padding;
         const left = right - width;
         const top = bottom - height;
-        this.box = scene.add.graphics();
         this.box.fillStyle(fill, 1);
         this.box.fillRoundedRect(left, top, width, height, radius);
         this.box.lineStyle(border, borderColor, 1);
