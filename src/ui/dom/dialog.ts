@@ -71,7 +71,11 @@ export const openDialog = (
             closed = true;
             document.removeEventListener('keydown', handleKey);
             overlay.remove();
-            previous?.focus();
+            // A card raised while the dialog was up (the refusal card after a refused replace) takes the focus back: the
+            // element that opened the dialog is gone or sits under the card (visual gate audit-boot-hidden-tab, VG-1).
+            const card = parent.ownerDocument.querySelector<HTMLElement>('[role="alertdialog"]');
+            const back = previous?.isConnected && (!card || card.contains(previous)) ? previous : card?.querySelector<HTMLElement>(FOCUSABLE);
+            back?.focus();
         },
     };
 };

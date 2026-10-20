@@ -244,4 +244,9 @@ test('#2 Z-8 a reset refused as a newer save says so, blocks writes and shows th
     expect(build).toBeTruthy();
     await expect(card.getByText(pl.saveFailed.detail('NewerSave', build!))).toBeVisible();
     expect((await snapshot(page)).save!.store!.writtenVersion).toBe(SAVE_VERSION + 1);
+
+    // "Zamknij" leaves the card on screen with the focus on its restart button, never lost on the page (visual gate VG-1).
+    await resetDialog.getByRole('button', { name: pl.saveTransfer.close, exact: true }).tap();
+    await expect(resetDialog).toBeHidden();
+    await expect(card.getByRole('button', { name: pl.saveRefused.restart, exact: true })).toBeFocused();
 });
