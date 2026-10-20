@@ -785,7 +785,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 10.1 Spec red before (deliberate break: remove the `NewerSave` branch of `failureText` → the dialog text assertion red; keep the bare `blockedBy ??=` in `replace` → the card assertion red), green after; restored
+- [x] 10.1 Spec red before (deliberate break: remove the `NewerSave` branch of `failureText` → the dialog text assertion red; keep the bare `blockedBy ??=` in `replace` → the card assertion red), green after; restored — c5b4db4
 - [ ] 10.2 `npx playwright test tests/e2e/save-transfer-blocked.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1` over phase 9
-- [ ] 10.3 `npm run build` prints `e2e hook: absent (` (no seam leaked)
-- [ ] 10.4 Full local gate green
+- [x] 10.3 `npm run build` prints `e2e hook: absent (` (no seam leaked) — c5b4db4
+- [x] 10.4 Full local gate green — c5b4db4
