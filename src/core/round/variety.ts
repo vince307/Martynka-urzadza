@@ -4,7 +4,8 @@
 // step), so the 60/30/10 bucket shares of the same seed stay what they were; the reorder uses no rng.
 import type { Rng } from '../rng';
 import type { SkillDef } from '../types';
-import type { SkillBuckets, Weights } from './pick';
+import { playable, type SkillBuckets, type Weights } from './pick';
+import type { StageDef } from '../types';
 
 export interface VarietyRules {
     /** Most tasks of one type in a round; a pool that has nothing else left is played whole. */
@@ -72,3 +73,23 @@ export const spreadTypes = (skills: readonly SkillDef[], typeOf: TypeOf = byType
 
 export const variedRound = (buckets: SkillBuckets, weights: Weights, rng: Rng, count: number, rules: VarietyRules, typeOf: TypeOf = byType): SkillDef[] =>
     spreadTypes(pickVariedSkills(buckets, weights, rng, count, rules, typeOf), typeOf);
+
+/**
+ * Warm-up draw: like `pickSkills` (uniform over the playable skills of the stage minus `blocked`, the whole pool when
+ * the filter empties it, one `rng.pick` per draw), but a type already at the cap in `counts` is left out while another
+ * is left. `counts` is owned by the caller and shared by the two halves, so the cap holds over the whole warm-up.
+ */
+export const pickVariedFromStage = (stage: StageDef, rng: Rng, count: number, counts: Map<string, number>, rules: VarietyRules, blocked?: (s: SkillDef) => boolean, typeOf: TypeOf = byType): SkillDef[] => {
+    const all = stage.steps.flatMap((step) => step.skills).filter(playable);
+    const kept = blocked ? all.filter((skill) => !blocked(skill)) : all;
+    const pool = kept.length > 0 ? kept : all;
+    if (pool.length === 0) {
+        throw new RangeError(`Stage ${stage.id} has no playable skills`);
+    }
+    return Array.from({ length: count }, () => {
+        const open = pool.filter((skill) => (counts.get(typeOf(skill)) ?? 0) < rules.maxPerType);
+        const skill = rng.pick(open.length > 0 ? open : pool);
+        counts.set(typeOf(skill), (counts.get(typeOf(skill)) ?? 0) + 1);
+        return skill;
+    });
+};

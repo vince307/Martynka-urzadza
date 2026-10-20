@@ -727,7 +727,7 @@ intended behaviour change (PA-1).
 - [x] 1.2 Existing `tests/curriculumPick.test.ts`, `tests/pick.test.ts`, `tests/review.test.ts`, `tests/reviewGuards.test.ts`, `tests/artFilter.test.ts`, `tests/pictureMode.test.ts` green unchanged (`git diff --stat` of those files empty) — 49a682f
 - [x] 1.3 Deliberate break: drop the cap filter → the synthetic `[A1, A2, B1]` case and oracle (b) red; skip `spreadTypes` → oracle (c) red; each restored; meta-check: (a) proves the shares only because the rng stream is aligned — a break that adds an extra `rng.next()` per draw must turn (a) red too (try it once) — 49a682f
 - [x] 1.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content) — 49a682f
-- [ ] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (local part green: lint, typecheck, unit 3662, deploy scripts, sample E1-E6, build absent; e2e left to the orchestrator)
+- [x] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (local part green: lint, typecheck, unit 3662, deploy scripts, sample E1-E6, build absent; e2e left to the orchestrator) — 49a682f (e2e 139+0 by orchestrator)
 
 #### Manual
 
@@ -737,8 +737,8 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged
-- [ ] 2.2 Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing
+- [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`; existing `tests/warmup.test.ts` assertions unchanged
+- [x] 2.2 Deliberate break: give each half its own tally → the "cap over all 6" case red; restored; meta-check: the case must use a pool where the halves share a type (the previous and current stage both have ADD_SUB), otherwise the break proves nothing
 - [ ] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (the first-launch specs answer through the hook, not by task order)
 
 ### Phase 3: Narrator off by default and the tap outcome of the hold (F-01, F-02 a core)
