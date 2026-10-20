@@ -56,8 +56,8 @@ Grounded in `research.md` (its Code References are the source, not re-searched) 
   (research): 15 of 62 playable steps have one type in the current bucket; 41.9 % of today's rounds have > 2 tasks of a
   type, 59.7 % a same-type neighbour.
 - `docs/design-gaps.md` ends at row 150. `context/foundation/lessons.md` does not exist (nothing to apply).
-- **Baseline**: the contract's baseline line is the unfilled placeholder `<<<BASELINE>>>`; every phase measures its
-  own branch baseline before its first edit and writes `baseline + delta`.
+- **Baseline**: the contract now records `main` at 64fd3ea (unit 3656, e2e 139); every phase still measures its own
+  branch baseline before its first edit and writes `baseline + delta`.
 
 ## Desired End State
 
@@ -127,7 +127,10 @@ ordered so each is green alone and touches at most one new UI component.
   type has at most `ceil(n / 2)` tasks.
 - **Warm-up (phase 2).** Type counts are shared across the 6 picks (cap 2 over the whole warm-up); the reorder runs
   inside each half (tasks 0–2 previous stage, 3–5 current), the second half seeded with the last type of the first half
-  as "previous", so tasks 2 and 3 differ when possible.
+  as "previous", so tasks 2 and 3 differ when possible. The seed is soft (plan-review F2): a greedy seeded with the
+  previous type can create an in-half neighbour (second half `[A, A, B]` after an `A` gives `B A A`), so `buildWarmup`
+  keeps the seeded order only when it has no same-type neighbour inside the half and otherwise uses the unseeded
+  `spreadTypes` order (`A B A`, one neighbour across the boundary). In-half variety wins over the boundary.
 - **"Wróć" exit order (phase 6)**, from research § F-02 (b): (1) cleanup as in `applyParentStage` (narrator `cancel`,
   `feedDrag({ type: 'reset' })`, `endFlyingStars`, camera tween kill; registry `narration`, `roomSwitch`, `hudTitle`
   cleared); (2) `registry.set(REGISTRY_KEYS.learner, null)` — `set`, not `remove` (the autosaver listens to
@@ -425,7 +428,9 @@ null || variants.puzzleDay !== null || variants.puzzlesDone.length > 0 || learne
 
 **Contract**: fresh child-placed learner → offered; `stageOverriddenByParent` → not; `roundsSince` 1 → not; after a
 variant (`lastMinigame` set, `roundsSince` 0) → not; history of 6 (warm-up only) → offered; history of 7 → not; a v1
-fixture lifted by `decodeSave` (`tests/fixtures/save-v1*.json` with history) → not offered. Save: `encodeSave` of a
+fixture lifted by `decodeSave`: `tests/fixtures/save-v1.json` holds only 2 history entries and fresh `variants` after
+`MIGRATIONS[1]`, so it IS offered (the accepted edge in the brief, pinned so it stays a known decision, plan-review
+F1); the same decoded learner with its history extended in the test to 7 entries → not offered. Save: `encodeSave` of a
 session with `learner: null`, `stars: 7`, a bought salon task → `decodeSave` + `validateSave` accept it, stars and rooms
 equal, `needsPlacement` true.
 
@@ -434,7 +439,7 @@ equal, `needsPlacement` true.
 #### Automated Verification:
 
 - New tests red before the change, green after; unit `<phase-4 count> + N`
-- Deliberate break: drop the `history` clause → the v1-fixture case red; drop the parent clause → its case red; each restored; meta-check: the v1 case must use a fixture whose `variants` are fresh after `MIGRATIONS[1]` (check it), otherwise it proves nothing
+- Deliberate break: drop the `history` clause → the v1-derived history-7 case red; drop the parent clause → its case red; each restored; meta-check: the v1 case must use a fixture whose `variants` are fresh after `MIGRATIONS[1]` (check it), otherwise it proves nothing
 - `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
 - Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
@@ -501,8 +506,9 @@ child-placed learner only).
 
 #### Manual Verification:
 
-- [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; it covers no answer tile, keypad key, "Dalej" or the build id
+- [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; the welcome screen reached by "Wróć" shows no HUD (star counter, gear); it covers no answer tile, keypad key, "Dalej" or the build id
 - [reviewer] Reading `backToAge` against the exit order: cleanup → learner `null` → `flush('now')` → stop UI and Room → start welcome
+- [human] Product choices the scope left open, decided by the agent (A-2 "Wróć" hidden when a parent chose the stage, A-3 visible through the whole warm-up/first round incl. mid-task, A-4 no confirmation): the maintainer confirms or asks for a change
 
 ---
 
@@ -545,7 +551,11 @@ first-launch section and one on the variety rule next to the 60/30/10 round draw
 audit M-1 (`TaskScene.applyParentStage`), M-2, M-13, H-3, H-4 re-recorded (Trigger: next change to the `TaskScene`
 round lifecycle / narrator); F4/F6 WelcomeScene guards marked closed in code; E1/E2 parent path silent until the first
 tap marked moot (F-01); hint on every tap vs once (Trigger: playtest note that a parent missed it); a finer type key
-(Trigger: maintainer counts set-the-clock and read-the-clock as different kinds).
+(Trigger: maintainer counts set-the-clock and read-the-clock as different kinds); the adaptive-curriculum follow-up
+"`firstPlayableSteps` (`pick.ts`) and `playableSteps` (`curriculum.ts`) filter steps by the same predicate — one source"
+(its trigger "next change to `pick.ts` or `curriculum.ts`" fires in phase 1) re-recorded, deferred because merging
+the predicates would move the warm-up pools that phase 2's "uncapped = `pickSkills`" oracle compares against
+(Trigger: next change to the warm-up pools or to `stepPlayable`).
 
 #### 4. Seam sweep
 
@@ -560,7 +570,7 @@ that says "muted", "E1–E2 read by default" or "uniform warm-up" (`grep -rn "mu
 #### Automated Verification:
 
 - `grep -n "src/core/placement.ts" CLAUDE.md` no longer claims `buildWarmup`; `grep -n "muted gear" CLAUDE.md` empty
-- `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 5
+- `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 6
 - Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual Verification:
@@ -656,6 +666,15 @@ The picker filters lists of at most ~70 skills five times per round; negligible.
 
 None: save format v4 unchanged (table in Overview). A saved `autoRead: null` now means "off" in E1–E2 too — the
 intended behaviour change (PA-1).
+
+## Known risks
+
+- (plan-review F3) `TaskScene`'s `shutdown` handler does not stop `UIScene`; `backToAge` must stop it explicitly (exit
+  order step 4) or the HUD stays over the welcome screen until the next `launch`. Row 6.4 [visual] also checks that the
+  welcome after "Wróć" shows no HUD.
+- (plan-review F5) Phase 4's "hint once" glue has no automated proof until phase 9 (canvas only); a regression between
+  phases 4 and 9 is caught only by the [visual] rows.
+- On a one-type step the cap relaxes (15 of 62 steps); per-skill practice inside a bucket shifts toward rarer types.
 
 ## Autonomous decisions
 
@@ -755,7 +774,7 @@ intended behaviour change (PA-1).
 #### Automated
 
 - [ ] 5.1 New tests red before the change, green after; unit `<phase-4 count> + N`
-- [ ] 5.2 Deliberate break: drop the `history` clause → the v1-fixture case red; drop the parent clause → its case red; each restored; meta-check: the v1 case must use a fixture whose `variants` are fresh after `MIGRATIONS[1]` (check it), otherwise it proves nothing
+- [ ] 5.2 Deliberate break: drop the `history` clause → the v1-derived history-7 case red; drop the parent clause → its case red; each restored; meta-check: the v1 case must use a fixture whose `variants` are fresh after `MIGRATIONS[1]` (check it), otherwise it proves nothing
 - [ ] 5.3 `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
 - [ ] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
@@ -769,15 +788,16 @@ intended behaviour change (PA-1).
 
 #### Manual
 
-- [ ] 6.4 [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; it covers no answer tile, keypad key, "Dalej" or the build id
+- [ ] 6.4 [visual] At 1440 and 1024 wide: "Wróć" on the warm-up (E3, age 8) with a tile task and with a keypad task, on the warm-up summary, on the first ordinary round of E1 (age 6); absent on the second ordinary round and for a parent-placed learner; the welcome screen reached by "Wróć" shows no HUD (star counter, gear); it covers no answer tile, keypad key, "Dalej" or the build id
 - [ ] 6.5 [reviewer] Reading `backToAge` against the exit order: cleanup → learner `null` → `flush('now')` → stop UI and Room → start welcome
+- [ ] 6.6 [human] Product choices the scope left open, decided by the agent (A-2 "Wróć" hidden when a parent chose the stage, A-3 visible through the whole warm-up/first round incl. mid-task, A-4 no confirmation): the maintainer confirms or asks for a change
 
 ### Phase 7: Docs, follow-ups and seam sweep
 
 #### Automated
 
 - [ ] 7.1 `grep -n "src/core/placement.ts" CLAUDE.md` no longer claims `buildWarmup`; `grep -n "muted gear" CLAUDE.md` empty
-- [ ] 7.2 `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 5
+- [ ] 7.2 `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 6
 - [ ] 7.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
