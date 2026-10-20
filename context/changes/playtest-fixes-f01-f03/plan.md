@@ -723,10 +723,10 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [x] 1.1 New tests red before the change (assertion, not import error: stub `variety.ts` first), green after; unit `<branch baseline> + N`
-- [x] 1.2 Existing `tests/curriculumPick.test.ts`, `tests/pick.test.ts`, `tests/review.test.ts`, `tests/reviewGuards.test.ts`, `tests/artFilter.test.ts`, `tests/pictureMode.test.ts` green unchanged (`git diff --stat` of those files empty)
-- [x] 1.3 Deliberate break: drop the cap filter → the synthetic `[A1, A2, B1]` case and oracle (b) red; skip `spreadTypes` → oracle (c) red; each restored; meta-check: (a) proves the shares only because the rng stream is aligned — a break that adds an extra `rng.next()` per draw must turn (a) red too (try it once)
-- [x] 1.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content)
+- [x] 1.1 New tests red before the change (assertion, not import error: stub `variety.ts` first), green after; unit `<branch baseline> + N` — 49a682f
+- [x] 1.2 Existing `tests/curriculumPick.test.ts`, `tests/pick.test.ts`, `tests/review.test.ts`, `tests/reviewGuards.test.ts`, `tests/artFilter.test.ts`, `tests/pictureMode.test.ts` green unchanged (`git diff --stat` of those files empty) — 49a682f
+- [x] 1.3 Deliberate break: drop the cap filter → the synthetic `[A1, A2, B1]` case and oracle (b) red; skip `spreadTypes` → oracle (c) red; each restored; meta-check: (a) proves the shares only because the rng stream is aligned — a break that adds an extra `rng.next()` per draw must turn (a) red too (try it once) — 49a682f
+- [x] 1.4 `npm run sample -- E1` … `E6` exit 0 (unchanged content) — 49a682f
 - [ ] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (local part green: lint, typecheck, unit 3662, deploy scripts, sample E1-E6, build absent; e2e left to the orchestrator)
 
 #### Manual
