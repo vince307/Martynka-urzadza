@@ -35,8 +35,8 @@ The task font promise has no own limit beyond the total boot limit.
 Trigger: a report of a boot stuck on the font, or the next change to the font load in `BootScene`.
 
 ## Refusal-card focus after a dialog closes
-When the refusal card opens over an import or reset dialog, focus is not placed on its button explicitly.
-Trigger: the phase 10 visual gate shows focus lost.
+When a refused `replace` raises the refusal card under an open import or reset dialog, `mountSaveRefusedCard` calls `restart.focus()` at mount, so focus moves from the dialog (z-index 15) to the card behind it (z-index 10) while the dialog is still up, and the dialog's own focus handling may take it back on close (impl-review F3; touch-only tablet, so low risk).
+Trigger: the visual gate shows focus on a hidden button or lost after "Zamknij", or the next change to `src/ui/dom/saveRefusedCard.ts` or the dialog focus handling.
 
 ## Real-device hidden-tab measurement
 Row 2.6 [human] checks the hidden-tab start on a device.
@@ -53,3 +53,11 @@ Trigger: none (closed).
 ## `pl.errorCard.build`
 No longer used in `src`; still used by `tests/e2e/error-boundary.spec.ts` (phase 9 may drop it with the tightened assertion).
 Trigger: phase 9 of this change, or the next change to `error-boundary.spec.ts`.
+
+## `bootLimitReached` beside `bootLimitDue` / `bootLimitWait` (impl-review F2)
+Three exports in `src/core/bootLimits.ts` compute the same `wall - hiddenMs` comparison; the review added a unit test that pins their agreement. Folding the early-fire re-check into `bootLimitDue`/`bootLimitWait` would remove one export.
+Trigger: next change to `src/core/bootLimits.ts` or to the timer `arm` in `BootScene.preload`.
+
+## CLAUDE.md points at the change folder (impl-review F5)
+The new "Boot hidden tab and error codes" sentence cites `context/changes/audit-boot-hidden-tab/follow-ups/review-fixes.md`, which moves at archive.
+Trigger: `/10x-archive audit-boot-hidden-tab` (rewrite the path to `context/archive/...` and run `validate-rule-files.sh`).

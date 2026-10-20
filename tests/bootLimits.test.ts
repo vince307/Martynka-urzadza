@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     bootLimitDue,
+    bootLimitReached,
     bootLimitSchedule,
     bootLimitWait,
     endHidden,
@@ -80,5 +81,27 @@ describe('hidden span', () => {
         const closed = endHidden(open, 30000);
         expect(endHidden(closed, 40000)).toEqual(closed);
         expect(hiddenMsAt(closed, 90000)).toBe(20000);
+    });
+});
+
+// impl-review: the early-fire re-check of the scene's timers asks bootLimitReached; it must agree with bootLimitDue and bootLimitWait.
+describe('bootLimitReached', () => {
+    it('is reached once the visible time hits the moment, never while hidden time holds it back', () => {
+        expect(bootLimitReached(51000, 50999)).toBe(false);
+        expect(bootLimitReached(51000, 51000)).toBe(true);
+        expect(bootLimitReached(51000, 70000, 60000)).toBe(false);
+        expect(bootLimitReached(51000, 111000, 60000)).toBe(true);
+    });
+
+    it('agrees with bootLimitDue at the cut and with bootLimitWait about the rest', () => {
+        const schedule = bootLimitSchedule(limits, 1000);
+        for (const [wall, hidden] of [[50000, 0], [51000, 0], [80000, 30000], [81000, 30000], [111000, 60000]] as const) {
+            expect(bootLimitReached(schedule.cutAt, wall, hidden)).toBe(bootLimitDue(schedule, wall, hidden) === 'cut');
+            if (!bootLimitReached(schedule.cutAt, wall, hidden)) expect(bootLimitWait(schedule.cutAt, wall, hidden)).toBe(schedule.cutAt - (wall - hidden));
+        }
+    });
+
+    it('is not reached on a NaN clock', () => {
+        expect(bootLimitReached(51000, Number.NaN)).toBe(false);
     });
 });
