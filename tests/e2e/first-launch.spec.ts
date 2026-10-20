@@ -38,6 +38,17 @@ const playRound = async (page: Page, length: number, wrongFirst: number): Promis
     await screenIs(page, 'summary');
 };
 
+/** Finished writes of the autosaver so far (the hook's read-only save status). */
+const writesDone = async (page: Page): Promise<number> => (await snapshot(page)).save?.writes ?? 0;
+
+/** Waits until a write that finished after `before` has landed (with `reason`, when given) and nothing is pending. */
+const savedSince = async (page: Page, before: number, reason?: 'now' | 'change'): Promise<void> => {
+    await expect.poll(async () => {
+        const save = (await snapshot(page)).save;
+        return save !== null && save !== undefined && save.writes > before && !save.dirty && (reason === undefined || save.lastReason === reason);
+    }).toBe(true);
+};
+
 // One canvas at a time (see task-round.spec.ts).
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(90_000);
@@ -197,12 +208,19 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     // Back to the age choice and an older age: the warm-up is of E5, the earned star stays.
     const first = await targets(page);
     expect(first.ageBack).toBeTruthy();
+    const beforeBack = await writesDone(page);
     await tapScene(page, first.ageBack!);
     await screenIs(page, 'welcome');
-    // "Wróć" writes at once (flush 'now' clears dirty when the write starts); a debounced write would still be pending here.
-    expect((await snapshot(page)).save?.dirty).toBe(false);
+    // "Wróć" writes at once: the next finished write carries the reason 'now' (flush), never 'change' (the 500 ms debounce).
+    // Nothing else in the warm-up flushes before the round ends, so without the flush this stays red (visual gate: the
+    // earlier `dirty` read flaked when a later registry write marked the state dirty again).
+    await expect.poll(async () => {
+        const save = (await snapshot(page)).save;
+        return (save?.writes ?? 0) > beforeBack ? save?.lastReason : null;
+    }, { intervals: [50] }).toBe('now');
     const age9 = (await targets(page)).ages?.find((a) => a.age === 9);
     expect(age9).toBeDefined();
+    const afterBack = await writesDone(page);
     await tapScene(page, age9!);
     await screenIs(page, 'task');
     const older = await snapshot(page);
@@ -210,8 +228,9 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     expect(older.warmup).toBe(true);
     expect(older.stars).toBe(1);
 
-    // The choice is saved: a reload resumes the E5 warm-up and still offers "Wróć".
-    await expect.poll(async () => (await snapshot(page)).save?.dirty).toBe(false);
+    // The choice is saved: a reload resumes the E5 warm-up and still offers "Wróć". `dirty` turns false when a write
+    // starts, so the reload waits for a write that FINISHED after the choice (writes counts finished writes).
+    await savedSince(page, afterBack);
     await page.reload();
     await screenIs(page, 'task');
     const reloaded = await snapshot(page);
@@ -224,9 +243,10 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     const { nextRound } = await targets(page);
     await tapScene(page, nextRound!);
     await screenIs(page, 'task');
+    const beforeEnd = await writesDone(page);
     await playRound(page, ROUND_LENGTH, 0);
     await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
-    await expect.poll(async () => (await snapshot(page)).save?.dirty).toBe(false);
+    await savedSince(page, beforeEnd, 'now');   // the round end flushes at once, after its last registry write
     await page.reload();
     await screenIs(page, 'task');
     await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
