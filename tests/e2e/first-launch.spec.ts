@@ -181,3 +181,51 @@ test('#12 (proposed) with the gate open a tap under the overlay on an age button
     await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
     expect((await snapshot(page)).learner?.stage).toBe('E3');
 });
+
+// Risk #12 (playtest F-02 b): a child who tapped the wrong age can go back to the age choice, but only
+// until her first ordinary round is finished. The way back is a canvas button (hook target `ageBack`);
+// the saved learner is cleared and flushed at once, so a reload after the new age shows the new stage.
+// Origin: context/changes/playtest-fixes-f01-f03 phase 8. The pure rule (ageBackOffered) is proved by tests/ageBack.test.ts.
+test('#12 "Wróć" returns to the age choice keeping the stars, survives a reload, and disappears after the first ordinary round', async ({ page }) => {
+    await passWelcomeAsChild(page, 8, OCTOBER);
+    expect((await snapshot(page)).learner?.stage).toBe('E3');
+    expect((await snapshot(page)).warmup).toBe(true);
+
+    await playTask(page, false);
+    expect((await snapshot(page)).stars).toBe(1);
+
+    // Back to the age choice and an older age: the warm-up is of E5, the earned star stays.
+    const first = await targets(page);
+    expect(first.ageBack).toBeTruthy();
+    await tapScene(page, first.ageBack!);
+    await screenIs(page, 'welcome');
+    const age9 = (await targets(page)).ages?.find((a) => a.age === 9);
+    expect(age9).toBeDefined();
+    await tapScene(page, age9!);
+    await screenIs(page, 'task');
+    const older = await snapshot(page);
+    expect(older.learner?.stage).toBe('E5');
+    expect(older.warmup).toBe(true);
+    expect(older.stars).toBe(1);
+
+    // The choice is saved: a reload resumes the E5 warm-up and still offers "Wróć".
+    await expect.poll(async () => (await snapshot(page)).save?.dirty).toBe(false);
+    await page.reload();
+    await screenIs(page, 'task');
+    const reloaded = await snapshot(page);
+    expect(reloaded.learner?.stage).toBe('E5');
+    expect(reloaded.stars).toBe(1);
+    await expect.poll(async () => (await targets(page)).ageBack ?? null).not.toBeNull();
+
+    // The warm-up and the first ordinary round: after them the way back is gone, also after a reload.
+    await playRound(page, WARMUP_LENGTH, 0);
+    const { nextRound } = await targets(page);
+    await tapScene(page, nextRound!);
+    await screenIs(page, 'task');
+    await playRound(page, ROUND_LENGTH, 0);
+    await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
+    await expect.poll(async () => (await snapshot(page)).save?.dirty).toBe(false);
+    await page.reload();
+    await screenIs(page, 'task');
+    await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
+});
