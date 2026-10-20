@@ -124,7 +124,7 @@ export interface AutosaverOptions {
     unavailableStarts?: number;
     log: (...args: unknown[]) => void;
     onFirstWrite?: () => Promise<Persistence> | void;
-    /** Called once, when a write is first refused because a newer version or another window of the game saved here (never for load blocks or `replace`). */
+    /** Called once, when a write is first refused because a newer version or another window of the game saved here (never for load blocks; a `replace` the store refuses as newer tells it too). */
     onBlocked?: (reason: 'newer' | 'otherTab', error: string) => void;
 }
 
@@ -481,7 +481,7 @@ export function createAutosaver(options: AutosaverOptions): Autosaver {
             lastFailure = { stage: 'replace', error: lastError };
             log('autosave: replace failed', e);
             if (lastError === NEWER_SAVE) {
-                blockedBy ??= 'newer';
+                refuseWrites('newer', NEWER_SAVE);
                 return { ok: false, error: lastError };
             }
             // An abandoned replace write may still land later; the live game is written after it.

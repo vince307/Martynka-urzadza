@@ -1,4 +1,5 @@
 import { isTimeoutError, type ReplaceResult } from '../../core/autosave';
+import { NEWER_SAVE } from '../../core/save';
 import type { SaveSummary } from '../../core/saveFile';
 import { pl } from '../../data/pl';
 import { createText } from './overlay';
@@ -30,6 +31,7 @@ export const createSummaryList = (title: string, summary: SaveSummary, roomName:
  */
 export const failureText = (result: ReplaceResult | null, forced: boolean, plain: string): string => {
     if (result !== null && !result.ok && isTimeoutError(result.error)) return pl.saveTransfer.replaceUnconfirmed;
+    if (result !== null && !result.ok && result.error === NEWER_SAVE) return pl.saveTransfer.deviceNewer;
     if (!forced || result === null || result.ok) return plain;
     return ['Busy', 'Blocked', 'InvalidSave'].includes(result.error) ? plain : pl.saveTransfer.siteDataAdvice;
 };

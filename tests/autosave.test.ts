@@ -1452,12 +1452,12 @@ describe('a store that refuses with OtherWriterSave blocks saving for good (stal
         expect(rejections).toEqual([]);
     });
 
-    it('replace meets OtherWriterSave in the store only as a refusal reported to the dialog, without telling the listener', async () => {
+    it('replace meets NewerSave in the store as a refusal reported to the dialog and tells the listener once (Z-8)', async () => {
         const told: string[] = [];
         const t = setup({ onBlocked: (reason) => void told.push(reason) });
         t.store.write = () => Promise.reject(newerError());
         expect(await t.saver.replace(encodeSave(session(9)))).toEqual({ ok: false, error: 'NewerSave' });
-        expect(told).toEqual([]);
+        expect(told).toEqual(['newer']);
     });
 
     it('replaceGate says Blocked for otherTab with and without force', () => {
@@ -1647,5 +1647,23 @@ describe('lateReadVerdict (SVB-02)', () => {
         expect(lateReadVerdict({ kind: 'unavailable', error: 'UnknownError' })).toBe('settle');
         expect(lateReadVerdict({ kind: 'fresh' })).toBe('settle');
         expect(lateReadVerdict({ kind: 'unreadable', reason: 'corrupt', raw: null })).toBe('settle');
+    });
+});
+
+describe('a replace refused with NewerSave blocks like an ordinary refusal (Z-8)', () => {
+    it('returns NewerSave, blocks as newer, tells the listener once, refuses a later replace and schedules no write', async () => {
+        const told: [string, string][] = [];
+        const t = setup({ onBlocked: (reason, error) => void told.push([reason, error]) });
+        let calls = 0;
+        t.store.write = () => (calls++, Promise.reject(newerError()));
+        t.saver.markDirty();
+        expect(await t.saver.replace(encodeSave(session(5)))).toEqual({ ok: false, error: 'NewerSave' });
+        expect(t.saver.status()).toMatchObject({ blockedBy: 'newer', blocked: true });
+        expect(told).toEqual([['newer', 'NewerSave']]);
+        expect(await t.saver.replace(encodeSave(session(6)))).toEqual({ ok: false, error: 'Blocked' });
+        t.saver.markDirty();
+        t.clock.advance(5000);
+        await settle();
+        expect(calls).toBe(1);
     });
 });
