@@ -769,7 +769,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [x] 8.1 Spec red before (deliberate break: the scene passes `hiddenMs` 0 to `bootLimitDue`/`bootLimitWait` (the subtraction removed) → the "still loading while hidden" assertion red — this breaks the RULE, not the fake; pass `background: false` in `UIScene` → the line assertion red), green after; restored
+- [x] 8.1 Spec red before (deliberate break: the scene passes `hiddenMs` 0 to `bootLimitDue`/`bootLimitWait` (the subtraction removed) → the "still loading while hidden" assertion red — this breaks the RULE, not the fake; pass `background: false` in `UIScene` → the line assertion red), green after; restored — 8b157d0
 - [ ] 8.2 `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` green run ALONE (fires the stale-tab-and-health follow-up "Isolation-only red of the `load-and-tab-guard` e2e (#2, P-5)": if that red reappears, fix it in this phase or record evidence and restate it in `follow-ups/review-fixes.md`); full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
 - [ ] 8.3 Full local gate green
 
