@@ -393,3 +393,14 @@ Bez kodu w grze i bez skryptu analitycznego (PRD zabrania telemetrii; gra dział
 - [ ] Miary: unikalni odwiedzający (dzień/tydzień/miesiąc, przybliżenie), nowi vs powracający (pełne pobranie gry vs samo `sw.js`), uruchomienia z siecią (`sw.js`), urządzenia (iPad/Android/komputer), źródła wejść, opcjonalnie kraje, ile urządzeń ma najnowszą wersję, błędy 404.
 - [ ] Bez danych o tym, co dziecko robi w grze (rundy, etapy, błędy w zadaniach) — to zostaje na urządzeniu.
 - [ ] Krótka strona „Prywatność” (link dla rodzica, np. z ekranu powitalnego): co jest w logach, po co, jak długo; dane dziecka nie opuszczają urządzenia.
+
+## Do zrobienia: opinia rodzica z gry (ustalone 2026-10-20)
+
+Wybrany wariant: formularz w panelu rodzica (za bramką dla dorosłych), wysyłany na własny serwer. Rozważone i odrzucone: `mailto:` (najprostszy, zgodny z PRD), formularz zewnętrzny (Tally/Google Forms — dane u obcej firmy), GitHub (rodzice nie mają kont).
+
+- [ ] Zmiana zasady: PRD (`context/foundation/prd.md`, „brak żądań sieciowych / bez backendu”) i plan `Martynka-urzadza.md` dostają wyjątek „opinia wysłana świadomie przez rodzica” — przez `/10x-prd`, przed implementacją.
+- [ ] Serwer (VPS, wspólny z CoiledSpring): mały endpoint POST za Caddy (np. `/api/opinia`), limit rozmiaru, limit liczby zgłoszeń z jednego adresu, pułapka na boty (ukryte pole), zapis do pliku/SQLite poza katalogiem wydania, powiadomienie mailem albo komenda `ssh martynka-ops opinie`. Zmiana w `deploy/` — `sync` + `bootstrap` z listą CoiledSpring robi właściciel.
+- [ ] Gra: formularz (tekst + opcjonalny e-mail do odpowiedzi) z numerem wersji i typem urządzenia; bez danych dziecka (postęp, etap, imię); offline — kolejka i wysyłka przy następnym połączeniu albo jasny komunikat „wyślij, gdy będziesz online”; spokojny komunikat przy błędzie.
+- [ ] RODO: strona „Prywatność” opisuje formularz (co zbieramy, po co, jak długo, jak usunąć), retencja zgłoszeń (np. 12 miesięcy), e-mail tylko za zgodą.
+- [ ] Wnioski z opinii przenosić do `docs/playtest-feedback.md` jako F-NN bez danych nadawcy (repo publiczne).
+- [ ] Slice w roadmapie po v1 (razem ze statystykami odwiedzin, ta sama zmiana w `deploy/` i ta sama strona „Prywatność”).
