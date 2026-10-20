@@ -685,10 +685,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 1.1 New and rewritten tests red before the change (assertion, not import error: export stubs first), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: ignore `hiddenMs` in `bootLimitDue` → the hidden-minute case red; reset the span start on a second hide → the idempotence case red; each restored; meta-check: the rewritten case must fail on today's code (it is the old assertion inverted), otherwise it proves nothing
-- [ ] 1.3 `grep -rn "bootLimitDue\|bootLimitWait" src` lists only `bootLimits.ts` and `BootScene.ts`
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 New and rewritten tests red before the change (assertion, not import error: export stubs first), green after; unit `<branch baseline> + N` — e6a0b43
+- [x] 1.2 Deliberate break: ignore `hiddenMs` in `bootLimitDue` → the hidden-minute case red; reset the span start on a second hide → the idempotence case red; each restored; meta-check: the rewritten case must fail on today's code (it is the old assertion inverted), otherwise it proves nothing — e6a0b43
+- [x] 1.3 `grep -rn "bootLimitDue\|bootLimitWait" src` lists only `bootLimits.ts` and `BootScene.ts` — e6a0b43
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (e2e part left to the orchestrator) — e6a0b43
 
 ### Phase 2: BootScene pauses its limits while the tab is hidden and records the hidden time (H-1)
 

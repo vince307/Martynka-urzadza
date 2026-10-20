@@ -1,58 +1,51 @@
 # Handoff — `audit-boot-hidden-tab` (slice fix:audit-boot-hidden-tab)
 
-The `/10x-plan-review` step of run 2026-10-20-playtest-boot reviewed `plan.md` against the code (verdict PROCEED, 0 critical, 3 warnings fixed in the plan, 4 observations) and set `change.md` to `plan_reviewed`; no product code was touched. The next agent must not use "drop the clear-on-hide" as the H-1 deliberate break: the hidden-aware guard keeps that green by design; the valid break is the scene passing `hiddenMs` 0 to the rule.
+Phase 1 (`/10x-tdd`, test-first) is committed as e6a0b43: `src/core/bootLimits.ts` now counts visible time only (hidden-span record plus hidden-aware `bootLimitDue`/`bootLimitWait`); `BootScene` is not wired yet (phase 2).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-boot-hidden-tab`, cut from `main` at 48c2c7e |
-| Commits | 4 (`… change identity (autonomous run)`, `… research`, `… plan`, `docs(audit-boot-hidden-tab): plan review`) |
+| Commits | 6 (4 docs, `test(audit-boot-hidden-tab): Boot limits count only visible time (p1)` e6a0b43, this handoff/progress docs commit) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 44 (`grep -c '^- \[ \]' plan.md`; titles of 2.3, 4.2, 4.3, 8.1, 8.2 edited in body and Progress alike) |
-| Working tree | clean after the commit |
+| `change.md` status | `implementing` is set by the skill only if edited; unchanged here (`plan_reviewed`) |
+| `## Progress` rows remaining | 40 (phase 1 rows 1.1–1.4 ticked with e6a0b43) |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/audit-boot-hidden-tab/reviews/plan-review.md` | Plan review report F1–F7 with decisions, ends with `VERDICT: PROCEED — …` |
-| `context/changes/audit-boot-hidden-tab/plan.md` | Triage edits: lifecycle (no arm when starting hidden, show acts only on a closed span, `clearTimers()` before re-arm); breaks 2.3/8.1 = remove the subtraction; 4.2/4.3 seed oracle = `tests/generateTask.test.ts` "does not consume rng differently"; 8.2 isolation run + fired follow-up; phase 7 follow-up list; phase 10 seam note; two `## Known risks` lines |
-| `context/changes/audit-boot-hidden-tab/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/audit-boot-hidden-tab/handoff.md` | This file |
+| `src/core/bootLimits.ts` | `HiddenSpan`, `noHidden`, `startHidden`, `endHidden`, `hiddenMsAt`; `bootLimitDue(schedule, wall, hiddenMs = 0)`, `bootLimitWait(at, wall, hiddenMs = 0)` |
+| `tests/bootLimits.test.ts` | rewritten hidden-minute case, never-earlier, hidden wait, 3 hidden-span cases |
+| `context/changes/audit-boot-hidden-tab/plan.md` | rows 1.1–1.4 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/audit-boot-hidden-tab` |
-| Progress↔phase | one `## Progress`, 44 rows, 10 `Driver:` lines; edited criteria changed identically in body and Progress (python replace asserted 2 hits each) |
-| code checks (grep/read) | `BootScene.preload` `arm`/`clearTimers`/cut guard (no phase check); `replace` catch `blockedBy ??= 'newer'` + `writesOff()` → silent block, no `onBlocked`; `failureText` forced → `siteDataAdvice`; `pl.saveFailed.detail` contains `Wersja <id>`; `ART_LIMITS` in `src/data/measures.ts`; `pictureLayout` drawPrompt call lacks `skillId`; e2e `newer` store stores `SAVE_VERSION + 1` on the first write |
-| unit, lint, typecheck, build, e2e | Not run: docs-only step; the step prompt bans builds, e2e and servers, and no code changed |
+| RED (stubs ignoring hidden time, so an assertion failure, not an import error) | `AssertionError: expected 'cut' to be 'slow'` (hidden-minute case, old assertion inverted); also `expected 1 to be 40000` (wait), `expected +0 to be 15000` / `20000` (span); 4 failed, 6 passed |
+| GREEN | `npx vitest run tests/bootLimits.test.ts`: 10 passed |
+| Deliberate break 1 | `bootLimitDue` ignores `hiddenMs`: hidden-minute case red; restored |
+| Deliberate break 2 | a second hide resets the span start: idempotence case red; restored. Meta-check: the rewritten case fails on the old code (it is the old assertion inverted) |
+| Gate | lint OK; typecheck OK; unit 3683 + 5 = 3688 passed; deploy scripts OK; sample E1–E6 OK; build OK, prints `e2e hook: absent (2 chunks checked)`; e2e: left to the orchestrator (`<baseline 141> + 0` expected) |
+| grep 1.3 | only `src/scenes/BootScene.ts` besides `bootLimits.ts` |
 
 ## 4. Next command
 
-`/10x-tdd audit-boot-hidden-tab` (phase 1, `Driver: tdd`)
+`/10x-implement audit-boot-hidden-tab phase 2`
 
 ## 5. Open
 
-- Phases and drivers unchanged: 1 tdd, 2 impl, 3 tdd, 4 tdd, 5 impl, 6 tdd, 7 impl, 8–10 e2e (three different spec files, not merged).
-- Manual-only rows (checklist):
-  - [ ] 2.6 [human] real tablet: hide the game during loading over a minute, come back, no cut.
-  - [ ] 3.5 [visual] "Obrazki" with and without a hidden span.
-  - [ ] 5.4 [visual] "Ups!" card with `Kod:`.
-  - [ ] 6.5 [visual] import/reset dialog after `NewerSave`, refusal card after closing.
-  - [ ] 2.5, 3.4, 7.5 [reviewer].
-- Fired follow-up now in the plan: stale-tab-and-health "Isolation-only red of `load-and-tab-guard`" (phase 8.2 runs the spec alone; phase 7 closes or restates it).
-- DESIGN-GAP 153 planned in phase 3; no 154.
-- Risk: the e2e fakes `document.hidden`; the real Phaser stall is inferred from source (phase-2 [human] row).
-- Risk (`## Known risks`): `Autosaver.replace` → `refuseWrites` and unforced `NewerSave` → `deviceNewer` go slightly past scope Z-8's literal text; justified (silent write block today).
+- Phase 2 (impl): `BootScene` own `visibilitychange` listener, lifecycle per plan "Critical Implementation Details"; `hiddenMs` in `bootLoad`, hook, layout doc. Valid e2e break (phase 8): pass `hiddenMs` 0 to the rule.
+- BootScene call sites still use the 2-argument forms (defaults keep them compiling).
+- Manual rows unchanged: 2.6 [human], 3.5, 5.4, 6.5 [visual], 2.5, 3.4, 7.5 [reviewer].
+- e2e part of the phase-1 gate not run by this step.
 
 ## 6. Autonomous decisions
 
-- R-1 **PROCEED, not RETHINK.** The approach (pure visible-time rule + scene glue, code from the thrown error, Z-8 in the same catch) fits the code; the issues were proof and lifecycle details. Would change: a phase finding Phaser's loader does not stall while hidden (then H-1's premise shrinks, not the fix).
-- R-2 **Kept the Z-8 extension (F4)** instead of narrowing to "forced only, text only". Why: verified in `autosave.ts` that without `refuseWrites` the page blocks writes silently (`writesOff`), never showing the card; the unforced text change is one line in the same function. Rejected: narrowing (leaves a silent progress loss). Would change: the maintainer reading scope § 2 as text-only.
-- R-3 **No phase merge or split.** Each phase is one risk, sized for one agent; e2e phases use three different spec files and setups. Would change: phase 9 found trivially small by its agent (it may still commit on its own).
-- R-4 **Phase 10 seam left conditional** with a note that the existing `newer` seam most likely suffices (F7). Would change: the phase-10 agent seeing a normal write refused before the reset.
-- R-5 **Severity of F1 as WARNING, not CRITICAL**: the plan was still executable and the fix is a one-line criterion edit; fixed in place. Would change: nothing; it is fixed.
+- D-1 **Driver stays `tdd`**; implementation did not exist (only the old wall-clock rule). Would change: nothing.
+- D-2 **Stubs first** (exported functions ignoring hidden time) so RED is an assertion failure; real code replaced them after RED.
+- D-3 **Commit set**: only `bootLimits.ts` and its test; plan/handoff in a follow-up docs commit. Skill prompts (manual gate, commit message, next phase) decided in place: accepted proposed message, stop after this phase.
+- D-4 **Extra tests** beyond plan: "never earlier because of hidden time" as a table over wall values; `bootLimitWait` hidden case. Would change: none.
