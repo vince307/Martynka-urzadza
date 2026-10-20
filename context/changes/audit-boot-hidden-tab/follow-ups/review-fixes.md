@@ -47,8 +47,8 @@ Closed by this change (phase 5/6: the card shows `Kod:`, the refusal text no lon
 Trigger: none (closed); reopen only if a card shows a wrong text again.
 
 ## Isolation-only red of `load-and-tab-guard` (stale-tab-and-health follow-up)
-Fired by phase 8: closed if the spec ran green alone, otherwise restated here with its evidence (to be filled by phase 8).
-Trigger: phase 8 runs `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` alone.
+Closed by phase 8: the whole spec file (6 tests, with the new #15 H-1) ran green alone, twice, with the default workers (6 passed in 34.5 s and 32.4 s). Reopen only if the red reappears.
+Trigger: none (closed).
 
 ## `pl.errorCard.build`
 No longer used in `src`; still used by `tests/e2e/error-boundary.spec.ts` (phase 9 may drop it with the tightened assertion).
