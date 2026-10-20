@@ -776,7 +776,7 @@ intended behaviour change (PA-1).
 - [x] 5.1 New tests red before the change, green after; unit `<phase-4 count> + N` — 6bd7c17 (red: 5 of 7 failed, e.g. expected true to be false; unit 3674 + 7 = 3681)
 - [x] 5.2 Deliberate break: drop the `history` clause → the v1-derived history-7 case red; drop the parent clause → its case red; each restored; meta-check: the v1 case must use a fixture whose `variants` are fresh after `MIGRATIONS[1]` (check it), otherwise it proves nothing — 6bd7c17 (history clause dropped: history 6/7 and v1 cases red; parent clause dropped: its case red; v1 fixture variants asserted fresh in the test)
 - [x] 5.3 `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty — 6bd7c17 (empty)
-- [ ] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — PH (e2e 139+0, orchestrator)
 
 ### Phase 6: "Wróć" on the warm-up and the first round (F-02 b)
 
@@ -784,7 +784,7 @@ intended behaviour change (PA-1).
 
 - [x] 6.1 `grep -n "backToAge" src/scenes/TaskScene.ts` shows no call to `advance`, `finishRound`, `countRound` inside it (reviewed by reading the method) — 33772b7
 - [x] 6.2 The layout touch-target test covers `TASK_LAYOUT.ageBack` (add it to the checked list; red if the box is made 80 px high, restored) — 33772b7
-- [ ] 6.3 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (first-launch specs unaffected: they never tap the margin)
+- [x] 6.3 Full local gate green (build prints `e2e hook: absent (`); e2e (orchestrator) `<branch e2e baseline> + 0` (first-launch specs unaffected: they never tap the margin) — PH (e2e 139+0, orchestrator)
 
 #### Manual
 
@@ -796,8 +796,8 @@ intended behaviour change (PA-1).
 
 #### Automated
 
-- [ ] 7.1 `grep -n "src/core/placement.ts" CLAUDE.md` no longer claims `buildWarmup`; `grep -n "muted gear" CLAUDE.md` empty
-- [ ] 7.2 `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 6
+- [x] 7.1 `grep -n "src/core/placement.ts" CLAUDE.md` no longer claims `buildWarmup`; `grep -n "muted gear" CLAUDE.md` empty — P7SHA
+- [x] 7.2 `grep -c "^Trigger:" context/changes/playtest-fixes-f01-f03/follow-ups/review-fixes.md` ≥ 6 — P7SHA
 - [ ] 7.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual

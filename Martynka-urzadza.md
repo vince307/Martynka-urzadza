@@ -6,7 +6,7 @@ Gra dla dziecka w wieku szkolnym (klasy 1–3), wzorowana na pętli „zdobywaj 
 
 Założenia:
 
-- Całość po polsku, duże i czytelne elementy, lektor (automatyczne czytanie poleceń to ustawienie rodzica, domyślnie włączone dla E1–E2).
+- Całość po polsku, duże i czytelne elementy, lektor (automatyczne czytanie poleceń to ustawienie rodzica, domyślnie wyłączone dla każdego etapu).
 - Bez energii, reklam, zakupów i kont. Nie da się przegrać, gwiazdek się nie traci.
 - Tablet w orientacji poziomej, sterowanie wyłącznie dotykiem. Działa też w przeglądarce na komputerze.
 - PWA: instalowana na ekranie początkowym, działa offline.
@@ -18,7 +18,7 @@ Szczegóły zadań matematycznych: **`docs/ZADANIA.md`** (etapy, kroki, typy zad
 
 ## 2. Pętla rozgrywki
 
-1. Przy pierwszym uruchomieniu dziecko podaje wiek. Gra proponuje etap programu (E1–E6), a rodzic (po bramce dla dorosłego) potwierdza go lub zmienia przed startem; wiek jest tylko podpowiedzią. Krótka rozgrzewka koryguje start w dół.
+1. Przy pierwszym uruchomieniu dziecko podaje wiek. Gra proponuje etap programu (E1–E6), a rodzic (po bramce dla dorosłego) potwierdza go lub zmienia przed startem; wiek jest tylko podpowiedzią. Krótka rozgrzewka koryguje start w dół. Dopóki dziecko nie skończy pierwszej rundy, przycisk „Wróć” na rozgrzewce i w pierwszej rundzie cofa je do wyboru wieku; potem etap zmienia już tylko rodzic.
 2. Na ekranie zadań dziecko rozwiązuje rundę zadań (domyślnie 5, liczba w `balance.ts`). Każde poprawne daje gwiazdkę (także w drugiej próbie), runda bez błędu daje bonus.
 3. Trudność dostosowuje się sama: opanowane umiejętności odblokowują kolejne kroki etapu.
 4. W pokoju dziecko wydaje gwiazdki na kolejne zadanie remontowe (np. „Napraw podłogę”).
@@ -155,7 +155,7 @@ Typy `Task` i `TaskParams` generatorów: `ZADANIA.md`, sekcja 7.
 ## 6. Ekran zadań
 
 - Układ: po lewej duże polecenie (tekst + ewentualny rysunek: zegar, monety, obiekty), po prawej obszar odpowiedzi (kafelki lub klawiaturka 0–9 z „kasuj” i „OK”). Na górze kropki postępu rundy (tyle, ile wynosi długość rundy z `balance.ts`).
-- Przycisk głośnika przy poleceniu; automatyczne czytanie to ustawienie rodzica (`settings.autoRead`, domyślnie włączone dla E1–E2, wyłączone od E3). Bez polskiego głosu przycisk ukryty.
+- Przycisk głośnika przy poleceniu; automatyczne czytanie to ustawienie rodzica (`settings.autoRead`, domyślnie wyłączone dla każdego etapu, rodzic włącza je w ustawieniach). Bez polskiego głosu przycisk ukryty.
 - Licznik gwiazdek jest zawsze widoczny; przełącznik zadania/pokój jest ukryty w trakcie rozwiązywania zadania, widoczny między zadaniami i w pokoju.
 - Poprawna odpowiedź: gwiazdka leci do licznika, krótki dźwięk, następne zadanie.
 - Błędna: delikatne potrząśnięcie, podpowiedź (pierwszy krok z `hint`), druga próba. Druga pomyłka: pokazanie rozwiązania krok po kroku, potem dziecko jeszcze raz wpisuje wynik (bez gwiazdki) i przechodzi dalej.
@@ -163,7 +163,7 @@ Typy `Task` i `TaskParams` generatorów: `ZADANIA.md`, sekcja 7.
 - Co kilka rund zamiast zwykłej rundy minigra (ZADANIA.md, sekcja 5) lub „zagadka dnia” za podwójne gwiazdki (mnożnik ×2 w `balance.ts`). W v1: Hasło z wyników i Zakrywanka oraz pula 10–15 zagadek dla E3–E4; reszta później.
 - Brak limitu czasu. Brak czerwonych krzyżyków i komunikatów „źle”.
 
-Wartości startowe (`balance.ts`): długość rundy 5; 1 gwiazdka za zadanie, +2 za rundę bez błędu, druga próba też daje 1 gwiazdkę (ale nie liczy się do opanowania umiejętności); koszt zadania remontowego 5–15 gwiazdek (czyli ok. 1–3 rundy na jeden mebel). Wagi losowania (60/30/10), długość serii i progi opanowania też są liczbami w `balance.ts`, nie stałymi w kodzie.
+Wartości startowe (`balance.ts`): długość rundy 5; 1 gwiazdka za zadanie, +2 za rundę bez błędu, druga próba też daje 1 gwiazdkę (ale nie liczy się do opanowania umiejętności); koszt zadania remontowego 5–15 gwiazdek (czyli ok. 1–3 rundy na jeden mebel). Wagi losowania (60/30/10), reguła różnorodności rundy (najwyżej 2 zadania tego samego typu, nigdy dwa takie same z rzędu; rozgrzewka też), długość serii i progi opanowania też są liczbami w `balance.ts`, nie stałymi w kodzie.
 
 ## 7. Pokój i meblowanie
 

@@ -3,9 +3,8 @@
 // exactly the rng calls of `pickRoundSkills` (one `next()` and one `pick` per draw, one more `pick` on a review
 // step), so the 60/30/10 bucket shares of the same seed stay what they were; the reorder uses no rng.
 import type { Rng } from '../rng';
-import type { SkillDef } from '../types';
+import type { SkillDef, StageDef } from '../types';
 import { playable, type SkillBuckets, type Weights } from './pick';
-import type { StageDef } from '../types';
 
 export interface VarietyRules {
     /** Most tasks of one type in a round; a pool that has nothing else left is played whole. */
