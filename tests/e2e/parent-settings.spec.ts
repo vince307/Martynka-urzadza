@@ -43,6 +43,7 @@ test('#14 (proposed) only a 2-second hold on the settings icon opens the adult g
     // A tap, a hold under the threshold and a drifting hold over it never open anything.
     await tapScene(page, icon!);
     await expect(gate).toHaveCount(0);
+    expect((await snapshot(page)).settingsHint).toBe(true); // a tap opens nothing, it only shows the hint (F-02)
     await holdTouch(page, icon!, HOLD_MS - 500);
     await expect(gate).toHaveCount(0);
     await holdTouch(page, icon!, HOLD_MS + 300, DRIFT); // over the threshold, but the finger wandered off its start
@@ -73,6 +74,32 @@ test('#14 (proposed) only a 2-second hold on the settings icon opens the adult g
     expect(after.index).toBe(before.index);
     await answerRight(page);
     await phaseIs(page, 'done');
+});
+
+test('#14 (proposed) the hint after a tap on the gear shows once per page load, and a hold still opens the gate afterwards', async ({ page }) => {
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eSkills: PINNED_SKILL });
+    await phaseIs(page, 'first');
+    const gate = page.getByRole('dialog', { name: 'Pytanie dla rodzica' });
+    const icon = (await targets(page)).settingsIcon;
+    expect(icon).toBeDefined();
+    expect((await snapshot(page)).settingsHint).toBe(false);
+
+    await tapScene(page, icon!);
+    expect((await snapshot(page)).settingsHint).toBe(true);
+    await expect(gate).toHaveCount(0);
+    // The hint goes away by itself (balance.parentSettings.hintMs); the hook is polled, never a fixed sleep.
+    await expect.poll(async () => (await snapshot(page)).settingsHint, { timeout: 10_000 }).toBe(false);
+
+    // A second tap in the same page load stays silent.
+    await tapScene(page, icon!);
+    await frames(page, 5);
+    expect((await snapshot(page)).settingsHint).toBe(false);
+    await expect(gate).toHaveCount(0);
+
+    await holdTouch(page, icon!, HOLD_MS + 300);
+    await expect(gate).toBeVisible();
+    expect((await snapshot(page)).settingsHint).toBe(false);
 });
 
 test('#14 (proposed) a parent stage change replaces the open round with the new stage at once and keeps the stars, and the auto-read choice survives the next stage change', async ({ page }) => {
