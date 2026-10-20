@@ -11,7 +11,7 @@ const textOf = (line: ArtHealthLine): string => {
         case 'missing':
             return line.table === 'task' ? pl.settings.artMissing(line.count, line.total) : line.table === 'room' ? pl.settings.roomArtMissing(line.count, line.total) : pl.settings.uiArtMissing(line.count, line.total);
         case 'cut':
-            return pl.settings.artCut;
+            return line.background ? pl.settings.artCutBackground : pl.settings.artCut;
         case 'folder':
             return pl.settings.artFolders(line.folder, line.count);
         case 'skipped':
