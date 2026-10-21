@@ -103,6 +103,10 @@ export const cutByTable = (
     return grouped;
 };
 
+/** How many pictures (task, room, ui files) a `cutByTable` record holds; sounds and the font have their own lines. */
+export const pictureCutCount = (byTable: Partial<Record<ArtTable | 'font', readonly string[]>> | undefined): number =>
+    (byTable?.task?.length ?? 0) + (byTable?.room?.length ?? 0) + (byTable?.ui?.length ?? 0);
+
 export type ArtLineTable = 'task' | 'room' | 'ui';
 /** One line of the parent's "Obrazki" section; the renderer maps each kind to Polish text (no text in core). */
 export type ArtHealthLine =
@@ -121,7 +125,7 @@ export interface ArtHealthLinesInput {
     readonly task: ArtHealth | undefined;
     readonly room: ArtHealth | undefined;
     readonly ui: ArtHealth | undefined;
-    /** How many files the boot limit cut. */
+    /** How many pictures the boot limit cut. */
     readonly cut: number;
     readonly build: string;
     /** The task font: `fallback` adds a line (the text is drawn in a system font). */

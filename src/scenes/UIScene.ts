@@ -13,7 +13,7 @@ import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
 import type { Autosaver } from '../core/autosave';
 import type { FallbackRecord } from '../core/artPick';
-import { artHealthLines, type ArtHealth } from '../core/artHealth';
+import { artHealthLines, pictureCutCount, type ArtHealth, type ArtTable } from '../core/artHealth';
 import type { RoomProblem } from '../core/rooms';
 import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
@@ -210,7 +210,7 @@ export class UIScene extends Scene {
                         task: this.registry.get(REGISTRY_KEYS.artHealth) as ArtHealth | undefined,
                         room: this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
                         ui: this.registry.get(REGISTRY_KEYS.uiArtHealth) as ArtHealth | undefined,
-                        cut: (this.registry.get(REGISTRY_KEYS.bootLoad) as { cut: readonly string[] } | undefined)?.cut.length ?? 0,
+                        cut: pictureCutCount((this.registry.get(REGISTRY_KEYS.bootLoad) as { cutByTable?: Partial<Record<ArtTable | 'font', readonly string[]>> } | undefined)?.cutByTable),
                         build: __BUILD_ID__,
                         font: this.registry.get(REGISTRY_KEYS.fontHealth) as 'loaded' | 'fallback' | undefined,
                         labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
