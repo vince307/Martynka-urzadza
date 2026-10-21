@@ -73,6 +73,7 @@ export interface Snapshot {
     /** The open round is a variant (S-15): its kind, the letters uncovered so far (word; null = hidden) and the results covered (dice). Null for an ordinary round. */
     variant?: { kind: 'word' | 'dice' | 'puzzle'; puzzleId: string | null; letters: (string | null)[] | null; covered: number[] | null } | null;
     narration: string | null;
+    heading: string | null;
     speakerVisible: boolean;
     unlock: { step: number; name: string } | null;
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
