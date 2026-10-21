@@ -1,6 +1,6 @@
 // Origin: change art-stand-in-and-load-signal, phase 1. The record of which task pictures did not load.
 import { describe, expect, it } from 'vitest';
-import { artCauses, artHealth, artHealthView, bootQueue, cutByTable, fontHealth, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
+import { artCauses, artHealth, artHealthLines, artHealthView, bootQueue, cutByTable, fontHealth, pictureCutCount, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
 
 const entries = Array.from({ length: 38 }, (_, i) => ({ key: `art-key-${i}`, id: `id-${i}` }));
 
@@ -132,5 +132,29 @@ describe('cutByTable', () => {
     it('groups cut keys by table and lists the font apart', () => {
         const tables = { task: new Set(['t1']), room: new Set(['r1', 'r2']), ui: new Set(['u1']), sound: new Set(['s1']) };
         expect(cutByTable(['r1', 'font', 's1', 'r2'], tables)).toEqual({ task: [], room: ['r1', 'r2'], ui: [], sound: ['s1'], font: ['font'] });
+    });
+});
+
+describe('pictureCutCount', () => {
+    const tables = { task: new Set(['t1']), room: new Set(['r1']), ui: new Set(['u1']), sound: new Set(['s1', 's2']) };
+
+    it('sums the task, room and ui lists and leaves sounds and the font out', () => {
+        expect(pictureCutCount({ task: ['a'], room: ['b'], ui: [], sound: ['s'], font: ['f'] })).toBe(2);
+    });
+
+    it('is 0 when only sounds and the font were cut, and then no cut line shows', () => {
+        const byTable = cutByTable(['s1', 's2', 'font'], tables);
+        const cut = pictureCutCount(byTable);
+        expect(cut).toBe(0);
+        expect(artHealthLines({ task: artHealth([], () => true), room: undefined, ui: undefined, cut, build: 'b' }).some((l) => l.kind === 'cut')).toBe(false);
+    });
+
+    it('is 0 for an absent record and counts the rest when a list is missing', () => {
+        expect(pictureCutCount(undefined)).toBe(0);
+        expect(pictureCutCount({ task: ['a', 'b'], room: ['c'] })).toBe(3);
+    });
+
+    it('reads the shape cutByTable writes', () => {
+        expect(pictureCutCount(cutByTable(['t1', 'r1', 's1', 'font'], tables))).toBe(2);
     });
 });

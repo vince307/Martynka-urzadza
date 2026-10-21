@@ -10,6 +10,7 @@ import { earn } from '../core/stars';
 import type { RoomState, Settings, SkillDef, StageDef, StageId, VariantState } from '../core/types';
 import { answer, lastTaskSettled, next, nextSolutionStep, roundResults, startRound, type RoundState } from '../core/round';
 import { isExpression } from '../core/round/prompt';
+import { headingOf } from '../core/round/heading';
 import { BLANK, fitPieces, splitBlanks, wrapBlankLines } from '../core/round/promptBlank';
 import { narrationOf } from '../core/narration/spoken';
 import { effectiveAutoRead } from '../core/narration/voice';
@@ -117,6 +118,7 @@ export interface TaskSnapshot {
     readonly finished: boolean;
     readonly summary: SummaryView | null;
     readonly narration: string | null;
+    readonly heading: string | null;   // the heading text the scene drew above the prompt
     readonly autoRead: boolean;
     readonly warmup: boolean;
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
@@ -194,6 +196,7 @@ export class TaskScene extends Scene {
     private rng!: Rng;
     private narrator: Narrator | undefined;
     private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
+    private drawnHeading: string | null = null;   // the heading text drawn above the current prompt (the hook reads it)
     private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
     private promptBaseSize: number = FONT_SIZES.prompt;   // the size the prompt was drawn at (a long sentence is smaller), restored when the steps close
     private kind: RoundKind = 'round';   // the kind of the open round (S-15); only a started round assigns it
@@ -404,7 +407,7 @@ export class TaskScene extends Scene {
     private currentNarration(): string | null {
         return narrationOf(this.state, {
             words: pl.speech,
-            calculate: pl.round.calculate,
+            headings: this.kind === 'word' ? null : pl.round.heading,
             tryAgain: pl.round.tryAgain,
             answerLine: pl.round.resultLine,
         });
@@ -666,6 +669,7 @@ export class TaskScene extends Scene {
         this.promptBoxes.forEach((g) => g.destroy());
         this.promptBoxes = [];
         this.promptShrunk = false;
+        this.drawnHeading = null;
         this.promptBaseSize = FONT_SIZES.prompt;
         if (this.kind === 'dice') {
             return;   // the dice are drawn by Dice; there is no prompt text
@@ -683,10 +687,12 @@ export class TaskScene extends Scene {
         // DESIGN-GAP 8 (resolved): the kit has no missing-number frame and the font has no U+25A1, so every "□" is
         // drawn as an outlined box between text pieces (docs/design-gaps.md row 8). The task data keeps "□".
         if (isExpression(task.prompt)) {
-            if (!wordRound) {
+            const kind = wordRound ? null : headingOf(task);
+            if (kind !== null) {
+                this.drawnHeading = pl.round.heading[kind];
                 this.promptTexts.push(
                     this.add
-                        .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
+                        .text(prompt.x, prompt.y, this.drawnHeading, textStyle('prompt', color))
                         .setOrigin(0.5),
                 );
             }
@@ -1193,6 +1199,7 @@ export class TaskScene extends Scene {
             finished: this.state.finished,
             summary: frozenSummary,
             narration: (this.registry.get(REGISTRY_KEYS.narration) as string | null | undefined) ?? null,
+            heading: this.drawnHeading,
             autoRead: this.autoRead,
             warmup: this.warmup,
             unlock: this.unlockView(),

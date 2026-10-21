@@ -1,7 +1,8 @@
 // Variety of a round (playtest F-03): at most `maxPerType` tasks of one type (generator) in a round, and the same
 // type never twice in a row while avoidable. The rule relaxes when the pool has too few types. The draw consumes
 // exactly the rng calls of `pickRoundSkills` (one `next()` and one `pick` per draw, one more `pick` on a review
-// step), so the 60/30/10 bucket shares of the same seed stay what they were; the reorder uses no rng.
+// step), so the 60/30/10 bucket shares of the same seed stay what they were; the reorder and the repair use no rng.
+// The cap holds over the whole round whenever the rolled pools allow it (repairCap).
 import type { Rng } from '../rng';
 import type { SkillDef, StageDef } from '../types';
 import { playable, type SkillBuckets, type Weights } from './pick';
@@ -25,6 +26,7 @@ export const pickVariedSkills = (buckets: SkillBuckets, weights: Weights, rng: R
     const total = usable.reduce((sum, key) => sum + (live.length > 0 ? weights[key] : 1), 0);
     const seen = new Map<string, number>();
     const drawn: SkillDef[] = [];
+    const pools: (readonly SkillDef[])[] = [];
     for (let i = 0; i < count; i += 1) {
         let roll = rng.next() * total;
         let chosen = usable[usable.length - 1];
@@ -41,8 +43,38 @@ export const pickVariedSkills = (buckets: SkillBuckets, weights: Weights, rng: R
         const skill = rng.pick(open.length > 0 ? open : pool);
         seen.set(typeOf(skill), (seen.get(typeOf(skill)) ?? 0) + 1);
         drawn.push(skill);
+        pools.push(pool);
     }
-    return drawn;
+    return repairCap(drawn, pools, rules.maxPerType, typeOf);
+};
+
+/**
+ * The greedy draw can still end above the cap when an early draw took a type that a later draw, whose pool was
+ * nearly all of that type, then needed. Without rng: backtrack over one type per draw (each from that draw's own
+ * rolled pool, at most `cap` per type, preferring the drawn type) and give a changed draw the first skill of its new
+ * type in the pool. No assignment (the forced case) returns the greedy draw as it was.
+ */
+const repairCap = (drawn: readonly SkillDef[], pools: readonly (readonly SkillDef[])[], cap: number, typeOf: TypeOf): SkillDef[] => {
+    const used = new Map<string, number>();
+    for (const skill of drawn) used.set(typeOf(skill), (used.get(typeOf(skill)) ?? 0) + 1);
+    if (Math.max(...used.values()) <= cap) return [...drawn];
+    const taken = new Map<string, number>();
+    const chosen: string[] = [];
+    const walk = (i: number): boolean => {
+        if (i === drawn.length) return true;
+        const own = typeOf(drawn[i]);
+        const types = [own, ...new Set(pools[i].map(typeOf))].filter((type, at, all) => all.indexOf(type) === at);
+        for (const type of types) {
+            if ((taken.get(type) ?? 0) >= cap) continue;
+            taken.set(type, (taken.get(type) ?? 0) + 1);
+            chosen[i] = type;
+            if (walk(i + 1)) return true;
+            taken.set(type, (taken.get(type) ?? 0) - 1);
+        }
+        return false;
+    };
+    if (!walk(0)) return [...drawn];
+    return drawn.map((skill, i) => (typeOf(skill) === chosen[i] ? skill : (pools[i].find((s) => typeOf(s) === chosen[i]) as SkillDef)));
 };
 
 /**

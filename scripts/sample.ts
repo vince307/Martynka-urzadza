@@ -166,7 +166,7 @@ for (const step of stage!.steps) {
                     console.log(`    hint visual: ${describeVisual(task.hintVisual)}`);
                 }
                 console.log(`    ${task.prompt}  → ${answer}${choices}   podpowiedź: ${task.hint.join(' | ')}${flag}`);
-                console.log(`      czyta: ${spokenTask(task, pl.speech, pl.round.calculate)}`);
+                console.log(`      czyta: ${spokenTask(task, pl.speech, pl.round.heading)}`);
             } catch (error) {
                 errors += 1;
                 console.log(`    BŁĄD ${skill.id}: ${error instanceof Error ? error.message : String(error)}`);

@@ -147,8 +147,6 @@ export const pl = {
         uiArtMissing: (count: number, total: number) =>
             `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}. Na tych ekranach zamiast obrazka jest napis lub rysunek.`,
         // DESIGN-GAP 140: the kit has no line for pictures that did not finish loading in time (a slow connection); calm, says what to do.
-        // DESIGN-GAP 153: the kit has no line for pictures cut while the game was in the background at start; calm, no blame on the connection.
-        artCutBackground: 'Część obrazków nie zdążyła się wczytać, bo gra była w tle podczas uruchamiania. Uruchom grę ponownie.',
         artCut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
         // DESIGN-GAP 141: the kit has no line for why pictures are missing; one calm sentence per cause, "Kod:" follows from saveFailed.detail.
         artCause: {
@@ -360,7 +358,7 @@ export const pl = {
         greater: 'większe niż',
     },
     round: {
-        calculate: 'Oblicz',
+        heading: { calculate: 'Oblicz', sign: 'Wstaw znak', fill: 'Uzupełnij' },
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',

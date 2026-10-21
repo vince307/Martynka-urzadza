@@ -80,7 +80,7 @@ test.describe('files that never answer', () => {
     // the tab was VISIBLE. A tab hidden during the load does not run the loader queue, so hidden time must not count toward the cut.
     // The visibility is faked (document.hidden / visibilityState are redefined, then visibilitychange is dispatched): the rule under
     // test is the scene's subtraction of the hidden span, not the browser's visibility, which a headless run cannot flip.
-    test('#15 H-1 a tab hidden during the load does not cut it; the cut comes when it is shown and the panel says the game was in the background', async ({ page }) => {
+    test('#15 H-1 a tab hidden during the load does not cut it; the cut comes when it is shown and the panel shows the ordinary cut line', async ({ page }) => {
         await silenceSpeech(page);
         await hold(page);
         await page.addInitScript(() => {
@@ -114,7 +114,7 @@ test.describe('files that never answer', () => {
         expect(boot.elapsedMs).toBeGreaterThanOrEqual(3000 + boot.hiddenMs - 50);
         expect(boot.cut.length).toBeGreaterThan(0);
 
-        // The settings panel names the background, not the plain cut line. The parent path from the screen the cut left.
+        // The settings panel shows the ordinary cut line (N-1: no background sentence). The parent path from the screen the cut left.
         const { parent } = await fromHook(page, 'targets');
         await tapScene(page, parent!);
         await typeIntoGate(page, (await gateProblem(page)).product);
@@ -125,8 +125,8 @@ test.describe('files that never answer', () => {
         await start.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
         await screenIs(page, 'task');
         const panel = await openSettings(page);
-        await expect(panel.getByText(pl.settings.artCutBackground, { exact: true })).toBeVisible();
-        await expect(panel.getByText(pl.settings.artCut, { exact: true })).toHaveCount(0);
+        await expect(panel.getByText(pl.settings.artCut, { exact: true })).toBeVisible();
+        await expect(panel.getByText('w tle')).toHaveCount(0);
     });
 });
 

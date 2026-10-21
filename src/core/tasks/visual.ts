@@ -2,11 +2,13 @@
 // The scene decides how to draw them; core only validates and keys them.
 import { GRID_ITEMS, GRID_LIMITS, type GridItemId } from '../../data/gridItems';
 import { balance } from '../../data/balance';
+import { TASK_LAYOUT } from '../../data/layout';
 import { ART_LIMITS, ICONS, JUGS, MONEY, THERMOMETER, WEIGHTS, type IconId, type JugId, type MoneyId, type WeightId } from '../../data/measures';
 import { PATTERN_LIMITS } from '../../data/shapes';
 import { faceLabel, isFace } from './faces';
 import { formatCelsius, formatMoney } from '../text/measure';
 import { formatTime } from '../text/time';
+import { columnMarks } from './written';
 import type { SkillDef } from '../types';
 
 export type AnswerMode = SkillDef['answer'];
@@ -91,6 +93,12 @@ export const assertDrawable = (task: { visual?: TaskVisual; hintVisual?: TaskVis
                 break;
             case 'money':
                 if (!v.pay) assertPool(v.items.length, ART_LIMITS.moneyItems, 'money');
+                // Audit N-4: the limit `coinLayout` enforces in the scene.
+                else if (v.pay.tray.length > TASK_LAYOUT.coinDrag.maxKinds) throw new RangeError(`${v.pay.tray.length} coin kinds on a tray, at most ${TASK_LAYOUT.coinDrag.maxKinds}`);
+                break;
+            case 'column':
+                // Audit N-4: the 'first' phase filters the 'all' result, so this covers every phase. Throws a RangeError on a carry off the last column.
+                columnMarks(v, 'all');
                 break;
             case 'numberLine':
                 lineTicks(v);
