@@ -1,7 +1,7 @@
 ---
 change_id: post-run-polish
 title: Post-run polish (task headings, round variety cap, "Obrazki" cut lines, skill id on drawing errors)
-status: implemented
+status: impl_reviewed
 created: 2026-10-21
 updated: 2026-10-21
 archived_at: null

@@ -656,7 +656,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 2.5 [reviewer] Teacher read: `npm run sample -- E1 --count 6` … `E6 --count 6`, every `czyta:` line of the changed steps (E1.2, E1.3, E1.7, E1.9, E2.4, E2.7, E3.2, E4.1, E4.6, E6.10 and the PLACE_VALUE decompose steps): heading fits the task, "Wstaw znak." before a sign question is natural for a 6–9-year-old, "Uzupełnij." before "Jaka liczba pasuje w okienku?" reads well
+- [x] 2.5 [reviewer] Teacher read: `npm run sample -- E1 --count 6` … `E6 --count 6`, every `czyta:` line of the changed steps (E1.2, E1.3, E1.7, E1.9, E2.4, E2.7, E3.2, E4.1, E4.6, E6.10 and the PLACE_VALUE decompose steps): heading fits the task, "Wstaw znak." before a sign question is natural for a 6–9-year-old, "Uzupełnij." before "Jaka liczba pasuje w okienku?" reads well — impl-review (teacher read E1–E6 recorded in reviews/impl-review.md)
 - [ ] 2.6 [human] On a tablet with a Polish voice: tap the speaker on a comparison task — "Wstaw znak" is pronounced clearly and the pause after it is natural
 
 ### Phase 3: The task screen draws the heading from the rule (PA-1 screen)
@@ -712,7 +712,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 7.1 New tests red before the change, green after; unit `<phase-6 count> + N` — 7004a50
 - [x] 7.2 Deliberate break: drop the `column` case → the column test red; drop the `money` case → the tray test red; set `ART_LIMITS.trayKinds` to 5 → the invariant red; each restored; meta-check: each bad fixture is first passed to `columnMarks` / `coinLayout(TASK_LAYOUT.coinDrag, tray)` directly in the test and throws there, so it is the scene-throwing input — 7004a50
 - [x] 7.3 Seeds unchanged: `npm run sample -- E1` … `E6` byte-identical to the phase-6 commit (saved before the first edit, `diff` empty); the existing "does not consume rng differently from the generator" case of `tests/generateTask.test.ts` green; `git diff main -- tests/contentInvariants.test.ts tests/solvableInMode.test.ts` empty — 7004a50
-- [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`money-pay.spec.ts`, `written-column.spec.ts` green)
+- [x] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`money-pay.spec.ts`, `written-column.spec.ts` green) — 7004a50 (e2e 143+1 on de5a308, orchestrator; money-pay, written-column green in that run)
 
 ### Phase 8: Docs, follow-ups and seam sweep
 
@@ -721,16 +721,16 @@ None: save format v4 unchanged (table in Overview).
 - [x] 8.1 `grep -rn "artCutBackground" src tests CLAUDE.md AGENTS.md` empty; `grep -rn "round.calculate" src scripts tests` empty — d7685b4
 - [x] 8.2 `grep -c "^Trigger:" context/changes/post-run-polish/follow-ups/review-fixes.md` ≥ 12 — d7685b4
 - [x] 8.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists) — d7685b4
-- [ ] 8.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 8.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — d7685b4 (gate re-run in impl-review: unit 3710+26; e2e 143+1 on de5a308, orchestrator)
 
 #### Manual
 
-- [ ] 8.5 [reviewer] The CLAUDE.md sentences match the code (`grep` each named symbol: `headingOf`, `pl.round.heading`, `pictureCutCount`, `assertDrawable` cases); save format v4 stated; DESIGN-GAP 153 and 154 read correctly
+- [x] 8.5 [reviewer] The CLAUDE.md sentences match the code (`grep` each named symbol: `headingOf`, `pl.round.heading`, `pictureCutCount`, `assertDrawable` cases); save format v4 stated; DESIGN-GAP 153 and 154 read correctly — impl-review (symbols grepped, v4 stated, gaps 153/154 read)
 
 ### Phase 9: The heading on screen and in the narration — e2e (#11)
 
 #### Automated
 
 - [x] 9.1 Spec red before (deliberate break: `drawPrompt` draws `pl.round.heading.calculate` for every kind → the heading assertion red; `currentNarration` passes `headings: null` → the narration assertion red), green after; restored — 7b5bd55
-- [ ] 9.2 `npx playwright test tests/e2e/narrator.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1` (narrator.spec 4/4 green in-agent; full suite and total check left to the orchestrator)
+- [x] 9.2 `npx playwright test tests/e2e/narrator.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1` (narrator.spec 4/4 green in-agent; full suite and total check left to the orchestrator) — impl-review (narrator.spec 4/4 re-run; full e2e 143+1 = 144, orchestrator; `--list` Total: 144)
 - [x] 9.3 Full local gate green — 7b5bd55
