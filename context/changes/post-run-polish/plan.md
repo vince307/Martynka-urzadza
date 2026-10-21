@@ -680,7 +680,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 4.2 Shares and buckets unchanged: `git diff main -- tests/variety.test.ts | grep '^-[^-]'` empty (only additions) and oracle (a) green; `git diff --stat main -- src/data/balance.ts src/core/curriculum.ts src/core/mastery.ts` empty (unlock thresholds and weights untouched) — ccf03af
 - [x] 4.3 Deliberate break: skip the repair → the seeded repros red; take the replacement skill with `rng.pick` → oracle (a) or the rng-state case red; each restored; meta-check: the brute-force existence check must be independent of the repair (it never calls it), otherwise "repair finds one" proves only itself — ccf03af
 - [x] 4.4 `npm run sample -- E1` … `E6` output byte-identical to the phase-3 commit (sample draws per step, not rounds; proves no generator or skill table moved) — ccf03af
-- [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round contents are seeded by `Date.now()` and e2e forces skills with `?e2eSkills`)
+- [x] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round contents are seeded by `Date.now()` and e2e forces skills with `?e2eSkills`) — ccf03af (e2e 143+0, orchestrator)
 
 ### Phase 5: "Obrazki" drops the background line (N-1)
 
@@ -690,7 +690,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 5.2 Unit `<phase-4 count> − removed + added` (three `background` cases replaced by one, the `artCutBackground` describe removed; both numbers named in the commit) and green — bb295b4
 - [x] 5.3 Deliberate break: add `background: true` back to the cut line when hidden → the `toEqual` case red; map `case 'cut'` to `pl.settings.artRestart` in `textOf` → the adapted `#15 H-1` and `#14 B-4` red (orchestrator, or the agent with `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` if Chromium starts); each restored — bb295b4
 - [x] 5.4 `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty — bb295b4
-- [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `load-and-tab-guard.spec.ts` green alone
+- [x] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `load-and-tab-guard.spec.ts` green alone — bb295b4 (e2e 143+0, orchestrator)
 
 ### Phase 6: The cut count counts pictures only (H-2)
 
@@ -699,7 +699,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N` — 91a1be1
 - [x] 6.2 Deliberate break: count all five lists → the sounds-only case red; restored; meta-check: the record in the test is built with the real `cutByTable` from file keys of `SOUNDS` and the font key, so it is the shape `BootScene` writes — 91a1be1
 - [x] 6.3 `grep -n "cut.length" src/scenes/UIScene.ts` empty — 91a1be1
-- [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` and `#15 A-1/A-2` cut pictures, so `artCut` still shows)
+- [x] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` and `#15 A-1/A-2` cut pictures, so `artCut` still shows) — 91a1be1 (e2e 143+0, orchestrator)
 
 #### Manual
 
@@ -709,9 +709,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 7.1 New tests red before the change, green after; unit `<phase-6 count> + N`
-- [ ] 7.2 Deliberate break: drop the `column` case → the column test red; drop the `money` case → the tray test red; set `ART_LIMITS.trayKinds` to 5 → the invariant red; each restored; meta-check: each bad fixture is first passed to `columnMarks` / `coinLayout(TASK_LAYOUT.coinDrag, tray)` directly in the test and throws there, so it is the scene-throwing input
-- [ ] 7.3 Seeds unchanged: `npm run sample -- E1` … `E6` byte-identical to the phase-6 commit (saved before the first edit, `diff` empty); the existing "does not consume rng differently from the generator" case of `tests/generateTask.test.ts` green; `git diff main -- tests/contentInvariants.test.ts tests/solvableInMode.test.ts` empty
+- [x] 7.1 New tests red before the change, green after; unit `<phase-6 count> + N` — 7004a50
+- [x] 7.2 Deliberate break: drop the `column` case → the column test red; drop the `money` case → the tray test red; set `ART_LIMITS.trayKinds` to 5 → the invariant red; each restored; meta-check: each bad fixture is first passed to `columnMarks` / `coinLayout(TASK_LAYOUT.coinDrag, tray)` directly in the test and throws there, so it is the scene-throwing input — 7004a50
+- [x] 7.3 Seeds unchanged: `npm run sample -- E1` … `E6` byte-identical to the phase-6 commit (saved before the first edit, `diff` empty); the existing "does not consume rng differently from the generator" case of `tests/generateTask.test.ts` green; `git diff main -- tests/contentInvariants.test.ts tests/solvableInMode.test.ts` empty — 7004a50
 - [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`money-pay.spec.ts`, `written-column.spec.ts` green)
 
 ### Phase 8: Docs, follow-ups and seam sweep
