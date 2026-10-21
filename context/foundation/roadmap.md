@@ -3,8 +3,8 @@ project: "Martynka urządza"
 version: 1
 status: draft
 created: 2026-10-11
-updated: 2026-10-16
-prd_version: 1
+updated: 2026-10-21
+prd_version: 2
 main_goal: market-feedback
 top_blocker: external
 milestone_id: v1-pelna-petla-m0-m8
@@ -25,7 +25,7 @@ Uwaga o nazewnictwie: `M-01` to kamień milowy tej roadmapy (pętla 10x). `M0`�
 **M-01: Wersja 1, pełna pętla gry (etapy M0–M8)** — Status: open
 
 - **Intent:** Córka gra sama na tablecie w pełną pętlę: runda zadań E3–E4 → gwiazdki → urządzanie salonu, z zapisem, docelową grafiką i balansem po testach z graczem. Kamień zamyka się, gdy wszystkie etapy planu M0–M8 są dostarczone.
-- **Source materials:** `context/foundation/prd.md` (v1); kolejność etapów z `Martynka-urzadza.md` sekcja 11.
+- **Source materials:** `context/foundation/prd.md` (v1; v2 z 2026-10-21 dodaje tylko wymagania po v1, FR-028–FR-031, i zmienia domyślną wartość FR-009 — zakres M-01 bez zmian); kolejność etapów z `Martynka-urzadza.md` sekcja 11.
 - **Done when:** every F-NN and S-NN below is `done`.
 - **Scope anchors:** FR-001–FR-027 (wszystkie must-have), US-01–US-04, NFR z PRD.
 
@@ -494,6 +494,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Dopracowanie treści E1–E2 i E5–E6** — Why parked: PRD Non-Goals; generatory działają, jakość poleceń gwarantowana w v1 dla E3–E4.
 - **Osobny raport postępów poza grą** — Why parked: PRD Non-Goals; podgląd w ustawieniach i eksport zapisu wystarczą.
 - **Układ pionowy, telefon, inne przeglądarki** — Why parked: PRD Non-Goals (niefunkcjonalne); tablet w poziomie, trzy nazwane przeglądarki.
+- **Pierwszy wycinek następnego kamienia (M-02): opinia rodzica, raport o błędzie i statystyki odwiedzin** (proponowany Change ID `parent-sends-and-stats`; PRD v2 FR-028–FR-031, dodane 2026-10-21) — Why parked: wymagania po v1, poza zakresem M-01 (FR-001–FR-027); otwiera się po zamknięciu M-01 (po S-17). Wynik: rodzic za bramką dla dorosłych wysyła opinię (tekst, opcjonalny e-mail, wersja i urządzenie, kolejka bez sieci) i raport o błędzie z karty „Ups!” i „Zapis gry”; autor dostaje je na własnym serwerze gry; autor widzi zbiorcze statystyki odwiedzin bez kodu w grze; rodzic czyta stronę „Prywatność”. Uwaga dla planu: zmienia `deploy/` (punkt odbioru, logi serwera), więc nie idzie autonomicznym biegiem — synchronizację i bootstrap serwera robi właściciel z listą CoiledSpring. Otwarte pytania z PRD v2 (8–10: przechowywanie, ochrona przed nadużyciem, gdzie link „Prywatność”) rozstrzyga plan. Szczegóły uzgodnień: `docs/human-checklist.md` (sekcje „Do zrobienia: statystyki odwiedzin” i „Do zrobienia: opinia rodzica i raport o błędzie z gry”).
+- **Statystyki nauki z gry** — Why parked: PRD v2 Non-Goals; dane o dziecku, mało graczy; później najwyżej jako opcja domyślnie wyłączona.
 
 ## Milestone History
 
