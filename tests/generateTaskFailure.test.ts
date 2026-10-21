@@ -4,6 +4,11 @@ import { generateTask } from '../src/core/tasks/generateTask';
 import type { Task } from '../src/core/tasks/types';
 import type { SkillDef } from '../src/core/types';
 import { errorCode } from '../src/core/save';
+import { columnMarks } from '../src/core/tasks/written';
+import { coinLayout } from '../src/core/round/dragLayout';
+import { faceLabel } from '../src/core/tasks/faces';
+import { TASK_LAYOUT } from '../src/data/layout';
+import type { MoneyId } from '../src/data/measures';
 
 // A generator the test controls, reached through the real registry lookup.
 let fake: ((skill: SkillDef, rng: ReturnType<typeof createRng>) => Task) | undefined;
@@ -73,5 +78,30 @@ describe('generateTask failure carries the skill', () => {
     it('a valid drawing passes untouched', () => {
         fake = () => ({ ...base, visual: { kind: 'icons', icon: 'apple', groups: [3, 4], framed: false } });
         expect(run(skill())).toBeUndefined();
+    });
+
+    // Audit N-4: the two drawing throws that used to happen only inside the scene.
+    it('a money pay tray over the layout limit throws at generation, with the skill id', () => {
+        const tray: MoneyId[] = ['coin-1zl', 'coin-2zl', 'coin-5zl', 'note-10zl', 'note-20zl'];
+        expect(tray.length).toBe(TASK_LAYOUT.coinDrag.maxKinds + 1);
+        expect(() => coinLayout(TASK_LAYOUT.coinDrag, tray)).toThrow(); // the scene-throwing input
+        fake = () => ({ ...base, visual: { kind: 'money', items: [], pay: { tray, fewest: false } } });
+        const e = run(skill()) as Error & { skillId?: string };
+        expect(e.skillId).toBe('E9.1.fake');
+        expect(e.name).toBe('RangeError');
+    });
+
+    it('a written column whose carry runs off the last column throws at generation, with the skill id', () => {
+        const column = { kind: 'column', op: '+', a: 99, b: 1, columns: 2 } as const;
+        expect(() => columnMarks(column, 'all')).toThrow(RangeError); // the scene-throwing input
+        fake = () => ({ ...base, visual: column });
+        const e = run(skill()) as Error & { skillId?: string };
+        expect(e.skillId).toBe('E9.1.fake');
+        expect(e.name).toBe('RangeError');
+    });
+
+    it('a generator calling faceLabel on a non-face code carries the skill id', () => {
+        fake = () => ({ ...base, prompt: faceLabel('not-a-face') });
+        expect((run(skill()) as { skillId?: string }).skillId).toBe('E9.1.fake');
     });
 });

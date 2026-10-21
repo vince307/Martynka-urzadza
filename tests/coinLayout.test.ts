@@ -7,6 +7,7 @@ import type { Carrying } from '../src/core/trayDrag';
 import type { MoneyId } from '../src/data/measures';
 import { balance } from '../src/data/balance';
 import { MIN_TOUCH_TARGET, TASK_LAYOUT } from '../src/data/layout';
+import { ART_LIMITS } from '../src/data/measures';
 
 const spec = TASK_LAYOUT.coinDrag;
 const { notebook } = TASK_LAYOUT;
@@ -155,5 +156,11 @@ describe('walletFull', () => {
     it('is true from the cap on, false below it', () => {
         expect(walletFull(wallet(balance.coinDrag.maxTotal - 1), balance.coinDrag.maxTotal)).toBe(false);
         expect(walletFull(wallet(balance.coinDrag.maxTotal), balance.coinDrag.maxTotal)).toBe(true);
+    });
+});
+
+describe('tray kinds limit', () => {
+    it('the art pool never holds more tray kinds than the layout lets a scene draw', () => {
+        expect(ART_LIMITS.trayKinds).toBeLessThanOrEqual(TASK_LAYOUT.coinDrag.maxKinds);
     });
 });
