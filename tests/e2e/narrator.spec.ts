@@ -6,7 +6,8 @@
 // touch (pointerup) and the game must stay silent until the child taps; stage E3 (the welcome
 // helper's parent path: age 10, stage E3 chosen instead of the proposal) has automatic reading off, so "Dalej" is silent too.
 import { test, expect, type Page } from '@playwright/test';
-import { passWelcome } from './support/welcome';
+import { passWelcome, passWelcomeAsParent } from './support/welcome';
+import { pl } from '../../src/data/pl';
 import { answerRight, answerWrong, phaseIs, snapshot, tapNext, tapScene, targets, toPage } from './support/hook';
 
 interface Spoken { text: string; lang: string; rate: number }
@@ -141,4 +142,26 @@ test('#narrator without a Polish voice the speaker stays hidden, nothing is spok
     }
     await expect.poll(async () => (await snapshot(page)).screen).toBe('summary');
     expect(await spokenSoFar(page)).toEqual([]);
+});
+
+test('#11 the heading above a sign task and above a calculation is drawn and read aloud before the task', async ({ page }) => {
+    // Risk #11 (the round as the child sees and hears it): a comparison skill and an addition skill alternate in the round.
+    await installSpeech(page, [{ lang: 'pl_PL', localService: true }]);
+    await passWelcomeAsParent(page, {
+        age: '10+',
+        stageLabel: 'Klasa 1, I półrocze',
+        stage: 'E1',
+        query: { e2eSkills: 'E1.2.compare_num_5,E1.3.add_sub_5' },
+    });
+    await phaseIs(page, 'first');
+    const sign = await snapshot(page);
+    expect(sign.heading).toBe(pl.round.heading.sign);
+    expect(sign.narration?.startsWith(`${pl.round.heading.sign}. `)).toBe(true);
+
+    await answerRight(page);
+    await tapNext(page);
+    await phaseIs(page, 'first');
+    await expect.poll(async () => (await snapshot(page)).heading).toBe(pl.round.heading.calculate);
+    const sum = await snapshot(page);
+    expect(sum.narration?.startsWith(`${pl.round.heading.calculate}. `)).toBe(true);
 });
