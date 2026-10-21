@@ -45,20 +45,9 @@ describe('artHealthLines', () => {
         expect(lines.filter((l) => l.kind === 'cause')).toEqual([{ kind: 'cause', cause: 'decode' }]);
     });
 
-    it('marks the cut line as a background cut when the load spent time hidden, with no cause or advice line', () => {
-        const lines = artHealthLines({ task: missingHealth(10, ['cut', 'cut', 'cut']), room: undefined, ui: undefined, cut: 3, build: 'b', background: true });
-        expect(lines).toContainEqual({ kind: 'cut', count: 3, background: true });
-        expect(lines.map((l) => l.kind)).toEqual(['missing', 'skipped', 'cut', 'code']);
-    });
-
-    it('keeps today\'s cut line when the load was never hidden', () => {
-        const lines = artHealthLines({ task: okHealth(3), room: undefined, ui: undefined, cut: 3, build: 'b', background: false });
-        expect(lines).toContainEqual({ kind: 'cut', count: 3 });
-    });
-
-    it('adds no cut line for a hidden load that cut nothing', () => {
-        const lines = artHealthLines({ task: okHealth(3), room: undefined, ui: undefined, cut: 0, build: 'b', background: true });
-        expect(lines.some((l) => l.kind === 'cut')).toBe(false);
+    it('gives the same plain cut line when the load also spent time hidden (hidden time never causes a cut)', () => {
+        const lines = artHealthLines({ task: missingHealth(10, ['cut', 'cut', 'cut']), room: undefined, ui: undefined, cut: 3, build: 'b' });
+        expect(lines.filter((l) => l.kind === 'cut')).toEqual([{ kind: 'cut', count: 3 }]);
     });
 
     it('leaves the cause line to the cut line when the cut is the cause', () => {

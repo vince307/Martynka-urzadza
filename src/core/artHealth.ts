@@ -107,7 +107,7 @@ export type ArtLineTable = 'task' | 'room' | 'ui';
 /** One line of the parent's "Obrazki" section; the renderer maps each kind to Polish text (no text in core). */
 export type ArtHealthLine =
     | { kind: 'ok' | 'missing'; table: ArtLineTable; count: number; total: number }
-    | { kind: 'cut'; count: number; background?: true }
+    | { kind: 'cut'; count: number }
     | { kind: 'folder'; folder: string; count: number }
     | { kind: 'skipped' }
     | { kind: 'labels'; labels: readonly string[] }
@@ -131,8 +131,6 @@ export interface ArtHealthLinesInput {
     readonly labelCap?: number;
     /** The screens that showed a drawn fallback instead of their picture (core/artPick record); one muted line names them. */
     readonly fallbacks?: FallbackRecord;
-    /** The load spent time hidden (bootLoad.hiddenMs > 0): a cut then gets the calm background line. */
-    readonly background?: boolean;
 }
 
 const CAUSE_ORDER: readonly ArtCause[] = ['fetch', 'network', 'decode', 'cut', 'never'];
@@ -172,7 +170,7 @@ export const folderCounts = (missing: readonly string[]): { folder: string; coun
  * missing pictures the main cause, whether a restart helps, and the code. When the cut is the cause, the cut line already
  * says it (and the restart advice with it). A fallback font adds its own line.
  */
-export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks, background }: ArtHealthLinesInput): ArtHealthLine[] => {
+export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks }: ArtHealthLinesInput): ArtHealthLine[] => {
     const lines: ArtHealthLine[] = [];
     const known: ArtHealth[] = [];
     for (const [table, health] of [['task', task], ['room', room], ['ui', ui]] as const) {
@@ -185,7 +183,7 @@ export const artHealthLines = ({ task, room, ui, cut, build, font, labels, label
         for (const { folder, count } of folderCounts(task.missing)) lines.push({ kind: 'folder', folder, count });
         lines.push({ kind: 'skipped' });
     }
-    if (cut > 0) lines.push(background ? { kind: 'cut', count: cut, background: true } : { kind: 'cut', count: cut });
+    if (cut > 0) lines.push({ kind: 'cut', count: cut });
     const listed = (labels ?? []).slice(0, Math.max(0, labelCap ?? 0));
     if (listed.length > 0) lines.push({ kind: 'labels', labels: listed });
     const cause = mainCause(known);
