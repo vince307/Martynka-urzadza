@@ -640,10 +640,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 1.1 New tests red before the change (assertion, not import error: export a stub returning null first), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: return `calculate` for string answers → the three sign cases red; drop the trailing-slot exception → `17 − 8 = □` red; each restored; meta-check: the survey case enumerates generated tasks and asserts a non-zero count of sign tasks (E1, E2, E4, E6) and fill tasks (E1, E2), so it cannot pass vacuously
-- [ ] 1.3 `grep -rn "headingOf" src` lists only `src/core/round/heading.ts` (no consumer yet)
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (e2e part left to the orchestrator)
+- [x] 1.1 New tests red before the change (assertion, not import error: export a stub returning null first), green after; unit `<branch baseline> + N`
+- [x] 1.2 Deliberate break: return `calculate` for string answers → the three sign cases red; drop the trailing-slot exception → `17 − 8 = □` red; each restored; meta-check: the survey case enumerates generated tasks and asserts a non-zero count of sign tasks (E1, E2, E4, E6) and fill tasks (E1, E2), so it cannot pass vacuously
+- [x] 1.3 `grep -rn "headingOf" src` lists only `src/core/round/heading.ts` (no consumer yet)
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (e2e part left to the orchestrator)
 
 ### Phase 2: The narrator reads the heading (PA-1 speaker)
 
