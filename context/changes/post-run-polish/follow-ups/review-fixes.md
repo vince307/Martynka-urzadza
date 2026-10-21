@@ -54,3 +54,7 @@ Trigger: the author rephrases gap 154 in `docs/design-gaps.md`.
 ## Finer type key for the variety rule
 The cap uses the task type; a finer key (type plus answer shape) would allow more mixing in one-type steps.
 Trigger: a playtest note of a round that feels repetitive despite the cap.
+
+## A number left at the end of a wrapped word prompt (visual gate)
+At 1440 the word prompt "Kuba miał 2 klocki i oddał Tomkowi 1 klocek. …" breaks as "Tomkowi 1 / klocek" (`TaskScene.drawPrompt`, Phaser word wrap); Polish typography keeps a number with its noun (a non-breaking space after a short number). Not this slice; seen in `screenshots/desktop-heading-word.png`.
+Trigger: next change to the prompt wrap (`wrapBlankLines` in `src/core/round/promptBlank.ts`) or a playtest note about a split number.

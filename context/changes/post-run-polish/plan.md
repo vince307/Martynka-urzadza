@@ -670,7 +670,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 3.5 [visual] Desktop 1440 and tablet 1024 (hook build, `?e2eSkills=`): a comparison task (E1.2 `compare_num_5`) shows "Wstaw znak" above "a □ b" with tiles < > =; a box-filling task (E1.3 `missing_5` with the box inside, or E2.4 `fact_swap_20`) shows "Uzupełnij"; an ordinary ADD_SUB task shows "Oblicz"; the heading sits where "Oblicz" sat, nothing overlaps at 1024
+- [x] 3.5 [visual] Desktop 1440 and tablet 1024 (hook build, `?e2eSkills=`): a comparison task (E1.2 `compare_num_5`) shows "Wstaw znak" above "a □ b" with tiles < > =; a box-filling task (E1.3 `missing_5` with the box inside, or E2.4 `fact_swap_20`) shows "Uzupełnij"; an ordinary ADD_SUB task shows "Oblicz"; the heading sits where "Oblicz" sat, nothing overlaps at 1024 — visual gate (screenshots/README.md, reviews/visual-review.md)
 
 ### Phase 4: The variety cap holds regardless of draw order (F3)
 
@@ -703,7 +703,7 @@ None: save format v4 unchanged (table in Overview).
 
 #### Manual
 
-- [ ] 6.5 [visual] Settings "Obrazki" at 1440 and 1024 wide after a cut start (hook build `?e2eArt=stallall`): the ordinary cut line, no "w tle" sentence, layout of the section unchanged
+- [x] 6.5 [visual] Settings "Obrazki" at 1440 and 1024 wide after a cut start (hook build `?e2eArt=stallall`): the ordinary cut line, no "w tle" sentence, layout of the section unchanged — visual gate (screenshots/README.md, reviews/visual-review.md)
 
 ### Phase 7: Drawing limits fail at generation with the skill id (N-4)
 
