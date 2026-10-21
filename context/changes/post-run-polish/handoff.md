@@ -1,27 +1,28 @@
 # Handoff — `post-run-polish` (slice fix:post-run-polish)
 
-Written by the `/10x-research` step of run 2026-10-21-post-run-polish: `research.md` answers all four areas with
-symbol anchors and scratch-script numbers. The one thing the next agent must not get wrong: F3 cannot roll buckets
-first (it breaks oracle (a) of `tests/variety.test.ts`); the fix is an rng-free repair after the unchanged draw, and
-the heading rule keys on the answer type (string = sign) plus the box position, not on the skill type.
+Written by the `/10x-plan` step of run 2026-10-21-post-run-polish: `plan.md` (9 phases, each with `Driver:`) and
+`plan-brief.md` are committed; nothing is implemented. The one thing the next agent must not get wrong: the F3 fix
+keeps every rng call of today's draw (repair after the draw, no rng), and the heading rule keys on answer type + box
+position in one pure `headingOf` used by both screen and narrator.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/post-run-polish`, cut from `main` at `ba3a7c4` |
-| Commits | 2 on top of `ba3a7c4` (`docs(post-run-polish): change identity (autonomous run)`, this step `docs(post-run-polish): research`) |
+| Commits | 3 on top of `ba3a7c4` (identity, research, this step `docs(post-run-polish): plan`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (scratch scripts `scripts/_*_tmp.ts` deleted before committing) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 42 (`grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/post-run-polish/research.md` | research: heading rule (survey table, proposed `headingOf` rule, wording check, speaker options), F3 repro + repair approach with prototype numbers, N-1/H-2 inputs and pins, N-4 checks for `assertDrawable` |
-| `context/changes/post-run-polish/change.md` | frontmatter only: `status: preparing`, `updated` (metadata guard) |
+| `context/changes/post-run-polish/plan.md` | implementation plan: 9 phases (1 tdd heading rule, 2 tdd narrator, 3 impl screen + hook `heading`, 4 tdd F3 repair, 5 impl N-1 removal + e2e #15 H-1 adapted, 6 tdd H-2 `pictureCutCount`, 7 tdd N-4 `assertDrawable`, 8 impl docs + seam sweep + follow-ups, 9 e2e #11 heading), `## Autonomous decisions` P-1..P-10, `## Progress` |
+| `context/changes/post-run-polish/plan-brief.md` | two-page brief |
+| `context/changes/post-run-polish/change.md` | frontmatter `status: planned` (metadata guard only) |
 | `context/changes/post-run-polish/handoff.md` | this file |
 
 ## 3. Verification
@@ -29,43 +30,45 @@ the heading rule keys on the answer type (string = sign) plus the box position, 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/post-run-polish` |
-| heading survey (`node --import tsx`, 20 draws per skill of E1–E6, `isExpression(prompt)`) | 15 type·mode·shape rows; sign tasks = string answers (COMPARE_NUM, COMPARE_EXPR, MISSING_OP); fill = `□` inside (MISSING, FACT_FAMILY swap, PLACE_VALUE decompose); MISSING "… = □" separate row |
-| F3 repro (every playable step × seeds 1..200 = 12 600 rounds) | 159 avoidable rounds with a type > 2 (e.g. `E2.1` seed 1, `E1.10` seed 107) |
-| F3 repair prototype (same rng calls, then rng-free backtracking repair) | 0 avoidable left, 0 bucket changes, rng state identical; 2 625 rounds forced (no assignment) |
-| lint / typecheck / unit / build / e2e | not run — research step (step prompt: no builds, e2e or servers); baseline inherited, unverified: unit 3710, e2e 143 |
+| body Success Criteria vs `## Progress` (python check) | 9 phases, every phase 1:1 (4/6/5/5/5/5/4/5/3 rows) |
+| `grep -c '^Driver:' plan.md` | 9 |
+| roadmap sync | `context/foundation/roadmap.md` has no Change ID `post-run-polish` — untouched (non-roadmap change) |
+| lint / typecheck / unit / build / e2e | not run — docs-only plan step (step prompt: no builds, e2e or servers); baseline inherited, unverified: unit 3710, e2e 143 |
 
-No deliberate break (research step).
+No deliberate break (docs step).
 
 ## 4. Next command
 
-`/10x-plan post-run-polish`
+`/10x-plan-review post-run-polish`
 
 ## 5. Open
 
-- Plan choices (research.md "Open Questions"): heading for "… = □" (MISSING result slot; calculate recommended) and the
-  speaker form — (a) heading + spoken prompt, dropping the four `speak` questions, or (b) heading + existing question.
-- Word round: the narrator says "Oblicz." while the screen shows no heading (`narrationOf` has no round kind) — plan
-  decides in scope or follow-up.
-- Pins to rewrite: `tests/spoken.test.ts` (`calculate` arg), `tests/artHealthLines.test.ts` (3 `background` cases),
-  `tests/artHealthText.test.ts` `describe('pl.settings.artCutBackground')`, e2e `tests/e2e/load-and-tab-guard.spec.ts`
-  "#15 H-1 …" (assertions and title); `tests/variety.test.ts` gets the seeded F3 red tests.
-- N-4: no test ties `ART_LIMITS.trayKinds` to `TASK_LAYOUT.coinDrag.maxKinds`; plan adds the `assertDrawable` cases
-  (`money.pay`, `column`) and an invariant test.
-- L-8 DOM test: vitest runs without a DOM environment (`vitest.config.mts`), so it stays a follow-up.
-- DESIGN-GAP: next free row **154** (fill heading), row **153** rewritten (N-1).
-- Follow-ups to re-record (unchanged from the previous handoff): audit N-2, N-3, N-5, N-6; M-1/M-2/M-13/H-3/H-4;
-  `modeWidgets` single switch in `TaskScene.render`; G-2/G-3/B-4/B-5; "Obrazki" `Kod:` line not muted; L-8.
-- Teacher read (`npm run sample -- <stage> --count 6`, E1–E6) in the impl-review for the heading copy.
+- Manual rows (human checklist): 2.5 [reviewer] teacher read of `czyta:` lines (`npm run sample -- <S> --count 6`); 2.6
+  [human] tablet listening check of "Wstaw znak"; 3.5 [visual] headings at 1440/1024 (comparison, box-filling, "Oblicz");
+  6.5 [visual] "Obrazki" with a cut at 1440/1024; 8.5 [reviewer] CLAUDE.md symbols.
+- DESIGN-GAP: row 154 added in phase 2 (`pl.round.heading`), row 153 rewritten in phase 5.
+- e2e: phase 5 edits `tests/e2e/load-and-tab-guard.spec.ts` `#15 H-1` (title + last assertions → `artCut`), count +0;
+  phase 9 adds one test to `tests/e2e/narrator.spec.ts` (+1). The orchestrator runs e2e at gates.
+- Sample stability: phase 2 diff limited to `czyta:` lines; phases 4 and 7 `npm run sample` byte-identical to their
+  parent commit.
+- Follow-ups to record in phase 8 (`follow-ups/review-fixes.md`, ≥ 12 `Trigger:` lines): audit N-2, N-3, N-5, N-6 and
+  other open rows; M-1/M-2/M-13/H-3/H-4; `modeWidgets` in `TaskScene.render`; G-2/G-3/B-4/B-5; "Obrazki" `Kod:` not
+  muted; L-8; sounds-only cut e2e; `speak` question redundancy; "Uzupełnij" wording; finer variety type key; F3 closed.
 
 ## 6. Autonomous decisions
 
-- R-1 Research done locally, no sub-agents: the change.md survey had already located every area; the remaining
-  questions needed runnable scratch scripts (survey, repro, prototype). Would change: an area found outside the named files.
-- R-2 F3 recommendation: draw unchanged, then rng-free repair; rejected rolling buckets first (breaks oracle (a) and
-  the per-seed shares). Would change: the maintainer accepting different buckets per seed.
-- R-3 Heading rule keys on `typeof task.answer === 'string'` and `□` position; rejected a per-type list (drifts with
-  new types). Would change: a future expression task with a string answer that is not a sign.
-- R-4 N-4 check placement: `assertDrawable` with `TASK_LAYOUT.coinDrag.maxKinds` read from `src/data/layout.ts`
-  (core already imports it in `roomHit.ts`, `drawingFit.ts`); limits stay where they are (refines change.md D-7's
-  "or move to balance"). Would change: an ESLint boundary rule against it (none found).
-- R-5 H-2 count via a pure helper over `bootLoad.cutByTable` (task + room + ui). Would change: nothing pre-agreed (PA-4).
+- PL-1 "… = □" keeps "Oblicz" (plan P-1); rejected "Uzupełnij" for every box. Why: a result slot is a calculation.
+  Would change: teacher read preferring one heading per generator type.
+- PL-2 Speaker = heading + today's text, `speak` questions kept (P-2); rejected dropping them. Why: no generator change,
+  the question explains "okienko". Would change: teacher read or playtest calling it too long.
+- PL-3 Word round read without a heading (P-3), in scope. Why: PA-1 "same heading" and the screen shows none. Would
+  change: nothing in this run.
+- PL-4 Phase headings follow the format example (`## Phase N:` with `Driver:`/`Driver why:` as the first lines under
+  it; `### Phase N:` only in `## Progress`), not duplicated `###` body headings. Why: the format example passed the
+  orchestrator's gates in run 2026-10-20. Would change: the orchestrator's driver check reading only `### Phase N:` body
+  headings (then add them above `Driver:`).
+- PL-5 One e2e phase (#11 heading, hook gains `heading`) and the N-1 e2e pin adapted inside phase 5 (P-6, P-9). Would
+  change: the hook already exposing drawn prompt texts.
+- PL-6 No PRD conflict found (P-10); the only `[human]` row is the device listening check 2.6.
+- PL-7 No sub-agents: research had located every symbol; a few greps confirmed skill ids and the narration hook path.
+  Would change: an area outside the named files.
