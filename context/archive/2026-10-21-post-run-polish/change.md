@@ -1,10 +1,10 @@
 ---
 change_id: post-run-polish
 title: Post-run polish (task headings, round variety cap, "Obrazki" cut lines, skill id on drawing errors)
-status: impl_reviewed
+status: archived
 created: 2026-10-21
 updated: 2026-10-21
-archived_at: null
+archived_at: 2026-10-21T14:48:17Z
 ---
 
 ## Notes
@@ -155,3 +155,7 @@ Agent decisions in this step (research/plan may refine, never contradict PA-*):
   Would change: research finding `coinLayout`'s spec must stay scene-only (then the limits move to `balance`).
 - **D-8 next step.** `/10x-research` (not `/10x-plan`): five areas across core, scene, narrator and DOM panel, with
   e2e specs that pin the background line and narration texts to find.
+
+- **A-1 archive prompt (ship step).** Chosen: "Continue archiving" (labelled Recommended: the only pending Progress
+  row is 2.6 [human], a post-run checklist item, not a blocker — step prompt). Rejected: resume implementation.
+  Would change: an automated row still open.
