@@ -1,6 +1,6 @@
 # Handoff — `post-run-polish` (slice fix:post-run-polish)
 
-Written by the visual gate of run 2026-10-21-post-run-polish: `VISUAL: PASS`, rows 3.5 and 6.5 ticked, no fix commit. The next step archives the change and ships; row 2.6 [human] stays open and the save format stays v4.
+Written by the visual gate of run 2026-10-21-post-run-polish (`VISUAL: PASS`, rows 3.5 and 6.5 ticked, no fix commit) and finalised by the archive + ship step: archived, pushed, PR opened and shipped; row 2.6 [human] stays open (post-run checklist) and the save format stays v4 (`SAVE_VERSION` 4, no diff in `src/core/save.ts`, `src/core/migrations`, `tests/fixtures`).
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual gate of run 2026-10-21-post-run-polish: `VISUAL: PASS`, ro
 |---|---|
 | Branch | `feat/post-run-polish`, cut from `main` at `ba3a7c4` |
 | Commits | docs/plan + p1 `11f0c69`, p2 `3be7518`, p3 `8a0f76d`, p4 `ccf03af`, p5 `bb295b4`, p6 `91a1be1`, p7 `7004a50`, p8 `d7685b4`, p9 `7b5bd55`, handoff `de5a308`, impl-review `f6c3fb4` + this visual-gate commit (`docs(post-run-polish): bramka wizualna`) |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; the archive step stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-21-post-run-polish/run-log.md |
+| `change.md` status | `archived` (archive step, folder moved to `context/archive/2026-10-21-post-run-polish/`) |
 | `## Progress` rows remaining | 1 (`grep -c '^- \[ \]' plan.md`): 2.6 [human] |
 | Working tree | clean after this commit (`tests/e2e/visual.local/` moved out of the repo, no `test-results/`) |
 
@@ -40,7 +40,7 @@ Written by the visual gate of run 2026-10-21-post-run-polish: `VISUAL: PASS`, ro
 
 ## 4. Next command
 
-`/10x-archive post-run-polish then ship (no hosted db push — none exists)`
+`none — shipped`
 
 ## 5. Open
 
