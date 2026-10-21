@@ -676,10 +676,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [x] 4.1 New tests red before the change (the seeded repros show 3 of one type on today's code), green after; unit `<phase-3 count> + N`
-- [x] 4.2 Shares and buckets unchanged: `git diff main -- tests/variety.test.ts | grep '^-[^-]'` empty (only additions) and oracle (a) green; `git diff --stat main -- src/data/balance.ts src/core/curriculum.ts src/core/mastery.ts` empty (unlock thresholds and weights untouched)
-- [x] 4.3 Deliberate break: skip the repair → the seeded repros red; take the replacement skill with `rng.pick` → oracle (a) or the rng-state case red; each restored; meta-check: the brute-force existence check must be independent of the repair (it never calls it), otherwise "repair finds one" proves only itself
-- [x] 4.4 `npm run sample -- E1` … `E6` output byte-identical to the phase-3 commit (sample draws per step, not rounds; proves no generator or skill table moved)
+- [x] 4.1 New tests red before the change (the seeded repros show 3 of one type on today's code), green after; unit `<phase-3 count> + N` — ccf03af
+- [x] 4.2 Shares and buckets unchanged: `git diff main -- tests/variety.test.ts | grep '^-[^-]'` empty (only additions) and oracle (a) green; `git diff --stat main -- src/data/balance.ts src/core/curriculum.ts src/core/mastery.ts` empty (unlock thresholds and weights untouched) — ccf03af
+- [x] 4.3 Deliberate break: skip the repair → the seeded repros red; take the replacement skill with `rng.pick` → oracle (a) or the rng-state case red; each restored; meta-check: the brute-force existence check must be independent of the repair (it never calls it), otherwise "repair finds one" proves only itself — ccf03af
+- [x] 4.4 `npm run sample -- E1` … `E6` output byte-identical to the phase-3 commit (sample draws per step, not rounds; proves no generator or skill table moved) — ccf03af
 - [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round contents are seeded by `Date.now()` and e2e forces skills with `?e2eSkills`)
 
 ### Phase 5: "Obrazki" drops the background line (N-1)
