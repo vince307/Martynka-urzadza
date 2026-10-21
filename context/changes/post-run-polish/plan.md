@@ -663,9 +663,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 3.1 `grep -n "headingOf\|round.heading" src/scenes/TaskScene.ts` shows `drawPrompt` and `currentNarration`; `grep -rn "'Oblicz'\|\"Oblicz\"" src --include=*.ts` lists only `src/data/pl.ts`
-- [ ] 3.2 Deliberate break: no unit test renders the canvas (node environment); record that the proof is phase 9's spec (break: draw `pl.round.heading.calculate` for every kind → red) plus the [visual] rows
-- [ ] 3.3 `npm run build` prints `e2e hook: absent (` (the `heading` field stays in the hook build)
+- [x] 3.1 `grep -n "headingOf\|round.heading" src/scenes/TaskScene.ts` shows `drawPrompt` and `currentNarration`; `grep -rn "'Oblicz'\|\"Oblicz\"" src --include=*.ts` lists only `src/data/pl.ts` — 8a0f76d
+- [x] 3.2 Deliberate break: no unit test renders the canvas (node environment); record that the proof is phase 9's spec (break: draw `pl.round.heading.calculate` for every kind → red) plus the [visual] rows — 8a0f76d
+- [x] 3.3 `npm run build` prints `e2e hook: absent (` (the `heading` field stays in the hook build) — 8a0f76d
 - [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
