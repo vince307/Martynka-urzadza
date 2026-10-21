@@ -225,7 +225,7 @@ ADD_SUB task → no "Oblicz." (word round).
 
 - New tests red before the change, green after; unit `<phase-1 count> + N`
 - Deliberate break: keep today's `isExpression(task.speak ?? task.prompt)` gate → the COMPARE_NUM and MISSING cases red; ignore `headings: null` → the word-round case red; each restored; meta-check: the "Wstaw znak." case must fail on today's code with no prefix at all (check the received value), proving the test sees the missing heading
-- Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `, `Uzupełnij. `, `Oblicz. ` added or kept); no prompt, answer, choice or hint line changes
+- Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `/`Uzupełnij. ` added where today no prefix is read — COMPARE_NUM, COMPARE_EXPR, MISSING_OP, MISSING; `Oblicz. ` replaced by `Uzupełnij. ` where today's plain-expression narration already had it — FACT_FAMILY `fact_swap_20`, PLACE_VALUE decompose; `Oblicz. ` added before a MISSING result-slot question; `Oblicz. ` kept elsewhere); no prompt, answer, choice or hint line changes
 - Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` compares the spoken text with the hook's `narration`, which this phase changes in step)
 
 #### Manual Verification:
@@ -260,8 +260,9 @@ switch.
 
 #### 2. Hook
 
-**Files**: `src/testing/e2eHook.ts` (the task snapshot that already carries `narration`), `tests/e2e/support/hook.ts`
-(snapshot type)
+**Files**: `src/scenes/TaskScene.ts` (`TaskSnapshot` interface and `snapshot()`, which already carry `narration`;
+`src/testing/e2eHook.ts` spreads `task().snapshot()` into the hook snapshot, so it needs no edit), `tests/e2e/support/hook.ts`
+(snapshot type, beside `narration`)
 
 **Intent**: expose `heading: string | null`, the text the scene drew for the current task (hook build only).
 
@@ -401,7 +402,7 @@ absent or a list is missing); `openSettings` passes it as `cut` instead of `boot
 
 #### 2. Tests
 
-**File**: `tests/artHealth.test.ts` (or `tests/artHealthLines.test.ts`)
+**File**: `tests/artHealth.test.ts` (it already tests `cutByTable`)
 
 **Contract**: `{ task: [a], room: [b], ui: [], sound: [s], font: [f] }` → 2; only `sound` and `font` → 0, and
 `artHealthLines` with that count has no cut line; `undefined` → 0; a record without `ui` → counts the rest.
@@ -445,9 +446,10 @@ N-4; `faceDraw` needs no check (typed `never`), `faceLabel` already runs at gene
 
 #### 2. Tests
 
-**Files**: `tests/generateTask.test.ts`, `tests/coinLayout.test.ts`
+**Files**: `tests/generateTaskFailure.test.ts` (its `vi.mock` of the registry with the `FAKE` generator is the seam; the
+icon-pool case there is the model), `tests/coinLayout.test.ts`
 
-**Contract**: a registered test generator returning a money pay visual with `maxKinds + 1` tray kinds → `generateTask`
+**Contract**: a `FAKE` test generator returning a money pay visual with `maxKinds + 1` tray kinds → `generateTask`
 throws with `skillId` and name `RangeError`; one returning a column whose carry runs past the last column → same; a
 test generator calling `faceLabel` on a non-face code → the thrown error carries `skillId`; data invariant
 `ART_LIMITS.trayKinds <= TASK_LAYOUT.coinDrag.maxKinds`.
@@ -584,8 +586,10 @@ None: save format v4 unchanged (table in Overview).
 - The repair picks the first skill of the new type in the pool, so that skill appears a little more often in repaired
   rounds; `distinctTasks` still redraws repeated prompts. Accepted (rng-free is the share contract).
 - "Uzupełnij" is agent wording (gap 154); the author may rephrase it — a one-string change in `pl.ts`.
-- The heading followed by the existing question ("Wstaw znak. Jaki znak pasuje w okienku?") is slightly redundant;
-  follow-up with a trigger.
+- The heading followed by the existing question ("Wstaw znak. Jaki znak pasuje w okienku?") is slightly redundant, and
+  COMPARE_EXPR reads three directives ("Wstaw znak. Porównaj wyniki. Jaki znak pasuje w okienku? …"); a MISSING result slot
+  reads "Oblicz. Jaka liczba pasuje w okienku? …". Each is one imperative plus one question (no double question), acceptable
+  for a 6–9-year-old; the teacher read 2.5 judges it, follow-up with a trigger (plan review F4).
 
 ## Autonomous decisions
 
@@ -647,7 +651,7 @@ None: save format v4 unchanged (table in Overview).
 
 - [ ] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`
 - [ ] 2.2 Deliberate break: keep today's `isExpression(task.speak ?? task.prompt)` gate → the COMPARE_NUM and MISSING cases red; ignore `headings: null` → the word-round case red; each restored; meta-check: the "Wstaw znak." case must fail on today's code with no prefix at all (check the received value), proving the test sees the missing heading
-- [ ] 2.3 Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `, `Uzupełnij. `, `Oblicz. ` added or kept); no prompt, answer, choice or hint line changes
+- [ ] 2.3 Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `/`Uzupełnij. ` added where today no prefix is read — COMPARE_NUM, COMPARE_EXPR, MISSING_OP, MISSING; `Oblicz. ` replaced by `Uzupełnij. ` where today's plain-expression narration already had it — FACT_FAMILY `fact_swap_20`, PLACE_VALUE decompose; `Oblicz. ` added before a MISSING result-slot question; `Oblicz. ` kept elsewhere); no prompt, answer, choice or hint line changes
 - [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` compares the spoken text with the hook's `narration`, which this phase changes in step)
 
 #### Manual

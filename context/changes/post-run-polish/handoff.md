@@ -1,18 +1,17 @@
 # Handoff — `post-run-polish` (slice fix:post-run-polish)
 
-Written by the `/10x-plan` step of run 2026-10-21-post-run-polish: `plan.md` (9 phases, each with `Driver:`) and
-`plan-brief.md` are committed; nothing is implemented. The one thing the next agent must not get wrong: the F3 fix
-keeps every rng call of today's draw (repair after the draw, no rng), and the heading rule keys on answer type + box
-position in one pure `headingOf` used by both screen and narrator.
+Written by the `/10x-plan-review` step of run 2026-10-21-post-run-polish: verdict PROCEED, three WARNINGs fixed in
+`plan.md`, nothing implemented. The one thing the next agent must not get wrong: phase 1 is test-first for an absent pure
+`headingOf` (`src/core/round/heading.ts`) — export a stub returning null first so the new tests fail on an assertion.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/post-run-polish`, cut from `main` at `ba3a7c4` |
-| Commits | 3 on top of `ba3a7c4` (identity, research, this step `docs(post-run-polish): plan`) |
+| Commits | 4 on top of `ba3a7c4` (identity, research, plan, this step `docs(post-run-polish): plan review`) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 42 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
@@ -20,9 +19,9 @@ position in one pure `headingOf` used by both screen and narrator.
 
 | path | what it is |
 |---|---|
-| `context/changes/post-run-polish/plan.md` | implementation plan: 9 phases (1 tdd heading rule, 2 tdd narrator, 3 impl screen + hook `heading`, 4 tdd F3 repair, 5 impl N-1 removal + e2e #15 H-1 adapted, 6 tdd H-2 `pictureCutCount`, 7 tdd N-4 `assertDrawable`, 8 impl docs + seam sweep + follow-ups, 9 e2e #11 heading), `## Autonomous decisions` P-1..P-10, `## Progress` |
-| `context/changes/post-run-polish/plan-brief.md` | two-page brief |
-| `context/changes/post-run-polish/change.md` | frontmatter `status: planned` (metadata guard only) |
+| `context/changes/post-run-polish/reviews/plan-review.md` | plan review report (F1–F5, verdict PROCEED) |
+| `context/changes/post-run-polish/plan.md` | edited: phase 3 hook files (`TaskSnapshot`/`snapshot()` in `TaskScene.ts`), 2.3 sample-diff wording (body + Progress), phase 6 test file `tests/artHealth.test.ts`, phase 7 tests in `tests/generateTaskFailure.test.ts` (`FAKE` seam), Known risks narration length |
+| `context/changes/post-run-polish/change.md` | status `plan_reviewed` |
 | `context/changes/post-run-polish/handoff.md` | this file |
 
 ## 3. Verification
@@ -30,45 +29,35 @@ position in one pure `headingOf` used by both screen and narrator.
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/post-run-polish` |
-| body Success Criteria vs `## Progress` (python check) | 9 phases, every phase 1:1 (4/6/5/5/5/5/4/5/3 rows) |
-| `grep -c '^Driver:' plan.md` | 9 |
-| roadmap sync | `context/foundation/roadmap.md` has no Change ID `post-run-polish` — untouched (non-roadmap change) |
-| lint / typecheck / unit / build / e2e | not run — docs-only plan step (step prompt: no builds, e2e or servers); baseline inherited, unverified: unit 3710, e2e 143 |
+| throwaway vitest of `pickVariedSkills` on today's code (file removed, tree clean) | `E2.1` seeds 1, 21: buckets current×3, previous, current → PLACE_VALUE ×3 (previous draw took ADD_SUB, avoidable); `E1.10` seed 107: COUNT ×3 with an earlier draw on COUNT (avoidable) — phase 4 repros are red today |
+| greps (`round.calculate` consumers, `artCutBackground` in e2e, `assertDrawable` money skips `pay`, `columnMarks` RangeError, `ART_LIMITS.trayKinds` = `maxKinds` = 4, no jsdom/happy-dom) | as the plan states, except F1/F3 locations (fixed) |
+| Progress↔Phase, `Driver:` lines | 9/9 phases 1:1, 9 drivers, all correct |
+| lint / typecheck / unit / build / e2e | not run — review step (step prompt: no builds, e2e or servers); baseline inherited, unverified: unit 3710, e2e 143 |
 
 No deliberate break (docs step).
 
 ## 4. Next command
 
-`/10x-plan-review post-run-polish`
+`/10x-tdd post-run-polish phase 1`
 
 ## 5. Open
 
-- Manual rows (human checklist): 2.5 [reviewer] teacher read of `czyta:` lines (`npm run sample -- <S> --count 6`); 2.6
-  [human] tablet listening check of "Wstaw znak"; 3.5 [visual] headings at 1440/1024 (comparison, box-filling, "Oblicz");
-  6.5 [visual] "Obrazki" with a cut at 1440/1024; 8.5 [reviewer] CLAUDE.md symbols.
+- Manual rows (human checklist): 2.5 [reviewer] teacher read of `czyta:` lines; 2.6 [human] tablet listening check of
+  "Wstaw znak"; 3.5 [visual] headings at 1440/1024; 6.5 [visual] "Obrazki" with a cut at 1440/1024; 8.5 [reviewer]
+  CLAUDE.md symbols.
 - DESIGN-GAP: row 154 added in phase 2 (`pl.round.heading`), row 153 rewritten in phase 5.
-- e2e: phase 5 edits `tests/e2e/load-and-tab-guard.spec.ts` `#15 H-1` (title + last assertions → `artCut`), count +0;
-  phase 9 adds one test to `tests/e2e/narrator.spec.ts` (+1). The orchestrator runs e2e at gates.
-- Sample stability: phase 2 diff limited to `czyta:` lines; phases 4 and 7 `npm run sample` byte-identical to their
-  parent commit.
-- Follow-ups to record in phase 8 (`follow-ups/review-fixes.md`, ≥ 12 `Trigger:` lines): audit N-2, N-3, N-5, N-6 and
-  other open rows; M-1/M-2/M-13/H-3/H-4; `modeWidgets` in `TaskScene.render`; G-2/G-3/B-4/B-5; "Obrazki" `Kod:` not
-  muted; L-8; sounds-only cut e2e; `speak` question redundancy; "Uzupełnij" wording; finer variety type key; F3 closed.
+- e2e: phase 5 adapts `tests/e2e/load-and-tab-guard.spec.ts` `#15 H-1` (+0); phase 9 adds one test to
+  `tests/e2e/narrator.spec.ts` (+1).
+- Review F4 (narration length, COMPARE_EXPR three directives) in plan Known risks; follow-up recorded in phase 8.
+- Follow-ups to record in phase 8 (`follow-ups/review-fixes.md`, ≥ 12 `Trigger:` lines) — list in plan phase 8.
 
 ## 6. Autonomous decisions
 
-- PL-1 "… = □" keeps "Oblicz" (plan P-1); rejected "Uzupełnij" for every box. Why: a result slot is a calculation.
-  Would change: teacher read preferring one heading per generator type.
-- PL-2 Speaker = heading + today's text, `speak` questions kept (P-2); rejected dropping them. Why: no generator change,
-  the question explains "okienko". Would change: teacher read or playtest calling it too long.
-- PL-3 Word round read without a heading (P-3), in scope. Why: PA-1 "same heading" and the screen shows none. Would
-  change: nothing in this run.
-- PL-4 Phase headings follow the format example (`## Phase N:` with `Driver:`/`Driver why:` as the first lines under
-  it; `### Phase N:` only in `## Progress`), not duplicated `###` body headings. Why: the format example passed the
-  orchestrator's gates in run 2026-10-20. Would change: the orchestrator's driver check reading only `### Phase N:` body
-  headings (then add them above `Driver:`).
-- PL-5 One e2e phase (#11 heading, hook gains `heading`) and the N-1 e2e pin adapted inside phase 5 (P-6, P-9). Would
-  change: the hook already exposing drawn prompt texts.
-- PL-6 No PRD conflict found (P-10); the only `[human]` row is the device listening check 2.6.
-- PL-7 No sub-agents: research had located every symbol; a few greps confirmed skill ids and the narration hook path.
-  Would change: an area outside the named files.
+- PR-1 Deep review done by direct greps and one throwaway vitest instead of a sub-agent. Why: every risky claim sat in
+  named files; a sub-agent would re-read the same. Would change: a claim spanning unnamed modules.
+- PR-2 F1–F3 fixed in plan.md as WARNINGs (wrong file / over-strict criterion), not RETHINK. Why: each is a location or
+  wording fix, the approach is sound. Would change: a driver or seed contract found wrong.
+- PR-3 Heading wording accepted as a teacher would ("Wstaw znak" also for MISSING_OP; "Uzupełnij" for a box inside an
+  equation; "Oblicz" for a result slot). Would change: the teacher read 2.5 or the author rephrasing gap 154.
+- PR-4 Narration "heading + existing question" accepted (one imperative + one question, not a double question);
+  recorded as F4. Would change: playtest note that it is too long.
