@@ -652,7 +652,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N` — 3be7518
 - [x] 2.2 Deliberate break: keep today's `isExpression(task.speak ?? task.prompt)` gate → the COMPARE_NUM and MISSING cases red; ignore `headings: null` → the word-round case red; each restored; meta-check: the "Wstaw znak." case must fail on today's code with no prefix at all (check the received value), proving the test sees the missing heading — 3be7518
 - [x] 2.3 Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `/`Uzupełnij. ` added where today no prefix is read — COMPARE_NUM, COMPARE_EXPR, MISSING_OP, MISSING; `Oblicz. ` replaced by `Uzupełnij. ` where today's plain-expression narration already had it — FACT_FAMILY `fact_swap_20`, PLACE_VALUE decompose; `Oblicz. ` added before a MISSING result-slot question; `Oblicz. ` kept elsewhere); no prompt, answer, choice or hint line changes — 3be7518
-- [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` compares the spoken text with the hook's `narration`, which this phase changes in step)
+- [x] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` compares the spoken text with the hook's `narration`, which this phase changes in step) — 3be7518 (e2e 143+0, orchestrator)
 
 #### Manual
 
@@ -666,7 +666,7 @@ None: save format v4 unchanged (table in Overview).
 - [x] 3.1 `grep -n "headingOf\|round.heading" src/scenes/TaskScene.ts` shows `drawPrompt` and `currentNarration`; `grep -rn "'Oblicz'\|\"Oblicz\"" src --include=*.ts` lists only `src/data/pl.ts` — 8a0f76d
 - [x] 3.2 Deliberate break: no unit test renders the canvas (node environment); record that the proof is phase 9's spec (break: draw `pl.round.heading.calculate` for every kind → red) plus the [visual] rows — 8a0f76d
 - [x] 3.3 `npm run build` prints `e2e hook: absent (` (the `heading` field stays in the hook build) — 8a0f76d
-- [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — 8a0f76d (e2e 143+0, orchestrator)
 
 #### Manual
 
@@ -676,10 +676,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 4.1 New tests red before the change (the seeded repros show 3 of one type on today's code), green after; unit `<phase-3 count> + N`
-- [ ] 4.2 Shares and buckets unchanged: `git diff main -- tests/variety.test.ts | grep '^-[^-]'` empty (only additions) and oracle (a) green; `git diff --stat main -- src/data/balance.ts src/core/curriculum.ts src/core/mastery.ts` empty (unlock thresholds and weights untouched)
-- [ ] 4.3 Deliberate break: skip the repair → the seeded repros red; take the replacement skill with `rng.pick` → oracle (a) or the rng-state case red; each restored; meta-check: the brute-force existence check must be independent of the repair (it never calls it), otherwise "repair finds one" proves only itself
-- [ ] 4.4 `npm run sample -- E1` … `E6` output byte-identical to the phase-3 commit (sample draws per step, not rounds; proves no generator or skill table moved)
+- [x] 4.1 New tests red before the change (the seeded repros show 3 of one type on today's code), green after; unit `<phase-3 count> + N`
+- [x] 4.2 Shares and buckets unchanged: `git diff main -- tests/variety.test.ts | grep '^-[^-]'` empty (only additions) and oracle (a) green; `git diff --stat main -- src/data/balance.ts src/core/curriculum.ts src/core/mastery.ts` empty (unlock thresholds and weights untouched)
+- [x] 4.3 Deliberate break: skip the repair → the seeded repros red; take the replacement skill with `rng.pick` → oracle (a) or the rng-state case red; each restored; meta-check: the brute-force existence check must be independent of the repair (it never calls it), otherwise "repair finds one" proves only itself
+- [x] 4.4 `npm run sample -- E1` … `E6` output byte-identical to the phase-3 commit (sample draws per step, not rounds; proves no generator or skill table moved)
 - [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round contents are seeded by `Date.now()` and e2e forces skills with `?e2eSkills`)
 
 ### Phase 5: "Obrazki" drops the background line (N-1)

@@ -110,6 +110,79 @@ describe('variety rule on the real curriculum', () => {
         }
     });
 
+    // F3 (post-run-polish phase 4): the cap holds over the whole round whenever the rolled pools allow it. The pools are
+    // recorded by replaying the rng with its own copy; existence is brute force over them, never the repair.
+    const rolledPools = (b: SkillBuckets, weights: Weights, seed: number, count: number): SkillDef[][] => {
+        const sim = createRng(seed);
+        const usable = (['current', 'earlier', 'previous'] as const).filter((k) => b[k].length > 0 && weights[k] > 0);
+        const total = usable.reduce((sum, k) => sum + weights[k], 0);
+        const pools: SkillDef[][] = [];
+        for (let i = 0; i < count; i += 1) {
+            let roll = sim.next() * total;
+            let chosen = usable[usable.length - 1];
+            for (const k of usable) {
+                roll -= weights[k];
+                if (roll < 0) {
+                    chosen = k;
+                    break;
+                }
+            }
+            const groups = chosen === 'current' ? b.currentGroups : undefined;
+            const pool = groups && groups.length > 0 ? sim.pick(groups) : b[chosen];
+            sim.pick(pool);
+            pools.push([...pool]);
+        }
+        return pools;
+    };
+    const withinCapPossible = (pools: readonly SkillDef[][], cap: number): boolean => {
+        const walk = (i: number, used: Map<string, number>): boolean => {
+            if (i === pools.length) return true;
+            for (const type of new Set(pools[i].map((s) => s.type))) {
+                if ((used.get(type) ?? 0) >= cap) continue;
+                used.set(type, (used.get(type) ?? 0) + 1);
+                const ok = walk(i + 1, used);
+                used.set(type, (used.get(type) ?? 0) - 1);
+                if (ok) return true;
+            }
+            return false;
+        };
+        return walk(0, new Map());
+    };
+    const stepBuckets = (id: StageId, step: number): { b: SkillBuckets; weights: Weights } => {
+        const b = skillBuckets(stage(id), previousOf(id), step);
+        return { b, weights: b.currentGroups ? { current: W.current + W.earlier, earlier: 0, previous: W.previous } : W };
+    };
+
+    it.each([
+        ['E2', 1, 1],
+        ['E2', 1, 21],
+        ['E1', 10, 107],
+    ] as [StageId, number, number][])('seeded repro %s.%i seed %i: no type above 2', (id, step, seed) => {
+        const { b, weights } = stepBuckets(id, step);
+        expect(withinCapPossible(rolledPools(b, weights, seed, 5), 2)).toBe(true);
+        const drawn = pickVariedSkills(b, weights, createRng(seed), 5, RULES);
+        expect(Math.max(...counts(drawn).values()), drawn.map((s) => s.type).join()).toBeLessThanOrEqual(2);
+    });
+
+    it('every playable step x 200 seeds: cap holds whenever the rolled pools allow it, rng use equals pickRoundSkills', () => {
+        for (const { id, step } of cases) {
+            const { b, weights } = stepBuckets(id, step);
+            for (let seed = 1; seed <= 200; seed += 1) {
+                const where = `${id}.${step} seed ${seed}`;
+                const rngA = createRng(seed);
+                const drawn = pickVariedSkills(b, weights, rngA, 5, RULES);
+                const rngB = createRng(seed);
+                pickRoundSkills(b, weights, rngB, 5);
+                expect(rngA.next(), `${where} rng state`).toBe(rngB.next());
+                const pools = rolledPools(b, weights, seed, 5);
+                drawn.forEach((skill, i) => expect(pools[i].some((s) => s.id === skill.id), `${where} draw ${i} in pool`).toBe(true));
+                if (withinCapPossible(pools, 2)) {
+                    expect(Math.max(...counts(drawn).values()), `${where} ${drawn.map((s) => s.type).join()}`).toBeLessThanOrEqual(2);
+                }
+            }
+        }
+    });
+
     it('buildAdaptiveRound returns tasks whose skills satisfy the spread', () => {
         for (const id of ALL) {
             const adaptation = startLearning(stages, ({ E1: 6, E2: 7, E3: 8, E4: 9, E5: 10, E6: 10 })[id], 8, placementData, balance.curriculum);
