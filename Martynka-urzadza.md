@@ -10,7 +10,7 @@ Założenia:
 - Bez energii, reklam, zakupów i kont. Nie da się przegrać, gwiazdek się nie traci.
 - Tablet w orientacji poziomej, sterowanie wyłącznie dotykiem. Działa też w przeglądarce na komputerze.
 - PWA: instalowana na ekranie początkowym, działa offline.
-- Bez backendu. Postęp zapisywany lokalnie na urządzeniu. Poza pobraniem gry i jej aktualizacji gra nie wysyła żadnych żądań sieciowych (brak telemetrii, analityki, czcionek z sieci).
+- Bez backendu dla rozgrywki. Postęp zapisywany lokalnie na urządzeniu. Gra nie wysyła niczego automatycznie (brak telemetrii, analityki, czcionek z sieci). Wyjątki: pobranie i aktualizacja gry oraz wysyłki uruchomione świadomie przez rodzica za bramką dla dorosłych (opinia, raport o błędzie; po v1, PRD FR-028–FR-029), zawsze bez danych dziecka.
 - Jeden profil dziecka na urządzeniu (format zapisu zostawia miejsce na profile, UI ich nie pokazuje). Urządzenia docelowe: tablet z Androidem (Chrome), iPad (Safari), komputer (Chrome/Safari, myszka).
 - Grafiki generowane osobno przez autora. Kod do końca etapu M5 działa na placeholderach.
 
@@ -246,7 +246,9 @@ Gotowe, gdy: na ekranach, które dziecko widzi w E3–E4 i w salonie, nie ma ża
 **M8 — testy z graczem.** Obserwacja gry córki oraz miary z historii w zapisie (czas na pokój, odsetek drugich prób per umiejętność), poprawki balansu (tempo zdobywania gwiazdek, koszt mebli, progi opanowania) i czytelności poleceń wyłącznie w `data/`.
 Gotowe, gdy: przejście pokoju zajmuje sensowny czas, zadania nie są ani za łatwe, ani frustrujące.
 
-**Później:** pozostałe minigry z ZADANIA.md, sekcja 5 i większa pula zagadek dla wszystkich etapów; dopracowanie treści E1–E2 i E5–E6; kolejne pokoje (drugi pokój to pierwsza rzecz po v1); wiele profili dzieci (np. dla rodzeństwa); układ pionowy.
+**Po v1 — opinia rodzica i statystyki** (PRD FR-028–FR-031, decyzje autora 2026-10-20/21): formularz opinii w ustawieniach rodzica (tekst, opcjonalny e-mail, wersja gry i urządzenie, kolejka bez sieci) i „Wyślij raport” na karcie „Ups!” i w „Zapis gry”, wysyłane na własny serwer gry (mały punkt odbioru za tym samym serwerem, który podaje grę); statystyki odwiedzin wyłącznie z logów serwera (zamaskowane adresy, retencja 30–90 dni, raport zbiorczy), bez kodu w grze; strona „Prywatność”. Zmiana w `deploy/` — wykonywana z autorem (synchronizacja i bootstrap serwera), nie w autonomicznym biegu.
+
+**Później:** pozostałe minigry z ZADANIA.md, sekcja 5 i większa pula zagadek dla wszystkich etapów; dopracowanie treści E1–E2 i E5–E6; kolejne pokoje (drugi pokój to pierwsza rzecz po v1); wiele profili dzieci (np. dla rodzeństwa); układ pionowy; statystyki nauki z gry (tylko przy dużej liczbie graczy, jako opcja domyślnie wyłączona, włączana przez rodzica).
 
 ## 12. Poza zakresem v1
 

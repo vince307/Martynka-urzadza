@@ -1,8 +1,9 @@
 ---
 project: "Martynka urządza"
-version: 1
+version: 2
 status: draft
 created: 2026-10-11
+updated: 2026-10-21
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -17,7 +18,7 @@ timeline_budget:
 
 # PRD — Martynka urządza
 
-Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca.
+Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca. Wersja 2 (2026-10-21): wyjątek prywatności dla wysyłek uruchamianych przez rodzica, nowe wymagania po v1 (FR-028–FR-031) i FR-009 bez automatycznego czytania; decyzje autora z 2026-10-20/21 zapisane w `docs/human-checklist.md`.
 
 ## Vision & Problem Statement
 
@@ -52,7 +53,7 @@ Przepływ MVP (pierwsza sesja dziecka, klik po kliku): (1) dziecko otwiera grę 
 - Zero frustracji i kar: nigdy utrata gwiazdek, czerwone krzyżyki ani limit czasu; błędna odpowiedź zawsze prowadzi do podpowiedzi i drugiej próby.
 - Postęp nigdy nie ginie: zamknięcie, restart tabletu i aktualizacja gry zostawiają stan dokładnie taki sam.
 - Zadania są matematycznie poprawne i zgodne z programem: żadnej błędnej odpowiedzi wzorcowej, ujemnych wyników ani zadań spoza zakresu etapu.
-- Działa offline i bez sieci zewnętrznej: żadnych żądań do internetu w trakcie gry, brak telemetrii, reklam i zakupów.
+- Działa offline i bez sieci zewnętrznej: gra nie wysyła niczego automatycznie (brak telemetrii, reklam i zakupów); jedyne wysyłki uruchamia świadomie rodzic za bramką dla dorosłych (opinia, raport o błędzie, FR-028–FR-029), zawsze bez danych dziecka.
 
 ## User Stories
 
@@ -126,7 +127,7 @@ Grupowanie według etapów planu (M0–M8); kolejność etapów jest wiążąca 
   > Socrates: Kontrargument: „jeśli druga próba daje tyle samo, dziecko może zgadywać pierwszą odpowiedź”. Rozstrzygnięcie: nagroda zostaje (brak frustracji), opanowanie liczy tylko pierwszą próbę.
 - FR-008: Po błędzie dziecko widzi delikatne potrząśnięcie i pierwszą podpowiedź, ma drugą próbę; po drugiej pomyłce widzi rozwiązanie krok po kroku, a potem jeszcze raz wpisuje wynik (bez gwiazdki) i przechodzi dalej. Priority: must-have
   > Socrates: Kontrargument: „bierne obejrzenie rozwiązania nic nie uczy” (paczka A: „Pokaż kroki” wraca do próby). Rozstrzygnięcie: po rozwiązaniu dziecko przepisuje wynik, bez gwiazdki.
-- FR-009: Dziecko może odsłuchać polecenie polskim lektorem; automatyczne czytanie poleceń jest ustawieniem rodzica (domyślnie włączone dla E1–E2, wyłączone od E3); bez polskiego głosu przycisk jest ukryty. Priority: must-have
+- FR-009: Dziecko może odsłuchać polecenie polskim lektorem; automatyczne czytanie poleceń jest ustawieniem rodzica, domyślnie wyłączonym dla każdego etapu (zmiana 2026-10-21, wcześniej domyślnie włączone dla E1–E2: w testach z graczem czytanie każdego zadania bez naciśnięcia głośnika przeszkadzało); bez polskiego głosu przycisk jest ukryty. Priority: must-have
   > Socrates: Kontrargument: „dziecko w E3, które słabo czyta, też potrzebuje lektora; dziecko w E2, które czyta, może być nim zirytowane”. Rozstrzygnięcie: automatyczne czytanie jako ustawienie rodzica z domyślną wartością zależną od etapu.
 - FR-010: Po rundzie dziecko widzi podsumowanie z liczbą gwiazdek i wybiera „Kolejna runda” lub „Do pokoju”; gdy gwiazdek wystarcza na bieżące zadanie remontowe, podsumowanie wyróżnia „Do pokoju”. Priority: must-have
   > Socrates: Kontrargument: „dziecko może grindować rundy i zapomnieć o nagrodzie”. Rozstrzygnięcie: podsumowanie podpowiada „Do pokoju”, gdy stać na mebel, żeby domknąć pętlę.
@@ -177,6 +178,15 @@ Grupowanie według etapów planu (M0–M8); kolejność etapów jest wiążąca 
 - FR-027: Autor dostraja balans (tempo gwiazdek, koszty mebli, progi opanowania) i czytelność poleceń wyłącznie w danych gry na podstawie obserwacji córki oraz miar odczytanych z historii w zapisie (np. czas na pokój, odsetek drugich prób per umiejętność). Priority: must-have
   > Socrates: Kontrargument: „bez danych obserwacja jest wrażeniem”. Rozstrzygnięcie: M8 ma kryteria pomiaru z historii zadań w zapisie.
 
+### Po v1 — opinia rodzica, raport o błędzie, statystyki odwiedzin
+
+Wymagania dodane 2026-10-21 (decyzje autora z 2026-10-20/21). Wchodzą po zamknięciu M0–M8, jako osobny etap; nie zmieniają kolejności M0–M8.
+
+- FR-028: Rodzic w ustawieniach (za bramką dla dorosłych) może napisać opinię lub komentarz o grze (tekst, opcjonalnie adres e-mail do odpowiedzi) i wysłać ją autorowi gry; do opinii dołączana jest wersja gry i typ urządzenia, nigdy dane dziecka (postęp, etap, imię, historia). Bez sieci opinia czeka i wysyła się przy następnym połączeniu, a rodzic wie, że jeszcze nie wyszła; nieudana wysyłka kończy się spokojnym komunikatem, nie utratą tekstu. Priority: must-have (po v1)
+- FR-029: Rodzic może wysłać autorowi raport o błędzie z karty awarii („Ups!”) i z sekcji „Zapis gry”: raport zawiera kod błędu, wersję gry, typ urządzenia i kilka linii technicznych, bez danych dziecka; każdy raport wysyła rodzic jednym stuknięciem, gra nigdy nie wysyła go sama. Priority: must-have (po v1)
+- FR-030: Autor widzi zbiorcze statystyki odwiedzin strony gry: unikalni odwiedzający (dzień, tydzień, miesiąc), nowi i powracający, uruchomienia gry z siecią, typ urządzenia, źródła wejść, odsetek urządzeń z najnowszą wersją, błędy pobierania. Statystyki powstają wyłącznie z obsługi pobierania i aktualizacji gry, bez żadnego kodu w grze; adresy odwiedzających są skracane, a surowe zapisy usuwane po 30–90 dniach. Priority: must-have (po v1)
+- FR-031: Rodzic może przeczytać krótką stronę „Prywatność” (link dostępny dla rodzica): co gra zbiera przy pobieraniu i aktualizacji, co zawiera opinia i raport o błędzie, po co, jak długo jest przechowywane i jak poprosić o usunięcie; dane dziecka nie opuszczają urządzenia poza świadomym eksportem i wysyłkami z FR-028–FR-029. Priority: must-have (po v1)
+
 ## Non-Functional Requirements
 
 - Gra uruchamia się offline z ikony na ekranie początkowym do ekranu gry w < 3 s na tablecie sprzed 3–4 lat.
@@ -184,7 +194,7 @@ Grupowanie według etapów planu (M0–M8); kolejność etapów jest wiążąca 
 - Każdy cel dotykowy dla dziecka ma ≥ 96 px w scenie 1920×1080 (≥ 48 px CSS na ekranie 1024×768), a tekst poleceń ≥ 64 px w scenie; polskie znaki pochodzą z czcionki dołączonej lokalnie.
 - Gra działa w pełni na tablecie z Androidem (Chrome), na iPadzie (Safari) oraz w przeglądarce na komputerze (Chrome, Safari) myszką.
 - Lektor działa tam, gdzie urządzenie ma polski głos; brak głosu nie blokuje żadnego przepływu.
-- Prywatność: poza pobraniem gry i jej aktualizacji gra nie wysyła żadnych żądań sieciowych (brak telemetrii, analityki, czcionek z sieci); dane dziecka nigdy nie opuszczają urządzenia poza świadomym eksportem przez rodzica.
+- Prywatność: gra nie wysyła niczego automatycznie. Wyjątki: pobranie i aktualizacja gry oraz wysyłki uruchomione świadomie przez rodzica za bramką dla dorosłych (opinia, raport o błędzie), zawsze bez danych dziecka. Brak telemetrii, analityki w grze i czcionek z sieci; statystyki odwiedzin (FR-030) nie wymagają kodu w grze. Dane dziecka nigdy nie opuszczają urządzenia poza świadomym eksportem przez rodzica.
 - Dostępność: gra szanuje systemowe ustawienie „ogranicz ruch” (animacja lotu gwiazdki wyłączona) i jest w pełni grywalna bez dźwięku; żadna informacja nie jest przekazywana wyłącznie dźwiękiem lub wyłącznie kolorem.
 
 ## Business Logic
@@ -204,7 +214,7 @@ Brak logowania i kont. Jeden profil dziecka na urządzeniu; dane (gwiazdki, poko
 Dwie role na tym samym urządzeniu, rozdzielone wyłącznie bramką UI:
 
 - **Dziecko**: rozwiązuje zadania, wydaje gwiazdki, urządza pokoje, zmienia warianty. Nie widzi ustawień.
-- **Rodzic**: wchodzi do ukrytych ustawień przez długie przytrzymanie ikony **plus bramkę dla dorosłego** (np. proste działanie do rozwiązania); tam zmienia etap, ogląda postępy, eksportuje/importuje zapis, resetuje grę z potwierdzeniem. Bramka chroni reset i zmianę etapu przed celowym wejściem dziecka, nie tylko przed przypadkowym.
+- **Rodzic**: wchodzi do ukrytych ustawień przez długie przytrzymanie ikony **plus bramkę dla dorosłego** (np. proste działanie do rozwiązania); tam zmienia etap, ogląda postępy, eksportuje/importuje zapis, resetuje grę z potwierdzeniem, a po v1 wysyła opinię lub raport o błędzie (FR-028–FR-029). Dziecko nie może niczego wysłać. Bramka chroni reset i zmianę etapu przed celowym wejściem dziecka, nie tylko przed przypadkowym.
 
 ## Non-Goals
 
@@ -216,6 +226,7 @@ Funkcjonalne:
 - Brak drugiego pokoju z grafiką, pełnej puli minigier (1–2 w v1) i pełnej puli zagadek (10–15 dla E3–E4 w v1): v1 skupia się na etapach E3–E4 i salonie.
 - Brak pełnego dopracowania treści E1–E2 i E5–E6: generatory działają dla wszystkich etapów, ale jakość poleceń i podpowiedzi jest gwarantowana w v1 dla E3–E4 (FR-004); reszta po M8.
 - Brak osobnego raportu postępów poza grą: podgląd w ustawieniach i eksport zapisu wystarczą.
+- Brak automatycznych statystyk nauki (ile rund, jakie etapy, które umiejętności sprawiają trudność), nawet zbiorczych: to dane o dziecku, a przy kilku rodzinach statystyka nic nie mówi. Później, przy dużej liczbie graczy: najwyżej opcja domyślnie wyłączona, włączana przez rodzica.
 
 Niefunkcjonalne:
 - Brak układu pionowego i wsparcia telefonu: tablet w poziomie; w pionie nakładka „Obróć tablet” (FR-002).
@@ -230,3 +241,6 @@ Niefunkcjonalne:
 5. **Ryzyko: motywacja po salonie**: jeden pokój to ok. 10 zadań remontowych; salon może skończyć się szybciej niż zainteresowanie (albo odwrotnie). Mierzy M8; drugi pokój jest pierwszą rzeczą po v1 i zależy od grafiki. Właściciel: autor.
 6. **Ryzyko: grafika mebli**: paczka A v1 nie zawiera 10 slotów × 3 wariantów mebli salonu ani ikon do wszystkich typów zadań; M7 zależy od osobnej pracy graficznej autora poza kodem. Opóźnienie grafiki = opóźnienie M7 (FR-026 zawężone do ekranów E3–E4 i salonu). Właściciel: autor. Rozstrzygnąć (termin dostarczenia grafiki) przed M7.
 7. **Ryzyko: lektor**: polski głos systemowy na tablecie może być słaby lub go brak (na Androidzie zależy od zainstalowanej syntezy mowy). Łagodzenie: przycisk ukryty bez głosu, automatyczne czytanie jako ustawienie rodzica (FR-009), córka w E3 czyta sama. Właściciel: autor. Sprawdzić na docelowym tablecie w M2.
+8. **Przechowywanie opinii i raportów** (FR-028–FR-029): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. Właściciel: autor. Rozstrzygnąć przed etapem po v1.
+9. **Ochrona przed nadużyciem wysyłek** (FR-028–FR-029): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. Właściciel: autor. Rozstrzygnąć w planie etapu po v1.
+10. **Gdzie rodzic znajduje stronę „Prywatność”** (FR-031): ekran powitalny dla rodzica, ustawienia, czy oba. Właściciel: autor. Rozstrzygnąć w planie etapu po v1.
