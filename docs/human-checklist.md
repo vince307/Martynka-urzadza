@@ -394,7 +394,7 @@ Bez kodu w grze i bez skryptu analitycznego (PRD zabrania telemetrii; gra dział
 - [ ] Bez danych o tym, co dziecko robi w grze (rundy, etapy, błędy w zadaniach) — to zostaje na urządzeniu.
 - [ ] Krótka strona „Prywatność” (link dla rodzica, np. z ekranu powitalnego): co jest w logach, po co, jak długo; dane dziecka nie opuszczają urządzenia.
 
-## Do zrobienia: opinia rodzica z gry (ustalone 2026-10-20)
+## Do zrobienia: opinia rodzica i raport o błędzie z gry (ustalone 2026-10-20/21)
 
 Wybrany wariant: formularz w panelu rodzica (za bramką dla dorosłych), wysyłany na własny serwer. Rozważone i odrzucone: `mailto:` (najprostszy, zgodny z PRD), formularz zewnętrzny (Tally/Google Forms — dane u obcej firmy), GitHub (rodzice nie mają kont).
 
@@ -402,5 +402,7 @@ Wybrany wariant: formularz w panelu rodzica (za bramką dla dorosłych), wysyła
 - [ ] Serwer (VPS, wspólny z CoiledSpring): mały endpoint POST za Caddy (np. `/api/opinia`), limit rozmiaru, limit liczby zgłoszeń z jednego adresu, pułapka na boty (ukryte pole), zapis do pliku/SQLite poza katalogiem wydania, powiadomienie mailem albo komenda `ssh martynka-ops opinie`. Zmiana w `deploy/` — `sync` + `bootstrap` z listą CoiledSpring robi właściciel.
 - [ ] Gra: formularz (tekst + opcjonalny e-mail do odpowiedzi) z numerem wersji i typem urządzenia; bez danych dziecka (postęp, etap, imię); offline — kolejka i wysyłka przy następnym połączeniu albo jasny komunikat „wyślij, gdy będziesz online”; spokojny komunikat przy błędzie.
 - [ ] RODO: strona „Prywatność” opisuje formularz (co zbieramy, po co, jak długo, jak usunąć), retencja zgłoszeń (np. 12 miesięcy), e-mail tylko za zgodą.
+- [ ] Raport o błędzie (ustalone 2026-10-21): przycisk „Wyślij raport” na karcie „Ups!” i w sekcji „Zapis gry”, ten sam endpoint co opinia; zawartość: `Kod:`, wersja, urządzenie, kilka linii technicznych; bez postępu, etapu i historii dziecka; każdy raport wysyła rodzic jednym stuknięciem, nigdy automatycznie.
+- [ ] Brzmienie wyjątku w PRD: „Gra nie wysyła niczego automatycznie. Wyjątki: pobranie i aktualizacja gry oraz wysyłki uruchomione świadomie przez rodzica za bramką dla dorosłych (opinia, raport o błędzie), zawsze bez danych dziecka.” Automatycznych statystyk nauki nie dodajemy (dane o dziecku, mało użytkowników); wrócić do tego przy dużej liczbie graczy, jako opcja domyślnie wyłączona.
 - [ ] Wnioski z opinii przenosić do `docs/playtest-feedback.md` jako F-NN bez danych nadawcy (repo publiczne).
 - [ ] Slice w roadmapie po v1 (razem ze statystykami odwiedzin, ta sama zmiana w `deploy/` i ta sama strona „Prywatność”).
