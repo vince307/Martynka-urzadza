@@ -696,9 +696,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N`
-- [ ] 6.2 Deliberate break: count all five lists → the sounds-only case red; restored; meta-check: the record in the test is built with the real `cutByTable` from file keys of `SOUNDS` and the font key, so it is the shape `BootScene` writes
-- [ ] 6.3 `grep -n "cut.length" src/scenes/UIScene.ts` empty
+- [x] 6.1 New tests red before the change, green after; unit `<phase-5 count> + N` — 91a1be1
+- [x] 6.2 Deliberate break: count all five lists → the sounds-only case red; restored; meta-check: the record in the test is built with the real `cutByTable` from file keys of `SOUNDS` and the font key, so it is the shape `BootScene` writes — 91a1be1
+- [x] 6.3 `grep -n "cut.length" src/scenes/UIScene.ts` empty — 91a1be1
 - [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#14 B-4` and `#15 A-1/A-2` cut pictures, so `artCut` still shows)
 
 #### Manual
