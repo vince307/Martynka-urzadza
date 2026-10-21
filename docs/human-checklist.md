@@ -406,3 +406,29 @@ Wybrany wariant: formularz w panelu rodzica (za bramką dla dorosłych), wysyła
 - [ ] Brzmienie wyjątku w PRD: „Gra nie wysyła niczego automatycznie. Wyjątki: pobranie i aktualizacja gry oraz wysyłki uruchomione świadomie przez rodzica za bramką dla dorosłych (opinia, raport o błędzie), zawsze bez danych dziecka.” Automatycznych statystyk nauki nie dodajemy (dane o dziecku, mało użytkowników); wrócić do tego przy dużej liczbie graczy, jako opcja domyślnie wyłączona.
 - [ ] Wnioski z opinii przenosić do `docs/playtest-feedback.md` jako F-NN bez danych nadawcy (repo publiczne).
 - [ ] Slice w roadmapie po v1 (razem ze statystykami odwiedzin, ta sama zmiana w `deploy/` i ta sama strona „Prywatność”).
+
+## Bieg 2026-10-21-post-run-polish (audyt #92 N-1, N-4, H-2 + F3 + „Oblicz”)
+
+Bieg uruchomiony 2026-10-21 po scaleniu #92 i #93; decyzje uzgodnione z góry. Wysłane: #94 (merge 81115ee). Format zapisu bez zmian (v4). `main` 81115ee: 3736 testów jednostkowych (było 3710), 144 e2e (było 143). Audyt zamykający #95: 0 CRITICAL, 0 HIGH, 0 MEDIUM, 2 LOW. Deploy 81115ee nie wystartował w czasie biegu (incydent GitHuba „Delays for Pull Requests and Webhook deliveries”) — stan w run-logu i w raporcie końcowym.
+
+### P0 — przed następnym biegiem
+
+- [ ] Upewnij się, że Deploy dla 81115ee przeszedł (Actions → Deploy); jeśli nie wystartował sam po incydencie GitHuba, uruchom go ręcznie (Actions → Deploy → Run workflow → `deploy`) i sprawdź `npm run check:deploy -- https://martynka-urzadza.pl 81115ee`.
+- [ ] Przejrzyj audyt #95 (`context/audits/observability/2026-10-21_1719-naglowek-zadania-obrazki-kod-umiejetnosci.md`).
+
+### P1 — tablet
+
+- [ ] Posłuchaj lektora na zadaniu porównania i uzupełniania: „Wstaw znak. Jaki znak pasuje w okienku? …”, „Uzupełnij. …” (post-run-polish 2.6).
+
+### P2 — później
+
+- [ ] Audyt #95 N-7: w minigrze Zakrywanka lektor mówi „Oblicz.”, a na ekranie nie ma nagłówka (`TaskScene.currentNarration`).
+- [ ] Audyt #95 N-8: naprawa limitu typów (`repairCap`) działa po cichu i zawsze bierze pierwszą umiejętność nowego typu.
+- [ ] Follow-upy z wyzwalaczami: `context/archive/2026-10-21-post-run-polish/follow-ups/review-fixes.md` (15), m.in. łamanie polecenia „Tomkowi 1 / klocek” w zadaniu tekstowym.
+- [ ] DESIGN-GAP 154 (nagłówek „Uzupełnij”) i przepisany 153 w `docs/design-gaps.md` — do odczytu przez autorkę zestawu.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Trzy nagłówki: „Wstaw znak” (porównania, brakujący znak), „Uzupełnij” (okienko w środku równania), „Oblicz” (reszta, także „… = □”); lektor mówi nagłówek, potem dotychczasowe pytanie (porównanie wyrażeń: trzy polecenia z rzędu).
+- [ ] Limit 2 na typ naprawiany po losowaniu bez użycia rng (udziały 60/30/10 bez zmian); ok. 1 runda na 5 ma 3 zadania jednego typu tylko tam, gdzie pula nie ma innego typu.
+- [ ] „Obrazki” po odcięciu startu pokazuje zwykłą linię (bez zdania „w tle”), liczba to same obrazki (zadania + pokój + ekrany).
