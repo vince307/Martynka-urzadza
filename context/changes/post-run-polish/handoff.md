@@ -1,15 +1,15 @@
 # Handoff — `post-run-polish` (slice fix:post-run-polish)
 
-Written by `/10x-implement` phase 8 of run 2026-10-21-post-run-polish: rule files, comments and follow-ups, committed as d7685b4. Do not edit `src/data/balance.ts`, `curriculum.ts`, `mastery.ts`: shares are the contract.
+Written by `/10x-e2e` phase 9 of run 2026-10-21-post-run-polish: the heading e2e test, committed as 7b5bd55. Do not edit `src/data/balance.ts`, `curriculum.ts`, `mastery.ts`: shares are the contract.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/post-run-polish`, cut from `main` at `ba3a7c4` |
-| Commits | docs/plan + p1 `11f0c69`, p2 `3be7518`, p3 `8a0f76d`, p4 `ccf03af`, p5 `bb295b4`, p6 `91a1be1`, p7 `7004a50`, p8 `d7685b4` + this handoff commit |
+| Commits | docs/plan + p1 `11f0c69`, p2 `3be7518`, p3 `8a0f76d`, p4 `ccf03af`, p5 `bb295b4`, p6 `91a1be1`, p7 `7004a50`, p8 `d7685b4`, p9 `7b5bd55` + this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | not changed by this step |
+| `change.md` status | `implemented` (epilogue, last phase) |
 | `## Progress` rows remaining | see `grep -c '^- \[ \]' plan.md` |
 | Working tree | clean after the handoff commit |
 
@@ -20,27 +20,28 @@ Written by `/10x-implement` phase 8 of run 2026-10-21-post-run-polish: rule file
 | `CLAUDE.md` | variety sentence (whole round, rng-free repair), boot sentence (ordinary cut line, picture-only count), new sentence for this change |
 | `src/core/round/prompt.ts` | header comment names `headingOf` |
 | `context/changes/post-run-polish/follow-ups/review-fixes.md` | 15 `Trigger:` entries |
-| `context/changes/post-run-polish/plan.md` | rows 8.1-8.3 ticked; 8.4 (orchestrator e2e), 8.5 [reviewer] open |
+| `tests/e2e/narrator.spec.ts` | new test `#11 the heading above a sign task and above a calculation is drawn and read aloud before the task` |
+| `context/changes/post-run-polish/plan.md` | rows 9.1, 9.3 ticked; 9.2 (orchestrator full suite), 7.4, 8.4, 8.5 [reviewer] open |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| grep `artCutBackground` (src tests CLAUDE.md AGENTS.md), `round.calculate` | empty |
-| `grep -c '^Trigger:'` follow-ups | 15 |
-| `validate-rule-files.sh` | PASS (489 paths, 0 missing) |
-| lint, typecheck, `npm test` | OK, 3736 passed (phase-7 3736, +0) |
-| deploy scripts, sample E1-E6, build | OK (`e2e hook: absent`) |
-| e2e full suite | orchestrator's part; 8.4 open |
+| `npx playwright test --config=<abs> tests/e2e/narrator.spec.ts` | 4 passed (new test green alone, 4.0 s) |
+| break 1: `headingOf` returns `'calculate'` for string answers | RED: `Expected: "Wstaw znak"`, `Received: "Oblicz"` (heading assertion); restored |
+| break 2: `TaskScene` narration options `headings: null` | RED: `expect(sign.narration?.startsWith(...)).toBe(true)` received false (heading assertion passed, narration failed); restored |
+| lint, typecheck | OK |
+| no servers left (4397/4398 not listening) | OK |
+| full e2e suite | orchestrator's part; 9.2, 7.4, 8.4 open |
 
 ## 4. Next command
 
-`/10x-e2e post-run-polish phase 9`
+`/10x-impl-review post-run-polish`
 
 ## 5. Open
 
 - Manual rows: 2.5 [reviewer], 2.6 [human], 3.5 [visual], 6.5 [visual], 8.5 [reviewer]; rows 7.4 and 8.4 wait for the orchestrator's e2e.
-- Phase 9 is e2e: do not run the implement epilogue (status implemented) before it.
+- Phase 9 done; epilogue run (status implemented).
 - AGENTS.md had nothing untrue; variety.ts comment still accurate (draw order refers to the spread tie-break).
 
 ## 6. Autonomous decisions
@@ -56,3 +57,4 @@ Written by `/10x-implement` phase 8 of run 2026-10-21-post-run-polish: rule file
 - P6-1 Skill tool not invoked separately; plan phase 6 followed directly (Driver tdd, fully testable, no mixed question). Stub summed all five lists (the planned break) so RED was a real assertion. Commit message as planned; stopped after the phase. Would change: n/a.
 - P7-1 Skill tool not invoked separately; plan phase 7 followed directly (Driver tdd kept, fully testable, no mixed question). The faceLabel case was green before the change (documented in the test as a pin). `visual.ts` imports `TASK_LAYOUT` from `data/layout` (core may import data). Commit message as planned; stopped after the phase. Would change: n/a.
 - P8-1 Skill tool not invoked separately; plan phase 8 followed directly (Driver impl). Reworded CLAUDE.md so the identifier `artCutBackground` does not appear (grep 8.1 must be empty). Stopped after the phase. Would change: n/a.
+- P9-1 Skill tool not invoked separately; plan phase 9 followed directly (Driver e2e). One test with two alternating skills (compare_num_5, add_sub_5) in the E1 stage via the parent path instead of two contexts. Chromium launched in-agent. Mixed phase: browser-level part only; the pure rule `headingOf` and `spokenTask` are covered by unit tests of phases 2. Stopped after the phase. Would change: n/a.

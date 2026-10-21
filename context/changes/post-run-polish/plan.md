@@ -731,6 +731,6 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 9.1 Spec red before (deliberate break: `drawPrompt` draws `pl.round.heading.calculate` for every kind → the heading assertion red; `currentNarration` passes `headings: null` → the narration assertion red), green after; restored
-- [ ] 9.2 `npx playwright test tests/e2e/narrator.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1`
-- [ ] 9.3 Full local gate green
+- [x] 9.1 Spec red before (deliberate break: `drawPrompt` draws `pl.round.heading.calculate` for every kind → the heading assertion red; `currentNarration` passes `headings: null` → the narration assertion red), green after; restored — 7b5bd55
+- [ ] 9.2 `npx playwright test tests/e2e/narrator.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 1`; total equals `npx playwright test --list | tail -1` (narrator.spec 4/4 green in-agent; full suite and total check left to the orchestrator)
+- [x] 9.3 Full local gate green — 7b5bd55
