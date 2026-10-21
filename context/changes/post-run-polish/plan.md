@@ -718,9 +718,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 8.1 `grep -rn "artCutBackground" src tests CLAUDE.md AGENTS.md` empty; `grep -rn "round.calculate" src scripts tests` empty
-- [ ] 8.2 `grep -c "^Trigger:" context/changes/post-run-polish/follow-ups/review-fixes.md` ≥ 12
-- [ ] 8.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists)
+- [x] 8.1 `grep -rn "artCutBackground" src tests CLAUDE.md AGENTS.md` empty; `grep -rn "round.calculate" src scripts tests` empty
+- [x] 8.2 `grep -c "^Trigger:" context/changes/post-run-polish/follow-ups/review-fixes.md` ≥ 12
+- [x] 8.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists)
 - [ ] 8.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
