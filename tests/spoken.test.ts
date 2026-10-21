@@ -14,7 +14,7 @@ import { pl } from '../src/data/pl';
 const words = pl.speech as SpeechWords;
 const NBSP = '\u00A0';
 const say = (text: string) => spokenText(text, words);
-const command = (task: Task) => spokenTask(task, words, pl.round.calculate);
+const command = (task: Task) => spokenTask(task, words, pl.round.heading);
 
 describe('spokenText', () => {
     it('reads a bare calculation with number words and operator words', () => {
@@ -151,7 +151,7 @@ describe('speech over every skill of every stage', () => {
 });
 
 describe('narrationOf', () => {
-    const opts = { words, calculate: pl.round.calculate, tryAgain: pl.round.tryAgain, answerLine: pl.round.resultLine };
+    const opts = { words, headings: pl.round.heading, tryAgain: pl.round.tryAgain, answerLine: pl.round.resultLine };
     const t = (prompt: string, hint: string[], answerValue: number): Task => ({ skillId: 'T.1', prompt, answer: answerValue, hint });
     const round = (): RoundState => startRound([t('38 + 27', ['30 + 20 = 50', '8 + 7 = 15', '50 + 15 = 65'], 65), t('9 − 4', ['9 − 4 = 5'], 5)], { ...balance.round, length: 2 });
     const WRONG = -1;
@@ -161,9 +161,26 @@ describe('narrationOf', () => {
         expect(narrationOf(answer(round(), 65), opts)).toBe('Oblicz. trzydzieści osiem plus dwadzieścia siedem');
     });
     it('prefers the task speak over the prompt', () => {
-        const spoken = { ...t('3 □ 5', [], 0), speak: 'Jaki znak pasuje w okienku? 3 □ 5' };
+        const spoken = { ...t('3 □ 5', [], 0), answer: '<', speak: 'Jaki znak pasuje w okienku? 3 □ 5' };
         const s = startRound([spoken], { ...balance.round, length: 1 });
-        expect(narrationOf(s, opts)).toBe('Jaki znak pasuje w okienku? trzy okienko pięć');
+        expect(narrationOf(s, opts)).toBe('Wstaw znak. Jaki znak pasuje w okienku? trzy okienko pięć');
+    });
+    it('puts the heading before the speak question of a sign task', () => {
+        const sign = { ...t('3 □ 5', [], 0), answer: '<', speak: pl.tasks.compareSpeak('3 □ 5') };
+        expect(command(sign)).toBe('Wstaw znak. Jaki znak pasuje w okienku? trzy okienko pięć');
+    });
+    it('says Uzupełnij for a box inside the expression and Oblicz for a result slot', () => {
+        expect(command(t('2 + □ = 4', [], 2)).startsWith('Uzupełnij. ')).toBe(true);
+        expect(command(t('7 + 6 = □', [], 13)).startsWith('Oblicz. ')).toBe(true);
+    });
+    it('reads a sentence task without a heading', () => {
+        const sentence = command(t('Ala ma 3 jabłka. Ile ma razem?', [], 3));
+        expect(sentence).not.toMatch(/^(Oblicz|Wstaw znak|Uzupełnij)\./u);
+    });
+    it('reads no heading in a word round (headings null)', () => {
+        expect(spokenTask(t('38 + 27', [], 65), words, null)).toBe('trzydzieści osiem plus dwadzieścia siedem');
+        const s = startRound([t('38 + 27', [], 65)], { ...balance.round, length: 1 });
+        expect(narrationOf(s, { ...opts, headings: null })).toBe('trzydzieści osiem plus dwadzieścia siedem');
     });
     it('on the second try says try again and reads the first hint', () => {
         expect(narrationOf(answer(round(), WRONG), opts)).toBe('Spróbuj jeszcze raz. trzydzieści plus dwadzieścia równa się pięćdziesiąt');

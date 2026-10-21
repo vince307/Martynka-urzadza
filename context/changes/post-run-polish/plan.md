@@ -649,9 +649,9 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: keep today's `isExpression(task.speak ?? task.prompt)` gate → the COMPARE_NUM and MISSING cases red; ignore `headings: null` → the word-round case red; each restored; meta-check: the "Wstaw znak." case must fail on today's code with no prefix at all (check the received value), proving the test sees the missing heading
-- [ ] 2.3 Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `/`Uzupełnij. ` added where today no prefix is read — COMPARE_NUM, COMPARE_EXPR, MISSING_OP, MISSING; `Oblicz. ` replaced by `Uzupełnij. ` where today's plain-expression narration already had it — FACT_FAMILY `fact_swap_20`, PLACE_VALUE decompose; `Oblicz. ` added before a MISSING result-slot question; `Oblicz. ` kept elsewhere); no prompt, answer, choice or hint line changes
+- [x] 2.1 New tests red before the change, green after; unit `<phase-1 count> + N`
+- [x] 2.2 Deliberate break: keep today's `isExpression(task.speak ?? task.prompt)` gate → the COMPARE_NUM and MISSING cases red; ignore `headings: null` → the word-round case red; each restored; meta-check: the "Wstaw znak." case must fail on today's code with no prefix at all (check the received value), proving the test sees the missing heading
+- [x] 2.3 Sample diff limited to narration: before the first edit save `npm run sample -- <S>` for E1–E6 to the scratchpad; after the change `diff` each; every changed line starts with `      czyta:` and differs only by a heading prefix (`Wstaw znak. `/`Uzupełnij. ` added where today no prefix is read — COMPARE_NUM, COMPARE_EXPR, MISSING_OP, MISSING; `Oblicz. ` replaced by `Uzupełnij. ` where today's plain-expression narration already had it — FACT_FAMILY `fact_swap_20`, PLACE_VALUE decompose; `Oblicz. ` added before a MISSING result-slot question; `Oblicz. ` kept elsewhere); no prompt, answer, choice or hint line changes
 - [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator.spec.ts` compares the spoken text with the hook's `narration`, which this phase changes in step)
 
 #### Manual

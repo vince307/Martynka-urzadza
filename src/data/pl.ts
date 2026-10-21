@@ -360,7 +360,7 @@ export const pl = {
         greater: 'większe niż',
     },
     round: {
-        calculate: 'Oblicz',
+        heading: { calculate: 'Oblicz', sign: 'Wstaw znak', fill: 'Uzupełnij' },
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',

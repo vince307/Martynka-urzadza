@@ -404,7 +404,7 @@ export class TaskScene extends Scene {
     private currentNarration(): string | null {
         return narrationOf(this.state, {
             words: pl.speech,
-            calculate: pl.round.calculate,
+            headings: this.kind === 'word' ? null : pl.round.heading,
             tryAgain: pl.round.tryAgain,
             answerLine: pl.round.resultLine,
         });
@@ -686,7 +686,7 @@ export class TaskScene extends Scene {
             if (!wordRound) {
                 this.promptTexts.push(
                     this.add
-                        .text(prompt.x, prompt.y, pl.round.calculate, textStyle('prompt', color))
+                        .text(prompt.x, prompt.y, pl.round.heading.calculate, textStyle('prompt', color))
                         .setOrigin(0.5),
                 );
             }

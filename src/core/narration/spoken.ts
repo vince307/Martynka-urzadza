@@ -3,7 +3,7 @@
 // reads in each phase of a round. Pure functions; the words come as an argument.
 import type { RoundState } from '../round';
 import { firstHint, solutionSteps } from '../round/hints';
-import { isExpression } from '../round/prompt';
+import { headingOf, type HeadingWords } from '../round/heading';
 import type { Task } from '../tasks/types';
 import { NUMBER_SOURCE, parseNumber } from '../text/formatNumber';
 import { MAX_NUMBER_WORD, numberToWords } from '../text/numberWords';
@@ -72,16 +72,19 @@ export const spokenText = (text: string, words: SpeechWords): string => {
         .join(' ');
 };
 
-/** What the narrator says for the task itself; a bare calculation gets the word "Oblicz" like the screen. */
-export const spokenTask = (task: Task, words: SpeechWords, calculate: string): string => {
-    const text = task.speak ?? task.prompt;
-    const spoken = spokenText(text, words);
-    return isExpression(text) ? `${calculate}. ${spoken}` : spoken;
+/**
+ * What the narrator says for the task itself: the heading the screen draws (the screen and the speaker share
+ * `headingOf`), then the question or prompt. `headings` null reads no heading (a word round).
+ */
+export const spokenTask = (task: Task, words: SpeechWords, headings: HeadingWords | null): string => {
+    const spoken = spokenText(task.speak ?? task.prompt, words);
+    const kind = headings === null ? null : headingOf(task);
+    return headings !== null && kind !== null ? `${headings[kind]}. ${spoken}` : spoken;
 };
 
 export interface NarrationOptions {
     words: SpeechWords;
-    calculate: string;
+    headings: HeadingWords | null;
     tryAgain: string;
     answerLine: (answer: string) => string;
 }
@@ -92,14 +95,14 @@ export const narrationOf = (state: RoundState, opts: NarrationOptions): string |
         return null;
     }
     const task = state.tasks[state.index];
-    const { words, calculate, tryAgain, answerLine } = opts;
+    const { words, headings, tryAgain, answerLine } = opts;
     switch (state.phase) {
         case 'first':
         case 'done':
-            return spokenTask(task, words, calculate);
+            return spokenTask(task, words, headings);
         case 'second': {
             const hint = state.notes[state.index] ?? firstHint(task);
-            return `${tryAgain}. ${hint === null ? spokenTask(task, words, calculate) : spokenText(hint, words)}`;
+            return `${tryAgain}. ${hint === null ? spokenTask(task, words, headings) : spokenText(hint, words)}`;
         }
         case 'solution': {
             const steps = solutionSteps(task, answerLine);
