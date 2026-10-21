@@ -409,11 +409,11 @@ Wybrany wariant: formularz w panelu rodzica (za bramką dla dorosłych), wysyła
 
 ## Bieg 2026-10-21-post-run-polish (audyt #92 N-1, N-4, H-2 + F3 + „Oblicz”)
 
-Bieg uruchomiony 2026-10-21 po scaleniu #92 i #93; decyzje uzgodnione z góry. Wysłane: #94 (merge 81115ee). Format zapisu bez zmian (v4). `main` 81115ee: 3736 testów jednostkowych (było 3710), 144 e2e (było 143). Audyt zamykający #95: 0 CRITICAL, 0 HIGH, 0 MEDIUM, 2 LOW. Deploy 81115ee nie wystartował w czasie biegu (incydent GitHuba „Delays for Pull Requests and Webhook deliveries”) — stan w run-logu i w raporcie końcowym.
+Bieg uruchomiony 2026-10-21 po scaleniu #92 i #93; decyzje uzgodnione z góry. Wysłane: #94 (merge 81115ee). Format zapisu bez zmian (v4). `main` 81115ee: 3736 testów jednostkowych (było 3710), 144 e2e (było 143). Audyt zamykający #95: 0 CRITICAL, 0 HIGH, 0 MEDIUM, 2 LOW. Deploy 81115ee wystartował z opóźnieniem (incydent GitHuba „Delays for Pull Requests and Webhook deliveries”), wydanie jest na produkcji, smoke na runnerze padł na sieci (szczegóły w P0).
 
 ### P0 — przed następnym biegiem
 
-- [ ] Upewnij się, że Deploy dla 81115ee przeszedł (Actions → Deploy); jeśli nie wystartował sam po incydencie GitHuba, uruchom go ręcznie (Actions → Deploy → Run workflow → `deploy`) i sprawdź `npm run check:deploy -- https://martynka-urzadza.pl 81115ee`.
+- [ ] Deploy 39625704399 (81115ee) wgrał wydanie, ale jest czerwony tylko na kroku „Smoke check (deploy)”: runner GitHuba nie połączył się ze stroną (`fetch failed` na `/`) w czasie incydentu GitHuba. Ręczny `check:deploy` z maszyny agenta: 22/22 ok, build 81115ee na produkcji. Uruchom ponownie nieudany job (Actions → Deploy → run 39625704399 → Re-run failed jobs), żeby ostatni Deploy na `main` był zielony — preflight następnego biegu tego wymaga.
 - [ ] Przejrzyj audyt #95 (`context/audits/observability/2026-10-21_1719-naglowek-zadania-obrazki-kod-umiejetnosci.md`).
 
 ### P1 — tablet
