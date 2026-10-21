@@ -686,10 +686,10 @@ None: save format v4 unchanged (table in Overview).
 
 #### Automated
 
-- [ ] 5.1 `grep -rn "artCutBackground\|background" src/core/artHealth.ts src/ui/dom/artHealthView.ts src/scenes/UIScene.ts src/data/pl.ts` shows no background cut code (only unrelated words, named in the commit); `grep -n "hiddenMs" src/scenes/BootScene.ts src/data/layout.ts` still shows the record
-- [ ] 5.2 Unit `<phase-4 count> − removed + added` (three `background` cases replaced by one, the `artCutBackground` describe removed; both numbers named in the commit) and green
-- [ ] 5.3 Deliberate break: add `background: true` back to the cut line when hidden → the `toEqual` case red; map `case 'cut'` to `pl.settings.artRestart` in `textOf` → the adapted `#15 H-1` and `#14 B-4` red (orchestrator, or the agent with `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` if Chromium starts); each restored
-- [ ] 5.4 `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty
+- [x] 5.1 `grep -rn "artCutBackground\|background" src/core/artHealth.ts src/ui/dom/artHealthView.ts src/scenes/UIScene.ts src/data/pl.ts` shows no background cut code (only unrelated words, named in the commit); `grep -n "hiddenMs" src/scenes/BootScene.ts src/data/layout.ts` still shows the record — bb295b4
+- [x] 5.2 Unit `<phase-4 count> − removed + added` (three `background` cases replaced by one, the `artCutBackground` describe removed; both numbers named in the commit) and green — bb295b4
+- [x] 5.3 Deliberate break: add `background: true` back to the cut line when hidden → the `toEqual` case red; map `case 'cut'` to `pl.settings.artRestart` in `textOf` → the adapted `#15 H-1` and `#14 B-4` red (orchestrator, or the agent with `npx playwright test tests/e2e/load-and-tab-guard.spec.ts` if Chromium starts); each restored — bb295b4
+- [x] 5.4 `git diff --stat main -- src/core/save.ts src/core/migrations tests/fixtures` empty — bb295b4
 - [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`, `load-and-tab-guard.spec.ts` green alone
 
 ### Phase 6: The cut count counts pictures only (H-2)
