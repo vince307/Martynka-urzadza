@@ -5,9 +5,14 @@ import { notebookGeometry } from '../src/core/notebookGeometry';
 describe('notebookGeometry', () => {
     const g = notebookGeometry();
 
-    it('puts nine stitch marks every 100 px from 20 px above the top to 20 px below the bottom', () => {
-        expect(g.stitches.map((s) => s.y)).toEqual([184, 284, 384, 484, 584, 684, 784, 884, 984]);
-        expect(g.stitches[0]).toEqual({ x: 236, y: 184, width: 26, height: 10 });
+    it('puts eight stitch marks every 100 px, all inside the page', () => {
+        // strip 200..996 (inner 220..976, 20 px overhang), a mark 44 px into each 100 px period: 244 + 100 k, k = 0..7
+        expect(g.stitches.map((s) => s.y)).toEqual([244, 344, 444, 544, 644, 744, 844, 944]);
+        expect(g.stitches[0]).toEqual({ x: 236, y: 244, width: 26, height: 10 });
+        for (const s of g.stitches) {
+            expect(s.y).toBeGreaterThanOrEqual(g.face.y);
+            expect(s.y + s.height).toBeLessThanOrEqual(g.face.y + g.face.height);
+        }
     });
     it('draws the margin line at the inner left + 92 px', () => {
         expect(g.margin).toEqual({ x: 180 + 16 + 92, y: 242, width: 2, height: 712 });

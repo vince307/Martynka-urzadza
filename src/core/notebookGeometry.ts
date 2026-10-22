@@ -9,7 +9,10 @@ export const notebookGeometry = (nb: typeof TASK_LAYOUT.notebook = TASK_LAYOUT.n
     const { left, top, width, height, border } = nb;
     const s = t.stitches;
     const stitches: Rect[] = [];
-    for (let y = top - s.overhang; y + s.height <= top + height + s.overhang; y += s.every) {
+    // The kit strip runs from `overhang` above the inner top to `overhang` below the inner bottom; a mark starts `phase` into each period.
+    const stripTop = top + border - s.overhang;
+    const stripBottom = top + height - border + s.overhang;
+    for (let y = stripTop + s.phase; y + s.height <= stripBottom; y += s.every) {
         stitches.push({ x: left + border + s.inset, y, width: s.width, height: s.height });
     }
     const m = t.margin;

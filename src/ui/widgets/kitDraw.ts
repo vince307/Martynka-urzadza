@@ -4,15 +4,14 @@ import type { Rect } from './geometry';
 /**
  * Kit drawing primitives shared by the notebook and the chunky controls.
  *
- * `fillPaper` is a two-band "gradient": Phaser 4's WebGL path fill gives the three tint corners to the vertices of each
- * triangle in turn (not by position), so `fillGradientStyle` on a rounded rectangle would not be a clean top-to-bottom
- * gradient, and Canvas ignores the command. The bands behave the same under both renderers.
+ * `fillPaper` fills a flat face with the midpoint of the two kit colours: the kit tints differ by a few RGB units, and
+ * Phaser 4's WebGL path fill cannot give a clean top-to-bottom gradient (the tint corners go to triangle vertices in
+ * turn, Canvas ignores the command), while two bands left a visible seam. A flat face behaves the same under both renderers.
  */
 export const fillPaper = (g: GameObjects.Graphics, rect: Rect, radius: number, top: number, bottom: number): void => {
-    g.fillStyle(bottom, 1);
+    const mid = (((((top >> 16) & 255) + ((bottom >> 16) & 255)) >> 1) << 16) | (((((top >> 8) & 255) + ((bottom >> 8) & 255)) >> 1) << 8) | (((top & 255) + (bottom & 255)) >> 1);
+    g.fillStyle(mid, 1);
     g.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
-    g.fillStyle(top, 1);
-    g.fillRoundedRect(rect.x, rect.y, rect.width, rect.height / 2, { tl: radius, tr: radius, bl: 0, br: 0 });
 };
 
 export interface Lip { offset: number; color: string | number; alpha: number }

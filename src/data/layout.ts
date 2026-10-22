@@ -601,7 +601,7 @@ export const NOTEBOOK = {
     faceBottom: '#fff5df',
     edge: { height: 12, color: '#328476' },
     shadow: { offsetY: 22, blur: 36, color: '#564730', alpha: 0.19 },
-    stitches: { inset: 40, width: 26, overhang: 20, height: 10, every: 100, color: '#bfa577' },
+    stitches: { inset: 40, width: 26, overhang: 20, phase: 44, height: 10, every: 100, color: '#bfa577' },
     margin: { fromInnerLeft: 92, inset: 38, width: 2, color: '#e4ceb2' },
     ribbon: { width: 48, height: 74, fromRight: 92, top: -16, notch: 0.78, color: '#f1ce6b' },
 } as const;
