@@ -65,6 +65,7 @@ import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
 import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
+import { SalonBackdrop } from '../ui/widgets/SalonBackdrop';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { CoverBoard } from '../ui/widgets/CoverBoard';
 import { Dice } from '../ui/widgets/Dice';
@@ -124,6 +125,7 @@ export interface TaskSnapshot {
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
     readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
+    readonly backdrop: { readonly mode: 'salon' | 'plain'; readonly captures: number };   // the blurred salon behind the notebook (notebook-polish)
     readonly solutionOverflow: boolean;   // the solution lines on screen overflow their room even at the smallest scale (audit WNA-04)
 }
 
@@ -195,6 +197,8 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private backdrop: SalonBackdrop | undefined;   // the blurred salon behind the notebook
+    private backdropRooms: unknown = null;   // the `rooms` object the backdrop was captured from
     private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
     private drawnHeading: string | null = null;   // the heading text drawn above the current prompt (the hook reads it)
     private promptShrunk = false;   // the prompt font was stepped down for the solution lines (fitPromptToSteps)
@@ -249,6 +253,8 @@ export class TaskScene extends Scene {
         this.dice = null;
         this.applyRound(this.freshRound());
         this.scene.launch(SCENE_KEYS.ui);
+        this.backdrop = new SalonBackdrop(this);
+        this.refreshBackdrop();
         drawNotebook(this);
         this.picture = new TaskPicture(this);
         this.hintPicture = new TaskPicture(this);
@@ -306,6 +312,8 @@ export class TaskScene extends Scene {
         // Back from the room: redraw the same state (summary), re-arm its buttons, no auto-reading.
         // A stage change made from the room (the parent panel) waits here: the round is replaced when the scene wakes.
         const onWake = (): void => {
+            // A purchase in the room replaced the `rooms` object: capture the salon again (before the parent-stage branch below).
+            if (this.registry.get(REGISTRY_KEYS.rooms) !== this.backdropRooms) this.refreshBackdrop();
             const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
             if (learner.stage !== this.stage.id) {
                 this.applyParentStage(false);
@@ -326,6 +334,7 @@ export class TaskScene extends Scene {
             this.game.events.off(GAME_EVENTS.parentStage, onParentStage);
             this.events.off('wake', onWake);
             this.events.off('sleep', onSleep);
+            this.backdrop?.destroy();
         });
 
         // Build id in the corner: the only way to see on a tablet that a silent
@@ -1151,6 +1160,13 @@ export class TaskScene extends Scene {
         });
     }
 
+    /** Capture the child's current salon behind the notebook. */
+    private refreshBackdrop(): void {
+        const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
+        this.backdropRooms = rooms ?? null;
+        this.backdrop?.render(rooms, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
+    }
+
     /** Cost of the next renovation task of the current room, or null when none is left. */
     private nextRoomTaskCost(): number | null {
         const roomId = (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
@@ -1181,6 +1197,7 @@ export class TaskScene extends Scene {
             visual: task.visual ? structuredClone(task.visual) : null,
             correctChoices: task.check && view.input === 'tiles' ? Object.freeze(view.choices.filter((c) => task.check?.(c))) : null,
             markedTile: this.tiles.markedValue(),
+            backdrop: { mode: this.backdrop?.mode ?? 'plain', captures: this.backdrop?.captures ?? 0 },
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),

@@ -12,6 +12,8 @@ import { openParentGate } from '../ui/dom/parentGate';
 import { openStagePanel } from '../ui/dom/stagePanel';
 import { AgeButton } from '../ui/widgets/AgeButton';
 import { drawNotebook } from '../ui/widgets/notebook';
+import { SalonBackdrop } from '../ui/widgets/SalonBackdrop';
+import type { RoomState } from '../core/types';
 import { PageButton } from '../ui/widgets/PageButton';
 import { textStyle } from '../ui/widgets/textStyle';
 
@@ -25,6 +27,7 @@ export class WelcomeScene extends Scene {
     private chosen = false;
     private parentButton: PageButton | undefined;
     private closeDialog: (() => void) | undefined;
+    private backdrop: SalonBackdrop | undefined;
     private session: InputSession | undefined;   // this scene's hold on the game's input switch while a parent dialog is open
 
     constructor() {
@@ -39,8 +42,11 @@ export class WelcomeScene extends Scene {
         this.session = undefined;
         this.events.once('shutdown', () => {
             this.closeDialog?.();
+            this.backdrop?.destroy();
             this.resumeInput();
         });
+        this.backdrop = new SalonBackdrop(this);
+        this.backdrop.render(this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
         drawNotebook(this);
         const flower = WELCOME_LAYOUT.flower;
         // No stand-in on the welcome: a missing texture draws nothing.
@@ -129,6 +135,10 @@ export class WelcomeScene extends Scene {
     }
 
     /** Centres of the buttons in 1920x1080 scene space, for the e2e hook. */
+    backdropState(): { mode: 'salon' | 'plain'; captures: number } {
+        return { mode: this.backdrop?.mode ?? 'plain', captures: this.backdrop?.captures ?? 0 };
+    }
+
     targets(): { ages: readonly { age: number; x: number; y: number }[]; parent: { x: number; y: number } | null } {
         return Object.freeze({
             ages: Object.freeze(this.buttons.map(({ age, button }) => Object.freeze({ age, ...button.target() }))),

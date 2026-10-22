@@ -968,9 +968,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 3.1 `tests/backdrop.test.ts` red before (stub returns `'salon'`), green after; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: `backdropMode` ignores `hasTexture` → the missing-scene case red; restored; meta-check: the test's texture predicate is built from the real `ROOMS` salon keys, so it is the key `RoomView` draws
-- [ ] 3.3 `grep -n "renderer.type" src/ui/widgets/SalonBackdrop.ts` present before any `addBlur`; `grep -rn "addBlur" src` lists only `SalonBackdrop.ts`
+- [x] 3.1 `tests/backdrop.test.ts` red before (stub returns `'salon'`), green after; unit `<phase-2 count> + N`
+- [x] 3.2 Deliberate break: `backdropMode` ignores `hasTexture` → the missing-scene case red; restored; meta-check: the test's texture predicate is built from the real `ROOMS` salon keys, so it is the key `RoomView` draws
+- [x] 3.3 `grep -n "renderer.type" src/ui/widgets/SalonBackdrop.ts` present before any `addBlur`; `grep -rn "addBlur" src` lists only `SalonBackdrop.ts`
 - [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
