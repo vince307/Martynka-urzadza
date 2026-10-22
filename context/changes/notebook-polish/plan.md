@@ -94,8 +94,9 @@ Grounded in `research.md` (its Code References are the source, not re-searched) 
 
 ### Key Discoveries:
 
-- A child `Graphics` placed at `(-cx, -cy)` inside a `Container` at the rect centre `(cx, cy)` keeps every absolute
-  drawing call valid while scale/rotation pivot on the centre — the one trick that lets bounce, wobble, press and pop
+- An inner `Container` at `(-cx, -cy)` inside an outer `Container` at the rect centre `(cx, cy)` keeps every absolute
+  drawing call AND every absolute `Text.setPosition` valid while scale/rotation pivot on the centre (two levels: a `Text`
+  directly in the centred container would be double-offset — plan review F1) — the one trick that lets bounce, wobble, press and pop
   reuse today's drawing code (`research.md` (b)/(c): "scale tweens need a local origin").
 - `src/core` may import `src/data/layout.ts` (precedent `src/core/roomHit.ts`, `src/core/round/drawingFit.ts`), so pure
   timing and geometry rules read `ANIMATION`/notebook tokens directly.
@@ -151,7 +152,8 @@ zero (kit approved a slashed zero); row **20** narrowed (sunflower only), row **
 - **Backdrop capture.** Capture once into a `DynamicTexture` at `BACKDROP.scale` of 1920×1080 (default ¼ = 480×270)
   using `drawRoomMiniature` with stand-ins suppressed, display one `Image` scaled up at a negative depth with
   `setScrollFactor(0)`, an ivory wash (`PAGE_BACKGROUND` α `BACKDROP.washAlpha` 0.6) above it. `addBlur` only when
-  `scene.renderer.type === Phaser.WEBGL`, applied on the source before capture. Re-capture in `TaskScene` `onWake` only
+  `scene.renderer.type === Phaser.WEBGL`, applied on the source container before capture; `dt.draw(container)` with no
+  x/y, then `dt.render()` (v4 queues draw commands). Re-capture in `TaskScene` `onWake` only
   when the registry `rooms` reference differs from the captured one.
 
 ## Phase 1: Tokens and pure motion rules
@@ -310,9 +312,11 @@ behind the notebook on task (summary, unlock) and welcome; the task scene refres
 
 **File**: `src/core/backdrop.ts` (new), `tests/backdrop.test.ts` (new)
 
-**Intent**: decide `'salon' | 'plain'` without Phaser: `plain` when the room's current scene picture key (the same
-`stagesDone` choice `RoomView.render` makes — reuse its pure part if exported, else `miniaturePieces`' scene piece) does
-not exist in the given texture-exists predicate; `salon` otherwise.
+**Intent**: decide `'salon' | 'plain'` without Phaser: `plain` when the room's current scene picture key does not exist in the
+given texture-exists predicate; `salon` otherwise. The key is `stagesDone(room, state) > 0 ? room.scene.after :
+room.scene.before` built from `stagesDone` in `src/core/rooms.ts` (plan review F2: no pure key function exists — the rule
+is inline in `RoomView.render` and `miniaturePieces`, and `src/core` must not import `src/ui/widgets/RoomView.ts`); the
+test cross-checks it against `miniaturePieces(room, state)[0].key` for the fresh and the renovated salon.
 
 **Contract**: `backdropMode(room: RoomDef, state: RoomState, hasTexture: (key: string) => boolean): 'salon' | 'plain'`.
 Tests: fresh salon with scene textures → salon; scene key missing → plain; a slot picture missing → still salon (piece
@@ -323,12 +327,19 @@ left out).
 **File**: `src/ui/widgets/SalonBackdrop.ts` (new)
 
 **Intent**: research option C + WebGL blur (`research.md` (a)). `render(rooms, currentRoom)`: if mode is `plain` draw
-nothing and remember `plain`; else draw the pieces with `drawRoomMiniature` at `BACKDROP.scale` into an off-screen
-container (stand-in boxes suppressed: pass a throw-away `Graphics` that is never added, or filter stand-ins out of
-`miniaturePieces` — whichever needs no `RoomView` edit), `enableFilters` + `filters.internal.addBlur(...)` only when
-`scene.renderer.type === Phaser.WEBGL`, capture into a `DynamicTexture` (480×270), destroy the container, show one
-`Image` scaled to 1920×1080 at `BACKDROP.depth`, `setScrollFactor(0)`, and a wash rect above it. Re-render destroys the
-old texture first. Exposes `mode` and `captures` (count) for the hook.
+nothing and remember `plain`; else draw the pieces with `drawRoomMiniature(scene, g, room, state, 0, 0, BACKDROP.scale,
+0)` where `g = scene.make.graphics({}, false)` (never on the display list, so stand-in boxes are never seen; destroyed
+after), and move the returned `Image[]` (they are created by `scene.add.image`, i.e. ON the display list) into a
+`scene.make.container({ x: 0, y: 0 }, false)` at once (adding to a container removes them from the display list), so
+nothing flashes on screen; `enableFilters` + `filters.internal.addBlur(...)` on that container only when
+`scene.renderer.type === Phaser.WEBGL` (`enableFilters` is a no-op under Canvas and `filters` stays unset, so an
+unguarded `addBlur` throws); `dt.draw(container)` **with no x/y** (Phaser 4.2.1: WebGL adds x/y to the object's position,
+Canvas overwrites it — `DynamicTexture.js` `_renderCanvas` vs `DynamicTextureHandler` — so only (0,0) is identical on
+both renderers) followed by **`dt.render()`** (v4 queues commands; nothing is drawn without it); a DynamicTexture capture
+runs the container's filter render step on WebGL (`Filters.js` `renderWebGLFilters`, confirmed from source in the plan
+review), so the blur is baked in. Then destroy the container and its images, show one `Image` of the texture scaled to
+1920×1080 at `BACKDROP.depth`, `setScrollFactor(0)`, and a wash rect above it. Re-render destroys the old texture first.
+Exposes `mode` and `captures` (count) for the hook.
 
 **Contract**: `class SalonBackdrop { constructor(scene); render(rooms: Record<string, RoomState>, currentRoom: string): void; get
 mode(): 'salon' | 'plain'; get captures(): number; destroy(): void }`. No input, no registry writes. DESIGN-GAP comment
@@ -338,7 +349,8 @@ salon picture is missing").
 #### 3. Wiring and hook
 
 **Files**: `src/scenes/TaskScene.ts` (`create`: build before `drawNotebook`; `onWake`: re-render only when
-`registry.get(REGISTRY_KEYS.rooms)` is not the captured reference), `src/scenes/WelcomeScene.ts` (`create`, from the
+`registry.get(REGISTRY_KEYS.rooms)` is not the captured reference — checked at the top of `onWake`, before its
+`applyParentStage(false)` / `render()` branch, so a purchase followed by a parent stage change still refreshes), `src/scenes/WelcomeScene.ts` (`create`, from the
 registry `rooms` — a fresh save is the neglected salon), `src/testing/e2eHook.ts` (task and welcome snapshots gain
 `backdrop: { mode, captures }`, read-only)
 
@@ -376,15 +388,24 @@ Driver why: a presentation helper wired into three widgets; risk is in rendered 
 
 **File**: `src/ui/widgets/chunky.ts` (new)
 
-**Intent**: `research.md` (b) "Recommended helper", with the Key Discovery pivot: a `Container` at the rect centre, the
-widget's face `Graphics`/`Text` added inside with position `(-cx, -cy)` so absolute drawing stays valid; a static lip
-`Graphics` (via `drawLip`) beneath, outside the container. `press()` tweens `face.y` to the lip offset
+**Intent**: `research.md` (b) "Recommended helper", with the Key Discovery pivot done in TWO levels (plan review F1): an
+outer `Container` `face` at the rect centre `(cx, cy)` (scale/rotation/`y` pivot here) holding one inner `Container` at
+`(-cx, -cy)`; the widget's face `Graphics` AND `Text` go into the inner container and keep their absolute coordinates
+and absolute `setPosition` calls unchanged (a `Text` placed directly in a centred container would be double-offset,
+because its position is its coordinate — `ActionButton.place` and `PageButton.show` call `label.setPosition(absolute)`).
+`place(rect)` moves the outer container to the new centre, the inner one to minus it, and redraws the lip (used by
+`ActionButton.place` and `PageButton.show`, whose rect changes per call). A static lip `Graphics` (via `drawLip`)
+beneath, outside the containers. Inside a container the children's own depths no longer count: `setDepth(d)` sets the
+lip and the outer container (`PageButton.setDepth`, used by `RoomDoneCard`, keeps lip+face at d and the zone at d+2; the
+label is ordered inside the face by insertion after its Graphics). `press()` tweens `face.y` to the lip offset
 (`pressDownMs`, `pressEase`); `release()` back to 0 (`pressUpMs`, `releaseEase`); under `prefersReducedMotion()` both
 set `y` at once. `reset()` kills tweens, `y = 0`, `scale = 1`, `angle = 0`. `setDepth(d)`, `setVisible`, `destroy`.
 `face` is exposed for phase 7 (bounce/wobble) and phase 8 (entrance).
 
-**Contract**: `class ChunkyFace { constructor(scene, rect, lip: LipToken, radius); readonly face: Container; add(...objs);
-redrawLip(rect); press(); release(); reset(); setDepth(d); setVisible(v); destroy() }`. No `Zone`, no input.
+**Contract**: `class ChunkyFace { constructor(scene, rect, lip: LipToken, radius); readonly face: Container; add(...objs)
+(into the inner container); place(rect); redrawLip(rect); press(); release(); reset(); setDepth(d); setVisible(v);
+destroy() }` (`destroy` destroys both containers with their children; `AnswerTiles.destroyTiles` and every `hide`/
+`destroy` path call it). No `Zone`, no input.
 
 #### 2. Widgets
 
@@ -681,7 +702,18 @@ contour per gvar master (IUP-inferred deltas filled first), `zero.tf` follows (c
 `head.modified`, `recalcTimestamp=False` (byte-identical rebuilds). Input `designs/martynka-maths-A-v1/fonts/
 AtkinsonHyperlegibleNext.ttf`; output `public/fonts/MartynkaNext.ttf`; the old `public/fonts/AtkinsonHyperlegibleNext.ttf`
 removed (no longer precached). `public/fonts/OFL.txt` kept with one added line naming the modification and the new
-name. Local tool (needs `fontTools`), output committed, not run in CI.
+name. Local tool (needs `fontTools`), output committed, not run in CI; the script refuses to run on a `fontTools` version other
+than the one it was written against (research ran 4.61.1; the pinned version is written in the script header and in the
+commit) so a rebuild on another machine is byte-identical or fails loudly (plan review F5).
+
+#### 1b. Deploy smoke
+
+**File**: `scripts/check-deploy.ts`
+
+**Intent**: the font joins the tables the smoke checks against the served precache (plan review F4): next to the four
+`precacheCovers` calls inside `if (sha7)`, `record(precacheCovers('task font', precache, [FONT_URL]))` (`FONT_URL` from
+`src/data/layout.ts`, which imports only a type, so the Node script can import it like `TASK_ART`). A rollback (no SHA)
+skips it like the others.
 
 #### 2. Constants
 
@@ -706,8 +738,8 @@ glyph count equals the original's; `fvar` still has the `wght` axis 200–800.
 
 - `npm run font` run twice → `cmp` of the two outputs identical (recorded in the commit)
 - `tests/fontZero.test.ts` red when pointed at the original (deliberate break: swap the path to `designs/…/AtkinsonHyperlegibleNext.ttf` → the 2-contour and name cases red), green on the shipped file; restored; meta-check: the contour count is read from `glyf`/`loca` bytes, independent of the script
-- `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file
-- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`, and `health-lines.spec.ts` (asserts `fontHealth`) green — Chromium/OTS proof
+- `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file; `grep -n "precacheCovers('task font'" scripts/check-deploy.ts` present
+- Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`; Chromium/OTS proof: the hook-build snapshot reads `fontHealth === 'loaded'` with the new font (read at the 10.5 visual pass, pinned later by phase 12 "#11 reduced motion round") — `health-lines.spec.ts` only proves a 404 still reads `fallback`, not that Chromium accepts the modified file
 
 #### Manual Verification:
 
@@ -757,7 +789,8 @@ pop timing (Trigger: S-17 balance pass); FontFace time limit (re-recorded, load 
 (re-recorded, `celebrate` swapped code only); solution step indicator dots (re-recorded); FeedbackBar text size
 (Trigger: visual gate or tablet finds it unreadable); unlock/minigame-done bursts (Trigger: maintainer request); spine
 band / offset shadow (Trigger: maintainer at the visual gate); Safari acceptance of the modified font (Trigger: [human]
-iPad row finds a fallback). Closed entries marked closed: slashed zero (phase 10), shared HUD button (phase 6), star
+iPad row finds a fallback); bare stroke/animation numbers in widgets this change did not touch (re-recorded from
+`narrator-round-summary`). Closed entries marked closed: slashed zero (phase 10), shared HUD button (phase 6), star
 over the 9 key (phase 7), star freezing while asleep — pop part (phase 7), `StarCounter` value never asserted.
 
 ### Success Criteria:
@@ -774,7 +807,7 @@ over the 9 key (phase 7), star freezing while asleep — pop part (phase 7), `St
 
 - [reviewer] The CLAUDE.md sentences match the code (grep each named symbol); save format v4 stated; gaps 155–164 and the updated rows 20, 25, 152 read correctly
 - [visual] Full screenshot pass, desktop 1440 and tablet 1024 (hook build on 4399), each state next to its kit frame in `designs/martynka-maths-A-v1/screenshots/`: welcome (`welcome.png`), task tiles (`task-tiles.png`), task keypad (`task-keypad.png`), correct (`correct.png`), wrong / second try (`second-try.png`, `hint-tiles.png`, `hint-keypad.png`), solution steps (`solution-step-1.png`, `solution-step-2.png`), summary (`summary.png`), unlock (`unlock.png`), room → buy a piece → back to the task (backdrop shows the new piece), reduced motion (static frames, no flight/pop); also `tablet-1024.png` for the 1024 layout; every chunky target still ≥ 96 px; nothing red after a wrong answer
-- [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj"
+- [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj", and confirms decision D-1, which departs from scope.md's words: no spine band (kit stitch marks only) and the shadow straight down, not lower-right
 
 ---
 
@@ -859,6 +892,8 @@ old file and fetches the new one at the next update (normal precache revision be
 - Safari/iPadOS acceptance of the modified font is not provable locally (Chromium only); the [human] row checks it, and
   the game falls back to `sans-serif` with the existing "Obrazki" font line if rejected.
 - Larger beads and 104 px HUD pills may crowd the HUD row; the phase-1 fallback tokens exist.
+- Under Canvas the backdrop capture is unblurred (¼ scale upscaled); acceptable softening, not provable locally (no
+  switch forces Canvas). Plan review F1/F2 fixes keep the Canvas path throw-free (no `filters` access, draw at (0,0)).
 
 ## Autonomous decisions
 
@@ -1025,8 +1060,8 @@ old file and fetches the new one at the next update (normal precache revision be
 
 - [ ] 10.1 `npm run font` run twice → `cmp` of the two outputs identical (recorded in the commit)
 - [ ] 10.2 `tests/fontZero.test.ts` red when pointed at the original (deliberate break: swap the path to `designs/…/AtkinsonHyperlegibleNext.ttf` → the 2-contour and name cases red), green on the shipped file; restored; meta-check: the contour count is read from `glyf`/`loca` bytes, independent of the script
-- [ ] 10.3 `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file
-- [ ] 10.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`, and `health-lines.spec.ts` (asserts `fontHealth`) green — Chromium/OTS proof
+- [ ] 10.3 `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file; `grep -n "precacheCovers('task font'" scripts/check-deploy.ts` present
+- [ ] 10.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`; Chromium/OTS proof: the hook-build snapshot reads `fontHealth === 'loaded'` with the new font (read at the 10.5 visual pass, pinned later by phase 12 "#11 reduced motion round") — `health-lines.spec.ts` only proves a 404 still reads `fallback`, not that Chromium accepts the modified file
 
 #### Manual
 
@@ -1046,7 +1081,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 - [ ] 11.6 [reviewer] The CLAUDE.md sentences match the code (grep each named symbol); save format v4 stated; gaps 155–164 and the updated rows 20, 25, 152 read correctly
 - [ ] 11.7 [visual] Full screenshot pass, desktop 1440 and tablet 1024 (hook build on 4399), each state next to its kit frame in `designs/martynka-maths-A-v1/screenshots/`: welcome (`welcome.png`), task tiles (`task-tiles.png`), task keypad (`task-keypad.png`), correct (`correct.png`), wrong / second try (`second-try.png`, `hint-tiles.png`, `hint-keypad.png`), solution steps (`solution-step-1.png`, `solution-step-2.png`), summary (`summary.png`), unlock (`unlock.png`), room → buy a piece → back to the task (backdrop shows the new piece), reduced motion (static frames, no flight/pop); also `tablet-1024.png` for the 1024 layout; every chunky target still ≥ 96 px; nothing red after a wrong answer
-- [ ] 11.8 [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj"
+- [ ] 11.8 [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj", and confirms decision D-1, which departs from scope.md's words: no spine band (kit stitch marks only) and the shadow straight down, not lower-right
 
 ### Phase 12: The polished round stays playable by touch — e2e (#11, #12)
 
