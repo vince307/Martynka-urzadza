@@ -169,10 +169,10 @@ export const FONT_WEIGHTS = {
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
 export const FONT_WEIGHT_RANGE = '200 800';
 
-/** Task screen font: Atkinson Hyperlegible Next, loaded from public/fonts and precached. */
-export const FONT_FAMILY = 'AtkinsonHyperlegibleNext, sans-serif';
-export const FONT_KEY = 'AtkinsonHyperlegibleNext';
-export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
+/** Task screen font: Martynka Next (Atkinson Hyperlegible Next with a plain zero, npm run font), loaded from public/fonts and precached. */
+export const FONT_FAMILY = 'MartynkaNext, sans-serif';
+export const FONT_KEY = 'MartynkaNext';
+export const FONT_URL = 'fonts/MartynkaNext.ttf';
 
 /** Scene keys. */
 export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', ui: 'UI' } as const;
