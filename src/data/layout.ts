@@ -181,6 +181,7 @@ export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
     toRoom: 'to-room',   // "Do pokoju" was tapped (summary or HUD switch); the task scene switches to the room scene
+    starLanded: 'star-landed',   // the flying star reached the counter; the HUD pops the counter
     parentStage: 'parent-stage',   // the parent confirmed another stage (core changed the learner in the registry); the task scene opens a fresh round of it
 } as const;
 
@@ -239,7 +240,7 @@ const DRAG_MAT = { x: 236, y: 380, width: 944, height: 460 } as const;
 const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as const;
 
 export const TASK_LAYOUT = {
-    notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
+    notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 44 },
     // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
     ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
@@ -591,6 +592,49 @@ export const ROOM_TOUCH_TARGETS = {
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
 } as const;
 
+/** The kit notebook (maths-A pack screen.css): frame, paper, bottom edge, shadow, stitch marks, margin line and bookmark ribbon. */
+export const NOTEBOOK = {
+    frame: '#54b5a9',
+    faceTop: '#fffbef',
+    faceBottom: '#fff5df',
+    edge: { height: 12, color: '#328476' },
+    shadow: { offsetY: 22, blur: 36, color: '#564730', alpha: 0.19 },
+    stitches: { inset: 40, width: 26, overhang: 20, height: 10, every: 100, color: '#bfa577' },
+    margin: { fromInnerLeft: 92, inset: 38, width: 2, color: '#e4ceb2' },
+    ribbon: { width: 48, height: 74, fromRight: 92, top: -16, notch: 0.78, color: '#f1ce6b' },
+} as const;
+
+/** The blurred, dimmed salon behind the notebook. */
+export const BACKDROP = {
+    scale: 0.25,
+    washAlpha: 0.6,
+    blur: { quality: 1, x: 2, y: 2, strength: 1, steps: 4 },
+    depth: -10,
+} as const;
+
+/** Chunky-control lips: how far the darker lip shows below the face, and its colour. */
+export const LIPS = {
+    answer: { offset: 8, color: '#a4bd96', alpha: 0.44 },
+    key: { offset: 5, color: '#a4bd96', alpha: 0.31 },
+    age: { offset: 10, color: '#a4bd96', alpha: 0.3 },
+    page: { offset: 8, color: '#397f73', alpha: 0.19 },
+    hud: { offset: 7, color: '#8f6d3d', alpha: 0.15 },
+    action: { offset: 8, color: '#397f73', alpha: 0.19 },   // DESIGN-GAP 156: the kit has no style for these
+} as const;
+
+export const HUD_PILL = { top: '#fffdf2', bottom: '#fff0cc', border: 5, borderColor: '#d3b77d', radius: 32, height: 104 } as const;
+
+/** Progress beads of a round. */
+export const BEADS = {
+    radius: 28,
+    gap: 74,
+    ring: 4,
+    currentRing: 7,
+    future: { fill: '#fff8e5', ring: '#9cb8a0' },
+    current: { fill: '#54b5a9', ring: '#245c59' },
+    done: { fill: '#a6cf7f', ring: '#547e3d' },
+} as const;
+
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
     shakeMs: 360,
@@ -604,6 +648,26 @@ export const ANIMATION = {
     purchasePopScale: 1.08,
     purchaseParticles: 14,
     purchaseParticleMs: 700,
+    pressDownMs: 80,
+    pressUpMs: 150,
+    pressEase: 'Quad.easeOut',
+    releaseEase: 'Back.easeOut',
+    bounceScale: 1.12,
+    bounceMs: 280,
+    wobbleAngle: 3,
+    wobbleOffset: 4,
+    wobbleMs: 520,
+    wobbleSwings: 2,
+    counterPopScale: 1.18,
+    counterPopMs: 220,
+    beadPopScale: 1.3,
+    beadPopMs: 260,
+    entranceSpanMs: 400,
+    entranceItemMs: 250,
+    entranceRise: 24,
+    summaryStarStepMs: 180,
+    summaryStarPopMs: 220,
+    summaryBurstParticles: 22,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 
