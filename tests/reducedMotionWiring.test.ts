@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 // Every file listed here starts a tween of its own; each must also ask prefersReducedMotion() before it does.
 // The list grows with the notebook-polish phases (press, bounce, wobble, pop, beads, entrance).
-const TWEENING_FILES = ['src/ui/widgets/chunky.ts', 'src/scenes/TaskScene.ts', 'src/ui/widgets/StarCounter.ts', 'src/ui/widgets/ProgressDots.ts'];
+const TWEENING_FILES = ['src/ui/widgets/chunky.ts', 'src/scenes/TaskScene.ts', 'src/ui/widgets/StarCounter.ts', 'src/ui/widgets/ProgressDots.ts', 'src/ui/widgets/SummaryPanel.ts'];
 
 describe('reduced motion wiring', () => {
     for (const file of TWEENING_FILES) {
@@ -38,5 +38,14 @@ describe('reduced motion wiring', () => {
         const chunky = readFileSync('src/ui/widgets/chunky.ts', 'utf8');
         const press = chunky.slice(chunky.indexOf('press(): void'), chunky.indexOf('release(): void'));
         expect(press).toMatch(/this\.entering[\s\S]*this\.reset\(\)/);
+    });
+
+    it('the summary bursts only when motion is allowed, and RoomScene and SummaryPanel share the burst helper', () => {
+        const panel = readFileSync('src/ui/widgets/SummaryPanel.ts', 'utf8');
+        const room = readFileSync('src/scenes/RoomScene.ts', 'utf8');
+        expect(panel.indexOf('prefersReducedMotion()')).toBeLessThan(panel.indexOf('starBurst('));
+        expect(panel).toMatch(/if \(!reduced\) \{[\s\S]*starBurst\(/);
+        expect(room).toMatch(/starBurst\(/);
+        expect(room).not.toMatch(/generateTexture/);
     });
 });

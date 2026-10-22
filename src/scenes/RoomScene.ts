@@ -10,7 +10,7 @@ import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import type { RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
-import { ANIMATION, PLACEHOLDER_COLORS, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
+import { ANIMATION, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl, roomText } from '../data/pl';
 import { FIRST_ROOM, ROOM_ORDER, ROOMS } from '../data/rooms';
 import type { Narrator } from '../ui/narrator';
@@ -20,11 +20,10 @@ import { RoomDoneCard } from '../ui/widgets/RoomDoneCard';
 import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
 import { SCENE_SIZE } from '../data/roomArt';
 import { RoomView } from '../ui/widgets/RoomView';
-import { drawStar } from '../ui/widgets/StarCounter';
+import { starBurst } from '../ui/widgets/starBurst';
 import { VariantPanel } from '../ui/widgets/VariantPanel';
 import type { Autosaver } from '../core/autosave';
 
-const PURCHASE_STAR_TEXTURE = 'purchase-star';
 
 export interface RoomSnapshot {
     roomId: string;
@@ -379,21 +378,7 @@ export class RoomScene extends Scene {
                 onComplete: () => object.setScale(sx, sy),
             });
         }
-        if (!this.textures.exists(PURCHASE_STAR_TEXTURE)) {
-            const g = this.make.graphics({}, false);
-            drawStar(g, 24, 24, 22, PLACEHOLDER_COLORS.butter, { color: PLACEHOLDER_COLORS.nextBorder, width: 3 });
-            g.generateTexture(PURCHASE_STAR_TEXTURE, 48, 48);
-            g.destroy();
-        }
-        const emitter = this.add.particles(at.x, at.y, PURCHASE_STAR_TEXTURE, {
-            speed: { min: 180, max: 420 },
-            angle: { min: 0, max: 360 },
-            lifespan: ANIMATION.purchaseParticleMs,
-            scale: { start: 0.9, end: 0 },
-            emitting: false,
-        }).setDepth(ROOM_LAYOUT.depth.celebrate);
-        emitter.explode(ANIMATION.purchaseParticles);
-        this.time.delayedCall(ANIMATION.purchaseParticleMs + 100, () => emitter.destroy());
+        starBurst(this, at.x, at.y, { count: ANIMATION.purchaseParticles, depth: ROOM_LAYOUT.depth.celebrate });
     }
 
     /** The `tap` cue of a navigation button (see TaskScene.tap for the list). */
