@@ -955,9 +955,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 2.1 `grep -n "notebookGeometry\|fillPaper" src/ui/widgets/notebook.ts` both present; `grep -rn "fillGradientStyle" src` lists only `src/ui/widgets/kitDraw.ts`
-- [ ] 2.2 Deliberate break: no unit test renders the canvas (node environment) — break `notebookGeometry` (ribbon `fromRight` from the left) → phase-1 geometry test red, restored; meta-check: this proves the geometry the notebook draws from, not the pixels — the pixels are proven by 2.4/2.5
-- [ ] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 2.1 `grep -n "notebookGeometry\|fillPaper" src/ui/widgets/notebook.ts` both present; `grep -rn "fillGradientStyle" src` lists only `src/ui/widgets/kitDraw.ts` — b0a0c89
+- [x] 2.2 Deliberate break: no unit test renders the canvas (node environment) — break `notebookGeometry` (ribbon `fromRight` from the left) → phase-1 geometry test red, restored; meta-check: this proves the geometry the notebook draws from, not the pixels — the pixels are proven by 2.4/2.5 — b0a0c89
+- [x] 2.3 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — b0a0c89
 
 #### Manual
 
