@@ -263,7 +263,7 @@ export const TASK_LAYOUT = {
     notebook: { left: NOTEBOOK_BOX.left, top: 204, width: 1560, height: 788, border: NOTEBOOK_BOX.border, radius: 44 },
     // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
     ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
-    dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
+    dots: { centerX: 960, y: 96 },   // the row of beads; size and pitch are BEADS
     prompt: { x: 960, y: 290, maxWidth: 1292 },
     promptBeside: { x: (CONTENT_LEFT + 1000) / 2, y: 290, maxWidth: 1000 - CONTENT_LEFT },   // sentence prompts left of the keypad
     expression: { x: (CONTENT_LEFT + 1000) / 2, y: 456, maxWidth: 1000 - CONTENT_LEFT },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
@@ -672,6 +672,8 @@ export const ANIMATION = {
     entranceSpanMs: 400,
     entranceItemMs: 250,
     entranceRise: 24,
+    entranceEase: 'Cubic.easeOut',
+    beadEase: 'Back.easeOut',
     summaryStarStepMs: 180,
     summaryStarPopMs: 220,
     summaryBurstParticles: 22,

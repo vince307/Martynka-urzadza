@@ -1,6 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
 import { parseFace } from '../../core/tasks/faces';
-import { LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { staggerDelays } from '../../core/motion';
+import { ANIMATION, LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { textStyle } from './textStyle';
 import { drawFace } from './faceDraw';
 import { ChunkyFace } from './chunky';
@@ -60,6 +61,9 @@ export class AnswerTiles {
         const room = (this.tiles[0]?.rect.width ?? 0) - 2 * tiles.border - 24;
         const scale = Math.min(1, ...this.tiles.map((t) => room / t.label.width));
         this.tiles.forEach((t) => t.label.setScale(scale));
+        // Entrance stagger: the zones are live from the first frame, a tap settles the tile (ChunkyFace.press).
+        const delays = staggerDelays(this.tiles.length, ANIMATION.entranceSpanMs, ANIMATION.entranceItemMs);
+        this.tiles.forEach((t, i) => t.chunky.enter(delays[i]));
     }
 
     setActive(active: boolean): void {

@@ -35,7 +35,7 @@ describe('task screen layout constants', () => {
         expect(roomSwitch.top).toBeGreaterThanOrEqual(0);
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(speaker.left);
         const dots = TASK_LAYOUT.dots;
-        const dotsLeft = dots.centerX - (2 * dots.gap + dots.radius + dots.ringWidth);   // five dots, centred
+        const dotsLeft = dots.centerX - (2 * BEADS.gap + BEADS.radius);   // five beads, centred
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(dotsLeft);
     });
 
@@ -55,8 +55,8 @@ describe('task screen layout constants', () => {
         const box = (p: { left: number; top: number; width: number; height: number }) => ({ left: p.left, top: p.top, right: p.left + p.width, bottom: p.top + p.height + lip });
         const hits = (a: ReturnType<typeof box>, b: ReturnType<typeof box>): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
         const { dots } = TASK_LAYOUT;
-        const reach = Math.max(dots.radius + dots.ringWidth, BEADS.radius + BEADS.currentRing);   // the larger of the dots now and the beads of phase 8
-        const row = { left: dots.centerX - (2 * dots.gap + reach), top: dots.y - reach, width: 2 * (2 * dots.gap + reach), height: 2 * reach - lip };
+        const reach = BEADS.radius;   // the beads of ProgressDots (the ring is drawn inside the radius)
+        const row = { left: dots.centerX - (2 * BEADS.gap + reach), top: dots.y - reach, width: 2 * (2 * BEADS.gap + reach), height: 2 * reach - lip };
         for (const p of [speaker, roomSwitch, counter]) {
             expect(hits(box(p), box(row)), 'beads row').toBe(false);
         }

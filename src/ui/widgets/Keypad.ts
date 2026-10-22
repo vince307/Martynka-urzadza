@@ -1,6 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
 import { keypadDisplay, keypadInput, type KeypadKey } from '../../core/round/keypad';
-import { LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { staggerDelays } from '../../core/motion';
+import { ANIMATION, LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { textStyle } from './textStyle';
 import { pl } from '../../data/pl';
 import { ChunkyFace } from './chunky';
@@ -93,6 +94,12 @@ export class Keypad {
                 o.input.enabled = visible;
             }
         });
+    }
+
+    /** Entrance stagger of the keys for a new task (zones stay live, a tap settles the key); the entry field stays at rest. */
+    enter(): void {
+        const delays = staggerDelays(this.chunkies.length, ANIMATION.entranceSpanMs, ANIMATION.entranceItemMs);
+        this.chunkies.forEach((c, i) => c.enter(delays[i]));
     }
 
     /** The entry field as one container, for the bounce and wobble of the answer and the star's start. */

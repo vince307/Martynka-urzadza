@@ -20,6 +20,7 @@ export class ChunkyFace {
     private readonly lipGraphics: GameObjects.Graphics;
     private baseY: number;
     private pressTween: Tweens.Tween | null = null;
+    private entering = false;
 
     constructor(
         private readonly scene: Scene,
@@ -51,7 +52,37 @@ export class ChunkyFace {
         drawLip(this.lipGraphics, rect, this.radius, this.lip);
     }
 
+    /**
+     * Entrance: the face rises from `entranceRise` below and fades in (the lip fades with it), after `delayMs`. The widget's
+     * Zone is live at once; a press while the entrance runs settles the face at rest first (`press`). No motion under
+     * `prefersReducedMotion()`.
+     */
+    enter(delayMs: number): void {
+        if (prefersReducedMotion()) {
+            return;
+        }
+        this.reset();
+        this.entering = true;
+        this.face.setY(this.baseY + ANIMATION.entranceRise).setAlpha(0);
+        this.lipGraphics.setAlpha(0);
+        this.scene.tweens.add({ targets: this.lipGraphics, alpha: 1, duration: ANIMATION.entranceItemMs, delay: delayMs, ease: ANIMATION.entranceEase });
+        this.scene.tweens.add({
+            targets: this.face,
+            y: this.baseY,
+            alpha: 1,
+            duration: ANIMATION.entranceItemMs,
+            delay: delayMs,
+            ease: ANIMATION.entranceEase,
+            onComplete: () => {
+                this.entering = false;
+            },
+        });
+    }
+
     press(): void {
+        if (this.entering) {
+            this.reset();   // a tap during the entrance: rest at once, then the normal press
+        }
         this.moveTo(this.baseY + this.lip.offset, ANIMATION.pressDownMs, ANIMATION.pressEase);
     }
 
@@ -62,8 +93,11 @@ export class ChunkyFace {
     /** Stops every tween and returns the face to rest. */
     reset(): void {
         this.pressTween = null;
+        this.entering = false;
         this.scene.tweens.killTweensOf(this.face);
-        this.face.setPosition(this.face.x, this.baseY).setScale(1).setAngle(0);
+        this.scene.tweens.killTweensOf(this.lipGraphics);
+        this.face.setPosition(this.face.x, this.baseY).setScale(1).setAngle(0).setAlpha(1);
+        this.lipGraphics.setAlpha(1);
     }
 
     setDepth(depth: number): void {
@@ -78,6 +112,7 @@ export class ChunkyFace {
 
     destroy(): void {
         this.scene.tweens.killTweensOf(this.face);
+        this.scene.tweens.killTweensOf(this.lipGraphics);
         this.lipGraphics.destroy();
         this.face.destroy();
     }

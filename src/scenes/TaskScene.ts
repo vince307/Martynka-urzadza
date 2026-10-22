@@ -475,7 +475,8 @@ export class TaskScene extends Scene {
         // A variant has the HUD title in the dots' place (kit minigame screens): the letters or the board show its progress.
         this.dots.update(this.kind === 'round' ? view.dots : []);
         const task0 = this.state.tasks[this.state.index];
-        if (this.shownIndex !== this.state.index) {
+        const newTask = this.shownIndex !== this.state.index;
+        if (newTask) {
             this.shownIndex = this.state.index;
             this.drawPrompt(view.input);
             this.keypad.reset();
@@ -525,6 +526,9 @@ export class TaskScene extends Scene {
         this.tiles.setVisible(shows.tiles && !diceRound);
         this.keypad.setKeyMode(view.input === 'digits');
         this.keypad.setVisible(shows.keypad);
+        if (newTask && shows.keypad) {
+            this.keypad.enter();
+        }
         this.select.setVisible(shows.select);
         this.dragLive = view.input === 'drag' && view.inputActive;
         if (!this.dragLive && this.dragState.carrying) {
