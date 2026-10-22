@@ -254,7 +254,7 @@ Gotowe, gdy: przejście pokoju zajmuje sensowny czas, zadania nie są ani za ła
 
 ## 12. Poza zakresem v1
 
-Fabuła i dialogi (po v1 wyjątek: mieszkańcy gotowego domu, jedno zdanie podziękowania), kupno, sprzedaż i wynajem domów, energia i timery, konta i synchronizacja w chmurze, wydarzenia czasowe, sklep, ranking.
+Fabuła i dialogi (po v1 wyjątki: mieszkańcy gotowego domu, jedno zdanie podziękowania, i niemy przewodnik w rogu zeszytu, PRD FR-037), kupno, sprzedaż i wynajem domów, energia i timery, konta i synchronizacja w chmurze, wydarzenia czasowe, sklep, ranking.
 
 ## 13. Do ustalenia
 

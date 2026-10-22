@@ -18,7 +18,7 @@ timeline_budget:
 
 # PRD — Martynka urządza
 
-Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca. Wersja 2 (2026-10-21): wyjątek prywatności dla wysyłek uruchamianych przez rodzica, nowe wymagania po v1 (FR-028–FR-031) i FR-009 bez automatycznego czytania; decyzje autora z 2026-10-20/21 zapisane w `docs/human-checklist.md`. Wersja 3 (2026-10-22): kierunek po v1 „ulica i domy” (FR-032–FR-036): dom z kilkoma pokojami, mieszkańcy zamiast sprzedaży i wynajmu, gwiazdki z rund pozostają jedyną walutą.
+Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca. Wersja 2 (2026-10-21): wyjątek prywatności dla wysyłek uruchamianych przez rodzica, nowe wymagania po v1 (FR-028–FR-031) i FR-009 bez automatycznego czytania; decyzje autora z 2026-10-20/21 zapisane w `docs/human-checklist.md`. Wersja 3 (2026-10-22): kierunek po v1 „ulica i domy” (FR-032–FR-036) i niemy przewodnik w zeszycie (FR-037): dom z kilkoma pokojami, mieszkańcy zamiast sprzedaży i wynajmu, gwiazdki z rund pozostają jedyną walutą.
 
 ## Vision & Problem Statement
 
@@ -197,7 +197,12 @@ Kierunek dodany 2026-10-22 (decyzja autora po przeglądzie dwóch gier o urządz
 - FR-035: Gwiazdki z rund zadań pozostają jedyną walutą gry. Domy nie przynoszą dochodu, nie są sprzedawane ani wynajmowane za gwiazdki i nic, co dziecko urządziło, nie znika ani nie jest oddawane. Priority: must-have (po v1)
 - FR-036: Po kilku domach otwiera się kolejna ulica lub dzielnica w innym otoczeniu (np. nad morzem, w górach); liczba domów na ulicy, pokoje domów i kolejność dzielnic są danymi gry, więc nowy dom lub ulica to dane i grafika. Priority: nice-to-have (po v1)
 
-## Non-Functional Requirements
+### Po v1 — przewodnik w zeszycie
+
+Dodane 2026-10-22 (decyzja autora po przeglądzie aplikacji matematycznych dla dzieci).
+
+- FR-037: W rogu zeszytu z zadaniami siedzi mały przewodnik (zwierzątko w stylu grafik gry) w trzech pozach: spokój, radość po dobrej odpowiedzi, zamyślenie po pomyłce. Nie mówi, nie ma dialogów ani historii, nie zasłania zadania i nigdy nie okazuje zawodu; przy systemowym „ogranicz ruch” zmienia pozę bez animacji. Priority: nice-to-have (po v1)
+
 
 - Gra uruchamia się offline z ikony na ekranie początkowym do ekranu gry w < 3 s na tablecie sprzed 3–4 lat.
 - Reakcja na dotyk (podświetlenie kafelka, wpisanie cyfry) jest widoczna w < 100 ms; animacja lotu gwiazdki nie blokuje przejścia do następnego zadania.
@@ -229,7 +234,7 @@ Dwie role na tym samym urządzeniu, rozdzielone wyłącznie bramką UI:
 ## Non-Goals
 
 Funkcjonalne:
-- Brak fabuły, dialogów, postaci i wydarzeń czasowych: Martynka to nazwa gry, nie bohaterka; pętla nagrody nie potrzebuje narracji (plan, sekcja 12). Jedyny wyjątek po v1: mieszkańcy gotowego domu (obrazek i jedno zdanie podziękowania, FR-034), bez dialogów, wyborów i historii.
+- Brak fabuły, dialogów, postaci i wydarzeń czasowych: Martynka to nazwa gry, nie bohaterka; pętla nagrody nie potrzebuje narracji (plan, sekcja 12). Wyjątki po v1: mieszkańcy gotowego domu (obrazek i jedno zdanie podziękowania, FR-034) oraz niemy przewodnik w rogu zeszytu (FR-037), bez dialogów, wyborów i historii.
 - Brak kupna, sprzedaży i wynajmu domów oraz dochodu pasywnego: dom urządzony przez dziecko nie znika, a jedynym źródłem gwiazdek są rozwiązane zadania (FR-035).
 - Brak swobodnego ustawiania i obracania mebli: elementy stoją na stałych miejscach pokoju, co jest prostsze dotykiem dla 6–8-latka (FR-033).
 - Brak energii, timerów, reklam, zakupów, sklepu i rankingu: gra ma zero presji i zero monetyzacji; nie da się przegrać ani niczego stracić.
