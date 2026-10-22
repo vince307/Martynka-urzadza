@@ -1046,8 +1046,8 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 9.1 `grep -n "starBurst" src/scenes/RoomScene.ts src/ui/widgets/SummaryPanel.ts` present in both; `grep -rn "generateTexture" src/scenes/RoomScene.ts` empty
-- [ ] 9.2 Deliberate break: show the summary buttons only after the last pop (delayed call) → at the orchestrator `task-round`/`adaptive` specs red (they tap `nextRound` at once), restored — the agent records the break and its expected red; unit guard: `tests/reducedMotionWiring.test.ts` list gains `SummaryPanel.ts`, `starBurst.ts`
+- [x] 9.1 `grep -n "starBurst" src/scenes/RoomScene.ts src/ui/widgets/SummaryPanel.ts` present in both; `grep -rn "generateTexture" src/scenes/RoomScene.ts` empty — 374c909
+- [x] 9.2 Deliberate break: show the summary buttons only after the last pop (delayed call) → at the orchestrator `task-round`/`adaptive` specs red (they tap `nextRound` at once), restored — the agent records the break and its expected red; unit guard: `tests/reducedMotionWiring.test.ts` list gains `SummaryPanel.ts`, `starBurst.ts` — 374c909
 - [ ] 9.3 Unit `<phase-8 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`room-purchase`, `salon-art` still green after the burst move)
 
 #### Manual
