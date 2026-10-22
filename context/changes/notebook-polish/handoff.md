@@ -1,16 +1,16 @@
 # Handoff — `notebook-polish` (slice fix:notebook-polish)
 
-Written by the `/10x-implement` step of phase 10. Phase 10 is committed as `e26f8b3`: the task font is now Martynka Next (Atkinson Hyperlegible Next with a plain oval zero, built by `npm run font`). The next agent starts phase 11 (docs, follow-ups, seam sweep); it must not touch the font file or its constants, and must fix the CLAUDE.md sentences that still name `AtkinsonHyperlegibleNext.ttf`.
+Written by the `/10x-implement` step of phase 11. Phase 11 is committed as `6b2c84b`: CLAUDE.md describes the change (font name fixed, `npm run font`, a Notebook polish block), `follow-ups/review-fixes.md` holds 14 open entries and 5 closed ones with `Trigger:` lines, the seam sweep found nothing to fix. The next agent starts phase 12 (e2e spec `tests/e2e/notebook-polish.spec.ts`).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/notebook-polish` |
-| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, p8 `639a467`, p9 `374c909`, p10 `e26f8b3`, then this docs commit |
+| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, p8 `639a467`, p9 `374c909`, p10 `e26f8b3`, p11 `6b2c84b`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` unchanged by this step |
-| `## Progress` rows remaining | 29 (`grep -c '^- \[ \]' plan.md`); rows 10.1-10.3 ticked with `e26f8b3`; 10.4 (full gate green here, e2e and the `fontHealth === 'loaded'` proof by the orchestrator) and 10.5 [visual] left; rows 9.1, 9.2 ticked with `374c909`; 9.3 (full gate green here, e2e by the orchestrator) and 9.4 [visual] left; rows 8.1, 8.2 ticked with `639a467`; 8.3 (full gate green here, e2e by the orchestrator) and 8.4 [visual] left; rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
+| `## Progress` rows remaining | 25 (`grep -c '^- \[ \]' plan.md`); rows 11.1-11.4 ticked with `6b2c84b`; 11.5 (e2e by the orchestrator), 11.6 [reviewer], 11.7 [visual], 11.8 [human] left; rows 10.1-10.3 ticked with `e26f8b3`; 10.4 (full gate green here, e2e and the `fontHealth === 'loaded'` proof by the orchestrator) and 10.5 [visual] left; rows 9.1, 9.2 ticked with `374c909`; 9.3 (full gate green here, e2e by the orchestrator) and 9.4 [visual] left; rows 8.1, 8.2 ticked with `639a467`; 8.3 (full gate green here, e2e by the orchestrator) and 8.4 [visual] left; rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
@@ -42,6 +42,8 @@ Written by the `/10x-implement` step of phase 10. Phase 10 is committed as `e26f
 | `scripts/check-deploy.ts` | p10: `record(precacheCovers('task font', precache, [FONT_URL]))` inside `if (sha7)` (a rollback skips it) |
 | `tests/fontZero.test.ts` | p10: 6 cases reading `cmap`/`loca`/`glyf`/`name`/`fvar` from the bytes (zero has 2 contours, the original 3; glyph id and count as the original; names; copyright kept; wght 200-800; OFL.txt present and notes the modification) |
 | `docs/design-gaps.md` | row 164 (plain zero overrides the kit) |
+| `CLAUDE.md` | p11: font sentence fixed, `npm run font` in Commands, one "Notebook polish" block naming the new modules and tokens, save v4 stated |
+| `context/changes/notebook-polish/follow-ups/review-fixes.md` | p11: 14 open entries and 5 closed, every one with a `Trigger:` line |
 
 ## 3. Verification
 
@@ -73,11 +75,17 @@ Written by the `/10x-implement` step of phase 10. Phase 10 is committed as `e26f
 | p10 deliberate break | `fontZero.test.ts` pointed at the original in `designs/`: 3 cases red (2-contour, names, copyright/Modified), 3 green; restored (the env seam removed), 6 green. Meta: contour count is read from `glyf`/`loca` bytes and the test asserts the original has 3, so the red is real and independent of the script |
 | p10 Playwright | not run: Chromium cannot start in the agent sandbox; the orchestrator runs e2e (expected baseline + 0) and the plain zero / `fontHealth === 'loaded'` check in a browser (OTS acceptance of the modified file is NOT proven here) |
 
+| p11 | `npm run lint`, `typecheck`, `npm test` (3780 passed = baseline 3736 + 44, +0 in p11), deploy scripts, `sample` E1-E6, `build` (`e2e hook: absent`) OK; rows 11.1-11.4 checks pass (`validate-rule-files.sh` PASS, gaps 155-164 present, no gradient code outside `kitDraw.ts`, one `generateTexture` in `starBurst.ts`, protected files unchanged vs main) |
+| p11 deliberate break | none: docs-only phase, the plan asks for none |
+| Playwright | not run (sandbox); 11.5 is the orchestrator's |
+
 ## 4. Next command
 
-`/10x-implement notebook-polish phase 11`
+`/10x-e2e notebook-polish phase 12`
 
 ## 5. Open
+
+- p11: seam sweep found no duplicated gradient/lip code, no second star texture, no stale `shake`/slashed-zero comments, no unused `ageButtonShadow`. `AGENTS.md` repeats none of the facts, left alone. Row 11.7 [visual] and 11.8 [human] (D-1 and the iPad zero) are not mine.
 
 - p10 not seen in a browser: the shipped font must load in Chromium (`fontHealth === 'loaded'` through the hook snapshot, row 10.4) and Safari; if the hook reports `fallback`, the pre-decided fallback is: revert `public/fonts/` and the `layout.ts` constants to the original file (zero stays slashed), keep `scripts/make-font.py`, record a follow-up. Rows 10.4 (e2e part) and 10.5 [visual] are not mine. Phase 11 must update CLAUDE.md (font file name in "Current state" and `## Commands`, `npm run font`) and re-record the FontFace time-limit follow-up.
 - `tests/fontZero.test.ts` reads the original from `designs/` (tracked in git, so CI has it).
@@ -111,3 +119,5 @@ Written by the `/10x-implement` step of phase 10. Phase 10 is committed as `e26f
 - p9: stars are one Graphics each (origin-centred, scaled) rather than a shared row; the earned-star group pops after the row, text appears with it (alpha), burst after its pop. `starBurst.ts` has no tween so it is not on the tweening-file list; a separate wiring case checks the burst sits behind the reduced-motion branch. Burst depth is `ROOM_LAYOUT.depth.celebrate`. Row 9.2 ticked for the grep/guard part; the break's red is the orchestrator's e2e. Commit message in Polish; no questions asked.
 
 - p10: option 1 of research (d): modify the zero, rename to "Martynka Next" (name IDs 1, 3, 4, 6, 25; 16/17 absent in the file), `OFL.txt` shipped beside the font with one added line; rejected a second digits font and a scaled O. Pinned fontTools 4.61.1 and fixed timestamp 2026-10-22 for byte-identical rebuilds. Rows 10.1-10.3 ticked; 10.4 left (e2e + browser proof by the orchestrator). Would change if Chromium rejects the file: use the fallback in section 5. Commit message in Polish; no questions asked.
+
+- p11: `AGENTS.md` unchanged (grep found no repeated facts). Follow-up entries 1, 4, 13, 14 are my wording of deferred items the plan named loosely (digits/dice, sound against the pop, hint labels, backdrop staleness); the trigger text is the part to review. Commit message in Polish; no questions asked.

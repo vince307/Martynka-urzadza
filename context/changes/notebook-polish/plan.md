@@ -1071,10 +1071,10 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 11.1 `grep -c "^Trigger:" context/changes/notebook-polish/follow-ups/review-fixes.md` ≥ 12
-- [ ] 11.2 `for n in 155 156 157 158 159 160 161 162 163 164; do grep -q "^| $n |" docs/design-gaps.md || echo MISSING $n; done` prints nothing
-- [ ] 11.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists)
-- [ ] 11.4 `grep -rn "fillGradientStyle" src` only `kitDraw.ts`; `grep -rn "generateTexture" src` has no second star-texture builder; `git diff --stat main -- src/data/balance.ts src/core/save.ts src/core/migrations tests/fixtures src/data/curriculum src/data/wordTemplates.ts` empty
+- [x] 11.1 `grep -c "^Trigger:" context/changes/notebook-polish/follow-ups/review-fixes.md` ≥ 12 — 6b2c84b — 6b2c84b
+- [x] 11.2 `for n in 155 156 157 158 159 160 161 162 163 164; do grep -q "^| $n |" docs/design-gaps.md || echo MISSING $n; done` prints nothing — 6b2c84b — 6b2c84b
+- [x] 11.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists) — 6b2c84b — 6b2c84b
+- [x] 11.4 `grep -rn "fillGradientStyle" src` only `kitDraw.ts`; `grep -rn "generateTexture" src` has no second star-texture builder; `git diff --stat main -- src/data/balance.ts src/core/save.ts src/core/migrations tests/fixtures src/data/curriculum src/data/wordTemplates.ts` empty — 6b2c84b — 6b2c84b
 - [ ] 11.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
