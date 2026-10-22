@@ -946,10 +946,10 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 1.1 New tests red before the change (stubs exported first, so failures are assertions, not import errors), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `staggerDelays` spreads over `spanMs` instead of `spanMs − itemMs` → the "last start + item ≤ span" case red; `newlyDone` returns every done index → the `[1]` case red; stitches start at `top` instead of `top − overhang` → the stitch count case red; each restored; meta-check: the oracles are literal numbers computed from the kit CSS by hand in the test, not from the function's own constants
-- [ ] 1.3 `git diff --stat main -- src/data/balance.ts src/core/save.ts tests/fixtures` empty
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 New tests red before the change (stubs exported first, so failures are assertions, not import errors), green after; unit `<branch baseline> + N` — a659097
+- [x] 1.2 Deliberate break: `staggerDelays` spreads over `spanMs` instead of `spanMs − itemMs` → the "last start + item ≤ span" case red; `newlyDone` returns every done index → the `[1]` case red; stitches start at `top` instead of `top − overhang` → the stitch count case red; each restored; meta-check: the oracles are literal numbers computed from the kit CSS by hand in the test, not from the function's own constants — a659097
+- [x] 1.3 `git diff --stat main -- src/data/balance.ts src/core/save.ts tests/fixtures` empty — a659097
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — a659097
 
 ### Phase 2: The notebook as in the kit (and the welcome sunflower)
 
