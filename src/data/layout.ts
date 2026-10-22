@@ -57,7 +57,6 @@ export const PLACEHOLDER_COLORS = {
     dieBorder: 0xb4cba7,
     diePip: 0x245c59,
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
-    ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
 
 /** DESIGN-GAP row 53: column colours of a bar chart, in order. */
@@ -522,7 +521,7 @@ export const MINIGAME_LAYOUT = {
 export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
     question: { x: 960, y: 290 },
-    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
+    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5 },
     // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the notebook's
     // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },

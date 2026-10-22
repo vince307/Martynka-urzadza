@@ -274,7 +274,7 @@ describe('task screen layout constants', () => {
         const count = placementData.ages.length;
         expect(left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
         expect(left + count * width + (count - 1) * gap).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
-        expect(top + height + WELCOME_LAYOUT.ages.shadow).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        expect(top + height + LIPS.age.offset).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         expect(WELCOME_LAYOUT.question.y + FONT_SIZES.summaryTitle).toBeLessThan(top);   // the question sits above the buttons
     });
 
@@ -289,7 +289,7 @@ describe('task screen layout constants', () => {
         expect(left + width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
         expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         const ages = WELCOME_LAYOUT.ages;
-        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + ages.shadow);
+        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + LIPS.age.offset);
     });
 
     it('uses the kit tile height of 136 px, not smaller', () => {
@@ -407,5 +407,26 @@ describe('notebook content stays right of the margin line (orchestrator browser 
         const { promptBeside, expression, keypad } = TASK_LAYOUT;
         expect(promptBeside.x + promptBeside.maxWidth / 2).toBeLessThan(keypad.left);
         expect(expression.x + expression.maxWidth / 2).toBeLessThan(keypad.left);
+    });
+});
+
+describe('page and age button lips (phase 5)', () => {
+    const { notebook } = TASK_LAYOUT;
+    const innerBottom = notebook.top + notebook.height - notebook.border;
+
+    it('keeps the lip of the summary, unlock, "Rodzic" and age buttons inside the notebook', () => {
+        const { buttons } = SUMMARY_LAYOUT;
+        expect(buttons.top + buttons.height + LIPS.page.offset).toBeLessThanOrEqual(innerBottom);
+        const unlock = UNLOCK_LAYOUT.button;
+        expect(unlock.top + unlock.height + LIPS.page.offset).toBeLessThanOrEqual(UNLOCK_LAYOUT.card.top + UNLOCK_LAYOUT.card.height - UNLOCK_LAYOUT.card.border);
+        const parent = WELCOME_LAYOUT.parent;
+        expect(parent.top + parent.height + LIPS.page.offset).toBeLessThanOrEqual(innerBottom);
+        const ages = WELCOME_LAYOUT.ages;
+        expect(ages.top + ages.height + LIPS.age.offset).toBeLessThanOrEqual(innerBottom);
+    });
+
+    it('keeps the lip of "Wróć" above the build id caption', () => {
+        const { ageBack } = TASK_LAYOUT;
+        expect(ageBack.top + ageBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });
