@@ -1,8 +1,9 @@
 import type { GameObjects, Scene } from 'phaser';
 import { parseFace } from '../../core/tasks/faces';
-import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
 import { textStyle } from './textStyle';
 import { drawFace } from './faceDraw';
+import { ChunkyFace } from './chunky';
 import { tileRow, type Rect } from './geometry';
 
 export type Choice = number | string;
@@ -10,6 +11,7 @@ export type Choice = number | string;
 
 interface Tile {
     rect: Rect;
+    chunky: ChunkyFace;
     graphics: GameObjects.Graphics;
     label: GameObjects.Text;
     zone: GameObjects.Zone;
@@ -45,7 +47,9 @@ export class AnswerTiles {
             const zone = this.scene.add
                 .zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height)
                 .setInteractive();
-            const tile: Tile = { rect, graphics, label, zone, value, pressed: false };
+            const chunky = new ChunkyFace(this.scene, rect, LIPS.answer, tiles.radius);
+            chunky.add(graphics, label);
+            const tile: Tile = { rect, chunky, graphics, label, zone, value, pressed: false };
             zone.on('pointerdown', () => this.press(tile));
             zone.on('pointerup', () => this.release(tile));
             zone.on('pointerout', () => this.release(tile));
@@ -64,8 +68,7 @@ export class AnswerTiles {
 
     setVisible(visible: boolean): void {
         this.tiles.forEach((t) => {
-            t.graphics.setVisible(visible);
-            t.label.setVisible(visible);
+            t.chunky.setVisible(visible);
             if (t.zone.input) {
                 t.zone.input.enabled = visible;
             }
@@ -100,6 +103,7 @@ export class AnswerTiles {
         }
         tile.pressed = true;
         this.paint(tile);          // synchronous: the highlight comes before any tween
+        tile.chunky.press();
         this.onPick(tile.value);
     }
 
@@ -107,6 +111,7 @@ export class AnswerTiles {
         if (tile.pressed) {
             tile.pressed = false;
             this.paint(tile);
+            tile.chunky.release();
         }
     }
 
@@ -115,8 +120,6 @@ export class AnswerTiles {
         const { radius, border } = TASK_LAYOUT.tiles;
         const isCorrect = this.correctValue !== null && tile.value === this.correctValue;
         graphics.clear();
-        graphics.fillStyle(PLACEHOLDER_COLORS.dotDone, 0.5);          // soft lower edge
-        graphics.fillRoundedRect(rect.x, rect.y + 8, rect.width, rect.height, radius);
         graphics.fillStyle(tile.pressed ? PLACEHOLDER_COLORS.pressed : isCorrect ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.tile, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
         const isHint = this.hintValue !== null && tile.value === this.hintValue;
@@ -130,8 +133,7 @@ export class AnswerTiles {
 
     private destroyTiles(): void {
         this.tiles.forEach((t) => {
-            t.graphics.destroy();
-            t.label.destroy();
+            t.chunky.destroy();
             t.zone.destroy();
         });
         this.tiles = [];

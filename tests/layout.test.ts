@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
+import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -328,6 +329,25 @@ describe('task screen layout constants', () => {
         ] as const) {
             expect(centre - width / 2).toBeGreaterThanOrEqual(inner.left);
             expect(centre + width / 2).toBeLessThanOrEqual(right);
+        }
+    });
+
+    it('keeps the lip of every task control inside the notebook and clear of the next control', () => {
+        const { tiles, keypad, notebook, bar } = TASK_LAYOUT;
+        const innerBottom = notebook.top + notebook.height - notebook.border;
+        const barTop = bar.bottom - bar.height;
+        for (const rect of tileRow(4, { x: notebook.left, y: tiles.top, width: notebook.width, height: tiles.height }, tiles)) {
+            expect(rect.y + rect.height + LIPS.answer.offset).toBeLessThan(barTop);
+        }
+        expect(bar.bottom + LIPS.action.offset).toBeLessThanOrEqual(innerBottom);
+        const rows = keypadGrid(keypad).keys.map((k) => k.rect);
+        for (const rect of rows) {
+            const below = rows.find((r) => r.x === rect.x && r.y > rect.y);
+            if (below) {
+                expect(rect.y + rect.height + LIPS.key.offset).toBeLessThan(below.y);
+            } else {
+                expect(rect.y + rect.height + LIPS.key.offset).toBeLessThanOrEqual(innerBottom);   // the bar sits left of the keypad, not under it
+            }
         }
     });
 
