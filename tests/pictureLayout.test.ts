@@ -269,13 +269,13 @@ describe('the box of a dense number line (visual gate S-14b: the box at 11 cover
 });
 
 describe('the hint number line beside the keypad (visual gate S-14b: a 0..30 line drew its labels at 11.7 CSS px on the tablet)', () => {
-    it('keeps the labels of a 0..30 hint line at least 10.5 CSS px on a 1024 px tablet (right of the margin line, so 12 no longer fits) and ends before the keypad', () => {
+    it('keeps the labels of a 0..30 hint line at least 12 CSS px on a 1024 px tablet (right of the margin line; the keypad column sits further right to make room) and ends before the keypad', () => {
         const L = TASK_LAYOUT.numberLine;
         const { picture, lines } = hintPictureLayout(spec, 'keypad');
         const widthUnits = 2 * L.pad + 30 * L.denseGap;
         const heightUnits = L.arcZone + L.tick / 2 + L.labelDrop + L.box.height;
         const s = Math.min(picture.width / widthUnits, picture.height / heightUnits, L.maxScale);
-        expect(s * FONT_SIZES.lineLabel * (1024 / 1920)).toBeGreaterThanOrEqual(10.5);
+        expect(s * FONT_SIZES.lineLabel * (1024 / 1920)).toBeGreaterThanOrEqual(12);
         expect(picture.x + picture.width).toBeLessThan(TASK_LAYOUT.keypad.left);
         expect(lines.x + lines.width).toBeLessThan(TASK_LAYOUT.keypad.left);
         expect(picture.x).toBeGreaterThanOrEqual(notebook.left + notebook.border);

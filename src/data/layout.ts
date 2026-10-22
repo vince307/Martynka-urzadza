@@ -272,7 +272,7 @@ export const TASK_LAYOUT = {
     expressionWide: { x: 960, y: 500, maxWidth: 1300 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4, fieldPadding: 24 },
+    keypad: { left: 1120, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4, fieldPadding: 24 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
@@ -324,7 +324,7 @@ export const TASK_LAYOUT = {
         digits: { picture: { x: CONTENT_LEFT, y: 340, width: 330, height: 508 }, lines: { x: CONTENT_LEFT + 346, y: 340, width: 1020 - CONTENT_LEFT - 346, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
         // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
-        hint: { keypad: { picture: { x: CONTENT_LEFT, y: 530, width: 1030 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 730, width: 1030 - CONTENT_LEFT, height: 118 } } },
+        hint: { keypad: { picture: { x: CONTENT_LEFT, y: 530, width: 1110 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 730, width: 1110 - CONTENT_LEFT, height: 118 } } },
         minHeight: 120,
         tall: {
             tiles: { picture: { x: CONTENT_LEFT, y: 330, width: 220, height: 630 }, lines: { x: 560, y: 330, width: 1140, height: 360 }, answers: { x: 540, width: 1184 }, bar: { x: 560, width: 1140 } },
