@@ -10,7 +10,7 @@ Written by the `/10x-implement` step of phase 7. Phase 7 is committed as `73e778
 | Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` unchanged by this step |
-| `## Progress` rows remaining | 39 (`grep -c '^- \[ \]' plan.md`); rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
+| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`); rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
