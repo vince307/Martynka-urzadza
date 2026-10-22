@@ -496,7 +496,7 @@ export const MINIGAME_LAYOUT = {
 /**
  * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
  * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
- * DESIGN-GAP (docs/design-gaps.md row 20): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
+ * DESIGN-GAP (docs/design-gaps.md row 20): the kit's cushion (welcome-cushion) has no art and overlaps the parent entry; the sunflower is the `flower` icon.
  */
 export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
@@ -505,6 +505,8 @@ export const WELCOME_LAYOUT = {
     // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the notebook's
     // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
+    // The kit's .welcome-flower: the `flower` task icon, bottom left of the notebook, clear of the age buttons (the cushion stays out, it overlaps `parent`).
+    flower: { left: 360, top: 790, size: 152, angle: -14, key: 'tasks/icons/flower' },
 } as const;
 
 /** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */

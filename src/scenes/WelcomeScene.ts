@@ -42,6 +42,11 @@ export class WelcomeScene extends Scene {
             this.resumeInput();
         });
         drawNotebook(this);
+        const flower = WELCOME_LAYOUT.flower;
+        // No stand-in on the welcome: a missing texture draws nothing.
+        if (this.textures.exists(flower.key)) {
+            this.add.image(flower.left + flower.size / 2, flower.top + flower.size / 2, flower.key).setDisplaySize(flower.size, flower.size).setAngle(flower.angle);
+        }
         this.add.text(WELCOME_LAYOUT.brand.x, WELCOME_LAYOUT.brand.y, pl.title, textStyle('brand')).setOrigin(0.5, 0);
         this.add.text(WELCOME_LAYOUT.question.x, WELCOME_LAYOUT.question.y, pl.welcome.question, textStyle('summaryTitle')).setOrigin(0.5, 0);
         const { left, top, width, gap } = WELCOME_LAYOUT.ages;
