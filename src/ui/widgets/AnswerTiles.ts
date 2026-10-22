@@ -92,6 +92,11 @@ export class AnswerTiles {
         this.tiles.forEach((t) => this.paint(t));
     }
 
+    /** The face container of the tile showing `value` (what bounces or wobbles), null when there is none. */
+    faceOf(value: Choice): GameObjects.Container | null {
+        return this.tiles.find((t) => t.value === value)?.chunky.face ?? null;
+    }
+
     /** Centres of the tiles in scene space, for the e2e hook. */
     targets(): { value: Choice; x: number; y: number }[] {
         return this.tiles.map((t) => ({ value: t.value, x: t.rect.x + t.rect.width / 2, y: t.rect.y + t.rect.height / 2 }));

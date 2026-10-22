@@ -64,6 +64,11 @@ export class ActionButton {
         }
     }
 
+    /** The face container (what bounces or wobbles). */
+    faceObject(): GameObjects.Container {
+        return this.chunky.face;
+    }
+
     /** Centre of the button in scene space, for the e2e hook; null while hidden. */
     target(): { x: number; y: number } | null {
         return this.shown ? { x: this.rect.x + this.rect.width / 2, y: this.rect.y + this.rect.height / 2 } : null;

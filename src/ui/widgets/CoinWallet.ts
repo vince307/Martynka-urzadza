@@ -119,6 +119,11 @@ export class CoinWallet {
         return this.ok.target();
     }
 
+    /** The "OK" face container, for the bounce and wobble of the answer. */
+    okFace(): GameObjects.Container {
+        return this.ok.faceObject();
+    }
+
     private walletArtLoaded(): boolean {
         return this.walletImage.scene.textures.exists(UI_ART_KEYS.wallet);
     }

@@ -1,4 +1,4 @@
-import type { GameObjects, Scene } from 'phaser';
+import type { GameObjects, Scene, Tweens } from 'phaser';
 import { ANIMATION, type LIPS } from '../../data/layout';
 import { prefersReducedMotion } from '../motion';
 import { drawLip } from './kitDraw';
@@ -19,6 +19,7 @@ export class ChunkyFace {
     private readonly inner: GameObjects.Container;
     private readonly lipGraphics: GameObjects.Graphics;
     private baseY: number;
+    private pressTween: Tweens.Tween | null = null;
 
     constructor(
         private readonly scene: Scene,
@@ -60,6 +61,7 @@ export class ChunkyFace {
 
     /** Stops every tween and returns the face to rest. */
     reset(): void {
+        this.pressTween = null;
         this.scene.tweens.killTweensOf(this.face);
         this.face.setPosition(this.face.x, this.baseY).setScale(1).setAngle(0);
     }
@@ -81,11 +83,13 @@ export class ChunkyFace {
     }
 
     private moveTo(y: number, duration: number, ease: string): void {
-        this.scene.tweens.killTweensOf(this.face);
+        // Only the press tween is stopped: a bounce or a wobble running on the same face (scale, angle, x) goes on.
+        this.pressTween?.stop();
+        this.pressTween = null;
         if (prefersReducedMotion()) {
             this.face.setY(y);
             return;
         }
-        this.scene.tweens.add({ targets: this.face, y, duration, ease });
+        this.pressTween = this.scene.tweens.add({ targets: this.face, y, duration, ease });
     }
 }

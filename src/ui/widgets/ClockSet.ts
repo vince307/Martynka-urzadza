@@ -93,6 +93,11 @@ export class ClockSet {
         return { centre: this.layout.centre, hourTip: find('hour') ?? hour, minuteTip: find('minute'), ok: this.ok.target(), radius: balance.clockSet.grabRadius };
     }
 
+    /** The "OK" face container, for the bounce and wobble of the answer. */
+    okFace(): GameObjects.Container {
+        return this.ok.faceObject();
+    }
+
     private tipOf(hand: 'hour' | 'minute', state: ClockSetState): Point {
         const angles = clockHandAngles(state.hour, state.minute);
         const a = (angles[hand] * Math.PI) / 180;

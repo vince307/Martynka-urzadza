@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { ANIMATION, LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { prefersReducedMotion } from '../motion';
 import { ChunkyFace } from './chunky';
 import { drawHudPill } from './hudPill';
 import { textStyle } from './textStyle';
@@ -42,8 +43,10 @@ export class StarCounter {
     /** The pill face (pill, star, number) as one object: the thing that pops when a star lands. */
     readonly face: GameObjects.Container;
     private readonly text: GameObjects.Text;
+    private readonly scene: Scene;
 
     constructor(scene: Scene, value: number) {
+        this.scene = scene;
         const { left, top, width, height, radius, starRadius, starGap } = TASK_LAYOUT.starCounter;
         const graphics = scene.add.graphics();
         drawHudPill(graphics, { x: left, y: top, width, height }, { radius });
@@ -60,6 +63,16 @@ export class StarCounter {
 
     setValue(value: number): void {
         this.text.setText(String(value));
+    }
+
+    /** A short grow-and-return when a star lands; the number is never delayed by it (setValue is synchronous). */
+    pop(): void {
+        if (prefersReducedMotion()) {
+            return;
+        }
+        this.scene.tweens.killTweensOf(this.face);
+        this.face.setScale(1);
+        this.scene.tweens.add({ targets: this.face, scale: ANIMATION.counterPopScale, duration: ANIMATION.counterPopMs / 2, yoyo: true, ease: 'Sine.easeOut' });
     }
 
     /** Shown text, for the e2e hook. */

@@ -108,6 +108,11 @@ export class BlockMat {
         return this.ok.target();
     }
 
+    /** The "OK" face container, for the bounce and wobble of the answer. */
+    okFace(): GameObjects.Container {
+        return this.ok.faceObject();
+    }
+
     private paint(state: BlockDragState): void {
         const layout = this.layout;
         const g = this.frame;

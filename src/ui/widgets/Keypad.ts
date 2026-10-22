@@ -28,6 +28,7 @@ export class Keypad {
     private readonly field: Rect;
     private readonly fieldGraphics: GameObjects.Graphics;
     private readonly fieldText: GameObjects.Text;
+    private readonly fieldBox: GameObjects.Container;   // centre container of the entry field: what bounces or wobbles
     private readonly objects: GameObjects.GameObject[] = [];
     private readonly chunkies: ChunkyFace[] = [];
 
@@ -43,7 +44,10 @@ export class Keypad {
         this.fieldText = scene.add
             .text(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, '', textStyle('answer'))
             .setOrigin(0.5);
-        this.objects.push(this.fieldGraphics, this.fieldText);
+        // Outer container at the field centre, inner one at minus the centre: the field keeps drawing in scene coordinates.
+        const inner = scene.add.container(-(this.field.x + this.field.width / 2), -(this.field.y + this.field.height / 2), [this.fieldGraphics, this.fieldText]);
+        this.fieldBox = scene.add.container(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, [inner]);
+        this.objects.push(this.fieldBox);
         for (const { key, rect } of grid.keys) {
             const graphics = scene.add.graphics();
             const label = scene.add
@@ -83,12 +87,22 @@ export class Keypad {
         this.visible = visible;
         this.chunkies.forEach((c) => c.setVisible(visible));
         this.objects.forEach((o) => {
-            const shown = visible && !(this.keyMode && (o === this.fieldGraphics || o === this.fieldText));
+            const shown = visible && !(this.keyMode && o === this.fieldBox);
             (o as GameObjects.GameObject & { setVisible(v: boolean): unknown }).setVisible(shown);
             if (o.input) {
                 o.input.enabled = visible;
             }
         });
+    }
+
+    /** The entry field as one container, for the bounce and wobble of the answer and the star's start. */
+    entryFace(): GameObjects.Container {
+        return this.fieldBox;
+    }
+
+    /** Centre of the entry field in scene space (where the flying star starts). */
+    entryTarget(): { x: number; y: number } {
+        return { x: this.field.x + this.field.width / 2, y: this.field.y + this.field.height / 2 };
     }
 
     /** Clears the typed digits (new task or a wrong answer). */

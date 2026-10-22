@@ -1,4 +1,4 @@
-import { Scene, type GameObjects } from 'phaser';
+import { Scene, type GameObjects, type Tweens } from 'phaser';
 import { initialClockSet, stepClockSet, type ClockSetEvent, type ClockSetGeo, type ClockSetState } from '../core/clockSet';
 import { clockSetLayout } from '../core/round/pictureLayout';
 import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
@@ -194,6 +194,7 @@ export class TaskScene extends Scene {
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
+    private wobbling: { target: GameObjects.Container; chain: Tweens.TweenChain } | null = null;
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
@@ -366,8 +367,7 @@ export class TaskScene extends Scene {
             return;
         }
         this.narrator?.cancel();
-        this.tweens.killTweensOf(this.cameras.main);
-        this.cameras.main.scrollX = 0;
+        this.stopWobble();
         this.stage = stage;
         this.warmup = false;
         this.unlockShown = false;
@@ -400,8 +400,7 @@ export class TaskScene extends Scene {
         this.narrator?.cancel();
         this.feedDrag({ type: 'reset' });
         this.endFlyingStars();
-        this.tweens.killTweensOf(this.cameras.main);
-        this.cameras.main.scrollX = 0;
+        this.stopWobble();
         this.registry.set(REGISTRY_KEYS.narration, null);
         this.registry.set(REGISTRY_KEYS.roomSwitch, false);
         this.registry.set(REGISTRY_KEYS.hudTitle, null);
@@ -791,6 +790,7 @@ export class TaskScene extends Scene {
         this.reported = open?.check?.(value) ? { index: this.state.index, value } : null;
         this.state = answer(this.state, value);
         this.playRoundCues(prior);
+        const face = this.answerFace(value);
         this.syncStars(before, this.answerSpot(value));
         if (this.kind !== 'round' && !this.variantCounted && lastTaskSettled(prior, this.state)) {
             // A variant is counted with its last stars, so closing before "Dalej" cannot replay it (SV2-10).
@@ -805,9 +805,12 @@ export class TaskScene extends Scene {
             this.dragState = initialBlockDrag();   // and a wrong build: the mat is emptied
             this.clockState = initialClockSet(this.clockStart);   // and a wrong time: the hands go back to the start
             this.coinState = { mat: emptyWallet(), carrying: null };   // and a wrong payment: the wallet is emptied, the child pays again from the tray
-            this.shake();
+            this.wobble(face);
         }
         this.render();
+        if (this.state.phase === 'done') {
+            this.bounce(face);
+        }
     }
 
     /** The cues of one round transition (core/sound roundCues): the scene only schedules them. */
@@ -1101,8 +1104,31 @@ export class TaskScene extends Scene {
                     case 'blocks': case null: return this.blockMat.okTarget();
                     default: { const unreachable: never = this.dragKind; return unreachable; }
                 }
-            case 'keypad': case 'digits': return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
+            case 'keypad': return this.keypad.entryTarget();   // the star starts at the entry field, not over a key
+            case 'digits': return this.keypad.targets().find((k) => k.key === 'ok') ?? null;
             default: { const unreachable: never = view.input; return unreachable; }
+        }
+    }
+
+    /** The object the answer touched: the picked tile, the keypad entry field or the "OK" face; digit boxes and dice have none. */
+    private answerFace(value: unknown): GameObjects.Container | null {
+        if (this.kind === 'dice') {
+            return null;
+        }
+        const input = roundView(this.state, pl.round.resultLine).input;
+        switch (input) {
+            case 'tiles': return this.tiles.faceOf(value as number | string);
+            case 'select': return this.select.okFace();
+            case 'drag':
+                switch (this.dragKind) {
+                    case 'clock': return this.clockSet.okFace();
+                    case 'coins': return this.coinWallet.okFace();
+                    case 'blocks': case null: return this.blockMat.okFace();
+                    default: { const unreachable: never = this.dragKind; return unreachable; }
+                }
+            case 'keypad': return this.keypad.entryFace();
+            case 'digits': return null;
+            default: { const unreachable: never = input; return unreachable; }
         }
     }
 
@@ -1156,6 +1182,7 @@ export class TaskScene extends Scene {
             onComplete: () => {
                 this.flyingStars = this.flyingStars.filter((flying) => flying !== star);
                 star.destroy();
+                this.game.events.emit(GAME_EVENTS.starLanded);   // the counter pops now; its number was set at once
             },
         });
     }
@@ -1302,23 +1329,44 @@ export class TaskScene extends Scene {
         this.render();
     }
 
-    /** A short sideways wobble after a mistake; it never blocks input. */
-    private shake(): void {
-        if (prefersReducedMotion()) {
+    /** A correct answer: the answered object grows once and returns. Off under reduced motion; it never blocks input. */
+    private bounce(target: GameObjects.Container | null): void {
+        if (!target || prefersReducedMotion()) {
             return;
         }
-        const camera = this.cameras.main;
-        this.tweens.killTweensOf(camera);
-        camera.scrollX = 0;
-        this.tweens.add({
-            targets: camera,
-            scrollX: { from: -ANIMATION.shakeDistance, to: ANIMATION.shakeDistance },
-            duration: ANIMATION.shakeMs / ANIMATION.shakeSegments,
-            yoyo: true,
-            repeat: 2,
-            onComplete: () => {
-                camera.scrollX = 0;
-            },
-        });
+        this.tweens.add({ targets: target, scale: ANIMATION.bounceScale, duration: ANIMATION.bounceMs / 2, yoyo: true, ease: 'Sine.easeOut' });
+    }
+
+    /**
+     * A wrong answer: the answered object sways slowly (small angle and offset, ends at rest). Nothing turns red and the
+     * notebook stays still. Off under reduced motion; it never blocks input.
+     */
+    private wobble(target: GameObjects.Container | null): void {
+        if (!target || prefersReducedMotion()) {
+            return;
+        }
+        this.stopWobble();
+        const rest = (target.getData('restX') as number | undefined) ?? target.x;
+        target.setData('restX', rest);
+        const swings = ANIMATION.wobbleSwings;
+        const duration = ANIMATION.wobbleMs / (swings * 2 + 1);
+        const tweens: { angle: number; x: number; duration: number; ease: string }[] = [];
+        for (let i = 0; i < swings; i++) {
+            const sign = i % 2 === 0 ? 1 : -1;
+            tweens.push({ angle: sign * ANIMATION.wobbleAngle, x: rest + sign * ANIMATION.wobbleOffset, duration, ease: 'Sine.easeInOut' });
+            tweens.push({ angle: -sign * ANIMATION.wobbleAngle, x: rest - sign * ANIMATION.wobbleOffset, duration, ease: 'Sine.easeInOut' });
+        }
+        tweens.push({ angle: 0, x: rest, duration, ease: 'Sine.easeInOut' });
+        this.wobbling = { target, chain: this.tweens.chain({ targets: target, tweens }) };
+    }
+
+    /** Ends a wobble in progress and puts its object back at rest. */
+    private stopWobble(): void {
+        const wobbling = this.wobbling;
+        this.wobbling = null;
+        if (wobbling && wobbling.target.scene) {
+            wobbling.chain.stop();
+            wobbling.target.setAngle(0).setX((wobbling.target.getData('restX') as number | undefined) ?? wobbling.target.x);
+        }
     }
 }

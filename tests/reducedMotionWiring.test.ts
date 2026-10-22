@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 // Every file listed here starts a tween of its own; each must also ask prefersReducedMotion() before it does.
 // The list grows with the notebook-polish phases (press, bounce, wobble, pop, beads, entrance).
-const TWEENING_FILES = ['src/ui/widgets/chunky.ts'];
+const TWEENING_FILES = ['src/ui/widgets/chunky.ts', 'src/scenes/TaskScene.ts', 'src/ui/widgets/StarCounter.ts'];
 
 describe('reduced motion wiring', () => {
     for (const file of TWEENING_FILES) {

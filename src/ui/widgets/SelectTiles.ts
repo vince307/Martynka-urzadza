@@ -103,6 +103,11 @@ export class SelectTiles {
         return this.ok.target();
     }
 
+    /** The "OK" face container, for the bounce and wobble of the answer. */
+    okFace(): GameObjects.Container {
+        return this.ok.faceObject();
+    }
+
     private toggle(tile: Tile): void {
         if (!this.active) {
             return;

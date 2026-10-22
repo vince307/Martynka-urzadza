@@ -647,9 +647,6 @@ export const BEADS = {
 
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
-    shakeMs: 360,
-    shakeSegments: 6,      // shakeMs / shakeSegments is one sideways swing (yoyo, 2 repeats)
-    shakeDistance: 14,
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
