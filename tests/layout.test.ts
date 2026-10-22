@@ -3,7 +3,7 @@ import { isExpression } from '../src/core/round/prompt';
 import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -374,5 +374,38 @@ describe('"Wróć" to the age choice (F-02 b)', () => {
         expect(ageBack.left).toBeGreaterThanOrEqual(0);
         expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
         expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+    });
+});
+
+describe('notebook content stays right of the margin line (orchestrator browser defect after phase 4)', () => {
+    const { notebook } = TASK_LAYOUT;
+    // Hand-computed: frame left 180 + border 16 + margin 92 = line at 288, width 2, gap 24.
+    const marginRight = 180 + 16 + 92 + 2;
+
+    it('derives the inset from the notebook tokens', () => {
+        expect(NOTEBOOK.margin.fromInnerLeft).toBe(92);
+        expect(CONTENT_LEFT).toBe(marginRight + 24);
+        expect(CONTENT_LEFT).toBe(314);
+    });
+
+    it('starts every left-column rectangle and the wrapped prompt box right of the line and ends them inside the notebook', () => {
+        const { picture: p, promptBeside, expression, coinDrag, drag } = TASK_LAYOUT;
+        const rects = [
+            p.keypad, p.keypadSolution.picture, p.keypadSolution.lines, p.tilesSolution.picture, p.select.solution.picture,
+            p.long.tiles, p.long.tilesSolution.picture, p.long.tilesSolution.lines, p.digits.picture, p.hint.keypad.picture, p.hint.keypad.lines,
+            p.tall.tiles.picture, p.tall.keypad.picture, p.drag.picture, drag.mat, coinDrag.wallet,
+            { x: promptBeside.x - promptBeside.maxWidth / 2, y: 0, width: promptBeside.maxWidth, height: 0 },
+            { x: expression.x - expression.maxWidth / 2, y: 0, width: expression.maxWidth, height: 0 },
+        ];
+        for (const r of rects) {
+            expect(r.x).toBeGreaterThanOrEqual(CONTENT_LEFT);
+            expect(r.x + r.width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        }
+    });
+
+    it('keeps a prompt beside the keypad clear of the keypad', () => {
+        const { promptBeside, expression, keypad } = TASK_LAYOUT;
+        expect(promptBeside.x + promptBeside.maxWidth / 2).toBeLessThan(keypad.left);
+        expect(expression.x + expression.maxWidth / 2).toBeLessThan(keypad.left);
     });
 });

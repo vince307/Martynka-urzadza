@@ -235,18 +235,39 @@ export const SAVE_KEYS = [
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
  * task-keypad.png). Touch targets are listed in TASK_TOUCH_TARGETS.
  */
+/** Left edge and frame width of the task notebook; `TASK_LAYOUT.notebook` and `CONTENT_LEFT` both read them. */
+const NOTEBOOK_BOX = { left: 180, border: 16 } as const;
+
+/** The kit notebook (maths-A pack screen.css): frame, paper, bottom edge, shadow, stitch marks, margin line and bookmark ribbon. */
+export const NOTEBOOK = {
+    frame: '#54b5a9',
+    faceTop: '#fffbef',
+    faceBottom: '#fff5df',
+    edge: { height: 12, color: '#328476' },
+    shadow: { offsetY: 22, blur: 36, color: '#564730', alpha: 0.19 },
+    stitches: { inset: 40, width: 26, overhang: 20, phase: 44, height: 10, every: 100, color: '#bfa577' },
+    margin: { fromInnerLeft: 92, inset: 38, width: 2, gap: 24, color: '#e4ceb2' },
+    ribbon: { width: 48, height: 74, fromRight: 92, top: -16, notch: 0.78, color: '#f1ce6b' },
+} as const;
+
+/**
+ * Where the content of a notebook screen may start: right of the margin line plus `NOTEBOOK.margin.gap` (the kit keeps all
+ * writing right of the line, clear of the stitch marks). The one inset the task layout uses instead of the notebook's left edge.
+ */
+export const CONTENT_LEFT = NOTEBOOK_BOX.left + NOTEBOOK_BOX.border + NOTEBOOK.margin.fromInnerLeft + NOTEBOOK.margin.width + NOTEBOOK.margin.gap;
+
 // The drag mode's mat and solution lines are also the drawing area of a clock to set (picture.drag below).
-const DRAG_MAT = { x: 236, y: 380, width: 944, height: 460 } as const;
+const DRAG_MAT = { x: CONTENT_LEFT, y: 380, width: 1180 - CONTENT_LEFT, height: 460 } as const;
 const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as const;
 
 export const TASK_LAYOUT = {
-    notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 44 },
+    notebook: { left: NOTEBOOK_BOX.left, top: 204, width: 1560, height: 788, border: NOTEBOOK_BOX.border, radius: 44 },
     // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
     ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
     dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
-    prompt: { x: 960, y: 290, maxWidth: 1300 },
-    promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
-    expression: { x: 620, y: 456, maxWidth: 760 },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
+    prompt: { x: 960, y: 290, maxWidth: 1292 },
+    promptBeside: { x: (CONTENT_LEFT + 1000) / 2, y: 290, maxWidth: 1000 - CONTENT_LEFT },   // sentence prompts left of the keypad
+    expression: { x: (CONTENT_LEFT + 1000) / 2, y: 456, maxWidth: 1000 - CONTENT_LEFT },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
     blank: { width: 64, height: 84, lineWidth: 8, radius: 12, gap: 24 },   // drawn "□" in an expression (DESIGN-GAP 8): about one digit of the expression font; gap = a word space
     blankInline: { width: 52, height: 68, lineWidth: 6, radius: 10, lineHeight: 92 },   // drawn "□" inside a sentence prompt (DESIGN-GAP 8): about one digit of the prompt font
     expressionWide: { x: 960, y: 500, maxWidth: 1300 },      // above the tiles
@@ -279,9 +300,9 @@ export const TASK_LAYOUT = {
         // `promptMinSize` until it ends `promptGap` above the drawing; if it still does not, the drawing moves down under it.
         promptGap: 16, promptMinSize: 44, promptSizeStep: 4,
         tiles: { x: 661, y: 396, width: 600, height: 294 },
-        tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
-        keypad: { x: 236, y: 470, width: 768, height: 378 },
-        keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
+        tilesSolution: { picture: { x: CONTENT_LEFT, y: 396, width: 860 - CONTENT_LEFT, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
+        keypad: { x: CONTENT_LEFT, y: 470, width: 1004 - CONTENT_LEFT, height: 378 },
+        keypadSolution: { picture: { x: CONTENT_LEFT, y: 470, width: 1004 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 668, width: 1004 - CONTENT_LEFT, height: 180 } },
         // A tall drawing (thermometer, S-14, visualShape 'tall'): one column on the left of the notebook in every phase, down to the bar's bottom.
         // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
         // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
@@ -290,25 +311,25 @@ export const TASK_LAYOUT = {
         // lines the tray's place. `minHeight`: a long prompt may push the drawing down, never to nothing (audit S13-08).
         select: {
             picture: { x: 661, y: 396, width: 600, height: 190 },
-            solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
+            solution: { picture: { x: CONTENT_LEFT, y: 396, width: 860 - CONTENT_LEFT, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
         // S-14b visual gate: a number line in a tiles task (E3.9 jumps, 0..30) drew its labels about 9 CSS px tall on a 1024 px tablet in the
         // 600 px `tiles` rectangle; a long drawing takes the notebook's full width, the solution lines under it, both above the tiles (top 712).
         long: {
-            tiles: { x: 236, y: 380, width: 1448, height: 300 },
-            tilesSolution: { picture: { x: 236, y: 330, width: 1448, height: 200 }, lines: { x: 236, y: 540, width: 1448, height: 160 } },
+            tiles: { x: CONTENT_LEFT, y: 380, width: 1684 - CONTENT_LEFT, height: 300 },
+            tilesSolution: { picture: { x: CONTENT_LEFT, y: 330, width: 1684 - CONTENT_LEFT, height: 200 }, lines: { x: CONTENT_LEFT, y: 540, width: 1684 - CONTENT_LEFT, height: 160 } },
         },
         // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP 93 (docs/design-gaps.md): the kit has no layout for the column beside its solution lines; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
         // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
-        digits: { picture: { x: 216, y: 340, width: 400, height: 508 }, lines: { x: 632, y: 340, width: 392, height: 508 } },
+        digits: { picture: { x: CONTENT_LEFT, y: 340, width: 330, height: 508 }, lines: { x: CONTENT_LEFT + 346, y: 340, width: 1020 - CONTENT_LEFT - 346, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
         // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
-        hint: { keypad: { picture: { x: 226, y: 530, width: 798, height: 190 }, lines: { x: 226, y: 730, width: 798, height: 118 } } },
+        hint: { keypad: { picture: { x: CONTENT_LEFT, y: 530, width: 1030 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 730, width: 1030 - CONTENT_LEFT, height: 118 } } },
         minHeight: 120,
         tall: {
-            tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
-            keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
+            tiles: { picture: { x: CONTENT_LEFT, y: 330, width: 220, height: 630 }, lines: { x: 560, y: 330, width: 1140, height: 360 }, answers: { x: 540, width: 1184 }, bar: { x: 560, width: 1140 } },
+            keypad: { picture: { x: CONTENT_LEFT, y: 420, width: 200, height: 540 }, lines: { x: 520, y: 420, width: 484, height: 428 }, bar: { x: 520, width: 500 } },
         },
     },
     // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
@@ -326,7 +347,7 @@ export const TASK_LAYOUT = {
     // a placed coin's box is the drop-centre pitch scaled minus coinGap (144 x 104 px). DESIGN-GAP 104, screenshots at the visual gate.
     coinDrag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        wallet: { x: 308, y: 380, width: 800, height: 525 },
+        wallet: { x: CONTENT_LEFT, y: 380, width: 794, height: 525 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         art: { width: 640, height: 420, dropCenters: [[200, 160], [320, 160], [440, 160], [200, 248], [320, 248], [440, 248]] },
         coinGap: 6, rowKinds: 3, maxKinds: 4,
@@ -592,18 +613,6 @@ export const ROOM_TOUCH_TARGETS = {
     close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
     modeButton: { width: ROOM_LAYOUT.modeButton.width, height: ROOM_LAYOUT.modeButton.height },
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
-} as const;
-
-/** The kit notebook (maths-A pack screen.css): frame, paper, bottom edge, shadow, stitch marks, margin line and bookmark ribbon. */
-export const NOTEBOOK = {
-    frame: '#54b5a9',
-    faceTop: '#fffbef',
-    faceBottom: '#fff5df',
-    edge: { height: 12, color: '#328476' },
-    shadow: { offsetY: 22, blur: 36, color: '#564730', alpha: 0.19 },
-    stitches: { inset: 40, width: 26, overhang: 20, phase: 44, height: 10, every: 100, color: '#bfa577' },
-    margin: { fromInnerLeft: 92, inset: 38, width: 2, color: '#e4ceb2' },
-    ribbon: { width: 48, height: 74, fromRight: 92, top: -16, notch: 0.78, color: '#f1ce6b' },
 } as const;
 
 /** The blurred, dimmed salon behind the notebook. */
