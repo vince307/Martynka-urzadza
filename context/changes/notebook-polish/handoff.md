@@ -13,7 +13,7 @@ only behind `renderer.type === WEBGL`.
 | Commits | 3 on the branch after this step (`40e27fe` change identity, `2da4b37` research, then `docs(notebook-polish): plan`) |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 66 (all; `grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 59 (all; `grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
