@@ -1,16 +1,16 @@
 # Handoff — `notebook-polish` (slice fix:notebook-polish)
 
-Written by the `/10x-implement` step of phase 6. Phase 6 is committed as `edfbf29`: HUD pills (`hudPill.ts`, speaker, "Do pokoju", star counter, gear). Before it, fix `5d901ff` restored the 12 px floor of the hint number line labels. The next agent starts phase 7 (correct bounce, think wobble, counter pop).
+Written by the `/10x-implement` step of phase 7. Phase 7 is committed as `73e778f`: correct bounce, think wobble, counter pop (camera shake removed). The next agent starts phase 8 (beads and entrance stagger).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/notebook-polish` |
-| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, then this docs commit |
+| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` unchanged by this step |
-| `## Progress` rows remaining | 42 (`grep -c '^- \[ \]' plan.md`); rows 6.1-6.3 ticked with `edfbf29`; 6.4 (e2e by the orchestrator) and 6.5 [visual] left; 4.4, 4.5, 5.4, 5.5 still left |
+| `## Progress` rows remaining | 39 (`grep -c '^- \[ \]' plan.md`); rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
@@ -30,6 +30,11 @@ Written by the `/10x-implement` step of phase 6. Phase 6 is committed as `edfbf2
 | `HUD_LAYOUT` | p6: unused `fill/pressed/borderColor/border` tokens removed from speaker, room switch and gear; `docs/design-gaps.md` row 158 added, row 25 updated; new case in `tests/layout.test.ts` |
 | `fix 5d901ff` | `TASK_LAYOUT.keypad.left` 1040 -> 1120 (keys 156 x 104 unchanged, right end 1636, inside the notebook), hint picture and lines width up to x 1110 (796 px): 0..30 labels 12.1 CSS px on a 1024 tablet; `pictureLayout.test.ts` floor back to 12 |
 | `fix 35aba94` | `fillPaper` is now one flat face (mid colour of the two kit tints) so no seam; stitch marks start `phase` 44 px into the kit strip (inner top - 20): 8 marks y 244..944, all inside the page; `NOTEBOOK.stitches.phase`; test with hand-computed oracle |
+| `src/scenes/TaskScene.ts` | p7: `answerFace(value)` (tile face, keypad entry field, or the "OK" face; none for digits and dice), `bounce`, `wobble` (+ `stopWobble`, `wobbling` field), camera shake and both `scrollX` resets gone; `flyStar` `onComplete` emits `GAME_EVENTS.starLanded`; keypad `answerSpot` is the entry field centre |
+| `Keypad.ts`, `AnswerTiles.ts`, `ActionButton.ts`, `SelectTiles/BlockMat/CoinWallet/ClockSet.ts` | p7: `entryFace()`/`entryTarget()` (field wrapped in a centre container), `faceOf(value)`, `faceObject()`, `okFace()` |
+| `chunky.ts` | p7: `moveTo` stops only its own press tween (`pressTween`), so a bounce or wobble on the same face survives the release |
+| `StarCounter.ts`, `UIScene.ts` | p7: `pop()` (scale yoyo, off under reduced motion); `UIScene` handles `starLanded`; `onStars` still calls `setValue` directly |
+| `tests/motionWiring.test.ts` | p7 (7 cases, AST anchored on method bodies); `reducedMotionWiring.test.ts` list gained `TaskScene.ts`, `StarCounter.ts`; `ANIMATION.shake*` removed; `docs/design-gaps.md` rows 159, 160 |
 
 ## 3. Verification
 
@@ -48,15 +53,18 @@ Written by the `/10x-implement` step of phase 6. Phase 6 is committed as `edfbf2
 | p6 | unit 3759 -> hint fix +0 (3759) -> p6 +1 (3760) = baseline 3736 + 24; lint, typecheck, deploy scripts, `sample` E1-E6, build OK |
 | p6 deliberate break | `HUD_PILL.height` 104 -> 140: the new HUD pill case red; restored. Meta: it went red on the `height === HUD_PILL.height` assertion (HUD_LAYOUT heights are literals, so no overlap appeared); the overlap part reads the real `TASK_LAYOUT.dots`, `BEADS`, `HUD_LAYOUT` rects and is not proven by this break |
 | p6 grep | `grep -n tweens SettingsIcon.ts` empty; `dialogSessions.test.ts` green unchanged |
+| p7 | unit 3760 -> 3769 = baseline 3736 + 33; lint, typecheck, deploy scripts, `sample` E1-E6, build OK; `grep shakeMs|shakeDistance|shakeSegments|cameras.main.scrollX src` empty |
+| p7 deliberate break | (a) `setValue` moved from `onStars` into the `starLanded` handler: 2 cases red; (b) `starLanded` emitted before the flight: the `flyStar` case red; both restored. Meta: regexes slice the `onStars`/`onStarLanded`/`flyStar` bodies, so a stray occurrence elsewhere does not satisfy them; they prove source order, not the rendered motion or the `counterText` specs (orchestrator e2e) |
 | Playwright | not run: Chromium cannot start in the sandbox; the orchestrator runs e2e (expected baseline + 0; `task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones) |
 
 ## 4. Next command
 
-`/10x-implement notebook-polish phase 7`
+`/10x-implement notebook-polish phase 8`
 
 ## 5. Open
 
-- Rows 4.4, 5.4, 6.4 (e2e) and 4.5, 5.5, 6.5 [visual] are not mine. Keypad moved 80 px right: check in a browser that the keypad column still looks balanced in the notebook and clear of the ribbon; e2e keypad specs read the hook rects from `TASK_LAYOUT`. Not seen in a browser for p6: pill gradient is flat (as the notebook), speaker/room button press, the gear hint bubble still pointing at the gear. Hint line labels are 12.1 CSS px again after `5d901ff` (keypad moved right); the written column is 330 px wide (was 400), the tall drawings 200-220 px (were 240-264). To confirm in a browser. Page buttons: not seen in a browser; label and graphics sit inside the face container. Not verified in a browser: that the container-wrapped Graphics/Text draw at the same place, press feel, the tile highlight appearing at once, ActionButton "Dalej" not flickering when it hides in the press handler.
+- p7 not seen in a browser: bounce/wobble feel, star start over the keypad entry field, counter pop on landing, wobble not cut by the release (chunky now stops only its press tween), reduced-motion path. Wobble target of a keypad answer is the (cleared) entry field showing `?`. A done-phase answer in `retype` is judged by the same `roundView(...).input` as `answerSpot`.
+- Rows 4.4, 5.4, 6.4, 7.4 (e2e) and 4.5, 5.5, 6.5, 7.5 [visual] are not mine. Keypad moved 80 px right: check in a browser that the keypad column still looks balanced in the notebook and clear of the ribbon; e2e keypad specs read the hook rects from `TASK_LAYOUT`. Not seen in a browser for p6: pill gradient is flat (as the notebook), speaker/room button press, the gear hint bubble still pointing at the gear. Hint line labels are 12.1 CSS px again after `5d901ff` (keypad moved right); the written column is 330 px wide (was 400), the tall drawings 200-220 px (were 240-264). To confirm in a browser. Page buttons: not seen in a browser; label and graphics sit inside the face container. Not verified in a browser: that the container-wrapped Graphics/Text draw at the same place, press feel, the tile highlight appearing at once, ActionButton "Dalej" not flickering when it hides in the press handler.
 - `SelectTiles` and `CoverBoard` still use their own lips (out of phase 4's list).
 - `ARTIFACT GAP`: none.
 
@@ -72,3 +80,5 @@ Written by the `/10x-implement` step of phase 6. Phase 6 is committed as `edfbf2
 
 - Hint-label fix: moved the keypad column 80 px right (1040 -> 1120) instead of shrinking `margin.gap` (only ~16 px gain) or crossing the margin line; hint rectangles end at 1110, 10 px before the keypad. Written column and tall drawings untouched (their fit tests are green and unchanged; they sit left of the keypad with lots of room). Would change if the maintainer wants the keypad flush at its old place: then labels need fewer ticks labelled or a smaller `margin.gap`.
 - p6: the counter uses a `ChunkyFace` (never pressed) so phase 7 has a ready `face` container; kept the 96 px gear (touch target) rather than 104; the pressed pill colour stays a face variant (`0xfff0cc`, the old speaker value) inside `hudPill.ts`. Commit messages in Polish; no questions asked.
+
+- p7: bounce target for select/drag/coins/clock is the OK face (as the plan); kept `ANIMATION` tokens from phase 1 unchanged. Wobble runs as one `tweens.chain` and is stopped by the next wobble, a stage change or "Wróć". Pop is not played when the flight is skipped (reduced motion). Row 7.4 left unticked (e2e by the orchestrator). Commit message in Polish; no questions asked.

@@ -1021,9 +1021,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [x] 7.1 `tests/motionWiring.test.ts` red before the change (it asserts `starLanded` and no `scrollX`), green after; unit `<phase-6 count> + N`
-- [x] 7.2 Deliberate break: move `setValue` into the `starLanded` handler → the "setValue in onStars" case red (and, at the orchestrator, `counterText` specs red); emit `starLanded` before the flight → the onComplete case red; each restored; meta-check: the regexes anchor on the method bodies (`onStars`, `flyStar`), not on any occurrence in the file
-- [x] 7.3 `grep -rn "shakeMs\|shakeDistance\|shakeSegments\|cameras.main.scrollX" src` empty
+- [x] 7.1 `tests/motionWiring.test.ts` red before the change (it asserts `starLanded` and no `scrollX`), green after; unit `<phase-6 count> + N` — 73e778f
+- [x] 7.2 Deliberate break: move `setValue` into the `starLanded` handler → the "setValue in onStars" case red (and, at the orchestrator, `counterText` specs red); emit `starLanded` before the flight → the onComplete case red; each restored; meta-check: the regexes anchor on the method bodies (`onStars`, `flyStar`), not on any occurrence in the file — 73e778f
+- [x] 7.3 `grep -rn "shakeMs\|shakeDistance\|shakeSegments\|cameras.main.scrollX" src` empty — 73e778f
 - [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (7 `counterText` specs green)
 
 #### Manual
