@@ -432,3 +432,17 @@ Bieg uruchomiony 2026-10-21 po scaleniu #92 i #93; decyzje uzgodnione z góry. W
 - [ ] Trzy nagłówki: „Wstaw znak” (porównania, brakujący znak), „Uzupełnij” (okienko w środku równania), „Oblicz” (reszta, także „… = □”); lektor mówi nagłówek, potem dotychczasowe pytanie (porównanie wyrażeń: trzy polecenia z rzędu).
 - [ ] Limit 2 na typ naprawiany po losowaniu bez użycia rng (udziały 60/30/10 bez zmian); ok. 1 runda na 5 ma 3 zadania jednego typu tylko tam, gdzie pula nie ma innego typu.
 - [ ] „Obrazki” po odcięciu startu pokazuje zwykłą linię (bez zdania „w tle”), liczba to same obrazki (zadania + pokój + ekrany).
+
+## Do zrobienia: ulica i domy (ustalone 2026-10-22)
+
+Kierunek po v1 zapisany w PRD v3 (FR-032–FR-036), planie (sekcja 11, „Po v1 — ulica i domy”) i roadmapie (Parked). Źródło: przegląd gier „My Cozy Home” i „My Dream House Makeover” (Poki) z 2026-10-22.
+
+- Ulica z działkami; pierwszy dom zawiera salon (postęp bez straty), kolejne pokoje urządzane jak salon, elementy na stałych miejscach.
+- Gotowy dom dostaje mieszkańców (obrazek, jedno zdanie podziękowania, pamiątka do albumu), zostaje na ulicy; otwiera się następna działka, po kilku domach kolejna dzielnica.
+- Odrzucone: sprzedaż i wynajem domów (strata dla dziecka), dochód pasywny (gwiazdki tylko z zadań), swobodne ustawianie i obracanie mebli (za trudne dotykiem), reklamy.
+- Pomysły z katalogu wystroju do nowych pokoi: okna, obrazy, rośliny, dywany, drobiazgi; ściany i podłoga jako dwa osobne wybory.
+
+- [ ] P2 — Po S-17: rozstrzygnąć wielkość domu i ulicy (PRD v3 OQ 11) na podstawie zmierzonego czasu na pokój.
+- [ ] P2 — Przed planem etapu: inwentaryzacja `designs/` pod ulicę, dom z zewnątrz, mieszkańców i pokoje drugiego domu; lista grafik do wygenerowania w stylu paczki salonu (PRD v3 OQ 13).
+- [ ] P2 — Wybrać pamiątkę od mieszkańców: naklejka do albumu, list czy wzór (PRD v3 OQ 12).
+- [ ] P2 — Kolejność kamieni po M-01: najpierw `parent-sends-and-stats`, potem „ulica i domy” (albo odwrotnie: decyzja autora).
