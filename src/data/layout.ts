@@ -430,7 +430,7 @@ export const TASK_LAYOUT = {
         minGapPx: 7, minLabelPx: 22,
     },
     // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
-    starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
+    starCounter: { left: 1622, top: 44, width: 196, height: 104, radius: 32, border: 5, starRadius: 30, starGap: 20 },
 } as const;
 
 /**
@@ -439,16 +439,16 @@ export const TASK_LAYOUT = {
  * left = starCounter.left - 24 (kit HUD gap) - width.
  */
 export const HUD_LAYOUT = {
-    speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
+    speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
-    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
+    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, iconSize: 56, iconGap: 14, iconStroke: 4 },
     // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
     // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
     title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
     // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; full colour in the family of the
     // speaker button (playtest F-02: a muted gear looked disabled), no feedback while held.
     // DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
-    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 5, fill: 0xfffdf2, borderColor: 0xd3b77d, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
     // Bubble with the hint after a short tap on the gear (F-02 a): above the gear, in the right margin and over the notebook's right border only
     // (left edge 1700 = the right end of the widest bar, a tall drawing's; every answer tile, key, "Dalej", tray and room control ends left of it),
     // five short lines at FONT_SIZES.settingsHint. Visual gate F-02: the first 380 px bubble covered "Dalej", a tile and "Wybieram".

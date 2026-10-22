@@ -3,7 +3,7 @@ import { isExpression } from '../src/core/round/prompt';
 import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -37,6 +37,31 @@ describe('task screen layout constants', () => {
         const dots = TASK_LAYOUT.dots;
         const dotsLeft = dots.centerX - (2 * dots.gap + dots.radius + dots.ringWidth);   // five dots, centred
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(dotsLeft);
+    });
+
+    it('draws every HUD control as a kit pill: 96 px or more, the pill height where the kit says so, lip on screen and clear of the beads and of each other', () => {
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        const counter = TASK_LAYOUT.starCounter;
+        const lip = LIPS.hud.offset;
+        const pills = { speaker, roomSwitch, counter, settings };
+        for (const [name, p] of Object.entries(pills)) {
+            expect(p.height, `${name} height`).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            expect(p.top + p.height + lip, `${name} lip on screen`).toBeLessThanOrEqual(GAME_HEIGHT);
+        }
+        for (const p of [speaker, roomSwitch, counter]) {
+            expect(p.height).toBe(HUD_PILL.height);
+        }
+        // Face and lip of one pill, as one rectangle, against the beads row and the other pills.
+        const box = (p: { left: number; top: number; width: number; height: number }) => ({ left: p.left, top: p.top, right: p.left + p.width, bottom: p.top + p.height + lip });
+        const hits = (a: ReturnType<typeof box>, b: ReturnType<typeof box>): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const { dots } = TASK_LAYOUT;
+        const reach = Math.max(dots.radius + dots.ringWidth, BEADS.radius + BEADS.currentRing);   // the larger of the dots now and the beads of phase 8
+        const row = { left: dots.centerX - (2 * dots.gap + reach), top: dots.y - reach, width: 2 * (2 * dots.gap + reach), height: 2 * reach - lip };
+        for (const p of [speaker, roomSwitch, counter]) {
+            expect(hits(box(p), box(row)), 'beads row').toBe(false);
+        }
+        const faces = Object.values(pills).map(box);
+        faces.forEach((a, i) => faces.slice(i + 1).forEach((b) => expect(hits(a, b)).toBe(false)));
     });
 
     it('keeps the parent settings icon a touch target in the bottom right, outside the notebook and the room area and clear of the other HUD controls', () => {
