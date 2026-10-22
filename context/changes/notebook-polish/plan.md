@@ -995,9 +995,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [x] 5.1 Unit `<phase-4 count> + N`, green
-- [x] 5.2 Deliberate break: start the `PageButton` press in `pointerup` instead of `pointerdown` → no unit red (record); instead break `LIPS.page.offset` to 60 → the summary-button lip case red; restored; meta-check: the fire moment is proven by e2e (`first-launch`, `task-round` summary taps) at the orchestrator gate, not by this unit case
-- [x] 5.3 `grep -rn "ageButtonShadow" src` empty (or only the token in `layout.ts` if still used elsewhere, named in the commit)
+- [x] 5.1 Unit `<phase-4 count> + N`, green — ceaab1b
+- [x] 5.2 Deliberate break: start the `PageButton` press in `pointerup` instead of `pointerdown` → no unit red (record); instead break `LIPS.page.offset` to 60 → the summary-button lip case red; restored; meta-check: the fire moment is proven by e2e (`first-launch`, `task-round` summary taps) at the orchestrator gate, not by this unit case — ceaab1b
+- [x] 5.3 `grep -rn "ageButtonShadow" src` empty (or only the token in `layout.ts` if still used elsewhere, named in the commit) — ceaab1b
 - [ ] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`first-launch`, `task-round`, `adaptive` tap these buttons)
 
 #### Manual
