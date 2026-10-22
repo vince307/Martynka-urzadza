@@ -982,9 +982,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 4.1 New tests green; unit `<phase-3 count> + N`
-- [ ] 4.2 Deliberate break: set `LIPS.answer.offset` to 40 → the lip-overlap case red; delete the `prefersReducedMotion` check in `chunky.ts` → the wiring test red; each restored; meta-check: the overlap case reads the real `TASK_LAYOUT` rects and `LIPS`, not copies
-- [ ] 4.3 `grep -n "+ 8\|+ 6" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` shows no lip literal left; existing source-regex tests (`gestureWiring`, `overflowWiring`, `variantCountWiring`) green unchanged
+- [x] 4.1 New tests green; unit `<phase-3 count> + N` — 26f5c23
+- [x] 4.2 Deliberate break: set `LIPS.answer.offset` to 40 → the lip-overlap case red; delete the `prefersReducedMotion` check in `chunky.ts` → the wiring test red; each restored; meta-check: the overlap case reads the real `TASK_LAYOUT` rects and `LIPS`, not copies — 26f5c23
+- [x] 4.3 `grep -n "+ 8\|+ 6" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` shows no lip literal left; existing source-regex tests (`gestureWiring`, `overflowWiring`, `variantCountWiring`) green unchanged — 26f5c23
 - [ ] 4.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones)
 
 #### Manual
