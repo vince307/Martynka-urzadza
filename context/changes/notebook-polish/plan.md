@@ -1034,8 +1034,8 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [x] 8.1 `grep -n "staggerDelays" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` and `grep -n "newlyDone" src/ui/widgets/ProgressDots.ts` present; `tests/reducedMotionWiring.test.ts` list gains `ProgressDots.ts` (and stays green)
-- [x] 8.2 Deliberate break: remove the reduced-motion branch in `ProgressDots` → the wiring test red; restored; meta-check: the e2e tap-during-entrance proof is phase 12 (#11), this unit guard only proves the branch exists
+- [x] 8.1 `grep -n "staggerDelays" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` and `grep -n "newlyDone" src/ui/widgets/ProgressDots.ts` present; `tests/reducedMotionWiring.test.ts` list gains `ProgressDots.ts` (and stays green) — 639a467
+- [x] 8.2 Deliberate break: remove the reduced-motion branch in `ProgressDots` → the wiring test red; restored; meta-check: the e2e tap-during-entrance proof is phase 12 (#11), this unit guard only proves the branch exists — 639a467
 - [ ] 8.3 Unit `<phase-7 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round specs tap tiles right after a task shows — proves the stagger does not gate input)
 
 #### Manual

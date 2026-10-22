@@ -1,16 +1,16 @@
 # Handoff — `notebook-polish` (slice fix:notebook-polish)
 
-Written by the `/10x-implement` step of phase 7. Phase 7 is committed as `73e778f`: correct bounce, think wobble, counter pop (camera shake removed). The next agent starts phase 8 (beads and entrance stagger).
+Written by the `/10x-implement` step of phase 8. Phase 8 is committed as `639a467`: beads with a pop, entrance stagger of tiles and keys. The next agent starts phase 9 (summary pops and the end-of-round burst).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/notebook-polish` |
-| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, then this docs commit |
+| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, p8 `639a467`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` unchanged by this step |
-| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`); rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
+| `## Progress` rows remaining | 34 (`grep -c '^- \[ \]' plan.md`); rows 8.1, 8.2 ticked with `639a467`; 8.3 (full gate green here, e2e by the orchestrator) and 8.4 [visual] left; rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
@@ -55,13 +55,17 @@ Written by the `/10x-implement` step of phase 7. Phase 7 is committed as `73e778
 | p6 grep | `grep -n tweens SettingsIcon.ts` empty; `dialogSessions.test.ts` green unchanged |
 | p7 | unit 3760 -> 3769 = baseline 3736 + 33; lint, typecheck, deploy scripts, `sample` E1-E6, build OK; `grep shakeMs|shakeDistance|shakeSegments|cameras.main.scrollX src` empty |
 | p7 deliberate break | (a) `setValue` moved from `onStars` into the `starLanded` handler: 2 cases red; (b) `starLanded` emitted before the flight: the `flyStar` case red; both restored. Meta: regexes slice the `onStars`/`onStarLanded`/`flyStar` bodies, so a stray occurrence elsewhere does not satisfy them; they prove source order, not the rendered motion or the `counterText` specs (orchestrator e2e) |
+| p8 | unit 3769 -> 3772 = baseline 3736 + 36; lint, typecheck, deploy scripts, `sample` E1-E6, build OK |
+| p8 deliberate break | (a) `prefersReducedMotion()` branch in `ProgressDots` replaced by `true`: 2 wiring cases red; (b) the `entering` settle in `press()` replaced by `false`: the stagger/press case red; both restored (`git checkout`), green. Meta: source-order regexes, they prove the branch and the settle exist, not the runtime; the tap-during-entrance proof is the orchestrator's e2e (round specs tap tiles at once) |
 | Playwright | not run: Chromium cannot start in the sandbox; the orchestrator runs e2e (expected baseline + 0; `task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones) |
 
 ## 4. Next command
 
-`/10x-implement notebook-polish phase 8`
+`/10x-implement notebook-polish phase 9`
 
 ## 5. Open
+
+- p8 not seen in a browser: bead row size (radius 28, pitch 74) against the HUD pills, pop feel, stagger look at 0/150/400 ms, reduced-motion rest. Rows 8.3 (e2e part) and 8.4 [visual] are not mine.
 
 - p7 not seen in a browser: bounce/wobble feel, star start over the keypad entry field, counter pop on landing, wobble not cut by the release (chunky now stops only its press tween), reduced-motion path. Wobble target of a keypad answer is the (cleared) entry field showing `?`. A done-phase answer in `retype` is judged by the same `roundView(...).input` as `answerSpot`.
 - Rows 4.4, 5.4, 6.4, 7.4 (e2e) and 4.5, 5.5, 6.5, 7.5 [visual] are not mine. Keypad moved 80 px right: check in a browser that the keypad column still looks balanced in the notebook and clear of the ribbon; e2e keypad specs read the hook rects from `TASK_LAYOUT`. Not seen in a browser for p6: pill gradient is flat (as the notebook), speaker/room button press, the gear hint bubble still pointing at the gear. Hint line labels are 12.1 CSS px again after `5d901ff` (keypad moved right); the written column is 330 px wide (was 400), the tall drawings 200-220 px (were 240-264). To confirm in a browser. Page buttons: not seen in a browser; label and graphics sit inside the face container. Not verified in a browser: that the container-wrapped Graphics/Text draw at the same place, press feel, the tile highlight appearing at once, ActionButton "Dalej" not flickering when it hides in the press handler.
@@ -82,3 +86,5 @@ Written by the `/10x-implement` step of phase 7. Phase 7 is committed as `73e778
 - p6: the counter uses a `ChunkyFace` (never pressed) so phase 7 has a ready `face` container; kept the 96 px gear (touch target) rather than 104; the pressed pill colour stays a face variant (`0xfff0cc`, the old speaker value) inside `hudPill.ts`. Commit messages in Polish; no questions asked.
 
 - p7: bounce target for select/drag/coins/clock is the OK face (as the plan); kept `ANIMATION` tokens from phase 1 unchanged. Wobble runs as one `tweens.chain` and is stopped by the next wobble, a stage change or "Wróć". Pop is not played when the flight is skipped (reduced motion). Row 7.4 left unticked (e2e by the orchestrator). Commit message in Polish; no questions asked.
+
+- p8: input during the stagger is never blocked: zones are not part of the face and stay live from the first frame; a tap calls `ChunkyFace.press()`, which first settles the face at rest (alpha 1, y at rest) and only then presses, so no tap lands on an invisible tile. The keypad entry field is not staggered. Beads: removed the unused `dots.radius/gap/ringWidth` tokens; layout tests read `BEADS`. Commit message in Polish; no questions asked. Row 8.3 left unticked (e2e by the orchestrator).
