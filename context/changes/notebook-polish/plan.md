@@ -1008,9 +1008,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 6.1 `tests/layout.test.ts` green with the new HUD heights (HUD rects ≥ 96, no overlap with beads at the phase-1 bead tokens — if it fails, apply the phase-1 bead fallback here and name it); unit `<phase-5 count> + N`
-- [ ] 6.2 Deliberate break: set `HUD_PILL.height` to 140 → the HUD overlap case red; restored; meta-check: the overlap case uses the real `HUD_LAYOUT` and `TASK_LAYOUT.dots`/`BEADS` rects
-- [ ] 6.3 `grep -n "tweens" src/ui/widgets/SettingsIcon.ts` empty (gear stays motionless); `tests/dialogSessions.test.ts` green unchanged
+- [x] 6.1 `tests/layout.test.ts` green with the new HUD heights (HUD rects ≥ 96, no overlap with beads at the phase-1 bead tokens — if it fails, apply the phase-1 bead fallback here and name it); unit `<phase-5 count> + N` — edfbf29
+- [x] 6.2 Deliberate break: set `HUD_PILL.height` to 140 → the HUD overlap case red; restored; meta-check: the overlap case uses the real `HUD_LAYOUT` and `TASK_LAYOUT.dots`/`BEADS` rects — edfbf29
+- [x] 6.3 `grep -n "tweens" src/ui/widgets/SettingsIcon.ts` empty (gear stays motionless); `tests/dialogSessions.test.ts` green unchanged — edfbf29
 - [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator`, `parent-settings`, `room-purchase` use these targets; `counterText` unchanged)
 
 #### Manual
