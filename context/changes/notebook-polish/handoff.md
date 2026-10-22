@@ -1,16 +1,16 @@
 # Handoff — `notebook-polish` (slice fix:notebook-polish)
 
-Written by the `/10x-implement` step of phase 9. Phase 9 is committed as `374c909`: summary stars pop one by one, "+N" pops, a shared `starBurst` helper (RoomScene and SummaryPanel). The next agent starts phase 10 (plain zero, Martynka Next font).
+Written by the `/10x-implement` step of phase 10. Phase 10 is committed as `e26f8b3`: the task font is now Martynka Next (Atkinson Hyperlegible Next with a plain oval zero, built by `npm run font`). The next agent starts phase 11 (docs, follow-ups, seam sweep); it must not touch the font file or its constants, and must fix the CLAUDE.md sentences that still name `AtkinsonHyperlegibleNext.ttf`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/notebook-polish` |
-| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, p8 `639a467`, p9 `374c909`, then this docs commit |
+| Commits | p1 `a659097`, p2 `b0a0c89`, p3 `626cf71`, p2 fix `35aba94`, p4 `26f5c23`, margin fix `89b265e`, p5 `ceaab1b`, hint-label fix `5d901ff`, p6 `edfbf29`, p7 `73e778f`, p8 `639a467`, p9 `374c909`, p10 `e26f8b3`, then this docs commit |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` unchanged by this step |
-| `## Progress` rows remaining | 32 (`grep -c '^- \[ \]' plan.md`); rows 9.1, 9.2 ticked with `374c909`; 9.3 (full gate green here, e2e by the orchestrator) and 9.4 [visual] left; rows 8.1, 8.2 ticked with `639a467`; 8.3 (full gate green here, e2e by the orchestrator) and 8.4 [visual] left; rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
+| `## Progress` rows remaining | 29 (`grep -c '^- \[ \]' plan.md`); rows 10.1-10.3 ticked with `e26f8b3`; 10.4 (full gate green here, e2e and the `fontHealth === 'loaded'` proof by the orchestrator) and 10.5 [visual] left; rows 9.1, 9.2 ticked with `374c909`; 9.3 (full gate green here, e2e by the orchestrator) and 9.4 [visual] left; rows 8.1, 8.2 ticked with `639a467`; 8.3 (full gate green here, e2e by the orchestrator) and 8.4 [visual] left; rows 7.1-7.3 ticked with `73e778f`; 7.4 (e2e by the orchestrator) and 7.5 [visual] left; 4.4, 4.5, 5.4, 5.5, 6.4, 6.5 still left |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
@@ -36,6 +36,12 @@ Written by the `/10x-implement` step of phase 9. Phase 9 is committed as `374c90
 | `StarCounter.ts`, `UIScene.ts` | p7: `pop()` (scale yoyo, off under reduced motion); `UIScene` handles `starLanded`; `onStars` still calls `setValue` directly |
 | `tests/motionWiring.test.ts` | p7 (7 cases, AST anchored on method bodies); `reducedMotionWiring.test.ts` list gained `TaskScene.ts`, `StarCounter.ts`; `ANIMATION.shake*` removed; `docs/design-gaps.md` rows 159, 160 |
 | `starBurst.ts`, `SummaryPanel.ts` | p9: `starBurst(scene, x, y, {count, depth, speed?, scale?})` owns the particle texture (key `purchase-star`, unchanged) and the explode; `RoomScene.celebrate` calls it (same count, speeds, depth); `SummaryPanel` draws one Graphics per star (centred at its own origin), pops them at `summaryPopDelays`, then "star +N" and the burst; `hide()` kills tweens, timers and star objects; buttons shown synchronously in `show()`; `docs/design-gaps.md` row 163; `reducedMotionWiring.test.ts` gained `SummaryPanel.ts` and a burst case |
+| `scripts/make-font.py`, `package.json` (`npm run font`) | p10: builds `public/fonts/MartynkaNext.ttf` from `designs/martynka-maths-A-v1/fonts/AtkinsonHyperlegibleNext.ttf`: zero's two counters replaced by one oval counter (outer contour scaled into the box of the two counters, per gvar master, IUP-inferred deltas first); name IDs 1, 3, 4, 6, 25 renamed, ID 5 gets a modification note, ID 0 untouched; `head.modified` fixed; refuses any fontTools other than 4.61.1 |
+| `public/fonts/MartynkaNext.ttf`, `OFL.txt` | p10: shipped font (114 640 B, sha1 `42ff8ec7`); old `AtkinsonHyperlegibleNext.ttf` removed from `public/` (the original stays in `designs/`); `OFL.txt` keeps the full license, one line added at the top naming the modification and the new name |
+| `src/data/layout.ts` | p10: `FONT_FAMILY`/`FONT_KEY` `MartynkaNext`, `FONT_URL` `fonts/MartynkaNext.ttf` (BootScene load path untouched) |
+| `scripts/check-deploy.ts` | p10: `record(precacheCovers('task font', precache, [FONT_URL]))` inside `if (sha7)` (a rollback skips it) |
+| `tests/fontZero.test.ts` | p10: 6 cases reading `cmap`/`loca`/`glyf`/`name`/`fvar` from the bytes (zero has 2 contours, the original 3; glyph id and count as the original; names; copyright kept; wght 200-800; OFL.txt present and notes the modification) |
+| `docs/design-gaps.md` | row 164 (plain zero overrides the kit) |
 
 ## 3. Verification
 
@@ -61,12 +67,20 @@ Written by the `/10x-implement` step of phase 9. Phase 9 is committed as `374c90
 | p9 | unit 3772 -> 3774 = baseline 3736 + 38; lint, typecheck, deploy scripts, `sample` E1-E6, build OK |
 | p9 deliberate break | summary "Kolejna runda" shown through a delayed call after the pops: unit suite stays green (no unit guard on timing, as the plan predicts); expected red at the orchestrator: `task-round`/`adaptive` specs that tap `nextRound` at once. Restored. Meta: the real proof of tappable-at-once is e2e only |
 | Playwright | not run: Chromium cannot start in the sandbox; the orchestrator runs e2e (expected baseline + 0; `task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones) |
+| p10 | unit 3774 -> 3780 = baseline 3736 + 44; lint, typecheck, deploy scripts, `sample` E1-E6, build OK (`e2e hook: absent`); `dist/sw.js` lists `fonts/MartynkaNext.ttf` and not the old file; `grep AtkinsonHyperlegibleNext src tests scripts vite` lists `scripts/make-font.py` (input) and `tests/fontZero.test.ts` (the original to compare with) |
+| p10 reproducibility | `npm run font` twice, `cmp` of the two outputs IDENTICAL (sha1 `42ff8ec7c87a873fd6381514c3e19d54d212309c`); fontTools 4.61.1 pinned in the script (refuses other versions) |
+| p10 render | PIL render at 120 px: plain oval 0, narrower than O, 1/7 and ąę unchanged (not a browser check) |
+| p10 deliberate break | `fontZero.test.ts` pointed at the original in `designs/`: 3 cases red (2-contour, names, copyright/Modified), 3 green; restored (the env seam removed), 6 green. Meta: contour count is read from `glyf`/`loca` bytes and the test asserts the original has 3, so the red is real and independent of the script |
+| p10 Playwright | not run: Chromium cannot start in the agent sandbox; the orchestrator runs e2e (expected baseline + 0) and the plain zero / `fontHealth === 'loaded'` check in a browser (OTS acceptance of the modified file is NOT proven here) |
 
 ## 4. Next command
 
-`/10x-implement notebook-polish phase 10`
+`/10x-implement notebook-polish phase 11`
 
 ## 5. Open
+
+- p10 not seen in a browser: the shipped font must load in Chromium (`fontHealth === 'loaded'` through the hook snapshot, row 10.4) and Safari; if the hook reports `fallback`, the pre-decided fallback is: revert `public/fonts/` and the `layout.ts` constants to the original file (zero stays slashed), keep `scripts/make-font.py`, record a follow-up. Rows 10.4 (e2e part) and 10.5 [visual] are not mine. Phase 11 must update CLAUDE.md (font file name in "Current state" and `## Commands`, `npm run font`) and re-record the FontFace time-limit follow-up.
+- `tests/fontZero.test.ts` reads the original from `designs/` (tracked in git, so CI has it).
 
 - p9 not seen in a browser: pop look and timing, "+N" pop, burst position from the earned star, 6-star warm-up row centred, reduced-motion static summary, purchase burst in the room unchanged. Rows 9.3 (e2e part) and 9.4 [visual] are not mine. `summaryView` re-shown (return from the room) replays the pops.
 
@@ -95,3 +109,5 @@ Written by the `/10x-implement` step of phase 9. Phase 9 is committed as `374c90
 - p8: input during the stagger is never blocked: zones are not part of the face and stay live from the first frame; a tap calls `ChunkyFace.press()`, which first settles the face at rest (alpha 1, y at rest) and only then presses, so no tap lands on an invisible tile. The keypad entry field is not staggered. Beads: removed the unused `dots.radius/gap/ringWidth` tokens; layout tests read `BEADS`. Commit message in Polish; no questions asked. Row 8.3 left unticked (e2e by the orchestrator).
 
 - p9: stars are one Graphics each (origin-centred, scaled) rather than a shared row; the earned-star group pops after the row, text appears with it (alpha), burst after its pop. `starBurst.ts` has no tween so it is not on the tweening-file list; a separate wiring case checks the burst sits behind the reduced-motion branch. Burst depth is `ROOM_LAYOUT.depth.celebrate`. Row 9.2 ticked for the grep/guard part; the break's red is the orchestrator's e2e. Commit message in Polish; no questions asked.
+
+- p10: option 1 of research (d): modify the zero, rename to "Martynka Next" (name IDs 1, 3, 4, 6, 25; 16/17 absent in the file), `OFL.txt` shipped beside the font with one added line; rejected a second digits font and a scaled O. Pinned fontTools 4.61.1 and fixed timestamp 2026-10-22 for byte-identical rebuilds. Rows 10.1-10.3 ticked; 10.4 left (e2e + browser proof by the orchestrator). Would change if Chromium rejects the file: use the fallback in section 5. Commit message in Polish; no questions asked.

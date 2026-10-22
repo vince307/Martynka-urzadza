@@ -1058,9 +1058,9 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 10.1 `npm run font` run twice → `cmp` of the two outputs identical (recorded in the commit)
-- [ ] 10.2 `tests/fontZero.test.ts` red when pointed at the original (deliberate break: swap the path to `designs/…/AtkinsonHyperlegibleNext.ttf` → the 2-contour and name cases red), green on the shipped file; restored; meta-check: the contour count is read from `glyf`/`loca` bytes, independent of the script
-- [ ] 10.3 `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file; `grep -n "precacheCovers('task font'" scripts/check-deploy.ts` present
+- [x] 10.1 `npm run font` run twice → `cmp` of the two outputs identical (recorded in the commit) — e26f8b3
+- [x] 10.2 `tests/fontZero.test.ts` red when pointed at the original (deliberate break: swap the path to `designs/…/AtkinsonHyperlegibleNext.ttf` → the 2-contour and name cases red), green on the shipped file; restored; meta-check: the contour count is read from `glyf`/`loca` bytes, independent of the script — e26f8b3
+- [x] 10.3 `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file; `grep -n "precacheCovers('task font'" scripts/check-deploy.ts` present — e26f8b3
 - [ ] 10.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`; Chromium/OTS proof: the hook-build snapshot reads `fontHealth === 'loaded'` with the new font (read at the 10.5 visual pass, pinned later by phase 12 "#11 reduced motion round") — `health-lines.spec.ts` only proves a 404 still reads `fallback`, not that Chromium accepts the modified file
 
 #### Manual
