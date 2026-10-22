@@ -1087,6 +1087,6 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Automated
 
-- [ ] 12.1 Spec red before (deliberate breaks, each run alone with `-g`: move `setValue` into the `starLanded` handler → "counter immediate" red; skip the `onWake` re-capture → "backdrop refreshes" red; gate tile `active` until the stagger ends → "counter immediate" red (tap lands on an inactive tile); restored), green after
-- [ ] 12.2 `npx playwright test tests/e2e/notebook-polish.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 6`; total equals `npx playwright test --list | tail -1`
-- [ ] 12.3 Full local gate green
+- [x] 12.1 Spec red before (deliberate breaks, each run alone with `-g`: move `setValue` into the `starLanded` handler → "counter immediate" red; skip the `onWake` re-capture → "backdrop refreshes" red; gate tile `active` until the stagger ends → "counter immediate" red (tap lands on an inactive tile); restored), green after — 18d0cee
+- [x] 12.2 `npx playwright test tests/e2e/notebook-polish.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 6`; total equals `npx playwright test --list | tail -1` — 18d0cee
+- [x] 12.3 Full local gate green — 18d0cee
