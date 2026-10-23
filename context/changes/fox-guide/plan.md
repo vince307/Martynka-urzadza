@@ -565,9 +565,9 @@ None: save format stays v4, nothing stored.
 
 #### Automated
 
-- [ ] 3.1 `tests/guideWiring.test.ts` and the grown `reducedMotionWiring` green; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: move the `guide.show` call to the end of `render()` → the "before the first return" case red; add `setInteractive()` in `GuideFox` → the no-input case red; each restored; meta-check: these are source guards of the wiring; behaviour on screen is proven by 3.5 and phase 5
-- [ ] 3.3 `grep -c "^| 16[5-8] |" docs/design-gaps.md` prints 4
+- [x] 3.1 `tests/guideWiring.test.ts` and the grown `reducedMotionWiring` green; unit `<phase-2 count> + N` — 953ed88
+- [x] 3.2 Deliberate break: move the `guide.show` call to the end of `render()` → the "before the first return" case red; add `setInteractive()` in `GuideFox` → the no-input case red; each restored; meta-check: these are source guards of the wiring; behaviour on screen is proven by 3.5 and phase 5 — 953ed88
+- [x] 3.3 `grep -c "^| 16[5-8] |" docs/design-gaps.md` prints 4 — 953ed88
 - [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`health-lines.spec.ts` follows `UI_ART.length`)
 
 #### Manual

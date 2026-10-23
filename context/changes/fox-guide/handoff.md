@@ -1,58 +1,55 @@
 # Handoff — `fox-guide` (slice fix:fox-guide)
 
-Written by step `/10x-tdd fox-guide phase 2` of run 2026-10-23-fox-guide: the fox tokens (`GUIDE`, `ANIMATION.guide*`), the pure pose rule and the silhouette rect are committed test-first as `2d99dcf`. The next agent starts phase 3 (the widget and scene glue); it must call `guidePose`/`guideRect`/`GUIDE_ART`, never copy their numbers.
+Written by step `/10x-implement fox-guide phase 4` of run 2026-10-23-fox-guide: `GuideFox`, the one `guide.show` call in `TaskScene.render`, the hook field `guide` and DESIGN-GAP rows 165-168 are committed as 953ed88. The next agent starts phase 4 (docs, follow-ups, seam sweep).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/fox-guide`, cut from `main` at `1962312` |
-| Commits | phase 1 `e392442`, phase 2 `2d99dcf` (`test(fox-guide): regula pozy i geometria liska (p2)`), plus the handoff commits |
+| Commits | phase 1 `e392442`, phase 2 `2d99dcf`, phase 3 `953ed88`, plus the handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | 18 (`grep -c '^- \[ \]' plan.md`); 1.4 and 2.4 wait for the orchestrator's e2e |
+| `## Progress` rows remaining | 15 (`grep -c '^- \[ \]' plan.md`); 1.4 and 2.4 wait for the orchestrator's e2e |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/data/layout.ts` | `GUIDE` (anchor 1792,400; displaySize 320; sourceSize 1024; origin; silhouette) and `ANIMATION.guidePoseMs/guidePopScale/guideEase` |
-| `src/core/guide.ts` | `GuidePose`, `GuideScreen`, `GUIDE_ART`, `guidePose` (two `never` guards) |
-| `src/core/guideLayout.ts` | `guideRect(guide = GUIDE)` |
-| `tests/guide.test.ts` | literal pose table (3 screens x 5 phases), `GUIDE_ART` ids in `UI_ART_KEYS` |
-| `tests/guideLayout.test.ts` | rect values, corner, scene margin, pop margins, ~85 no-overlap cases (12 px gap) from the real layout functions and `TASK_LAYOUT`/`HUD_LAYOUT`/`MINIGAME_LAYOUT`/`SUMMARY_LAYOUT`/`UNLOCK_LAYOUT` |
-| `context/changes/fox-guide/plan.md` | rows 2.1-2.3 ticked with the sha |
+| `src/ui/widgets/GuideFox.ts` | the widget: one Image at `GUIDE.anchor`, hidden on `null` or a missing texture, `setDisplaySize` after every `setTexture`, pop 1.06/240 ms only on a visible pose change and not under reduced motion, no input; `snapshot()` |
+| `src/scenes/TaskScene.ts` | fox created after `drawNotebook`; `guide.show(guidePose(screen, phase))` once in `render()` before the unlock branch; `TaskSnapshot.guide` |
+| `tests/e2e/support/hook.ts` | `Snapshot.guide?: { pose, visible, rect, interactive, pops }` (the hook spreads `TaskSnapshot`; `e2eHook.ts` not edited) |
+| `tests/guideWiring.test.ts`, `tests/reducedMotionWiring.test.ts` | source guards (no `setInteractive`, reduced-motion check before `tweens.add`, one `guidePose(` before the first `return`) |
+| `docs/design-gaps.md` | rows 165-168 |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/fox-guide` (observed) |
-| first RED (stubs: `guidePose` -> `'idle'`, `guideRect` -> zero rect, `GUIDE_ART` all `guideIdle`) | 18 assertion failures, e.g. "expected 1 to be 3" (distinct poses) and "expected +0 to be close to 1714.5, received difference is 1714.5" (rect); the no-overlap cases pass vacuously on the empty stub rect and are proven by the break below |
-| GREEN | `tests/guide.test.ts` + `tests/guideLayout.test.ts`: 104 passed |
-| deliberate break `GUIDE.anchor.x` 1792 -> 1700 | 16 red: tall lines, drag tray and tile, coin tray tile, keypad, clock lines, ribbon, rect values and pop margin; restored, green |
-| deliberate break `retype` -> `'idle'` | 1 red ("task / retype -> think"); restored, green |
-| meta-check | overlap oracles come from `pictureLayout`, `answerSpans`, `dragLayout`, `coinLayout`, `keypadGrid` and the layout constants, not from `guideRect`'s tokens, so moving the anchor turns them red; the pose oracle is a literal table |
-| `grep -n never src/core/guide.ts tests/guideLayout.test.ts` | guards in both files |
-| `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | baseline 3782 (phase 1) + 104 = 3886 passed (202 files) |
+| deliberate break: `guide.show` moved after the first return of `render()` | "before the first return" case red; restored, green |
+| deliberate break: `setInteractive()` added in `GuideFox` | "never takes input" case red; restored, green |
+| meta-check | these are source guards; the on-screen behaviour is proven by 3.5 (visual) and phase 5 (e2e) |
+| `grep -c "^| 16[5-8] |" docs/design-gaps.md` | 4 |
+| lint / typecheck / `npm test` | OK / OK / 3886 (phase 2) + 5 = 3891 passed |
 | deploy scripts, `sample` E1-E6, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| e2e (`npx playwright test`) | NOT run (Chromium cannot start in the sandbox); orchestrator runs it, expect 150 + 0 |
+| e2e | NOT run (Chromium cannot start in the sandbox); orchestrator runs it, expect 150 + 0 |
 
 ## 4. Next command
 
-`/10x-implement fox-guide phase 3`
+`/10x-implement fox-guide phase 4`
 
 ## 5. Open
 
-- Rows 1.4 and 2.4 stay unticked until the orchestrator's e2e run (150 + 0).
-- Manual rows still open: 3.5 [visual], 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
-- DESIGN-GAP rows 165-168 and follow-ups are planned for phases 3 and 4; boot payload 47.6 s of 48 s (see phase 1): no more boot art.
-- The overlap cases model text blocks as boxes (prompt 120 px, expressions 160 px, settings hint 6 lines at 1.4 line height); the visual pass (4.5) is the real check.
+- Rows 1.4, 2.4, 3.4 stay unticked until the orchestrator's e2e run (150 + 0).
+- Manual rows open: 3.5 [visual] (not done by this step), 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
+- Phase 4 is docs, follow-ups (>= 6 Trigger lines, include the "Obrazki" parent-line follow-up F6 and the fallback anchor x 1802) and the seam sweep; boot payload 47.6 s of 48 s: no more boot art.
+- `src/testing/e2eHook.ts` was not edited, so the narrator-round-summary follow-up did not fire.
 
 ## 6. Autonomous decisions
 
-- Mixed-phase question: not asked; the phase is pure functions plus data tokens, all done test-first, `Driver: tdd` kept. The tokens in `layout.ts` were added with the stubs (data, no behaviour). Would change: none.
-- Commit message taken as proposed in spirit (Polish, `test(fox-guide): ... (p2)`); stopped after this phase.
-- Test names use `%s` instead of the `%i` first written (it printed NaN). Plan ticks 2.1-2.3 cite `2d99dcf`; 2.4 left for the orchestrator.
+- Phase 3 is `Driver: impl`; the wiring tests were written alongside the code, deliberate breaks done after. Would change: none.
+- Pop implemented as one yoyo tween of `guidePoseMs / 2` each way (total 240 ms) on scaleX/scaleY from the base scale read after `setDisplaySize`. Would change: the visual gate finding it too lively.
+- A repeated `show` of the same visible pose returns early (no tween killed), so non-pose renders never disturb a running pop.
+- Commit message taken as proposed; stopped after this phase.
