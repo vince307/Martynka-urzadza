@@ -433,11 +433,25 @@ Bieg uruchomiony 2026-10-21 po scaleniu #92 i #93; decyzje uzgodnione z góry. W
 - [ ] Limit 2 na typ naprawiany po losowaniu bez użycia rng (udziały 60/30/10 bez zmian); ok. 1 runda na 5 ma 3 zadania jednego typu tylko tam, gdzie pula nie ma innego typu.
 - [ ] „Obrazki” po odcięciu startu pokazuje zwykłą linię (bez zdania „w tle”), liczba to same obrazki (zadania + pokój + ekrany).
 
+## Do zrobienia: ulica i domy (ustalone 2026-10-22)
+
+Kierunek po v1 zapisany w PRD v3 (FR-032–FR-036), planie (sekcja 11, „Po v1 — ulica i domy”) i roadmapie (Parked). Źródło: przegląd gier „My Cozy Home” i „My Dream House Makeover” (Poki) z 2026-10-22.
+
+- Ulica z działkami; pierwszy dom zawiera salon (postęp bez straty), kolejne pokoje urządzane jak salon, elementy na stałych miejscach.
+- Gotowy dom dostaje mieszkańców (obrazek, jedno zdanie podziękowania, pamiątka do albumu), zostaje na ulicy; otwiera się następna działka, po kilku domach kolejna dzielnica.
+- Odrzucone: sprzedaż i wynajem domów (strata dla dziecka), dochód pasywny (gwiazdki tylko z zadań), swobodne ustawianie i obracanie mebli (za trudne dotykiem), reklamy.
+- Pomysły z katalogu wystroju do nowych pokoi: okna, obrazy, rośliny, dywany, drobiazgi; ściany i podłoga jako dwa osobne wybory.
+
+- [ ] P2 — Po S-17: rozstrzygnąć wielkość domu i ulicy (PRD v3 OQ 11) na podstawie zmierzonego czasu na pokój.
+- [ ] P2 — Przed planem etapu: inwentaryzacja `designs/` pod ulicę, dom z zewnątrz, mieszkańców i pokoje drugiego domu; lista grafik do wygenerowania w stylu paczki salonu (PRD v3 OQ 13).
+- [ ] P2 — Wybrać pamiątkę od mieszkańców: naklejka do albumu, list czy wzór (PRD v3 OQ 12).
+- [ ] P2 — Kolejność kamieni po M-01: najpierw `parent-sends-and-stats`, potem „ulica i domy” (albo odwrotnie: decyzja autora).
+
 ## Bieg 2026-10-22-notebook-polish (dopracowanie zeszytu i interfejsu)
 
-Wynik: PR #99 otwarty, CI zielone, bez scalenia (decyzja: scalenie po „zmerguj” właściciela). Zapis v4 bez zmian. Testy: jednostkowe 3736 → 3781, e2e 144 → 150. Audyt observability po scaleniu (zmiana jeszcze nie na main).
+Wynik: PR #99 scalony 2026-10-23 na „zmerguj” właściciela (243ce53). Zapis v4 bez zmian. Testy: jednostkowe 3736 → 3781, e2e 144 → 150. Audyt observability po wdrożeniu.
 
-- [ ] P0 — Przed „zmerguj”: obejrzeć PR #99 (sekcja „Przed i po”) i sprawdzić na tablecie: wygląd zeszytu z rozmytym salonem, zwykłe zero, płynność animacji (podskok, kołysanie, koraliki, gwiazdki na podsumowaniu), „ogranicz ruch” w systemie. Źródło: plan wiersz 11.8 [human].
+- [ ] P0 — Po wdrożeniu sprawdzić na tablecie: wygląd zeszytu z rozmytym salonem, zwykłe zero, płynność animacji (podskok, kołysanie, koraliki, gwiazdki na podsumowaniu), „ogranicz ruch” w systemie. Źródło: plan wiersz 11.8 [human].
 - [ ] P0 — Na iPadzie: czy czcionka Martynka Next się wczytuje (zero bez kreski; w „Obrazki”/zdrowiu czcionki brak zastępczej). Źródło: follow-up 11.
 - [ ] P1 — Po scaleniu: audyt observability (`/10x-observability-audit`) dla ekranu zadania, podsumowania i tła z salonem.
 - [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-22-notebook-polish/follow-ups/review-fixes.md` (17 otwartych: m.in. warga dla SelectTiles/CoverBoard/kości, ptaszek na dobrym kafelku, wybuch na karcie „Nowa umiejętność!”, czas ładowania czcionki).

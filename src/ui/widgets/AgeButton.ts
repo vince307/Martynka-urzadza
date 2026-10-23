@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { PLACEHOLDER_COLORS, WELCOME_LAYOUT } from '../../data/layout';
+import { LIPS, PLACEHOLDER_COLORS, WELCOME_LAYOUT } from '../../data/layout';
+import { ChunkyFace } from './chunky';
 import { textStyle } from './textStyle';
 
 /**
@@ -8,6 +9,7 @@ import { textStyle } from './textStyle';
  */
 export class AgeButton {
     private readonly graphics: GameObjects.Graphics;
+    private readonly chunky: ChunkyFace;
     private pressed = false;
     private readonly center: { x: number; y: number };
 
@@ -21,21 +23,26 @@ export class AgeButton {
         const { width, height } = WELCOME_LAYOUT.ages;
         this.center = { x: left + width / 2, y: top + height / 2 };
         this.graphics = scene.add.graphics();
-        scene.add.text(this.center.x, this.center.y, label, textStyle('ageDigit')).setOrigin(0.5);
+        const text = scene.add.text(this.center.x, this.center.y, label, textStyle('ageDigit')).setOrigin(0.5);
+        this.chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.age, WELCOME_LAYOUT.ages.radius);
+        this.chunky.add(this.graphics, text);
         const zone = scene.add.zone(this.center.x, this.center.y, width, height).setInteractive();
         this.draw(left, top, false);
         zone.on('pointerdown', () => {
             this.pressed = true;
             this.draw(left, top, true);
+            this.chunky.press();
         });
         zone.on('pointerout', () => {
             this.pressed = false;
             this.draw(left, top, false);
+            this.chunky.release();
         });
         zone.on('pointerup', () => {
             const tapped = this.pressed;
             this.pressed = false;
             this.draw(left, top, false);
+            this.chunky.release();
             if (tapped) {
                 this.onTap();
             }
@@ -43,10 +50,8 @@ export class AgeButton {
     }
 
     private draw(left: number, top: number, pressed: boolean): void {
-        const { width, height, radius, border, shadow } = WELCOME_LAYOUT.ages;
+        const { width, height, radius, border } = WELCOME_LAYOUT.ages;
         this.graphics.clear();
-        this.graphics.fillStyle(PLACEHOLDER_COLORS.ageButtonShadow, 1);
-        this.graphics.fillRoundedRect(left, top + shadow, width, height, radius);
         this.graphics.fillStyle(pressed ? PLACEHOLDER_COLORS.pressed : PLACEHOLDER_COLORS.ageButton, 1);
         this.graphics.fillRoundedRect(left, top, width, height, radius);
         this.graphics.lineStyle(border, PLACEHOLDER_COLORS.ageButtonBorder, 1);

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { isExpression } from '../src/core/round/prompt';
+import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, GAME_WIDTH, HUD_LAYOUT, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -34,8 +35,33 @@ describe('task screen layout constants', () => {
         expect(roomSwitch.top).toBeGreaterThanOrEqual(0);
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(speaker.left);
         const dots = TASK_LAYOUT.dots;
-        const dotsLeft = dots.centerX - (2 * dots.gap + dots.radius + dots.ringWidth);   // five dots, centred
+        const dotsLeft = dots.centerX - (2 * BEADS.gap + BEADS.radius);   // five beads, centred
         expect(roomSwitch.left + roomSwitch.width).toBeLessThanOrEqual(dotsLeft);
+    });
+
+    it('draws every HUD control as a kit pill: 96 px or more, the pill height where the kit says so, lip on screen and clear of the beads and of each other', () => {
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        const counter = TASK_LAYOUT.starCounter;
+        const lip = LIPS.hud.offset;
+        const pills = { speaker, roomSwitch, counter, settings };
+        for (const [name, p] of Object.entries(pills)) {
+            expect(p.height, `${name} height`).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            expect(p.top + p.height + lip, `${name} lip on screen`).toBeLessThanOrEqual(GAME_HEIGHT);
+        }
+        for (const p of [speaker, roomSwitch, counter]) {
+            expect(p.height).toBe(HUD_PILL.height);
+        }
+        // Face and lip of one pill, as one rectangle, against the beads row and the other pills.
+        const box = (p: { left: number; top: number; width: number; height: number }) => ({ left: p.left, top: p.top, right: p.left + p.width, bottom: p.top + p.height + lip });
+        const hits = (a: ReturnType<typeof box>, b: ReturnType<typeof box>): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const { dots } = TASK_LAYOUT;
+        const reach = BEADS.radius;   // the beads of ProgressDots (the ring is drawn inside the radius)
+        const row = { left: dots.centerX - (2 * BEADS.gap + reach), top: dots.y - reach, width: 2 * (2 * BEADS.gap + reach), height: 2 * reach - lip };
+        for (const p of [speaker, roomSwitch, counter]) {
+            expect(hits(box(p), box(row)), 'beads row').toBe(false);
+        }
+        const faces = Object.values(pills).map(box);
+        faces.forEach((a, i) => faces.slice(i + 1).forEach((b) => expect(hits(a, b)).toBe(false)));
     });
 
     it('keeps the parent settings icon a touch target in the bottom right, outside the notebook and the room area and clear of the other HUD controls', () => {
@@ -273,7 +299,7 @@ describe('task screen layout constants', () => {
         const count = placementData.ages.length;
         expect(left).toBeGreaterThanOrEqual(notebook.left + notebook.border);
         expect(left + count * width + (count - 1) * gap).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
-        expect(top + height + WELCOME_LAYOUT.ages.shadow).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
+        expect(top + height + LIPS.age.offset).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         expect(WELCOME_LAYOUT.question.y + FONT_SIZES.summaryTitle).toBeLessThan(top);   // the question sits above the buttons
     });
 
@@ -288,7 +314,7 @@ describe('task screen layout constants', () => {
         expect(left + width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
         expect(top + height).toBeLessThanOrEqual(notebook.top + notebook.height - notebook.border);
         const ages = WELCOME_LAYOUT.ages;
-        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + ages.shadow);
+        expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + LIPS.age.offset);
     });
 
     it('uses the kit tile height of 136 px, not smaller', () => {
@@ -331,6 +357,25 @@ describe('task screen layout constants', () => {
         }
     });
 
+    it('keeps the lip of every task control inside the notebook and clear of the next control', () => {
+        const { tiles, keypad, notebook, bar } = TASK_LAYOUT;
+        const innerBottom = notebook.top + notebook.height - notebook.border;
+        const barTop = bar.bottom - bar.height;
+        for (const rect of tileRow(4, { x: notebook.left, y: tiles.top, width: notebook.width, height: tiles.height }, tiles)) {
+            expect(rect.y + rect.height + LIPS.answer.offset).toBeLessThan(barTop);
+        }
+        expect(bar.bottom + LIPS.action.offset).toBeLessThanOrEqual(innerBottom);
+        const rows = keypadGrid(keypad).keys.map((k) => k.rect);
+        for (const rect of rows) {
+            const below = rows.find((r) => r.x === rect.x && r.y > rect.y);
+            if (below) {
+                expect(rect.y + rect.height + LIPS.key.offset).toBeLessThan(below.y);
+            } else {
+                expect(rect.y + rect.height + LIPS.key.offset).toBeLessThanOrEqual(innerBottom);   // the bar sits left of the keypad, not under it
+            }
+        }
+    });
+
     it('draws colours from the palette as valid RGB numbers', () => {
         for (const color of Object.values(PLACEHOLDER_COLORS)) {
             expect(Number.isInteger(color) && color >= 0 && color <= 0xffffff).toBe(true);
@@ -354,5 +399,59 @@ describe('"Wróć" to the age choice (F-02 b)', () => {
         expect(ageBack.left).toBeGreaterThanOrEqual(0);
         expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
         expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+    });
+});
+
+describe('notebook content stays right of the margin line (orchestrator browser defect after phase 4)', () => {
+    const { notebook } = TASK_LAYOUT;
+    // Hand-computed: frame left 180 + border 16 + margin 92 = line at 288, width 2, gap 24.
+    const marginRight = 180 + 16 + 92 + 2;
+
+    it('derives the inset from the notebook tokens', () => {
+        expect(NOTEBOOK.margin.fromInnerLeft).toBe(92);
+        expect(CONTENT_LEFT).toBe(marginRight + 24);
+        expect(CONTENT_LEFT).toBe(314);
+    });
+
+    it('starts every left-column rectangle and the wrapped prompt box right of the line and ends them inside the notebook', () => {
+        const { picture: p, promptBeside, expression, coinDrag, drag } = TASK_LAYOUT;
+        const rects = [
+            p.keypad, p.keypadSolution.picture, p.keypadSolution.lines, p.tilesSolution.picture, p.select.solution.picture,
+            p.long.tiles, p.long.tilesSolution.picture, p.long.tilesSolution.lines, p.digits.picture, p.hint.keypad.picture, p.hint.keypad.lines,
+            p.tall.tiles.picture, p.tall.keypad.picture, p.drag.picture, drag.mat, coinDrag.wallet,
+            { x: promptBeside.x - promptBeside.maxWidth / 2, y: 0, width: promptBeside.maxWidth, height: 0 },
+            { x: expression.x - expression.maxWidth / 2, y: 0, width: expression.maxWidth, height: 0 },
+        ];
+        for (const r of rects) {
+            expect(r.x).toBeGreaterThanOrEqual(CONTENT_LEFT);
+            expect(r.x + r.width).toBeLessThanOrEqual(notebook.left + notebook.width - notebook.border);
+        }
+    });
+
+    it('keeps a prompt beside the keypad clear of the keypad', () => {
+        const { promptBeside, expression, keypad } = TASK_LAYOUT;
+        expect(promptBeside.x + promptBeside.maxWidth / 2).toBeLessThan(keypad.left);
+        expect(expression.x + expression.maxWidth / 2).toBeLessThan(keypad.left);
+    });
+});
+
+describe('page and age button lips (phase 5)', () => {
+    const { notebook } = TASK_LAYOUT;
+    const innerBottom = notebook.top + notebook.height - notebook.border;
+
+    it('keeps the lip of the summary, unlock, "Rodzic" and age buttons inside the notebook', () => {
+        const { buttons } = SUMMARY_LAYOUT;
+        expect(buttons.top + buttons.height + LIPS.page.offset).toBeLessThanOrEqual(innerBottom);
+        const unlock = UNLOCK_LAYOUT.button;
+        expect(unlock.top + unlock.height + LIPS.page.offset).toBeLessThanOrEqual(UNLOCK_LAYOUT.card.top + UNLOCK_LAYOUT.card.height - UNLOCK_LAYOUT.card.border);
+        const parent = WELCOME_LAYOUT.parent;
+        expect(parent.top + parent.height + LIPS.page.offset).toBeLessThanOrEqual(innerBottom);
+        const ages = WELCOME_LAYOUT.ages;
+        expect(ages.top + ages.height + LIPS.age.offset).toBeLessThanOrEqual(innerBottom);
+    });
+
+    it('keeps the lip of "Wróć" above the build id caption', () => {
+        const { ageBack } = TASK_LAYOUT;
+        expect(ageBack.top + ageBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });

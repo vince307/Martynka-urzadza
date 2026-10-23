@@ -1,5 +1,7 @@
 Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next)
 
+Modified version: MartynkaNext.ttf is Atkinson Hyperlegible Next with a plain zero (the slashed zero glyph was redrawn) and renamed "Martynka Next" for the Martynka urzadza game (scripts/make-font.py). It stays under this license.
+
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
 https://openfontlicense.org

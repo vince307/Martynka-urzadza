@@ -1,14 +1,17 @@
 import type { GameObjects, Scene } from 'phaser';
 import { keypadDisplay, keypadInput, type KeypadKey } from '../../core/round/keypad';
-import { PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
+import { staggerDelays } from '../../core/motion';
+import { ANIMATION, LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT, TEXT_COLOR } from '../../data/layout';
 import { textStyle } from './textStyle';
 import { pl } from '../../data/pl';
+import { ChunkyFace } from './chunky';
 import { keypadGrid, type Rect } from './geometry';
 
 
 interface Button {
     key: KeypadKey;
     rect: Rect;
+    chunky: ChunkyFace;
     graphics: GameObjects.Graphics;
     pressed: boolean;
 }
@@ -26,7 +29,9 @@ export class Keypad {
     private readonly field: Rect;
     private readonly fieldGraphics: GameObjects.Graphics;
     private readonly fieldText: GameObjects.Text;
+    private readonly fieldBox: GameObjects.Container;   // centre container of the entry field: what bounces or wobbles
     private readonly objects: GameObjects.GameObject[] = [];
+    private readonly chunkies: ChunkyFace[] = [];
 
     constructor(
         scene: Scene,
@@ -40,19 +45,25 @@ export class Keypad {
         this.fieldText = scene.add
             .text(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, '', textStyle('answer'))
             .setOrigin(0.5);
-        this.objects.push(this.fieldGraphics, this.fieldText);
+        // Outer container at the field centre, inner one at minus the centre: the field keeps drawing in scene coordinates.
+        const inner = scene.add.container(-(this.field.x + this.field.width / 2), -(this.field.y + this.field.height / 2), [this.fieldGraphics, this.fieldText]);
+        this.fieldBox = scene.add.container(this.field.x + this.field.width / 2, this.field.y + this.field.height / 2, [inner]);
+        this.objects.push(this.fieldBox);
         for (const { key, rect } of grid.keys) {
             const graphics = scene.add.graphics();
             const label = scene.add
                 .text(rect.x + rect.width / 2, rect.y + rect.height / 2, labelOf(key), textStyle(key === 'delete' || key === 'ok' ? 'keyLabel' : 'key'))
                 .setOrigin(0.5);
             const zone = scene.add.zone(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height).setInteractive();
-            const button: Button = { key, rect, graphics, pressed: false };
+            const chunky = new ChunkyFace(scene, rect, LIPS.key, TASK_LAYOUT.keypad.radius);
+            chunky.add(graphics, label);
+            const button: Button = { key, rect, chunky, graphics, pressed: false };
             zone.on('pointerdown', () => this.press(button));
             zone.on('pointerup', () => this.release(button));
             zone.on('pointerout', () => this.release(button));
             this.buttons.push(button);
-            this.objects.push(graphics, label, zone);
+            this.objects.push(zone);
+            this.chunkies.push(chunky);
             this.paintButton(button);
         }
         this.paintField();
@@ -75,13 +86,30 @@ export class Keypad {
 
     setVisible(visible: boolean): void {
         this.visible = visible;
+        this.chunkies.forEach((c) => c.setVisible(visible));
         this.objects.forEach((o) => {
-            const shown = visible && !(this.keyMode && (o === this.fieldGraphics || o === this.fieldText));
+            const shown = visible && !(this.keyMode && o === this.fieldBox);
             (o as GameObjects.GameObject & { setVisible(v: boolean): unknown }).setVisible(shown);
             if (o.input) {
                 o.input.enabled = visible;
             }
         });
+    }
+
+    /** Entrance stagger of the keys for a new task (zones stay live, a tap settles the key); the entry field stays at rest. */
+    enter(): void {
+        const delays = staggerDelays(this.chunkies.length, ANIMATION.entranceSpanMs, ANIMATION.entranceItemMs);
+        this.chunkies.forEach((c, i) => c.enter(delays[i]));
+    }
+
+    /** The entry field as one container, for the bounce and wobble of the answer and the star's start. */
+    entryFace(): GameObjects.Container {
+        return this.fieldBox;
+    }
+
+    /** Centre of the entry field in scene space (where the flying star starts). */
+    entryTarget(): { x: number; y: number } {
+        return { x: this.field.x + this.field.width / 2, y: this.field.y + this.field.height / 2 };
     }
 
     /** Clears the typed digits (new task or a wrong answer). */
@@ -108,6 +136,7 @@ export class Keypad {
         }
         button.pressed = true;
         this.paintButton(button);   // synchronous highlight
+        button.chunky.press();
         if (this.keyMode) {
             this.onKey?.(button.key);
             return;
@@ -124,6 +153,7 @@ export class Keypad {
         if (button.pressed) {
             button.pressed = false;
             this.paintButton(button);
+            button.chunky.release();
         }
     }
 
@@ -131,8 +161,6 @@ export class Keypad {
         const { radius } = TASK_LAYOUT.keypad;
         const fill = key === 'ok' ? PLACEHOLDER_COLORS.next : key === 'delete' ? PLACEHOLDER_COLORS.hint : PLACEHOLDER_COLORS.tile;
         graphics.clear();
-        graphics.fillStyle(PLACEHOLDER_COLORS.dotDone, 0.5);
-        graphics.fillRoundedRect(rect.x, rect.y + 6, rect.width, rect.height, radius);
         graphics.fillStyle(pressed ? PLACEHOLDER_COLORS.pressed : fill, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
         graphics.lineStyle(TASK_LAYOUT.keypad.keyBorder, key === 'ok' ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.tileBorder, 1);

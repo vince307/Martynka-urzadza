@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { PLACEHOLDER_COLORS, SUMMARY_LAYOUT } from '../../data/layout';
+import { LIPS, PLACEHOLDER_COLORS, SUMMARY_LAYOUT } from '../../data/layout';
+import { ChunkyFace } from './chunky';
 import { textStyle } from './textStyle';
 
 export type PageButtonKind = 'primary' | 'secondary';
@@ -13,6 +14,7 @@ export class PageButton {
     private readonly graphics: GameObjects.Graphics;
     private readonly label: GameObjects.Text;
     private readonly zone: GameObjects.Zone;
+    private readonly chunky: ChunkyFace;
     private pressed = false;
     private shown = false;
     private rect = { x: 0, y: 0 };
@@ -26,15 +28,26 @@ export class PageButton {
         this.graphics = scene.add.graphics();
         this.label = scene.add.text(0, 0, '', textStyle('pageButton')).setOrigin(0.5);
         this.zone = scene.add.zone(0, 0, width, height).setInteractive();
+        this.chunky = new ChunkyFace(scene, { x: 0, y: 0, width, height }, LIPS.page, SUMMARY_LAYOUT.buttons.radius);
+        this.chunky.add(this.graphics, this.label);
         this.zone.on('pointerdown', () => {
             this.pressed = true;
+            if (this.shown) {
+                this.chunky.press();
+            }
         });
         this.zone.on('pointerout', () => {
             this.pressed = false;
+            if (this.shown) {
+                this.chunky.release();
+            }
         });
         this.zone.on('pointerup', () => {
             const tapped = this.pressed && this.shown;
             this.pressed = false;
+            if (this.shown) {
+                this.chunky.release();
+            }
             if (tapped) {
                 this.onTap();
             }
@@ -57,7 +70,9 @@ export class PageButton {
         this.shown = true;
         this.pressed = false;
         const primary = kind === 'primary';
-        this.graphics.setVisible(true).clear();
+        this.chunky.place({ x: left, y: top, width, height });
+        this.chunky.setVisible(true);
+        this.graphics.clear();
         this.graphics.fillStyle(primary ? PLACEHOLDER_COLORS.pageButton : PLACEHOLDER_COLORS.pageButtonSecondary, 1);
         this.graphics.fillRoundedRect(left, top, width, height, radius);
         const borderColor = highlighted
@@ -65,7 +80,7 @@ export class PageButton {
             : primary ? PLACEHOLDER_COLORS.nextBorder : PLACEHOLDER_COLORS.pageButtonSecondaryBorder;
         this.graphics.lineStyle(highlighted ? highlightBorder : border, borderColor, 1);
         this.graphics.strokeRoundedRect(left, top, width, height, radius);
-        this.label.setText(text).setVisible(true).setPosition(left + width / 2, top + height / 2);
+        this.label.setText(text).setPosition(left + width / 2, top + height / 2);
         this.zone.setPosition(left + width / 2, top + height / 2);
         this.zone.setSize(width, height);
         if (this.zone.input) {
@@ -75,8 +90,7 @@ export class PageButton {
 
     /** Draw order, for a button that sits over other layers of its scene (the "Pokój gotowy!" card). */
     setDepth(depth: number): this {
-        this.graphics.setDepth(depth);
-        this.label.setDepth(depth + 1);
+        this.chunky.setDepth(depth);
         this.zone.setDepth(depth + 2);
         return this;
     }
@@ -84,8 +98,8 @@ export class PageButton {
     hide(): void {
         this.shown = false;
         this.pressed = false;
-        this.graphics.setVisible(false);
-        this.label.setVisible(false);
+        this.chunky.reset();
+        this.chunky.setVisible(false);
         if (this.zone.input) {
             this.zone.input.enabled = false;
         }

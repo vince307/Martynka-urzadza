@@ -262,14 +262,14 @@ describe('a long drawing: the number line of a tiles task (visual gate S-14b: 0.
 describe('the box of a dense number line (visual gate S-14b: the box at 11 covered the "0" of the landing "10")', () => {
     it('leaves room for a two-digit label on the next tick', () => {
         const L = TASK_LAYOUT.numberLine;
-        const twoDigitHalf = 0.5 * 2 * 0.5 * FONT_SIZES.lineLabel;   // Atkinson digits are about half an em wide
+        const twoDigitHalf = 0.5 * 2 * 0.5 * FONT_SIZES.lineLabel;   // Martynka Next digits (Atkinson-based) are about half an em wide
         expect(L.box.denseWidth / 2 + twoDigitHalf).toBeLessThan(L.denseGap);
         expect(L.box.width / 2 + twoDigitHalf).toBeLessThan(L.gap);
     });
 });
 
 describe('the hint number line beside the keypad (visual gate S-14b: a 0..30 line drew its labels at 11.7 CSS px on the tablet)', () => {
-    it('keeps the labels of a 0..30 hint line at least 12 CSS px on a 1024 px tablet and ends before the keypad', () => {
+    it('keeps the labels of a 0..30 hint line at least 12 CSS px on a 1024 px tablet (right of the margin line; the keypad column sits further right to make room) and ends before the keypad', () => {
         const L = TASK_LAYOUT.numberLine;
         const { picture, lines } = hintPictureLayout(spec, 'keypad');
         const widthUnits = 2 * L.pad + 30 * L.denseGap;

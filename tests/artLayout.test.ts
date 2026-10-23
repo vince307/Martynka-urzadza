@@ -6,10 +6,11 @@ import { iconsLayout, jugsLayout, moneyLayout, rowLayout, scaleLayout, standInLa
 import { ART_STAND_IN, FONT_SIZES } from '../src/data/layout';
 import { JUG_VISIBLE_RECT, THERMOMETER } from '../src/data/measures';
 
+// The shipped picture rectangles (read from the layout, so a layout change such as the notebook margin is covered).
 const AREAS: Rect[] = [
-    { x: 661, y: 396, width: 600, height: 294 },
-    { x: 236, y: 470, width: 768, height: 190 },
-    { x: 236, y: 396, width: 624, height: 294 },
+    TASK_LAYOUT.picture.tiles,
+    TASK_LAYOUT.picture.keypadSolution.picture,
+    TASK_LAYOUT.picture.tilesSolution.picture,
 ];
 
 const inside = (inner: Rect, outer: Rect): boolean =>
