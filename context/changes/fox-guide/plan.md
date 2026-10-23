@@ -550,7 +550,7 @@ None: save format stays v4, nothing stored.
 - [x] 1.1 `file public/assets/ui/fox-*.webp` lists three WebP images; `tests/uiArt.test.ts` green with 8 rows (header sizes 384 × 384, no orphan, keys = ids) — e392442
 - [x] 1.2 `tests/bootBudget.test.ts` green; deliberate break: set `HEADROOM_MS` to 3000 → red with the computed seconds (≈ 47.4) in the message; restored; meta-check: the payload comes from file sizes on disk through the boot tables, not from a number copied from the comment, so the break proves the sum is real and near the limit — e392442
 - [x] 1.3 `git diff main -- src/data/balance.ts` touches only the comment of `loader` (no value changed); `git diff --stat main -- src/core/save.ts tests/fixtures` empty — e392442
-- [ ] 1.4 Full local gate green (lint, typecheck, unit `<branch baseline> + N` + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.4 Full local gate green (lint, typecheck, unit `<branch baseline> + N` + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e 150/150 on 8cc3500 (orchestrator)
 
 ### Phase 2: Pose rule and geometry
 
@@ -559,7 +559,7 @@ None: save format stays v4, nothing stored.
 - [x] 2.1 New tests red before the change (stubs return `'idle'` / an empty rect), green after; unit `<branch baseline> + N` — 2d99dcf
 - [x] 2.2 Deliberate break: `GUIDE.anchor.x` 1700 → the tall-lines and drag-tray cases red; `guidePose` maps `retype` to `'idle'` → the retype row red; each restored; meta-check: the overlap oracles come from the real layout functions and `TASK_LAYOUT`/`HUD_LAYOUT` constants, not from `guideRect`'s own tokens, and the pose oracle is a literal table — 2d99dcf
 - [x] 2.3 `grep -n "never" src/core/guide.ts tests/guideLayout.test.ts` shows both exhaustive guards — 2d99dcf
-- [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — e2e 150/150 on 8cc3500 (orchestrator)
 
 ### Phase 3: The fox in the task scene
 
@@ -568,7 +568,7 @@ None: save format stays v4, nothing stored.
 - [x] 3.1 `tests/guideWiring.test.ts` and the grown `reducedMotionWiring` green; unit `<phase-2 count> + N` — 953ed88
 - [x] 3.2 Deliberate break: move the `guide.show` call to the end of `render()` → the "before the first return" case red; add `setInteractive()` in `GuideFox` → the no-input case red; each restored; meta-check: these are source guards of the wiring; behaviour on screen is proven by 3.5 and phase 5 — 953ed88
 - [x] 3.3 `grep -c "^| 16[5-8] |" docs/design-gaps.md` prints 4 — 953ed88
-- [ ] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`health-lines.spec.ts` follows `UI_ART.length`)
+- [x] 3.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`health-lines.spec.ts` follows `UI_ART.length`) — e2e 150/150 on 8cc3500 (orchestrator)
 
 #### Manual
 
