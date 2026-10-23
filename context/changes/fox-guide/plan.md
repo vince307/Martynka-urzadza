@@ -547,9 +547,9 @@ None: save format stays v4, nothing stored.
 
 #### Automated
 
-- [ ] 1.1 `file public/assets/ui/fox-*.webp` lists three WebP images; `tests/uiArt.test.ts` green with 8 rows (header sizes 384 × 384, no orphan, keys = ids)
-- [ ] 1.2 `tests/bootBudget.test.ts` green; deliberate break: set `HEADROOM_MS` to 3000 → red with the computed seconds (≈ 47.4) in the message; restored; meta-check: the payload comes from file sizes on disk through the boot tables, not from a number copied from the comment, so the break proves the sum is real and near the limit
-- [ ] 1.3 `git diff main -- src/data/balance.ts` touches only the comment of `loader` (no value changed); `git diff --stat main -- src/core/save.ts tests/fixtures` empty
+- [x] 1.1 `file public/assets/ui/fox-*.webp` lists three WebP images; `tests/uiArt.test.ts` green with 8 rows (header sizes 384 × 384, no orphan, keys = ids) — e392442
+- [x] 1.2 `tests/bootBudget.test.ts` green; deliberate break: set `HEADROOM_MS` to 3000 → red with the computed seconds (≈ 47.4) in the message; restored; meta-check: the payload comes from file sizes on disk through the boot tables, not from a number copied from the comment, so the break proves the sum is real and near the limit — e392442
+- [x] 1.3 `git diff main -- src/data/balance.ts` touches only the comment of `loader` (no value changed); `git diff --stat main -- src/core/save.ts tests/fixtures` empty — e392442
 - [ ] 1.4 Full local gate green (lint, typecheck, unit `<branch baseline> + N` + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 2: Pose rule and geometry
