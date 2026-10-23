@@ -21,7 +21,7 @@ export const PLACEHOLDER_COLORS = {
     blockHundred: 0xd9edd3, // kit reference/base-ten.svg flat
     blockTen: 0xa6ddd2,     // kit reference/base-ten.svg rod
     tile: 0xe3f0d9,        // answer tile and keypad key
-    selected: 0xd7ebc1,    // kit .answer.selected: a marked tile of the multi-select mode
+    selected: 0xd7ebc1,    // kit .answer.selected: a marked tile of the multi-select mode, and the correct answer tile
     selectedBorder: 0x547e3d, // kit .answer.selected outline and check mark
     correct: 0xe5f2d4,     // correct answer feedback
     hint: 0xfff0b9,        // hint and solution bar
@@ -618,7 +618,7 @@ export const ROOM_TOUCH_TARGETS = {
 export const BACKDROP = {
     scale: 0.25,
     washAlpha: 0.6,
-    blur: { quality: 1, x: 2, y: 2, strength: 1, steps: 4 },
+    blur: { quality: 1, x: 1, y: 1, strength: 1, steps: 1 },
     depth: -10,
 } as const;
 

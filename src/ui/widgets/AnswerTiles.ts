@@ -129,10 +129,11 @@ export class AnswerTiles {
         const { radius, border } = TASK_LAYOUT.tiles;
         const isCorrect = this.correctValue !== null && tile.value === this.correctValue;
         graphics.clear();
-        graphics.fillStyle(tile.pressed ? PLACEHOLDER_COLORS.pressed : isCorrect ? PLACEHOLDER_COLORS.correct : PLACEHOLDER_COLORS.tile, 1);
+        // The kit's correct tile (correct.png, screen.css `.answer.selected`): a deeper green face and a dark green outline.
+        graphics.fillStyle(tile.pressed ? PLACEHOLDER_COLORS.pressed : isCorrect ? PLACEHOLDER_COLORS.selected : PLACEHOLDER_COLORS.tile, 1);
         graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
         const isHint = this.hintValue !== null && tile.value === this.hintValue;
-        graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.dotDone : isHint ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.tileBorder, 1);
+        graphics.lineStyle(isHint ? border * 2 : border, isCorrect ? PLACEHOLDER_COLORS.selectedBorder : isHint ? PLACEHOLDER_COLORS.butter : PLACEHOLDER_COLORS.tileBorder, 1);
         graphics.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, radius);
         const face = parseFace(tile.value);
         if (face) {
