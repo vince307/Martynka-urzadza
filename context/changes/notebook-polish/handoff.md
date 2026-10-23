@@ -8,8 +8,8 @@ The visual gate step wrote this. Every [visual] row (2.4-11.7) was captured at 1
 |---|---|
 | Branch | `feat/notebook-polish` (cut from `main` at `6e426ed`) |
 | Commits | 38 on the branch: p1 `a659097` ... p12 `18d0cee`, review fix `050b185`, review docs `30d51ee`, visual fix `3c58eec`, then this docs commit `docs(notebook-polish): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged; the archive step stamps it) |
+| Pushed / PR / merged | pushed by the ship step; PR/CI recorded in context/runs/2026-10-22-notebook-polish/run-log.md; merge waits for the maintainer |
+| `change.md` status | `archived` (stamped by the ship step's `/10x-archive`) |
 | `## Progress` rows remaining | 1 (`grep -c '^- \[ \]' plan.md`): [human] 11.8 |
 | Working tree | clean after the docs commit |
 
@@ -45,7 +45,7 @@ All observed in this step. The baselines come from the contract: unit 3736, e2e 
 
 ## 4. Next command
 
-`/10x-archive notebook-polish` then ship (stop at an open PR; no hosted DB)
+none — PR open for the maintainer
 
 ## 5. Open
 
