@@ -594,6 +594,6 @@ None: save format stays v4, nothing stored.
 
 #### Automated
 
-- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: `guidePose` returns `'idle'` for every task phase → "follows the round" red; `setInteractive()` on the fox image with a `pointerdown` that calls `advance` → "a tap on the fox" red; skip the `textures.exists` check → "no fox without its art" red; drop the `prefersReducedMotion()` check → "reduced motion" red; each restored), green after
-- [ ] 5.2 `npx playwright test tests/e2e/fox-guide.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
-- [ ] 5.3 Full local gate green
+- [x] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: `guidePose` returns `'idle'` for every task phase → "follows the round" red; `setInteractive()` on the fox image with a `pointerdown` that calls `advance` → "a tap on the fox" red; skip the `textures.exists` check → "no fox without its art" red; drop the `prefersReducedMotion()` check → "reduced motion" red; each restored), green after — d228146
+- [x] 5.2 `npx playwright test tests/e2e/fox-guide.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1` — d228146
+- [x] 5.3 Full local gate green — d228146
