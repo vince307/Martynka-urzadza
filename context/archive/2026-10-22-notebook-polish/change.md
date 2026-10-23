@@ -1,10 +1,10 @@
 ---
 change_id: notebook-polish
 title: Notebook polish (finished maths-A notebook, chunky controls, interface life, plain zero)
-status: impl_reviewed
+status: archived
 created: 2026-10-22
 updated: 2026-10-23
-archived_at: null
+archived_at: 2026-10-23T01:16:20Z
 ---
 
 ## Notes
@@ -186,3 +186,9 @@ Agent decisions in this step (research/plan may refine, never contradict PA-*):
   without measuring. Would change: nothing pre-set.
 - **D-7 next step.** `/10x-research` (not `/10x-plan`): three steps across ~15 widgets, three scenes, the Phaser 4 filter
   API, the font tooling and the e2e hook need source-backed findings before a plan.
+
+- **Archive with an open [human] row (ship step, 2026-10-23).** Chosen: `Continue archiving (Recommended)` — the only
+  pending Progress row is the manual [human] 11.8 (0 automated, 1 manual), which is the maintainer's post-run check on
+  the tablet before "merguj", listed in the PR body. Rows without a SHA suffix are [visual]/e2e evidence rows (soft
+  warning); no SHA repoint offered (branch not rebased). Roadmap: no item with this Change ID. What would change it:
+  an automated row still open, or the maintainer asking to hold the archive until the tablet check.
