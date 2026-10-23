@@ -1,25 +1,27 @@
 # Handoff — `fox-guide` (slice fix:fox-guide)
 
-Written by step `/10x-new fox-guide` of run 2026-10-23-fox-guide: the change identity exists, every scope.md / FR-037
-claim is checked against the repo in `change.md`. The next agent must not assume an inner notebook corner is free in
-every answer mode — none is at 180–240 px (see the claims table); measure each mode before choosing.
+Written by step `/10x-research fox-guide` of run 2026-10-23-fox-guide: `research.md` resolves placement, screens, pose
+rule, motion, art size, input and e2e, and proposes four phases. The next agent must not put the fox on the notebook's
+inner face: the chosen spot is the right margin at the top-right corner (feet at 1792, 400; 320 px image, silhouette
+≈ 188 × 220), and the geometry test must use the silhouette union of the three poses, not the image box.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/fox-guide`, cut from `main` at `1962312` |
-| Commits | 1 on the branch: `docs(fox-guide): change identity (autonomous run)` |
+| Commits | 2 on the branch: `docs(fox-guide): change identity (autonomous run)`, `docs(fox-guide): research` |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the two files below were staged) |
+| Working tree | clean after the commit (only the three files below staged) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/fox-guide/change.md` | change identity: source, save/migration note (none, v4), art pack facts, claim / repo now / correction table, kit views bound + DESIGN-GAP note, triggered follow-ups, Autonomous decisions D-1..D-6 |
+| `context/changes/fox-guide/research.md` | research: (a) placement + full rect table with symbols and clearances, (b) screens, (c) pose rule + TaskScene hooks, (d) motion/depth/backdrop, (e) art pipeline (384² WebP, sizes measured), (f) input, (g) e2e hook + spec, DESIGN-GAP rows 165–168, proposed phases with drivers |
+| `context/changes/fox-guide/change.md` | frontmatter only: `status: preparing`, `updated` (by the guard script) |
 | `context/changes/fox-guide/handoff.md` | this file |
 
 ## 3. Verification
@@ -27,41 +29,40 @@ every answer mode — none is at 180–240 px (see the claims table); measure ea
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/fox-guide` (observed) |
-| `ls context/changes/fox-guide context/archive \| grep fox` | no prior change of that id (uniqueness check of `/10x-new`) |
-| repo reads for the claims table | `scripts/make-task-art.mjs` (`UI_JOBS`, `SALON_V2`), `src/data/uiArt.ts`, `tests/uiArt.test.ts` (length 5), `src/scenes/BootScene.ts` (`queuers.ui`, `tables`, `withCauses`), `vite/config.shared.mjs` (`globPatterns` include webp), `scripts/check-deploy.ts` (`precacheCovers` over `UI_ART`), `src/data/layout.ts` (`TASK_LAYOUT`, `HUD_LAYOUT`, `SUMMARY_LAYOUT`), `src/core/notebookGeometry.ts`, `src/core/round.ts` (phases), `src/ui/motion.ts`, `src/main.ts` (no resolution) |
+| `cwebp -resize {384,512} … -q 85 -alpha_q 100 -m 6` on the three pack PNGs (scratchpad only, nothing in the repo) | 384²: idle 13 700 B, cheer 15 086 B, think 13 598 B; 512²: 20 282 / 22 466 / 20 160 B |
+| `metadata-guard.mjs inspect` / `mark-researched` | changed: true, status new → preparing |
 | lint / typecheck / tests / build / e2e | not run: docs-only step, no code changed |
 
 ## 4. Next command
 
-`/10x-research fox-guide`
+`/10x-plan fox-guide`
 
 ## 5. Open
 
-- Research questions (from `change.md`): which corner (inner face vs. astride the frame / right or left margin) is free
-  in tiles, keypad, select, drag (blocks, clock, coins), digits, tall picture, hint number line and the solution phase,
-  plus the summary; what "180–240 px" measures (canvas vs. silhouette) and the WebP size; how the pose maps for the
-  daily puzzle, word and dice minigames and the warm-up; whether the e2e hook (`src/testing/e2eHook.ts`) gets a
-  read-only pose; how `npm run art` gets a third kit root (`scripts/make-task-art.mjs` `UI_JOBS` read only `SALON_V2`).
-- `tests/uiArt.test.ts` pins `UI_ART` length 5 — must become 8 when the poses are added.
-- DESIGN-GAP rows to add in `docs/design-gaps.md` (next numbers after 164): fox placement/size, pose motion, screens
-  where it shows, missing-art behaviour. None added yet.
-- Follow-ups: none names the guide; code-touch triggers listed in `change.md` § "Open follow-ups triggered by this
-  slice" (health-lines-and-smoke § 18 `UI_MISSING_URL`, final-art-salon F3 `BootScene` progress listener,
-  stale-tab-and-health G-2.. `loaderror` labels, child-flow-guards `modeWidgets` in `TaskScene.render`, TaskScene
-  lifecycle audit items) — each taken only if the plan edits that symbol.
+- Plan inputs: `research.md` § "Proposed phases for the plan" (1 art + table `impl`, 2 pose + geometry `tdd`,
+  3 widget + scene + hook + gaps `impl`, 4 e2e spec `e2e`).
+- DESIGN-GAP rows 165–168 are proposed in `research.md`, not yet added to `docs/design-gaps.md` (phase 3).
+- `tests/uiArt.test.ts` `toHaveLength(5)` must become 8; the `balance.loader` comment (boot payload) must grow by ~42 KB.
+- Visual-gate risk: 10 px of the silhouette over the paper face at x 1714–1724; fallback anchor x 1802 noted in
+  `research.md` Open Questions.
+- Follow-ups: none taken; `TaskScene.render` gets one call, so the child-flow-guards `modeWidgets` follow-up stays open
+  (the fox reads the phase, not the mode); BootScene follow-ups untouched (no BootScene edit needed).
 
 ## 6. Autonomous decisions
 
-- D-1: scope.md items 1–8 recorded as pre-agreed by the maintainer 2026-10-23. Would change: only the maintainer.
-- D-2: next step `/10x-research` instead of the skill default `/10x-plan` — the corner needs per-mode measurement; also
-  fixed by the step prompt. Would change: nothing (prompt-fixed).
-- D-3: corner candidates include sitting astride the notebook frame or in the side margin, because no inner corner is
-  free in every mode at the scope's size; rejected shrinking the fox or moving content. Would change: research finding a
-  free inner corner in every mode/phase at ≥ 180 px.
-- D-4: default presence = task screen (incl. warm-up, puzzle) + summary, not the unlock card or minigame done card;
-  rejected deciding finally before the variant flows are mapped. Would change: research showing a variant screen whose
-  corner is occupied or whose outcomes do not map to poses.
-- D-5: working hypothesis — pose = pure function of the round `phase` in `src/core/` (first → idle, second/solution/retype
-  → think, done → cheer), no new state. Would change: a flow whose outcomes are not in the round phase.
-- D-6: no migration, `SAVE_VERSION` stays 4. Would change: nothing in scope.
-- Clipboard hand-off of `/10x-new` skipped (no human at the terminal); the next command is §4.
+- R-1: "180–240 px" = silhouette height (ears to base); image 320 px → silhouette 220. Rejected: canvas 180–240
+  (silhouette 123–165, pose hard to read). Would change: maintainer says the canvas; then `GUIDE.displaySize` 240, same anchor.
+- R-2: placement right margin at the top-right corner, astride the frame. Rejected: bottom-right (bar/"Dalej", hint bubble,
+  gear), bottom-left ("Wróć", build id, stitches, wallet/tall column), top-left/top edge (prompt, "Do pokoju", 56 px gap).
+  Would change: a layout change that puts content right of x 1700 above y 643, or the visual gate rejecting the look.
+- R-3: screens — task layer of every round kind + cheer on `SummaryPanel` and `MinigameDoneCard`; hidden on `UnlockCard`.
+  Rejected: hiding on the done card (it is the word/dice summary) and showing on the unlock card (scope names only task +
+  summary). Would change: maintainer wanting the fox on the unlock card.
+- R-4: pose = pure function of screen + `RoundPhase` (first idle; second/solution/retype think; done cheer). Would change: a
+  new phase in `RoundPhase` (the `never` guard forces a decision).
+- R-5: motion = `setTexture` + 1.06 pop, 240 ms; no cross-fade, no breathing. Would change: the visual gate finding the pop
+  too lively or the swap too abrupt.
+- R-6: WebP 384² (not 512²): the 1920 × 1080 backing store caps detail at the 320 scene px shown; 1.2 : 1 bilinear is clean
+  without mipmaps; 20 KB less on a near-limit boot budget. Would change: a game config `resolution`/zoom > 1 or a larger fox.
+- R-7: missing pose texture → that pose hidden, no `recordFallback`. Would change: a request to record it in "Obrazki" beyond the UI count.
+- `/10x-research` clarification questions were not asked (no human); scope came from `change.md` + `scope.md` + the step prompt.
