@@ -1,25 +1,26 @@
 # Handoff — `fox-guide` (slice fix:fox-guide)
 
-Written by step `/10x-impl-review fox-guide` of run 2026-10-23-fox-guide: full-plan review APPROVED, 0 critical, 0 warnings, 4 observations, `MERGE: CLEAR`; change.md is `impl_reviewed`. The next agent must not tick the [visual]/[human] rows without real screenshots or the maintainer's word.
+Written by the visual-gate step of run 2026-10-23-fox-guide: `VISUAL: PASS`, no fixes needed, rows 3.5 and 4.5 ticked; change.md stays `impl_reviewed`. The next agent must not tick 4.6/4.7 [human] or 4.8 [reviewer] — 4.8 is proved at ship by the PR's CI log.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/fox-guide`, cut from `main` at `1962312` |
-| Commits | phases 1-5 `e392442`, `2d99dcf`, `953ed88`, `4d590fd`, `d228146`, handoff commits, plus this review commit |
+| Commits | phases 1-5 `e392442`, `2d99dcf`, `953ed88`, `4d590fd`, `d228146`, handoff and review commits up to `b84b2cf`, plus this commit `docs(fox-guide): bramka wizualna` |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` |
-| Progress rows open | 5 (`grep -c '^- \[ \]' plan.md`): 3.5, 4.5 [visual]; 4.6, 4.7 [human]; 4.8 [reviewer] (CI at ship) |
-| Working tree | clean after the review commit |
+| Progress rows open | 3 (`grep -c '^- \[ \]' plan.md`): 4.6, 4.7 [human]; 4.8 [reviewer] (CI at ship) |
+| Working tree | clean after this commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/fox-guide/reviews/impl-review.md` | full-plan review (phases 1-5), evidence, F1-F4 observations, ends `MERGE: CLEAR — …` |
-| `context/changes/fox-guide/plan.md` | row 4.4 ticked with the measured numbers |
-| `context/changes/fox-guide/change.md` | `status: impl_reviewed` |
+| `context/changes/fox-guide/reviews/visual-review.md` | visual gate verdict per row, hand-check of `guide.rect` against `GUIDE`, designer's read; ends `VISUAL: PASS — …` |
+| `context/changes/fox-guide/screenshots/*.jpg` | 32 frames per width (`desktop-*`, `tablet-*`) + `kit-fox-poses.jpg` |
+| `context/changes/fox-guide/screenshots/README.md` | route, switches, table state · frame · how reached |
+| `context/changes/fox-guide/plan.md` | rows 3.5 and 4.5 ticked with the evidence |
 | `context/changes/fox-guide/handoff.md` | this file |
 
 ## 3. Verification
@@ -27,31 +28,27 @@ Written by step `/10x-impl-review fox-guide` of run 2026-10-23-fox-guide: full-p
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/fox-guide` |
-| lint, typecheck | OK |
-| `npm test` | 3891 passed = baseline 3781 + 110 (109 in `guide`, `guideLayout`, `guideWiring`, `bootBudget` tests + 1 `reducedMotionWiring` case) |
-| deploy/ops script tests, `sample` E1-E6 | OK |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --list` | 155 = baseline 150 + 5 (p5 spec) |
-| `npx playwright test --workers=3` | 140 passed, 13 failed, 2 did not run (load); `--last-failed --workers=1`: 15 passed → 155 / 155 |
-| break: `guidePose` retype → idle | `tests/guide.test.ts` retype row red; restored |
-| break: `GUIDE.anchor.x` 1700 | 16 of 88 `guideLayout` cases red; restored |
-| break (e2e): drop `textures.exists` in `GuideFox.show` | `#11 no fox without its art` red (Expected false, Received true); restored, `dist/` rebuilt |
-| scope | `SAVE_VERSION` 4; no diff in save/migrations/fixtures/storage/pl.ts/curriculum/generators; balance.ts only the `loader` comment; `.claude/settings.json` and hooks untouched, no `--no-verify` |
+| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | OK, `e2e hook: present (2 chunks checked)` (hook build, as intended) |
+| throwaway Playwright capture (gitignored `tests/e2e/visual.local/`, moved out after) on 4399, projects desktop 1440×900 and tablet 1024×768 | 30 / 30 passed (7.0 min); its assertions: pose idle/cheer/think per state, `guide.visible` false on unlock and with `?e2eArt=ui`, `warmup` true |
+| hand-check `guide.rect` | hook `{1714.5, 180, 188.125, 220}` = `GUIDE` arithmetic (s 0.3125: 1792 − 77.5; 1792 + 110.625; 400 − 220); page rect logged at both widths matches the canvas scale; magenta outline in `*-rect-check-zoom.jpg` touches ears, paws and tail |
+| lint / typecheck / unit / build / e2e | not re-run: this step changed only docs and screenshots under `context/` (no source, test or config change); last observed by impl-review on `8bf3af3` (inherited, unverified here) |
+| servers | 4399 stopped (`lsof -ti tcp:4399 -sTCP:LISTEN` empty); no background shells left |
 
 ## 4. Next command
 
-`visual gate (rows 3.5, 4.5) — then /10x-archive fox-guide`
+`/10x-archive fox-guide` then ship (stop at open PR; no hosted db push — no DB)
 
 ## 5. Open
 
-- [visual] 3.5 and 4.5 (`plan.md` Phase 3/4 Manual): hook build on 4399, desktop 1440 and tablet 1024, the state matrix of 4.5.
-- [human] 4.6 accept the fox's place and size (`GUIDE` in `src/data/layout.ts`; fallback anchor x 1802, follow-up F5); 4.7 real tablet sharpness, pop and the cheer on a 0-star summary.
-- [reviewer] (CI at ship) 4.8: workflow `CI`, job `check`; proof lines `Tests  <N> passed` (`npm test`) and `e2e hook: absent (` (`npm run build`).
-- Observations F1-F4 in `reviews/impl-review.md` (tap test lands on an empty margin; plan payload numbers drifted to the measured 47.6 s, `tests/bootBudget.test.ts` leaves ~0.4 s spare; `modeWidgets` follow-up left open; `GuideFox.snapshot` `rect` is static). Follow-ups F1-F7 in `follow-ups/review-fixes.md`, unchanged.
-- DESIGN-GAP 165-168 in `docs/design-gaps.md` (written in p3).
+- [human] 4.6 accept the fox's place and size (`GUIDE` in `src/data/layout.ts`; fallback anchor x 1802, follow-up F5 in `follow-ups/review-fixes.md`). The gate notes row 3.5's "feet at the frame line" is met as "paw on the notebook's right frame line, feet at y 400", the P-2 reading.
+- [human] 4.7 real tablet: sharpness at 384² art, the pop's feel, and the cheer on a 0-star summary (not reachable in the gate).
+- [reviewer] (CI at ship) 4.8: workflow `CI`, job `check`; proof lines `Tests  <N> passed` and `e2e hook: absent (`.
+- Observations F1-F4 in `reviews/impl-review.md`; follow-ups F1-F7 in `follow-ups/review-fixes.md`, unchanged.
+- DESIGN-GAP 165-168 in `docs/design-gaps.md`, unchanged.
 
 ## 6. Autonomous decisions
 
-- Triage choice "Done" (no interactive triage): no critical or warning finding, so nothing to fix; observations recorded with `Decision: RECORDED`. Would change: a finding of WARNING or above.
-- Row 4.4 ticked by this step on its own run (unit 3781 + 110, e2e 150 + 5), as the step prompt allowed. Would change: a red rerun.
-- e2e parallel failures judged as load: all 15 passed serially with no code change. Would change: a failure that repeats serially.
+- Capture route: Claude in Chrome first (own tab, closed); it stopped at the slow-save card because another tab of the same origin held IndexedDB, so the Playwright fallback with fresh contexts was used. Rejected: closing the other tab (not mine). Would change: a Chrome profile without another tab on `localhost:4399`.
+- Portrait check by resizing the Playwright page to 420×760, not the same-origin iframe of profile § 9 (the iframe trick exists only because Chrome ignores resize). Would change: an overlay rule that differs inside an iframe.
+- No fix: placement and size are the maintainer's 4.6 decision, not a discrepancy; nothing was covered. Would change: any frame showing an overlap or a wrong pose.
+- Full local gate not re-run: only `context/` docs and JPEGs changed. Would change: any edit under `src/`, `tests/`, `scripts/` or config.

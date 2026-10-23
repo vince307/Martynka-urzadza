@@ -572,7 +572,7 @@ None: save format stays v4, nothing stored.
 
 #### Manual
 
-- [ ] 3.5 [visual] Hook build on 4399, desktop 1440 and tablet 1024: a tiles task at its start (idle), after a right tap (cheer), after a wrong tap (think) — the fox stands at the notebook's top-right corner, feet at the frame line, nothing of the task covered, the pop soft
+- [x] 3.5 [visual] Hook build on 4399, desktop 1440 and tablet 1024: a tiles task at its start (idle), after a right tap (cheer), after a wrong tap (think) — the fox stands at the notebook's top-right corner, feet at the frame line, nothing of the task covered, the pop soft — visual gate on b84b2cf: `screenshots/{desktop,tablet}-tiles-{idle,cheer-pop,cheer,think}.jpg`, `reviews/visual-review.md`
 
 ### Phase 4: Docs, follow-ups, seam sweep and the full visual pass
 
@@ -585,7 +585,7 @@ None: save format stays v4, nothing stored.
 
 #### Manual
 
-- [ ] 4.5 [visual] Hook build on 4399, desktop 1440 and tablet 1024, every state: tiles (idle, cheer, think), keypad second try (think), solution phase with step lines (think), retype, select, drag blocks, coin wallet, clock to set, digits column, tall picture with tiles, hint number line, word round with letters, dice board, daily puzzle, warm-up (6 beads), `SummaryPanel` (cheer), `MinigameDoneCard` (cheer), unlock card (no fox), `?e2eArt=ui` (no fox), the settings hint bubble open; plus a 420 × 760 same-origin iframe showing the "Obróć tablet" overlay over the fox — nothing of any task element, bead or HUD pill covered in any frame
+- [x] 4.5 [visual] Hook build on 4399, desktop 1440 and tablet 1024, every state: tiles (idle, cheer, think), keypad second try (think), solution phase with step lines (think), retype, select, drag blocks, coin wallet, clock to set, digits column, tall picture with tiles, hint number line, word round with letters, dice board, daily puzzle, warm-up (6 beads), `SummaryPanel` (cheer), `MinigameDoneCard` (cheer), unlock card (no fox), `?e2eArt=ui` (no fox), the settings hint bubble open; plus a 420 × 760 same-origin iframe showing the "Obróć tablet" overlay over the fox — nothing of any task element, bead or HUD pill covered in any frame — visual gate on b84b2cf: 32 frames per width in `screenshots/README.md`, `reviews/visual-review.md` (portrait via a 420 × 760 viewport, not an iframe)
 - [ ] 4.6 [human] Accept the fox's place and size: right margin astride the notebook's top-right corner (feet at 1792, 400; image 320 px, silhouette ≈ 188 × 220, "180–240 px" read as the silhouette height; about 10 px of the body over the paper face) — PRD FR-037 says "w rogu zeszytu"; this reading puts the fox mostly in the margin beside the corner (decisions P-1, P-2; fallback anchor x 1802 in the follow-ups)
 - [ ] 4.7 [human] On a real tablet: the fox is sharp at 384² art, the pop reads soft, and the cheer on a 0-star summary does not feel odd
 - [ ] 4.8 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(`
