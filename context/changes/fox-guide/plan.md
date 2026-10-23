@@ -237,13 +237,16 @@ y 180–400).
 
 **Contract**: `guide.test.ts` — every `RoundPhase` × screen against a literal table; `GUIDE_ART` ids exist in
 `UI_ART_KEYS`. `guideLayout.test.ts` — with a 12 px gap, `guideRect()` is disjoint from: `pictureLayout(spec, input,
-shape, solution)` for every `ANSWER_MODES` × {wide, tall, long} × {false, true} (a `never`-guarded switch over
-`ANSWER_MODES` so a new mode fails until listed), `hintPictureLayout`, `answerSpans`, `clockSetLayout(TASK_LAYOUT.drag,
+solution, shape)` (real argument order: `solution` before `shape`) for every `ANSWER_MODES` × {wide, long} × {false, true}
+plus `tall` only for `TALL_MODES` (`src/core/tasks/visual.ts`; `tallOf` throws for drag/select/digits — plan review F1)
+(a `never`-guarded switch over `ANSWER_MODES` so a new mode fails until listed), `hintPictureLayout`, `answerSpans`, `clockSetLayout(TASK_LAYOUT.drag,
 …)`, `dragLayout`/`coinLayout` at their max kinds, the keypad's computed bottom, `TASK_LAYOUT.prompt`/`expressionWide`
 extents, `TASK_LAYOUT.barSpan` and `tall.*.bar`, `notebookGeometry().ribbon` bbox, `TASK_LAYOUT.dots` with the warm-up's 6
 beads, `HUD_LAYOUT` rects (star counter grown by `counterPopScale`), a 6-line bound of the settings hint bubble,
 `letterRow` at the longest `MINIGAME_WORDS` word, `MINIGAME_LAYOUT` board and card, `SUMMARY_LAYOUT` and
-`UNLOCK_LAYOUT.card`; `guideRect()` lies inside 1920 × 1080 with ≥ 12 px to the right edge; "in the corner": the
+`UNLOCK_LAYOUT.card`; `guideRect()` lies inside 1920 × 1080 with ≥ 12 px to the right edge; the popped rect (the silhouette scaled by
+`ANIMATION.guidePopScale` about the anchor, ≈ x 1709.9–1909.3, y 166.8–400) keeps ≥ 8 px from the right edge, the tall
+solution lines (x ≤ 1700) and the star counter grown by `counterPopScale` (bottom ≈ 157.4) — plan review F3; "in the corner": the
 notebook's right outer edge (x 1740) lies inside the rect's x span and the rect's top is within 40 px of the notebook top
 (204); the silhouette height is within 180–240 (scope item 2, read as the silhouette — P-1).
 
@@ -274,6 +277,10 @@ Driver why: one widget and scene glue over the phase-2 rules — the risk is in 
 **File**: `src/ui/widgets/GuideFox.ts` (new)
 
 **Intent**: one `Image` at `GUIDE.anchor` with `GUIDE.origin` and display size `GUIDE.displaySize`, created hidden;
+**after every `setTexture` call `setDisplaySize(GUIDE.displaySize, GUIDE.displaySize)` again and take the pop's base
+scale from it** (plan review F2: `setDisplaySize` stores a scale relative to the current frame, so an image created on a
+missing key's 32 px `__MISSING` frame would draw a later 384 px pose ten times too large; never `setDisplaySize` while the
+texture is missing);
 `show(pose: GuidePose | null)` hides it for `null` or a missing texture (`scene.textures.exists`), otherwise sets the
 texture and pops (`base × ANIMATION.guidePopScale`, yoyo, `guidePoseMs` in total, `guideEase`) only when the shown pose
 changed while visible and `prefersReducedMotion()` is false; `killTweensOf` + base scale before any change. Never calls
@@ -292,7 +299,12 @@ GuidePose | null; visible: boolean; rect: Rect; interactive: boolean; pops: numb
 later); in `render()`, after `summary` and `unlock` are computed and before the first `return`, one call
 `this.guide.show(guidePose(screen, this.state.phase))`; `TaskSnapshot.guide` = `this.guide.snapshot()`.
 
-**Contract**: `TaskSnapshot.guide: { pose; visible; rect; interactive; pops }` (read-only; the hook spreads it).
+**Contract**: `TaskSnapshot.guide: { pose; visible; rect; interactive; pops }` (read-only; the hook spreads it, so
+`src/testing/e2eHook.ts` needs no edit — if it is edited after all, the narrator-round-summary follow-up "report `null`
+targets while the room is open" fires and is taken in the same phase). **File**: `tests/e2e/support/hook.ts` — the
+e2e `Snapshot` interface gains `guide?: { pose: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number;
+y: number; width: number; height: number }; interactive: boolean; pops: number }` (it is a hand-written interface, not
+derived from `TaskSnapshot`; plan review F4).
 
 #### 3. Wiring tests
 
@@ -344,7 +356,8 @@ The rule files describe the fox; deferred items get triggers; duplicates and sta
 (`src/core/guideLayout.ts`) proven clear of every mode by `tests/guideLayout.test.ts`, tokens `GUIDE` and
 `ANIMATION.guide*`, three `UI_ART` rows from the third root of `npm run art`, `tests/bootBudget.test.ts` as the boot
 payload check, `TaskSnapshot.guide` in the hook, gaps 165–168; save format stays v4. Fix sentences made untrue (the UI art
-list in the S-16c sentence, "the UI pictures" counts).
+list in the S-16c sentence, "the UI pictures" counts, and the `npm run art` line of Commands: it now also needs the local
+`designs/martynka-fox-guide-v1` pack — plan review F7).
 
 #### 2. Seam sweep
 
@@ -363,7 +376,9 @@ else changed.
 fox); fox on the unlock card (Trigger: maintainer request); 512² art (Trigger: a game config `resolution`/zoom > 1 or a
 larger `GUIDE.displaySize`); boot budget headroom (Trigger: `tests/bootBudget.test.ts` red — decide raising `totalMs`
 within the 60 s bound of `loaderBalance.test.ts` or slimming art); fox placement fallback anchor x 1802 (Trigger: the
-maintainer rejects the 10 px over the paper face); `modeWidgets` follow-up left open (the fox reads the phase only).
+maintainer rejects the 10 px over the paper face); `modeWidgets` follow-up left open (the fox reads the phase only); the "Obrazki" UI sentence "napis lub rysunek" untrue
+for a missing fox (Trigger: the maintainer reading "Obrazki" with a missing fox, or the next change to
+`pl.settings.uiArtMissing`).
 
 ### Success Criteria:
 
@@ -463,6 +478,14 @@ None: save format stays v4, nothing stored.
   1724–1913, still ≥ 7 px from the edge; the geometry test's right-edge gap would then be lowered to 7 px in the same
   fix).
 - The budget test leaves 0.6 s spare under its floor; the next ~28 KB of boot art trips it by design (follow-up).
+- (plan review F5) The fox's real WebP bytes are known only after phase 1's conversion (research measured 42 384 B). If
+  `tests/bootBudget.test.ts` is red with them, phase 1 converts at 352² (then 320²), re-measures, updates `GUIDE`-free
+  numbers (`UI_ART` sizes, the `loader` comment) and records it in the commit; it never raises `totalMs` or lowers
+  `HEADROOM_MS`. Still red at 320² → `STATUS: BLOCKED`.
+- (plan review F6) `pl.settings.uiArtMissing` ends "Na tych ekranach zamiast obrazka jest napis lub rysunek." — for a
+  missing fox nothing is drawn, so with only fox poses missing the parent's line is slightly inaccurate. No text change
+  (scope item 8); DESIGN-GAP 168 names it, and a follow-up (Trigger: maintainer reading "Obrazki" with a missing fox)
+  goes to phase 4's follow-ups.
 - Reaching the unlock card in e2e is the slowest road in the suite (E4 rounds until a step unlocks), a known load flake
   family (profile § 8): the spec reuses the `health-lines.spec.ts` road.
 
