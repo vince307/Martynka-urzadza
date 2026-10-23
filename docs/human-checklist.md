@@ -463,3 +463,20 @@ Wynik: PR #99 scalony 2026-10-23 na „zmerguj” właściciela (243ce53). Zapis
 - [ ] Papier zeszytu płaski (bez dwóch pasów gradientu — w Phaserze gradient na zaokrąglonym kształcie rysuje się nierówno).
 - [ ] Rozmycie salonu lekkie (jedno przejście), żeby pokój był rozpoznawalny jak w makiecie.
 - [ ] Czcionka zmieniona i przemianowana na „Martynka Next” (licencja OFL zachowana z notą o zmianie; `npm run font` odtwarza ten sam plik).
+
+## Bieg 2026-10-23-fox-guide (lisek-przewodnik, PRD FR-037)
+
+Wynik: PR #102 otwarty, CI zielone (fed1028), czeka na „zmerguj”. Zapis v4 bez zmian. Testy: jednostkowe 3781 → 3891, e2e 150 → 155. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS.
+
+- [ ] P0 — Przejrzeć i scalić PR #102 („zmerguj”). Źródło: zakres biegu.
+- [ ] P0 — Zaakceptować miejsce i wielkość liska: prawy margines przy górnym prawym rogu zeszytu (stopy w 1792, 400; obrazek 320 px, sylwetka ok. 188 × 220; „180–240 px” czytane jako wysokość sylwetki). Zapasowa kotwica x 1802 w follow-upie F5. Źródło: plan wiersz 4.6 [human].
+- [ ] P1 — Na prawdziwym tablecie: lisek ostry przy grafice 384², „pyknięcie” przy zmianie pozy miękkie, radość na podsumowaniu z 0 gwiazdek nie razi. Źródło: plan wiersz 4.7 [human].
+- [ ] P1 — Po scaleniu: audyt observability (statyczny) dla ekranu zadania z liskiem.
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-23-fox-guide/follow-ups/review-fixes.md` (F1–F7: oddychanie w spoczynku, lisek na karcie „Nowa umiejętność!”, grafika 512², zapas czasu startu, kotwica x 1802, zdanie w „Obrazki” o braku liska, powiązanie z `modeWidgets`).
+- [ ] P2 — DESIGN-GAP 165–168 w `docs/design-gaps.md` (miejsce, wielkość, pozy na ekranach, brak liska bez grafiki) — do odczytu przez autorkę zestawu.
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Lisek siedzi na prawym marginesie obok rogu zeszytu, nie wewnątrz kartki: wewnątrz żaden róg nie jest wolny we wszystkich trybach odpowiedzi.
+- [ ] Pozy: spokój na początku zadania, zamyślenie po pomyłce (także przy pokazanych krokach i przepisywaniu), radość po dobrej odpowiedzi i na podsumowaniu oraz karcie końca minigry; brak liska na karcie „Nowa umiejętność!”.
+- [ ] Budżet startu: grafiki ładują się teraz ok. 47,6 s przy limicie testu 48 s (`balance.loader.totalMs` 50 s minus 2 s zapasu); następna grafika wymaga podniesienia limitu albo odchudzenia plików (follow-up F4).
