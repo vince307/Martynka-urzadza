@@ -77,6 +77,20 @@ describe('answer feedback motion (notebook-polish phase 7)', () => {
         }
     });
 
+    it('a repaint at the same rect keeps the OK bounce and wobble, and a wobble sways around the current place (review fix)', () => {
+        const chunky = load('src/ui/widgets/chunky.ts');
+        const place = method(chunky, 'place');
+        // The "OK" of select and drag modes is re-shown by every render that follows submit: an early return before reset()
+        // is what keeps the wobble started just before that render.
+        expect(place).toMatch(/if \(same\) \{[\s\S]*?return;/);
+        expect(place.indexOf('if (same)')).toBeLessThan(place.indexOf('this.reset()'));
+        expect(method(chunky, 'reset')).toMatch(/setPosition\(this\.baseX, this\.baseY\)/);
+        const wobble = method(task, 'wobble');
+        expect(wobble).not.toMatch(/getData|setData/);
+        expect(wobble.indexOf('this.stopWobble()')).toBeLessThan(wobble.indexOf('const rest = target.x'));
+        expect(method(task, 'stopWobble')).toMatch(/isPlaying\(\)[\s\S]*setX\(wobbling\.rest\)/);
+    });
+
     it('the keypad star starts at the entry field', () => {
         expect(method(task, 'answerSpot')).toMatch(/case 'keypad': return this\.keypad\.entryTarget\(\)/);
     });

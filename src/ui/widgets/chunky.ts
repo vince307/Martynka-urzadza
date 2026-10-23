@@ -18,9 +18,11 @@ export class ChunkyFace {
     readonly face: GameObjects.Container;
     private readonly inner: GameObjects.Container;
     private readonly lipGraphics: GameObjects.Graphics;
+    private baseX = 0;
     private baseY: number;
     private pressTween: Tweens.Tween | null = null;
     private entering = false;
+    private rect: Rect | null = null;
 
     constructor(
         private readonly scene: Scene,
@@ -42,9 +44,22 @@ export class ChunkyFace {
 
     /** Moves the face and the lip to a new rect (a button whose rect changes per call). */
     place(rect: Rect): void {
+        // A repaint at the same rect (the "OK" of select and drag modes is re-shown on every render) keeps a running bounce
+        // or wobble; only a real move stops the tweens and redraws the lip. A face still sunk by a press goes back up (the
+        // owner forgets the press when it re-shows), without touching the bounce or wobble.
+        const same = this.rect !== null && this.rect.x === rect.x && this.rect.y === rect.y
+            && this.rect.width === rect.width && this.rect.height === rect.height;
+        this.rect = { ...rect };
+        if (same) {
+            if (!this.entering && (this.pressTween !== null || this.face.y !== this.baseY)) {
+                this.release();
+            }
+            return;
+        }
         this.reset();
         const cx = rect.x + rect.width / 2;
         const cy = rect.y + rect.height / 2;
+        this.baseX = cx;
         this.baseY = cy;
         this.face.setPosition(cx, cy);
         this.inner.setPosition(-cx, -cy);
@@ -96,7 +111,7 @@ export class ChunkyFace {
         this.entering = false;
         this.scene.tweens.killTweensOf(this.face);
         this.scene.tweens.killTweensOf(this.lipGraphics);
-        this.face.setPosition(this.face.x, this.baseY).setScale(1).setAngle(0).setAlpha(1);
+        this.face.setPosition(this.baseX, this.baseY).setScale(1).setAngle(0).setAlpha(1);
         this.lipGraphics.setAlpha(1);
     }
 

@@ -8,6 +8,7 @@ import { passWelcome, openWelcome, passWelcomeAsChild } from './support/welcome'
 import { answerRight, phaseIs, screenIs, silenceSpeech, snapshot, tapNext, tapTarget } from './support/hook';
 
 const ROUND_LENGTH = 5;
+const TILE_SKILL = 'E1.1.compare_qty_10'; // an E1 skill answered with tiles (src/data/curriculum/E1.ts)
 const SALON_PURCHASE_STARS = '5'; // the renovation stage costs 5: enough for one tap in the room
 
 test.setTimeout(90_000);
@@ -44,8 +45,9 @@ test('#12 the welcome screen stands over the salon backdrop and an age tap start
 });
 
 test('#11 the counter shows the new total at once, with motion on, while the star is still flying', async ({ page }) => {
-    // Age 6 plays E1, the stage of answer tiles: the first tap lands on a tile during the entrance of the task.
-    await passWelcomeAsChild(page, 6, 9);
+    // Age 6 plays E1; the skill is pinned to a tile task (E1 also draws select tasks), so the first tap lands on a tile
+    // during the entrance of the task.
+    await passWelcomeAsChild(page, 6, 9, { e2eSkills: TILE_SKILL });
     await phaseIs(page, 'first');
     expect((await snapshot(page)).input).toBe('tiles');
     expect((await snapshot(page)).counterText).toBe('0');

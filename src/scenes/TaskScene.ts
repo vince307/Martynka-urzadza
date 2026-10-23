@@ -194,7 +194,7 @@ export class TaskScene extends Scene {
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
     private shownIndex = -1;
-    private wobbling: { target: GameObjects.Container; chain: Tweens.TweenChain } | null = null;
+    private wobbling: { target: GameObjects.Container; chain: Tweens.TweenChain; rest: number } | null = null;
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
@@ -1350,8 +1350,8 @@ export class TaskScene extends Scene {
             return;
         }
         this.stopWobble();
-        const rest = (target.getData('restX') as number | undefined) ?? target.x;
-        target.setData('restX', rest);
+        // Read after stopWobble put a swaying object back: a face moved to another rect since its last wobble sways around its new place.
+        const rest = target.x;
         const swings = ANIMATION.wobbleSwings;
         const duration = ANIMATION.wobbleMs / (swings * 2 + 1);
         const tweens: { angle: number; x: number; duration: number; ease: string }[] = [];
@@ -1361,16 +1361,17 @@ export class TaskScene extends Scene {
             tweens.push({ angle: -sign * ANIMATION.wobbleAngle, x: rest - sign * ANIMATION.wobbleOffset, duration, ease: 'Sine.easeInOut' });
         }
         tweens.push({ angle: 0, x: rest, duration, ease: 'Sine.easeInOut' });
-        this.wobbling = { target, chain: this.tweens.chain({ targets: target, tweens }) };
+        this.wobbling = { target, chain: this.tweens.chain({ targets: target, tweens }), rest };
     }
 
     /** Ends a wobble in progress and puts its object back at rest. */
     private stopWobble(): void {
         const wobbling = this.wobbling;
         this.wobbling = null;
-        if (wobbling && wobbling.target.scene) {
+        // A chain already killed by a ChunkyFace move or reset left its face at the new rest: only a running one is put back.
+        if (wobbling && wobbling.target.scene && wobbling.chain.isPlaying()) {
             wobbling.chain.stop();
-            wobbling.target.setAngle(0).setX((wobbling.target.getData('restX') as number | undefined) ?? wobbling.target.x);
+            wobbling.target.setAngle(0).setX(wobbling.rest);
         }
     }
 }

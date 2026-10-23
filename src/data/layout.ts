@@ -266,7 +266,7 @@ export const TASK_LAYOUT = {
     dots: { centerX: 960, y: 96 },   // the row of beads; size and pitch are BEADS
     prompt: { x: 960, y: 290, maxWidth: 1292 },
     promptBeside: { x: (CONTENT_LEFT + 1000) / 2, y: 290, maxWidth: 1000 - CONTENT_LEFT },   // sentence prompts left of the keypad
-    expression: { x: (CONTENT_LEFT + 1000) / 2, y: 456, maxWidth: 1000 - CONTENT_LEFT },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
+    expression: { x: (CONTENT_LEFT + 1000) / 2, y: 456, maxWidth: 1000 - CONTENT_LEFT },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to maxWidth (it ends at x 1000, clear of the keypad column at 1120)
     blank: { width: 64, height: 84, lineWidth: 8, radius: 12, gap: 24 },   // drawn "□" in an expression (DESIGN-GAP 8): about one digit of the expression font; gap = a word space
     blankInline: { width: 52, height: 68, lineWidth: 6, radius: 10, lineHeight: 92 },   // drawn "□" inside a sentence prompt (DESIGN-GAP 8): about one digit of the prompt font
     expressionWide: { x: 960, y: 500, maxWidth: 1300 },      // above the tiles
@@ -323,7 +323,7 @@ export const TASK_LAYOUT = {
         // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
         digits: { picture: { x: CONTENT_LEFT, y: 340, width: 330, height: 508 }, lines: { x: CONTENT_LEFT + 346, y: 340, width: 1020 - CONTENT_LEFT - 346, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
-        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
+        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; notebook-polish: x CONTENT_LEFT..1110 (796), 10 px left of the keypad, keeps them at 12.1.
         hint: { keypad: { picture: { x: CONTENT_LEFT, y: 530, width: 1110 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 730, width: 1110 - CONTENT_LEFT, height: 118 } } },
         minHeight: 120,
         tall: {
@@ -429,7 +429,7 @@ export const TASK_LAYOUT = {
         label: { x: 301, drop: 17, size: 50, gap: 13 },   // gap: kit '+30' at 50 px centred on 301 starts 13 units after the major tick end (246)
         minGapPx: 7, minLabelPx: 22,
     },
-    // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
+    // Star counter top right (kit correct.png): a kit HUD pill (drawHudPill, HUD_PILL tokens), star and number.
     starCounter: { left: 1622, top: 44, width: 196, height: 104, radius: 32, border: 5, starRadius: 30, starGap: 20 },
 } as const;
 
