@@ -3,8 +3,8 @@ project: "Martynka urządza"
 version: 1
 status: draft
 created: 2026-10-11
-updated: 2026-10-21
-prd_version: 2
+updated: 2026-10-22
+prd_version: 3
 main_goal: market-feedback
 top_blocker: external
 milestone_id: v1-pelna-petla-m0-m8
@@ -489,12 +489,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Energia, timery, reklamy, zakupy, sklep, ranking** — Why parked: PRD Non-Goals; zero presji i zero monetyzacji.
 - **Wiele profili, konta, chmura, synchronizacja** — Why parked: PRD Non-Goals i Access Control; jeden profil lokalny, format zapisu zostawia miejsce na profile.
 - **Merge board** — Why parked: PRD Non-Goals; zadania matematyczne zastępują go całkowicie.
-- **Drugi pokój z grafiką** — Why parked: PRD Non-Goals; pierwsza rzecz po v1, zależna od grafiki.
+- **Drugi pokój z grafiką** — Why parked: PRD Non-Goals; pierwsza rzecz po v1, zależna od grafiki. Od PRD v3 część kierunku „ulica i domy” (niżej).
 - **Pozostałe minigry (poza 1–2) i pełna pula zagadek dla wszystkich etapów** — Why parked: PRD Non-Goals; v1 sprawdza format na małej puli.
 - **Dopracowanie treści E1–E2 i E5–E6** — Why parked: PRD Non-Goals; generatory działają, jakość poleceń gwarantowana w v1 dla E3–E4.
 - **Osobny raport postępów poza grą** — Why parked: PRD Non-Goals; podgląd w ustawieniach i eksport zapisu wystarczą.
 - **Układ pionowy, telefon, inne przeglądarki** — Why parked: PRD Non-Goals (niefunkcjonalne); tablet w poziomie, trzy nazwane przeglądarki.
 - **Pierwszy wycinek następnego kamienia (M-02): opinia rodzica, raport o błędzie i statystyki odwiedzin** (proponowany Change ID `parent-sends-and-stats`; PRD v2 FR-028–FR-031, dodane 2026-10-21) — Why parked: wymagania po v1, poza zakresem M-01 (FR-001–FR-027); otwiera się po zamknięciu M-01 (po S-17). Wynik: rodzic za bramką dla dorosłych wysyła opinię (tekst, opcjonalny e-mail, wersja i urządzenie, kolejka bez sieci) i raport o błędzie z karty „Ups!” i „Zapis gry”; autor dostaje je na własnym serwerze gry; autor widzi zbiorcze statystyki odwiedzin bez kodu w grze; rodzic czyta stronę „Prywatność”. Uwaga dla planu: zmienia `deploy/` (punkt odbioru, logi serwera), więc nie idzie autonomicznym biegiem — synchronizację i bootstrap serwera robi właściciel z listą CoiledSpring. Otwarte pytania z PRD v2 (8–10: przechowywanie, ochrona przed nadużyciem, gdzie link „Prywatność”) rozstrzyga plan. Szczegóły uzgodnień: `docs/human-checklist.md` (sekcje „Do zrobienia: statystyki odwiedzin” i „Do zrobienia: opinia rodzica i raport o błędzie z gry”).
+- **Ulica i domy** (PRD v3 FR-032–FR-036, dodane 2026-10-22) — Why parked: wymagania po v1, poza zakresem M-01 (FR-001–FR-027); kandydat na kamień milowy po `parent-sends-and-stats`. Wynik: dziecko widzi ulicę z działkami, pierwszy dom z salonem i kolejnymi pokojami urządzanymi jak salon, gotowy dom dostaje mieszkańców i pamiątkę, otwiera się następna działka; gwiazdki z rund pozostają jedyną walutą. Proponowany pierwszy wycinek: ulica z jednym domem (salon bez straty postępu) i drugi pokój tego domu. Uwagi dla planu: nowy format zapisu (v5: domy, pokoje domu, pamiątki) z migracją salonu bez straty; grafika ulicy, domu z zewnątrz, mieszkańców i nowych pokoi w stylu paczek salonu (inwentaryzacja `designs/` przed planem); wielkość domu i ulicy zależy od tempa zmierzonego w S-17 (PRD v3 Open Questions 11–13).
 - **Statystyki nauki z gry** — Why parked: PRD v2 Non-Goals; dane o dziecku, mało graczy; później najwyżej jako opcja domyślnie wyłączona.
 
 ## Milestone History
