@@ -65,6 +65,8 @@ import { E2E_FORCED_FAILURE, forcedSkills } from '../testing/e2eHook';
 import { prefersReducedMotion } from '../ui/motion';
 import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
+import { GuideFox, type GuideSnapshot } from '../ui/widgets/GuideFox';
+import { guidePose, type GuideScreen } from '../core/guide';
 import { SalonBackdrop } from '../ui/widgets/SalonBackdrop';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { CoverBoard } from '../ui/widgets/CoverBoard';
@@ -126,6 +128,7 @@ export interface TaskSnapshot {
     readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
     readonly backdrop: { readonly mode: 'salon' | 'plain'; readonly captures: number };   // the blurred salon behind the notebook (notebook-polish)
+    readonly guide: GuideSnapshot;   // the fox guide in the notebook corner (fox-guide)
     readonly solutionOverflow: boolean;   // the solution lines on screen overflow their room even at the smallest scale (audit WNA-04)
 }
 
@@ -198,6 +201,7 @@ export class TaskScene extends Scene {
     private stage!: StageDef;
     private rng!: Rng;
     private narrator: Narrator | undefined;
+    private guide!: GuideFox;   // the fox guide (decorative, never takes input)
     private backdrop: SalonBackdrop | undefined;   // the blurred salon behind the notebook
     private backdropRooms: unknown = null;   // the `rooms` object the backdrop was captured from
     private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
@@ -257,6 +261,7 @@ export class TaskScene extends Scene {
         this.backdrop = new SalonBackdrop(this);
         this.refreshBackdrop();
         drawNotebook(this);
+        this.guide = new GuideFox(this);
         this.picture = new TaskPicture(this);
         this.hintPicture = new TaskPicture(this);
         this.dots = new ProgressDots(this);
@@ -428,6 +433,8 @@ export class TaskScene extends Scene {
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
         const summary = this.currentSummary();
         const unlock = this.unlockView();
+        const screen: GuideScreen = unlock ? 'unlock' : summary ? 'summary' : 'task';
+        this.guide.show(guidePose(screen, this.state.phase));
         if (unlock) {
             // The card comes before the summary: nothing may redraw the summary over it.
             this.registry.set(REGISTRY_KEYS.roomSwitch, false);
@@ -1229,6 +1236,7 @@ export class TaskScene extends Scene {
             correctChoices: task.check && view.input === 'tiles' ? Object.freeze(view.choices.filter((c) => task.check?.(c))) : null,
             markedTile: this.tiles.markedValue(),
             backdrop: { mode: this.backdrop?.mode ?? 'plain', captures: this.backdrop?.captures ?? 0 },
+            guide: this.guide.snapshot(),
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
             choices: Object.freeze([...(view.input === 'tiles' || view.input === 'select' ? view.choices : [])]),
