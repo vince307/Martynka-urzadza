@@ -1,60 +1,58 @@
 # Handoff — `fox-guide` (slice fix:fox-guide)
 
-Written by step `/10x-implement fox-guide phase 1` of run 2026-10-23-fox-guide: three 384 x 384 WebP fox poses are in
-`public/assets/ui/`, `UI_ART` has 8 rows, and a new `tests/bootBudget.test.ts` pins the boot payload (47.6 s at 50 KB/s,
-limit 48 s). Phase 1 is committed as `e392442`. The next agent starts phase 2 (pose rule and geometry, test-first).
+Written by step `/10x-tdd fox-guide phase 2` of run 2026-10-23-fox-guide: the fox tokens (`GUIDE`, `ANIMATION.guide*`), the pure pose rule and the silhouette rect are committed test-first as `2d99dcf`. The next agent starts phase 3 (the widget and scene glue); it must call `guidePose`/`guideRect`/`GUIDE_ART`, never copy their numbers.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/fox-guide`, cut from `main` at `1962312` |
-| Commits | 5 on the branch after this step: identity, research, plan, plan review, `feat(fox-guide): grafiki liska, wiersze UI_ART i budzet startu (p1)` (`e392442`), plus the handoff commit |
+| Commits | phase 1 `e392442`, phase 2 `2d99dcf` (`test(fox-guide): regula pozy i geometria liska (p2)`), plus the handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | 21 (`grep -c '^- \[ \]' plan.md`); 1.1-1.3 ticked, 1.4 left open for the orchestrator's e2e |
+| `## Progress` rows remaining | 18 (`grep -c '^- \[ \]' plan.md`); 1.4 and 2.4 wait for the orchestrator's e2e |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `public/assets/ui/fox-{idle,cheer,think}.webp` | 384 x 384 WebP, 13 700 / 15 086 / 13 598 B (42 384 B), made by `npm run art` |
-| `scripts/make-task-art.mjs` | `FOX` root + `FOX_POSES` jobs, existence check, count line |
-| `src/data/uiArt.ts` | ids `guideIdle`, `guideCheer`, `guideThink`, `label: ''`; keys `ui/fox-*` |
-| `tests/bootBudget.test.ts` | new: sums TASK_ART, ROOM_ART, UI_ART, font, boot sounds (larger format) from disk; `HEADROOM_MS` 2000 |
-| `tests/uiArt.test.ts` | `toHaveLength(8)` |
-| `src/data/balance.ts` | `loader` comment only (2 378 800 B, 47.6 s, names the budget test); values unchanged |
+| `src/data/layout.ts` | `GUIDE` (anchor 1792,400; displaySize 320; sourceSize 1024; origin; silhouette) and `ANIMATION.guidePoseMs/guidePopScale/guideEase` |
+| `src/core/guide.ts` | `GuidePose`, `GuideScreen`, `GUIDE_ART`, `guidePose` (two `never` guards) |
+| `src/core/guideLayout.ts` | `guideRect(guide = GUIDE)` |
+| `tests/guide.test.ts` | literal pose table (3 screens x 5 phases), `GUIDE_ART` ids in `UI_ART_KEYS` |
+| `tests/guideLayout.test.ts` | rect values, corner, scene margin, pop margins, ~85 no-overlap cases (12 px gap) from the real layout functions and `TASK_LAYOUT`/`HUD_LAYOUT`/`MINIGAME_LAYOUT`/`SUMMARY_LAYOUT`/`UNLOCK_LAYOUT` |
+| `context/changes/fox-guide/plan.md` | rows 2.1-2.3 ticked with the sha |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/fox-guide` (observed) |
-| `npm run art` | only the three new files appeared in `git status public/`; other files byte-identical |
-| `npx vitest run tests/bootBudget.test.ts tests/uiArt.test.ts` | green |
-| deliberate break `HEADROOM_MS` 2000 -> 3000 | red: "boot payload 2378800 B = 47.6 s at 50 KB/s, limit 47 s"; restored, green. Meta-check: the sum comes from `statSync` of real files through the boot tables, so the break proves the sum is real and near the limit |
+| first RED (stubs: `guidePose` -> `'idle'`, `guideRect` -> zero rect, `GUIDE_ART` all `guideIdle`) | 18 assertion failures, e.g. "expected 1 to be 3" (distinct poses) and "expected +0 to be close to 1714.5, received difference is 1714.5" (rect); the no-overlap cases pass vacuously on the empty stub rect and are proven by the break below |
+| GREEN | `tests/guide.test.ts` + `tests/guideLayout.test.ts`: 104 passed |
+| deliberate break `GUIDE.anchor.x` 1792 -> 1700 | 16 red: tall lines, drag tray and tile, coin tray tile, keypad, clock lines, ribbon, rect values and pop margin; restored, green |
+| deliberate break `retype` -> `'idle'` | 1 red ("task / retype -> think"); restored, green |
+| meta-check | overlap oracles come from `pictureLayout`, `answerSpans`, `dragLayout`, `coinLayout`, `keypadGrid` and the layout constants, not from `guideRect`'s tokens, so moving the anchor turns them red; the pose oracle is a literal table |
+| `grep -n never src/core/guide.ts tests/guideLayout.test.ts` | guards in both files |
 | `npm run lint` / `typecheck` | OK / OK |
-| `npm test` | baseline 3781 + 1 = 3782 passed (200 files) |
+| `npm test` | baseline 3782 (phase 1) + 104 = 3886 passed (202 files) |
 | deploy scripts, `sample` E1-E6, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| `git diff main -- src/data/balance.ts` | one line, the `loader` comment; `save.ts` and `tests/fixtures` untouched |
-| e2e (`npx playwright test`) | NOT run by this step (Chromium cannot start in the sandbox); orchestrator runs it, expect baseline 150 + 0 |
+| e2e (`npx playwright test`) | NOT run (Chromium cannot start in the sandbox); orchestrator runs it, expect 150 + 0 |
 
 ## 4. Next command
 
-`/10x-tdd fox-guide phase 2`
+`/10x-implement fox-guide phase 3`
 
 ## 5. Open
 
-- Row 1.4 stays unticked until the orchestrator's e2e run (150 + 0).
-- Measured payload is 2 378 800 B (47.6 s), 0.4 s under the 48 s limit; the plan estimated 47.4 s (the test counts the
-  larger sound format, M4A). Any further boot art needs smaller art or a decision, never a change of `totalMs`/`HEADROOM_MS`.
-- Manual rows from the plan review still open: 3.5 [visual], 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
-- DESIGN-GAP rows 165-168 planned for phase 3; follow-ups planned for phase 4 (see plan).
+- Rows 1.4 and 2.4 stay unticked until the orchestrator's e2e run (150 + 0).
+- Manual rows still open: 3.5 [visual], 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
+- DESIGN-GAP rows 165-168 and follow-ups are planned for phases 3 and 4; boot payload 47.6 s of 48 s (see phase 1): no more boot art.
+- The overlap cases model text blocks as boxes (prompt 120 px, expressions 160 px, settings hint 6 lines at 1.4 line height); the visual pass (4.5) is the real check.
 
 ## 6. Autonomous decisions
 
-- Row 1.4 not ticked: the e2e part is the orchestrator's; I did not run it. Would change: none.
-- `bootBudget` counts the larger of each boot sound's two formats (as the plan says), giving 47.6 s instead of the
-  plan's 47.4 s estimate; still within the 48 s limit. Would change: the budget exceeding 48 s.
-- Code commit first, Progress ticks and handoff in a second docs commit so the ticks can cite the real sha.
+- Mixed-phase question: not asked; the phase is pure functions plus data tokens, all done test-first, `Driver: tdd` kept. The tokens in `layout.ts` were added with the stubs (data, no behaviour). Would change: none.
+- Commit message taken as proposed in spirit (Polish, `test(fox-guide): ... (p2)`); stopped after this phase.
+- Test names use `%s` instead of the `%i` first written (it printed NaN). Plan ticks 2.1-2.3 cite `2d99dcf`; 2.4 left for the orchestrator.

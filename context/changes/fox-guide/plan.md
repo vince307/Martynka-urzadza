@@ -556,9 +556,9 @@ None: save format stays v4, nothing stored.
 
 #### Automated
 
-- [ ] 2.1 New tests red before the change (stubs return `'idle'` / an empty rect), green after; unit `<branch baseline> + N`
-- [ ] 2.2 Deliberate break: `GUIDE.anchor.x` 1700 → the tall-lines and drag-tray cases red; `guidePose` maps `retype` to `'idle'` → the retype row red; each restored; meta-check: the overlap oracles come from the real layout functions and `TASK_LAYOUT`/`HUD_LAYOUT` constants, not from `guideRect`'s own tokens, and the pose oracle is a literal table
-- [ ] 2.3 `grep -n "never" src/core/guide.ts tests/guideLayout.test.ts` shows both exhaustive guards
+- [x] 2.1 New tests red before the change (stubs return `'idle'` / an empty rect), green after; unit `<branch baseline> + N` — 2d99dcf
+- [x] 2.2 Deliberate break: `GUIDE.anchor.x` 1700 → the tall-lines and drag-tray cases red; `guidePose` maps `retype` to `'idle'` → the retype row red; each restored; meta-check: the overlap oracles come from the real layout functions and `TASK_LAYOUT`/`HUD_LAYOUT` constants, not from `guideRect`'s own tokens, and the pose oracle is a literal table — 2d99dcf
+- [x] 2.3 `grep -n "never" src/core/guide.ts tests/guideLayout.test.ts` shows both exhaustive guards — 2d99dcf
 - [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 ### Phase 3: The fox in the task scene
