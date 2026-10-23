@@ -1,10 +1,10 @@
 ---
 change_id: fox-guide
 title: Fox guide (silent mascot in the corner of the task notebook, PRD FR-037)
-status: impl_reviewed
+status: archived
 created: 2026-10-23
 updated: 2026-10-23
-archived_at: null
+archived_at: 2026-10-23T16:51:07Z
 ---
 
 ## Notes
