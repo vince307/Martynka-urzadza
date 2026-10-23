@@ -961,8 +961,8 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 2.4 [visual] Gradient proof (WebGL, hook build on 4399): the face shows a visible light-to-ivory gradient top to bottom; if flat, switch `fillPaper` to the two-band fallback in this phase and re-shoot; Canvas proof: no switch forces Canvas — record in the phase commit that Canvas draws `top` solid (source-proven) and the face still reads as ivory
-- [ ] 2.5 [visual] Desktop 1440 and tablet 1024: welcome and a task (tiles) next to `designs/martynka-maths-A-v1/screenshots/welcome.png` and `task-tiles.png` — stitch marks, margin line, ribbon top right over the frame, 12 px darker bottom edge, shadow below; nothing of the notebook covers the HUD, tiles, prompt or "Rodzic"; the sunflower sits left-bottom clear of the age buttons
+- [x] 2.4 [visual] Gradient proof (WebGL, hook build on 4399): the face shows a visible light-to-ivory gradient top to bottom; if flat, switch `fillPaper` to the two-band fallback in this phase and re-shoot; Canvas proof: no switch forces Canvas — record in the phase commit that Canvas draws `top` solid (source-proven) and the face still reads as ivory — visual gate 3c58eec: WebGL face flat #fff8e7 top to bottom by the p2 decision (35aba94, `fillPaper` midpoint, two bands showed a seam); the kit face spans 3 RGB units (232->229), so flat reads the same; Canvas not forced (source-proven)
+- [x] 2.5 [visual] Desktop 1440 and tablet 1024: welcome and a task (tiles) next to `designs/martynka-maths-A-v1/screenshots/welcome.png` and `task-tiles.png` — stitch marks, margin line, ribbon top right over the frame, 12 px darker bottom edge, shadow below; nothing of the notebook covers the HUD, tiles, prompt or "Rodzic"; the sunflower sits left-bottom clear of the age buttons — visual gate 3c58eec: `*-welcome.jpg`, `*-task-tiles.jpg` vs `kit-welcome.jpg`, `kit-task-tiles.jpg`
 
 ### Phase 3: The child's salon, blurred, behind the notebook
 
@@ -975,8 +975,8 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 3.5 [visual] Blur-capture proof (WebGL, hook build on 4399): the task screen backdrop is soft (no hard furniture edges) and recognisably the salon; if the capture did NOT bake the blur in (hard edges, blocky), drop the filter and set `BACKDROP.scale` to 0.125 in this phase (decided fallback: softening by the upscale only — never a live per-frame filter) and re-shoot
-- [ ] 3.6 [visual] Desktop 1440 and tablet 1024: welcome, task, summary, unlock with the backdrop vs the kit frames `welcome.png`, `task-tiles.png`, `summary.png`, `unlock.png` (kit wash 60 % ivory over a 5 px blur); `?e2eArt=room` shows the plain page colour; room → buy a piece → "Do zadań": the new piece is visible in the backdrop (hook `backdrop.captures` +1)
+- [x] 3.5 [visual] Blur-capture proof (WebGL, hook build on 4399): the task screen backdrop is soft (no hard furniture edges) and recognisably the salon; if the capture did NOT bake the blur in (hard edges, blocky), drop the filter and set `BACKDROP.scale` to 0.125 in this phase (decided fallback: softening by the upscale only — never a live per-frame filter) and re-shoot — visual gate: blur baked in but far stronger than the kit (salon unrecognisable, `before-fix-backdrop-*.jpg`); fixed in 3c58eec (`BACKDROP.blur` one 1 px pass): soft, no hard edges, window, frames, sofa and plants recognisable
+- [x] 3.6 [visual] Desktop 1440 and tablet 1024: welcome, task, summary, unlock with the backdrop vs the kit frames `welcome.png`, `task-tiles.png`, `summary.png`, `unlock.png` (kit wash 60 % ivory over a 5 px blur); `?e2eArt=room` shows the plain page colour; room → buy a piece → "Do zadań": the new piece is visible in the backdrop (hook `backdrop.captures` +1) — visual gate 3c58eec: welcome/task/summary/unlock frames; `*-plain-page.jpg` (captures 0, mode plain); purchase: captures 1 -> 2, `*-backdrop-after-purchase.jpg`, `*-backdrop-after-sofa.jpg`
 
 ### Phase 4: Chunky helper and the task controls
 
@@ -989,7 +989,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 4.5 [visual] Desktop 1440 and tablet 1024: task tiles, task keypad, solution steps ("Następny krok"/"Już wiem"), "Dalej" next to `task-tiles.png`, `task-keypad.png`, `solution-step-1.png`, `correct.png`; lips the kit depth and colour; a held press shows the face sitting on the lip; the tile highlight still appears at once (< 100 ms, PRD)
+- [x] 4.5 [visual] Desktop 1440 and tablet 1024: task tiles, task keypad, solution steps ("Następny krok"/"Już wiem"), "Dalej" next to `task-tiles.png`, `task-keypad.png`, `solution-step-1.png`, `correct.png`; lips the kit depth and colour; a held press shows the face sitting on the lip; the tile highlight still appears at once (< 100 ms, PRD) — visual gate 3c58eec: `*-task-tiles`, `*-task-keypad`, `*-solution-step-1/2`, `*-correct`, `*-press-held` (0 key held on its lip, darker face)
 
 ### Phase 5: Page and age buttons on the chunky helper
 
@@ -1002,7 +1002,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 5.5 [visual] Desktop 1440 and tablet 1024: welcome (age buttons, "Rodzic"), summary, unlock, "Wróć" next to `welcome.png`, `summary.png`, `unlock.png`; lips present, no overlap with the notebook edge or the build id
+- [x] 5.5 [visual] Desktop 1440 and tablet 1024: welcome (age buttons, "Rodzic"), summary, unlock, "Wróć" next to `welcome.png`, `summary.png`, `unlock.png`; lips present, no overlap with the notebook edge or the build id — visual gate 3c58eec: `*-welcome`, `*-summary`, `*-unlock`, `*-wroc`; no overlap with the notebook edge or the build id
 
 ### Phase 6: HUD pills
 
@@ -1015,7 +1015,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 6.5 [visual] Desktop 1440 and tablet 1024: HUD between tasks (speaker, "Do pokoju", counter, gear) next to `task-tiles.png` HUD; pills share gradient, border and lip; the gear hint bubble still points at the gear
+- [x] 6.5 [visual] Desktop 1440 and tablet 1024: HUD between tasks (speaker, "Do pokoju", counter, gear) next to `task-tiles.png` HUD; pills share gradient, border and lip; the gear hint bubble still points at the gear — visual gate 3c58eec: `*-hud-between`, `*-gear-hint`
 
 ### Phase 7: Correct bounce, think wobble, counter pop
 
@@ -1028,7 +1028,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 7.5 [visual] Desktop 1440 and tablet 1024 (hook build): correct tile (bounce, green, star flies from above the tile, counter pops on landing — `correct.png`), keypad correct (star starts at the entry field), wrong/second try (tile wobbles slowly, hint yellow, nothing red, notebook still — `second-try.png`, `hint-tiles.png`, `hint-keypad.png`); with `--force-prefers-reduced-motion`/`emulateMedia`: no bounce, wobble, flight or pop, counter number still changes
+- [x] 7.5 [visual] Desktop 1440 and tablet 1024 (hook build): correct tile (bounce, green, star flies from above the tile, counter pops on landing — `correct.png`), keypad correct (star starts at the entry field), wrong/second try (tile wobbles slowly, hint yellow, nothing red, notebook still — `second-try.png`, `hint-tiles.png`, `hint-keypad.png`); with `--force-prefers-reduced-motion`/`emulateMedia`: no bounce, wobble, flight or pop, counter number still changes — visual gate 3c58eec: `*-correct-bounce` (green tile, star above it; tile colour fixed in 3c58eec to the kit `.answer.selected`), `*-keypad-correct` (star at the field), `*-wrong-wobble`/`*-second-try` (no red), `*-reduced-*`; OK wobble in `*-{select,drag-blocks,clock-set,coins}-wrong-wobble`
 
 ### Phase 8: Beads and entrance stagger
 
@@ -1040,7 +1040,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 8.4 [visual] Desktop 1440 and tablet 1024: beads row (future/current/done kit colours, larger, no overlap with HUD pills), a bead filling with a pop after a correct answer; tiles and keypad entering with the stagger (a short screen recording or 3 frames at 0/150/400 ms); reduced motion: everything at rest at once
+- [x] 8.4 [visual] Desktop 1440 and tablet 1024: beads row (future/current/done kit colours, larger, no overlap with HUD pills), a bead filling with a pop after a correct answer; tiles and keypad entering with the stagger (a short screen recording or 3 frames at 0/150/400 ms); reduced motion: everything at rest at once — visual gate 3c58eec: beads in every task frame; `*-stagger-1..4` (video frames, ~40 ms apart); `*-reduced-entrance-000` at rest
 
 ### Phase 9: Summary pops and the end-of-round burst
 
@@ -1052,7 +1052,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 9.4 [visual] Desktop 1440 and tablet 1024: summary of a clean round (5 stars pop in, "+N", burst) and a warm-up summary (6 stars centred) next to `summary.png`; a purchase in the room still bursts as before; reduced motion: static summary
+- [x] 9.4 [visual] Desktop 1440 and tablet 1024: summary of a clean round (5 stars pop in, "+N", burst) and a warm-up summary (6 stars centred) next to `summary.png`; a purchase in the room still bursts as before; reduced motion: static summary — visual gate 3c58eec: `*-summary-pop-early/mid`, `*-summary`, `*-warmup-summary` (6 stars, +8), `*-room-slot-burst`, `*-reduced-summary`
 
 ### Phase 10: Plain zero (Martynka Next)
 
@@ -1065,7 +1065,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 #### Manual
 
-- [ ] 10.5 [visual] Desktop 1440 and tablet 1024: keypad (0 key), a task with 0 in the prompt ("10 + 20"), summary "+10" if available: a plain oval 0, 0 visibly narrower than O, 1/7 unchanged, Polish diacritics (ą ę ł ś ć ź ż ń ó) render in prompts and the welcome title; fallback decided in advance: if the hook reports `fontHealth: 'fallback'` in Chromium, revert to the original file and constants in this phase, keep the script, and record a follow-up (the zero stays slashed)
+- [x] 10.5 [visual] Desktop 1440 and tablet 1024: keypad (0 key), a task with 0 in the prompt ("10 + 20"), summary "+10" if available: a plain oval 0, 0 visibly narrower than O, 1/7 unchanged, Polish diacritics (ą ę ł ś ć ź ż ń ó) render in prompts and the welcome title; fallback decided in advance: if the hook reports `fontHealth: 'fallback'` in Chromium, revert to the original file and constants in this phase, keep the script, and record a follow-up (the zero stays slashed) — visual gate 3c58eec: `desktop-task-keypad` "10 + 20", keypad 0 key, plain oval 0 in tiles; diacritics in the welcome title and prompts; hook `fontHealth: loaded`
 
 ### Phase 11: Docs, follow-ups, seam sweep and the full visual pass
 
@@ -1080,7 +1080,7 @@ old file and fetches the new one at the next update (normal precache revision be
 #### Manual
 
 - [x] 11.6 [reviewer] The CLAUDE.md sentences match the code (grep each named symbol); save format v4 stated; gaps 155–164 and the updated rows 20, 25, 152 read correctly — impl-review: every symbol of the Notebook polish block grepped present, v4 stated; gear wording and gap 158 "gradient" corrected in the review fix
-- [ ] 11.7 [visual] Full screenshot pass, desktop 1440 and tablet 1024 (hook build on 4399), each state next to its kit frame in `designs/martynka-maths-A-v1/screenshots/`: welcome (`welcome.png`), task tiles (`task-tiles.png`), task keypad (`task-keypad.png`), correct (`correct.png`), wrong / second try (`second-try.png`, `hint-tiles.png`, `hint-keypad.png`), solution steps (`solution-step-1.png`, `solution-step-2.png`), summary (`summary.png`), unlock (`unlock.png`), room → buy a piece → back to the task (backdrop shows the new piece), reduced motion (static frames, no flight/pop); also `tablet-1024.png` for the 1024 layout; every chunky target still ≥ 96 px; nothing red after a wrong answer
+- [x] 11.7 [visual] Full screenshot pass, desktop 1440 and tablet 1024 (hook build on 4399), each state next to its kit frame in `designs/martynka-maths-A-v1/screenshots/`: welcome (`welcome.png`), task tiles (`task-tiles.png`), task keypad (`task-keypad.png`), correct (`correct.png`), wrong / second try (`second-try.png`, `hint-tiles.png`, `hint-keypad.png`), solution steps (`solution-step-1.png`, `solution-step-2.png`), summary (`summary.png`), unlock (`unlock.png`), room → buy a piece → back to the task (backdrop shows the new piece), reduced motion (static frames, no flight/pop); also `tablet-1024.png` for the 1024 layout; every chunky target still ≥ 96 px; nothing red after a wrong answer — visual gate 3c58eec: 116 frames + 12 kit frames in `screenshots/`, README there; targets >= 96 px (`tests/layout.test.ts`, clock OK measured 72 px at 1440 = 96 scene px)
 - [ ] 11.8 [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj", and confirms decision D-1, which departs from scope.md's words: no spine band (kit stitch marks only) and the shadow straight down, not lower-right
 
 ### Phase 12: The polished round stays playable by touch — e2e (#11, #12)

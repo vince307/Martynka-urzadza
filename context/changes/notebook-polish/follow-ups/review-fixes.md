@@ -65,6 +65,10 @@ Trigger: the next change to `src/data/layout.ts` animation or HUD tokens, or to 
 `TASK_LAYOUT.barSpan.keypad.x` is 310, 4 px left of `CONTENT_LEFT` (314); `starBurst` relies on its callers for the reduced-motion check (no guard of its own); `Keypad` has no `killTweensOf` on hide (its field wobble ends at rest by itself); `WelcomeScene.backdropState` sits under the JSDoc of `targets`; the bounce of a select/drag "OK" at a correct answer is cut when the button hides in the done phase (the star and the counter pop still run); `SalonBackdrop.render` assumes `holder.destroy(true)` frees the filter camera made by `enableFilters()` (not read in the Phaser 4.2.1 source).
 Trigger: the next change to `SalonBackdrop`, `starBurst`, `Keypad`, `WelcomeScene` or the bar layout, or the visual gate finds the bar crossing the margin.
 
+## 17. Check mark on the correct answer tile (visual gate)
+The kit marks the correct tile with a small check after the number (`correct.png`, screen.css `.answer .small-check`). The visual gate gave the tile the kit's `.answer.selected` face and outline (`AnswerTiles.paint`, `PLACEHOLDER_COLORS.selected`/`selectedBorder`), but no check is drawn: the glyph is not proven in `MartynkaNext.ttf` and a drawn check needs its own size rule. The visual gate also measured the hint bar of the keypad layout (`TASK_LAYOUT.barSpan.keypad.x` 310) 20 px right of the margin line (x 290): it does not cross it (entry 16).
+Trigger: the maintainer asks for the check at the [human] tablet check, or the next change to `AnswerTiles`.
+
 ## Closed by this change
 - Slashed zero: closed in phase 10 (`MartynkaNext.ttf`).
 Trigger: none (closed); reopen if a browser shows the old zero.
