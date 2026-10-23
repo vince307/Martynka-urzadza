@@ -446,3 +446,20 @@ Kierunek po v1 zapisany w PRD v3 (FR-032–FR-036), planie (sekcja 11, „Po v1 
 - [ ] P2 — Przed planem etapu: inwentaryzacja `designs/` pod ulicę, dom z zewnątrz, mieszkańców i pokoje drugiego domu; lista grafik do wygenerowania w stylu paczki salonu (PRD v3 OQ 13).
 - [ ] P2 — Wybrać pamiątkę od mieszkańców: naklejka do albumu, list czy wzór (PRD v3 OQ 12).
 - [ ] P2 — Kolejność kamieni po M-01: najpierw `parent-sends-and-stats`, potem „ulica i domy” (albo odwrotnie: decyzja autora).
+
+## Bieg 2026-10-22-notebook-polish (dopracowanie zeszytu i interfejsu)
+
+Wynik: PR #99 scalony 2026-10-23 na „zmerguj” właściciela (243ce53). Zapis v4 bez zmian. Testy: jednostkowe 3736 → 3781, e2e 144 → 150. Audyt observability po wdrożeniu.
+
+- [ ] P0 — Po wdrożeniu sprawdzić na tablecie: wygląd zeszytu z rozmytym salonem, zwykłe zero, płynność animacji (podskok, kołysanie, koraliki, gwiazdki na podsumowaniu), „ogranicz ruch” w systemie. Źródło: plan wiersz 11.8 [human].
+- [ ] P0 — Na iPadzie: czy czcionka Martynka Next się wczytuje (zero bez kreski; w „Obrazki”/zdrowiu czcionki brak zastępczej). Źródło: follow-up 11.
+- [ ] P1 — Po scaleniu: audyt observability (`/10x-observability-audit`) dla ekranu zadania, podsumowania i tła z salonem.
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-22-notebook-polish/follow-ups/review-fixes.md` (17 otwartych: m.in. warga dla SelectTiles/CoverBoard/kości, ptaszek na dobrym kafelku, wybuch na karcie „Nowa umiejętność!”, czas ładowania czcionki).
+
+### Decyzje biegu: zaakceptuj albo odwróć
+
+- [ ] Zeszyt jak w makiecie: same przeszycia bez osobnego paska grzbietu, cień prosto w dół (Twój opis mówił o grzbiecie i cieniu w prawo-dół; follow-up 10).
+- [ ] Klawiatura przesunięta o 80 px w prawo, żeby etykiety osi w podpowiedzi miały ≥ 12 px na tablecie (treść zeszytu zaczyna się za marginesem).
+- [ ] Papier zeszytu płaski (bez dwóch pasów gradientu — w Phaserze gradient na zaokrąglonym kształcie rysuje się nierówno).
+- [ ] Rozmycie salonu lekkie (jedno przejście), żeby pokój był rozpoznawalny jak w makiecie.
+- [ ] Czcionka zmieniona i przemianowana na „Martynka Next” (licencja OFL zachowana z notą o zmianie; `npm run font` odtwarza ten sam plik).
