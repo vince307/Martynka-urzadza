@@ -57,6 +57,14 @@ Trigger: a tablet check finds the hint labels too small.
 `SalonBackdrop` captures on create and on wake only; a purchase made while a task screen sleeps is picked up on wake.
 Trigger: a playtest note that the backdrop shows a stale piece.
 
+## 15. Literals and borrowed tokens left by the polish (impl-review F5)
+`hudPill.ts` `PRESSED_FILL` (0xfff0cc, repeats `HUD_PILL.bottom`), the ease names `'Sine.easeOut'`/`'Sine.easeInOut'` in `TaskScene.bounce`/`wobble` and `StarCounter.pop`, `SHADOW_STEPS` and the stitch highlight in `notebook.ts`, the default speed range of `starBurst`, the summary burst depth borrowed from `ROOM_LAYOUT.depth.celebrate`, `WELCOME_LAYOUT.flower.key` written by hand instead of from `TASK_ART`, the unused `TASK_LAYOUT.starCounter.border`, and `notebookGeometry().edge` computed but `drawNotebook` drawing the edge from `NOTEBOOK.edge`.
+Trigger: the next change to `src/data/layout.ts` animation or HUD tokens, or to `notebook.ts`/`hudPill.ts`.
+
+## 16. Small seams found by the implementation review (impl-review F6-F8)
+`TASK_LAYOUT.barSpan.keypad.x` is 310, 4 px left of `CONTENT_LEFT` (314); `starBurst` relies on its callers for the reduced-motion check (no guard of its own); `Keypad` has no `killTweensOf` on hide (its field wobble ends at rest by itself); `WelcomeScene.backdropState` sits under the JSDoc of `targets`; the bounce of a select/drag "OK" at a correct answer is cut when the button hides in the done phase (the star and the counter pop still run); `SalonBackdrop.render` assumes `holder.destroy(true)` frees the filter camera made by `enableFilters()` (not read in the Phaser 4.2.1 source).
+Trigger: the next change to `SalonBackdrop`, `starBurst`, `Keypad`, `WelcomeScene` or the bar layout, or the visual gate finds the bar crossing the margin.
+
 ## Closed by this change
 - Slashed zero: closed in phase 10 (`MartynkaNext.ttf`).
 Trigger: none (closed); reopen if a browser shows the old zero.

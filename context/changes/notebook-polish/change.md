@@ -1,7 +1,7 @@
 ---
 change_id: notebook-polish
 title: Notebook polish (finished maths-A notebook, chunky controls, interface life, plain zero)
-status: implemented
+status: impl_reviewed
 created: 2026-10-22
 updated: 2026-10-23
 archived_at: null

@@ -985,7 +985,7 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 4.1 New tests green; unit `<phase-3 count> + N` — 26f5c23
 - [x] 4.2 Deliberate break: set `LIPS.answer.offset` to 40 → the lip-overlap case red; delete the `prefersReducedMotion` check in `chunky.ts` → the wiring test red; each restored; meta-check: the overlap case reads the real `TASK_LAYOUT` rects and `LIPS`, not copies — 26f5c23
 - [x] 4.3 `grep -n "+ 8\|+ 6" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` shows no lip literal left; existing source-regex tests (`gestureWiring`, `overflowWiring`, `variantCountWiring`) green unchanged — 26f5c23
-- [ ] 4.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones)
+- [x] 4.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`task-round`, `drawn-tasks`, `money-pay`, `clock-set` tap the same zones) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -998,7 +998,7 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 5.1 Unit `<phase-4 count> + N`, green — ceaab1b
 - [x] 5.2 Deliberate break: start the `PageButton` press in `pointerup` instead of `pointerdown` → no unit red (record); instead break `LIPS.page.offset` to 60 → the summary-button lip case red; restored; meta-check: the fire moment is proven by e2e (`first-launch`, `task-round` summary taps) at the orchestrator gate, not by this unit case — ceaab1b
 - [x] 5.3 `grep -rn "ageButtonShadow" src` empty (or only the token in `layout.ts` if still used elsewhere, named in the commit) — ceaab1b
-- [ ] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`first-launch`, `task-round`, `adaptive` tap these buttons)
+- [x] 5.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`first-launch`, `task-round`, `adaptive` tap these buttons) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -1011,7 +1011,7 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 6.1 `tests/layout.test.ts` green with the new HUD heights (HUD rects ≥ 96, no overlap with beads at the phase-1 bead tokens — if it fails, apply the phase-1 bead fallback here and name it); unit `<phase-5 count> + N` — edfbf29
 - [x] 6.2 Deliberate break: set `HUD_PILL.height` to 140 → the HUD overlap case red; restored; meta-check: the overlap case uses the real `HUD_LAYOUT` and `TASK_LAYOUT.dots`/`BEADS` rects — edfbf29
 - [x] 6.3 `grep -n "tweens" src/ui/widgets/SettingsIcon.ts` empty (gear stays motionless); `tests/dialogSessions.test.ts` green unchanged — edfbf29
-- [ ] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator`, `parent-settings`, `room-purchase` use these targets; `counterText` unchanged)
+- [x] 6.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`narrator`, `parent-settings`, `room-purchase` use these targets; `counterText` unchanged) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -1024,7 +1024,7 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 7.1 `tests/motionWiring.test.ts` red before the change (it asserts `starLanded` and no `scrollX`), green after; unit `<phase-6 count> + N` — 73e778f
 - [x] 7.2 Deliberate break: move `setValue` into the `starLanded` handler → the "setValue in onStars" case red (and, at the orchestrator, `counterText` specs red); emit `starLanded` before the flight → the onComplete case red; each restored; meta-check: the regexes anchor on the method bodies (`onStars`, `flyStar`), not on any occurrence in the file — 73e778f
 - [x] 7.3 `grep -rn "shakeMs\|shakeDistance\|shakeSegments\|cameras.main.scrollX" src` empty — 73e778f
-- [ ] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (7 `counterText` specs green)
+- [x] 7.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (7 `counterText` specs green) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -1036,7 +1036,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 - [x] 8.1 `grep -n "staggerDelays" src/ui/widgets/AnswerTiles.ts src/ui/widgets/Keypad.ts` and `grep -n "newlyDone" src/ui/widgets/ProgressDots.ts` present; `tests/reducedMotionWiring.test.ts` list gains `ProgressDots.ts` (and stays green) — 639a467
 - [x] 8.2 Deliberate break: remove the reduced-motion branch in `ProgressDots` → the wiring test red; restored; meta-check: the e2e tap-during-entrance proof is phase 12 (#11), this unit guard only proves the branch exists — 639a467
-- [ ] 8.3 Unit `<phase-7 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round specs tap tiles right after a task shows — proves the stagger does not gate input)
+- [x] 8.3 Unit `<phase-7 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (round specs tap tiles right after a task shows — proves the stagger does not gate input) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -1048,7 +1048,7 @@ old file and fetches the new one at the next update (normal precache revision be
 
 - [x] 9.1 `grep -n "starBurst" src/scenes/RoomScene.ts src/ui/widgets/SummaryPanel.ts` present in both; `grep -rn "generateTexture" src/scenes/RoomScene.ts` empty — 374c909
 - [x] 9.2 Deliberate break: show the summary buttons only after the last pop (delayed call) → at the orchestrator `task-round`/`adaptive` specs red (they tap `nextRound` at once), restored — the agent records the break and its expected red; unit guard: `tests/reducedMotionWiring.test.ts` list gains `SummaryPanel.ts`, `starBurst.ts` — 374c909
-- [ ] 9.3 Unit `<phase-8 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`room-purchase`, `salon-art` still green after the burst move)
+- [x] 9.3 Unit `<phase-8 count> + N`; full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`room-purchase`, `salon-art` still green after the burst move) — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
@@ -1061,7 +1061,7 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 10.1 `npm run font` run twice → `cmp` of the two outputs identical (recorded in the commit) — e26f8b3
 - [x] 10.2 `tests/fontZero.test.ts` red when pointed at the original (deliberate break: swap the path to `designs/…/AtkinsonHyperlegibleNext.ttf` → the 2-contour and name cases red), green on the shipped file; restored; meta-check: the contour count is read from `glyf`/`loca` bytes, independent of the script — e26f8b3
 - [x] 10.3 `grep -rn "AtkinsonHyperlegibleNext" src tests scripts vite` lists only `scripts/make-font.py` (input path); build green and `dist/sw.js` lists `fonts/MartynkaNext.ttf` (grep) and not the old file; `grep -n "precacheCovers('task font'" scripts/check-deploy.ts` present — e26f8b3
-- [ ] 10.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`; Chromium/OTS proof: the hook-build snapshot reads `fontHealth === 'loaded'` with the new font (read at the 10.5 visual pass, pinned later by phase 12 "#11 reduced motion round") — `health-lines.spec.ts` only proves a 404 still reads `fallback`, not that Chromium accepts the modified file
+- [x] 10.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`; Chromium/OTS proof: the hook-build snapshot reads `fontHealth === 'loaded'` with the new font (read at the 10.5 visual pass, pinned later by phase 12 "#11 reduced motion round") — `health-lines.spec.ts` only proves a 404 still reads `fallback`, not that Chromium accepts the modified file — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6; `fontHealth === 'loaded'` with Martynka Next asserted by the green p12 reduced-motion test (Chromium)
 
 #### Manual
 
@@ -1075,11 +1075,11 @@ old file and fetches the new one at the next update (normal precache revision be
 - [x] 11.2 `for n in 155 156 157 158 159 160 161 162 163 164; do grep -q "^| $n |" docs/design-gaps.md || echo MISSING $n; done` prints nothing — 6b2c84b — 6b2c84b
 - [x] 11.3 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS (every path CLAUDE.md names exists) — 6b2c84b — 6b2c84b
 - [x] 11.4 `grep -rn "fillGradientStyle" src` only `kitDraw.ts`; `grep -rn "generateTexture" src` has no second star-texture builder; `git diff --stat main -- src/data/balance.ts src/core/save.ts src/core/migrations tests/fixtures src/data/curriculum src/data/wordTemplates.ts` empty — 6b2c84b — 6b2c84b
-- [ ] 11.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 11.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — e2e: orchestrator 144 passed (+0) after p2/p4/p6/p8/p10 and 150 after p12; impl-review re-run (workers=2, load timeouts re-checked with --workers=1): 150 = 144 + 6
 
 #### Manual
 
-- [ ] 11.6 [reviewer] The CLAUDE.md sentences match the code (grep each named symbol); save format v4 stated; gaps 155–164 and the updated rows 20, 25, 152 read correctly
+- [x] 11.6 [reviewer] The CLAUDE.md sentences match the code (grep each named symbol); save format v4 stated; gaps 155–164 and the updated rows 20, 25, 152 read correctly — impl-review: every symbol of the Notebook polish block grepped present, v4 stated; gear wording and gap 158 "gradient" corrected in the review fix
 - [ ] 11.7 [visual] Full screenshot pass, desktop 1440 and tablet 1024 (hook build on 4399), each state next to its kit frame in `designs/martynka-maths-A-v1/screenshots/`: welcome (`welcome.png`), task tiles (`task-tiles.png`), task keypad (`task-keypad.png`), correct (`correct.png`), wrong / second try (`second-try.png`, `hint-tiles.png`, `hint-keypad.png`), solution steps (`solution-step-1.png`, `solution-step-2.png`), summary (`summary.png`), unlock (`unlock.png`), room → buy a piece → back to the task (backdrop shows the new piece), reduced motion (static frames, no flight/pop); also `tablet-1024.png` for the 1024 layout; every chunky target still ≥ 96 px; nothing red after a wrong answer
 - [ ] 11.8 [human] The maintainer checks the look (notebook, backdrop, lips, motion feel) and the plain zero on the real tablet (iPad Safari: `fontHealth` loaded — the diacritics and 0 render in the new font) before "merguj", and confirms decision D-1, which departs from scope.md's words: no spine band (kit stitch marks only) and the shadow straight down, not lower-right
 
