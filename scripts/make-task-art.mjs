@@ -1,6 +1,6 @@
 // Converts the art kits' PNGs to the WebP files the game loads: money, measuring and counting icons of the task screen
 // (public/assets/tasks/), the salon of the room (public/assets/rooms/salon/, full resolution of the pack) and the pictures of the
-// loading screen, wallet, notebook and salon thumbnail plus three more counting icons from the salon-v2 pack (public/assets/ui/). The kit stays in designs/ (never committed); only the results are. Output is
+// loading screen, wallet, notebook and salon thumbnail plus three more counting icons from the salon-v2 pack, and the three poses of the fox guide from the fox pack (public/assets/ui/). The kit stays in designs/ (never committed); only the results are. Output is
 // deterministic, so re-running it leaves committed files unchanged. Needs the `cwebp` binary (libwebp).
 // Usage: npm run art
 import { execFileSync } from 'node:child_process';
@@ -13,6 +13,7 @@ const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
 const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
+const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 
 // Output sizes are at most twice the displayed size (half of the kit's resolution), see the plan, "Ladowanie".
@@ -67,7 +68,11 @@ const UI_JOBS = [
 ];
 const V2_ICONS = ['plate', 'box', 'sticker'];
 
-for (const dir of [KIT, SALON_V2]) {
+/** The fox guide poses: the whole 1024 canvas is only resized, never trimmed, so the anchor (0.5, 0.87890625) holds. */
+const FOX_POSES = ['idle', 'cheer', 'think'];
+const FOX_SIZE = [384, 384];
+
+for (const dir of [KIT, SALON_V2, FOX]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -111,4 +116,9 @@ for (const id of V2_ICONS) {
     total += bytes;
     console.log(`icons/${id}.webp  ${SQUARE[0]}x${SQUARE[1]}  ${bytes} B`);
 }
-console.log(`${JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length} files, ${total} B`);
+for (const pose of FOX_POSES) {
+    const bytes = convert(join(FOX, `assets/fox-${pose}.png`), join(UI_OUT, `fox-${pose}.webp`), ['-resize', String(FOX_SIZE[0]), String(FOX_SIZE[1])]);
+    total += bytes;
+    console.log(`ui/fox-${pose}.webp  ${FOX_SIZE[0]}x${FOX_SIZE[1]}  ${bytes} B`);
+}
+console.log(`${JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);
