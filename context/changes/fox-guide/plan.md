@@ -578,9 +578,9 @@ None: save format stays v4, nothing stored.
 
 #### Automated
 
-- [ ] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "GuideFox\|guidePose\|bootBudget" CLAUDE.md` present
-- [ ] 4.2 `grep -c "Trigger:" context/changes/fox-guide/follow-ups/review-fixes.md` ≥ 6
-- [ ] 4.3 `grep -rn silhouette src` lists only `src/data/layout.ts` and `src/core/guideLayout.ts`
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "GuideFox\|guidePose\|bootBudget" CLAUDE.md` present — 4d590fd
+- [x] 4.2 `grep -c "Trigger:" context/changes/fox-guide/follow-ups/review-fixes.md` ≥ 6 — 4d590fd
+- [x] 4.3 `grep -rn silhouette src` lists only `src/data/layout.ts` and `src/core/guideLayout.ts` — 4d590fd
 - [ ] 4.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual

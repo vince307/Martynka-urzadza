@@ -1,55 +1,53 @@
 # Handoff — `fox-guide` (slice fix:fox-guide)
 
-Written by step `/10x-implement fox-guide phase 4` of run 2026-10-23-fox-guide: `GuideFox`, the one `guide.show` call in `TaskScene.render`, the hook field `guide` and DESIGN-GAP rows 165-168 are committed as 953ed88. The next agent starts phase 4 (docs, follow-ups, seam sweep).
+Written by step `/10x-implement fox-guide phase 4` of run 2026-10-23-fox-guide: the CLAUDE.md fox sentences, the follow-ups file and the seam sweep are committed as 4d590fd. The next agent starts phase 5 (the e2e spec).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/fox-guide`, cut from `main` at `1962312` |
-| Commits | phase 1 `e392442`, phase 2 `2d99dcf`, phase 3 `953ed88`, plus the handoff commits |
+| Commits | phase 1 `e392442`, phase 2 `2d99dcf`, phase 3 `953ed88`, phase 4 `4d590fd`, plus the handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged) |
-| `## Progress` rows remaining | 15 (`grep -c '^- \[ \]' plan.md`); 1.4 and 2.4 wait for the orchestrator's e2e |
+| `## Progress` rows remaining | 11 (`grep -c '^- \[ \]' plan.md`); 4.4 waits for the orchestrator's e2e |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/widgets/GuideFox.ts` | the widget: one Image at `GUIDE.anchor`, hidden on `null` or a missing texture, `setDisplaySize` after every `setTexture`, pop 1.06/240 ms only on a visible pose change and not under reduced motion, no input; `snapshot()` |
-| `src/scenes/TaskScene.ts` | fox created after `drawNotebook`; `guide.show(guidePose(screen, phase))` once in `render()` before the unlock branch; `TaskSnapshot.guide` |
-| `tests/e2e/support/hook.ts` | `Snapshot.guide?: { pose, visible, rect, interactive, pops }` (the hook spreads `TaskSnapshot`; `e2eHook.ts` not edited) |
-| `tests/guideWiring.test.ts`, `tests/reducedMotionWiring.test.ts` | source guards (no `setInteractive`, reduced-motion check before `tweens.add`, one `guidePose(` before the first `return`) |
-| `docs/design-gaps.md` | rows 165-168 |
+| `CLAUDE.md` | "Current state" fox sentence group; S-16c UI pictures sentence names the fox poses; `npm run art` line of Commands names the three kits |
+| `context/changes/fox-guide/follow-ups/review-fixes.md` | F1-F7, each with a `Trigger:` line (idle breathing, unlock card, 512 art, boot budget, anchor x 1802, "Obrazki" sentence, `modeWidgets`) |
+| `context/changes/fox-guide/plan.md` | rows 1.4, 2.4, 3.4 ticked (orchestrator e2e 150/150 on 8cc3500), 4.1-4.3 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/fox-guide` (observed) |
-| deliberate break: `guide.show` moved after the first return of `render()` | "before the first return" case red; restored, green |
-| deliberate break: `setInteractive()` added in `GuideFox` | "never takes input" case red; restored, green |
-| meta-check | these are source guards; the on-screen behaviour is proven by 3.5 (visual) and phase 5 (e2e) |
-| `grep -c "^| 16[5-8] |" docs/design-gaps.md` | 4 |
-| lint / typecheck / `npm test` | OK / OK / 3886 (phase 2) + 5 = 3891 passed |
+| `validate-rule-files.sh` | PASS (20 files, 0 missing) |
+| deliberate break: a wrong path (`guideLayoutX.ts`) in CLAUDE.md | validator FAIL (missing: 1); restored, PASS |
+| meta-check | the validator proves the paths named in the rule files exist, not that the prose is true; the prose was checked against the code by reading |
+| `grep -c "Trigger:" follow-ups/review-fixes.md` | 8 (>= 6) |
+| `grep -rn silhouette src` | only `src/core/guideLayout.ts` and `src/data/layout.ts` |
+| lint / typecheck / `npm test` | OK / OK / 3891 passed (phase 3 count + 0) |
 | deploy scripts, `sample` E1-E6, `npm run build` | OK; build prints `e2e hook: absent (2 chunks checked)` |
-| e2e | NOT run (Chromium cannot start in the sandbox); orchestrator runs it, expect 150 + 0 |
+| e2e | NOT run here (Chromium cannot start in the sandbox); orchestrator runs it, expect 150 + 0 |
 
 ## 4. Next command
 
-`/10x-implement fox-guide phase 4`
+`/10x-e2e fox-guide phase 5`
 
 ## 5. Open
 
-- Rows 1.4, 2.4, 3.4 stay unticked until the orchestrator's e2e run (150 + 0).
-- Manual rows open: 3.5 [visual] (not done by this step), 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
-- Phase 4 is docs, follow-ups (>= 6 Trigger lines, include the "Obrazki" parent-line follow-up F6 and the fallback anchor x 1802) and the seam sweep; boot payload 47.6 s of 48 s: no more boot art.
-- `src/testing/e2eHook.ts` was not edited, so the narrator-round-summary follow-up did not fire.
+- Row 4.4 stays unticked until the orchestrator's e2e run (150 + 0).
+- Manual rows open: 3.5 [visual], 4.5 [visual], 4.6 [human], 4.7 [human], 4.8 [reviewer].
+- Seam sweep found no duplicate silhouette or pose logic, and the headers of `uiArt.ts`, `make-task-art.mjs` and the `balance.loader` comment were already updated by phases 1-3; no unused tokens found by reading.
+- `AGENTS.md` repeats none of the facts, not edited. Design-gaps rows 165-168 were read and are correct.
 
 ## 6. Autonomous decisions
 
-- Phase 3 is `Driver: impl`; the wiring tests were written alongside the code, deliberate breaks done after. Would change: none.
-- Pop implemented as one yoyo tween of `guidePoseMs / 2` each way (total 240 ms) on scaleX/scaleY from the base scale read after `setDisplaySize`. Would change: the visual gate finding it too lively.
-- A repeated `show` of the same visible pose returns early (no tween killed), so non-pose renders never disturb a running pop.
-- Commit message taken as proposed; stopped after this phase.
+- Phase 4 is `Driver: impl` (docs). Deliberate break chosen: a wrong path in CLAUDE.md against `validate-rule-files.sh`, as there is no code to break. Would change: none.
+- 4.4 not ticked: its e2e half belongs to the orchestrator.
+- Commit message `docs(fox-guide): ... (p4)` as only docs changed; stopped after this phase.
