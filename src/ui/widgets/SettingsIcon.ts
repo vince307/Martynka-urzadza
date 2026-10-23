@@ -1,5 +1,6 @@
 import type { GameObjects, Input, Scene } from 'phaser';
 import { HUD_LAYOUT } from '../../data/layout';
+import { drawHudPill } from './hudPill';
 
 export interface SettingsIconHandlers {
     down: (pointer: { id: number; x: number; y: number }) => void;
@@ -32,11 +33,8 @@ export class SettingsIcon {
     }
 
     private draw(g: GameObjects.Graphics): void {
-        const { left, top, width, height, radius, border, fill, borderColor, iconColor, alpha, gearRadius, gearTooth, gearTeeth, gearHole, gearStroke } = HUD_LAYOUT.settings;
-        g.fillStyle(fill, alpha);
-        g.fillRoundedRect(left, top, width, height, radius);
-        g.lineStyle(border, borderColor, alpha);
-        g.strokeRoundedRect(left, top, width, height, radius);
+        const { left, top, width, height, radius, iconColor, alpha, gearRadius, gearTooth, gearTeeth, gearHole, gearStroke } = HUD_LAYOUT.settings;
+        drawHudPill(g, { x: left, y: top, width, height }, { lip: true, radius });
         // Gear outline: alternating tooth tips and roots around the centre.
         const cx = left + width / 2;
         const cy = top + height / 2;

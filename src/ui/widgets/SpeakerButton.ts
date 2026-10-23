@@ -1,5 +1,7 @@
 import type { GameObjects, Scene } from 'phaser';
-import { HUD_LAYOUT, PLACEHOLDER_COLORS } from '../../data/layout';
+import { HUD_LAYOUT, LIPS, PLACEHOLDER_COLORS } from '../../data/layout';
+import { ChunkyFace } from './chunky';
+import { drawHudPill } from './hudPill';
 
 type Point = [number, number];
 
@@ -27,16 +29,19 @@ const quadratic = ([a, c, b]: [Point, Point, Point]): Point[] =>
 export class SpeakerButton {
     private readonly graphics: GameObjects.Graphics;
     private readonly zone: GameObjects.Zone;
+    private readonly chunky: ChunkyFace;
     private shown = false;
 
     constructor(scene: Scene, onTap: () => void) {
         const { left, top, width, height } = HUD_LAYOUT.speaker;
         this.graphics = scene.add.graphics();
+        this.chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.hud, HUD_LAYOUT.speaker.radius);
+        this.chunky.add(this.graphics);
         this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive();
-        this.zone.on('pointerdown', () => this.draw(true));
-        this.zone.on('pointerout', () => this.draw(false));
+        this.zone.on('pointerdown', () => this.press(true));
+        this.zone.on('pointerout', () => this.press(false));
         this.zone.on('pointerup', () => {
-            this.draw(false);
+            this.press(false);
             if (this.shown) {
                 onTap();
             }
@@ -46,7 +51,8 @@ export class SpeakerButton {
 
     setVisible(on: boolean): void {
         this.shown = on;
-        this.graphics.setVisible(on);
+        this.chunky.reset();
+        this.chunky.setVisible(on);
         if (this.zone.input) {
             this.zone.input.enabled = on;
         }
@@ -61,14 +67,23 @@ export class SpeakerButton {
         return this.shown ? { x: left + width / 2, y: top + height / 2 } : null;
     }
 
+    private press(down: boolean): void {
+        if (!this.shown) {
+            return;
+        }
+        this.draw(down);
+        if (down) {
+            this.chunky.press();
+        } else {
+            this.chunky.release();
+        }
+    }
+
     private draw(pressed: boolean): void {
-        const { left, top, width, height, radius, border, fill, pressed: pressedFill, borderColor, iconSize } = HUD_LAYOUT.speaker;
+        const { left, top, width, height, radius, iconSize } = HUD_LAYOUT.speaker;
         const g = this.graphics;
         g.clear();
-        g.fillStyle(pressed ? pressedFill : fill, 1);
-        g.fillRoundedRect(left, top, width, height, radius);
-        g.lineStyle(border, borderColor, 1);
-        g.strokeRoundedRect(left, top, width, height, radius);
+        drawHudPill(g, { x: left, y: top, width, height }, { pressed, radius });
         const scale = iconSize / ICON_VIEWBOX;
         const originX = left + (width - iconSize) / 2;
         const originY = top + (height - iconSize) / 2;

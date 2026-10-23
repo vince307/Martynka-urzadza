@@ -1,5 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
-import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { ChunkyFace } from './chunky';
 import { textStyle } from './textStyle';
 
 
@@ -12,6 +13,8 @@ export class ActionButton {
     private border: number = PLACEHOLDER_COLORS.buttonBorder;
     private rect = { x: 0, y: 0, width: 0, height: 0 };
     private shown = false;
+    private readonly chunky: ChunkyFace;
+    private pressed = false;
 
     constructor(
         scene: Scene,
@@ -20,11 +23,18 @@ export class ActionButton {
         this.graphics = scene.add.graphics();
         this.label = scene.add.text(0, 0, '', textStyle('barButton')).setOrigin(0.5);
         this.zone = scene.add.zone(0, 0, 10, 10).setInteractive();
+        // DESIGN-GAP 156: the kit has no style for these buttons; they take the page-button lip.
+        this.chunky = new ChunkyFace(scene, this.rect, LIPS.action, TASK_LAYOUT.bar.radius);
+        this.chunky.add(this.graphics, this.label);
         this.zone.on('pointerdown', () => {
             if (this.shown) {
+                this.pressed = true;
+                this.chunky.press();
                 this.onTap();
             }
         });
+        this.zone.on('pointerup', () => this.release());
+        this.zone.on('pointerout', () => this.release());
         this.hide();
     }
 
@@ -46,11 +56,17 @@ export class ActionButton {
 
     hide(): void {
         this.shown = false;
-        this.graphics.setVisible(false);
-        this.label.setVisible(false);
+        this.pressed = false;
+        this.chunky.reset();
+        this.chunky.setVisible(false);
         if (this.zone.input) {
             this.zone.input.enabled = false;
         }
+    }
+
+    /** The face container (what bounces or wobbles). */
+    faceObject(): GameObjects.Container {
+        return this.chunky.face;
     }
 
     /** Centre of the button in scene space, for the e2e hook; null while hidden. */
@@ -63,14 +79,25 @@ export class ActionButton {
         return this.shown ? { x: this.rect.x, width: this.rect.width } : null;
     }
 
+    private release(): void {
+        if (this.pressed) {
+            this.pressed = false;
+            if (this.shown) {
+                this.chunky.release();
+            }
+        }
+    }
+
     private place(x: number, centerY: number, width: number, fill: number, border: number): void {
         const { bar } = TASK_LAYOUT;
         this.rect = { x, y: centerY - bar.height / 2, width, height: bar.height };
         this.fill = fill;
         this.border = border;
         this.shown = true;
-        this.graphics.setVisible(true);
-        this.label.setVisible(true).setPosition(x + width / 2, centerY);
+        this.pressed = false;
+        this.chunky.place(this.rect);
+        this.chunky.setVisible(true);
+        this.label.setPosition(x + width / 2, centerY);
         this.zone.setPosition(x + width / 2, centerY).setSize(width, bar.height);
         if (this.zone.input) {
             this.zone.input.enabled = true;

@@ -1,6 +1,8 @@
 import type { GameObjects, Scene } from 'phaser';
-import { HUD_LAYOUT, PLACEHOLDER_COLORS } from '../../data/layout';
+import { HUD_LAYOUT, LIPS, PLACEHOLDER_COLORS } from '../../data/layout';
 import { pl } from '../../data/pl';
+import { ChunkyFace } from './chunky';
+import { drawHudPill } from './hudPill';
 import { textStyle } from './textStyle';
 
 /**
@@ -13,6 +15,7 @@ export class RoomSwitchButton {
     private readonly graphics: GameObjects.Graphics;
     private readonly label: GameObjects.Text;
     private readonly zone: GameObjects.Zone;
+    private readonly chunky: ChunkyFace;
     private shown = false;
     private pressed = false;
 
@@ -20,19 +23,21 @@ export class RoomSwitchButton {
         const { left, top, width, height } = HUD_LAYOUT.roomSwitch;
         this.graphics = scene.add.graphics();
         this.label = scene.add.text(0, 0, pl.summary.toRoom, textStyle('barButton')).setOrigin(0, 0.5);
+        this.chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.hud, HUD_LAYOUT.roomSwitch.radius);
+        this.chunky.add(this.graphics, this.label);
         this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive();
         this.zone.on('pointerdown', () => {
             this.pressed = true;
-            this.draw(true);
+            this.hold(true);
         });
         this.zone.on('pointerout', () => {
             this.pressed = false;
-            this.draw(false);
+            this.hold(false);
         });
         this.zone.on('pointerup', () => {
             const tapped = this.pressed && this.shown;
             this.pressed = false;
-            this.draw(false);
+            this.hold(false);
             if (tapped) {
                 onTap();
             }
@@ -43,8 +48,8 @@ export class RoomSwitchButton {
     setVisible(on: boolean): void {
         this.shown = on;
         this.pressed = false;
-        this.graphics.setVisible(on);
-        this.label.setVisible(on);
+        this.chunky.reset();
+        this.chunky.setVisible(on);
         if (this.zone.input) {
             this.zone.input.enabled = on;
         }
@@ -59,15 +64,24 @@ export class RoomSwitchButton {
         return this.shown ? { x: left + width / 2, y: top + height / 2 } : null;
     }
 
+    /** Sinks or lifts the face with the finger; a hidden button keeps its face at rest. */
+    private hold(down: boolean): void {
+        if (!this.shown) {
+            return;
+        }
+        this.draw(down);
+        if (down) {
+            this.chunky.press();
+        } else {
+            this.chunky.release();
+        }
+    }
+
     private draw(pressed: boolean): void {
-        const { left, top, width, height, radius, border, iconSize, iconGap, iconStroke } = HUD_LAYOUT.roomSwitch;
-        const { fill, pressed: pressedFill, borderColor } = HUD_LAYOUT.speaker;
+        const { left, top, width, height, radius, iconSize, iconGap, iconStroke } = HUD_LAYOUT.roomSwitch;
         const g = this.graphics;
         g.clear();
-        g.fillStyle(pressed ? pressedFill : fill, 1);
-        g.fillRoundedRect(left, top, width, height, radius);
-        g.lineStyle(border, borderColor, 1);
-        g.strokeRoundedRect(left, top, width, height, radius);
+        drawHudPill(g, { x: left, y: top, width, height }, { pressed, radius });
         // Content (icon + label) centred in the button.
         const contentWidth = iconSize + iconGap + this.label.width;
         const iconX = left + (width - contentWidth) / 2;

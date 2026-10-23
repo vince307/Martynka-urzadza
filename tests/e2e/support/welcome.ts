@@ -92,8 +92,8 @@ export const passWelcome = (page: Page, query?: Record<string, string>): Promise
     passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE, query });
 
 /** Child path: taps `age` with the month pinned by ?e2eMonth (the e2e build only); the warm-up follows when the stage has a previous one. */
-export const passWelcomeAsChild = async (page: Page, age: number, month: number): Promise<void> => {
-    await openWelcome(page, month);
+export const passWelcomeAsChild = async (page: Page, age: number, month: number, query: Record<string, string> = {}): Promise<void> => {
+    await openWelcome(page, month, query);
     let button: { x: number; y: number } | undefined;
     await expect
         .poll(async () => {

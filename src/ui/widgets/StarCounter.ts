@@ -1,5 +1,8 @@
 import type { GameObjects, Scene } from 'phaser';
-import { PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { ANIMATION, LIPS, PLACEHOLDER_COLORS, TASK_LAYOUT } from '../../data/layout';
+import { prefersReducedMotion } from '../motion';
+import { ChunkyFace } from './chunky';
+import { drawHudPill } from './hudPill';
 import { textStyle } from './textStyle';
 
 
@@ -32,27 +35,44 @@ export const starCounterTarget = (): { x: number; y: number } => {
     return { x: left + width / 2, y: top + height / 2 };
 };
 
-/** "★ N" pill in the top right corner; shows the session total, set by the UI overlay. */
+/**
+ * "★ N" pill in the top right corner; shows the session total, set by the UI overlay. A kit HUD pill (gradient face, border,
+ * lip); its face is a container at the pill centre so a later pop scales it around the star, and it never presses.
+ */
 export class StarCounter {
+    /** The pill face (pill, star, number) as one object: the thing that pops when a star lands. */
+    readonly face: GameObjects.Container;
     private readonly text: GameObjects.Text;
+    private readonly scene: Scene;
 
     constructor(scene: Scene, value: number) {
-        const { left, top, width, height, radius, border, starRadius, starGap } = TASK_LAYOUT.starCounter;
+        this.scene = scene;
+        const { left, top, width, height, radius, starRadius, starGap } = TASK_LAYOUT.starCounter;
         const graphics = scene.add.graphics();
-        graphics.fillStyle(PLACEHOLDER_COLORS.butter, 1);
-        graphics.fillRoundedRect(left, top, width, height, radius);
-        graphics.fillStyle(PLACEHOLDER_COLORS.ivory, 1);
-        graphics.fillRoundedRect(left + border, top + border, width - 2 * border, height - 2 * border, radius - border / 2);
+        drawHudPill(graphics, { x: left, y: top, width, height }, { radius });
         const centerY = top + height / 2;
         drawStar(graphics, left + starGap + starRadius, centerY, starRadius, PLACEHOLDER_COLORS.butter);
         this.text = scene.add
             .text(left + width - starGap, centerY, '', textStyle('counter'))
             .setOrigin(1, 0.5);
+        const chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.hud, radius);
+        chunky.add(graphics, this.text);
+        this.face = chunky.face;
         this.setValue(value);
     }
 
     setValue(value: number): void {
         this.text.setText(String(value));
+    }
+
+    /** A short grow-and-return when a star lands; the number is never delayed by it (setValue is synchronous). */
+    pop(): void {
+        if (prefersReducedMotion()) {
+            return;
+        }
+        this.scene.tweens.killTweensOf(this.face);
+        this.face.setScale(1);
+        this.scene.tweens.add({ targets: this.face, scale: ANIMATION.counterPopScale, duration: ANIMATION.counterPopMs / 2, yoyo: true, ease: 'Sine.easeOut' });
     }
 
     /** Shown text, for the e2e hook. */

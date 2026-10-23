@@ -23,6 +23,7 @@
     "check:deploy": "node --import tsx scripts/check-deploy.ts",
     "icons": "node scripts/make-icons.mjs",
     "art": "node scripts/make-task-art.mjs",
+    "font": "python3 scripts/make-font.py",
     "sounds": "node scripts/copy-sounds.mjs"
   },
   "dependencies": {

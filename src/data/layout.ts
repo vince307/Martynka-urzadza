@@ -21,7 +21,7 @@ export const PLACEHOLDER_COLORS = {
     blockHundred: 0xd9edd3, // kit reference/base-ten.svg flat
     blockTen: 0xa6ddd2,     // kit reference/base-ten.svg rod
     tile: 0xe3f0d9,        // answer tile and keypad key
-    selected: 0xd7ebc1,    // kit .answer.selected: a marked tile of the multi-select mode
+    selected: 0xd7ebc1,    // kit .answer.selected: a marked tile of the multi-select mode, and the correct answer tile
     selectedBorder: 0x547e3d, // kit .answer.selected outline and check mark
     correct: 0xe5f2d4,     // correct answer feedback
     hint: 0xfff0b9,        // hint and solution bar
@@ -57,7 +57,6 @@ export const PLACEHOLDER_COLORS = {
     dieBorder: 0xb4cba7,
     diePip: 0x245c59,
     unlockBorder: 0xd8bc6f,     // kit .unlock-card border
-    ageButtonShadow: 0xc6d8b9,  // kit .age-button box-shadow (#a4bd964d over the ivory page), flattened
 } as const;
 
 /** DESIGN-GAP row 53: column colours of a bar chart, in order. */
@@ -170,10 +169,10 @@ export const FONT_WEIGHTS = {
 /** Weight range of the variable font, declared on its FontFace so canvas text uses the real weights. */
 export const FONT_WEIGHT_RANGE = '200 800';
 
-/** Task screen font: Atkinson Hyperlegible Next, loaded from public/fonts and precached. */
-export const FONT_FAMILY = 'AtkinsonHyperlegibleNext, sans-serif';
-export const FONT_KEY = 'AtkinsonHyperlegibleNext';
-export const FONT_URL = 'fonts/AtkinsonHyperlegibleNext.ttf';
+/** Task screen font: Martynka Next (Atkinson Hyperlegible Next with a plain zero, npm run font), loaded from public/fonts and precached. */
+export const FONT_FAMILY = 'MartynkaNext, sans-serif';
+export const FONT_KEY = 'MartynkaNext';
+export const FONT_URL = 'fonts/MartynkaNext.ttf';
 
 /** Scene keys. */
 export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', ui: 'UI' } as const;
@@ -181,6 +180,7 @@ export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
     toRoom: 'to-room',   // "Do pokoju" was tapped (summary or HUD switch); the task scene switches to the room scene
+    starLanded: 'star-landed',   // the flying star reached the counter; the HUD pops the counter
     parentStage: 'parent-stage',   // the parent confirmed another stage (core changed the learner in the registry); the task scene opens a fresh round of it
 } as const;
 
@@ -234,24 +234,45 @@ export const SAVE_KEYS = [
  * Task screen geometry in scene pixels, from the art pack kit (task-tiles.png,
  * task-keypad.png). Touch targets are listed in TASK_TOUCH_TARGETS.
  */
+/** Left edge and frame width of the task notebook; `TASK_LAYOUT.notebook` and `CONTENT_LEFT` both read them. */
+const NOTEBOOK_BOX = { left: 180, border: 16 } as const;
+
+/** The kit notebook (maths-A pack screen.css): frame, paper, bottom edge, shadow, stitch marks, margin line and bookmark ribbon. */
+export const NOTEBOOK = {
+    frame: '#54b5a9',
+    faceTop: '#fffbef',
+    faceBottom: '#fff5df',
+    edge: { height: 12, color: '#328476' },
+    shadow: { offsetY: 22, blur: 36, color: '#564730', alpha: 0.19 },
+    stitches: { inset: 40, width: 26, overhang: 20, phase: 44, height: 10, every: 100, color: '#bfa577' },
+    margin: { fromInnerLeft: 92, inset: 38, width: 2, gap: 24, color: '#e4ceb2' },
+    ribbon: { width: 48, height: 74, fromRight: 92, top: -16, notch: 0.78, color: '#f1ce6b' },
+} as const;
+
+/**
+ * Where the content of a notebook screen may start: right of the margin line plus `NOTEBOOK.margin.gap` (the kit keeps all
+ * writing right of the line, clear of the stitch marks). The one inset the task layout uses instead of the notebook's left edge.
+ */
+export const CONTENT_LEFT = NOTEBOOK_BOX.left + NOTEBOOK_BOX.border + NOTEBOOK.margin.fromInnerLeft + NOTEBOOK.margin.width + NOTEBOOK.margin.gap;
+
 // The drag mode's mat and solution lines are also the drawing area of a clock to set (picture.drag below).
-const DRAG_MAT = { x: 236, y: 380, width: 944, height: 460 } as const;
+const DRAG_MAT = { x: CONTENT_LEFT, y: 380, width: 1180 - CONTENT_LEFT, height: 460 } as const;
 const DRAG_SOLUTION_LINES = { x: 1240, y: 380, width: 440, height: 440 } as const;
 
 export const TASK_LAYOUT = {
-    notebook: { left: 180, top: 204, width: 1560, height: 788, border: 16, radius: 40 },
+    notebook: { left: NOTEBOOK_BOX.left, top: 204, width: 1560, height: 788, border: NOTEBOOK_BOX.border, radius: 44 },
     // "Wróć" to the age choice (DESIGN-GAP row 152): inside the left margin (x 0-180, the notebook starts at 180), above the build id caption, both sides >= MIN_TOUCH_TARGET.
     ageBack: { left: 16, top: 880, width: 148, height: 96, radius: 28, border: 4 },
-    dots: { centerX: 960, y: 96, radius: 20, gap: 62, ringWidth: 4 },
-    prompt: { x: 960, y: 290, maxWidth: 1300 },
-    promptBeside: { x: 620, y: 290, maxWidth: 800 },   // sentence prompts left of the keypad
-    expression: { x: 620, y: 456, maxWidth: 760 },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to 760 (40 px clear of the keypad, visual gate S-14c)
+    dots: { centerX: 960, y: 96 },   // the row of beads; size and pitch are BEADS
+    prompt: { x: 960, y: 290, maxWidth: 1292 },
+    promptBeside: { x: (CONTENT_LEFT + 1000) / 2, y: 290, maxWidth: 1000 - CONTENT_LEFT },   // sentence prompts left of the keypad
+    expression: { x: (CONTENT_LEFT + 1000) / 2, y: 456, maxWidth: 1000 - CONTENT_LEFT },   // beside the keypad: kit .equation box (left 318, width 610, top 378, 112 px x 1.4), x aligned with promptBeside; a wider one shrinks to maxWidth (it ends at x 1000, clear of the keypad column at 1120)
     blank: { width: 64, height: 84, lineWidth: 8, radius: 12, gap: 24 },   // drawn "□" in an expression (DESIGN-GAP 8): about one digit of the expression font; gap = a word space
     blankInline: { width: 52, height: 68, lineWidth: 6, radius: 10, lineHeight: 92 },   // drawn "□" inside a sentence prompt (DESIGN-GAP 8): about one digit of the prompt font
     expressionWide: { x: 960, y: 500, maxWidth: 1300 },      // above the tiles
     // tiles.top and bar.bottom sit 12 px higher than the kit so the bar keeps 16 px from the tiles and the notebook border.
     tiles: { left: 416, top: 712, width: 254, height: 136, gap: 24, radius: 28, border: 4 },
-    keypad: { left: 1040, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4, fieldPadding: 24 },
+    keypad: { left: 1120, top: 342, width: 516, keyWidth: 156, keyHeight: 104, gap: 24, rowGap: 16, fieldHeight: 112, radius: 24, keyBorder: 3, fieldBorder: 4, fieldPadding: 24 },
     bar: { height: 96, minWidth: 220, bottom: 960, radius: 24, padding: 24, border: 4, hintBorder: 3 },
     // Multi-select mode (S-13, DESIGN-GAP row 7/54): six narrower tiles in one row, "OK" centred under them above the bar.
     select: { tileWidth: 200, top: 600, okCenterY: 800, markSize: 18, markWidth: 5 },
@@ -278,9 +299,9 @@ export const TASK_LAYOUT = {
         // `promptMinSize` until it ends `promptGap` above the drawing; if it still does not, the drawing moves down under it.
         promptGap: 16, promptMinSize: 44, promptSizeStep: 4,
         tiles: { x: 661, y: 396, width: 600, height: 294 },
-        tilesSolution: { picture: { x: 236, y: 396, width: 624, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
-        keypad: { x: 236, y: 470, width: 768, height: 378 },
-        keypadSolution: { picture: { x: 236, y: 470, width: 768, height: 190 }, lines: { x: 236, y: 668, width: 768, height: 180 } },
+        tilesSolution: { picture: { x: CONTENT_LEFT, y: 396, width: 860 - CONTENT_LEFT, height: 294 }, lines: { x: 900, y: 396, width: 784, height: 294 } },
+        keypad: { x: CONTENT_LEFT, y: 470, width: 1004 - CONTENT_LEFT, height: 378 },
+        keypadSolution: { picture: { x: CONTENT_LEFT, y: 470, width: 1004 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 668, width: 1004 - CONTENT_LEFT, height: 180 } },
         // A tall drawing (thermometer, S-14, visualShape 'tall'): one column on the left of the notebook in every phase, down to the bar's bottom.
         // Visual gate S-14 (F3): in the wide rectangles a degree was about 2 CSS px on a 1024 px tablet, a child could not read it.
         // `answers` is the row the tiles centre in, `bar` the bar span; both start right of the column. The lines of the solution sit
@@ -289,25 +310,25 @@ export const TASK_LAYOUT = {
         // lines the tray's place. `minHeight`: a long prompt may push the drawing down, never to nothing (audit S13-08).
         select: {
             picture: { x: 661, y: 396, width: 600, height: 190 },
-            solution: { picture: { x: 236, y: 396, width: 624, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
+            solution: { picture: { x: CONTENT_LEFT, y: 396, width: 860 - CONTENT_LEFT, height: 190 }, lines: { x: 900, y: 396, width: 784, height: 190 } },
         },
         // S-14b visual gate: a number line in a tiles task (E3.9 jumps, 0..30) drew its labels about 9 CSS px tall on a 1024 px tablet in the
         // 600 px `tiles` rectangle; a long drawing takes the notebook's full width, the solution lines under it, both above the tiles (top 712).
         long: {
-            tiles: { x: 236, y: 380, width: 1448, height: 300 },
-            tilesSolution: { picture: { x: 236, y: 330, width: 1448, height: 200 }, lines: { x: 236, y: 540, width: 1448, height: 160 } },
+            tiles: { x: CONTENT_LEFT, y: 380, width: 1684 - CONTENT_LEFT, height: 300 },
+            tilesSolution: { picture: { x: CONTENT_LEFT, y: 330, width: 1684 - CONTENT_LEFT, height: 200 }, lines: { x: CONTENT_LEFT, y: 540, width: 1684 - CONTENT_LEFT, height: 160 } },
         },
         // S-14b: a written column (`digits`) stays put in every phase, the solution lines beside it. Provisional numbers, DESIGN-GAP 93 (docs/design-gaps.md): the kit has no layout for the column beside its solution lines; screenshots at the visual gate.
         drag: { picture: DRAG_MAT, lines: DRAG_SOLUTION_LINES },
         // Visual gate S-14b: a 320 px strip broke the lines inside equations ("9 + / 3 = 12"); the column is 40 px narrower (three columns at 1.22, two still at 1.3) and the strip 392 px.
-        digits: { picture: { x: 216, y: 340, width: 400, height: 508 }, lines: { x: 632, y: 340, width: 392, height: 508 } },
+        digits: { picture: { x: CONTENT_LEFT, y: 340, width: 330, height: 508 }, lines: { x: CONTENT_LEFT + 346, y: 340, width: 1020 - CONTENT_LEFT - 346, height: 508 } },
         // S-14b: the hint number line sits under the expression, the solution lines under it (keypad only). Provisional, DESIGN-GAP 92 (docs/design-gaps.md): screenshots at the visual gate.
-        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; 798 (x 226..1024) keeps them at 12.2.
-        hint: { keypad: { picture: { x: 226, y: 530, width: 798, height: 190 }, lines: { x: 226, y: 730, width: 798, height: 118 } } },
+        // Visual gate S-14b: 768 wide, a 0..30 line drew its labels at 11.7 CSS px on a 1024 px tablet; notebook-polish: x CONTENT_LEFT..1110 (796), 10 px left of the keypad, keeps them at 12.1.
+        hint: { keypad: { picture: { x: CONTENT_LEFT, y: 530, width: 1110 - CONTENT_LEFT, height: 190 }, lines: { x: CONTENT_LEFT, y: 730, width: 1110 - CONTENT_LEFT, height: 118 } } },
         minHeight: 120,
         tall: {
-            tiles: { picture: { x: 216, y: 330, width: 264, height: 630 }, lines: { x: 520, y: 330, width: 1180, height: 360 }, answers: { x: 500, width: 1224 }, bar: { x: 520, width: 1180 } },
-            keypad: { picture: { x: 236, y: 420, width: 240, height: 540 }, lines: { x: 500, y: 420, width: 504, height: 428 }, bar: { x: 500, width: 520 } },
+            tiles: { picture: { x: CONTENT_LEFT, y: 330, width: 220, height: 630 }, lines: { x: 560, y: 330, width: 1140, height: 360 }, answers: { x: 540, width: 1184 }, bar: { x: 560, width: 1140 } },
+            keypad: { picture: { x: CONTENT_LEFT, y: 420, width: 200, height: 540 }, lines: { x: 520, y: 420, width: 484, height: 428 }, bar: { x: 520, width: 500 } },
         },
     },
     // Drag mode (S-13 phase 8, DESIGN-GAP row 7/54): the tray takes the keypad's place on the right of the notebook, the mat the left part;
@@ -325,7 +346,7 @@ export const TASK_LAYOUT = {
     // a placed coin's box is the drop-centre pitch scaled minus coinGap (144 x 104 px). DESIGN-GAP 104, screenshots at the visual gate.
     coinDrag: {
         tray: { x: 1240, y: 380, width: 440, height: 300, gap: 16 },
-        wallet: { x: 308, y: 380, width: 800, height: 525 },
+        wallet: { x: CONTENT_LEFT, y: 380, width: 794, height: 525 },
         ok: { x: 1240, y: 724, width: 440, height: 96 },
         art: { width: 640, height: 420, dropCenters: [[200, 160], [320, 160], [440, 160], [200, 248], [320, 248], [440, 248]] },
         coinGap: 6, rowKinds: 3, maxKinds: 4,
@@ -408,8 +429,8 @@ export const TASK_LAYOUT = {
         label: { x: 301, drop: 17, size: 50, gap: 13 },   // gap: kit '+30' at 50 px centred on 301 starts 13 units after the major tick end (246)
         minGapPx: 7, minLabelPx: 22,
     },
-    // Star counter top right (kit correct.png): ivory pill with a butter border, star and number.
-    starCounter: { left: 1622, top: 46, width: 196, height: 100, radius: 28, border: 4, starRadius: 30, starGap: 20 },
+    // Star counter top right (kit correct.png): a kit HUD pill (drawHudPill, HUD_PILL tokens), star and number.
+    starCounter: { left: 1622, top: 44, width: 196, height: 104, radius: 32, border: 5, starRadius: 30, starGap: 20 },
 } as const;
 
 /**
@@ -418,16 +439,16 @@ export const TASK_LAYOUT = {
  * left = starCounter.left - 24 (kit HUD gap) - width.
  */
 export const HUD_LAYOUT = {
-    speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, border: 5, fill: 0xfffdf2, pressed: 0xfff0cc, borderColor: 0xd3b77d, iconSize: 56 },
+    speaker: { left: 1494, top: 44, width: 104, height: 104, radius: 32, iconSize: 56 },
     // "Do pokoju" between tasks (FR-011), top left; same look as the speaker, a house icon and the label.
-    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, border: 5, iconSize: 56, iconGap: 14, iconStroke: 4 },
+    roomSwitch: { left: 104, top: 44, width: 316, height: 104, radius: 32, iconSize: 56, iconGap: 14, iconStroke: 4 },
     // Title of a round variant (S-15), centred in the HUD like the kit's minigame title; the progress dots give way to it
     // (the letters or the board show the progress). Name, then a star drawn in code and the badge. DESIGN-GAP 79/80 (docs/design-gaps.md).
     title: { centerX: 960, maxWidth: 960, y: 96, starRadius: 18, gap: 12 },
     // Parent's settings gear (S-08), bottom right, outside the notebook (x 180-1740) and the room panel; full colour in the family of the
     // speaker button (playtest F-02: a muted gear looked disabled), no feedback while held.
     // DESIGN-GAP (docs/design-gaps.md rows 25, 28 and 151): the kit has no settings icon; the gear is drawn in code, with no feedback while held.
-    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, border: 5, fill: 0xfffdf2, borderColor: 0xd3b77d, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
+    settings: { left: 1782, top: 952, width: 96, height: 96, radius: 30, iconColor: 0x397f73, alpha: 1, gearRadius: 26, gearTooth: 8, gearTeeth: 8, gearHole: 9, gearStroke: 5 },
     // Bubble with the hint after a short tap on the gear (F-02 a): above the gear, in the right margin and over the notebook's right border only
     // (left edge 1700 = the right end of the widest bar, a tall drawing's; every answer tile, key, "Dalej", tray and room control ends left of it),
     // five short lines at FONT_SIZES.settingsHint. Visual gate F-02: the first 380 px bubble covered "Dalej", a tile and "Wybieram".
@@ -495,15 +516,17 @@ export const MINIGAME_LAYOUT = {
 /**
  * Welcome screen (kit welcome.png, screen.css .welcome-brand, .page-title, .age-buttons, .age-button): the brand,
  * the question and one square button per age on the notebook. The brand and question centre on x 960 (kit: left/right insets).
- * DESIGN-GAP (docs/design-gaps.md row 20): the kit's sunflower and cushion (welcome-flower, welcome-cushion) wait for the art of S-16.
+ * DESIGN-GAP (docs/design-gaps.md row 20): the kit's cushion (welcome-cushion) has no art and overlaps the parent entry; the sunflower is the `flower` icon.
  */
 export const WELCOME_LAYOUT = {
     brand: { x: 960, y: 64 },
     question: { x: 960, y: 290 },
-    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5, shadow: 10 },
+    ages: { left: 363, top: 526, width: 218, height: 190, gap: 28, radius: 38, border: 5 },
     // DESIGN-GAP (docs/design-gaps.md row 15): the kit has no parent entry; secondary page button in the notebook's
     // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
+    // The kit's .welcome-flower: the `flower` task icon, bottom left of the notebook, clear of the age buttons (the cushion stays out, it overlaps `parent`).
+    flower: { left: 360, top: 790, size: 152, angle: -14, key: 'tasks/icons/flower' },
 } as const;
 
 /** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */
@@ -591,11 +614,39 @@ export const ROOM_TOUCH_TARGETS = {
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
 } as const;
 
+/** The blurred, dimmed salon behind the notebook. */
+export const BACKDROP = {
+    scale: 0.25,
+    washAlpha: 0.6,
+    blur: { quality: 1, x: 1, y: 1, strength: 1, steps: 1 },
+    depth: -10,
+} as const;
+
+/** Chunky-control lips: how far the darker lip shows below the face, and its colour. */
+export const LIPS = {
+    answer: { offset: 8, color: '#a4bd96', alpha: 0.44 },
+    key: { offset: 5, color: '#a4bd96', alpha: 0.31 },
+    age: { offset: 10, color: '#a4bd96', alpha: 0.3 },
+    page: { offset: 8, color: '#397f73', alpha: 0.19 },
+    hud: { offset: 7, color: '#8f6d3d', alpha: 0.15 },
+    action: { offset: 8, color: '#397f73', alpha: 0.19 },   // DESIGN-GAP 156: the kit has no style for these
+} as const;
+
+export const HUD_PILL = { top: '#fffdf2', bottom: '#fff0cc', border: 5, borderColor: '#d3b77d', radius: 32, height: 104 } as const;
+
+/** Progress beads of a round. */
+export const BEADS = {
+    radius: 28,
+    gap: 74,
+    ring: 4,
+    currentRing: 7,
+    future: { fill: '#fff8e5', ring: '#9cb8a0' },
+    current: { fill: '#54b5a9', ring: '#245c59' },
+    done: { fill: '#a6cf7f', ring: '#547e3d' },
+} as const;
+
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
-    shakeMs: 360,
-    shakeSegments: 6,      // shakeMs / shakeSegments is one sideways swing (yoyo, 2 repeats)
-    shakeDistance: 14,
     starFlightMs: 850,
     starPopMs: 150,        // the flying star grows first, then travels
     starPopScale: 1.6,
@@ -604,6 +655,28 @@ export const ANIMATION = {
     purchasePopScale: 1.08,
     purchaseParticles: 14,
     purchaseParticleMs: 700,
+    pressDownMs: 80,
+    pressUpMs: 150,
+    pressEase: 'Quad.easeOut',
+    releaseEase: 'Back.easeOut',
+    bounceScale: 1.12,
+    bounceMs: 280,
+    wobbleAngle: 3,
+    wobbleOffset: 4,
+    wobbleMs: 520,
+    wobbleSwings: 2,
+    counterPopScale: 1.18,
+    counterPopMs: 220,
+    beadPopScale: 1.3,
+    beadPopMs: 260,
+    entranceSpanMs: 400,
+    entranceItemMs: 250,
+    entranceRise: 24,
+    entranceEase: 'Cubic.easeOut',
+    beadEase: 'Back.easeOut',
+    summaryStarStepMs: 180,
+    summaryStarPopMs: 220,
+    summaryBurstParticles: 22,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 

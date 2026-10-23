@@ -300,7 +300,7 @@ export const installE2EHook = (game: Game): void => {
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';

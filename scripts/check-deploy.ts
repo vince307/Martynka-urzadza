@@ -3,6 +3,7 @@
 // `switch` and by the agent from its session.
 // Usage: npm run check:deploy -- <baseUrl> [sha7]
 // Exit codes: 0 all checks ok, 1 some check failed, 2 usage.
+import { FONT_URL } from '../src/data/layout';
 import { ROOM_ART } from '../src/data/roomArt';
 import { SOUNDS } from '../src/data/sounds';
 import { TASK_ART } from '../src/data/taskArt';
@@ -126,6 +127,7 @@ const main = async (): Promise<number> => {
         // These tables are HEAD's: after a rollback (no SHA) they may list files the older release never had.
         record(precacheCovers('task pictures', precache, TASK_ART.map((a) => a.url)));
         record(precacheCovers('screen pictures', precache, UI_ART.map((a) => a.url)));
+        record(precacheCovers('task font', precache, [FONT_URL]));
         record(precacheCovers('room pictures', precache, ROOM_ART.map((a) => a.url)));
         record(precacheCovers('boot sounds', precache, SOUNDS.filter((s) => s.boot).flatMap((s) => [...s.urls])));
     }

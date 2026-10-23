@@ -77,6 +77,9 @@ export class UIScene extends Scene {
         this.counter = new StarCounter(this, stars);
         const onStars = (_parent: unknown, value: number): void => this.counter.setValue(value);
         this.registry.events.on(`changedata-${REGISTRY_KEYS.stars}`, onStars);
+        // The number is already right (onStars); the pop only waits for the flying star to land.
+        const onStarLanded = (): void => this.counter.pop();
+        this.game.events.on(GAME_EVENTS.starLanded, onStarLanded);
 
         this.narrator = this.registry.get(REGISTRY_KEYS.narrator) as Narrator | undefined;
         this.speaker = new SpeakerButton(this, () => {
@@ -127,6 +130,7 @@ export class UIScene extends Scene {
             this.registry.events.off(`changedata-${REGISTRY_KEYS.roomSwitch}`, refreshSwitch);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.hudTitle}`, refreshTitle);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
+            this.game.events.off(GAME_EVENTS.starLanded, onStarLanded);
             this.registry.events.off(`changedata-${REGISTRY_KEYS.narration}`, refreshSpeaker);
             unsubscribe?.();
         });
