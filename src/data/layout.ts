@@ -645,6 +645,19 @@ export const BEADS = {
     done: { fill: '#a6cf7f', ring: '#547e3d' },
 } as const;
 
+/**
+ * The fox guide in the corner of the task notebook (PRD FR-037; DESIGN-GAP 165). The image is `displaySize` square, standing on `anchor`
+ * (its feet) with `origin` as the pack's common anchor (512, 900 of 1024); `silhouette` is the union of the three poses' solid bounds in
+ * source pixels (pack qa-report.json), the body that may never cover a task element.
+ */
+export const GUIDE = {
+    anchor: { x: 1792, y: 400 },
+    displaySize: 320,
+    sourceSize: 1024,
+    origin: { x: 0.5, y: 0.87890625 },
+    silhouette: { left: 264, top: 196, right: 866, bottom: 900 },
+} as const;
+
 /** Animation durations in milliseconds. */
 export const ANIMATION = {
     starFlightMs: 850,
@@ -666,6 +679,9 @@ export const ANIMATION = {
     wobbleMs: 520,
     wobbleSwings: 2,
     counterPopScale: 1.18,
+    guidePoseMs: 240,      // the fox's pose change: a pop up to guidePopScale and back, none under reduced motion (DESIGN-GAP 166)
+    guidePopScale: 1.06,
+    guideEase: 'Sine.easeOut',
     counterPopMs: 220,
     beadPopScale: 1.3,
     beadPopMs: 260,
