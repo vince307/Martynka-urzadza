@@ -169,7 +169,7 @@ maintainer's lever, DESIGN-GAP 169). `SALON.contactShadows`: `lamp-table` 0.75 (
 
 **File**: `src/data/layout.ts` — `ROOM_LAYOUT.worn = { grade: { sepia: 0.20, saturate: -0.30, brightness: 0.90, contrast:
 0.90, lift: 4 }, soft: { sepia: 0.10, saturate: -0.35, brightness: 0.95, contrast: 1, lift: 0 }, canvasWash: { colour:
-<PAGE_BACKGROUND as number>, alpha: 0.30 } }`; `ROOM_LAYOUT.contactShadow = { colour: 0x5f462b, alpha: 0.25, rings: 8,
+PLACEHOLDER_COLORS.ivory, alpha: 0.30 } }` (the numeric twin of `PAGE_BACKGROUND`; `src/data` cannot call `hexToNumber` from `src/ui`); `ROOM_LAYOUT.contactShadow = { colour: 0x5f462b, alpha: 0.25, rings: 8,
 heightRatio: 0.32 }` (colour and peak alpha measured from the pack's `shadows` layer, DESIGN-GAP 171). Depth unchanged in
 this phase.
 
@@ -236,7 +236,7 @@ false and touches nothing.
 **Contract**: no `furnishings` layer any more. Before the stage: `shadows` layer at `depth.shadows` (also when the room
 is done, as today), then one image per `wornPieces(room, state)` entry whose texture exists, at `depth.worn + z / 1000`,
 graded through `applyWornGrade`; a missing worn texture is skipped (no stand-in, gap 172); under Canvas one wash rectangle
-(`ROOM_LAYOUT.worn.canvasWash`) at `depth.worn + 0.5`. After the stage and before `roomDone`: one Graphics at
+(`ROOM_LAYOUT.worn.canvasWash`) at `depth.worn + 0.5` (only when at least one worn image was drawn). After the stage and before `roomDone`: one Graphics at
 `depth.shadows` with `contactShadowPieces(room, state, ROOM_LAYOUT.contactShadow.heightRatio)` drawn as `rings` concentric
 ellipses whose alpha rises to `alpha` at the centre (works on both renderers). Worn images and the ellipse Graphics are
 recreated or cleared on every `render`; `shownNow` / `shown()` unchanged. New `wornState(): { keys: string[]; graded: boolean }`
@@ -456,8 +456,12 @@ status: final-art-salon F1 closed (folded in phase 2), F2 open (worn pieces get 
 F2 (curtain clip) open, VO2 / F5 / F7 open, L-7 closed (worn state in the room snapshot), L-R8 / L-R11 open except `onSleep`
 (folded), salon-load-health M-6 second half open, per-file timeout test open, fox-guide F4 closed by headroom (record the new
 number), texture atlas open, gap 109 follow-up open, GPU memory note (one full-scene texture fewer), "a done salon loses
-its shadows" open (whole layer logic at `roomDone` unchanged), audit-backdrop-fox F6 `isSalonPixel` open (render not edited),
-notebook-polish 16 open, first-furniture-purchase V1 closed-by-history, L-4 open.
+its shadows" open (whole layer logic at `roomDone` unchanged), audit-backdrop-fox F6 `isSalonPixel` and notebook-polish 16
+**fired** (phase 3 edits `SalonBackdrop.render` and `BackdropSnapshot` for the `graded` count) and re-recorded open with that
+reason (the restore path, the blur and `holder.destroy(true)` are untouched; the `graded` count is no pixel proof either),
+save-observability L-R9 (`stars.ts` `earn`, fired by the `RoomScene` edit) and salon-load-health M-5 (purchase flow under
+`writefail`, fired by the `fadeStage` edit) re-recorded open (no purchase, star or save code changes), first-furniture-purchase
+V1 closed-by-history, L-4 open.
 
 ### Success Criteria:
 
