@@ -1,51 +1,45 @@
 # Handoff — `audit-backdrop-fox` (slice fix:audit-backdrop-fox)
 
-Written by the `/10x-tdd` step, phase 1, of run 2026-10-24-audit-backdrop-fox: the pure fox availability rule and the "Obrazki" lines are in, tests first. Phase 2 wires them into `GuideFox` and `UIScene`.
+Written by the `/10x-implement` step, phase 2, of run 2026-10-24-audit-backdrop-fox: `GuideFox` hides for the whole scene when any pose is missing and records `guide`; `UIScene` passes `noStandIn`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/audit-backdrop-fox` |
-| Commits | phase 1 commit 8263f8b on top of the plan-review commits, plus this handoff commit |
+| Commits | phase 2 commit 63fb936, plus this handoff commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implementing` is not set by this step; unchanged |
-| `## Progress` rows | 1.1-1.4 ticked with 8263f8b; 1.5 left (its e2e part is the orchestrator's) |
+| `change.md` status | unchanged |
+| `## Progress` rows | 2.1-2.3 ticked with 63fb936; 2.4 left (its e2e part is the orchestrator's) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/guide.ts` | `GUIDE_IDS`, `guideAvailable(exists)` |
-| `src/core/artPick.ts` | `'guide'` in `FallbackWhere`/`FALLBACK_ORDER`, `DrawnFallbackWhere` |
-| `src/core/artHealth.ts` | `standIn` on the ui missing line, `noStandIn` input, `guide` line |
-| `src/data/pl.ts`, `src/ui/dom/artHealthView.ts` | `uiArtMissing(count,total,standIn)`, `guideMissing`, view cases |
-| `tests/guide.test.ts`, `tests/artHealthLines.test.ts`, `tests/artHealthText.test.ts` | new cases; `tests/e2e/health-lines.spec.ts` call updated to `(1, total, true)` |
+| `src/ui/widgets/GuideFox.ts` | `available` once in the constructor, `recordFallback(scene,'guide','none')`, `requested` in `GuideSnapshot`, no per-pose texture check |
+| `src/scenes/UIScene.ts` | `noStandIn` = UI keys of the three fox poses |
+| `tests/e2e/support/hook.ts` | `guide.requested` |
+| `tests/guideWiring.test.ts` | two new source-guard cases |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (against stubs: `guideAvailable` true, no guide line, standIn absent, pl stub) | 11 failed, e.g. `AssertionError: expected [] to deeply equal [ { kind: 'guide' } ]` and `expected true to be false` (guideAvailable) |
-| GREEN | the three files 61 passed |
-| deliberate break: `guideAvailable` checks only idle; `standIn` = `missing.length > 0` | 3 red (guideCheer, guideThink missing rows; "only fox keys" case); restored. Meta: oracles are literal key lists and tables, not computed by the code under test |
-| lint, typecheck, `npm test` + deploy scripts + sample E1-E6, build | green; unit 3903 passed (baseline 3891 + 12); `e2e hook: absent (2 chunks checked)` |
-| `git diff main --stat` of save, fixtures, balance, curriculum | empty; `pl.ts` diff does not touch `artFallback`/`artFallbackNames` |
-| e2e | not run (not in this phase) |
+| deliberate break 1: per-pose `textures.exists` back in `show` | wiring case red; restored |
+| deliberate break 2: `recordFallback` call deleted | same case red; restored. Meta: source guards only; on-screen behaviour is proven by phase 6 e2e |
+| lint, typecheck, `npm test` + deploy scripts + sample E1-E6, build | green; unit 3905 (3903 + 2); `e2e hook: absent (2 chunks checked)` |
+| e2e | not run (orchestrator) |
 
 ## 4. Next command
 
-`/10x-implement audit-backdrop-fox phase 2`
+`/10x-implement audit-backdrop-fox phase 3`
 
 ## 5. Open
 
-- Phase 2 must pass `noStandIn` (the three fox keys) from `UIScene.openSettings`, call `recordFallback(scene, 'guide', 'none')`, apply `guideAvailable` in the `GuideFox` constructor. Phases 3-6 as in the earlier handoff.
-- Manual rows 4.7-4.10 unchanged. `ARTIFACT GAP`: none.
+- Phases 3-6 per plan. Manual rows 4.7-4.10 unchanged. `ARTIFACT GAP`: none.
 
 ## 6. Autonomous decisions
 
-- **T-1 Commit set = planned files only; stop after phase 1.** Would change: nothing.
-- **T-2 Phase stays `Driver: tdd`**; stubs for new symbols were scaffolding to reach assertion failures. Would change: n/a.
-- **T-3 Row 1.5 left unticked**: it includes the e2e baseline that the orchestrator measures.
-- **T-4 The wrong first oracle (plural of 3) was a test error fixed before the quoted RED.**
+- **I-1 Both breaks live in one test case** (constructor/record/no-per-pose), so each break turns that one case red rather than two separate cases. Would change: split if a reviewer wants separate cases.
+- **I-2 Row 2.4 left unticked**: includes the e2e baseline run by the orchestrator.

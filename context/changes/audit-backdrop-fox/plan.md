@@ -632,9 +632,9 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 2.1 `tests/guideWiring.test.ts` green with the new cases; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: put `!this.scene.textures.exists(key)` back into `show` → the "no per-pose check" case red; delete the `recordFallback` call → its case red; each restored; meta-check: these are source guards of the wiring; on-screen behaviour (hidden in every phase, the panel text) is proven by phase 6
-- [ ] 2.3 `grep -n "requested" src/ui/widgets/GuideFox.ts tests/e2e/support/hook.ts` shows the field in both
+- [x] 2.1 `tests/guideWiring.test.ts` green with the new cases; unit `<phase-1 count> + N` — 63fb936
+- [x] 2.2 Deliberate break: put `!this.scene.textures.exists(key)` back into `show` → the "no per-pose check" case red; delete the `recordFallback` call → its case red; each restored; meta-check: these are source guards of the wiring; on-screen behaviour (hidden in every phase, the panel text) is proven by phase 6 — 63fb936
+- [x] 2.3 `grep -n "requested" src/ui/widgets/GuideFox.ts tests/e2e/support/hook.ts` shows the field in both — 63fb936
 - [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`fox-guide.spec.ts` `#11 no fox without its art` still green: `?e2eArt=ui` misses all three poses)
 
 ### Phase 3: Backdrop record and the redraw after a context restore
