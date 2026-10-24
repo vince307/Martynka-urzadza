@@ -622,10 +622,10 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 1.1 New cases red against stubs (`guideAvailable` returns `true`, no `guide` line, `standIn` absent), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: `guideAvailable` checks only `idle` → the single-missing rows red; `standIn` computed as `ui.missing.length > 0` → the "only fox keys" case red; each restored; meta-check: the oracles are literal tables and literal key lists, not values computed by the code under test
-- [ ] 1.3 `npm run typecheck` green with `'guide'` in `FallbackWhere` and `artFallbackNames` unchanged (`git diff main -- src/data/pl.ts` shows no edit of `artFallback`/`artFallbackNames`)
-- [ ] 1.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum` empty
+- [x] 1.1 New cases red against stubs (`guideAvailable` returns `true`, no `guide` line, `standIn` absent), green after; unit `<branch baseline> + N`
+- [x] 1.2 Deliberate break: `guideAvailable` checks only `idle` → the single-missing rows red; `standIn` computed as `ui.missing.length > 0` → the "only fox keys" case red; each restored; meta-check: the oracles are literal tables and literal key lists, not values computed by the code under test
+- [x] 1.3 `npm run typecheck` green with `'guide'` in `FallbackWhere` and `artFallbackNames` unchanged (`git diff main -- src/data/pl.ts` shows no edit of `artFallback`/`artFallbackNames`)
+- [x] 1.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum` empty
 - [ ] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`#14 G-1` text unchanged for the wallet)
 
 ### Phase 2: The fox hides for the whole scene and is recorded

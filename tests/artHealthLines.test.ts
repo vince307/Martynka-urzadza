@@ -132,3 +132,34 @@ describe('artHealthLines: fallback line (phase 7)', () => {
         expect(artHealthLines(base).some((l) => l.kind === 'fallback')).toBe(false);
     });
 });
+
+describe('artHealthLines: fox and stand-in (audit G-1, G-2)', () => {
+    const FOX = ['ui/fox-idle', 'ui/fox-cheer', 'ui/fox-think'];
+    const uiMissing = (keys: string[]): ArtHealth => {
+        const all = ['ui/wallet-open', ...FOX, 'ui/notebook'];
+        return artHealth(all.map((key) => ({ key, id: key })), (key) => !keys.includes(key));
+    };
+    const base = { task: okHealth(3), room: okHealth(3), cut: 0, build: 'abc1234', noStandIn: FOX };
+    const uiLine = (lines: ReturnType<typeof artHealthLines>) => lines.find((l) => l.kind === 'missing' && l.table === 'ui');
+
+    it('promises no stand-in when only fox keys are missing', () => {
+        expect(uiLine(artHealthLines({ ...base, ui: uiMissing(FOX) }))).toMatchObject({ standIn: false, count: 3 });
+    });
+    it('keeps the stand-in promise for a missing wallet, alone or with a fox pose', () => {
+        expect(uiLine(artHealthLines({ ...base, ui: uiMissing(['ui/wallet-open']) }))).toMatchObject({ standIn: true });
+        expect(uiLine(artHealthLines({ ...base, ui: uiMissing(['ui/wallet-open', 'ui/fox-think']) }))).toMatchObject({ standIn: true });
+    });
+    it('promises a stand-in when noStandIn is absent', () => {
+        expect(uiLine(artHealthLines({ ...base, noStandIn: undefined, ui: uiMissing(FOX) }))).toMatchObject({ standIn: true });
+    });
+    it('gives one guide line and no fallback line for a recorded fox', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), fallbacks: { guide: 'none' } });
+        expect(lines.filter((l) => l.kind === 'guide')).toEqual([{ kind: 'guide' }]);
+        expect(lines.some((l) => l.kind === 'fallback')).toBe(false);
+    });
+    it('lists only drawn places in the fallback line and orders font, guide, fallback', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), font: 'fallback', fallbacks: { guide: 'none', wallet: 'drawn' } });
+        expect(lines.find((l) => l.kind === 'fallback')).toEqual({ kind: 'fallback', where: ['wallet'] });
+        expect(lines.map((l) => l.kind).filter((k) => k === 'font' || k === 'guide' || k === 'fallback')).toEqual(['font', 'guide', 'fallback']);
+    });
+});

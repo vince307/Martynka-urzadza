@@ -1,6 +1,6 @@
 // Which task pictures failed to load, as a record the scenes keep for the session and a view the parent panel reads.
 // Pure: the expected entries and the "texture exists" predicate come in as arguments (no Phaser, no data import).
-import { FALLBACK_ORDER, type FallbackRecord, type FallbackWhere } from './artPick';
+import { FALLBACK_ORDER, type DrawnFallbackWhere, type FallbackRecord } from './artPick';
 
 export interface ArtHealth {
     readonly total: number;
@@ -110,13 +110,14 @@ export const pictureCutCount = (byTable: Partial<Record<ArtTable | 'font', reado
 export type ArtLineTable = 'task' | 'room' | 'ui';
 /** One line of the parent's "Obrazki" section; the renderer maps each kind to Polish text (no text in core). */
 export type ArtHealthLine =
-    | { kind: 'ok' | 'missing'; table: ArtLineTable; count: number; total: number }
+    | { kind: 'ok' | 'missing'; table: ArtLineTable; count: number; total: number; standIn?: boolean }
     | { kind: 'cut'; count: number }
     | { kind: 'folder'; folder: string; count: number }
     | { kind: 'skipped' }
     | { kind: 'labels'; labels: readonly string[] }
     | { kind: 'font' }
-    | { kind: 'fallback'; where: readonly FallbackWhere[] }
+    | { kind: 'guide' }
+    | { kind: 'fallback'; where: readonly DrawnFallbackWhere[] }
     | { kind: 'advice'; restart: boolean }
     | { kind: 'cause'; cause: ArtCause }
     | { kind: 'code'; code: ArtCause; build: string };
@@ -135,6 +136,8 @@ export interface ArtHealthLinesInput {
     readonly labelCap?: number;
     /** The screens that showed a drawn fallback instead of their picture (core/artPick record); one muted line names them. */
     readonly fallbacks?: FallbackRecord;
+    /** UI texture keys whose screen draws nothing in their place (the fox poses); absent means every key has a stand-in. */
+    readonly noStandIn?: readonly string[];
 }
 
 const CAUSE_ORDER: readonly ArtCause[] = ['fetch', 'network', 'decode', 'cut', 'never'];
@@ -172,16 +175,19 @@ export const folderCounts = (missing: readonly string[]): { folder: string; coun
  * Lines of "Obrazki": each known table (an unknown one says nothing, the others still show), the missing task pictures per
  * folder with the sentence that their tasks are skipped, the cut line, the labels of missing room pieces (capped), and for
  * missing pictures the main cause, whether a restart helps, and the code. When the cut is the cause, the cut line already
- * says it (and the restart advice with it). A fallback font adds its own line.
+ * says it (and the restart advice with it). A fallback font adds its own line, then a recorded fox (no stand-in) its own, then the
+ * drawn fallbacks. The `ui` missing line carries `standIn`: true when some missing key has a stand-in (keys in `noStandIn` have none).
  */
-export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks }: ArtHealthLinesInput): ArtHealthLine[] => {
+export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks, noStandIn }: ArtHealthLinesInput): ArtHealthLine[] => {
     const lines: ArtHealthLine[] = [];
     const known: ArtHealth[] = [];
     for (const [table, health] of [['task', task], ['room', room], ['ui', ui]] as const) {
         const view = artHealthView(health);
         if (view.kind === 'unknown' || !health) continue;
         known.push(health);
-        lines.push({ kind: view.kind, table, count: view.kind === 'missing' ? view.count : 0, total: health.total });
+        const line: ArtHealthLine = { kind: view.kind, table, count: view.kind === 'missing' ? view.count : 0, total: health.total };
+        if (table === 'ui' && line.kind === 'missing') line.standIn = health.missing.some((key) => !(noStandIn ?? []).includes(key));
+        lines.push(line);
     }
     if (task && task.missing.length > 0) {
         for (const { folder, count } of folderCounts(task.missing)) lines.push({ kind: 'folder', folder, count });
@@ -197,7 +203,8 @@ export const artHealthLines = ({ task, room, ui, cut, build, font, labels, label
         if (!cutSaysIt) lines.push({ kind: 'advice', restart: restartHelps(cause) });
     }
     if (font === 'fallback') lines.push({ kind: 'font' });
-    const shown = FALLBACK_ORDER.filter((where) => fallbacks?.[where] !== undefined);
+    if (fallbacks?.guide !== undefined) lines.push({ kind: 'guide' });
+    const shown = FALLBACK_ORDER.filter((where): where is DrawnFallbackWhere => where !== 'guide' && fallbacks?.[where] !== undefined);
     if (shown.length > 0) lines.push({ kind: 'fallback', where: shown });
     if (cause) lines.push({ kind: 'code', code: cause, build });
     return lines;

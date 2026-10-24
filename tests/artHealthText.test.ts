@@ -31,7 +31,7 @@ describe('pl.settings.uiArtMissing', () => {
         [2, '2 z 5 obrazków ekranów nie wczytały się.'],
         [5, '5 z 5 obrazków ekranów nie wczytało się.'],
     ])('agrees the verb with %i', (count, start) => {
-        expect(pl.settings.uiArtMissing(count, 5).startsWith(start)).toBe(true);
+        expect(pl.settings.uiArtMissing(count, 5, true).startsWith(start)).toBe(true);
     });
 });
 
@@ -42,5 +42,15 @@ describe('pl.settings.artFolders agreement (phase 6)', () => {
         [5, 'pieniądze: brak 5 obrazków.'],
     ])('%i', (n, text) => {
         expect(pl.settings.artFolders('money', n)).toBe(text);
+    });
+});
+
+describe('pl.settings stand-in sentence and fox line (audit G-1)', () => {
+    it('drops the stand-in sentence when there is none', () => {
+        expect(pl.settings.uiArtMissing(5, 8, false)).toBe('5 z 8 obrazków ekranów nie wczytało się.');
+        expect(pl.settings.uiArtMissing(1, 8, true)).toBe('1 z 8 obrazków ekranów nie wczytał się. Na tych ekranach zamiast obrazka jest napis lub rysunek.');
+    });
+    it('says the fox is not shown, in one sentence', () => {
+        expect(pl.settings.guideMissing).toBe('Lisek w rogu zeszytu się nie pokazuje, bo brakuje jego obrazka.');
     });
 });

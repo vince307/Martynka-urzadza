@@ -35,7 +35,7 @@ test.describe('screen pictures', () => {
         const total = UI_ART.length;
 
         const panel = await openSettings(page);
-        await expect(panel.getByText(pl.settings.uiArtMissing(1, total), { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.uiArtMissing(1, total, true), { exact: true })).toBeVisible();
         await expect(panel.getByText(pl.settings.uiArtOk, { exact: true })).toHaveCount(0);
         // The task pictures are a separate count and all loaded.
         await expect(panel.getByText(pl.settings.artOk, { exact: true })).toBeVisible();

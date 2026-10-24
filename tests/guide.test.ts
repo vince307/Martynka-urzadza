@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GUIDE_ART, guidePose, type GuidePose, type GuideScreen } from '../src/core/guide';
+import { GUIDE_ART, guideAvailable, guidePose, type GuidePose, type GuideScreen } from '../src/core/guide';
 import type { RoundPhase } from '../src/core/round';
 import { UI_ART_KEYS } from '../src/data/uiArt';
 
@@ -24,5 +24,18 @@ describe('guide pose', () => {
         expect(new Set(ids).size).toBe(3);
         for (const id of ids) expect(UI_ART_KEYS).toHaveProperty(id);
         expect(GUIDE_ART).toEqual({ idle: 'guideIdle', cheer: 'guideCheer', think: 'guideThink' });
+    });
+});
+
+describe('guideAvailable (audit G-2: one missing pose hides the fox)', () => {
+    const all = ['guideIdle', 'guideCheer', 'guideThink'];
+    it('is true only when all three poses exist', () => {
+        expect(guideAvailable((id) => all.includes(id))).toBe(true);
+    });
+    it.each(all)('is false when only %s is missing', (gone) => {
+        expect(guideAvailable((id) => all.includes(id) && id !== gone)).toBe(false);
+    });
+    it('is false when none exists', () => {
+        expect(guideAvailable(() => false)).toBe(false);
     });
 });

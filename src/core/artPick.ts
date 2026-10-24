@@ -18,9 +18,11 @@ export function neededMiniatureKeys(pieces: readonly { key: string; alpha: numbe
     return pieces.filter((p) => p.alpha !== 0).map((p) => p.key);
 }
 
-/** The screens whose picture can be replaced by a drawn fallback. */
-export type FallbackWhere = 'wallet' | 'notebook' | 'miniature' | 'loading';
-export const FALLBACK_ORDER: readonly FallbackWhere[] = ['wallet', 'notebook', 'miniature', 'loading'];
+/** The screens whose picture can be replaced by a drawn fallback; the fox (`guide`) records `'none'`: nothing is drawn in its place. */
+export type FallbackWhere = 'wallet' | 'notebook' | 'miniature' | 'loading' | 'guide';
+/** The places that have a drawn fallback (everything but the fox). */
+export type DrawnFallbackWhere = Exclude<FallbackWhere, 'guide'>;
+export const FALLBACK_ORDER: readonly FallbackWhere[] = ['wallet', 'notebook', 'miniature', 'loading', 'guide'];
 /** Which fallback the child sees per screen (the mode is the picker's own word: 'drawn', 'icon', 'box', 'thumbnail'). Runtime only. */
 export type FallbackRecord = Readonly<Partial<Record<FallbackWhere, string>>>;
 
