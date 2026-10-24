@@ -3,9 +3,11 @@
 // missing, or animate under reduced motion. Runs in the chromium-hook project (read-only window.__martynkaE2E, `guide`).
 // Taps go through page.touchscreen.tap; the expected body rect comes from guideRect() so the spec has no fixed coordinates.
 import { test, expect, type Page } from '@playwright/test';
-import { passWelcomeAsChild, passWelcomeAsParent } from './support/welcome';
+import { openSettings, passWelcomeAsChild, passWelcomeAsParent } from './support/welcome';
 import { answerRight, answerWrong, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapNext, tapScene, tapTarget, targets } from './support/hook';
 import { guideRect } from '../../src/core/guideLayout';
+import { pl } from '../../src/data/pl';
+import { UI_ART } from '../../src/data/uiArt';
 
 const TILE_SKILL = 'E1.1.compare_qty_10'; // an E1 skill answered with tiles (src/data/curriculum/E1.ts)
 
@@ -122,4 +124,47 @@ test('#11 reduced motion swaps the pose without a pop; with motion the same answ
     await phaseIs(control, 'done');
     await expect.poll(async () => (await snapshot(control)).guide!.pops).toBeGreaterThanOrEqual(1);
     await control.context().close();
+});
+
+// Audit finding G-1/G-2 (change audit-backdrop-fox): one of the three fox pictures does not load. The fox then stays hidden for the whole
+// session (no stand-in box, no pose that blinks in and out) and the parent's pictures section says so. The abort is a network failure, so the
+// section also carries cause/advice lines for it: the checks name single sentences, never the whole line list.
+test.describe('one pose missing', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test.beforeEach(async ({ page }) => {
+        await page.route('**/assets/ui/fox-think.webp', (route) => route.abort());
+    });
+
+    test('#11 one missing pose hides the fox in every phase', async ({ page }) => {
+        await startTiles(page);
+        const hidden = async () => expect((await snapshot(page)).guide).toMatchObject({ visible: false });
+        await hidden();
+        expect((await snapshot(page)).guide!.requested).toBe('idle');
+        expect((await snapshot(page)).artFallbacks?.guide).toBe('none');
+
+        await answerWrong(page);
+        await phaseIs(page, 'second');
+        await expect.poll(async () => (await snapshot(page)).guide!.requested).toBe('think');
+        await hidden();
+
+        await answerRight(page);
+        await phaseIs(page, 'done');
+        await expect.poll(async () => (await snapshot(page)).guide!.requested).toBe('cheer');
+        await hidden();
+
+        await tapNext(page);
+        await playRoundRight(page, 4);
+        await screenIs(page, 'summary');
+        await hidden();
+    });
+
+    test('#14 the pictures section names the missing fox', async ({ page }) => {
+        await startTiles(page);
+        const panel = await openSettings(page);
+        await expect(panel.getByText(pl.settings.guideMissing, { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.uiArtMissing(1, UI_ART.length, false), { exact: true })).toBeVisible();
+        await expect(panel.getByText('napis lub rysunek')).toHaveCount(0);
+        await expect(panel.getByText('Zamiast obrazka gra rysuje', { exact: false })).toHaveCount(0);
+    });
 });
