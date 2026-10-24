@@ -1,10 +1,10 @@
 ---
 change_id: audit-backdrop-fox
 title: Salon backdrop after a WebGL context loss, honest backdrop record, missing fox named in "Obrazki"
-status: impl_reviewed
+status: archived
 created: 2026-10-24
 updated: 2026-10-24
-archived_at: null
+archived_at: 2026-10-24T20:26:52Z
 ---
 
 ## Notes
