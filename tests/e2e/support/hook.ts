@@ -54,7 +54,7 @@ export interface Snapshot {
     stars: number;
     counterText: string;
     /** The blurred salon behind the notebook (task and welcome screens): which look it has and how many times it was captured. */
-    backdrop?: { mode: 'salon' | 'plain'; captures: number };
+    backdrop?: { mode: 'salon' | 'plain'; captures: number; drawn: boolean; blurred: boolean; renderer: 'webgl' | 'canvas'; redraws: number };
     /** The fox guide in the notebook corner (fox-guide). */
     guide?: { pose: 'idle' | 'cheer' | 'think' | null; requested: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number; y: number; width: number; height: number }; interactive: boolean; pops: number };
     settingsHint: boolean;
@@ -138,7 +138,7 @@ export interface Targets {
     parent?: Point;
     settingsIcon?: Point;
 }
-interface Hook { snapshot: Snapshot; targets: Targets }
+interface Hook { snapshot: Snapshot; targets: Targets; backdropPixel: [number, number, number, number] }
 
 export const readHook = <K extends keyof Hook>(page: Page, key: K): Promise<Hook[K] | null> =>
     page.evaluate((k) => {

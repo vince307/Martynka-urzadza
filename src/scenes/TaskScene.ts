@@ -1,4 +1,4 @@
-import { Scene, type GameObjects, type Tweens } from 'phaser';
+import { Renderer, Scene, WEBGL, type GameObjects, type Tweens } from 'phaser';
 import { initialClockSet, stepClockSet, type ClockSetEvent, type ClockSetGeo, type ClockSetState } from '../core/clockSet';
 import { clockSetLayout } from '../core/round/pictureLayout';
 import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
@@ -67,7 +67,7 @@ import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { GuideFox, type GuideSnapshot } from '../ui/widgets/GuideFox';
 import { guidePose, type GuideScreen } from '../core/guide';
-import { SalonBackdrop } from '../ui/widgets/SalonBackdrop';
+import { SalonBackdrop, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { CoverBoard } from '../ui/widgets/CoverBoard';
 import { Dice } from '../ui/widgets/Dice';
@@ -127,7 +127,7 @@ export interface TaskSnapshot {
     readonly unlock: { readonly step: number; readonly name: string } | null;   // the open "Nowa umiejętność!" card
     readonly variant: { readonly kind: VariantKind; readonly puzzleId: string | null; readonly letters: readonly (string | null)[] | null; readonly covered: readonly number[] | null } | null;   // the open round is a variant (S-15); null for an ordinary round or the warm-up
     readonly today: string;   // the calendar day the scheduler sees
-    readonly backdrop: { readonly mode: 'salon' | 'plain'; readonly captures: number };   // the blurred salon behind the notebook (notebook-polish)
+    readonly backdrop: BackdropSnapshot;   // the blurred salon behind the notebook (notebook-polish)
     readonly guide: GuideSnapshot;   // the fox guide in the notebook corner (fox-guide)
     readonly solutionOverflow: boolean;   // the solution lines on screen overflow their room even at the smallest scale (audit WNA-04)
 }
@@ -260,6 +260,12 @@ export class TaskScene extends Scene {
         this.scene.launch(SCENE_KEYS.ui);
         this.backdrop = new SalonBackdrop(this);
         this.refreshBackdrop();
+        // A lost and restored WebGL context empties every texture; the backdrop is drawn again at once, awake or asleep (audit B-1).
+        const onRestore = (): void => this.refreshBackdrop('restore');
+        this.game.renderer.on(Renderer.Events.RESTORE_WEBGL, onRestore);
+        this.events.once('shutdown', () => {
+            this.game.renderer.off(Renderer.Events.RESTORE_WEBGL, onRestore);
+        });
         drawNotebook(this);
         this.guide = new GuideFox(this);
         this.picture = new TaskPicture(this);
@@ -1198,11 +1204,16 @@ export class TaskScene extends Scene {
         });
     }
 
+    /** The pixel the backdrop shows in its middle (e2e hook only reads it). */
+    backdropPixel(): [number, number, number, number] | null {
+        return this.backdrop?.pixel() ?? null;
+    }
+
     /** Capture the child's current salon behind the notebook. */
-    private refreshBackdrop(): void {
+    private refreshBackdrop(cause: BackdropCause = 'capture'): void {
         const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
         this.backdropRooms = rooms ?? null;
-        this.backdrop?.render(rooms, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
+        this.backdrop?.render(rooms, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined, cause);
     }
 
     /** Cost of the next renovation task of the current room, or null when none is left. */
@@ -1235,7 +1246,7 @@ export class TaskScene extends Scene {
             visual: task.visual ? structuredClone(task.visual) : null,
             correctChoices: task.check && view.input === 'tiles' ? Object.freeze(view.choices.filter((c) => task.check?.(c))) : null,
             markedTile: this.tiles.markedValue(),
-            backdrop: { mode: this.backdrop?.mode ?? 'plain', captures: this.backdrop?.captures ?? 0 },
+            backdrop: this.backdrop?.snapshot() ?? Object.freeze({ mode: 'plain' as const, captures: 0, drawn: false, blurred: false, renderer: this.game.renderer.type === WEBGL ? 'webgl' as const : 'canvas' as const, redraws: 0 }),
             guide: this.guide.snapshot(),
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),

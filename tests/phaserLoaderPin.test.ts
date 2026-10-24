@@ -65,3 +65,25 @@ describe('phaser audio decode seam pin (src/ui/decodeSeam.ts)', () => {
         expect(audio, hint).toContain('new AudioFile(loader, key, urlConfig, xhrSettings, game.sound.context)');
     });
 });
+
+describe('phaser webgl restore pin (src/ui/widgets/SalonBackdrop.ts, e2e backdrop-restore.spec.ts)', () => {
+    const read = (path: string): string => readFileSync(`node_modules/phaser/src/${path}`, 'utf8');
+    it('names the restore event restorewebgl', () => {
+        expect(read('renderer/events/RESTORE_WEBGL_EVENT.js'), 'TaskScene and WelcomeScene listen with Renderer.Events.RESTORE_WEBGL: re-verify the redraw').toContain("module.exports = 'restorewebgl'");
+    });
+    it('re-creates textures and framebuffers before it emits the event', () => {
+        const src = read('renderer/webgl/WebGLRenderer.js');
+        const start = src.indexOf('dispatchContextRestored: function');
+        const body = src.slice(start, src.indexOf('\n    },', start));
+        const hint = 'the backdrop is redrawn on the event: re-verify that textures are usable by then';
+        expect(start).toBeGreaterThan(-1);
+        expect(body.indexOf('ArrayEach(this.glFramebufferWrappers'), hint).toBeGreaterThan(-1);
+        expect(body.indexOf('ArrayEach(this.glFramebufferWrappers'), hint).toBeLessThan(body.indexOf('this.emit(Events.RESTORE_WEBGL'));
+    });
+    it('reads one pixel through snapshotArea with the pixel type', () => {
+        expect(read('textures/DynamicTexture.js'), 'SalonBackdrop.pixel relies on it').toMatch(/snapshotPixel: function[\s\S]*?this\.snapshotArea\(x, y, 1, 1, callback, 'pixel'\)/);
+    });
+    it('destroys the filter camera with the game object', () => {
+        expect(read('gameobjects/GameObject.js'), 'comment at holder.destroy in SalonBackdrop').toMatch(/if \(this\.filterCamera\)[\s\S]*?this\.filterCamera\.destroy\(\)/);
+    });
+});

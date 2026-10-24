@@ -307,6 +307,10 @@ export const installE2EHook = (game: Game): void => {
                 const speaker = ui().speakerTarget();
                 return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
             },
+            get backdropPixel() {
+                if (boot()?.isLoading()) return null;
+                return onWelcome() ? welcome().backdropPixel() : task().backdropPixel();
+            },
             get targets() {
                 if (onWelcome()) {
                     const { ages, parent } = welcome().targets();
