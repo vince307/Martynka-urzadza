@@ -1,7 +1,7 @@
 ---
 change_id: salon-style
 title: Salon before state in the house clay style, palette board, contact shadows in the empty room
-status: plan_reviewed
+status: implementing
 created: 2026-10-24
 updated: 2026-10-24
 archived_at: null

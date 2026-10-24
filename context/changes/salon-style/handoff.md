@@ -10,7 +10,7 @@ must not read the new required `RoomDef.worn` / `contactShadows` as drift (the p
 | Branch | `feat/salon-style`, cut from `main` at `309e672` |
 | Commits | five before this handoff: identity, research, plan, plan review, `test(salon-style): worn grade and piece rules (p1)` 7d2e520 |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `in_progress` |
+| `change.md` status | `implementing` |
 | Progress rows remaining | 29 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
