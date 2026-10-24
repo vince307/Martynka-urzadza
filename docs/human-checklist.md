@@ -466,9 +466,8 @@ Wynik: PR #99 scalony 2026-10-23 na „zmerguj” właściciela (243ce53). Zapis
 
 ## Bieg 2026-10-23-fox-guide (lisek-przewodnik, PRD FR-037)
 
-Wynik: PR #102 otwarty, CI zielone (fed1028), czeka na „zmerguj”. Zapis v4 bez zmian. Testy: jednostkowe 3781 → 3891, e2e 150 → 155. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS.
+Wynik: PR #102 scalony 2026-10-24 na „zmerguj” właściciela (3d6f0e8). Zapis v4 bez zmian. Testy: jednostkowe 3781 → 3891, e2e 150 → 155. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS.
 
-- [ ] P0 — Przejrzeć i scalić PR #102 („zmerguj”). Źródło: zakres biegu.
 - [ ] P0 — Zaakceptować miejsce i wielkość liska: prawy margines przy górnym prawym rogu zeszytu (stopy w 1792, 400; obrazek 320 px, sylwetka ok. 188 × 220; „180–240 px” czytane jako wysokość sylwetki). Zapasowa kotwica x 1802 w follow-upie F5. Źródło: plan wiersz 4.6 [human].
 - [ ] P1 — Na prawdziwym tablecie: lisek ostry przy grafice 384², „pyknięcie” przy zmianie pozy miękkie, radość na podsumowaniu z 0 gwiazdek nie razi. Źródło: plan wiersz 4.7 [human].
 - [ ] P1 — Po scaleniu: audyt observability (statyczny) dla ekranu zadania z liskiem.
