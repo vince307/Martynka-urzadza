@@ -1,7 +1,7 @@
 ---
 change_id: audit-backdrop-fox
 title: Salon backdrop after a WebGL context loss, honest backdrop record, missing fox named in "Obrazki"
-status: preparing
+status: planned
 created: 2026-10-24
 updated: 2026-10-24
 archived_at: null
@@ -122,3 +122,8 @@ fox `requested`, the `guide` fallback) is runtime only, outside `SAVE_KEYS`. Pro
 - **D6 Design gaps**: row 168 amended (whole-session hide, parent sentence) and one new row for the fox "Obrazki" sentence
   if the plan does not fit it into 168; no row for B-1/B-2 (no visible change). Would change: a visible difference after
   restore found by research (e.g. black frame before redraw) → a gap row.
+- **Plan step (P-1..P-11 in `plan.md` § Autonomous decisions)**: six phases (tdd rules → fox widget → backdrop → docs and
+  sweep → two e2e phases); `pixel()` returns `null` under Canvas (source: the Canvas snapshot is an async Image); the
+  Chromium INVALID_OPERATION log on restore accepted (no console assertions); G-2 e2e through `page.route`, which departs
+  from scope item 6's literal options (`[human]` row 4.8); parent wording chosen autonomously (`[human]` row 4.7); the pixel
+  through a separate hook getter `backdropPixel`. Would change: see each decision's reversal condition in `plan.md`.
