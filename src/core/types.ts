@@ -70,7 +70,20 @@ export interface RoomDef {
     tasks: RoomTaskDef[];     // completed in order
     /** Lengths the task list had in earlier builds (the list only grows at its end): a saved `tasksDone` equal to one of them has a room that grew since. Log only. */
     formerTaskCounts?: readonly number[];
+    /** The neglected pieces the room shows before its renovation stage, in the style of the renovated room (a graded copy of the real furniture). */
+    worn: readonly WornDef[];
+    /** Soft shadows under the fixed or default pieces right after the stage, until the room is done. */
+    contactShadows: readonly ContactShadowDef[];
 }
+
+/** Parameters of a colour grade: sepia and saturation mix, brightness and contrast factors, an offset in 0-255 units. */
+export interface GradeParams { sepia: number; saturate: number; brightness: number; contrast: number; lift: number }
+
+/** A piece of the worn set: a slot id (with the variant that stands for it) or a decor id. `soft` marks upholstery, which gets the extra soft grade. */
+export interface WornDef { piece: string; variant?: 0 | 1 | 2; soft?: boolean }
+
+/** A contact shadow under a piece: width as a factor of the piece's visible width, offset from the piece's foot. */
+export interface ContactShadowDef { piece: string; widthFactor: number; offset: readonly [number, number] }
 
 /** One entry of the room list shown on the "Pokój gotowy!" card: a room, or a teaser for a room that does not exist yet. */
 export type RoomListEntry =

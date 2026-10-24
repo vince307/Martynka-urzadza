@@ -6,7 +6,9 @@ export const testSlot = (id: string, z: number): SlotDef => ({
 });
 
 /** The parts of a RoomDef a test does not care about: its four scene pictures and no decoration. */
-export const TEST_ROOM_PARTS: Pick<RoomDef, 'scene' | 'decor'> = {
+export const TEST_ROOM_PARTS: Pick<RoomDef, 'scene' | 'decor' | 'worn' | 'contactShadows'> = {
     scene: { before: 'b', after: 'a', furnishingsBefore: 'f', shadows: 's' },
     decor: [],
+    worn: [],
+    contactShadows: [],
 };

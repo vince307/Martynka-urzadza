@@ -563,6 +563,15 @@ export const ROOM_LAYOUT = {
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
     slot: { radius: 24, holdOutline: 10 },
+    // The worn (neglected) salon before the renovation stage: a colour grade over the real furniture, the extra grade for upholstery,
+    // and the wash the Canvas renderer uses instead (it has no filters). DESIGN-GAP (docs/design-gaps.md rows 169 and 170): the kit has no worn look.
+    worn: {
+        grade: { sepia: 0.20, saturate: -0.30, brightness: 0.90, contrast: 0.90, lift: 4 },
+        soft: { sepia: 0.10, saturate: -0.35, brightness: 0.95, contrast: 1, lift: 0 },
+        canvasWash: { colour: PLACEHOLDER_COLORS.ivory, alpha: 0.30 },   // the numeric twin of PAGE_BACKGROUND
+    },
+    // Contact shadow under a fixed or default piece (DESIGN-GAP row 171); colour and peak alpha measured from the pack's `shadows` layer.
+    contactShadow: { colour: 0x5f462b, alpha: 0.25, rings: 8, heightRatio: 0.32 },
 } as const;
 
 /**
