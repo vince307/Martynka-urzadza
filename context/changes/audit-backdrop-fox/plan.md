@@ -677,6 +677,6 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: restore the per-pose `textures.exists` check in `GuideFox.show` and drop the constructor rule → "every phase" red (fox visible at idle); delete the `recordFallback` call → "pictures section" red; pass no `noStandIn` in `UIScene` → "pictures section" red on the exact count line; each restored), green after
+- [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: restore the per-pose `textures.exists` check in `GuideFox.show` and drop the constructor rule → "every phase" red (fox visible at idle); delete the `recordFallback` call → "pictures section" red; pass no `noStandIn` in `UIScene` → "pictures section" red on the exact count line; each restored), green after — 18e7eff
 - [ ] 6.2 `npx playwright test tests/e2e/fox-guide.spec.ts tests/e2e/health-lines.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<phase-5 e2e count> + 2`; total equals `npx playwright test --list | tail -1`
 - [ ] 6.3 Full local gate green
