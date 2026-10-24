@@ -21,6 +21,8 @@ import { encodeSave, freshSession, saveProblem, type SalonCarried, type SessionS
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import { ROOM_ART } from '../data/roomArt';
+import { GUIDE_IDS } from '../core/guide';
+import { UI_ART_KEYS } from '../data/uiArt';
 import { openSaveImportDialog, type BrokenDevice } from '../ui/dom/saveImportDialog';
 import { openSaveResetDialog } from '../ui/dom/saveResetDialog';
 import { openSaveExportDialog } from '../ui/dom/saveExportDialog';
@@ -220,6 +222,7 @@ export class UIScene extends Scene {
                         labels: missingRoomLabels(this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined),
                         labelCap: balance.artHealth.labelCap,
                         fallbacks: this.registry.get(REGISTRY_KEYS.artFallbacks) as FallbackRecord | undefined,
+                        noStandIn: GUIDE_IDS.map((id) => UI_ART_KEYS[id]),
                     }),
                     ...(sound ? { sound: { prefs: sound.prefs(), missing: sound.status().missing.length, music: sound.status().music, lockedCount: sound.status().lockedCount, device: sound.status().device, musicError: sound.status().musicError, prefsKept: this.registry.get(REGISTRY_KEYS.soundPrefsKept) as boolean | undefined } } : {}),
                     watchVoice: narrator ? (callback) => narrator.onAvailability(callback) : undefined,

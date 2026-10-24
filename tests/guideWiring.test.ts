@@ -31,4 +31,21 @@ describe('fox guide wiring', () => {
         expect(source.indexOf('new GuideFox(this)')).toBeGreaterThan(source.indexOf('drawNotebook(this)'));
         expect(source).toMatch(/guide: this\.guide\.snapshot\(\)/);
     });
+
+    it('GuideFox decides availability once in the constructor, records the absence and never checks a texture per pose', () => {
+        const source = readFileSync('src/ui/widgets/GuideFox.ts', 'utf8');
+        expect(source.match(/guideAvailable\(/g)).toHaveLength(1);
+        const ctor = source.slice(source.indexOf('constructor('), source.indexOf('/** `null` hides'));
+        expect(ctor).toContain('guideAvailable(');
+        expect(source).toMatch(/recordFallback\([^)]*'guide'/);
+        const show = source.slice(source.indexOf('    show(pose'), source.indexOf('    snapshot()'));
+        expect(show).not.toMatch(/textures\.exists/);
+        expect(show).toMatch(/this\.requested = pose/);
+    });
+
+    it('UIScene passes the three fox keys as noStandIn to artHealthLines', () => {
+        const source = readFileSync('src/scenes/UIScene.ts', 'utf8');
+        const call = source.slice(source.indexOf('artHealthLines({'));
+        expect(call.slice(0, call.indexOf('}),'))).toMatch(/noStandIn:/);
+    });
 });
