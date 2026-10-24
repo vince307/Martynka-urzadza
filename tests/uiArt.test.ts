@@ -33,7 +33,7 @@ describe('UI art table', () => {
     });
 
     it('has a WebP file of the tabled size for every entry', () => {
-        expect(UI_ART).toHaveLength(5);
+        expect(UI_ART).toHaveLength(8);
         for (const art of UI_ART) {
             const bytes = readFileSync(join(PUBLIC, art.url));
             expect(webpSize(bytes), art.url).toEqual({ width: art.width, height: art.height });
