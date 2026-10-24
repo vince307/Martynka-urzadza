@@ -1,4 +1,4 @@
-import { Scene, type GameObjects } from 'phaser';
+import { Scene, type GameObjects, type Tweens } from 'phaser';
 import { balance } from '../data/balance';
 import type { InputSuspender } from '../core/inputSuspend';
 import type { LongPressEvent } from '../core/longPress';
@@ -19,7 +19,7 @@ import { PageButton } from '../ui/widgets/PageButton';
 import { RoomDoneCard } from '../ui/widgets/RoomDoneCard';
 import { RoomTaskButton } from '../ui/widgets/RoomTaskButton';
 import { SCENE_SIZE } from '../data/roomArt';
-import { RoomView } from '../ui/widgets/RoomView';
+import { buildWorn, RoomView } from '../ui/widgets/RoomView';
 import { starBurst } from '../ui/widgets/starBurst';
 import { VariantPanel } from '../ui/widgets/VariantPanel';
 import type { Autosaver } from '../core/autosave';
@@ -32,6 +32,10 @@ export interface RoomSnapshot {
     /** Chosen slots without a hold point (e2e hook only reads it). */
     unreachable: string[];
     shown: Readonly<Record<string, number>>;
+    /** The graded after pieces of the neglected room (empty after the stage task) and whether every one carries the worn filter. */
+    worn: { keys: string[]; graded: boolean };
+    /** The loose pieces standing on a contact shadow (between the stage and the finished room). */
+    contactShadows: string[];
     currentTask: { id: string; label: string; cost: number } | null;
     taskKind: 'stage' | 'slot' | null;
     affordable: boolean;
@@ -58,6 +62,8 @@ export interface RoomSnapshot {
 export class RoomScene extends Scene {
     private resume: PageButton | undefined;
     private view!: RoomView;
+    private ghosts: GameObjects.Image[] = [];
+    private ghostTweens: Tweens.Tween[] = [];
     private taskButton!: RoomTaskButton;
     private variantPanel!: VariantPanel;
     private panel: PanelState = { kind: 'closed' };
@@ -137,6 +143,7 @@ export class RoomScene extends Scene {
             this.card = false;
             this.cardDrawn = false;
             this.resetGesture();
+            this.clearGhosts();
         };
         this.events.on('wake', refresh);
         this.events.on('sleep', onSleep);
@@ -144,6 +151,7 @@ export class RoomScene extends Scene {
         this.events.once('shutdown', () => {
             this.events.off('wake', refresh);
             this.events.off('sleep', onSleep);
+            this.clearGhosts();
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
         });
     }
@@ -340,18 +348,37 @@ export class RoomScene extends Scene {
         }
         const { room } = this.resolve();
         const { depth } = ROOM_LAYOUT;
-        const keys = [
-            { key: room.scene.before, depth: depth.scene + 0.1 },
-            { key: room.scene.furnishingsBefore, depth: depth.furnishingsBefore + 0.1 },
-        ];
         // DESIGN-GAP (docs/design-gaps.md): the pack has no in-between backgrounds (brief P3.6), so this is a plain cross-fade.
-        keys.forEach(({ key, depth: at }) => {
-            if (!this.textures.exists(key)) {
-                return;
+        // The whole neglected state fades: its background, its floor shadows and the graded pieces (built from the empty state).
+        const ghosts: GameObjects.Image[] = [];
+        const plain = [
+            { key: room.scene.before, depth: depth.scene + 0.1 },
+            { key: room.scene.shadows, depth: depth.shadows + 0.1 },
+        ];
+        plain.forEach(({ key, depth: at }) => {
+            if (this.textures.exists(key)) {
+                ghosts.push(this.add.image(0, 0, key).setOrigin(0, 0).setDisplaySize(SCENE_SIZE.width, SCENE_SIZE.height).setDepth(at));
             }
-            const ghost = this.add.image(0, 0, key).setOrigin(0, 0).setDisplaySize(SCENE_SIZE.width, SCENE_SIZE.height).setDepth(at);
-            this.tweens.add({ targets: ghost, alpha: 0, duration: ANIMATION.stageFadeMs, ease: 'Sine.easeInOut', onComplete: () => ghost.destroy() });
         });
+        ghosts.push(...buildWorn(this, room, emptyRoomState(), depth.wornGhost).images);
+        ghosts.forEach((ghost) => {
+            this.ghosts.push(ghost);
+            const tween = this.tweens.add({ targets: ghost, alpha: 0, duration: ANIMATION.stageFadeMs, ease: 'Sine.easeInOut', onComplete: () => this.dropGhost(ghost) });
+            this.ghostTweens.push(tween);
+        });
+    }
+
+    private dropGhost(ghost: GameObjects.Image): void {
+        this.ghosts = this.ghosts.filter((g) => g !== ghost);
+        ghost.destroy();
+    }
+
+    /** A cross-fade never outlives a visit to the room: stop what is left and remove the ghosts (final-art-salon F1). */
+    private clearGhosts(): void {
+        this.ghostTweens.forEach((t) => t.stop());
+        this.ghostTweens = [];
+        this.ghosts.forEach((g) => g.destroy());
+        this.ghosts = [];
     }
 
     /** Pop of the new furniture and a burst of stars; nothing at all when the child asked for less motion. */
@@ -442,6 +469,8 @@ export class RoomScene extends Scene {
             chosen: { ...state.chosen },
             unreachable: unreachableSlots(room, state.chosen, this.alphaAt(room, state.chosen)),
             shown: this.view.shown(),
+            worn: this.view.wornState(),
+            contactShadows: this.view.contactShadowIds(),
             currentTask: task ? { id: task.id, label: task.label, cost: task.cost } : null,
             taskKind: task?.kind ?? null,
             affordable: view?.affordable ?? false,

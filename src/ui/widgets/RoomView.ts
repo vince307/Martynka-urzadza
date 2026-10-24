@@ -1,11 +1,45 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { LayerDef, RoomDef, RoomState, SlotDef } from '../../core/types';
-import { roomDone, shownVariants, stagesDone } from '../../core/rooms';
+import { contactShadowPieces, roomDone, shownVariants, stagesDone, wornPieces } from '../../core/rooms';
 import { slotBox, type Box } from '../../core/roomHit';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
 import { roomText } from '../../data/pl';
 import { SCENE_SIZE } from '../../data/roomArt';
+import { applyWornGrade } from '../wornGrade';
 import { RoomLayer } from './RoomLayer';
+
+/** The graded images of the worn salon (change salon-style) and what they report to the e2e hook. */
+export interface WornBuild {
+    images: GameObjects.Image[];
+    keys: string[];
+    /** At least one image was drawn and every drawn image carries the worn filter (false under the Canvas renderer). */
+    graded: boolean;
+}
+
+/**
+ * The worn set of `wornPieces(room, state)` as images at `depth + z / 1000`, each through `applyWornGrade`. A piece whose texture is
+ * missing is skipped: it has no stand-in (DESIGN-GAP row 172). Shared by `RoomView.render` and the stage cross-fade of `RoomScene`.
+ */
+export function buildWorn(scene: Scene, room: RoomDef, state: RoomState, depth: number): WornBuild {
+    const out: WornBuild = { images: [], keys: [], graded: false };
+    let allGraded = true;
+    wornPieces(room, state).forEach((piece) => {
+        if (!scene.textures.exists(piece.key)) {
+            return;
+        }
+        const art = room.slots.find((s) => s.id === piece.id) ?? room.decor.find((d) => d.id === piece.id);
+        const anchor = art?.anchor ?? [0, 0];
+        const image = scene.add.image(piece.x + anchor[0], piece.y + anchor[1], piece.key)
+            .setOrigin(anchor[0] / piece.width, anchor[1] / piece.height)
+            .setDisplaySize(piece.width, piece.height)
+            .setDepth(depth + piece.z / 1000);
+        allGraded = applyWornGrade(scene, image, piece.soft) && allGraded;
+        out.images.push(image);
+        out.keys.push(piece.id);
+    });
+    out.graded = out.images.length > 0 && allGraded;
+    return out;
+}
 
 export interface RoomPreview {
     slot: string;
@@ -22,9 +56,9 @@ export const layerBox = (layer: LayerDef): Box => {
 };
 
 /**
- * The room (S-09, S-16a): the art pack's pictures in the 1920x1080 scene. Before the renovation stage: the neglected room and its
- * furnishings; after it: the renovated room, the decoration and every bought piece, each on its own depth `z` (0-99, below the controls,
- * see `ROOM_LAYOUT.depth`); the shadows come with the finished room. A picture whose texture is missing is a stand-in box with its
+ * The room (S-09, S-16a): the art pack's pictures in the 1920x1080 scene. Before the renovation stage: the neglected room with the after pieces
+ * under a worn grade (DESIGN-GAP rows 169 and 171); after it: the renovated room, the decoration and every bought piece, each on its own depth `z` (0-99, below the controls,
+ * see `ROOM_LAYOUT.depth`); the floor shadows show before the stage and with the finished room, in between the loose pieces stand on contact shadows. A picture whose texture is missing is a stand-in box with its
  * Polish caption (a missing scene picture: the coloured backdrop). It takes no input.
  * DESIGN-GAP (docs/design-gaps.md): the stand-in is ours; the kit has none for a room picture.
  */
@@ -34,10 +68,16 @@ export class RoomView {
     private readonly layers = new Map<string, RoomLayer>();
     private room: RoomDef | null = null;
     private shownNow: Record<string, 0 | 1 | 2> = {};
+    private wornImages: GameObjects.Image[] = [];
+    private wornWash: GameObjects.Rectangle | null = null;
+    private readonly contact: GameObjects.Graphics;
+    private wornDrawn: WornBuild = { images: [], keys: [], graded: false };
+    private contactDrawn: string[] = [];
 
     constructor(private readonly scene: Scene) {
         this.backdrop = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.scene);
         this.outline = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.outline);
+        this.contact = scene.add.graphics().setDepth(ROOM_LAYOUT.depth.shadows);
     }
 
     /**
@@ -74,12 +114,13 @@ export class RoomView {
         const backgroundKey = renovated ? room.scene.after : room.scene.before;
         layer('scene').show(backgroundKey, whole, depth.scene, null);
         this.drawBackdrop(renovated, !this.scene.textures.exists(backgroundKey));
-        if (!renovated) {
-            layer('furnishings').show(room.scene.furnishingsBefore, whole, depth.furnishingsBefore, null);
-        }
-        if (roomDone(room, state)) {
+        // The neglected room is the after furniture under a worn grade on the floor shadows; the renovated room is grounded by
+        // contact shadows under the loose pieces until the finished room brings the whole shadows layer (change salon-style).
+        if (!renovated || roomDone(room, state)) {
             layer('shadows').show(room.scene.shadows, whole, depth.shadows, null);
         }
+        this.drawWorn(room, state);
+        this.drawContactShadows(room, state);
         const chosen: Record<string, 0 | 1 | 2> = { ...state.chosen };
         if (preview) {
             chosen[preview.slot] = preview.variant;
@@ -106,6 +147,45 @@ export class RoomView {
                 l.hide();
             }
         });
+    }
+
+    private drawWorn(room: RoomDef, state: RoomState): void {
+        this.wornImages.forEach((image) => image.destroy());
+        this.wornWash?.destroy();
+        this.wornWash = null;
+        this.wornDrawn = buildWorn(this.scene, room, state, ROOM_LAYOUT.depth.worn);
+        this.wornImages = this.wornDrawn.images;
+        if (this.wornImages.length > 0 && !this.wornDrawn.graded) {
+            // The Canvas renderer has no filters: one translucent wash stands in for the grade.
+            const { colour, alpha } = ROOM_LAYOUT.worn.canvasWash;
+            this.wornWash = this.scene.add.rectangle(0, 0, SCENE_SIZE.width, SCENE_SIZE.height, colour, alpha).setOrigin(0, 0).setDepth(ROOM_LAYOUT.depth.worn + 0.5);
+        }
+    }
+
+    /** Soft ellipses under the loose pieces, concentric so the middle is darkest; the same on both renderers. DESIGN-GAP row 171. */
+    private drawContactShadows(room: RoomDef, state: RoomState): void {
+        const { colour, alpha, rings, heightRatio } = ROOM_LAYOUT.contactShadow;
+        const pieces = contactShadowPieces(room, state, heightRatio);
+        const g = this.contact;
+        g.clear();
+        g.fillStyle(colour, alpha / rings);
+        pieces.forEach((p) => {
+            for (let i = 0; i < rings; i++) {
+                const f = 1 - i / rings;
+                g.fillEllipse(p.cx, p.cy, p.width * f, p.height * f);
+            }
+        });
+        this.contactDrawn = pieces.map((p) => p.id);
+    }
+
+    /** What the worn set drew at the last `render`, for the e2e hook. */
+    wornState(): { keys: string[]; graded: boolean } {
+        return { keys: [...this.wornDrawn.keys], graded: this.wornDrawn.graded };
+    }
+
+    /** The pieces that stood on a contact shadow at the last `render`, for the e2e hook. */
+    contactShadowIds(): string[] {
+        return [...this.contactDrawn];
     }
 
     /** The coloured backdrop, only while the scene picture of the moment is missing. */
