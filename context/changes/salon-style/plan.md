@@ -679,6 +679,6 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: return `[]` from `wornPieces` → the fresh-salon test red; keep the worn set after the stage (drop the `stagesDone` guard) → the stage test red; skip `applyWornGrade` in `drawRoomMiniature` → the welcome test red on `graded`; each restored), green after
+- [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: return `[]` from `wornPieces` → the fresh-salon test red; keep the worn set after the stage (drop the `stagesDone` guard) → the stage test red; skip `applyWornGrade` in `drawRoomMiniature` → the welcome test red on `graded`; each restored), green after — d912810
 - [ ] 6.2 `npx playwright test tests/e2e/salon-style.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
-- [ ] 6.3 Full local gate green
+- [x] 6.3 Full local gate green — d912810
