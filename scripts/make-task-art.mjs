@@ -1,13 +1,17 @@
 // Converts the art kits' PNGs to the WebP files the game loads: money, measuring and counting icons of the task screen
 // (public/assets/tasks/), the salon of the room (public/assets/rooms/salon/, full resolution of the pack) and the pictures of the
 // loading screen, wallet, notebook and salon thumbnail plus three more counting icons from the salon-v2 pack, and the three poses of the fox guide from the fox pack (public/assets/ui/). The kit stays in designs/ (never committed); only the results are. Output is
-// deterministic, so re-running it leaves committed files unchanged. Needs the `cwebp` binary (libwebp).
+// deterministic, so re-running it leaves committed files unchanged. Needs the `cwebp` binary (libwebp) and, for the two salon backgrounds,
+// `python3` with `pip install pillow==12.1.0 numpy==2.4.3` (scripts/recolour-board.py recolours the green board first; like `npm run font`).
 // Usage: npm run art
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const BOARD_COLOUR = '#BCD799';
+const BOARD_JOBS = new Set(['architecture-before', 'architecture-after']);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
@@ -102,7 +106,19 @@ for (const job of JOBS) {
     console.log(`${job.to}  ${job.size[0]}x${job.size[1]}  ${bytes} B`);
 }
 for (const job of ROOM_JOBS) {
-    const bytes = convert(join(SALON_V2, job.from), join(ROOM_OUT, job.to), []);
+    let source = join(SALON_V2, job.from);
+    const id = job.to.replace(/^salon\//, '').replace(/\.webp$/, '');
+    if (BOARD_JOBS.has(id)) {
+        const tmpPng = join(tmpdir(), `${id}-board.png`);
+        try {
+            execFileSync('python3', [join(ROOT, 'scripts/recolour-board.py'), source, tmpPng, BOARD_COLOUR], { stdio: ['ignore', 'inherit', 'inherit'] });
+        } catch (error) {
+            console.error(`recolour-board failed for ${source}: ${error instanceof Error ? error.message : error}`);
+            process.exit(1);
+        }
+        source = tmpPng;
+    }
+    const bytes = convert(source, join(ROOM_OUT, job.to), []);
     total += bytes;
     console.log(`rooms/${job.to}  ${bytes} B`);
 }

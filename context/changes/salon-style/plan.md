@@ -650,10 +650,10 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 4.1 `npm run art` run once: `git status --porcelain public/` lists exactly the two background files; run again: `git status --porcelain public/` unchanged and `cmp` of each file against a copy from the first run identical
-- [ ] 4.2 Deliberate break: run `scripts/recolour-board.py` under a fake version (`PINNED_PILLOW = '0.0.0'` edited locally) → exits non-zero with the pip line; restored; meta-check: proves the pin, not the image (the image is judged by the visual gate)
-- [ ] 4.3 `tests/roomArt.test.ts` (headers and sizes) and `tests/bootBudget.test.ts` green; the boot payload sum printed by a one-off `node -e` over `ROOM_ART`/`TASK_ART`/`UI_ART` sizes is below 48 s at 50 KB/s and recorded in the handoff
-- [ ] 4.4 `grep -n "PINNED_PILLOW\|PINNED_NUMPY" scripts/recolour-board.py` present; `grep -n "recolour-board.py" scripts/make-task-art.mjs` present
+- [x] 4.1 `npm run art` run once: `git status --porcelain public/` lists exactly the two background files; run again: `git status --porcelain public/` unchanged and `cmp` of each file against a copy from the first run identical
+- [x] 4.2 Deliberate break: run `scripts/recolour-board.py` under a fake version (`PINNED_PILLOW = '0.0.0'` edited locally) → exits non-zero with the pip line; restored; meta-check: proves the pin, not the image (the image is judged by the visual gate)
+- [x] 4.3 `tests/roomArt.test.ts` (headers and sizes) and `tests/bootBudget.test.ts` green; the boot payload sum printed by a one-off `node -e` over `ROOM_ART`/`TASK_ART`/`UI_ART` sizes is below 48 s at 50 KB/s and recorded in the handoff
+- [x] 4.4 `grep -n "PINNED_PILLOW\|PINNED_NUMPY" scripts/recolour-board.py` present; `grep -n "recolour-board.py" scripts/make-task-art.mjs` present
 - [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 ### Phase 5: Docs, follow-ups, seam sweep
