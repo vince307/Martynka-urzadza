@@ -669,7 +669,7 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: remove `WelcomeScene`'s listener → the welcome test red with `redraws 0` and pixel `[0,0,0,0]`; remove `TaskScene`'s listener → both task tests red; make `TaskScene`'s handler return early while `this.sys.isSleeping()` → only the room test red; each restored), green after
+- [x] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: remove `WelcomeScene`'s listener → the welcome test red with `redraws 0` and pixel `[0,0,0,0]`; remove `TaskScene`'s listener → both task tests red; make `TaskScene`'s handler return early while `this.sys.isSleeping()` → only the room test red; each restored), green after — SHA
 - [ ] 5.2 `npx playwright test tests/e2e/backdrop-restore.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
 - [ ] 5.3 Full local gate green
 
