@@ -1,61 +1,62 @@
 # Handoff — `salon-style` (slice fix:salon-style)
 
-Written by the `/10x-implement salon-style phase 2` step: phase 2 is committed (90785fc). The room now draws the graded worn set, the shadows before the stage and contact shadows after it; the old `furnishings-before` picture is no longer drawn but still loaded and still used by the miniature (phase 3).
+Written by the `/10x-implement salon-style phase 3` step: phase 3 is committed (6ff84fa, plus the one-line comment fix 93c4b0a). The miniature and the task/welcome backdrop now carry the graded worn set; `furnishingsBefore` and its picture are gone from type, data, art table, script and disk.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-style`, cut from `main` at `309e672` |
-| Commits | p1 7d2e520, p2 `feat(salon-style): room draws worn set, floor shadows and contact shadows (p2)` 90785fc, plus docs commits |
+| Commits | p1 7d2e520, p2 90785fc, p3 `feat(salon-style): miniature and backdrop follow, the old worn picture is gone (p3)` 6ff84fa, fix 93c4b0a (balance.ts comment still named the removed file, grep 3.3 needed it empty), plus docs commits |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` |
-| Progress rows remaining | 26 (`grep -c '^- \[ \]' plan.md`) |
+| Progress rows remaining | 21 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/wornGrade.ts` | `applyWornGrade(scene, image, soft)`: soft matrix first, then worn (WebGL), false under Canvas |
-| `src/ui/widgets/RoomView.ts` | `buildWorn` (export), `RoomView.drawWorn/drawContactShadows/wornState/contactShadowIds`; `furnishings` layer gone from `render`; shadows layer before the stage and when done |
-| `src/scenes/RoomScene.ts` | `fadeStage` ghosts before, shadows and the worn set (from `emptyRoomState()`); `ghosts`/`ghostTweens`, `clearGhosts` on sleep and shutdown; `RoomSnapshot.worn`, `.contactShadows` |
-| `src/data/layout.ts` | `ROOM_LAYOUT.depth`: `furnishingsBefore` replaced by `worn` 3 and `wornGhost` 99 |
-| `tests/salonStyleWiring.test.ts` | 4 source guards; `tests/phaserLoaderPin.test.ts` +3 pins; `tests/layout.test.ts` depth case; `tests/e2e/support/hook.ts` Snapshot.room fields |
-| `context/changes/salon-style/plan.md` | rows 2.1, 2.2, 2.4 ticked |
+| `src/ui/widgets/RoomView.ts` | `MiniaturePiece.worn`; `miniaturePieces` before the stage = scene, `shadows`, the ten `wornPieces` (all `alpha: 0`); `drawRoomMiniature` grades them through `applyWornGrade` |
+| `src/ui/widgets/SalonBackdrop.ts` | `BackdropSnapshot.graded` (images with an internal filter in the last capture), `plainBackdropSnapshot` 0 |
+| `tests/e2e/support/hook.ts` | `Snapshot.backdrop.graded` (hook build only) |
+| `src/core/types.ts`, `src/data/rooms.ts`, `src/data/roomArt.ts`, `scripts/make-task-art.mjs` | `furnishingsBefore` removed; `git rm public/assets/rooms/salon/furnishings-before.webp` (288 634 B) |
+| `src/data/balance.ts` | loader comment re-measured: 2 090 166 B, about 41.8 s at 50 KB/s, largest file the font 114 640 B (limit 50 s unchanged) |
+| tests | `roomMiniature` (literal key list, `worn` flags), `roomArt` (37), `roomShown`, `roomFixtures`, `salonStyleWiring` +1, `salon-load-health.spec.ts` #15 stalls `shadows.webp` |
+| `context/changes/salon-style/plan.md` | rows 2.3, 3.1-3.4 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| new guards + pins | `salonStyleWiring` 4, `phaserLoaderPin` +3: green (these are source guards; no RED stage, the code and guards were written together) |
-| deliberate break: `furnishings` layer back in `render` + `clearGhosts` removed from `onSleep` (together) | 2 red: `RoomView draws no furnishings picture…`, `the ghosts are cleared on sleep and on shutdown`; restored |
-| deliberate break: worn matrix added before the soft one | red `applyWornGrade adds the soft matrix before the worn one` (expected 1129 < 1082); restored |
-| meta-check | the first attempt at the sleep break stayed green: the `body()` slice for the nested `onSleep` ran to the shutdown block that also clears ghosts. The test was fixed to slice to the closing `};`, and the break then went red. These guards prove wiring only, the drawn result is for phase 6 and the visual gate |
+| 4 target suites | green (`roomMiniature`, `roomArt`, `roomShown`, `bootBudget`) |
+| deliberate break: worn miniature pieces `alpha: 1` | `roomMiniature` red; restored |
+| deliberate break: `furnishingsBefore` back in `SCENE_FILES` and `SALON.scene` without the file | `roomArt` red (3 cases); restored. A first attempt on `make-task-art.mjs` alone stayed green because `roomArt` never reads the script; the data-level break is the one that proves the file-set guard |
+| meta-check | the expected key lists in `roomMiniature` are literals written from `SALON` data (z order hand-read), not built by `miniaturePieces`; the `neededMiniatureKeys` case is unchanged (alpha 0 keeps it) and stayed green |
 | `npm run lint`, `typecheck` | clean |
-| `npm test` | 3935 passed, 207 files (baseline after p1 3928, +7) |
-| deploy scripts, `sample` E1-E6 | OK |
+| `npm test` + deploy scripts + `sample` E1-E6 | 3936 passed, 207 files (after p2 3935, +1 wiring case; the roomMiniature case was rewritten in place) |
 | `npm run build` | ok, `e2e hook: absent (2 chunks checked)` |
-| `grep -rn furnishingsBefore src/ui src/scenes` | one hit left: `miniaturePieces` in `RoomView.ts` (phase 3 removes it); row 2.3 left unticked |
-| Playwright, screenshot | not run (orchestrator); no screenshot taken |
+| Playwright `salon-load-health.spec.ts -g "#15 H-2" --workers=1` | 1 passed (27.7s) on `shadows.webp` |
+| boot budget | 2 090 166 B = 41.8 s at 50 KB/s, limit 48 s (50 s - 2 s headroom); was 2 378 800 B, 47.6 s |
+| grep 3.3 | `src scripts tests` empty, file absent; 3.4 diff empty |
+| screenshot | not taken |
 
 ## 4. Next command
 
-`/10x-implement salon-style phase 3`
+`/10x-implement salon-style phase 4`
 
 ## 5. Open
 
-- Rows 2.3 (miniature still names the old file until phase 3) and 2.5 (e2e count `branch baseline + 0`) are left for phase 3 / the orchestrator.
-- Manual rows (phase 5): 5.6-5.10 [human]/[visual], 5.11 [reviewer] as in the plan.
-- Known risk carried: nested per-image ColorMatrix filters in `SalonBackdrop.render` (phase 3 checks the `graded` count); worn pieces under WebGL are unproven visually.
-- The stage ghost of the worn set is built with `emptyRoomState()`, so it shows the original worn set whatever the saved room was.
-- DESIGN-GAPs 169-172 are cited in code comments but not yet in `docs/design-gaps.md` (phase 5).
+- Rows 2.5, 3.5 (full e2e `branch baseline + 0`, `notebook-polish` and `backdrop-restore` backdrop cases with the grown record) are left for the orchestrator.
+- Docs still naming `furnishings-before`: `docs/design-gaps.md` rows 32 and 107 and `docs/art-inventory.md` (phase 5 rows 5.2, 5.4).
+- Manual rows 5.6-5.10 [human]/[visual], 5.11 [reviewer] as in the plan.
+- Unverified visually: nested per-image ColorMatrix filters inside the backdrop holder under WebGL (the `graded` count is the e2e handle, phase 6).
+- `roomArt` test title said 38 entries; fixed to 37. The 1 550 000 B total-weight cap in that test is untouched.
 
 ## 6. Autonomous decisions
 
-- Driver impl, so source guards and pins were written with the code, not red-first. Would change: nothing.
-- Row 2.3 not ticked: the plan's grep cannot be empty before phase 3 retargets the miniature; I kept the miniature on the old picture so `roomMiniature` tests and `#15 H-2` stay green. Would change: the orchestrator ruling the grep scope excludes `miniaturePieces`.
-- `buildWorn` returns `{ images, keys, graded }` and takes the anchor from the slot or decor definition (`WornPiece` carries no anchor). Would change: adding `anchor` to `WornPiece`.
-- Canvas wash is one `Rectangle` at `depth.worn + 0.5`, drawn only when worn images exist but are ungraded. Would change: the visual gate on a Canvas device.
-- Contact shadows: `rings` concentric `fillEllipse` at alpha `alpha / rings` each in one Graphics at `depth.shadows`. Would change: the visual gate showing banding.
-- No screenshot (optional). No lessons file exists.
+- Made a second commit 93c4b0a instead of amending: the first commit left the removed file's name in a `balance.ts` comment, which the row 3.3 grep forbids. Would change: nothing.
+- Worn pieces in the miniature are placed top-left from `x, y, width, height` (equal to the anchor-origin placement of `buildWorn`). Would change: the visual gate showing an offset.
+- `graded` counts images with a non-empty internal filter list rather than reading `applyWornGrade` results, so it stays correct if `drawRoomMiniature` grows more filters. Would change: a wanted split between grade and other filters.
+- `neededMiniatureKeys` / "Pokój gotowy!" unchanged by keeping the worn entries at `alpha: 0`.
+- No lessons file exists.
