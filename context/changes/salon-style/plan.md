@@ -621,10 +621,10 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 1.1 New cases red against stubs (`gradeMatrix` returns identity, both piece rules return `[]`), green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: swap the sepia and saturate order in `gradeMatrix` → the literal-matrix case red; drop the `stagesDone > 0` guard in `wornPieces` → the after-stage case red; use `x` without `anchor` in `contactShadowPieces` → the literal-coordinate case red; each restored; meta-check: the matrices come from the prototype script and the coordinates are hand-computed from `src/data/rooms.ts` numbers, not from the code under test
-- [ ] 1.3 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/pl.ts` empty
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 New cases red against stubs (`gradeMatrix` returns identity, both piece rules return `[]`), green after; unit `<branch baseline> + N` — 7d2e520
+- [x] 1.2 Deliberate break: swap the sepia and saturate order in `gradeMatrix` → the literal-matrix case red; drop the `stagesDone > 0` guard in `wornPieces` → the after-stage case red; use `x` without `anchor` in `contactShadowPieces` → the literal-coordinate case red; each restored; meta-check: the matrices come from the prototype script and the coordinates are hand-computed from `src/data/rooms.ts` numbers, not from the code under test — 7d2e520
+- [x] 1.3 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/pl.ts` empty — 7d2e520
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 7d2e520
 
 ### Phase 2: The room draws the worn set, the shadows and the contact shadows
 
