@@ -641,10 +641,10 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 3.1 `tests/phaserLoaderPin.test.ts` and `tests/backdropRestoreWiring.test.ts` green; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: delete the `off` in `TaskScene`'s shutdown block → wiring case red; wrap the WelcomeScene redraw in `this.time.delayedCall(0, …)` → wiring case red; change the pin's expected event string → pin red; each restored; meta-check: the wiring cases are source guards and the pin reads Phaser's own source, so on-screen redraw is proven by phase 5, not here
-- [ ] 3.3 `grep -rn "restorewebgl" src` empty (only the Phaser constant is used)
-- [ ] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures vite/e2eHookGuard.mjs` empty
+- [x] 3.1 `tests/phaserLoaderPin.test.ts` and `tests/backdropRestoreWiring.test.ts` green; unit `<phase-2 count> + N` — 706a01b
+- [x] 3.2 Deliberate break: delete the `off` in `TaskScene`'s shutdown block → wiring case red; wrap the WelcomeScene redraw in `this.time.delayedCall(0, …)` → wiring case red; change the pin's expected event string → pin red; each restored; meta-check: the wiring cases are source guards and the pin reads Phaser's own source, so on-screen redraw is proven by phase 5, not here — 706a01b
+- [x] 3.3 `grep -rn "restorewebgl" src` empty (only the Phaser constant is used) — 706a01b
+- [x] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures vite/e2eHookGuard.mjs` empty — 706a01b
 - [ ] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`notebook-polish.spec.ts` `#12` and `#11` backdrop cases still green with the grown record)
 
 ### Phase 4: Docs, follow-ups, seam sweep and the visual pass
