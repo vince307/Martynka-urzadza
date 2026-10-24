@@ -14,8 +14,8 @@ describe('backdrop redraw on a WebGL context restore', () => {
             expect(text.match(/renderer\.on\(Renderer\.Events\.RESTORE_WEBGL/g)).toHaveLength(1);
             const off = text.match(/renderer\.off\(Renderer\.Events\.RESTORE_WEBGL/g);
             expect(off, 'remove the listener in the shutdown block').toHaveLength(1);
-            const shutdown = text.lastIndexOf("'shutdown'", text.indexOf('renderer.off(Renderer.Events.RESTORE_WEBGL'));
-            expect(shutdown, 'the off call must sit in an events.once shutdown block').toBeGreaterThan(-1);
+            // The off call sits inside an events.once('shutdown') block (no closing brace between the block's opening and the call).
+            expect(text, 'the off call must sit in an events.once shutdown block').toMatch(/events\.once\('shutdown', \(\) => \{[^}]*renderer\.off\(Renderer\.Events\.RESTORE_WEBGL, onRestore\)/);
         });
         it(`${file} redraws at once, with no timer or wake on the way`, () => {
             const m = /const onRestore = \(\): void => ([^;]*);/.exec(text);

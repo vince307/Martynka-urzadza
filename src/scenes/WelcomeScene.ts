@@ -1,4 +1,4 @@
-import { Renderer, Scene, WEBGL } from 'phaser';
+import { Renderer, Scene } from 'phaser';
 import { startLearning } from '../core/curriculum';
 import { placeByChild, type PlacedLearner, type SessionLearner } from '../core/placement';
 import { createRng } from '../core/rng';
@@ -12,7 +12,7 @@ import { openParentGate } from '../ui/dom/parentGate';
 import { openStagePanel } from '../ui/dom/stagePanel';
 import { AgeButton } from '../ui/widgets/AgeButton';
 import { drawNotebook } from '../ui/widgets/notebook';
-import { SalonBackdrop, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
+import { SalonBackdrop, plainBackdropSnapshot, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
 import type { RoomState } from '../core/types';
 import { PageButton } from '../ui/widgets/PageButton';
 import { textStyle } from '../ui/widgets/textStyle';
@@ -145,7 +145,7 @@ export class WelcomeScene extends Scene {
     }
 
     backdropState(): BackdropSnapshot {
-        return this.backdrop?.snapshot() ?? Object.freeze({ mode: 'plain' as const, captures: 0, drawn: false, blurred: false, renderer: this.game.renderer.type === WEBGL ? 'webgl' as const : 'canvas' as const, redraws: 0 });
+        return this.backdrop?.snapshot() ?? plainBackdropSnapshot(this);
     }
 
     backdropPixel(): [number, number, number, number] | null {

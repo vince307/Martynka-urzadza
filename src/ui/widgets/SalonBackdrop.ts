@@ -8,7 +8,7 @@ import { drawRoomMiniature } from './RoomView';
 
 let serial = 0;
 
-/** What the backdrop drew, not only what was asked (audit B-2). Runtime only, read by the e2e hook. */
+/** What the backdrop drew, not only what was asked (audit B-2). Runtime only, read by the e2e hook. `captures` counts every non-plain render, restores included; `redraws` only the restores. */
 export interface BackdropSnapshot {
     readonly mode: BackdropMode;
     readonly captures: number;
@@ -19,6 +19,11 @@ export interface BackdropSnapshot {
 }
 
 export type BackdropCause = 'capture' | 'restore';
+
+/** The record of a scene that has no backdrop yet (nothing drawn); one shape for every owner. */
+export const plainBackdropSnapshot = (scene: Scene): BackdropSnapshot => Object.freeze({
+    mode: 'plain', captures: 0, drawn: false, blurred: false, renderer: scene.sys.game.renderer.type === WEBGL ? 'webgl' : 'canvas', redraws: 0,
+});
 
 /**
  * The child's own salon, blurred and washed ivory, behind the notebook. The room is captured ONCE into a small texture (a quarter
@@ -38,18 +43,6 @@ export class SalonBackdrop {
 
     constructor(private readonly scene: Scene) {}
 
-    get mode(): BackdropMode {
-        return this.currentMode;
-    }
-
-    get captures(): number {
-        return this.captureCount;
-    }
-
-    get redraws(): number {
-        return this.redrawCount;
-    }
-
     snapshot(): BackdropSnapshot {
         return Object.freeze({
             mode: this.currentMode,
@@ -61,7 +54,10 @@ export class SalonBackdrop {
         });
     }
 
-    /** One texture pixel from the middle of the backdrop; null without a texture, under Canvas (async snapshot) or when the read did not run at once. */
+    /**
+     * One texture pixel from the middle of the backdrop; null without a texture, under Canvas (async snapshot) or when the read did not run at once.
+     * For the e2e hook only: the WebGL read takes over the renderer's one snapshot slot and rebinds the texture framebuffer between frames.
+     */
     pixel(): [number, number, number, number] | null {
         if (!this.texture || this.scene.sys.game.renderer.type !== WEBGL) return null;
         let out: [number, number, number, number] | null = null;

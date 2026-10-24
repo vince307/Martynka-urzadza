@@ -79,6 +79,9 @@ describe('phaser webgl restore pin (src/ui/widgets/SalonBackdrop.ts, e2e backdro
         expect(start).toBeGreaterThan(-1);
         expect(body.indexOf('ArrayEach(this.glFramebufferWrappers'), hint).toBeGreaterThan(-1);
         expect(body.indexOf('ArrayEach(this.glFramebufferWrappers'), hint).toBeLessThan(body.indexOf('this.emit(Events.RESTORE_WEBGL'));
+        // The room pictures the redraw copies from are texture wrappers: they must be back before the event too.
+        expect(body.indexOf('ArrayEach(this.glTextureWrappers'), hint).toBeGreaterThan(-1);
+        expect(body.indexOf('ArrayEach(this.glTextureWrappers'), hint).toBeLessThan(body.indexOf('this.emit(Events.RESTORE_WEBGL'));
     });
     it('reads one pixel through snapshotArea with the pixel type', () => {
         expect(read('textures/DynamicTexture.js'), 'SalonBackdrop.pixel relies on it').toMatch(/snapshotPixel: function[\s\S]*?this\.snapshotArea\(x, y, 1, 1, callback, 'pixel'\)/);

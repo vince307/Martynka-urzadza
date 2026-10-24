@@ -156,6 +156,7 @@ test.describe('one pose missing', () => {
         await tapNext(page);
         await playRoundRight(page, 4);
         await screenIs(page, 'summary');
+        await expect.poll(async () => (await snapshot(page)).guide!.requested).toBe('cheer');
         await hidden();
     });
 
@@ -165,6 +166,6 @@ test.describe('one pose missing', () => {
         await expect(panel.getByText(pl.settings.guideMissing, { exact: true })).toBeVisible();
         await expect(panel.getByText(pl.settings.uiArtMissing(1, UI_ART.length, false), { exact: true })).toBeVisible();
         await expect(panel.getByText('napis lub rysunek')).toHaveCount(0);
-        await expect(panel.getByText('Zamiast obrazka gra rysuje', { exact: false })).toHaveCount(0);
+        await expect(panel.getByText(pl.settings.artFallback([]).split(':')[0], { exact: false })).toHaveCount(0);
     });
 });

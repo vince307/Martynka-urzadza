@@ -1,4 +1,4 @@
-import { Renderer, Scene, WEBGL, type GameObjects, type Tweens } from 'phaser';
+import { Renderer, Scene, type GameObjects, type Tweens } from 'phaser';
 import { initialClockSet, stepClockSet, type ClockSetEvent, type ClockSetGeo, type ClockSetState } from '../core/clockSet';
 import { clockSetLayout } from '../core/round/pictureLayout';
 import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
@@ -67,7 +67,7 @@ import type { Narrator } from '../ui/narrator';
 import { drawNotebook } from '../ui/widgets/notebook';
 import { GuideFox, type GuideSnapshot } from '../ui/widgets/GuideFox';
 import { guidePose, type GuideScreen } from '../core/guide';
-import { SalonBackdrop, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
+import { SalonBackdrop, plainBackdropSnapshot, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
 import { AnswerTiles } from '../ui/widgets/AnswerTiles';
 import { CoverBoard } from '../ui/widgets/CoverBoard';
 import { Dice } from '../ui/widgets/Dice';
@@ -1246,7 +1246,7 @@ export class TaskScene extends Scene {
             visual: task.visual ? structuredClone(task.visual) : null,
             correctChoices: task.check && view.input === 'tiles' ? Object.freeze(view.choices.filter((c) => task.check?.(c))) : null,
             markedTile: this.tiles.markedValue(),
-            backdrop: this.backdrop?.snapshot() ?? Object.freeze({ mode: 'plain' as const, captures: 0, drawn: false, blurred: false, renderer: this.game.renderer.type === WEBGL ? 'webgl' as const : 'canvas' as const, redraws: 0 }),
+            backdrop: this.backdrop?.snapshot() ?? plainBackdropSnapshot(this),
             guide: this.guide.snapshot(),
             hintVisual: view.hintPicture ? view.hintPicture.kind : null,
             art: Object.freeze(this.picture.art().map((entry) => Object.freeze({ ...entry }))),
