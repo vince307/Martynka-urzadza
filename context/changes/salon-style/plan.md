@@ -660,10 +660,10 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "wornPieces\|recolour-board" CLAUDE.md` present
-- [ ] 5.2 `grep -n "^| 169 \|^| 170 \|^| 171 \|^| 172 " docs/design-gaps.md` four rows; `grep -n "^| 107 " docs/design-gaps.md` no longer says the room is `furnishings-before`
-- [ ] 5.3 `grep -c "Trigger:" context/changes/salon-style/follow-ups/review-fixes.md` ≥ 5
-- [ ] 5.4 `grep -rn "addColorMatrix" src` lists only `src/ui/wornGrade.ts`; `grep -rn "furnishingsBefore\|furnishings-before" src tests scripts CLAUDE.md` empty
+- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "wornPieces\|recolour-board" CLAUDE.md` present — 65f05e0
+- [x] 5.2 `grep -n "^| 169 \|^| 170 \|^| 171 \|^| 172 " docs/design-gaps.md` four rows; `grep -n "^| 107 " docs/design-gaps.md` no longer says the room is `furnishings-before` — 65f05e0
+- [x] 5.3 `grep -c "Trigger:" context/changes/salon-style/follow-ups/review-fixes.md` ≥ 5 — 65f05e0
+- [x] 5.4 `grep -rn "addColorMatrix" src` lists only `src/ui/wornGrade.ts`; `grep -rn "furnishingsBefore\|furnishings-before" src tests scripts CLAUDE.md` empty — 65f05e0
 - [ ] 5.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
