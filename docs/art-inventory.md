@@ -32,7 +32,7 @@ Paczka evolution trzyma w katalogu 6 wcześniejszych kolorystyk zastąpionych fo
 
 Źródło: `martynka-expansion-v1` (manifest `scene`, `slots`, `layers`). Tła: `architecture-before.png` (zniszczone
 ściany, przetarta podłoga, wyblakłe zasłony), `architecture-after.png` (pusta odnowiona architektura),
-`furnishings-before.png` (wszystkie meble w wersji zniszczonej jako jedna warstwa, alfa), `shadows.png` (cienie,
+`furnishings-before.png` (wszystkie meble w wersji zniszczonej jako jedna warstwa, alfa; od salon-style nieużywany i usunięty z gry), `shadows.png` (cienie,
 alfa). Brak teł pośrednich. Pozycje w manifeście to lewy górny róg + `width/height` + `anchor` + `z`; `rooms.ts`
 trzyma środek slotu i `depth`, więc współrzędne trzeba przeliczyć.
 
@@ -157,7 +157,7 @@ Zestawy do precache (bez duplikatów; dziś `dist/` ma 1,7 MB, Workbox ma limit 
 | **v1 (salon + ikony + S-14)** | 77 | 31 MB | **≈ 2,5 MB** |
 | **Wszystkie 7 lokacji + reszta** | 212 | 80 MB | **≈ 7,5 MB** |
 
-Zmierzone w S-16a: salon w `public/assets/rooms/salon/` to 26 plików WebP, 1 233 242 B (ok. 1,2 MB) przy pełnej rozdzielczości (`npm run art`); wszystkie ładowane w `BootScene` i w precache.
+Zmierzone w S-16a (później 38 plików, a po salon-style 37 plików, 1 203 284 B): salon w `public/assets/rooms/salon/` to 26 plików WebP, 1 233 242 B (ok. 1,2 MB) przy pełnej rozdzielczości (`npm run art`); wszystkie ładowane w `BootScene` i w precache.
 
 Wniosek: PNG wprost z paczek (31–80 MB) nie nadaje się do precache na tablecie; WebP mieści v1 w ok. 2,5 MB, a
 całość w ok. 7–8 MB. Osobny problem to pamięć tekstur: tło 1920×1080 po dekodowaniu to ok. 8 MB RGBA, więc gra
@@ -174,7 +174,7 @@ powinna ładować do Phasera tylko tekstury bieżącego pokoju (z precache, offl
 | Formy czy kolory | „3 warianty, ten sam kąt i światło” | evolution: różne formy w 3 grupach, wspólna kotwica | a) tylko kolory; b) dopuścić formy | b) — kod już traktuje wariant jako dowolny obraz; wymagać tylko wspólnego płótna i kotwicy |
 | Liczenie związane z pokojem | ikony dowolne (ZADANIA, COUNT) | `maths` per lokacja: ikona miejsca | a) brak; b) preferowane ikony pokoju w danych | b) po v1 — lista rzeczowników na pokój w `rooms.ts`, generator COUNT bierze ją z większą wagą |
 | Minigry v1 (plan sekcja 13) | 1–2 z ZADANIA sekcja 5, otwarte | expansion: Zakrywanka i Hasło z wyników | wybrać 1–2 | Hasło z wyników (od E1, słowo = nazwa mebla) + Zakrywanka; obie rysowane kodem, gotowy wzór ekranu |
-| Styl salonu | salon = pokój v1 | salon starszy (zielone tło, ciasny kadr), nowsze to dioramy | a) zostaje; b) przerobić salon w stylu diorama | a) dla v1 — zatwierdzony kit; ujednolicenie przy liście pokoi po v1 |
+| Styl salonu | salon = pokój v1 | salon starszy (zielone tło, ciasny kadr), nowsze to dioramy | a) zostaje; b) przerobić salon w stylu diorama | a) dla v1 — zatwierdzony kit; ujednolicenie przy liście pokoi po v1. Zaktualizowano 2026-10-24 (salon-style): stan przed remontem rysowany w kodzie z mebli „po” (`SALON.worn`) pod szarą korektą kolorów, `furnishings-before` nieużywany (37 plików salonu), zielona plansza wokół dioramy przekolorowana na `#BCD799` w `npm run art` (krok Python: Pillow 12.1.0 + numpy 2.4.3, `scripts/recolour-board.py`) |
 
 ## 8. Wpływ na roadmapę
 
