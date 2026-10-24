@@ -16,13 +16,15 @@ export interface BackdropSnapshot {
     readonly blurred: boolean;
     readonly renderer: 'webgl' | 'canvas';
     readonly redraws: number;
+    /** Worn images that carried a grade filter in the last capture (0 under Canvas or after the stage). */
+    readonly graded: number;
 }
 
 export type BackdropCause = 'capture' | 'restore';
 
 /** The record of a scene that has no backdrop yet (nothing drawn); one shape for every owner. */
 export const plainBackdropSnapshot = (scene: Scene): BackdropSnapshot => Object.freeze({
-    mode: 'plain', captures: 0, drawn: false, blurred: false, renderer: scene.sys.game.renderer.type === WEBGL ? 'webgl' : 'canvas', redraws: 0,
+    mode: 'plain', captures: 0, drawn: false, blurred: false, renderer: scene.sys.game.renderer.type === WEBGL ? 'webgl' : 'canvas', redraws: 0, graded: 0,
 });
 
 /**
@@ -40,6 +42,7 @@ export class SalonBackdrop {
     private redrawCount = 0;
     private wasDrawn = false;
     private wasBlurred = false;
+    private gradedCount = 0;
 
     constructor(private readonly scene: Scene) {}
 
@@ -51,6 +54,7 @@ export class SalonBackdrop {
             blurred: this.wasBlurred,
             renderer: this.scene.sys.game.renderer.type === WEBGL ? 'webgl' : 'canvas',
             redraws: this.redrawCount,
+            graded: this.gradedCount,
         });
     }
 
@@ -75,6 +79,7 @@ export class SalonBackdrop {
         this.clear();
         this.wasDrawn = false;
         this.wasBlurred = false;
+        this.gradedCount = 0;
         const id = currentRoom && ROOMS[currentRoom] ? currentRoom : FIRST_ROOM;
         const room = ROOMS[id];
         const state = rooms?.[id] ?? { tasksDone: 0, chosen: {} };
@@ -85,6 +90,7 @@ export class SalonBackdrop {
         // Never on the display list: a stand-in box for a missing slot picture is not drawn, the piece is simply left out.
         const g = this.scene.make.graphics({}, false);
         const images = drawRoomMiniature(this.scene, g, room, state, 0, 0, scale, 0);
+        this.gradedCount = images.filter((i) => (i.filters?.internal.list.length ?? 0) > 0).length;
         const holder = this.scene.make.container({ x: 0, y: 0 }, false);
         holder.add(images);   // leaves the display list at once, so nothing flashes on screen
         // `enableFilters` does nothing under the Canvas renderer (no `filters`), and there the upscale alone softens the picture.

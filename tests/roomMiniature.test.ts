@@ -7,8 +7,17 @@ import type { RoomState } from '../src/core/types';
 const keys = (state: RoomState): string[] => miniaturePieces(SALON, state).map((p) => p.key);
 
 describe('miniaturePieces', () => {
-    it('shows the neglected room with its furnishings before the stage', () => {
-        expect(keys({ tasksDone: 0, chosen: {} })).toEqual([SALON.scene.before, SALON.scene.furnishingsBefore]);
+    it('shows the neglected room with the shadows and the graded worn set, all invisible stand-ins, before the stage', () => {
+        const pieces = miniaturePieces(SALON, { tasksDone: 0, chosen: {} });
+        expect(pieces.map((p) => p.key)).toEqual([
+            'salon/before', 'salon/shadows',
+            'salon/wall-frames', 'salon/rug', 'salon/cabinet', 'salon/lamp-table', 'salon/plant-left',
+            'salon/sofa-morska', 'salon/plant-right', 'salon/armchair', 'salon/coffee-table', 'salon/pouf',
+        ]);
+        expect(pieces.slice(1).every((p) => p.alpha === 0)).toBe(true);
+        expect(pieces[0].worn).toBeUndefined();
+        expect(pieces[1].worn).toBeUndefined();
+        expect(pieces.slice(2).map((p) => p.worn?.soft)).toEqual([false, true, false, false, false, true, false, true, false, true]);
     });
 
     it('shows the renovated room with the decoration after the stage, without furnishings or shadows', () => {
@@ -16,7 +25,6 @@ describe('miniaturePieces', () => {
         expect(k[0]).toBe(SALON.scene.after);
         expect(k).toContain(SALON.decor[0].key);
         for (const id of ['lamp-table', 'plant-left', 'pouf']) expect(k).toContain(SALON.slots.find((s) => s.id === id)!.variants[0]);
-        expect(k).not.toContain(SALON.scene.furnishingsBefore);
         expect(k).not.toContain(SALON.scene.shadows);
     });
 

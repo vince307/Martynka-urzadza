@@ -25,7 +25,7 @@ const slots: SlotDef[] = [
 export const SALON: RoomDef = {
     id: 'salon',
     name: 'salon',
-    scene: { before: 'salon/before', after: 'salon/after', furnishingsBefore: 'salon/furnishings-before', shadows: 'salon/shadows' },
+    scene: { before: 'salon/before', after: 'salon/after', shadows: 'salon/shadows' },
     decor,
     slots,
     // New tasks go at the END of this list only (later slots of the art pack): `RoomState.tasksDone` counts positions in it,

@@ -241,10 +241,12 @@ export interface MiniaturePiece {
     box: Box;
     fill: number;
     alpha: number;
+    /** A piece of the graded worn set: drawn through `applyWornGrade` (WebGL only). */
+    worn?: { soft: boolean };
 }
 
 /**
- * The pictures of the room's miniature, back to front: the scene, the neglected furnishings until the stage, the shadows of a
+ * The pictures of the room's miniature, back to front: the scene, the shadows and the graded worn set until the stage, the shadows of a
  * finished room, the decoration after the stage, then the furnished slots by `z` (empty slots are left out). The same layers as `RoomView.render`.
  */
 export function miniaturePieces(room: RoomDef, state: RoomState): MiniaturePiece[] {
@@ -254,7 +256,11 @@ export function miniaturePieces(room: RoomDef, state: RoomState): MiniaturePiece
     const wholeBox: Box = { left: 0, top: 0, right: SCENE_SIZE.width, bottom: SCENE_SIZE.height };
     const pieces: MiniaturePiece[] = [{ key: renovated ? room.scene.after : room.scene.before, placement: whole, box: wholeBox, fill: renovated ? standIn.wallAfter : standIn.wallBefore, alpha: 1 }];
     if (!renovated) {
-        pieces.push({ key: room.scene.furnishingsBefore, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
+        pieces.push({ key: room.scene.shadows, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
+        wornPieces(room, state).forEach((w) => pieces.push({
+            key: w.key, placement: { x: w.x, y: w.y, width: w.width, height: w.height }, box: { left: w.x, top: w.y, right: w.x + w.width, bottom: w.y + w.height },
+            fill: standIn.decorFill, alpha: 0, worn: { soft: w.soft },
+        }));
     }
     if (roomDone(room, state)) {
         pieces.push({ key: room.scene.shadows, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
@@ -287,7 +293,11 @@ export function drawRoomMiniature(
     miniaturePieces(room, state).forEach((piece, index) => {
         const { x, y, width, height } = piece.placement;
         if (scene.textures.exists(piece.key)) {
-            images.push(scene.add.image(left + x * scale, top + y * scale, piece.key).setOrigin(0, 0).setDisplaySize(width * scale, height * scale).setDepth(depth + index / 1000));
+            const image = scene.add.image(left + x * scale, top + y * scale, piece.key).setOrigin(0, 0).setDisplaySize(width * scale, height * scale).setDepth(depth + index / 1000);
+            if (piece.worn) {
+                applyWornGrade(scene, image, piece.worn.soft);
+            }
+            images.push(image);
             return;
         }
         if (piece.alpha === 0) {

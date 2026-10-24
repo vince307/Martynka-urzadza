@@ -44,4 +44,13 @@ describe('the worn salon wiring', () => {
         expect(clear).toContain('.stop()');
         expect(clear).toContain('.destroy()');
     });
+
+    it('the miniature grades its worn images and the backdrop counts them', () => {
+        const mini = body(view, 'export function drawRoomMiniature(');
+        expect(mini).toContain('if (piece.worn)');
+        expect(mini).toContain('applyWornGrade(scene, image, piece.worn.soft)');
+        const backdrop = read('src/ui/widgets/SalonBackdrop.ts');
+        expect(backdrop).toContain('this.gradedCount = images.filter(');
+        expect(backdrop).toContain('graded: this.gradedCount');
+    });
 });

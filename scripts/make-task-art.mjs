@@ -28,7 +28,7 @@ const weights = ['weight-1kg', 'weight-2kg', 'weight-5kg', 'weight-10dag', 'weig
 const jugs = ['container-1l', 'container-half-l', 'container-quarter-l'];
 const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'];
 
-const sceneFiles = ['architecture-before', 'architecture-after', 'furnishings-before', 'shadows'];
+const sceneFiles = ['architecture-before', 'architecture-after', 'shadows'];
 const decor = ['plant-right'];
 const furniture = [
     'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',

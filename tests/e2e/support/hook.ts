@@ -54,7 +54,7 @@ export interface Snapshot {
     stars: number;
     counterText: string;
     /** The blurred salon behind the notebook (task and welcome screens): which look it has and how many times it was captured. */
-    backdrop?: { mode: 'salon' | 'plain'; captures: number; drawn: boolean; blurred: boolean; renderer: 'webgl' | 'canvas'; redraws: number };
+    backdrop?: { mode: 'salon' | 'plain'; captures: number; drawn: boolean; blurred: boolean; renderer: 'webgl' | 'canvas'; redraws: number; graded: number };
     /** The fox guide in the notebook corner (fox-guide). */
     guide?: { pose: 'idle' | 'cheer' | 'think' | null; requested: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number; y: number; width: number; height: number }; interactive: boolean; pops: number };
     settingsHint: boolean;

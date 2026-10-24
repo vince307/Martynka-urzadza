@@ -64,7 +64,7 @@ export interface RoomDef {
     id: string;               // e.g. "salon"
     name: string;
     /** Texture keys of the four full-scene pictures: the room before and after the renovation stage, its neglected furniture and shadows. */
-    scene: { before: string; after: string; furnishingsBefore: string; shadows: string };
+    scene: { before: string; after: string; shadows: string };
     decor: LayerDef[];        // shown once a stage task is done
     slots: SlotDef[];
     tasks: RoomTaskDef[];     // completed in order

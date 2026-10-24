@@ -21,7 +21,6 @@ export const SCENE_SIZE = { width: 1920, height: 1080 } as const;
 export const SCENE_FILES = {
     before: 'architecture-before',
     after: 'architecture-after',
-    furnishingsBefore: 'furnishings-before',
     shadows: 'shadows',
 } as const;
 

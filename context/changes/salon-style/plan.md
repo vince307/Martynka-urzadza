@@ -632,7 +632,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 - [x] 2.1 `tests/salonStyleWiring.test.ts`, `tests/phaserLoaderPin.test.ts`, `tests/layout.test.ts` green; unit `<phase-1 count> + N` — 90785fc
 - [x] 2.2 Deliberate break: put the `furnishings` layer back into `render` → the wiring case red; add the worn matrix before the soft one → the order case red; drop the ghost clean-up from `onSleep` → its case red; each restored; meta-check: these are source guards and a pin of Phaser's own source; the drawn result is proven by phase 6 and the visual gate — 90785fc
-- [ ] 2.3 `grep -rn "furnishingsBefore" src/ui src/scenes` empty
+- [x] 2.3 `grep -rn "furnishingsBefore" src/ui src/scenes` empty — PENDING
 - [x] 2.4 `tests/reducedMotionWiring.test.ts` and `tests/motionWiring.test.ts` green unchanged (no new tween outside `fadeStage`) — 90785fc
 - [ ] 2.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`salon-load-health.spec.ts` `#15 H-2` still green: the old file is still in the boot queue; `salon-art.spec.ts` and `room-purchase.spec.ts` unchanged)
 
@@ -640,10 +640,10 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 3.1 `tests/roomMiniature.test.ts`, `tests/roomArt.test.ts`, `tests/roomShown.test.ts`, `tests/bootBudget.test.ts` green; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: give the worn miniature pieces `alpha: 1` → `roomMiniature` (and the `neededMiniatureKeys` case) red; restore `furnishings-before` in `sceneFiles` without the file → `roomArt` red; each restored; meta-check: the expected key lists are literals from `SALON` data, not built by `miniaturePieces`
-- [ ] 3.3 `grep -rn "furnishingsBefore\|furnishings-before" src scripts tests` empty; `test -e public/assets/rooms/salon/furnishings-before.webp` fails
-- [ ] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/core/migrations` empty
+- [x] 3.1 `tests/roomMiniature.test.ts`, `tests/roomArt.test.ts`, `tests/roomShown.test.ts`, `tests/bootBudget.test.ts` green; unit `<phase-2 count> + N` — PENDING
+- [x] 3.2 Deliberate break: give the worn miniature pieces `alpha: 1` → `roomMiniature` (and the `neededMiniatureKeys` case) red; restore `furnishings-before` in `sceneFiles` without the file → `roomArt` red; each restored; meta-check: the expected key lists are literals from `SALON` data, not built by `miniaturePieces` — PENDING
+- [x] 3.3 `grep -rn "furnishingsBefore\|furnishings-before" src scripts tests` empty; `test -e public/assets/rooms/salon/furnishings-before.webp` fails — PENDING
+- [x] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/core/migrations` empty — PENDING
 - [ ] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#15 H-2` green on `shadows.webp`; `notebook-polish.spec.ts` and `backdrop-restore.spec.ts` backdrop cases green with the grown record)
 
 ### Phase 4: Board recolour in the art pipeline

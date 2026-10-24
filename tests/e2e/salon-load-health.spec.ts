@@ -49,7 +49,7 @@ test.describe('picture that never answers', () => {
     test('#15 H-2 a picture that never answers ends the loading after the limit and is counted as missing', async ({ page }) => {
         await silenceSpeech(page);
         // The request is held open: the file hangs instead of failing.
-        await page.route('**/assets/rooms/salon/furnishings-before.webp', () => {});
+        await page.route('**/assets/rooms/salon/shadows.webp', () => {});
         await passWelcome(page, { e2eArt: 'stall', e2eVariant: 'off' });
         await expect.poll(async () => (await snapshot(page)).roomArtHealth?.missing ?? 0).toBeGreaterThanOrEqual(1);
         const health = (await snapshot(page)).roomArtHealth!;
