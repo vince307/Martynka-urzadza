@@ -651,11 +651,11 @@ None: save format stays v4; every new record is runtime only.
 
 #### Automated
 
-- [ ] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "guideAvailable\|RESTORE_WEBGL\|backdropPixel" CLAUDE.md` present
-- [ ] 4.2 `grep -c "MartynkaNext.ttf" docs/art-inventory.md` ≥ 2 and `grep -n "identyczny we wszystkich paczkach i w" docs/art-inventory.md` empty
-- [ ] 4.3 `grep -n "^| 168 |" docs/design-gaps.md` mentions `guideMissing` and no longer says "no text change"
-- [ ] 4.4 `grep -c "Trigger:" context/changes/audit-backdrop-fox/follow-ups/review-fixes.md` ≥ 5
-- [ ] 4.5 `grep -rn "snapshotPixel" src` lists only `src/ui/widgets/SalonBackdrop.ts`
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "guideAvailable\|RESTORE_WEBGL\|backdropPixel" CLAUDE.md` present — b46be2a
+- [x] 4.2 `grep -c "MartynkaNext.ttf" docs/art-inventory.md` ≥ 2 and `grep -n "identyczny we wszystkich paczkach i w" docs/art-inventory.md` empty — b46be2a
+- [x] 4.3 `grep -n "^| 168 |" docs/design-gaps.md` mentions `guideMissing` and no longer says "no text change" — b46be2a
+- [x] 4.4 `grep -c "Trigger:" context/changes/audit-backdrop-fox/follow-ups/review-fixes.md` ≥ 5 — b46be2a
+- [x] 4.5 `grep -rn "snapshotPixel" src` lists only `src/ui/widgets/SalonBackdrop.ts` — b46be2a
 - [ ] 4.6 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
 
 #### Manual
