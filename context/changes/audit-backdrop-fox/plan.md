@@ -285,7 +285,9 @@ hook exposes the record and the pixel; the Phaser 4.2.1 behaviour relied on is p
 **Contract**: exported `interface BackdropSnapshot { mode: BackdropMode; captures: number; drawn: boolean; blurred:
 boolean; renderer: 'webgl' | 'canvas'; redraws: number }`; `render(rooms, currentRoom, cause: 'capture' | 'restore' =
 'capture')` — `cause === 'restore'` bumps `redraws` and writes one
-`console.warn(`Salon backdrop redrawn after a WebGL context restore (${scene key}, redraw ${n})`)` (developer English);
+`console.warn(`Salon backdrop redrawn after a WebGL context restore (${scene key}, redraw ${n})`)` (developer English),
+both at the top of `render`, before the `plain` early return (a restore in `plain` mode is still counted; `drawn: false`
+tells that nothing was drawn — plan review F1);
 `drawn` = a DynamicTexture was created and drawn at the last render (false in `plain` mode or when
 `addDynamicTexture` returned null); `blurred` = the `addBlur(...)` result was defined at the last render; `renderer` from
 `scene.sys.game.renderer.type === WEBGL`; `captures` keeps its meaning (every non-plain render). `snapshot():
@@ -305,7 +307,8 @@ run synchronously. The class comment drops nothing; FU-NP 16's filter-camera not
 handler `onRestore = (): void => this.refreshBackdrop('restore')` registered with
 `this.game.renderer.on(Renderer.Events.RESTORE_WEBGL, onRestore)` (Phaser constant, never the string literal) and removed
 with `off` in the existing `events.once('shutdown')` block; `TaskSnapshot.backdrop: BackdropSnapshot` built from
-`this.backdrop?.snapshot()` (a `plain`/zero record when absent); public `backdropPixel()` forwarding `pixel()`.
+`this.backdrop?.snapshot()` (when absent: `mode: 'plain'`, zeros, `drawn`/`blurred` false, `renderer` still read from
+`this.game.renderer.type` — plan review F3); public `backdropPixel()` forwarding `pixel()`.
 
 **File**: `src/scenes/WelcomeScene.ts`
 
@@ -408,7 +411,8 @@ filter-camera part closed by the pin (Trigger: the next change to `starBurst`, `
 carried follow-ups re-recorded (autosave carried F4 / observability F4 `openParent` guard, parent-settings F6 suspender
 cast) — closed if the sweep finds them already fixed, else open (Trigger: a non-final error path in WelcomeScene or the
 next change to `WelcomeScene.openParent`); the generic triggers on `artHealth.ts` / `artHealthView.ts` (load-and-tab-guard
-A-5, A-11; salon-load-health; audit-boot-hidden-tab; post-run-polish) re-recorded open (Trigger: unchanged, cited);
+A-5, A-11; salon-load-health; audit-boot-hidden-tab; post-run-polish; save-reason-and-recovery ASL-02..09; stale-tab-and-health
+G-2, G-3, B-4, B-5) re-recorded open (Trigger: unchanged, cited; plan review F2);
 narrator-round-summary's hook follow-up ("`null` targets while the room is open") recorded closed (already in
 `e2eHook.ts` `targets`); fox-guide F6 recorded closed (= G-1).
 
@@ -547,6 +551,9 @@ None: save format stays v4; every new record is runtime only.
   the pin turns red first (research R1).
 - `snapshotPixel` between frames rebinds the texture framebuffer; research saw no glitch; phase 5's run confirms (the
   getter is never called outside e2e).
+- Phase 6's `page.route` abort of `fox-think.webp` is a network failure, so "Obrazki" also shows the `cause`/`advice`/`code`
+  lines for it; the `#14` test asserts only the fox sentence, the exact count line and the absence of "napis lub rysunek"
+  and of the `artFallback(` line, never the whole line list (plan review F4).
 - `fox-guide.spec.ts` `#11 no fox on the unlock card` walks the slow E4 road (known load-flake family, profile § 8); the
   new tests do not use it.
 
