@@ -630,10 +630,10 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 
 #### Automated
 
-- [ ] 2.1 `tests/salonStyleWiring.test.ts`, `tests/phaserLoaderPin.test.ts`, `tests/layout.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: put the `furnishings` layer back into `render` → the wiring case red; add the worn matrix before the soft one → the order case red; drop the ghost clean-up from `onSleep` → its case red; each restored; meta-check: these are source guards and a pin of Phaser's own source; the drawn result is proven by phase 6 and the visual gate
+- [x] 2.1 `tests/salonStyleWiring.test.ts`, `tests/phaserLoaderPin.test.ts`, `tests/layout.test.ts` green; unit `<phase-1 count> + N` — 90785fc
+- [x] 2.2 Deliberate break: put the `furnishings` layer back into `render` → the wiring case red; add the worn matrix before the soft one → the order case red; drop the ghost clean-up from `onSleep` → its case red; each restored; meta-check: these are source guards and a pin of Phaser's own source; the drawn result is proven by phase 6 and the visual gate — 90785fc
 - [ ] 2.3 `grep -rn "furnishingsBefore" src/ui src/scenes` empty
-- [ ] 2.4 `tests/reducedMotionWiring.test.ts` and `tests/motionWiring.test.ts` green unchanged (no new tween outside `fadeStage`)
+- [x] 2.4 `tests/reducedMotionWiring.test.ts` and `tests/motionWiring.test.ts` green unchanged (no new tween outside `fadeStage`) — 90785fc
 - [ ] 2.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`salon-load-health.spec.ts` `#15 H-2` still green: the old file is still in the boot queue; `salon-art.spec.ts` and `room-purchase.spec.ts` unchanged)
 
 ### Phase 3: Miniature and backdrop follow; the old worn picture is gone
