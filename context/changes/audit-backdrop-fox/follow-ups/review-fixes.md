@@ -14,6 +14,8 @@ Each entry has a `Trigger:` line; later slices grep for them.
   Trigger: a non-final error path in WelcomeScene or the next change to `WelcomeScene.openParent`.
 - F5 Generic triggers on `artHealth.ts` / `artHealthView.ts` stay open as recorded (load-and-tab-guard A-5, A-11; salon-load-health; audit-boot-hidden-tab; post-run-polish; save-reason-and-recovery ASL-02..09; stale-tab-and-health G-2, G-3, B-4, B-5).
   Trigger: unchanged, as cited in those changes.
+- F6 (impl-review F4) `tests/e2e/backdrop-restore.spec.ts` `isSalonPixel` accepts any opaque pixel that is not the page colour; it does not prove the same salon came back (compare with the pre-loss pixel within a tolerance).
+  Trigger: the next change to `SalonBackdrop.render` or to the backdrop blur, or a report of a wrong-looking backdrop after a restore.
 
 ## Closed
 

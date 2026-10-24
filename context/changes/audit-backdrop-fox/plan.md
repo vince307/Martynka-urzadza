@@ -626,7 +626,7 @@ None: save format stays v4; every new record is runtime only.
 - [x] 1.2 Deliberate break: `guideAvailable` checks only `idle` → the single-missing rows red; `standIn` computed as `ui.missing.length > 0` → the "only fox keys" case red; each restored; meta-check: the oracles are literal tables and literal key lists, not values computed by the code under test — 8263f8b
 - [x] 1.3 `npm run typecheck` green with `'guide'` in `FallbackWhere` and `artFallbackNames` unchanged (`git diff main -- src/data/pl.ts` shows no edit of `artFallback`/`artFallbackNames`) — 8263f8b
 - [x] 1.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum` empty — 8263f8b
-- [ ] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`#14 G-1` text unchanged for the wallet)
+- [x] 1.5 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`#14 G-1` text unchanged for the wallet) — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
 
 ### Phase 2: The fox hides for the whole scene and is recorded
 
@@ -635,7 +635,7 @@ None: save format stays v4; every new record is runtime only.
 - [x] 2.1 `tests/guideWiring.test.ts` green with the new cases; unit `<phase-1 count> + N` — 63fb936
 - [x] 2.2 Deliberate break: put `!this.scene.textures.exists(key)` back into `show` → the "no per-pose check" case red; delete the `recordFallback` call → its case red; each restored; meta-check: these are source guards of the wiring; on-screen behaviour (hidden in every phase, the panel text) is proven by phase 6 — 63fb936
 - [x] 2.3 `grep -n "requested" src/ui/widgets/GuideFox.ts tests/e2e/support/hook.ts` shows the field in both — 63fb936
-- [ ] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`fox-guide.spec.ts` `#11 no fox without its art` still green: `?e2eArt=ui` misses all three poses)
+- [x] 2.4 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`fox-guide.spec.ts` `#11 no fox without its art` still green: `?e2eArt=ui` misses all three poses) — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
 
 ### Phase 3: Backdrop record and the redraw after a context restore
 
@@ -645,7 +645,7 @@ None: save format stays v4; every new record is runtime only.
 - [x] 3.2 Deliberate break: delete the `off` in `TaskScene`'s shutdown block → wiring case red; wrap the WelcomeScene redraw in `this.time.delayedCall(0, …)` → wiring case red; change the pin's expected event string → pin red; each restored; meta-check: the wiring cases are source guards and the pin reads Phaser's own source, so on-screen redraw is proven by phase 5, not here — 706a01b
 - [x] 3.3 `grep -rn "restorewebgl" src` empty (only the Phaser constant is used) — 706a01b
 - [x] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures vite/e2eHookGuard.mjs` empty — 706a01b
-- [ ] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`notebook-polish.spec.ts` `#12` and `#11` backdrop cases still green with the grown record)
+- [x] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`notebook-polish.spec.ts` `#12` and `#11` backdrop cases still green with the grown record) — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
 
 ### Phase 4: Docs, follow-ups, seam sweep and the visual pass
 
@@ -656,7 +656,7 @@ None: save format stays v4; every new record is runtime only.
 - [x] 4.3 `grep -n "^| 168 |" docs/design-gaps.md` mentions `guideMissing` and no longer says "no text change" — b46be2a
 - [x] 4.4 `grep -c "Trigger:" context/changes/audit-backdrop-fox/follow-ups/review-fixes.md` ≥ 5 — b46be2a
 - [x] 4.5 `grep -rn "snapshotPixel" src` lists only `src/ui/widgets/SalonBackdrop.ts` — b46be2a
-- [ ] 4.6 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 4.6 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
 
 #### Manual
 
@@ -670,13 +670,13 @@ None: save format stays v4; every new record is runtime only.
 #### Automated
 
 - [x] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: remove `WelcomeScene`'s listener → the welcome test red with `redraws 0` and pixel `[0,0,0,0]`; remove `TaskScene`'s listener → both task tests red; make `TaskScene`'s handler return early while `this.sys.isSleeping()` → only the room test red; each restored), green after — abadce5
-- [ ] 5.2 `npx playwright test tests/e2e/backdrop-restore.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
-- [ ] 5.3 Full local gate green
+- [x] 5.2 `npx playwright test tests/e2e/backdrop-restore.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1` — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
+- [x] 5.3 Full local gate green — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
 
 ### Phase 6: A missing fox pose hides the fox for the whole round and is named — e2e (#11, #14)
 
 #### Automated
 
 - [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: restore the per-pose `textures.exists` check in `GuideFox.show` and drop the constructor rule → "every phase" red (fox visible at idle); delete the `recordFallback` call → "pictures section" red; pass no `noStandIn` in `UIScene` → "pictures section" red on the exact count line; each restored), green after — 18e7eff
-- [ ] 6.2 `npx playwright test tests/e2e/fox-guide.spec.ts tests/e2e/health-lines.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<phase-5 e2e count> + 2`; total equals `npx playwright test --list | tail -1`
-- [ ] 6.3 Full local gate green
+- [x] 6.2 `npx playwright test tests/e2e/fox-guide.spec.ts tests/e2e/health-lines.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<phase-5 e2e count> + 2`; total equals `npx playwright test --list | tail -1` — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
+- [x] 6.3 Full local gate green — 22c80e2 (impl-review: unit 3891+24=3915, e2e 160 = 155+3+2)
