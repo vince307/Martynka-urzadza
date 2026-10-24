@@ -1,72 +1,71 @@
 # Handoff — `salon-style` (slice fix:salon-style)
 
-Written by the `/10x-research` step of run 2026-10-24-salon-style: `research.md` answers every open question with prototype
-montages (scratchpad, not committed) and proposes five phases. The next agent must not reintroduce a dust/stain overlay or a
-turquoise nudge: both were tried by eye and rejected; and the worn pieces must stay outside `chosen` / `shownVariants`.
+Written by the `/10x-plan` step of run 2026-10-24-salon-style: `plan.md` has six phases (tdd, impl ×4, e2e) with 33
+Progress rows, and `plan-brief.md` is written. The next agent must not reintroduce a dust overlay or a turquoise nudge, and must
+keep the worn pieces outside `chosen` / `shownVariants`. The extra grade on soft furnishings (P-2) is a plan decision answering
+the orchestrator's concern, so a review must not read it as drift.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-style`, cut from `main` at `309e672` |
-| Commits | two: `docs(salon-style): change identity (autonomous run)`, `docs(salon-style): research` |
+| Commits | three: `docs(salon-style): change identity (autonomous run)`, `docs(salon-style): research`, `docs(salon-style): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| Progress rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| Progress rows remaining | 33 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/salon-style/research.md` | findings: grade numbers (E), Phaser 4.2.1 filter API/Canvas/DynamicTexture, slot mapping, board colour + tool, turquoise verdict, contact shadows, budget, phases, gap rows |
-| `context/changes/salon-style/change.md` | frontmatter only: `status: preparing`, `updated` |
+| `context/changes/salon-style/plan.md` | full plan: 6 phases with `Driver:` lines, contracts, literal oracles, deliberate breaks, `## Autonomous decisions` P-1…P-12, `## Progress` (33 rows) |
+| `context/changes/salon-style/plan-brief.md` | two-page brief |
+| `context/changes/salon-style/change.md` | status `preparing` → `planned` |
 | `context/changes/salon-style/handoff.md` | this file |
-| scratchpad `/private/tmp/claude-501/-Users-kamilp-Dev-Martynka-urzadza/99d35901-8f35-42fa-8afe-0717b608b676/scratchpad/salon-style/` | prototype scripts and montages (`m9-proposed-flow.png` is the key one); not committed |
+| scratchpad `/private/tmp/claude-501/-Users-kamilp-Dev-Martynka-urzadza/99d35901-8f35-42fa-8afe-0717b608b676/scratchpad/salon-style/` | new montages `m12-variants.png` (every variant of seven slots), `m13-worn-levers.png` (old before / grade E / E + soft extra / without frames / done room); scripts `variants.py`, `m13.py`; not committed |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/salon-style` |
-| Pillow prototypes (`m1.py`…`m9.py`, `board2.py`, `turq.py`) | montages opened and judged by eye; chosen numbers in research.md §1, §4, §6 |
-| recolour determinism: `recolour2` run twice + `cmp` | byte-identical PNG |
-| `cwebp -q 85 -alpha_q 100 -m 6` on the source `architecture-after.png` + `cmp` with the committed webp | identical (cwebp 1.1.0 is deterministic) |
-| recoloured webp sizes | after 68 022 B (was 71 648), before 86 958 B (was 93 778); boot payload ≈ 2 079 700 B ≈ 41.6 s vs 48 s |
-| full local gate | not run: docs-only step, no code changed |
+| `python3 m13.py` (scratchpad, Pillow 12.1.0, numpy 2.4.3) | montage written, judged by eye: soft-extra grade B gives a clearly larger purchase step than E alone |
+| prototype `grade_matrix` for the two param sets | E `[0.5794,0.1842,0.0941,0,16.8, …]` (matches research), soft `[0.691,0.1693,0.1168,0,0, 0.1325,0.7199,0.1155,0,0, 0.1278,0.1548,0.669,0,0]` — pinned as literals in phase 1 |
+| Phaser 4.2.1 `renderer/webgl/renderNodes/Camera.js` | internal filters run from index 0 upward (soft matrix added first) |
+| `grep -c '^- \[ \]' plan.md` | 33 = Success Criteria bullets of phases 1-6 (4+5+5+5+11+3) |
+| `metadata-guard.mjs mark-planned` | `{"changed":true}` |
+| full local gate | not run: docs-only step, no code changed (baseline in the contract: unit 3915, e2e 160) |
 
 ## 4. Next command
 
-`/10x-plan salon-style`
+`/10x-plan-review salon-style`
 
 ## 5. Open
 
-- Plan inputs (research.md "Proposed phases"): P1 tdd data+core (`wornMatrix`, `wornPieces`, `contactShadowPieces` in
-  `src/core/rooms.ts`, `RoomDef.scene` without `furnishingsBefore`, `miniaturePieces` worn flag, file deleted); P2 impl
-  scene/widgets (`RoomView.render`, `RoomScene.fadeStage` + `onSleep` F1, `SalonBackdrop.render` graded sub-container, Canvas
-  wash, e2e snapshot field); P3 impl art (`scripts/recolour-board.py` pinned Pillow 12.1.0 + numpy 2.4.3, called from
-  `scripts/make-task-art.mjs`); P4 e2e (#15 in `tests/e2e/salon-load-health.spec.ts` retargeted to `shadows.webp`, new
-  before/after spec); P5 impl docs + visual gate.
-- DESIGN-GAPs to add: 169 worn look, 170 board colour `#BCD799`, 171 decoration contact shadows, 172 missing worn texture
-  shows nothing; 107 and 109 amended.
-- Risk: the WebGL result vs the Pillow prototype (shader clamps per channel like the prototype); the visual gate decides.
-- Follow-ups for `follow-ups/review-fixes.md` at plan/archive time: thumbnail and loading background with curtains; a proper
-  "before" from the author if the code version falls short; L-7 fires via the worn layer's snapshot field.
+- Manual rows (phase 5): 5.6 [human] accept the worn before state or ask the author for a before picture; 5.7 [human] grade
+  stronger than scope's −25 % and no dust overlay; 5.8 [human] turquoise not nudged; 5.9 [human] board `#BCD799` and the Python
+  step; 5.10 [visual] the full frame list at 1440 and 1024; 5.11 [reviewer] (CI at ship).
+- DESIGN-GAPs to add in phase 5: 169 worn look, 170 board colour, 171 contact shadows, 172 missing worn texture shows nothing;
+  107 and 109 amended.
+- Risks: WebGL vs the Pillow prototype; nested per-image filters inside the backdrop's blurred holder (fallback named in plan
+  "Known risks"); `#15 H-2` retargeted to `shadows.webp` in phase 3.
+- Follow-ups go to `context/changes/salon-style/follow-ups/review-fixes.md` in phase 5 (list in plan phase 5 § 4).
 
 ## 6. Autonomous decisions
 
-- R1 grade E (sepia 0.20, saturate −0.30, brightness 0.90, contrast 0.90, lift +4) over the scope's A (−0.25/light sepia/0.92):
-  A left the sofa cyan and the before/after step small (m1). Would change: the visual gate on WebGL showing E too grey or
-  too weak.
-- R2 no dust/stain overlay; the matrix haze + the whole `shadows` layer in the before state replace it. Rejected: speckles
-  (polka dots, m2), soft stains (spots, m4). Would change: the maintainer saying the room does not read as "old".
-- R3 `architecture-before` kept (no clash, m9). Would change: the visual gate.
-- R4 board `#BCD799` via a pinned Python + Pillow + numpy conversion step. Rejected: ivory + shadow (pillars melt), sharp,
-  pngjs, runtime code. Would change: the maintainer refusing Python in `npm run art`, then pngjs.
-- R5 turquoise nudge not done (D6 not met, m8). Would change: a maintainer request.
-- R6 contact shadows as code ellipses (alpha 0.25, rgb 95,70,43 from the pack's layer), shown after the stage until
-  `roomDone`. Rejected: crops of `shadows` (blobs touch neighbours). Would change: author-delivered per-piece shadows.
-- R7 worn pieces = variant 0 of the nine slots in the worn picture + decor `plant-right`; missing texture shows nothing.
-  Would change: the maintainer wanting stand-ins.
-- R8 e2e #15 retarget to `shadows.webp`. Would change: the plan finding another file more representative.
-- Skill's AskUserQuestion clarification skipped (unattended run; questions derived from change.md).
+- P-2 orchestrator concern: extra grade on sofa, rug, armchair, pouf (sat −0.35, sepia 0.10, brightness 0.95) before grade E.
+  Rejected: plainer coffee-table top (no variant without the vase, m12), dropping the table or the frames, a non-v0 worn variant
+  (kept as the `SALON.worn[].variant` data lever). Would change: the maintainer rejecting the look at [human] 5.6.
+- P-3 per-image filters through one helper `applyWornGrade`, not one filtered container (research's proposal). Would change: a
+  frame-rate report on the first room screen.
+- P-7 no contact shadows in the backdrop miniature. Would change: the visual gate showing floating pieces in the after backdrop.
+- P-9 six phases (research's scene phase split so the old file stays queued until the phase that removes it retargets `#15`).
+  Would change: per-phase overhead dominating.
+- P-10 hook fields `room.worn`, `room.contactShadows`, `backdrop.graded`. Would change: a spec needing per-piece filter state.
+- P-1, P-4, P-5, P-6, P-8 carry research R1, R4, R5, R6, R7 unchanged; P-11 e2e risks #16 and #12; P-12 no teacher read (no task
+  content). Each reversal condition is in plan.md `## Autonomous decisions`.
+- Skill's AskUserQuestion steps (complexity, questions, phase approval) skipped: unattended run; decisions taken from research,
+  change.md and scope.md, the step prompt's concern answered by a new prototype.
+- No roadmap edit (non-roadmap change, step prompt).
