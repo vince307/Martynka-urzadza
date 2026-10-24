@@ -35,7 +35,7 @@ test.describe('screen pictures', () => {
         const total = UI_ART.length;
 
         const panel = await openSettings(page);
-        await expect(panel.getByText(pl.settings.uiArtMissing(1, total), { exact: true })).toBeVisible();
+        await expect(panel.getByText(pl.settings.uiArtMissing(1, total, true), { exact: true })).toBeVisible();
         await expect(panel.getByText(pl.settings.uiArtOk, { exact: true })).toHaveCount(0);
         // The task pictures are a separate count and all loaded.
         await expect(panel.getByText(pl.settings.artOk, { exact: true })).toBeVisible();
@@ -92,7 +92,10 @@ test.describe('screen fallbacks reach the panel', () => {
         await screenIs(page, 'task');
 
         const panel = await openSettings(page);
-        await expect(panel.getByText(pl.settings.artFallbackNames.notebook, { exact: false })).toBeVisible();
+        // Under ?e2eArt=ui the fox line also says "zeszyt", so aim at the fallback sentence itself.
+        const fallbackLead = pl.settings.artFallback([]).split(':')[0] ?? '';
+        await expect(panel.getByText(fallbackLead, { exact: false }).filter({ hasText: pl.settings.artFallbackNames.notebook })).toBeVisible();
+        await expect(panel.getByText(pl.settings.guideMissing, { exact: true })).toBeVisible();
     });
 
     test('#14 G-7 a drawn room miniature is named in the pictures section', async ({ page }) => {

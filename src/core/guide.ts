@@ -23,3 +23,9 @@ export const guidePose = (screen: GuideScreen, phase: RoundPhase): GuidePose | n
         default: { const _exhaustive: never = screen; return _exhaustive; }
     }
 };
+
+/** The three pose pictures, for callers that check them together. */
+export const GUIDE_IDS: readonly UiArtId[] = [GUIDE_ART.idle, GUIDE_ART.cheer, GUIDE_ART.think];
+
+/** The fox is shown only when every pose picture exists, so it never blinks away by round phase (audit G-2). */
+export const guideAvailable = (exists: (id: UiArtId) => boolean): boolean => GUIDE_IDS.every(exists);

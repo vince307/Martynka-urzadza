@@ -9,7 +9,7 @@ const textOf = (line: ArtHealthLine): string => {
         case 'ok':
             return line.table === 'task' ? pl.settings.artOk : line.table === 'room' ? pl.settings.roomArtOk : pl.settings.uiArtOk;
         case 'missing':
-            return line.table === 'task' ? pl.settings.artMissing(line.count, line.total) : line.table === 'room' ? pl.settings.roomArtMissing(line.count, line.total) : pl.settings.uiArtMissing(line.count, line.total);
+            return line.table === 'task' ? pl.settings.artMissing(line.count, line.total) : line.table === 'room' ? pl.settings.roomArtMissing(line.count, line.total) : pl.settings.uiArtMissing(line.count, line.total, line.standIn ?? true);
         case 'cut':
             return pl.settings.artCut;
         case 'folder':
@@ -20,6 +20,8 @@ const textOf = (line: ArtHealthLine): string => {
             return pl.settings.artLabels(line.labels);
         case 'font':
             return pl.settings.fontFallback;
+        case 'guide':
+            return pl.settings.guideMissing;
         case 'fallback':
             return pl.settings.artFallback(line.where.map((where) => pl.settings.artFallbackNames[where]));
         case 'advice':

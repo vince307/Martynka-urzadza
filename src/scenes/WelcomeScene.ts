@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Renderer, Scene } from 'phaser';
 import { startLearning } from '../core/curriculum';
 import { placeByChild, type PlacedLearner, type SessionLearner } from '../core/placement';
 import { createRng } from '../core/rng';
@@ -12,7 +12,7 @@ import { openParentGate } from '../ui/dom/parentGate';
 import { openStagePanel } from '../ui/dom/stagePanel';
 import { AgeButton } from '../ui/widgets/AgeButton';
 import { drawNotebook } from '../ui/widgets/notebook';
-import { SalonBackdrop } from '../ui/widgets/SalonBackdrop';
+import { SalonBackdrop, plainBackdropSnapshot, type BackdropCause, type BackdropSnapshot } from '../ui/widgets/SalonBackdrop';
 import type { RoomState } from '../core/types';
 import { PageButton } from '../ui/widgets/PageButton';
 import { textStyle } from '../ui/widgets/textStyle';
@@ -46,7 +46,13 @@ export class WelcomeScene extends Scene {
             this.resumeInput();
         });
         this.backdrop = new SalonBackdrop(this);
-        this.backdrop.render(this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
+        this.refreshBackdrop();
+        // A lost and restored WebGL context empties every texture; the backdrop is drawn again at once (audit B-1).
+        const onRestore = (): void => this.refreshBackdrop('restore');
+        this.game.renderer.on(Renderer.Events.RESTORE_WEBGL, onRestore);
+        this.events.once('shutdown', () => {
+            this.game.renderer.off(Renderer.Events.RESTORE_WEBGL, onRestore);
+        });
         drawNotebook(this);
         const flower = WELCOME_LAYOUT.flower;
         // No stand-in on the welcome: a missing texture draws nothing.
@@ -134,11 +140,19 @@ export class WelcomeScene extends Scene {
         return month;
     }
 
-    /** Centres of the buttons in 1920x1080 scene space, for the e2e hook. */
-    backdropState(): { mode: 'salon' | 'plain'; captures: number } {
-        return { mode: this.backdrop?.mode ?? 'plain', captures: this.backdrop?.captures ?? 0 };
+    private refreshBackdrop(cause: BackdropCause = 'capture'): void {
+        this.backdrop?.render(this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined, cause);
     }
 
+    backdropState(): BackdropSnapshot {
+        return this.backdrop?.snapshot() ?? plainBackdropSnapshot(this);
+    }
+
+    backdropPixel(): [number, number, number, number] | null {
+        return this.backdrop?.pixel() ?? null;
+    }
+
+    /** Centres of the buttons in 1920x1080 scene space, for the e2e hook. */
     targets(): { ages: readonly { age: number; x: number; y: number }[]; parent: { x: number; y: number } | null } {
         return Object.freeze({
             ages: Object.freeze(this.buttons.map(({ age, button }) => Object.freeze({ age, ...button.target() }))),

@@ -24,7 +24,7 @@ lokalne (`designs/` w `.gitignore`), więc integracja oznacza skopiowanie przeko
 
 We wszystkich paczkach: `source-art/`, `prompts*.json`, `source-metadata.json`, `previews/`, `screenshots/`,
 `tools/`, `*-checks.json`, `qa-report.json`, `preview.*` to źródła, dokumentacja i kontrola — nie trafiają do gry.
-Font `AtkinsonHyperlegibleNext.ttf` jest identyczny we wszystkich paczkach i w `public/fonts/`.
+Font gry to `public/fonts/MartynkaNext.ttf`: Atkinson Hyperlegible Next z zwykłym zerem, zbudowany z `AtkinsonHyperlegibleNext.ttf` z paczki poleceniem `npm run font` i sprawdzany przez `tests/fontZero.test.ts`.
 Paczka evolution trzyma w katalogu 6 wcześniejszych kolorystyk zastąpionych formami (`children-bed-{sunny,mint}`,
 `library-reading-{sunny,mint}`, `terrace-dining-{sunny,mint}`); integrator bierze tylko pliki z manifestu.
 
@@ -92,7 +92,7 @@ dopasowanym do miejsca (kwiaty / ołówki / książki / filiżanki / pędzle).
 | Wzorce pomocy | maths-A `reference/` | clock, ruler, number-line, base-ten, written-addition, square-grid, dice (SVG) + `helper-style.cjs` | S-13 (rysowane w kodzie; tylko wzór stylu) |
 | Plansze minigier | expansion `preview.js`/`expansion.css`, `screenshots/dice-*`, `word-*` | „Kostki” = Zakrywanka (wyniki 0–12, + i −), „Ukryte słowo” = Hasło z wyników (SOFA, OKNO, LAMPA, FOTEL, PÓŁKA); rysowane kodem, PNG to tylko podglądy | S-15 |
 | UI | żadna paczka nie ma PNG UI | przyciski, kafelki, notes, gwiazdka, panele są w CSS kitu; gra już rysuje je kodem | S-16 (zostaje kod) |
-| Font | wszystkie paczki | identyczny z `public/fonts/` | — |
+| Font | wszystkie paczki | `public/fonts/MartynkaNext.ttf` (Atkinson z zwykłym zerem, `npm run font`) | — |
 
 Wiersze `docs/design-gaps.md`, które grafika już pokrywa:
 
