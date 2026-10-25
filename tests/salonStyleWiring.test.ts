@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 // Source guards for change salon-style phase 2: the drawn result is proven by the phase 6 e2e and the visual gate.
@@ -52,5 +52,33 @@ describe('the worn salon wiring', () => {
         const backdrop = read('src/ui/widgets/SalonBackdrop.ts');
         expect(backdrop).toContain('this.gradedCount = images.filter(');
         expect(backdrop).toContain('graded: this.gradedCount');
+    });
+});
+
+describe('worn record wiring', () => {
+    const grade = read('src/ui/wornGrade.ts');
+    const boot = read('src/scenes/BootScene.ts');
+    const listSrc = (dir: string): string[] =>
+        readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+            entry.isDirectory() ? listSrc(`${dir}/${entry.name}`) : entry.name.endsWith('.ts') ? [`${dir}/${entry.name}`] : []);
+    const files = listSrc('src');
+
+    it('applyWornGrade records the ungraded look and no longer ignores its scene', () => {
+        expect(grade).toContain("recordFallback(scene, 'worn', 'ungraded')");
+        expect(grade).not.toContain('_scene');
+    });
+
+    it('the record lives only in wornGrade.ts and the grade is called only from RoomView.ts', () => {
+        expect(files.filter((f) => /recordFallback\([^)]*'worn'/.test(read(f)))).toEqual(['src/ui/wornGrade.ts']);
+        expect(files.filter((f) => read(f).includes('applyWornGrade(') && f !== 'src/ui/wornGrade.ts')).toEqual(['src/ui/widgets/RoomView.ts']);
+    });
+
+    it('BootScene.create logs the renderer once, after the second-run return', () => {
+        const create = boot.slice(boot.indexOf('    create(): void {'));
+        const infos = create.match(/console\.info\(/g) ?? [];
+        expect(infos).toHaveLength(1);
+        expect(create).toContain("'Renderer: WebGL'");
+        expect(create).toContain("'Renderer: Canvas (no filters: the worn salon look is off)'");
+        expect(create.indexOf('console.info(')).toBeGreaterThan(create.indexOf('if (this.creates > 1)'));
     });
 });

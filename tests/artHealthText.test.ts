@@ -54,3 +54,14 @@ describe('pl.settings stand-in sentence and fox line (audit G-1)', () => {
         expect(pl.settings.guideMissing).toBe('Lisek w rogu zeszytu się nie pokazuje, bo brakuje jego obrazka.');
     });
 });
+
+describe('pl.settings.wornPlain (audit L-1)', () => {
+    it('is one sentence that claims no stand-in', () => {
+        const text = pl.settings.wornPlain;
+        expect(typeof text).toBe('string');
+        expect(text.endsWith('.')).toBe(true);
+        expect(text.slice(0, -1)).not.toMatch(/[.!?]/);
+        expect(text).not.toContain('rysuje:');
+        expect(text).not.toContain('zamiast');
+    });
+});

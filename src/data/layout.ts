@@ -531,7 +531,7 @@ export const WELCOME_LAYOUT = {
 
 /** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */
 export const ROOM_LAYOUT = {
-    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
+    resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12, 31 and 174: the pouf and its contact shadow reach under this button)
     // The room fills the whole scene (S-16a): the art pack's pictures are 1920x1080. Depth bands: the room's own layers use the manifest `z` (0-99);
     // the scene pictures sit at the bottom (`scene`) and the shadows below the lowest slot or decoration z (the curtains, z 3), as in the pack's draw order; everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
     scene: { left: 0, top: 0, width: 1920, height: 1080 },

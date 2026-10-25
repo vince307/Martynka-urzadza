@@ -117,6 +117,7 @@ export type ArtHealthLine =
     | { kind: 'labels'; labels: readonly string[] }
     | { kind: 'font' }
     | { kind: 'guide' }
+    | { kind: 'worn' }
     | { kind: 'fallback'; where: readonly DrawnFallbackWhere[] }
     | { kind: 'advice'; restart: boolean }
     | { kind: 'cause'; cause: ArtCause }
@@ -175,8 +176,8 @@ export const folderCounts = (missing: readonly string[]): { folder: string; coun
  * Lines of "Obrazki": each known table (an unknown one says nothing, the others still show), the missing task pictures per
  * folder with the sentence that their tasks are skipped, the cut line, the labels of missing room pieces (capped), and for
  * missing pictures the main cause, whether a restart helps, and the code. When the cut is the cause, the cut line already
- * says it (and the restart advice with it). A fallback font adds its own line, then a recorded fox (no stand-in) its own, then the
- * drawn fallbacks. The `ui` missing line carries `standIn`: true when some missing key has a stand-in (keys in `noStandIn` have none).
+ * says it (and the restart advice with it). A fallback font adds its own line, then a recorded fox (no stand-in) its own, then an
+ * ungraded worn look (the furniture shows, no stand-in), then the drawn fallbacks. The `ui` missing line carries `standIn`: true when some missing key has a stand-in (keys in `noStandIn` have none).
  */
 export const artHealthLines = ({ task, room, ui, cut, build, font, labels, labelCap, fallbacks, noStandIn }: ArtHealthLinesInput): ArtHealthLine[] => {
     const lines: ArtHealthLine[] = [];
@@ -204,7 +205,8 @@ export const artHealthLines = ({ task, room, ui, cut, build, font, labels, label
     }
     if (font === 'fallback') lines.push({ kind: 'font' });
     if (fallbacks?.guide !== undefined) lines.push({ kind: 'guide' });
-    const shown = FALLBACK_ORDER.filter((where): where is DrawnFallbackWhere => where !== 'guide' && fallbacks?.[where] !== undefined);
+    if (fallbacks?.worn !== undefined) lines.push({ kind: 'worn' });
+    const shown = FALLBACK_ORDER.filter((where): where is DrawnFallbackWhere => where !== 'guide' && where !== 'worn' && fallbacks?.[where] !== undefined);
     if (shown.length > 0) lines.push({ kind: 'fallback', where: shown });
     if (cause) lines.push({ kind: 'code', code: cause, build });
     return lines;

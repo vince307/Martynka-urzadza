@@ -52,6 +52,8 @@ test('#12 salon-style the welcome backdrop of a fresh device is the graded worn 
     expect(backdrop.mode).toBe('salon');
     expect(backdrop.blurred).toBe(true);
     expect(backdrop.graded).toBe(WORN_KEYS.length);
+    // WebGL control: grading worked, so nothing was recorded as ungraded (the Canvas counterpart is canvas-renderer.spec.ts).
+    expect((await snapshot(page)).artFallbacks?.worn).toBeUndefined();
     expect(requested.filter((url) => url.includes('furnishings-before'))).toEqual([]);
 });
 

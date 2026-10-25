@@ -1,4 +1,4 @@
-import { Loader, Scene } from 'phaser';
+import { Loader, Scene, WEBGL } from 'phaser';
 import { artCauses, artHealth, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
 import { bootLimitDue, bootLimitReached, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
@@ -327,6 +327,11 @@ export class BootScene extends Scene {
         }
         this.loading?.destroy();
         this.loading = null;
+        try {
+            console.info(this.sys.game.renderer.type === WEBGL ? 'Renderer: WebGL' : 'Renderer: Canvas (no filters: the worn salon look is off)');
+        } catch (error) {
+            console.warn('Renderer could not be read', error);
+        }
         // Did the task font arrive? (A decode failure fires no loaderror, so the document's font set is read.)
         // A diagnostic only: a browser without an iterable document.fonts must still start the game (the record then says fallback).
         let faces: { family: string; status: string }[] = [];

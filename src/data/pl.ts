@@ -148,6 +148,8 @@ export const pl = {
             `${count} z ${total} obrazków ekranów ${inflect(count, ['nie wczytał się', 'nie wczytały się', 'nie wczytało się'])}.${standIn ? ' Na tych ekranach zamiast obrazka jest napis lub rysunek.' : ''}`,
         // DESIGN-GAP 168: the kit has no parent text for a picture that has no stand-in (the fox is simply not shown).
         guideMissing: 'Lisek w rogu zeszytu się nie pokazuje, bo brakuje jego obrazka.',
+        // DESIGN-GAP 173: the kit has no parent text for the renderer; true, calm, and claims no stand-in (the furniture still shows).
+        wornPlain: 'Przeglądarka rysuje grę w prostszym trybie, więc meble przed remontem nie wyglądają na stare.',
         // DESIGN-GAP 140: the kit has no line for pictures that did not finish loading in time (a slow connection); calm, says what to do.
         artCut: 'Część obrazków nie zdążyła się wczytać. Przy lepszym internecie uruchom grę ponownie.',
         // DESIGN-GAP 141: the kit has no line for why pictures are missing; one calm sentence per cause, "Kod:" follows from saveFailed.detail.

@@ -15,6 +15,9 @@ w from the colour distance to the local board, so no green rim is left around th
 Local tool, like `npm run font`: needs Python 3 with Pillow and numpy, run by `npm run art`. Not run in CI, outputs are
 committed. It refuses to run on other library versions so a rebuild is byte-identical or fails loudly. The output PNG
 has no metadata and a fixed compression level.
+
+It also refuses a wrong image: when the board mask covers less than 5 % or more than 30 % of the image, or the result has
+non-finite values, it exits non-zero with the file name and writes nothing. The mask share is printed on stdout.
 """
 import collections
 import sys
@@ -25,6 +28,15 @@ from PIL import Image, ImageFilter
 
 PINNED_PILLOW = '12.1.0'
 PINNED_NUMPY = '2.4.3'
+
+# The board is about 13.5 % of both real backgrounds (measured: 13.47 % architecture-before, 13.45 % architecture-after).
+# Outside 5 %-30 % the mask found something else (no board, or a green image), so nothing is written.
+MIN_SHARE = 0.05
+MAX_SHARE = 0.30
+
+
+class BoardError(ValueError):
+    pass
 
 
 def check_versions() -> None:
@@ -83,7 +95,12 @@ def recolour(a, target, shade=0.5):
     w_rim = np.clip(1 - dist / 140, 0, 1) * rim * ((h > 70) & (h < 180))
     w = np.maximum(f, w_rim)
     out = a + w[..., None] * (tgt - board)
-    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+    share = float(filled.mean())
+    if not np.isfinite(out).all():
+        raise BoardError(f'board mask covers {share:.1%} and the result has non-finite values')
+    if not MIN_SHARE <= share <= MAX_SHARE:
+        raise BoardError(f'board mask covers {share:.1%}, outside 5%-30%')
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)), share
 
 
 def main() -> None:
@@ -96,7 +113,12 @@ def main() -> None:
         sys.exit(f'recolour-board: bad colour {colour}')
     target = tuple(int(hexv[i:i + 2], 16) for i in (0, 2, 4))
     a = np.asarray(Image.open(src).convert('RGB')).astype(np.float32)
-    recolour(a, target).save(dst, format='PNG', compress_level=9, optimize=False)
+    try:
+        image, share = recolour(a, target)
+    except BoardError as error:
+        sys.exit(f'recolour-board: {src}: {error}')
+    print(f'recolour-board: {src}: board mask {share:.2%}')
+    image.save(dst, format='PNG', compress_level=9, optimize=False)
 
 
 if __name__ == '__main__':
