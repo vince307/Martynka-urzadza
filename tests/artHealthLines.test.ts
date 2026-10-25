@@ -1,6 +1,7 @@
 // Origin: change health-lines-and-smoke, phase 5 (L-8, F4, A-5, B-4). The lines of the parent's "Obrazki" section.
 import { describe, expect, it } from 'vitest';
 import { artHealth, artHealthLines, type ArtHealth, type ArtCause } from '../src/core/artHealth';
+import { FALLBACK_ORDER } from '../src/core/artPick';
 
 const entries = (n: number) => Array.from({ length: n }, (_, i) => ({ key: `k${i}`, id: `i${i}` }));
 const okHealth = (n: number): ArtHealth => artHealth(entries(n), () => true);
@@ -161,5 +162,26 @@ describe('artHealthLines: fox and stand-in (audit G-1, G-2)', () => {
         const lines = artHealthLines({ ...base, ui: okHealth(5), font: 'fallback', fallbacks: { guide: 'none', wallet: 'drawn' } });
         expect(lines.find((l) => l.kind === 'fallback')).toEqual({ kind: 'fallback', where: ['wallet'] });
         expect(lines.map((l) => l.kind).filter((k) => k === 'font' || k === 'guide' || k === 'fallback')).toEqual(['font', 'guide', 'fallback']);
+    });
+    it('gives one worn line and no fallback line for an ungraded worn look', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), fallbacks: { worn: 'ungraded' } });
+        expect(lines.filter((l) => l.kind === 'worn')).toEqual([{ kind: 'worn' }]);
+        expect(lines.some((l) => l.kind === 'fallback')).toBe(false);
+    });
+    it('puts the worn line before a drawn fallback line and keeps worn out of its places', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), fallbacks: { worn: 'ungraded', wallet: 'drawn' } });
+        expect(lines.map((l) => l.kind).filter((k) => k === 'worn' || k === 'fallback')).toEqual(['worn', 'fallback']);
+        expect(lines.find((l) => l.kind === 'fallback')).toEqual({ kind: 'fallback', where: ['wallet'] });
+    });
+    it('orders font, guide, worn, fallback', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), font: 'fallback', fallbacks: { guide: 'none', worn: 'ungraded', wallet: 'drawn' } });
+        expect(lines.map((l) => l.kind).filter((k) => ['font', 'guide', 'worn', 'fallback'].includes(k))).toEqual(['font', 'guide', 'worn', 'fallback']);
+    });
+    it('gives no worn line when nothing was recorded for it', () => {
+        const lines = artHealthLines({ ...base, ui: okHealth(5), fallbacks: { wallet: 'drawn' } });
+        expect(lines.some((l) => l.kind === 'worn')).toBe(false);
+    });
+    it('ends the fallback order with worn', () => {
+        expect(FALLBACK_ORDER).toEqual(['wallet', 'notebook', 'miniature', 'loading', 'guide', 'worn']);
     });
 });

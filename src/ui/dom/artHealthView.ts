@@ -22,6 +22,8 @@ const textOf = (line: ArtHealthLine): string => {
             return pl.settings.fontFallback;
         case 'guide':
             return pl.settings.guideMissing;
+        case 'worn':
+            return pl.settings.wornPlain;
         case 'fallback':
             return pl.settings.artFallback(line.where.map((where) => pl.settings.artFallbackNames[where]));
         case 'advice':
