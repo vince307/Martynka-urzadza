@@ -19,7 +19,7 @@ const addGrade = (image: GameObjects.Image, params: GradeParams): boolean => {
  * renderer there are no filters, nothing is touched and the room draws a wash instead (change salon-style).
  * DESIGN-GAP (docs/design-gaps.md rows 169 and 170): the kit has no worn look.
  * When the result is false the ungraded look is recorded once per call as `artFallbacks.worn = 'ungraded'` (shown by the "Obrazki"
- * line `pl.settings.wornPlain`, DESIGN-GAP 173); this is the one place that records it, so every caller is covered.
+ * line in `pl.settings`, DESIGN-GAP 173); this is the one place that records it, so every caller is covered.
  */
 export function applyWornGrade(scene: Scene, image: GameObjects.Image, soft: boolean): boolean {
     const { worn } = ROOM_LAYOUT;
