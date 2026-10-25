@@ -526,10 +526,10 @@ None: save format stays v4; the record is runtime only.
 
 #### Automated
 
-- [ ] 2.1 New cases red against stubs (no `worn` line; `worn` left in the drawn list), green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: drop `'worn'` from the drawn-list filter body → the `{ worn, wallet }` case red (typecheck stays green: a type predicate's body is not checked by `tsc`, so the unit case is the only guard); push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test
-- [ ] 2.3 `git diff main -- src/data/pl.ts` shows only the added `wornPlain` line and its comment (no edit of `artFallback`/`artFallbackNames`)
-- [ ] 2.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/rooms.ts` empty
+- [x] 2.1 New cases red against stubs (no `worn` line; `worn` left in the drawn list), green after; unit `<phase-1 count> + N` — 93e3452
+- [x] 2.2 Deliberate break: drop `'worn'` from the drawn-list filter body → the `{ worn, wallet }` case red (typecheck stays green: a type predicate's body is not checked by `tsc`, so the unit case is the only guard); push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test — 93e3452
+- [x] 2.3 `git diff main -- src/data/pl.ts` shows only the added `wornPlain` line and its comment (no edit of `artFallback`/`artFallbackNames`) — 93e3452
+- [x] 2.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/rooms.ts` empty — 93e3452
 - [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 3: Record the ungraded look in one place and log the renderer (L-1 wiring)

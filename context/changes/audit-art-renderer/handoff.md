@@ -1,7 +1,7 @@
 # Handoff — `audit-art-renderer` (slice fix:audit-art-renderer)
 
-Written by the `/10x-tdd` phase 1 step of run 2026-10-25-audit-art-renderer: phase 1 done test-first and committed (`a25aec2`).
-The next agent must keep the `worn` record in ONE place (`applyWornGrade`, no caller edits); phase 1 is closed, do not touch
+Written by the `/10x-tdd` phase 1 step of run 2026-10-25-audit-art-renderer: phase 2 done test-first and committed (`93e3452`); phase 1 is `a25aec2`.
+Phase 3 must keep the `worn` record in ONE place (`applyWornGrade`, no caller edits); phase 1 is closed, do not touch
 `scripts/recolour-board.py` again. A skipped `tests/recolourBoard.test.ts` locally is NOT green (compare passed counts).
 
 ## 1. State
@@ -9,47 +9,48 @@ The next agent must keep the `worn` record in ONE place (`applyWornGrade`, no ca
 | | |
 |---|---|
 | Branch | `feat/audit-art-renderer`, cut from `main` at `c123331` |
-| Commits | phase 1 `a25aec2` `test(audit-art-renderer): board recolour refuses a wrong image (p1)` plus this handoff commit |
+| Commits | p1 `a25aec2`, p2 `93e3452`, plus handoff commits |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `implementing` |
-| `## Progress` rows remaining | 23 (`grep -c '^- \[ \]' plan.md`) |
+| `## Progress` rows remaining | 19 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `scripts/recolour-board.py` | `BoardError`, `MIN_SHARE` 0.05 / `MAX_SHARE` 0.30, finiteness + share checks in `recolour` (returns `(image, share)`), `main` prints `board mask N%` |
-| `tests/recolourBoard.test.ts` | spawned-CLI test, 3 cases, pin probe, titled skip + `console.warn` (visible with `--reporter=verbose`) |
-| `context/changes/audit-art-renderer/plan.md` | rows 1.1-1.6 ticked with `a25aec2` |
+| `src/core/artPick.ts` | `FallbackWhere` + `'worn'`, `FALLBACK_ORDER` ends `'worn'`, `DrawnFallbackWhere` excludes `guide`/`worn` |
+| `src/core/artHealth.ts` | `ArtHealthLine` `{kind:'worn'}`, pushed after `guide`; drawn list excludes `worn` |
+| `src/data/pl.ts` | `pl.settings.wornPlain` (DESIGN-GAP 173 comment; the gap row in docs is phase 3) |
+| `src/ui/dom/artHealthView.ts` | `case 'worn'` |
+| `tests/artHealthLines.test.ts`, `tests/artHealthText.test.ts` | 5 + 1 new cases (literal oracles) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| RED (before the guard) | all 3 failed on assertions: e.g. `AssertionError: expected +0 not to be +0` (all-green exits 0), `expected '' to contain 'board mask 15.00%'` (band) |
-| GREEN `npx vitest run tests/recolourBoard.test.ts` | 3 passed |
-| break: share check off | all-green case red (`expected +0 not to be +0`), others green; restored |
-| break: finiteness check off | no-green case red (`expected '/…/recolour-board.py…' to contain 'non-finite'`), others green; restored. Meta: band case green under both breaks and needs the printed share, so a blanket refusal or no-op guard cannot pass; oracles are literal synthetic images |
-| skip path `RECOLOUR_BOARD_PYTHON=/nonexistent/python3` | 3 skipped; title and `recolourBoard: skipped: python3 cannot import PIL and numpy; needs Pillow 12.1.0 / numpy 2.4.3` shown with `--reporter=verbose` (default reporter hides both) |
-| `npm run art` | `board mask 13.47%` and `13.45%`; `git status --porcelain public/` empty (byte-identical); no `scripts/__pycache__` |
+| RED (before impl) | 5 failed on assertions, e.g. `AssertionError: expected [] to deeply equal [ { kind: 'worn' } ]`, `expected [ 'font', 'guide', 'fallback' ] to deeply equal [ 'font', 'guide', 'worn', 'fallback' ]`, `expected 'undefined' to be 'string'` |
+| GREEN | 46 passed in the two files |
+| break: drop `'worn'` from the drawn-list filter | 2 red (`expected true to be false`; fallback line `where` mismatch); restored |
+| break: worn line before guide | order case red (`[ 'font', 'worn', 'guide', 'fallback' ]` vs expected); restored. Meta: oracles are literal lists/records |
 | lint / typecheck | OK / OK |
-| unit | 3939 passed (baseline 3936 + 3); deploy scripts OK; `sample` E1-E6 OK |
+| unit | 3945 passed (phase 1 3939 + 6); deploy scripts OK; `sample` E1-E6 OK |
 | build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e | not run: no `src/`, `vite/` or `tests/e2e/` file changed; orchestrator batches after phase 3 |
+| diffs vs main | `pl.ts` only the comment + `wornPlain` lines; save/fixtures/balance/curriculum/rooms empty |
+| e2e | pending: this phase touched `src/`; orchestrator batches after phase 3 |
 
 ## 4. Next command
 
-`/10x-tdd audit-art-renderer phase 2`
+`/10x-implement audit-art-renderer phase 3`
 
 ## 5. Open
 
-- Phases 2 `tdd`, 3 `impl`, 4 `impl`, 5 `e2e` unchanged (see plan). Manual rows 4.6-4.10 are not mine.
-- DESIGN-GAPs to add (phase 3): 173, 174. Follow-ups to record (phase 4).
+- Phase 3 wiring (`applyWornGrade` records `worn`/`ungraded` once, `console.info` of the renderer), phases 4 and 5 per plan. Manual rows 4.6-4.10 are not mine. Row 2.5 is the orchestrator's e2e.
+- DESIGN-GAPs 173, 174 rows in docs (phase 3). Follow-ups (phase 4).
 - ARTIFACT GAP: none.
 
 ## 6. Autonomous decisions
 
-- D-1 Unit test uses `describe.skipIf` with the titled reason as planned; no "mixed phase" question arose. Would change: n/a.
-- D-2 Committed only the planned set (script, test, plan, change.md); `change.md` status moved to `implementing` as the skill requires.
-- D-3 Row 1.6 ticked on the local gate; its e2e clause (`+ 0`) is the orchestrator's, no e2e-relevant file changed.
+- D-1 No mixed-phase question; no driver redirect (implementation was absent, RED observed). Would change: n/a.
+- D-2 Committed only the planned set; the unrelated `artHealth.ts` doc comment was extended to name the worn line.
+- D-3 Row 2.5 left open (e2e is the orchestrator's).
