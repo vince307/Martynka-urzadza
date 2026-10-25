@@ -479,3 +479,24 @@ Wynik: PR #102 scalony 2026-10-24 na „zmerguj” właściciela (3d6f0e8). Zapi
 - [ ] Lisek siedzi na prawym marginesie obok rogu zeszytu, nie wewnątrz kartki: wewnątrz żaden róg nie jest wolny we wszystkich trybach odpowiedzi.
 - [ ] Pozy: spokój na początku zadania, zamyślenie po pomyłce (także przy pokazanych krokach i przepisywaniu), radość po dobrej odpowiedzi i na podsumowaniu oraz karcie końca minigry; brak liska na karcie „Nowa umiejętność!”.
 - [ ] Budżet startu: grafiki ładują się teraz ok. 47,6 s przy limicie testu 48 s (`balance.loader.totalMs` 50 s minus 2 s zapasu); następna grafika wymaga podniesienia limitu albo odchudzenia plików (follow-up F4).
+
+## Bieg 2026-10-24-audit-backdrop-fox (poprawki po audytach #101 i #104)
+
+Wynik: PR #105 scalony 2026-10-24 na „zmerguj” właściciela (309e672), wdrożenie 23/23. Zapis v4 bez zmian. Testy: jednostkowe 3891 → 3915, e2e 155 → 160. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS.
+
+- [ ] P1 — Zaakceptować zdanie dla rodzica w „Obrazki”: „Lisek w rogu zeszytu się nie pokazuje, bo brakuje jego obrazka.” (`pl.settings.guideMissing`); linia obrazków interfejsu traci zdanie o „napisie lub rysunku”, gdy brakuje tylko liska. Źródło: plan wiersz 4.7 [human].
+- [ ] P2 — Zaakceptować formę dowodu G-2: brak jednej pozy liska jest wywoływany w e2e przez `page.route` (przerwanie `fox-think.webp`), nie nową wartością `e2eArt`; wspiera to tabela testów `guideAvailable`. Źródło: plan wiersz 4.8 [human].
+- [ ] P2 — PR #101 i #104 (raporty audytów) — ich znaleziska B-1, B-2, C-1, G-1, G-2 są naprawione w #105; scalić albo zamknąć.
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-24-audit-backdrop-fox/follow-ups/review-fixes.md`.
+
+## Bieg 2026-10-24-salon-style (salon „przed remontem” w stylu gry, w kodzie)
+
+Wynik: PR #106 scalony 2026-10-25 na „Merguj” właściciela (8ee2993), wdrożenie 23/23. Zapis v4 bez zmian. Testy: jednostkowe 3915 → 3936, e2e 160 → 164. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS. Audyt po scaleniu: PR #107 (0 krytycznych/wysokich, M-1 i L-1).
+
+- [ ] P0 — Postarzenie w kodzie przyjęte tymczasowo; właściciel 2026-10-25 zlecił właściwe grafiki „przed” (paczka `martynka-salon-worn-v1`: nowe `architecture-before` i 10 zużytych mebli na płótnach wariantu 0). Po dostarczeniu: zmiana podmieniająca filtr na grafiki. Źródło: plan wiersz 5.6 [human], follow-up 2.
+- [ ] P1 — Zaakceptować albo odwrócić: mocniejszy filtr niż w zakresie (−30 % nasycenia, sepia 0,20, jasność 0,90 + osobny filtr na tapicerkę) i brak nakładki z kurzem. Znika razem z nowymi grafikami. Źródło: plan wiersz 5.7 [human].
+- [ ] P2 — Turkusy nieprzesunięte (porównanie nie pokazało zysku). Źródło: plan wiersz 5.8 [human].
+- [ ] P1 — Kolor planszy `#BCD799` (spoza zestawu) i krok Pythona w `npm run art` (Pillow 12.1.0 + numpy 2.4.3). Źródło: plan wiersz 5.9 [human]; audyt #107 M-1 (skrypt potrafi zapisać czarny obraz z kodem 0) — w naprawie.
+- [ ] P2 — Cień pufy chowa się za przyciskiem „Wróć do notesu” (bramka wizualna) — w naprawie razem z #107.
+- [ ] P2 — Miniatura salonu i tło ładowania nadal pokazują zasłony (follow-up 1; P2 w zleceniu dla designera).
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-24-salon-style/follow-ups/review-fixes.md` (m.in. F2: żaden test automatyczny nie widzi wyglądu postarzenia ani cieni).
