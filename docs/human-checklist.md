@@ -500,3 +500,13 @@ Wynik: PR #106 scalony 2026-10-25 na „Merguj” właściciela (8ee2993), wdro�
 - [ ] P2 — Cień pufy chowa się za przyciskiem „Wróć do notesu” (bramka wizualna) — w naprawie razem z #107.
 - [ ] P2 — Miniatura salonu i tło ładowania nadal pokazują zasłony (follow-up 1; P2 w zleceniu dla designera).
 - [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-24-salon-style/follow-ups/review-fixes.md` (m.in. F2: żaden test automatyczny nie widzi wyglądu postarzenia ani cieni).
+
+## Bieg 2026-10-25-audit-art-renderer (poprawki po audycie #107)
+
+Wynik: PR #109 otwarty, CI zielone (run 40221411402), czeka na „zmerguj”. Zapis v4 bez zmian. Testy: jednostkowe 3936 → 3948, e2e 164 → 167. Przegląd: MERGE: CLEAR, bramka wizualna: VISUAL: PASS. Zamyka audyt #107 M-1 (skrypt planszy odmawia złej maski z kodem 1) i L-1 (tryb Canvas zapisany i nazwany w „Obrazki”).
+
+- [ ] P1 — Zaakceptować albo zmienić zdanie dla rodzica w „Obrazki”: „Przeglądarka rysuje grę w prostszym trybie, więc meble przed remontem nie wyglądają na stare.” (`pl.settings.wornPlain`). Źródło: plan wiersz 4.6 [human], DESIGN-GAP 173.
+- [ ] P2 — Pufa pod przyciskiem „Wróć do notesu” (zakrywa 46 px pufy i cały jej cień): przesunąć miejsce pufy, przesunąć przycisk albo zaakceptować. Ten bieg dodał tylko wiersz luki. Źródło: plan wiersz 4.7 [human], DESIGN-GAP 174. Uwaga: ten wpis zastępuje punkt „Cień pufy … w naprawie” z sekcji salon-style.
+- [ ] P2 — Zaakceptować albo odwrócić: miniatura pokoju (`drawRoomMiniature`) nadal ignoruje wynik filtra; brak filtra zapisuje się w jednym miejscu, w `applyWornGrade`. Źródło: plan wiersz 4.8 [human].
+- [ ] P2 — Zaakceptować albo odwrócić: test skryptu planszy (`tests/recolourBoard.test.ts`) w CI się pomija (brak Pillow/numpy) i drukuje powód; dowodem jest tylko lokalna bramka. Źródło: impl-review F1, plan wiersz 4.10.
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-25-audit-art-renderer/follow-ups/review-fixes.md` (8 wpisów; ścieżka istnieje po scaleniu #109).
