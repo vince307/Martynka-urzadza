@@ -28,7 +28,9 @@ function probe(): string | null {
 const reason = probe();
 const ready = reason === null;
 const needs = `needs Pillow ${PILLOW} / numpy ${NUMPY}`;
-if (!ready) console.warn(`recolourBoard: skipped: ${reason}; ${needs}`);
+// Written straight to stderr: vitest 5's default reporter hides console output of a file whose tests all skip, so a
+// console.warn would never reach the CI log (impl-review F1).
+if (!ready) process.stderr.write(`recolourBoard: skipped: ${reason}; ${needs}\n`);
 
 const dir = mkdtempSync(join(tmpdir(), 'recolour-'));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
