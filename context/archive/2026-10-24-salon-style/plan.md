@@ -673,7 +673,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 - [ ] 5.8 [human] Accept the turquoises not nudged (scope item 4 optional; side-by-side m8 showed no clear gain) (decision P-5)
 - [ ] 5.9 [human] Accept the board colour `#BCD799` (not a kit token) and a pinned Python step (Pillow 12.1.0 + numpy 2.4.3) inside `npm run art` (decision P-4)
 - [x] 5.10 [visual] Hook build on 4399, desktop 1440 and tablet 1024: room before state (fresh device); the stage purchase mid cross-fade and after it; after-stage empty room with contact shadows under lamp, left plant, pouf and right plant; first furniture purchase (sofa); a finished room (whole shadows layer, no ellipses); the task-screen backdrop for a before salon and for an after salon; the welcome backdrop (fresh device); the room with `?e2eArt=room` (stand-ins, no worn pieces, no crash) — beside the art review's comparison of the after furniture and research montage m9 — visual gate on 8c36703: `reviews/visual-review.md` VISUAL: PASS, 34 frames + comparison in `screenshots/`
-- [ ] 5.11 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in an earlier `check` log: `Tests  3915 passed (3915)`, `e2e hook: absent (2 chunks checked)`)
+- [x] 5.11 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in an earlier `check` log: `Tests  3915 passed (3915)`, `e2e hook: absent (2 chunks checked)`) — CI run 40146299673 (job check 121028257925 on 9ce6fc0: `Tests  3936 passed (3936)`, `e2e hook: absent (2 chunks checked)`)
 
 ### Phase 6: The before salon is graded and the after room is grounded — e2e (#16, #12)
 
