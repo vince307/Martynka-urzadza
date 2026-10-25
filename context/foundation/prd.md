@@ -3,7 +3,7 @@ project: "Martynka urządza"
 version: 3
 status: draft
 created: 2026-10-11
-updated: 2026-10-22
+updated: 2026-10-25
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -258,9 +258,9 @@ Niefunkcjonalne:
 5. **Ryzyko: motywacja po salonie**: jeden pokój to ok. 10 zadań remontowych; salon może skończyć się szybciej niż zainteresowanie (albo odwrotnie). Mierzy M8; drugi pokój jest pierwszą rzeczą po v1 i zależy od grafiki. Kierunek po v1 (2026-10-22): ulica i domy (FR-032–FR-036). Właściciel: autor.
 6. **Ryzyko: grafika mebli**: paczka A v1 nie zawiera 10 slotów × 3 wariantów mebli salonu ani ikon do wszystkich typów zadań; M7 zależy od osobnej pracy graficznej autora poza kodem. Opóźnienie grafiki = opóźnienie M7 (FR-026 zawężone do ekranów E3–E4 i salonu). Właściciel: autor. Rozstrzygnąć (termin dostarczenia grafiki) przed M7.
 7. **Ryzyko: lektor**: polski głos systemowy na tablecie może być słaby lub go brak (na Androidzie zależy od zainstalowanej syntezy mowy). Łagodzenie: przycisk ukryty bez głosu, automatyczne czytanie jako ustawienie rodzica (FR-009), córka w E3 czyta sama. Właściciel: autor. Sprawdzić na docelowym tablecie w M2.
-8. **Przechowywanie opinii i raportów** (FR-028–FR-029): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. Właściciel: autor. Rozstrzygnąć przed etapem po v1.
-9. **Ochrona przed nadużyciem wysyłek** (FR-028–FR-029): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. Właściciel: autor. Rozstrzygnąć w planie etapu po v1.
-10. **Gdzie rodzic znajduje stronę „Prywatność”** (FR-031): ekran powitalny dla rodzica, ustawienia, czy oba. Właściciel: autor. Rozstrzygnąć w planie etapu po v1.
+8. **Przechowywanie opinii i raportów** (FR-028–FR-029): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. Właściciel: autor. Rozstrzygnąć przed etapem po v1. **Rozstrzygnięte 2026-10-25 (autor):** opinie i raporty są przechowywane 12 miesięcy od wysłania, potem usuwane; adres e-mail jest usuwany zaraz po odpowiedzi autora, najpóźniej razem z opinią po 12 miesiącach.
+9. **Ochrona przed nadużyciem wysyłek** (FR-028–FR-029): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. Właściciel: autor. Rozstrzygnąć w planie etapu po v1. **Rozstrzygnięte 2026-10-25 (autor):** z jednego adresu sieciowego najwyżej 5 wysyłek na godzinę i 20 na dobę; kolejne są odrzucane, a rodzic widzi spokojny komunikat „spróbuj później” bez utraty tekstu. Autor dostaje raz dziennie e-mail z samą liczbą nowych opinii i raportów (bez treści); treść czyta na serwerze komendą dostępną tylko dla niego.
+10. **Gdzie rodzic znajduje stronę „Prywatność”** (FR-031): ekran powitalny dla rodzica, ustawienia, czy oba. Właściciel: autor. Rozstrzygnąć w planie etapu po v1. **Rozstrzygnięte 2026-10-25 (autor):** w obu miejscach — na ekranie powitalnym przy ścieżce „Rodzic” (żeby rodzic przeczytał ją przed bramką) i w ustawieniach rodzica.
 11. **Wielkość domu i ulicy** (FR-032–FR-036): ile pokoi ma dom (propozycja: 3), ile domów ma ulica i czy pierwszy dom to salon plus dwa nowe pokoje. Zależy od tempa z M8 (czas na pokój). Właściciel: autor. Rozstrzygnąć po M8, przed planem etapu.
 12. **Pamiątka od mieszkańców** (FR-034): naklejka do albumu, list czy nowy wzór do następnego domu; czy album jest osobnym ekranem. Właściciel: autor. Rozstrzygnąć w planie etapu.
 13. **Grafika ulicy i nowych pokoi** (FR-032–FR-033): widok ulicy z działkami, dom z zewnątrz (pusty i zamieszkany), mieszkańcy i pokoje drugiego domu; co z istniejących paczek grafik da się użyć, a co trzeba wygenerować w tym samym stylu. Właściciel: autor. Rozstrzygnąć przed etapem (inwentaryzacja grafik).

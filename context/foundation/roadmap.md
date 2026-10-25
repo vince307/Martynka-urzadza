@@ -42,8 +42,8 @@ Gra działa lokalnie i offline, bez kont i bez telemetrii; dziecko ćwiczy matem
 | ID    | Change ID             | Outcome (user can …)                                                        | Prerequisites | PRD refs                    | Status   |
 | ----- | --------------------- | --------------------------------------------------------------------------- | ------------- | --------------------------- | -------- |
 | S-17  | playtest-balance      | autor dostraja balans w danych gry po obserwacji córki                       | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
-| S-18  | privacy-page          | rodzic czyta stronę „Prywatność” z linku w grze                              | —             | FR-031, NFR Prywatność      | blocked  |
-| S-19  | parent-feedback-send  | rodzic wysyła opinię za bramką (także bez sieci), autor ją czyta             | S-18          | FR-028, NFR Prywatność, Guardrails | blocked  |
+| S-18  | privacy-page          | rodzic czyta stronę „Prywatność” z linku w grze                              | —             | FR-031, NFR Prywatność      | ready    |
+| S-19  | parent-feedback-send  | rodzic wysyła opinię za bramką (także bez sieci), autor ją czyta             | S-18          | FR-028, NFR Prywatność, Guardrails | proposed |
 | S-20  | parent-bug-report     | rodzic jednym stuknięciem wysyła raport z karty „Ups!” i z „Zapis gry”       | S-19          | FR-029, NFR Prywatność      | proposed |
 | S-21  | visit-stats           | autor widzi zbiorcze statystyki odwiedzin bez kodu w grze                    | S-18          | FR-030, NFR Prywatność      | proposed |
 
@@ -96,11 +96,11 @@ Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze
 - **Parallel with:** S-17
 - **Blockers:** —
 - **Unknowns:**
-  - Gdzie rodzic znajduje link do strony: ekran powitalny dla rodzica, ustawienia, czy oba (PRD Open Question 10)? — Owner: autor. Block: yes.
-  - Jak długo autor trzyma opinie i raporty (propozycja PRD: 12 miesięcy) i czy e-mail znika wcześniej, po odpowiedzi (PRD Open Question 8)? — Owner: autor. Block: yes.
+  - Gdzie rodzic znajduje link do strony: ekran powitalny dla rodzica, ustawienia, czy oba (PRD Open Question 10)? — Owner: autor. Rozstrzygnięte 2026-10-25: oba (ekran powitalny przy „Rodzic” i ustawienia).
+  - Jak długo autor trzyma opinie i raporty (propozycja PRD: 12 miesięcy) i czy e-mail znika wcześniej, po odpowiedzi (PRD Open Question 8)? — Owner: autor. Rozstrzygnięte 2026-10-25: 12 miesięcy; e-mail usuwany po odpowiedzi, najpóźniej po 12 miesiącach.
   - Kto jest administratorem danych i jaki adres kontaktowy podać do prośby o usunięcie (strona publiczna, repozytorium publiczne)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
 - **Risk:** stoi pierwsza, bo przy celu `quality` rodzic ma móc przeczytać, co wychodzi, zanim cokolwiek wyjdzie; ryzyko: strona obiecuje coś, czego kolejne wycinki nie dotrzymają — każdy z nich aktualizuje ją w tym samym PR.
-- **Status:** blocked
+- **Status:** ready
 
 ### S-19: Opinia rodzica do autora
 
@@ -111,12 +111,12 @@ Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze
 - **Parallel with:** S-21, S-17
 - **Blockers:** wdrożenie części serwerowej — po scaleniu PR właściciel uruchamia `sync` i `bootstrap` na VPS-ie i sprawdza, że CoiledSpring działa (zmian w `deploy/` agent nie wdraża sam).
 - **Unknowns:**
-  - Ile opinii z jednego urządzenia lub adresu w danym czasie jest w porządku, zanim kolejne zostaną odrzucone, i jak autor dowiaduje się o nowej opinii (e-mail, komenda na serwerze, oba) (PRD Open Question 9)? — Owner: autor. Block: yes.
-  - Jak długo opinie leżą na serwerze i kiedy znika e-mail (PRD Open Question 8; ta sama decyzja co w S-18)? — Owner: autor. Block: yes.
+  - Ile opinii z jednego urządzenia lub adresu w danym czasie jest w porządku, zanim kolejne zostaną odrzucone, i jak autor dowiaduje się o nowej opinii (e-mail, komenda na serwerze, oba) (PRD Open Question 9)? — Owner: autor. Rozstrzygnięte 2026-10-25: 5 na godzinę i 20 na dobę z jednego adresu; raz dziennie e-mail z liczbą nowych, treść komendą na serwerze.
+  - Jak długo opinie leżą na serwerze i kiedy znika e-mail (PRD Open Question 8; ta sama decyzja co w S-18)? — Owner: autor. Rozstrzygnięte 2026-10-25 (jak w S-18).
   - Gdzie na wspólnym VPS-ie żyje przyjmowanie wysyłek, tak żeby awaria lub nadużycie nie dotknęły CoiledSpring ani wydań gry? — Owner: zespół. Block: no (rozstrzyga `/10x-research`).
   - Jak kolejka „wyślij przy następnym połączeniu” zachowuje się po zamknięciu gry i po aktualizacji (gdzie leży tekst, czy przeżywa reset zapisu)? — Owner: zespół. Block: no.
 - **Risk:** gwiazda przewodnia; pierwszy ruch danych z gry na zewnątrz i pierwszy adres na serwerze przyjmujący dane — ryzyko prywatności (dane dziecka w treści, e-mail w logach) i nadużycia (spam, zapchany dysk wspólnego VPS-a).
-- **Status:** blocked
+- **Status:** proposed
 
 ### S-20: Raport o błędzie z gry
 
@@ -152,16 +152,16 @@ Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze
 | Roadmap ID | Change ID            | Suggested issue title                                       | Ready for `/10x-plan` | Notes |
 | ---------- | -------------------- | ----------------------------------------------------------- | --------------------- | ----- |
 | S-17       | playtest-balance     | Balans po testach z córką                                   | no                    | Czeka na obserwacje autora (przeniesione z M-01). |
-| S-18       | privacy-page         | Strona „Prywatność” z linkiem dla rodzica                   | no                    | Blokują PRD Open Questions 8 i 10. |
-| S-19       | parent-feedback-send | Opinia rodzica wysyłana do autora (z kolejką offline)        | no                    | Po S-18; blokują PRD Open Questions 8 i 9. |
+| S-18       | privacy-page         | Strona „Prywatność” z linkiem dla rodzica                   | yes                   | PRD Open Questions 8 i 10 rozstrzygnięte 2026-10-25. |
+| S-19       | parent-feedback-send | Opinia rodzica wysyłana do autora (z kolejką offline)        | no                    | Po S-18; PRD Open Questions 8 i 9 rozstrzygnięte 2026-10-25. |
 | S-20       | parent-bug-report    | Raport o błędzie z karty „Ups!” i z „Zapis gry”             | no                    | Po S-19. |
 | S-21       | visit-stats          | Statystyki odwiedzin z logu serwera, bez kodu w grze        | no                    | Po S-18; zmiana w `deploy/` wdrażana przez właściciela. |
 
 ## Open Roadmap Questions
 
-1. **Przechowywanie opinii i raportów** (PRD Open Question 8): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. — Owner: autor. Block: S-18, S-19.
-2. **Ochrona przed nadużyciem wysyłek** (PRD Open Question 9): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. — Owner: autor. Block: S-19 (i S-20).
-3. **Gdzie rodzic znajduje stronę „Prywatność”** (PRD Open Question 10): ekran powitalny dla rodzica, ustawienia, czy oba. — Owner: autor. Block: S-18.
+1. **Przechowywanie opinii i raportów** (PRD Open Question 8): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. — Owner: autor. Rozstrzygnięte 2026-10-25: 12 miesięcy, e-mail usuwany po odpowiedzi (najpóźniej po 12 miesiącach).
+2. **Ochrona przed nadużyciem wysyłek** (PRD Open Question 9): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. — Owner: autor. Rozstrzygnięte 2026-10-25: 5/h i 20/dobę z jednego adresu; dzienny e-mail z liczbą nowych, treść komendą na serwerze.
+3. **Gdzie rodzic znajduje stronę „Prywatność”** (PRD Open Question 10): ekran powitalny dla rodzica, ustawienia, czy oba. — Owner: autor. Rozstrzygnięte 2026-10-25: oba.
 4. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; kierunek po v1 to ulica i domy. — Owner: autor. Block: — (kolejny kamień).
 
 ## Parked
