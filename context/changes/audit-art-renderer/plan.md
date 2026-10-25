@@ -547,10 +547,10 @@ None: save format stays v4; the record is runtime only.
 #### Automated
 
 - [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "recolourBoard\|wornPlain" CLAUDE.md` present
-- [x] 4.2 `grep -c "Trigger:" context/changes/audit-art-renderer/follow-ups/review-fixes.md` ≥ 6
-- [x] 4.3 `grep -rn "'worn', 'ungraded'" src` lists only `src/ui/wornGrade.ts`; `grep -rn "wornPlain" src` lists `src/data/pl.ts` and `src/ui/dom/artHealthView.ts` only
-- [x] 4.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum public` empty
-- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+ — 8f2665e- [x] 4.2 `grep -c "Trigger:" context/changes/audit-art-renderer/follow-ups/review-fixes.md` ≥ 6
+ — 8f2665e- [x] 4.3 `grep -rn "'worn', 'ungraded'" src` lists only `src/ui/wornGrade.ts`; `grep -rn "wornPlain" src` lists `src/data/pl.ts` and `src/ui/dom/artHealthView.ts` only
+ — 8f2665e- [x] 4.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum public` empty
+ — 8f2665e- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 
