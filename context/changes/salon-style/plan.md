@@ -634,7 +634,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 - [x] 2.2 Deliberate break: put the `furnishings` layer back into `render` → the wiring case red; add the worn matrix before the soft one → the order case red; drop the ghost clean-up from `onSleep` → its case red; each restored; meta-check: these are source guards and a pin of Phaser's own source; the drawn result is proven by phase 6 and the visual gate — 90785fc
 - [x] 2.3 `grep -rn "furnishingsBefore" src/ui src/scenes` empty — 6ff84fa
 - [x] 2.4 `tests/reducedMotionWiring.test.ts` and `tests/motionWiring.test.ts` green unchanged (no new tween outside `fadeStage`) — 90785fc
-- [ ] 2.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`salon-load-health.spec.ts` `#15 H-2` still green: the old file is still in the boot queue; `salon-art.spec.ts` and `room-purchase.spec.ts` unchanged)
+- [x] 2.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`salon-load-health.spec.ts` `#15 H-2` still green: the old file is still in the boot queue; `salon-art.spec.ts` and `room-purchase.spec.ts` unchanged) — impl-review: full e2e 164 = 160 + 4 (148 at `--workers=3`, the 16 load timeouts green with `--last-failed --workers=1`); unit 3936 = 3915 + 21
 
 ### Phase 3: Miniature and backdrop follow; the old worn picture is gone
 
@@ -644,7 +644,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 - [x] 3.2 Deliberate break: give the worn miniature pieces `alpha: 1` → `roomMiniature` (and the `neededMiniatureKeys` case) red; restore `furnishings-before` in `sceneFiles` without the file → `roomArt` red; each restored; meta-check: the expected key lists are literals from `SALON` data, not built by `miniaturePieces` — 6ff84fa
 - [x] 3.3 `grep -rn "furnishingsBefore\|furnishings-before" src scripts tests` empty; `test -e public/assets/rooms/salon/furnishings-before.webp` fails — 6ff84fa
 - [x] 3.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/core/migrations` empty — 6ff84fa
-- [ ] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#15 H-2` green on `shadows.webp`; `notebook-polish.spec.ts` and `backdrop-restore.spec.ts` backdrop cases green with the grown record)
+- [x] 3.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` (`#15 H-2` green on `shadows.webp`; `notebook-polish.spec.ts` and `backdrop-restore.spec.ts` backdrop cases green with the grown record) — impl-review: full e2e 164 = 160 + 4 (148 at `--workers=3`, the 16 load timeouts green with `--last-failed --workers=1`); unit 3936 = 3915 + 21
 
 ### Phase 4: Board recolour in the art pipeline
 
@@ -654,7 +654,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 - [x] 4.2 Deliberate break: run `scripts/recolour-board.py` under a fake version (`PINNED_PILLOW = '0.0.0'` edited locally) → exits non-zero with the pip line; restored; meta-check: proves the pin, not the image (the image is judged by the visual gate) — 05be316
 - [x] 4.3 `tests/roomArt.test.ts` (headers and sizes) and `tests/bootBudget.test.ts` green; the boot payload sum printed by a one-off `node -e` over `ROOM_ART`/`TASK_ART`/`UI_ART` sizes is below 48 s at 50 KB/s and recorded in the handoff — 05be316
 - [x] 4.4 `grep -n "PINNED_PILLOW\|PINNED_NUMPY" scripts/recolour-board.py` present; `grep -n "recolour-board.py" scripts/make-task-art.mjs` present — 05be316
-- [ ] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 4.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — impl-review: full e2e 164 = 160 + 4 (148 at `--workers=3`, the 16 load timeouts green with `--last-failed --workers=1`); unit 3936 = 3915 + 21
 
 ### Phase 5: Docs, follow-ups, seam sweep
 
@@ -664,7 +664,7 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 - [x] 5.2 `grep -n "^| 169 \|^| 170 \|^| 171 \|^| 172 " docs/design-gaps.md` four rows; `grep -n "^| 107 " docs/design-gaps.md` no longer says the room is `furnishings-before` — 65f05e0
 - [x] 5.3 `grep -c "Trigger:" context/changes/salon-style/follow-ups/review-fixes.md` ≥ 5 — 65f05e0
 - [x] 5.4 `grep -rn "addColorMatrix" src` lists only `src/ui/wornGrade.ts`; `grep -rn "furnishingsBefore\|furnishings-before" src tests scripts CLAUDE.md` empty — 65f05e0
-- [ ] 5.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0`
+- [x] 5.5 Full local gate green; e2e (orchestrator) `<branch e2e baseline> + 0` — impl-review: full e2e 164 = 160 + 4 (148 at `--workers=3`, the 16 load timeouts green with `--last-failed --workers=1`); unit 3936 = 3915 + 21
 
 #### Manual
 
@@ -680,5 +680,5 @@ None: save format stays v4; `RoomDef.scene` loses a texture key, no saved field 
 #### Automated
 
 - [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`: return `[]` from `wornPieces` → the fresh-salon test red; keep the worn set after the stage (drop the `stagesDone` guard) → the stage test red; skip `applyWornGrade` in `drawRoomMiniature` → the welcome test red on `graded`; each restored), green after — d912810
-- [ ] 6.2 `npx playwright test tests/e2e/salon-style.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
+- [x] 6.2 `npx playwright test tests/e2e/salon-style.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1` — impl-review: full e2e 164 = 160 + 4 (148 at `--workers=3`, the 16 load timeouts green with `--last-failed --workers=1`); unit 3936 = 3915 + 21
 - [x] 6.3 Full local gate green — d912810

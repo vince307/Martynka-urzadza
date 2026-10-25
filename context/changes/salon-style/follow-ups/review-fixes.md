@@ -40,3 +40,8 @@ Trigger: a tablet frame-rate report on the first room screen.
 - save-observability L-R9 (`stars.ts` `earn`, fired by the `RoomScene` edit) and salon-load-health M-5 (purchase flow under `writefail`, fired by the `fadeStage` edit): re-recorded open, no purchase, star or save code changed. Trigger: the next change to `stars.ts` or the purchase flow.
 - first-furniture-purchase V1: closed by history (captions went with the art in S-16a).
 - salon-load-health L-4 / salon-extra-slots L-4 (hit test): open. Trigger: a change to the room hit test.
+
+## From the impl-review (2026-10-25)
+
+- impl-review F2 (no automated check of the worn LOOK): a break that keeps the counters but changes the look (identity matrix in `applyWornGrade` while it still adds the filter, `ROOM_LAYOUT.contactShadow.alpha` 0) leaves the whole unit suite (3936) and `salon-style`, `salon-art`, `backdrop-restore`, `notebook-polish` e2e (17) green; only the visual gate (row 5.10) sees it. A cheap guard would be a hook-build pixel sample of one worn piece against its ungraded texture (`gl.readPixels` or a canvas copy) and of the floor under the lamp after the stage. Trigger: the visual gate of this change finds the grade or the shadows wrong, or the next change to `applyWornGrade`, `gradeMatrix` or `RoomView` `drawContactShadows`.
+- impl-review F4 (`RoomScene` `ghostTweens` keeps finished tweens until sleep): bounded (one stage purchase per room, cleared on sleep and shutdown). Trigger: a second stage task in a room or the next change to `fadeStage`.
