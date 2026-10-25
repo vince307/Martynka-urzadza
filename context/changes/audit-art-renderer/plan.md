@@ -530,7 +530,7 @@ None: save format stays v4; the record is runtime only.
 - [x] 2.2 Deliberate break: drop `'worn'` from the drawn-list filter body → the `{ worn, wallet }` case red (typecheck stays green: a type predicate's body is not checked by `tsc`, so the unit case is the only guard); push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test — 93e3452
 - [x] 2.3 `git diff main -- src/data/pl.ts` shows only the added `wornPlain` line and its comment (no edit of `artFallback`/`artFallbackNames`) — 93e3452
 - [x] 2.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/rooms.ts` empty — 93e3452
-- [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 374686e
 
 ### Phase 3: Record the ungraded look in one place and log the renderer (L-1 wiring)
 
@@ -540,17 +540,17 @@ None: save format stays v4; the record is runtime only.
 - [x] 3.2 Deliberate break: delete the `recordFallback` call → its case red; change `console.info` to `console.log` → the renderer case red; each restored; meta-check: these are source guards of the wiring; the record under a real Canvas renderer and the panel text are proven by phase 5 — 9ff2639
 - [x] 3.3 `git diff --stat main -- src/ui/widgets src/scenes/RoomScene.ts src/ui/artFallbacks.ts src/main.ts vite/e2eHookGuard.mjs public` empty — 9ff2639
 - [x] 3.4 `git diff main -- src/data/layout.ts` changes comments only (no value change; the existing trailing comment of `resume` may be extended); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows — 9ff2639
-- [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-style.spec.ts` green under WebGL: nothing recorded there)
+- [x] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-style.spec.ts` green under WebGL: nothing recorded there) — 374686e
 
 ### Phase 4: Docs, follow-ups, seam sweep and the visual pass
 
 #### Automated
 
-- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "recolourBoard\|wornPlain" CLAUDE.md` present — 8f2665e
- — 8f2665e- [x] 4.2 `grep -c "Trigger:" context/changes/audit-art-renderer/follow-ups/review-fixes.md` ≥ 6
- — 8f2665e- [x] 4.3 `grep -rn "'worn', 'ungraded'" src` lists only `src/ui/wornGrade.ts`; `grep -rn "wornPlain" src` lists `src/data/pl.ts` and `src/ui/dom/artHealthView.ts` only
- — 8f2665e- [x] 4.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum public` empty
- — 8f2665e- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -n "recolourBoard\|wornPlain" CLAUDE.md` present — 8f2665e — 8f2665e
+- [x] 4.2 `grep -c "Trigger:" context/changes/audit-art-renderer/follow-ups/review-fixes.md` ≥ 6 — 8f2665e
+- [x] 4.3 `grep -rn "'worn', 'ungraded'" src` lists only `src/ui/wornGrade.ts`; `grep -rn "wornPlain" src` lists `src/data/pl.ts` and `src/ui/dom/artHealthView.ts` only — 8f2665e
+- [x] 4.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum public` empty — 8f2665e
+- [x] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 374686e
 
 #### Manual
 
@@ -564,6 +564,6 @@ None: save format stays v4; the record is runtime only.
 
 #### Automated
 
-- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: delete the `recordFallback` call in `applyWornGrade` → `#12` and `#16` red on `artFallbacks.worn`; return `pl.settings.guideMissing` from `case 'worn'` in `textOf` → `#14` red; remove the `console.info` → `#12` red; drop the launch args → `#12` red on `renderer`; each restored), green after; `salon-style.spec.ts` `#12` red when `applyWornGrade` records unconditionally, restored
-- [ ] 5.2 `npx playwright test tests/e2e/canvas-renderer.spec.ts tests/e2e/salon-style.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
-- [ ] 5.3 Full local gate green
+- [x] 5.1 Spec red before (deliberate breaks, each run alone with `-g`: delete the `recordFallback` call in `applyWornGrade` → `#12` and `#16` red on `artFallbacks.worn`; return `pl.settings.guideMissing` from `case 'worn'` in `textOf` → `#14` red; remove the `console.info` → `#12` red; drop the launch args → `#12` red on `renderer`; each restored), green after; `salon-style.spec.ts` `#12` red when `applyWornGrade` records unconditionally, restored — 374686e
+- [x] 5.2 `npx playwright test tests/e2e/canvas-renderer.spec.ts tests/e2e/salon-style.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1` — 374686e
+- [x] 5.3 Full local gate green — 374686e
