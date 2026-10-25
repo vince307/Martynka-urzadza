@@ -54,7 +54,7 @@ export interface Snapshot {
     stars: number;
     counterText: string;
     /** The blurred salon behind the notebook (task and welcome screens): which look it has and how many times it was captured. */
-    backdrop?: { mode: 'salon' | 'plain'; captures: number; drawn: boolean; blurred: boolean; renderer: 'webgl' | 'canvas'; redraws: number };
+    backdrop?: { mode: 'salon' | 'plain'; captures: number; drawn: boolean; blurred: boolean; renderer: 'webgl' | 'canvas'; redraws: number; graded: number };
     /** The fox guide in the notebook corner (fox-guide). */
     guide?: { pose: 'idle' | 'cheer' | 'think' | null; requested: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number; y: number; width: number; height: number }; interactive: boolean; pops: number };
     settingsHint: boolean;
@@ -70,7 +70,7 @@ export interface Snapshot {
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; unreachable: string[] } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; worn: { keys: string[]; graded: boolean }; contactShadows: string[]; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; unreachable: string[] } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;

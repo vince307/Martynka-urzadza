@@ -10,8 +10,10 @@ const slot = (id: string, extra: Partial<SlotDef> = {}): SlotDef => ({
 
 const room: RoomDef = {
     id: 'test', name: 'Test',
-    scene: { before: 'b', after: 'a', furnishingsBefore: 'f', shadows: 's' },
+    scene: { before: 'b', after: 'a', shadows: 's' },
     decor: [],
+    worn: [],
+    contactShadows: [],
     slots: [slot('lamp', { shownBeforePurchase: 0 }), slot('rug'), slot('pouf', { shownBeforePurchase: 1 })],
     tasks: [
         { kind: 'stage', id: 'paint', label: 'x', cost: 1 },

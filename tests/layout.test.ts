@@ -246,7 +246,9 @@ describe('task screen layout constants', () => {
                 expect(layer.z, `${room.id}/${layer.id}`).toBeLessThanOrEqual(99);
                 expect(layer.z, `${room.id}/${layer.id}`).toBeGreaterThan(depth.shadows);
             }
-            expect(depth.furnishingsBefore).toBeLessThan(depth.shadows);
+            expect(depth.shadows).toBeLessThan(depth.worn);
+            expect(depth.worn + 0.1).toBeLessThan(depth.outline);
+            expect(depth.wornGhost).toBeLessThan(depth.outline);
         }
     });
 

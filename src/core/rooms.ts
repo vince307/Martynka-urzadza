@@ -1,7 +1,7 @@
 // Room purchase logic (S-09), pure: no Phaser, no registry. The scene passes
 // the balance in and writes the result back (plan "State sequencing").
 import type { SessionSave } from './save';
-import type { RoomDef, RoomListEntry, RoomState, RoomTaskDef } from './types';
+import type { LayerDef, RoomDef, RoomListEntry, RoomState, RoomTaskDef, SlotDef } from './types';
 
 type Variant = 0 | 1 | 2;
 
@@ -184,6 +184,43 @@ export function roomGrowth(rooms: Readonly<Record<string, RoomState>>, catalogue
         if (def && state.tasksDone < def.tasks.length && (def.formerTaskCounts ?? []).includes(state.tasksDone)) {
             out.push({ room: id, from: state.tasksDone, to: def.tasks.length });
         }
+    }
+    return out;
+}
+
+export interface WornPiece { id: string; key: string; x: number; y: number; width: number; height: number; z: number; soft: boolean }
+export interface ContactShadowPiece { id: string; cx: number; cy: number; width: number; height: number }
+
+const findPiece = (room: RoomDef, id: string): { slot: SlotDef } | { layer: LayerDef } => {
+    const slot = room.slots.find((s) => s.id === id);
+    if (slot !== undefined) return { slot };
+    const layer = room.decor.find((d) => d.id === id);
+    if (layer !== undefined) return { layer };
+    throw new Error(`Unknown room piece "${id}" in room "${room.id}"`);
+};
+
+/** The worn set the room shows before its stage task: graded copies of the real furniture, sorted by `z`. Never part of `chosen` or `shownVariants`. */
+export function wornPieces(room: RoomDef, state: RoomState): WornPiece[] {
+    const out = room.worn.map((w): WornPiece => {
+        const found = findPiece(room, w.piece);
+        const art = 'slot' in found ? found.slot : found.layer;
+        const key = 'slot' in found ? found.slot.variants[w.variant ?? 0] : found.layer.key;
+        return { id: art.id, key, x: art.x, y: art.y, width: art.width, height: art.height, z: art.z, soft: w.soft === true };
+    });
+    if (stagesDone(room, state) > 0) return [];
+    return out.sort((a, b) => a.z - b.z);
+}
+
+/** Soft ellipses under the pieces that stand on the floor, right after the stage and until the room is done. */
+export function contactShadowPieces(room: RoomDef, state: RoomState, heightRatio: number): ContactShadowPiece[] {
+    if (stagesDone(room, state) === 0 || roomDone(room, state)) return [];
+    const out: ContactShadowPiece[] = [];
+    for (const def of room.contactShadows) {
+        const found = findPiece(room, def.piece);
+        if ('slot' in found && shownVariant(room, state, found.slot.id) === null) continue;
+        const art = 'slot' in found ? found.slot : found.layer;
+        const width = art.visibleRect[2] * def.widthFactor;
+        out.push({ id: art.id, cx: art.x + art.anchor[0] + def.offset[0], cy: art.y + art.anchor[1] + def.offset[1], width, height: width * heightRatio });
     }
     return out;
 }

@@ -25,12 +25,34 @@ const slots: SlotDef[] = [
 export const SALON: RoomDef = {
     id: 'salon',
     name: 'salon',
-    scene: { before: 'salon/before', after: 'salon/after', furnishingsBefore: 'salon/furnishings-before', shadows: 'salon/shadows' },
+    scene: { before: 'salon/before', after: 'salon/after', shadows: 'salon/shadows' },
     decor,
     slots,
     // New tasks go at the END of this list only (later slots of the art pack): `RoomState.tasksDone` counts positions in it,
     // so inserting or reordering would move every saved room.
     formerTaskCounts: [7],   // S-16a left a 7-task salon; S-16d appended five tasks (R-2)
+    // The neglected salon (change salon-style): the real furniture, variant 0, graded in code, in draw order (z). `variant` is the
+    // maintainer's lever for which look stands for the old piece (DESIGN-GAP docs/design-gaps.md row 169). `soft` = upholstery.
+    worn: [
+        { piece: 'wall-frames' },
+        { piece: 'rug', soft: true },
+        { piece: 'cabinet' },
+        { piece: 'lamp-table' },
+        { piece: 'plant-left' },
+        { piece: 'sofa', soft: true },
+        { piece: 'plant-right' },
+        { piece: 'armchair', soft: true },
+        { piece: 'coffee-table' },
+        { piece: 'pouf', soft: true },
+    ],
+    // Soft ellipses under the pieces that stand on the floor right after the stage (DESIGN-GAP row 171); the widths are measured
+    // against the pack's own `shadows` layer.
+    contactShadows: [
+        { piece: 'lamp-table', widthFactor: 0.75, offset: [8, -6] },
+        { piece: 'plant-left', widthFactor: 0.55, offset: [8, -6] },
+        { piece: 'pouf', widthFactor: 0.95, offset: [8, -6] },
+        { piece: 'plant-right', widthFactor: 0.60, offset: [8, -8] },
+    ],
     tasks: [
         { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
         { kind: 'slot', id: 'add-sofa', slot: 'sofa', label: 'addSofa', cost: 7 },

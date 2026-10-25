@@ -32,8 +32,8 @@ const filesUnder = (dir: string, base = ''): string[] =>
     );
 
 describe('room art table', () => {
-    it('has 38 entries, each a WebP file of the tabled size', () => {
-        expect(ROOM_ART).toHaveLength(38);
+    it('has 37 entries, each a WebP file of the tabled size', () => {
+        expect(ROOM_ART).toHaveLength(37);
         for (const art of ROOM_ART) {
             expect(webpSize(readFileSync(join(PUBLIC, art.url))), art.url).toEqual({ width: art.width, height: art.height });
         }

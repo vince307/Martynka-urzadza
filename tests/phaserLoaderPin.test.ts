@@ -90,3 +90,20 @@ describe('phaser webgl restore pin (src/ui/widgets/SalonBackdrop.ts, e2e backdro
         expect(read('gameobjects/GameObject.js'), 'comment at holder.destroy in SalonBackdrop').toMatch(/if \(this\.filterCamera\)[\s\S]*?this\.filterCamera\.destroy\(\)/);
     });
 });
+
+describe('phaser colour matrix filter pin (src/ui/wornGrade.ts)', () => {
+    const read = (path: string): string => readFileSync(`node_modules/phaser/src/${path}`, 'utf8');
+    it('runs the internal filters of a camera from the first added upward', () => {
+        const hint = 'applyWornGrade adds the soft matrix before the worn one and relies on this order: re-verify Camera.js';
+        expect(read('renderer/webgl/renderNodes/Camera.js'), hint).toMatch(/for \(index = 0; index < internalFilters\.length; index\+\+\)\s*\{\s*filter = internalFilters\[index\];/);
+    });
+    it('stores the 20 values as given and divides the offsets 4, 9, 14 and 19 by 255 in getData', () => {
+        const src = read('display/ColorMatrix.js');
+        const hint = 'gradeMatrix gives offsets in 0-255: re-verify ColorMatrix#set and #getData';
+        expect(src, hint).toMatch(/set: function \(value\)\s*\{\s*this\._matrix\.set\(value\);/);
+        expect(src, hint).toMatch(/data\[4\] \/= 255;\s*data\[9\] \/= 255;\s*data\[14\] \/= 255;\s*data\[19\] \/= 255;/);
+    });
+    it('hands a filter its colorMatrix and leaves a Canvas game object without filters', () => {
+        expect(read('filters/ColorMatrix.js'), 'applyWornGrade sets filter.colorMatrix').toContain('this.colorMatrix = new DisplayColorMatrix()');
+    });
+});

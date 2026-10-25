@@ -533,9 +533,9 @@ export const WELCOME_LAYOUT = {
 export const ROOM_LAYOUT = {
     resume: { left: 240, top: 892, width: 480, height: 116, radius: 32, border: 5 },   // kit .return-note button, DESIGN-GAP (docs/design-gaps.md rows 12 and 31)
     // The room fills the whole scene (S-16a): the art pack's pictures are 1920x1080. Depth bands: the room's own layers use the manifest `z` (0-99);
-    // the scene pictures sit at the bottom (`scene`, `furnishingsBefore`) and the shadows below the lowest slot or decoration z (the curtains, z 3), as in the pack's draw order; everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
+    // the scene pictures sit at the bottom (`scene`) and the shadows below the lowest slot or decoration z (the curtains, z 3), as in the pack's draw order; everything the child touches or reads sits above that band (the sofa at z 30 must never cover the panel, the outline or the card).
     scene: { left: 0, top: 0, width: 1920, height: 1080 },
-    depth: { scene: 0, furnishingsBefore: 1, shadows: 2, outline: 100, controls: 110, panel: 120, celebrate: 130, card: 140 },
+    depth: { scene: 0, shadows: 2, worn: 3, wornGhost: 99, outline: 100, controls: 110, panel: 120, celebrate: 130, card: 140 },
     // Stand-in for a room picture whose texture is missing (and for the art before it is loaded): coloured boxes with the Polish caption, like ART_STAND_IN.
     // variantFills[i] is the colour of variant i, so the three still differ without the art. wallBottom is where the stand-in wall meets the floor.
     standIn: {
@@ -563,6 +563,15 @@ export const ROOM_LAYOUT = {
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
     slot: { radius: 24, holdOutline: 10 },
+    // The worn (neglected) salon before the renovation stage: a colour grade over the real furniture, the extra grade for upholstery,
+    // and the wash the Canvas renderer uses instead (it has no filters). DESIGN-GAP (docs/design-gaps.md rows 169 and 170): the kit has no worn look.
+    worn: {
+        grade: { sepia: 0.20, saturate: -0.30, brightness: 0.90, contrast: 0.90, lift: 4 },
+        soft: { sepia: 0.10, saturate: -0.35, brightness: 0.95, contrast: 1, lift: 0 },
+        canvasWash: { colour: PLACEHOLDER_COLORS.ivory, alpha: 0.30 },   // the numeric twin of PAGE_BACKGROUND
+    },
+    // Contact shadow under a fixed or default piece (DESIGN-GAP row 171); colour and peak alpha measured from the pack's `shadows` layer.
+    contactShadow: { colour: 0x5f462b, alpha: 0.25, rings: 8, heightRatio: 0.32 },
 } as const;
 
 /**
