@@ -515,12 +515,12 @@ None: save format stays v4; the record is runtime only.
 
 #### Automated
 
-- [x] 1.1 `tests/recolourBoard.test.ts` red before the guard (all-green and no-green cases exit 0; band case lacks the share line), green after; unit `<branch baseline> + 3`
-- [x] 1.2 Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red on the missing `non-finite` text (the share check still refuses it at 0.0 %, so exit stays ≠ 0: the two checks overlap on an empty mask by design, the finiteness one names the cause); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script
-- [x] 1.3 Skip path: `RECOLOUR_BOARD_PYTHON=/nonexistent/python3 npx vitest run tests/recolourBoard.test.ts` → 3 skipped, the output shows `recolourBoard: skipped: python3 cannot import PIL and numpy; needs Pillow 12.1.0 / numpy 2.4.3`; without the variable → 3 passed (no silent skip where the pins exist)
-- [x] 1.4 `npm run art` prints `board mask 13.47%` and `board mask 13.45%`, then `git status --porcelain public/` empty
-- [x] 1.5 `git status --porcelain scripts/` shows only `recolour-board.py` (no `__pycache__`)
-- [x] 1.6 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 `tests/recolourBoard.test.ts` red before the guard (all-green and no-green cases exit 0; band case lacks the share line), green after; unit `<branch baseline> + 3` — a25aec2
+- [x] 1.2 Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red on the missing `non-finite` text (the share check still refuses it at 0.0 %, so exit stays ≠ 0: the two checks overlap on an empty mask by design, the finiteness one names the cause); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script — a25aec2
+- [x] 1.3 Skip path: `RECOLOUR_BOARD_PYTHON=/nonexistent/python3 npx vitest run tests/recolourBoard.test.ts` → 3 skipped, the output shows `recolourBoard: skipped: python3 cannot import PIL and numpy; needs Pillow 12.1.0 / numpy 2.4.3`; without the variable → 3 passed (no silent skip where the pins exist) — a25aec2
+- [x] 1.4 `npm run art` prints `board mask 13.47%` and `board mask 13.45%`, then `git status --porcelain public/` empty — a25aec2
+- [x] 1.5 `git status --porcelain scripts/` shows only `recolour-board.py` (no `__pycache__`) — a25aec2
+- [x] 1.6 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — a25aec2
 
 ### Phase 2: The `worn` record and its "Obrazki" line (L-1 rules and copy)
 
