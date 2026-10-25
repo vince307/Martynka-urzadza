@@ -1,61 +1,58 @@
 # Handoff — `salon-style` (slice fix:salon-style)
 
-Written by the `/10x-impl-review salon-style` step: full-plan review done, verdict APPROVED, `MERGE: CLEAR`; one cheap fix committed (c8660de). The next agent must not skip the visual gate (row 5.10): no automated test sees the worn LOOK or the contact shadows (impl-review F2).
+Written by the visual-gate step (row 5.10): `VISUAL: PASS`, no fix needed, 34 frames + a comparison sheet committed. The next agent archives and ships. It must not tick rows 5.6–5.9 (they are [human]) or 5.11 (CI at ship).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/salon-style`, cut from `main` at `309e672` |
-| Commits | p1 7d2e520, p2 90785fc, p3 6ff84fa (+ 93c4b0a), fix 19e5a40, p4 05be316, p5 65f05e0, p6 d912810, impl-review fix c8660de, plus docs commits |
+| Commits | p1 7d2e520, p2 90785fc, p3 6ff84fa (+ 93c4b0a), fix 19e5a40, p4 05be316, p5 65f05e0, p6 d912810, impl-review fix c8660de, docs commits, and this step's `docs(salon-style): visual gate` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| Progress rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 5.6-5.9 [human], 5.10 [visual], 5.11 [reviewer] (CI at ship) |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` stamps it) |
+| Progress rows remaining | 5 (`grep -c '^- \[ \]' plan.md`): 5.6–5.9 [human], 5.11 [reviewer] (CI at ship) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/salon-style/reviews/impl-review.md` | new: full-plan review (phases 1-6), 0 critical, 2 warnings (F1 fixed, F2 follow-up), 5 observations, `MERGE: CLEAR` |
-| `CLAUDE.md` | F1: S-16d sentence's "38 files" marked as then, 37 since salon-style (c8660de) |
-| `context/changes/salon-style/plan.md` | rows 2.5, 3.5, 4.5, 5.5, 6.2 ticked from this step's measured numbers |
-| `context/changes/salon-style/follow-ups/review-fixes.md` | + impl-review F2 (look not tested) and F4 (`ghostTweens`), each with `Trigger:` |
-| `context/changes/salon-style/change.md` | status `impl_reviewed` |
+| `context/changes/salon-style/reviews/visual-review.md` | new: the visual gate, with states, hand-checked numbers, the designer's read and the final `VISUAL: PASS` line |
+| `context/changes/salon-style/screenshots/*.jpg` | new: 17 frames per width (desktop 1440, tablet 1024) + `compare-art-review-vs-now.jpg` |
+| `context/changes/salon-style/screenshots/README.md` | new: every frame, how it was reached, and the capture route |
+| `context/changes/salon-style/plan.md` | row 5.10 ticked |
+| `context/changes/salon-style/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| lint, typecheck | clean |
-| `npm test` | `Tests  3936 passed` = baseline 3915 + 21 |
-| deploy script tests, `sample` E1-E6 | exit 0 |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test --list` | 164 = baseline 160 + 4 |
-| full e2e `--workers=3` | 148 passed, 13 failed, 3 did not run (39 min, load) |
-| `--last-failed --workers=1` | 16 passed → 164/164 green (all failures were load) |
-| break: `mul(mix, sat)` in `gradeMatrix` | 2 red in `tests/colorGrade.test.ts` (`expected 0.5848524 to be close to 0.5794`); restored |
-| break: `wornPieces` always `[]` | `salon-style.spec.ts -g "fresh salon"` red on `worn.keys`; restored |
-| LOOK break: identity matrix in `applyWornGrade` (filter still added) + `contactShadow.alpha` 0 | unit 3936 green, 17 e2e (`salon-style`, `salon-art`, `backdrop-restore`, `notebook-polish`) green → WARNING F2, follow-up; restored |
-| `npm run art` re-run | exit 0; `git status --porcelain public/` empty (deterministic) |
-| `validate-rule-files.sh` | PASS |
-| save/geometry diff vs main (`save.ts`, migrations, fixtures, `roomHit.ts`, `pl.ts`, curriculum, storage) | empty; `SAVE_VERSION = 4` |
+| `E2E_HOOK=1 npm run build -- --outDir dist-e2e` | `e2e hook: present (2 chunks checked)` (hook build for the gate only) |
+| Claude in Chrome, new tab `localhost:4399/?e2eMonth=9` | slow-save card (`Kod: timeout`, another tab on the origin), so the gate fell back |
+| Playwright capture (scratchpad spec, 6 tests × 2 projects, fresh context each) | 12/12 passed after one spec fix (the stand-in test polled a backdrop that is `plain` under `?e2eArt=room`) |
+| Hook reads | before: 10 worn keys, `graded true`, `contactShadows []`; after stage: `worn []`, contact shadows lamp-table, plant-left, pouf, plant-right; done: `contactShadows []`; backdrop `graded` 10 (welcome, task before), 0 (task after); stand-in: `worn []`, no page error |
+| Worn grade hand-check | cabinet pixel after (209,129,64) → expected (167.7,129.0,95.2), measured (168,129,95); 3 more points within 0.7 |
+| Board hand-check | (196,224,160) / `#BCD799` = 1.043/1.042/1.046 (one factor, lighting kept) |
+| Contact shadow hand-check | solved alpha beside the lamp stool 0.158 / 0.116 / 0.075 at 0.3 / 0.5 / 0.7 of the half-width (model 0.173 / 0.147 / 0.091) |
+| `cmp` xfade-700ms and rm-stage-after vs room-after-stage | identical (both widths) |
+| Local gate (lint, typecheck, unit, build, e2e) | not re-run: this step changed only docs and screenshots, and no source file |
+| Leftovers | the 4399 server was stopped (`lsof -ti tcp:4399 -sTCP:LISTEN` empty); `ps -U $(id -u)` shows no vite, playwright, until or tail process |
 
 ## 4. Next command
 
-`visual gate (row 5.10) — then /10x-archive salon-style`
+`/10x-archive salon-style` then ship (no hosted db push — none exists)
 
 ## 5. Open
 
-- [visual] 5.10: hook build on 4399, 1440 and 1024: room before (fresh), stage mid cross-fade and after, empty room with contact shadows, sofa bought, finished room, task backdrop before/after, welcome backdrop, `?e2eArt=room`. This is the only proof of the look (`applyWornGrade`, `RoomView` `drawContactShadows`).
-- [human] 5.6 worn before state (coffee table keeps vase/books); 5.7 stronger grade, no dust overlay; 5.8 turquoises not nudged; 5.9 board `#BCD799` + Python step in `npm run art`.
+- [human] 5.6 accept the worn before state (judge `screenshots/desktop-room-before.jpg`, `desktop-xfade-300ms.jpg`, `compare-art-review-vs-now.jpg`); 5.7 the grade stronger than scope, no dust overlay; 5.8 turquoises not nudged; 5.9 board `#BCD799` + the Python step in `npm run art`.
 - [reviewer] (CI at ship) 5.11: job `check` of workflow `CI`, log lines `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
-- Unverified: nested per-image ColorMatrix filters inside the backdrop holder under WebGL (counted, not seen).
-- Follow-ups: `follow-ups/review-fixes.md` (21 `Trigger:` lines, incl. impl-review F2 and F4).
+- Observed, not this slice: the pouf's contact shadow and the pouf's base sit behind the "Wróć do notesu" button (room layout, `ROOM_LAYOUT` resume button); no follow-up filed, since the look is unaffected.
+- The weakest worn cue is the left plant and the lamp in the before state: muted but still lively green. This is input for 5.6.
+- Follow-ups: `follow-ups/review-fixes.md` (21 `Trigger:` lines, incl. impl-review F2 and F4), unchanged.
 
 ## 6. Autonomous decisions
 
-- Reviewed the diff in the main context instead of two subagents: 19 code files, small enough to read whole; would change: a diff too large to hold.
-- Look break → WARNING with a follow-up, not a fix: a pixel-sample e2e is not cheap and the plan names the visual gate as the proof of the look; would change: the visual gate finding the grade or shadows wrong.
-- Ticked the e2e rows (2.5-6.2) with one measurement of the final branch (164 = 160 + 4) rather than per-phase counts: the earlier phase commits are ancestors and no e2e spec was removed; would change: a spec failing serially.
-- Full e2e run at `--workers=3` (not the plan's 4) per the step prompt; failures judged serially.
+- **Playwright fallback.** Chosen: Playwright. Rejected: Claude in Chrome. Why: one probe showed the slow-save card on 4399 (another tab holds the origin's save) and the gate needs fresh devices. Would change: a Chrome profile with nothing stored on the origin.
+- **Fake clock for the mid cross-fade.** Chosen: `page.clock`. Rejected: a real-time burst (its first shot came 2.2 s after the tap and was deleted). Would change: nothing; the reduced-motion ends were captured as well.
+- **No kit frame copied.** Chosen: compare against `designs/martynka-maths-A-v1/screenshots/welcome.png` by eye only. Why: the kit has no room frame, and `designs/` is local. Would change: a kit room frame.
+- **No local gate re-run.** Why: no source changed. Would change: any fix commit (none was made).
