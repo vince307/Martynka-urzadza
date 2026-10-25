@@ -1,7 +1,7 @@
 ---
 change_id: audit-art-renderer
 title: Board recolour refuses a wrong image, Canvas renderer named in "Obrazki", pouf contact shadow under the return button
-status: planned
+status: plan_reviewed
 created: 2026-10-25
 updated: 2026-10-25
 archived_at: null

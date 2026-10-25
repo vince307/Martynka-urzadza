@@ -179,7 +179,7 @@ on the refusal. numpy's `RuntimeWarning` on the empty mask may stay on stderr (h
 #### Automated Verification:
 
 - `tests/recolourBoard.test.ts` red before the guard (all-green and no-green cases exit 0; band case lacks the share line), green after; unit `<branch baseline> + 3`
-- Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red (exit 0, black image written); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script
+- Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red on the missing `non-finite` text (the share check still refuses it at 0.0 %, so exit stays ≠ 0: the two checks overlap on an empty mask by design, the finiteness one names the cause); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script
 - Skip path: `RECOLOUR_BOARD_PYTHON=/nonexistent/python3 npx vitest run tests/recolourBoard.test.ts` → 3 skipped, the output shows `recolourBoard: skipped: python3 cannot import PIL and numpy; needs Pillow 12.1.0 / numpy 2.4.3`; without the variable → 3 passed (no silent skip where the pins exist)
 - `npm run art` prints `board mask 13.47%` and `board mask 13.45%`, then `git status --porcelain public/` empty
 - `git status --porcelain scripts/` shows only `recolour-board.py` (no `__pycache__`)
@@ -241,7 +241,7 @@ with a full stop and does not contain `rysuje:` or `zamiast` (no stand-in claim)
 #### Automated Verification:
 
 - New cases red against stubs (no `worn` line; `worn` left in the drawn list), green after; unit `<phase-1 count> + N`
-- Deliberate break: drop `'worn'` from the drawn-list filter → typecheck red in `artHealthView.ts` (`artFallbackNames['worn']`) and the `{ worn, wallet }` case red; push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test
+- Deliberate break: drop `'worn'` from the drawn-list filter body → the `{ worn, wallet }` case red (typecheck stays green: a type predicate's body is not checked by `tsc`, so the unit case is the only guard); push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test
 - `git diff main -- src/data/pl.ts` shows only the added `wornPlain` line and its comment (no edit of `artFallback`/`artFallbackNames`)
 - `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/rooms.ts` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
@@ -280,7 +280,7 @@ remote-inspector session.
 
 **Contract**: in `create`, one `console.info` (developer English): `Renderer: WebGL` when
 `this.sys.game.renderer.type === WEBGL` (the named `WEBGL` import from `'phaser'`, as `SalonBackdrop.ts` does), otherwise `Renderer: Canvas (no
-filters: the worn salon look is off)`. Wrapped like the other `create` diagnostics so a throw never stops boot.
+filters: the worn salon look is off)`. Wrapped like the other `create` diagnostics so a throw never stops boot. Placed AFTER the `this.creates > 1` early return, so a second `create` never logs it twice (the phase-5 spec counts exactly one line).
 
 #### 3. Source guards
 
@@ -309,7 +309,7 @@ the maintainer; files `src/data/rooms.ts` (`pouf`), `src/data/layout.ts` (`ROOM_
 - `tests/salonStyleWiring.test.ts` green with the new cases; unit `<phase-2 count> + N`
 - Deliberate break: delete the `recordFallback` call → its case red; change `console.info` to `console.log` → the renderer case red; each restored; meta-check: these are source guards of the wiring; the record under a real Canvas renderer and the panel text are proven by phase 5
 - `git diff --stat main -- src/ui/widgets src/scenes/RoomScene.ts src/ui/artFallbacks.ts src/main.ts vite/e2eHookGuard.mjs public` empty
-- `git diff main -- src/data/layout.ts` is one added comment line (no value change); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
+- `git diff main -- src/data/layout.ts` changes comments only (no value change; the existing trailing comment of `resume` may be extended); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-style.spec.ts` green under WebGL: nothing recorded there)
 
 ---
@@ -349,7 +349,7 @@ without `-I` (Trigger: next change to `scripts/make-task-art.mjs`); re-recorded 
 impl-review F2 (pixel guard of the worn look; `applyWornGrade` edited), final-art-salon F4 and salon-load-health L-6/L-8
 (art-health view), audit-backdrop-fox F5 (generic `artHealth.ts` group), audit-backdrop-fox F1 (`pixel()` null under
 Canvas — the new Canvas e2e checks the record, not pixels); salon-style 3 (Canvas look itself) referenced as still open
-with the new signal named. Unfired ones (salon-style F4, final-art-salon F2, salon-extra-slots F2, L-R8/L-R11, F6 /
+with the new signal named. Name inside the re-recorded `artHealthView.ts` group explicitly: salon-load-health L-8 / audit-boot-hidden-tab L-8 (no DOM test of `createArtHealthView`) and the "Obrazki" `Kod:` line not muted (post-run-polish, audit-boot-hidden-tab). final-art-salon F3 (`BootScene` progress listener) is already closed in code (`this.load.off('progress', onProgress)`), nothing to re-record. Unfired ones (salon-style F4, final-art-salon F2, salon-extra-slots F2, L-R8/L-R11, F6 /
 notebook-polish 16, G-3, VO2/F5/F7) are not re-recorded.
 
 #### 3. Seam sweep
@@ -413,7 +413,7 @@ model on `salon-style.spec.ts` and `support/{hook,welcome}.ts`; a `pageerror` co
 **File**: `tests/e2e/salon-style.spec.ts` — in `#12 salon-style the welcome backdrop … graded worn salon`, one added
 assertion `artFallbacks.worn` undefined (WebGL control).
 
-No `sleep`/`until`/`while` loops or `tail -f` waiters (profile § 8); waits through `expect.poll`.
+No `sleep`/`until`/`while` loops or `tail -f` waiters (profile § 8); waits through `expect.poll`. The `console` listener of `#12` is attached before the first `page.goto` (the boot line is printed before the welcome screen exists).
 
 ### Success Criteria:
 
@@ -462,6 +462,7 @@ None: save format stays v4; the record is runtime only.
 - A runner image that ships exactly Pillow 12.1.0 / numpy 2.4.3 would run the Python test in CI; it would then pass (the
   script needs no `designs/`), not fail.
 - numpy prints `RuntimeWarning` lines on the empty-mask refusal; the test matches substrings, not the whole stderr.
+- A local gate where `tests/recolourBoard.test.ts` reports skipped (another `python3` on `PATH`, pins in a user site that `-I` hides) is not green for this change: the `+ 3` passed count in rows 1.1 / later `<phase-N count>` lines would drop by 3; a phase agent compares counts, not only the exit code (plan-review F7).
 
 ## Autonomous decisions
 
@@ -487,6 +488,10 @@ None: save format stays v4; the record is runtime only.
 - **P-9 Renderer log is `console.info`**, not `warn`: Canvas is a supported path, not a fault. Would change: a maintainer
   wanting it in the error-level filter.
 
+- **Plan review (2026-10-25)**: `reviews/plan-review.md` PROCEED; fixed in place F1 (row 1.2 break wording), F2 (row 2.2:
+  type predicates are unchecked), F3 (renderer log after the `creates > 1` return), F4 (row 3.4 comment-only), F5 (named
+  `artHealthView.ts` follow-ups), F6 (console listener before `goto`), F7 (Known risk: local skip shows in counts).
+
 ## References
 
 - Research: `context/changes/audit-art-renderer/research.md`; identity `context/changes/audit-art-renderer/change.md`
@@ -511,7 +516,7 @@ None: save format stays v4; the record is runtime only.
 #### Automated
 
 - [ ] 1.1 `tests/recolourBoard.test.ts` red before the guard (all-green and no-green cases exit 0; band case lacks the share line), green after; unit `<branch baseline> + 3`
-- [ ] 1.2 Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red (exit 0, black image written); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script
+- [ ] 1.2 Deliberate break: remove the share check → the all-green case red; remove the finiteness check → the no-green case red on the missing `non-finite` text (the share check still refuses it at 0.0 %, so exit stays ≠ 0: the two checks overlap on an empty mask by design, the finiteness one names the cause); each restored; meta-check: the band case stays green under both breaks and passes only with the share printed, so a blanket refusal or a silent no-op guard cannot pass; the oracles are literal synthetic images, not values computed by the script
 - [ ] 1.3 Skip path: `RECOLOUR_BOARD_PYTHON=/nonexistent/python3 npx vitest run tests/recolourBoard.test.ts` → 3 skipped, the output shows `recolourBoard: skipped: python3 cannot import PIL and numpy; needs Pillow 12.1.0 / numpy 2.4.3`; without the variable → 3 passed (no silent skip where the pins exist)
 - [ ] 1.4 `npm run art` prints `board mask 13.47%` and `board mask 13.45%`, then `git status --porcelain public/` empty
 - [ ] 1.5 `git status --porcelain scripts/` shows only `recolour-board.py` (no `__pycache__`)
@@ -522,7 +527,7 @@ None: save format stays v4; the record is runtime only.
 #### Automated
 
 - [ ] 2.1 New cases red against stubs (no `worn` line; `worn` left in the drawn list), green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: drop `'worn'` from the drawn-list filter → typecheck red in `artHealthView.ts` (`artFallbackNames['worn']`) and the `{ worn, wallet }` case red; push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test
+- [ ] 2.2 Deliberate break: drop `'worn'` from the drawn-list filter body → the `{ worn, wallet }` case red (typecheck stays green: a type predicate's body is not checked by `tsc`, so the unit case is the only guard); push the `worn` line before `guide` → the order case red; each restored; meta-check: the oracles are literal records and literal line lists, not values computed by the code under test
 - [ ] 2.3 `git diff main -- src/data/pl.ts` shows only the added `wornPlain` line and its comment (no edit of `artFallback`/`artFallbackNames`)
 - [ ] 2.4 `git diff --stat main -- src/core/save.ts tests/fixtures src/data/balance.ts src/data/curriculum src/data/rooms.ts` empty
 - [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
@@ -534,7 +539,7 @@ None: save format stays v4; the record is runtime only.
 - [ ] 3.1 `tests/salonStyleWiring.test.ts` green with the new cases; unit `<phase-2 count> + N`
 - [ ] 3.2 Deliberate break: delete the `recordFallback` call → its case red; change `console.info` to `console.log` → the renderer case red; each restored; meta-check: these are source guards of the wiring; the record under a real Canvas renderer and the panel text are proven by phase 5
 - [ ] 3.3 `git diff --stat main -- src/ui/widgets src/scenes/RoomScene.ts src/ui/artFallbacks.ts src/main.ts vite/e2eHookGuard.mjs public` empty
-- [ ] 3.4 `git diff main -- src/data/layout.ts` is one added comment line (no value change); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
+- [ ] 3.4 `git diff main -- src/data/layout.ts` changes comments only (no value change; the existing trailing comment of `resume` may be extended); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
 - [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-style.spec.ts` green under WebGL: nothing recorded there)
 
 ### Phase 4: Docs, follow-ups, seam sweep and the visual pass
