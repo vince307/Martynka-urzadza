@@ -1,534 +1,183 @@
 ---
 project: "Martynka urządza"
-version: 1
+version: 2
 status: draft
 created: 2026-10-11
-updated: 2026-10-22
+updated: 2026-10-25
 prd_version: 3
-main_goal: market-feedback
-top_blocker: external
-milestone_id: v1-pelna-petla-m0-m8
-milestone_seq: 1
+main_goal: quality
+top_blocker: decisions
+milestone_id: wysylki-rodzica-i-statystyki
+milestone_seq: 2
 milestone_status: open
 ---
 
 # Roadmap: Martynka urządza
 
-> Derived from `context/foundation/prd.md` (v1) + `Martynka-urzadza.md` sekcja 11 (etapy M0–M8) + auto-researched codebase baseline.
-> Edit-in-place; archive when superseded.
+> Derived from `context/foundation/prd.md` (v3, wymagania „Po v1 — opinia rodzica, raport o błędzie, statystyki odwiedzin”) + decyzje autora w `docs/human-checklist.md` (sekcje „Do zrobienia: statystyki odwiedzin” i „Do zrobienia: opinia rodzica i raport o błędzie z gry”) + auto-researched codebase baseline.
+> Edit-in-place; archive when superseded. Poprzedni kamień (M-01, etapy M0–M8) jest w historii gita tego pliku i w `## Milestone History`.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
-
-Uwaga o nazewnictwie: `M-01` to kamień milowy tej roadmapy (pętla 10x). `M0`–`M8` to etapy z planu `Martynka-urzadza.md`; ich kolejność jest wiążąca. Każdy wycinek należy do dokładnie jednego etapu planu (kolumna „Etap” w tabeli), a pierwszy wycinek etapu ma w Prerequisites ostatni wycinek etapu poprzedniego. „Parallel with” liczone jest tylko w obrębie jednego etapu.
 
 ## Milestone
 
-**M-01: Wersja 1, pełna pętla gry (etapy M0–M8)** — Status: open
+**M-02: Wysyłki rodzica i statystyki odwiedzin** — Status: open
 
-- **Intent:** Córka gra sama na tablecie w pełną pętlę: runda zadań E3–E4 → gwiazdki → urządzanie salonu, z zapisem, docelową grafiką i balansem po testach z graczem. Kamień zamyka się, gdy wszystkie etapy planu M0–M8 są dostarczone.
-- **Source materials:** `context/foundation/prd.md` (v1; v2 z 2026-10-21 dodaje tylko wymagania po v1, FR-028–FR-031, i zmienia domyślną wartość FR-009 — zakres M-01 bez zmian); kolejność etapów z `Martynka-urzadza.md` sekcja 11.
-- **Done when:** every F-NN and S-NN below is `done`.
-- **Scope anchors:** FR-001–FR-027 (wszystkie must-have), US-01–US-04, NFR z PRD.
+- **Intent:** Rodzic może świadomie, za bramką dla dorosłych, wysłać autorowi opinię albo raport o błędzie i przeczytać, co gra zbiera; autor widzi zbiorcze statystyki odwiedzin strony. Dane dziecka nadal nie opuszczają urządzenia. Kamień niesie też przeniesiony z M-01 balans po testach z córką (S-17).
+- **Source materials:** `context/foundation/prd.md` (v3): FR-028–FR-031 z sekcji „Po v1”, NFR prywatności, Guardrails, Open Questions 8–10; FR-027 dla przeniesionego S-17.
+- **Done when:** every S-NN below is `done`.
+- **Scope anchors:** FR-027 (przeniesione z M-01), FR-028, FR-029, FR-030, FR-031; NFR „Prywatność”; Guardrail „Działa offline i bez sieci zewnętrznej”.
 
 ## Vision recap
 
-Dziecko w klasach 1–3 unika ćwiczenia matematyki poza szkołą, a rodzic musi pilnować kart pracy. Gra zamienia ćwiczenie w pętlę nagrody: runda zadań zgodnych z polskim programem daje gwiazdki, gwiazdki opłacają urządzanie pokoju, a wybór jednego z trzech wariantów mebla jest nagrodą. Zero presji (bez czasu, bez „źle”, bez utraty gwiazdek), wszystko lokalnie i offline, rodzic ustawia etap i widzi postępy bez kont.
+Gra działa lokalnie i offline, bez kont i bez telemetrii; dziecko ćwiczy matematykę i urządza salon. Wersja 2 PRD dodaje jedną kontrolowaną furtkę: rodzic, nie dziecko, może sam wysłać autorowi opinię albo raport o błędzie, zawsze bez danych dziecka, a autor dowiaduje się o ruchu na stronie wyłącznie z obsługi pobierania gry, bez kodu w grze.
 
 ## North star
 
-**S-09: Córka kupuje pierwszy mebel za gwiazdki z rundy** — najmniejszy przepływ od początku do końca, który udowadnia główną hipotezę PRD („nagrodą musi być budowanie”); umieszczony najwcześniej, jak pozwalają etapy planu (M4), bo bez działającej pętli nagrody reszta nie ma znaczenia.
+**S-19: Rodzic wysyła autorowi opinię z ustawień, a autor ją czyta** — pierwszy przepływ, w którym coś z gry trafia na własny serwer; dowodzi naraz trzech rzeczy, na których stoi cały kamień: wysyłka tylko za bramką, nic z danych dziecka, spokojne zachowanie bez sieci.
 
-> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu do zapisu stanu, którego dostarczenie dowodzi, że produkt działa. Wszystko inne ma sens dopiero, gdy ten wycinek zadziała.
+> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu do zapisu po drugiej stronie, którego dostarczenie dowodzi, że ta część produktu działa. Stoi tak wcześnie, jak pozwala strona „Prywatność” (cel `quality`: najpierw rodzic może przeczytać, co wychodzi, potem coś wychodzi).
 
 ## At a glance
 
-| ID    | Change ID                   | Etap | Outcome (user can …)                                                              | Prerequisites        | PRD refs                        | Status   |
-| ----- | --------------------------- | ---- | --------------------------------------------------------------------------------- | -------------------- | ------------------------------- | -------- |
-| F-01  | game-shell-scaling          | M0   | (foundation) szkielet gry na Phaser 4.2 w scenie 1920×1080, docelowy układ katalogów, bez telemetrii szablonu | —    | NFR (czytelność, prywatność)    | done        |
-| F-02  | static-deploy-pipeline      | M0   | (foundation) build statyczny wdrażany z GitHub Actions na VPS za Caddy z rollbackiem | —                  | NFR (prywatność), tech-stack    | done        |
-| S-01  | installable-offline-pwa     | M0   | dziecko otwiera grę z adresu na tablecie, instaluje ją i uruchamia offline        | F-01, F-02           | FR-001, FR-002, FR-003, NFR     | done |
-| F-03  | generator-test-harness      | M1   | (foundation) vitest, seedowany rng i skrypt próbkujący z raportem naruszeń        | F-01                 | FR-005                          | done |
-| S-02  | generators-e3-e4            | M1   | autor wypisuje poprawne zadania grupy 1 z każdego kroku E3–E4 z podpowiedziami    | F-03, S-01           | FR-004, FR-005                  | done |
-| S-03  | generators-remaining-stages | M1   | autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na wspólnych generatorach        | S-02                 | FR-004                          | done |
-| S-04  | task-round-stars            | M2   | dziecko rozwiązuje rundę dotykiem, dostaje gwiazdki, po błędzie podpowiedź i drugą próbę | S-03            | FR-006, FR-007, FR-008, FR-011, US-01 | done |
-| S-05  | narrator-round-summary      | M2   | dziecko odsłuchuje polecenie i po rundzie wybiera „Kolejna runda” lub „Do pokoju” | S-04                 | FR-009, FR-010                  | done |
-| S-06  | first-launch-placement      | M3   | dziecko podaje wiek, rodzic potwierdza etap po bramce, rozgrzewka koryguje start  | S-05                 | FR-012                          | done |
-| S-07  | adaptive-curriculum         | M3   | gra dobiera zadania wg wag i opanowania, odblokowuje kroki, łagodzi trudność      | S-05                 | FR-013, FR-014                  | done |
-| S-08  | parent-settings-progress    | M3   | rodzic zmienia etap i widzi zwięzły podgląd postępów za bramką                   | S-06, S-07           | FR-015, US-03                   | done |
-| S-09  | first-furniture-purchase    | M4   | dziecko wydaje gwiazdki na zadanie remontowe i wybiera jeden z 3 wariantów        | S-08                 | FR-016, FR-017, US-02           | done |
-| S-10  | variant-change-room-done    | M4   | dziecko zmienia wariant za darmo, widzi „Pokój gotowy!” i robi poprawki           | S-09                 | FR-018, FR-019                  | done |
-| S-11  | autosave-versioned-save     | M5   | po zamknięciu i otwarciu gry (także po aktualizacji) stan jest identyczny         | S-10                 | FR-020, FR-021, US-04           | done     |
-| S-12  | save-export-import-reset    | M5   | rodzic eksportuje, importuje (z podsumowaniem) i resetuje zapis                   | S-11                 | FR-022                          | done     |
-| S-13  | drawn-widget-tasks-e3-e4    | M6   | dziecko rozwiązuje zadania z zegarem, linijką, osią, klockami i słupkiem dla E3–E4 | S-12                | FR-023                          | done     |
-| S-13b | drawn-grid-tasks-e3-e4      | M6   | dziecko rozwiązuje kwadrat magiczny, zadania na siatce i obwody oraz ustawia zegar przeciąganiem wskazówek (E3–E4) | S-13 | FR-023                    | done |
-| S-14  | art-tasks-all-stages        | M6   | dziecko rozwiązuje zadania z monetami, wagą, naczyniami i termometrem; każdy etap ma pełny zestaw typów | S-13 | FR-023                    | done |
-| S-14b | number-line-written-arrows  | M6   | dziecko liczy pisemnie w słupku (E5–E6), uzupełnia grafy i tabelki (E2) i widzi oś liczbową w podpowiedziach | S-14 | FR-023                    | done |
-| S-14c | text-measure-time-types     | M6   | dziecko rozwiązuje tekstowe zadania o czasie, jednostkach, cenach, kolejności działań i nierównościach (E1, E5–E6) oraz rundę powtórkową | S-14 | FR-023 | done |
-| S-14d | e1-shapes-picture-mode      | M6   | 6-latek rozwiązuje zadania z figurami, szlaczkami, „który z kolei”, parami i płaci monetami przeciąganiem do portfela | S-14 | FR-023                | done |
-| S-15  | minigame-daily-puzzle       | M6   | co kilka rund dziecko dostaje minigrę lub zagadkę dnia za podwójne gwiazdki       | S-12                 | FR-024, FR-025                  | done |
-| S-16a | final-art-salon             | M7   | dziecko remontuje salon z docelowej grafiki (tło przed → po, 6 mebli × 3), widzi animacje i ekran ładowania | S-14, S-15 | FR-026 | done |
-| S-16b | final-sound                 | M7   | dziecko słyszy dźwięki gry po pierwszym dotknięciu; gra grywalna bez dźwięku       | S-16a                | FR-017, FR-026                  | done |
-| S-16c | final-art-p2                | M7   | dziecko widzi docelową ikonę aplikacji, ekran ładowania, miniaturę salonu, portfel i zeszyt z paczki salon-v2 | S-16a | FR-026 | done |
-| S-16d | salon-extra-slots           | M7   | dziecko urządza w salonie 5 nowych miejsc (zasłony, półka, lampa, roślina, pufa) po 3 warianty | S-16a | FR-016, FR-019 | done |
-| S-17  | playtest-balance            | M8   | autor dostraja balans i czytelność po obserwacji córki i miarach z historii       | S-16                 | FR-027                          | proposed |
+| ID    | Change ID             | Outcome (user can …)                                                        | Prerequisites | PRD refs                    | Status   |
+| ----- | --------------------- | --------------------------------------------------------------------------- | ------------- | --------------------------- | -------- |
+| S-17  | playtest-balance      | autor dostraja balans w danych gry po obserwacji córki                       | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
+| S-18  | privacy-page          | rodzic czyta stronę „Prywatność” z linku w grze                              | —             | FR-031, NFR Prywatność      | blocked  |
+| S-19  | parent-feedback-send  | rodzic wysyła opinię za bramką (także bez sieci), autor ją czyta             | S-18          | FR-028, NFR Prywatność, Guardrails | blocked  |
+| S-20  | parent-bug-report     | rodzic jednym stuknięciem wysyła raport z karty „Ups!” i z „Zapis gry”       | S-19          | FR-029, NFR Prywatność      | proposed |
+| S-21  | visit-stats           | autor widzi zbiorcze statystyki odwiedzin bez kodu w grze                    | S-18          | FR-030, NFR Prywatność      | proposed |
 
 ## Streams
 
-Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks. Etapy planu nadal obowiązują: strumień nie uprawnia do wyprzedzenia etapu.
+Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                        | Chain                                          | Note                                                                 |
-| ------ | ---------------------------- | ---------------------------------------------- | -------------------------------------------------------------------- |
-| A      | Szkielet i PWA (M0)          | `F-01` → `F-02` → `S-01`                       | Pierwsza rzecz, którą córka otworzy na tablecie; odblokowuje wszystko. |
-| B      | Zadania i gwiazdki (M1–M2)   | `F-03` → `S-02` → `S-03` → `S-04` → `S-05`     | Joins Stream A at `S-01`. Inwestycja w `core/` (generatory, runda); E3–E4 najpierw (market-feedback). |
-| C      | Etap i adaptacja (M3)        | `S-06` → `S-07` → `S-08`                       | Joins Stream B at `S-05`. `S-06` ∥ `S-07`; `S-08` je spina.           |
-| D      | Pokój i zapis (M4–M5)        | `S-09` → `S-10` → `S-11` → `S-12`              | Joins Stream C at `S-08`. Zawiera gwiazdę przewodnią `S-09`.          |
-| E      | Rysunki, grafika, testy (M6–M8) | `S-13` → `S-13b` → `S-14` → `S-14b` / `S-14c` / `S-14d` → `S-15` → `S-16a` → `S-16b` → `S-16c` → `S-16d` → `S-17`  | Joins Stream D at `S-12`. `S-13` ∥ `S-15`; paczka `designs/martynka-salon-v2` (2026-10-15) odblokowała S-16b–d. |
+| Stream | Theme                  | Chain                       | Note                                                                 |
+| ------ | ---------------------- | --------------------------- | -------------------------------------------------------------------- |
+| A      | Wysyłki rodzica        | `S-18` → `S-19` → `S-20`    | Cel `quality`: strona „Prywatność” przed pierwszą wysyłką; raport o błędzie używa drogi opinii. |
+| B      | Statystyki odwiedzin   | `S-21`                      | Joins Stream A at `S-18`; równolegle z `S-19`, bez kodu w grze.        |
+| C      | Balans po testach      | `S-17`                      | Przeniesione z M-01; zależy od obserwacji córki, nie od kodu; równolegle ze wszystkim. |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-10-11` (auto-researched + user-confirmed).
-Foundations below assume these are present and do NOT re-scaffold them.
+What's already in place in the codebase as of `2026-10-25` (auto-researched + user-confirmed).
 
-- **Frontend:** partial — nietknięty szablon Phaser 4.0.0 + Vite 6 + TypeScript (`src/game/scenes/*.ts`, konfiguracja 1024×768); brak docelowego układu `core/`/`data/`/`scenes/`, brak skalowania 1920×1080, brak PWA (bez manifestu i service workera).
-- **Backend / API:** n/a — per `tech-stack.md`: bez backendu, bez żądań sieciowych poza pobraniem gry.
-- **Data:** absent — brak zapisu lokalnego (brak biblioteki IndexedDB, brak modułu zapisu).
-- **Auth:** n/a — per PRD Access Control: bez kont; bramka rodzica to element UI (M3), nie warstwa auth.
-- **Deploy / infra:** absent — brak workflowów GitHub Actions, katalogu `deploy/` ani konfiguracji Caddy; cel (self-host, auto-deploy po merge) zdecydowany w `tech-stack.md`.
-- **Observability:** absent, celowo — NFR prywatności zabrania telemetrii; szablonowy `log.js` (ping gryzor.co przy `npm run dev`/`build`) do usunięcia w M0.
+- **Frontend:** present — gra Phaser 4.2.1 z panelem rodzica za bramką dla dorosłych (`src/ui/dom/settingsPanel.ts`, `src/core/parentGate.ts`), kartą awarii z linią `Kod:` (`src/ui/dom/errorCard.ts`) i sekcją „Zapis gry” (`src/ui/dom/saveHealthView.ts`); wszystkie teksty w `src/data/pl.ts`.
+- **Backend / API:** absent — serwer tylko podaje statyczne pliki gry (`deploy/Caddyfile`: `file_server`); nie ma żadnego adresu przyjmującego dane.
+- **Data:** present lokalnie, absent na serwerze — zapis gry w IndexedDB (`src/storage/idb.ts`); na serwerze nie ma miejsca na opinie i raporty.
+- **Auth:** n/a — bez kont; bramka dla dorosłych to element UI (PRD Access Control).
+- **Deploy / infra:** present — GitHub Actions → VPS wspólny z CoiledSpring (`deploy/`, `.github/workflows/deploy.yml`), konto agenta `martynka-ops`; zmiany w `deploy/` wdraża właściciel (`sync` + `bootstrap`).
+- **Observability:** partial — w grze linie zdrowia w panelu rodzica (nic nie wychodzi z urządzenia); serwer nie ma logu dostępu, więc statystyk odwiedzin nie ma z czego liczyć.
 
 ## Foundations
 
-### F-01: Szkielet gry i skalowanie
-
-- **Outcome:** (foundation) gra startuje na Phaser 4.2.x w scenie 1920×1080 dopasowanej do ekranu, z pustą sceną, docelowym układem katalogów (`core/` bez importów silnika, `data/`, `scenes/`, `storage/`, `tests/`), bez telemetrii szablonu; `npx tsc --noEmit` przechodzi.
-- **Change ID:** game-shell-scaling
-- **PRD refs:** NFR (cele dotykowe ≥ 96 px w scenie 1920×1080; prywatność: zero żądań sieciowych), FR-002 (nakładka „Obróć tablet” wchodzi w S-01)
-- **Unlocks:** S-01 (ekran na tablecie), F-03 (testy czystej logiki wymagają układu `core/`), S-04 (sceny)
-- **Prerequisites:** —
-- **Parallel with:** F-02
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** pierwszy kontakt z Phaser 4.2 (renderer i filtry nowe względem v3); zrobiony najpierw, bo każdy wycinek widoczny dla dziecka zależy od poprawnego skalowania i układu.
-- **Status:** done
-
-### F-02: Statyczny deploy na VPS
-
-- **Outcome:** (foundation) build `dist/` jest publikowany z GitHub Actions na istniejący VPS za Caddy (HTTPS), z zachowaniem poprzedniego wydania do rollbacku; runbook w `deploy/README.md`.
-- **Change ID:** static-deploy-pipeline
-- **PRD refs:** NFR (prywatność: tylko pobranie gry i aktualizacji), US-04 (aktualizacja gry nie gubi stanu)
-- **Unlocks:** S-01 (gra otwiera się z adresu URL na tablecie), weryfikacja offline po każdym etapie (plan, sekcja 14)
-- **Prerequisites:** —
-- **Parallel with:** F-01
-- **Blockers:** — (domena martynka-urzadza.pl kupiona i podpięta 2026-10-11)
-- **Unknowns:** — (adres rozstrzygnięty: https://martynka-urzadza.pl)
-- **Risk:** jedyna warstwa z infrastrukturą; minimalna (rsync przez restricted user) i wzorowana na CoiledSpring; zrobiona w M0, żeby każdy kolejny etap był sprawdzany na tablecie, nie tylko w przeglądarce.
-- **Status:** done
-
-### F-03: Harness testów generatorów
-
-- **Outcome:** (foundation) vitest działa na `core/`, generatory dostają seedowany rng, a skrypt próbkujący wypisuje po 3 zadania z każdego kroku etapu i raportuje naruszenia (zakres, ujemne, odmiana).
-- **Change ID:** generator-test-harness
-- **PRD refs:** FR-005, guardrail „zadania matematycznie poprawne”
-- **Unlocks:** S-02, S-03 (testy 1000 losowań per umiejętność), S-13/S-14 (ten sam harness dla typów z rysunkami)
-- **Prerequisites:** F-01
-- **Parallel with:** F-02, S-01 (harness nie dotyka PWA ani deployu; etap M1 i tak startuje dopiero po S-01, zob. S-02)
-- **Blockers:** —
-- **Unknowns:**
-  - Z przeglądu F-01: włączyć `strictPropertyInitialization` i dodać `tests/` do `include` w tsconfig przy wprowadzaniu vitest. — Owner: autor. Block: no.
-  - Dokładne kryterium „gotowe” dla M1 przy zawężeniu pełnej jakości treści do E3–E4 (PRD Open Question 3). — Owner: autor. Block: no (harness jest taki sam niezależnie od odpowiedzi; rozstrzygnąć przy planowaniu S-02).
-- **Risk:** bez harnessu generatory będą sprawdzane ręcznie i błędy odpowiedzi wzorcowych dotrą do córki; minimalny zakres (vitest + rng + sample), nie „warstwa testowa”.
-- **Status:** done
+Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze przyjmujący wysyłki — powstaje w pierwszym wycinku, który go używa (`S-19`), a log dostępu w `S-21`.
 
 ## Slices
-
-### S-01: Instalowalna gra offline na tablecie
-
-- **Outcome:** dziecko otwiera grę z adresu URL na tablecie, dodaje ją do ekranu początkowego (z instrukcją przy pierwszym uruchomieniu w przeglądarce) i uruchamia offline; w pionie widzi „Obróć tablet”; nowa wersja instaluje się sama przy następnym starcie.
-- **Change ID:** installable-offline-pwa
-- **PRD refs:** FR-001, FR-002, FR-003, NFR (start offline < 3 s, Android Chrome + iPad Safari + komputer)
-- **Prerequisites:** F-01, F-02
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:**
-  - Z przeglądu F-02: hashowane bundle Vite przenieść do `build.assetsDir: '_app'` i matcher Caddy na `/_app/*`, żeby `immutable` nie objęło nienazwanej hashem grafiki z `public/assets/` (M7); ponowny bootstrap wykonuje agent (`ssh martynka-ops sync`, potem `bootstrap`; zmiana `agent-ops-access`). — Owner: autor. Block: no.
-  - Czy iPad (Safari) faktycznie utrzymuje dane PWA bez dodania do ekranu początkowego? — Owner: autor. Block: no (sprawdzić na urządzeniu; FR-001 i tak pokazuje instrukcję).
-- **Risk:** zamyka etap M0 („gra otwiera się na tablecie z URL, da się dodać do ekranu i uruchomić offline”); PWA na iPadzie bywa kapryśna, dlatego sprawdzana na obu tabletach zanim wejdzie treść.
-- **Status:** done
-
-### S-02: Generatory zadań dla E3–E4
-
-- **Outcome:** autor wypisuje z każdego kroku etapów E3 i E4 oryginalne zadania wszystkich typów grupy 1 (ZADANIA.md, sekcja 7) z poprawną odpowiedzią, rozpraszaczami, podpowiedzią krok po kroku i poprawną odmianą liczebników; testy 1000 losowań przechodzą.
-- **Change ID:** generators-e3-e4
-- **PRD refs:** FR-004 (część E3–E4), FR-005, guardrail „zadania poprawne i zgodne z programem”
-- **Prerequisites:** F-03, S-01 (koniec etapu M0)
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:**
-  - Jak liczyć i testować poprawność odmiany liczebników w szablonach tekstowych (reguła dla 1 / 2–4 / 5+ i wyjątków 12–14)? — Owner: autor. Block: no.
-- **Risk:** największy odcinek bez efektu na ekranie (ryzyko zaakceptowane w shape-notes); E3–E4 najpierw, bo to etap córki (market-feedback), reszta etapów w S-03.
-- **Status:** done
-
-### S-03: Generatory dla pozostałych etapów
-
-- **Outcome:** autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na tych samych generatorach z danymi etapu; testy mechaniczne (zakres, ujemne, rozpraszacze) przechodzą dla wszystkich sześciu etapów; dopracowanie treści tych etapów pozostaje na później (PRD Non-Goals).
-- **Change ID:** generators-remaining-stages
-- **PRD refs:** FR-004 (część E1–E2, E5–E6)
-- **Prerequisites:** S-02
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** zamyka etap M1 (`sample` dla każdego etapu); ryzyko, że dane etapów bez dopracowania treści ujawnią luki w parametrach generatorów, które łatwiej naprawić teraz niż po M2.
-- **Status:** done
-
-### S-04: Runda zadań i gwiazdki
-
-- **Outcome:** dziecko rozwiązuje rundę zadań dotykiem (kafelki lub klawiaturka) z kropkami postępu, dostaje gwiazdkę za każde poprawne zadanie (także w drugiej próbie) i bonus za rundę bez błędu; po błędzie widzi potrząśnięcie i podpowiedź, po drugiej pomyłce rozwiązanie krok po kroku i przepisuje wynik; licznik gwiazdek jest zawsze widoczny, przełącznik ukryty w trakcie zadania.
-- **Change ID:** task-round-stars
-- **PRD refs:** FR-006, FR-007, FR-008, FR-011, US-01, NFR (reakcja na dotyk < 100 ms, cele ≥ 96 px)
-- **Prerequisites:** S-03
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Decisions:** 2026-10-12 (maintainer): w E1 odpowiedzi liczbowe przez 3–4 kafelki zgodnie z ZADANIA §4, nie przez klawiaturkę; S-04 zmienia `answerMode` umiejętności E1 i dobiera dystraktory. E2e rundy (ryzyko #11 planu testów) wymaga haka testowego tylko do odczytu w osobnym buildzie e2e (`context/foundation/test-plan.md`, etap 5).
-- **Risk:** pierwsza rzecz, w którą córka zagra; placeholdery (kolorowe kształty z podpisem) muszą być już czytelne, bo to one dają pierwszy sygnał z gracza.
-- **Status:** done
-
-### S-05: Lektor i podsumowanie rundy
-
-- **Outcome:** dziecko odsłuchuje polecenie polskim lektorem (automatyczne czytanie jako ustawienie z domyślną wartością zależną od etapu; bez polskiego głosu przycisk ukryty) i po rundzie widzi podsumowanie z gwiazdkami oraz przyciski „Kolejna runda” i „Do pokoju” (wyróżnione, gdy stać na mebel).
-- **Change ID:** narrator-round-summary
-- **PRD refs:** FR-009, FR-010, NFR (lektor tam, gdzie jest polski głos)
-- **Prerequisites:** S-04
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:**
-  - Jakość polskiego głosu systemowego na docelowych tabletach (PRD Open Question 7). — Owner: autor. Block: no (sprawdzić na urządzeniach; przepływ działa bez głosu).
-- **Risk:** zamyka etap M2; „Do pokoju” prowadzi na razie do pustej sceny pokoju (pokój wchodzi w M4).
-- **Status:** done
-
-### S-06: Pierwsze uruchomienie i dobór etapu
-
-- **Outcome:** przy pierwszym uruchomieniu dziecko podaje wiek (6–10), gra proponuje etap wg wieku i miesiąca, rodzic po bramce dla dorosłego potwierdza lub zmienia etap, a rozgrzewka 6 zadań koryguje start w dół.
-- **Change ID:** first-launch-placement
-- **PRD refs:** FR-012
-- **Prerequisites:** S-05
-- **Parallel with:** S-07
-- **Blockers:** —
-- **Unknowns:**
-  - Czy rozgrzewka nadal koryguje etap w dół, gdy rodzic ustawił go świadomie, czy jest wtedy pomijana? (PRD Open Question 1) — Owner: autor. Block: no (rozstrzygnąć przy `/10x-plan` tego wycinka; obie wersje są małe).
-- **Risk:** wprowadza bramkę dla dorosłego używaną potem w S-08 i S-12; zrobiona tu, bo bez etapu adaptacja z S-07 nie ma punktu startu.
-- **Status:** done
-
-### S-07: Adaptacja trudności
-
-- **Outcome:** gra losuje zadania z odblokowanych kroków według wag (wartości w danych balansu), prowadzi licznik opanowania 0–5 każdej umiejętności licząc tylko pierwszą próbę, odblokowuje kolejny krok przy opanowaniu w większości umiejętności ze scenką „Nowa umiejętność!” i łagodzi trudność po dwóch słabych rundach.
-- **Change ID:** adaptive-curriculum
-- **PRD refs:** FR-013, FR-014, Business Logic (reguła domenowa)
-- **Prerequisites:** S-05
-- **Parallel with:** S-06
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** to jest reguła domenowa produktu; czysta logika w `core/` z testami, niezależna od scen, więc może iść równolegle z S-06.
-- **Status:** done
-
-### S-08: Ustawienia rodzica i podgląd postępów
-
-- **Outcome:** rodzic po długim przytrzymaniu ikony i bramce dla dorosłego zmienia etap, włącza lub wyłącza automatyczne czytanie i widzi zwięzły podgląd postępów (bieżący krok i 3 najsłabsze umiejętności z przykładami błędów).
-- **Change ID:** parent-settings-progress
-- **PRD refs:** FR-015, US-03, Access Control
-- **Prerequisites:** S-06, S-07
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** zamyka etap M3; podgląd czyta historię z S-07, więc idzie po niej; eksport/import/reset dochodzą dopiero w S-12 (etap M5).
-- **Status:** done
-
-### S-09: Pierwszy mebel za gwiazdki
-
-- **Outcome:** dziecko widzi salon (placeholdery) z bieżącym zadaniem remontowym i kosztem z danych pokoju, przy braku gwiazdek przycisk pokazuje „masz X/Y” i prowadzi do zadań, a przy wystarczającej liczbie otwiera panel 3 wariantów z podglądem i zatwierdza „Wybieram” (gwiazdki odejmowane dopiero wtedy) z animacją i dźwiękiem.
-- **Change ID:** first-furniture-purchase
-- **PRD refs:** FR-016, FR-017, US-02, Success Criteria (pierwszy pokój)
-- **Prerequisites:** S-08
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** gwiazda przewodnia: pierwszy moment, w którym da się sprawdzić, czy urządzanie motywuje córkę bardziej niż same gwiazdki; etap M3 przed nim wynika z wiążącej kolejności planu, nie z zależności technicznej.
-- **Status:** done
-
-### S-10: Zmiana wariantu i ukończenie pokoju
-
-- **Outcome:** dziecko zmienia wariant urządzonego elementu za darmo po przytrzymaniu (lub w trybie „zmień”), po ostatnim zadaniu widzi „Pokój gotowy!”, listę pokoi z jedną pozycją i zapowiedzią oraz może dalej robić „poprawki” i rundy.
-- **Change ID:** variant-change-room-done
-- **PRD refs:** FR-018, FR-019
-- **Prerequisites:** S-09
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** zamyka etap M4 („cały pokój od zaniedbanego do urządzonego”); ryzyko motywacji po salonie (PRD Open Question 5) mierzy dopiero S-17.
-- **Status:** done
-
-### S-11: Autozapis i wersjonowany zapis
-
-- **Outcome:** po zamknięciu gry (lub rozładowaniu tabletu) i ponownym otwarciu gwiazdki, salon i postęp nauki są dokładnie takie same; zapis następuje sam po każdej zmianie i przy ukryciu karty, natychmiast po zapłacie za mebel i końcu rundy; zapis ze starszej wersji gry jest przenoszony do nowej, a nieudane przeniesienie zostawia stary zapis i oferuje eksport.
-- **Change ID:** autosave-versioned-save
-- **PRD refs:** FR-020, FR-021, US-04, guardrail „postęp nigdy nie ginie”
-- **Prerequisites:** S-10
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** do tej pory stan żył w pamięci; wprowadzenie zapisu po M4 (zgodnie z planem) oznacza, że format zapisu obejmuje od razu cały stan pętli, co zmniejsza liczbę migracji później.
-- **Status:** done
-
-### S-12: Eksport, import i reset zapisu
-
-- **Outcome:** rodzic w ustawieniach eksportuje zapis do pliku, importuje go po walidacji i podsumowaniu (gwiazdki, etap, postęp pokoju) i resetuje grę z potwierdzeniem.
-- **Change ID:** save-export-import-reset
-- **PRD refs:** FR-022, US-03
-- **Prerequisites:** S-11
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** zamyka etap M5 (test: zamknij i otwórz, stan identyczny); import to jedyne miejsce, gdzie da się nadpisać tygodnie postępu, stąd podsumowanie przed nadpisaniem.
-- **Status:** done
-
-### S-13: Zadania z widżetami rysowanymi w kodzie dla E3–E4
-
-- **Outcome:** dziecko rozwiązuje w rundzie zadania typów grupy 2 dla E3–E4 z zegarem, linijką, osią liczbową, klockami dziesiątkowymi, słupkiem pisemnym, grafami i figurami rysowanymi w kodzie, z odpowiedzią dotykiem (w tym przeciąganiem i zaznaczaniem).
-- **Change ID:** drawn-widget-tasks-e3-e4
-- **PRD refs:** FR-023 (grupa 2, E3–E4)
-- **Prerequisites:** S-12
-- **Parallel with:** S-15
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** największy etap planu (M6); E3–E4 najpierw, żeby córka zobaczyła nowe typy zadań, zanim powstaną wszystkie; pierwsze tryby odpowiedzi „drag” i „select”.
-- **Status:** done
-
-### S-13b: Zadania na siatce i „ustaw zegar” dla E3–E4
-
-- **Outcome:** dziecko rozwiązuje kwadrat magiczny (E3.5), zadania na siatce z kodowaniem pól (E3.7) i obwody figur na siatce (E4.7) oraz ustawia zegar przeciąganiem wskazówek (CLOCK, E3–E4).
-- **Change ID:** drawn-grid-tasks-e3-e4
-- **PRD refs:** FR-023 (grupa 2, E3–E4)
-- **Prerequisites:** S-13
-- **Parallel with:** S-15
-- **Blockers:** —
-- **Unknowns:** gest kątowy wskazówek na tablecie (przyciąganie do 5 minut).
-- **Risk:** wydzielone z S-13 (plan `context/changes/drawn-widget-tasks-e3-e4/plan.md`, decyzja autonomiczna 1): PUZZLE_GRID, GRID i PERIMETER dzielą jeden widżet siatki (`square-grid.svg`), „ustaw zegar” to drugi typ `drag`; dołożenie umiejętności do E3.5/E4.7 zmienia próg odblokowania tych kroków. Plan S-14 (decyzja autonomiczna 1) dokłada PERIMETER w E5.12 (bok z obwodu) i E6.3 (figury złożone) — ten sam widżet siatki.
-- **Status:** done
-
-### S-14: Zadania z grafiką i pełny zestaw typów dla wszystkich etapów
-
-- **Outcome:** dziecko rozwiązuje zadania z monetami i banknotami, wagą, naczyniami i termometrem (grafika z paczki A v1) oraz typy grup 2–3 dla E1–E2 i E5–E6; każdy etap ma pełny zestaw typów z ZADANIA.md.
-- **Change ID:** art-tasks-all-stages
-- **PRD refs:** FR-023 (grupa 3 i pozostałe etapy)
-- **Prerequisites:** S-13
-- **Parallel with:** S-15
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** zamyka kryterium M6 („każdy etap ma pełny zestaw typów”); monety, waga, naczynia i termometr są już w paczce A v1, więc nie zależy od nowej grafiki. Plan (`context/changes/art-tasks-all-stages/plan.md`, decyzje autonomiczne 1–2) zawęża S-14 do grafiki paczki A (MONEY_COUNT, MONEY_CHANGE, MASS w równowadze, CAPACITY, TEMPERATURE, COUNT, MULT_GROUPS) i danych widżetów S-13 w E1/E2/E5/E6; reszta typów → S-14b, S-14c, S-14d, PERIMETER E5.12/E6.3 → S-13b; MONEY_PAY → S-14d.
-- **Status:** done
-
-### S-14b: Słupek pisemny, grafy i oś liczbowa
-
-- **Outcome:** dziecko dodaje i odejmuje pisemnie w słupku z okienkami cyfr i przeniesieniem (WRITTEN, E5.2, E6.7), uzupełnia grafy i tabelki strzałkowe (ARROW_TABLE, E2.6) i widzi oś liczbową jako rysunek SEQUENCE/MULT_GROUPS i podpowiedź ADD_SUB.
-- **Change ID:** number-line-written-arrows
-- **PRD refs:** FR-023 (grupa 2, E2, E5–E6)
-- **Prerequisites:** S-14
-- **Parallel with:** S-14c, S-15
-- **Blockers:** —
-- **Unknowns:** nowy tryb wejścia „cyfra w okienku” (pierwszy od S-13) — helpery e2e przed `playable`.
-- **Risk:** wydzielone z S-14 (plan S-14, decyzja autonomiczna 1); ref. kitu `reference/written-addition.svg`, `reference/number-line.svg`.
-- **Status:** done
-
-### S-14c: Typy tekstowe: czas, jednostki, ceny, kolejność działań, runda powtórkowa
-
-- **Outcome:** dziecko rozwiązuje zadania tekstowe CLOCK_ELAPSED (E5.3, E5.8, E6.2), TIME_UNITS (E6.1), UNIT_CHOICE (E5.7), PRICE i TIMES_MORE (E5.10), ORDER_OPS (E5.11), INEQUALITY (E1.9), tekstowe warianty MASS (gramy, brutto/netto/tara, tona: E5.7, E6.3, E6.5) i LENGTH (skala E5.12, wyrażenia dwumianowe E6.3), PLACE_VALUE ≥ 1000 (E6.9, E6.10) oraz rundę powtórkową z całego roku (MIX, E6.11).
-- **Change ID:** text-measure-time-types
-- **PRD refs:** FR-023 (E1, E5–E6)
-- **Prerequisites:** S-14
-- **Parallel with:** S-14b, S-15
-- **Blockers:** —
-- **Unknowns:** MIX to funkcja programu (runda z całego roku), nie generator — kształt w planie slice'a.
-- **Risk:** wydzielone z S-14 (plan S-14, decyzja autonomiczna 1); bez widżetów, więc tani w e2e; dużo treści do odczytu nauczyciela.
-- **Status:** done
-
-### S-14d: E1 z obrazkami: figury, szlaczki, „który z kolei”, pary i płacenie monetami
-
-- **Outcome:** 6-latek rozwiązuje E1.1 (SHAPES, PATTERN, COMPARE_QTY, SPATIAL, SYMMETRY), ORDINAL (E1.2), BONDS z parami i CHOOSE_OP z obrazkiem oraz MONEY_PAY (przeciąganie monet do portfela, „najmniej monet”, E1.11, E2.2); „tryb z obrazkami” dla 6-latków (design-gaps wiersz 21).
-- **Change ID:** e1-shapes-picture-mode
-- **PRD refs:** FR-023 (E1–E2)
-- **Prerequisites:** S-14
-- **Parallel with:** S-15
-- **Blockers:** —
-- **Unknowns:** uogólnienie `blockDrag` na nominały i układ portfela (follow-up S-14 `Trigger: S-14d`).
-- **Risk:** MONEY_PAY to drugi wariant `drag` — dotyka helperów e2e używanych przez każdy spec (`answerRight`); E1.1 jest dziś pusty.
-- **Status:** done
-
-### S-15: Minigra i zagadka dnia
-
-- **Outcome:** co kilka rund dziecko zamiast zwykłej rundy dostaje jedną z 1–2 minigier (np. hasło z wyników, sklepik) lub zagadkę dnia z puli ok. 10–15 zagadek dla E3–E4 za podwójne gwiazdki (mnożnik w danych balansu).
-- **Change ID:** minigame-daily-puzzle
-- **PRD refs:** FR-024, FR-025
-- **Prerequisites:** S-12
-- **Parallel with:** S-13, S-14
-- **Blockers:** —
-- **Unknowns:**
-  - Które 1–2 minigry wchodzą do v1 i jaki mnożnik za zagadkę? (PRD Open Question 2) — Owner: autor. Block: no (rozstrzygnąć na starcie `/10x-plan` tego wycinka).
-  - Kto i kiedy napisze pulę 10–15 zagadek (praca autorska poza kodem)? — Owner: autor. Block: no.
-- **Risk:** wariant rundy, nie nowa pętla; osobny wycinek, żeby nie rozdymał S-13; zależy tylko od rundy i adaptacji, stąd równoległość w M6.
-- **Status:** done
-
-### S-16a: Docelowa grafika salonu, animacje, ekran ładowania
-
-- **Outcome:** dziecko remontuje salon zbudowany z paczki `martynka-expansion-v1`: pierwsza czynność („Odnów ściany i podłogę”) zmienia tło z zniszczonego na odnowione (jeden etap, bez panelu wariantów), potem 6 mebli z wyborem 3 wariantów (sofa, dywan, stolik, komoda, fotel, obrazki); lampa, dwie rośliny i pufa to stała dekoracja; animacje (tweeny, cząsteczki, z „ogranicz ruch”) i ekran ładowania; na ekranach salonu nie ma placeholderów, a brakujące grafiki są spisane w `docs/designer-brief-s16.md`.
-- **Change ID:** final-art-salon
-- **PRD refs:** FR-016, FR-026, NFR (dostępność: „ogranicz ruch”, grywalne bez dźwięku)
-- **Prerequisites:** S-14, S-15
-- **Parallel with:** —
-- **Blockers:** —
-- **Decyzje autora (2026-10-15):** 6 slotów mebli + jeden etap tła przed → po (zamiast 10 slotów); koszty 5–15 gwiazdek za czynność (stroi S-17); warianty mogą różnić się formą (wspólne płótno i kotwica); dźwięki wydzielone do S-16b. Zapisy z 10-slotowym salonem (`tasksDone` liczy pozycje starej listy) przelicza naprawa przy wczytaniu bez zmiany wersji formatu, jeśli się da (zapis v3 tylko gdy konieczny: wtedy bieg zatrzymuje się na otwartym PR). Przyszłe sloty od grafika (brief P3) dopisuje się **na końcu** listy czynności, żeby stary `tasksDone` pozostał poprawny.
-- **Unknowns:** —
-- **Risk:** zmiana listy czynności salonu na żywych zapisach (przemapowanie postępu); waga precache (WebP ≈ 1,2 MB dla salonu).
-- **Status:** done
-
-### S-16b: Dźwięki
-
-- **Outcome:** dziecko słyszy dźwięki z listy P1 w `docs/designer-brief-s16.md` (dobra odpowiedź, gwiazdka, zakup, „Pokój gotowy!” …) po pierwszym dotknięciu; dźwięk respektuje wyciszenie, gra pozostaje w pełni grywalna bez dźwięku.
-- **Change ID:** final-sound
-- **PRD refs:** FR-017, FR-026, NFR (grywalne bez dźwięku)
-- **Prerequisites:** S-16a
-- **Parallel with:** S-17
-- **Blockers:** —
-- **Decyzje autora (2026-10-15):** dźwięki z paczki `designs/martynka-salon-v2` (12 efektów + `music-loop`, OGG i M4A); efekty domyślnie włączone, muzyka domyślnie wyłączona (rodzic włącza w panelu); ustawienie dźwięku poza zapisem gry (osobny klucz, format zapisu zostaje v3), chyba że plan wykaże, że się nie da — wtedy bieg zatrzymuje się na otwartym PR.
-- **Unknowns:** —
-- **Risk:** odblokowanie Web Audio na iPadzie po pierwszym dotknięciu; waga precache (~1,1 MB obu formatów).
-- **Status:** done
-
-### S-16c: Grafika P2 z paczki salon-v2
-
-- **Outcome:** dziecko widzi docelową ikonę aplikacji (zwykłą i maskable), ekran ładowania z tłem i emblematem, miniatury salonu przed/po na karcie „Pokój gotowy!”, zeszyt na karcie „Nowa umiejętność!”, otwarty portfel w zadaniach MONEY_PAY i ikony talerz/pudełko/naklejka w zadaniach z liczeniem; placeholdery i luki projektu, które ta grafika pokrywa, są zamknięte.
-- **Change ID:** final-art-p2
-- **PRD refs:** FR-026
-- **Prerequisites:** S-16a
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** waga precache; nowe rzeczowniki (talerz, pudełko, naklejka) w `src/data/nouns.ts` z czytaniem nauczycielskim.
-- **Status:** done
-
-### S-16d: Pięć nowych miejsc w salonie
-
-- **Outcome:** dziecko urządza w salonie 5 nowych miejsc po 3 warianty (zasłony, półka ścienna, lampa, lewa roślina, pufa) z paczki `designs/martynka-salon-v2`; tła przed/po bez zasłon; salon ma 11 miejsc.
-- **Change ID:** salon-extra-slots
-- **PRD refs:** FR-016, FR-019
-- **Prerequisites:** S-16a
-- **Parallel with:** —
-- **Blockers:** —
-- **Decyzje autora (2026-10-15):** nowe czynności dopisane NA KOŃCU listy (stary `tasksDone` zostaje poprawny, format zapisu zostaje v3; zamrożona tabela celu migracji v2→v3 zostaje, jej test-przypięcie do danych aktualizuje się świadomie); kolejność: zasłony, półka, lampa, roślina, pufa; koszty 8–15 (S-17 stroi); lampa, lewa roślina i pufa do zakupu pokazują swój dotychczasowy wygląd (wariant 0) jako dekoracja, a czynność brzmi np. „Wymień lampę” z panelem wariantów; zasłony i półka przed zakupem nie istnieją (gołe okno, pusta ściana); salony już ukończone dostają nowe czynności i drugi raz kartę „Pokój gotowy!”.
-- **Unknowns:** —
-- **Risk:** zmiana listy czynności na żywych zapisach (dopisanie na końcu); prawa roślina zostaje stałą dekoracją.
-- **Status:** done
 
 ### S-17: Balans po testach z graczem
 
 - **Outcome:** autor po obserwacji gry córki i miarach z historii w zapisie (czas na pokój, odsetek drugich prób per umiejętność) dostraja wyłącznie w danych gry tempo gwiazdek, koszty mebli, progi opanowania i czytelność poleceń; przejście salonu zajmuje sensowny czas, zadania nie są ani za łatwe, ani frustrujące.
 - **Change ID:** playtest-balance
 - **PRD refs:** FR-027, Success Criteria (Primary), PRD Open Question 5 (motywacja po salonie)
-- **Prerequisites:** S-16a
-- **Parallel with:** —
+- **Prerequisites:** S-16a (M-01, done)
+- **Parallel with:** S-18, S-19, S-20, S-21
 - **Blockers:** —
 - **Unknowns:**
   - Ile tygodni obserwacji wystarczy, by ocenić kryterium „gra 3 razy w tygodniu przez 4 tygodnie”? — Owner: autor. Block: no.
 - **Risk:** zamyka M8 i cały kamień; jedyny wycinek, którego „gotowe” zależy od zachowania gracza, nie od kodu.
 - **Status:** proposed
 
+### S-18: Strona „Prywatność”
+
+- **Outcome:** rodzic otwiera z gry krótką stronę „Prywatność” i czyta po polsku, co gra zbiera przy pobieraniu i aktualizacji, co będzie zawierać opinia i raport o błędzie, po co, jak długo jest przechowywane i jak poprosić o usunięcie; strona działa też offline.
+- **Change ID:** privacy-page
+- **PRD refs:** FR-031, NFR Prywatność, PRD Open Questions 8 i 10
+- **Prerequisites:** —
+- **Parallel with:** S-17
+- **Blockers:** —
+- **Unknowns:**
+  - Gdzie rodzic znajduje link do strony: ekran powitalny dla rodzica, ustawienia, czy oba (PRD Open Question 10)? — Owner: autor. Block: yes.
+  - Jak długo autor trzyma opinie i raporty (propozycja PRD: 12 miesięcy) i czy e-mail znika wcześniej, po odpowiedzi (PRD Open Question 8)? — Owner: autor. Block: yes.
+  - Kto jest administratorem danych i jaki adres kontaktowy podać do prośby o usunięcie (strona publiczna, repozytorium publiczne)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
+- **Risk:** stoi pierwsza, bo przy celu `quality` rodzic ma móc przeczytać, co wychodzi, zanim cokolwiek wyjdzie; ryzyko: strona obiecuje coś, czego kolejne wycinki nie dotrzymają — każdy z nich aktualizuje ją w tym samym PR.
+- **Status:** blocked
+
+### S-19: Opinia rodzica do autora
+
+- **Outcome:** rodzic w ustawieniach (za bramką dla dorosłych) pisze opinię, opcjonalnie podaje e-mail do odpowiedzi i wysyła ją; do opinii dołącza się wersja gry i typ urządzenia, nigdy postęp, etap, imię ani historia; bez sieci opinia czeka i wychodzi przy następnym połączeniu, a rodzic widzi, że jeszcze nie wyszła; nieudana wysyłka kończy się spokojnym komunikatem bez utraty tekstu; autor czyta opinie po swojej stronie i dowiaduje się o nowej.
+- **Change ID:** parent-feedback-send
+- **PRD refs:** FR-028, NFR Prywatność, Guardrails (wysyłki tylko świadomie przez rodzica), PRD Open Questions 8 i 9
+- **Prerequisites:** S-18
+- **Parallel with:** S-21, S-17
+- **Blockers:** wdrożenie części serwerowej — po scaleniu PR właściciel uruchamia `sync` i `bootstrap` na VPS-ie i sprawdza, że CoiledSpring działa (zmian w `deploy/` agent nie wdraża sam).
+- **Unknowns:**
+  - Ile opinii z jednego urządzenia lub adresu w danym czasie jest w porządku, zanim kolejne zostaną odrzucone, i jak autor dowiaduje się o nowej opinii (e-mail, komenda na serwerze, oba) (PRD Open Question 9)? — Owner: autor. Block: yes.
+  - Jak długo opinie leżą na serwerze i kiedy znika e-mail (PRD Open Question 8; ta sama decyzja co w S-18)? — Owner: autor. Block: yes.
+  - Gdzie na wspólnym VPS-ie żyje przyjmowanie wysyłek, tak żeby awaria lub nadużycie nie dotknęły CoiledSpring ani wydań gry? — Owner: zespół. Block: no (rozstrzyga `/10x-research`).
+  - Jak kolejka „wyślij przy następnym połączeniu” zachowuje się po zamknięciu gry i po aktualizacji (gdzie leży tekst, czy przeżywa reset zapisu)? — Owner: zespół. Block: no.
+- **Risk:** gwiazda przewodnia; pierwszy ruch danych z gry na zewnątrz i pierwszy adres na serwerze przyjmujący dane — ryzyko prywatności (dane dziecka w treści, e-mail w logach) i nadużycia (spam, zapchany dysk wspólnego VPS-a).
+- **Status:** blocked
+
+### S-20: Raport o błędzie z gry
+
+- **Outcome:** rodzic jednym stuknięciem wysyła autorowi raport z karty awarii („Ups!”) i z sekcji „Zapis gry”: kod błędu, wersja gry, typ urządzenia i kilka linii technicznych, bez postępu, etapu i historii dziecka; gra nigdy nie wysyła raportu sama; bez sieci raport zachowuje się jak opinia.
+- **Change ID:** parent-bug-report
+- **PRD refs:** FR-029, NFR Prywatność
+- **Prerequisites:** S-19
+- **Parallel with:** S-21, S-17
+- **Blockers:** jak w S-19, jeśli raport zmienia część serwerową.
+- **Unknowns:**
+  - Karta „Ups!” zatrzymuje grę — czy wysyłka z niej ma działać bez bramki dla dorosłych (gra stoi, dziecko może stuknąć), czy z bramką? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`; PRD mówi „rodzic jednym stuknięciem”).
+  - Które „kilka linii technicznych” wolno dołączyć, żeby żadna nie niosła danych dziecka (np. nazwa umiejętności w `Kod:` jest daną o postępie?) — Owner: zespół. Block: no.
+- **Risk:** po S-19, bo używa tej samej drogi i tej samej kolejki; ryzyko: linia techniczna przemyca dane dziecka.
+- **Status:** proposed
+
+### S-21: Statystyki odwiedzin dla autora
+
+- **Outcome:** autor widzi zbiorczy raport odwiedzin strony gry: unikalni odwiedzający (dzień, tydzień, miesiąc), nowi i powracający, uruchomienia gry z siecią, typ urządzenia, źródła wejść, odsetek urządzeń z najnowszą wersją, błędy pobierania; raport powstaje wyłącznie z obsługi pobierania i aktualizacji gry, adresy są skracane, surowe zapisy znikają po 30–90 dniach; w grze nie przybywa ani jednej linii kodu.
+- **Change ID:** visit-stats
+- **PRD refs:** FR-030, NFR Prywatność
+- **Prerequisites:** S-18
+- **Parallel with:** S-19, S-20, S-17
+- **Blockers:** wdrożenie na VPS-ie przez właściciela (`sync` + `bootstrap`), jak w S-19.
+- **Unknowns:**
+  - Ile dni trzymać surowe zapisy w widełkach 30–90? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`, potrzebne też na stronie „Prywatność”).
+  - Jak autor ogląda raport: tylko przez tailnet, za hasłem, czy jako podsumowanie z komendy na serwerze? — Owner: autor. Block: no.
+  - Czy wersja serwera na VPS-ie umie skracać adresy w logu tak, jak zakłada decyzja z 2026-10-20? — Owner: zespół. Block: no (sprawdza `/10x-research`).
+- **Risk:** po S-18, bo log dostępu to nowe zbieranie danych, które strona „Prywatność” ma opisać, zanim się zacznie; ryzyko: log wspólnego serwera obejmie też ruch CoiledSpring albo trzyma pełne adresy.
+- **Status:** proposed
+
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                   | Suggested issue title                                   | Ready for `/10x-plan` | Notes |
-| ---------- | --------------------------- | ------------------------------------------------------- | --------------------- | ----- |
-| F-01       | game-shell-scaling          | M0: szkielet Phaser 4.2, scena 1920×1080, układ katalogów | yes                 | Run `/10x-plan game-shell-scaling` |
-| F-02       | static-deploy-pipeline      | M0: deploy dist/ z GitHub Actions na VPS za Caddy       | yes                   | Równolegle z F-01 |
-| S-01       | installable-offline-pwa     | M0: instalowalna PWA offline na tablecie                | no                    | Po F-01, F-02 |
-| F-03       | generator-test-harness      | M1: vitest, seedowany rng, skrypt sample                | no                    | Po F-01; może iść równolegle z S-01 |
-| S-02       | generators-e3-e4            | M1: generatory grupy 1 dla E3–E4                        | no                    | Po F-03 i S-01 |
-| S-03       | generators-remaining-stages | M1: generatory dla E1–E2 i E5–E6                        | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-generators-remaining-stages/`); PR otwarty, merge czeka na „merguj” |
-| S-04       | task-round-stars            | M2: runda zadań, gwiazdki, podpowiedzi                  | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-task-round-stars/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08 |
-| S-05       | narrator-round-summary      | M2: lektor i podsumowanie rundy                         | no                    | Done — zarchiwizowane 2026-10-12 (`context/archive/2026-10-12-narrator-round-summary/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08. Follow-upy S-04 z `Trigger: S-05` zamknięte (przełącznik HUD, rysowany licznik w e2e) albo przeniesione (`pl.title` → S-06, kropki kroków → następna zmiana `SolutionSteps`) |
-| S-06       | first-launch-placement      | M3: wiek, etap, bramka rodzica, rozgrzewka              | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-first-launch-placement/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08. Odstępstwo od FR-012 (decyzja orkiestratora): dziecko startuje samo na etapie z tabeli wieku, bramka chroni tylko zmianę etapu (wiersz [human] 7.5). Proponowane ryzyko #12 (pierwsze uruchomienie dotykiem) czeka na `/10x-test-plan --refresh` (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`). Follow-up S-04/S-05 `Trigger: S-06` (`pl.title` — marka powitania, gołe liczby — tokeny) zamknięty w fazach 4 i 7 |
-| S-07       | adaptive-curriculum         | M3: wagi, opanowanie, odblokowanie kroków               | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-adaptive-curriculum/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08. Decyzja autonomiczna do przejrzenia (wiersz [human] 8.6): podłoga kalendarza — E3 w październiku tylko kroki 1, 2, 6, cały etap od stycznia; do S-11 każdy zimny start zeruje opanowanie i wraca do podłogi (wiersz [human] 8.5). Follow-upy S-04/S-05/S-06 `Trigger: S-07` zamknięte (brak powtórzeń polecenia w rundzie i rozgrzewce, `PlacementData` w core); `= ?` przeniesione do S-16. Proponowane ryzyka #12 i #13 czekają na `/10x-test-plan --refresh` (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`) |
-| S-08       | parent-settings-progress    | M3: ustawienia rodzica i podgląd postępów               | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-parent-settings-progress/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-12-s04-s08. Wszystkie follow-upy `Trigger: S-08` (auto-czytanie, zmiana etapu za bramką, wspólne helpery e2e, `pendingUnlock`, przykłady błędów w historii) zamknięte. Otwarte wiersze [human] 6.7, 9.6–9.8 (lista kontrolna po runie). Nowe follow-upy (`context/archive/2026-10-13-parent-settings-progress/follow-ups/review-fixes.md`): ryzyko test-planu #14 (`/10x-test-plan refresh` lub przed S-11); zapis ustawień i postępów + wczesny zapis (`Trigger: S-11`); prywatność eksportu przykładów błędów (`Trigger: S-12`); kalibracja przytrzymania 2 s (`Trigger: S-17`); F4–F8 (src/pwa, nowa nakładka z `suspend()`, WelcomeScene/UIScene, `pl.settings.empty`/długa historia przy S-11) |
-| S-09       | first-furniture-purchase    | M4: pierwszy mebel za gwiazdki (gwiazda przewodnia)     | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-first-furniture-purchase/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s09-s11. Saldo gwiazdek w rejestrze, salon 10 slotów (koszty 5–15, razem 96), panel 3 wariantów, „Wybieram” odejmuje gwiazdki; follow-upy S-05 `Trigger: S-09` (koszt w `summaryView`, lot gwiazdki) zamknięte; wspólny przycisk HUD nadal otwarty (następna zmiana przycisku HUD). Otwarte wiersze [human] 7.6–7.10 (lista slotów i koszty, brak dźwięku vs FR-017 do S-16, sesyjność do S-11, UX panelu bez kitu, test na iPadzie/Androidzie) — lista kontrolna po runie |
-| S-10       | variant-change-room-done    | M4: zmiana wariantu, „Pokój gotowy!”                    | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-variant-change-room-done/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s09-s11. Darmowa zmiana wariantu po przytrzymaniu urządzonego slotu (600 ms / 40 px, `balance.roomHold`) i w trybie „Zmień wygląd” po ukończeniu pokoju, karta „Pokój gotowy!” po ostatnim zakupie, lista pokoi (salon + zapowiedź „Wkrótce”); follow-upy S-09 `Trigger: S-10` (przytrzymanie, F4 `pl.room.name`, F5 rzutowania, V1 podpisy) zamknięte; V2 „pop” dywanu nad kanapą i V3 znikające podpisy → S-16. Szew `?e2eStars` tylko w buildzie z hookiem (strażnik w `vite/e2eHookGuard.mjs`). Otwarte wiersze [human] 3.5, 6.6–6.9 (szew e2eStars, próg przytrzymania, UX trybu/karty/listy z V4/V5, kopia „Zmień wygląd” vs FR-019 „poprawki”, urządzenia) — lista kontrolna po runie |
-| S-11       | autosave-versioned-save     | M5: autozapis i wersjonowany zapis                      | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-autosave-versioned-save/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s09-s11. Format zapisu v1 (jednokierunkowy na urządzeniach dzieci) w IndexedDB przez `idb-keyval` (`src/storage/idb.ts`), dekoder z łańcuchem migracji w `src/core/save.ts`, autozapis 500 ms + ukrycie karty, natychmiast po zakupie i końcu rundy; nieczytelny lub nowszy zapis nigdy nie jest nadpisywany (karta z eksportem kopii). Follow-upy S-06/S-07/S-08/S-09/S-10 `Trigger: S-11` zamknięte. Otwarte wiersze [human] 4.6, 5.7, 5.8, 6.6 (akceptacja kształtu v1 vs plan §5), 6.7, 6.8, 6.9 — lista kontrolna po runie. Nowe follow-upy (`context/archive/2026-10-13-autosave-versioned-save/follow-ups/review-fixes.md`): migracja v2 + e2e na dwóch buildach (ryzyko #10) + dwie instancje jednego originu (`Trigger: first save-format change (v2)`), F3–F5, odświeżenie test-planu (faza 4) i profilu runu |
-| S-12       | save-export-import-reset    | M5: eksport, import, reset                              | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-save-export-import-reset/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. Eksport kopii (`.txt` z kopertą JSON: aplikacja, build, powód) dopiero po potwierdzeniu, import po walidacji i podsumowaniu „Teraz / Z pliku” (gwiazdki, etap, pokój), reset z potwierdzeniem; format zapisu nadal v1 (bez migracji). Zamknięte: follow-upy S-11/S-08 `Trigger: S-12` oraz audyt 2026-10-13_1751 M-S3, L-S2, N-8, M-S2 (N-7 poza zakresem). Otwarte wiersze [human] 4.7, 5.6, 6.8 (`.txt` wbrew literze FR-022), 6.9, 6.10 — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-13-save-export-import-reset/follow-ups/review-fixes.md`): import/reset nad nieczytelnym zapisem (F1, `Trigger: first save-format change (v2) or the first deploy rollback across a save version, or the next change to saveImportDialog.ts / saveResetDialog.ts`), dwie karty jednego originu i L-S1 (`Trigger: first save-format change (v2)`), N-7 (pomiar iPada), import z ekranu powitalnego. Do sprawdzenia: podgląd postępów pokazał „Krok 8 z 8” dla E3 po jednej rundzie (nie kod S-12) |
-| S-13       | drawn-widget-tasks-e3-e4    | M6: widżety rysowane w kodzie dla E3–E4                 | no                    | Done — zarchiwizowane 2026-10-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. `Task.visual` + `Task.input`; CLOCK (tarcza), LENGTH (linijka), PLACE_VALUE odczyt i budowa (klocki, pierwszy tryb `drag` na macie), DATA (diagram słupkowy), tryb `select` (EVEN_ODD); nowe kroki grywalne E3.3–E3.6, E4.1, E4.3, E4.7, E4.8; format zapisu nadal v1. Zawężenie: siatka, obwód, kwadrat magiczny, „ustaw zegar” → S-13b; oś liczbowa, słupek pisemny, grafy → S-14. Otwarte wiersze [human] 4.6 („15.00” vs kit „3:30”), 6.9, 9.8 (tablet, małe klocki na macie O3), 10.6, 10.7 — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): O1 klocki jedności w dwóch rzędach, O2 diagram nieczytelny w fazie rozwiązania obok klawiatury, czas e2e (adaptive.spec blisko limitu 180 s, `Trigger: a timeout of adaptive.spec, or the next change adding drag skills to E4`) |
-| S-13b      | drawn-grid-tasks-e3-e4      | M6: siatka, kwadrat magiczny, obwód, „ustaw zegar”      | no                    | Done — zarchiwizowane 2026-10-14 (`context/archive/2026-10-14-drawn-grid-tasks-e3-e4/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-14-save-s13b-s15-s14b. PUZZLE_GRID (kwadrat magiczny, piramida; E3.5), GRID z kodowaniem pól (E3.7), PERIMETER (E4.7; nowe kroki grywalne E5.12 bok z obwodu i E6.3 figury złożone), „ustaw zegar” przeciąganiem wskazówek (nowa gałąź `drag`, E3.3, E3.11, E4.3 tylko kwadranse); rozwiązywalność w trybie odpowiedzi (S13-01…04, S13-07); format zapisu nadal v1. Wyższe progi odblokowania na żywych zapisach dla E3.3, E3.5, E3.7, E3.11, E4.7 (wolniej, nic nie ginie). Otwarte wiersze [human] 8.7 (gest na tablecie), 10.6 (decyzje wbrew ZADANIA, trzy nowe sformułowania) — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-14-drawn-grid-tasks-e3-e4/follow-ups/review-fixes.md`): BONDS z parami / CHOOSE_OP z obrazkiem `Trigger: S-14d`; „ustaw zegar” E5–E6 co minutę `Trigger: S-14c or a tablet test`; S13-06 `Trigger: S-15 save format v2`; O5 podpowiedź `E5.5.capacity_quarter_l` `Trigger: S-14b`; O1–O6, F4, F5 przy następnej zmianie widżetów |
-| S-14       | art-tasks-all-stages        | M6: zadania z grafiką, pełny zestaw typów               | no                    | Done — zarchiwizowane 2026-10-14 (`context/archive/2026-10-14-art-tasks-all-stages/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-13-s12-s14. Pierwsza grafika w grze: 38 plików WebP z paczki A v1 w `public/assets/tasks/` (precache); MONEY_COUNT, MONEY_CHANGE, MASS w równowadze, CAPACITY, TEMPERATURE, COUNT, MULT_GROUPS oraz widżety S-13 w E1/E2/E5/E6; format zapisu nadal v1. Zawężenie: reszta typów → S-14b/S-14c/S-14d, PERIMETER E5.12/E6.3 → S-13b, MONEY_PAY → S-14d. Otwarte wiersze [human] 2.9 (WebP, luźne pliki), 8.9 (zawężenie), 9.7 (odstępstwa od ZADANIA, m.in. temperatury E3 ≥ 0), 9.8 (teksty, masy `SCALE_ITEMS`), 9.9 (tablet: ostrość, termometr) — lista kontrolna po runie. Follow-upy: `context/archive/2026-10-14-art-tasks-all-stages/follow-ups/review-fixes.md`. Wcześniej: S-13 done (Prerequisites spełnione). Z S-13 (`context/archive/2026-10-13-drawn-widget-tasks-e3-e4/follow-ups/review-fixes.md`): oś liczbowa jako podpowiedź ADD_SUB `Trigger: S-14`; podświetlenie rysunku przy podpowiedzi, BONDS z parami / CHOOSE_OP z obrazkiem, wymiana 10 jedności na dziesiątkę i setki na macie `Trigger: S-14 or …`; O2 diagram w fazie rozwiązania obok klawiatury (gdy S-14 doda więcej rysunków przy klawiaturze). Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): „tryb z obrazkami” dla 6-latków pominięty (design-gaps wiersz 21) |
-| S-14b      | number-line-written-arrows  | M6: słupek pisemny, grafy, oś liczbowa                  | no                    | Done — zarchiwizowane 2026-10-15 (`context/archive/2026-10-14-number-line-written-arrows/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-14-save-s13b-s15-s14b. WRITTEN w słupku z okienkami cyfr i przeniesieniem/pożyczką rysowanymi przez grę (E5.2, E6.7; nowy tryb odpowiedzi `digits`), ARROW_TABLE grafy i tabelki strzałkowe (E2.6), oś liczbowa jako rysunek SEQUENCE (E2.7) i MULT_GROUPS oraz podpowiedź ADD_SUB (E2–E3 do 30); format zapisu nadal v2. Wyższe progi odblokowania na żywych zapisach dla E2.6, E3.9, E5.2, E6.7 (wolniej, nic nie ginie). Otwarte wiersze [human] 8.8 (szkolny zapis przeniesienia i pożyczki, z O5), 9.6 (decyzje wbrew ZADANIA/PRD i progi; z F4 i O3) — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-14-number-line-written-arrows/follow-ups/review-fixes.md`): WRITTEN z brakującymi cyframi, F9, ARROW_TABLE z regułą „·n”/łańcuchem i E5.5 `capacity_half_l_e5` `Trigger: S-14c`; oś-podpowiedź dla E1 i E1.10 `place_read_12` `Trigger: S-14d`; F5, F8, O1, O2, wspólny `ArtPool`, prostokąty rysunku obok klawiatury przy następnej zmianie widżetu/układu |
-| S-14c      | text-measure-time-types     | M6: typy tekstowe, warianty miar, runda powtórkowa      | no                    | Done — zarchiwizowane 2026-10-15 (`context/archive/2026-10-15-text-measure-time-types/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-fix-s14c-s14d. 7 nowych typów (CLOCK_ELAPSED, TIME_UNITS, UNIT_CHOICE, PRICE, TIMES_MORE, ORDER_OPS, INEQUALITY — pierwsze kafelki z wieloma dobrymi odpowiedziami), tekstowe warianty MASS/LENGTH/CAPACITY (w tym E5.5 `capacity_half_l_e5`, follow-up S-14b zamknięty), PLACE_VALUE od 1000 (E6.9, E6.10) i krok powtórkowy MIX E6.11 (`StepDef.review`, poza startem kalendarza i rozgrzewką); format zapisu nadal v2. Wyższe progi odblokowania na żywych zapisach dla E1.9, E5.3, E5.5, E5.7, E5.10, E5.12, E6.3, E6.5, E6.9, E6.10 (wolniej, nic nie ginie); E6.2 grywalny → start kalendarza E6 `[2, 3, 5, 7, 9, 10]` (było `[3, 4, 6, 8, 10, 10]`). Otwarte wiersze [human] 4.8 (głos tabletu: „8 15”, „okienko … mniejsze niż”, symbole jednostek, „24.00”), 9.6 (decyzje wbrew ZADANIA/PRD i progi) — lista kontrolna po runie. Follow-upy z nowymi triggerami (`context/archive/2026-10-15-text-measure-time-types/follow-ups/review-fixes.md`): „ustaw zegar” w E5–E6 i tarcza co minutę `Trigger: a CLOCK step in E5-E6 or a tablet test`; banknoty 200/500 zł `Trigger: a money skill above 100 zł`; WRITTEN z brakującymi cyframi i F9 `Trigger: the next change to WRITTEN`; ARROW_TABLE „·n”/łańcuch `Trigger: a multi-number reducer`; LOGIC w E6.11 `Trigger: S-15 F1 (puzzle pool for E5-E6)`; rozkład jazdy jako tabela, tytuł rundy powtórkowej w HUD, przykład błędu INEQUALITY w podglądzie rodzica (`Trigger: a v3 save …`), mowa i hinty (`Trigger: [human] 4.8 …`), trzywierszowy pasek podpowiedzi i minimalna skala `fitPieces` przy następnej zmianie układu. Brak follow-upów `Trigger: S-14d`. |
-| S-14d      | e1-shapes-picture-mode      | M6: figury E1, pary, MONEY_PAY, tryb z obrazkami        | no                    | Done — zarchiwizowane 2026-10-15 (`context/archive/2026-10-15-e1-shapes-picture-mode/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-fix-s14c-s14d. E1.1 grywalny: SHAPES (figury rysowane na kafelkach, „który nie pasuje”, zaznacz wszystkie) i PATTERN (szlaczek), COMPARE_QTY (dwie grupy obok siebie, „Po lewej/Po prawej/Tyle samo”), ORDINAL (E1.2, liczby do 5), CHOOSE_OP z obrazkiem (E1.3, strzałka przybywa/ubywa) i MONEY_PAY (przeciąganie monet z tacy do portfela, zdejmowanie stuknięciem, wariant „najmniej monet”; E1.11 monety 1–5 zł, E2.2 z banknotem 10 zł; wspólny reduktor `trayDrag` dla klocków i monet, trzecia gałąź `drag` `coins`); „tryb z obrazkami” jako filtr doboru rundy w E1 (wiek 6 jesienią albo łagodzenie; design-gaps wiersz 21); O4 `E1.2.count_5` zamknięty; format zapisu nadal v2. Wyższe progi odblokowania na żywych zapisach dla E1.2 (1 → 2) i E1.3 (2 → 3) (wolniej, nic nie ginie); E1.1 grywalny → start kalendarza E1 `[2, 4, 6, 8, 10, 11]` (było `[3, 4, 6, 8, 10, 11]`). Otwarte wiersze [human] 9.6 (tablet z palcem 6-latka: monety, kafelki z figurami, „Po lewej/Po prawej/Tyle samo”), 9.7 (decyzje wbrew ZADANIA/roadmapie, w tym zły zapłacony zestaw opróżnia portfel, CHOOSE_OP z obrazkiem od 2, grupy COMPARE_QTY w ramkach obok siebie) — lista kontrolna po runie. Follow-upy z nowymi triggerami (`context/archive/2026-10-15-e1-shapes-picture-mode/follow-ups/review-fixes.md`): SPATIAL `Trigger: art for a SPATIAL scene or S-16`; SYMMETRY `Trigger: a toggle-cells answer mode`; BONDS „połącz pary” `Trigger: a pairing answer mode`; ORDINAL „dotknij czwartego” `Trigger: a tap-in-picture answer mode` i słownie/do 10 `Trigger: noun gender data in nouns.ts or an E1 step with ordinals to 10`; oś-podpowiedź dla E1 `Trigger: a layout band above the tiles`; E1.10 `place_read_12` `Trigger: a content-invariants exception for tiny task spaces or [human]`; portfel w podglądzie rodzica `Trigger: a v3 save or a parent asking for it`; grafika portfela `Trigger: the author delivers wallet art`; banknot 10 zł w E1.11 i pierwsza podpowiedź CHOOSE_OP `Trigger: [human] 9.7`; CHOOSE_OP z 1 rzeczą `Trigger: noun gender data in nouns.ts`; czwarta gałąź `drag` `Trigger: a fourth DragMode`; pełny portfel, znacznik na dużej figurze, ikony 10 | 10, monety na tacy, etykiety zastępcze `Trigger: [human] 9.6 tablet test`; `CoinWallet.paint`, `PatternRow` `dashedRect`, SHAPES `all`, wspólne `grosze(id)` przy następnej zmianie tych plików. Brak follow-upów `Trigger: S-14d` w innych zmianach. |
-| S-15       | minigame-daily-puzzle       | M6: minigra i zagadka dnia                              | no                    | Done — zarchiwizowane 2026-10-14 (`context/archive/2026-10-14-minigame-daily-puzzle/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-14-save-s13b-s15-s14b. Po 3 zwykłych rundach wariant rundy: Hasło z wyników (E1–E2, litera po każdym działaniu) albo Zakrywanka (kostki 0–12, plansza 13 pól), zagadka dnia z puli 15 oryginalnych zagadek LOGIC E3–E4 raz dziennie za ×2 gwiazdki (`balance.variants`). **Format zapisu v2** (migracja 1 → 2, kopia `profile:default:backup-v1`, karta `migration-failed`; build v1 po wycofaniu pokazuje kartę `future` i nie nadpisuje). Otwarte wiersze [human] 1.6 (drzwi jednokierunkowe v2, zaakceptowane przez maintainera na Step 0), 5.6 (autor czyta 15 zagadek), 8.5 (reguła Hasła i słowa), 9.5 (stukanie w pola na tablecie), 10.6 (decyzje wbrew PRD/ZADANIA/kitowi, w tym F1: E5–E6 dostają pulę E3–E4) — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-14-minigame-daily-puzzle/follow-ups/review-fixes.md`): e2e dwóch buildów, odczyt kopii backup-v1, `migration-failed` vs import/reset, `replace` bez kopii v1 `Trigger: the next save-format change (v3)`; S13-06 `Trigger: the next save-format change or S-17`; zakres kostek, `everyRounds`, F5 dzień zagadki, O3, pule zagadek dla innych etapów `Trigger: S-17 playtest`; F6–F8, O1, O2, O4 przy następnej zmianie widżetów minigier / `pl.minigames` / `drawPrompt` |
-| S-16a      | final-art-salon             | M7: docelowa grafika salonu, animacje, ekran ładowania  | no                    | Done — zarchiwizowane 2026-10-15 (`context/archive/2026-10-15-final-art-salon/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-s16a-salon-art. Salon z paczki `martynka-expansion-v1`: etap tła „Odnów ściany i podłogę” + 6 mebli × 3 warianty, lampa/rośliny/pufa jako stała dekoracja, koszty 5, 7, 9, 10, 12, 13, 15 (suma 71), animacje za „ogranicz ruch”, ekran ładowania rysowany kodem, „Obrazki” liczy grafikę pokoju. Żywe zapisy przelicza `remapLegacySalon` przy wczytaniu (reguła B, **format zapisu zostaje v2**, fixture'y bez zmian). Otwarte wiersze [human] 2.5 (reguła B: zaokrąglenie w górę, meble podarowane z wariantem 0, bez zwrotu za stary `tasksDone` 9–10) i 10.4 (iPad: pełny remont, ≈ 59 MB tekstur, ekran ładowania offline) — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-15-final-art-salon/follow-ups/review-fixes.md`): wszystkie dawne `Trigger: S-16` przeniesione (atlas `Trigger: precache over budget or a second room`, termometr E3–E5, podświetlenie rysunku, lektor jednostek, O3 i ` = ?` `Trigger: S-17`, SPATIAL, portfel, zero w foncie, `audio.noAudio` `Trigger: S-16b`); nowe: ryzyko rollbacku `Trigger: any deploy rollback of the build that shipped S-16a`, koszty salonu `Trigger: S-17`, F1 `RoomScene.fadeStage` po uśpieniu `Trigger: the next change to RoomScene.fadeStage or a tablet check (10.4) showing it`, F2 `drawRoomMiniature`, F3–F5, VO1–VO3 |
-| S-16b      | final-sound                 | M7: dźwięki                                             | no                    | Done — zarchiwizowane 2026-10-16 (`context/archive/2026-10-16-final-sound/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-fix-s16bcd. 12 efektów + `music-loop` z paczki salon-v2 (`public/assets/sounds/{m4a,ogg}`, kolejność [m4a, ogg]); efekty domyślnie włączone, muzyka wyłączona i ładowana leniwie; sekcja „Dźwięki” w panelu rodzica (DESIGN-GAP 114); ustawienie w `localStorage` poza zapisem (**format zapisu zostaje v3**); brakujący, uszkodzony albo wiszący dźwięk nie zatrzymuje gry (`QUIET_REJECTIONS`, `cutLoad`); luka 35 zamknięta. Otwarte wiersze [human] 9.7 (odsłuch na iPadzie) i 10.6 (dźwięki offline) — lista kontrolna po runie. Follow-upy: `context/archive/2026-10-16-final-sound/follow-ups/review-fixes.md` (VO3, trzask pętli, wyciszanie muzyki pod lektorem, precache obu formatów, `tap` na kafelkach, przełącznik ciszy, WebKit, status muzyki `loading`, wyrównanie nagłówków panelu). |
-| S-16c      | final-art-p2                | M7: ikona, ekran ładowania, miniatury, portfel, zeszyt  | no                    | Done — zarchiwizowane 2026-10-16 (`context/archive/2026-10-16-final-art-p2/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-fix-s16bcd. Ikony aplikacji z paczki salon-v2 (zwykła, maskable, apple-touch, favicon) w `public/icons/`; ekran ładowania z tłem i emblematem (tytuł rysowany przez grę, jasny obrys) i rysowanym zapasem przy odcięciu; portfel na sześć miejsc w MONEY_PAY (limit 10 → 6 tylko dla wariantu `pay` E1.11/E2.2, pełny portfel przyciemnia tacę, DESIGN-GAP 115); zeszyt na karcie „Nowa umiejętność!”; miniatura salonu z zapasem na karcie „Pokój gotowy!” (`salon-before` nieprzekonwertowany); ikony talerz/pudełko/naklejka w liczeniu; **format zapisu zostaje v3**; luki 22, 105, 108 zamknięte, 104 zawężona. Błąd nazwy zdarzenia pliku ekranu ładowania (podwójny myślnik) znaleziony przez e2e i naprawiony (`src/core/loaderEvent.ts`). Otwarte wiersze [human] 7.4 (ikona na iPadzie / przycięcie maskable na Androidzie) i 10.4 (płacenie palcem w portfelu na iPadzie) — lista kontrolna po runie. Follow-upy: `context/archive/2026-10-16-final-art-p2/follow-ups/review-fixes.md` (VO1 rozmiar monety w portfelu, VO2 kompozycja ekranu ładowania, VO3 rysowany portfel, F4 zegar „wczytuję”, F5 optymalizacja PNG ikon, F6 `make-icons.mjs`, płatności 7–10 zł, typy `Rect`, `ArtPool`). |
-| S-16d      | salon-extra-slots           | M7: 5 nowych miejsc salonu                              | no                    | Done — zarchiwizowane 2026-10-16 (`context/archive/2026-10-16-salon-extra-slots/`); PR/CI/merge/deploy w autonomicznym runie 2026-10-15-fix-s16bcd. Salon ma 11 miejsc i 12 czynności: zasłony, półka ścienna, lampa, lewa roślina, pufa × 3 warianty z paczki salon-v2, dopisane na końcu (koszty 8, 10, 12, 13, 15; salon razem 129); lampa/roślina/pufa w starym wyglądzie do zakupu („Wymień …”), zasłony i półka dopiero po zakupie; tła bez zasłon. Format zapisu zostaje v3; ukończone salony dostają nowe czynności i drugi raz „Pokój gotowy!”. Otwarte wiersze [human] 6.4 (iPad: „Wymień lampę”), 8.4 (iPad: przytrzymanie zasłon przy górnej krawędzi) — lista kontrolna po runie. Follow-upy (`context/archive/2026-10-16-salon-extra-slots/follow-ups/review-fixes.md`): VG-1 (nawis zasłon w miniaturze), VG-2 (obrys przytrzymania poza kadrem), VO1–VO3, F1–F5 z wyzwalaczami. S-16b, S-16c i S-16d zrobione — następne S-17 playtest-balance. |
-| S-17       | playtest-balance            | M8: balans po testach z córką                           | yes                   | NASTĘPNE: S-16a–d zrobione (S-16d 2026-10-16) — gotowe do `/10x-plan playtest-balance` po obserwacji gry. Koszty salonu po S-16d: 12 czynności, razem 129 gwiazdek (nowe 8, 10, 12, 13, 15). Z S-16a (`context/archive/2026-10-15-final-art-salon/follow-ups/review-fixes.md`): koszty salonu 5–15 (suma 71), O3 kafelki obok termometru, ` = ?` w poleceniach. Z S-06 (`context/archive/2026-10-13-first-launch-placement/follow-ups/review-fixes.md`): bonus czystej rundy (+2) w rozgrzewce 6 zadań, mowa na ścieżce rodzica przed pierwszym stuknięciem w canvas (iPad), bramka 13–19 × 13–19 na klawiaturze cyfr DOM; z S-07 (`context/archive/2026-10-13-adaptive-curriculum/follow-ups/review-fixes.md`): wagi 60/30/10, łagodzenie 20/50/30, `minStartSteps`, `unlockAt` 4 / `unlockShare` 0.5, formuła podłogi kalendarza (E3 w październiku ~1 miesiąc przed podręcznikiem), pierwsze stuknięcie po obrocie tabletu; z S-15 (`context/archive/2026-10-14-minigame-daily-puzzle/follow-ups/review-fixes.md`): zakres kostek Zakrywanki 0–12 dla każdego etapu, `balance.variants.everyRounds` (3) i tempo gwiazdek planszy 13 pól, F5 dzień zagadki liczony przy końcu, O3 podsumowanie bez informacji o ×2, pule zagadek dla etapów poza E3–E4, S13-06; z S-14d (`context/archive/2026-10-15-e1-shapes-picture-mode/follow-ups/review-fixes.md`): test na tablecie z 6-latkiem ([human] 9.6: pełny portfel bez sygnału, znacznik na dużej figurze, ikony 10 | 10 ≈ 22 px, monety na tacy mniejsze niż w portfelu, etykiety zastępcze ≈ 9–10 px), wolniejsze odblokowanie E1.2/E1.3 |
+| Roadmap ID | Change ID            | Suggested issue title                                       | Ready for `/10x-plan` | Notes |
+| ---------- | -------------------- | ----------------------------------------------------------- | --------------------- | ----- |
+| S-17       | playtest-balance     | Balans po testach z córką                                   | no                    | Czeka na obserwacje autora (przeniesione z M-01). |
+| S-18       | privacy-page         | Strona „Prywatność” z linkiem dla rodzica                   | no                    | Blokują PRD Open Questions 8 i 10. |
+| S-19       | parent-feedback-send | Opinia rodzica wysyłana do autora (z kolejką offline)        | no                    | Po S-18; blokują PRD Open Questions 8 i 9. |
+| S-20       | parent-bug-report    | Raport o błędzie z karty „Ups!” i z „Zapis gry”             | no                    | Po S-19. |
+| S-21       | visit-stats          | Statystyki odwiedzin z logu serwera, bez kodu w grze        | no                    | Po S-18; zmiana w `deploy/` wdrażana przez właściciela. |
 
 ## Open Roadmap Questions
 
-1. **Rozgrzewka po ustawieniu etapu przez rodzica** (FR-012): czy rozgrzewka 6 zadań nadal koryguje etap w dół, gdy rodzic ustawił go świadomie, czy jest pomijana? — Owner: autor. Block: S-06 (nie blokuje planowania; rozstrzygnąć w `/10x-plan`).
-2. **Które 1–2 minigry wchodzą do v1** (FR-024) i jaki mnożnik gwiazdek za zagadkę dnia (FR-025, liczba w balansie). — Owner: autor. Block: S-15 (rozstrzygnąć na starcie M6).
-3. **Zgodność M1 z planem**: plan wymaga testów 1000 losowań dla każdej umiejętności wszystkich etapów; FR-004 zawęża pełną jakość treści do E3–E4, zachowując testy mechaniczne dla wszystkich. Doprecyzować kryterium „gotowe” M1. — Owner: autor. Block: F-03, S-02, S-03 (nie blokuje planowania; propozycja roadmapy: S-02 = pełna jakość E3–E4, S-03 = testy mechaniczne reszty).
-4. **Cicha aktualizacja (FR-003) zamiast strategii „prompt” z planu**: plan zaktualizowany 2026-10-11. — Owner: autor. Block: — (rozstrzygnięte; zostaje do potwierdzenia w S-01).
-5. **Ryzyko: motywacja po salonie**: jeden pokój to ok. 10 zadań remontowych; salon może skończyć się szybciej niż zainteresowanie. — Owner: autor. Block: S-17 (mierzy M8); drugi pokój to pierwsza rzecz po v1.
-6. **Ryzyko: grafika mebli**: paczka A v1 nie zawiera 10 slotów × 3 wariantów mebli salonu ani ikon do wszystkich typów; M7 zależy od pracy graficznej autora poza kodem. — Owner: autor. Block: S-16b (dźwięki). ROZSTRZYGNIĘTE dla grafiki 2026-10-15: salon v1 = 6 mebli z paczki expansion + etap tła (S-16a), brakujące elementy w `docs/designer-brief-s16.md`.
-7. **Ryzyko: lektor**: polski głos systemowy na tablecie może być słaby lub go brak. — Owner: autor. Block: S-05 (nie blokuje; sprawdzić na urządzeniach w M2).
-8. **Adres gry do czasu zakupu domeny**: ROZSTRZYGNIĘTE 2026-10-11: gra działa pod https://martynka-urzadza.pl (DNS A → 179.198.222.94, `www` przekierowuje na apex, certyfikaty Let's Encrypt przez Caddy); etap z certyfikatem na adres IP trwał jeden dzień. — Owner: autor. Block: —.
+1. **Przechowywanie opinii i raportów** (PRD Open Question 8): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. — Owner: autor. Block: S-18, S-19.
+2. **Ochrona przed nadużyciem wysyłek** (PRD Open Question 9): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. — Owner: autor. Block: S-19 (i S-20).
+3. **Gdzie rodzic znajduje stronę „Prywatność”** (PRD Open Question 10): ekran powitalny dla rodzica, ustawienia, czy oba. — Owner: autor. Block: S-18.
+4. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; kierunek po v1 to ulica i domy. — Owner: autor. Block: — (kolejny kamień).
 
 ## Parked
 
-- **Fabuła, dialogi, postacie, wydarzenia czasowe** — Why parked: PRD Non-Goals; Martynka to nazwa gry, nie bohaterka.
-- **Energia, timery, reklamy, zakupy, sklep, ranking** — Why parked: PRD Non-Goals; zero presji i zero monetyzacji.
-- **Wiele profili, konta, chmura, synchronizacja** — Why parked: PRD Non-Goals i Access Control; jeden profil lokalny, format zapisu zostawia miejsce na profile.
-- **Merge board** — Why parked: PRD Non-Goals; zadania matematyczne zastępują go całkowicie.
-- **Drugi pokój z grafiką** — Why parked: PRD Non-Goals; pierwsza rzecz po v1, zależna od grafiki. Od PRD v3 część kierunku „ulica i domy” (niżej).
-- **Pozostałe minigry (poza 1–2) i pełna pula zagadek dla wszystkich etapów** — Why parked: PRD Non-Goals; v1 sprawdza format na małej puli.
-- **Dopracowanie treści E1–E2 i E5–E6** — Why parked: PRD Non-Goals; generatory działają, jakość poleceń gwarantowana w v1 dla E3–E4.
-- **Osobny raport postępów poza grą** — Why parked: PRD Non-Goals; podgląd w ustawieniach i eksport zapisu wystarczą.
-- **Układ pionowy, telefon, inne przeglądarki** — Why parked: PRD Non-Goals (niefunkcjonalne); tablet w poziomie, trzy nazwane przeglądarki.
-- **Pierwszy wycinek następnego kamienia (M-02): opinia rodzica, raport o błędzie i statystyki odwiedzin** (proponowany Change ID `parent-sends-and-stats`; PRD v2 FR-028–FR-031, dodane 2026-10-21) — Why parked: wymagania po v1, poza zakresem M-01 (FR-001–FR-027); otwiera się po zamknięciu M-01 (po S-17). Wynik: rodzic za bramką dla dorosłych wysyła opinię (tekst, opcjonalny e-mail, wersja i urządzenie, kolejka bez sieci) i raport o błędzie z karty „Ups!” i „Zapis gry”; autor dostaje je na własnym serwerze gry; autor widzi zbiorcze statystyki odwiedzin bez kodu w grze; rodzic czyta stronę „Prywatność”. Uwaga dla planu: zmienia `deploy/` (punkt odbioru, logi serwera), więc nie idzie autonomicznym biegiem — synchronizację i bootstrap serwera robi właściciel z listą CoiledSpring. Otwarte pytania z PRD v2 (8–10: przechowywanie, ochrona przed nadużyciem, gdzie link „Prywatność”) rozstrzyga plan. Szczegóły uzgodnień: `docs/human-checklist.md` (sekcje „Do zrobienia: statystyki odwiedzin” i „Do zrobienia: opinia rodzica i raport o błędzie z gry”).
-- **Ulica i domy** (PRD v3 FR-032–FR-036, dodane 2026-10-22) — Why parked: wymagania po v1, poza zakresem M-01 (FR-001–FR-027); kandydat na kamień milowy po `parent-sends-and-stats`. Wynik: dziecko widzi ulicę z działkami, pierwszy dom z salonem i kolejnymi pokojami urządzanymi jak salon, gotowy dom dostaje mieszkańców i pamiątkę, otwiera się następna działka; gwiazdki z rund pozostają jedyną walutą. Proponowany pierwszy wycinek: ulica z jednym domem (salon bez straty postępu) i drugi pokój tego domu. Uwagi dla planu: nowy format zapisu (v5: domy, pokoje domu, pamiątki) z migracją salonu bez straty; grafika ulicy, domu z zewnątrz, mieszkańców i nowych pokoi w stylu paczek salonu (inwentaryzacja `designs/` przed planem); wielkość domu i ulicy zależy od tempa zmierzonego w S-17 (PRD v3 Open Questions 11–13).
-- **Statystyki nauki z gry** — Why parked: PRD v2 Non-Goals; dane o dziecku, mało graczy; później najwyżej jako opcja domyślnie wyłączona.
+- **Ulica i domy** (PRD v3 FR-032–FR-036) — Why parked: kandydat na kamień M-03; zależy od tempa z S-17 (PRD Open Question 11) i od inwentaryzacji grafik (PRD Open Questions 12–13).
+- **Docelowe grafiki salonu „przed remontem”** (paczka zamówiona 2026-10-25) — Why parked: nie jest wymaganiem PRD, tylko podmianą obecnego postarzenia w kodzie; wejdzie jako osobna zmiana, gdy paczka dotrze.
+- **Statystyki nauki z gry** — Why parked: PRD Non-Goals; dane o dziecku, mało graczy; później najwyżej jako opcja domyślnie wyłączona.
+- **Opinia przez `mailto:`, formularz zewnętrzny lub GitHub** — Why parked: odrzucone przez autora 2026-10-20/21 (`docs/human-checklist.md`): dane u obcej firmy albo rodzice bez kont.
+- **Fabuła, energia, timery, reklamy, zakupy, wiele profili, chmura, merge board, układ pionowy** — Why parked: PRD Non-Goals, bez zmian od M-01.
 
 ## Milestone History
 
-(Append-only. Empty on the very first milestone.)
+(Append-only. Carried forward verbatim into each successor milestone's roadmap.)
+
+- **M-01: Wersja 1, pełna pętla gry (etapy M0–M8)** (`v1-pelna-petla-m0-m8`) — closed 2026-10-25. Etapy M0–M7 dostarczone i wdrożone (F-01–F-03, S-01–S-16d done, ostatnie scalenie 7770ae8); S-17 (M8, balans po testach z córką) zależy od obserwacji, nie od kodu, więc za zgodą autora przeniesione do M-02 zamiast blokować zamknięcie.
 
 ## Done
 
-(Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived.)
-
-- **F-01: (foundation) gra startuje na Phaser 4.2.x w scenie 1920×1080 dopasowanej do ekranu, z pustą sceną, docelowym układem katalogów (`core/` bez importów silnika, `data/`, `scenes/`, `storage/`, `tests/`), bez telemetrii szablonu; `npx tsc --noEmit` przechodzi** — Archived 2026-10-11 → `context/archive/2026-10-11-game-shell-scaling/`. Lesson: —.
-- **F-02: (foundation) build `dist/` jest publikowany z GitHub Actions na istniejący VPS za Caddy (HTTPS), z zachowaniem poprzedniego wydania do rollbacku; runbook w `deploy/README.md`** — Archived 2026-10-11 → `context/archive/2026-10-11-static-deploy-pipeline/`. Lesson: —.
-- **S-01: dziecko otwiera grę z adresu URL na tablecie, dodaje ją do ekranu początkowego (z instrukcją przy pierwszym uruchomieniu w przeglądarce) i uruchamia offline; w pionie widzi „Obróć tablet”; nowa wersja instaluje się sama przy następnym starcie** — Archived 2026-10-12 → `context/archive/2026-10-11-installable-offline-pwa/`. Lesson: —.
-- **F-03: (foundation) vitest działa na `core/`, generatory dostają seedowany rng, a skrypt próbkujący wypisuje po 3 zadania z każdego kroku etapu i raportuje naruszenia (zakres, ujemne, odmiana)** — Archived 2026-10-12 → `context/archive/2026-10-12-generator-test-harness/`. Lesson: —.
-- **S-02: autor wypisuje z każdego kroku etapów E3 i E4 oryginalne zadania wszystkich typów grupy 1 (ZADANIA.md, sekcja 7) z poprawną odpowiedzią, rozpraszaczami, podpowiedzią krok po kroku i poprawną odmianą liczebników; testy 1000 losowań przechodzą** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-e3-e4/`. Lesson: przegląd treści przez „nauczyciela” wyłapał biernik i podpowiedź IX, których walidator nie widzi; każdy nowy rzeczownik i przypadek musi trafić do danych z testem.
-- **S-03: autor wypisuje zadania grupy 1 dla E1–E2 i E5–E6 na tych samych generatorach z danymi etapu; testy mechaniczne (zakres, ujemne, rozpraszacze) przechodzą dla wszystkich sześciu etapów; dopracowanie treści tych etapów pozostaje na później (PRD Non-Goals)** — Archived 2026-10-12 → `context/archive/2026-10-12-generators-remaining-stages/`. Lesson: —.
-- **S-04: dziecko rozwiązuje rundę zadań dotykiem (kafelki lub klawiaturka) z kropkami postępu, dostaje gwiazdkę za każde poprawne zadanie (także w drugiej próbie) i bonus za rundę bez błędu; po błędzie widzi potrząśnięcie i podpowiedź, po drugiej pomyłce rozwiązanie krok po kroku i przepisuje wynik; licznik gwiazdek jest zawsze widoczny, przełącznik ukryty w trakcie zadania.** — Archived 2026-10-12 → `context/archive/2026-10-12-task-round-stars/`. Lesson: —.
-- **S-05: dziecko odsłuchuje polecenie polskim lektorem (automatyczne czytanie jako ustawienie z domyślną wartością zależną od etapu; bez polskiego głosu przycisk ukryty) i po rundzie widzi podsumowanie z gwiazdkami oraz przyciski „Kolejna runda” i „Do pokoju” (wyróżnione, gdy stać na mebel).** — Archived 2026-10-12 → `context/archive/2026-10-12-narrator-round-summary/`. Lesson: —.
-- **S-06: przy pierwszym uruchomieniu dziecko podaje wiek (6–10), gra proponuje etap wg wieku i miesiąca, rodzic po bramce dla dorosłego potwierdza lub zmienia etap, a rozgrzewka 6 zadań koryguje start w dół.** — Archived 2026-10-13 → `context/archive/2026-10-13-first-launch-placement/`. Lesson: —.
-- **S-07: gra losuje zadania z odblokowanych kroków według wag (wartości w danych balansu), prowadzi licznik opanowania 0–5 każdej umiejętności licząc tylko pierwszą próbę, odblokowuje kolejny krok przy opanowaniu w większości umiejętności ze scenką „Nowa umiejętność!” i łagodzi trudność po dwóch słabych rundach.** — Archived 2026-10-13 → `context/archive/2026-10-13-adaptive-curriculum/`. Lesson: —.
-- **S-08: rodzic po długim przytrzymaniu ikony i bramce dla dorosłego zmienia etap, włącza lub wyłącza automatyczne czytanie i widzi zwięzły podgląd postępów (bieżący krok i 3 najsłabsze umiejętności z przykładami błędów).** — Archived 2026-10-13 → `context/archive/2026-10-13-parent-settings-progress/`. Lesson: —.
-- **S-09: dziecko widzi salon (placeholdery) z bieżącym zadaniem remontowym i kosztem z danych pokoju, przy braku gwiazdek przycisk pokazuje „masz X/Y” i prowadzi do zadań, a przy wystarczającej liczbie otwiera panel 3 wariantów z podglądem i zatwierdza „Wybieram” (gwiazdki odejmowane dopiero wtedy) z animacją i dźwiękiem.** — Archived 2026-10-13 → `context/archive/2026-10-13-first-furniture-purchase/`. Lesson: —.
-- **S-10: dziecko zmienia wariant urządzonego elementu za darmo po przytrzymaniu (lub w trybie „zmień”), po ostatnim zadaniu widzi „Pokój gotowy!”, listę pokoi z jedną pozycją i zapowiedzią oraz może dalej robić „poprawki” i rundy.** — Archived 2026-10-13 → `context/archive/2026-10-13-variant-change-room-done/`. Lesson: —.
-- **S-11: po zamknięciu gry (lub rozładowaniu tabletu) i ponownym otwarciu gwiazdki, salon i postęp nauki są dokładnie takie same; zapis następuje sam po każdej zmianie i przy ukryciu karty, natychmiast po zapłacie za mebel i końcu rundy; zapis ze starszej wersji gry jest przenoszony do nowej, a nieudane przeniesienie zostawia stary zapis i oferuje eksport.** — Archived 2026-10-13 → `context/archive/2026-10-13-autosave-versioned-save/`. Lesson: —.
-- **S-12: rodzic w ustawieniach eksportuje zapis do pliku, importuje go po walidacji i podsumowaniu (gwiazdki, etap, postęp pokoju) i resetuje grę z potwierdzeniem.** — Archived 2026-10-13 → `context/archive/2026-10-13-save-export-import-reset/`. Lesson: —.
-- **S-13: dziecko rozwiązuje w rundzie zadania typów grupy 2 dla E3–E4 z zegarem, linijką, osią liczbową, klockami dziesiątkowymi, słupkiem pisemnym, grafami i figurami rysowanymi w kodzie, z odpowiedzią dotykiem (w tym przeciąganiem i zaznaczaniem).** — Archived 2026-10-13 → `context/archive/2026-10-13-drawn-widget-tasks-e3-e4/`. Lesson: —.
-- **S-14: dziecko rozwiązuje zadania z monetami i banknotami, wagą, naczyniami i termometrem (grafika z paczki A v1) oraz typy grup 2–3 dla E1–E2 i E5–E6; każdy etap ma pełny zestaw typów z ZADANIA.md.** — Archived 2026-10-14 → `context/archive/2026-10-14-art-tasks-all-stages/`. Lesson: —.
-- **S-13b: dziecko rozwiązuje kwadrat magiczny (E3.5), zadania na siatce z kodowaniem pól (E3.7) i obwody figur na siatce (E4.7) oraz ustawia zegar przeciąganiem wskazówek (CLOCK, E3–E4).** — Archived 2026-10-14 → `context/archive/2026-10-14-drawn-grid-tasks-e3-e4/`. Lesson: —.
-- **S-15: co kilka rund dziecko zamiast zwykłej rundy dostaje jedną z 1–2 minigier (np. hasło z wyników, sklepik) lub zagadkę dnia z puli ok. 10–15 zagadek dla E3–E4 za podwójne gwiazdki (mnożnik w danych balansu).** — Archived 2026-10-14 → `context/archive/2026-10-14-minigame-daily-puzzle/`. Lesson: —.
-- **S-14b: dziecko dodaje i odejmuje pisemnie w słupku z okienkami cyfr i przeniesieniem (WRITTEN, E5.2, E6.7), uzupełnia grafy i tabelki strzałkowe (ARROW_TABLE, E2.6) i widzi oś liczbową jako rysunek SEQUENCE/MULT_GROUPS i podpowiedź ADD_SUB.** — Archived 2026-10-15 → `context/archive/2026-10-14-number-line-written-arrows/`. Lesson: —.
-- **S-14c: dziecko rozwiązuje zadania tekstowe CLOCK_ELAPSED (E5.3, E5.8, E6.2), TIME_UNITS (E6.1), UNIT_CHOICE (E5.7), PRICE i TIMES_MORE (E5.10), ORDER_OPS (E5.11), INEQUALITY (E1.9), tekstowe warianty MASS (gramy, brutto/netto/tara, tona: E5.7, E6.3, E6.5) i LENGTH (skala E5.12, wyrażenia dwumianowe E6.3), PLACE_VALUE ≥ 1000 (E6.9, E6.10) oraz rundę powtórkową z całego roku (MIX, E6.11).** — Archived 2026-10-15 → `context/archive/2026-10-15-text-measure-time-types/`. Lesson: —.
-- **S-14d: 6-latek rozwiązuje E1.1 (SHAPES, PATTERN, COMPARE_QTY, SPATIAL, SYMMETRY), ORDINAL (E1.2), BONDS z parami i CHOOSE_OP z obrazkiem oraz MONEY_PAY (przeciąganie monet do portfela, „najmniej monet”, E1.11, E2.2); „tryb z obrazkami” dla 6-latków (design-gaps wiersz 21).** — Archived 2026-10-15 → `context/archive/2026-10-15-e1-shapes-picture-mode/`. Lesson: —.
-- **S-16a: dziecko remontuje salon zbudowany z paczki `martynka-expansion-v1`: pierwsza czynność („Odnów ściany i podłogę”) zmienia tło z zniszczonego na odnowione (jeden etap, bez panelu wariantów), potem 6 mebli z wyborem 3 wariantów (sofa, dywan, stolik, komoda, fotel, obrazki); lampa, dwie rośliny i pufa to stała dekoracja; animacje (tweeny, cząsteczki, z „ogranicz ruch”) i ekran ładowania; na ekranach salonu nie ma placeholderów, a brakujące grafiki są spisane w `docs/designer-brief-s16.md`.** — Archived 2026-10-15 → `context/archive/2026-10-15-final-art-salon/`. Lesson: —.
-- **S-16b: dziecko słyszy dźwięki z listy P1 w `docs/designer-brief-s16.md` (dobra odpowiedź, gwiazdka, zakup, „Pokój gotowy!” …) po pierwszym dotknięciu; dźwięk respektuje wyciszenie, gra pozostaje w pełni grywalna bez dźwięku.** — Archived 2026-10-16 → `context/archive/2026-10-16-final-sound/`. Lesson: —.
-- **S-16c: dziecko widzi docelową ikonę aplikacji (zwykłą i maskable), ekran ładowania z tłem i emblematem, miniatury salonu przed/po na karcie „Pokój gotowy!”, zeszyt na karcie „Nowa umiejętność!”, otwarty portfel w zadaniach MONEY_PAY i ikony talerz/pudełko/naklejka w zadaniach z liczeniem; placeholdery i luki projektu, które ta grafika pokrywa, są zamknięte.** — Archived 2026-10-16 → `context/archive/2026-10-16-final-art-p2/`. Lesson: —.
-- **S-16d: dziecko urządza w salonie 5 nowych miejsc po 3 warianty (zasłony, półka ścienna, lampa, lewa roślina, pufa) z paczki `designs/martynka-salon-v2`; tła przed/po bez zasłon; salon ma 11 miejsc.** — Archived 2026-10-16 → `context/archive/2026-10-16-salon-extra-slots/`. Lesson: —.
+(Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Pełna lista M-01 jest w historii gita tego pliku.)
