@@ -536,10 +536,10 @@ None: save format stays v4; the record is runtime only.
 
 #### Automated
 
-- [ ] 3.1 `tests/salonStyleWiring.test.ts` green with the new cases; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: delete the `recordFallback` call → its case red; change `console.info` to `console.log` → the renderer case red; each restored; meta-check: these are source guards of the wiring; the record under a real Canvas renderer and the panel text are proven by phase 5
-- [ ] 3.3 `git diff --stat main -- src/ui/widgets src/scenes/RoomScene.ts src/ui/artFallbacks.ts src/main.ts vite/e2eHookGuard.mjs public` empty
-- [ ] 3.4 `git diff main -- src/data/layout.ts` changes comments only (no value change; the existing trailing comment of `resume` may be extended); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
+- [x] 3.1 `tests/salonStyleWiring.test.ts` green with the new cases; unit `<phase-2 count> + N`
+- [x] 3.2 Deliberate break: delete the `recordFallback` call → its case red; change `console.info` to `console.log` → the renderer case red; each restored; meta-check: these are source guards of the wiring; the record under a real Canvas renderer and the panel text are proven by phase 5
+- [x] 3.3 `git diff --stat main -- src/ui/widgets src/scenes/RoomScene.ts src/ui/artFallbacks.ts src/main.ts vite/e2eHookGuard.mjs public` empty
+- [x] 3.4 `git diff main -- src/data/layout.ts` changes comments only (no value change; the existing trailing comment of `resume` may be extended); `grep -n "^| 17[34] |" docs/design-gaps.md` shows both rows
 - [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-style.spec.ts` green under WebGL: nothing recorded there)
 
 ### Phase 4: Docs, follow-ups, seam sweep and the visual pass
