@@ -7,10 +7,14 @@ import {
     entryVerdict,
     failLine,
     hasBuildId,
+    gameBase,
     isLocalHost,
+    killSwitchCheck,
     precacheCovers,
     precacheFromSw,
     precacheServed,
+    redirectCheck,
+    resolveInBase,
     roomArtCheck,
 } from '../scripts/deploy-check/parse';
 
@@ -148,5 +152,38 @@ describe('table coverage, local host and failure line', () => {
         expect(line).toContain('/assets/a.webp');
         expect(line).toContain('already live');
         expect(failLine('boom')).toContain('boom');
+    });
+});
+
+describe('game under a path and the old domain', () => {
+    it('adds the trailing slash and drops query and hash', () => {
+        expect(gameBase('https://bystrow.ariom.cloud/graj').href).toBe('https://bystrow.ariom.cloud/graj/');
+        expect(gameBase('https://bystrow.ariom.cloud/graj/?x=1#y').href).toBe('https://bystrow.ariom.cloud/graj/');
+        expect(gameBase('https://martynka-urzadza.pl').href).toBe('https://martynka-urzadza.pl/');
+    });
+
+    it('resolves release paths inside the game directory', () => {
+        const base = gameBase('https://bystrow.ariom.cloud/graj/');
+        expect(resolveInBase('/manifest.webmanifest', base).href).toBe('https://bystrow.ariom.cloud/graj/manifest.webmanifest');
+        expect(resolveInBase('_app/index-a.js', base).href).toBe('https://bystrow.ariom.cloud/graj/_app/index-a.js');
+        expect(resolveInBase('/graj/_app/index-a.js', base).href).toBe('https://bystrow.ariom.cloud/graj/_app/index-a.js');
+        expect(resolveInBase('/', base).href).toBe('https://bystrow.ariom.cloud/graj/');
+        expect(resolveInBase('/_app/x.js', gameBase('https://martynka-urzadza.pl')).href).toBe('https://martynka-urzadza.pl/_app/x.js');
+    });
+
+    it('accepts only a permanent redirect to the exact address', () => {
+        const to = 'https://bystrow.ariom.cloud/graj/x?y=1';
+        expect(redirectCheck('r', 301, to, to).ok).toBe(true);
+        expect(redirectCheck('r', 308, to, to).ok).toBe(true);
+        expect(redirectCheck('r', 302, to, to).ok).toBe(false);
+        expect(redirectCheck('r', 301, 'https://bystrow.ariom.cloud/graj/x', to).ok).toBe(false);
+        expect(redirectCheck('r', 200, null, to).ok).toBe(false);
+    });
+
+    it('checks the kill switch status, cache and body', () => {
+        expect(killSwitchCheck(200, 'no-cache', 'registration.unregister()').ok).toBe(true);
+        expect(killSwitchCheck(301, 'no-cache', '').ok).toBe(false);
+        expect(killSwitchCheck(200, 'max-age=60', 'unregister').ok).toBe(false);
+        expect(killSwitchCheck(200, 'no-cache', 'self.skipWaiting()').ok).toBe(false);
     });
 });

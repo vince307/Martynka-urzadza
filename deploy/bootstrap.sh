@@ -3,6 +3,7 @@
 # Run as root on the VPS shared with CoiledSpring:
 #
 #   sudo bash deploy/bootstrap.sh --site <IPv4|domain> --ci-pubkey "ssh-ed25519 AAAA... martynka-ci" [--bind <public IPv4>] [--ops-pubkey "ssh-ed25519 ... martynka-ops"]
+#                          [--app-path /graj/ --landing-root <dir>] [--redirect-from <old domain>]
 #
 # Caddy binds only the public IPv4 (--bind; defaults to --site when that is an
 # IPv4, otherwise to the address of the default route), because tailscaled
@@ -15,7 +16,8 @@
 #   3. installs martynka-deploy
 #   4. sshd Match block for `martynka` (ForceCommand, no forwarding, no TTY),
 #      validated with `sshd -t` before reloading
-#   5. /etc/caddy/Caddyfile from deploy/Caddyfile (IP certificate or domain)
+#   5. /etc/caddy/Caddyfile = `import /etc/caddy/sites/*.caddy`; this site's block (deploy/render-caddyfile.sh)
+#      goes to /etc/caddy/sites/martynka.caddy, other files in sites/ are never touched
 #   6. UFW: allow 80/tcp and 443/tcp (nothing else is touched)
 #   7. caddy enabled and (re)loaded
 #   8. diagnostics
@@ -32,6 +34,9 @@ SITE=""
 CI_PUBKEY=""
 BIND=""
 OPS_PUBKEY=""
+APP_PATH=""
+LANDING_ROOT=""
+REDIRECT_FROM=""
 OPS_USER="martynka-ops"
 OPS_SRC="/opt/martynka-src"
 OPS_CONF_DIR="/etc/martynka"
@@ -44,12 +49,17 @@ MARTYNKA_USER="martynka"
 MARTYNKA_ROOT="/srv/martynka"
 DISPATCH_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/martynka-deploy"
 CADDYFILE_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/Caddyfile"
+RENDER_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/render-caddyfile.sh"
+KILL_SWITCH_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sw-kill-switch.js"
+LEGACY_ROOT="$MARTYNKA_ROOT/legacy"
+SITES_DIR="/etc/caddy/sites"
+SITE_FILE="$SITES_DIR/martynka.caddy"
 SSHD_MATCH_FILE="/etc/ssh/sshd_config.d/61-martynka-deploy.conf"
 TAILNET_FROM='100.64.0.0/10,fd7a:115c:a1e0::/48'
 MIN_CADDY_FOR_IP="2.10.0"
 
 usage() {
-    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\" [--bind <public IPv4>] [--ops-pubkey \"<ssh public key>\"]" >&2
+    echo "usage: $0 --site <IPv4|domain> --ci-pubkey \"<ssh public key>\" [--bind <public IPv4>] [--ops-pubkey \"<ssh public key>\"] [--app-path /graj/ --landing-root <dir>] [--redirect-from <old domain>]" >&2
     exit 2
 }
 
@@ -59,6 +69,9 @@ while [[ $# -gt 0 ]]; do
         --ci-pubkey) CI_PUBKEY="${2:-}"; shift 2 ;;
         --bind) BIND="${2:-}"; shift 2 ;;
         --ops-pubkey) OPS_PUBKEY="${2:-}"; shift 2 ;;
+        --app-path) APP_PATH="${2:-}"; shift 2 ;;
+        --landing-root) LANDING_ROOT="${2:-}"; shift 2 ;;
+        --redirect-from) REDIRECT_FROM="${2:-}"; shift 2 ;;
         -h|--help) usage ;;
         *) echo "unknown argument: $1" >&2; usage ;;
     esac
@@ -71,7 +84,7 @@ if [[ "$(uname -s)" != "Linux" ]] || ! command -v apt-get >/dev/null; then
     exit 1
 fi
 [[ "$(id -u)" -eq 0 ]] || { echo "run as root" >&2; exit 1; }
-[[ -f "$DISPATCH_SRC" && -f "$CADDYFILE_SRC" ]] || { echo "deploy/martynka-deploy or deploy/Caddyfile missing next to this script" >&2; exit 1; }
+[[ -f "$DISPATCH_SRC" && -f "$CADDYFILE_SRC" && -f "$RENDER_SRC" && -f "$KILL_SWITCH_SRC" ]] || { echo "deploy/martynka-deploy, Caddyfile, render-caddyfile.sh or sw-kill-switch.js missing next to this script" >&2; exit 1; }
 [[ "$CI_PUBKEY" =~ ^ssh-(ed25519|rsa)\ [A-Za-z0-9+/=]+ ]] || { echo "--ci-pubkey does not look like an SSH public key" >&2; exit 1; }
 if [[ -n "$OPS_PUBKEY" ]]; then
     [[ "$OPS_PUBKEY" =~ ^ssh-(ed25519|rsa)\ [A-Za-z0-9+/=]+ ]] || { echo "--ops-pubkey does not look like an SSH public key" >&2; exit 1; }
@@ -180,13 +193,11 @@ else
     fi
 fi
 
-# 5. Caddyfile ---------------------------------------------------------------
+# 5. Caddyfile -----------------------------------------------------------------
 if is_ipv4 "$SITE"; then
     SITE_BLOCK="https://$SITE"
-    TLS_MODE="ip"
 else
     SITE_BLOCK="$SITE"
-    TLS_MODE="domain"
 fi
 if [[ -z "$BIND" ]]; then
     if is_ipv4 "$SITE"; then
@@ -196,42 +207,51 @@ if [[ -z "$BIND" ]]; then
     fi
 fi
 is_ipv4 "$BIND" || { echo "cannot determine the public IPv4 to bind Caddy to; pass --bind <IPv4>" >&2; exit 1; }
-CADDYFILE_TMP="$(mktemp)"
-# __TLS__ becomes a `tls { issuer acme { profile shortlived } }` block for an IP
-# address (Let's Encrypt short-lived IP certificate) and disappears for a domain.
-sed -e "s|__SITE__|$SITE_BLOCK|" -e "s|__BIND__|$BIND|" "$CADDYFILE_SRC" | awk -v mode="$TLS_MODE" '
-    /__TLS__/ {
-        if (mode == "ip") {
-            print "    tls {"
-            print "        issuer acme {"
-            print "            profile shortlived"
-            print "        }"
-            print "    }"
-        }
-        next
-    }
-    { print }' > "$CADDYFILE_TMP"
-if [[ "$TLS_MODE" == "domain" ]]; then
-    # www.<domain> redirects to the apex; the certificate for it is issued only
-    # if its DNS A record exists (Caddy retries otherwise, without blocking the apex).
-    cat >> "$CADDYFILE_TMP" <<EOF
 
-www.$SITE {
-    bind $BIND
-    redir https://$SITE{uri} permanent
-}
-EOF
-fi
+# The main Caddyfile only imports the per-site files, so other sites on this host
+# (each owning one file in sites/) coexist; this script writes martynka.caddy only.
+install -d -m 755 "$SITES_DIR"
+RENDER_ARGS=(--site "$SITE" --bind "$BIND")
+[[ -n "$APP_PATH" ]] && RENDER_ARGS+=(--app-path "$APP_PATH")
+[[ -n "$LANDING_ROOT" ]] && RENDER_ARGS+=(--landing-root "$LANDING_ROOT")
+[[ -n "$REDIRECT_FROM" ]] && RENDER_ARGS+=(--redirect-from "$REDIRECT_FROM")
+SITE_TMP="$(mktemp)"
+bash "$RENDER_SRC" "${RENDER_ARGS[@]}" > "$SITE_TMP"
 # Format before comparing, so an unchanged config is detected as unchanged.
-caddy fmt --overwrite "$CADDYFILE_TMP" >/dev/null 2>&1 || true
-if [[ -f /etc/caddy/Caddyfile ]] && cmp -s "$CADDYFILE_TMP" /etc/caddy/Caddyfile; then
-    rm -f "$CADDYFILE_TMP"
-    skip "Caddyfile unchanged"
+caddy fmt --overwrite "$SITE_TMP" >/dev/null 2>&1 || true
+if [[ -f "$SITE_FILE" ]] && cmp -s "$SITE_TMP" "$SITE_FILE"; then
+    rm -f "$SITE_TMP"
+    skip "$SITE_FILE unchanged"
 else
+    [[ -f "$SITE_FILE" ]] && cp "$SITE_FILE" "$SITE_FILE.bak"
+    install -m 644 "$SITE_TMP" "$SITE_FILE"
+    rm -f "$SITE_TMP"
+    ok "$SITE_FILE written for $SITE_BLOCK (bind $BIND)"
+fi
+
+MAIN_TMP="$(mktemp)"
+printf '# Managed by Martynka urządza deploy/bootstrap.sh: every site lives in its own file.\nimport %s/*.caddy\n' "$SITES_DIR" > "$MAIN_TMP"
+if [[ -f /etc/caddy/Caddyfile ]] && cmp -s "$MAIN_TMP" /etc/caddy/Caddyfile; then
+    rm -f "$MAIN_TMP"
+    skip "/etc/caddy/Caddyfile already imports $SITES_DIR"
+else
+    # The former monolithic Caddyfile stays as .bak (the site block now lives in sites/).
     [[ -f /etc/caddy/Caddyfile ]] && cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak
-    install -m 644 "$CADDYFILE_TMP" /etc/caddy/Caddyfile
-    rm -f "$CADDYFILE_TMP"
-    ok "Caddyfile written for $SITE_BLOCK (bind $BIND)"
+    install -m 644 "$MAIN_TMP" /etc/caddy/Caddyfile
+    rm -f "$MAIN_TMP"
+    ok "/etc/caddy/Caddyfile now imports $SITES_DIR (previous copy in Caddyfile.bak)"
+fi
+
+# Landing page releases and the kill-switch service worker of the old domain.
+if [[ -n "$LANDING_ROOT" ]]; then
+    LANDING_BASE="$(dirname "$LANDING_ROOT")"
+    install -d -m 755 "$LANDING_BASE/releases"
+    ok "$LANDING_BASE/releases ready"
+fi
+if [[ -n "$REDIRECT_FROM" ]]; then
+    install -d -m 755 "$LEGACY_ROOT"
+    install -m 644 "$KILL_SWITCH_SRC" "$LEGACY_ROOT/sw.js"
+    ok "$LEGACY_ROOT/sw.js installed (kill switch for $REDIRECT_FROM)"
 fi
 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
 ok "Caddyfile validates"
@@ -334,7 +354,7 @@ SSHD
 
     install -d -m 700 -o root -g root "$OPS_CONF_DIR"
     CONF_TMP="$(mktemp)"
-    printf 'SITE=%q\nBIND=%q\nCI_PUBKEY=%q\nOPS_PUBKEY=%q\n' "$SITE" "$BIND" "$CI_PUBKEY" "$OPS_PUBKEY" > "$CONF_TMP"
+    printf 'SITE=%q\nBIND=%q\nCI_PUBKEY=%q\nOPS_PUBKEY=%q\nAPP_PATH=%q\nLANDING_ROOT=%q\nREDIRECT_FROM=%q\n' "$SITE" "$BIND" "$CI_PUBKEY" "$OPS_PUBKEY" "$APP_PATH" "$LANDING_ROOT" "$REDIRECT_FROM" > "$CONF_TMP"
     install -m 600 -o root -g root "$CONF_TMP" "$OPS_CONF"
     rm -f "$CONF_TMP"
     ok "$OPS_CONF written"

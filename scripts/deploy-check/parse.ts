@@ -134,3 +134,48 @@ export const isLocalHost = (url: string): boolean => {
 
 export const failLine = (error: unknown): string =>
     `FAIL request error — ${error instanceof Error ? error.message : String(error)} (the release is already live; roll back from Actions → Deploy if needed)`;
+
+/** The game's base URL with a trailing slash, so `https://host/graj` and `https://host/graj/` mean the same directory. */
+export const gameBase = (raw: string): URL => {
+    const url = new URL(raw);
+    if (!url.pathname.endsWith('/')) {
+        url.pathname = `${url.pathname}/`;
+    }
+    url.search = '';
+    url.hash = '';
+    return url;
+};
+
+/**
+ * Resolve a path found in the release (a bundle "/_app/x.js", a precache entry "/index.html") inside the game's
+ * base directory. A path that already starts with the base path ("/graj/_app/x.js" from a build with base "/graj/")
+ * is kept as is; any other leading "/" means the root of the game, not of the host.
+ */
+export const resolveInBase = (path: string, base: URL): URL => {
+    if (base.pathname !== '/' && path.startsWith(base.pathname)) {
+        return new URL(path, base.origin);
+    }
+    return new URL(path.replace(/^\/+/, ''), base);
+};
+
+/** The old domain must answer a permanent redirect whose Location is exactly the expected address (query kept). */
+export const redirectCheck = (name: string, status: number, location: string | null, expected: string): CheckResult => ({
+    name,
+    ok: [301, 308].includes(status) && location === expected,
+    detail: `${status} → ${location ?? '(none)'}${location === expected ? '' : `, expected ${expected}`}`,
+});
+
+/** The old domain's /sw.js is the kill switch: 200, never cached, and it unregisters the worker. */
+export const killSwitchCheck = (status: number, cacheControl: string | null, body: string): CheckResult => {
+    const problems: string[] = [];
+    if (status !== 200) {
+        problems.push(`status ${status}`);
+    }
+    if (!(cacheControl ?? '').toLowerCase().includes('no-cache')) {
+        problems.push(`cache-control ${cacheControl ?? '(none)'}`);
+    }
+    if (!body.includes('unregister')) {
+        problems.push('body does not unregister');
+    }
+    return { name: 'old domain /sw.js is the kill switch', ok: problems.length === 0, detail: problems.length === 0 ? '200, no-cache, unregisters' : problems.join(', ') };
+};
