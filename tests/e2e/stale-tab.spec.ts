@@ -13,7 +13,7 @@ import { pl } from '../../src/data/pl';
 test.setTimeout(120_000);
 
 // One query for every page, or the 4th ordinary round would be the daily puzzle (S-15) and the pages would differ.
-const QUERY = '/?e2eMonth=10&e2eVariant=off';
+const QUERY = './?e2eMonth=10&e2eVariant=off';
 
 /** A round of 5 played right, written at its end; the page stands on the summary afterwards. */
 async function playSavedRound(page: Page): Promise<void> {

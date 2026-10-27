@@ -28,7 +28,8 @@ describe('app icons', () => {
 
     it('every manifest icon exists under public/', () => {
         const config = readFileSync(join(ROOT, 'vite/config.shared.mjs'), 'utf8');
-        const sources = [...config.matchAll(/src:\s*'(\/icons\/[^']+)'/g)].map((m) => m[1]);
+        // Relative to the manifest (the game is served under /graj/), so no leading "/".
+        const sources = [...config.matchAll(/src:\s*'(icons\/[^']+)'/g)].map((m) => m[1]);
         expect(sources.length).toBeGreaterThanOrEqual(3);
         for (const src of sources) expect(existsSync(join(ROOT, 'public', src))).toBe(true);
     });

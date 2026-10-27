@@ -16,7 +16,7 @@ test('#15 S-16c the loading screen shows the background and the emblem while the
     await page.route('**/assets/rooms/salon/*.webp', (route) => {
         held.push(route);
     });
-    await page.goto('/?e2eVariant=off');
+    await page.goto('./?e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     // The room pictures are held, so the screen is still the loading screen, and both pictures of it are already drawn.
     await expect.poll(async () => (await snapshot(page)).loading?.art, { timeout: 15_000 }).toEqual({ background: true, emblem: true });
@@ -36,7 +36,7 @@ test('#15 S-16c loading pictures that never answer leave the drawn screen and th
         await target.route('**/assets/ui/loading-*.webp', () => {});
     };
     await hang(page);
-    await page.goto('/?e2eArt=stallall&e2eVariant=off');
+    await page.goto('./?e2eArt=stallall&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     // The pictures never come: the loading screen is the drawn one, with neither picture.
     await expect.poll(async () => (await snapshot(page)).loading?.phase, { timeout: 15_000 }).toBeDefined();

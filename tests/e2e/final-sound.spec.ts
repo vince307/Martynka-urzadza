@@ -152,7 +152,7 @@ test('#14 S-16b the parent turns effects off and music on; the music is requeste
             }
         });
         await silenceSpeech(second);
-        await second.goto('/');
+        await second.goto('./');
         await second.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
         await expect.poll(async () => (await snapshot(second)).screen).toBe('welcome');
         expect((await snapshot(second)).sound?.prefs).toEqual({ effects: true, music: false });

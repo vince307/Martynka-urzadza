@@ -24,7 +24,7 @@ const SLOWER_LIMIT_MS = 5000; // E2E_SLOWER_LOAD_TIMEOUT_MS
 /** Loads a page whose store answers slowly or never: the start card with "Poczekaj dłużej" is on screen. */
 async function openSlowCard(page: Page, mode: 'slow' | 'hang' | 'slowfail') {
     await silenceSpeech(page);
-    await page.goto(`/?e2eSave=${mode}&e2eVariant=off`);
+    await page.goto(`./?e2eSave=${mode}&e2eVariant=off`);
     const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
     await expect(card).toBeVisible();
     return card;
@@ -47,7 +47,7 @@ async function startAsChild(page: Page): Promise<void> {
 
 test('#2 SV2-01 a v1 save whose copy always fails is written as v4 after three tries', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=backupfail&e2eMonth=10&e2eVariant=off');
+    await page.goto('./?e2eSave=backupfail&e2eMonth=10&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await fromHook(page, 'snapshot');
     await screenIs(page, 'task');
@@ -172,7 +172,7 @@ test('#2 SVB-02 a read that fails while the parent waits shows the error card wi
 
 test('#2 #7 SV2-04 the kept old save can be saved and imported again', async ({ page, browser }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=v1&e2eMonth=10&e2eVariant=off');
+    await page.goto('./?e2eSave=v1&e2eMonth=10&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'task');
     // Play until the v1 save was copied: the button exists only when the store holds the copy.

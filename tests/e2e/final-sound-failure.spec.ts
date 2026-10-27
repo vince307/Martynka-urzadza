@@ -34,7 +34,7 @@ test('#15 S-16b a sound file that is not audio is skipped without the restart ca
 test('#15 S-16b hanging sound downloads end at the total boot limit', async ({ page }) => {
     await silenceSpeech(page);
     await page.route('**/assets/sounds/**', () => {});
-    await page.goto('/?e2eArt=stallall&e2eVariant=off');
+    await page.goto('./?e2eArt=stallall&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await expect.poll(async () => (await snapshot(page)).screen, { timeout: 15_000 }).toBe('welcome');
     const after = await snapshot(page);

@@ -18,7 +18,7 @@ test.setTimeout(60_000);
 /** Loads the game with the store switch, passes the card with "Graj dalej" and taps the first age (E1, no warm-up): a task is on screen. */
 async function playOnWithBlockedSave(page: Page, mode: 'unavailable' | 'unreadable' | 'corrupt', card: { title: string; continue: string }): Promise<void> {
     await silenceSpeech(page);
-    await page.goto(`/?e2eSave=${mode}`);
+    await page.goto(`./?e2eSave=${mode}`);
     const dialog = page.getByRole('alertdialog', { name: card.title });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: card.continue, exact: true }).tap();
@@ -130,7 +130,7 @@ test('#2 SIR-01 a save from a newer version is never offered for overwrite', asy
 
 test('#2 SIR-02 a save the browser never gives can be replaced after a second confirmation', async ({ page }) => {
     // SRR-08: the first refused start is not forceable; the counter (localStorage) survives the reload, so the second start is.
-    await page.goto('/?e2eSave=unavailable');
+    await page.goto('./?e2eSave=unavailable');
     await expect(page.getByRole('alertdialog', { name: pl.saveUnavailable.title })).toBeVisible();
     await playOnWithBlockedSave(page, 'unavailable', pl.saveUnavailable);
     // A marker on this page load: it is gone only if the page really reloaded.
@@ -158,7 +158,7 @@ test('#2 SIR-02 a save the browser never gives can be replaced after a second co
 
 test('#2 SIR-02 a read that timed out offers no overwrite', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=hang');
+    await page.goto('./?e2eSave=hang');
     const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
     await expect(card).toBeVisible();
     await card.getByRole('button', { name: pl.saveSlow.continue, exact: true }).tap();

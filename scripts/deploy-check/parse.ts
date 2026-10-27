@@ -7,11 +7,15 @@ export interface CheckResult {
     detail: string;
 }
 
-/** Hashed bundles referenced by index.html: "/_app/index-<hash>.js", "/_app/index-<hash>.css". */
-export const bundlesFromHtml = (html: string): string[] => {
+/**
+ * Hashed bundles referenced by index.html, named from the game root like the precache: "/_app/index-<hash>.js".
+ * A build served under a path writes them as "<basePath>_app/..." (base "/graj/" → "/graj/_app/index-<hash>.js").
+ */
+export const bundlesFromHtml = (html: string, basePath = '/'): string[] => {
     const found = new Set<string>();
-    for (const m of html.matchAll(/(?:src|href)="(\/_app\/[^"]+\.(?:js|css))"/g)) {
-        found.add(m[1]);
+    const prefix = basePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const m of html.matchAll(new RegExp(`(?:src|href)="${prefix}(_app/[^"]+\\.(?:js|css))"`, 'g'))) {
+        found.add(`/${m[1]}`);
     }
     return [...found];
 };

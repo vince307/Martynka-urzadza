@@ -40,7 +40,7 @@ test('#15 (proposed) an exception in a frame shows the restart card instead of a
 test('#15 (proposed) a failure while the game boots shows the card', async ({ page }) => {
     await silenceSpeech(page);
     // The boot scene throws inside the font loader's promise chain: the carrier is an unhandled rejection.
-    await page.goto('/?e2eFail=boot');
+    await page.goto('./?e2eFail=boot');
     await expect(card(page)).toBeVisible();
     await expect(card(page).getByRole('button', { name: pl.errorCard.restart, exact: true })).toBeVisible();
     const build = await page.locator('#game-container').getAttribute('data-build');

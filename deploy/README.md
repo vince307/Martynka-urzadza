@@ -123,7 +123,7 @@ Na hoście działa jeden Caddy (apt), związany tylko z publicznym IPv4 (`bind`)
 - `--app-path /graj/ --landing-root /srv/bystrow-landing/current` (zawsze razem; ścieżka zaczyna się i kończy `/`): gra pod `/graj/` (`redir /graj /graj/`, `handle_path`, te same nagłówki cache), a pod `/` strona wizytówkowa z katalogu landingu (HTML `no-cache`, reszta 7 dni). Bootstrap tworzy `/srv/bystrow-landing/releases`.
 - `--redirect-from martynka-urzadza.pl`: stara domena i `www.` przekierowują na stałe na `https://<strona><app-path>{uri}`, poza `/sw.js` z `/srv/martynka/legacy` (wyłącznik: czyści cache, wyrejestrowuje worker, przeładowuje karty). Smoke: `npm run check:deploy -- https://bystrow.ariom.cloud/graj/ <sha7> --redirect-from martynka-urzadza.pl`.
 
-Uwaga: gra pod ścieżką wymaga builda z `base` zgodnym ze ścieżką (dziś `base: '/'`, `scope: '/'`); to osobna zmiana, nie część tego kroku.
+Build gry ma `base: '/graj/'` (`APP_BASE` w `vite/config.shared.mjs`: manifest `start_url`/`scope` `/graj/`, `sw.js` ze `scope` `/graj/`, ikony względne); `npm run check:build` sprawdza to na `dist/` w CI i przed wdrożeniem. Taki build działa tylko pod `/graj/`: serwer musi mieć `--app-path /graj/` zanim trafi tam pierwszy build z tą ścieżką (przy grze pod `/` wszystkie odwołania `/graj/...` dają 404).
 
 Przeniesienie na nowy adres (kolejność):
 

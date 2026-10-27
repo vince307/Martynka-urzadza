@@ -21,6 +21,7 @@
     "test:watch": "vitest",
     "sample": "node --import tsx scripts/sample.ts",
     "check:deploy": "node --import tsx scripts/check-deploy.ts",
+    "check:build": "node --import tsx scripts/check-build.ts",
     "icons": "node scripts/make-icons.mjs",
     "art": "node scripts/make-task-art.mjs",
     "font": "python3 scripts/make-font.py",
