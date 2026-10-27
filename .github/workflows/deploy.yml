@@ -69,6 +69,18 @@ jobs:
           name: dist
           path: dist
 
+      # The build serves only under its base (start_url = vite base, "/graj/"): never upload it to a site
+      # whose address is elsewhere (e.g. the old domain at "/"), or the live game 404s before the smoke runs.
+      - name: Site address matches the build base
+        if: ${{ inputs.action != 'rollback' }}
+        run: |
+          BASE="$(node -p 'JSON.parse(require("fs").readFileSync("dist/manifest.webmanifest", "utf8")).start_url')"
+          SITE_PATH="$(node -p 'try { const p = new URL(process.argv[1]).pathname; p.endsWith("/") ? p : p + "/" } catch { "" }' "$SITE_URL")"
+          if [ "$SITE_PATH" != "$BASE" ]; then
+            echo "::error::DEPLOY_SITE_URL ('$SITE_URL') must point at the game under $BASE (e.g. https://bystrow.ariom.cloud$BASE); move the server first (deploy/README.md), then set the variable."
+            exit 1
+          fi
+
       - name: Join the tailnet
         uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4.2.0
         with:
