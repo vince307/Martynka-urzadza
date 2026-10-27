@@ -80,13 +80,17 @@ cmd_sync() {
 
 cmd_bootstrap() {
     [[ -r "$CONF" ]] || fail_usage "missing $CONF; run the manual bootstrap with --ops-pubkey first"
-    local SITE="" BIND="" CI_PUBKEY="" OPS_PUBKEY=""
+    local SITE="" BIND="" CI_PUBKEY="" OPS_PUBKEY="" APP_PATH="" LANDING_ROOT="" REDIRECT_FROM=""
     # shellcheck disable=SC1090
     source "$CONF"
     [[ -n "$SITE" && -n "$BIND" && -n "$CI_PUBKEY" && -n "$OPS_PUBKEY" ]] || fail_usage "$CONF must set SITE, BIND, CI_PUBKEY and OPS_PUBKEY"
     [[ -f "$SRC/deploy/bootstrap.sh" ]] || fail_usage "no deploy/bootstrap.sh in $SRC; run sync"
     echo "bootstrap from $SRC @ $(git -C "$SRC" rev-parse --short HEAD) for $SITE (bind $BIND)"
-    bash "$SRC/deploy/bootstrap.sh" --site "$SITE" --bind "$BIND" --ci-pubkey "$CI_PUBKEY" --ops-pubkey "$OPS_PUBKEY"
+    local extra=()
+    [[ -n "$APP_PATH" ]] && extra+=(--app-path "$APP_PATH")
+    [[ -n "$LANDING_ROOT" ]] && extra+=(--landing-root "$LANDING_ROOT")
+    [[ -n "$REDIRECT_FROM" ]] && extra+=(--redirect-from "$REDIRECT_FROM")
+    bash "$SRC/deploy/bootstrap.sh" --site "$SITE" --bind "$BIND" --ci-pubkey "$CI_PUBKEY" --ops-pubkey "$OPS_PUBKEY" ${extra[@]+"${extra[@]}"}
 }
 
 [[ $# -ge 1 ]] || fail_usage "no command"

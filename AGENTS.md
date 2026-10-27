@@ -35,4 +35,4 @@ Vitest in `tests/` (`vitest.config.mts`). Each skill gets a 1000-draw test (`tes
 
 ## Commits and PRs
 
-Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, PR; `main` changes only by a GitHub merge, which deploys to https://martynka-urzadza.pl. Server work: `ssh martynka-ops <cmd>` as one plain command; never touch CoiledSpring. Runbook: @deploy/README.md.
+Polish commit messages with a conventional prefix (`feat:`, `chore:`). Branch, push, PR; `main` changes only by a GitHub merge, which deploys to https://martynka-urzadza.pl (target: https://bystrow.ariom.cloud/graj/ with a landing page at `/`; until the move is applied the old address is the live one). Server work: `ssh martynka-ops <cmd>` as one plain command; never touch CoiledSpring. Runbook: @deploy/README.md.

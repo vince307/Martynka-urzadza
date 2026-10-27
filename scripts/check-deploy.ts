@@ -1,7 +1,9 @@
 // Deploy smoke check (test-plan.md rollout phase 2): proves from outside that
 // a release is live and installable. Used by the deploy workflow after
 // `switch` and by the agent from its session.
-// Usage: npm run check:deploy -- <baseUrl> [sha7]
+// Usage: npm run check:deploy -- <baseUrl> [sha7] [--redirect-from <domain>]
+// <baseUrl> may carry a path (https://bystrow.ariom.cloud/graj/): every request is made inside it.
+// --redirect-from also checks that the old domain redirects there and serves the kill-switch /sw.js.
 // Exit codes: 0 all checks ok, 1 some check failed, 2 usage.
 import { FONT_URL } from '../src/data/layout';
 import { ROOM_ART } from '../src/data/roomArt';
@@ -15,11 +17,15 @@ import {
     contentTypeCheck,
     entryVerdict,
     failLine,
+    gameBase,
     hasBuildId,
     isLocalHost,
+    killSwitchCheck,
     precacheCovers,
     precacheFromSw,
     precacheServed,
+    redirectCheck,
+    resolveInBase,
     type CheckResult,
     type EntryVerdict,
 } from './deploy-check/parse';
@@ -31,12 +37,16 @@ const HEAD_TIMEOUT_MS = 15000;
 const GET_TIMEOUT_MS = 60000;
 const TITLE = 'Martynka urządza';
 
-const [baseArg, sha7] = process.argv.slice(2);
-if (!baseArg || (sha7 !== undefined && !/^[0-9a-f]{7,40}$/.test(sha7))) {
-    console.error('Usage: npm run check:deploy -- <baseUrl> [sha7]');
+const argv = process.argv.slice(2);
+const redirectAt = argv.indexOf('--redirect-from');
+const redirectFrom = redirectAt === -1 ? undefined : argv[redirectAt + 1];
+const positional = redirectAt === -1 ? argv : argv.filter((_, i) => i !== redirectAt && i !== redirectAt + 1);
+const [baseArg, sha7] = positional;
+if (!baseArg || positional.length > 2 || (sha7 !== undefined && !/^[0-9a-f]{7,40}$/.test(sha7)) || (redirectAt !== -1 && !/^[a-z0-9.-]+$/i.test(redirectFrom ?? ''))) {
+    console.error('Usage: npm run check:deploy -- <baseUrl> [sha7] [--redirect-from <domain>]');
     process.exit(2);
 }
-const base = new URL(baseArg);
+const base = gameBase(baseArg);
 const results: CheckResult[] = [];
 const record = (r: CheckResult): void => {
     results.push(r);
@@ -60,7 +70,7 @@ const get = async (path: string, retries = 0): Promise<Response> => {
     for (let attempt = 0; ; attempt += 1) {
         try {
             // The limit covers the body read too: the Deploy job has no timeout of its own, a stalled answer must end.
-            return await fetch(new URL(path, base), { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
+            return await fetch(resolveInBase(path, base), { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
         } catch (error) {
             if (attempt >= retries) {
                 throw Object.assign(new Error(`${path}: ${error instanceof Error ? error.message : String(error)}`), { cause: error });
@@ -74,7 +84,7 @@ const get = async (path: string, retries = 0): Promise<Response> => {
 const headEntry = async (url: string): Promise<EntryVerdict> => {
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
-            const res = await fetch(new URL(url, base), { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(HEAD_TIMEOUT_MS) });
+            const res = await fetch(resolveInBase(url, base), { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(HEAD_TIMEOUT_MS) });
             return entryVerdict(url, res.status, res.headers.get('content-type'), res.headers.get('location'));
         } catch {
             if (attempt === 0) {
@@ -152,7 +162,9 @@ const main = async (): Promise<number> => {
         record({ name: 'build id', ok: hasBuildId(entryJs, sha7), detail: hasBuildId(entryJs, sha7) ? `"${sha7}" found in the entry bundle` : `"${sha7}" not found in the entry bundle` });
     }
 
-    if (!base.hostname.startsWith('www.') && !isLocalHost(baseArg)) {
+    // Only an apex (one dot, not an IPv4) has a www twin; a subdomain such as bystrow.ariom.cloud has none.
+    const isApex = /^[^.]+\.[^.]+$/.test(base.hostname) && !/^\d+\.\d+$/.test(base.hostname);
+    if (isApex && !isLocalHost(baseArg)) {
         const www = new URL(base);
         www.hostname = `www.${base.hostname}`;
         try {
@@ -161,6 +173,24 @@ const main = async (): Promise<number> => {
             record({ name: 'www redirects to apex', ok: [301, 308].includes(res.status) && location.startsWith(`${base.protocol}//${base.hostname}`), detail: `${res.status} → ${location || '(none)'}` });
         } catch (error) {
             record({ name: 'www redirects to apex', ok: false, detail: error instanceof Error ? error.message : String(error) });
+        }
+    }
+
+    if (redirectFrom) {
+        const target = base.href.replace(/\/$/, '');
+        for (const uri of ['/', '/x?y=1']) {
+            try {
+                const res = await fetch(`https://${redirectFrom}${uri}`, { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
+                record(redirectCheck(`${redirectFrom}${uri} redirects to the game`, res.status, res.headers.get('location'), `${target}${uri}`));
+            } catch (error) {
+                record({ name: `${redirectFrom}${uri} redirects to the game`, ok: false, detail: error instanceof Error ? error.message : String(error) });
+            }
+        }
+        try {
+            const res = await fetch(`https://${redirectFrom}/sw.js`, { redirect: 'manual', signal: AbortSignal.timeout(GET_TIMEOUT_MS) });
+            record(killSwitchCheck(res.status, res.headers.get('cache-control'), await res.text()));
+        } catch (error) {
+            record({ name: 'old domain /sw.js is the kill switch', ok: false, detail: error instanceof Error ? error.message : String(error) });
         }
     }
 

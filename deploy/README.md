@@ -13,7 +13,7 @@ push na main
                  ├─ rsync dist/ → /srv/martynka/releases/<YYYYMMDDTHHMMSSZ-sha7>/   (rrsync, tylko zapis)
                  ├─ switch <id> → /srv/martynka/current → releases/<id>   (atomowo, 5 ostatnich wydań)
                  └─ health check: curl https://<adres>/ zawiera „Martynka urządza”, manifest i sw.js odpowiadają 200
-Caddy (/etc/caddy/Caddyfile): root /srv/martynka/current, HTTPS z Let's Encrypt
+Caddy (/etc/caddy/Caddyfile = `import /etc/caddy/sites/*.caddy`; blok gry w `/etc/caddy/sites/martynka.caddy`): root /srv/martynka/current, HTTPS z Let's Encrypt
   ├─ do czasu domeny: certyfikat na publiczny adres IPv4 (profile shortlived, 6 dni, auto-odnawiany)
   └─ po zakupie domeny: zwykły certyfikat na domenę
 Tablet → https://<adres>
@@ -28,7 +28,10 @@ Pliki w `deploy/`:
 | `bootstrap.sh` | idempotentne przygotowanie serwera (root) |
 | `martynka-deploy` | jedyna komenda dostępna dla klucza CI (`rsync`, `switch`, `rollback`, `status`) |
 | `test-martynka-deploy.sh` | lokalny test dyspozytora (`bash deploy/test-martynka-deploy.sh`) |
-| `Caddyfile` | szablon konfiguracji Caddy (`__SITE__`, `__BIND__`, `__TLS__` podstawia bootstrap) |
+| `Caddyfile` | szablon bloku strony gry (`__SITE__`, `__BIND__`, `__TLS__` podstawia `render-caddyfile.sh`) |
+| `render-caddyfile.sh` | renderuje `/etc/caddy/sites/martynka.caddy` (flagi w sekcji „Wspólny Caddy”) |
+| `test-render-caddyfile.sh` | lokalny test renderu (`caddy validate` w Dockerze, pomijany bez Dockera) |
+| `sw-kill-switch.js` | service worker „wyłącznik” dla starej domeny (instalowany do `/srv/martynka/legacy/sw.js`) |
 
 ## 2. Wymagania
 
@@ -61,7 +64,7 @@ Skrypt odmawia uruchomienia poza Linuksem z `apt-get`, więc uruchomiony przez p
 
 Caddy słucha tylko na publicznym IPv4 (`--bind`, domyślnie adres z `--site`; przy domenie podaj `--bind <IPv4>` albo skrypt weźmie adres z trasy domyślnej), bo port 443 na adresach tailnetu zajmuje `tailscaled` dla CoiledSpring.
 
-Skrypt jest idempotentny; każdy krok wypisuje `[ok]` albo `[skip]`. Po zapisaniu Caddyfile formatuje go (`caddy fmt`), a po przeładowaniu sprawdza `systemctl is-active caddy` i w razie awarii wypisuje ostatnie linie logu. Co robi: instaluje `rsync` (z `rrsync`) i Caddy z oficjalnego repozytorium apt (wymaga ≥ 2.10 dla certyfikatu na IP), tworzy użytkownika `martynka` i `/srv/martynka/releases`, wpisuje klucz CI do `authorized_keys` z `restrict,from="<tailnet>",command="/usr/local/bin/martynka-deploy"`, instaluje dyspozytor, dodaje `/etc/ssh/sshd_config.d/61-martynka-deploy.conf` (`Match User martynka`, `ForceCommand`, bez forwardingu i TTY) i przeładowuje sshd dopiero po `sshd -t`, zapisuje `/etc/caddy/Caddyfile` (kopia poprzedniego w `.bak`), otwiera w UFW `80/tcp` i `443/tcp`, włącza Caddy i wypisuje diagnostykę (`caddy version`, listenery 80/443, `tailscale serve status`).
+Skrypt jest idempotentny; każdy krok wypisuje `[ok]` albo `[skip]`. Po zapisaniu Caddyfile formatuje go (`caddy fmt`), a po przeładowaniu sprawdza `systemctl is-active caddy` i w razie awarii wypisuje ostatnie linie logu. Co robi: instaluje `rsync` (z `rrsync`) i Caddy z oficjalnego repozytorium apt (wymaga ≥ 2.10 dla certyfikatu na IP), tworzy użytkownika `martynka` i `/srv/martynka/releases`, wpisuje klucz CI do `authorized_keys` z `restrict,from="<tailnet>",command="/usr/local/bin/martynka-deploy"`, instaluje dyspozytor, dodaje `/etc/ssh/sshd_config.d/61-martynka-deploy.conf` (`Match User martynka`, `ForceCommand`, bez forwardingu i TTY) i przeładowuje sshd dopiero po `sshd -t`, zapisuje `/etc/caddy/Caddyfile` jako samo `import /etc/caddy/sites/*.caddy` (dawny, monolityczny plik zostaje jako `.bak`) i blok strony w `/etc/caddy/sites/martynka.caddy` (kopia poprzedniego w `.bak`), otwiera w UFW `80/tcp` i `443/tcp`, włącza Caddy i wypisuje diagnostykę (`caddy version`, listenery 80/443, `tailscale serve status`).
 
 Po bootstrapie sprawdź:
 
@@ -109,7 +112,24 @@ Docelowy adres gry to `https://martynka-urzadza.pl` (`www.` przekierowuje na ape
 3. GitHub: zmienna `DEPLOY_SITE_URL` → `https://martynka-urzadza.pl` (health check w workflow).
 4. Zainstalowaną na tablecie PWA (etap S-01) trzeba zainstalować ponownie pod nowym adresem.
 
-Adres IP przestaje być obsługiwany po kroku 2 (Caddyfile ma już tylko bloki domeny).
+Adres IP przestaje być obsługiwany po kroku 2 (plik strony ma już tylko bloki domeny).
+
+### Wspólny Caddy
+
+Na hoście działa jeden Caddy (apt), związany tylko z publicznym IPv4 (`bind`), bo `tailscaled` trzyma :443 na adresach tailnetu (CoiledSpring). Główny `/etc/caddy/Caddyfile` zawiera tylko `import /etc/caddy/sites/*.caddy`; każda strona ma własny plik w `sites/`. Bootstrap tej gry zapisuje wyłącznie `sites/martynka.caddy` (nazwa pliku zostaje, choć plik może obsługiwać `bystrow.ariom.cloud`) i nigdy nie rusza innych plików w `sites/`. Inne strony (firmowa, aplikacje Node) dokładają swoje pliki.
+
+`render-caddyfile.sh --site <IPv4|domena> --bind <IPv4> [--app-path /graj/ --landing-root <katalog>] [--redirect-from <domena>]` pisze zawartość pliku na stdout. Bez opcjonalnych flag blok jest taki jak dotąd (gra pod `/`, `www.` tylko dla domeny z jedną kropką). Te same flagi przyjmuje `bootstrap.sh` i zapisuje je w `/etc/martynka/ops.conf` jako `APP_PATH=`, `LANDING_ROOT=`, `REDIRECT_FROM=` (`martynka-ops bootstrap` przekazuje je, gdy niepuste):
+
+- `--app-path /graj/ --landing-root /srv/bystrow-landing/current` (zawsze razem; ścieżka zaczyna się i kończy `/`): gra pod `/graj/` (`redir /graj /graj/`, `handle_path`, te same nagłówki cache), a pod `/` strona wizytówkowa z katalogu landingu (HTML `no-cache`, reszta 7 dni). Bootstrap tworzy `/srv/bystrow-landing/releases`.
+- `--redirect-from martynka-urzadza.pl`: stara domena i `www.` przekierowują na stałe na `https://<strona><app-path>{uri}`, poza `/sw.js` z `/srv/martynka/legacy` (wyłącznik: czyści cache, wyrejestrowuje worker, przeładowuje karty). Smoke: `npm run check:deploy -- https://bystrow.ariom.cloud/graj/ <sha7> --redirect-from martynka-urzadza.pl`.
+
+Uwaga: gra pod ścieżką wymaga builda z `base` zgodnym ze ścieżką (dziś `base: '/'`, `scope: '/'`); to osobna zmiana, nie część tego kroku.
+
+Przeniesienie na nowy adres (kolejność):
+
+1. Na starej domenie: Ustawienia rodzica → „Zapisz kopię” (eksport zapisu); IndexedDB jest per origin, więc zapis nie przejdzie sam na `bystrow.ariom.cloud`.
+2. Bootstrap z flagami wyżej (najpierw `sync`, potem `bootstrap`), `caddy-validate`, smoke.
+3. Na nowym adresie: Ustawienia rodzica → „Wczytaj z pliku”. Zainstalowaną PWA zainstalować od nowa pod nowym adresem; stare PWA sprzątnie wyłącznik pod `/sw.js` starej domeny.
 
 ## 8. Rozwiązywanie problemów
 
