@@ -36,7 +36,7 @@ test.describe('files that never answer', () => {
     test('#15 A-1/A-2 many hanging pictures, the font and a salon file end the loading at the total limit, with the slow line first', async ({ page }) => {
         await silenceSpeech(page);
         await hold(page);
-        await page.goto('/?e2eArt=stallall&e2eVariant=off');
+        await page.goto('./?e2eArt=stallall&e2eVariant=off');
         await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
         // The slow line comes before the cut: the screen is still the loading screen.
         await expect.poll(async () => (await snapshot(page)).loading?.phase).toBe('slow');
@@ -57,7 +57,7 @@ test.describe('files that never answer', () => {
     test('#15 A-1 a file that answers after the cut does not start the game twice', async ({ page }) => {
         await silenceSpeech(page);
         const held = await hold(page);
-        await page.goto('/?e2eArt=stallall&e2eVariant=off');
+        await page.goto('./?e2eArt=stallall&e2eVariant=off');
         await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
         // The cut comes at the e2e total limit after the page load: wait past it, not the default 5 s.
         await expect.poll(async () => (await snapshot(page)).screen, { timeout: 15_000 }).toBe('welcome');
@@ -95,7 +95,7 @@ test.describe('files that never answer', () => {
                 document.dispatchEvent(new Event('visibilitychange'));
                 return performance.now();
             }, hidden);
-        await page.goto('/?e2eArt=stallall&e2eVariant=off');
+        await page.goto('./?e2eArt=stallall&e2eVariant=off');
         await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
         // Hidden before the 3 s total limit (the e2e seam) has passed in visible time.
         expect((await snapshot(page)).screen).toBe('loading');

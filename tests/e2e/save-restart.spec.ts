@@ -109,7 +109,7 @@ test('#16 FR-020 a purchase is saved at once and ?e2eStars seeds only a fresh st
 
 test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy and is never written', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=unreadable');
+    await page.goto('./?e2eSave=unreadable');
     const card = page.getByRole('alertdialog', { name: pl.saveFuture.title });
     await expect(card).toBeVisible();
 
@@ -163,7 +163,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
 // specs start with page.goto, never openWelcome. A new browser context is a fresh device; IndexedDB is never touched.
 test('#2 C-1 a save the browser will not give shows the card, plays without writing and says so in the parent panel', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=unavailable');
+    await page.goto('./?e2eSave=unavailable');
     const card = page.getByRole('alertdialog', { name: pl.saveUnavailable.title });
     await expect(card).toBeVisible();
     // There is no stored copy to keep: no export button.
@@ -195,7 +195,7 @@ test('#2 C-1 a save the browser will not give shows the card, plays without writ
 
 test('#2 M-S4 a read that never answers ends in the same card after the load timeout', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=hang');
+    await page.goto('./?e2eSave=hang');
     const card = page.getByRole('alertdialog', { name: pl.saveSlow.title });
     await expect(card).toBeVisible();
     await card.getByRole('button', { name: pl.saveSlow.continue }).tap();

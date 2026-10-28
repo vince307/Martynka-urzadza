@@ -15,7 +15,7 @@ const DAY_ONE = '2026-10-14';
 const DAY_TWO = '2026-10-15';
 const PUZZLE_STARS = 2;
 
-const address = (day: string): string => `/?e2eVariant=puzzle&e2eDay=${day}&e2eMonth=10`;
+const address = (day: string): string => `./?e2eVariant=puzzle&e2eDay=${day}&e2eMonth=10`;
 
 const startE4 = (page: Page, day: string): Promise<void> =>
     passWelcomeAsParent(page, {

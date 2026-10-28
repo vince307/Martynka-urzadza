@@ -53,8 +53,10 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
     window.addEventListener('load', () => {
         // A failed registration must never break the game; it only means
         // "online only" until the next launch.
+        // The game lives under a path (BASE_URL "/graj/", vite/config.shared.mjs); the worker and its scope stay
+        // inside it, so it never controls the landing page at "/".
         container
-            .register('/sw.js', { scope: '/' })
+            .register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
             .then((registration) => {
                 if (registration.active) emit({ type: 'active', id: idOf(registration.active) });
                 if (registration.waiting) {

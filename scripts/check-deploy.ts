@@ -142,7 +142,7 @@ const main = async (): Promise<number> => {
         record(precacheCovers('boot sounds', precache, SOUNDS.filter((s) => s.boot).flatMap((s) => [...s.urls])));
     }
 
-    const bundles = bundlesFromHtml(html);
+    const bundles = bundlesFromHtml(html, base.pathname);
     record(compareBundles(bundles, precache));
     let entryJs = '';
     for (const bundle of bundles) {

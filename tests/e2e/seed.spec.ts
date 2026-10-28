@@ -5,15 +5,25 @@
 import { test, expect } from '@playwright/test';
 import { TASK_ART } from '../../src/data/taskArt';
 
+// The game is served under /graj/ like in production (playwright.config.ts baseURL, landing page at "/").
+const APP = '/graj/';
+
 test('the game boots offline from the service worker cache', async ({ page, context }) => {
     // Setup: the first, online launch installs the service worker and precaches the build.
-    await page.goto('/');
+    await page.goto('./');
     const container = page.locator('#game-container');
     const buildId = await container.getAttribute('data-build');
     expect(buildId).toBeTruthy();
     // Going offline before the worker controls the page would test nothing: the reload
     // would simply fail. clientsClaim makes the active worker take the page over.
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+    // The worker is the game's own: sw.js under /graj/ with scope /graj/, so it can never take over the landing page at "/".
+    const registration = await page.evaluate(async () => {
+        const reg = await navigator.serviceWorker.getRegistration();
+        return { scope: reg?.scope, script: navigator.serviceWorker.controller?.scriptURL };
+    });
+    expect(new URL(registration.scope!).pathname).toBe(APP);
+    expect(new URL(registration.script!).pathname).toBe(`${APP}sw.js`);
 
     // Action: cut the network and launch again.
     await context.setOffline(true);
@@ -25,7 +35,7 @@ test('the game boots offline from the service worker cache', async ({ page, cont
     const soundRequests: string[] = [];
     page.on('request', (request) => {
         const path = new URL(request.url()).pathname;
-        if (path.startsWith('/assets/sounds/')) {
+        if (path.startsWith(`${APP}assets/sounds/`)) {
             soundRequests.push(path);
         }
     });
@@ -50,13 +60,13 @@ test('the game boots offline from the service worker cache', async ({ page, cont
     await expect(container).toHaveAttribute('data-build', buildId!);
     await expect(container.locator('canvas')).toBeVisible();
     expect(servedByNetwork).toEqual([]);
-    expect(failed.filter((path) => path.startsWith('/assets/') || path.startsWith('/_app/'))).toEqual([]);
-    expect(servedBySw).toContain('/');
-    expect(servedBySw.filter((path) => path.startsWith('/_app/') && path.endsWith('.js')).length).toBeGreaterThanOrEqual(2);
+    expect(failed.filter((path) => path.startsWith(`${APP}assets/`) || path.startsWith(`${APP}_app/`))).toEqual([]);
+    expect(servedBySw).toContain(APP);
+    expect(servedBySw.filter((path) => path.startsWith(`${APP}_app/`) && path.endsWith('.js')).length).toBeGreaterThanOrEqual(2);
 
     // The task drawings (S-14) are loaded at start, so each one must come from the worker's cache too: one file
     // missing from the precache fails this by name. The decoded images show up as object URLs.
-    await expect.poll(() => TASK_ART.filter((art) => !servedBySw.includes(`/${art.url}`)).map((art) => art.url)).toEqual([]);
+    await expect.poll(() => TASK_ART.filter((art) => !servedBySw.includes(`${APP}${art.url}`)).map((art) => art.url)).toEqual([]);
     await expect.poll(() => objectUrls).toBeGreaterThanOrEqual(TASK_ART.length);
 
     // The sounds (S-16b): the effects load at start, one format per effect, never the music; each came from the worker's cache.

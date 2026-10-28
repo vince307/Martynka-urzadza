@@ -14,7 +14,7 @@ Stan: szkielet (etap M0). Phaser 4.2 + TypeScript + Vite, scena 1920×1080 dopas
 | Komenda | Opis |
 |---|---|
 | `npm install` | Instalacja zależności |
-| `npm run dev` | Serwer deweloperski Vite na http://localhost:8080 (dodaj `-- --host`, żeby otworzyć na tablecie w tej samej sieci) |
+| `npm run dev` | Serwer deweloperski Vite na http://localhost:8080/graj/ (dodaj `-- --host`, żeby otworzyć na tablecie w tej samej sieci) |
 | `npm run build` | Build produkcyjny do `dist/` |
 | `npm run preview` | Podgląd builda produkcyjnego |
 | `npm run typecheck` | Sprawdzenie typów (`tsc --noEmit`); Vite nie sprawdza typów przy dev ani build |

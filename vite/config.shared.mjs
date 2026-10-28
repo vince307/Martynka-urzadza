@@ -22,6 +22,14 @@ const buildId = () => {
     }
 };
 
+/**
+ * Path the game is served under: bystrow.ariom.cloud has a landing page at "/" and the game at /graj/
+ * (Caddy `handle_path /graj/*` strips the prefix, so the files sit at the release root). Every URL the
+ * browser uses carries it: bundles, manifest, sw.js and its scope. scripts/build-check/paths.ts
+ * (APP_BASE) checks dist/ against the same value.
+ */
+export const APP_BASE = '/graj/';
+
 const pwaOptions = {
     // New service worker activates at once (skipWaiting + clientsClaim) but the
     // open page is not reloaded: the next launch gets the new build silently.
@@ -32,16 +40,18 @@ const pwaOptions = {
         name: 'Martynka urządza',
         short_name: 'Martynka',
         lang: 'pl',
-        start_url: '/',
-        scope: '/',
+        // The installed app opens and stays inside the game, never on the landing page.
+        start_url: APP_BASE,
+        scope: APP_BASE,
         display: 'fullscreen',
         orientation: 'landscape',
         background_color: THEME_COLOR,
         theme_color: THEME_COLOR,
+        // Relative to the manifest (APP_BASE/manifest.webmanifest), so no leading "/".
         icons: [
-            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-            { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+            { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+            { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
     },
     // Icons are already covered by the png glob below.
@@ -60,7 +70,7 @@ const pwaOptions = {
 };
 
 export const sharedConfig = {
-    base: '/',
+    base: APP_BASE,
     define: {
         __BUILD_ID__: JSON.stringify(buildId()),
         __E2E_HOOK__: JSON.stringify(process.env.E2E_HOOK === '1'),

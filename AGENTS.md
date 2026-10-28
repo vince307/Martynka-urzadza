@@ -19,7 +19,7 @@
 
 ## Commands
 
-- `npm run dev` — Vite on :8080 (`-- --host` for tablets).
+- `npm run dev` — Vite on http://localhost:8080/graj/ (`-- --host` for tablets).
 - `npm run build` — production build to `dist/`.
 - `npm run typecheck` — `tsc --noEmit`; Vite does not.
 - `npm run preview` — the only local way to test `sw.js`.

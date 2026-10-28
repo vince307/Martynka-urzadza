@@ -27,6 +27,15 @@ describe('deploy check parsers', () => {
         expect(bundlesFromHtml('<html></html>')).toEqual([]);
     });
 
+    it('finds the bundles of a build served under a path, named from the game root', () => {
+        const under = html.replace(/"\//g, '"/graj/');
+        expect(bundlesFromHtml(under, '/graj/')).toEqual(['/_app/index-dt_hHSYl.js', '/_app/index-D-QdC4-j.css']);
+        expect(compareBundles(bundlesFromHtml(under, '/graj/'), precacheFromSw(sw)).ok).toBe(true);
+        // A root build checked as a /graj/ release (or the reverse) has no bundles there: the check fails.
+        expect(bundlesFromHtml(html, '/graj/')).toEqual([]);
+        expect(bundlesFromHtml(under)).toEqual([]);
+    });
+
     it('reads the precache list with a leading slash', () => {
         expect(precacheFromSw(sw)).toContain('/_app/phaser-B9cGCB07.js');
         expect(precacheFromSw(sw)).toContain('/index.html');

@@ -15,7 +15,7 @@ test.setTimeout(120_000);
 
 test('#2 H-1/M-3 a salon saved under the old list as v2 is written as v4 at start, copy right after, with no child action', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=legacy-salon&e2eVariant=off');
+    await page.goto('./?e2eSave=legacy-salon&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     // No tap: the start write comes from the autosaver alone.
     await screenIs(page, 'welcome');
@@ -34,7 +34,7 @@ test('#2 H-1/M-3 a salon saved under the old list as v2 is written as v4 at star
 
 test('#2 M-3 a v1 save is written as v4 at start', async ({ page }) => {
     await silenceSpeech(page);
-    await page.goto('/?e2eSave=v1&e2eVariant=off');
+    await page.goto('./?e2eSave=v1&e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'task');
     // No round played: the write at start is the only way the store gets v3.

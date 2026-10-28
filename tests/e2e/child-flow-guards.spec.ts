@@ -35,7 +35,7 @@ test('#2 SV2-10 a puzzle answered and closed before Dalej is not paid again the 
     await expect.poll(async () => (await snapshot(page)).save?.writes ?? 0).toBeGreaterThan(0);
     const before = await snapshot(page);
 
-    await page.goto(`/?e2eVariant=puzzle&e2eDay=${DAY}&e2eMonth=10`);
+    await page.goto(`./?e2eVariant=puzzle&e2eDay=${DAY}&e2eMonth=10`);
     await fromHook(page, 'snapshot');
     await screenIs(page, 'task');
     const after = await snapshot(page);

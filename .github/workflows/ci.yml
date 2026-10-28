@@ -37,3 +37,5 @@ jobs:
       - run: npm run sample -- E5
       - run: npm run sample -- E6
       - run: npm run build
+      # The build is made for the game under /graj/ (manifest, index.html URLs, precache; scripts/check-build.ts).
+      - run: npm run check:build

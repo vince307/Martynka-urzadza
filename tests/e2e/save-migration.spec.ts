@@ -12,7 +12,7 @@ import { SAVE_VERSION } from '../../src/core/save';
 
 test.setTimeout(120_000);
 
-const OPEN = '/?e2eSave=v1&e2eMonth=10&e2eVariant=off';
+const OPEN = './?e2eSave=v1&e2eMonth=10&e2eVariant=off';
 
 test('#10 a v1 save loads in the v4 build with the same stars, stage and learner history', async ({ page }) => {
     await silenceSpeech(page);

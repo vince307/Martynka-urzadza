@@ -22,7 +22,7 @@ export const openWelcome = async (page: Page, month?: number, query: Record<stri
     if (month !== undefined) {
         params.set('e2eMonth', String(month));
     }
-    await page.goto(params.size === 0 ? '/' : `/?${params.toString()}`);
+    await page.goto(params.size === 0 ? './' : `./?${params.toString()}`);
     // A stale server without the hook would fail every test with an unreadable error.
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');

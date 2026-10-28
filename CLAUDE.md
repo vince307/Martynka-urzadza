@@ -19,9 +19,10 @@ Save timeouts and backup policy (change save-v2-backup-health): every store call
 
 ```bash
 npm install
-npm run dev          # Vite dev server on http://localhost:8080 (add `-- --host` to open it on a tablet)
+npm run dev          # Vite dev server on http://localhost:8080/graj/ (the game's base path, as in production; add `-- --host` to open it on a tablet)
 npm run build        # production build to dist/ (vite/config.prod.mjs, terser)
-npm run preview      # serve the production build (the only local way to exercise sw.js; dev skips it)
+npm run preview      # serve the production build at /graj/ (the only local way to exercise sw.js; dev skips it)
+npm run check:build  # after a build: manifest start_url/scope, index.html URLs and the sw.js precache stay under /graj/ (scripts/check-build.ts; CI and deploy run it)
 npm run icons        # regenerate the app icons in public/icons/ from the pack in designs/ (deterministic; needs cwebp + dwebp)
 npm run font         # rebuild public/fonts/MartynkaNext.ttf (plain zero) from designs/martynka-maths-A-v1/fonts/AtkinsonHyperlegibleNext.ttf with scripts/make-font.py (python, fontTools 4.61.1 pinned, byte-identical output)
 npm run art          # convert the art kits' PNGs (designs/, local only: maths kit, salon-v2 pack, martynka-fox-guide-v1) to WebP in public/assets/ (needs cwebp, and python3 with Pillow 12.1.0 + numpy 2.4.3 for the board recolour)
@@ -35,7 +36,7 @@ npx playwright test   # local browser e2e (tests/e2e/, Chromium): builds and ser
 
 ESLint enforces the module boundaries (`src/core` without Phaser or browser globals; `src/data` imports from `core` only `core/text/*` and types) and `tests/lint-boundaries.test.ts` checks those rules on synthetic sources, so a config regression fails the suite. Every pull request runs `.github/workflows/ci.yml` (lint, typecheck, tests, `sample` E1–E6, build); the deploy workflow lints before building. Generators are pure `(skill, rng) => Task` functions registered in `src/core/tasks/registry.ts` next to their params parsers (parsers reject infeasible data); each gets a 1000-draw test (20 seeds × 50, `tests/helpers.ts`) that replays failures by seed, and `tests/contentInvariants.test.ts` checks every skill of every stage (hint arithmetic, bounds, variety, degenerate shares), every noun used in a prompt must be in `src/data/nouns.ts` (the validator and `tests/wordTemplates.test.ts` check agreement for 0–100), `src/data/` may import only `src/core/text/*` and types from `core/`, and `scripts/sample.ts` runs `node --import tsx` because Node's type stripping cannot resolve extension-less imports.
 
-Vite configs live in `vite/config.dev.mjs` and `vite/config.prod.mjs`, both built on `vite/config.shared.mjs` (`base: '/'`, hashed bundles in `_app/`, Phaser in its own chunk, PWA plugin). Files in `public/` are served at the root, so Phaser loader paths look like `assets/...`; `public/assets/` is never cached as immutable (only `/_app/*` is), and the precache globs cover js, css, html, png, webp, ogg, m4a, woff2 and ttf, so every asset must be loaded at start (no lazy chunks) while the service worker uses `clientsClaim`.
+Vite configs live in `vite/config.dev.mjs` and `vite/config.prod.mjs`, both built on `vite/config.shared.mjs` (`base: '/graj/'` = `APP_BASE`: the landing page owns `/` on bystrow.ariom.cloud, so the manifest `start_url`/`scope`, `sw.js` and its scope (`import.meta.env.BASE_URL` in `src/pwa/registerServiceWorker.ts`) all stay under `/graj/`; hashed bundles in `_app/`, Phaser in its own chunk, PWA plugin). Files in `public/` are served at the base, so Phaser loader paths are relative (`assets/...`, never a leading `/`), manifest icons are relative to the manifest, `index.html` uses `%BASE_URL%`, and e2e specs open the game with `page.goto('./…')` (baseURL ends in `/graj/`); `public/assets/` is never cached as immutable (only `/_app/*` is), and the precache globs cover js, css, html, png, webp, ogg, m4a, woff2 and ttf, so every asset must be loaded at start (no lazy chunks) while the service worker uses `clientsClaim`.
 
 ## Target architecture (from the plan)
 
