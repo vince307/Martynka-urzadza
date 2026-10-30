@@ -736,9 +736,9 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [x] 4.1 New cases green (the `undefined` picker case red before the signature change); unit `<phase-3 count> + N`
-- [x] 4.2 Deliberate break: pass the current `room`/`state` to every tile again → the source guard red; return `'thumbnail'` for an undefined key → the picker case red; each restored; meta-check: the guard cannot see the pixels; the visual pass (6.x) and phase 7 look at the drawn card
-- [x] 4.3 `git diff <phase-3 sha> -- src/data/pl.ts` shows only `name` → `names` (and `roomText.name`); `grep -rn "pl.room.name\b\|\.name ?? id" src` empty
+- [x] 4.1 New cases green (the `undefined` picker case red before the signature change); unit `<phase-3 count> + N` — c9fcca5
+- [x] 4.2 Deliberate break: pass the current `room`/`state` to every tile again → the source guard red; return `'thumbnail'` for an undefined key → the picker case red; each restored; meta-check: the guard cannot see the pixels; the visual pass (6.x) and phase 7 look at the drawn card — c9fcca5
+- [x] 4.3 `git diff <phase-3 sha> -- src/data/pl.ts` shows only `name` → `names` (and `roomText.name`); `grep -rn "pl.room.name\b\|\.name ?? id" src` empty — c9fcca5
 - [ ] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-*` specs reading `doneMiniature` stay green)
 
 ### Phase 5: The art table and the art script per room
