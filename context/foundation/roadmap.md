@@ -1,173 +1,218 @@
 ---
 project: "Martynka urządza"
-version: 2
+version: 3
 status: draft
 created: 2026-10-11
-updated: 2026-10-25
-prd_version: 3
+updated: 2026-10-30
+prd_version: 4
 main_goal: quality
-top_blocker: decisions
-milestone_id: wysylki-rodzica-i-statystyki
-milestone_seq: 2
+top_blocker: external
+milestone_id: ulica-i-domy
+milestone_seq: 3
 milestone_status: open
 ---
 
 # Roadmap: Martynka urządza
 
-> Derived from `context/foundation/prd.md` (v3, wymagania „Po v1 — opinia rodzica, raport o błędzie, statystyki odwiedzin”) + decyzje autora w `docs/human-checklist.md` (sekcje „Do zrobienia: statystyki odwiedzin” i „Do zrobienia: opinia rodzica i raport o błędzie z gry”) + auto-researched codebase baseline.
-> Edit-in-place; archive when superseded. Poprzedni kamień (M-01, etapy M0–M8) jest w historii gita tego pliku i w `## Milestone History`.
+> Derived from `context/foundation/prd.md` (v4, sekcja „Po v1 — ulica i domy”: FR-032–FR-036, FR-038–FR-041, decyzje autora z 2026-10-30) + decyzje autora w `docs/human-checklist.md` (sekcja „Decyzje 2026-10-30: kształt etapu „ulica i domy””) + auto-researched codebase baseline (potwierdzony 2026-10-30).
+> Edit-in-place; archive when superseded. Poprzednie kamienie (M-01 etapy M0–M8, M-02 wysyłki rodzica, odłożony) są w historii gita tego pliku i w `## Milestone History`.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
 
 ## Milestone
 
-**M-02: Wysyłki rodzica i statystyki odwiedzin** — Status: open
+**M-03: Ulica i domy** — Status: open
 
-- **Intent:** Rodzic może świadomie, za bramką dla dorosłych, wysłać autorowi opinię albo raport o błędzie i przeczytać, co gra zbiera; autor widzi zbiorcze statystyki odwiedzin strony. Dane dziecka nadal nie opuszczają urządzenia. Kamień niesie też przeniesiony z M-01 balans po testach z córką (S-17).
-- **Source materials:** `context/foundation/prd.md` (v3): FR-028–FR-031 z sekcji „Po v1”, NFR prywatności, Guardrails, Open Questions 8–10; FR-027 dla przeniesionego S-17.
-- **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-027 (przeniesione z M-01), FR-028, FR-029, FR-030, FR-031; NFR „Prywatność”; Guardrail „Działa offline i bez sieci zewnętrznej”.
+- **Intent:** Po salonie dziecko urządza kolejne pokoje pierwszego domu wybierane w przekroju z piętrami, a gdy dom jest gotowy, wprowadzają się mieszkańcy i zostawiają naklejkę do albumu; potem otwiera się ulica z działkami i drugi dom. Nic z salonu nie przepada, gwiazdki z rund pozostają jedyną walutą, nowy pokój lub dom to dane i grafika. Kamień niesie też przeniesiony z M-02 balans po testach z córką (S-17), bo od zmierzonego tempa zależy wielkość ulicy.
+- **Source materials:** `context/foundation/prd.md` (v4): FR-032–FR-036 i FR-038–FR-041 z sekcji „Po v1 — ulica i domy”, Open Questions 5 i 11–14; FR-027 dla przeniesionego S-17; `docs/human-checklist.md`, decyzje z 2026-10-30.
+- **Done when:** every F-NN and S-NN below is `done`.
+- **Scope anchors:** FR-027 (przeniesione z M-02), FR-032, FR-033, FR-034, FR-035, FR-036, FR-038, FR-039, FR-040, FR-041; US-02 (dziecko urządza za gwiazdki); Guardrails „nic urządzonego nie znika”, „bez fabuły i dialogów”; PRD Open Questions 5, 11, 12, 13, 14.
 
 ## Vision recap
 
-Gra działa lokalnie i offline, bez kont i bez telemetrii; dziecko ćwiczy matematykę i urządza salon. Wersja 2 PRD dodaje jedną kontrolowaną furtkę: rodzic, nie dziecko, może sam wysłać autorowi opinię albo raport o błędzie, zawsze bez danych dziecka, a autor dowiaduje się o ruchu na stronie wyłącznie z obsługi pobierania gry, bez kodu w grze.
+Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na urządzanie pokoju, wybierając jeden z trzech wariantów każdego elementu. Wersja 4 PRD rozwija nagrodę po salonie: pokoje składają się w dom z piętrami, dom w ulicę, a gotowy dom zamieszkują mieszkańcy; gra nadal działa offline, bez kont, fabuły, sprzedaży i dochodu, a jedynym źródłem gwiazdek są rozwiązane zadania.
 
 ## North star
 
-**S-19: Rodzic wysyła autorowi opinię z ustawień, a autor ją czyta** — pierwszy przepływ, w którym coś z gry trafia na własny serwer; dowodzi naraz trzech rzeczy, na których stoi cały kamień: wysyłka tylko za bramką, nic z danych dziecka, spokojne zachowanie bez sieci.
+**S-24: Mieszkańcy wprowadzają się do gotowego domu i zostawiają naklejkę** — pierwszy przepływ, który domyka całą nową pętlę nagrody (pokoje → dom → mieszkańcy → pamiątka) i dowodzi, że nowy etap trzyma motywację po salonie (PRD Open Question 5); stoi tak wcześnie, jak pozwalają dwa nowe pokoje i przekrój domu.
 
-> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu do zapisu po drugiej stronie, którego dostarczenie dowodzi, że ta część produktu działa. Stoi tak wcześnie, jak pozwala strona „Prywatność” (cel `quality`: najpierw rodzic może przeczytać, co wychodzi, potem coś wychodzi).
+> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu dziecka do zapisu, którego dostarczenie dowodzi, że ta część produktu działa. Cel `quality` ustawia przed nią kontrakt „pokój to dane” i bezstratny zapis domów (F-04), żeby nic z salonu nie przepadło, zanim pojawi się drugi pokój.
 
 ## At a glance
 
-| ID    | Change ID             | Outcome (user can …)                                                        | Prerequisites | PRD refs                    | Status   |
-| ----- | --------------------- | --------------------------------------------------------------------------- | ------------- | --------------------------- | -------- |
-| S-17  | playtest-balance      | autor dostraja balans w danych gry po obserwacji córki                       | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
-| S-18  | privacy-page          | rodzic czyta stronę „Prywatność” z linku w grze                              | —             | FR-031, NFR Prywatność      | blocked  |
-| S-19  | parent-feedback-send  | rodzic wysyła opinię za bramką (także bez sieci), autor ją czyta             | S-18          | FR-028, NFR Prywatność, Guardrails | blocked  |
-| S-20  | parent-bug-report     | rodzic jednym stuknięciem wysyła raport z karty „Ups!” i z „Zapis gry”       | S-19          | FR-029, NFR Prywatność      | proposed |
-| S-21  | visit-stats           | autor widzi zbiorcze statystyki odwiedzin bez kodu w grze                    | S-18          | FR-030, NFR Prywatność      | proposed |
+| ID    | Change ID            | Outcome (user can …)                                                                 | Prerequisites      | PRD refs                                   | Status   |
+| ----- | -------------------- | ------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------ | -------- |
+| F-04  | rooms-as-data        | (foundation) dom i pokoje są danymi gry, a zapis niesie dom bez straty salonu        | —                  | FR-032, FR-033, FR-038, PRD Open Question 14 | ready    |
+| S-17  | playtest-balance     | autor dostraja balans w danych gry po obserwacji córki                               | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
+| S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | proposed |
+| S-23  | house-cross-section  | dziecko wybiera pokój w przekroju domu z piętrami; „Do pokoju” zawsze trafia do remontu | S-22            | FR-038, FR-039, FR-033                     | proposed |
+| S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | proposed |
+| S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25         | FR-034, FR-040, FR-041, FR-035             | proposed |
+| S-26  | street-plots         | dziecko widzi ulicę z działkami i urządza drugi dom z innymi pokojami                | S-24, S-17         | FR-032, FR-036, FR-039, FR-040             | blocked  |
+| S-27  | district             | po kilku domach otwiera się dzielnica w innym otoczeniu                              | S-26               | FR-036                                     | proposed |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                  | Chain                       | Note                                                                 |
-| ------ | ---------------------- | --------------------------- | -------------------------------------------------------------------- |
-| A      | Wysyłki rodzica        | `S-18` → `S-19` → `S-20`    | Cel `quality`: strona „Prywatność” przed pierwszą wysyłką; raport o błędzie używa drogi opinii. |
-| B      | Statystyki odwiedzin   | `S-21`                      | Joins Stream A at `S-18`; równolegle z `S-19`, bez kodu w grze.        |
-| C      | Balans po testach      | `S-17`                      | Przeniesione z M-01; zależy od obserwacji córki, nie od kodu; równolegle ze wszystkim. |
+| Stream | Theme                    | Chain                                                    | Note                                                                                              |
+| ------ | ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| A      | Dom od środka            | `F-04` → `S-22` → `S-23` → `S-24` → `S-26` → `S-27`      | Cel `quality`: kontrakt danych i bezstratny zapis przed drugim pokojem; ulica dopiero po mieszkańcach. |
+| B      | Trzeci pokój             | `S-25`                                                   | Joins Stream A at `S-24`; równolegle z `S-23`; dowód, że pokój to tylko dane i grafika.             |
+| C      | Balans po testach        | `S-17`                                                   | Przeniesione z M-02; zależy od obserwacji córki, nie od kodu; jego pomiar odblokowuje `S-26`.       |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-10-25` (auto-researched + user-confirmed).
+What's already in place in the codebase as of `2026-10-30` (auto-researched 2026-10-25 + user-confirmed 2026-10-30).
+Foundations below assume these are present and do NOT re-scaffold them.
 
-- **Frontend:** present — gra Phaser 4.2.1 z panelem rodzica za bramką dla dorosłych (`src/ui/dom/settingsPanel.ts`, `src/core/parentGate.ts`), kartą awarii z linią `Kod:` (`src/ui/dom/errorCard.ts`) i sekcją „Zapis gry” (`src/ui/dom/saveHealthView.ts`); wszystkie teksty w `src/data/pl.ts`.
-- **Backend / API:** absent — serwer tylko podaje statyczne pliki gry (`deploy/Caddyfile`: `file_server`); nie ma żadnego adresu przyjmującego dane.
-- **Data:** present lokalnie, absent na serwerze — zapis gry w IndexedDB (`src/storage/idb.ts`); na serwerze nie ma miejsca na opinie i raporty.
+- **Frontend:** present — gra Phaser 4.2.1; silnik pokoju: salon z danych (`src/data/rooms.ts`: zadania remontowe, sloty, 3 warianty), scena pokoju z panelem wariantów, karta „Pokój gotowy!” z kafelkiem „Wkrótce”, miniatura pokoju i tło zeszytu rysowane z żywych warstw; panel rodzica za bramką; wszystkie teksty w `src/data/pl.ts`. Założenia „tylko salon” (cienie kontaktowe, postarzenie wariantu 0, manifest slotów, tabele migracji) są do sprawdzenia (PRD Open Question 14).
+- **Backend / API:** absent — serwer podaje tylko statyczne pliki gry; w tym kamieniu nic nie jest potrzebne.
+- **Data:** present lokalnie — zapis gry w IndexedDB, format v4 z `rooms`/`currentRoom` i łańcuchem migracji; dom i ulica nie mają jeszcze miejsca w zapisie.
 - **Auth:** n/a — bez kont; bramka dla dorosłych to element UI (PRD Access Control).
-- **Deploy / infra:** present — GitHub Actions → VPS wspólny z CoiledSpring (`deploy/`, `.github/workflows/deploy.yml`), konto agenta `martynka-ops`; zmiany w `deploy/` wdraża właściciel (`sync` + `bootstrap`).
-- **Observability:** partial — w grze linie zdrowia w panelu rodzica (nic nie wychodzi z urządzenia); serwer nie ma logu dostępu, więc statystyk odwiedzin nie ma z czego liczyć.
+- **Deploy / infra:** present — GitHub Actions → VPS, gra pod `/graj/` od #115, smoke po wdrożeniu sprawdza grafiki pokoju; limit ładowania startu liczy każdą nową paczkę.
+- **Observability:** partial — linie zdrowia w panelu rodzica („Obrazki”, „Zapis gry”); nic nie wychodzi z urządzenia; brak linii dla domu i ulicy.
 
 ## Foundations
 
-Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze przyjmujący wysyłki — powstaje w pierwszym wycinku, który go używa (`S-19`), a log dostępu w `S-21`.
+### F-04: Dom i pokoje jako dane
+
+- **Outcome:** (foundation) pokój da się dodać wyłącznie danymi i grafiką: wszystko, co dziś jest napisane pod salon (cienie, postarzenie, manifest slotów, tabele migracji, karta „Pokój gotowy!”), staje się danymi pokoju; zapis niesie dom z listą pokoi i miejscem każdego pokoju w siatce piętro × miejsce, a salon dziecka przechodzi do pierwszego domu bez straty, z zamrożoną próbką starego zapisu w testach.
+- **Change ID:** rooms-as-data
+- **PRD refs:** FR-032 (nic z salonu nie przepada), FR-033 (pokój jak salon, z danych), FR-038 (piętra jako dane), PRD Open Question 14
+- **Unlocks:** S-22, S-25 (pokoje z danych), S-23 (siatka pięter w zapisie); zamyka PRD Open Question 14.
+- **Prerequisites:** —
+- **Parallel with:** S-17
+- **Blockers:** —
+- **Unknowns:**
+  - Czy nowy format zapisu (v5) ma już nieść ulicę i dzielnicę, czy tylko dom; za wcześnie zapisana ulica to pole, którego nikt nie czyta, za późno to druga migracja. — Owner: zespół. Block: no (rozstrzyga `/10x-research`).
+- **Risk:** stoi pierwszy przy celu `quality`, bo jedna migracja z salonem w środku jest bezpieczniejsza niż dwie; ryzyko: fundament rozrasta się w przepisanie sceny pokoju — jego miarą jest kuchnia w S-22, nie nowa architektura.
+- **Status:** ready
 
 ## Slices
 
 ### S-17: Balans po testach z graczem
 
-- **Outcome:** autor po obserwacji gry córki i miarach z historii w zapisie (czas na pokój, odsetek drugich prób per umiejętność) dostraja wyłącznie w danych gry tempo gwiazdek, koszty mebli, progi opanowania i czytelność poleceń; przejście salonu zajmuje sensowny czas, zadania nie są ani za łatwe, ani frustrujące.
+- **Outcome:** autor po obserwacji gry córki i miarach z historii w zapisie (czas na pokój, odsetek drugich prób per umiejętność) dostraja wyłącznie w danych gry tempo gwiazdek, koszty mebli, progi opanowania i czytelność poleceń; przejście salonu zajmuje sensowny czas, zadania nie są ani za łatwe, ani frustrujące; zmierzony czas na pokój rozstrzyga, ile domów ma ulica (PRD Open Question 11).
 - **Change ID:** playtest-balance
-- **PRD refs:** FR-027, Success Criteria (Primary), PRD Open Question 5 (motywacja po salonie)
+- **PRD refs:** FR-027, Success Criteria (Primary), PRD Open Question 5 (motywacja po salonie), PRD Open Question 11 (wielkość ulicy)
 - **Prerequisites:** S-16a (M-01, done)
-- **Parallel with:** S-18, S-19, S-20, S-21
+- **Parallel with:** F-04, S-22, S-23, S-25, S-24
 - **Blockers:** —
 - **Unknowns:**
   - Ile tygodni obserwacji wystarczy, by ocenić kryterium „gra 3 razy w tygodniu przez 4 tygodnie”? — Owner: autor. Block: no.
-- **Risk:** zamyka M8 i cały kamień; jedyny wycinek, którego „gotowe” zależy od zachowania gracza, nie od kodu.
+- **Risk:** przeniesiony z M-01 i M-02; jedyny wycinek, którego „gotowe” zależy od zachowania gracza, nie od kodu; bez jego pomiaru ulica (S-26) zostaje zablokowana.
 - **Status:** proposed
 
-### S-18: Strona „Prywatność”
+### S-22: Kuchnia, drugi pokój z danych
 
-- **Outcome:** rodzic otwiera z gry krótką stronę „Prywatność” i czyta po polsku, co gra zbiera przy pobieraniu i aktualizacji, co będzie zawierać opinia i raport o błędzie, po co, jak długo jest przechowywane i jak poprosić o usunięcie; strona działa też offline.
-- **Change ID:** privacy-page
-- **PRD refs:** FR-031, NFR Prywatność, PRD Open Questions 8 i 10
-- **Prerequisites:** —
+- **Outcome:** dziecko po skończeniu salonu widzi celebrację pokoju (pełne odsłonięcie, wybuch gwiazdek, jedno zdanie lektora, jedno „Dalej”) i przechodzi do kuchni, którą urządza jak salon: ściany i podłoga, potem elementy z 3 wariantami za gwiazdki w kolejności z danych pokoju; w remoncie jest zawsze jeden pokój; dopóki paczka kuchni nie dotrze, kuchnia stoi na rysowanych zastępnikach i nie trafia do dziecka, a z paczką jej dodanie to dane i pliki.
+- **Change ID:** kitchen-room
+- **PRD refs:** FR-033, FR-035, FR-040 (celebracja pokoju), US-02
+- **Prerequisites:** F-04
 - **Parallel with:** S-17
-- **Blockers:** —
+- **Blockers:** paczka grafiki kuchni od grafika (pierwsza w kolejności zamówień z 2026-10-30; format jak paczka salonu: przed/po, sloty z manifestem, 3 warianty) — bez niej wycinek kończy się na zastępnikach.
 - **Unknowns:**
-  - Gdzie rodzic znajduje link do strony: ekran powitalny dla rodzica, ustawienia, czy oba (PRD Open Question 10)? — Owner: autor. Block: yes.
-  - Jak długo autor trzyma opinie i raporty (propozycja PRD: 12 miesięcy) i czy e-mail znika wcześniej, po odpowiedzi (PRD Open Question 8)? — Owner: autor. Block: yes.
-  - Kto jest administratorem danych i jaki adres kontaktowy podać do prośby o usunięcie (strona publiczna, repozytorium publiczne)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
-- **Risk:** stoi pierwsza, bo przy celu `quality` rodzic ma móc przeczytać, co wychodzi, zanim cokolwiek wyjdzie; ryzyko: strona obiecuje coś, czego kolejne wycinki nie dotrzymają — każdy z nich aktualizuje ją w tym samym PR.
-- **Status:** blocked
-
-### S-19: Opinia rodzica do autora
-
-- **Outcome:** rodzic w ustawieniach (za bramką dla dorosłych) pisze opinię, opcjonalnie podaje e-mail do odpowiedzi i wysyła ją; do opinii dołącza się wersja gry i typ urządzenia, nigdy postęp, etap, imię ani historia; bez sieci opinia czeka i wychodzi przy następnym połączeniu, a rodzic widzi, że jeszcze nie wyszła; nieudana wysyłka kończy się spokojnym komunikatem bez utraty tekstu; autor czyta opinie po swojej stronie i dowiaduje się o nowej.
-- **Change ID:** parent-feedback-send
-- **PRD refs:** FR-028, NFR Prywatność, Guardrails (wysyłki tylko świadomie przez rodzica), PRD Open Questions 8 i 9
-- **Prerequisites:** S-18
-- **Parallel with:** S-21, S-17
-- **Blockers:** wdrożenie części serwerowej — po scaleniu PR właściciel uruchamia `sync` i `bootstrap` na VPS-ie i sprawdza, że CoiledSpring działa (zmian w `deploy/` agent nie wdraża sam).
-- **Unknowns:**
-  - Ile opinii z jednego urządzenia lub adresu w danym czasie jest w porządku, zanim kolejne zostaną odrzucone, i jak autor dowiaduje się o nowej opinii (e-mail, komenda na serwerze, oba) (PRD Open Question 9)? — Owner: autor. Block: yes.
-  - Jak długo opinie leżą na serwerze i kiedy znika e-mail (PRD Open Question 8; ta sama decyzja co w S-18)? — Owner: autor. Block: yes.
-  - Gdzie na wspólnym VPS-ie żyje przyjmowanie wysyłek, tak żeby awaria lub nadużycie nie dotknęły CoiledSpring ani wydań gry? — Owner: zespół. Block: no (rozstrzyga `/10x-research`).
-  - Jak kolejka „wyślij przy następnym połączeniu” zachowuje się po zamknięciu gry i po aktualizacji (gdzie leży tekst, czy przeżywa reset zapisu)? — Owner: zespół. Block: no.
-- **Risk:** gwiazda przewodnia; pierwszy ruch danych z gry na zewnątrz i pierwszy adres na serwerze przyjmujący dane — ryzyko prywatności (dane dziecka w treści, e-mail w logach) i nadużycia (spam, zapchany dysk wspólnego VPS-a).
-- **Status:** blocked
-
-### S-20: Raport o błędzie z gry
-
-- **Outcome:** rodzic jednym stuknięciem wysyła autorowi raport z karty awarii („Ups!”) i z sekcji „Zapis gry”: kod błędu, wersja gry, typ urządzenia i kilka linii technicznych, bez postępu, etapu i historii dziecka; gra nigdy nie wysyła raportu sama; bez sieci raport zachowuje się jak opinia.
-- **Change ID:** parent-bug-report
-- **PRD refs:** FR-029, NFR Prywatność
-- **Prerequisites:** S-19
-- **Parallel with:** S-21, S-17
-- **Blockers:** jak w S-19, jeśli raport zmienia część serwerową.
-- **Unknowns:**
-  - Karta „Ups!” zatrzymuje grę — czy wysyłka z niej ma działać bez bramki dla dorosłych (gra stoi, dziecko może stuknąć), czy z bramką? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`; PRD mówi „rodzic jednym stuknięciem”).
-  - Które „kilka linii technicznych” wolno dołączyć, żeby żadna nie niosła danych dziecka (np. nazwa umiejętności w `Kod:` jest daną o postępie?) — Owner: zespół. Block: no.
-- **Risk:** po S-19, bo używa tej samej drogi i tej samej kolejki; ryzyko: linia techniczna przemyca dane dziecka.
+  - Które elementy kuchni są slotami z wariantami, a które stałą dekoracją, i jakie koszty (suma kuchni względem salonu, by tempo z S-17 miało sens)? — Owner: autor z grafikiem. Block: no (rozstrzygnąć w `/10x-plan` z inwentarzem paczki).
+  - Jak karta „Pokój gotowy!” zmienia się w celebrację o trzech natężeniach bez trzech scenek (FR-040)? — Owner: zespół. Block: no.
+- **Risk:** pierwszy pokój po salonie i pierwszy pomiar motywacji po nim; ryzyko: nowa paczka przekracza limit ładowania startu (dziś blisko granicy), więc wycinek musi zmierzyć budżet, a nie tylko dodać pliki.
 - **Status:** proposed
 
-### S-21: Statystyki odwiedzin dla autora
+### S-23: Przekrój domu z piętrami
 
-- **Outcome:** autor widzi zbiorczy raport odwiedzin strony gry: unikalni odwiedzający (dzień, tydzień, miesiąc), nowi i powracający, uruchomienia gry z siecią, typ urządzenia, źródła wejść, odsetek urządzeń z najnowszą wersją, błędy pobierania; raport powstaje wyłącznie z obsługi pobierania i aktualizacji gry, adresy są skracane, surowe zapisy znikają po 30–90 dniach; w grze nie przybywa ani jednej linii kodu.
-- **Change ID:** visit-stats
-- **PRD refs:** FR-030, NFR Prywatność
-- **Prerequisites:** S-18
-- **Parallel with:** S-19, S-20, S-17
-- **Blockers:** wdrożenie na VPS-ie przez właściciela (`sync` + `bootstrap`), jak w S-19.
+- **Outcome:** dziecko ogląda dom z boku jak domek dla lalek: piętra z danych, każdy pokój jako miniatura rysowana z żywych warstw tak, jak go zostawiło, zamknięte pokoje jako sylwetki „Wkrótce”; dotknięcie pokoju otwiera go w pełnym widoku; „Do pokoju” z zeszytu zawsze trafia do pokoju w remoncie, a przekrój to osobny przycisk, nigdy obowiązkowy przystanek; z każdego poziomu da się wrócić jednym dotknięciem.
+- **Change ID:** house-cross-section
+- **PRD refs:** FR-038, FR-039, FR-033 (kolejność pokoi z danych)
+- **Prerequisites:** S-22
+- **Parallel with:** S-25, S-17
+- **Blockers:** paczka skorupy domu (dach, ściany, klatka, tło) od grafika — druga w kolejności zamówień; do jej czasu skorupa rysowana w kodzie.
 - **Unknowns:**
-  - Ile dni trzymać surowe zapisy w widełkach 30–90? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`, potrzebne też na stronie „Prywatność”).
-  - Jak autor ogląda raport: tylko przez tailnet, za hasłem, czy jako podsumowanie z komendy na serwerze? — Owner: autor. Block: no.
-  - Czy wersja serwera na VPS-ie umie skracać adresy w logu tak, jak zakłada decyzja z 2026-10-20? — Owner: zespół. Block: no (sprawdza `/10x-research`).
-- **Risk:** po S-18, bo log dostępu to nowe zbieranie danych, które strona „Prywatność” ma opisać, zanim się zacznie; ryzyko: log wspólnego serwera obejmie też ruch CoiledSpring albo trzyma pełne adresy.
+  - Czy dziecko wybiera, który z zamkniętych pokoi otworzy się następny, czy kolejność jest tylko danymi domu (PRD FR-033, decyzja 2026-10-30 zostawiła to planowi)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
+  - Jak miniatury z żywych warstw zachowują się w trybie Canvas i przy „ogranicz ruch” (tło zeszytu ma już taką ścieżkę)? — Owner: zespół. Block: no.
+- **Risk:** nowy ekran między zeszytem a pokojem; ryzyko „zmęczenia hubem” u 6-latka, dlatego reguła FR-039 jest w tym wycinku, nie później.
+- **Status:** proposed
+
+### S-25: Pokój dziecięcy, trzeci pokój wyłącznie z danych
+
+- **Outcome:** dziecko po kuchni urządza pokój dziecięcy; jego dodanie dotyka wyłącznie danych pokoju i plików grafiki (dowód FR-033), celebracja i przekrój działają dla niego bez zmian w kodzie; pierwszy dom ma wtedy trzy pokoje (decyzja 2026-10-30).
+- **Change ID:** kids-room
+- **PRD refs:** FR-033, FR-035
+- **Prerequisites:** S-22
+- **Parallel with:** S-23, S-17
+- **Blockers:** paczka grafiki pokoju dziecięcego od grafika.
+- **Unknowns:**
+  - Jakie elementy i koszty ma pokój dziecięcy (jak w S-22)? — Owner: autor z grafikiem. Block: no.
+- **Risk:** jeśli ten wycinek wymaga zmian w kodzie poza danymi, F-04 i S-22 nie dotrzymały kontraktu i to tu się to ujawnia.
+- **Status:** proposed
+
+### S-24: Mieszkańcy wprowadzają się, naklejka do albumu
+
+- **Outcome:** gdy wszystkie pokoje domu są gotowe, dziecko widzi celebrację domu (mocniejsze natężenie tego samego mechanizmu co pokój): obrazek mieszkańców, jedno zdanie podziękowania czytane przez lektora, bez dialogów i wyborów, i dostaje naklejkę do albumu; dom zostaje zamieszkany (ożywa: np. kot w oknie, światło), dziecko może do niego wracać i zmieniać warianty za darmo; album jest dostępny z widoku domu, bez waluty, wymiany i pustych miejsc, które naciskają.
+- **Change ID:** residents-move-in
+- **PRD refs:** FR-034, FR-040 (celebracja domu), FR-041, FR-035
+- **Prerequisites:** S-23, S-25
+- **Parallel with:** S-17
+- **Blockers:** paczka mieszkańców i naklejki od grafika — trzecia w kolejności zamówień.
+- **Unknowns:**
+  - Czy album jest osobnym ekranem, czy kartą nad widokiem domu (PRD Open Question 12, reszta)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
+  - Treść zdania podziękowania i nazwy mieszkańców: czytane przez nauczyciela jak treść zadań, bez imion dziecka. — Owner: autor. Block: no.
+- **Risk:** gwiazda przewodnia; pierwsza „postać” w grze, więc guardrail „bez fabuły” jest tu najłatwiej złamać; ryzyko: scenka rośnie w dialog albo w wybory.
+- **Status:** proposed
+
+### S-26: Ulica z działkami i drugi dom
+
+- **Outcome:** dziecko widzi ulicę z działkami: pierwszy dom (zamieszkany, z salonem i pokojami dziecka) stoi na pierwszej działce, pozostałe są zamknięte z „Wkrótce” i otwierają się po kolei po gotowym domu; drugi dom ma inne pokoje i dodatek (np. ogródek albo balkon) zdefiniowane w danych; celebracja ulicy to trzecie natężenie tego samego mechanizmu; ulica jest osobnym przyciskiem z widoku domu i nigdy obowiązkowym przystankiem.
+- **Change ID:** street-plots
+- **PRD refs:** FR-032, FR-036 (ulica jako dane), FR-039, FR-040 (celebracja ulicy)
+- **Prerequisites:** S-24, S-17
+- **Parallel with:** —
+- **Blockers:** paczka elewacji i ulicy (domy z zewnątrz pusty i zamieszkany, działki, tło) od grafika — ostatnia w kolejności zamówień; paczki pokoi drugiego domu.
+- **Unknowns:**
+  - Ile domów ma ulica i jak duże są kolejne domy; zależy od czasu na pokój zmierzonego w S-17 (PRD Open Question 11). — Owner: autor. Block: yes.
+  - Które pokoje i jaki dodatek ma drugi dom, żeby wnosił coś nowego (decyzja 2026-10-30)? — Owner: autor. Block: no.
+- **Risk:** najdroższy wycinek w grafice i trzeci poziom zbliżenia; stoi po mieszkańcach, bo pusta ulica na miesiące to świat, który nic nie daje dziecku.
+- **Status:** blocked
+
+### S-27: Dzielnica w innym otoczeniu
+
+- **Outcome:** po kilku domach dziecko widzi kolejną ulicę lub dzielnicę w innym otoczeniu (np. nad morzem, w górach); liczba domów na ulicy, pokoje domów i kolejność dzielnic są danymi, więc nowa dzielnica to dane i grafika.
+- **Change ID:** district
+- **PRD refs:** FR-036
+- **Prerequisites:** S-26
+- **Parallel with:** —
+- **Blockers:** paczka dzielnicy od grafika.
+- **Unknowns:**
+  - Które otoczenie jako pierwsze i czy dzielnica zmienia coś poza tłem (np. inny zestaw pokoi)? — Owner: autor. Block: no.
+- **Risk:** nice-to-have; stoi ostatnia, bo bez dwóch domów na ulicy nie ma czego otwierać.
 - **Status:** proposed
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID            | Suggested issue title                                       | Ready for `/10x-plan` | Notes |
-| ---------- | -------------------- | ----------------------------------------------------------- | --------------------- | ----- |
-| S-17       | playtest-balance     | Balans po testach z córką                                   | no                    | Czeka na obserwacje autora (przeniesione z M-01). |
-| S-18       | privacy-page         | Strona „Prywatność” z linkiem dla rodzica                   | no                    | Blokują PRD Open Questions 8 i 10. |
-| S-19       | parent-feedback-send | Opinia rodzica wysyłana do autora (z kolejką offline)        | no                    | Po S-18; blokują PRD Open Questions 8 i 9. |
-| S-20       | parent-bug-report    | Raport o błędzie z karty „Ups!” i z „Zapis gry”             | no                    | Po S-19. |
-| S-21       | visit-stats          | Statystyki odwiedzin z logu serwera, bez kodu w grze        | no                    | Po S-18; zmiana w `deploy/` wdrażana przez właściciela. |
+| Roadmap ID | Change ID           | Suggested issue title                                              | Ready for `/10x-plan` | Notes |
+| ---------- | ------------------- | ------------------------------------------------------------------ | --------------------- | ----- |
+| F-04       | rooms-as-data       | Dom i pokoje jako dane, zapis v5 z domem bez straty salonu         | yes                   | Run `/10x-plan rooms-as-data` |
+| S-17       | playtest-balance    | Balans po testach z córką (czas na pokój rozstrzyga OQ 11)         | no                    | Czeka na obserwacje autora (przeniesione z M-02). |
+| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | no                    | Po F-04; paczka kuchni od grafika. |
+| S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | no                    | Po S-22; paczka skorupy domu. |
+| S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | no                    | Po S-22; równolegle z S-23. |
+| S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Po S-23 i S-25; gwiazda przewodnia. |
+| S-26       | street-plots        | Ulica z działkami i drugi dom                                      | no                    | Blokuje PRD Open Question 11 (po S-17). |
+| S-27       | district            | Dzielnica w innym otoczeniu                                        | no                    | Po S-26; nice-to-have. |
 
 ## Open Roadmap Questions
 
-1. **Przechowywanie opinii i raportów** (PRD Open Question 8): jak długo autor trzyma opinie i raporty (propozycja: 12 miesięcy) i czy adres e-mail jest usuwany wcześniej, po odpowiedzi. — Owner: autor. Block: S-18, S-19.
-2. **Ochrona przed nadużyciem wysyłek** (PRD Open Question 9): ile opinii i raportów z jednego urządzenia w danym czasie jest w porządku, zanim kolejne zostaną odrzucone; jak autor dowiaduje się o nowej opinii. — Owner: autor. Block: S-19 (i S-20).
-3. **Gdzie rodzic znajduje stronę „Prywatność”** (PRD Open Question 10): ekran powitalny dla rodzica, ustawienia, czy oba. — Owner: autor. Block: S-18.
-4. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; kierunek po v1 to ulica i domy. — Owner: autor. Block: — (kolejny kamień).
+1. **Wielkość ulicy i kolejnych domów** (PRD Open Question 11): ile domów ma ulica i jak duże są kolejne domy; pierwszy dom to salon, kuchnia i pokój dziecięcy (decyzja 2026-10-30). — Owner: autor. Block: S-26 (po pomiarze z S-17).
+2. **Forma albumu** (PRD Open Question 12, reszta): osobny ekran czy karta nad widokiem domu. — Owner: autor. Block: — (rozstrzygnąć w planie S-24).
+3. **Grafika** (PRD Open Question 13): inwentaryzacja istniejących paczek i terminy dostaw w kolejności kuchnia → skorupa domu → mieszkańcy → elewacje i ulica; każda paczka obciąża limit ładowania startu. — Owner: autor. Block: — (każdy wycinek z grafiką kończy się na zastępnikach, dopóki paczka nie dotrze).
+4. **Założenia „salonowe” w kodzie** (PRD Open Question 14): co z cieni, postarzenia, manifestu slotów i tabel migracji musi stać się danymi pokoju. — Owner: agent. Block: — (rozstrzyga badanie F-04).
+5. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; odpowiedzią tego kamienia jest S-24. — Owner: autor. Block: —.
+6. **Powrót wysyłek rodzica** (M-02, odłożony): kiedy S-18–S-21 wracają jako kolejny kamień; PRD Open Questions 8–10 są już rozstrzygnięte (2026-10-25). — Owner: autor. Block: — (następny kamień).
 
 ## Parked
 
-- **Ulica i domy** (PRD v3 FR-032–FR-036) — Why parked: kandydat na kamień M-03; zależy od tempa z S-17 (PRD Open Question 11) i od inwentaryzacji grafik (PRD Open Questions 12–13).
-- **Docelowe grafiki salonu „przed remontem”** (paczka zamówiona 2026-10-25) — Why parked: nie jest wymaganiem PRD, tylko podmianą obecnego postarzenia w kodzie; wejdzie jako osobna zmiana, gdy paczka dotrze.
+- **Wysyłki rodzica i statystyki odwiedzin** (M-02, S-18–S-21, PRD FR-028–FR-031) — Why parked: odłożone 2026-10-30 decyzją autora na rzecz „ulicy i domów”; dekompozycja w historii gita tego pliku; wraca jako kolejny kamień.
+- **Docelowe grafiki salonu „przed remontem”** (paczka zamówiona 2026-10-25) — Why parked: nie jest wymaganiem PRD, tylko podmianą obecnego postarzenia w kodzie; wejdzie jako osobna zmiana, gdy paczka dotrze (F-04 ma zostawić na nią miejsce w danych pokoju).
+- **Scenki fabularne, dialogi i wybory przy mieszkańcach** — Why parked: PRD Non-Goals i decyzja 2026-10-30 (FR-040: jedna celebracja, jedno zdanie).
+- **Równoległe remonty dwóch pokoi i swobodne ustawianie mebli** — Why parked: PRD Non-Goals (FR-033).
 - **Statystyki nauki z gry** — Why parked: PRD Non-Goals; dane o dziecku, mało graczy; później najwyżej jako opcja domyślnie wyłączona.
 - **Opinia przez `mailto:`, formularz zewnętrzny lub GitHub** — Why parked: odrzucone przez autora 2026-10-20/21 (`docs/human-checklist.md`): dane u obcej firmy albo rodzice bez kont.
 - **Fabuła, energia, timery, reklamy, zakupy, wiele profili, chmura, merge board, układ pionowy** — Why parked: PRD Non-Goals, bez zmian od M-01.
@@ -177,7 +222,8 @@ Brak w tym kamieniu. Jedyny brakujący element przekrojowy — adres na serwerze
 (Append-only. Carried forward verbatim into each successor milestone's roadmap.)
 
 - **M-01: Wersja 1, pełna pętla gry (etapy M0–M8)** (`v1-pelna-petla-m0-m8`) — closed 2026-10-25. Etapy M0–M7 dostarczone i wdrożone (F-01–F-03, S-01–S-16d done, ostatnie scalenie 7770ae8); S-17 (M8, balans po testach z córką) zależy od obserwacji, nie od kodu, więc za zgodą autora przeniesione do M-02 zamiast blokować zamknięcie.
+- **M-02: Wysyłki rodzica i statystyki odwiedzin** (`wysylki-rodzica-i-statystyki`) — abandoned (odłożony) 2026-10-30. Żaden wycinek nie ruszył; autor wybrał najpierw „ulicę i domy” (PRD v4). S-17 przeniesiony do M-03; S-18–S-21 (FR-028–FR-031, decyzje OQ 8–10 z 2026-10-25) wracają jako kolejny kamień, dekompozycja w historii gita tego pliku (stan z 1f6869d).
 
 ## Done
 
-(Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Pełna lista M-01 jest w historii gita tego pliku.)
+(Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Pełne listy M-01 i M-02 są w historii gita tego pliku.)
