@@ -69,6 +69,10 @@ export const artHealth = (entries: readonly { key: string; id: string }[], exist
     return { total: entries.length, missing: gone.map((entry) => entry.key), missingIds: new Set(gone.map((entry) => entry.id)) };
 };
 
+/** The health record of a room's art entries; boot and the runtime room loader build identical records through it. */
+export const roomHealthOf = (entries: readonly { key: string }[], exists: (key: string) => boolean): ArtHealth =>
+    artHealth(entries.map((art) => ({ key: art.key, id: art.key })), exists);
+
 /** `unknown` when no record exists (a scene started without the boot scene). */
 export const artHealthView = (health: ArtHealth | undefined): ArtHealthView => {
     if (!health) return { kind: 'unknown' };
