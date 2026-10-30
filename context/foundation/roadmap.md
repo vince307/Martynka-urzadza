@@ -110,7 +110,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-033, FR-035, FR-040 (celebracja pokoju), US-02
 - **Prerequisites:** F-04
 - **Parallel with:** S-17
-- **Blockers:** paczka grafiki kuchni od grafika (pierwsza w kolejności zamówień z 2026-10-30; format jak paczka salonu: przed/po, sloty z manifestem, 3 warianty) — bez niej wycinek kończy się na zastępnikach.
+- **Blockers:** — (kuchnia jest w `designs/martynka-locations-v2`: przed/po, 6 slotów z manifestem, 3 warianty).
 - **Unknowns:**
   - Które elementy kuchni są slotami z wariantami, a które stałą dekoracją, i jakie koszty (suma kuchni względem salonu, by tempo z S-17 miało sens)? — Owner: autor z grafikiem. Block: no (rozstrzygnąć w `/10x-plan` z inwentarzem paczki).
   - Jak karta „Pokój gotowy!” zmienia się w celebrację o trzech natężeniach bez trzech scenek (FR-040)? — Owner: zespół. Block: no.
@@ -124,7 +124,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-038, FR-039, FR-033 (kolejność pokoi z danych)
 - **Prerequisites:** S-22
 - **Parallel with:** S-25, S-17
-- **Blockers:** paczka skorupy domu (dach, ściany, klatka, tło) od grafika — druga w kolejności zamówień; do jej czasu skorupa rysowana w kodzie.
+- **Blockers:** paczka skorupy domu 1 od grafika (brief `docs/designer-brief-m03.md`, P1) — do jej czasu skorupa rysowana w kodzie.
 - **Unknowns:**
   - Czy dziecko wybiera, który z zamkniętych pokoi otworzy się następny, czy kolejność jest tylko danymi domu (PRD FR-033, decyzja 2026-10-30 zostawiła to planowi)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
   - Jak miniatury z żywych warstw zachowują się w trybie Canvas i przy „ogranicz ruch” (tło zeszytu ma już taką ścieżkę)? — Owner: zespół. Block: no.
@@ -138,7 +138,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-033, FR-035
 - **Prerequisites:** S-22
 - **Parallel with:** S-23, S-17
-- **Blockers:** paczka grafiki pokoju dziecięcego od grafika.
+- **Blockers:** — (pokój dziecięcy jest w `designs/martynka-evolution-v1`, z trzema etapami tła i łóżkiem w 3 formach).
 - **Unknowns:**
   - Jakie elementy i koszty ma pokój dziecięcy (jak w S-22)? — Owner: autor z grafikiem. Block: no.
 - **Risk:** jeśli ten wycinek wymaga zmian w kodzie poza danymi, F-04 i S-22 nie dotrzymały kontraktu i to tu się to ujawnia.
@@ -151,7 +151,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-034, FR-040 (celebracja domu), FR-041, FR-035
 - **Prerequisites:** S-23, S-25
 - **Parallel with:** S-17
-- **Blockers:** paczka mieszkańców i naklejki od grafika — trzecia w kolejności zamówień.
+- **Blockers:** paczka mieszkańców domu 1 i naklejki od grafika (brief, P1).
 - **Unknowns:**
   - Czy album jest osobnym ekranem, czy kartą nad widokiem domu (PRD Open Question 12, reszta)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
   - Treść zdania podziękowania i nazwy mieszkańców: czytane przez nauczyciela jak treść zadań, bez imion dziecka. — Owner: autor. Block: no.
@@ -165,7 +165,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-032, FR-036 (ulica jako dane), FR-039, FR-040 (celebracja ulicy)
 - **Prerequisites:** S-24, S-17
 - **Parallel with:** —
-- **Blockers:** paczka elewacji i ulicy (domy z zewnątrz pusty i zamieszkany, działki, tło) od grafika — ostatnia w kolejności zamówień; paczki pokoi drugiego domu.
+- **Blockers:** paczka ulicy, elewacji i skorupy domu 2 od grafika (brief, P2); pokoje domu 2 (pracownia, ogród zimowy, biblioteka) już są w `designs/`.
 - **Unknowns:**
   - Ile domów ma ulica i jak duże są kolejne domy; zależy od czasu na pokój zmierzonego w S-17 (PRD Open Question 11). — Owner: autor. Block: yes.
   - Które pokoje i jaki dodatek ma drugi dom, żeby wnosił coś nowego (decyzja 2026-10-30)? — Owner: autor. Block: no.
@@ -191,7 +191,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | ---------- | ------------------- | ------------------------------------------------------------------ | --------------------- | ----- |
 | F-04       | rooms-as-data       | Dom i pokoje jako dane, zapis v5 z domem bez straty salonu         | yes                   | Run `/10x-plan rooms-as-data` |
 | S-17       | playtest-balance    | Balans po testach z córką (czas na pokój rozstrzyga OQ 11)         | no                    | Czeka na obserwacje autora (przeniesione z M-02). |
-| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | no                    | Po F-04; paczka kuchni od grafika. |
+| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | no                    | Po F-04; grafika kuchni już jest. |
 | S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | no                    | Po S-22; paczka skorupy domu. |
 | S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | no                    | Po S-22; równolegle z S-23. |
 | S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Po S-23 i S-25; gwiazda przewodnia. |
@@ -202,7 +202,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 1. **Wielkość ulicy i kolejnych domów** (PRD Open Question 11): ile domów ma ulica i jak duże są kolejne domy; pierwszy dom to salon, kuchnia i pokój dziecięcy (decyzja 2026-10-30). — Owner: autor. Block: S-26 (po pomiarze z S-17).
 2. **Forma albumu** (PRD Open Question 12, reszta): osobny ekran czy karta nad widokiem domu. — Owner: autor. Block: — (rozstrzygnąć w planie S-24).
-3. **Grafika** (PRD Open Question 13): inwentaryzacja istniejących paczek i terminy dostaw w kolejności kuchnia → skorupa domu → mieszkańcy → elewacje i ulica; każda paczka obciąża limit ładowania startu. — Owner: autor. Block: — (każdy wycinek z grafiką kończy się na zastępnikach, dopóki paczka nie dotrze).
+3. **Grafika** (PRD Open Question 13): inwentaryzacja zrobiona 2026-10-30 (kuchnia, pracownia, pokój dziecięcy, biblioteka, taras i ogród zimowy są w `designs/`); brakuje skorupy domu, mieszkańców i ulicy, zamawiane briefem `docs/designer-brief-m03.md` w kolejności skorupa domu 1 → mieszkańcy domu 1 → ulica i dom 2; każda paczka obciąża limit ładowania startu. — Owner: autor. Block: — (każdy wycinek z grafiką kończy się na zastępnikach, dopóki paczka nie dotrze).
 4. **Założenia „salonowe” w kodzie** (PRD Open Question 14): co z cieni, postarzenia, manifestu slotów i tabel migracji musi stać się danymi pokoju. — Owner: agent. Block: — (rozstrzyga badanie F-04).
 5. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; odpowiedzią tego kamienia jest S-24. — Owner: autor. Block: —.
 6. **Powrót wysyłek rodzica** (M-02, odłożony): kiedy S-18–S-21 wracają jako kolejny kamień; PRD Open Questions 8–10 są już rozstrzygnięte (2026-10-25). — Owner: autor. Block: — (następny kamień).
