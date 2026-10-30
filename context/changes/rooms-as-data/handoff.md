@@ -1,63 +1,54 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-impl-review rooms-as-data` step of run 2026-10-30-rooms-kitchen: full-plan review done, verdict APPROVED,
-`MERGE: CLEAR`; two WARNINGs fixed in `4b1c37e`. The next agent must not miss that the changed e2e test (finished salon, now read
-through the hook's new `rooms` field instead of IndexedDB) has NOT been run in a browser yet: the orchestrator re-runs it.
+Written by the visual-gate step of run 2026-10-30-rooms-kitchen. The slice is reviewed (`MERGE: CLEAR`) and visually gated: `VISUAL: GAPS`. Every child-facing room state matches `main`. The welcome backdrop and the parent-only settings states were not captured. The next agent must not read GAPS as a blocker: per `visual-gate.md`, GAPS does not block shipping. The e2e re-run owed by the previous step (§5) is the orchestrator's, not this step's.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` |
-| Commits | phases `dd6db69` (p1), `901926e` (p2), `96f9128` (p3), `c9fcca5` (p4), `2c367e8` (p5), `01bedba` (p6), `9bfa475` (p7), review fix `4b1c37e`, plus docs commits; this handoff in `docs(rooms-as-data): przegląd implementacji` |
+| Commits | phases `dd6db69` (p1) … `9bfa475` (p7), review fix `4b1c37e`, docs commits up to `17d3756`; this step adds `docs(rooms-as-data): bramka wizualna` (screenshots, README, visual review, plan row 6.6, this handoff); no `fix` commit |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows remaining | 5: 6.6 [visual], 6.7 [human], 6.8 [human], 6.9 [reviewer] (CI at ship), 7.2 (full e2e, orchestrator) |
+| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` sets the archived status) |
+| `## Progress` rows remaining | 4 (`grep -c '^- \[ \]' plan.md`): 6.7 [human], 6.8 [human], 6.9 [reviewer] (CI at ship), 7.2 (full e2e, orchestrator) |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/rooms-as-data/reviews/impl-review.md` | review report: 0 critical, 2 warnings (fixed), 4 observations, migration evidence table; ends `MERGE: CLEAR` |
-| `src/testing/e2eHook.ts` | hook snapshot gains `rooms` (deep-frozen copy of `REGISTRY_KEYS.rooms`; e2e build only) |
-| `tests/e2e/support/hook.ts` | `Snapshot.rooms` type |
-| `tests/e2e/rooms-as-data.spec.ts` | finished-salon test reads `save`, `house`, `rooms` from the hook after the reload; no `indexedDB.open` |
-| `tests/saveV5.test.ts` | `it.each` over both v4 fixtures: decode + encode equals the literal fixture with `version: 5`, the house and guard placeholders |
-| `context/changes/rooms-as-data/follow-ups/review-fixes.md` | entries 14 (done-card `mode`, Trigger: S-22) and 15 (frozen `copyOfHouseV5` stays, Trigger: next migration change) |
-| `context/changes/rooms-as-data/change.md` | status `impl_reviewed` |
+| `context/changes/rooms-as-data/screenshots/{desktop,tablet}-0{1..7}-*.png` | 14 frames: room before, after the stage with sofa and rug, done card, finished room, change mode, change panel, task backdrop (1440×900 and 1024×768) |
+| `context/changes/rooms-as-data/screenshots/README.md` | route (Claude in Chrome, fresh origin `[::1]:4399`, iframe sizes), table of state · desktop · tablet · how reached, not-captured list |
+| `context/changes/rooms-as-data/reviews/visual-review.md` | verdict per state vs `main`'s salon-style frames, hand-checked star arithmetic, decisions; ends `VISUAL: GAPS — …` |
+| `context/changes/rooms-as-data/plan.md` | row 6.6 ticked with what was captured and what was not |
+| `context/changes/rooms-as-data/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result (observed in this step) |
 |---|---|
-| `npm run lint` / `npm run typecheck` | pass / pass (before and after the fix) |
-| `npm test` on a worktree of `main` `9d28753` | 209 files, 3962 passed (= contract baseline) |
-| `npm test` at `66f16c4` / after `4b1c37e` | 4012 (3962 + 50) / 4014 (3962 + 52), 213 files (+4) |
-| `bash deploy/test-martynka-deploy.sh`, `bash deploy/ops/test-martynka-ops.sh` | OK, OK |
-| `npm run sample -- E1` … `E6` | `Naruszenia: 0` ×6 |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| `validate-rule-files.sh` | PASS |
-| probe: v4 code (`main` worktree) on `save-v5.json` | `decodeSave` → `unreadable/future`; `writeVerdict` normal and replace → `refuse NewerSave` |
-| probe: v5 code, both v4 fixtures decode+encode | deep-equal to the fixture + `version 5` + house + guard placeholders (lossless) |
-| break: `LIFT_V4_HOUSE` resets `variants.roundsSince` | `tests/saveV5.test.ts` 4 red; restored |
-| break: `toSession` drops `streak` | 3 red (the two new cases + v5 round trip; the older v4 "keeps every field" case stayed green = the gap F2 closes); restored, `git diff --stat` empty. Meta-check: the oracle is the frozen fixture literal, not migration output |
-| e2e | NOT run: ports 4397/4398 held by the orchestrator's full suite |
+| `E2E_HOOK=1 npx vite --config vite/config.dev.mjs --port 4399 --strictPort` | served the hook build; killed at the end (`lsof -ti tcp:4399 -sTCP:LISTEN \| xargs kill`, exit 143 seen) |
+| hook `snapshot` along the path | stars 130 → 109 after stage + sofa + rug (5 + 7 + 9) → 1 after all 12 tasks (sum 129); `card.items` = salon (done) + teaser; `house` = house-1, salon (0,0), kitchen (0,1); change-mode "Wybieram" kept stars 1 and set `chosen.sofa` 2; `backdrop {salon, drawn, blurred, webgl}` |
+| frame comparison vs `context/archive/2026-10-24-salon-style/screenshots/desktop-room-{before,done-card}.jpg` | same layout, positions and copy; differences only in chosen looks, star count and the HUD speaker (silenced in the old capture) |
+| lint / typecheck / unit / build | NOT run: this step changed no code (docs and PNGs only) |
+| e2e | NOT run: ports 4397/4398 held by the orchestrator; Playwright excluded by the step prompt |
+| leftovers | own server killed; the remaining `vite preview` on 4397/4398 belong to the orchestrator and were left alone |
 
 ## 4. Next command
 
-Orchestrator first re-runs `npx playwright test tests/e2e/rooms-as-data.spec.ts -g "finished salon"` (green; then red with the break below, restored) and records 7.2; then the visual gate (rooms: salon before / after the stage / finished with the "Pokój gotowy!" done card, "Zmień wygląd", "Zapis gry" after `?e2eSave=v4-salon`), then `/10x-archive rooms-as-data`.
+`/10x-archive rooms-as-data`, then ship (no hosted DB push: none exists).
 
 ## 5. Open
 
-- E2E re-run owed (F1): spec title `#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell`; deliberate break: in `roomInRenovation` (`src/core/house.ts`) make an unknown room `return cell.room` instead of `continue` → red on `currentRoom` ("kitchen" vs "salon") and on `Object.keys(rooms)`; restore.
-- 7.2 full e2e `<branch e2e baseline> + 3`, total equals `npx playwright test --list | tail -1` (orchestrator).
-- Human checklist: 6.6 [visual] screenshots vs `main`; 6.7 [human] accept rollback risk (`pl.saveFuture`, `deploy/README.md` v5 note); 6.8 [human] accept unit + in-memory-seam proof instead of two real builds; 6.9 [reviewer] (CI at ship) job `check` of workflow `CI`, log `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
-- Follow-ups: `context/changes/rooms-as-data/follow-ups/review-fixes.md` (1–15). DESIGN-GAP: none added.
+- Carried from the previous step (orchestrator): E2E re-run of `#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell`. Its deliberate break: in `roomInRenovation` (`src/core/house.ts`), make an unknown room `return cell.room` instead of `continue`. Then 7.2, full e2e = `<branch e2e baseline> + 3`.
+- Visual not captured (VISUAL: GAPS): the welcome backdrop; settings "Zapis gry" after `?e2eSave=v4-salon` (the migration and `backup-v4` lines); the "Salon" room name in the export/import/reset summaries (`roomText.name` in `UIScene.openImport`/`openReset`). All of them need the gear long press, which needs Playwright (profile § 8). Covered by e2e/unit only.
+- Human checklist: 6.7 [human] accept the rollback risk (`pl.saveFuture`, `deploy/README.md` v5 note). 6.8 [human] accept the unit and in-memory-seam proof instead of two real builds. 6.9 [reviewer] at ship: CI `check` log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
+- DESIGN-GAP: none added. Follow-ups: `context/changes/rooms-as-data/follow-ups/review-fixes.md` (1–15), none added here.
 
 ## 6. Autonomous decisions
 
-- **No subagents for the review.** Chosen: read the whole code diff and probe the migration first-hand. Rejected: the skill's two parallel subagents. Why: ~900 code lines and a save migration that ships to every device; a summary hand-off would lose the probes. Would change: a diff too large for one context.
-- **Triage without asking (contract rule 1).** F1, F2 fixed (cheap WARNINGs); F3, F5, F6 accepted; F4 deferred with Trigger S-22. Would change: the maintainer reading the report and wanting F4 now.
-- **F1 fix shape: hook field `rooms` (registry copy), not a stored-save read.** Why: the registry after reload is what the load path made of the stored save (`save.load === 'loaded'` proves it came from the store), and a move to the kitchen would show there directly; profile § 9 forbids a test-side IndexedDB read. Would change: a need to prove the bytes written (then expose the store's last write through the hook, as `writtenHouse` does for the seam store).
-- **Playwright not run.** Both e2e ports were listening (orchestrator's run); per the step prompt no server was started. Would change: free ports.
+- **Claude in Chrome only, no Playwright fallback.** The step prompt forbids Playwright now. Why: the orchestrator's e2e run holds the machine's Playwright ports. Would change: free ports and a need for the long-press states. Then a throwaway Playwright spec on 4399 could capture "Zapis gry" and the summaries.
+- **Fresh device = origin `http://[::1]:4399`.** `localhost:4399` already held a `martynka` database. Rejected: "Zacznij od nowa", which is behind the long press. Rejected: clearing storage by hand, which the profile forbids. Would change: Vite listening on IPv4 too, so that `127.0.0.1` could serve the same purpose.
+- **One playthrough, iframe resized per state.** Both widths of a state show the same game state. Rejected: two playthroughs. Would change: a scene whose layout is fixed at creation time.
+- **Row 6.6 ticked with an explicit not-captured list, instead of left open.** The step's four required states plus the task backdrop are verified. The rest is recorded as GAPS. Would change: the orchestrator requiring every listed sub-state before a tick. Then untick the row and run a Playwright pass for the long-press states.
+- **PNG kept although the earlier gates used JPEG.** The step prompt asks for `*.png` (about 11 MB in all). Would change: a repository size concern. Then re-encode as JPEG quality 80, as in the salon-style gate.
