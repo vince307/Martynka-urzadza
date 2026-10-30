@@ -2,6 +2,7 @@
 // cost 5-15 stars), plan section 9 (nothing distinguished by colour alone: a variant has a name and a colour) and the
 // art pack's manifest (1920x1080 scene, six furniture slots with three variants, four fixed layers).
 import { describe, expect, it } from 'vitest';
+import { UI_ART_KEYS } from '../src/data/uiArt';
 import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
@@ -149,7 +150,11 @@ describe('salon data', () => {
     });
 
     it('has a non-empty child-facing label for every task, in the author\'s wording for the stage', () => {
-        expect(pl.room.name.length).toBeGreaterThan(0);
+        for (const id of Object.keys(ROOMS)) {
+            expect(roomText.name(id)?.length ?? 0, id).toBeGreaterThan(0);
+            const thumb = ROOMS[id].thumbnail;
+            if (thumb !== undefined) expect(Object.values(UI_ART_KEYS), id).toContain(thumb);
+        }
         expect(pl.room.tasks.renovate).toBe('Odnów ściany i podłogę');
         for (const task of SALON.tasks) {
             const label = (pl.room.tasks as Record<string, string>)[task.label];
@@ -165,7 +170,7 @@ describe('salon data', () => {
 
     it('lists the salon first, then a teaser that unlocks after it (FR-019), as the old literal did', () => {
         expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { teaser: true, unlockAfter: 'salon' }]);
-        for (const id of Object.keys(ROOMS)) expect(typeof (pl.room as { name: unknown }).name, id).toBe('string');
+        for (const id of Object.keys(ROOMS)) expect(typeof roomText.name(id), id).toBe('string');
     });
 
     it('keeps the frozen v5 house and the data house in step for the salon cell', () => {

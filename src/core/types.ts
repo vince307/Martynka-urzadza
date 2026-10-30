@@ -61,8 +61,9 @@ export type RoomTaskDef =
     | { kind: 'slot'; id: string; slot: string; label: string; cost: number };
 
 export interface RoomDef {
-    id: string;               // e.g. "salon"
-    name: string;
+    id: string;               // e.g. "salon"; its child-facing name is `roomText.name(id)`
+    /** A UI art key of the pack thumbnail shown on the "Pokój gotowy!" card when a piece texture is missing; none = drawn stand-ins. */
+    thumbnail?: string;
     /** Texture keys of the four full-scene pictures: the room before and after the renovation stage, its neglected furniture and shadows. */
     scene: { before: string; after: string; shadows: string };
     decor: LayerDef[];        // shown once a stage task is done

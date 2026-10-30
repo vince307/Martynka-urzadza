@@ -289,8 +289,12 @@ export class RoomScene extends Scene {
         }
     }
 
+    private savedRooms(): Record<string, RoomState> {
+        return (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
+    }
+
     private listItems(): RoomListItem[] {
-        const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
+        const rooms = this.savedRooms();
         const saved = (this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE;
         return roomsListView(houseRoomList(houseLayout(saved, HOUSES, FIRST_HOUSE), ROOMS), ROOMS, rooms);
     }
@@ -315,7 +319,7 @@ export class RoomScene extends Scene {
             this.modeButton.hide();
         }
         if (this.cardDrawn) {
-            this.doneCard.show(this.listItems(), room, state);
+            this.doneCard.show(this.listItems(), ROOMS, { ...this.savedRooms(), [room.id]: state }, room.id);
         } else {
             this.doneCard.hide();
         }

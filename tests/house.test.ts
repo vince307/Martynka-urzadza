@@ -8,7 +8,6 @@ import { TEST_ROOM_PARTS } from './roomFixtures';
 
 const mk = (id: string): RoomDef => ({
     id,
-    name: id,
     ...TEST_ROOM_PARTS,
     slots: [],
     tasks: [{ kind: 'stage', id: `${id}-stage`, label: 'stage', cost: 5 }],

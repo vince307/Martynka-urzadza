@@ -11,7 +11,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { openSettings, passWelcome } from './support/welcome';
 import { chooseFile, jsonFile, openImport, reloadedBy } from './support/saveImport';
 import { playRoundRight, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
-import { pl } from '../../src/data/pl';
+import { pl, roomText } from '../../src/data/pl';
 import { ROOMS } from '../../src/data/rooms';
 
 test.setTimeout(120_000);
@@ -99,7 +99,7 @@ test('#7 #2 a valid file replaces the save only after the summary and survives t
     await expect(dialog.getByRole('heading', { name: pl.saveTransfer.now })).toBeVisible();
     await expect(dialog.getByText(pl.saveTransfer.stars(IMPORTED_STARS))).toBeVisible();
     await expect(dialog.getByText(pl.stages[IMPORTED_STAGE])).toBeVisible();
-    await expect(dialog.getByText(pl.saveTransfer.room(SALON.name, 0, SALON.tasks.length))).toHaveCount(2);
+    await expect(dialog.getByText(pl.saveTransfer.room(roomText.name(SALON.id) ?? SALON.id, 0, SALON.tasks.length))).toHaveCount(2);
     // The overwrite is never the default: the focus starts on "Anuluj" (visual gate).
     await expect(dialog.getByRole('button', { name: pl.parent.cancel, exact: true })).toBeFocused();
     expect((await snapshot(page)).stars).toBe(0);

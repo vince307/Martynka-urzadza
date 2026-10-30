@@ -2,6 +2,7 @@
 // of a picture in the 1920x1080 scene, `visibleRect` the object without its margin, `z` the draw order (0-99).
 // Texture keys are `salon/<file id>`. RoomTaskDef.label is a key into pl.room.tasks.
 import { FIRST_HOUSE } from './houses';
+import { UI_ART_KEYS } from './uiArt';
 import type { LayerDef, RoomDef, SlotDef } from '../core/types';
 
 /** The right plant: part of the renovated room, no task and no variants. Lamp, left plant and pouf are slots that show their old look until bought (S-16d). */
@@ -25,7 +26,7 @@ const slots: SlotDef[] = [
 
 export const SALON: RoomDef = {
     id: 'salon',
-    name: 'salon',
+    thumbnail: UI_ART_KEYS.salonAfter,
     scene: { before: 'salon/before', after: 'salon/after', shadows: 'salon/shadows' },
     decor,
     slots,

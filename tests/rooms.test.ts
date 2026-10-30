@@ -12,7 +12,6 @@ import { TEST_ROOM_PARTS, testSlot } from './roomFixtures';
 
 const room: RoomDef = {
     id: 'test',
-    name: 'Test',
     ...TEST_ROOM_PARTS,
     slots: [
         testSlot('floor', 1),
@@ -191,7 +190,6 @@ describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
 describe('background stage task (S-16a)', () => {
     const staged: RoomDef = {
         id: 'staged',
-        name: 'Staged',
         ...TEST_ROOM_PARTS,
         slots: [testSlot('sofa', 2)],
         tasks: [

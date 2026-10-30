@@ -8,9 +8,9 @@ export function firstLoaded(keys: readonly string[], exists: (key: string) => bo
 }
 
 /** Live pieces when all of them exist, else the pack thumbnail, else the drawn stand-ins. */
-export function miniatureMode(needed: readonly string[], exists: (key: string) => boolean, thumbnailKey: string): MiniatureMode {
+export function miniatureMode(needed: readonly string[], exists: (key: string) => boolean, thumbnailKey: string | undefined): MiniatureMode {
     if (needed.every(exists)) return 'live';
-    return exists(thumbnailKey) ? 'thumbnail' : 'drawn';
+    return thumbnailKey !== undefined && exists(thumbnailKey) ? 'thumbnail' : 'drawn';
 }
 
 /** The keys a miniature draws: every piece except an `alpha === 0` one (it is skipped when missing). */

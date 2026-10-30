@@ -78,7 +78,7 @@ export function roomDone(room: RoomDef, state: RoomState): boolean {
 export interface RoomListItem {
     kind: 'room' | 'teaser';
     id: string | null;        // room id, null for a teaser
-    nameKey: string | null;   // the room's key into pl.room.name, null for a teaser
+    nameKey: string | null;   // the room's key into `roomText.name`, null for a teaser
     done: boolean;            // only a room can be done
     unlocked: boolean;
 }

@@ -32,7 +32,6 @@ const SALON_HOUSE = { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0
 
 const room: RoomDef = {
     id: 'living',
-    name: 'Salon',
     ...TEST_ROOM_PARTS,
     slots: [
         testSlot('floor', 1),

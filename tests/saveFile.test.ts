@@ -134,7 +134,7 @@ describe('saveProblem agrees with validateSave', () => {
 
 describe('saveSummary', () => {
     const room = (id: string, tasks: number): RoomDef => ({
-        id, name: id, ...TEST_ROOM_PARTS, slots: [],
+        id, ...TEST_ROOM_PARTS, slots: [],
         tasks: Array.from({ length: tasks }, (_, i) => ({ kind: 'slot' as const, id: `${id}${i}`, slot: 's', label: 'l', cost: 5 })),
     });
     const rooms = { living: room('living', 10), bedroom: room('bedroom', 8) };
