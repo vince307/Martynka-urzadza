@@ -745,10 +745,10 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 5.1 `tests/roomArt.test.ts` green; unit `<phase-4 count> + N`
-- [ ] 5.2 Deliberate break: change the salon folder in `roomArt` to `assets/rooms/salon2/` → the snapshot case red; set the salon `recolourBoard: false` and run `npm run art` → `git status --porcelain public/` lists `architecture-before.webp` and `architecture-after.webp`; each restored; meta-check: the snapshot is taken from the code before the edit, so it is an oracle of today's behaviour, not of the refactor
-- [ ] 5.3 `npm run art` then `git status --porcelain public/` empty; `git status --porcelain scripts/` shows only `make-task-art.mjs`
-- [ ] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui public` empty
+- [x] 5.1 `tests/roomArt.test.ts` green; unit `<phase-4 count> + N`
+- [x] 5.2 Deliberate break: change the salon folder in `roomArt` to `assets/rooms/salon2/` → the snapshot case red; set the salon `recolourBoard: false` and run `npm run art` → `git status --porcelain public/` lists `architecture-before.webp` and `architecture-after.webp`; each restored; meta-check: the snapshot is taken from the code before the edit, so it is an oracle of today's behaviour, not of the refactor
+- [x] 5.3 `npm run art` then `git status --porcelain public/` empty; `git status --porcelain scripts/` shows only `make-task-art.mjs`
+- [x] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui public` empty
 - [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 6: Docs, follow-ups, seam sweep and the visual pass
