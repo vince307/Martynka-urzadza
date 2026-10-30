@@ -1,29 +1,29 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-research` step of run 2026-10-30-rooms-kitchen: `research.md` answers the v5 shape, the
-`MIGRATIONS[4]` step, `backup-v4`, street/district (no) and the salon-only code list; `change.md` is `preparing`. The one
-thing the next agent must not get wrong: the v4 save is already multi-room, so v5 ADDS `house: { id, rooms: [{ room,
-floor, place }] }` beside the unchanged `rooms`/`currentRoom` (do not nest room states), the migration table is frozen
-in core (never imported from `src/data/`), and `RoomDoneCard.show` currently draws every room tile from the current room
-(a bug the plan must fix before a second room exists).
+Written by the `/10x-plan` step of run 2026-10-30-rooms-kitchen: `plan.md` (7 phases, 35 Progress rows) and
+`plan-brief.md` are written, `change.md` is `planned`, roadmap F-04 is `planning`. The one thing the next agent must not
+get wrong: phase 1 commits `tests/fixtures/save-v4-salon.json` while `SAVE_VERSION` is still 4 (that is what makes it a
+genuine v4 sample) and no later phase may edit it; the v5 migration table is frozen in core and lists only the salon.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` (confirmed with `git branch --show-current`) |
-| Commits | 2 on the branch: `docs(rooms-as-data): change identity (autonomous run)` and this step's `docs(rooms-as-data): research` |
+| Commits | 3 on the branch after this step: change identity, research, and this step's `docs(rooms-as-data): plan` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`, sha256 f780d138…) |
+| `## Progress` rows remaining | 35 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/rooms-as-data/research.md` | research: v5 shape and rules, `MIGRATIONS[4]`, `backup-v4` path, street/district decision with evidence, salon-assumption table (data vs leave), renovation rule API, kitchen pack inventory, design bounds, open questions |
-| `context/changes/rooms-as-data/change.md` | frontmatter only: `status: new -> preparing`, `updated` |
+| `context/changes/rooms-as-data/plan.md` | the plan: 7 phases with `Driver:` lines, Autonomous decisions P-0..P-11, Progress |
+| `context/changes/rooms-as-data/plan-brief.md` | two-page brief with the key-decision table |
+| `context/changes/rooms-as-data/change.md` | frontmatter only: `status: preparing -> planned` |
+| `context/foundation/roadmap.md` | F-04 status `ready -> planning` (At a glance row and item body) |
 | `context/changes/rooms-as-data/handoff.md` | this file |
 
 ## 3. Verification
@@ -31,49 +31,46 @@ in core (never imported from `src/data/`), and `RoomDoneCard.show` currently dra
 | command | result (observed in this step) |
 |---|---|
 | `git branch --show-current` | `feat/rooms-as-data` |
-| grep of `src/` for writers of `currentRoom` | only `src/main.ts` (`booting.registry.set(REGISTRY_KEYS.currentRoom, ...)`); no scene moves the child to another room |
-| grep of `src/`, `scripts/`, `vite/` for `FIRST_ROOM`, `ROOM_ORDER`, `ROOMS`, `SALON`, `ROOM_ART`, `salonAfter`, `salon/`, `martynka-salon` | every hit tabled in research "Salon assumptions" |
-| kitchen pack (`designs/martynka-locations-v2/manifest.json`, `assets/`) read with python | 6 slots x 3 variants, `shadowEllipses: []`, no decor, no thumbnail; scene files `kitchen-{before,after,shadows}.png` |
-| pixel sample of `kitchen-before.png` vs salon `architecture-before.png` (PIL) | kitchen `(255,245,223)` at 3 points (cream, no board); salon green board -> board recolour must be per room |
-| `metadata-guard.mjs inspect` / `mark-researched` | ok, `change.md` sha256 409593f4... |
+| `metadata-guard.mjs inspect` / `mark-planned` | inspect ok (change.md 409593f4…); mark-planned `{"changed":true}` |
+| `grep -c '^- \[ \]' plan.md` | 35 = the Success Criteria bullets of phases 1-7 (4+5+5+4+5+9+3), one-to-one |
+| `grep -c "^## Phase\|^Driver: "` on plan.md | 14 (7 phase headings, 7 Driver lines) |
+| `gh run view 41118206318 --log` (CI `check`, job 124277837113) | `Tests  3959 passed \| 3 skipped (3962)`, `e2e hook: absent (2 chunks checked)` — cited in row 6.9 |
+| code spot-checks (grep/sed of `src/core/save.ts`, `src/data/rooms.ts`, `src/data/roomArt.ts`, `scripts/make-task-art.mjs`, `RoomDoneCard.ts`, `main.ts`, `e2eHook.ts`) | match research; `freshSession(` has 10 call sites in 8 files; `RoomDef.name` read only by `UIScene` `roomName` |
 | lint / typecheck / unit / build / e2e | not run: docs-only step, no source change |
 
 ## 4. Next command
 
-`/10x-plan rooms-as-data`
+`/10x-plan-review rooms-as-data`
 
 ## 5. Open
 
-- Plan inputs (research "Save format v5", "Salon assumptions", "Room switching"): `SaveV5`/`HouseState` in
-  `src/core/types.ts`; `saveProblem` check `house`; `copyHouse` in `encodeSave`/`toSession`; `freshSession` takes the
-  house; `MIGRATIONS[4]` with a frozen table; `HouseDef`/`HOUSES`/`FIRST_HOUSE` in `src/data/`; `ROOM_ART` and the art
-  script driven by a room list (per-room scene files and `recolourBoard` flag); `ROOM_ORDER` derived from the house;
-  per-room name (`pl.room.names`) and optional thumbnail (G-3) in `RoomDoneCard.drawRoomTile`; fix
-  `RoomDoneCard.show` per-tile room/state; pure `roomInRenovation` tested on synthetic rooms, applied at load.
-- Tests to update, not break: `tests/saveV4.test.ts` (`SAVE_VERSION` 4), `tests/fixtureLoadPath.test.ts` `FIXTURES`,
-  `tests/roomArt.test.ts` (37 entries, `SALON` keys). New frozen fixtures: `tests/fixtures/save-v4-salon.json`, a v5 one.
-- Open choices for the plan: room ids `kitchen` / kids' room in the frozen v5 table (or freeze only `salon`); wire the
-  renovation rule at load only or also at the card's "Dalej" (S-22 owns the visible move, D2).
-- `[human]` candidate: rollback below the v5 build shows `pl.saveFuture`; docs note in `deploy/README.md` (as for v3/v4).
-- DESIGN-GAP candidates (rows from 175 in `docs/design-gaps.md`): room-neutral mismatch lines
-  (`pl.settings.roomMismatch`, `pl.saveTransfer.roomMismatch`); room without a pack thumbnail on the done card. For
-  S-22: kitchen cream background vs the salon board `#BCD799`.
-- Follow-ups: the table "Open follow-ups triggered by this slice" in `change.md` stands; re-record the out-of-scope ones
-  in `follow-ups/review-fixes.md` at archive.
+- Phase drivers: 1 tdd (house rules + v4 salon fixture), 2 tdd (save v5), 3 impl (load path, room list, `v4-salon` seam),
+  4 impl (name, thumbnail, `RoomDoneCard` per-tile fix), 5 impl (art table + script per room), 6 impl (docs, follow-ups,
+  seam sweep incl. CLAUDE.md v4 -> v5, visual), 7 e2e (`tests/e2e/rooms-as-data.spec.ts`, risks #10, #2).
+- Manual rows (human checklist): 6.6 `[visual]` salon states + done card + "Zapis gry" at 1440/1024 vs `main`; 6.7
+  `[human]` rollback below v5 shows `pl.saveFuture` (`deploy/README.md` note); 6.8 `[human]` update proven without two real
+  builds (decision P-6); 6.9 `[reviewer] (CI at ship)`.
+- Plan-review attention: `freshSession(house)` signature churn in tests (no default house in core); the phase-7 done-card
+  test buys all 12 salon tasks through touch (timeout); `mergeHouse` marks the save dirty on the first v5 load because the
+  frozen table lacks the kitchen cell (intended).
+- DESIGN-GAP: none added (no new copy; `pl.room.names.salon` reuses "Salon").
+- Follow-ups: listed in plan phase 6 § 2 (written to `follow-ups/review-fixes.md` in phase 6).
 
 ## 6. Autonomous decisions
 
-- R0 scope fixed by the maintainer (scope.md): v5 = house + floor grid, salon moved without loss, frozen v4 fixture,
-  write-once `backup-v4`. Recorded as fixed. Would change: a new maintainer instruction.
-- R1 no street/district in v5 (confirms D1). Why: no code of this run reads one, and S-24 (stickers, inhabited house,
-  FR-034/FR-041) forces another save version before the street anyway. Rejected: a `street` field now. Would change:
-  the plan adding code in F-04/S-22 that reads a street or plot.
-- R2 house added beside the top-level `rooms`/`currentRoom`, not nesting room states. Why: every room consumer and the
-  migration stay unchanged; room ids are already unique. Rejected: `houses[].rooms` with nested states. Would change: a
-  need for two houses holding the same room id.
-- R3 data is the authority for a known house; the save carries the child's copy and keeps unknown entries (report, not
-  repair). Why: resolves FR-038 ("floors are data") against scope.md ("save carries the grid") without overriding
-  either. Would change: the maintainer wanting the saved layout to win over data.
-- R4 the research was done in the main context (no sub-agents) although the skill defaults to delegation: the scope was
-  a known, bounded file set listed in `change.md`. Would change: nothing for this step.
-- Skill checkpoints: no clarification asked (unattended run; question derived from `change.md`).
+- Fixed by the maintainer (scope.md): v5 = house + floor grid, lossless salon move, frozen v4 fixture, write-once
+  `backup-v4`, no art or balance in F-04. Would change: a new maintainer instruction.
+- P-1 frozen v5 table lists only the salon. Rejected: freezing salon/kitchen/`kids-room`. Why: data merges its rooms at load;
+  a guessed id frozen forever lingers as an extra room. Would change: needing a save's grid without data.
+- P-2 data house = salon + kitchen only. Why: kitchen id fixed by the pack, needed for the "Wkrótce" tile; kids' room and
+  closed cells wait for S-25/S-23. Would change: those slices fixing their ids.
+- P-3 renovation rule runs at load only; "Dalej" wired in S-22. Rejected: wiring "Dalej" now (invisible with one room,
+  fires `RoomScene` follow-ups). Would change: S-22 cancelled while a second room ships.
+- P-6 update proven by the real IndexedDB load path in unit tests + the in-memory e2e seam, not two real builds — departs
+  from test-plan phase 4's two-build wish → `[human]` row 6.8. Would change: v6 or a cross-build report.
+- Other plan decisions (P-4 `house` checked last, P-5 data wins for a known house, P-7 `RoomDef.name` removed, P-8 optional
+  thumbnail falls back to drawn, P-9 "Stan salonu" copy left for S-22, P-10 seven phases, P-11 risk ids) are in plan.md
+  `## Autonomous decisions` with their reversal conditions.
+- Skill checkpoints decided in place: complexity HIGH, zero questions asked (research + scope settle every product choice);
+  phase structure approved by the agent; no clipboard copy (unattended); no sub-agents (research's Code References covered
+  the file set).
