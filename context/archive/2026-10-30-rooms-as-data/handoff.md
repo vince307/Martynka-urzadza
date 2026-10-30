@@ -1,6 +1,6 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the visual-gate step of run 2026-10-30-rooms-kitchen. The slice is reviewed (`MERGE: CLEAR`) and visually gated: `VISUAL: GAPS`. Every child-facing room state matches `main`. The welcome backdrop and the parent-only settings states were not captured. The next agent must not read GAPS as a blocker: per `visual-gate.md`, GAPS does not block shipping. The e2e re-run owed by the previous step (§5) is the orchestrator's, not this step's.
+Final pre-merge state written by the archive + ship step of run 2026-10-30-rooms-kitchen (2026-10-30): row 7.2 ticked (`a69828f`), change archived (`9a7f7e4`, `context/archive/2026-10-30-rooms-as-data/`, roadmap F-04 `done`, S-22 ready for `/10x-plan`), CLAUDE.md follow-ups path moved to the archive. PR/CI/merge/deploy recorded in context/runs/2026-10-30-rooms-kitchen/run-log.md. Earlier (visual-gate step): the slice is reviewed (`MERGE: CLEAR`) and visually gated: `VISUAL: GAPS`. Every child-facing room state matches `main`. The welcome backdrop and the parent-only settings states were not captured. The next agent must not read GAPS as a blocker: per `visual-gate.md`, GAPS does not block shipping. The e2e re-run owed by the previous step (§5) is the orchestrator's, not this step's.
 
 ## 1. State
 
@@ -8,20 +8,20 @@ Written by the visual-gate step of run 2026-10-30-rooms-kitchen. The slice is re
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` |
 | Commits | phases `dd6db69` (p1) … `9bfa475` (p7), review fix `4b1c37e`, docs commits up to `17d3756`; this step adds `docs(rooms-as-data): bramka wizualna` (screenshots, README, visual review, plan row 6.6, this handoff); no `fix` commit |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; `/10x-archive` sets the archived status) |
-| `## Progress` rows remaining | 4 (`grep -c '^- \[ \]' plan.md`): 6.7 [human], 6.8 [human], 6.9 [reviewer] (CI at ship), 7.2 (full e2e, orchestrator) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-30-rooms-kitchen/run-log.md (pushed by the ship step after this commit) |
+| `change.md` status | `archived` (`archived_at: 2026-10-30T23:02:04Z`, commit `9a7f7e4`) |
+| `## Progress` rows remaining | 3: 6.7 [human], 6.8 [human] (post-run checklist), 6.9 [reviewer] (CI at ship, ticked by the ship step from the PR `check` log) |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/rooms-as-data/screenshots/{desktop,tablet}-0{1..7}-*.png` | 14 frames: room before, after the stage with sofa and rug, done card, finished room, change mode, change panel, task backdrop (1440×900 and 1024×768) |
-| `context/changes/rooms-as-data/screenshots/README.md` | route (Claude in Chrome, fresh origin `[::1]:4399`, iframe sizes), table of state · desktop · tablet · how reached, not-captured list |
-| `context/changes/rooms-as-data/reviews/visual-review.md` | verdict per state vs `main`'s salon-style frames, hand-checked star arithmetic, decisions; ends `VISUAL: GAPS — …` |
-| `context/changes/rooms-as-data/plan.md` | row 6.6 ticked with what was captured and what was not |
-| `context/changes/rooms-as-data/handoff.md` | this file |
+| `context/archive/2026-10-30-rooms-as-data/screenshots/{desktop,tablet}-0{1..7}-*.png` | 14 frames: room before, after the stage with sofa and rug, done card, finished room, change mode, change panel, task backdrop (1440×900 and 1024×768) |
+| `context/archive/2026-10-30-rooms-as-data/screenshots/README.md` | route (Claude in Chrome, fresh origin `[::1]:4399`, iframe sizes), table of state · desktop · tablet · how reached, not-captured list |
+| `context/archive/2026-10-30-rooms-as-data/reviews/visual-review.md` | verdict per state vs `main`'s salon-style frames, hand-checked star arithmetic, decisions; ends `VISUAL: GAPS — …` |
+| `context/archive/2026-10-30-rooms-as-data/plan.md` | row 6.6 ticked with what was captured and what was not |
+| `context/archive/2026-10-30-rooms-as-data/handoff.md` | this file |
 
 ## 3. Verification
 
@@ -36,16 +36,19 @@ Written by the visual-gate step of run 2026-10-30-rooms-kitchen. The slice is re
 
 ## 4. Next command
 
-`/10x-archive rooms-as-data`, then ship (no hosted DB push: none exists).
+none — shipped
 
 ## 5. Open
 
 - Carried from the previous step (orchestrator): E2E re-run of `#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell`. Its deliberate break: in `roomInRenovation` (`src/core/house.ts`), make an unknown room `return cell.room` instead of `continue`. Then 7.2, full e2e = `<branch e2e baseline> + 3`.
 - Visual not captured (VISUAL: GAPS): the welcome backdrop; settings "Zapis gry" after `?e2eSave=v4-salon` (the migration and `backup-v4` lines); the "Salon" room name in the export/import/reset summaries (`roomText.name` in `UIScene.openImport`/`openReset`). All of them need the gear long press, which needs Playwright (profile § 8). Covered by e2e/unit only.
 - Human checklist: 6.7 [human] accept the rollback risk (`pl.saveFuture`, `deploy/README.md` v5 note). 6.8 [human] accept the unit and in-memory-seam proof instead of two real builds. 6.9 [reviewer] at ship: CI `check` log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
-- DESIGN-GAP: none added. Follow-ups: `context/changes/rooms-as-data/follow-ups/review-fixes.md` (1–15), none added here.
+- DESIGN-GAP: none added. Follow-ups: `context/archive/2026-10-30-rooms-as-data/follow-ups/review-fixes.md` (1–15), none added here.
 
 ## 6. Autonomous decisions
+
+- **Archive despite 3 open Progress rows (archive + ship step).** Chosen: "Continue archiving" (fixed by the step prompt). Open: 6.7 and 6.8 are [human] acceptances, a post-run checklist for the maintainer, not a blocker; 6.9 is the CI-at-ship row ticked from the PR `check` log. The 8 rows without a SHA suffix are gate/evidence rows (no code diff). Would change: a [human] row that must hold before merge (none: the maintainer authorised full ship, scope.md).
+- **Handoff written inside the archived folder.** The archive is read-only by convention, but the step prompt asks for the final pre-merge state here; one docs edit before the push.
 
 - **Claude in Chrome only, no Playwright fallback.** The step prompt forbids Playwright now. Why: the orchestrator's e2e run holds the machine's Playwright ports. Would change: free ports and a need for the long-press states. Then a throwaway Playwright spec on 4399 could capture "Zapis gry" and the summaries.
 - **Fresh device = origin `http://[::1]:4399`.** `localhost:4399` already held a `martynka` database. Rejected: "Zacznij od nowa", which is behind the long press. Rejected: clearing storage by hand, which the profile forbids. Would change: Vite listening on IPv4 too, so that `127.0.0.1` could serve the same purpose.
