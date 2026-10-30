@@ -1,5 +1,5 @@
-// Textures of the salon (S-16a): the art pack's scene pictures, decoration and furniture variants converted to WebP by
-// `npm run art` (public/assets/rooms/salon/). Entries are derived from SALON, so a texture key in the room data and in this
+// Textures of every room (S-16a for the salon; ROOM_SCENE_FILES has a row per room): the art pack's scene pictures, decoration and furniture variants converted to WebP by
+// `npm run art` (public/assets/rooms/<room>/). Entries are derived from the room data, so a texture key in the room data and in this
 // table cannot drift apart; tests/roomArt.test.ts checks the table against the files and their headers. Loaded at start by
 // BootScene so the service worker precaches them.
 import { roomText } from './pl';

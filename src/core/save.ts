@@ -5,6 +5,7 @@
 import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
 import { LIFT_V2_SALON, carryV2Salon } from './migrations/legacySalon';
 import { LIFT_V4_HOUSE } from './migrations/house';
+import { copyHouse } from './house';
 import { emptyRoomState } from './rooms';
 import type { HouseState, RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
@@ -206,8 +207,6 @@ const copyHistory = (history: SavedLearner['history']): SavedLearner['history'] 
             ? { example: { prompt: h.example.prompt, given: h.example.given, answer: Array.isArray(h.example.answer) ? [...h.example.answer] : h.example.answer } }
             : {}),
     }));
-
-const copyHouse = (h: HouseState): HouseState => ({ id: h.id, rooms: h.rooms.map((p) => ({ room: p.room, floor: p.floor, place: p.place })) });
 
 const copyVariants = (v: VariantState): VariantState => ({
     roundsSince: v.roundsSince,

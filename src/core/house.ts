@@ -7,7 +7,7 @@ type Known = Readonly<Record<string, RoomDef>>;
 
 const known1 = (known: Known, id: string): RoomDef | undefined => (Object.prototype.hasOwnProperty.call(known, id) ? known[id] : undefined);
 const copyCell = (c: HouseRoomPlace): HouseRoomPlace => ({ room: c.room, floor: c.floor, place: c.place });
-const copyHouse = (h: HouseState): HouseState => ({ id: h.id, rooms: h.rooms.map(copyCell) });
+export const copyHouse = (h: HouseState): HouseState => ({ id: h.id, rooms: h.rooms.map(copyCell) });
 
 /** The rooms of a house in order while the build knows them; the first unknown room becomes a teaser and ends the list. */
 export function houseRoomList(house: HouseState, known: Known): RoomListEntry[] {

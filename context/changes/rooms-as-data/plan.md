@@ -755,10 +755,10 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 6.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "save format v5|houseRoomList" CLAUDE.md` present
-- [ ] 6.2 `grep -c "Trigger:" context/changes/rooms-as-data/follow-ups/review-fixes.md` ≥ 10
-- [ ] 6.3 `grep -rnE "ROOM_ORDER|SALON_ART|SCENE_FILES\b|pl\.room\.name\b|freshSession\(FIRST_ROOM" src scripts tests` empty; `grep -rn "HOUSE_V5 = \|HOUSE_V5:" src` lists one place
-- [ ] 6.4 `git diff --stat bc19919 -- src/data/balance.ts src/data/curriculum public tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json` empty
+- [x] 6.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "save format v5|houseRoomList" CLAUDE.md` present
+- [x] 6.2 `grep -c "Trigger:" context/changes/rooms-as-data/follow-ups/review-fixes.md` ≥ 10
+- [x] 6.3 `grep -rnE "ROOM_ORDER|SALON_ART|SCENE_FILES\b|pl\.room\.name\b|freshSession\(FIRST_ROOM" src scripts tests` empty; `grep -rn "HOUSE_V5 = \|HOUSE_V5:" src` lists one place
+- [x] 6.4 `git diff --stat bc19919 -- src/data/balance.ts src/data/curriculum public tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json` empty
 - [ ] 6.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
