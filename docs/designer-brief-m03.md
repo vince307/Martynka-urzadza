@@ -54,18 +54,18 @@ Pliki:
 4. `house-1-roof-overlay.png` (opcjonalnie) — fragmenty, które mają leżeć **nad** dioramami (np. belka stropu,
    poręcz schodów), jeśli coś takiego wynika z rysunku.
 
-Siatka komórek do wpisania w `manifest.houses[0].cells` (propozycja; grafik może ją przesunąć, ale wszystkie
-komórki domu mają **tę samą wielkość i proporcję 16:9**, bo gra skaluje całą dioramę 1920×1080):
+Siatka komórek (obowiązująca, pełne zlecenie w `docs/designer-orders/2026-10-30-house-1-shell.md`): wszystkie
+komórki domu mają **tę samą wielkość 608×342 (16:9)**, bo gra skaluje całą dioramę 1920×1080 jednolicie:
 
 | Komórka | x | y | szerokość | wysokość |
 |---|---:|---:|---:|---:|
-| parter lewa (salon) | 300 | 620 | 640 | 360 |
-| parter prawa (kuchnia) | 980 | 620 | 640 | 360 |
-| piętro lewa (pokój dziecięcy) | 300 | 230 | 640 | 360 |
-| piętro prawa (zamknięta) | 980 | 230 | 640 | 360 |
+| parter lewa (salon) | 252 | 636 | 608 | 342 |
+| parter prawa (kuchnia) | 1060 | 636 | 608 | 342 |
+| piętro lewa (pokój dziecięcy) | 252 | 236 | 608 | 342 |
+| piętro prawa (zamknięta) | 1060 | 236 | 608 | 342 |
 
-Nad piętrem zostaje miejsce na dach (y 40–230), po bokach i na dole na HUD gry (licznik gwiazdek w rogu,
-przyciski „Do notesu”/„Ulica” na dole). Dioramy mają w paczkach kremowy margines wokół pokoju (`composition.destination`
+Między kolumnami jest klatka schodowa (x 860–1060), między piętrami strop (y 578–636), nad piętrem dach
+(y 40–236); prawy górny róg i dolny pas (y > 1010) należą do HUD gry. Dioramy mają w paczkach kremowy margines wokół pokoju (`composition.destination`
 w manifestach lokacji); gra może go przyciąć do obrysu architektury, więc komórka powinna wyglądać dobrze zarówno
 z marginesem, jak i bez.
 
