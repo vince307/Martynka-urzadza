@@ -45,6 +45,13 @@ describe('save format v5', () => {
         expect(r.session.currentRoom).toBe('salon');
     });
 
+    it.each(['save-v4-salon.json', 'save-v4.json'])('%s survives decode and encode whole: only the version, the house and the guard placeholders change', (name) => {
+        const raw = fixture(name);
+        const r = decodeSave(clone(raw));
+        if (r.kind !== 'ok') throw new Error('unreadable');
+        expect(encodeSave(r.session)).toEqual({ ...raw, version: 5, house: SALON_HOUSE, generation: 0, writer: '' });
+    });
+
     it('keeps the room of a v4 save that is not the salon', () => {
         const r = decodeSave(fixture('save-v4.json'));
         if (r.kind !== 'ok') throw new Error('unreadable');

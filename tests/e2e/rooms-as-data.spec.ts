@@ -66,21 +66,11 @@ test('#10 rooms-as-data a finished salon reopens in the salon, never in the kitc
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'task');
     await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('salon');
+    // Read back through the hook only (profile § 9: a test never opens IndexedDB): the reloaded page loaded the stored save, and
+    // its registry is what the load path made of it.
     const after = await snapshot(page);
+    expect(after.save).toMatchObject({ load: 'loaded', migratedFrom: null });
     expect(after.house).toEqual(HOUSE);
-    const saved = await page.evaluate(
-        () =>
-            new Promise<{ rooms: Record<string, { tasksDone: number }>; currentRoom: string }>((resolve, reject) => {
-                const open = indexedDB.open('martynka');
-                open.onerror = () => reject(new Error(String(open.error)));
-                open.onsuccess = () => {
-                    const get = open.result.transaction('saves').objectStore('saves').get('profile:default');
-                    get.onerror = () => reject(new Error(String(get.error)));
-                    get.onsuccess = () => resolve(get.result as never);
-                };
-            }),
-    );
-    expect(saved.currentRoom).toBe('salon');
-    expect(saved.rooms.salon.tasksDone).toBe(SALON.tasks.length);
-    expect(Object.keys(saved.rooms)).not.toContain('kitchen');
+    expect(after.rooms?.salon?.tasksDone).toBe(SALON.tasks.length);
+    expect(Object.keys(after.rooms ?? {})).toEqual(['salon']);
 });

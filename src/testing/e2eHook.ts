@@ -9,7 +9,7 @@ import type { SoundService, SoundStatus } from '../ui/sound';
 import type { SessionLearner } from '../core/placement';
 import { encodeSave, freshSession, NEWER_SAVE, SAVE_VERSION, storedVersionNewer } from '../core/save';
 import { playable } from '../core/round/pick';
-import type { HouseState, SkillDef, Settings, StageDef } from '../core/types';
+import type { HouseState, RoomState, SkillDef, Settings, StageDef } from '../core/types';
 import { stages } from '../data/curriculum';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { FIRST_HOUSE } from '../data/houses';
@@ -310,7 +310,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, rooms: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? null)), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
             },
             get backdropPixel() {
                 if (boot()?.isLoading()) return null;

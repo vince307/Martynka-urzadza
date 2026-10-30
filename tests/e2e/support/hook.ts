@@ -88,6 +88,8 @@ export interface Snapshot {
     /** The house in the registry (read-only copy) and the room the game is in. */
     house?: HouseShape | null;
     currentRoom?: string | null;
+    /** The renovation state of every room in the registry (read-only copy): what the load path made of the save. */
+    rooms?: Record<string, { tasksDone: number; chosen: Record<string, number> }> | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */
