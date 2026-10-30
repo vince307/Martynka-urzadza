@@ -510,3 +510,22 @@ Wynik: PR #109 otwarty, CI zielone (run 40221411402), czeka na „zmerguj”. Za
 - [ ] P2 — Zaakceptować albo odwrócić: miniatura pokoju (`drawRoomMiniature`) nadal ignoruje wynik filtra; brak filtra zapisuje się w jednym miejscu, w `applyWornGrade`. Źródło: plan wiersz 4.8 [human].
 - [ ] P2 — Zaakceptować albo odwrócić: test skryptu planszy (`tests/recolourBoard.test.ts`) w CI się pomija (brak Pillow/numpy) i drukuje powód; dowodem jest tylko lokalna bramka. Źródło: impl-review F1, plan wiersz 4.10.
 - [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-25-audit-art-renderer/follow-ups/review-fixes.md` (8 wpisów; ścieżka istnieje po scaleniu #109).
+
+## Decyzje 2026-10-30: kształt etapu „ulica i domy” (PRD v4, kamień M-03)
+
+Rozmowa autora z agentem o rozwoju po salonie (nowe pokoje, piętra, budynek, mieszkańcy, ulica). Propozycja agenta oceniona względem Gossip Harbor, Merge Mansion, Homescapes, Toca Life i Animal Crossing; autor przyjął ją w całości („pasuje”). Zapis: `context/foundation/prd.md` (FR-038–FR-041, uściślenia FR-033 i FR-034, Open Questions 11–14), `context/foundation/roadmap.md` (M-03), `Martynka-urzadza.md` (sekcja „Po v1”).
+
+- [x] Budowa „od środka”: drugi pokój (kuchnia) → przekrój domu z piętrami → mieszkańcy i album → ulica z działkami → dzielnica (FR-036) dopiero po dwóch domach.
+- [x] Przekrój domu („domek dla lalek”) jest miejscem wyboru pokoju; piętra to dane (siatka piętro × miejsce), dom i budynek z mieszkaniami to ta sama struktura.
+- [x] Jeden pokój w remoncie naraz; wybór dziecka co najwyżej spośród zamkniętych pokoi (plan slice'a).
+- [x] „Do pokoju” zawsze trafia do pokoju w remoncie; dom i ulica to osobne przyciski, nigdy obowiązkowe; najwyżej trzy poziomy zbliżenia.
+- [x] Jedna parametryzowana celebracja (pokój, dom, ulica), bez scenek fabularnych; mieszkańcy „ożywiają” dom zamiast opowiadać; jedno zdanie czyta lektor.
+- [x] Pamiątka to naklejka do albumu (OQ 12); osobny ekran czy karta — w planie slice'a.
+- [x] Pierwszy dom mały: salon + kuchnia + pokój dziecięcy (OQ 11 w części); liczba domów na ulicy po pomiarze tempa z S-17.
+- [x] Każdy kolejny dom wnosi coś nowego (typy pokoi, mieszkańcy, dodatek domu).
+- [x] Inwentaryzacja grafik 2026-10-30: kuchnia, pracownia, pokój dziecięcy, biblioteka, taras i ogród zimowy są gotowe w `designs/` (locations-v2, evolution-v1); kuchni nie trzeba zamawiać.
+- [ ] P0 — Zlecić grafikowi skorupę domu 1 (odblokowuje S-23): gotowe zlecenie `docs/designer-orders/2026-10-30-house-1-shell.md` (komórki 608×342, wypełnienie `#FFF5DF`, klatka schodowa w środku).
+- [ ] P0 — Zlecić grafikowi resztę `docs/designer-brief-m03.md`: P1 skorupa domu 1 i mieszkańcy z naklejką (blokują S-23 i S-24), P2 ulica, elewacje, dom 2, ikony, P3 etapy kuchni i salon na kremowym tle. Układ domów: dom 1 = salon + kuchnia (parter), pokój dziecięcy + komórka „Wkrótce” (piętro); dom 2 = pracownia + ogród zimowy (przybudówka), biblioteka na poddaszu; dom 3 = taras (później).
+- [ ] P2 — Paczki `martynka-salon-worn-v1/v2` dotarły 2026-10-25; podmiana postarzenia z kodu na grafikę czeka jako osobna zmiana (Parked w roadmapie).
+- [x] M-02 (wysyłki rodzica, S-18–S-21) odłożony 2026-10-30 na wybór autora w `/10x-roadmap` (jeden otwarty kamień naraz); S-17 przeniesiony do M-03; M-02 wraca jako kolejny kamień, dekompozycja w historii gita `roadmap.md` (1f6869d).
+- [ ] P1 — Zaakceptować albo odwrócić fundament F-04 `rooms-as-data` (zapis v5 z domem i siatką pięter, salon przeniesiony bez straty) przed kuchnią; wybór celu `jakość` w wywiadzie roadmapy.
