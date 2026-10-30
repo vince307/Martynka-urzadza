@@ -1,68 +1,67 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-tdd rooms-as-data phase 1` step of run 2026-10-30-rooms-kitchen: phase 1 is committed (`dd6db69`), the
-house rules and the frozen v4 salon fixture exist, `SAVE_VERSION` is still 4. The one thing the next agent must not get wrong:
-`tests/fixtures/save-v4-salon.json` is frozen from now on (phase 2 must not edit it) and the load path must compare houses with
-`houseEqual`, never by reference.
+Written by the `/10x-tdd rooms-as-data phase 2` step of run 2026-10-30-rooms-kitchen: phase 2 is committed (`901926e`), `SAVE_VERSION` is now 5
+and a save carries `house`. The one thing the next agent must not get wrong: frozen fixtures v1-v4 (incl. `save-v4-salon.json`) and
+`save-v5.json` are never edited, and phase 3 must not touch `src/core/save.ts` or fixtures (row 3.4); the load path applies the house in `main.ts` only.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` |
-| Commits | 5 docs/test commits before this handoff; phase 1 is `dd6db69` |
+| Commits | phase 1 `dd6db69`, phase 2 `901926e`, plus docs commits |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` (unchanged; the implementing step owns later status changes) |
-| `## Progress` rows remaining | 32 (`grep -c '^- \[ \]' plan.md`); rows 1.1-1.3 ticked, 1.4 left open (e2e part is the orchestrator's) |
+| `change.md` status | `plan_reviewed` (unchanged) |
+| `## Progress` rows remaining | 28 (`grep -c '^- \[ \]' plan.md`); rows 2.1-2.4 ticked, 2.5 and 1.4 open (e2e part is the orchestrator's) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/core/house.ts` | new: `houseRoomList`, `roomInRenovation`, `nextRoom`, `mergeHouse`, `houseLayout`, `houseEqual` (pure, copies, no mutation) |
-| `src/core/types.ts` | `HouseRoomPlace`, `HouseState` added; no save type change |
-| `tests/house.test.ts` | new: 18 cases on synthetic rooms `a`, `b` and literal lists |
-| `tests/fixtures/save-v4-salon.json` | new, frozen: v4 save with a real salon (stars 23, tasksDone 6, 5 non-zero-variant picks, learner E2, variants, generation 12, writer `tab1:n1`) |
-| `tests/saveV4.test.ts` | one case: the salon fixture decodes unmigrated, `saveProblem` null (reworded to v5 in phase 2) |
-| `tests/fixtureLoadPath.test.ts` | `FIXTURES` gains `save-v4-salon` |
-| `context/changes/rooms-as-data/plan.md` | rows 1.1-1.3 ticked with `dd6db69` |
+| `src/core/migrations/house.ts` | new: `HOUSE_V5` (frozen), `LIFT_V4_HOUSE` (fresh copy of the house per lift) |
+| `src/core/save.ts` | `SAVE_VERSION` 5, `MIGRATIONS[4]`, `validHouse` (checked last), `copyHouse`, `SessionSave.house`, `freshSession(house, stars)` |
+| `src/core/types.ts` | `SaveV5`, `SaveState = SaveV5` |
+| `src/data/houses.ts` | new: `HOUSES` (`house-1`: salon (0,0), kitchen (0,1)), `FIRST_HOUSE`; `FIRST_ROOM` now derives from it |
+| `src/data/layout.ts`, `src/main.ts`, `src/scenes/UIScene.ts`, `src/testing/e2eHook.ts` | `REGISTRY_KEYS.house` in `SAVE_KEYS`, preBoot + snapshot, `freshSession(FIRST_HOUSE, …)` |
+| `tests/saveV5.test.ts`, `tests/fixtures/save-v5.json` | new (v5 fixture = `save-v4.json` lifted, room `living`, house-1 with `living` cell; frozen) |
+| other tests | `helpers.ts` `houseOf`; `save`, `saveV4`, `saveFile`, `autosave`, `idbStore`, `fixtureLoadPath`, `legacySalonMigration`, `rooms`, `ageBack`, `saveKeys` follow v5 |
+| `plan.md` | rows 2.1-2.4 ticked with `901926e` |
 
 ## 3. Verification
 
 | command | result (observed in this step) |
 |---|---|
-| unit baseline (`npm test` before the first edit) | 209 files, 3962 tests passed |
-| unit after phase 1 | 210 files, 3982 tests passed: baseline 3962, +20 (18 house, 1 saveV4, 1 fixtureLoadPath case) |
-| RED | stub `src/core/house.ts` returning empty values: 13 of 18 failed on assertions, e.g. `AssertionError: expected [] to deeply equal [ { room: 'a' }, …(1) ]`, `expected null to be 'a'`, `expected true to be false` (houseEqual). The fixture cases were written after the fixture file, so they were not observed red; the file's absence is the red (`readFileSync` ENOENT) |
-| GREEN | `tests/house.test.ts`, `saveV4.test.ts`, `fixtureLoadPath.test.ts`: 61 passed |
-| deliberate break 1 | `roomInRenovation` made to ignore `roomDone` (`if (state) return`): 4 red (`is the second room after the first is done`, `is null when every known room is done`, two `nextRoom` cases); restored |
-| deliberate break 2 | teaser `break` replaced by `continue` in `houseRoomList`: 2 red (`turns the first unknown room into a teaser…`, `is empty when the first room is unknown`); restored |
-| meta-check | oracles are literal rooms and lists written in the test, nothing computed by the code under test; break 1 also proves `nextRoom` depends on the rule |
+| unit baseline | 3982 (after phase 1) |
+| unit after phase 2 | 211 files, 4002 tests passed: +20 (saveV5 17, autosave 1, idbStore 1, fixtureLoadPath +1 fixture) |
+| RED | stub `house.ts` + `tests/saveV5.test.ts`: 15 failed, first `AssertionError: expected 4 to be 5` (`is the current version`), also `TypeError: MIGRATIONS[4] is not a function`, `expected null to be 4` (migratedFrom) |
+| GREEN | saveV5 17 passed, then full suite after updating v4-era tests |
+| break 1 | `LIFT_V4_HOUSE` reusing `HOUSE_V5`: `two lifts do not share the house object` red; restored |
+| break 2 | `house` dropped from `toSession`: 3 red (fixture round-trip, migrated-field case, encode copies); restored |
+| break 3 | `house` check before `stars`: `checks the house after stars` red; restored |
+| meta-check | v4 oracle = frozen fixture proven in phase 1; v5 oracle = literal house in the test; neither computed by the migration |
 | lint / typecheck | pass / pass |
-| deploy scripts (`test-martynka-deploy.sh`, `test-martynka-ops.sh`) | OK / OK |
-| `sample` E1-E6 | all exit 0 |
+| deploy scripts, `sample` E1-E6 | OK OK / all exit 0 |
 | `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| row 1.3 diff vs `bc19919` (`save.ts`, `src/data`, fixtures v1-v4, `public`) | empty |
-| Playwright e2e | NOT run (orchestrator owns ports 4397/4398); row 1.4 e2e part left unticked |
+| row 2.3 diff vs `dd6db69` (fixtures v1-v4 + salon, `legacySalon.ts`) | empty |
+| row 2.4 | `grep "freshSession(FIRST_ROOM" src` empty; layout.ts has `house` key and `SAVE_KEYS` entry |
+| Playwright e2e | NOT run (orchestrator owns ports); row 2.5 e2e part left unticked. e2e specs read `SAVE_VERSION`, so they follow to 5 |
 
 ## 4. Next command
 
-`/10x-tdd rooms-as-data phase 2`
+`/10x-implement rooms-as-data phase 3`
 
 ## 5. Open
 
-- Row 1.4 stays unticked until the orchestrator's e2e (`--workers=4`, expected branch baseline + 0).
-- Phase 2 checks `git diff dd6db69 -- tests/fixtures/save-v4-salon.json` empty.
-- Manual rows 6.6-6.9 as in the plan (unchanged). Carried risks as in the plan `## Known risks`.
-- DESIGN-GAP: none added. Follow-ups: none new.
+- Rows 1.4 and 2.5 stay unticked until the orchestrator's e2e (`--workers=4`, expected branch baseline + 0).
+- No load-time merge yet: a loaded session keeps its saved house (phase 3 adds `mergeHouse`, `nextRoom`, `ROOM_ORDER` removal).
+- `fixtureLoadPath` now includes `save-v5`; `save.test.ts` and `saveFile.test.ts` use `save-v5.json` as the "current valid save".
+- Manual rows 6.6-6.9 as in the plan. DESIGN-GAP: none. Follow-ups: none new.
 
 ## 6. Autonomous decisions
 
-- Skill checkpoints (manual gate, how to proceed, commit message) decided in place: commit the planned set only, stop after
-  phase 1, proposed message used (Polish title).
-- The phase keeps `Driver: tdd`; no redirect (implementation did not exist).
-- `houseRoomList` gives the first entry no `unlockAfter`; later entries `unlockAfter` the previous room (matches the plan
-  contract and today's `ROOM_ORDER`). `houseLayout` returns a copy of the data house. Would change: phase 3's "equals the old
-  literal" test showing a mismatch.
-- The `Skill` tool was not invoked; the skill's steps were followed directly from the plan (no user prompts involved).
+- Skill checkpoints (manual gate, how to proceed, commit message, dirty paths) decided in place: planned set only committed, stopped after phase 2, proposed message used.
+- Phase keeps `Driver: tdd`; implementation did not exist. The `Skill` tool was invoked; its instructions followed from the plan.
+- `save-v5.json` is built from `save-v4.json` (room `living`) rather than the salon fixture, so the many existing tests that used `save-v4.json` as "the current valid save" keep their `rooms.living` oracles; the salon is covered by lifting `save-v4-salon.json`. Would change: a reviewer wanting a salon v5 fixture (cheap to add as a second frozen file).
+- Existing v4-era tests were reworded to v5 (`migratedFrom: 4`, `version: 5`, chain tables gain `4: MIGRATIONS[4]`, "future" probes use version 6); their v4 assertions on frozen fixtures were not weakened.
+- `freshSession` takes a `HouseState`; tests use `houseOf(room)` in `tests/helpers.ts`.

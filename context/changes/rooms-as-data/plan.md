@@ -716,10 +716,10 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 2.1 `tests/saveV5.test.ts` red against v4 (no `MIGRATIONS[4]`, no `house` check), green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: make `LIFT_V4_HOUSE` reuse the `HOUSE_V5` object without copying → the "two lifts do not share" case red; drop `house` from `toSession` → the fixture round-trip case red; move the `house` check before `stars` → a `corrupt/stars` case red; each restored; meta-check: the v4 oracle is the frozen fixture proven by the v4 code in phase 1, the v5 oracle a literal, so neither is computed by the migration under test
-- [ ] 2.3 `git diff <phase-1 sha> -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json tests/fixtures/save-v4-salon.json src/core/migrations/legacySalon.ts` empty
-- [ ] 2.4 `grep -rn "freshSession(FIRST_ROOM" src` empty; `grep -n "house" src/data/layout.ts` shows the registry key and its `SAVE_KEYS` entry
+- [x] 2.1 `tests/saveV5.test.ts` red against v4 (no `MIGRATIONS[4]`, no `house` check), green after; unit `<phase-1 count> + N` — 901926e
+- [x] 2.2 Deliberate break: make `LIFT_V4_HOUSE` reuse the `HOUSE_V5` object without copying → the "two lifts do not share" case red; drop `house` from `toSession` → the fixture round-trip case red; move the `house` check before `stars` → a `corrupt/stars` case red; each restored; meta-check: the v4 oracle is the frozen fixture proven by the v4 code in phase 1, the v5 oracle a literal, so neither is computed by the migration under test — 901926e
+- [x] 2.3 `git diff <phase-1 sha> -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json tests/fixtures/save-v4-salon.json src/core/migrations/legacySalon.ts` empty — 901926e
+- [x] 2.4 `grep -rn "freshSession(FIRST_ROOM" src` empty; `grep -n "house" src/data/layout.ts` shows the registry key and its `SAVE_KEYS` entry — 901926e
 - [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (the existing `save-migration.spec.ts` asserts `writtenVersion` against `SAVE_VERSION`, so it follows to 5)
 
 ### Phase 3: The load path applies the house; the room list comes from the house
