@@ -1,18 +1,18 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-plan` step of run 2026-10-30-rooms-kitchen: `plan.md` (7 phases, 35 Progress rows) and
-`plan-brief.md` are written, `change.md` is `planned`, roadmap F-04 is `planning`. The one thing the next agent must not
-get wrong: phase 1 commits `tests/fixtures/save-v4-salon.json` while `SAVE_VERSION` is still 4 (that is what makes it a
-genuine v4 sample) and no later phase may edit it; the v5 migration table is frozen in core and lists only the salon.
+Written by the `/10x-plan-review` step of run 2026-10-30-rooms-kitchen: verdict PROCEED (0 critical, 3 warnings fixed in
+`plan.md`, 2 observations), `change.md` is `plan_reviewed`. The one thing the next agent must not get wrong: phase 1 commits
+`tests/fixtures/save-v4-salon.json` while `SAVE_VERSION` is still 4 and adds `houseEqual` beside the other house rules (the
+load path in phase 3 must compare houses structurally, never by reference, or every start writes the save).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` (confirmed with `git branch --show-current`) |
-| Commits | 3 on the branch after this step: change identity, research, and this step's `docs(rooms-as-data): plan` |
+| Commits | 4 on the branch after this step: change identity, research, plan, and this step's `docs(rooms-as-data): plan review` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`, sha256 f780d138…) |
+| `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 35 (`grep -c '^- \[ \]' plan.md`) |
 | Working tree | clean after the commit |
 
@@ -20,10 +20,9 @@ genuine v4 sample) and no later phase may edit it; the v5 migration table is fro
 
 | path | what it is |
 |---|---|
-| `context/changes/rooms-as-data/plan.md` | the plan: 7 phases with `Driver:` lines, Autonomous decisions P-0..P-11, Progress |
-| `context/changes/rooms-as-data/plan-brief.md` | two-page brief with the key-decision table |
-| `context/changes/rooms-as-data/change.md` | frontmatter only: `status: preparing -> planned` |
-| `context/foundation/roadmap.md` | F-04 status `ready -> planning` (At a glance row and item body) |
+| `context/changes/rooms-as-data/reviews/plan-review.md` | the review report (F1–F5, decisions, `VERDICT: PROCEED`) |
+| `context/changes/rooms-as-data/plan.md` | triaged: `houseEqual` in phase 1; structural dirty compare, real-data "finished salon stays" test and hook `currentRoom` in phase 3; phase-2 test list completed; parent-only "salon" → "Salon" declared in phase 4 and row 6.6; phase-7 third test now reloads a finished salon (row 7.1 break added); Known risks + decisions PR-1..PR-3 |
+| `context/changes/rooms-as-data/change.md` | frontmatter `status: planned -> plan_reviewed` |
 | `context/changes/rooms-as-data/handoff.md` | this file |
 
 ## 3. Verification
@@ -31,46 +30,40 @@ genuine v4 sample) and no later phase may edit it; the v5 migration table is fro
 | command | result (observed in this step) |
 |---|---|
 | `git branch --show-current` | `feat/rooms-as-data` |
-| `metadata-guard.mjs inspect` / `mark-planned` | inspect ok (change.md 409593f4…); mark-planned `{"changed":true}` |
-| `grep -c '^- \[ \]' plan.md` | 35 = the Success Criteria bullets of phases 1-7 (4+5+5+4+5+9+3), one-to-one |
-| `grep -c "^## Phase\|^Driver: "` on plan.md | 14 (7 phase headings, 7 Driver lines) |
-| `gh run view 41118206318 --log` (CI `check`, job 124277837113) | `Tests  3959 passed \| 3 skipped (3962)`, `e2e hook: absent (2 chunks checked)` — cited in row 6.9 |
-| code spot-checks (grep/sed of `src/core/save.ts`, `src/data/rooms.ts`, `src/data/roomArt.ts`, `scripts/make-task-art.mjs`, `RoomDoneCard.ts`, `main.ts`, `e2eHook.ts`) | match research; `freshSession(` has 10 call sites in 8 files; `RoomDef.name` read only by `UIScene` `roomName` |
+| `grep -c '^- \[ \]' plan.md` | 35 (unchanged; rows 6.6 and 7.1 rewritten identically in phase body and Progress, replace count 2 each) |
+| `grep -c '^Driver: ' plan.md` | 7; drivers unchanged (1 tdd, 2 tdd, 3-6 impl, 7 e2e after the phase-6 seam sweep) |
+| code checks | `roomsListView` maps a teaser entry to `id: null`; `repairCurrentRoom` uses the known ids; `RoomScene.resolve` falls back to `ROOMS[FIRST_ROOM]` and the hook's `roomId` is `room.id` (cannot see a move); `SALON.name` is `'salon'` and `UIScene` `roomName` prints it; one `doneCard.show` call; `room-change.spec.ts` already asserts the done-card items; `freshSession(` callers: `src/main.ts`, `src/scenes/UIScene.ts`, `src/testing/e2eHook.ts`, 4 test files |
 | lint / typecheck / unit / build / e2e | not run: docs-only step, no source change |
 
 ## 4. Next command
 
-`/10x-plan-review rooms-as-data`
+`/10x-tdd rooms-as-data phase 1`
 
 ## 5. Open
 
-- Phase drivers: 1 tdd (house rules + v4 salon fixture), 2 tdd (save v5), 3 impl (load path, room list, `v4-salon` seam),
-  4 impl (name, thumbnail, `RoomDoneCard` per-tile fix), 5 impl (art table + script per room), 6 impl (docs, follow-ups,
-  seam sweep incl. CLAUDE.md v4 -> v5, visual), 7 e2e (`tests/e2e/rooms-as-data.spec.ts`, risks #10, #2).
-- Manual rows (human checklist): 6.6 `[visual]` salon states + done card + "Zapis gry" at 1440/1024 vs `main`; 6.7
-  `[human]` rollback below v5 shows `pl.saveFuture` (`deploy/README.md` note); 6.8 `[human]` update proven without two real
-  builds (decision P-6); 6.9 `[reviewer] (CI at ship)`.
-- Plan-review attention: `freshSession(house)` signature churn in tests (no default house in core); the phase-7 done-card
-  test buys all 12 salon tasks through touch (timeout); `mergeHouse` marks the save dirty on the first v5 load because the
-  frozen table lacks the kitchen cell (intended).
-- DESIGN-GAP: none added (no new copy; `pl.room.names.salon` reuses "Salon").
-- Follow-ups: listed in plan phase 6 § 2 (written to `follow-ups/review-fixes.md` in phase 6).
+- Manual rows (human checklist): 6.6 `[visual]` salon states + done card + "Zapis gry" at 1440/1024 vs `main` (only
+  expected difference: "Salon" in the parent save summaries); 6.7 `[human]` rollback below v5 shows `pl.saveFuture`; 6.8
+  `[human]` update proven without two real builds (decision P-6); 6.9 `[reviewer] (CI at ship)`.
+- Carried risks (plan `## Known risks`): start-time write if the house compare is not `houseEqual` (multi-tab specs
+  `stale-tab.spec.ts`, `load-and-tab-guard.spec.ts` would go red); `kitchen` cell stored in every F-04 save (accepted);
+  `freshSession(house)`/`SessionSave.house` churn in tests; phase-7 finished-salon test length; e2e seam leak guarded by the
+  `v4-salon` marker in `vite/e2eHookGuard.mjs`.
+- DESIGN-GAP: none added.
+- Follow-ups: written in phase 6 to `follow-ups/review-fixes.md` (list in plan phase 6 § 2); the review found no triggered
+  follow-up missing.
 
 ## 6. Autonomous decisions
 
 - Fixed by the maintainer (scope.md): v5 = house + floor grid, lossless salon move, frozen v4 fixture, write-once
   `backup-v4`, no art or balance in F-04. Would change: a new maintainer instruction.
-- P-1 frozen v5 table lists only the salon. Rejected: freezing salon/kitchen/`kids-room`. Why: data merges its rooms at load;
-  a guessed id frozen forever lingers as an extra room. Would change: needing a save's grid without data.
-- P-2 data house = salon + kitchen only. Why: kitchen id fixed by the pack, needed for the "Wkrótce" tile; kids' room and
-  closed cells wait for S-25/S-23. Would change: those slices fixing their ids.
-- P-3 renovation rule runs at load only; "Dalej" wired in S-22. Rejected: wiring "Dalej" now (invisible with one room,
-  fires `RoomScene` follow-ups). Would change: S-22 cancelled while a second room ships.
-- P-6 update proven by the real IndexedDB load path in unit tests + the in-memory e2e seam, not two real builds — departs
-  from test-plan phase 4's two-build wish → `[human]` row 6.8. Would change: v6 or a cross-build report.
-- Other plan decisions (P-4 `house` checked last, P-5 data wins for a known house, P-7 `RoomDef.name` removed, P-8 optional
-  thumbnail falls back to drawn, P-9 "Stan salonu" copy left for S-22, P-10 seven phases, P-11 risk ids) are in plan.md
-  `## Autonomous decisions` with their reversal conditions.
-- Skill checkpoints decided in place: complexity HIGH, zero questions asked (research + scope settle every product choice);
-  phase structure approved by the agent; no clipboard copy (unattended); no sub-agents (research's Code References covered
-  the file set).
+- PR-1 keep the `kitchen` cell in the F-04 data house (proven invisible: teaser entry, unknown rooms skipped by
+  `roomInRenovation`, repair against `ROOMS`); added real-data and reload tests. Rejected: salon-only data house + a generic
+  teaser rule (recreates `ROOM_ORDER`'s special case). Would change: either new test failing.
+- PR-2 structural `houseEqual` for the load-time dirty decision. Rejected: leaving "differs" to the implementer. Why: a
+  reference compare writes at every start and stales an open tab via `writeVerdict`. Would change: nothing known.
+- PR-3 the parent save summaries' "salon" → "Salon" is accepted as a parent-only correction, declared in row 6.6, no
+  `[human]` row. Would change: the maintainer preferring the old text.
+- Phase-7 third test changed from a duplicate of `room-change.spec.ts` to a finished-salon reload; e2e count stays +3.
+  Would change: a cheaper seam for a finished salon appearing.
+- Skill checkpoints decided in place: "how to proceed" → triage done in place (fix CRITICAL/obvious WARNING, record the
+  rest), report saved; no sub-agent (the risky claims were a few direct greps); no `AskUserQuestion`.

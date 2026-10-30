@@ -175,6 +175,9 @@ Driver why: the house types and rules are absent pure logic with literal synthet
   caller: data rooms in data order, then saved rooms whose `room` is not in data (kept, appended, listed in `extraRooms`).
 - `houseLayout(saved: HouseState, houses: readonly HouseState[], first: HouseState): HouseState` — the data house with the
   saved id, else `first`.
+- `houseEqual(a: HouseState, b: HouseState): boolean` — structural: same `id`, same cells in the same order (`room`,
+  `floor`, `place`). The load path uses it to decide "the merged house differs" (plan review F2: every helper returns a
+  fresh copy, so a reference compare would mark the save dirty, and write it, on every start).
 - Every returned house/array is a fresh copy.
 
 #### 3. Frozen v4 salon fixture
@@ -197,7 +200,8 @@ one `example`, `pendingUnlock: null`), `variants` with `roundsSince: 2`, `lastMi
 list = `[{room:'a'},{room:'b',unlockAfter:'a'}]`; unknown `c` after `a` → teaser after `a`, list ends; `roomInRenovation`
 → `a` while `a` not done, `b` after `a` done, `null` when both done, skips an unknown room; `nextRoom` keeps the current
 room when nothing is left, moves to `b` and adds its empty state, does not mutate (deep-frozen input); `mergeHouse` keeps
-a saved extra room at the end and reports it; `houseLayout` falls back to `first` for an unknown id. `saveV4.test.ts`: the
+a saved extra room at the end and reports it; `houseLayout` falls back to `first` for an unknown id; `houseEqual` is true
+for two separately built equal houses and false for a different id, a swapped cell order or a changed `place`. `saveV4.test.ts`: the
 v4 salon fixture decodes `ok` with `migratedFrom: null` and `saveProblem` null (this test is reworded to v5 in phase 2).
 `fixtureLoadPath.test.ts` `FIXTURES` gains `save-v4-salon`.
 
@@ -266,7 +270,10 @@ HOUSES[0]`; `FIRST_ROOM` in `rooms.ts` becomes `FIRST_HOUSE.rooms[0].room` (valu
 
 **Files**: `tests/saveV5.test.ts` (new), `tests/fixtures/save-v5.json` (new, frozen), `tests/saveV4.test.ts`,
 `tests/save.test.ts`, `tests/fixtureLoadPath.test.ts`, `tests/autosave.test.ts`, `tests/idbStore.test.ts`, every test
-calling `freshSession(` (pass a one-room house, e.g. a local `houseOf('living')` helper)
+calling `freshSession(` (today `tests/saveFile.test.ts`, `tests/ageBack.test.ts`, `tests/legacySalonMigration.test.ts`,
+`tests/save.test.ts`; pass a one-room house, e.g. a local `houseOf('living')` helper), every literal `SessionSave` in tests
+(`tests/save.test.ts` `session`/`withExample`/`fresh`, `tests/rooms.test.ts`; gains `house`), and the v4 encode pin in
+`tests/legacySalonMigration.test.ts` (`toMatchObject({ version: 4, … })` → 5)
 
 **Contract**: `saveV5.test.ts`: `SAVE_VERSION` 5; `MIGRATIONS[4](v4 salon fixture)` deep-equals `{ ...fixture, version: 5,
 house: { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }] } }` (literal), does not mutate its input, and two
@@ -313,8 +320,14 @@ from the house (`ROOM_ORDER` removed), and the e2e build can start from the froz
 **Contract**: after `repairCurrentRoom`: if `HOUSES` has `session.house.id` → `session.house = mergeHouse(saved, data).house`,
 `console.warn` once when `extraRooms` is non-empty; else keep the saved house and `console.warn` the unknown id. Then
 `nextRoom(session, houseLayout(session.house, HOUSES, FIRST_HOUSE), ROOMS)`; `movedFrom !== null` → `console.info` and
-`saver.markDirty()` (like `roomRepaired`). A merged house that differs from the saved one also marks dirty. No other load
-behaviour changes.
+`saver.markDirty()` (like `roomRepaired`). A merged house that differs from the saved one — `!houseEqual(merged, saved)`,
+never a reference compare — also marks dirty: an unchanged v5 save must NOT be written at start (a start-time write would
+bump `generation` and stale an already open tab through `writeVerdict`, a behaviour change). No other load behaviour changes.
+
+**Why the kitchen cell is invisible in F-04** (plan review F1): `ROOMS` has no `kitchen`, so `houseRoomList` turns the cell
+into today's teaser entry (`{ teaser: true, unlockAfter: 'salon' }`, no room id), `roomInRenovation` skips it (only rooms in
+`known`), `nextRoom` therefore returns `null` → keeps `salon` for a finished salon, and `repairCurrentRoom` still repairs
+against `Object.keys(ROOMS)`. A child with a done salon stays in the salon with today's card; no stand-in kitchen is drawn.
 
 #### 2. Room list
 
@@ -329,7 +342,8 @@ rooms)`; `ROOM_ORDER` deleted from `src/data/rooms.ts`; `RoomListEntry` stays.
 
 **Contract**: seam `v4-salon` (`E2ESaveSeam`, `E2E_SAVE_SEAMS`, doc line) seeding the store with
 `structuredClone(save-v4-salon.json)`; `E2ESaveStoreLog.writtenHouse: HouseState | null` set on each write; the hook
-snapshot gains `house` (registry value, frozen copy). Marker `v4-salon` added to `E2E_HOOK_MARKERS` (absent from `dist/`).
+snapshot gains `house` (registry value, frozen copy) and `currentRoom` (the raw registry value: `room.roomId` reports
+`room.id` after the `ROOMS[id] ?? ROOMS[FIRST_ROOM]` fallback, so it cannot see a move to an unknown room). Marker `v4-salon` added to `E2E_HOOK_MARKERS` (absent from `dist/`).
 
 #### 4. Tests
 
@@ -337,8 +351,11 @@ snapshot gains `house` (registry value, frozen copy). Marker `v4-salon` added to
 
 **Contract**: `houseRoomList(FIRST_HOUSE, ROOMS)` deep-equals the old literal `[{ room: 'salon' }, { teaser: true,
 unlockAfter: 'salon' }]`; every room of `ROOMS` is placed in `FIRST_HOUSE`; `HOUSE_V5.id === FIRST_HOUSE.id` and its salon
-cell equals the data's; the ROOM_ORDER test is rewritten on the house. Source guards: `main.ts` calls `repairCurrentRoom(`
-before `nextRoom(`; `ROOM_ORDER` appears nowhere in `src/`; `RoomScene.ts` calls `houseRoomList(`.
+cell equals the data's; the ROOM_ORDER test is rewritten on the house; with the real data and a finished salon state
+(every `SALON` task done) `roomInRenovation(FIRST_HOUSE, ROOMS, states)` is `null` and `nextRoom` returns `currentRoom:
+'salon'`, `movedFrom: null` and `rooms` without a `kitchen` key (plan review F1). Source guards: `main.ts` calls
+`repairCurrentRoom(` before `nextRoom(` and compares houses with `houseEqual(`; `ROOM_ORDER` appears nowhere in `src/`;
+`RoomScene.ts` calls `houseRoomList(`.
 
 ### Success Criteria:
 
@@ -378,14 +395,16 @@ The room name and the fallback thumbnail become per-room data, and the card stop
 
 #### 3. Card
 
-**Files**: `src/ui/widgets/RoomDoneCard.ts`, `src/scenes/RoomScene.ts` (the two `doneCard.show` calls), `src/scenes/UIScene.ts`
+**Files**: `src/ui/widgets/RoomDoneCard.ts`, `src/scenes/RoomScene.ts` (the one `doneCard.show` call, in `redraw`), `src/scenes/UIScene.ts`
 (`roomName`), `src/core/rooms.ts` (`RoomListItem.nameKey` comment)
 
 **Contract**: `show(items, catalogue: Readonly<Record<string, RoomDef>>, states: Readonly<Record<string, RoomState>>,
 current: string)`: each room tile uses `catalogue[item.id]` and `states[item.id] ?? emptyRoomState()`; a room item absent
 from the catalogue is drawn as a teaser tile (never throws); caption `roomText.name(id) ?? id`; thumbnail
 `room.thumbnail`; `miniature()` reports the mode of the `current` room's tile. `UIScene` `roomName: (id) =>
-roomText.name(id) ?? id`. The DESIGN-GAP comment names per-room thumbnails (row 108 unchanged).
+roomText.name(id) ?? id` (both dialog call sites). **One intended, parent-only visible change** (plan review F3): today
+`RoomDef.name` is the id `'salon'`, so the export/import/reset summaries print "salon"; after this phase they print
+"Salon" (`pl.room.names.salon`). Nothing a child sees changes. The DESIGN-GAP comment names per-room thumbnails (row 108 unchanged).
 
 #### 4. Tests
 
@@ -519,7 +538,7 @@ doc "v4", `RoomListItem.nameKey`, `roomArt.ts` header "salon", `make-task-art.mj
 
 #### Manual Verification:
 
-- [visual] Hook build on 4399, desktop 1440 and tablet 1024: the salon before the stage, the salon after the stage with some furniture, a finished salon with the "Pokój gotowy!" card (salon tile with its check mark, the "Wkrótce" tile without its padlock), "Zmień wygląd" mode, the welcome backdrop, the task screen backdrop, settings "Zapis gry" after a v4 → v5 load (`?e2eSave=v4-salon`, the migration line and the `backup-v4` line), each compared with `main` at `bc19919` — no visible difference
+- [visual] Hook build on 4399, desktop 1440 and tablet 1024: the salon before the stage, the salon after the stage with some furniture, a finished salon with the "Pokój gotowy!" card (salon tile with its check mark, the "Wkrótce" tile without its padlock), "Zmień wygląd" mode, the welcome backdrop, the task screen backdrop, settings "Zapis gry" after a v4 → v5 load (`?e2eSave=v4-salon`, the migration line and the `backup-v4` line), each compared with `main` at `bc19919` — no visible difference except the parent-only room name in the export/import/reset summaries ("salon" → "Salon", plan review F3)
 - [human] Accept the rollback risk: a build older than v5 meets a v5 save as `pl.saveFuture` and never overwrites it (note in `deploy/README.md`, as at v3/v4)
 - [human] Accept that the v4 → v5 update is proven by unit tests on the real IndexedDB load path (`tests/fixtureLoadPath.test.ts`) and an e2e on the in-memory seam, not by two real builds (save-truth follow-up §15, decision P-6)
 - [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41118206318, job 124277837113: `Tests  3959 passed | 3 skipped (3962)`, `e2e hook: absent (2 chunks checked)`)
@@ -549,9 +568,13 @@ One new hook spec on the `v4-salon` seam, modelled on `tests/e2e/save-migration.
 - `#2 rooms-as-data after a round the save is written as v5 with the house and the v4 copy right after it` — play a round,
   `store.writtenVersion === 5`, `store.writtenHouse` equals the house above, `ops.slice(0, 2) = ['write', 'backup']`, one
   backup op.
-- `#10 rooms-as-data the done card shows the salon tile and one locked teaser` — seed is not enough to finish the salon, so
-  this test uses `?e2eStars` on a fresh device to buy all 12 tasks through the touch path (as `salon-*` specs do) and checks
-  `card.items` = salon done + teaser, `doneMiniature === 'live'`.
+- `#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell` — the seed is not enough to finish
+  the salon, so this test uses `?e2eStars` on a fresh device to buy all 12 tasks through the touch path (as
+  `room-change.spec.ts` does), checks `card.items` = salon done + unlocked teaser and `doneMiniature === 'live'`, then
+  `page.reload()` (same context, the real IndexedDB keeps the save) and checks the hook's `currentRoom === 'salon'`,
+  `room.tasksDone === 12`, `house` unchanged, and `rooms` without a `kitchen` key (plan review F1: the load-time `nextRoom`
+  must not route a finished salon to the cell the build does not ship). `room-change.spec.ts` already pins the card items;
+  the reload is the new proof.
 
 No `sleep`/`until`/`while` loops or `tail -f` waiters (profile § 8); waits through `expect.poll`.
 
@@ -559,7 +582,7 @@ No `sleep`/`until`/`while` loops or `tail -f` waiters (profile § 8); waits thro
 
 #### Automated Verification:
 
-- Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after
+- Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; make `roomInRenovation` return the first house cell even when unknown → the finished-salon reload case red on `currentRoom`; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after
 - `npx playwright test tests/e2e/rooms-as-data.spec.ts tests/e2e/save-migration.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
 - Full local gate green
 
@@ -603,6 +626,14 @@ stay byte-identical and load through the whole chain.
   (core does not import data).
 - The phase-7 done-card test needs all 12 salon purchases through touch (~ the length of `salon-extra-slots` specs); if it
   runs close to its limit, raise only that test's timeout.
+- (plan review F2) A start-time write would bump `generation` and refuse the next write of an already open tab
+  (`writeVerdict`): the house compare at load must be `houseEqual`, and only a migrated, repaired, moved or really merged
+  save is marked dirty. An existing multi-tab spec (`stale-tab.spec.ts`, `load-and-tab-guard.spec.ts`) going red in phase 3
+  is this bug, not a flake.
+- (plan review F5, observation) Every v5 save written by F-04 stores a `kitchen` cell the build does not ship. Harmless:
+  data wins for a known house (`mergeHouse`), so S-22/S-23 may move or rename it; an unknown cell only shows as the teaser.
+- (plan review F4, observation) `freshSession(house)` and `SessionSave.house` make TypeScript fail in every test literal
+  listed in phase 2 § 5 — the typecheck is the checklist; never silence it with `as never`.
 
 ## Autonomous decisions
 
@@ -639,6 +670,16 @@ stay byte-identical and load through the whole chain.
   overhead dominating.
 - **P-11 Risk ids** #10 (an update keeps stars, room and stage) and #2 (progress never lost) for the e2e phase. Would change:
   the test plan adding a room-data risk.
+- **PR-1 (plan review) Keep the kitchen cell in the F-04 data house.** Checked against the code: `roomsListView` turns an
+  unknown cell into today's teaser (no id), `roomInRenovation` reads only known rooms, `repairCurrentRoom` uses
+  `Object.keys(ROOMS)` — so a finished salon stays the current room and the card is unchanged. Rejected: a salon-only data
+  house plus a generic teaser (it would recreate `ROOM_ORDER`'s special case). Added proof: a phase-3 data test and a
+  phase-7 reload test with a hook `currentRoom`. Would change: either test failing.
+- **PR-2 (plan review) Structural `houseEqual` for the dirty decision**, so an unchanged save is never written at start.
+  Would change: nothing known.
+- **PR-3 (plan review) The parent save summaries now say "Salon" instead of the raw id "salon".** A correction, parent-only,
+  recorded in the visual row 6.6; no `[human]` row (no child-facing or balance change). Would change: the maintainer
+  preferring the old text.
 
 ## References
 
@@ -722,7 +763,7 @@ stay byte-identical and load through the whole chain.
 
 #### Manual
 
-- [ ] 6.6 [visual] Hook build on 4399, desktop 1440 and tablet 1024: the salon before the stage, the salon after the stage with some furniture, a finished salon with the "Pokój gotowy!" card (salon tile with its check mark, the "Wkrótce" tile without its padlock), "Zmień wygląd" mode, the welcome backdrop, the task screen backdrop, settings "Zapis gry" after a v4 → v5 load (`?e2eSave=v4-salon`, the migration line and the `backup-v4` line), each compared with `main` at `bc19919` — no visible difference
+- [ ] 6.6 [visual] Hook build on 4399, desktop 1440 and tablet 1024: the salon before the stage, the salon after the stage with some furniture, a finished salon with the "Pokój gotowy!" card (salon tile with its check mark, the "Wkrótce" tile without its padlock), "Zmień wygląd" mode, the welcome backdrop, the task screen backdrop, settings "Zapis gry" after a v4 → v5 load (`?e2eSave=v4-salon`, the migration line and the `backup-v4` line), each compared with `main` at `bc19919` — no visible difference except the parent-only room name in the export/import/reset summaries ("salon" → "Salon", plan review F3)
 - [ ] 6.7 [human] Accept the rollback risk: a build older than v5 meets a v5 save as `pl.saveFuture` and never overwrites it (note in `deploy/README.md`, as at v3/v4)
 - [ ] 6.8 [human] Accept that the v4 → v5 update is proven by unit tests on the real IndexedDB load path (`tests/fixtureLoadPath.test.ts`) and an e2e on the in-memory seam, not by two real builds (save-truth follow-up §15, decision P-6)
 - [ ] 6.9 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41118206318, job 124277837113: `Tests  3959 passed | 3 skipped (3962)`, `e2e hook: absent (2 chunks checked)`)
@@ -731,6 +772,6 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 7.1 Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after
+- [ ] 7.1 Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; make `roomInRenovation` return the first house cell even when unknown → the finished-salon reload case red on `currentRoom`; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after
 - [ ] 7.2 `npx playwright test tests/e2e/rooms-as-data.spec.ts tests/e2e/save-migration.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
 - [ ] 7.3 Full local gate green
