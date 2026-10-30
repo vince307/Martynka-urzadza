@@ -795,9 +795,9 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [ ] 1.1 `tests/celebration.test.ts` and `tests/roomLoad.test.ts` red before the modules exist, green after; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: ignore `reducedMotion` in `celebrationView` → the reduced-motion case red; drop the `pending` filter in `roomsToLoad` → the pending case red; each restored; meta-check: oracles are literal tables and literal id lists, not values computed by the code under test
-- [ ] 1.3 `npm run lint` passes (the boundary rules keep `src/core/celebration.ts` and `src/core/roomLoad.ts` free of Phaser and data imports)
+- [x] 1.1 `tests/celebration.test.ts` and `tests/roomLoad.test.ts` red before the modules exist, green after; unit `<branch baseline> + N`
+- [x] 1.2 Deliberate break: ignore `reducedMotion` in `celebrationView` → the reduced-motion case red; drop the `pending` filter in `roomsToLoad` → the pending case red; each restored; meta-check: oracles are literal tables and literal id lists, not values computed by the code under test
+- [x] 1.3 `npm run lint` passes (the boundary rules keep `src/core/celebration.ts` and `src/core/roomLoad.ts` free of Phaser and data imports)
 - [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 2: Boot loads only the room in renovation; the budget test per room
