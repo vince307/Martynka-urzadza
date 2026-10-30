@@ -707,9 +707,9 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 1.1 `tests/house.test.ts` red before `src/core/house.ts` exists, green after; the fixture cases red before the file exists; unit `<branch baseline> + N`
-- [ ] 1.2 Deliberate break: make `roomInRenovation` ignore `roomDone` → the "b after a done" case red; drop the teaser stop in `houseRoomList` → the unknown-room case red; each restored; meta-check: oracles are literal synthetic rooms and literal lists, not values computed by the code under test
-- [ ] 1.3 `git diff --stat bc19919 -- src/core/save.ts src/data tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json public` empty (v4 code unchanged while the fixture is proven)
+- [x] 1.1 `tests/house.test.ts` red before `src/core/house.ts` exists, green after; the fixture cases red before the file exists; unit `<branch baseline> + N` — dd6db69
+- [x] 1.2 Deliberate break: make `roomInRenovation` ignore `roomDone` → the "b after a done" case red; drop the teaser stop in `houseRoomList` → the unknown-room case red; each restored; meta-check: oracles are literal synthetic rooms and literal lists, not values computed by the code under test — dd6db69
+- [x] 1.3 `git diff --stat bc19919 -- src/core/save.ts src/data tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json public` empty (v4 code unchanged while the fixture is proven) — dd6db69
 - [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 2: Save format v5 carries the house

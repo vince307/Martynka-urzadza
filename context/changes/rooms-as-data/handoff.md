@@ -1,69 +1,68 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-plan-review` step of run 2026-10-30-rooms-kitchen: verdict PROCEED (0 critical, 3 warnings fixed in
-`plan.md`, 2 observations), `change.md` is `plan_reviewed`. The one thing the next agent must not get wrong: phase 1 commits
-`tests/fixtures/save-v4-salon.json` while `SAVE_VERSION` is still 4 and adds `houseEqual` beside the other house rules (the
-load path in phase 3 must compare houses structurally, never by reference, or every start writes the save).
+Written by the `/10x-tdd rooms-as-data phase 1` step of run 2026-10-30-rooms-kitchen: phase 1 is committed (`dd6db69`), the
+house rules and the frozen v4 salon fixture exist, `SAVE_VERSION` is still 4. The one thing the next agent must not get wrong:
+`tests/fixtures/save-v4-salon.json` is frozen from now on (phase 2 must not edit it) and the load path must compare houses with
+`houseEqual`, never by reference.
 
 ## 1. State
 
 | | |
 |---|---|
-| Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` (confirmed with `git branch --show-current`) |
-| Commits | 4 on the branch after this step: change identity, research, plan, and this step's `docs(rooms-as-data): plan review` |
+| Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` |
+| Commits | 5 docs/test commits before this handoff; phase 1 is `dd6db69` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 35 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit |
+| `change.md` status | `plan_reviewed` (unchanged; the implementing step owns later status changes) |
+| `## Progress` rows remaining | 32 (`grep -c '^- \[ \]' plan.md`); rows 1.1-1.3 ticked, 1.4 left open (e2e part is the orchestrator's) |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/rooms-as-data/reviews/plan-review.md` | the review report (F1–F5, decisions, `VERDICT: PROCEED`) |
-| `context/changes/rooms-as-data/plan.md` | triaged: `houseEqual` in phase 1; structural dirty compare, real-data "finished salon stays" test and hook `currentRoom` in phase 3; phase-2 test list completed; parent-only "salon" → "Salon" declared in phase 4 and row 6.6; phase-7 third test now reloads a finished salon (row 7.1 break added); Known risks + decisions PR-1..PR-3 |
-| `context/changes/rooms-as-data/change.md` | frontmatter `status: planned -> plan_reviewed` |
-| `context/changes/rooms-as-data/handoff.md` | this file |
+| `src/core/house.ts` | new: `houseRoomList`, `roomInRenovation`, `nextRoom`, `mergeHouse`, `houseLayout`, `houseEqual` (pure, copies, no mutation) |
+| `src/core/types.ts` | `HouseRoomPlace`, `HouseState` added; no save type change |
+| `tests/house.test.ts` | new: 18 cases on synthetic rooms `a`, `b` and literal lists |
+| `tests/fixtures/save-v4-salon.json` | new, frozen: v4 save with a real salon (stars 23, tasksDone 6, 5 non-zero-variant picks, learner E2, variants, generation 12, writer `tab1:n1`) |
+| `tests/saveV4.test.ts` | one case: the salon fixture decodes unmigrated, `saveProblem` null (reworded to v5 in phase 2) |
+| `tests/fixtureLoadPath.test.ts` | `FIXTURES` gains `save-v4-salon` |
+| `context/changes/rooms-as-data/plan.md` | rows 1.1-1.3 ticked with `dd6db69` |
 
 ## 3. Verification
 
 | command | result (observed in this step) |
 |---|---|
-| `git branch --show-current` | `feat/rooms-as-data` |
-| `grep -c '^- \[ \]' plan.md` | 35 (unchanged; rows 6.6 and 7.1 rewritten identically in phase body and Progress, replace count 2 each) |
-| `grep -c '^Driver: ' plan.md` | 7; drivers unchanged (1 tdd, 2 tdd, 3-6 impl, 7 e2e after the phase-6 seam sweep) |
-| code checks | `roomsListView` maps a teaser entry to `id: null`; `repairCurrentRoom` uses the known ids; `RoomScene.resolve` falls back to `ROOMS[FIRST_ROOM]` and the hook's `roomId` is `room.id` (cannot see a move); `SALON.name` is `'salon'` and `UIScene` `roomName` prints it; one `doneCard.show` call; `room-change.spec.ts` already asserts the done-card items; `freshSession(` callers: `src/main.ts`, `src/scenes/UIScene.ts`, `src/testing/e2eHook.ts`, 4 test files |
-| lint / typecheck / unit / build / e2e | not run: docs-only step, no source change |
+| unit baseline (`npm test` before the first edit) | 209 files, 3962 tests passed |
+| unit after phase 1 | 210 files, 3982 tests passed: baseline 3962, +20 (18 house, 1 saveV4, 1 fixtureLoadPath case) |
+| RED | stub `src/core/house.ts` returning empty values: 13 of 18 failed on assertions, e.g. `AssertionError: expected [] to deeply equal [ { room: 'a' }, …(1) ]`, `expected null to be 'a'`, `expected true to be false` (houseEqual). The fixture cases were written after the fixture file, so they were not observed red; the file's absence is the red (`readFileSync` ENOENT) |
+| GREEN | `tests/house.test.ts`, `saveV4.test.ts`, `fixtureLoadPath.test.ts`: 61 passed |
+| deliberate break 1 | `roomInRenovation` made to ignore `roomDone` (`if (state) return`): 4 red (`is the second room after the first is done`, `is null when every known room is done`, two `nextRoom` cases); restored |
+| deliberate break 2 | teaser `break` replaced by `continue` in `houseRoomList`: 2 red (`turns the first unknown room into a teaser…`, `is empty when the first room is unknown`); restored |
+| meta-check | oracles are literal rooms and lists written in the test, nothing computed by the code under test; break 1 also proves `nextRoom` depends on the rule |
+| lint / typecheck | pass / pass |
+| deploy scripts (`test-martynka-deploy.sh`, `test-martynka-ops.sh`) | OK / OK |
+| `sample` E1-E6 | all exit 0 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| row 1.3 diff vs `bc19919` (`save.ts`, `src/data`, fixtures v1-v4, `public`) | empty |
+| Playwright e2e | NOT run (orchestrator owns ports 4397/4398); row 1.4 e2e part left unticked |
 
 ## 4. Next command
 
-`/10x-tdd rooms-as-data phase 1`
+`/10x-tdd rooms-as-data phase 2`
 
 ## 5. Open
 
-- Manual rows (human checklist): 6.6 `[visual]` salon states + done card + "Zapis gry" at 1440/1024 vs `main` (only
-  expected difference: "Salon" in the parent save summaries); 6.7 `[human]` rollback below v5 shows `pl.saveFuture`; 6.8
-  `[human]` update proven without two real builds (decision P-6); 6.9 `[reviewer] (CI at ship)`.
-- Carried risks (plan `## Known risks`): start-time write if the house compare is not `houseEqual` (multi-tab specs
-  `stale-tab.spec.ts`, `load-and-tab-guard.spec.ts` would go red); `kitchen` cell stored in every F-04 save (accepted);
-  `freshSession(house)`/`SessionSave.house` churn in tests; phase-7 finished-salon test length; e2e seam leak guarded by the
-  `v4-salon` marker in `vite/e2eHookGuard.mjs`.
-- DESIGN-GAP: none added.
-- Follow-ups: written in phase 6 to `follow-ups/review-fixes.md` (list in plan phase 6 § 2); the review found no triggered
-  follow-up missing.
+- Row 1.4 stays unticked until the orchestrator's e2e (`--workers=4`, expected branch baseline + 0).
+- Phase 2 checks `git diff dd6db69 -- tests/fixtures/save-v4-salon.json` empty.
+- Manual rows 6.6-6.9 as in the plan (unchanged). Carried risks as in the plan `## Known risks`.
+- DESIGN-GAP: none added. Follow-ups: none new.
 
 ## 6. Autonomous decisions
 
-- Fixed by the maintainer (scope.md): v5 = house + floor grid, lossless salon move, frozen v4 fixture, write-once
-  `backup-v4`, no art or balance in F-04. Would change: a new maintainer instruction.
-- PR-1 keep the `kitchen` cell in the F-04 data house (proven invisible: teaser entry, unknown rooms skipped by
-  `roomInRenovation`, repair against `ROOMS`); added real-data and reload tests. Rejected: salon-only data house + a generic
-  teaser rule (recreates `ROOM_ORDER`'s special case). Would change: either new test failing.
-- PR-2 structural `houseEqual` for the load-time dirty decision. Rejected: leaving "differs" to the implementer. Why: a
-  reference compare writes at every start and stales an open tab via `writeVerdict`. Would change: nothing known.
-- PR-3 the parent save summaries' "salon" → "Salon" is accepted as a parent-only correction, declared in row 6.6, no
-  `[human]` row. Would change: the maintainer preferring the old text.
-- Phase-7 third test changed from a duplicate of `room-change.spec.ts` to a finished-salon reload; e2e count stays +3.
-  Would change: a cheaper seam for a finished salon appearing.
-- Skill checkpoints decided in place: "how to proceed" → triage done in place (fix CRITICAL/obvious WARNING, record the
-  rest), report saved; no sub-agent (the risky claims were a few direct greps); no `AskUserQuestion`.
+- Skill checkpoints (manual gate, how to proceed, commit message) decided in place: commit the planned set only, stop after
+  phase 1, proposed message used (Polish title).
+- The phase keeps `Driver: tdd`; no redirect (implementation did not exist).
+- `houseRoomList` gives the first entry no `unlockAfter`; later entries `unlockAfter` the previous room (matches the plan
+  contract and today's `ROOM_ORDER`). `houseLayout` returns a copy of the data house. Would change: phase 3's "equals the old
+  literal" test showing a mismatch.
+- The `Skill` tool was not invoked; the skill's steps were followed directly from the plan (no user prompts involved).
