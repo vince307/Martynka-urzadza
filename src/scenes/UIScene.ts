@@ -19,7 +19,8 @@ import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, saveProblem, type SalonCarried, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
-import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { FIRST_HOUSE } from '../data/houses';
+import { ROOMS } from '../data/rooms';
 import { ROOM_ART } from '../data/roomArt';
 import { GUIDE_IDS } from '../core/guide';
 import { UI_ART_KEYS } from '../data/uiArt';
@@ -300,7 +301,7 @@ export class UIScene extends Scene {
         this.closeDialog = openSaveResetDialog({
             device: view,
             roomName: (id) => ROOMS[id]?.name ?? id,
-            fresh: () => encodeSave(freshSession(FIRST_ROOM)),
+            fresh: () => encodeSave(freshSession(FIRST_HOUSE)),
             apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });

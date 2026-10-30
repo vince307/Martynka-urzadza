@@ -18,12 +18,12 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
 describe('frozen fixtures through the real load path', () => {
-    it.each(FIXTURES)('%s loads, keeps every earned value, writes v4 and keeps the old copy', async (name) => {
+    it.each(FIXTURES)('%s loads, keeps every earned value, writes v5 and keeps the old copy', async (name) => {
         const raw = read(name);
         const dbName = `fixture-load-${++n}`;
         await set('profile:default', raw, createStore(dbName, 'saves'));

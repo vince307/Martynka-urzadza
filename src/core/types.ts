@@ -180,5 +180,11 @@ export interface SaveV4 extends Omit<SaveV3, 'version'> {
     writer: string;
 }
 
+/** Save format, version 5: version 4 plus the house with the cell of each room (rooms-as-data). */
+export interface SaveV5 extends Omit<SaveV4, 'version'> {
+    version: 5;
+    house: HouseState;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV4;
+export type SaveState = SaveV5;

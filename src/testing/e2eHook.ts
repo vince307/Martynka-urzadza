@@ -11,7 +11,7 @@ import { playable } from '../core/round/pick';
 import type { SkillDef, Settings, StageDef } from '../core/types';
 import { stages } from '../data/curriculum';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
-import { FIRST_ROOM } from '../data/rooms';
+import { FIRST_HOUSE } from '../data/houses';
 import type { BootScene } from '../scenes/BootScene';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
@@ -180,7 +180,7 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   : seam === 'slowfail'
                     ? new Promise<unknown>((_resolve, reject) => setTimeout(() => reject(new DOMException('e2e', 'UnknownError')), E2E_SLOW_READ_MS))
                     : seam === 'slow'
-                    ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_ROOM, 7))), E2E_SLOW_READ_MS))
+                    ? new Promise<unknown>((resolve) => setTimeout(() => resolve(encodeSave(freshSession(FIRST_HOUSE, 7))), E2E_SLOW_READ_MS))
                     : Promise.resolve(value),
         backup: (raw, from) => {
             log.ops.push('backup');

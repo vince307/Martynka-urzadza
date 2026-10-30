@@ -96,6 +96,14 @@ describe('IndexedDB backup copy (S-15 phase 2)', () => {
         expect(await freshStore('default:backup-v1', dbName).read()).toBeUndefined();
     });
 
+    it('a v4 copy goes to backup-v4 and readBackups returns it (rooms-as-data)', async () => {
+        const dbName = `bk-${++counter}`;
+        const store = freshStore(undefined, dbName);
+        await store.backup({ a: 4 }, 4);
+        expect(await freshStore('default:backup-v4', dbName).read()).toEqual({ a: 4 });
+        expect((await store.readBackups()).find((b) => b.from === 4)?.raw).toEqual({ a: 4 });
+    });
+
     it('a v3 copy goes to backup-v3 (stale-tab-and-health)', async () => {
         const dbName = `bk-${++counter}`;
         await freshStore(undefined, dbName).backup({ a: 3 }, 3);

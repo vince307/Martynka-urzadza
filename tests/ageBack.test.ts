@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ageBackOffered, needsPlacement, type SessionLearner } from '../src/core/placement';
 import { decodeSave, encodeSave, freshSession, validateSave } from '../src/core/save';
+import { houseOf } from './helpers';
 import type { VariantState } from '../src/core/types';
 
 const WARMUP = 6;
@@ -60,7 +61,7 @@ describe('ageBackOffered', () => {
 
 describe('a save without a learner after "Wróć"', () => {
     it('keeps stars and the bought salon task, and asks for placement again', () => {
-        const base = freshSession('living', 7);
+        const base = freshSession(houseOf('living'), 7);
         const session = { ...base, rooms: { living: { tasksDone: 2, chosen: { sofa: 1 as const } } } };
         const raw: unknown = JSON.parse(JSON.stringify(encodeSave(session)));
         expect(validateSave(raw)).toBe(true);
