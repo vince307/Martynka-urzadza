@@ -1,6 +1,6 @@
 # Handoff — `kitchen-room` (slice S-22)
 
-Written by the `/10x-tdd kitchen-room phase 1` step of run 2026-10-30-rooms-kitchen (2026-10-31). Phase 1 is committed (3412b6e); the plan has 8 phases. The next agent must not get this wrong: **`refreshHealth(room)` is a no-op
+Written by the `/10x-implement kitchen-room phase 3` step of run 2026-10-30-rooms-kitchen (2026-10-31). Phases 1-2 are committed (3412b6e, 9deb86d); the plan has 8 phases. The next agent must not get this wrong: **`refreshHealth(room)` is a no-op
 while `room` is pending in `roomArtLoader` (plan review F1) — "Obrazki" must never list a room still loading — and the
 boot loads ONE room (`bootRoomArt(currentRoom)`) with `balance.loader.totalMs` unchanged at 50 000.**
 
@@ -9,16 +9,17 @@ boot loads ONE room (`bootRoomArt(currentRoom)`) with `balance.loader.totalMs` u
 | | |
 |---|---|
 | Branch | `feat/kitchen-room` |
-| Commits | plan-review state + `3412b6e test(kitchen-room): Celebration view and room-load rules (p1)` |
+| Commits | `3412b6e` (p1), `9deb86d feat(kitchen-room): Boot loads only the room in renovation; the budget test per room (p2)` |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `implementing` is not yet set by this step (unchanged: `plan_reviewed`) |
-| `## Progress` rows remaining | 39 (1.1-1.3 ticked with sha; 1.4 left: its e2e clause belongs to the orchestrator) |
+| `## Progress` rows remaining | 36 (1.1-1.3, 2.1-2.3 ticked with sha; 1.4 and 2.4 left: e2e clause belongs to the orchestrator) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
+| `src/data/roomArt.ts` `bootRoomArt`; `src/core/artHealth.ts` `roomHealthOf` (reuse in phase 3); `BootScene` queues/judges the current room; `tests/bootRoomArt.test.ts` |
 | `src/core/celebration.ts` | `celebrationView`, `CelebrationIntensity`, `CelebrationSpec`, `CelebrationView` |
 | `src/core/roomLoad.ts` | `cardRooms`, `roomsToLoad`, `tileLoading` |
 | `tests/celebration.test.ts`, `tests/roomLoad.test.ts` | 3 + 6 tests, literal oracles |
@@ -28,19 +29,18 @@ boot loads ONE room (`bootRoomArt(currentRoom)`) with `balance.loader.totalMs` u
 
 | command | result (observed) |
 |---|---|
-| RED (stubs returning sentinels) | 9 failed, first: `AssertionError: expected { intensity: 'room', ...(3) } to deeply equal` (revealMs -1 vs 700); `expected [ '?' ] to deeply equal [ 'a', 'b' ]` |
-| GREEN | 9 passed |
-| Deliberate break 1 | `revealMs: spec.holdMs` (reducedMotion ignored; grep confirmed the edit) -> `is a static reveal with no burst under reduced motion` red; restored |
-| Deliberate break 2 | `if (pending.has(room)) continue;` removed (grep count 0) -> `skips a room already pending` red; restored, 9 green |
-| Meta-check | oracles are literal tables and id lists in the tests; the breaks fail only the matching case |
-| lint / typecheck | OK / OK |
-| unit | `npm test`: 4023 passed (215 files) = baseline 4014 + 9; deploy and ops scripts OK; sample E1-E6 OK |
-| build | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e | not run (orchestrator) |
+| bootBudget + bootRoomArt | 4 passed (budget is `it.each` over ROOMS) |
+| Break 1 | `bootRoomArt` returns `ROOM_ART` (python replace confirmed): behaviour tests stay GREEN (one room: ROOM_ART == salon entries), as the plan foresees; the budget goes red only once the kitchen exists. Restored |
+| Break 2 | `BootScene` iterates `ROOM_ART` again (confirmed): source guard red; restored |
+| Meta-check | budget bytes are `statSync` of files on disk; the guard proves wiring only |
+| lint / typecheck / build | OK / OK / OK (hook absent) |
+| unit | 4026 passed = p1 4023 + 3; deploy, ops scripts OK; sample E1-E6 exit 0 |
+| rows 2.3 | `git diff --stat 942e237 -- rooms.ts pl.ts public save.ts` empty; `totalMs: 50000` |
+| e2e | `salon-art.spec.ts` 4 passed (workers=1); full suite is the orchestrator's |
 
 ## 4. Next command
 
-`/10x-implement kitchen-room phase 2`
+`/10x-tdd kitchen-room phase 3`
 
 ## 5. Open
 
@@ -66,5 +66,6 @@ boot loads ONE room (`bootRoomArt(currentRoom)`) with `balance.loader.totalMs` u
 
 - **Fixed by the maintainer (scope.md):** unchanged from the plan review (kitchen from locations-v2, one celebration, room intensity only, one room in renovation, budget measured).
 - **Phase 1 stayed `Driver: tdd`;** implementation was absent, so no redirect. Stubs returning sentinels gave an assertion-red, not a missing-module red.
+- **Phase 2 (impl):** manual gate skipped (no manual rows), commit message as proposed, row 2.4 left for the orchestrator's e2e. Lessons file absent.
 - **Row 1.4 left unticked:** its clause includes the orchestrator's e2e run. Would change: orchestrator ticks it at its gate.
 - **Skill checkpoints decided in place:** manual gate skipped (no manual rows in phase 1), commit set = the four new files + plan.md, subject taken as proposed, no next-phase question (stop after this phase). `change.md` status not touched (still `plan_reviewed`). Lessons file absent; none applied.

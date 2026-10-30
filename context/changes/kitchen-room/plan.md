@@ -804,9 +804,9 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [x] 2.1 `tests/bootBudget.test.ts` and `tests/bootRoomArt.test.ts` green; unit `<phase-1 count> + N`
-- [x] 2.2 Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 8 proves the browser
-- [x] 2.3 `git diff --stat 942e237 -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty; `grep -n "totalMs:" src/data/balance.ts` still shows 50 000 (`50_000`)
+- [x] 2.1 `tests/bootBudget.test.ts` and `tests/bootRoomArt.test.ts` green; unit `<phase-1 count> + N` — 9deb86d
+- [x] 2.2 Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 8 proves the browser — 9deb86d
+- [x] 2.3 `git diff --stat 942e237 -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty; `grep -n "totalMs:" src/data/balance.ts` still shows 50 000 (`50_000`) — 9deb86d
 - [ ] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-art`, `salon-load-health`, `health-lines` stay green)
 
 ### Phase 3: The runtime room-art loader on the HUD loader
