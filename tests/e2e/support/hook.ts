@@ -11,6 +11,7 @@ export type BlockKind = 'hundred' | 'ten' | 'one';
 export type MoneyKind = 'coin-1zl' | 'coin-2zl' | 'coin-5zl' | 'note-10zl';
 /** The branch of an open 'drag' task, as the hook publishes it (null while no 'drag' task is open). */
 export type DragBranch = 'blocks' | 'clock' | 'coins' | null;
+export interface HouseShape { id: string; rooms: { room: string; floor: number; place: number }[] }
 export interface Snapshot {
     index: number;
     solutionStep: number;
@@ -83,7 +84,10 @@ export interface Snapshot {
     /** Whether the game's input manager takes pointer events (false under the adult gate and the settings panel). */
     inputEnabled: boolean;
     /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
-    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'otherTab' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null } | null } | null;
+    save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'otherTab' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null; writtenHouse: HouseShape | null } | null } | null;
+    /** The house in the registry (read-only copy) and the room the game is in. */
+    house?: HouseShape | null;
+    currentRoom?: string | null;
     /** Stage of the open round (task screens only). */
     stage?: string;
     /** Automatic reading in effect now: the parent's choice, else the stage default (task screens only). */

@@ -710,7 +710,7 @@ stay byte-identical and load through the whole chain.
 - [x] 1.1 `tests/house.test.ts` red before `src/core/house.ts` exists, green after; the fixture cases red before the file exists; unit `<branch baseline> + N` — dd6db69
 - [x] 1.2 Deliberate break: make `roomInRenovation` ignore `roomDone` → the "b after a done" case red; drop the teaser stop in `houseRoomList` → the unknown-room case red; each restored; meta-check: oracles are literal synthetic rooms and literal lists, not values computed by the code under test — dd6db69
 - [x] 1.3 `git diff --stat bc19919 -- src/core/save.ts src/data tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json public` empty (v4 code unchanged while the fixture is proven) — dd6db69
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 ### Phase 2: Save format v5 carries the house
 
@@ -720,7 +720,7 @@ stay byte-identical and load through the whole chain.
 - [x] 2.2 Deliberate break: make `LIFT_V4_HOUSE` reuse the `HOUSE_V5` object without copying → the "two lifts do not share" case red; drop `house` from `toSession` → the fixture round-trip case red; move the `house` check before `stars` → a `corrupt/stars` case red; each restored; meta-check: the v4 oracle is the frozen fixture proven by the v4 code in phase 1, the v5 oracle a literal, so neither is computed by the migration under test — 901926e
 - [x] 2.3 `git diff <phase-1 sha> -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json tests/fixtures/save-v4-salon.json src/core/migrations/legacySalon.ts` empty — 901926e
 - [x] 2.4 `grep -rn "freshSession(FIRST_ROOM" src` empty; `grep -n "house" src/data/layout.ts` shows the registry key and its `SAVE_KEYS` entry — 901926e
-- [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (the existing `save-migration.spec.ts` asserts `writtenVersion` against `SAVE_VERSION`, so it follows to 5)
+- [x] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (the existing `save-migration.spec.ts` asserts `writtenVersion` against `SAVE_VERSION`, so it follows to 5) — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 ### Phase 3: The load path applies the house; the room list comes from the house
 
@@ -730,7 +730,7 @@ stay byte-identical and load through the whole chain.
 - [x] 3.2 Deliberate break: swap the salon/kitchen order in `HOUSES` → the "equals the old literal" case red; call `nextRoom` before `repairCurrentRoom` → the order guard red; each restored; meta-check: the order guard proves wiring only; the behaviour under a real v4 save is proven by phase 7 — 96f9128
 - [x] 3.3 `npm run build` prints `e2e hook: absent (` (the new `v4-salon` marker is not in `dist/`) — 96f9128
 - [x] 3.4 `git diff --stat <phase-2 sha> -- src/ui/widgets src/core/save.ts tests/fixtures public` empty — 96f9128
-- [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 ### Phase 4: Per-room name and thumbnail; each done-card tile drawn from its own room
 
@@ -739,7 +739,7 @@ stay byte-identical and load through the whole chain.
 - [x] 4.1 New cases green (the `undefined` picker case red before the signature change); unit `<phase-3 count> + N` — c9fcca5
 - [x] 4.2 Deliberate break: pass the current `room`/`state` to every tile again → the source guard red; return `'thumbnail'` for an undefined key → the picker case red; each restored; meta-check: the guard cannot see the pixels; the visual pass (6.x) and phase 7 look at the drawn card — c9fcca5
 - [x] 4.3 `git diff <phase-3 sha> -- src/data/pl.ts` shows only `name` → `names` (and `roomText.name`); `grep -rn "pl.room.name\b\|\.name ?? id" src` empty — c9fcca5
-- [ ] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-*` specs reading `doneMiniature` stay green)
+- [x] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-*` specs reading `doneMiniature` stay green) — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 ### Phase 5: The art table and the art script per room
 
@@ -749,7 +749,7 @@ stay byte-identical and load through the whole chain.
 - [x] 5.2 Deliberate break: change the salon folder in `roomArt` to `assets/rooms/salon2/` → the snapshot case red; set the salon `recolourBoard: false` and run `npm run art` → `git status --porcelain public/` lists `architecture-before.webp` and `architecture-after.webp`; each restored; meta-check: the snapshot is taken from the code before the edit, so it is an oracle of today's behaviour, not of the refactor — 2c367e8
 - [x] 5.3 `npm run art` then `git status --porcelain public/` empty; `git status --porcelain scripts/` shows only `make-task-art.mjs` — 2c367e8
 - [x] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui public` empty — 2c367e8
-- [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 ### Phase 6: Docs, follow-ups, seam sweep and the visual pass
 
@@ -759,7 +759,7 @@ stay byte-identical and load through the whole chain.
 - [x] 6.2 `grep -c "Trigger:" context/changes/rooms-as-data/follow-ups/review-fixes.md` ≥ 10 — 01bedba
 - [x] 6.3 `grep -rnE "ROOM_ORDER|SALON_ART|SCENE_FILES\b|pl\.room\.name\b|freshSession\(FIRST_ROOM" src scripts tests` empty; `grep -rn "HOUSE_V5 = \|HOUSE_V5:" src` lists one place — 01bedba
 - [x] 6.4 `git diff --stat bc19919 -- src/data/balance.ts src/data/curriculum public tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4.json` empty — 01bedba
-- [ ] 6.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 6.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 167/167 at 19ded7a (worktree; under load 152+15 serial re-run)
 
 #### Manual
 
@@ -772,6 +772,6 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 7.1 Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; make `roomInRenovation` return the first house cell even when unknown → the finished-salon reload case red on `currentRoom`; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after
+- [x] 7.1 Spec red before (deliberate breaks, each run alone with `-g`: drop `house` from `toSession` → `#10` house case red; make `LIFT_V4_HOUSE` drop `chosen` → `#10` room case red; drop `migrated` from the autosaver options in `main.ts` → `#2` red on the backup op; make `roomInRenovation` return the first house cell even when unknown → the finished-salon reload case red on `currentRoom`; return the current room/state for every tile → done-card case unaffected (one room — recorded as the expected blind spot, covered by the phase-4 guard); each restored), green after — observed: `-g "a v4 salon save opens"` red with the merge in `main.ts` bypassed (`house: savedHouse`) and with `LIFT_V4_HOUSE` dropping `chosen`; `-g "after a round the save is written"` red with `migrated: undefined`; `-g "finished salon"` red on `currentRoom` ("kitchen" vs "salon") with `roomInRenovation` returning the unknown cell; the literal break "drop `house` from `toSession`" stayed green (the load-path merge in `main.ts` rebuilds the house from data, by design) so it was replaced by the merge bypass; every break restored with `git checkout` of its file
 - [ ] 7.2 `npx playwright test tests/e2e/rooms-as-data.spec.ts tests/e2e/save-migration.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
-- [ ] 7.3 Full local gate green
+- [x] 7.3 Full local gate green (lint, typecheck, 4012 unit, build `e2e hook: absent`)
