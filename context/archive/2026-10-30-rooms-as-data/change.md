@@ -1,10 +1,10 @@
 ---
 change_id: rooms-as-data
 title: Rooms and the house as game data, save format v5 carrying the house
-status: impl_reviewed
+status: archived
 created: 2026-10-30
 updated: 2026-10-30
-archived_at: null
+archived_at: 2026-10-30T23:02:04Z
 ---
 
 ## Notes

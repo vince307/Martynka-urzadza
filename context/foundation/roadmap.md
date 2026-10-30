@@ -41,7 +41,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 
 | ID    | Change ID            | Outcome (user can …)                                                                 | Prerequisites      | PRD refs                                   | Status   |
 | ----- | -------------------- | ------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------ | -------- |
-| F-04  | rooms-as-data        | (foundation) dom i pokoje są danymi gry, a zapis niesie dom bez straty salonu        | —                  | FR-032, FR-033, FR-038, PRD Open Question 14 | planning |
+| F-04  | rooms-as-data        | (foundation) dom i pokoje są danymi gry, a zapis niesie dom bez straty salonu        | —                  | FR-032, FR-033, FR-038, PRD Open Question 14 | done |
 | S-17  | playtest-balance     | autor dostraja balans w danych gry po obserwacji córki                               | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
 | S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | proposed |
 | S-23  | house-cross-section  | dziecko wybiera pokój w przekroju domu z piętrami; „Do pokoju” zawsze trafia do remontu | S-22            | FR-038, FR-039, FR-033                     | proposed |
@@ -86,7 +86,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Czy nowy format zapisu (v5) ma już nieść ulicę i dzielnicę, czy tylko dom; za wcześnie zapisana ulica to pole, którego nikt nie czyta, za późno to druga migracja. — Owner: zespół. Block: no (rozstrzyga `/10x-research`).
 - **Risk:** stoi pierwszy przy celu `quality`, bo jedna migracja z salonem w środku jest bezpieczniejsza niż dwie; ryzyko: fundament rozrasta się w przepisanie sceny pokoju — jego miarą jest kuchnia w S-22, nie nowa architektura.
-- **Status:** planning
+- **Status:** done
 
 ## Slices
 
@@ -189,9 +189,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 | Roadmap ID | Change ID           | Suggested issue title                                              | Ready for `/10x-plan` | Notes |
 | ---------- | ------------------- | ------------------------------------------------------------------ | --------------------- | ----- |
-| F-04       | rooms-as-data       | Dom i pokoje jako dane, zapis v5 z domem bez straty salonu         | yes                   | Run `/10x-plan rooms-as-data` |
+| F-04       | rooms-as-data       | Dom i pokoje jako dane, zapis v5 z domem bez straty salonu         | done                  | Zarchiwizowane 2026-10-30 → `context/archive/2026-10-30-rooms-as-data/`; zapis v5 z domem. |
 | S-17       | playtest-balance    | Balans po testach z córką (czas na pokój rozstrzyga OQ 11)         | no                    | Czeka na obserwacje autora (przeniesione z M-02). |
-| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | no                    | Po F-04; grafika kuchni już jest. |
+| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | yes                   | F-04 gotowe; run `/10x-new kitchen-room`, potem `/10x-research`, `/10x-plan kitchen-room`. Follow-upy F-04 z `Trigger: S-22` w `context/archive/2026-10-30-rooms-as-data/follow-ups/review-fixes.md`. |
 | S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | no                    | Po S-22; paczka skorupy domu. |
 | S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | no                    | Po S-22; równolegle z S-23. |
 | S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Po S-23 i S-25; gwiazda przewodnia. |
@@ -227,3 +227,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Pełne listy M-01 i M-02 są w historii gita tego pliku.)
+
+- **F-04: (foundation) pokój da się dodać wyłącznie danymi i grafiką: wszystko, co dziś jest napisane pod salon (cienie, postarzenie, manifest slotów, tabele migracji, karta „Pokój gotowy!”), staje się danymi pokoju; zapis niesie dom z listą pokoi i miejscem każdego pokoju w siatce piętro × miejsce, a salon dziecka przechodzi do pierwszego domu bez straty, z zamrożoną próbką starego zapisu w testach.** — Archived 2026-10-30 → `context/archive/2026-10-30-rooms-as-data/`. Lesson: —.
