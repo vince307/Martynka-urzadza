@@ -90,6 +90,12 @@ export type RoomListEntry =
     | { room: string; unlockAfter?: string }
     | { teaser: true; unlockAfter: string };
 
+/** A room's cell in a house: floor 0 is the ground floor, place 0 the leftmost. */
+export interface HouseRoomPlace { room: string; floor: number; place: number }
+
+/** A house: its rooms in opening order, each with its cell in the floor x place grid (FR-038). */
+export interface HouseState { id: string; rooms: HouseRoomPlace[] }
+
 // --- saved state ---
 
 /** A mistake the parent can read in the progress preview: the first wrong try of a task. Raw JSON-safe values, formatted on display. */

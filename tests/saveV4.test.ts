@@ -45,6 +45,17 @@ describe('save format v4', () => {
         expect(encodeSave(r.session)).toEqual({ ...raw, generation: 0, writer: '' });
     });
 
+    it('the v4 salon fixture (F-04 phase 1) decodes unmigrated with its salon intact', () => {
+        const raw = fixture('save-v4-salon.json');
+        expect(saveProblem(raw)).toBeNull();
+        const r = decodeSave(raw);
+        if (r.kind !== 'ok') throw new Error('unreadable');
+        expect(r.migratedFrom).toBeNull();
+        expect(r.session.stars).toBe(23);
+        expect(r.session.rooms.salon).toEqual({ tasksDone: 6, chosen: { sofa: 2, rug: 1, 'coffee-table': 0, cabinet: 1, armchair: 2 } });
+        expect(r.session.currentRoom).toBe('salon');
+    });
+
     it.each([[-1], [1.5], ['3'], [null]])('rejects generation %j', (generation) => {
         expect(saveProblem({ ...fixture('save-v4.json'), generation })).toBe('generation');
     });

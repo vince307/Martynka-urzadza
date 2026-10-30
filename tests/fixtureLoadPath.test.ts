@@ -18,7 +18,7 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
