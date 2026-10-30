@@ -1,3 +1,4 @@
+import type { RoomArtLoader } from '../ui/roomArtLoader';
 import { Scene, type Time } from 'phaser';
 import { openInputSession, type InputSession, type InputSuspender } from '../core/inputSuspend';
 import { IDLE, longPress, type LongPressEvent, type LongPressState } from '../core/longPress';
@@ -106,6 +107,7 @@ export class UIScene extends Scene {
 
         // The music loads through this scene's loader (it lives for the whole session) and only when the parent turned it on.
         soundOf(this.registry)?.attachLoader(this.load);
+        (this.registry.get(REGISTRY_KEYS.roomArtLoader) as RoomArtLoader | undefined)?.attachLoader(this.load);   // rooms the boot skipped load here, on the same session-long loader
 
         this.title = new HudTitle(this);
         const refreshTitle = (): void => this.title.set((this.registry.get(REGISTRY_KEYS.hudTitle) as HudTitleView | null | undefined) ?? null);

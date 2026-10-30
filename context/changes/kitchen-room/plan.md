@@ -813,9 +813,9 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [ ] 3.1 `tests/roomArtLoader.test.ts` red before the service exists, green after; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; drop the pending check in `refreshHealth` → the pending-health case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
-- [ ] 3.3 `npm run build` prints `e2e hook: absent (` (the seam stays out of `dist/`)
+- [x] 3.1 3.1 `tests/roomArtLoader.test.ts` red before the service exists, green after; unit `<phase-2 count> + N`
+- [x] 3.2 3.2 Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; drop the pending check in `refreshHealth` → the pending-health case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
+- [x] 3.3 3.3 `npm run build` prints `e2e hook: absent (` (the seam stays out of `dist/`)
 - [ ] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`sound`/music specs stay green on the shared loader)
 
 ### Phase 4: The room celebration card and the move after "Dalej"
