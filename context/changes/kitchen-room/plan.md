@@ -7,7 +7,9 @@ Roadmap slice S-22 `kitchen-room` (milestone M-03 `ulica-i-domy`), second slice 
 last salon purchase the child sees ONE parameterised celebration at room intensity (a hold of the finished room, a star
 burst, at most one narrator sentence, one "Dalej"; static under reduced motion), "Dalej" moves her to the kitchen and
 saves, and she furnishes the kitchen like the salon (walls and floor first, then 6 pieces with 3 variants for stars, in
-the order of the room data). One room is in renovation at a time (FR-033).
+the order of the room data). One room is in renovation at a time (FR-033). A done room stays reachable for "poprawki"
+(FR-019): the room view shows one button with the other done room's name that opens it in place (runtime only, its art
+loaded at runtime), and every way into the room view still opens the room in renovation (FR-039) — plan review F2.
 
 The kitchen is data and art from `designs/martynka-locations-v2` (manifest room `kitchen`), converted by `npm run art`.
 The boot budget is kept by loading at boot ONLY the room in renovation and loading every other room a child can see
@@ -83,6 +85,10 @@ Grounded in `research.md` and spot-checked on this branch at `c2bfe61`:
 - The kitchen plays like the salon: stage "Odnów ściany i podłogę" (before → after), then counter, fridge, table and
   chairs, coffee corner, bench, rack with 3 variants each, costs 5, 7, 9, 10, 12, 13, 15 (sum 71). After the kitchen's
   last purchase the card shows two done tiles (salon and kitchen) and "Dalej" stays in the kitchen with "Zmień wygląd".
+- From the kitchen the room view offers the finished salon (one button named "Salon"; from the salon visit, a button
+  named "Kuchnia" goes back): the salon opens in place with "Zmień wygląd", a change is free and saved, no purchase is
+  possible there, and "Do pokoju", the HUD switch, a wake and a reload always open the room in renovation (FR-019,
+  FR-035, FR-039). `currentRoom` never changes for a visit.
 - `npm run art` regenerates the kitchen WebP deterministically in `public/assets/rooms/kitchen/` and leaves the salon
   bytes unchanged.
 
@@ -97,6 +103,8 @@ Grounded in `research.md` and spot-checked on this branch at `c2bfe61`:
 | Celebration card, tile of the next room (kitchen on the salon's card) | next room | runtime, queued at the last purchase (`RoomScene.dispatch`, the `roomDone` branch), before the reveal hold | drawn miniature without a fallback record; the card redraws on completion |
 | Celebration card, tiles of done rooms (salon on the kitchen's card after a launch in the kitchen) | done rooms | runtime, same moment | same |
 | Room view right after "Dalej" | next room (now current) | already queued at the last purchase; finished or still in flight | stand-in layers until completion, then redraw; "Obrazki" recomputed on completion |
+| Task/welcome backdrop right after "Dalej" | next room (now current) | same runtime load; the backdrop is captured again on the task scene's wake when `roomLoad` changed since the last capture (plan review F3) | plain page colour (`backdropMode`) until the scene picture is loaded |
+| Done-room visit (the room view's visit button, FR-019) | a done room that is not current (salon from the kitchen) | runtime, queued when the room view first shows the visit button (prefetch) and again on the tap (no-op when loaded/pending) | stand-in layers until completion, then redraw; no fallback record and no "Obrazki" line (only the current room is judged) |
 | A reload after "Dalej" (or between the last purchase and "Dalej") | the room `nextRoom` picks at load | boot | as the room view |
 
 ## What We're NOT Doing
@@ -105,12 +113,12 @@ Grounded in `research.md` and spot-checked on this branch at `c2bfe61`:
   opens in the kitchen, nothing is lost.
 - No raise of `balance.loader.totalMs`, no texture atlas, no downscaled kitchen (research: atlas re-recorded, q70 still
   fails); no derived kitchen thumbnail (no `UI_ART` row).
-- No house cross-section, no way to re-enter a done room in full view (S-23 owns it): after "Dalej" the salon's
-  change mode is unreachable until S-23 (decision K-6, `[human]` row).
+- No house cross-section (S-23 owns it). The done-room visit button of phase 6 is the interim way to a done room's
+  change mode; S-23 replaces it (follow-up with trigger S-23). No room switcher list, no visit of a room that is not done.
 - No house/street celebration copy, keepsake or sticker album (S-23/S-24, FR-041); only `'room'` is passed by any scene.
 - No recolour of the kitchen margin to the salon green (DESIGN-GAP; designer brief P3.2 orders the salon on cream).
 - No change to `RoomView.render`, `stepPanel`, `fadeStage`, `drawRoomMiniature`, purchase logic, `SalonBackdrop`
-  (follow-ups VO2/F5/F7, L-R8, F1, F2/§27/§28, `ghostTweens` stay unfired and are re-recorded in phase 6).
+  (follow-ups VO2/F5/F7, L-R8, F1, F2/§27/§28, `ghostTweens` stay unfired and are re-recorded in phase 7).
 - No service-worker install warning (F-04 follow-up 6) and no open-panel placeholder guard (follow-up 7): re-recorded
   with triggers (the purchase/panel path is unchanged).
 - No balance change except the kitchen's own task costs; no curriculum, mastery, variants or star-income change.
@@ -124,8 +132,9 @@ the build still has one room, so it is a no-op for the child and the budget test
 the runtime room-art loader as a service on the HUD loader (phase 3); then the celebration card and the "Dalej" move in
 `RoomScene`, still with one room, so nothing visible moves yet except the reveal and the bursts (phase 4); then the
 kitchen as data and art, which is where the card shows the kitchen and "Dalej" really moves — the e2e specs that expect
-the teaser change in that phase (phase 5); then docs, gap rows, follow-ups, the seam sweep and the visual pass (phase 6,
-last impl); then the browser proof of the whole flow (phase 7, e2e). Each phase touches at most two UI components.
+the teaser change in that phase (phase 5); then the done-room visit that keeps FR-019 reachable (phase 6); then docs, gap
+rows, follow-ups, the seam sweep and the visual pass (phase 7, last impl); then the browser proof of the whole flow
+(phase 8, e2e). Each phase touches at most two UI components.
 
 ## Critical Implementation Details
 
@@ -137,6 +146,9 @@ last impl); then the browser proof of the whole flow (phase 7, e2e). Each phase 
   by "the loader emitted complete" alone (a `complete` can be the music's).
 - **Fallback record.** `recordFallback(scene, 'miniature', …)` must stay a signal of a real missing picture: never for a
   tile whose room is still loading.
+- **Health never judges a pending room (plan review F1).** `refreshHealth(room)` writes nothing while `room` is in the
+  loader's pending set: the settle of that room writes the record. Without this, "Dalej" (which refreshes health for the
+  new current room) would list all 21 kitchen pictures as missing in "Obrazki" while they are still in flight.
 
 ## Phase 1: Celebration view and room-load rules (pure)
 
@@ -243,7 +255,7 @@ to `ROOM_ART.length` today). `balance.loader` comment: one room's art at boot, f
 #### Automated Verification:
 
 - `tests/bootBudget.test.ts` and `tests/bootRoomArt.test.ts` green; unit `<phase-1 count> + N`
-- Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 7 proves the browser
+- Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 8 proves the browser
 - `git diff --stat 942e237 -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty; `grep -n "totalMs:" src/data/balance.ts` still shows 50 000 (`50_000`)
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-art`, `salon-load-health`, `health-lines` stay green)
 
@@ -273,7 +285,7 @@ queues `load.image(key, url)` for the missing keys; sets `file.xhrSettings.timeo
 `addfile` for its own keys; keyed `loaderror` records the cause per key; on `complete` judges each pending room by
 `textures.exists` and settles it), `pending(): ReadonlySet<string>`, `refreshHealth(currentRoom: string): void`
 (writes `REGISTRY_KEYS.roomArtHealth` over `roomArt(currentRoom)` with the phase-2 helper; logs missing keys with
-`loadErrorLine` as the boot does). On settling it bumps a runtime registry value `REGISTRY_KEYS.roomLoad`
+`loadErrorLine` as the boot does; a no-op while `currentRoom` is pending — plan review F1). On settling it bumps a runtime registry value `REGISTRY_KEYS.roomLoad`
 (`{ pending: string[]; settled: string[] }`, outside `SAVE_KEYS`) and refreshes health when the settled room is the
 current one. `disabled` (the `?e2eArt=room` seam) makes `ensure` a no-op. A throw while queueing warns and settles the
 room as failed (stand-ins stay; never fatal).
@@ -297,14 +309,15 @@ hook reports `roomLoad`.
 missing keys with the per-file timeout; a second `ensure` while pending queues nothing; a keyed `loaderror` for one key
 leaves the room settled with that key missing in the health record and does not touch another room's record; a
 `complete` caused by another file (music) does not settle a room whose keys are not in the cache; `disabled` queues
-nothing; listeners are removed after settling.
+nothing; listeners are removed after settling; `refreshHealth(room)` while `room` is pending leaves the health record
+untouched, and the settle of that (current) room writes it.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `tests/roomArtLoader.test.ts` red before the service exists, green after; unit `<phase-2 count> + N`
-- Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
+- Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; drop the pending check in `refreshHealth` → the pending-health case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
 - `npm run build` prints `e2e hook: absent (` (the seam stays out of `dist/`)
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`sound`/music specs stay green on the shared loader)
 
@@ -313,7 +326,7 @@ nothing; listeners are removed after settling.
 ## Phase 4: The room celebration card and the move after "Dalej"
 
 Driver: impl
-Driver why: widget (`RoomDoneCard`) and scene (`RoomScene`) wiring of the phase-1 and phase-3 rules, with one room still in data; proven by source guards, the reduced-motion wiring test and the phase-7 e2e.
+Driver why: widget (`RoomDoneCard`) and scene (`RoomScene`) wiring of the phase-1 and phase-3 rules, with one room still in data; proven by source guards, the reduced-motion wiring test and the phase-8 e2e.
 
 ### Overview
 
@@ -343,7 +356,7 @@ room numbers with `keepsake: true` and a comment "not reachable before S-23/S-24
 tile whose room is pending draws the drawn miniature and records NO fallback (F-04 follow-up 14 and research (a));
 `recordFallback` only for a non-pending tile whose mode is not live; `mode` stays the current tile's; when `burst > 0`
 the card plays ONE `starBurst` from its centre at `ROOM_LAYOUT.depth.card + 1` on the first `show` of a visit and keeps
-the handle; `hide()` destroys it. Doc comment updated (celebration, DESIGN-GAP row number from phase 6's list).
+the handle; `hide()` destroys it. Doc comment updated (celebration, DESIGN-GAP row number from phase 7's list).
 
 **File**: `src/ui/widgets/starBurst.ts`
 
@@ -369,6 +382,12 @@ the handle; `hide()` destroys it. Doc comment updated (celebration, DESIGN-GAP r
 - `onSleep`: the card's burst is destroyed with the card (follow-up L-R11 for the new emitter).
 - The e2e hook's room snapshot gains `card.celebration: { intensity, revealMs, burst }` (read from what the scene used).
 
+**File**: `src/scenes/TaskScene.ts` (plan review F3)
+
+**Contract**: the wake check that re-captures the backdrop when `REGISTRY_KEYS.rooms` changed also re-captures when
+`REGISTRY_KEYS.roomLoad` is not the value seen at the last capture (store it beside `backdropRooms`), so a backdrop
+captured plain while the new room was in flight is drawn again once it loaded. `SalonBackdrop` itself is unchanged.
+
 #### 4. Tests
 
 **Files**: `tests/celebrationWiring.test.ts` (new), `tests/reducedMotionWiring.test.ts`, `tests/roomDoneCardWiring.test.ts`
@@ -376,14 +395,15 @@ the handle; `hide()` destroys it. Doc comment updated (celebration, DESIGN-GAP r
 **Contract**: source guards — `RoomScene` calls `celebrationView('room'` and never another intensity; the card delay
 comes from `revealMs`; "Dalej" calls `nextRoom` and `flush('now')` after both registry writes (order guard as in
 `tests/houseWiring.test.ts`); `RoomDoneCard` calls `recordFallback` only outside the pending branch; the new `starBurst`
-call sits behind a non-zero `burst` that the reduced-motion view makes 0 (`reducedMotionWiring` list extended).
+call sits behind a non-zero `burst` that the reduced-motion view makes 0 (`reducedMotionWiring` list extended);
+`TaskScene`'s wake re-capture condition reads `REGISTRY_KEYS.roomLoad` (F3).
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - New and extended wiring tests green; unit `<phase-3 count> + N`
-- Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 7
+- Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 8
 - `git diff --stat <phase-3 sha> -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (with one room "Dalej" still stays in the salon: `room-change` FR-019 and every `cardNext` spec stay green)
 
@@ -396,7 +416,7 @@ call sits behind a non-zero `burst` that the reduced-motion view makes 0 (`reduc
 ## Phase 5: The kitchen as data and art
 
 Driver: impl
-Driver why: a data row, an art-script row and generated WebP whose proof is the art/data tests and byte-identical salon output; the visible move is exercised by the updated e2e specs and phase 7.
+Driver why: a data row, an art-script row and generated WebP whose proof is the art/data tests and byte-identical salon output; the visible move is exercised by the updated e2e specs and phase 8.
 
 ### Overview
 
@@ -456,8 +476,9 @@ case is salon-only), `tests/e2e/rooms-as-data.spec.ts`, `tests/e2e/room-change.s
 new snapshot, the file list per room folder, the weight cap `≤ 1 550 000` per room (not in total). Specs: the salon
 card lists `['room:true:true','room:false:true']` (kitchen tile instead of the teaser); in `room-change.spec.ts` the
 FR-019 test after `cardNext` asserts the move (`currentRoom` kitchen, no mode button) and its change-mode half moves to
-phase 7 (the kitchen's own change mode); `salon-extra-slots` `items[1]` is the kitchen room item. No spec loses a check
-without it being re-homed in phase 7 (listed in the phase-5 commit message).
+phase 8 (the salon's change mode through the done-room visit, and the kitchen's own change mode); `salon-extra-slots`
+`items[1]` is the kitchen room item. No spec loses a check without it being re-homed in phase 8 (listed in the phase-5
+commit message).
 
 ### Success Criteria:
 
@@ -477,10 +498,82 @@ without it being re-homed in phase 7 (listed in the phase-5 commit message).
 
 ---
 
-## Phase 6: Docs, gap rows, follow-ups, seam sweep and the visual pass
+## Phase 6: Visit a done room in its change mode (FR-019)
 
 Driver: impl
-Driver why: rule-file text, gap rows, follow-ups and leftovers over phases 1–5 plus the screenshot matrix — docs and glue.
+Driver why: a small pure helper with its own unit test plus one runtime field and one button in `RoomScene` over the phase-3 loader and the phase-5 kitchen — scene wiring proven by source guards and the layout test; the browser path is proven in phase 8.
+
+### Overview
+
+Plan review F2: without this, the child loses the salon's "poprawki" (PRD FR-019, must-have, live today) and cannot
+even see her finished salon (FR-035) from the moment she taps "Dalej" until S-23. The room view gets ONE button that
+opens the other done room in place; the room in renovation never changes (FR-033), every way into the room view still
+opens it (FR-039), and the celebration card keeps one "Dalej" (FR-040). S-23's cross-section replaces the button.
+
+### Changes Required:
+
+#### 1. Visit rule
+
+**File**: `src/core/roomVisit.ts` (new)
+
+**Intent**: one pure answer to "which room does the visit button open".
+
+**Contract**: `visitTarget(items: readonly RoomListItem[], current: string, visiting: string | null): string | null` —
+while `visiting` is set, returns `current` (the way back); otherwise the first `kind: 'room'` item in list order that is
+`done` and whose id is not `current`; `null` when none. No Phaser, no data import.
+
+#### 2. Scene
+
+**File**: `src/scenes/RoomScene.ts`
+
+**Intent**: show a done room without touching the room in renovation.
+
+**Contract**:
+- `private visiting: string | null` (runtime only, never written to the registry or the save); `resolve()` uses
+  `visiting` first, then `currentRoom` (one id, as today); `visiting = null` in `create`, in the wake `refresh` and in
+  `onSleep`, so "Do pokoju", the HUD switch and a wake always open the room in renovation.
+- One `PageButton` (`visitButton`, depth `controls`) labelled `roomText.name(<target nameKey>)` (existing name copy, no new
+  string), shown only when not blocked (no panel, no card) and `visitTarget(this.listItems(), currentRoom, visiting)` is
+  not null; showing it calls `roomArtLoader.ensure([target])` (prefetch; no-op when loaded or pending).
+- Tap: `tap()`, close the panel, `mode = 'normal'`, `resetGesture()`, `visiting = target === currentRoom ? null : target`,
+  `ensure([target])`, `redraw()`. The visited done room has no task (no task button, no purchase); "Zmień wygląd" and the
+  hold work as today through `resolve()`, and a free change is written to `rooms[<visited id>]` by the existing
+  `dispatch` `step.changed` path and saved by the autosave.
+- The e2e hook room snapshot gains `visiting` and a `visitTarget()` tap point (as `modeButtonTarget`).
+
+#### 3. Layout
+
+**Files**: `src/data/layout.ts`, `tests/layout.test.ts`
+
+**Contract**: `ROOM_LAYOUT.visitButton` and `ROOM_TOUCH_TARGETS.visitButton` (child-sized touch target like
+`modeButton`); the layout test proves it overlaps none of `resume`, `taskButton`, `modeButton`, the variant panel area
+and the HUD pills. DESIGN-GAP comment (row from phase 7's list).
+
+#### 4. Tests
+
+**Files**: `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` (new)
+
+**Contract**: unit, literal lists: `[salon done, kitchen not done]`, current kitchen → `'salon'`; same list, visiting
+salon → `'kitchen'`; `[salon not done, kitchen not done]` → `null`; `[salon done, kitchen done]`, current kitchen →
+`'salon'`; a teaser item is never a target. Wiring guards: `resolve` reads `visiting` before `currentRoom`; the wake
+`refresh` and `onSleep` set `visiting = null`; the visit tap calls `ensure`; `RoomScene` never writes
+`REGISTRY_KEYS.currentRoom` outside the "Dalej" branch.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` and `tests/layout.test.ts` green; unit `<phase-5 count> + N`
+- Deliberate break: drop `visiting = null` from the wake `refresh` → the wiring guard red; make `visitTarget` ignore `done` → the not-done unit case red; each restored; meta-check: the oracles are literal lists; the guards prove wiring only, phase 8 proves the browser
+- `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+
+---
+
+## Phase 7: Docs, gap rows, follow-ups, seam sweep and the visual pass
+
+Driver: impl
+Driver why: rule-file text, gap rows, follow-ups and leftovers over phases 1–6 plus the screenshot matrix — docs and glue.
 
 ### Overview
 
@@ -495,24 +588,27 @@ Close the slice in the repo's own records and look at every state the child sees
 **Intent**: the next agent reads the truth.
 
 **Contract**: CLAUDE.md "Current state": ONE compact S-22 sentence (kitchen from locations-v2 as data, `bootRoomArt`
-boot of the room in renovation + `roomArtLoader` runtime load, `celebrationView`, "Dalej" → `nextRoom`); stale
+boot of the room in renovation + `roomArtLoader` runtime load, `celebrationView`, "Dalej" → `nextRoom`, the done-room
+visit `visitTarget`); stale
 salon-only wording fixed (e.g. "the salon is data" lines that imply one room, `?e2eArt=room` "queues no salon
 picture"); the sentence "every asset must be loaded at start (no lazy chunks)" reworded to "every asset is precached
 (no lazy chunks); the Phaser loader may load a room's art after boot". Gap rows from 175: kitchen task imperatives and
 slot captions (pack has names only), the celebration view at room intensity, the kitchen tile without a pack thumbnail,
-salon green board vs kitchen cream margin (until brief P3.2), room-neutral mismatch lines, salon change mode unreachable
-until S-23. Follow-ups with `Trigger:` lines: F-04 follow-ups 5 (atlas), 6 (SW warning), 7 (open-panel guard), 12, 13
-(L-R8), F1, F2/§27/§28, VO2/F5/F7 re-recorded; S-23 needs done rooms drawn in the cross-section (use `roomArtLoader`);
-house/street celebration copy and keepsake (S-23/S-24).
+salon green board vs kitchen cream margin (until brief P3.2), room-neutral mismatch lines, the done-room visit button
+(the kit has no room switcher; interim until S-23). Follow-ups with `Trigger:` lines: F-04 follow-ups 4 (`salon-before`
+thumbnail; the kitchen tile uses the live/drawn miniature), 5 (atlas), 6 (SW warning), 7 (open-panel guard), 12, 13
+(L-R8), F1, F2/§27/§28, VO2/F5/F7, salon-load-health M-5 (purchase e2e under `writefail`) re-recorded; S-23 needs done
+rooms drawn in the cross-section (use `roomArtLoader`) and replaces the visit button; the runtime loader does not run
+the boot's `wrongSizes` check (plan review F5); house/street celebration copy and keepsake (S-23/S-24).
 
 #### 2. Seam sweep
 
 **Files**: as found
 
-**Intent**: no leftover of phases 1–5.
+**Intent**: no leftover of phases 1–6.
 
 **Contract**: `grep` for `teaser` expectations, `ROOM_ART.length` in specs, "salon" in comments of generic room code
-(`RoomScene`, `RoomDoneCard`, `BootScene`, `roomArt.ts`, `e2eHook.ts` seam docs), unused exports from phases 1–4,
+(`RoomScene`, `RoomDoneCard`, `BootScene`, `roomArt.ts`, `e2eHook.ts` seam docs), unused exports from phases 1–6,
 `starBurst` callers; the e2e hook seam doc for `?e2eArt=room` says it stops boot AND runtime room loads.
 
 ### Success Criteria:
@@ -520,25 +616,25 @@ house/street celebration copy and keepsake (S-23/S-24).
 #### Automated Verification:
 
 - `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "bootRoomArt|roomArtLoader|celebrationView" CLAUDE.md` present
-- `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6
+- `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6
 - `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty
 - `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual Verification:
 
-- [visual] Hook build on 4399 (`?e2eStars=N`), desktop 1440 and tablet 1024: (1) the finished salon's celebration card (salon tile with check, kitchen tile with its before-state miniature, "Dalej") and the same under reduced motion; (2) the kitchen before its stage; (3) the kitchen after the stage; (4) the kitchen with some furniture (bench drawn with and without the counter: its hidden end must not look broken); (5) the finished kitchen with the card (two done tiles) and then "Zmień wygląd" with the change panel; (6) the HUD room switch / task-screen backdrop showing the kitchen; (7) a forced runtime miss (`?e2eArt=room`): kitchen stand-ins, nothing broken; each frame named in `reviews/visual-review.md`
-- [human] Accept that after "Dalej" the salon's change mode ("poprawki", PRD FR-019 literal text) is unreachable until S-23's house cross-section (decision K-6)
+- [visual] Hook build on 4399 (`?e2eStars=N`), desktop 1440 and tablet 1024: (1) the finished salon's celebration card (salon tile with check, kitchen tile with its before-state miniature, "Dalej") and the same under reduced motion; (2) the kitchen before its stage; (3) the kitchen after the stage; (4) the kitchen with some furniture (bench drawn with and without the counter: its hidden end must not look broken); (5) the finished kitchen with the card (two done tiles) and then "Zmień wygląd" with the change panel; (6) the HUD room switch / task-screen backdrop showing the kitchen; (7) a forced runtime miss (`?e2eArt=room`): kitchen stand-ins, nothing broken; (8) the kitchen with the "Salon" visit button, then the visited salon in change mode with the "Kuchnia" button (no overlap with the task/mode/return buttons); each frame named in `reviews/visual-review.md`
+- [human] Accept the interim "Salon"/"Kuchnia" visit button in the room view as the way to a done room's "poprawki" until S-23's house cross-section (decision K-6, DESIGN-GAP row)
 - [human] Accept the salon green board next to the kitchen cream margin until the designer's salon re-export on cream (brief P3.2)
 - [human] On a real tablet, installed and offline after one online launch: finish the salon, "Dalej", the kitchen draws its pictures (runtime load from the precache)
 - [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41142145249 of PR #117: `Tests  4011 passed | 3 skipped (4014)`, `e2e hook: absent (2 chunks checked)`)
 
 ---
 
-## Phase 7: From the finished salon into the kitchen — e2e (#2, #16)
+## Phase 8: From the finished salon into the kitchen — e2e (#2, #16)
 
 Driver: e2e
-Driver why: the risk is the real browser path — last purchase → celebration → "Dalej" → runtime room load → save → reload in the kitchen → kitchen purchases (test-plan #2 progress kept, #16 a purchase deducts once); built by phases 3–5, contract `E2E=on`.
+Driver why: the risk is the real browser path — last purchase → celebration → "Dalej" → runtime room load → save → reload in the kitchen → kitchen purchases → done-room visit (test-plan #2 progress kept, #16 a purchase deducts once); built by phases 3–6, after the phase-7 seam sweep, contract `E2E=on`.
 
 ### Overview
 
@@ -562,13 +658,18 @@ One spec, modelled on `tests/e2e/rooms-as-data.spec.ts` and `tests/e2e/room-chan
   `room-change.spec.ts`).
 - `S-22 reduced motion: the card appears at once without a burst` — `page.emulateMedia({ reducedMotion: 'reduce' })`;
   `card.celebration.revealMs === 0`, `burst === 0`.
+- `#16 S-22 FR-019 from the kitchen the finished salon opens for free changes and "Do pokoju" returns to the kitchen` —
+  after the move (seeded or continued): tap `visitTarget` → room snapshot `salon`, `visiting` `salon`, no task button;
+  the mode button opens the change mode; a change keeps the stars and is written to `rooms.salon`; `currentRoom` stays
+  `kitchen`; "Wróć do notesu" then "Do pokoju" → room `kitchen`; reload → room `kitchen` with the salon change kept
+  (the salon change-mode check re-homed from `room-change.spec.ts`).
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; each restored), green after
-- `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
+- Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; drop `visiting = null` from the wake `refresh` → the visit test red on the room after "Do pokoju"; each restored), green after
+- `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
 - Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
 
 ---
@@ -580,17 +681,32 @@ One spec, modelled on `tests/e2e/rooms-as-data.spec.ts` and `tests/e2e/room-chan
 - Pure: `celebrationView` (table, reduced motion), `cardRooms` / `roomsToLoad` / `tileLoading` on synthetic lists.
 - Service: `roomArtLoader` with a fake loader (timeout, keyed error, shared-loader `complete`, disabled seam, listener cleanup).
 - Data: `bootRoomArt`, per-room `roomArt` snapshots and weight caps, `roomsData` over both rooms, the boot budget per room.
-- Wiring guards: boot queue, card fallback, "Dalej" order, celebration intensity, reduced-motion list.
+- Wiring guards: boot queue, card fallback, "Dalej" order, celebration intensity, reduced-motion list, backdrop
+  re-capture on `roomLoad`, done-room visit (`visiting` reset, `resolve` order).
+- Pure: `visitTarget` on literal lists; the layout test for the visit button.
 
 ### Integration Tests:
 
-- e2e phase 7 (hook build): salon → card → kitchen → reload → kitchen purchases → kitchen card → change mode; reduced motion.
+- e2e phase 8 (hook build): salon → card → kitchen → reload → kitchen purchases → kitchen card → change mode; reduced
+  motion; done-room visit (salon change from the kitchen, back to the kitchen).
 
 ### Manual Testing Steps:
 
-1. Phase 6 visual matrix (seven states, two widths).
+1. Phase 7 visual matrix (eight states, two widths).
 2. Teacher read of the kitchen copy (phase 5).
-3. Offline tablet check of the runtime kitchen load (phase 6 `[human]`).
+3. Offline tablet check of the runtime kitchen load (phase 7 `[human]`).
+
+## Known risks
+
+- **Runtime loads skip the boot's size check (plan review F5).** `BootScene` logs a picture whose size differs from its
+  table (`wrongSizes`); `roomArtLoader` does not. A wrongly sized kitchen file loaded at runtime draws stretched without
+  a log line. Mitigated: `tests/roomArt.test.ts` pins the sizes in the per-room snapshot and the boot of a launch in the
+  kitchen runs the check. Re-recorded as a follow-up (phase 7).
+- **A visited done room is not judged by "Obrazki" (plan review F2).** Its missing pictures show as stand-ins with no
+  health line; only the current room is judged (requirement: never report a not-yet-loaded room as missing). A boot in
+  the kitchen never loads the salon at boot, so the visit always relies on the runtime load from the precache.
+- **Shared HUD loader.** The music's `once('addfile')` is synchronous with its own `loader.audio`, so it cannot catch a
+  room file; the room loader must use keyed `on('addfile')` listeners removed on settle (phase 3 contract).
 
 ## Performance Considerations
 
@@ -632,12 +748,16 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - **K-5 House and street rows of the table exist with room numbers and `keepsake: true`; only `'room'` is ever passed**
   (source guard). Why: the type makes the parameter real without inventing copy; S-23/S-24 tune it. Would change:
   S-23/S-24.
-- **K-6 Deciding against PRD FR-019's literal text ("po ukończeniu salonu gra oferuje poprawki").** After "Dalej" the
-  child is in the kitchen and the salon's change mode cannot be reached until S-23's cross-section (FR-038: a tap on a
-  room opens it). Rejected: a second button on the card (FR-040: one "Dalej"); keeping the child in the salon (FR-033:
-  the next room opens after the previous one). Why: FR-033/FR-040 are the newer, more specific requirements; the change
-  mode stays for the room in view once it is done. `[human]` row 6.7. Would change: the maintainer wanting the salon
-  revisitable before S-23 → a small "Zmień wygląd" entry outside the card.
+- **K-6 (revised by the plan review, F2) Keep PRD FR-019's "poprawki" reachable with an interim done-room visit button
+  in the room view (phase 6).** Chosen: one button named after the other done room opens it in place (runtime
+  `visiting`, `currentRoom` untouched, reset on every wake/sleep), its art loaded at runtime through `roomArtLoader`.
+  Rejected: leaving the salon unreachable until S-23 (the original K-6: takes a must-have, live today, away from the
+  child and hides her finished salon, FR-035, for as long as S-23's art takes); a second button on the card (FR-040: one
+  "Dalej"); keeping the child in the salon (FR-033); setting `currentRoom` to the salon for a visit (would move the room
+  in renovation, the backdrop and the save). Why: `RoomScene.resolve()` is the one source of the room shown, so a visit
+  is one field, one button and a pure rule — one phase; FR-039 holds because every way in resets the visit. `[human]`
+  row 7.7 accepts the interim button. Would change: S-23 (the cross-section replaces it) or the maintainer preferring
+  the gap until S-23.
 - **K-7 Kitchen tasks in manifest order after the stage (counter before bench, so the bench's tucked end sits under the
   counter), costs 5, 7, 9, 10, 12, 13, 15 (sum 71)** — the ramp of the salon's first seven tasks (S-16a sum 71).
   Rejected: re-ordering by z; flat costs. Would change: S-17 (`[human]` row) or the visual gate showing the bench end.
@@ -651,8 +771,9 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - **K-12 Offline proof of the runtime load is a `[human]` tablet check plus the deploy smoke's `precacheCovers` over the
   full `ROOM_ART`, not a browser e2e.** Why: the e2e hook build and the offline seed run on different servers; an
   offline e2e of a runtime room load would need a new seam. Would change: a regression report of offline kitchen art.
-- **K-13 Phase drivers:** 1 tdd (pure, absent), 3 tdd (service absent, fake-loader precedent), 2/4/5/6 impl (wiring,
-  data, docs), 7 e2e (browser risk #2/#16 of features built in 3–5).
+- **K-13 Phase drivers:** 1 tdd (pure, absent), 3 tdd (service absent, fake-loader precedent), 2/4/5/6/7 impl (wiring,
+  data, the visit wiring, docs), 8 e2e (browser risk #2/#16 of features built in 3–6, after the phase-7 seam sweep).
+  Phase 6 is impl, not tdd: its pure part is a few lines next to scene wiring; its unit test is written in the phase.
 
 ## References
 
@@ -684,7 +805,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 #### Automated
 
 - [ ] 2.1 `tests/bootBudget.test.ts` and `tests/bootRoomArt.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 7 proves the browser
+- [ ] 2.2 Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 8 proves the browser
 - [ ] 2.3 `git diff --stat 942e237 -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty; `grep -n "totalMs:" src/data/balance.ts` still shows 50 000 (`50_000`)
 - [ ] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-art`, `salon-load-health`, `health-lines` stay green)
 
@@ -693,7 +814,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 #### Automated
 
 - [ ] 3.1 `tests/roomArtLoader.test.ts` red before the service exists, green after; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
+- [ ] 3.2 Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; drop the pending check in `refreshHealth` → the pending-health case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room
 - [ ] 3.3 `npm run build` prints `e2e hook: absent (` (the seam stays out of `dist/`)
 - [ ] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`sound`/music specs stay green on the shared loader)
 
@@ -702,7 +823,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 #### Automated
 
 - [ ] 4.1 New and extended wiring tests green; unit `<phase-3 count> + N`
-- [ ] 4.2 Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 7
+- [ ] 4.2 Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 8
 - [ ] 4.3 `git diff --stat <phase-3 sha> -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty
 - [ ] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (with one room "Dalej" still stays in the salon: `room-change` FR-019 and every `cardNext` spec stay green)
 
@@ -726,28 +847,37 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [ ] 5.7 [reviewer] The kitchen `RoomDef` geometry matches `designs/martynka-locations-v2/manifest.json` `rooms.kitchen` slot by slot (x, y, width, height, z, anchor, visibleRect); no slot, decor or art invented
 - [ ] 5.8 [human] S-17 tunes kitchen costs (5, 7, 9, 10, 12, 13, 15 = 71 stars; salon style, data only)
 
-### Phase 6: Docs, gap rows, follow-ups, seam sweep and the visual pass
+### Phase 6: Visit a done room in its change mode (FR-019)
 
 #### Automated
 
-- [ ] 6.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "bootRoomArt|roomArtLoader|celebrationView" CLAUDE.md` present
-- [ ] 6.2 `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6
-- [ ] 6.3 `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty
-- [ ] 6.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
-- [ ] 6.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [ ] 6.1 `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` and `tests/layout.test.ts` green; unit `<phase-5 count> + N`
+- [ ] 6.2 Deliberate break: drop `visiting = null` from the wake `refresh` → the wiring guard red; make `visitTarget` ignore `done` → the not-done unit case red; each restored; meta-check: the oracles are literal lists; the guards prove wiring only, phase 8 proves the browser
+- [ ] 6.3 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- [ ] 6.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+
+### Phase 7: Docs, gap rows, follow-ups, seam sweep and the visual pass
+
+#### Automated
+
+- [ ] 7.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "bootRoomArt|roomArtLoader|celebrationView" CLAUDE.md` present
+- [ ] 7.2 `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6
+- [ ] 7.3 `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty
+- [ ] 7.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- [ ] 7.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
 
-- [ ] 6.6 [visual] Hook build on 4399 (`?e2eStars=N`), desktop 1440 and tablet 1024: (1) the finished salon's celebration card (salon tile with check, kitchen tile with its before-state miniature, "Dalej") and the same under reduced motion; (2) the kitchen before its stage; (3) the kitchen after the stage; (4) the kitchen with some furniture (bench drawn with and without the counter: its hidden end must not look broken); (5) the finished kitchen with the card (two done tiles) and then "Zmień wygląd" with the change panel; (6) the HUD room switch / task-screen backdrop showing the kitchen; (7) a forced runtime miss (`?e2eArt=room`): kitchen stand-ins, nothing broken; each frame named in `reviews/visual-review.md`
-- [ ] 6.7 [human] Accept that after "Dalej" the salon's change mode ("poprawki", PRD FR-019 literal text) is unreachable until S-23's house cross-section (decision K-6)
-- [ ] 6.8 [human] Accept the salon green board next to the kitchen cream margin until the designer's salon re-export on cream (brief P3.2)
-- [ ] 6.9 [human] On a real tablet, installed and offline after one online launch: finish the salon, "Dalej", the kitchen draws its pictures (runtime load from the precache)
-- [ ] 6.10 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41142145249 of PR #117: `Tests  4011 passed | 3 skipped (4014)`, `e2e hook: absent (2 chunks checked)`)
+- [ ] 7.6 [visual] Hook build on 4399 (`?e2eStars=N`), desktop 1440 and tablet 1024: (1) the finished salon's celebration card (salon tile with check, kitchen tile with its before-state miniature, "Dalej") and the same under reduced motion; (2) the kitchen before its stage; (3) the kitchen after the stage; (4) the kitchen with some furniture (bench drawn with and without the counter: its hidden end must not look broken); (5) the finished kitchen with the card (two done tiles) and then "Zmień wygląd" with the change panel; (6) the HUD room switch / task-screen backdrop showing the kitchen; (7) a forced runtime miss (`?e2eArt=room`): kitchen stand-ins, nothing broken; (8) the kitchen with the "Salon" visit button, then the visited salon in change mode with the "Kuchnia" button (no overlap with the task/mode/return buttons); each frame named in `reviews/visual-review.md`
+- [ ] 7.7 [human] Accept the interim "Salon"/"Kuchnia" visit button in the room view as the way to a done room's "poprawki" until S-23's house cross-section (decision K-6, DESIGN-GAP row)
+- [ ] 7.8 [human] Accept the salon green board next to the kitchen cream margin until the designer's salon re-export on cream (brief P3.2)
+- [ ] 7.9 [human] On a real tablet, installed and offline after one online launch: finish the salon, "Dalej", the kitchen draws its pictures (runtime load from the precache)
+- [ ] 7.10 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41142145249 of PR #117: `Tests  4011 passed | 3 skipped (4014)`, `e2e hook: absent (2 chunks checked)`)
 
-### Phase 7: From the finished salon into the kitchen — e2e (#2, #16)
+### Phase 8: From the finished salon into the kitchen — e2e (#2, #16)
 
 #### Automated
 
-- [ ] 7.1 Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; each restored), green after
-- [ ] 7.2 `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 3`; total equals `npx playwright test --list | tail -1`
-- [ ] 7.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [ ] 8.1 Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; drop `visiting = null` from the wake `refresh` → the visit test red on the room after "Do pokoju"; each restored), green after
+- [ ] 8.2 `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
+- [ ] 8.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)

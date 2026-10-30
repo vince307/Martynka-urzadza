@@ -31,7 +31,7 @@ pieces × 3 variants, costs 5–15 (sum 71); its own card shows two done tiles a
 | Runtime loader home | Session service on the HUD scene loader | Same pattern as the music loop, survives the room scene's sleep | Plan (K-3) |
 | Celebration | `celebrationView(intensity, reducedMotion, table)` over the existing card; only `'room'` reachable | One mechanism (FR-040, scope.md), no invented house/street copy | scope.md / Plan (K-4, K-5) |
 | Narrator line | Unchanged "Pokój gotowy!" | Room-neutral, no per-room gender agreement | Research / Plan |
-| Salon change mode after the move | Unreachable until S-23 (against FR-019's literal text, `[human]` row) | FR-033/FR-040 forbid staying or a second button | Plan (K-6) |
+| Salon change mode after the move | Interim done-room visit button in the room view (runtime `visiting`, `currentRoom` untouched), `[human]` row 7.7 | Keeps FR-019 "poprawki" and the finished salon visible without a second card button (FR-040) or moving the renovation (FR-033/FR-039) | Plan review F2 (K-6 revised) |
 | Kitchen content | Manifest slots only, no decor/worn/shadows/thumbnail; order counter → rack | Nothing invented; bench tucks under the counter | scope.md / Research |
 | Kitchen costs | 5, 7, 9, 10, 12, 13, 15 (71) | Salon's first-seven ramp; S-17 tunes (`[human]`) | Plan (K-7) |
 | Save format | Stays v5 | Everything derives from `rooms` + `house` | Research (D3) |
@@ -42,7 +42,7 @@ pieces × 3 variants, costs 5–15 (sum 71); its own card shows two done tiles a
 celebration card + "Dalej" → `nextRoom` + save; kitchen data, art (`npm run art`), copy, room-neutral parent lines;
 docs, gap rows, follow-ups, visual pass; one e2e spec.
 
-**Out of scope:** save v6, `totalMs` raise, atlas, kitchen thumbnail, cross-section/revisiting done rooms (S-23),
+**Out of scope:** save v6, `totalMs` raise, atlas, kitchen thumbnail, cross-section (S-23; an interim done-room visit button is in scope),
 house/street celebration copy and keepsakes (S-23/S-24), recolouring the kitchen margin, SW warning and panel guard
 follow-ups, any balance change but kitchen costs.
 
@@ -62,16 +62,17 @@ ensures the card's rooms at the last purchase and applies `nextRoom` on "Dalej" 
 | 3. Runtime loader (tdd) | `roomArtLoader` on the HUD loader | Shared loader with the music |
 | 4. Celebration + move (impl) | Card burst/hold, honest tiles, "Dalej" → `nextRoom` | Save order, reduced motion |
 | 5. Kitchen data + art (impl) | 21 WebP, `KITCHEN`, copy, spec updates | Teaser-expecting specs, copy grammar |
-| 6. Docs + sweep + visual (impl) | CLAUDE.md, gaps 175+, follow-ups, 7-state matrix | Stale salon-only text |
-| 7. E2E (#2, #16) | `kitchen-room.spec.ts` (+3) | Long purchase flows under load |
+| 6. Done-room visit (impl) | `visitTarget`, visit button, runtime `visiting` in `RoomScene` (FR-019) | A visit leaking into `currentRoom` or surviving a wake |
+| 7. Docs + sweep + visual (impl) | CLAUDE.md, gaps 175+, follow-ups, 8-state matrix | Stale salon-only text |
+| 8. E2E (#2, #16) | `kitchen-room.spec.ts` (+4) | Long purchase flows under load |
 
 **Prerequisites:** F-04 merged (942e237); local `designs/martynka-locations-v2`, `cwebp`.
-**Estimated effort:** 7 phases, one fresh agent each; phase 5 is the largest (data + art + spec edits).
+**Estimated effort:** 8 phases (phase 6 "visit a done room" added by the plan review), one fresh agent each; phase 5 is the largest (data + art + spec edits).
 
 ## Open Risks & Assumptions
 
 - A cold link may show kitchen stand-ins for a few seconds after "Dalej" (accepted; visual gate checks it).
-- The salon's change mode is gone until S-23 (`[human]` acceptance).
+- The salon's change mode is reached through an interim visit button until S-23's cross-section (`[human]` acceptance).
 - Offline runtime load is proven by the precache check and a tablet check, not by an e2e.
 
 ## Success Criteria (Summary)

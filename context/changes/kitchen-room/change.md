@@ -1,7 +1,7 @@
 ---
 change_id: kitchen-room
 title: Kitchen, the second room from data, with the parameterised room celebration
-status: planned
+status: plan_reviewed
 created: 2026-10-31
 updated: 2026-10-31
 archived_at: null
