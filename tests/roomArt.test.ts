@@ -1,11 +1,12 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ROOM_ART } from '../src/data/roomArt';
-import { SALON } from '../src/data/rooms';
+import { ROOM_ART, ROOM_SCENE_FILES } from '../src/data/roomArt';
+import { ROOMS } from '../src/data/rooms';
+import snapshot from './fixtures/room-art-salon.json';
 
 const PUBLIC = join(__dirname, '..', 'public');
-const ROOMS = join(PUBLIC, 'assets', 'rooms');
+const ROOMS_DIR = join(PUBLIC, 'assets', 'rooms');
 
 /** Width and height from a WebP header (lossy VP8, lossless VP8L or extended VP8X); null when it is no WebP. */
 const webpSize = (bytes: Buffer): { width: number; height: number } | null => {
@@ -32,6 +33,16 @@ const filesUnder = (dir: string, base = ''): string[] =>
     );
 
 describe('room art table', () => {
+    it('equals the snapshot taken before the per-room refactor', () => {
+        expect(ROOM_ART).toEqual(snapshot);
+    });
+
+    it('has a scene-file row for every room of the data', () => {
+        for (const id of Object.keys(ROOMS)) {
+            expect(Object.keys(ROOM_SCENE_FILES), id).toContain(id);
+        }
+    });
+
     it('has 37 entries, each a WebP file of the tabled size', () => {
         expect(ROOM_ART).toHaveLength(37);
         for (const art of ROOM_ART) {
@@ -41,22 +52,22 @@ describe('room art table', () => {
 
     it('leaves no file in public/assets/rooms without a table entry', () => {
         const tabled = ROOM_ART.map((art) => art.url.replace('assets/rooms/', ''));
-        expect(filesUnder(ROOMS).sort()).toEqual([...tabled].sort());
+        expect(filesUnder(ROOMS_DIR).sort()).toEqual([...tabled].sort());
     });
 
     it('has exactly the texture keys the salon data names, each once', () => {
-        const wanted = [
-            ...Object.values(SALON.scene),
-            ...SALON.decor.map((layer) => layer.key),
-            ...SALON.slots.flatMap((slot) => slot.variants),
-        ];
+        const wanted = Object.values(ROOMS).flatMap((room) => [
+            ...Object.values(room.scene),
+            ...room.decor.map((layer) => layer.key),
+            ...room.slots.flatMap((slot) => slot.variants),
+        ]);
         expect(ROOM_ART.map((art) => art.key).sort()).toEqual([...wanted].sort());
         expect(new Set(wanted).size).toBe(wanted.length);
     });
 
     it('labels every stand-in in Polish except the full-scene pictures', () => {
         for (const art of ROOM_ART) {
-            const scene = Object.values(SALON.scene).includes(art.key);
+            const scene = Object.values(ROOMS).some((room) => Object.values(room.scene).includes(art.key));
             expect(art.label === '', art.key).toBe(scene);
             expect(art.label, art.key).not.toMatch(/[-/]/);
         }

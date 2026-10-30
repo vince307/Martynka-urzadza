@@ -135,13 +135,13 @@ describe('loadSave', () => {
         expect(loaded.kind).toBe('loaded');
         if (loaded.kind === 'loaded') expect(loaded.session.stars).toBe(7);
 
-        const future = { version: 5, stars: 1 };
+        const future = { version: 6, stars: 1 };
         const f = makeStore(future);
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
 
-        const bad = { ...(fixture('save-v4.json') as Record<string, unknown>), stars: 'x' };
-        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 4, problem: 'stars' });
+        const bad = { ...(fixture('save-v5.json') as Record<string, unknown>), stars: 'x' };
+        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 5, problem: 'stars' });
 
         const broken = makeStore(fixture('save-v1.json'));
         broken.state.readFails = true;
@@ -892,6 +892,16 @@ describe('write at start after a migration (audit M-3)', () => {
         expect(t.saver.status()).toMatchObject({ lastReason: 'migration', migrationWrittenAt: t.clock.now(), backup: 'done', dirty: false, writes: 1 });
     });
 
+    it('a start migrated from v4 copies the raw v4 save with from 4 (rooms-as-data)', async () => {
+        const v4 = fixture('save-v4-salon.json');
+        const t = setup({ migrated: { from: 4, raw: v4 }, load: 'loaded' });
+        t.clock.advance(500);
+        await settle();
+        await settle();
+        expect(t.state.ops).toEqual(['write', 'backup']);
+        expect(t.state.backups).toEqual([{ raw: v4, from: 4 }]);
+    });
+
     it('a start that was not migrated arms nothing and writes nothing', async () => {
         const t = setup({ load: 'loaded' });
         expect(t.clock.pending()).toBe(0);
@@ -952,7 +962,7 @@ describe('write at start after a migration (audit M-3)', () => {
             await settle();
         }
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
-        expect(line?.[0]).toBe('autosave: writing v4 without the v2 copy');
+        expect(line?.[0]).toBe('autosave: writing v5 without the v2 copy');
         expect(line?.[1]).toMatchObject({ from: 2, attempts: 3 });
     });
 

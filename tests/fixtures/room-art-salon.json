@@ -1,0 +1,261 @@
+[
+  {
+    "key": "salon/before",
+    "url": "assets/rooms/salon/architecture-before.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "salon/after",
+    "url": "assets/rooms/salon/architecture-after.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "salon/shadows",
+    "url": "assets/rooms/salon/shadows.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "salon/plant-right",
+    "url": "assets/rooms/salon/plant-right.webp",
+    "width": 244,
+    "height": 539,
+    "label": "roślina"
+  },
+  {
+    "key": "salon/sofa-morska",
+    "url": "assets/rooms/salon/sofa-morska.webp",
+    "width": 835,
+    "height": 566,
+    "label": "sofa Morska"
+  },
+  {
+    "key": "salon/sofa-sloneczna",
+    "url": "assets/rooms/salon/sofa-sloneczna.webp",
+    "width": 835,
+    "height": 566,
+    "label": "sofa Słoneczna"
+  },
+  {
+    "key": "salon/sofa-listkowa",
+    "url": "assets/rooms/salon/sofa-listkowa.webp",
+    "width": 835,
+    "height": 566,
+    "label": "sofa Listkowa"
+  },
+  {
+    "key": "salon/rug",
+    "url": "assets/rooms/salon/rug.webp",
+    "width": 1111,
+    "height": 640,
+    "label": "dywan Listki"
+  },
+  {
+    "key": "salon/rug-arcs",
+    "url": "assets/rooms/salon/rug-arcs.webp",
+    "width": 1111,
+    "height": 640,
+    "label": "dywan Łuki"
+  },
+  {
+    "key": "salon/rug-flowers",
+    "url": "assets/rooms/salon/rug-flowers.webp",
+    "width": 1111,
+    "height": 640,
+    "label": "dywan Kwiaty"
+  },
+  {
+    "key": "salon/coffee-table",
+    "url": "assets/rooms/salon/coffee-table.webp",
+    "width": 537,
+    "height": 397,
+    "label": "stolik Dębowy"
+  },
+  {
+    "key": "salon/coffee-table-cream",
+    "url": "assets/rooms/salon/coffee-table-cream.webp",
+    "width": 537,
+    "height": 397,
+    "label": "stolik Kremowy"
+  },
+  {
+    "key": "salon/coffee-table-turquoise",
+    "url": "assets/rooms/salon/coffee-table-turquoise.webp",
+    "width": 537,
+    "height": 397,
+    "label": "stolik Turkusowy"
+  },
+  {
+    "key": "salon/cabinet",
+    "url": "assets/rooms/salon/cabinet.webp",
+    "width": 512,
+    "height": 363,
+    "label": "komoda Dębowa"
+  },
+  {
+    "key": "salon/cabinet-mint",
+    "url": "assets/rooms/salon/cabinet-mint.webp",
+    "width": 512,
+    "height": 363,
+    "label": "komoda Miętowa"
+  },
+  {
+    "key": "salon/cabinet-cream",
+    "url": "assets/rooms/salon/cabinet-cream.webp",
+    "width": 512,
+    "height": 363,
+    "label": "komoda Kremowa"
+  },
+  {
+    "key": "salon/armchair",
+    "url": "assets/rooms/salon/armchair.webp",
+    "width": 399,
+    "height": 361,
+    "label": "fotel Kremowy"
+  },
+  {
+    "key": "salon/armchair-mint",
+    "url": "assets/rooms/salon/armchair-mint.webp",
+    "width": 399,
+    "height": 361,
+    "label": "fotel Miętowy"
+  },
+  {
+    "key": "salon/armchair-sunny",
+    "url": "assets/rooms/salon/armchair-sunny.webp",
+    "width": 399,
+    "height": 361,
+    "label": "fotel Słoneczny"
+  },
+  {
+    "key": "salon/wall-frames",
+    "url": "assets/rooms/salon/wall-frames.webp",
+    "width": 634,
+    "height": 425,
+    "label": "obrazki Botaniczne"
+  },
+  {
+    "key": "salon/wall-frames-meadow",
+    "url": "assets/rooms/salon/wall-frames-meadow.webp",
+    "width": 634,
+    "height": 425,
+    "label": "obrazki Łąka"
+  },
+  {
+    "key": "salon/wall-frames-sky",
+    "url": "assets/rooms/salon/wall-frames-sky.webp",
+    "width": 634,
+    "height": 425,
+    "label": "obrazki Niebo"
+  },
+  {
+    "key": "salon/curtains-leaf",
+    "url": "assets/rooms/salon/curtains-leaf.webp",
+    "width": 590,
+    "height": 695,
+    "label": "zasłony Listkowe"
+  },
+  {
+    "key": "salon/curtains-cream",
+    "url": "assets/rooms/salon/curtains-cream.webp",
+    "width": 590,
+    "height": 695,
+    "label": "zasłony Lniane"
+  },
+  {
+    "key": "salon/curtains-botanical",
+    "url": "assets/rooms/salon/curtains-botanical.webp",
+    "width": 590,
+    "height": 695,
+    "label": "zasłony Botaniczne"
+  },
+  {
+    "key": "salon/shelf-oak",
+    "url": "assets/rooms/salon/shelf-oak.webp",
+    "width": 440,
+    "height": 242,
+    "label": "półka Dębowa"
+  },
+  {
+    "key": "salon/shelf-mint",
+    "url": "assets/rooms/salon/shelf-mint.webp",
+    "width": 440,
+    "height": 242,
+    "label": "półka Miętowa"
+  },
+  {
+    "key": "salon/shelf-arch",
+    "url": "assets/rooms/salon/shelf-arch.webp",
+    "width": 440,
+    "height": 242,
+    "label": "półka Z łukiem"
+  },
+  {
+    "key": "salon/lamp-table",
+    "url": "assets/rooms/salon/lamp-table.webp",
+    "width": 239,
+    "height": 415,
+    "label": "lampa Klasyczna"
+  },
+  {
+    "key": "salon/lamp-wicker",
+    "url": "assets/rooms/salon/lamp-wicker.webp",
+    "width": 239,
+    "height": 415,
+    "label": "lampa Wiklinowa"
+  },
+  {
+    "key": "salon/lamp-flower",
+    "url": "assets/rooms/salon/lamp-flower.webp",
+    "width": 239,
+    "height": 415,
+    "label": "lampa Kwiatowa"
+  },
+  {
+    "key": "salon/plant-left",
+    "url": "assets/rooms/salon/plant-left.webp",
+    "width": 290,
+    "height": 445,
+    "label": "roślina Monstera"
+  },
+  {
+    "key": "salon/plant-fern",
+    "url": "assets/rooms/salon/plant-fern.webp",
+    "width": 290,
+    "height": 445,
+    "label": "roślina Paproć"
+  },
+  {
+    "key": "salon/plant-ficus",
+    "url": "assets/rooms/salon/plant-ficus.webp",
+    "width": 290,
+    "height": 445,
+    "label": "roślina Fikus"
+  },
+  {
+    "key": "salon/pouf",
+    "url": "assets/rooms/salon/pouf.webp",
+    "width": 278,
+    "height": 218,
+    "label": "pufa Pikowana"
+  },
+  {
+    "key": "salon/pouf-knit",
+    "url": "assets/rooms/salon/pouf-knit.webp",
+    "width": 278,
+    "height": 218,
+    "label": "pufa Pleciona"
+  },
+  {
+    "key": "salon/pouf-oak",
+    "url": "assets/rooms/salon/pouf-oak.webp",
+    "width": 278,
+    "height": 218,
+    "label": "pufa Na nóżkach"
+  }
+]

@@ -5,11 +5,13 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
+import { houseEqual, houseLayout, mergeHouse, nextRoom } from './core/house';
 import { parentVisible, repairCurrentRoom, roomGrowth, roomStateProblems, type RoomProblem } from './core/rooms';
+import { FIRST_HOUSE, HOUSES } from './data/houses';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { channelVerdict, errorCode, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
-import type { Settings, VariantState } from './core/types';
+import type { HouseState, Settings, VariantState } from './core/types';
 import { stages } from './data/curriculum';
 import { placementData } from './data/placement';
 import { createIdbSaveStore, requestPersistence } from './storage/idb';
@@ -75,6 +77,7 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.stars, start.stars);
                 booting.registry.set(REGISTRY_KEYS.rooms, start.rooms);
                 booting.registry.set(REGISTRY_KEYS.currentRoom, start.currentRoom);
+                booting.registry.set(REGISTRY_KEYS.house, start.house);
                 booting.registry.set(REGISTRY_KEYS.variants, start.variants);
                 booting.registry.set(REGISTRY_KEYS.today, today);   // read at each round start: a tablet left open past midnight sees the new day
                 if (start.learner) {
@@ -261,6 +264,22 @@ const start = async (): Promise<void> => {
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
         // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
+        // F-04: data is the authority for a known house; an unknown house id is kept as saved (report, never repair).
+        const savedHouse = session.house;
+        if (HOUSES.some((h) => h.id === savedHouse.id)) {
+            const merged = mergeHouse(savedHouse, houseLayout(savedHouse, HOUSES, FIRST_HOUSE));
+            session = { ...session, house: merged.house };
+            if (merged.extraRooms.length > 0) console.warn(`Save house lists rooms this build does not: ${merged.extraRooms.join(', ')}`);
+        } else {
+            console.warn(`Save names an unknown house (${savedHouse.id}); kept as saved`);
+        }
+        const moved = nextRoom(session, houseLayout(session.house, HOUSES, FIRST_HOUSE), ROOMS);
+        session = { ...session, rooms: moved.rooms, currentRoom: moved.currentRoom };
+        if (moved.movedFrom !== null) {
+            roomRepaired = true;
+            console.info(`Renovation moved from ${moved.movedFrom} to ${moved.currentRoom}`);
+        }
+        if (!houseEqual(session.house, savedHouse)) roomRepaired = true;
         // R-4: report only. The rooms stay exactly as saved; an unknown room is logged but not shown to a parent.
         roomProblems = roomStateProblems(session.rooms, ROOMS);
         if (roomProblems.length > 0) {
@@ -283,7 +302,7 @@ const start = async (): Promise<void> => {
     } else {
         // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.
         const seeded = outcome.kind === 'fresh' ? (__E2E_HOOK__ ? e2eStars(window.location.search) : null) : null;
-        session = freshSession(FIRST_ROOM, seeded ?? 0);
+        session = freshSession(FIRST_HOUSE, seeded ?? 0);
         if (outcome.kind === 'unreadable') {
             console.warn(`Save unreadable (${unreadableCode(outcome)}); playing without saving this session`);
         }
@@ -314,6 +333,7 @@ const start = async (): Promise<void> => {
             stars: (game.registry.get(REGISTRY_KEYS.stars) as number | undefined) ?? 0,
             rooms: game.registry.get(REGISTRY_KEYS.rooms) as SessionSave['rooms'],
             currentRoom: game.registry.get(REGISTRY_KEYS.currentRoom) as string,
+            house: (game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? session.house,
             settings: game.registry.get(REGISTRY_KEYS.settings) as Settings,
             learner: (game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null,
             variants: (game.registry.get(REGISTRY_KEYS.variants) as VariantState | undefined) ?? session.variants,

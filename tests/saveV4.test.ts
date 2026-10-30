@@ -8,8 +8,9 @@ const fixture = (name: string): Record<string, unknown> => JSON.parse(readFileSy
 const clone = <T>(v: T): T => structuredClone(v);
 
 describe('save format v4', () => {
-    it('is the current version', () => {
-        expect(SAVE_VERSION).toBe(4);
+    it('has the v3 -> v4 step (the current version moved to 5 with the house)', () => {
+        expect(typeof MIGRATIONS[3]).toBe('function');
+        expect(SAVE_VERSION).toBeGreaterThanOrEqual(4);
     });
 
     it('lifts the populated v3 fixture to v4 with the same game and empty guard fields', () => {
@@ -18,7 +19,7 @@ describe('save format v4', () => {
         const lifted = MIGRATIONS[3](v3) as Record<string, unknown>;
         expect(v3).toEqual(before);
         expect(lifted).toEqual({ ...before, version: 4, generation: 0, writer: '' });
-        expect(saveProblem(lifted)).toBeNull();
+        expect(saveProblem(MIGRATIONS[4](lifted))).toBeNull();
     });
 
     it.each(['save-v1.json', 'save-v2.json', 'save-v2-legacy-salon.json', 'save-v3.json'])('%s decodes with migratedFrom = its version', (name) => {
@@ -37,20 +38,31 @@ describe('save format v4', () => {
         expect(r.session.learner?.unlockedStep.E3).toBe(3);
     });
 
-    it('the v4 fixture decodes unmigrated and encodes back except for the guard placeholders', () => {
+    it('the v4 fixture decodes as migrated from 4 and encodes back as v5 except for the guard placeholders', () => {
         const raw = fixture('save-v4.json');
         const r = decodeSave(raw);
         if (r.kind !== 'ok') throw new Error('unreadable');
-        expect(r.migratedFrom).toBeNull();
-        expect(encodeSave(r.session)).toEqual({ ...raw, generation: 0, writer: '' });
+        expect(r.migratedFrom).toBe(4);
+        expect(encodeSave(r.session)).toEqual({ ...raw, version: 5, house: { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }] }, generation: 0, writer: '' });
+    });
+
+    it('the v4 salon fixture (F-04 phase 1) decodes (migrated from 4) with its salon intact', () => {
+        const raw = fixture('save-v4-salon.json');
+        expect(importProblem(raw)).toBeNull();
+        const r = decodeSave(raw);
+        if (r.kind !== 'ok') throw new Error('unreadable');
+        expect(r.migratedFrom).toBe(4);
+        expect(r.session.stars).toBe(23);
+        expect(r.session.rooms.salon).toEqual({ tasksDone: 6, chosen: { sofa: 2, rug: 1, 'coffee-table': 0, cabinet: 1, armchair: 2 } });
+        expect(r.session.currentRoom).toBe('salon');
     });
 
     it.each([[-1], [1.5], ['3'], [null]])('rejects generation %j', (generation) => {
-        expect(saveProblem({ ...fixture('save-v4.json'), generation })).toBe('generation');
+        expect(saveProblem({ ...fixture('save-v5.json'), generation })).toBe('generation');
     });
 
     it('rejects a writer that is not a string', () => {
-        expect(saveProblem({ ...fixture('save-v4.json'), writer: 7 })).toBe('writer');
+        expect(saveProblem({ ...fixture('save-v5.json'), writer: 7 })).toBe('writer');
     });
 
     it('an import of the v3 fixture is valid after the lift', () => {

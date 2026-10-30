@@ -1,7 +1,7 @@
 // Origin: S-12 phase 2, test-plan risk #7 (an imported file is validated before it replaces the save).
 // Oracle: research section 2 of save-export-import-reset: a parsable but wrong file must never be accepted
 // ("JSON.parse succeeded" is not a valid file); frozen fixtures tests/fixtures/save-v1*.json are the valid inputs.
-import { backupExtras } from './helpers';
+import { backupExtras, houseOf } from './helpers';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createAutosaver, type AutosaveStatus, type BlockReason } from '../src/core/autosave';
@@ -16,7 +16,7 @@ const fixture = (name: string): Record<string, unknown> =>
 const clone = <T>(v: T): T => structuredClone(v);
 const MAX = 1_000_000;
 const v1 = (): SaveState => fixture('save-v1.json') as unknown as SaveState;
-const v3 = (): SaveState => fixture('save-v4.json') as unknown as SaveState;
+const v3 = (): SaveState => fixture('save-v5.json') as unknown as SaveState;
 const decoded = (): SessionSave => {
     const d = decodeSave(v1());
     if (d.kind !== 'ok') throw new Error('fixture must decode');
@@ -116,25 +116,25 @@ describe('saveProblem agrees with validateSave', () => {
         ['learner', (r) => { (r.learner as Record<string, unknown>).stage = 'E9'; }, 'learner'],
     ];
     it.each(broken)('names %s', (_n, mutate, key) => {
-        const r = clone(fixture('save-v4.json'));
+        const r = clone(fixture('save-v5.json'));
         mutate(r);
         expect(saveProblem(r)).toBe(key);
         expect(validateSave(r)).toBe(false);
     });
 
-    it.each([null, 'x', 7, [], {}, fixture('save-v4.json'), fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
+    it.each([null, 'x', 7, [], {}, fixture('save-v5.json'), fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
         expect(validateSave(value)).toBe(saveProblem(value) === null);
     });
 
     it('a valid save has no problem', () => {
-        expect(saveProblem(fixture('save-v4.json'))).toBeNull();
+        expect(saveProblem(fixture('save-v5.json'))).toBeNull();
         expect(saveProblem(fixture('save-v2.json'))).toBe('version');
     });
 });
 
 describe('saveSummary', () => {
     const room = (id: string, tasks: number): RoomDef => ({
-        id, name: id, ...TEST_ROOM_PARTS, slots: [],
+        id, ...TEST_ROOM_PARTS, slots: [],
         tasks: Array.from({ length: tasks }, (_, i) => ({ kind: 'slot' as const, id: `${id}${i}`, slot: 's', label: 'l', cost: 5 })),
     });
     const rooms = { living: room('living', 10), bedroom: room('bedroom', 8) };
@@ -266,7 +266,7 @@ describe('deviceSaveView (S12-01): the dialogs never show a fresh in-memory sess
 describe('deviceSaveView newer (P-5)', () => {
     it('a newer-save block is blocked, never forceable', () => {
         const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
-        const current = encodeSave(freshSession('living'));
+        const current = encodeSave(freshSession(houseOf('living')));
         expect(deviceSaveView({ blockedBy: 'newer', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'newer', forceable: false });
     });
 });
@@ -274,7 +274,7 @@ describe('deviceSaveView newer (P-5)', () => {
 describe('deviceSaveView otherTab (stale tab)', () => {
     it('an other-writer block is blocked, never forceable', () => {
         const rooms = { living: { id: 'living', tasks: [] } as unknown as RoomDef };
-        const current = encodeSave(freshSession('living'));
+        const current = encodeSave(freshSession(houseOf('living')));
         expect(deviceSaveView({ blockedBy: 'otherTab', loadReason: null, loadError: null }, current, rooms)).toEqual({ kind: 'blocked', cause: 'otherTab', forceable: false });
     });
 });

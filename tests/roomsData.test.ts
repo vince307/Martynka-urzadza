@@ -2,11 +2,15 @@
 // cost 5-15 stars), plan section 9 (nothing distinguished by colour alone: a variant has a name and a colour) and the
 // art pack's manifest (1920x1080 scene, six furniture slots with three variants, four fixed layers).
 import { describe, expect, it } from 'vitest';
+import { UI_ART_KEYS } from '../src/data/uiArt';
 import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { FIRST_ROOM, ROOMS, ROOM_ORDER, SALON } from '../src/data/rooms';
+import { FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
+import { FIRST_HOUSE } from '../src/data/houses';
+import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
+import { HOUSE_V5 } from '../src/core/migrations/house';
 import { GAME_HEIGHT, GAME_WIDTH, MIN_TOUCH_TARGET } from '../src/data/layout';
 
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
@@ -15,11 +19,11 @@ const cleanRound = balance.round.length * balance.round.starPerTask + balance.ro
 describe('every room in ROOMS', () => {
     const rooms = Object.values(ROOMS);
 
-    it('is keyed by its own id and listed in ROOM_ORDER', () => {
+    it('is keyed by its own id and placed in the first house', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
-        const listed = ROOM_ORDER.flatMap((e) => ('room' in e ? [e.room] : []));
-        expect([...listed].sort()).toEqual(Object.keys(ROOMS).sort());
+        const placed = FIRST_HOUSE.rooms.map((c) => c.room);
+        for (const id of Object.keys(ROOMS)) expect(placed, id).toContain(id);
     });
 
     it('has one furniture task per slot, whole costs of 5-15 stars, the first within one clean round', () => {
@@ -146,7 +150,11 @@ describe('salon data', () => {
     });
 
     it('has a non-empty child-facing label for every task, in the author\'s wording for the stage', () => {
-        expect(pl.room.name.length).toBeGreaterThan(0);
+        for (const id of Object.keys(ROOMS)) {
+            expect(roomText.name(id)?.length ?? 0, id).toBeGreaterThan(0);
+            const thumb = ROOMS[id].thumbnail;
+            if (thumb !== undefined) expect(Object.values(UI_ART_KEYS), id).toContain(thumb);
+        }
         expect(pl.room.tasks.renovate).toBe('Odnów ściany i podłogę');
         for (const task of SALON.tasks) {
             const label = (pl.room.tasks as Record<string, string>)[task.label];
@@ -160,16 +168,23 @@ describe('salon data', () => {
         expect(pl.room.short(0, 15)).toBe('masz 0/15');
     });
 
-    it('lists the salon first, then a teaser that unlocks after a listed room (FR-019)', () => {
-        expect(ROOM_ORDER.length).toBeGreaterThanOrEqual(2);
-        expect(ROOM_ORDER[0]).toMatchObject({ room: FIRST_ROOM });
-        const ids = ROOM_ORDER.flatMap((e) => ('room' in e ? [e.room] : []));
-        for (const id of ids) {
-            expect(ROOMS[id], id).toBeDefined();
-            expect(typeof (pl.room as { name: unknown }).name, id).toBe('string');
-        }
-        for (const entry of ROOM_ORDER) if (entry.unlockAfter !== undefined) expect(ids).toContain(entry.unlockAfter);
-        expect(ROOM_ORDER.some((e) => 'teaser' in e)).toBe(true);
+    it('lists the salon first, then a teaser that unlocks after it (FR-019), as the old literal did', () => {
+        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { teaser: true, unlockAfter: 'salon' }]);
+        for (const id of Object.keys(ROOMS)) expect(typeof roomText.name(id), id).toBe('string');
+    });
+
+    it('keeps the frozen v5 house and the data house in step for the salon cell', () => {
+        expect(HOUSE_V5.id).toBe(FIRST_HOUSE.id);
+        expect(HOUSE_V5.rooms[0]).toEqual(FIRST_HOUSE.rooms[0]);
+    });
+
+    it('keeps a finished salon in the salon: the kitchen cell is invisible until the kitchen is data (F-04)', () => {
+        const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} } };
+        expect(roomInRenovation(FIRST_HOUSE, ROOMS, states)).toBeNull();
+        const moved = nextRoom({ rooms: states, currentRoom: 'salon' }, FIRST_HOUSE, ROOMS);
+        expect(moved.currentRoom).toBe('salon');
+        expect(moved.movedFrom).toBeNull();
+        expect(Object.keys(moved.rooms)).not.toContain('kitchen');
     });
 
     it('holds a child briefly (FR-018): shorter than the parent hold, above platform press thresholds, drift under half a target', () => {

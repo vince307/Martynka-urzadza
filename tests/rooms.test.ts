@@ -7,11 +7,11 @@ import { currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, p
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
+import { houseOf } from './helpers';
 import { TEST_ROOM_PARTS, testSlot } from './roomFixtures';
 
 const room: RoomDef = {
     id: 'test',
-    name: 'Test',
     ...TEST_ROOM_PARTS,
     slots: [
         testSlot('floor', 1),
@@ -137,6 +137,7 @@ describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
         settings: { autoRead: true },
         learner: null,
         variants: { roundsSince: 0, lastMinigame: null, puzzleDay: null, puzzlesDone: [] },
+        house: houseOf('salon'),
     });
 
     it('keeps a known room: the same session object, nothing repaired', () => {
@@ -189,7 +190,6 @@ describe('repairCurrentRoom (H-R3: a save naming an unknown room)', () => {
 describe('background stage task (S-16a)', () => {
     const staged: RoomDef = {
         id: 'staged',
-        name: 'Staged',
         ...TEST_ROOM_PARTS,
         slots: [testSlot('sofa', 2)],
         tasks: [

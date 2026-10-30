@@ -1,5 +1,5 @@
 // Converts the art kits' PNGs to the WebP files the game loads: money, measuring and counting icons of the task screen
-// (public/assets/tasks/), the salon of the room (public/assets/rooms/salon/, full resolution of the pack) and the pictures of the
+// (public/assets/tasks/), the rooms (public/assets/rooms/<room>/, full resolution of the pack; the ROOM_PACKS table is where a new room is added) and the pictures of the
 // loading screen, wallet, notebook and salon thumbnail plus three more counting icons from the salon-v2 pack, and the three poses of the fox guide from the fox pack (public/assets/ui/). The kit stays in designs/ (never committed); only the results are. Output is
 // deterministic, so re-running it leaves committed files unchanged. Needs the `cwebp` binary (libwebp) and, for the two salon backgrounds,
 // `python3` with `pip install pillow==12.1.0 numpy==2.4.3` (scripts/recolour-board.py recolours the green board first; like `npm run font`).
@@ -11,7 +11,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const BOARD_COLOUR = '#BCD799';
-const BOARD_JOBS = new Set(['architecture-before', 'architecture-after']);
+/** The two background files of a room that carry the green board. */
+const BOARD_FILES = ['architecture-before', 'architecture-after'];
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
@@ -32,23 +33,35 @@ const weights = ['weight-1kg', 'weight-2kg', 'weight-5kg', 'weight-10dag', 'weig
 const jugs = ['container-1l', 'container-half-l', 'container-quarter-l'];
 const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'];
 
-const sceneFiles = ['architecture-before', 'architecture-after', 'shadows'];
-const decor = ['plant-right'];
-const furniture = [
-    'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
-    'coffee-table', 'coffee-table-cream', 'coffee-table-turquoise', 'cabinet', 'cabinet-mint', 'cabinet-cream',
-    'armchair', 'armchair-mint', 'armchair-sunny', 'wall-frames', 'wall-frames-meadow', 'wall-frames-sky',
-    'lamp-table', 'plant-left', 'pouf',
-    'curtains-leaf', 'curtains-cream', 'curtains-botanical', 'shelf-oak', 'shelf-mint', 'shelf-arch',
-    'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
+/**
+ * One row per room (the place S-22 adds the kitchen). `pack` is the kit folder, `scene` lists the scene files of the pack's
+ * assets/room/, `decor` and `furniture` the PNGs of assets/furniture/; every output goes to public/assets/rooms/<room>/<id>.webp.
+ * `recolourBoard` recolours the green board of the two background files (before/after) before the conversion.
+ */
+const ROOM_PACKS = [
+    {
+        room: 'salon',
+        pack: SALON_V2,
+        scene: ['architecture-before', 'architecture-after', 'shadows'],
+        decor: ['plant-right'],
+        furniture: [
+            'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
+            'coffee-table', 'coffee-table-cream', 'coffee-table-turquoise', 'cabinet', 'cabinet-mint', 'cabinet-cream',
+            'armchair', 'armchair-mint', 'armchair-sunny', 'wall-frames', 'wall-frames-meadow', 'wall-frames-sky',
+            'lamp-table', 'plant-left', 'pouf',
+            'curtains-leaf', 'curtains-cream', 'curtains-botanical', 'shelf-oak', 'shelf-mint', 'shelf-arch',
+            'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
+        ],
+        recolourBoard: true,
+    },
 ];
 
-/** Salon files keep the size of the source (the manifest's pixel geometry); no -resize. */
-/** @type {Array<{ from: string, to: string }>} */
-const ROOM_JOBS = [
-    ...sceneFiles.map((id) => ({ from: `assets/room/${id}.png`, to: `salon/${id}.webp` })),
-    ...[...decor, ...furniture].map((id) => ({ from: `assets/furniture/${id}.png`, to: `salon/${id}.webp` })),
-];
+/** Room files keep the size of the source (the manifest's pixel geometry); no -resize. */
+/** @type {Array<{ pack: string, from: string, to: string, recolour: boolean }>} */
+const ROOM_JOBS = ROOM_PACKS.flatMap((row) => [
+    ...row.scene.map((id) => ({ pack: row.pack, from: `assets/room/${id}.png`, to: `${row.room}/${id}.webp`, recolour: row.recolourBoard && BOARD_FILES.includes(id) })),
+    ...[...row.decor, ...row.furniture].map((id) => ({ pack: row.pack, from: `assets/furniture/${id}.png`, to: `${row.room}/${id}.webp`, recolour: false })),
+]);
 
 /** @type {Array<{ from: string, to: string, size: number[] }>} */
 const JOBS = [
@@ -76,7 +89,7 @@ const V2_ICONS = ['plate', 'box', 'sticker'];
 const FOX_POSES = ['idle', 'cheer', 'think'];
 const FOX_SIZE = [384, 384];
 
-for (const dir of [KIT, SALON_V2, FOX]) {
+for (const dir of [KIT, SALON_V2, FOX, ...ROOM_PACKS.map((row) => row.pack)]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -106,9 +119,9 @@ for (const job of JOBS) {
     console.log(`${job.to}  ${job.size[0]}x${job.size[1]}  ${bytes} B`);
 }
 for (const job of ROOM_JOBS) {
-    let source = join(SALON_V2, job.from);
-    const id = job.to.replace(/^salon\//, '').replace(/\.webp$/, '');
-    if (BOARD_JOBS.has(id)) {
+    let source = join(job.pack, job.from);
+    const id = job.to.replace(/^[^/]+\//, '').replace(/\.webp$/, '');
+    if (job.recolour) {
         const tmpPng = join(tmpdir(), `${id}-board.png`);
         try {
             execFileSync('python3', [join(ROOT, 'scripts/recolour-board.py'), source, tmpPng, BOARD_COLOUR], { stdio: ['ignore', 'inherit', 'inherit'] });

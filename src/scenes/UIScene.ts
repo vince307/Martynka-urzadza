@@ -7,7 +7,7 @@ import { progressView } from '../core/progress';
 import { createRng } from '../core/rng';
 import type { Settings } from '../core/types';
 import { balance } from '../data/balance';
-import { pl } from '../data/pl';
+import { pl, roomText } from '../data/pl';
 import { getStage } from '../data/curriculum';
 import { GAME_EVENTS, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { openParentGate } from '../ui/dom/parentGate';
@@ -19,7 +19,8 @@ import { newestBackup, saveHealthView } from '../core/saveHealth';
 import { offlineView, type SwStatus } from '../core/swStatus';
 import { encodeSave, freshSession, saveProblem, type SalonCarried, type SessionSave } from '../core/save';
 import { deviceSaveView, exportFileText, saveSummary, type SaveSummary } from '../core/saveFile';
-import { FIRST_ROOM, ROOMS } from '../data/rooms';
+import { FIRST_HOUSE } from '../data/houses';
+import { ROOMS } from '../data/rooms';
 import { ROOM_ART } from '../data/roomArt';
 import { GUIDE_IDS } from '../core/guide';
 import { UI_ART_KEYS } from '../data/uiArt';
@@ -280,7 +281,7 @@ export class UIScene extends Scene {
         this.closeDialog = openSaveImportDialog({
             device: view,
             summarize: (s: SessionSave): SaveSummary => saveSummary(s, ROOMS),
-            roomName: (id) => ROOMS[id]?.name ?? id,
+            roomName: (id) => roomText.name(id) ?? id,
             maxBytes: balance.save.importMaxBytes,
             apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
@@ -299,8 +300,8 @@ export class UIScene extends Scene {
         const view = device.kind === 'broken' ? this.brokenView(saver) : device;
         this.closeDialog = openSaveResetDialog({
             device: view,
-            roomName: (id) => ROOMS[id]?.name ?? id,
-            fresh: () => encodeSave(freshSession(FIRST_ROOM)),
+            roomName: (id) => roomText.name(id) ?? id,
+            fresh: () => encodeSave(freshSession(FIRST_HOUSE)),
             apply: (state, force) => saver.replace(state, { force }),
             onClose: () => session.run(() => this.closeSettings()),
         });

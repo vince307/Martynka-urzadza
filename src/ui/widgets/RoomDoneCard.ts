@@ -1,11 +1,10 @@
 import type { GameObjects, Scene } from 'phaser';
 import { miniatureMode, neededMiniatureKeys, type MiniatureMode } from '../../core/artPick';
-import type { RoomListItem } from '../../core/rooms';
+import { emptyRoomState, type RoomListItem } from '../../core/rooms';
 import type { RoomDef, RoomState } from '../../core/types';
 import { PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT } from '../../data/layout';
-import { pl } from '../../data/pl';
+import { pl, roomText } from '../../data/pl';
 import { recordFallback } from '../artFallbacks';
-import { UI_ART_KEYS } from '../../data/uiArt';
 import { PageButton } from './PageButton';
 import { drawRoomMiniature, miniaturePieces } from './RoomView';
 import { textStyle } from './textStyle';
@@ -14,7 +13,7 @@ import { textStyle } from './textStyle';
  * The "Pokój gotowy!" card over the finished room: the title, the list of rooms (a tile with a miniature and a check mark for a room,
  * a faded dashed tile "Wkrótce" for the next one, with a padlock while it is locked) and "Dalej". The tiles are not buttons.
  * It draws what it is given and decides nothing.
- * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card. The miniature is the room's own pictures in scale; when a piece texture is missing it is the pack's `salon-after` thumbnail, and drawn stand-ins only when that is missing too (docs/design-gaps.md row 108).
+ * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card. The miniature is the room's own pictures in scale; when a piece texture is missing it is the room's pack thumbnail (`RoomDef.thumbnail`), and drawn stand-ins only when that is missing too (docs/design-gaps.md row 108).
  */
 export class RoomDoneCard {
     private readonly graphics: GameObjects.Graphics;
@@ -31,7 +30,7 @@ export class RoomDoneCard {
         this.hide();
     }
 
-    show(items: readonly RoomListItem[], room: RoomDef, state: RoomState): void {
+    show(items: readonly RoomListItem[], catalogue: Readonly<Record<string, RoomDef>>, states: Readonly<Record<string, RoomState>>, current: string): void {
         const { card, tiles, button } = ROOM_DONE_LAYOUT;
         const g = this.graphics.setVisible(true);
         g.clear();
@@ -45,8 +44,10 @@ export class RoomDoneCard {
         const first = card.left + card.width / 2 - total / 2;
         items.forEach((item, index) => {
             const left = first + index * (tiles.width + tiles.gap);
-            if (item.kind === 'room') {
-                this.drawRoomTile(left, room, state, item.done);
+            const room = item.kind === 'room' && item.id !== null && Object.prototype.hasOwnProperty.call(catalogue, item.id) ? catalogue[item.id] : null;
+            if (item.kind === 'room' && room !== null) {
+                const state = Object.prototype.hasOwnProperty.call(states, room.id) ? states[room.id] : emptyRoomState();
+                this.drawRoomTile(left, room, state, item.done, room.id === current);
             } else {
                 this.drawTeaserTile(left, !item.unlocked);
             }
@@ -83,7 +84,7 @@ export class RoomDoneCard {
         this.captions.push(this.scene.add.text(x, y, text, textStyle('bar')).setOrigin(0.5).setDepth(ROOM_LAYOUT.depth.card + 1).setAlpha(alpha));
     }
 
-    private drawRoomTile(left: number, room: RoomDef, state: RoomState, done: boolean): void {
+    private drawRoomTile(left: number, room: RoomDef, state: RoomState, done: boolean, isCurrent: boolean): void {
         const { tiles } = ROOM_DONE_LAYOUT;
         const g = this.graphics;
         const top = tiles.top;
@@ -93,19 +94,19 @@ export class RoomDoneCard {
         g.strokeRoundedRect(left, top, tiles.width, tiles.height, tiles.radius);
         const thumbWidth = ROOM_LAYOUT.scene.width * tiles.thumbScale;
         const exists = (key: string): boolean => this.scene.textures.exists(key);
-        const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, UI_ART_KEYS.salonAfter);
-        this.mode = mode;
+        const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, room.thumbnail);
+        if (isCurrent) this.mode = mode;
         if (mode !== 'live') recordFallback(this.scene, 'miniature', mode);
         const thumbLeft = left + (tiles.width - thumbWidth) / 2;
-        if (mode === 'thumbnail') {
+        if (mode === 'thumbnail' && room.thumbnail !== undefined) {
             this.pictures.push(
-                this.scene.add.image(thumbLeft, top + tiles.thumbTop, UI_ART_KEYS.salonAfter).setOrigin(0, 0)
+                this.scene.add.image(thumbLeft, top + tiles.thumbTop, room.thumbnail).setOrigin(0, 0)
                     .setDisplaySize(thumbWidth, ROOM_LAYOUT.scene.height * tiles.thumbScale).setDepth(ROOM_LAYOUT.depth.card + 1),
             );
         } else {
             this.pictures.push(...drawRoomMiniature(this.scene, g, room, state, thumbLeft, top + tiles.thumbTop, tiles.thumbScale, ROOM_LAYOUT.depth.card + 1));
         }
-        this.caption(pl.room.name, left + tiles.width / 2, top + tiles.captionY);
+        this.caption(roomText.name(room.id) ?? room.id, left + tiles.width / 2, top + tiles.captionY);
         if (done) {
             // A check mark in a circle: the "done" sign is a shape, not only a colour.
             const cx = left + tiles.width - tiles.markInset;

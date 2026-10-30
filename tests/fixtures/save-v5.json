@@ -1,0 +1,87 @@
+{
+  "version": 5,
+  "profileId": "default",
+  "stars": 7,
+  "rooms": {
+    "living": {
+      "tasksDone": 3,
+      "chosen": {
+        "floor": 1,
+        "sofa": 0,
+        "lamp": 2
+      }
+    }
+  },
+  "currentRoom": "living",
+  "settings": {
+    "autoRead": false
+  },
+  "learner": {
+    "age": 8,
+    "stage": "E3",
+    "stageOverriddenByParent": false,
+    "warmupPending": false,
+    "unlockedStep": {
+      "E1": 5,
+      "E2": 6,
+      "E3": 3,
+      "E4": 2,
+      "E5": 2,
+      "E6": 2
+    },
+    "mastery": {
+      "E3.add.100": 4,
+      "E3.mult.table": 2
+    },
+    "streak": {
+      "E3.add.100": 0,
+      "E3.mult.table": 1
+    },
+    "history": [
+      {
+        "skillId": "E3.add.100",
+        "ok": true,
+        "firstTry": true,
+        "at": 1760000000000
+      },
+      {
+        "skillId": "E3.mult.table",
+        "ok": true,
+        "firstTry": false,
+        "at": 1760000001000,
+        "example": {
+          "prompt": "6 · 7 = ?",
+          "given": 36,
+          "answer": 42
+        }
+      }
+    ],
+    "weakStreak": 1,
+    "easedRounds": 0,
+    "pendingUnlock": {
+      "stage": "E3",
+      "step": 3
+    }
+  },
+  "variants": {
+    "roundsSince": 2,
+    "lastMinigame": "word",
+    "puzzleDay": "2026-10-14",
+    "puzzlesDone": [
+      "logic.e3.a",
+      "logic.e3.b"
+    ]
+  },
+  "generation": 5,
+  "writer": "fixture-writer",
+  "house": {
+    "id": "house-1",
+    "rooms": [
+      {
+        "room": "living",
+        "floor": 0,
+        "place": 0
+      }
+    ]
+  }
+}

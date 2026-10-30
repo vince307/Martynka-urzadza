@@ -5,8 +5,11 @@ import { createRng } from '../src/core/rng';
 import { validationBounds } from '../src/core/tasks/bounds';
 import type { Generator, Task } from '../src/core/tasks/types';
 import { validateTask, type ValidationContext } from '../src/core/tasks/validate';
-import type { SkillDef } from '../src/core/types';
+import type { HouseState, SkillDef } from '../src/core/types';
 import { nouns } from '../src/data/nouns';
+
+/** A one-room house for save tests that name their own first room. */
+export const houseOf = (room: string): HouseState => ({ id: 'test-house', rooms: [{ room, floor: 0, place: 0 }] });
 
 export const SEEDS = 20;
 export const DRAWS_PER_SEED = 50;

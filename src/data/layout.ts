@@ -189,6 +189,7 @@ export const REGISTRY_KEYS = {
     stars: 'stars',           // the child's star balance, the one source: the task scene adds, a room purchase subtracts
     rooms: 'rooms',           // Record<string, RoomState> (shape of SaveState.rooms): the renovation progress per room
     currentRoom: 'currentRoom', // id of the room the child decorates
+    house: 'house',           // HouseState (shape of SaveState.house): the rooms of the house and their cells; saved
     narration: 'narration',   // text the speaker reads in the current phase, or null
     narrator: 'narrator',     // the game's Narrator (src/ui/narrator.ts), set before the scenes start
     roomSwitch: 'roomSwitch', // whether the HUD "Do pokoju" shows (roundView.switchVisible), false while the room is open
@@ -225,6 +226,7 @@ export const SAVE_KEYS = [
     REGISTRY_KEYS.stars,
     REGISTRY_KEYS.rooms,
     REGISTRY_KEYS.currentRoom,
+    REGISTRY_KEYS.house,
     REGISTRY_KEYS.learner,
     REGISTRY_KEYS.settings,
     REGISTRY_KEYS.variants,

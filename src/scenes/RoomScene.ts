@@ -8,11 +8,13 @@ import { effectiveAutoRead } from '../core/narration/voice';
 import { panelCue } from '../core/sound';
 import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
-import type { RoomDef, RoomState, Settings } from '../core/types';
+import { houseLayout, houseRoomList } from '../core/house';
+import type { HouseState, RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl, roomText } from '../data/pl';
-import { FIRST_ROOM, ROOM_ORDER, ROOMS } from '../data/rooms';
+import { FIRST_HOUSE, HOUSES } from '../data/houses';
+import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import type { Narrator } from '../ui/narrator';
 import { prefersReducedMotion } from '../ui/motion';
 import { PageButton } from '../ui/widgets/PageButton';
@@ -287,9 +289,14 @@ export class RoomScene extends Scene {
         }
     }
 
+    private savedRooms(): Record<string, RoomState> {
+        return (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
+    }
+
     private listItems(): RoomListItem[] {
-        const rooms = (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
-        return roomsListView(ROOM_ORDER, ROOMS, rooms);
+        const rooms = this.savedRooms();
+        const saved = (this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE;
+        return roomsListView(houseRoomList(houseLayout(saved, HOUSES, FIRST_HOUSE), ROOMS), ROOMS, rooms);
     }
 
     private redraw(): void {
@@ -312,7 +319,7 @@ export class RoomScene extends Scene {
             this.modeButton.hide();
         }
         if (this.cardDrawn) {
-            this.doneCard.show(this.listItems(), room, state);
+            this.doneCard.show(this.listItems(), ROOMS, { ...this.savedRooms(), [room.id]: state }, room.id);
         } else {
             this.doneCard.hide();
         }

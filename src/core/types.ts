@@ -61,8 +61,9 @@ export type RoomTaskDef =
     | { kind: 'slot'; id: string; slot: string; label: string; cost: number };
 
 export interface RoomDef {
-    id: string;               // e.g. "salon"
-    name: string;
+    id: string;               // e.g. "salon"; its child-facing name is `roomText.name(id)`
+    /** A UI art key of the pack thumbnail shown on the "Pokój gotowy!" card when a piece texture is missing; none = drawn stand-ins. */
+    thumbnail?: string;
     /** Texture keys of the four full-scene pictures: the room before and after the renovation stage, its neglected furniture and shadows. */
     scene: { before: string; after: string; shadows: string };
     decor: LayerDef[];        // shown once a stage task is done
@@ -89,6 +90,12 @@ export interface ContactShadowDef { piece: string; widthFactor: number; offset: 
 export type RoomListEntry =
     | { room: string; unlockAfter?: string }
     | { teaser: true; unlockAfter: string };
+
+/** A room's cell in a house: floor 0 is the ground floor, place 0 the leftmost. */
+export interface HouseRoomPlace { room: string; floor: number; place: number }
+
+/** A house: its rooms in opening order, each with its cell in the floor x place grid (FR-038). */
+export interface HouseState { id: string; rooms: HouseRoomPlace[] }
 
 // --- saved state ---
 
@@ -174,5 +181,11 @@ export interface SaveV4 extends Omit<SaveV3, 'version'> {
     writer: string;
 }
 
+/** Save format, version 5: version 4 plus the house with the cell of each room (rooms-as-data). */
+export interface SaveV5 extends Omit<SaveV4, 'version'> {
+    version: 5;
+    house: HouseState;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV4;
+export type SaveState = SaveV5;

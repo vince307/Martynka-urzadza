@@ -4,10 +4,12 @@
 // in MIGRATIONS and a frozen fixture (tests/fixtures/save-v<N>.json); it never edits an older fixture.
 import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
 import { LIFT_V2_SALON, carryV2Salon } from './migrations/legacySalon';
+import { LIFT_V4_HOUSE } from './migrations/house';
+import { copyHouse } from './house';
 import { emptyRoomState } from './rooms';
-import type { RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
+import type { HouseState, RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** Error name a store write throws when the stored save is of a newer format than the page writing (P-5). */
 export const NEWER_SAVE = 'NewerSave';
@@ -69,6 +71,7 @@ export interface SessionSave {
     settings: Settings;
     learner: SessionLearner | null;
     variants: VariantState;
+    house: HouseState;
 }
 
 /** Runtime note of a load: the salon was moved to the new look at the v2 step, from `from` to `to` tasks done. Never saved. */
@@ -95,6 +98,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     2: LIFT_V2_SALON,
     // v3 -> v4 (stale-tab-and-health): the guard fields a store stamps inside its write transaction.
     3: (raw) => ({ ...(raw as Record<string, unknown>), version: 4, generation: 0, writer: '' }),
+    // v4 -> v5 (rooms-as-data): the house the salon lives in.
+    4: LIFT_V4_HOUSE,
 };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -142,7 +147,13 @@ const validVariants = (v: unknown): v is VariantState =>
     Array.isArray(v.puzzlesDone) &&
     v.puzzlesDone.every((id) => typeof id === 'string');
 
-/** The first top-level key of a v4 save that fails the strict check, or null when the value is a valid save. */
+const validHouse = (v: unknown): v is HouseState =>
+    isRecord(v) &&
+    typeof v.id === 'string' &&
+    Array.isArray(v.rooms) &&
+    v.rooms.every((p) => isRecord(p) && typeof p.room === 'string' && isCount(p.floor) && isCount(p.place));
+
+/** The first top-level key of a v5 save that fails the strict check, or null when the value is a valid save. */
 export function saveProblem(value: unknown): string | null {
     if (!isRecord(value)) return 'version';
     if (value.version !== SAVE_VERSION) return 'version';
@@ -157,6 +168,7 @@ export function saveProblem(value: unknown): string | null {
     if (!validVariants(value.variants)) return 'variants';
     if (!isCount(value.generation)) return 'generation';
     if (typeof value.writer !== 'string') return 'writer';
+    if (!validHouse(value.house)) return 'house';
     return null;
 }
 
@@ -176,7 +188,7 @@ export function importProblem(raw: unknown, migrations: Readonly<Record<number, 
     return saveProblem(current);
 }
 
-/** Strict check of a v4 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
+/** Strict check of a v5 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
 export function validateSave(value: unknown): value is SaveState {
     return saveProblem(value) === null;
 }
@@ -232,6 +244,7 @@ export function encodeSave(session: SessionSave, profileId: string = DEFAULT_PRO
         variants: copyVariants(session.variants),
         generation: 0,
         writer: '',
+        house: copyHouse(session.house),
     };
 }
 
@@ -243,6 +256,7 @@ function toSession(save: SaveState): SessionSave {
         currentRoom: save.currentRoom,
         settings: { autoRead: save.settings.autoRead },
         variants: copyVariants(save.variants),
+        house: copyHouse(save.house),
         learner: l
             ? {
                   age: l.age,
@@ -305,7 +319,8 @@ export function decodeSave(raw: unknown, migrations: Readonly<Record<number, Mig
     }
 }
 
-/** The empty game of a first launch and of a reset; the caller names the first room (core does not import data). */
-export function freshSession(firstRoom: string, stars = 0): SessionSave {
-    return { stars, rooms: { [firstRoom]: emptyRoomState() }, currentRoom: firstRoom, settings: initialSettings(), learner: null, variants: startingVariants() };
+/** The empty game of a first launch and of a reset; the caller names the house (core does not import data), the first room is its first cell. */
+export function freshSession(house: HouseState, stars = 0): SessionSave {
+    const firstRoom = house.rooms[0].room;
+    return { stars, rooms: { [firstRoom]: emptyRoomState() }, currentRoom: firstRoom, settings: initialSettings(), learner: null, variants: startingVariants(), house: copyHouse(house) };
 }

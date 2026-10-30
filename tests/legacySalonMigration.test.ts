@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LEGACY_SALON_V2, LIFT_V2_SALON, SALON_V3_TARGET, carryV2Salon } from '../src/core/migrations/legacySalon';
 import { MIGRATIONS, decodeSave, encodeSave, freshSession } from '../src/core/save';
+import { houseOf } from './helpers';
 import { SALON } from '../src/data/rooms';
 
 const fixture = (name: string): Record<string, unknown> =>
@@ -47,7 +48,7 @@ const EXPECTED: [number, number, Record<string, number>][] = [
 
 describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
     it('is registered next to the v1 step', () => {
-        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2', '3']);
+        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2', '3', '4']);
     });
 
     it.each(EXPECTED)('old tasksDone %i becomes %i with the carried variants', (n, done, chosen) => {
@@ -65,14 +66,14 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         expect(raw).toEqual(snapshot);
     });
 
-    it('C-2r: a frozen v1 save with the old salon goes v1 -> v4 and keeps what was bought', () => {
+    it('C-2r: a frozen v1 save with the old salon goes v1 -> v5 and keeps what was bought', () => {
         const r = decodeSave(fixture('save-v1-legacy-salon.json'));
         expect(r).toMatchObject({ kind: 'ok', migratedFrom: 1 });
         if (r.kind !== 'ok') return;
         expect(r.session.stars).toBe(7);
         expect(r.session.rooms.salon).toEqual({ tasksDone: 6, chosen: { sofa: 1, rug: 2, 'coffee-table': 0, cabinet: 0, armchair: 0 } });
         const encoded = encodeSave(r.session);
-        expect(encoded).toMatchObject({ version: 4, generation: 0, writer: '' });
+        expect(encoded).toMatchObject({ version: 5, generation: 0, writer: '' });
     });
 
     it('a salon already in the new shape only gets the new version', () => {
@@ -137,7 +138,7 @@ describe('the frozen tables', () => {
     });
 
     it('a v3 save with chosen.curtains is decoded unchanged (curtains is a live slot id since S-16d)', () => {
-        const session = freshSession('salon');
+        const session = freshSession(houseOf('salon'));
         session.rooms.salon = { tasksDone: 8, chosen: { sofa: 0, curtains: 1 } };
         const r = decodeSave(JSON.parse(JSON.stringify(encodeSave(session))));
         expect(r.kind).toBe('ok');

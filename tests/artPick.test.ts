@@ -16,6 +16,9 @@ describe('firstLoaded', () => {
 });
 
 describe('miniatureMode', () => {
+    it('is drawn when a piece is missing and the room has no thumbnail key', () => {
+        expect(miniatureMode(['a', 'b'], only('a', 't'), undefined)).toBe('drawn');
+    });
     it('is live when every needed key exists, also for an empty list', () => {
         expect(miniatureMode(['a', 'b'], only('a', 'b'), 't')).toBe('live');
         expect(miniatureMode([], only(), 't')).toBe('live');
