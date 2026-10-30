@@ -2,7 +2,7 @@
 // of a picture in the 1920x1080 scene, `visibleRect` the object without its margin, `z` the draw order (0-99).
 // Texture keys are `salon/<file id>`. RoomTaskDef.label is a key into pl.room.tasks.
 import { FIRST_HOUSE } from './houses';
-import type { LayerDef, RoomDef, RoomListEntry, SlotDef } from '../core/types';
+import type { LayerDef, RoomDef, SlotDef } from '../core/types';
 
 /** The right plant: part of the renovated room, no task and no variants. Lamp, left plant and pouf are slots that show their old look until bought (S-16d). */
 const decor: LayerDef[] = [
@@ -72,8 +72,3 @@ export const SALON: RoomDef = {
 
 export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;
-
-export const ROOM_ORDER: readonly RoomListEntry[] = [
-    { room: 'salon' },
-    { teaser: true, unlockAfter: 'salon' },   // unlocks when the salon is done (FR-019); a real second room replaces it in v1.1
-];

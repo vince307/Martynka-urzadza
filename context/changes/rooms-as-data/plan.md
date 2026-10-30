@@ -726,10 +726,10 @@ stay byte-identical and load through the whole chain.
 
 #### Automated
 
-- [ ] 3.1 New data and guard tests green; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: swap the salon/kitchen order in `HOUSES` → the "equals the old literal" case red; call `nextRoom` before `repairCurrentRoom` → the order guard red; each restored; meta-check: the order guard proves wiring only; the behaviour under a real v4 save is proven by phase 7
-- [ ] 3.3 `npm run build` prints `e2e hook: absent (` (the new `v4-salon` marker is not in `dist/`)
-- [ ] 3.4 `git diff --stat <phase-2 sha> -- src/ui/widgets src/core/save.ts tests/fixtures public` empty
+- [x] 3.1 New data and guard tests green; unit `<phase-2 count> + N`
+- [x] 3.2 Deliberate break: swap the salon/kitchen order in `HOUSES` → the "equals the old literal" case red; call `nextRoom` before `repairCurrentRoom` → the order guard red; each restored; meta-check: the order guard proves wiring only; the behaviour under a real v4 save is proven by phase 7
+- [x] 3.3 `npm run build` prints `e2e hook: absent (` (the new `v4-salon` marker is not in `dist/`)
+- [x] 3.4 `git diff --stat <phase-2 sha> -- src/ui/widgets src/core/save.ts tests/fixtures public` empty
 - [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 4: Per-room name and thumbnail; each done-card tile drawn from its own room

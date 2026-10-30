@@ -5,8 +5,9 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
+import { houseEqual, houseLayout, mergeHouse, nextRoom } from './core/house';
 import { parentVisible, repairCurrentRoom, roomGrowth, roomStateProblems, type RoomProblem } from './core/rooms';
-import { FIRST_HOUSE } from './data/houses';
+import { FIRST_HOUSE, HOUSES } from './data/houses';
 import { FIRST_ROOM, ROOMS } from './data/rooms';
 import { channelVerdict, errorCode, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
@@ -263,6 +264,22 @@ const start = async (): Promise<void> => {
         const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
         // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
+        // F-04: data is the authority for a known house; an unknown house id is kept as saved (report, never repair).
+        const savedHouse = session.house;
+        if (HOUSES.some((h) => h.id === savedHouse.id)) {
+            const merged = mergeHouse(savedHouse, houseLayout(savedHouse, HOUSES, FIRST_HOUSE));
+            session = { ...session, house: merged.house };
+            if (merged.extraRooms.length > 0) console.warn(`Save house lists rooms this build does not: ${merged.extraRooms.join(', ')}`);
+        } else {
+            console.warn(`Save names an unknown house (${savedHouse.id}); kept as saved`);
+        }
+        const moved = nextRoom(session, houseLayout(session.house, HOUSES, FIRST_HOUSE), ROOMS);
+        session = { ...session, rooms: moved.rooms, currentRoom: moved.currentRoom };
+        if (moved.movedFrom !== null) {
+            roomRepaired = true;
+            console.info(`Renovation moved from ${moved.movedFrom} to ${moved.currentRoom}`);
+        }
+        if (!houseEqual(session.house, savedHouse)) roomRepaired = true;
         // R-4: report only. The rooms stay exactly as saved; an unknown room is logged but not shown to a parent.
         roomProblems = roomStateProblems(session.rooms, ROOMS);
         if (roomProblems.length > 0) {

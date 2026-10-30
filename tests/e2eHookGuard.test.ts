@@ -43,7 +43,7 @@ describe('e2e hook guard', () => {
     });
 
     it('lists every marker with the hook marker first', () => {
-        expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills', 'e2eArt', 'stallall', 'e2eDay', 'e2eVariant', 'legacy-salon']);
+        expect(E2E_HOOK_MARKERS).toEqual([E2E_HOOK_MARKER, 'e2eMonth', 'e2eFail', 'e2e-forced-failure', 'e2eStars', 'e2eSave', 'e2eSkills', 'e2eArt', 'stallall', 'e2eDay', 'e2eVariant', 'legacy-salon', 'v4-salon']);
         expect(E2E_REQUIRED_MARKERS).toEqual(E2E_HOOK_MARKERS);
     });
 
