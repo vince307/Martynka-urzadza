@@ -1,52 +1,63 @@
 # Handoff — `rooms-as-data` (slice F-04)
 
-Written by the `/10x-e2e rooms-as-data phase 7` step of run 2026-10-30-rooms-kitchen: phase 7 (e2e spec) is committed (`9bfa475`); this was the last phase, `change.md` status is now `implemented`.
+Written by the `/10x-impl-review rooms-as-data` step of run 2026-10-30-rooms-kitchen: full-plan review done, verdict APPROVED,
+`MERGE: CLEAR`; two WARNINGs fixed in `4b1c37e`. The next agent must not miss that the changed e2e test (finished salon, now read
+through the hook's new `rooms` field instead of IndexedDB) has NOT been run in a browser yet: the orchestrator re-runs it.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/rooms-as-data`, cut from `main` at `9d28753` |
-| Commits | phase 1 `dd6db69`, phase 2 `901926e`, phase 3 `96f9128`, phase 4 `c9fcca5`, phase 5 `2c367e8`, phase 6 `01bedba`, phase 7 `9bfa475`, plus docs commits |
+| Commits | phases `dd6db69` (p1), `901926e` (p2), `96f9128` (p3), `c9fcca5` (p4), `2c367e8` (p5), `01bedba` (p6), `9bfa475` (p7), review fix `4b1c37e`, plus docs commits; this handoff in `docs(rooms-as-data): przegląd implementacji` |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | 7.2 (full-suite clause, orchestrator), 6.6 [visual], 6.7 [human], 6.8 [human], 6.9 [reviewer] |
-| Working tree | clean after the handoff commit |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 5: 6.6 [visual], 6.7 [human], 6.8 [human], 6.9 [reviewer] (CI at ship), 7.2 (full e2e, orchestrator) |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/rooms-as-data.spec.ts` | 3 hook-build tests on the `v4-salon` seam (#10 x2, #2); the last one reads the real IndexedDB (`martynka` / `saves` / `profile:default`) after a reload |
-| `tests/e2e/support/hook.ts` | `Snapshot` gained `house`, `currentRoom`, `store.writtenHouse` (types only; the hook already reported them) |
-| `playwright.config.ts` | `rooms-as-data` added to `ROUND_SPEC` (webServer entries untouched) |
-| `context/changes/rooms-as-data/plan.md` | rows 1.4, 2.5, 3.5, 4.4, 5.5, 6.5 (e2e clause), 7.1, 7.3 ticked |
+| `context/changes/rooms-as-data/reviews/impl-review.md` | review report: 0 critical, 2 warnings (fixed), 4 observations, migration evidence table; ends `MERGE: CLEAR` |
+| `src/testing/e2eHook.ts` | hook snapshot gains `rooms` (deep-frozen copy of `REGISTRY_KEYS.rooms`; e2e build only) |
+| `tests/e2e/support/hook.ts` | `Snapshot.rooms` type |
+| `tests/e2e/rooms-as-data.spec.ts` | finished-salon test reads `save`, `house`, `rooms` from the hook after the reload; no `indexedDB.open` |
+| `tests/saveV5.test.ts` | `it.each` over both v4 fixtures: decode + encode equals the literal fixture with `version: 5`, the house and guard placeholders |
+| `context/changes/rooms-as-data/follow-ups/review-fixes.md` | entries 14 (done-card `mode`, Trigger: S-22) and 15 (frozen `copyOfHouseV5` stays, Trigger: next migration change) |
+| `context/changes/rooms-as-data/change.md` | status `impl_reviewed` |
 
 ## 3. Verification
 
 | command | result (observed in this step) |
 |---|---|
-| `npx playwright test tests/e2e/rooms-as-data.spec.ts tests/e2e/save-migration.spec.ts --workers=1` | 5 passed |
-| break: `main.ts` load merge bypassed (`house: savedHouse`), `-g "a v4 salon save opens"` | red (house diff), restored |
-| break: `LIFT_V4_HOUSE` drops `chosen`, same `-g` | red, restored |
-| break: `migrated: undefined` in `main.ts`, `-g "after a round the save is written"` | red (ops/backup), restored |
-| break: `roomInRenovation` returns the unknown cell, `-g "finished salon"` | red, `currentRoom` "kitchen" vs "salon", restored |
-| break "drop `house` from `toSession`" | stayed green: the load-path merge (`mergeHouse` in `main.ts`) rebuilds the house from data; replaced by the merge bypass above |
-| lint / typecheck / unit / build | pass / pass / 213 files 4012 tests / `e2e hook: absent (2 chunks checked)` |
-| full e2e suite | NOT run (orchestrator) |
+| `npm run lint` / `npm run typecheck` | pass / pass (before and after the fix) |
+| `npm test` on a worktree of `main` `9d28753` | 209 files, 3962 passed (= contract baseline) |
+| `npm test` at `66f16c4` / after `4b1c37e` | 4012 (3962 + 50) / 4014 (3962 + 52), 213 files (+4) |
+| `bash deploy/test-martynka-deploy.sh`, `bash deploy/ops/test-martynka-ops.sh` | OK, OK |
+| `npm run sample -- E1` … `E6` | `Naruszenia: 0` ×6 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| `validate-rule-files.sh` | PASS |
+| probe: v4 code (`main` worktree) on `save-v5.json` | `decodeSave` → `unreadable/future`; `writeVerdict` normal and replace → `refuse NewerSave` |
+| probe: v5 code, both v4 fixtures decode+encode | deep-equal to the fixture + `version 5` + house + guard placeholders (lossless) |
+| break: `LIFT_V4_HOUSE` resets `variants.roundsSince` | `tests/saveV5.test.ts` 4 red; restored |
+| break: `toSession` drops `streak` | 3 red (the two new cases + v5 round trip; the older v4 "keeps every field" case stayed green = the gap F2 closes); restored, `git diff --stat` empty. Meta-check: the oracle is the frozen fixture literal, not migration output |
+| e2e | NOT run: ports 4397/4398 held by the orchestrator's full suite |
 
 ## 4. Next command
 
-`/10x-impl-review rooms-as-data`
+Orchestrator first re-runs `npx playwright test tests/e2e/rooms-as-data.spec.ts -g "finished salon"` (green; then red with the break below, restored) and records 7.2; then the visual gate (rooms: salon before / after the stage / finished with the "Pokój gotowy!" done card, "Zmień wygląd", "Zapis gry" after `?e2eSave=v4-salon`), then `/10x-archive rooms-as-data`.
 
 ## 5. Open
 
-- 7.2 full-suite clause (`baseline + 3`, `--list` total) is the orchestrator's; 6.6 [visual], 6.7 [human] rollback risk, 6.8 [human] two-real-builds decision, 6.9 [reviewer] CI at ship.
-- Follow-ups: `context/changes/rooms-as-data/follow-ups/review-fixes.md`. DESIGN-GAP: none.
-- Blind spot recorded: a done-card test that returns the current room for every tile is unaffected (one room); covered by the phase-4 guard.
+- E2E re-run owed (F1): spec title `#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell`; deliberate break: in `roomInRenovation` (`src/core/house.ts`) make an unknown room `return cell.room` instead of `continue` → red on `currentRoom` ("kitchen" vs "salon") and on `Object.keys(rooms)`; restore.
+- 7.2 full e2e `<branch e2e baseline> + 3`, total equals `npx playwright test --list | tail -1` (orchestrator).
+- Human checklist: 6.6 [visual] screenshots vs `main`; 6.7 [human] accept rollback risk (`pl.saveFuture`, `deploy/README.md` v5 note); 6.8 [human] accept unit + in-memory-seam proof instead of two real builds; 6.9 [reviewer] (CI at ship) job `check` of workflow `CI`, log `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
+- Follow-ups: `context/changes/rooms-as-data/follow-ups/review-fixes.md` (1–15). DESIGN-GAP: none added.
 
 ## 6. Autonomous decisions
 
-- Break "drop `house` from `toSession`" replaced by bypassing the load-path merge (rule broken: the house comes from data on load), because the original is masked by design.
-- The saved-state check uses a raw IndexedDB read in the spec (no hook field exposes `rooms` keys); `rooms` has no `kitchen` key proved there.
-- Earlier e2e rows ticked with the orchestrator's 167/167 evidence only for their e2e clause.
+- **No subagents for the review.** Chosen: read the whole code diff and probe the migration first-hand. Rejected: the skill's two parallel subagents. Why: ~900 code lines and a save migration that ships to every device; a summary hand-off would lose the probes. Would change: a diff too large for one context.
+- **Triage without asking (contract rule 1).** F1, F2 fixed (cheap WARNINGs); F3, F5, F6 accepted; F4 deferred with Trigger S-22. Would change: the maintainer reading the report and wanting F4 now.
+- **F1 fix shape: hook field `rooms` (registry copy), not a stored-save read.** Why: the registry after reload is what the load path made of the stored save (`save.load === 'loaded'` proves it came from the store), and a move to the kitchen would show there directly; profile § 9 forbids a test-side IndexedDB read. Would change: a need to prove the bytes written (then expose the store's last write through the hook, as `writtenHouse` does for the seam store).
+- **Playwright not run.** Both e2e ports were listening (orchestrator's run); per the step prompt no server was started. Would change: free ports.

@@ -31,6 +31,11 @@ Each entry carries a `Trigger:` line; later slices grep for it.
 13. L-R8 `stepPanel` refusals.
     Trigger: the next change to `RoomScene` purchase handling.
 
+14. Implementation review F4: `RoomDoneCard.show` sets `mode` (what `miniature()` and the hook's `doneMiniature` report) only from the tile whose room is `current`; when the current room is not among the listed rooms (a save whose house id is unknown, or a current room outside the house list) `mode` keeps its previous value. With one room it cannot happen.
+    Trigger: S-22 (a second real room on the card), or a change to `houseRoomList` that can drop the current room.
+15. Implementation review F3: the frozen `copyOfHouseV5` in `src/core/migrations/house.ts` repeats `copyHouse` of `src/core/house.ts` on purpose (a frozen step never depends on code that may change). Keep it; never point the migration at `copyHouse`.
+    Trigger: the next change to `src/core/migrations/` or the v6 save format.
+
 ## Closed by history
 
 - P-8 keep the first `backup-v3`: `backup-v<N>` copies are write-once since save-truth; `backup-v4` inherits that with no new mechanism.
