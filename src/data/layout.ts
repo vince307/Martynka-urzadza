@@ -201,7 +201,7 @@ export const REGISTRY_KEYS = {
     saver: 'saver',           // the game's autosave (the Autosaver of core/autosave: flush, status, current, replace), set in main.ts before the scenes run
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
-    roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    roomArtHealth: 'roomArtHealth',     // ArtHealth of the current room's pictures (core/artHealth), set by BootScene and roomArtLoader; runtime only, not in SAVE_KEYS
     roomArtLoader: 'roomArtLoader',     // the runtime RoomArtLoader (src/ui/roomArtLoader.ts), set in main.ts; runtime only, not in SAVE_KEYS
     roomLoad: 'roomLoad',               // { pending: string[]; settled: string[] }: rooms the runtime loader is fetching / has settled, set by the loader; runtime only, not in SAVE_KEYS
     uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter

@@ -234,7 +234,7 @@ export class BootScene extends Scene {
         });
         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
-        // Queue order (audit B-6, bootQueue): the pictures a child sees first, then the salon and the screens, the sounds last, so a slow
+        // Queue order (audit B-6, bootQueue): the pictures a child sees first, then the current room and the screens, the sounds last, so a slow
         // link cuts the quiet effects before a picture. The two loading pictures were queued above, before the limits.
         const queuers: Record<BootGroup, () => void> = {
             loadingArt: () => undefined,

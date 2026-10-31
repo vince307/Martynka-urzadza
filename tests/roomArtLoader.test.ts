@@ -48,6 +48,7 @@ const rig = (options: { disabled?: boolean } = {}) => {
         health: () => store.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
         load: () => store.get(REGISTRY_KEYS.roomLoad) as { pending: string[]; settled: string[] } | undefined,
         fail: (key: string) => emit('loaderror', files.find((f) => f.key === key)),
+        fetched: (key: string) => emit('load', files.find((f) => f.key === key)),
         complete: () => emit('complete'),
     };
 };
@@ -93,6 +94,32 @@ describe('runtime room-art loader', () => {
         r.complete();
         expect(r.service.pending().size).toBe(0);
         expect(r.load()?.settled).toEqual(['a']);
+    });
+
+    it('a picture fetched but not decoded settles its room as missing (Phaser 4.2.1 emits no loaderror for a decode failure)', () => {
+        const r = rig();
+        r.service.ensure(['a']);
+        r.service.refreshHealth('a');
+        r.fetched('a/one'); r.cached.add('a/one');
+        r.fetched('a/two');   // FILE_LOAD, then onProcessError: no texture and no keyed loaderror (tests/phaserLoaderPin.test.ts)
+        r.complete();
+        expect(r.service.pending().size).toBe(0);
+        expect(r.load()?.settled).toEqual(['a']);
+        expect(r.health()?.missing).toEqual(['a/two']);
+        expect(r.health()?.causes).toEqual({ 'a/two': 'decode' });
+        expect(r.handlers).toEqual([]);
+    });
+
+    it('a key that failed is not queued again in the same session (a redraw that calls ensure cannot loop on a failing file)', () => {
+        const r = rig();
+        r.service.ensure(['a']);
+        r.fail('a/one');
+        r.fetched('a/two');   // decode failure
+        r.complete();
+        r.service.ensure(['a']);
+        expect(r.queued).toEqual(['a/one', 'a/two']);
+        expect(r.service.pending().size).toBe(0);
+        expect(r.handlers).toEqual([]);
     });
 
     it('disabled queues nothing', () => {

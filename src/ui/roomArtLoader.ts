@@ -51,7 +51,10 @@ export const createRoomArtLoader = (game: Game, opts: RoomArtLoaderOptions): Roo
         if (health.missing.length > 0) console.warn(`Room art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);
     };
 
-    const resolved = (room: string): boolean => entriesOf(room).every((e) => exists(e.key) || failed.has(e.key));
+    // A key is settled when its texture exists, its fetch failed (keyed loaderror) or it was fetched without a texture: Phaser 4.2.1
+    // emits FILE_LOAD and then onProcessError for a picture that does not decode, never loaderror (tests/phaserLoaderPin.test.ts).
+    const attempted = (key: string): boolean => exists(key) || failed.has(key) || loaded.has(key);
+    const resolved = (room: string): boolean => entriesOf(room).every((e) => attempted(e.key));
 
     const onComplete = (): void => {
         for (const room of [...pending]) {
@@ -80,7 +83,9 @@ export const createRoomArtLoader = (game: Game, opts: RoomArtLoaderOptions): Roo
         ensure: (rooms) => {
             if (opts.disabled || !loader) return;
             const load = loader;
-            const wanted = roomsToLoad(rooms, (room) => entriesOf(room).map((e) => e.key), exists, pending);
+            // A key that failed this session is not fetched again (as at boot): the room view calls ensure on every redraw, and a
+            // settle redraws, so a retry would loop on a failing file. A reload tries again.
+            const wanted = roomsToLoad(rooms, (room) => entriesOf(room).map((e) => e.key), attempted, pending);
             if (wanted.rooms.length === 0) return;
             const entries = wanted.rooms.flatMap((room) => entriesOf(room));
             const queuedKeys = new Set(wanted.keys);
@@ -109,7 +114,7 @@ export const createRoomArtLoader = (game: Game, opts: RoomArtLoaderOptions): Roo
                 load.on('loaderror', onFail);
                 for (const key of wanted.keys) {
                     const entry = entries.find((e) => e.key === key);
-                    if (entry) { failed.delete(key); load.image(entry.key, entry.url); }
+                    if (entry) load.image(entry.key, entry.url);
                 }
                 load.once('complete', onComplete);
                 publish();
