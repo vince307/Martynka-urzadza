@@ -28,3 +28,23 @@ Each item carries a `Trigger:` line; a later slice greps for them.
     Trigger: S-23 / S-24 (FR-040 house and street intensities).
 13. Kitchen task imperatives, captions and the bench join need a teacher read and the designer's wording (gaps 175, 181).
     Trigger: the designer's kitchen copy, or the next change to `src/data/rooms.ts` kitchen rows.
+    (Teacher read done in the implementation review 2026-10-31: pass; the designer's wording is still owed.)
+
+## From the implementation review (2026-10-31)
+
+14. `createRoomArtLoader` `ensure`, catch path: `detach()` is the chained closure, so a throw while queueing room B also removes
+    room A's `loaderror`/`complete` listeners and A stays pending (impl-review F3). Detach only this call's `addfile`/`load`/`loaderror`
+    and keep `complete` while an earlier room is pending.
+    Trigger: the next change to `src/ui/roomArtLoader.ts`, or a report of a room stuck on stand-ins after "Room art could not be queued".
+15. `createRoomArtLoader` `ensure`: every call adds one more `once('complete', onComplete)` (impl-review F4); harmless (bounded,
+    `detach` removes all), but `publish` runs more than once per `complete`. Keep one registration.
+    Trigger: the next change to `src/ui/roomArtLoader.ts`.
+16. `RoomScene` `onSleep` / wake `refresh` drop a drawn celebration card without `moveAfterDone` (impl-review F5): the child stays in
+    the done room until a reload (load-time `nextRoom` then moves her). Unreachable today (the way out is hidden while the card is up).
+    Also the card's burst emitter is destroyed at the next `redraw`/`hide`, not in `onSleep` (plan L-R11).
+    Trigger: a way out of the room view that stays visible while the card is up (S-23 cross-section), or a settings dialog over the card.
+17. `TaskScene` re-captures the backdrop only on wake when `REGISTRY_KEYS.roomLoad` changed (impl-review F6): art that arrives while
+    the task screen is up shows on the next room/task switch.
+    Trigger: the visual gate or a playtest showing a plain backdrop after "Dalej".
+18. `ANIMATION.celebration.room.burstCount` is the literal 22, not `ANIMATION.summaryBurstParticles` (impl-review F7).
+    Trigger: the next change to either burst count.

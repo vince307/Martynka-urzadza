@@ -843,8 +843,8 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Manual
 
-- [ ] 5.6 [reviewer] Teacher read of every new Polish string: the six slot captions, the 18 variant labels (gender/number agreement with each caption), the six task imperatives (accusative: "lodówkę", "ławkę"), `names.kitchen`, the two room-neutral parent lines; short, child-friendly, no adult words ("zabudowa")
-- [ ] 5.7 [reviewer] The kitchen `RoomDef` geometry matches `designs/martynka-locations-v2/manifest.json` `rooms.kitchen` slot by slot (x, y, width, height, z, anchor, visibleRect); no slot, decor or art invented
+- [x] 5.6 [reviewer] Teacher read of every new Polish string: the six slot captions, the 18 variant labels (gender/number agreement with each caption), the six task imperatives (accusative: "lodówkę", "ławkę"), `names.kitchen`, the two room-neutral parent lines; short, child-friendly, no adult words ("zabudowa") — 82b690c (impl-review: pass)
+- [x] 5.7 [reviewer] The kitchen `RoomDef` geometry matches `designs/martynka-locations-v2/manifest.json` `rooms.kitchen` slot by slot (x, y, width, height, z, anchor, visibleRect); no slot, decor or art invented — 82b690c (impl-review: pass, all six slots equal the manifest)
 - [ ] 5.8 [human] S-17 tunes kitchen costs (5, 7, 9, 10, 12, 13, 15 = 71 stars; salon style, data only)
 
 ### Phase 6: Visit a done room in its change mode (FR-019)
