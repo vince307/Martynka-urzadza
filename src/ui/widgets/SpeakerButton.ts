@@ -22,6 +22,8 @@ const quadratic = ([a, c, b]: [Point, Point, Point]): Point[] =>
         return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]];
     });
 
+export interface SpeakerRect { left: number; top: number; width: number; height: number; radius: number; iconSize: number }
+
 /**
  * HUD button that reads the current task aloud. It speaks on pointerup (a touch end is a user
  * activation for speech; pointerdown is not), and has no label: the icon is the kit's.
@@ -32,10 +34,10 @@ export class SpeakerButton {
     private readonly chunky: ChunkyFace;
     private shown = false;
 
-    constructor(scene: Scene, onTap: () => void) {
-        const { left, top, width, height } = HUD_LAYOUT.speaker;
+    constructor(scene: Scene, onTap: () => void, private readonly spot: SpeakerRect = HUD_LAYOUT.speaker) {
+        const { left, top, width, height } = spot;
         this.graphics = scene.add.graphics();
-        this.chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.hud, HUD_LAYOUT.speaker.radius);
+        this.chunky = new ChunkyFace(scene, { x: left, y: top, width, height }, LIPS.hud, spot.radius);
         this.chunky.add(this.graphics);
         this.zone = scene.add.zone(left + width / 2, top + height / 2, width, height).setInteractive();
         this.zone.on('pointerdown', () => this.press(true));
@@ -63,7 +65,7 @@ export class SpeakerButton {
 
     /** Centre of the button in scene space, for the e2e hook; null while hidden. */
     target(): { x: number; y: number } | null {
-        const { left, top, width, height } = HUD_LAYOUT.speaker;
+        const { left, top, width, height } = this.spot;
         return this.shown ? { x: left + width / 2, y: top + height / 2 } : null;
     }
 
@@ -80,7 +82,7 @@ export class SpeakerButton {
     }
 
     private draw(pressed: boolean): void {
-        const { left, top, width, height, radius, iconSize } = HUD_LAYOUT.speaker;
+        const { left, top, width, height, radius, iconSize } = this.spot;
         const g = this.graphics;
         g.clear();
         drawHudPill(g, { x: left, y: top, width, height }, { pressed, radius });

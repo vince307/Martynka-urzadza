@@ -311,7 +311,7 @@ export const installE2EHook = (game: Game): void => {
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), artFallbacks: artFallbacksSnapshot(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, ...welcome().viewState(), backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), artFallbacks: artFallbacksSnapshot(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inHouse() ? 'house' : inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
@@ -327,8 +327,8 @@ export const installE2EHook = (game: Game): void => {
             },
             get targets() {
                 if (onWelcome()) {
-                    const { ages, parent } = welcome().targets();
-                    return Object.freeze({ ages, parent });
+                    const { ages, parent, choices, choiceBack } = welcome().targets();
+                    return Object.freeze({ ages, parent, choices, choiceBack });
                 }
                 const round = task().targets();
                 return Object.freeze({

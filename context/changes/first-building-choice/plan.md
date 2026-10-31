@@ -893,11 +893,11 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 6.1 `npx vitest run tests/layout.test.ts tests/welcomeChoiceWiring.test.ts` green; unit `<phase-5 count> + N`
-- [ ] 6.2 Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; drop the `hasPurchase` guard → its wiring case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
-- [ ] 6.3 `npm run build` prints `e2e hook: absent (`
-- [ ] 6.4 `git diff --stat <phase-5 sha> -- src/core/save.ts src/data/balance.ts src/scenes/BootScene.ts src/scenes/RoomScene.ts` empty
-- [ ] 6.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0` with every welcome helper passing the choice; total equals `npx playwright test --list | tail -1`
+- [x] 6.1 `npx vitest run tests/layout.test.ts tests/welcomeChoiceWiring.test.ts` green; unit `<phase-5 count> + N`
+- [x] 6.2 Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; drop the `hasPurchase` guard → its wiring case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
+- [x] 6.3 `npm run build` prints `e2e hook: absent (`
+- [x] 6.4 `git diff --stat <phase-5 sha> -- src/core/save.ts src/data/balance.ts src/scenes/BootScene.ts src/scenes/RoomScene.ts` empty
+- [x] 6.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0` with every welcome helper passing the choice; total equals `npx playwright test --list | tail -1`
 
 ### Phase 7: "Wróć" from the task screen to the choice
 

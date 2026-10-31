@@ -1,5 +1,5 @@
 // Risks #15 (a frozen screen with no word: the loading never ends) and #2 (progress is lost: an older tab overwrites a newer
-// save) of context/foundation/test-plan.md, change load-and-tab-guard. (a) many hanging pictures, the font and a salon file end
+// save) of context/foundation/test-plan.md, change load-and-tab-guard. (a) many hanging pictures, the font and a choice card end
 // the loading at the total limit, with the slow line first; (b) a file that answers after the cut does not start the game twice;
 // (c) a newer save written by another tab is not overwritten. The ?e2eSave seam is an in-memory store with a write log
 // (snapshot.save.store); IndexedDB is never opened from here and a new test = a new browser context = a fresh device. The
@@ -8,7 +8,7 @@
 // cause (#15 A-9; that the round skips the skill is the unit test of artFilter: ?e2eSkills bypasses the filter) and (e) the cut line
 // after a total-limit start (#14 B-4). Strings come from src/data/pl.ts. Runs in the chromium-hook project.
 import { test, expect, type Route } from '@playwright/test';
-import { gateProblem, openSettings, passWelcome, typeIntoGate } from './support/welcome';
+import { gateProblem, openSettings, passChoice, passWelcome, typeIntoGate } from './support/welcome';
 import { answerRight, fromHook, screenIs, silenceSpeech, snapshot, tapScene } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { FONT_KEY } from '../../src/data/layout';
@@ -23,6 +23,10 @@ const hold = async (page: import('@playwright/test').Page): Promise<{ font: Rout
         held.font.push(route);
     });
     await page.route('**/assets/rooms/salon/*.webp', (route) => {
+        held.room.push(route);
+    });
+    // A fresh install boots the two choice cards instead of a room (S-28); they hang like the room files did.
+    await page.route('**/assets/choice/*.webp', (route) => {
         held.room.push(route);
     });
     return held;
@@ -47,7 +51,7 @@ test.describe('files that never answer', () => {
         const after = await snapshot(page);
         expect(after.artHealth!.missing).toBeGreaterThanOrEqual(1);
         expect(after.bootLoad!.cut).toContain(FONT_KEY);
-        expect(after.bootLoad!.cut.some((key) => key.includes('salon'))).toBe(true);
+        expect(after.bootLoad!.cut.some((key) => key.includes('choice'))).toBe(true);
         expect(after.bootLoad!.creates).toBe(1);
         // No error card follows.
         await expect(page.getByRole('alertdialog')).toHaveCount(0);
@@ -123,7 +127,7 @@ test.describe('files that never answer', () => {
         await start.getByRole('button', { name: '10+', exact: true }).tap();
         await start.getByRole('button', { name: 'Klasa 2, I półrocze', exact: true }).tap();
         await start.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
-        await screenIs(page, 'task');
+        await passChoice(page);
         const panel = await openSettings(page);
         await expect(panel.getByText(pl.settings.artCut, { exact: true })).toBeVisible();
         await expect(panel.getByText('w tle')).toHaveCount(0);

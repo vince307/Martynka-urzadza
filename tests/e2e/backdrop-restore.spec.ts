@@ -5,7 +5,7 @@
 // counts the renders caused by a restore, `backdropPixel` reads a pixel of the blurred texture). Chromium logs a harmless
 // INVALID_OPERATION on restore, so no console-error assertion here.
 import { test, expect, type Page } from '@playwright/test';
-import { openWelcome, passWelcome } from './support/welcome';
+import { openWelcome, passChoice, passWelcome } from './support/welcome';
 import { answerRight, phaseIs, readHook, screenIs, silenceSpeech, snapshot, tapScene, tapTarget } from './support/hook';
 import { PAGE_BACKGROUND } from '../../src/data/layout';
 
@@ -47,18 +47,13 @@ const loseAndRestore = async (page: Page): Promise<void> => {
     });
 };
 
-test('#12 the welcome backdrop is drawn again after a WebGL context restore', async ({ page }) => {
+test('#12 the welcome stays plain and playable after a WebGL context restore', async ({ page }) => {
     await openWelcome(page, 9);
-    await expect.poll(async () => (await snapshot(page)).backdrop?.mode).toBe('salon');
-    await expect.poll(async () => (await snapshot(page)).backdrop?.drawn).toBe(true);
-    const before = (await snapshot(page)).backdrop!;
-    expect(before).toMatchObject({ blurred: true, renderer: 'webgl', redraws: 0 });
-    await expectSalonPixel(page);
-
+    // S-28 (plan decision P5): a fresh install boots no room, so the welcome backdrop is the plain page colour; the restore
+    // listener is still guarded by tests/backdropRestoreWiring.test.ts and the task backdrop redraw by the specs below.
+    expect((await snapshot(page)).backdrop).toMatchObject({ mode: 'plain', drawn: false, redraws: 0 });
     await loseAndRestore(page);
-    await expect.poll(async () => (await snapshot(page)).backdrop?.redraws).toBe(1);
-    expect((await snapshot(page)).backdrop!.drawn).toBe(true);
-    await expectSalonPixel(page);
+    expect((await snapshot(page)).backdrop).toMatchObject({ mode: 'plain', drawn: false });
 
     // An age tap still starts the game.
     let age: { x: number; y: number } | undefined;
@@ -67,7 +62,7 @@ test('#12 the welcome backdrop is drawn again after a WebGL context restore', as
         return age !== undefined;
     }).toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
 });
 
 test('#11 the task backdrop is drawn again after a WebGL context restore', async ({ page }) => {

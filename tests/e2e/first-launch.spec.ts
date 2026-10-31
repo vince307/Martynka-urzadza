@@ -7,7 +7,7 @@
 // page.touchscreen.tap. The warm-up rule itself (4 first-try answers of 6) is proved by the unit
 // tests; this proves that the scenes apply it.
 import { test, expect, type Page } from '@playwright/test';
-import { gateProblem, openGate, passWelcomeAsChild, typeIntoGate } from './support/welcome';
+import { gateProblem, openGate, passChoice, passWelcomeAsChild, typeIntoGate } from './support/welcome';
 import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapNext, tapScene, targets } from './support/hook';
 
 const OCTOBER = 9;
@@ -149,8 +149,7 @@ test('#12 (proposed) a wrong gate answer gives a calm message and a new problem 
     await expect(panel.getByRole('button', { name: /Klasa 2, I półrocze.*propozycja/ })).toBeVisible();
     await panel.getByRole('button', { name: 'Klasa 2, II półrocze', exact: true }).tap();
     await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
-
-    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    await passChoice(page);
     const start = await snapshot(page);
     expect(start.learner).toMatchObject({ stage: 'E4', stageOverriddenByParent: true, warmupPending: false });
     expect(start.warmup).toBe(false);
@@ -163,8 +162,7 @@ test('#12 (proposed) a parent who confirms the proposal gets the proposed stage 
     const panel = page.getByRole('dialog', { name: 'Ustawienia startowe' });
     await panel.getByRole('button', { name: String(PARENT_AGE), exact: true }).tap();
     await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
-
-    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    await passChoice(page);
     const start = await snapshot(page);
     expect(start.learner).toMatchObject({ stage: 'E3', stageOverriddenByParent: false, warmupPending: true });
     expect(start.warmup).toBe(true);
@@ -189,7 +187,7 @@ test('#12 (proposed) with the gate open a tap under the overlay on an age button
     await page.getByRole('dialog', { name: 'Pytanie dla rodzica' }).getByRole('button', { name: 'Anuluj', exact: true }).tap();
     await expect(page.getByRole('dialog')).toBeHidden();
     await tapScene(page, age!);
-    await expect.poll(async () => (await snapshot(page)).screen).toBe('task');
+    await passChoice(page);
     expect((await snapshot(page)).learner?.stage).toBe('E3');
 });
 
@@ -222,7 +220,7 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     expect(age9).toBeDefined();
     const afterBack = await writesDone(page);
     await tapScene(page, age9!);
-    await screenIs(page, 'task');
+    await passChoice(page);
     const older = await snapshot(page);
     expect(older.learner?.stage).toBe('E5');
     expect(older.warmup).toBe(true);

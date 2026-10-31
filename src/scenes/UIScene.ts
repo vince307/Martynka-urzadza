@@ -111,6 +111,8 @@ export class UIScene extends Scene {
         // A fresh install booted no room: the one the child chose loads during her first round (a no-op when it is already loaded).
         const chosenRoom = this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined;
         if (chosenRoom !== undefined) (this.registry.get(REGISTRY_KEYS.roomArtLoader) as RoomArtLoader | undefined)?.ensure([chosenRoom]);
+        // Boot judged no room (total 0): "Obrazki" judges the chosen room as soon as its pictures have settled, so the first session counts a missing picture too (plan review F8).
+        if (chosenRoom !== undefined && (this.registry.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined)?.total === 0) (this.registry.get(REGISTRY_KEYS.roomArtLoader) as RoomArtLoader | undefined)?.refreshHealth(chosenRoom);
 
         this.title = new HudTitle(this);
         const refreshTitle = (): void => this.title.set((this.registry.get(REGISTRY_KEYS.hudTitle) as HudTitleView | null | undefined) ?? null);

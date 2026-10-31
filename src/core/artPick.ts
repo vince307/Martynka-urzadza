@@ -22,9 +22,9 @@ export function neededMiniatureKeys(pieces: readonly { key: string; alpha: numbe
  * The screens whose picture can be replaced by a drawn fallback; the fox (`guide`) records `'none'`: nothing is drawn in its place.
  * The worn look (`worn`) records `'ungraded'`: the furniture shows, only without the worn grade (a renderer without filters).
  */
-export type FallbackWhere = 'wallet' | 'notebook' | 'miniature' | 'loading' | 'guide' | 'worn' | 'house';
-/** The places that have a drawn fallback and a line in "Obrazki" (the house has its own record and no line, S-23). */
-export type DrawnFallbackWhere = Exclude<FallbackWhere, 'guide' | 'worn' | 'house'>;
+export type FallbackWhere = 'wallet' | 'notebook' | 'miniature' | 'loading' | 'guide' | 'worn' | 'house' | 'choice';
+/** The places that have a drawn fallback and a line in "Obrazki" (the house has its own record and no line, S-23; the choice cards are counted in the UI table, so `choice` has no line either). */
+export type DrawnFallbackWhere = Exclude<FallbackWhere, 'guide' | 'worn' | 'house' | 'choice'>;
 export const FALLBACK_ORDER: readonly FallbackWhere[] = ['wallet', 'notebook', 'miniature', 'loading', 'guide', 'worn', 'house'];
 /** Which fallback the child sees per screen (the mode is the picker's own word: 'drawn', 'icon', 'box', 'thumbnail'). Runtime only. */
 export type FallbackRecord = Readonly<Partial<Record<FallbackWhere, string>>>;

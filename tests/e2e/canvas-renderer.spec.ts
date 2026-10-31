@@ -4,7 +4,7 @@
 // name it. WebGL is switched off by Chromium launch flags so the production AUTO -> Canvas path runs (no seam). The WebGL control is
 // in salon-style.spec.ts. Runs in the chromium-hook project (read-only window.__martynkaE2E).
 import { test, expect, type Page } from '@playwright/test';
-import { openSettings, openWelcome, passWelcome } from './support/welcome';
+import { openSettings, passWelcome } from './support/welcome';
 import { answerRight, answerWrong, housePixel, openHouse, phaseIs, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 
 test.setTimeout(120_000);
@@ -18,7 +18,7 @@ const watchErrors = (page: Page): string[] => {
     return errors;
 };
 
-test('#12 canvas-renderer the welcome backdrop under Canvas records the ungraded worn look', async ({ page }) => {
+test('#12 canvas-renderer the task backdrop under Canvas records the ungraded worn look', async ({ page }) => {
     const errors = watchErrors(page);
     const renderer: string[] = [];
     page.on('console', (message) => {
@@ -26,7 +26,9 @@ test('#12 canvas-renderer the welcome backdrop under Canvas records the ungraded
             renderer.push(message.text());
         }
     });
-    await openWelcome(page, 9);
+    // S-28: a fresh install boots no room, so the welcome is plain; the salon backdrop appears on the task screen once the chosen room has loaded.
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eVariant: 'off' });
     await expect.poll(async () => (await snapshot(page)).backdrop?.drawn).toBe(true);
     const state = await snapshot(page);
     expect(state.backdrop?.renderer).toBe('canvas');

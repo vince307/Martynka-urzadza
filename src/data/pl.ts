@@ -11,6 +11,8 @@ export const pl = {
     title: 'Bystrow',
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
+        // DESIGN-GAP (docs/design-gaps.md, phase 8): the kit has no first-building choice; the texts are ours.
+        choice: { question: 'Co urządzamy najpierw?', house: 'Dom', space: 'Baza kosmiczna', spoken: 'Co urządzamy najpierw: dom czy bazę kosmiczną?', back: 'Wróć' },
     },
     // DESIGN-GAP (docs/design-gaps.md rows 15-17): the kit has no parent entry, adult gate or stage panel; the texts are ours.
     parent: {

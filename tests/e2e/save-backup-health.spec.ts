@@ -8,7 +8,7 @@
 // Runs in the chromium-hook project.
 import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
-import { openSettings, passWelcome } from './support/welcome';
+import { openSettings, passChoice, passWelcome } from './support/welcome';
 import { chooseFile, openImport } from './support/saveImport';
 import { fromHook, playRoundRight, playTaskRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
@@ -42,7 +42,7 @@ async function startAsChild(page: Page): Promise<void> {
         })
         .toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
 }
 
 test('#2 SV2-01 a v1 save whose copy always fails is written as v4 after three tries', async ({ page }) => {

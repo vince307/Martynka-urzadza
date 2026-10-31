@@ -6,7 +6,7 @@
 // here: the saved state is read through the read-only hook (snapshot.save + the game state). Runs in the chromium-hook project.
 import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
-import { openSettings, passWelcome, gateProblem, typeIntoGate } from './support/welcome';
+import { openSettings, passChoice, passWelcome, gateProblem, typeIntoGate } from './support/welcome';
 import { answerRight, answerWrong, fromHook, phaseIs, playRoundRight, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
 
@@ -148,7 +148,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
         return age !== undefined;
     }).toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
     await expect.poll(async () => {
         const save = (await snapshot(page)).save;
         return save ? save.skipped + save.writes : 0;
@@ -181,7 +181,7 @@ test('#2 C-1 a save the browser will not give shows the card, plays without writ
         return age !== undefined;
     }).toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
     await expect.poll(async () => (await snapshot(page)).save?.skipped ?? 0).toBeGreaterThan(0);
     const save = (await snapshot(page)).save!;
     expect(save).toMatchObject({ load: 'unavailable', blocked: true, blockedBy: 'unavailable', lastError: 'UnknownError', writes: 0 });
@@ -207,7 +207,7 @@ test('#2 M-S4 a read that never answers ends in the same card after the load tim
         return age !== undefined;
     }).toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
     await expect.poll(async () => (await snapshot(page)).save).toMatchObject({ load: 'unavailable', blockedBy: 'unavailable', lastError: 'timeout' });
     const panel = await openSettings(page);
     await expect(panel.locator('section.parent-save').getByText(pl.settings.saveOff.timeout)).toBeVisible();

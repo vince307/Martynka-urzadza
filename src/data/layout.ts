@@ -532,6 +532,15 @@ export const WELCOME_LAYOUT = {
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
     // The kit's .welcome-flower: the `flower` task icon, bottom left of the notebook, clear of the age buttons (the cushion stays out, it overlaps `parent`).
     flower: { left: 360, top: 790, size: 152, angle: -14, key: 'tasks/icons/flower' },
+    // The first-building choice (S-28), inside the notebook right of the margin line: the title over two cards (picture 3:2 over a label band),
+    // the speaker beside the title, the child's "Wróć" bottom left. DESIGN-GAP (docs/design-gaps.md, phase 8): the kit has no choice screen;
+    // the layout reuses the age view's title position, the age button face and the HUD speaker.
+    choice: {
+        title: { x: 960, y: 290 },
+        cards: { left: 380, top: 392, pictureWidth: 540, pictureHeight: 360, labelHeight: 88, gap: 80, radius: 38, border: 5 },
+        speaker: { left: 1560, top: 262, width: 104, height: 104, radius: 32, iconSize: 56 },
+        back: { left: 330, top: 860, width: 220, height: 96, radius: 28, border: 4 },
+    },
 } as const;
 
 /** Room scene (S-09, S-16a): the salon pictures over the full `scene`, the way back to the notebook and the current renovation task button. */
@@ -608,6 +617,9 @@ export const HUD_TOUCH_TARGETS = {
 export const WELCOME_TOUCH_TARGETS = {
     age: { width: WELCOME_LAYOUT.ages.width, height: WELCOME_LAYOUT.ages.height },
     parent: { width: WELCOME_LAYOUT.parent.width, height: WELCOME_LAYOUT.parent.height },
+    choiceCard: { width: WELCOME_LAYOUT.choice.cards.pictureWidth, height: WELCOME_LAYOUT.choice.cards.pictureHeight + WELCOME_LAYOUT.choice.cards.labelHeight },
+    choiceSpeaker: { width: WELCOME_LAYOUT.choice.speaker.width, height: WELCOME_LAYOUT.choice.speaker.height },
+    choiceBack: { width: WELCOME_LAYOUT.choice.back.width, height: WELCOME_LAYOUT.choice.back.height },
 } as const;
 
 /** Every interactive rectangle of the task screen, checked against MIN_TOUCH_TARGET. */

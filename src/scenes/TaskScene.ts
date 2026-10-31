@@ -264,8 +264,14 @@ export class TaskScene extends Scene {
         // A lost and restored WebGL context empties every texture; the backdrop is drawn again at once, awake or asleep (audit B-1).
         const onRestore = (): void => this.refreshBackdrop('restore');
         this.game.renderer.on(Renderer.Events.RESTORE_WEBGL, onRestore);
+        // A fresh install boots no room (S-28): the chosen room arrives during the first round and the backdrop shows it as soon as it has loaded.
+        const onRoomLoad = (): void => {
+            if (this.registry.get(REGISTRY_KEYS.roomLoad) !== this.backdropRoomLoad) this.refreshBackdrop();
+        };
+        this.registry.events.on(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         this.events.once('shutdown', () => {
             this.game.renderer.off(Renderer.Events.RESTORE_WEBGL, onRestore);
+            this.registry.events.off(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         });
         drawNotebook(this);
         this.guide = new GuideFox(this);
@@ -420,7 +426,7 @@ export class TaskScene extends Scene {
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
         this.scene.stop(SCENE_KEYS.ui);
         this.scene.stop(SCENE_KEYS.room);
-        this.scene.start(SCENE_KEYS.welcome);
+        this.scene.start(SCENE_KEYS.welcome, {});   // explicit empty data: Phaser keeps the data of the scene's last start otherwise, and the welcome would reopen the choice view
     }
 
     /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
