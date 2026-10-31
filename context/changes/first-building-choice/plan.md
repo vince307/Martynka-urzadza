@@ -878,12 +878,12 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [x] 5.1 `npm run art` regenerates the 2 files; `git status --short public/assets` shows only `public/assets/choice/`
-- [x] 5.2 `npx vitest run tests/choiceArt.test.ts tests/bootBudget.test.ts tests/artHealth.test.ts tests/deployCheck.test.ts` green; unit `<phase-4 count> + N`
-- [x] 5.3 Deliberate break: make `bootGroups(true)` include `'room'` → its literal case red; delete `choice-space.webp` → the file case red; each restored; meta-check: the boot proof is the pure group list plus the build; the browser proof that the welcome shows the cards is phase 9
-- [x] 5.4 `npm run build` then `grep -o "assets/choice/" dist/sw.js | wc -l` = 2
-- [x] 5.5 `git diff --stat <phase-4 sha> -- src/ui/roomArtLoader.ts src/data/balance.ts public/assets/rooms public/assets/ui public/assets/tasks` empty
-- [x] 5.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (gate green locally; e2e left to the orchestrator)
+- [x] 5.1 `npm run art` regenerates the 2 files; `git status --short public/assets` shows only `public/assets/choice/` — f427d42
+- [x] 5.2 `npx vitest run tests/choiceArt.test.ts tests/bootBudget.test.ts tests/artHealth.test.ts tests/deployCheck.test.ts` green; unit `<phase-4 count> + N` — f427d42
+- [x] 5.3 Deliberate break: make `bootGroups(true)` include `'room'` → its literal case red; delete `choice-space.webp` → the file case red; each restored; meta-check: the boot proof is the pure group list plus the build; the browser proof that the welcome shows the cards is phase 9 — f427d42
+- [x] 5.4 `npm run build` then `grep -o "assets/choice/" dist/sw.js | wc -l` = 2 — f427d42
+- [x] 5.5 `git diff --stat <phase-4 sha> -- src/ui/roomArtLoader.ts src/data/balance.ts public/assets/rooms public/assets/ui public/assets/tasks` empty — f427d42
+- [x] 5.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (gate green locally; e2e left to the orchestrator) — f427d42
 
 #### Manual
 
