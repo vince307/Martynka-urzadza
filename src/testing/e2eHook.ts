@@ -335,6 +335,7 @@ export const installE2EHook = (game: Game): void => {
                     choose: inRoom() ? room().chooseTarget() : null,
                     close: inRoom() ? room().closeTarget() : null,
                     modeButton: inRoom() ? room().modeButtonTarget() : null,
+                    visitButton: inRoom() ? room().visitTarget() : null,
                     cardNext: inRoom() ? room().cardNextTarget() : null,
                     slots: inRoom() ? room().slotTargets() : {},
                     speaker: ui().speakerTarget(),

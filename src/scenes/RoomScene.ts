@@ -11,6 +11,7 @@ import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskB
 import { celebrationView } from '../core/celebration';
 import { houseLayout, houseRoomList, nextRoom } from '../core/house';
 import { cardRooms } from '../core/roomLoad';
+import { visitTarget } from '../core/roomVisit';
 import type { RoomArtLoader } from '../ui/roomArtLoader';
 import type { HouseState, RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
@@ -54,6 +55,7 @@ export interface RoomSnapshot {
     card: { title: string; items: RoomListItem[]; celebration: { intensity: string; revealMs: number; burst: number } } | null;
     doneMiniature: 'live' | 'thumbnail' | 'drawn' | null;
     modeText: string | null;
+    visiting: string | null;
 }
 
 /**
@@ -75,6 +77,9 @@ export class RoomScene extends Scene {
     private gesture: RoomGestureState = ROOM_GESTURE_IDLE;
     private holdZone!: GameObjects.Zone;
     private modeButton!: PageButton;
+    private visitButton!: PageButton;
+    /** The done room the child looks at instead of the room in renovation (runtime only, never saved). */
+    private visiting: string | null = null;
     private doneCard!: RoomDoneCard;
     private mode: 'normal' | 'change' = 'normal';
     /** The last purchase finished the room: the child's controls stay off until "Dalej" (set at once, drawn after the pop). */
@@ -88,6 +93,7 @@ export class RoomScene extends Scene {
     }
 
     create(): void {
+        this.visiting = null;
         this.view = new RoomView(this);
         this.gesture = ROOM_GESTURE_IDLE;
         this.mode = 'normal';
@@ -120,6 +126,7 @@ export class RoomScene extends Scene {
             this.resetGesture();
             this.redraw();
         }).setDepth(ROOM_LAYOUT.depth.controls);
+        this.visitButton = new PageButton(this, () => this.visit()).setDepth(ROOM_LAYOUT.depth.controls);
         this.doneCard = new RoomDoneCard(this, () => {
             this.tap();
             this.card = false;
@@ -130,6 +137,7 @@ export class RoomScene extends Scene {
         const button = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.task); }).setDepth(ROOM_LAYOUT.depth.controls);
         this.resume = button;
         const refresh = (): void => {
+            this.visiting = null;
             this.panel = { kind: 'closed' };
             this.mode = 'normal';
             this.card = false;
@@ -145,6 +153,7 @@ export class RoomScene extends Scene {
         };
         refresh();
         const onSleep = (): void => {
+            this.visiting = null;
             // The panel, the card and the change mode never outlive the visit: the way out is hidden while they are up, but a settings dialog could cover it.
             this.panel = { kind: 'closed' };
             this.mode = 'normal';
@@ -219,7 +228,7 @@ export class RoomScene extends Scene {
 
     /** Room and its state from ONE id, so an unknown id can never pair one room with another room's state. */
     private resolve(): { room: RoomDef; state: RoomState } {
-        const id = (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
+        const id = this.visiting ?? (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
         const room = ROOMS[id] ?? ROOMS[FIRST_ROOM];
         const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
         return { room, state: rooms?.[room.id] ?? emptyRoomState() };
@@ -337,6 +346,26 @@ export class RoomScene extends Scene {
         return roomsListView(houseRoomList(houseLayout(saved, HOUSES, FIRST_HOUSE), ROOMS), ROOMS, rooms);
     }
 
+    private currentRoomId(): string {
+        return (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
+    }
+
+    /** The visit button: opens the other done room in place, or leads back; the room in renovation and the balance are never touched. */
+    private visit(): void {
+        this.tap();
+        const current = this.currentRoomId();
+        const target = visitTarget(this.listItems(), current, this.visiting);
+        if (target === null) {
+            return;
+        }
+        this.panel = { kind: 'closed' };
+        this.mode = 'normal';
+        this.resetGesture();
+        this.visiting = target === current ? null : target;
+        this.roomArtLoader()?.ensure([target]);
+        this.redraw();
+    }
+
     private redraw(): void {
         const { room, state } = this.resolve();
         const task = currentTask(room, state);
@@ -355,6 +384,14 @@ export class RoomScene extends Scene {
             this.modeButton.show(this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter, modeButton.left, modeButton.top, 'primary', false, modeButton);
         } else {
             this.modeButton.hide();
+        }
+        const target = blocked ? null : visitTarget(this.listItems(), this.currentRoomId(), this.visiting);
+        if (target !== null) {
+            const { visitButton } = ROOM_LAYOUT;
+            this.roomArtLoader()?.ensure([target]);
+            this.visitButton.show(roomText.name(target) ?? target, visitButton.left, visitButton.top, 'primary', false, visitButton);
+        } else {
+            this.visitButton.hide();
         }
         if (this.cardDrawn) {
             const view = celebrationView('room', prefersReducedMotion(), ANIMATION.celebration);
@@ -482,6 +519,10 @@ export class RoomScene extends Scene {
         return this.modeButton.target();
     }
 
+    visitTarget(): { x: number; y: number } | null {
+        return this.visitButton.target();
+    }
+
     cardNextTarget(): { x: number; y: number } | null {
         return this.doneCard.target();
     }
@@ -533,6 +574,7 @@ export class RoomScene extends Scene {
             mode: this.mode,
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems(), celebration: { ...this.celebrationUsed } } : null,
             doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,
+            visiting: this.visiting,
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
     }

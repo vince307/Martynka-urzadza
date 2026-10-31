@@ -566,6 +566,9 @@ export const ROOM_LAYOUT = {
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
+    // Visit button (FR-019, plan review F2): opens the other done room in place ("Salon"/"Kuchnia"), top right under the star counter,
+    // clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md, kitchen-room visit button): the kit has no way to a done room; S-23's house cross-section replaces it.
+    visitButton: { left: 1622, top: 172, width: 256, height: 104, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
     slot: { radius: 24, holdOutline: 10 },
     // The worn (neglected) salon before the renovation stage: a colour grade over the real furniture, the extra grade for upholstery,
@@ -625,6 +628,7 @@ export const ROOM_TOUCH_TARGETS = {
     choose: { width: ROOM_LAYOUT.choose.width, height: ROOM_LAYOUT.choose.height },
     close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
     modeButton: { width: ROOM_LAYOUT.modeButton.width, height: ROOM_LAYOUT.modeButton.height },
+    visitButton: { width: ROOM_LAYOUT.visitButton.width, height: ROOM_LAYOUT.visitButton.height },
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
 } as const;
 
