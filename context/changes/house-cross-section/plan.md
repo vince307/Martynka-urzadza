@@ -686,10 +686,10 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [ ] 3.1 `npx vitest run tests/layout.test.ts tests/houseSceneWiring.test.ts` green; unit `<phase-2 count> + N`
-- [ ] 3.2 Deliberate break: move `HOUSE_LAYOUT.back` to `left: 240` → the roof-clear case red; drop the `RESTORE_WEBGL` listener → the wiring guard red; each restored; meta-check: the guards prove wiring, the browser proof is phase 6
-- [ ] 3.3 `npm run build` prints `e2e hook: absent (`; `grep -c "e2eArt" dist/_app/*.js` unchanged from the branch baseline (0)
-- [ ] 3.4 `git diff --stat 112f158 -- src/ui/roomArtLoader.ts src/ui/widgets/SalonBackdrop.ts src/ui/widgets/RoomView.ts src/core/save.ts src/data/balance.ts` empty
+- [x] 3.1 `npx vitest run tests/layout.test.ts tests/houseSceneWiring.test.ts` green; unit `<phase-2 count> + N` — 518f581
+- [x] 3.2 Deliberate break: move `HOUSE_LAYOUT.back` to `left: 240` → the roof-clear case red; drop the `RESTORE_WEBGL` listener → the wiring guard red; each restored; meta-check: the guards prove wiring, the browser proof is phase 6 — 518f581
+- [x] 3.3 `npm run build` prints `e2e hook: absent (`; `grep -c "e2eArt" dist/_app/*.js` unchanged from the branch baseline (0) — 518f581
+- [x] 3.4 `git diff --stat 112f158 -- src/ui/roomArtLoader.ts src/ui/widgets/SalonBackdrop.ts src/ui/widgets/RoomView.ts src/core/save.ts src/data/balance.ts` empty — 518f581
 - [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 4: Room ↔ house navigation, the hook and the moved tests
