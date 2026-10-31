@@ -823,7 +823,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 #### Automated
 
 - [x] 4.1 New and extended wiring tests green; unit `<phase-3 count> + N` — 74d5aea
-- [x] 4.2 Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 8
+- [x] 4.2 Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 8 — 74d5aea
 - [x] 4.3 `git diff --stat <phase-3 sha> -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty — 74d5aea
 - [ ] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (with one room "Dalej" still stays in the salon: `room-change` FR-019 and every `cardNext` spec stay green)
 
