@@ -10,6 +10,8 @@ export const HOUSES: readonly HouseState[] = [
             { room: 'kitchen', floor: 0, place: 1 },
         ],
     },
+    // The space base (S-28). No HOUSE_GEOMETRY entry yet: S-29 adds the cross-section. Nobody can choose it until the choice view (phase 6).
+    { id: 'base-1', rooms: [{ room: 'bridge', floor: 0, place: 0 }] },
 ];
 
 export const FIRST_HOUSE: HouseState = HOUSES[0];

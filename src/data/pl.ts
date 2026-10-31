@@ -413,7 +413,7 @@ export const pl = {
         choose: 'Wybieram',
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
-        names: { salon: 'Salon', kitchen: 'Kuchnia' },
+        names: { salon: 'Salon', kitchen: 'Kuchnia', bridge: 'Mostek' },
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
@@ -437,6 +437,13 @@ export const pl = {
             setUpCoffee: 'Urządź kącik kawowy',
             placeBench: 'Postaw ławkę',
             setOutDishes: 'Ustaw naczynia',
+            // DESIGN-GAP (docs/design-gaps.md): the kit has no Mostek copy; these task labels are ours (imperative + accusative).
+            placeConsole: 'Postaw pulpit',
+            placePilotChair: 'Postaw fotel pilota',
+            setUpTelescope: 'Ustaw teleskop',
+            placePlanetShelf: 'Postaw regał z planetami',
+            layOrbitMat: 'Połóż matę orbitalną',
+            setUpPlantPod: 'Ustaw kapsułę roślinną',
         },
         // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
@@ -457,6 +464,12 @@ export const pl = {
             'kitchen-coffee': 'kącik kawowy',
             'kitchen-bench': 'ławka',
             'kitchen-rack': 'naczynia',
+            'bridge-console': 'pulpit sterowniczy',
+            'bridge-chair': 'fotel pilota',
+            'bridge-telescope': 'teleskop',
+            'bridge-shelf': 'regał z planetami',
+            'bridge-rug': 'mata orbitalna',
+            'bridge-plants': 'kapsuła roślinna',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -477,6 +490,12 @@ export const pl = {
             'kitchen-coffee': ['Naturalny', 'Słoneczny', 'Miętowy'],
             'kitchen-bench': ['Naturalna', 'Słoneczna', 'Miętowa'],
             'kitchen-rack': ['Naturalne', 'Słoneczne', 'Miętowe'],
+            'bridge-console': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-chair': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-telescope': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-shelf': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-rug': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'bridge-plants': ['Naturalna', 'Słoneczna', 'Miętowa'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {

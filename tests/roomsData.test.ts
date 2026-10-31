@@ -7,26 +7,28 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
-import { FIRST_HOUSE } from '../src/data/houses';
+import { BRIDGE, FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
+import { FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
 import { GAME_HEIGHT, GAME_WIDTH, MIN_TOUCH_TARGET } from '../src/data/layout';
 
+// Mostek (FR-044) costs up to 21 stars; the other rooms stay within 15.
+const MAX_TASK_COST = 21;
 const cleanRound = balance.round.length * balance.round.starPerTask + balance.round.cleanRoundBonus;
 
 // Every registered room, not only the salon (M-R5, L-R10): a second room must not slip past the invariants.
 describe('every room in ROOMS', () => {
     const rooms = Object.values(ROOMS);
 
-    it('is keyed by its own id and placed in the first house', () => {
+    it('is keyed by its own id and placed in exactly one house of HOUSES', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
-        const placed = FIRST_HOUSE.rooms.map((c) => c.room);
-        for (const id of Object.keys(ROOMS)) expect(placed, id).toContain(id);
+        const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
     });
 
-    it('has one furniture task per slot, whole costs of 5-15 stars, the first within one clean round', () => {
+    it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
         for (const room of rooms) {
             const slotIds = room.slots.map((s) => s.id);
             expect(new Set(slotIds).size, room.id).toBe(slotIds.length);
@@ -36,7 +38,7 @@ describe('every room in ROOMS', () => {
             for (const { cost } of room.tasks) {
                 expect(Number.isInteger(cost), room.id).toBe(true);
                 expect(cost, room.id).toBeGreaterThanOrEqual(5);
-                expect(cost, room.id).toBeLessThanOrEqual(15);
+                expect(cost, room.id).toBeLessThanOrEqual(MAX_TASK_COST);
             }
             expect(room.tasks[0]?.cost ?? 0, room.id).toBeLessThanOrEqual(cleanRound);
         }
@@ -88,6 +90,27 @@ describe('every room in ROOMS', () => {
             expect(new Set(keys).size, room.id).toBe(keys.length);
             for (const key of keys) expect(key.startsWith(`${room.id}/`), key).toBe(true);
         }
+    });
+});
+
+describe('bridge data (FR-044)', () => {
+    it('costs 6, 10, 13, 14, 17, 19, 21 = 100 stars, each above the salon task at the same index', () => {
+        expect(BRIDGE.tasks.map((t) => t.cost)).toEqual([6, 10, 13, 14, 17, 19, 21]);
+        expect(BRIDGE.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(100);
+        BRIDGE.tasks.forEach((t, i) => expect(t.cost, `task ${i}`).toBeGreaterThan(SALON.tasks[i].cost));
+    });
+
+    it('is the stage first, then six furniture tasks, and the only room of the base', () => {
+        expect(BRIDGE.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        expect(BRIDGE.slots).toHaveLength(6);
+        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }]);
+    });
+
+    it('keeps the child in Mostek after the last task: Dalej stays', () => {
+        const states = { bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} } };
+        const moved = nextRoom({ rooms: states, currentRoom: 'bridge' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
+        expect(moved.currentRoom).toBe('bridge');
+        expect(moved.movedFrom).toBeNull();
     });
 });
 

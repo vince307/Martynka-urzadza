@@ -19,6 +19,7 @@ const OUT = join(ROOT, 'public/assets/tasks');
 const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
+const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
@@ -70,6 +71,14 @@ const ROOM_PACKS = [
             'kitchen-bench-natural', 'kitchen-bench-sunny', 'kitchen-bench-mint',
             'kitchen-rack-natural', 'kitchen-rack-sunny', 'kitchen-rack-mint',
         ],
+        recolourBoard: false,
+    },
+    {
+        room: 'bridge',
+        pack: SPACE_BASE,
+        scene: ['bridge-before', 'bridge-after', 'bridge-shadows'],
+        decor: [],
+        furniture: ['console', 'chair', 'telescope', 'shelf', 'rug', 'plants'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `bridge-${slot}-${v}`)),
         recolourBoard: false,
     },
 ];
