@@ -136,7 +136,7 @@ export interface Targets {
     doneNext?: Point | null;
     doneRoom?: Point | null;
     unlockNext: Point | null;
-    ageBack?: Point | null;
+    themeBack?: Point | null;
     resume: Point | null;
     taskButton?: Point | null;
     thumbs?: Point[];

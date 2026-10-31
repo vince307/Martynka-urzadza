@@ -86,11 +86,6 @@ export function firstRoundDone(learner: Pick<SessionLearner, 'history'>, variant
     );
 }
 
-/** "Wróć" to the age choice shows only to a child-placed learner who has not finished her first round (F-02 b). */
-export function ageBackOffered(learner: Pick<SessionLearner, 'history' | 'stageOverriddenByParent'>, variants: VariantState, warmupLength: number): boolean {
-    return !learner.stageOverriddenByParent && !firstRoundDone(learner, variants, warmupLength);
-}
-
 /** Some room of the building has a renovation task done: the child has already spent stars there. */
 export function hasPurchase(rooms: Readonly<Record<string, RoomState>>): boolean {
     return Object.values(rooms).some((r) => r.tasksDone > 0);

@@ -1,6 +1,9 @@
 // Origin: first-building-choice phase 1 (S-28, FR-043). "Wróć" to the building choice: pure rule over saved data, literal oracles.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { hasPurchase, themeBackOffered, type SessionLearner } from '../src/core/placement';
+import { hasPurchase, needsPlacement, themeBackOffered, type SessionLearner } from '../src/core/placement';
+import { decodeSave, encodeSave, freshSession, validateSave } from '../src/core/save';
+import { houseOf } from './helpers';
 import type { VariantState } from '../src/core/types';
 
 const WARMUP = 6;
@@ -36,5 +39,34 @@ describe('themeBackOffered', () => {
     });
     it('is offered for a room map with only zeros', () => {
         expect(themeBackOffered({ history: [] }, fresh, WARMUP, { salon: room(0), kitchen: room(0) })).toBe(true);
+    });
+});
+
+describe('a v1 save lifted by decodeSave', () => {
+    it('has 2 history entries and fresh variants, so the way back is offered (accepted edge, plan-review F1); 7 entries end it', () => {
+        const raw: unknown = JSON.parse(readFileSync(new URL('./fixtures/save-v1.json', import.meta.url), 'utf8'));
+        const result = decodeSave(raw);
+        if (result.kind !== 'ok' || result.session.learner === null) throw new Error('fixture must decode');
+        const { learner: lifted, variants, rooms } = result.session;
+        expect(variants).toEqual(fresh);
+        expect(lifted.history).toHaveLength(2);
+        expect(themeBackOffered(lifted, variants, WARMUP, {})).toBe(true);
+        const extended = { ...lifted, history: [...lifted.history, ...history(5)] };
+        expect(themeBackOffered(extended, variants, WARMUP, rooms)).toBe(false);
+    });
+});
+
+describe('a save without a learner after "Wróć"', () => {
+    it('keeps stars and the bought salon task, and asks for placement again', () => {
+        const base = freshSession(houseOf('living'), 7);
+        const session = { ...base, rooms: { living: { tasksDone: 2, chosen: { sofa: 1 as const } } } };
+        const raw: unknown = JSON.parse(JSON.stringify(encodeSave(session)));
+        expect(validateSave(raw)).toBe(true);
+        const result = decodeSave(raw);
+        if (result.kind !== 'ok') throw new Error('must decode');
+        expect(result.session.stars).toBe(7);
+        expect(result.session.rooms).toEqual(session.rooms);
+        expect(result.session.learner).toBeNull();
+        expect(needsPlacement(result.session.learner)).toBe(true);
     });
 });

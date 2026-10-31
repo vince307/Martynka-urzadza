@@ -486,11 +486,11 @@ describe('isExpression', () => {
 
 describe('"Wróć" to the age choice (F-02 b)', () => {
     it('is a touch target inside the left margin, clear of the notebook, above the build id caption', () => {
-        const { ageBack, notebook } = TASK_LAYOUT;
-        expect(TASK_TOUCH_TARGETS.ageBack).toEqual({ width: ageBack.width, height: ageBack.height });
-        expect(ageBack.left).toBeGreaterThanOrEqual(0);
-        expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
-        expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+        const { themeBack, notebook } = TASK_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.themeBack).toEqual({ width: themeBack.width, height: themeBack.height });
+        expect(themeBack.left).toBeGreaterThanOrEqual(0);
+        expect(themeBack.left + themeBack.width).toBeLessThanOrEqual(notebook.left);
+        expect(themeBack.top + themeBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });
 
@@ -543,7 +543,7 @@ describe('page and age button lips (phase 5)', () => {
     });
 
     it('keeps the lip of "Wróć" above the build id caption', () => {
-        const { ageBack } = TASK_LAYOUT;
-        expect(ageBack.top + ageBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+        const { themeBack } = TASK_LAYOUT;
+        expect(themeBack.top + themeBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });

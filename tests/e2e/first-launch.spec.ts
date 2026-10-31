@@ -153,6 +153,8 @@ test('#12 (proposed) a wrong gate answer gives a calm message and a new problem 
     const start = await snapshot(page);
     expect(start.learner).toMatchObject({ stage: 'E4', stageOverriddenByParent: true, warmupPending: false });
     expect(start.warmup).toBe(false);
+    // FR-043: the parent path offers "Wróć" to the building choice too, during the first round.
+    await expect.poll(async () => (await targets(page)).themeBack ?? null).not.toBeNull();
     await playRound(page, ROUND_LENGTH, 0);
     expect((await snapshot(page)).outcomes).toHaveLength(ROUND_LENGTH);
 });
@@ -191,11 +193,12 @@ test('#12 (proposed) with the gate open a tap under the overlay on an age button
     expect((await snapshot(page)).learner?.stage).toBe('E3');
 });
 
-// Risk #12 (playtest F-02 b): a child who tapped the wrong age can go back to the age choice, but only
-// until her first ordinary round is finished. The way back is a canvas button (hook target `ageBack`);
-// the saved learner is cleared and flushed at once, so a reload after the new age shows the new stage.
-// Origin: context/changes/playtest-fixes-f01-f03 phase 8. The pure rule (ageBackOffered) is proved by tests/ageBack.test.ts.
-test('#12 "Wróć" returns to the age choice keeping the stars, survives a reload, and disappears after the first ordinary round', async ({ page }) => {
+// Risk #12 (playtest F-02 b, S-28 FR-043): a child who tapped the wrong age or building can go back to the building choice,
+// but only until her first ordinary round is finished. The way back is a canvas button (hook target `themeBack`);
+// the saved learner is cleared and flushed at once, the placement travels to the choice view, the stars stay.
+// Origin: playtest-fixes-f01-f03 phase 8, moved to the building choice by first-building-choice phase 7. The pure rule
+// (themeBackOffered) is proved by tests/themeBack.test.ts.
+test('#12 "Wróć" returns to the building choice keeping the stars and the placement, survives a reload, and disappears after the first ordinary round', async ({ page }) => {
     await passWelcomeAsChild(page, 8, OCTOBER);
     expect((await snapshot(page)).learner?.stage).toBe('E3');
     expect((await snapshot(page)).warmup).toBe(true);
@@ -203,38 +206,35 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     await playTask(page, false);
     expect((await snapshot(page)).stars).toBe(1);
 
-    // Back to the age choice and an older age: the warm-up is of E5, the earned star stays.
     const first = await targets(page);
-    expect(first.ageBack).toBeTruthy();
+    expect(first.themeBack).toBeTruthy();
     const beforeBack = await writesDone(page);
-    await tapScene(page, first.ageBack!);
+    await tapScene(page, first.themeBack!);
     await screenIs(page, 'welcome');
+    await expect.poll(async () => (await snapshot(page)).welcomeView).toBe('choice');
     // "Wróć" writes at once: the next finished write carries the reason 'now' (flush), never 'change' (the 500 ms debounce).
-    // Nothing else in the warm-up flushes before the round ends, so without the flush this stays red (visual gate: the
-    // earlier `dirty` read flaked when a later registry write marked the state dirty again).
     await expect.poll(async () => {
         const save = (await snapshot(page)).save;
         return (save?.writes ?? 0) > beforeBack ? save?.lastReason : null;
     }, { intervals: [50] }).toBe('now');
-    const age9 = (await targets(page)).ages?.find((a) => a.age === 9);
-    expect(age9).toBeDefined();
-    const afterBack = await writesDone(page);
-    await tapScene(page, age9!);
-    await passChoice(page);
-    const older = await snapshot(page);
-    expect(older.learner?.stage).toBe('E5');
-    expect(older.warmup).toBe(true);
-    expect(older.stars).toBe(1);
+    // The choice view of a placed learner has no "Wróć" of its own.
+    expect((await targets(page)).choiceBack ?? null).toBeNull();
 
-    // The choice is saved: a reload resumes the E5 warm-up and still offers "Wróć". `dirty` turns false when a write
-    // starts, so the reload waits for a write that FINISHED after the choice (writes counts finished writes).
+    const afterBack = await writesDone(page);
+    await passChoice(page, 'space');
+    const again = await snapshot(page);
+    expect(again.learner?.stage).toBe('E3');
+    expect(again.warmup).toBe(true);
+    expect(again.stars).toBe(1);
+
+    // The choice is saved: a reload resumes the E3 warm-up and still offers "Wróć".
     await savedSince(page, afterBack);
     await page.reload();
     await screenIs(page, 'task');
     const reloaded = await snapshot(page);
-    expect(reloaded.learner?.stage).toBe('E5');
+    expect(reloaded.learner?.stage).toBe('E3');
     expect(reloaded.stars).toBe(1);
-    await expect.poll(async () => (await targets(page)).ageBack ?? null).not.toBeNull();
+    await expect.poll(async () => (await targets(page)).themeBack ?? null).not.toBeNull();
 
     // The warm-up and the first ordinary round: after them the way back is gone, also after a reload.
     await playRound(page, WARMUP_LENGTH, 0);
@@ -243,9 +243,9 @@ test('#12 "Wróć" returns to the age choice keeping the stars, survives a reloa
     await screenIs(page, 'task');
     const beforeEnd = await writesDone(page);
     await playRound(page, ROUND_LENGTH, 0);
-    await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
+    await expect.poll(async () => (await targets(page)).themeBack ?? null).toBeNull();
     await savedSince(page, beforeEnd, 'now');   // the round end flushes at once, after its last registry write
     await page.reload();
     await screenIs(page, 'task');
-    await expect.poll(async () => (await targets(page)).ageBack ?? null).toBeNull();
+    await expect.poll(async () => (await targets(page)).themeBack ?? null).toBeNull();
 });
