@@ -1,7 +1,7 @@
 ---
 change_id: house-cross-section
 title: Przekrój domu z piętrami; „Do pokoju” zawsze do pokoju w remoncie
-status: planned
+status: plan_reviewed
 created: 2026-10-31
 updated: 2026-10-31
 archived_at: null

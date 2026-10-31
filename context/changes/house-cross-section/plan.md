@@ -113,7 +113,8 @@ spec. Each phase is green on the full local gate.
 ## Critical Implementation Details
 
 - **State sequencing.** `scene.switch(SCENE_KEYS.room, data)` sleeps the house and wakes the room with `data`; the
-  room's wake handler must compute `visiting = houseWakeVisit(data, currentRoom, cells)` BEFORE its redraw, and its
+  room's wake handler must set `visiting = houseWakeVisit(data, currentRoom, cells)` in place of `refresh`'s
+  `visiting = null` (after the other resets, BEFORE its redraw; plan review F4), and its
   `onSleep` keeps `visiting = null`. A wake with `undefined` data (notebook "Do pokoju", house back) must give `null`.
 - **Timing & lifecycle.** The first `scene.switch(SCENE_KEYS.house)` STARTS the house scene (create runs, no wake);
   later ones wake it. `HouseScene` must draw from the same `render()` in both `create` and the wake handler, and set the
@@ -343,7 +344,12 @@ UI components only.
 - Re-render on `changedata-${REGISTRY_KEYS.roomLoad}` while active and synchronously on `Renderer.Events.RESTORE_WEBGL`;
   listeners removed on `shutdown`.
 - Hook surface (used by phase 4): `snapshot(): { cells: { id, floor, place, room, state, mode }[]; shellReady; pending: string[] }`,
-  `targets(): { back, cells: Record<cellId, {x, y}> }` (interior points), `pixel(cellId)` (one pixel of the cell texture).
+  `targets(): { back, cells: Record<cellId, {x, y}> }` (interior points), `pixel(cellId)` (one pixel from the middle of the
+  cell texture: under WebGL `snapshotPixel` like `SalonBackdrop.pixel`; under Canvas read the DynamicTexture's own 2D
+  `context.getImageData(x, y, 1, 1)` synchronously — NOT `null` as `SalonBackdrop.pixel` returns there, or the phase-6
+  Canvas assert is vacuous; plan review F3).
+- The `?e2eArt=house` seam is read from `REGISTRY_KEYS.forcedArt` (set by `main.ts`, the name is not an e2e marker), never
+  by importing `src/testing/` (plan review F7).
 
 #### 4. Tests
 
@@ -390,8 +396,11 @@ The "Dom" button replaces the visit button; the room's wake reads the house's da
   depth `controls`, label `pl.house.open`, at `ROOM_LAYOUT.houseButton`) shown when not `blocked` (panel open or card —
   kitchen follow-up 16 stays unfired; change mode closes on sleep as today); tap → `this.tap()`,
   `scene.switch(SCENE_KEYS.house)`.
-- The wake handler becomes `(sys, data)`: compute `visiting = houseWakeVisit(data, currentRoom, houseCells(…))` before
-  the existing resets and redraw; `onSleep` keeps `visiting = null`; `create` keeps `visiting = null`; when `visiting`
+- The wake handler becomes `(sys, data)`: the existing resets run first, and `refresh`'s own `this.visiting = null` is
+  REPLACED by `this.visiting = houseWakeVisit(data, currentRoom, houseCells(…))` (so no later line in `refresh` clears it),
+  all before the redraw; `create` calls `refresh()` without data (→ `null`); keep the source anchors `const refresh = (`
+  and `const onSleep = (): void => {` that `tests/roomVisitWiring.test.ts` and `tests/salonStyleWiring.test.ts` cut on
+  (plan review F4/F8); `onSleep` keeps `visiting = null`; `create` keeps `visiting = null`; when `visiting`
   is set call `roomArtLoader.ensure([visiting])`. `RoomScene` still never writes `REGISTRY_KEYS.currentRoom` outside the
   "Dalej" branch.
 - `snapshot()` keeps `visiting`; add `houseButtonTarget()`.
@@ -408,8 +417,11 @@ in place); its DESIGN-GAP comment now points at the house rows.
 **Files**: `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts`
 
 **Contract**: `inHouse = () => game.scene.isActive(SCENE_KEYS.house)`; `screen` checks `inHouse()` first → `'house'`;
-snapshot `house: inHouse() ? house().snapshot() : null` beside the room; `housePixel(cellId)`; targets `houseButton`
-(room), `houseBack`, `houseCells` (house), every room target `null` while in the house; `visitButton` removed.
+snapshot `houseView: inHouse() ? house().snapshot() : null` beside the room — NOT `house`: the snapshot's `house` field
+already carries the saved `HouseState` and `tests/e2e/rooms-as-data.spec.ts` asserts it (plan review F2); `housePixel(cellId)`;
+targets `houseButton` (room), `houseBack`, `houseCells` (house), every room target `null` while in the house, and the
+sleeping task scene's summary targets (`nextRound`, `toRoom`, `unlockNext`, `ageBack`) `null` while `inRoom() || inHouse()`
+(today they are nulled for `inRoom()` only; plan review F5); `visitButton` removed.
 `E2EArtSeam` includes `'house'`. Support types follow; a helper `openHouse(page)` taps `houseButton` and waits for
 `screen === 'house'`.
 
@@ -459,7 +471,13 @@ renovation (touch has no hover), closed cell inert, a known not-reached room sho
 board in a cream cell (extends 178); row 180 marked closed by S-23. Follow-ups with `Trigger:` lines: kitchen 3, 14, 15
 (loader untouched, re-recorded), 2 (no house "Obrazki" line), 10 (`drawRoomMiniature` untouched; capture clips), 12
 (re-record `Trigger: S-24`), 16 (guarded, re-record), 19 (re-record), rooms-as-data 11 (kids id → S-25), audit-art-renderer
-2 closed as stale, `SalonBackdrop` could share `captureRoomMiniature` (Trigger: next change to `SalonBackdrop`),
+2 closed as stale, plus every open follow-up whose `Trigger:` names a file or path this slice changes (plan review F6):
+notebook-polish §6 and salon-style/salon-extra-slots L-R11 (`RoomScene` wake/sleep), stale-tab-and-health "worker build
+id" (`registerServiceWorker`), salon-load-health M-6 (closed by phase 2's warning and the house smoke line),
+audit-boot-hidden-tab G-3 (room miniature), the `artHealth.ts` triggers (save-reason-and-recovery 20, load-and-tab-guard
+A-11, audit-art-renderer 23, stale-tab-and-health 28), narrator-round-summary 39 and load-and-tab-guard P-6 (already fixed
+in code: close as stale) — each included, closed as stale with the evidence, or re-recorded with its trigger;
+`SalonBackdrop` could share `captureRoomMiniature` (Trigger: next change to `SalonBackdrop`),
 house sky gradient (Trigger: a designer answer), back-to-the-previous-room (Trigger: playtest note).
 
 #### 2. Seam sweep
@@ -511,7 +529,8 @@ One spec modelled on `tests/e2e/kitchen-room.spec.ts` against the hook build, pl
 **Contract**: tests (risk ids in titles):
 - `S-23 FR-038 the house at the start shows the salon in renovation and three closed cells` — fresh context; room →
   `openHouse`; `house.cells` states `[current, closed, closed, closed]` (ground-left salon); `mode` of the salon cell
-  `live`; `housePixel('ground-left')` not the background colour; tap `houseCells['upper-right']` → still `screen: 'house'`;
+  `live`; `housePixel('ground-left')` non-null with alpha 255 (an uncaptured texture is transparent, the sky is not in
+  the texture; plan review F3); tap `houseCells['upper-right']` → still `screen: 'house'`;
   tap `houseBack` → `screen: 'room'`, room `salon`, `visiting` null.
 - `#2 #16 S-23 FR-039 a done room opened from the house; "Do pokoju" from the notebook returns to the room in renovation`
   — reach salon done + kitchen current (the kitchen spec's helper or `?e2eStars`); `openHouse`; states
@@ -525,15 +544,20 @@ One spec modelled on `tests/e2e/kitchen-room.spec.ts` against the hook build, pl
 
 **File**: `tests/e2e/canvas-renderer.spec.ts`
 
-**Contract**: add `S-23 house miniatures are captured under Canvas` — open the house, `housePixel('ground-left')` not the
-background colour.
+**Contract**: add `S-23 house miniatures are captured under Canvas` — open the house, `housePixel('ground-left')` polled
+until non-null, alpha 255.
+
+**File**: `playwright.config.ts`
+
+**Contract**: add `house-cross-section` to the `ROUND_SPEC` alternation (the spec needs the hook build, project
+`chromium-hook`, like `kitchen-room`); no other field changes (plan review F1).
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - Spec red before (deliberate breaks, each run alone with `-g`): make the room's wake set `visiting` from the previous value instead of `houseWakeVisit` → the FR-039 test red on the room after "Do pokoju"; make `cellTap` return a room for a closed cell → the closed-cell assert red; skip the capture in `HouseView` → both pixel asserts red; ignore the `?e2eArt=house` seam → the stand-in test red; each restored; green after
-- `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
+- `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts --list` lists the new tests under `chromium-hook` only; both specs green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
 - Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
 
 ---
@@ -560,10 +584,16 @@ background colour.
 
 ## Known risks
 
-- `dt.draw` of a Graphics and of filtered (worn) images under Canvas was not run in research; the phase-6 Canvas case and
-  visual frame (7) prove it. If Canvas drops the worn filter the miniature is ungraded (same as the room under Canvas).
-- Phaser wake data (`switch(key, data)`) has no precedent in the repo; phase 4 wiring and phase 6 prove it. If unreliable,
-  fall back to a runtime registry key written by the house and consumed (cleared) by the room wake — recorded decision.
+- `dt.draw` of a Graphics and of filtered (worn) images under Canvas was not run (source read only, see below); the phase-6
+  Canvas case and visual frame (7) prove it. If Canvas drops the worn filter the miniature is ungraded (same as the room under Canvas).
+- Phaser wake data (`switch(key, data)`) has no precedent in the repo. Plan review read the 4.2.1 source:
+  `ScenePlugin.switch` → `queueOp('switch', from, to, data)` → `processQueue` `this[op](keyA, keyB, data)` →
+  `SceneManager.switch` sleeps `from`, then `wake(to, data)` (→ `Systems.wake` emits `Events.WAKE` with `(sys, data)`) or
+  `start(to, data)` (→ `create(data)`). Phase 6 proves it in the browser; the registry-key fallback stays recorded but is
+  not expected.
+- Canvas capture: plan review read `DynamicTexture._renderCanvas` (4.2.1): the `DRAW` command calls
+  `object.renderCanvas(renderer, object, camera)` on the off-list holder (Container → children, Graphics included) into
+  the DT's own 2D canvas, so the capture works there; the risk left is the pixel read (F3) and the ungraded worn look.
 - Runtime house art could show the stand-in shell for a frame on the first open; from the precache it is near-instant.
 
 ## Performance Considerations
@@ -610,6 +640,9 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 - **P10 — the "Dom" button is hidden only while `blocked`** (panel or card), as the visit button was: kitchen follow-up
   16 stays unfired; change mode closes on sleep. Would change: a way out that stays visible over the card.
 - **P11 — kitchen follow-up 6 (SW `redundant` warning) is fixed here** (fires: the precache set grows; one line).
+- **R1 (plan review, 2026-10-31)** — findings F1-F6 fixed in place (ROUND_SPEC row, `houseView` hook name, Canvas pixel
+  read, wake ordering, task targets nulled in the house, fired generic follow-ups); report
+  `context/changes/house-cross-section/reviews/plan-review.md`. Phases, drivers and Progress rows unchanged (36).
 - **P12 — phases**: six (1 tdd, 4 impl, 1 e2e), at most two new UI components per phase (phase 3: `HouseScene`,
   `HouseView`); the hook moves with the navigation (phase 4) so every phase keeps the e2e suite green.
 
@@ -694,5 +727,5 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 #### Automated
 
 - [ ] 6.1 Spec red before (deliberate breaks, each run alone with `-g`): make the room's wake set `visiting` from the previous value instead of `houseWakeVisit` → the FR-039 test red on the room after "Do pokoju"; make `cellTap` return a room for a closed cell → the closed-cell assert red; skip the capture in `HouseView` → both pixel asserts red; ignore the `?e2eArt=house` seam → the stand-in test red; each restored; green after
-- [ ] 6.2 `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
+- [ ] 6.2 `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts --list` lists the new tests under `chromium-hook` only; both specs green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
 - [ ] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
