@@ -662,10 +662,10 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [x] 1.1 `npx vitest run tests/houseCells.test.ts tests/house.test.ts` green; unit `<branch unit baseline> + N` (N = new cases)
-- [x] 1.2 Deliberate break: make `houseWakeVisit` accept the current room → its case red; make `houseCells` mark a known not-reached room `done` → the first literal case red; each restored; meta-check: oracles are literal arrays written from FR-033/FR-039, not computed by the code under test
-- [x] 1.3 `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json src/data/rooms.ts` empty
-- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + sample E1-E6, build `e2e hook: absent (`); e2e not affected (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.1 `npx vitest run tests/houseCells.test.ts tests/house.test.ts` green; unit `<branch unit baseline> + N` (N = new cases) — 158004b
+- [x] 1.2 Deliberate break: make `houseWakeVisit` accept the current room → its case red; make `houseCells` mark a known not-reached room `done` → the first literal case red; each restored; meta-check: oracles are literal arrays written from FR-033/FR-039, not computed by the code under test — 158004b
+- [x] 1.3 `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json src/data/rooms.ts` empty — 158004b
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + sample E1-E6, build `e2e hook: absent (`); e2e not affected (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — 158004b
 
 ### Phase 2: House art: script, WebP, table, deploy smoke
 
