@@ -1,7 +1,7 @@
 ---
 change_id: first-building-choice
 title: Wybór „Co urządzamy najpierw?” (Dom albo Baza kosmiczna) i Mostek bazy
-status: new
+status: preparing
 created: 2026-10-31
 updated: 2026-10-31
 archived_at: null
