@@ -696,11 +696,11 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [x] 4.1 `npx vitest run tests/roomVisitWiring.test.ts tests/layout.test.ts tests/houseCells.test.ts` green; unit `<phase-3 count> − (deleted roomVisit cases) + N` — SHA
-- [x] 4.2 `grep -rn "visitTarget\|visitButton\|roomVisit'" src tests` empty (except `RoomSnapshot.visiting`) — SHA
-- [x] 4.3 Deliberate break: set `visiting` from any truthy `data.visit` without `houseWakeVisit` → the wiring guard red; drop `visiting = null` from `onSleep` → the guard red; each restored; meta-check: the guards are source-level, the kitchen spec and phase 6 prove the browser — SHA
+- [x] 4.1 `npx vitest run tests/roomVisitWiring.test.ts tests/layout.test.ts tests/houseCells.test.ts` green; unit `<phase-3 count> − (deleted roomVisit cases) + N` — b46f63f
+- [x] 4.2 `grep -rn "visitTarget\|visitButton\|roomVisit'" src tests` empty (except `RoomSnapshot.visiting`) — b46f63f
+- [x] 4.3 Deliberate break: set `visiting` from any truthy `data.visit` without `houseWakeVisit` → the wiring guard red; drop `visiting = null` from `onSleep` → the guard red; each restored; meta-check: the guards are source-level, the kitchen spec and phase 6 prove the browser — b46f63f
 - [ ] 4.4 `npx playwright test tests/e2e/kitchen-room.spec.ts` green (orchestrator; sandbox disabled)
-- [x] 4.5 `git diff --stat 112f158 -- src/core/save.ts src/data/balance.ts src/data/rooms.ts src/ui/roomArtLoader.ts` empty — SHA
+- [x] 4.5 `git diff --stat 112f158 -- src/core/save.ts src/data/balance.ts src/data/rooms.ts src/ui/roomArtLoader.ts` empty — b46f63f
 - [ ] 4.6 Full local gate green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; total equals `npx playwright test --list | tail -1`
 
 ### Phase 5: Docs, gap rows, follow-ups, seam sweep and the visual pass
