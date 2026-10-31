@@ -1,13 +1,13 @@
 # Handoff — `first-building-choice` (slice S-28)
 
-Written by the `/10x-implement` phase-3 step of run 2026-10-31-space-base: phase 3 (Mostek art and room data) is committed (5628349) and ticked. The next agent must not get this wrong: `SAVE_VERSION` is 6 now; `tests/fixtures/save-v5*.json` and `save-v6.json` are frozen; phase 4 must not touch `src/core/save.ts` or `src/core/migrations`; `base-1` has NO `HOUSE_GEOMETRY` (S-29), tests pin that.
+Written by the `/10x-implement` phase-4 step of run 2026-10-31-space-base: phase 4 (building as data, load path, FR-049/FR-050 proofs) is committed (930363a) and ticked. The next agent must not get this wrong: `SAVE_VERSION` is 6; phases 5+ must not touch `src/core/save.ts` or `src/core/migrations`; `base-1` has NO `HOUSE_GEOMETRY` (S-29), so RoomScene hides "Dom" there; `buildingStart` takes no `stars` argument (it returns house/rooms/currentRoom only; the caller keeps stars).
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
-| commits | 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + docs |
+| commits | 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + `930363a` p4 + docs |
 | pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | 39 (`grep -c '^- \[ \]' plan.md`) |
@@ -17,30 +17,29 @@ Written by the `/10x-implement` phase-3 step of run 2026-10-31-space-base: phase
 
 | path | what it is |
 |---|---|
-| `scripts/make-task-art.mjs` | `SPACE_BASE` root + `ROOM_PACKS` row `bridge` |
-| `public/assets/rooms/bridge/*.webp` (21 new) | 3 scenes + 18 furniture, 699 124 B total (131 files, 3 395 024 B in the whole `npm run art` log) |
-| `src/data/rooms.ts` | `BRIDGE` (6 slots from the manifest, tasks cost 6/10/13/14/17/19/21 = 100), `ROOMS` gains it |
-| `src/data/roomArt.ts`, `src/data/pl.ts`, `src/data/houses.ts` | `ROOM_SCENE_FILES.bridge`; Mostek names, task labels (DESIGN-GAP comment), variant names; `HOUSES` gains `base-1` (no geometry) |
-| `tests/roomArt.test.ts`, `tests/fixtures/room-art-bridge.json` (new), `tests/roomsData.test.ts`, `tests/houseCells.test.ts` | bridge art snapshot (sizes from the pack manifest), cost pins, one-house placement, `nextRoom` stays in Mostek, geometry pin `['base-1']` |
-| `plan.md` | rows 3.1-3.6 ticked with sha |
+| `src/core/types.ts`, `src/data/houses.ts` | `BuildingChoice`; `BUILDING_CHOICES` (`house` -> `house-1`, `space` -> `base-1`, art keys `choice/house`, `choice/space` for phase 5) |
+| `src/core/house.ts` | `buildingStart(choice, choices, houses)` (pure, throws `RangeError` on unknown choice/house; does not import save.ts) |
+| `src/main.ts` | load path repairs `currentRoom` with `houseRoomIds(savedLayout, ROOMS)` and that building's first room; `FIRST_ROOM` import gone |
+| `src/scenes/RoomScene.ts` | "Dom" button shown only when `HOUSE_GEOMETRY` has the saved house id |
+| `src/testing/e2eHook.ts`, `vite/e2eHookGuard.mjs` | seam `?e2eSave=v5-salon` (frozen `save-v5-salon.json`), marker `v5-salon` |
+| tests | new `tests/buildingNeutral.test.ts`; changed `house`, `roomsData`, `houseWiring`, `freshRoundWiring`, `fixtureLoadPath`, `e2eHookGuard`, `roomVisitWiring` (regex follows the new condition) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npm run art` | ran in the sandbox; `git status --short public/assets` = only `rooms/bridge/` |
-| 5 targeted suites | 74 passed |
-| `npm test` | 224 files, 4120 passed (baseline 4092; after p2 4116, delta +4) |
-| lint / typecheck / deploy + ops shell tests / sample E1-E6 / build | OK; `e2e hook: absent` |
-| `grep -o "assets/rooms/bridge/" dist/sw.js \| wc -l` | 21 |
-| row 3.5 diff (salon, kitchen, balance, curriculum, core, scenes, main) | empty |
-| deliberate break 1 | a bridge WebP moved away -> 3 roomArt cases red (size, no-orphan, weight); restored |
-| deliberate break 2 | console cost 10 -> 9 -> the cost-pin case red; restored. Meta-check: 9 is still above the salon's 7, so the pin (literal list from FR-044) caught it, not the "above the salon" assertion; the oracles are the literal list and the manifest sizes |
-| e2e | not run: no UI change; orchestrator gates it (`179 + 0`) |
+| `npm test` | 4151 passed (baseline 4092; after p3 4120, delta +31) |
+| lint / typecheck / deploy + ops shell tests / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
+| diff vs 5628349 on save.ts, migrations, balance, curriculum, minigames, HouseScene | empty |
+| deliberate break 1 | `base-1` -> `house-1` in `BUILDING_CHOICES` -> `roomsData` choices case and `buildingNeutral` "differ in building" red; restored. Meta-check: the `buildingStart` literal case uses synthetic data, so it stayed green here (it is pinned by its own break 3) |
+| deliberate break 2 | `main.ts` back to `Object.keys(ROOMS)`/`'salon'` -> `houseWiring` load-path guard red; restored |
+| deliberate break 3 | `buildingStart` currentRoom hard-coded `'salon'` -> `house.test` literal case red; restored |
+| deliberate break 4 | `freshRound` reads `REGISTRY_KEYS.currentRoom` -> `freshRoundWiring` guard red; restored |
+| e2e | not run (no UI change visible in a browser path; "Dom" still shows in house-1); orchestrator gates it (`179 + 0`) |
 
 ## 4. Next command
 
-`/10x-implement first-building-choice phase 4`
+`/10x-implement first-building-choice phase 5`
 
 ## 5. Open
 
@@ -61,3 +60,4 @@ Written by the `/10x-implement` phase-3 step of run 2026-10-31-space-base: phase
 - **Phase 1 (tdd):** manual confirmation gate, how-to-proceed and commit-message prompts decided in place (planned set committed, stopped after the phase). Stubs returned wrong values (`[]`/`false`) so RED is an assertion; the fixture was generated after RED, so fixture cases showed ENOENT in RED. Skill ids in the fixture are real E2.1 ids. Would change: none.
 - **Phase 2 (tdd):** manual gate, how-to-proceed, commit-message prompts decided in place (planned set committed, stopped). The plan's wording "every `toBe(5)` moves" was refined: tests that corrupt or re-read a current save need a `room 'living'` base, so they use `v6of('save-v5.json')` instead of the bridge-only `save-v6.json`. The `saveV5.test.ts` "unmigrated" cases now expect `migratedFrom: 5`. The source guard forbids the word `copyHouse` in `building.ts` comments too. Would change: none.
 - **Phase 3 (impl):** manual gate and commit-message prompts decided in place (stopped after the phase). The DESIGN-GAP row for Mostek copy is left to phase 8 (the code comment already marks it). Variant names: four masculine (pulpit, fotel, teleskop, regał), two feminine (mata, kapsuła) as the plan says. Would change: the teacher read finding a wording fault.
+- **Phase 4 (impl):** manual gate and commit-message prompts decided in place (stopped after the phase). `buildingStart` drops the plan's `stars` parameter (unused, lint) and builds the start itself instead of calling `freshSession` (save.ts imports core/house: a cycle); `fixtureLoadPath` has a test that it equals the `freshSession` shape via the fixtures. FR-050 test compares rounds as JSON (tasks hold closures). Would change: a reviewer wanting `freshSession` reuse via a shared module.
