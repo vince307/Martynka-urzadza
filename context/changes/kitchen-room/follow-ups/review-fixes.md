@@ -48,3 +48,11 @@ Each item carries a `Trigger:` line; a later slice greps for them.
     Trigger: the visual gate or a playtest showing a plain backdrop after "Dalej".
 18. `ANIMATION.celebration.room.burstCount` is the literal 22, not `ANIMATION.summaryBurstParticles` (impl-review F7).
     Trigger: the next change to either burst count.
+19. The task-screen backdrop is invisible while the kitchen is current (visual gate, gap 182): the backdrop texture holds the kitchen
+    (`backdropPixel` [221, 206, 183]), but the diorama lies under the notebook and the pack's cream margin equals the page colour.
+    Not the follow-up 17 case (the capture is not plain). Needs a design answer (crop or framing behind the notebook).
+    Trigger: S-23 (house cross-section and its backdrop), the designer's salon re-export on cream (brief P3.2), or a playtest note.
+20. Kitchen stand-in captions under `?e2eArt=room` (visual gate frame `*-16`): the rack and bench captions are partly covered by the
+    counter box (z order of the pack) and "lodówka / Naturalna" fills the 166 px fridge box edge to edge. Readable enough for a
+    fallback; the salon's stand-ins behave the same way.
+    Trigger: the next change to `RoomLayer` stand-ins or `captionAnchor`, or a room whose stand-in caption becomes unreadable.

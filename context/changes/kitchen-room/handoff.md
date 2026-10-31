@@ -1,58 +1,63 @@
 # Handoff — `kitchen-room` (slice S-22)
 
-Written by the `/10x-impl-review kitchen-room` step of run 2026-10-30-rooms-kitchen (2026-10-31). Review verdict APPROVED after one fix commit (82b690c, runtime room-art loader); `MERGE: CLEAR`. The next agent must not get this wrong: **82b690c changed `src/ui/roomArtLoader.ts` after the orchestrator's last full e2e, so the room specs must be re-run at the gate.**
+Written by the visual-gate step of run 2026-10-30-rooms-kitchen (2026-10-31), on `7e1441f`. Verdict **VISUAL: GAPS**: 16 states / 28 frames captured, kitchen matches the pack, star arithmetic checked, no code fix. The next agent must not get this wrong: **gap 182 (the task-screen backdrop is invisible while the kitchen is current) is a design question for the maintainer, not a bug to patch in archive or ship**; and the orchestrator's room-spec re-run for loader fix 82b690c (previous handoff §5) is still owed.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/kitchen-room`, cut from `main` at `942e237` |
-| Commits | p1-p8 `3412b6e`..`779a306`, phase-8 handoff `8ab15e2`, review fix `82b690c` (`fix(kitchen-room): poprawki z przeglądu implementacji`), review docs commit `docs(kitchen-room): przegląd implementacji` |
+| Commits | p1-p8 `3412b6e`..`779a306`, `8ab15e2`, review fix `82b690c`, review docs `7e1441f`, this step's `docs(kitchen-room): bramka wizualna` (no `fix` commit) |
 | Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` |
-| `## Progress` rows open | 8 (`grep -c '^- \[ \]' plan.md`): 4.5, 7.6 [visual]; 5.8, 7.7, 7.8, 7.9 [human]; 7.10 [reviewer] (CI at ship); 8.2 (full e2e count, orchestrator) |
+| `change.md` status | `impl_reviewed` (unchanged; archive sets its own) |
+| `## Progress` rows open | 7 (`grep -c '^- \[ \]' plan.md`): 4.5 [visual] (animations / reduced motion not capturable here), 5.8, 7.7, 7.8, 7.9 [human], 7.10 [reviewer] (CI at ship), 8.2 (full e2e count, orchestrator); 7.6 ticked with its exceptions |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/roomArtLoader.ts` | fix: `attempted` (texture, keyed failure, or fetched without a texture = decode failure) settles a room and is what `ensure` passes to `roomsToLoad`; a failed key is not re-queued in the session |
-| `tests/roomArtLoader.test.ts` | 2 new cases (decode failure settles with cause `decode`; a failed key is not queued again) and a `fetched` rig helper |
-| `src/data/layout.ts`, `src/scenes/BootScene.ts` | stale comments (`REGISTRY_KEYS.roomArtHealth`, boot queue order) |
-| `docs/design-gaps.md` | row 175 wording (actual imperatives, teacher read done) |
-| `context/changes/kitchen-room/reviews/impl-review.md` | the review report (F1 CRITICAL fixed, F2 WARNING fixed, F3-F9 observations) |
-| `context/changes/kitchen-room/follow-ups/review-fixes.md` | follow-ups 14-18 with `Trigger:` |
-| `context/changes/kitchen-room/plan.md` | rows 5.6, 5.7 ticked |
-| `context/changes/kitchen-room/change.md` | status `impl_reviewed` |
+| `context/changes/kitchen-room/screenshots/*.png` | 28 frames: 14 desktop 1440×900, 14 tablet 1024×768 (states 01-16; a dash in the README marks a width not taken) |
+| `context/changes/kitchen-room/screenshots/README.md` | route, input method, frame table (state · desktop · tablet · hook facts), kit frames compared, not captured |
+| `context/changes/kitchen-room/reviews/visual-review.md` | per-state verdicts, pack comparison (positions, layering, captions), star arithmetic, decisions; last line `VISUAL: GAPS — …` |
+| `docs/design-gaps.md` | row 181 closed with the bench-join note; new row 182 (backdrop invisible with the kitchen) |
+| `context/changes/kitchen-room/follow-ups/review-fixes.md` | follow-ups 19 (backdrop, gap 182) and 20 (stand-in captions under `?e2eArt=room`), each with `Trigger:` |
+| `context/changes/kitchen-room/plan.md` | 7.6 ticked with captured/not-captured list; 4.5 annotated, left open |
+| `context/changes/kitchen-room/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result (observed in this step) |
 |---|---|
-| `npm run lint`, `npm run typecheck` | OK, OK (8ab15e2 and 82b690c) |
-| `npm test` | 8ab15e2: 4055 = baseline 4014 + 41 (per-file delta in impl-review.md); 82b690c: 4057 = 4055 + 2 |
-| `bash deploy/test-martynka-deploy.sh`, `bash deploy/ops/test-martynka-ops.sh`, `npm run sample -- E1..E6` | OK, OK, all exit 0 |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| `npx playwright test tests/e2e/kitchen-room.spec.ts --workers=1` (82b690c) | 4 passed (2.8m) |
-| RED of the fix | both new loader cases failed on the old code (`pending().size` expected 0, received 1), green after |
-| Deliberate break re-executed: `flush('now')` moved before `registry.set(currentRoom)` in `RoomScene.moveAfterDone` | `celebrationWiring` order case red; restored from a copy, 8/8 green; meta-check: a source-order guard, the browser order is proven by the kitchen-room move + reload test |
-| Leftover processes | none of mine (`ps -U`), ports 4397/4398 free |
+| `git branch --show-current` | `feat/kitchen-room` |
+| Hook dev server `E2E_HOOK=1 npx vite --config vite/config.dev.mjs --port 4399 --strictPort --host ::` | served; killed at the end (`lsof -ti tcp:4399 -sTCP:LISTEN \| xargs kill`, exit 143 of the background job) |
+| Fresh origin `http://127.0.0.1:4399` | `indexedDB.databases()` `[]`, `localStorage.length` 0 before the game started |
+| Star arithmetic (hook + drawn counter) | 200 + 1 = 201; salon 129 → 72; kitchen 72 → 67 → 41 → 16, +1 → 17, → 2 (= 72 − 71 + 1); free changes 17 and 2 unchanged |
+| Kitchen runtime load after "Dalej" | `roomLoad.settled ['kitchen']`, `roomArtHealth` 21 / 0 missing, `save.dirty false` |
+| Backdrop with the kitchen | `backdrop {drawn, blurred, webgl}`, `backdropPixel` [221, 206, 183]; nothing visible around the notebook (gap 182) |
+| `?e2eArt=room` | `roomArtHealth` 21 / 21 missing, stand-ins drawn, controls intact |
+| lint / typecheck / unit / build | not run: no source file changed in this step (docs, plan, gap file, screenshots only; no test reads `docs/design-gaps.md`) |
+| Playwright | not used (step rule); ports 4397/4398 not touched |
+| Leftover processes | `ps -U $(id -u)` with the sandbox disabled: no vite of mine; the listed `playwright test --workers=3` and `sleep 10` belong to the orchestrator and were left alone |
 
 ## 4. Next command
 
-Visual gate (`references/visual-gate.md`, hook build on 4399, desktop 1440 + tablet 1024): kitchen before the stage, after the stage, furnished, finished, the celebration card (salon tile + kitchen tile, and the kitchen's two-done-tiles card; plus reduced motion), the "Salon"/"Kuchnia" visit button (rows 4.5, 7.6) — then `/10x-archive kitchen-room`.
+`/10x-archive kitchen-room` then ship (no hosted DB)
 
 ## 5. Open
 
-- Orchestrator: re-run `tests/e2e/kitchen-room.spec.ts`, `rooms-as-data`, `salon-art`, `health-lines`, `room-change` (loader fix 82b690c), then the full e2e for row 8.2 (`<branch baseline> + 4`, total = `npx playwright test --list | tail -1`, 174).
-- Manual rows: 4.5 / 7.6 [visual]; 5.8 S-17 kitchen costs, 7.7 accept the interim visit button, 7.8 green board vs cream margin, 7.9 offline tablet kitchen load [human]; 7.10 [reviewer] (CI at ship): job `check`, log `Tests +[0-9]+ passed` and `e2e hook: absent \(`.
-- Follow-ups 14-18 (`createRoomArtLoader` `ensure` catch detach and repeated `once('complete')`; `RoomScene` `onSleep`/`refresh` dropping a card without `moveAfterDone`; `TaskScene` `onWake` backdrop; `ANIMATION.celebration` literal 22) in `follow-ups/review-fixes.md`.
+- **Orchestrator (inherited, still owed):** re-run `tests/e2e/kitchen-room.spec.ts`, `rooms-as-data`, `salon-art`, `health-lines`, `room-change` after loader fix 82b690c, then the full e2e for row 8.2 (`<branch baseline> + 4`, total = `npx playwright test --list | tail -1`). This step changed no code, so it adds no spec to re-run.
+- **Gap 182 / follow-up 19** (`SalonBackdrop.render`, `BACKDROP` in `src/data/layout.ts`): with the kitchen current, the task, summary and welcome screens look plain. The texture holds the kitchen, but the diorama is under the notebook and the pack margin is the page colour. A human decision is needed, together with row 7.8 (green board vs. cream margin): accept it for now, or ask the designer for a crop or framing.
+- **Row 4.5 [visual], open:** the salon's last-purchase pop, the burst in flight, the hold of a finished room and reduced motion. Claude in Chrome cannot emulate `prefers-reduced-motion` or drive a long press. If wanted, capture them with Playwright `reducedMotion: 'reduce'` and `holdTouch` (`tests/e2e/support/hook.ts`).
+- **Manual rows** (human checklist): 5.8 S-17 kitchen costs; 7.7 accept the interim visit button; 7.8 green board vs. cream margin (now also gap 182); 7.9 offline tablet kitchen load; 7.10 [reviewer] CI `check` at ship.
+- **Follow-up 20** (`RoomLayer` stand-ins, `captionAnchor`): kitchen stand-in captions are partly covered under `?e2eArt=room`. This is a fallback only.
+- Follow-ups 14-18 are unchanged, in `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
 
-- **Fixed by the maintainer (scope.md):** unchanged (save v5, kitchen from locations-v2, one celebration, one room in renovation, no balance change, boot budget measured).
-- **Triage without questions (contract rule 1):** CRITICAL fixed, WARNING fixed when cheap, observations recorded. Skill continuation question answered "Done" (stop after this step).
-- **F1 graded CRITICAL, not WARNING:** the failure path of the runtime load (focus risk 1) kept a room pending forever on a decode failure and looped fetch + redraw on a fetch failure; cheap, test-led fix. Rejected: retrying a failed key with a back-off (more state; boot does not retry either). Would change: a requirement that a transient runtime failure heals without a reload.
-- **F3 (catch-path detach) deferred, not fixed:** no test rig for a throwing `load.image` and the path is practically unreachable. Would change: a report of "Room art could not be queued".
-- **5.6 / 5.7 ticked:** teacher read and manifest geometry both pass (evidence in impl-review.md).
+- **Fixed by the maintainer (scope.md):** unchanged: save v5, the kitchen from locations-v2, one celebration, one room in renovation, no balance change, boot budget measured. No art or slot was invented. `designs/` was only read.
+- **Gap 182 recorded, not fixed.** Rejected: zooming or cropping the backdrop, or painting a board behind the kitchen, because each would invent design (scope.md, profile § 6). This would change if the maintainer or designer specified a backdrop framing.
+- **Fresh device `127.0.0.1:4399`, game only in the iframe, parent tab on `favicon.png`.** Rejected: `localhost` or `[::1]` (earlier gates may have left saves there), and a parent game page (two writers would trip `otherTab`). This would change if the server could not be reached over IPv4.
+- **Taps as synthetic pointer and mouse events at the hook's `targets`.** Rejected: clicking screen coordinates per tap (about 40 purchases, each needing a screenshot to map). A tap was occasionally not taken right after a scene change or panel close, and the same tap a second later worked. This is judged a synthetic-input artefact, because the touch path is proven by `kitchen-room.spec.ts`. This would change if a real-touch run showed a missed first tap on "Salon", "Wybieram" or the task button.
+- **7.6 ticked with its exceptions and 4.5 left open** (the F-04 precedent: 6.6 was ticked with a "NOT captured" list). 7.6's eight states were all captured except reduced motion. 4.5 is mostly animation that this tool cannot capture. This would change if Playwright captures of the animations were made.
+- **Gap 181 closed with a note.** The bench is always bought after the counter (task order in `KITCHEN.tasks`), so "bench without counter" never shows in play. This would change if the kitchen's task order were reordered.
