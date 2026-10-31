@@ -5,12 +5,14 @@ import { describe, expect, it } from 'vitest';
 import { MIGRATIONS, SAVE_VERSION, decodeSave, encodeSave, importProblem, saveProblem } from '../src/core/save';
 
 const fixture = (name: string): Record<string, unknown> => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
+// A v6 base for the strict-check cases: the frozen v5 fixture with only the version moved (a literal spread).
+const v6base = (): Record<string, unknown> => ({ ...fixture('save-v5.json'), version: 6 });
 const clone = <T>(v: T): T => structuredClone(v);
 const SALON_HOUSE = { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }] };
 
 describe('save format v5', () => {
-    it('is the current version', () => {
-        expect(SAVE_VERSION).toBe(5);
+    it('is one version behind the current one (v6 is the rollback guard of first-building-choice)', () => {
+        expect(SAVE_VERSION).toBe(6);
     });
 
     it('lifts the v4 salon fixture to v5 with only the house added', () => {
@@ -19,7 +21,7 @@ describe('save format v5', () => {
         const lifted = MIGRATIONS[4](v4);
         expect(v4).toEqual(before);
         expect(lifted).toEqual({ ...before, version: 5, house: SALON_HOUSE });
-        expect(saveProblem(lifted)).toBeNull();
+        expect(saveProblem(MIGRATIONS[5](lifted))).toBeNull();
     });
 
     it('two lifts do not share the house object', () => {
@@ -49,7 +51,7 @@ describe('save format v5', () => {
         const raw = fixture(name);
         const r = decodeSave(clone(raw));
         if (r.kind !== 'ok') throw new Error('unreadable');
-        expect(encodeSave(r.session)).toEqual({ ...raw, version: 5, house: SALON_HOUSE, generation: 0, writer: '' });
+        expect(encodeSave(r.session)).toEqual({ ...raw, version: 6, house: SALON_HOUSE, generation: 0, writer: '' });
     });
 
     it('keeps the room of a v4 save that is not the salon', () => {
@@ -60,12 +62,12 @@ describe('save format v5', () => {
         expect(Object.keys(r.session.rooms)).toEqual(Object.keys(fixture('save-v4.json').rooms as object));
     });
 
-    it('the v5 fixture decodes unmigrated and encodes back except for the guard placeholders', () => {
+    it('the v5 fixture decodes as migrated from 5 and encodes back as v6 except for the guard placeholders', () => {
         const raw = fixture('save-v5.json');
         const r = decodeSave(raw);
         if (r.kind !== 'ok') throw new Error('unreadable');
-        expect(r.migratedFrom).toBeNull();
-        expect(encodeSave(r.session)).toEqual({ ...raw, generation: 0, writer: '' });
+        expect(r.migratedFrom).toBe(5);
+        expect(encodeSave(r.session)).toEqual({ ...raw, version: 6, generation: 0, writer: '' });
     });
 
     it('encodeSave copies the house', () => {
@@ -84,38 +86,38 @@ describe('save format v5', () => {
         ['a fractional place', { id: 'h', rooms: [{ room: 'salon', floor: 0, place: 0.5 }] }],
         ['a non-string id', { id: 7, rooms: [] }],
     ])('names house for %s', (_n, house) => {
-        const v = { ...fixture('save-v5.json'), house };
+        const v = { ...v6base(), house };
         if (house === undefined) delete (v as { house?: unknown }).house;
         expect(saveProblem(v)).toBe('house');
     });
 
     it('accepts duplicates and unknown room ids in the house', () => {
         const house = { id: 'unknown-house', rooms: [{ room: 'salon', floor: 0, place: 0 }, { room: 'salon', floor: 0, place: 0 }, { room: 'attic', floor: 2, place: 3 }] };
-        expect(saveProblem({ ...fixture('save-v5.json'), house })).toBeNull();
+        expect(saveProblem({ ...v6base(), house })).toBeNull();
     });
 
     it('checks the house after stars (a broken stars value is named first)', () => {
-        expect(saveProblem({ ...fixture('save-v5.json'), stars: -1, house: undefined })).toBe('stars');
+        expect(saveProblem({ ...v6base(), stars: -1, house: undefined })).toBe('stars');
     });
 
     it('the v4 salon fixture is importable', () => {
         expect(importProblem(fixture('save-v4-salon.json'))).toBeNull();
     });
 
-    it('a v6 save is future', () => {
-        expect(decodeSave({ ...fixture('save-v5.json'), version: 6 })).toEqual({ kind: 'unreadable', reason: 'future' });
+    it('a v7 save is future', () => {
+        expect(decodeSave({ ...fixture('save-v5.json'), version: 7 })).toEqual({ kind: 'unreadable', reason: 'future' });
     });
 });
 
 describe('frozen v5 salon fixture (first-building-choice phase 1)', () => {
     // Written by the unchanged v5 code (decode + re-encode); the store stamps generation and writer.
     const raw = () => fixture('save-v5-salon.json');
-    it('is a v5 save with a salon in progress that decodes unmigrated', () => {
+    it('is a v5 save with a salon in progress that decodes as migrated from 5', () => {
         const r = decodeSave(raw());
         expect(r.kind).toBe('ok');
         if (r.kind !== 'ok') return;
-        expect(r.migratedFrom).toBeNull();
-        expect(saveProblem(raw())).toBeNull();
+        expect(r.migratedFrom).toBe(5);
+        expect(saveProblem(MIGRATIONS[5](raw()))).toBeNull();
         expect(r.session.currentRoom).toBe('salon');
         expect(r.session.house.id).toBe('house-1');
         expect(r.session.rooms.salon).toEqual({ tasksDone: 4, chosen: { sofa: 2, rug: 1, 'coffee-table': 0 } });
@@ -130,11 +132,11 @@ describe('frozen v5 salon fixture (first-building-choice phase 1)', () => {
         const again = { ...(encodeSave(r.session) as unknown as Record<string, unknown>) };
         delete again.generation;
         delete again.writer;
-        expect(again).toEqual(rest);
+        expect(again).toEqual({ ...rest, version: 6 });
     });
     it('is the v5 shape: without house it is not a v5 save', () => {
         const noHouse = raw();
         delete noHouse.house;
-        expect(saveProblem(noHouse)).not.toBeNull();
+        expect(saveProblem({ ...noHouse, version: 6 })).toBe('house');
     });
 });

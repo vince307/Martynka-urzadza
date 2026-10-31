@@ -10,6 +10,8 @@ import type { SaveState } from '../src/core/types';
 import { balance } from '../src/data/balance';
 
 const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+// The current version's shape for tests that corrupt or re-read a save: the frozen v5 fixture with only the version moved (a literal spread).
+const v6of = (name: string): Record<string, unknown> => ({ ...(fixture(name) as Record<string, unknown>), version: 6 });
 const settle = (): Promise<void> => new Promise((r) => setImmediate(r));
 
 /** Whether `p` has settled after a few turns: a missing time limit fails by assertion, not by the vitest timeout. */
@@ -135,13 +137,13 @@ describe('loadSave', () => {
         expect(loaded.kind).toBe('loaded');
         if (loaded.kind === 'loaded') expect(loaded.session.stars).toBe(7);
 
-        const future = { version: 6, stars: 1 };
+        const future = { version: 7, stars: 1 };
         const f = makeStore(future);
         const out: LoadOutcome = await loadSave(f.store);
         expect(out).toEqual({ kind: 'unreadable', reason: 'future', raw: future });
 
-        const bad = { ...(fixture('save-v5.json') as Record<string, unknown>), stars: 'x' };
-        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 5, problem: 'stars' });
+        const bad = { ...(v6of('save-v5.json')), stars: 'x' };
+        expect(await loadSave(makeStore(bad).store)).toEqual({ kind: 'unreadable', reason: 'corrupt', raw: bad, from: 6, problem: 'stars' });
 
         const broken = makeStore(fixture('save-v1.json'));
         broken.state.readFails = true;
@@ -962,7 +964,7 @@ describe('write at start after a migration (audit M-3)', () => {
             await settle();
         }
         const line = t.logs.find((l) => String(l[0]).includes('without the v2 copy'));
-        expect(line?.[0]).toBe('autosave: writing v5 without the v2 copy');
+        expect(line?.[0]).toBe('autosave: writing v6 without the v2 copy');
         expect(line?.[1]).toMatchObject({ from: 2, attempts: 3 });
     });
 

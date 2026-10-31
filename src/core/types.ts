@@ -204,5 +204,10 @@ export interface SaveV5 extends Omit<SaveV4, 'version'> {
     house: HouseState;
 }
 
+/** Save format, version 6: the v5 shape under a rollback guard (first-building-choice; the building is `house.id`). */
+export interface SaveV6 extends Omit<SaveV5, 'version'> {
+    version: 6;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV5;
+export type SaveState = SaveV6;
