@@ -860,10 +860,10 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [x] 7.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "bootRoomArt|roomArtLoader|celebrationView" CLAUDE.md` present
-- [x] 7.2 `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6
-- [x] 7.3 `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty
-- [x] 7.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- [x] 7.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "bootRoomArt|roomArtLoader|celebrationView" CLAUDE.md` present — 16e5d3b
+- [x] 7.2 `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6 — 16e5d3b
+- [x] 7.3 `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty — 16e5d3b
+- [x] 7.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty — 16e5d3b
 - [ ] 7.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
