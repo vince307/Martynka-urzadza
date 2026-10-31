@@ -1,26 +1,28 @@
 # Handoff — `house-cross-section` (slice S-23)
 
-Written by the `/10x-research` step of run 2026-10-31-house-cross-section. Research is complete and committed; no product
-code changed. The next agent must not let a house visit survive the way back to the notebook: FR-039 holds today only
-because `RoomScene` nulls `visiting` on every sleep and wake, and the new path may set it only from an explicit cell tap.
+Written by the `/10x-plan` step of run 2026-10-31-house-cross-section. The plan (6 phases: 1 tdd, 4 impl, 1 e2e) and its
+brief are committed; no product code changed. The next agent must check that FR-039 holds by construction: `visiting`
+is set ONLY by `houseWakeVisit` from the house's switch data on the room's wake, and the notebook path passes no data.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/house-cross-section`, cut from `main` at `112f158` |
-| commits | 2 on the branch after this step: `docs(house-cross-section): change identity (autonomous run)`, `docs(house-cross-section): research` |
+| commits | 3 on the branch after this step: change identity, research, `docs(house-cross-section): plan` |
 | pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`) |
 | working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/house-cross-section/research.md` | research: miniatures (capture vs live), scene hosting (new `HouseScene` vs `RoomScene` layer), cell geometry, house art + runtime loader, e2e hook, boot budget, open questions for the plan |
-| `context/changes/house-cross-section/change.md` | frontmatter only: `status: new` → `preparing`, `updated` 2026-10-31 |
+| `context/changes/house-cross-section/plan.md` | the plan: 6 phases with `Driver:` lines, autonomous decisions P1-P12, `## Progress` (36 rows) |
+| `context/changes/house-cross-section/plan-brief.md` | two-page brief with the key-decisions table |
+| `context/changes/house-cross-section/change.md` | status `preparing` → `planned` |
+| `context/foundation/roadmap.md` | S-23 status `proposed` → `planning` (at-a-glance row and item body) |
 | `context/changes/house-cross-section/handoff.md` | this file |
 
 ## 3. Verification
@@ -28,43 +30,41 @@ because `RoomScene` nulls `visiting` on every sleep and wake, and the new path m
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/house-cross-section` |
-| `npx vitest run tests/bootBudget.test.ts` | 2 passed (salon and kitchen boot under 48 s) |
-| source re-checks (grep) | scene list in `src/main.ts`; `visiting` reset in `RoomScene` `refresh`/`onSleep`; hardcoded `REGISTRY_KEYS.roomLoad`/`roomArtHealth` and two `once('complete')` sites in `src/ui/roomArtLoader.ts`; `SalonBackdrop.render` DynamicTexture at (0,0); `RESTORE_WEBGL` listeners in `TaskScene`/`WelcomeScene`; `inRoom()`/`screen` in `src/testing/e2eHook.ts` |
-| lint / typecheck / full unit / build / e2e | not run: docs-only step (baseline on main 112f158 inherited, unverified) |
+| Progress mapping | 36 unchecked rows = 4 + 7 + 5 + 6 + 11 + 3 success criteria of phases 1-6, one-to-one |
+| `Driver:` lines | one `Driver:` and one single-line `Driver why:` under each `## Phase N:` body heading |
+| shell alpha bbox (python3 -I, PIL on `designs/martynka-house-street-v1/assets/house/house-1-shell.png`) | x 183-1734, y 47-1006; roof starts at x 605 (y 100) and x 267 (y 200): the top-left corner holds the back button |
+| `gh run view 41161789323 --log` (Deploy) | seen `ok   precache covers room pictures — 58 of 58 room pictures precached`, `Tests  4054 passed | 3 skipped (4057)`, `e2e hook: absent (2 chunks checked)` — the formats the `(CI at ship)` rows cite |
+| lint / typecheck / unit / build / e2e | not run: docs-only step (baseline on main 112f158 inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-plan house-cross-section`
+`/10x-plan-review house-cross-section`
 
 ## 5. Open
 
-- Plan decisions (research.md "Open Questions"): hosting (new `HouseScene` + `scene.switch(SCENE_KEYS.room, { visit })`,
-  recommended, vs a layer of `RoomScene`); miniature per cell as a 608×342 `DynamicTexture` capture like
-  `SalonBackdrop.render` with the stand-in Graphics in the holder (recommended) vs live objects + `setCrop` (fires kitchen
-  follow-up 10); parameterise `createRoomArtLoader` (`src/ui/roomArtLoader.ts`) vs a sibling — either fires kitchen
-  follow-ups 3, 14, 15; house art health as an `artFallbacks` record (recommended) vs an `ArtTable` `'house'`; house
-  narration (default none).
-- Cell geometry: new data keyed by house id (manifest cells, `col` = `place`); closed cell = geometry cell with no
-  `HouseRoomPlace`; no save field (stays v5).
-- Tests that move: `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` (wake/sleep reset → "a wake without data ends
-  a visit"), `tests/layout.test.ts` (`ROOM_TOUCH_TARGETS.visitButton`), `tests/e2e/kitchen-room.spec.ts` visit test; hook
-  `targets.visitButton` and `RoomScene.visitTarget` removed, `screen: 'house'` + house targets added.
-- DESIGN-GAPs (rows after 182 in `docs/design-gaps.md`): those listed in `change.md` plus: the manifest's button band
-  (y 1010-1080, 70 px) is below `MIN_TOUCH_TARGET` 96, so the house back button goes in a side margin outside the shell;
-  house background (preview CSS gradient `#e7f4f4`→`#eef4e1`) needs tokens.
-- Follow-ups firing: kitchen 1 (in scope), 6 (one `console.warn` on `redundant` in `trackStates`,
-  `src/pwa/registerServiceWorker.ts`), 16 (guarded: house button under `blocked`); audit-art-renderer 2 is stale (close).
+- Manual rows (human checklist): 2.7 and 5.11 `[reviewer] (CI at ship)`; 5.6 `[visual]` (8 states × 1440/1024);
+  5.7 `[human]` roller blind as FR-038 "sylwetki" + a not-reached room shown closed (decision P5, against the PRD's
+  literal "sylwetki"); 5.8 `[human]` copy "Dom"/"Wróć do pokoju" and top-left back button; 5.9 `[human]` salon green board
+  in a cream cell (gap 178); 5.10 `[human]` tablet offline house check.
+- Known risks for review: Phaser `scene.switch(key, data)` wake data unproven in the repo (fallback recorded in plan
+  "Known risks"); `DynamicTexture` capture of a Graphics and of worn-filtered images under Canvas unproven (phase 6 Canvas
+  case + visual frame 7).
+- DESIGN-GAP rows are planned from 183 in phase 5 (`docs/design-gaps.md`); row 180 closes.
+- Follow-ups: kitchen 6 fixed in phase 2 (`trackStates` in `src/pwa/registerServiceWorker.ts`); kitchen 3/14/15/2/10/12/16/19,
+  rooms-as-data 11 and audit-art-renderer 2 are re-recorded or closed in phase 5 (`follow-ups/review-fixes.md`).
+- No test-plan risk id covers house navigation; the e2e phase cites #2 and #16 and titles FR-038/FR-039.
 
 ## 6. Autonomous decisions
 
-- R1 — scope of the research taken from `change.md` § Open and the step prompt; no `AskUserQuestion`. Would change: nothing.
-- R2 — recommend a new `HouseScene` over a `RoomScene` layer: the room's hold zone, panel and buttons sleep for free,
-  `RoomScene` does not grow, and the existing sleep/wake resets keep FR-039. Rejected: the layer (more `blocked` branches,
-  full-screen cover over a live room). Cost accepted: first scene-data hand-off in the repo. Would change: the plan finding
-  Phaser's wake data unreliable in a test, or the house needing room state that only `RoomScene` holds.
-- R3 — recommend per-cell DynamicTexture capture: the only renderer-neutral clip in the repo (Phaser 4 masks are WebGL
-  filters; Canvas is supported). Rejected: live objects + `setCrop`. Would change: a Canvas run showing `dt.draw` of the
-  Graphics/filtered images misbehaving.
-- R4 — recommend no "Obrazki" line for runtime house art (artFallbacks record), consistent with kitchen follow-up 2.
-  Would change: the maintainer wanting runtime art judged in "Obrazki".
-- No scope.md decision overturned; no `[human]` row.
+- P1-P12 are recorded in `plan.md` "## Autonomous decisions" (chosen, rejected, why, what would change it). In short:
+  P1 new `HouseScene` with switch data; P2 per-cell `DynamicTexture` capture; P3 house art on the house scene's own loader
+  at first open (not boot, not `roomArtLoader`; kitchen follow-ups 3/14/15 stay unfired); P4 `artFallbacks.house` record,
+  no "Obrazki" line; P5 cell states current/done/closed (a not-reached room is closed; `[human]` 5.7); P6 back returns to
+  the room in renovation; P7 copy "Dom"/"Wróć do pokoju", back button top-left (`[human]` 5.8); P8 no transition, no
+  narrator line; P9 flat sky token instead of the CSS gradient; P10 "Dom" hidden only while blocked (kitchen follow-up 16
+  unfired); P11 SW `redundant` warning fixed here; P12 six small phases, hook moved with navigation to keep e2e green.
+- Skill checkpoints decided in place (contract rule 1): complexity/question budget, approach and phase approval — no
+  `AskUserQuestion`; answers taken from scope.md, change.md D1-D11 and research recommendations. Would change: the plan
+  review finding a phase too large or a rule unprovable.
+- Roadmap status edit committed with the plan (step prompt: clean tree wins over the skill's "leave it uncommitted").
+- No scope.md decision overturned.
