@@ -163,6 +163,9 @@ id, runs the real `encodeSave` and stamps `generation: 9`, `writer: 'tab1:n1'` a
 - `themeBackOffered(learner: Pick<SessionLearner, 'history'>, variants: VariantState, warmupLength: number, rooms: Readonly<Record<string, RoomState>>): boolean`
   = `!firstRoundDone(learner, variants, warmupLength)` AND every `rooms[*].tasksDone === 0`. No stage-override term
   (both paths). `ageBackOffered` stays until phase 7 removes it.
+- `hasPurchase(rooms: Readonly<Record<string, RoomState>>): boolean` = some `rooms[*].tasksDone > 0`; `themeBackOffered`
+  uses it, and phase 6 uses it to keep a learner-less save that already bought something in its saved building (plan
+  review F4).
 - `houseRoomIds(house: HouseState, known: Readonly<Record<string, RoomDef>>): string[]` — the house's cells' rooms present
   in `known`, in house order, fresh array.
 
@@ -172,7 +175,7 @@ id, runs the real `encodeSave` and stamps `generation: 9`, `writer: 'tab1:n1'` a
 
 **Contract**: `themeBack.test.ts` literal cases: parent-placed learner with empty history → true; child-placed → true;
 history of `warmupLength + 1` → false; `roundsSince: 1` → false; any room with `tasksDone: 1` → false; a room map with
-only zeros → true. `house.test.ts`: `houseRoomIds` over a synthetic house `[a, unknown, b]` → `['a', 'b']`, empty for an
+only zeros → true; `hasPurchase({})` false, `{ salon: { tasksDone: 0 } }` false, `{ salon: 0, kitchen: 1 }` true. `house.test.ts`: `houseRoomIds` over a synthetic house `[a, unknown, b]` → `['a', 'b']`, empty for an
 all-unknown house, no mutation. `saveV5.test.ts`: `save-v5-salon.json` decodes `ok`, `migratedFrom: null`,
 `saveProblem` null, and `encodeSave(decoded session)` deep-equals the fixture except the store-stamped `generation` and
 `writer` (round-trip = this is exactly what v5 writes). `fixtureLoadPath.test.ts` `FIXTURES` gains `save-v5-salon`.
@@ -298,14 +301,17 @@ the salon's task at the same index, first ≤ `cleanRound`); `ROOMS` gains `brid
 
 #### 3. Tests
 
-**Files**: `tests/roomArt.test.ts`, `tests/fixtures/room-art-bridge.json` (new), `tests/roomsData.test.ts`
+**Files**: `tests/roomArt.test.ts`, `tests/fixtures/room-art-bridge.json` (new), `tests/roomsData.test.ts`, `tests/houseCells.test.ts`
 
 **Contract**: room-art fixture and per-room count (bridge 21), header sizes, labels without `-`/`/`; the room-size cap
 (1 550 000 B) holds. `roomsData`: the cost cap becomes `MAX_TASK_COST = 21` (test constant, comment: Mostek FR-044) with
 min 5 and the first-task rule kept; a pin `BRIDGE.tasks` costs `[6, 10, 13, 14, 17, 19, 21]`, sum 100, and each greater
 than `SALON.tasks[i].cost`; "placed in the first house" → "placed in exactly one house of `HOUSES`"; `houseRoomList(base-1,
 ROOMS)` → `[{ room: 'bridge' }]` (no teaser); with every Mostek task done `nextRoom` keeps `currentRoom: 'bridge'`,
-`movedFrom: null` (D7: "Dalej" stays in Mostek).
+`movedFrom: null` (D7: "Dalej" stays in Mostek). `houseCells.test.ts` (plan review F1: its "has a geometry for every house" and
+"a cell for every place of every house" iterate `HOUSES` and go red when `base-1` joins without geometry): both cases run over
+the houses that have a `HOUSE_GEOMETRY` entry, plus a pin that the houses without one are exactly `['base-1']` (comment: S-29
+adds the base geometry and drops the pin).
 
 #### 4. The base building
 
@@ -321,7 +327,7 @@ entry; comment: S-29). No building can be chosen yet (phase 6), so no player rea
 - `npm run art` regenerates the files; `git status --short public/assets` shows only `public/assets/rooms/bridge/`
 - `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N`
 - Deliberate break: rename one bridge WebP → the room-art fixture/file case red; set the console cost to 9 → the "above the salon" case red; each restored; meta-check: the cost oracle is the literal list written from FR-044, the art oracle the pack manifest sizes
-- `npm run build` then `grep -c "assets/rooms/bridge/" dist/sw.js` = 21
+- `npm run build` then `grep -o "assets/rooms/bridge/" dist/sw.js | wc -l` = 21 (sw.js is one line, so `grep -c` would print 1)
 - `git diff --stat <phase-2 sha> -- public/assets/rooms/salon public/assets/rooms/kitchen src/data/balance.ts src/data/curriculum src/core src/scenes src/main.ts` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
@@ -463,7 +469,7 @@ sounds, no room) within the same limit; the per-room cases include `bridge`.
 - `npm run art` regenerates the 2 files; `git status --short public/assets` shows only `public/assets/choice/`
 - `npx vitest run tests/choiceArt.test.ts tests/bootBudget.test.ts tests/artHealth.test.ts tests/deployCheck.test.ts` green; unit `<phase-4 count> + N`
 - Deliberate break: make `bootGroups(true)` include `'room'` → its literal case red; delete `choice-space.webp` → the file case red; each restored; meta-check: the boot proof is the pure group list plus the build; the browser proof that the welcome shows the cards is phase 9
-- `npm run build` then `grep -c "assets/choice/" dist/sw.js` = 2
+- `npm run build` then `grep -o "assets/choice/" dist/sw.js | wc -l` = 2
 - `git diff --stat <phase-4 sha> -- src/ui/roomArtLoader.ts src/data/balance.ts public/assets/rooms public/assets/ui public/assets/tasks` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
@@ -518,7 +524,10 @@ notebook, brand and build id stay). The choice view: title, one `ChoiceCard` per
 `pl.welcome.choice[id]`), a `SpeakerButton` speaking `pl.welcome.choice.spoken` through the registry narrator
 (`REGISTRY_KEYS.narrator`), visible only while `narrator.available` (`onAvailability`, listener removed on shutdown),
 `narrator.cancel()` when leaving; "Wróć" (`PageButton`) back to the age view only when `!placed.stageOverriddenByParent`
-and the placement came from the age view (not from scene data of a parent-placed learner). A card tap (once):
+and the placement came from the age view (not from scene data of a parent-placed learner). Purchase guard (plan
+review F4): when `hasPurchase(<registry rooms>)` holds (a learner-less v5 save written after today's "Wróć" followed a
+first-round purchase: stars are earned per task and the room is open between tasks), the placement skips the choice
+view and calls today's `start(placed)` in the saved building, so no bought piece is dropped. A card tap (once):
 `registry.set` `house`, `rooms`, `currentRoom` from `buildingStart(id, BUILDING_CHOICES, HOUSES, <registry stars>)`, then
 today's `start(placed)` body (learner, `TaskScene`). `recordFallback(this, 'choice', 'drawn')` when a card drew its
 stand-in. Retire the JSDoc nit of notebook-polish follow-up #16 and align the `openParent` suspender guard
@@ -541,7 +550,8 @@ optional `building` (default `'house'`) and call it, so no spec using them chang
 
 **Contract**: layout — cards, speaker and back ≥ `MIN_TOUCH_TARGET`, inside the notebook face, not overlapping each
 other or the brand/title. Wiring (source text): the card tap sets `REGISTRY_KEYS.house` before `REGISTRY_KEYS.learner`;
-`WelcomeScene` writes none of `REGISTRY_KEYS.stars`, `.variants`, `.settings`; it calls `buildingStart(`; it never calls
+`WelcomeScene` writes none of `REGISTRY_KEYS.stars`, `.variants`, `.settings`; it calls `buildingStart(`; it calls
+`hasPurchase(` before showing the choice view; it never calls
 `tweens`; the speaker uses `REGISTRY_KEYS.narrator` and calls `cancel()` on shutdown.
 
 ### Success Criteria:
@@ -549,7 +559,7 @@ other or the brand/title. Wiring (source text): the card tap sets `REGISTRY_KEYS
 #### Automated Verification:
 
 - `npx vitest run tests/layout.test.ts tests/welcomeChoiceWiring.test.ts` green; unit `<phase-5 count> + N`
-- Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
+- Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; drop the `hasPurchase` guard → its wiring case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
 - `npm run build` prints `e2e hook: absent (`
 - `git diff --stat <phase-5 sha> -- src/core/save.ts src/data/balance.ts src/scenes/BootScene.ts src/scenes/RoomScene.ts` empty
 - Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0` with every welcome helper passing the choice; total equals `npx playwright test --list | tail -1`
@@ -639,7 +649,10 @@ choice-card stand-in, plain welcome/task backdrop on a fresh install until the r
 the base (R7). Follow-ups with `Trigger:` lines: rooms-as-data 8, 9, 10 (re-recorded), 15 (applied, closed), texture
 atlas (re-recorded `Trigger: tests/bootBudget.test.ts fails or headroom < 2 s`), kitchen 6 (closed as stale, evidence in
 research), post-run-polish N-2 (closed by phase 7), audit-backdrop-fox F4 and notebook-polish #16 (closed by phase 6),
-the `bases.base-1.label` "Baza księżycowa" nit (`Trigger: S-29`), every other open follow-up whose `Trigger:` names a file
+the `bases.base-1.label` "Baza księżycowa" nit (`Trigger: S-29`), the follow-ups whose trigger fires on this slice's
+`BootScene.preload` change or the v6 format (plan review F5): salon-load-health "time limit of the second font load
+(`FontFace`)" and "per-file loader timeout guarded only by e2e", art-stand-in-and-load-signal S14-08 (font logged without
+URL), minigame-daily-puzzle "the next save-format change or S-17" — each closed with evidence or re-recorded; every other open follow-up whose `Trigger:` names a file
 this slice changed (`WelcomeScene`, `BootScene.preload`, `TaskScene.backToAge`, `src/core/migrations/`, save format) —
 each included, closed as stale with evidence, or re-recorded.
 
@@ -659,7 +672,7 @@ lines for `v5-salon`, gap numbers cited in comments match the new rows.
 
 - `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "buildingStart|CHOICE_ART|themeBackOffered|SAVE_VERSION. 6|v5-salon" CLAUDE.md` present
 - `grep -c "Trigger:" context/changes/first-building-choice/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| (19[1-9]|20[0-9]) " docs/design-gaps.md` ≥ 7
-- Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rnE "'(house|space)'" src --include=*.ts` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/data/pl.ts`, `src/core/types.ts` and the hook
+- Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rn "'space'" src` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/core/types.ts` and the hook (`'house'` is not grepped: `HouseScene`, `artHealth`, `artPick`, `celebration` and `save.ts` already use it for other meanings)
 - `git diff --stat <phase-7 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
 - Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
@@ -751,6 +764,15 @@ first write after the migration copies the raw v5 save to `profile:default:backu
 v6 build meets `future`, shows `pl.saveFuture` and overwrites nothing (`deploy/README.md` § 6 note). Import of a v5 file
 migrates through `decodeSave`.
 
+## Known risks
+
+- (plan review F8) A fresh install computes room health over `[]`, and the chosen room loads at runtime through the room
+  loader, which "Obrazki" does not judge; a missing Mostek or salon picture in the first session shows only as a stand-in
+  box and reaches "Obrazki" at the next launch, when `bootRoomArt` loads the room. Gap row "plain backdrop on a fresh
+  install" covers the visible part; would change: a parent report of a blank first room.
+- (plan review F4) Phase 6 skips the choice for a learner-less save with a purchase; such a child never sees the choice
+  and keeps the house. Would change: the maintainer wanting those children asked too (then only with no room purchase lost).
+
 ## Autonomous decisions
 
 Maintainer decisions (scope.md) and starting decisions D1-D10 (change.md) and R1-R7 (research) are kept; none is
@@ -833,7 +855,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 - [ ] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only `public/assets/rooms/bridge/`
 - [ ] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N`
 - [ ] 3.3 Deliberate break: rename one bridge WebP → the room-art fixture/file case red; set the console cost to 9 → the "above the salon" case red; each restored; meta-check: the cost oracle is the literal list written from FR-044, the art oracle the pack manifest sizes
-- [ ] 3.4 `npm run build` then `grep -c "assets/rooms/bridge/" dist/sw.js` = 21
+- [ ] 3.4 `npm run build` then `grep -o "assets/rooms/bridge/" dist/sw.js | wc -l` = 21 (sw.js is one line, so `grep -c` would print 1)
 - [ ] 3.5 `git diff --stat <phase-2 sha> -- public/assets/rooms/salon public/assets/rooms/kitchen src/data/balance.ts src/data/curriculum src/core src/scenes src/main.ts` empty
 - [ ] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
@@ -859,7 +881,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 - [ ] 5.1 `npm run art` regenerates the 2 files; `git status --short public/assets` shows only `public/assets/choice/`
 - [ ] 5.2 `npx vitest run tests/choiceArt.test.ts tests/bootBudget.test.ts tests/artHealth.test.ts tests/deployCheck.test.ts` green; unit `<phase-4 count> + N`
 - [ ] 5.3 Deliberate break: make `bootGroups(true)` include `'room'` → its literal case red; delete `choice-space.webp` → the file case red; each restored; meta-check: the boot proof is the pure group list plus the build; the browser proof that the welcome shows the cards is phase 9
-- [ ] 5.4 `npm run build` then `grep -c "assets/choice/" dist/sw.js` = 2
+- [ ] 5.4 `npm run build` then `grep -o "assets/choice/" dist/sw.js | wc -l` = 2
 - [ ] 5.5 `git diff --stat <phase-4 sha> -- src/ui/roomArtLoader.ts src/data/balance.ts public/assets/rooms public/assets/ui public/assets/tasks` empty
 - [ ] 5.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
@@ -872,7 +894,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 #### Automated
 
 - [ ] 6.1 `npx vitest run tests/layout.test.ts tests/welcomeChoiceWiring.test.ts` green; unit `<phase-5 count> + N`
-- [ ] 6.2 Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
+- [ ] 6.2 Deliberate break: set the learner before the house in the card tap → the order guard red; move `WELCOME_LAYOUT.choice.speaker` onto a card → the overlap case red; drop the `hasPurchase` guard → its wiring case red; each restored; meta-check: the guards prove wiring only; phase 9 proves the browser path
 - [ ] 6.3 `npm run build` prints `e2e hook: absent (`
 - [ ] 6.4 `git diff --stat <phase-5 sha> -- src/core/save.ts src/data/balance.ts src/scenes/BootScene.ts src/scenes/RoomScene.ts` empty
 - [ ] 6.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0` with every welcome helper passing the choice; total equals `npx playwright test --list | tail -1`
@@ -893,7 +915,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 - [ ] 8.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "buildingStart|CHOICE_ART|themeBackOffered|SAVE_VERSION. 6|v5-salon" CLAUDE.md` present
 - [ ] 8.2 `grep -c "Trigger:" context/changes/first-building-choice/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| (19[1-9]|20[0-9]) " docs/design-gaps.md` ≥ 7
-- [ ] 8.3 Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rnE "'(house|space)'" src --include=*.ts` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/data/pl.ts`, `src/core/types.ts` and the hook
+- [ ] 8.3 Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rn "'space'" src` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/core/types.ts` and the hook (`'house'` is not grepped: `HouseScene`, `artHealth`, `artPick`, `celebration` and `save.ts` already use it for other meanings)
 - [ ] 8.4 `git diff --stat <phase-7 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
 - [ ] 8.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
 
