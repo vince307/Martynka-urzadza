@@ -1,43 +1,46 @@
 # Handoff — `first-building-choice` (slice S-28)
 
-Written by the `/10x-plan-review` step of run 2026-10-31-space-base: verdict PROCEED, five findings fixed in `plan.md`, `change.md` is `plan_reviewed`, and phase 1 is next. The next agent must not get this wrong: the frozen `save-v5-salon.json` is produced in **phase 1 by the unchanged v5 code** (decode + re-encode round-trip, `git diff` guard on `src/core/save.ts`), and the v6 bump comes only in phase 2; phase 1 now also adds the pure `hasPurchase(rooms)` (plan-review F4).
+Written by the `/10x-tdd` phase-1 step of run 2026-10-31-space-base: phase 1 is committed (9b537e7) and ticked. The next agent must not get this wrong: `tests/fixtures/save-v5-salon.json` is frozen (produced by the unchanged v5 code); phase 2 bumps to v6 and must leave it byte-identical.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
-| commits | 5: change identity (4e6b8d9), research (c5c2a21), plan (10d7cad), this step's `docs(first-building-choice): plan review` |
+| commits | 5 docs + `9b537e7` test(first-building-choice) phase 1 + this handoff |
 | pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 54 (`grep -c '^- \[ \]' plan.md`) |
-| working tree | clean after the commit |
+| `## Progress` rows remaining | 50 (`grep -c '^- \[ \]' plan.md`) |
+| working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/first-building-choice/reviews/plan-review.md` | the review: 3 critical, 2 warnings, 3 observations, triage, `VERDICT: PROCEED` |
-| `context/changes/first-building-choice/plan.md` | fixed in place: phase 3 adds `tests/houseCells.test.ts` (F1); 3.4/5.4 use `grep -o … \| wc -l` (F2); 8.3 greps `'space'` only (F3); `hasPurchase` in phase 1 and the purchase guard in phase 6 + 6.2 break (F4); phase 8 names four triggered follow-ups (F5); new `## Known risks` (F4, F8) |
-| `context/changes/first-building-choice/change.md` | `status: plan_reviewed` |
-| `context/changes/first-building-choice/handoff.md` | this file |
+| `tests/fixtures/save-v5-salon.json` | frozen v5 salon-in-progress save (stars 17, E2 child, salon tasksDone 4, generation 9, writer `tab1:n1`), made by decode + encode on unchanged v5 code through a scratchpad script |
+| `src/core/placement.ts` | `hasPurchase`, `themeBackOffered` (`ageBackOffered` kept until phase 7) |
+| `src/core/house.ts` | `houseRoomIds` |
+| `tests/themeBack.test.ts` (new), `tests/house.test.ts`, `tests/saveV5.test.ts`, `tests/fixtureLoadPath.test.ts` | cases for the above; fixture row `save-v5-salon` |
+| `context/changes/first-building-choice/plan.md` | rows 1.1-1.4 ticked with sha |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/first-building-choice` |
-| `grep -n "for (const h of HOUSES)" tests/houseCells.test.ts` | two cases iterate `HOUSES` and require `HOUSE_GEOMETRY[h.id]` → would be red after phase 3 (F1) |
-| `grep -c "assets/rooms/" dist/sw.js` vs `grep -o "assets/rooms/[a-z]*/" dist/sw.js \| sort \| uniq -c` | `1` vs `37 salon`, `21 kitchen` → `grep -c` criteria unsatisfiable (F2) |
-| `grep -rnE "'(house\|space)'" src` | `'house'` in `HouseScene.ts`, `artHealth.ts`, `artPick.ts`, `celebration.ts`, `save.ts` (F3) |
-| `TaskScene.syncStars` + `roundView.switchVisible` read | stars per task, room open between tasks; `ageBackOffered` ignores rooms → learner-less save with purchase possible (F4) |
-| criteria ↔ Progress check (python extract, pairwise) | 54 Progress rows equal the first 54 phase criteria texts |
-| `ls designs/bystrow-space-base-v1/assets/{room,furniture,choice}` + manifest slots | 3 + 18 + 2 files, six bridge slot ids as in phase 3 |
-| local gate (lint, typecheck, tests, build, e2e) | not run: docs-only step, no code touched |
+| RED (stubs returning `[]`/`false`) | `AssertionError: expected [] to deeply equal [ 'a', 'b' ]` (houseRoomIds); `AssertionError: expected false to be true` (themeBack cases); saveV5 fixture cases ENOENT before the fixture existed |
+| GREEN `npx vitest run` of the 4 files | 62 passed |
+| `npm run lint` / `typecheck` | OK / OK (lint first flagged unused destructured vars in the new test; fixed) |
+| `npm test` | 4107 passed; baseline 4092 on main, delta +15 |
+| deploy + ops shell tests, `sample` E1-E6 | OK |
+| `npm run build` | prints `e2e hook: absent (2 chunks checked)` |
+| `git diff --stat fc13e8c -- src/core/save.ts src/core/migrations src/data public` | empty (row 1.3) |
+| deliberate break 1 | dropped `!hasPurchase(rooms)` from `themeBackOffered` -> "is gone for a room with a purchase" red; restored |
+| deliberate break 2 | removed `house` from a scratch copy of the fixture -> decode/`ok` and round-trip cases red; restored byte-identical. Meta-check: the fixture is proven a v5 write by decode + re-encode on the unchanged v5 code (round-trip test), not by the v6 migration. Note the "without house" `saveProblem` case passes by design under that break |
+| e2e | not run: no UI change, orchestrator gates it (`179 + 0` expected) |
 
 ## 4. Next command
 
-`/10x-tdd first-building-choice phase 1`
+`/10x-tdd first-building-choice phase 2`
 
 ## 5. Open
 
@@ -55,3 +58,4 @@ Written by the `/10x-plan-review` step of run 2026-10-31-space-base: verdict PRO
 - **F6: P3 kept, not overturned** (hiding "Wróć" after a purchase is the only option compatible with no refund and one building; `[human]` 8.7 names it). Would change: the maintainer preferring the literal FR-043 with a refund.
 - **F7: phase 4 driver stays `impl`** (thin wrapper + characterization; deliberate breaks cover the new rule). Would change: `buildingStart` growing real branching.
 - **Verdict PROCEED, not RETHINK:** the approach is sound; all defects were local and fixed.
+- **Phase 1 (tdd):** manual confirmation gate, how-to-proceed and commit-message prompts decided in place (planned set committed, stopped after the phase). Stubs returned wrong values (`[]`/`false`) so RED is an assertion; the fixture was generated after RED, so fixture cases showed ENOENT in RED. Skill ids in the fixture are real E2.1 ids. Would change: none.

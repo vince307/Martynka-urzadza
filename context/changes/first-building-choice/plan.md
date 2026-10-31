@@ -829,10 +829,10 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 1.1 `npx vitest run tests/themeBack.test.ts tests/house.test.ts tests/saveV5.test.ts tests/fixtureLoadPath.test.ts` green; the new cases red before the code/fixture exist; unit `<branch unit baseline> + N`
-- [ ] 1.2 Deliberate break: drop the `tasksDone` term from `themeBackOffered` → the "room with a purchase" case red; decode a scratch copy of the fixture with `house` removed → the `ok`/`saveProblem` case red (the fixture is the v5 shape, not v4); each restored; meta-check: the fixture is proven a genuine v5 write by decode + re-encode on the unchanged v5 code, never by the v6 migration under test
-- [ ] 1.3 `git diff --stat fc13e8c -- src/core/save.ts src/core/migrations src/data tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5.json public` empty (v5 code unchanged while the fixture is frozen)
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `179 + 0`
+- [x] 1.1 `npx vitest run tests/themeBack.test.ts tests/house.test.ts tests/saveV5.test.ts tests/fixtureLoadPath.test.ts` green; the new cases red before the code/fixture exist; unit `<branch unit baseline> + N` — 9b537e7
+- [x] 1.2 Deliberate break: drop the `tasksDone` term from `themeBackOffered` → the "room with a purchase" case red; decode a scratch copy of the fixture with `house` removed → the `ok`/`saveProblem` case red (the fixture is the v5 shape, not v4); each restored; meta-check: the fixture is proven a genuine v5 write by decode + re-encode on the unchanged v5 code, never by the v6 migration under test — 9b537e7
+- [x] 1.3 `git diff --stat fc13e8c -- src/core/save.ts src/core/migrations src/data tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5.json public` empty (v5 code unchanged while the fixture is frozen) — 9b537e7
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `179 + 0` (e2e: not run, no UI change, orchestrator gates it) — 9b537e7
 
 ### Phase 2: Save format v6 (version bump)
 
