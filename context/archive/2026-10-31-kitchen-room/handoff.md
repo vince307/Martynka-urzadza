@@ -1,6 +1,6 @@
 # Handoff — `kitchen-room` (slice S-22)
 
-Written by the visual-gate step of run 2026-10-30-rooms-kitchen (2026-10-31), on `7e1441f`. Verdict **VISUAL: GAPS**: 16 states / 28 frames captured, kitchen matches the pack, star arithmetic checked, no code fix. The next agent must not get this wrong: **gap 182 (the task-screen backdrop is invisible while the kitchen is current) is a design question for the maintainer, not a bug to patch in archive or ship**; and the orchestrator's room-spec re-run for loader fix 82b690c (previous handoff §5) is still owed.
+Final pre-merge state written by the archive + ship step of run 2026-10-30-rooms-kitchen (2026-10-31): row 8.2 ticked from the orchestrator's e2e evidence (`066dd70`, full e2e 174 = 170 + 4), change archived (`b5a4e4e`, `context/archive/2026-10-31-kitchen-room/`, roadmap S-22 `done`, S-23 and S-25 ready for `/10x-plan`), CLAUDE.md follow-ups path moved to the archive. Archived with 6 open rows: 4.5 [visual] (animations not capturable, left open as the visual gate recorded), 5.8, 7.7, 7.8, 7.9 [human] (post-run checklist, not a blocker: they are maintainer decisions or a real-tablet check, none a code defect) and 7.10 [reviewer] (CI at ship, ticked by this step from the PR `check` log). PR/CI/merge/deploy recorded in context/runs/2026-10-30-rooms-kitchen/run-log.md. Earlier (visual-gate step), on `7e1441f`. Verdict **VISUAL: GAPS**: 16 states / 28 frames captured, kitchen matches the pack, star arithmetic checked, no code fix. The next agent must not get this wrong: **gap 182 (the task-screen backdrop is invisible while the kitchen is current) is a design question for the maintainer, not a bug to patch in archive or ship**; and the orchestrator's room-spec re-run for loader fix 82b690c (previous handoff §5) is still owed.
 
 ## 1. State
 
@@ -8,9 +8,9 @@ Written by the visual-gate step of run 2026-10-30-rooms-kitchen (2026-10-31), on
 |---|---|
 | Branch | `feat/kitchen-room`, cut from `main` at `942e237` |
 | Commits | p1-p8 `3412b6e`..`779a306`, `8ab15e2`, review fix `82b690c`, review docs `7e1441f`, this step's `docs(kitchen-room): bramka wizualna` (no `fix` commit) |
-| Pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged; archive sets its own) |
-| `## Progress` rows open | 7 (`grep -c '^- \[ \]' plan.md`): 4.5 [visual] (animations / reduced motion not capturable here), 5.8, 7.7, 7.8, 7.9 [human], 7.10 [reviewer] (CI at ship), 8.2 (full e2e count, orchestrator); 7.6 ticked with its exceptions |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-30-rooms-kitchen/run-log.md (pushed by the ship step after this commit) |
+| `change.md` status | `archived` (`archived_at: 2026-10-31T02:38:22Z`, commit `b5a4e4e`) |
+| `## Progress` rows open | 6: 4.5 [visual], 5.8, 7.7, 7.8, 7.9 [human] (post-run checklist), 7.10 [reviewer] (CI at ship, ticked by the ship step from the PR `check` log); 8.2 ticked `066dd70` |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
@@ -42,7 +42,7 @@ Written by the visual-gate step of run 2026-10-30-rooms-kitchen (2026-10-31), on
 
 ## 4. Next command
 
-`/10x-archive kitchen-room` then ship (no hosted DB)
+none — shipped
 
 ## 5. Open
 
@@ -54,6 +54,9 @@ Written by the visual-gate step of run 2026-10-30-rooms-kitchen (2026-10-31), on
 - Follow-ups 14-18 are unchanged, in `follow-ups/review-fixes.md`.
 
 ## 6. Autonomous decisions
+
+- **Archive with open rows (ship step).** `/10x-archive` warned about 6 open rows; chosen "Continue archiving" (step prompt). Rejected: "Resume implementation", because no open row is a code defect: 5.8 and 7.7-7.9 are maintainer decisions or a real-tablet check (post-run checklist), 4.5 is animation the visual tool cannot capture, 7.10 is ticked at ship from CI. This would change if a [human] row reported a defect before the merge.
+- **Row 4.5 left open** (visual-review.md shows only the settled card captured, not the pop, burst, hold or reduced motion).
 
 - **Fixed by the maintainer (scope.md):** unchanged: save v5, the kitchen from locations-v2, one celebration, one room in renovation, no balance change, boot budget measured. No art or slot was invented. `designs/` was only read.
 - **Gap 182 recorded, not fixed.** Rejected: zooming or cropping the backdrop, or painting a board behind the kitchen, because each would invent design (scope.md, profile § 6). This would change if the maintainer or designer specified a backdrop framing.
