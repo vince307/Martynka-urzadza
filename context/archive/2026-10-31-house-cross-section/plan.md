@@ -680,7 +680,7 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Manual
 
-- [ ] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints a line matching `ok +precache covers house pictures — 3 of 3 house pictures precached` (format seen in Deploy run 41161789323: `ok   precache covers room pictures — 58 of 58 room pictures precached`)
+- [x] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints a line matching `ok +precache covers house pictures — 3 of 3 house pictures precached` (format seen in Deploy run 41161789323: `ok   precache covers room pictures — 58 of 58 room pictures precached`) — CI run 41203490325 (deploy job 124544532379 on dfaf345: `ok   precache covers house pictures — 3 of 3 house pictures precached`)
 
 ### Phase 3: The house scene and its view
 

@@ -549,3 +549,27 @@ Wynik: oba slice'y wdrożone bez parkowania. PR #116 (PRD v4, M-03) scalony jako
 - [ ] P2 — Zaakceptować albo odwrócić (S-22): pokoje poza remontem ładują się w trakcie gry (`roomArtLoader`) zamiast podnosić limit `balance.loader.totalMs` (zostaje 50 s; najgorszy przypadek salon 41,8 s, kuchnia 33,7 s).
 - [ ] P2 — Zaakceptować albo odwrócić (S-22): przycisk odwiedzin zachowuje FR-019 („Do pokoju” zawsze do pokoju w remoncie).
 - [ ] P1 — Paczka grafika `designs/martynka-house-street-v1/` (skorupa domu 1) gotowa: QA 10/10, komórki 608×342 w 100 % `#FFF5DF`. Decyzje przed S-23: zamknięta komórka to turkusowa roleta (czy z napisem „Wkrótce” w grze); dioramy wyglądają małe w komórkach przez marginesy w grafikach pokoi (przyciąć czy skalować); podgląd pokoju dziecięcego Codex złożył sam; opcjonalny `house-1-front.png` pominięty. Integracja to S-23.
+
+## Bieg 2026-10-31-house-cross-section (S-23)
+
+Wynik: S-23 `house-cross-section` wdrożony. PR #121, scalenie dfaf345, wdrożenie 41203490325 (smoke 23/23, w tym „3 of 3 house pictures precached”). Zapis gry bez zmian (v5). Testy: jednostkowe 4057 → 4090, e2e 174 → 179. Przegląd: MERGE: CLEAR (0 CRITICAL, 2 ostrzeżenia poprawione). Bramka wizualna: PASS po poprawce 15a086f — skorupa domu z paczki była rysowana nad komórkami, więc w grze dom miał puste kremowe komórki; testy tego nie widziały, bo czytały teksturę komórki, nie ekran. Audyt zamykający: PR #122 otwarty, 0 CRITICAL/HIGH/MEDIUM, 3 LOW.
+
+- [ ] P0 — Przejrzeć i scalić audyt PR #122 (L-1: plik skorupy, którego nie da się zdekodować, nie zostawia w grze własnego wpisu w konsoli; L-2: nieudane przechwycenie komórki zostaje pustą komórką bez wpisu, utrata kontekstu WebGL nie jest logowana; L-3: odrzucona wizyta wraca do pokoju w remoncie bez wpisu). Bieg go nie scala. Audyt #119 (3 LOW) też nadal czeka.
+- [ ] P1 — Zaakceptować albo zmienić: zamknięty pokój to roleta z paczki z napisem „Wkrótce” zamiast „sylwetki” z FR-038, a kuchnia jest pokazana jako zamknięta, dopóki salon jest w remoncie. Źródło: plan S-23 wiersz 5.7 [human], decyzja P5.
+- [ ] P1 — Zaakceptować albo zmienić teksty „Dom” (z pokoju do domu) i „Wróć do pokoju” (z domu do pokoju w remoncie) oraz przycisk powrotu w lewym górnym rogu (pas przycisków w paczce ma 70 px, mniej niż 96 px celu dotyku). Źródło: wiersz 5.8 [human], DESIGN-GAP 183–184.
+- [ ] P1 — Na prawdziwym tablecie, po instalacji i jednym uruchomieniu z internetem, bez internetu: otworzyć dom; skorupa i obie miniatury pokoi się rysują. Źródło: wiersz 5.10 [human].
+- [ ] P2 — Zielona plansza salonu w kremowej komórce domu do czasu eksportu salonu na kremowym tle od grafika (brief P3.2). Źródło: wiersz 5.9 [human], DESIGN-GAP 178, 190.
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md` (26 wpisów, m.in. test w przeglądarce dla „Dom” ukrytego pod kartą celebracji i asercja piksela z ekranu dla komórki domu).
+- [ ] P2 — Zaakceptować albo odwrócić (S-23): grafika domu ładuje się przy pierwszym otwarciu domu, nie przy starcie gry (limit startu bez zmian).
+- [ ] P2 — Zaakceptować albo odwrócić (S-23): kolejność pokoi tylko z danych domu; dziecko nie wybiera, który zamknięty pokój otworzy się następny (FR-033).
+- [ ] P2 — Zaakceptować albo odwrócić (S-23): celebracja zostaje na poziomie pokoju; świętowanie domu przechodzi do S-24 (dom 1 nie może być skończony bez pokoju dziecięcego, S-25).
+
+## Decyzje 2026-10-31: nazwa Bystrow, ikona „b” i wybór „Co urządzamy najpierw?”
+
+Rozmowa autora z agentem w trakcie biegu S-23.
+
+- [x] Gra zmienia nazwę na „Bystrow” (jak na https://bystrow.ariom.cloud/). Ikona aplikacji = logo ze strony: kremowe „b” na ciemnozielonym zaokrąglonym kwadracie `#346650` ze złotą gwiazdką `#D79A38`.
+- [x] Przy pierwszym uruchomieniu dziecko wybiera, co urządza najpierw: Dom (salon) albo Baza kosmiczna. Wybór dla każdego dziecka, bez etykiety „dla chłopców”.
+- [x] Zlecenie grafika na bazę kosmiczną: `docs/designer-orders/2026-10-31-space-base-1.md`; paczka `designs/bystrow-space-base-v1/` gotowa 2026-10-31 (jedna tura Codexa; QA 178 kontroli zaliczonych; komórki 100 % `#FFF5DF`; moduł „Mostek” przed/po, 18 mebli, przekrój bazy, karty wyboru).
+- [ ] P1 — Zmiana nazwy i ikony jako osobna zmiana (PR czeka na „merguj”). Nazwy techniczne (baza IndexedDB `martynka`, klucz `profile:default`, `localStorage` `martynka:sound`) zostają, bo ich zmiana skasowałaby dzieciom postęp.
+- [ ] P1 — Wybór „Co urządzamy najpierw?” i baza kosmiczna wymagają wpisu w PRD (`/10x-prd`) i slice'a w roadmapie (`/10x-roadmap`): zmieniają pierwsze uruchomienie, dane domu/bazy i kolejność pokoi.
