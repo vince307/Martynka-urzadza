@@ -83,7 +83,7 @@ export const pl = {
         // DESIGN-GAP 130 (docs/design-gaps.md): the kit has no line for an older build that saved over this game's progress.
         olderWriter: 'Starsza wersja gry zapisała tu postępy. Uruchom grę ponownie.',
         // DESIGN-GAP 137: the kit has no line for a saved salon that does not match the game.
-        roomMismatch: 'Stan salonu w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
+        roomMismatch: 'Stan pokoju w zapisie nie pasuje do gry. Postępy zostają bez zmian.',
         // DESIGN-GAP 150: the kit has no line for a salon moved to the new look on this launch; the text is ours, to be read by a teacher.
         salonCarried: 'Pokój przeniesiony na nowy wygląd. Kupione rzeczy zostały.',
         // DESIGN-GAP 129: the kit has no line for a write that timed out; it may have landed, so the sentence does not claim a loss.
@@ -232,7 +232,7 @@ export const pl = {
     // DESIGN-GAP 46, 47: the kit has no copy for keeping a copy of the save; calm, for the adult.
     saveTransfer: {
         // DESIGN-GAP 138: the kit has no line for a file whose salon does not match the game.
-        roomMismatch: 'Stan salonu w tym pliku nie pasuje do gry.',
+        roomMismatch: 'Stan pokoju w tym pliku nie pasuje do gry.',
         exportButton: 'Zapisz kopię',
         exportTitle: 'Kopia zapisu',
         exportBody: 'Plik zostanie zapisany na tym urządzeniu albo udostępniony wybranej aplikacji.',
@@ -411,7 +411,7 @@ export const pl = {
         choose: 'Wybieram',
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
-        names: { salon: 'Salon' },
+        names: { salon: 'Salon', kitchen: 'Kuchnia' },
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
@@ -429,6 +429,12 @@ export const pl = {
             swapLamp: 'Wymień lampę',
             swapPlant: 'Wymień roślinę',
             swapPouf: 'Wymień pufę',
+            placeCounter: 'Postaw szafki',
+            placeFridge: 'Postaw lodówkę',
+            placeKitchenTable: 'Postaw stół i krzesła',
+            setUpCoffee: 'Urządź kącik kawowy',
+            placeBench: 'Postaw ławkę',
+            setOutDishes: 'Ustaw naczynia',
         },
         // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
@@ -443,6 +449,12 @@ export const pl = {
             'lamp-table': 'lampa',
             'plant-left': 'roślina',
             pouf: 'pufa',
+            'kitchen-counter': 'szafki',
+            'kitchen-fridge': 'lodówka',
+            'kitchen-table': 'stół i krzesła',
+            'kitchen-coffee': 'kącik kawowy',
+            'kitchen-bench': 'ławka',
+            'kitchen-rack': 'naczynia',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -457,6 +469,12 @@ export const pl = {
             'lamp-table': ['Klasyczna', 'Wiklinowa', 'Kwiatowa'],
             'plant-left': ['Monstera', 'Paproć', 'Fikus'],
             pouf: ['Pikowana', 'Pleciona', 'Na nóżkach'],
+            'kitchen-counter': ['Naturalne', 'Słoneczne', 'Miętowe'],
+            'kitchen-fridge': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'kitchen-table': ['Naturalne', 'Słoneczne', 'Miętowe'],
+            'kitchen-coffee': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'kitchen-bench': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'kitchen-rack': ['Naturalne', 'Słoneczne', 'Miętowe'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {

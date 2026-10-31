@@ -1,9 +1,10 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ROOM_ART, ROOM_SCENE_FILES } from '../src/data/roomArt';
+import { ROOM_ART, ROOM_SCENE_FILES, roomArt } from '../src/data/roomArt';
 import { ROOMS } from '../src/data/rooms';
-import snapshot from './fixtures/room-art-salon.json';
+import kitchenSnapshot from './fixtures/room-art-kitchen.json';
+import salonSnapshot from './fixtures/room-art-salon.json';
 
 const PUBLIC = join(__dirname, '..', 'public');
 const ROOMS_DIR = join(PUBLIC, 'assets', 'rooms');
@@ -33,8 +34,10 @@ const filesUnder = (dir: string, base = ''): string[] =>
     );
 
 describe('room art table', () => {
-    it('equals the snapshot taken before the per-room refactor', () => {
-        expect(ROOM_ART).toEqual(snapshot);
+    it('equals the snapshot of each room (the salon one taken before the per-room refactor, the kitchen one from the pack manifest)', () => {
+        expect(roomArt(ROOMS.salon)).toEqual(salonSnapshot);
+        expect(roomArt(ROOMS.kitchen)).toEqual(kitchenSnapshot);
+        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot]);
     });
 
     it('has a scene-file row for every room of the data', () => {
@@ -43,8 +46,9 @@ describe('room art table', () => {
         }
     });
 
-    it('has 37 entries, each a WebP file of the tabled size', () => {
-        expect(ROOM_ART).toHaveLength(37);
+    it('has 37 salon and 21 kitchen entries, each a WebP file of the tabled size', () => {
+        expect(roomArt(ROOMS.salon)).toHaveLength(37);
+        expect(roomArt(ROOMS.kitchen)).toHaveLength(21);
         for (const art of ROOM_ART) {
             expect(webpSize(readFileSync(join(PUBLIC, art.url))), art.url).toEqual({ width: art.width, height: art.height });
         }
@@ -73,8 +77,10 @@ describe('room art table', () => {
         }
     });
 
-    it('weighs at most 1 550 000 bytes in total', () => {
-        const total = ROOM_ART.reduce((sum, art) => sum + statSync(join(PUBLIC, art.url)).size, 0);
-        expect(total).toBeLessThanOrEqual(1_550_000);
+    it('weighs at most 1 550 000 bytes per room', () => {
+        for (const room of Object.values(ROOMS)) {
+            const total = roomArt(room).reduce((sum, art) => sum + statSync(join(PUBLIC, art.url)).size, 0);
+            expect(total, room.id).toBeLessThanOrEqual(1_550_000);
+        }
     });
 });

@@ -168,8 +168,8 @@ describe('salon data', () => {
         expect(pl.room.short(0, 15)).toBe('masz 0/15');
     });
 
-    it('lists the salon first, then a teaser that unlocks after it (FR-019), as the old literal did', () => {
-        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { teaser: true, unlockAfter: 'salon' }]);
+    it('lists the salon first, then the kitchen that unlocks after it (S-22; the teaser is gone while every cell is a room)', () => {
+        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }]);
         for (const id of Object.keys(ROOMS)) expect(typeof roomText.name(id), id).toBe('string');
     });
 
@@ -178,13 +178,14 @@ describe('salon data', () => {
         expect(HOUSE_V5.rooms[0]).toEqual(FIRST_HOUSE.rooms[0]);
     });
 
-    it('keeps a finished salon in the salon: the kitchen cell is invisible until the kitchen is data (F-04)', () => {
+    it('moves a finished salon into the kitchen with an empty kitchen state and the salon untouched (S-22)', () => {
         const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} } };
-        expect(roomInRenovation(FIRST_HOUSE, ROOMS, states)).toBeNull();
+        expect(roomInRenovation(FIRST_HOUSE, ROOMS, states)).toBe('kitchen');
         const moved = nextRoom({ rooms: states, currentRoom: 'salon' }, FIRST_HOUSE, ROOMS);
-        expect(moved.currentRoom).toBe('salon');
-        expect(moved.movedFrom).toBeNull();
-        expect(Object.keys(moved.rooms)).not.toContain('kitchen');
+        expect(moved.currentRoom).toBe('kitchen');
+        expect(moved.movedFrom).toBe('salon');
+        expect(moved.rooms.kitchen).toEqual({ tasksDone: 0, chosen: {} });
+        expect(moved.rooms.salon).toEqual(states.salon);
     });
 
     it('holds a child briefly (FR-018): shorter than the parent hold, above platform press thresholds, drift under half a target', () => {

@@ -71,5 +71,35 @@ export const SALON: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON };
+// The second room (S-22): the kitchen of the art pack martynka-locations-v2 (manifest room `kitchen`), geometry copied slot by slot.
+// Texture keys are `kitchen/<file id>`. No fixed decoration, no worn look and no contact shadows: the pack has none.
+const kitchenSlots: SlotDef[] = [
+    { id: 'kitchen-counter', x: 630, y: 221, width: 653, height: 434, z: 20, anchor: [327, 418], visibleRect: [16, 62, 621, 356], variants: ['kitchen/kitchen-counter-natural', 'kitchen/kitchen-counter-sunny', 'kitchen/kitchen-counter-mint'] },
+    { id: 'kitchen-fridge', x: 1236, y: 296, width: 166, height: 347, z: 25, anchor: [83, 331], visibleRect: [16, 27, 134, 304], variants: ['kitchen/kitchen-fridge-natural', 'kitchen/kitchen-fridge-sunny', 'kitchen/kitchen-fridge-mint'] },
+    { id: 'kitchen-table', x: 658, y: 539, width: 446, height: 377, z: 40, anchor: [223, 361], visibleRect: [16, 25, 414, 336], variants: ['kitchen/kitchen-table-natural', 'kitchen/kitchen-table-sunny', 'kitchen/kitchen-table-mint'] },
+    { id: 'kitchen-coffee', x: 1221, y: 575, width: 375, height: 344, z: 45, anchor: [188, 328], visibleRect: [17, 16, 342, 312], variants: ['kitchen/kitchen-coffee-natural', 'kitchen/kitchen-coffee-sunny', 'kitchen/kitchen-coffee-mint'] },
+    { id: 'kitchen-bench', x: 440, y: 446, width: 300, height: 223, z: 18, anchor: [150, 207], visibleRect: [16, 35, 268, 172], variants: ['kitchen/kitchen-bench-natural', 'kitchen/kitchen-bench-sunny', 'kitchen/kitchen-bench-mint'] },
+    { id: 'kitchen-rack', x: 347, y: 301, width: 200, height: 354, z: 10, anchor: [100, 338], visibleRect: [16, 92, 168, 246], variants: ['kitchen/kitchen-rack-natural', 'kitchen/kitchen-rack-sunny', 'kitchen/kitchen-rack-mint'] },
+];
+
+export const KITCHEN: RoomDef = {
+    id: 'kitchen',
+    scene: { before: 'kitchen/before', after: 'kitchen/after', shadows: 'kitchen/shadows' },
+    decor: [],
+    slots: kitchenSlots,
+    worn: [],
+    contactShadows: [],
+    // New tasks go at the END of this list only (RoomState.tasksDone counts positions in it). Costs in the salon's style (S-17 tunes them).
+    tasks: [
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
+        { kind: 'slot', id: 'place-counter', slot: 'kitchen-counter', label: 'placeCounter', cost: 7 },
+        { kind: 'slot', id: 'place-fridge', slot: 'kitchen-fridge', label: 'placeFridge', cost: 9 },
+        { kind: 'slot', id: 'place-kitchen-table', slot: 'kitchen-table', label: 'placeKitchenTable', cost: 10 },
+        { kind: 'slot', id: 'set-up-coffee', slot: 'kitchen-coffee', label: 'setUpCoffee', cost: 12 },
+        { kind: 'slot', id: 'place-bench', slot: 'kitchen-bench', label: 'placeBench', cost: 13 },
+        { kind: 'slot', id: 'set-out-dishes', slot: 'kitchen-rack', label: 'setOutDishes', cost: 15 },
+    ],
+};
+
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;

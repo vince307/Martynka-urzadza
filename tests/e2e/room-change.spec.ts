@@ -8,7 +8,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { passWelcome } from './support/welcome';
 import { answerRight, answerWrong, holdTouch, phaseIs, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { balance } from '../../src/data/balance';
-import { pl } from '../../src/data/pl';
 import { ROOM_LAYOUT } from '../../src/data/layout';
 import { SALON } from '../../src/data/rooms';
 
@@ -165,7 +164,7 @@ test('#16 a hold on a furnished slot changes it for free; a tap, a short or a dr
     expect((await snapshot(page)).stars).toBe(S - 9);
 });
 
-test('FR-019 the last purchase shows »Pokój gotowy!« and the change mode of the done room changes for free', async ({ page }) => {
+test('FR-019 the last purchase shows »Pokój gotowy!« and »Dalej« moves the child into the kitchen', async ({ page }) => {
     await silenceSpeech(page);
     const total = SALON.tasks.reduce((sum, task) => sum + task.cost, 0);
     await passWelcome(page, { e2eStars: String(total) });
@@ -189,32 +188,15 @@ test('FR-019 the last purchase shows »Pokój gotowy!« and the change mode of t
     expect(done.room.unreachable).toEqual([]);
     expect(done.room.card?.items).toHaveLength(2);
     expect(done.room.card?.items[0]).toMatchObject({ kind: 'room', id: 'salon', done: true });
-    expect(done.room.card?.items[1]).toMatchObject({ kind: 'teaser', unlocked: true });
+    expect(done.room.card?.items[1]).toMatchObject({ kind: 'room', id: 'kitchen', done: false, unlocked: true });
     expect((await targets(page)).resume).toBeNull(); // the way out is hidden behind the card
 
-    // "Dalej" closes the card and the done room offers the change mode.
+    // "Dalej" closes the card and moves the child into the kitchen (S-22): the stars are untouched, the new room has no change mode.
+    // The salon's change mode (through the done-room visit) and the kitchen's own are proved in phase 8.
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).room.card).toBeNull();
-    await expect.poll(async () => (await room(page)).room.modeText).toBe(pl.room.change.enter);
-    await tapTarget(page, 'modeButton');
-    await expect.poll(async () => (await room(page)).room.mode).toBe('change');
-
-    // In the change mode a plain tap on a furnished slot opens its panel; the change costs nothing.
-    const sofaAt = (await targets(page)).slots?.sofa;
-    expect(sofaAt).toBeDefined();
-    const before = (await room(page)).room.chosen.sofa;
-    await tapScene(page, sofaAt!);
-    await expect.poll(async () => (await room(page)).room.panel).toMatchObject({ kind: 'open', mode: 'change', slot: 'sofa' });
-    const next = await changeTo(page, before);
-    await expect.poll(async () => (await room(page)).room.panel.kind).toBe('closed');
-    const changed = await room(page);
-    expect(changed.room.chosen.sofa).toBe(next);
-    expect(changed.room.chosen.sofa).not.toBe(before);
-    expect(changed.state.stars).toBe(0);
-    expect(changed.room.mode).toBe('change');
-
-    // "Gotowe" leaves the mode.
-    await tapTarget(page, 'modeButton');
-    await expect.poll(async () => (await room(page)).room.mode).toBe('normal');
-    expect((await room(page)).room.modeText).toBe(pl.room.change.enter);
+    await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('kitchen');
+    const moved = await room(page);
+    expect(moved.room.modeText).toBeNull();
+    expect(moved.state.stars).toBe(0);
 });

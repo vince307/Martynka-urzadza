@@ -835,10 +835,10 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [ ] 5.1 `tests/roomArt.test.ts`, `tests/roomsData.test.ts`, `tests/bootBudget.test.ts` green with the kitchen (budget: salon 41.8 s and kitchen ≈ 33.7 s both under 48 s); unit `<phase-4 count> + N`
-- [ ] 5.2 `npm run art` then `git status --porcelain public/` lists only new files under `public/assets/rooms/kitchen/`; a second `npm run art` changes nothing
-- [ ] 5.3 Deliberate break: put the kitchen into the boot queue next to the salon (all of `ROOM_ART`) → `tests/bootBudget.test.ts` red (57.8 s); swap two kitchen variant keys → the kitchen snapshot red; each restored; meta-check: the snapshot is the manifest-derived table reviewed once in this phase (checked by eye against `designs/martynka-locations-v2/manifest.json`), sizes come from disk
-- [ ] 5.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- [x] 5.1 `tests/roomArt.test.ts`, `tests/roomsData.test.ts`, `tests/bootBudget.test.ts` green with the kitchen (budget: salon 41.8 s and kitchen ≈ 33.7 s both under 48 s); unit `<phase-4 count> + N`
+- [x] 5.2 `npm run art` then `git status --porcelain public/` lists only new files under `public/assets/rooms/kitchen/`; a second `npm run art` changes nothing
+- [x] 5.3 Deliberate break: put the kitchen into the boot queue next to the salon (all of `ROOM_ART`) → `tests/bootBudget.test.ts` red (57.8 s); swap two kitchen variant keys → the kitchen snapshot red; each restored; meta-check: the snapshot is the manifest-derived table reviewed once in this phase (checked by eye against `designs/martynka-locations-v2/manifest.json`), sizes come from disk
+- [x] 5.4 (against HEAD empty; against 942e237 only the phase-2 comment of `balance.loader`, `totalMs` 50 000) `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
 - [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` with the three updated specs; total equals `npx playwright test --list | tail -1`
 
 #### Manual

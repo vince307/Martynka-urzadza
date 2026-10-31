@@ -23,6 +23,7 @@ type SceneRole = 'before' | 'after' | 'shadows';
 /** File name (without folder and extension) of each scene picture, by room id and role in RoomDef.scene. A room in ROOMS needs a row (tests/roomArt.test.ts). */
 export const ROOM_SCENE_FILES: Readonly<Record<string, Readonly<Record<SceneRole, string>>>> = {
     salon: { before: 'architecture-before', after: 'architecture-after', shadows: 'shadows' },
+    kitchen: { before: 'kitchen-before', after: 'kitchen-after', shadows: 'kitchen-shadows' },
 };
 
 const urlOf = (key: string): string => `assets/rooms/${key}.webp`;
