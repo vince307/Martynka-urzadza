@@ -868,11 +868,11 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 4.1 New and changed tests green; unit `<phase-3 count> + N`
-- [ ] 4.2 Deliberate break: map `space` to `house-1` in `BUILDING_CHOICES` → the `buildingStart` literal case red; pass `Object.keys(ROOMS)` and `FIRST_ROOM` again in `main.ts` → the load-path guard and the "salon inside base-1 repairs to bridge" case red; make `freshRound` read `REGISTRY_KEYS.currentRoom` → the wiring guard red; each restored; meta-check: FR-050's deep-equal proves the round inputs carry no building and the guard proves the scene passes none; the browser path is phase 9
-- [ ] 4.3 `npm run build` prints `e2e hook: absent (` (the `v5-salon` marker is not in `dist/`)
-- [ ] 4.4 `git diff --stat <phase-3 sha> -- src/core/save.ts src/core/migrations src/data/balance.ts src/data/curriculum src/data/minigames.ts src/scenes/HouseScene.ts` empty
-- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
+- [x] 4.1 New and changed tests green; unit `<phase-3 count> + N`
+- [x] 4.2 Deliberate break: map `space` to `house-1` in `BUILDING_CHOICES` → the `buildingStart` literal case red; pass `Object.keys(ROOMS)` and `FIRST_ROOM` again in `main.ts` → the load-path guard and the "salon inside base-1 repairs to bridge" case red; make `freshRound` read `REGISTRY_KEYS.currentRoom` → the wiring guard red; each restored; meta-check: FR-050's deep-equal proves the round inputs carry no building and the guard proves the scene passes none; the browser path is phase 9
+- [x] 4.3 `npm run build` prints `e2e hook: absent (` (the `v5-salon` marker is not in `dist/`)
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/core/save.ts src/core/migrations src/data/balance.ts src/data/curriculum src/data/minigames.ts src/scenes/HouseScene.ts` empty
+- [x] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (e2e not run by this step; the orchestrator gates it)
 
 ### Phase 5: Fresh-install boot and the choice-card art
 

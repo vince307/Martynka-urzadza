@@ -1,6 +1,6 @@
 // Houses as data (FR-038): each house lists its rooms in opening order, with the cell of each in the floor x place grid.
 // The layout is from docs/designer-brief-m03.md ("Układ domów"); the children's room and the closed cell come with later slices.
-import type { HouseGeometry, HouseState } from '../core/types';
+import type { BuildingChoice, HouseGeometry, HouseState } from '../core/types';
 
 export const HOUSES: readonly HouseState[] = [
     {
@@ -15,6 +15,12 @@ export const HOUSES: readonly HouseState[] = [
 ];
 
 export const FIRST_HOUSE: HouseState = HOUSES[0];
+
+/** The two cards of the first-building choice, in display order; `art` keys name the pictures of phase 5. */
+export const BUILDING_CHOICES: readonly BuildingChoice[] = [
+    { id: 'house', house: 'house-1', art: 'choice/house' },
+    { id: 'space', house: 'base-1', art: 'choice/space' },
+];
 
 /** Cell rectangles of each house view (scene space 1920x1080), from the art pack manifest (houses.house-1). Art keys name the pictures of phase 2. */
 export const HOUSE_GEOMETRY: Readonly<Record<string, HouseGeometry>> = {

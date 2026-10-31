@@ -1,6 +1,7 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import saveV4SalonFixture from '../../tests/fixtures/save-v4-salon.json';
+import saveV5SalonFixture from '../../tests/fixtures/save-v5-salon.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, BackupRecord, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
@@ -124,8 +125,8 @@ export const E2E_LOADER_TIMEOUT_MS = 2000;
 /** The boot limits under `?e2eArt=stallall`: the slow line after 0.5 s, the total cut after 3 s. */
 export const E2E_BOOT_LIMITS = { slowAfterMs: 500, totalMs: 3000 } as const;
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon' | 'v5-salon';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon', 'v5-salon'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -142,7 +143,7 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a save of the current version whose stars field is bad; the migrated-corrupt path is covered by unit tests), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `slowfail` (the read rejects with UnknownError after `E2E_SLOW_READ_MS`, past the first limit: the late read error behind the slow card), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done), `v4-salon` (the frozen v4 save with a salon in progress, so the current build meets a real v4 save and lifts it to v5). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `slowfail` (the read rejects with UnknownError after `E2E_SLOW_READ_MS`, past the first limit: the late read error behind the slow card), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done), `v4-salon` (the frozen v4 save with a salon in progress, so the current build meets a real v4 save and lifts it to v5), `v5-salon` (the frozen v5 save with a salon in progress, so the current build meets a real v5 save and lifts it to v6). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -171,7 +172,9 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : seam === 'v4-salon'
                     ? structuredClone(saveV4SalonFixture) // frozen v4 bytes: a salon in progress, no house yet
-                    : undefined;
+                    : seam === 'v5-salon'
+                      ? structuredClone(saveV5SalonFixture) // frozen v5 bytes: a salon in progress in house-1, no building choice yet
+                      : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null, writtenHouse: null };
     const copies = new Map<number, unknown>();
     let record: BackupRecord | null = null;

@@ -100,6 +100,9 @@ export interface SceneRect { x: number; y: number; width: number; height: number
 /** One cell of a house view: where a room is drawn (art cell size, scene space). */
 export interface HouseCellDef extends SceneRect { id: string; floor: number; place: number }
 
+/** A card of the first-building choice (FR-042): which building it starts and the key of its picture (loaded by phase 5). */
+export interface BuildingChoice { id: 'house' | 'space'; house: string; art: string }
+
 /** The view of a house as data: art keys (not URLs), cell rectangles from the art pack manifest. */
 export interface HouseGeometry {
     shell: string;

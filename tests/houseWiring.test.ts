@@ -32,6 +32,16 @@ describe('house wiring', () => {
         expect(first('houseEqual')).toBeGreaterThan(-1);
     });
 
+    it('main.ts hands repairCurrentRoom the rooms of the saved building, not every room (S-28)', () => {
+        const sf = parse('src/main.ts');
+        const text = sf.getText(sf);
+        const ids = text.indexOf('houseRoomIds(');
+        expect(ids).toBeGreaterThan(-1);
+        expect(text.slice(text.indexOf('repairCurrentRoom('), text.indexOf('repairCurrentRoom(') + 200)).toContain('houseRoomIds(');
+        expect(sf.getText(sf)).not.toContain('Object.keys(ROOMS)');
+        expect(sf.getText(sf)).not.toContain('FIRST_ROOM');
+    });
+
     it('RoomScene builds its list from the house', () => {
         expect(callPositions(parse('src/scenes/RoomScene.ts')).some((c) => c.name === 'houseRoomList')).toBe(true);
     });

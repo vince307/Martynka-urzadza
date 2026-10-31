@@ -8,7 +8,7 @@ import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
 import { BRIDGE, FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
-import { FIRST_HOUSE, HOUSES } from '../src/data/houses';
+import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
 import { GAME_HEIGHT, GAME_WIDTH, MIN_TOUCH_TARGET } from '../src/data/layout';
@@ -222,5 +222,13 @@ describe('salon data', () => {
         for (const text of [pl.room.done.title, pl.room.done.spoken, pl.room.done.teaser, pl.room.change.enter, pl.room.change.exit, pl.room.change.hint]) {
             expect(text.trim().length).toBeGreaterThan(0);
         }
+    });
+});
+
+describe('BUILDING_CHOICES (FR-042)', () => {
+    it('are exactly house and space, each naming a house of HOUSES', () => {
+        expect(BUILDING_CHOICES.map((c) => c.id)).toEqual(['house', 'space']);
+        expect(BUILDING_CHOICES.map((c) => c.house)).toEqual(['house-1', 'base-1']);
+        for (const c of BUILDING_CHOICES) expect(HOUSES.some((h) => h.id === c.house), c.id).toBe(true);
     });
 });
