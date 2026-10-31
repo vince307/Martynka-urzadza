@@ -26,7 +26,7 @@ export interface HouseSnapshot {
  * in renovation returns to it, every other cell does nothing. The scene only reads the registry (never writes the room, the stars or the
  * current room), draws through `HouseView` and moves with `scene.switch`, so the task scene and the room sleep underneath. Nothing here is a tween.
  * Its pictures load on this scene's own loader the first time it opens (never at boot); until they arrive, or when they fail, a shell drawn in
- * code stands in. DESIGN-GAP (docs/design-gaps.md): the kit has no house view.
+ * code stands in. DESIGN-GAP (docs/design-gaps.md rows 184, 186-189): the kit has no house view.
  */
 export class HouseScene extends Scene {
     private view!: HouseView;

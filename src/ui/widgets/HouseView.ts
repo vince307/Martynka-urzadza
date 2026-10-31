@@ -23,7 +23,7 @@ const textureKey = (cellId: string): string => `house-cell-${cellId}`;
 /**
  * The cross-section of the house (FR-038): the sky, one captured miniature per open cell (done or current room), the pack's closed cell and
  * "Wkrótce" for every other cell, the shell over the cells and the frame around the room in renovation. Draw order as in the pack README:
- * background, cells, shell, frame. Nothing moves (no tween). DESIGN-GAP (docs/design-gaps.md): the pack's sky is a CSS gradient, flat here;
+ * background, cells, shell, frame. Nothing moves (no tween). DESIGN-GAP (docs/design-gaps.md rows 185, 189, 190): the pack's sky is a CSS gradient, flat here;
  * the stand-in shell (picture missing) is ours.
  */
 export class HouseView {

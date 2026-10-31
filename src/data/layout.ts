@@ -566,7 +566,7 @@ export const ROOM_LAYOUT = {
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
-    // "Dom" button (S-23, FR-038): top right under the star counter, clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md, house rows):
+    // "Dom" button (S-23, FR-038): top right under the star counter, clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md row 183; row 180 closed):
     // the kit has no way between the rooms; it replaced the kitchen-room visit button.
     houseButton: { left: 1622, top: 172, width: 256, height: 104, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
@@ -633,7 +633,7 @@ export const ROOM_TOUCH_TARGETS = {
 } as const;
 
 /**
- * The house cross-section (S-23). DESIGN-GAP (docs/design-gaps.md): the pack's sky is a CSS gradient, so the background is a flat fill of its top colour
+ * The house cross-section (S-23). DESIGN-GAP (docs/design-gaps.md rows 184, 185): the pack's sky is a CSS gradient, so the background is a flat fill of its top colour
  * (the same on Canvas and WebGL); the manifest's 70 px button band is below MIN_TOUCH_TARGET, so "Wróć do pokoju" sits in the free top-left corner,
  * above the shell's roof (the shell starts at x 456) and in the place of the HUD "Do pokoju" pill, which is hidden here.
  */
