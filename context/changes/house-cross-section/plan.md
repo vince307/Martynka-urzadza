@@ -726,6 +726,6 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`): make the room's wake set `visiting` from the previous value instead of `houseWakeVisit` → the FR-039 test red on the room after "Do pokoju"; make `cellTap` return a room for a closed cell → the closed-cell assert red; skip the capture in `HouseView` → both pixel asserts red; ignore the `?e2eArt=house` seam → the stand-in test red; each restored; green after
-- [x] 6.2 `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts --list` lists the new tests under `chromium-hook` only; both specs green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1`
-- [x] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 6.1 Spec red before (deliberate breaks, each run alone with `-g`): make the room's wake set `visiting` from the previous value instead of `houseWakeVisit` → the FR-039 test red on the room after "Do pokoju"; make `cellTap` return a room for a closed cell → the closed-cell assert red; skip the capture in `HouseView` → both pixel asserts red; ignore the `?e2eArt=house` seam → the stand-in test red; each restored; green after — 4112bd0
+- [x] 6.2 `npx playwright test tests/e2e/house-cross-section.spec.ts tests/e2e/canvas-renderer.spec.ts --list` lists the new tests under `chromium-hook` only; both specs green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 5`; total equals `npx playwright test --list | tail -1` — 4112bd0
+- [x] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — 4112bd0

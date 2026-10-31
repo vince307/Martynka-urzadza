@@ -1,54 +1,56 @@
 # Handoff — `house-cross-section` (slice S-23)
 
-Written by the `/10x-implement` step, phase 5 of run 2026-10-31-house-cross-section (commit `5d59882`, docs only, no code behaviour changed). The next step is phase 6 (e2e); it must add `house-cross-section` to `ROUND_SPEC` in `playwright.config.ts`, and `housePixel(cellId)` is a method on `window.__martynkaE2E` (call it with `page.evaluate`).
+Written by the `/10x-e2e` step, phase 6 (the last) of run 2026-10-31-house-cross-section; the test commit is `4112bd0`. The slice is `implemented`; the full e2e count is the orchestrator's to confirm (see §3), do not read "full suite" as run to the end.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/house-cross-section`, cut from `main` at `112f158` |
-| commits | docs, `158004b` p1, `c470f94` p2, `518f581` p3, `b46f63f` p4, `5d59882` p5 (+ this handoff commit) |
+| commits | docs, p1 `158004b`, p2 `c470f94`, p3 `518f581`, p4 `b46f63f`, p5 `5d59882`, p6 `4112bd0` (+ this handoff/epilogue commit) |
 | pushed / PR / merged | no / no / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 3.5, 4.4, 4.6, 5.5 (orchestrator e2e), 2.7, 5.11 [reviewer], 5.6 [visual], 5.7-5.10 [human], phase 6 |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | 7: 3.5, 4.4, 4.6 (earlier e2e rows ticked by the orchestrator earlier; check `grep -n '^- \[ \]' plan.md`), 2.7, 5.11 [reviewer], 5.6 [visual], 5.7-5.10 [human] |
 | working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `docs/design-gaps.md` | rows 183-190 added (Dom button, back button, flat sky, frame, closed cell, known-not-reached room closed, stand-in shell, salon green board in cream cell); row 180 closed |
-| `CLAUDE.md` | S-22 sentence: interim visit button replaced by the house cross-section; scene list has House; new S-23 paragraph |
-| `context/changes/house-cross-section/follow-ups/review-fixes.md` | new, 23 `Trigger:` lines (new items, kitchen/rooms-as-data re-recorded, F6 list, 4 closed as stale with evidence) |
-| `src/data/layout.ts`, `src/data/pl.ts`, `src/scenes/HouseScene.ts`, `src/ui/widgets/HouseView.ts` | comments only: DESIGN-GAP citations now name the row numbers |
-| `context/changes/house-cross-section/plan.md` | rows 5.1-5.4 ticked |
+| `tests/e2e/house-cross-section.spec.ts` | new, 4 tests under `chromium-hook` |
+| `tests/e2e/canvas-renderer.spec.ts` | + `S-23 canvas-renderer house miniatures are captured under Canvas` |
+| `tests/e2e/support/hook.ts` | `houseView` on `Snapshot`, `housePixel(page, cellId)` helper |
+| `tests/e2e/support/salon.ts` | `solveByRetype` exported |
+| `playwright.config.ts` | `house-cross-section` added to `ROUND_SPEC` only |
+| `context/changes/house-cross-section/plan.md`, `change.md` | rows 6.1-6.3 ticked with sha; status implemented |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `validate-rule-files.sh` | PASS (25 files, 0 missing); `grep -nE "HouseScene\|houseWakeVisit\|HOUSE_ART" CLAUDE.md` present |
-| `grep -c "Trigger:"` follow-ups / gap rows `1(8[3-9]\|9x)` | 23 (>= 10) / 8 (>= 7) |
-| seam sweep greps (`visitTarget\|visitButton` in src tests CLAUDE.md; `252, 636\|1060, 236` outside `houses.ts`) | both empty |
-| `git diff --stat 112f158 -- balance.ts curriculum save.ts fixtures public/assets/rooms` | empty |
-| break: appended `// 252, 636` to `src/core/rng.ts` | the cell-rect grep caught it; restored with `git checkout`. Meta-check: the grep is the criterion itself, so it proves the criterion, not behaviour |
-| lint, typecheck, `npm test`, deploy/ops tests, sample E1-E6, build | green; `Tests 4089 passed` (phase 4 4089, delta 0: docs/comments only); `e2e hook: absent (2 chunks checked)` |
-| Playwright | NOT run (orchestrator owns ports 4397/4398); rows 5.5 and earlier e2e rows are its |
+| new tests alone, `--workers=1` | 5 passed (house spec 4, canvas 1) |
+| `npx playwright test --list` | Total 179 tests = baseline 174 + 5 |
+| deliberate break A: `RoomScene` wake keeps `visiting` from the previous value AND the sleep reset removed | FR-039 test red (`roomId` "salon", expected "kitchen"); restored. Meta-check: a first try with only the `?? this.visiting` change stayed green because the sleep handler already resets `visiting` — the sleep reset is the second guard, so the test protects the pair, not the wake line alone |
+| break B: `cellTap` returns a room for a closed cell | FR-038 test red (screen "room", expected "house"); restored |
+| break C: `captureRoomMiniature` skipped in `HouseView` | both pixel asserts red (house spec and Canvas case, received null); restored |
+| break D: `?e2eArt=house` seam ignored in `HouseScene.loadArt` | stand-in test red (`artFallbacks.house` undefined); restored |
+| lint / typecheck / `npm test` / build | green; `Tests 4089 passed` (delta 0), `e2e hook: absent (2 chunks checked)` |
+| full e2e `--workers=2` | NOT run to the end: machine load ~29, about 70 tests in 25 minutes, run stopped by me. 70 passed, 2 failed (`adaptive.spec.ts` #13 "Nowa umiejętność!", `first-launch.spec.ts` #12 "Wróć"); both pass alone with `--workers=1` (load timeouts). The orchestrator's `--workers=4` run owns the final number (expect 179) |
 
 ## 4. Next command
 
-`/10x-e2e house-cross-section phase 6`
+`/10x-impl-review house-cross-section`
 
 ## 5. Open
 
-- Seam sweep findings: none to fix. No leftovers of `visit` wording (remaining uses are the live `visiting`/`houseWakeVisit` symbols), no duplicated cell-rect constants outside `src/data/houses.ts`, every `pl.house` key is used (`open` in `RoomScene`, `back` in `HouseScene`), no "five scenes" text; capture duplication (`captureRoomMiniature` vs `SalonBackdrop.render`) kept and recorded as follow-up 3.
-- Manual rows: 2.7, 5.11 `[reviewer]`; 5.6 `[visual]` (gate captures the 8 frames); 5.7-5.10 `[human]`.
-- Gap rows 183-190 in `docs/design-gaps.md`; follow-ups in `context/changes/house-cross-section/follow-ups/review-fixes.md`.
-- Follow-up 11 says "hook test in phase 6" for the Dom button hidden under the celebration card; phase 6 should cover it or the item stays open.
+- Manual rows: 2.7, 5.11 `[reviewer]`; 5.6 `[visual]`; 5.7-5.10 `[human]`.
+- Follow-up 11 (Dom button hidden under the celebration card) is NOT covered: the new test checks the button is absent while the variant panel is open (gap 183), not under the celebration card. It stays open in `follow-ups/review-fixes.md`.
+- The plan's third test names the kitchen cell; the spec uses the salon cell on a fresh device (the kitchen cell is closed there) and the kitchen path is covered by the FR-039 test (kitchen current after "Dalej").
+- Full-suite count unconfirmed (above).
 
 ## 6. Autonomous decisions
 
-- Narrator-round-summary 39 could not be found as an open item in the archive: recorded as closed as stale ("not found"). Would change: the maintainer pointing at the item.
-- Salon-load-health M-6 and load-and-tab-guard P-6 closed as stale on the evidence of the current `registerServiceWorker.ts` warnings; audit-art-renderer 2 closed (`-I` present). Would change: a silent install failure reported.
-- Deliberate break for a docs phase is the seam-sweep grep itself (no behaviour to break). Would change: the plan adding a test for it.
-- Driver stays `impl`.
+- Mixed-phase gate: the cell-state rules are covered by `tests/houseCells.test.ts` (unit); this phase drives only the browser part.
+- Third test uses the salon's current cell, not the kitchen's, to avoid a second `finishSalon` run under load. Would change: the plan insisting on the kitchen cell.
+- Stopped the full run at 72 of 179 under load instead of waiting hours; reran the two failures alone. Would change: the orchestrator wanting the full count from this step.
+- Driver stays `e2e`.
