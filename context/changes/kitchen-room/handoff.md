@@ -1,63 +1,61 @@
 # Handoff — `kitchen-room` (slice S-22)
 
-Written by the `/10x-tdd kitchen-room phase 3` step of run 2026-10-30-rooms-kitchen (2026-10-31). Phases 1-3 are committed (3412b6e, 9deb86d, f5f8904); the plan has 8 phases. The next agent must not get this wrong: **`RoomArtLoader.refreshHealth(room)` is a no-op
-while `room` is pending in `roomArtLoader` (plan review F1) — "Obrazki" must never list a room still loading — and the
-boot loads ONE room (`bootRoomArt(currentRoom)`) with `balance.loader.totalMs` unchanged at 50 000.**
+Written by the `/10x-implement kitchen-room phase 4` step of run 2026-10-30-rooms-kitchen (2026-10-31). Phases 1-4 are committed (3412b6e, 9deb86d, f5f8904, p4 below); the plan has 8 phases. The next agent must not get this wrong: **phase 5 adds the kitchen, so "Dalej" really moves for the first time; the order at "Dalej" is `nextRoom` -> `rooms` -> `currentRoom` -> `flush('now')` -> `ensure` + `refreshHealth` -> `redraw()` (guarded by `tests/celebrationWiring.test.ts`), and "Obrazki" must never list a room still loading.**
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/kitchen-room` |
-| Commits | `3412b6e` (p1), `9deb86d` (p2), `f5f8904 feat(kitchen-room): The runtime room-art loader on the HUD loader (p3)` |
+| Commits | `3412b6e` (p1), `9deb86d` (p2), `f5f8904` (p3), `feat(kitchen-room): The room celebration card and the move after "Dalej" (p4)` `74d5aea` |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows | 3.1-3.3 ticked with sha; 3.4 left (e2e clause belongs to the orchestrator) |
+| `## Progress` rows | 4.1-4.3 ticked with sha; 4.4 left (e2e clause belongs to the orchestrator); 4.5 [visual] left |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/roomArtLoader.ts` | `createRoomArtLoader(game, {disabled, entriesOf?})`: `attachLoader`, `ensure(rooms)`, `pending()`, `refreshHealth(currentRoom)`; type `RoomArtLoader`, `RoomLoadState` |
-| `src/data/layout.ts` | `REGISTRY_KEYS.roomArtLoader`, `REGISTRY_KEYS.roomLoad` (runtime, not in SAVE_KEYS) |
-| `src/main.ts`, `src/scenes/UIScene.ts` | service created in preBoot (`disabled` on `?e2eArt=room`); attached to the HUD loader beside the sound service |
-| `src/testing/e2eHook.ts` | top-level snapshot field `roomLoad` (pending, settled) |
-| `tests/roomArtLoader.test.ts` | 7 tests, fake loader and cache, literal key lists |
+| `src/data/layout.ts` | `ANIMATION.celebration` (room/house/street rows; room `holdMs` 1200 = 600 stage fade + 600 look, `burstCount` 22 = summary burst, `keepsake` false) |
+| `src/ui/widgets/RoomDoneCard.ts` | `show(..., extras: CardExtras {pending, burst})`; no fallback record for a pending tile; ONE `starBurst` per visit from the card centre, destroyed in `hide()` |
+| `src/ui/widgets/starBurst.ts` | returns the emitter |
+| `src/scenes/RoomScene.ts` | `dispatch` ensures `cardRooms(...)` at the last purchase, delay = `celebrationView('room', ...).revealMs`; `moveAfterDone()` on "Dalej"; `changedata-roomLoad` redraw listener; snapshot `card.celebration` |
+| `src/scenes/TaskScene.ts` | wake re-captures the backdrop when `roomLoad` changed (`backdropRoomLoad`, F3) |
+| `tests/celebrationWiring.test.ts` (new, 8), `tests/roomDoneCardWiring.test.ts` (+2), `tests/reducedMotionWiring.test.ts` (+1) | source guards |
 
 ## 3. Verification
 
 | command | result (observed) |
 |---|---|
-| RED | service stub: `AssertionError: expected [] to deeply equal [ 'b/two', 'b/three' ]` (6 of 6 behaviour cases red) |
-| GREEN | `tests/roomArtLoader.test.ts` 7 passed |
-| Break timeout | drop `xhrSettings.timeout` -> per-file-limit case red |
-| Break complete | settle without `resolved()` -> "complete caused by another file" case red |
-| Break listener | drop `off('loaderror')` -> "removes its listeners" case red |
-| Break F1 | drop pending check in `refreshHealth` -> pending-health case red; each confirmed changed (cmp with the original) and restored |
-| Meta-check | loader and cache are the test's own fakes; oracles are literal key lists of a synthetic room |
+| Wiring tests | 4 files, 30 passed |
+| Break order | `flush('now')` before `registry.set(currentRoom)` -> "Dalej moves ... after both registry writes" red |
+| Break fallback | record fallback for a pending tile -> "records a fallback only for a tile that is not loading" red |
+| Break delay | fixed `600` instead of `revealMs` -> "delay of the card comes from revealMs" red |
+| Meta-check | each break confirmed changed (`git diff --quiet` reported CHANGED) and restored by `git checkout`; guards prove wiring only, browser behaviour is phase 8 |
 | lint / typecheck / build | OK / OK / OK, `e2e hook: absent (2 chunks checked)` |
-| unit | 4033 passed = 4026 + 7; deploy, ops scripts OK; sample E1-E6 OK |
-| e2e | `salon-art.spec.ts` 4 passed (workers=1); full suite is the orchestrator's |
+| unit | 4044 passed = 4033 + 11; deploy, ops scripts OK; sample E1-E6 OK |
+| 4.3 | `git diff` of `src/data/rooms.ts`, `src/data/pl.ts`, `public`, `src/core/save.ts` empty |
+| e2e | `room-change`, `final-art-room-done`, `room-purchase` specs, workers=1: 7 passed; full suite is the orchestrator's |
 
 ## 4. Next command
 
-`/10x-implement kitchen-room phase 4`
+`/10x-implement kitchen-room phase 5`
 
 ## 5. Open
 
-- Phase 4 uses `REGISTRY_KEYS.roomArtLoader` (`ensure(cardRooms(...))` when the card opens, `refreshHealth(currentRoom)` after a room switch) and `roomLoad` for tile loading (`tileLoading`).
-- Settle rule: a room settles on a `complete` only when each of its keys is in the texture cache or failed (keyed `loaderror`); an unrelated `complete` re-arms `once('complete')`. A decode failure is assumed to raise `loaderror` through Phaser's `nextFile(false)`, not browser-verified.
-- Manual Progress rows (human checklist): 4.5 [visual] celebration on the salon (one room); 5.6 [reviewer] teacher read of the kitchen copy; 5.7 [reviewer] kitchen geometry vs `designs/martynka-locations-v2/manifest.json`; 5.8 [human] S-17 tunes kitchen costs; 7.6 [visual] eight-state matrix at 1440 + 1024; 7.7 [human] accept the interim "Salon"/"Kuchnia" visit button until S-23; 7.8 [human] salon green board vs kitchen cream margin; 7.9 [human] offline tablet check of the runtime kitchen load; 7.10 [reviewer] CI job `check`.
+- Phase 5 (kitchen data and art) changes the e2e specs `tests/e2e/rooms-as-data.spec.ts`, `room-change.spec.ts`, `salon-extra-slots.spec.ts` (the teaser tile becomes the kitchen tile).
+- Manual rows: 4.5 [visual] pop, hold, card with burst, salon tile and "Wkrótce" tile at 1440 and 1024, plus reduced motion; 5.6 [reviewer] kitchen copy; 5.7 [reviewer] kitchen geometry; 5.8 [human] S-17 tunes costs; 7.6 [visual] eight-state matrix; 7.7-7.9 [human]; 7.10 [reviewer] CI `check`.
+- Known: the celebration burst count (22) and hold (1200) are agent picks within the plan's range, tuned by the 4.5 visual look; `house`/`street` rows are placeholders for S-23/S-24.
 - Phase 6 placement risk: the bottom bar is full; `ROOM_LAYOUT.visitButton` must pass the extended `tests/layout.test.ts` overlap check.
-- Known risks in plan.md: runtime loads skip `wrongSizes` (the loader passes a no-op size reader, F5); a visited done room is not judged by "Obrazki"; shared HUD loader listeners are keyed (F6).
-- e2e specs that change in phase 5: `tests/e2e/rooms-as-data.spec.ts`, `tests/e2e/room-change.spec.ts`, `tests/e2e/salon-extra-slots.spec.ts`.
-- DESIGN-GAP rows from 175 (phase 7); follow-ups re-recorded in phase 7 (`context/changes/kitchen-room/follow-ups/review-fixes.md`).
+- Known risks in plan.md: runtime loads skip `wrongSizes` (F5); a visited done room is not judged by "Obrazki"; shared HUD loader listeners are keyed (F6).
+- DESIGN-GAP rows from 175 (phase 7); follow-ups re-recorded in phase 7.
 
 ## 6. Autonomous decisions
 
-- **Fixed by the maintainer (scope.md):** unchanged from the plan review (kitchen from locations-v2, one celebration, room intensity only, one room in renovation, budget measured).
-- **Phase 3 stayed `Driver: tdd`;** the service was absent. Stub first (no-op methods) gave assertion-red.
-- **Contract refinement:** `RoomArtLoaderOptions.entriesOf` (default: the room table) added so the test uses a synthetic room; "complete from another file" keeps the room pending (re-armed `once`), per the plan's wording, instead of settling it failed.
-- **Skill checkpoints decided in place:** no manual rows in phase 3 (gate skipped), commit set = the six code/test files + plan.md, subject as proposed, stop after this phase. Row 3.4 left for the orchestrator's e2e. Lessons file absent.
-- Phases 1-2 decisions: unchanged (row 1.4 and 2.4 left for the orchestrator's e2e).
+- **Fixed by the maintainer (scope.md):** unchanged (kitchen from locations-v2, one celebration, room intensity only, one room in renovation, budget measured).
+- **Driver impl;** no skill checkpoint needed a user answer: execution mode = in this context, no unrelated dirty paths, commit message as proposed, stop after the phase. Lessons file absent.
+- **Hold = 1200 ms** (600 stage fade + 600 look) and `burstCount` 22, within the plan's 400-800 ms extra. What would change it: the 4.5 visual look.
+- **Burst once per visit** via a `burstPlayed` flag on the card (cleared in `hide()`), because the card redraws on every `roomLoad` change.
+- Card `extras` has a default (`pending` empty, `burst` 0) so other callers stay valid.
+- Phases 1-3 decisions: unchanged (rows 1.4, 2.4, 3.4 and 4.4 left for the orchestrator's e2e).
