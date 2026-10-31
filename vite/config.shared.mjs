@@ -37,8 +37,8 @@ const pwaOptions = {
     // Registration lives in src/pwa/registerServiceWorker.ts (skipped in dev).
     injectRegister: null,
     manifest: {
-        name: 'Martynka urządza',
-        short_name: 'Martynka',
+        name: 'Bystrow',
+        short_name: 'Bystrow',
         lang: 'pl',
         // The installed app opens and stays inside the game, never on the landing page.
         start_url: APP_BASE,

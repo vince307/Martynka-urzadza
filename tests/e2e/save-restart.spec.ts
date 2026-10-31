@@ -126,7 +126,7 @@ test('#2 FR-021 an unreadable save shows the parent card, exports the raw copy a
     await expect(exportDialog.getByText(pl.saveTransfer.exportOutcome.downloadStarted)).toBeVisible();
     await exportDialog.getByRole('button', { name: pl.saveTransfer.close }).tap();
     await expect(exportDialog).toBeHidden();
-    expect(download.suggestedFilename()).toMatch(/^martynka-zapis-surowy-\d{4}-\d{2}-\d{2}\.txt$/);
+    expect(download.suggestedFilename()).toMatch(/^bystrow-zapis-surowy-\d{4}-\d{2}-\d{2}\.txt$/);
     const text = await readFile(await download.path(), 'utf8');
     expect(text).toContain('"version": 99');
     expect(text).toContain('"stars": 7');

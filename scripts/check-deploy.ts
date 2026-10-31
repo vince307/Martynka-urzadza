@@ -36,7 +36,8 @@ const RETRY_DELAY_MS = 5000;
 const HEAD_POOL = 8;
 const HEAD_TIMEOUT_MS = 15000;
 const GET_TIMEOUT_MS = 60000;
-const TITLE = 'Martynka urządza';
+// The game is "Bystrow" since 2026-10-31; a rollback to an older release still serves "Martynka urządza".
+const TITLES = ['Bystrow', 'Martynka urządza'];
 
 const argv = process.argv.slice(2);
 const redirectAt = argv.indexOf('--redirect-from');
@@ -115,7 +116,8 @@ const main = async (): Promise<number> => {
     // issuing a certificate for a fresh domain.
     const home = await get('/', RETRIES);
     const html = await home.text();
-    record({ name: 'GET /', ok: home.status === 200 && html.includes(TITLE), detail: `${home.status}, title ${html.includes(TITLE) ? 'present' : 'missing'}` });
+    const titled = TITLES.some((title) => html.includes(`<title>${title}</title>`));
+    record({ name: 'GET /', ok: home.status === 200 && titled, detail: `${home.status}, title ${titled ? 'present' : 'missing'}` });
     record(cacheControlCheck('/', home.headers.get('cache-control'), 'no-cache'));
 
     const index = await get('/index.html');
@@ -123,7 +125,7 @@ const main = async (): Promise<number> => {
 
     const manifest = await get('/manifest.webmanifest');
     const manifestName = manifestNameOf(await manifest.text());
-    record({ name: 'GET /manifest.webmanifest', ok: manifest.status === 200 && manifestName === TITLE, detail: `${manifest.status}, name "${manifestName}"` });
+    record({ name: 'GET /manifest.webmanifest', ok: manifest.status === 200 && TITLES.includes(manifestName), detail: `${manifest.status}, name "${manifestName}"` });
     record(contentTypeCheck('/manifest.webmanifest', manifest.headers.get('content-type'), 'application/manifest+json'));
     record(cacheControlCheck('/manifest.webmanifest', manifest.headers.get('cache-control'), 'no-cache'));
 

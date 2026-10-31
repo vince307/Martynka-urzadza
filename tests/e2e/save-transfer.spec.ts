@@ -127,7 +127,7 @@ test('#2 #10 an export from the panel round-trips through import on another devi
     const downloaded = page.waitForEvent('download');
     await exportDialog.getByRole('button', { name: pl.saveTransfer.saveFile, exact: true }).tap();
     const download = await downloaded;
-    expect(download.suggestedFilename()).toMatch(/^martynka-zapis-\d{4}-\d{2}-\d{2}\.txt$/);
+    expect(download.suggestedFilename()).toMatch(/^bystrow-zapis-\d{4}-\d{2}-\d{2}\.txt$/);
     const fileText = await readFile(await download.path(), 'utf8');
     expect(fileText).toContain('"app": "martynka-urzadza"');
     expect(fileText).toContain('"build"');

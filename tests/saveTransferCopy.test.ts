@@ -45,7 +45,7 @@ describe('pl.saveTransfer import copy', () => {
     });
 
     it('names the raw copy with a date and the file info with date and build (S12-14, S12-09)', () => {
-        expect(pl.saveFailed.fileName('2026-10-14')).toBe('martynka-zapis-surowy-2026-10-14.txt');
+        expect(pl.saveFailed.fileName('2026-10-14')).toBe('bystrow-zapis-surowy-2026-10-14.txt');
         expect(pl.saveTransfer.fileInfo('14.10.2026', 'abc1234')).toBe('Kopia z 14.10.2026, wersja gry abc1234');
         expect(pl.saveTransfer.fileInfo(null, null)).toBe('');
         expect(pl.saveTransfer.fileInfo('14.10.2026', null)).toBe('Kopia z 14.10.2026');

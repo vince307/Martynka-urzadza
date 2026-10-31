@@ -3,7 +3,7 @@ import { APP_BASE, checkBuildPaths, htmlUrls, swPrecacheUrls } from '../scripts/
 
 // Synthetic build output for the game served under /graj/ (Task 9: landing at /, game at /graj/).
 const manifest = JSON.stringify({
-    name: 'Martynka urządza',
+    name: 'Bystrow',
     start_url: '/graj/',
     scope: '/graj/',
     icons: [
