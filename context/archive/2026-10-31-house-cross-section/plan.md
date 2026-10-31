@@ -720,7 +720,7 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 - [ ] 5.8 [human] Accept the copy "Dom" (room → house) and "Wróć do pokoju" (house → room in renovation) and the back button in the top-left corner (DESIGN-GAP rows; decisions P6, P7)
 - [ ] 5.9 [human] Accept the salon's green board inside a cream house cell until the designer's salon re-export on cream (brief P3.2, gap 178)
 - [ ] 5.10 [human] On a real tablet, installed and offline after one online launch: open the house, the shell and both room miniatures draw (runtime load from the precache)
-- [ ] 5.11 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the Deploy run 41161789323 `build` log: `Tests  4054 passed | 3 skipped (4057)`, `e2e hook: absent (2 chunks checked)`)
+- [x] 5.11 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the Deploy run 41161789323 `build` log: `Tests  4054 passed | 3 skipped (4057)`, `e2e hook: absent (2 chunks checked)`) — CI run 41203037920 (job 124542486708, PR #121 head f524188): `Tests  4087 passed | 3 skipped (4090)`, `e2e hook: absent (2 chunks checked)`
 
 ### Phase 6: House navigation in the browser — e2e (FR-039, FR-038, #2, #16)
 
