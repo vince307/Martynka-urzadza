@@ -1,17 +1,17 @@
 # Handoff — `house-cross-section` (slice S-23)
 
-Written by the `/10x-new` step of run 2026-10-31-house-cross-section. The change identity exists with roadmap claims
-re-verified, the house pack inventoried and follow-ups triaged; no code changed. The next agent must not treat the
-roadmap's "house pack blocker" as live: the pack `designs/martynka-house-street-v1/` is in scope and ships as WebP.
+Written by the `/10x-research` step of run 2026-10-31-house-cross-section. Research is complete and committed; no product
+code changed. The next agent must not let a house visit survive the way back to the notebook: FR-039 holds today only
+because `RoomScene` nulls `visiting` on every sleep and wake, and the new path may set it only from an explicit cell tap.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/house-cross-section`, cut from `main` at `112f158` |
-| commits | 1 on the branch after this step: `docs(house-cross-section): change identity (autonomous run)` |
+| commits | 2 on the branch after this step: `docs(house-cross-section): change identity (autonomous run)`, `docs(house-cross-section): research` |
 | pushed / PR / merged | no / no / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
 | working tree | clean after the commit |
 
@@ -19,7 +19,8 @@ roadmap's "house pack blocker" as live: the pack `designs/martynka-house-street-
 
 | path | what it is |
 |---|---|
-| `context/changes/house-cross-section/change.md` | identity; roadmap claim table (S-23 vs repo now); design sources bound (house pack manifest, README § Integracja, preview CSS, brief layout); expected DESIGN-GAPs; migration (none); follow-ups triggered with takes; decisions D1–D11 |
+| `context/changes/house-cross-section/research.md` | research: miniatures (capture vs live), scene hosting (new `HouseScene` vs `RoomScene` layer), cell geometry, house art + runtime loader, e2e hook, boot budget, open questions for the plan |
+| `context/changes/house-cross-section/change.md` | frontmatter only: `status: new` → `preparing`, `updated` 2026-10-31 |
 | `context/changes/house-cross-section/handoff.md` | this file |
 
 ## 3. Verification
@@ -27,31 +28,43 @@ roadmap's "house pack blocker" as live: the pack `designs/martynka-house-street-
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/house-cross-section` |
-| `cwebp -q 85 -alpha_q 100 -m 6` on the three pack PNGs (scratchpad only, nothing committed) | `house-1-shell` 44 964 B, `cell-closed` 5 554 B, `cell-frame` 8 600 B = 59 118 B |
-| `grep Trigger: … S-23` over `context/archive/*/follow-ups/review-fixes.md` | kitchen-room 1, 12, 16, 19; rooms-as-data 11 (plus conditional "next change to X" triggers listed in change.md) |
-| lint / typecheck / unit / build / e2e | not run: docs-only step, no code changed (baseline on main 112f158 inherited, unverified) |
+| `npx vitest run tests/bootBudget.test.ts` | 2 passed (salon and kitchen boot under 48 s) |
+| source re-checks (grep) | scene list in `src/main.ts`; `visiting` reset in `RoomScene` `refresh`/`onSleep`; hardcoded `REGISTRY_KEYS.roomLoad`/`roomArtHealth` and two `once('complete')` sites in `src/ui/roomArtLoader.ts`; `SalonBackdrop.render` DynamicTexture at (0,0); `RESTORE_WEBGL` listeners in `TaskScene`/`WelcomeScene`; `inRoom()`/`screen` in `src/testing/e2eHook.ts` |
+| lint / typecheck / full unit / build / e2e | not run: docs-only step (baseline on main 112f158 inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-research house-cross-section`
+`/10x-plan house-cross-section`
 
 ## 5. Open
 
-- Research questions for `/10x-research`:
-  - house view as a new scene (`SCENE_KEYS`, `src/main.ts`) or a layer of `RoomScene`; how `visiting` (runtime, `RoomScene`) is set from a house tap and cleared on the way back to the notebook (FR-039: `GAME_EVENTS.toRoom` must always open `currentRoom`);
-  - house art loading at runtime (extend `createRoomArtLoader` in `src/ui/roomArtLoader.ts` or a sibling) and preloading the non-boot room for its miniature; if `roomArtLoader` is edited, kitchen follow-ups 14 and 15 fire;
-  - whether `drawRoomMiniature` (`src/ui/widgets/RoomView.ts`) needs a cell clip at 19/60 (curtains reach above the room; kitchen follow-up 10);
-  - cell geometry as data keyed by house id (manifest) vs `HouseRoomPlace` `floor`/`place`; closed cells = manifest cells without a known room;
-  - e2e hook: remove `visitTarget()` (`src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts`), add house targets/snapshot; rewrite `tests/e2e/kitchen-room.spec.ts` visit steps; `tests/roomVisit.test.ts`, `tests/layout.test.ts` (`visitButton`);
-  - house art health: a fallback record in `REGISTRY_KEYS.artFallbacks` vs an "Obrazki" line.
-- DESIGN-GAPs to add (rows after 182 in `docs/design-gaps.md`): house button in the room view, way back from the house, frame on touch (marks the room in renovation), salon green board inside a cream cell (extends 178), tap on a closed cell (inert), code-drawn shell fallback; close gap 180.
-- Follow-ups to re-record in this slice's `follow-ups/review-fixes.md`: kitchen 12 (→ S-24), 16 (fix itself), 19 (backdrop), rooms-as-data 11 (kids id → S-25), L-R8; close audit-art-renderer 2 (`python3 -I` already present in `scripts/make-task-art.mjs`).
+- Plan decisions (research.md "Open Questions"): hosting (new `HouseScene` + `scene.switch(SCENE_KEYS.room, { visit })`,
+  recommended, vs a layer of `RoomScene`); miniature per cell as a 608×342 `DynamicTexture` capture like
+  `SalonBackdrop.render` with the stand-in Graphics in the holder (recommended) vs live objects + `setCrop` (fires kitchen
+  follow-up 10); parameterise `createRoomArtLoader` (`src/ui/roomArtLoader.ts`) vs a sibling — either fires kitchen
+  follow-ups 3, 14, 15; house art health as an `artFallbacks` record (recommended) vs an `ArtTable` `'house'`; house
+  narration (default none).
+- Cell geometry: new data keyed by house id (manifest cells, `col` = `place`); closed cell = geometry cell with no
+  `HouseRoomPlace`; no save field (stays v5).
+- Tests that move: `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` (wake/sleep reset → "a wake without data ends
+  a visit"), `tests/layout.test.ts` (`ROOM_TOUCH_TARGETS.visitButton`), `tests/e2e/kitchen-room.spec.ts` visit test; hook
+  `targets.visitButton` and `RoomScene.visitTarget` removed, `screen: 'house'` + house targets added.
+- DESIGN-GAPs (rows after 182 in `docs/design-gaps.md`): those listed in `change.md` plus: the manifest's button band
+  (y 1010-1080, 70 px) is below `MIN_TOUCH_TARGET` 96, so the house back button goes in a side margin outside the shell;
+  house background (preview CSS gradient `#e7f4f4`→`#eef4e1`) needs tokens.
+- Follow-ups firing: kitchen 1 (in scope), 6 (one `console.warn` on `redundant` in `trackStates`,
+  `src/pwa/registerServiceWorker.ts`), 16 (guarded: house button under `blocked`); audit-art-renderer 2 is stale (close).
 
 ## 6. Autonomous decisions
 
-- D1–D7 carried from `context/runs/2026-10-31-house-cross-section/scope.md` as "orchestrator starting decision (scope.md)" — none overturned; details and reversal conditions in `change.md` § Autonomous decisions.
-- D8 replace the interim visit button with the house button (not both) — would change: playtest showing the direct jump is missed.
-- D9 celebration stays room intensity (no house-done moment before S-25) — would change: S-25 shipping first.
-- D10 missing copy (house button, way back) written in the existing style with gap rows — would change: designer wording delivered.
-- D11 next step `/10x-research` rather than the skill's default `/10x-plan` (fixed by the step prompt; the slice spans scenes, loader and hook) — would change: nothing.
-- No `AskUserQuestion`; no `[human]` row needed (no scope.md decision overturned).
+- R1 — scope of the research taken from `change.md` § Open and the step prompt; no `AskUserQuestion`. Would change: nothing.
+- R2 — recommend a new `HouseScene` over a `RoomScene` layer: the room's hold zone, panel and buttons sleep for free,
+  `RoomScene` does not grow, and the existing sleep/wake resets keep FR-039. Rejected: the layer (more `blocked` branches,
+  full-screen cover over a live room). Cost accepted: first scene-data hand-off in the repo. Would change: the plan finding
+  Phaser's wake data unreliable in a test, or the house needing room state that only `RoomScene` holds.
+- R3 — recommend per-cell DynamicTexture capture: the only renderer-neutral clip in the repo (Phaser 4 masks are WebGL
+  filters; Canvas is supported). Rejected: live objects + `setCrop`. Would change: a Canvas run showing `dt.draw` of the
+  Graphics/filtered images misbehaving.
+- R4 — recommend no "Obrazki" line for runtime house art (artFallbacks record), consistent with kitchen follow-up 2.
+  Would change: the maintainer wanting runtime art judged in "Obrazki".
+- No scope.md decision overturned; no `[human]` row.
