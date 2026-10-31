@@ -1,9 +1,9 @@
 ---
-project: "Martynka urządza"
-version: 4
+project: "Bystrow"
+version: 5
 status: draft
 created: 2026-10-11
-updated: 2026-10-30
+updated: 2026-10-31
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -16,9 +16,9 @@ timeline_budget:
   after_hours_only: false
 ---
 
-# PRD — Martynka urządza
+# PRD — Bystrow (do 2026-10-31 „Martynka urządza”)
 
-Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca. Wersja 2 (2026-10-21): wyjątek prywatności dla wysyłek uruchamianych przez rodzica, nowe wymagania po v1 (FR-028–FR-031) i FR-009 bez automatycznego czytania; decyzje autora z 2026-10-20/21 zapisane w `docs/human-checklist.md`. Wersja 3 (2026-10-22): kierunek po v1 „ulica i domy” (FR-032–FR-036) i niemy przewodnik w zeszycie (FR-037): dom z kilkoma pokojami, mieszkańcy zamiast sprzedaży i wynajmu, gwiazdki z rund pozostają jedyną walutą. Wersja 4 (2026-10-30): decyzje autora o kształcie „ulicy i domów” (FR-038–FR-041, uściślenie FR-033 i FR-034): przekrój domu z piętrami jako miejsce wyboru pokoju, jeden pokój w remoncie naraz, jedna parametryzowana celebracja, nawigacja bez obowiązkowych przystanków, album pamiątek; kolejność budowy od środka (pokój → dom → ulica → dzielnica); otwarty kamień M-03.
+Gra dla dziecka w wieku 6–10 lat (klasy 1–3): runda zadań matematycznych daje gwiazdki, gwiazdki opłacają zadania remontowe w pokoju, dziecko wybiera jeden z 3 wariantów każdego elementu. Tablet w poziomie, tylko dotyk, instalowalna aplikacja webowa działająca offline, cały tekst w grze po polsku. Źródło: `context/foundation/shape-notes.md` (sesja 2026-10-10/11). Kolejność etapów M0–M8 z planu `Martynka-urzadza.md` jest wiążąca. Wersja 2 (2026-10-21): wyjątek prywatności dla wysyłek uruchamianych przez rodzica, nowe wymagania po v1 (FR-028–FR-031) i FR-009 bez automatycznego czytania; decyzje autora z 2026-10-20/21 zapisane w `docs/human-checklist.md`. Wersja 3 (2026-10-22): kierunek po v1 „ulica i domy” (FR-032–FR-036) i niemy przewodnik w zeszycie (FR-037): dom z kilkoma pokojami, mieszkańcy zamiast sprzedaży i wynajmu, gwiazdki z rund pozostają jedyną walutą. Wersja 4 (2026-10-30): decyzje autora o kształcie „ulicy i domów” (FR-038–FR-041, uściślenie FR-033 i FR-034): przekrój domu z piętrami jako miejsce wyboru pokoju, jeden pokój w remoncie naraz, jedna parametryzowana celebracja, nawigacja bez obowiązkowych przystanków, album pamiątek; kolejność budowy od środka (pokój → dom → ulica → dzielnica); otwarty kamień M-03. Wersja 5 (2026-10-31): gra nazywa się „Bystrow”; przy pierwszym uruchomieniu dziecko wybiera, co urządza najpierw: Dom (salon) albo Bazę kosmiczną (FR-042–FR-050); źródło: `context/foundation/shape-notes.md` (sesja 2026-10-31, poprzednia sesja w `context/foundation/archive/shape-notes-2026-10-11.md`).
 
 ## Vision & Problem Statement
 
@@ -34,6 +34,8 @@ Wgląd, dlaczego to zadziała tam, gdzie zeszyt i apki nie: (1) nagrodą musi by
 
 **Rodzic.** Instaluje grę na tablecie, ustawia (lub koryguje) etap w ukrytych ustawieniach, od czasu do czasu sprawdza postępy (opanowanie umiejętności, najczęstsze błędy). Nie gra razem z dzieckiem na co dzień.
 
+**Po v1 — wybór budowli (2026-10-31).** Baza kosmiczna jest dla każdego dziecka 6–10 lat jako równorzędny temat obok domu, także dla dzieci, których salon nie wciąga; persona główna się nie zmienia. Dziecko, które już gra (ma zapis), gra dalej w domu bez pytania o wybór; ekran wyboru widzi tylko nowe dziecko. Rodzeństwo na dwóch urządzeniach może mieć różne tematy.
+
 ## Success Criteria
 
 Przepływ MVP (pierwsza sesja dziecka, klik po kliku): (1) dziecko otwiera grę z ikony na ekranie początkowym tabletu, bez sieci; (2) podaje wiek, rozwiązuje rozgrzewkę, gra ustawia etap (rodzic może go zmienić); (3) rozwiązuje rundę zadań kafelkami lub klawiaturką, za każde poprawne gwiazdka, po błędzie podpowiedź i druga próba; (4) widzi podsumowanie rundy, wybiera „Do pokoju”; (5) płaci gwiazdkami za zadanie remontowe, wybiera 1 z 3 wariantów, widzi animację; (6) zamyka grę, po ponownym otwarciu wszystko jest tak, jak zostawiła; (7) po ostatnim zadaniu widzi „Pokój gotowy!”. Linia „wydane” dla v1: M0–M8 w całości (łącznie z testami z graczem i poprawkami balansu). Koszt 16-tygodniowego MVP został pokazany i zaakceptowany 2026-10-10.
@@ -42,11 +44,13 @@ Przepływ MVP (pierwsza sesja dziecka, klik po kliku): (1) dziecko otwiera grę 
 - Córka sama prosi o grę: gra z własnej inicjatywy co najmniej 3 razy w tygodniu przez 4 kolejne tygodnie, bez nagabywania.
 - Przechodzi cały pierwszy pokój od zaniedbanego do urządzonego w rozsądnym czasie (ok. 1–2 tygodnie grania; dokładną wartość ustala M8).
 - W ustawieniach rodzica widać odblokowane kolejne kroki etapu i rosnące opanowanie umiejętności, zgodne z tym, co jest aktualnie w szkole.
+- Po v1 (wybór budowli): nowe dziecko przechodzi całą ścieżkę bazy: wiek → Baza kosmiczna → rozgrzewka → rundy → remont Mostka → przekrój bazy.
 
 ### Secondary
 - Gra zastępuje karty pracy: rodzic przestaje siedzieć nad zeszytem, ćwiczenie w domu = gra.
 - Gra działa także myszką w przeglądarce na komputerze, choć celem jest tablet.
 - Inne dziecko w wieku 6–10 lat też trafia w sensowny etap (dobór etapu nie jest dopasowany tylko do córki).
+- Po v1 (wybór budowli): dziecko spoza domu, którego salon nie wciągnął, wybiera bazę i wraca do gry (obserwacja autora, bez telemetrii); córka na świeżej instalacji sama rozumie wybór, bez czytania i bez pomocy dorosłego.
 - Rodzic faktycznie zagląda w podgląd postępów co najmniej raz w tygodniu.
 
 ### Guardrails
@@ -54,6 +58,7 @@ Przepływ MVP (pierwsza sesja dziecka, klik po kliku): (1) dziecko otwiera grę 
 - Postęp nigdy nie ginie: zamknięcie, restart tabletu i aktualizacja gry zostawiają stan dokładnie taki sam.
 - Zadania są matematycznie poprawne i zgodne z programem: żadnej błędnej odpowiedzi wzorcowej, ujemnych wyników ani zadań spoza zakresu etapu.
 - Działa offline i bez sieci zewnętrznej: gra nie wysyła niczego automatycznie (brak telemetrii, reklam i zakupów); jedyne wysyłki uruchamia świadomie rodzic za bramką dla dorosłych (opinia, raport o błędzie, FR-028–FR-029), zawsze bez danych dziecka.
+- Po v1 (wybór budowli): po aktualizacji dziecko z zapisem jest w swoim domu, z tymi samymi gwiazdkami i bez ekranu wyboru; pierwszy start jest dłuższy najwyżej o jedno dotknięcie; zadania nie zależą od tematu.
 
 ## User Stories
 
@@ -101,6 +106,32 @@ Przepływ MVP (pierwsza sesja dziecka, klik po kliku): (1) dziecko otwiera grę 
 #### Acceptance Criteria
 - Zapis następuje bez działania użytkownika po każdej zmianie stanu i przy ukryciu karty
 - Zapis ze starszej wersji gry jest przenoszony do nowej wersji, nie kasowany
+
+### US-05: Nowe dziecko wybiera bazę kosmiczną i remontuje Mostek
+
+- **Given** świeża instalacja, brak zapisu
+- **When** dziecko wybiera wiek, na ekranie „Co urządzamy najpierw?” dotyka karty „Baza kosmiczna”, robi rozgrzewkę i rundę, potem „Do pokoju”
+- **Then** widzi Mostek w stanie „przed” z pierwszym zadaniem remontowym; po zapłaceniu gwiazdkami ściany i podłoga przechodzą w „po”, a oddalenie („Baza”) pokazuje przekrój bazy z Mostkiem w pierwszej komórce i śluzami „Wkrótce” w pozostałych
+
+#### Acceptance Criteria
+- Wcześniej (do wersji 4) nowe dziecko po rozgrzewce trafiało zawsze do salonu
+- Przycisk głośnika na ekranie wyboru czyta pytanie i nazwy kart
+- Ścieżka rodzica („Rodzic” → etap) też kończy się wyborem tematu przez dziecko
+
+### US-06: Dziecko z zapisem po aktualizacji
+
+- **Given** zapis sprzed zmiany z salonem w remoncie i gwiazdkami
+- **When** gra uruchamia się po aktualizacji z wyborem tematu
+- **Then** dziecko trafia do zeszytu bez ekranu wyboru, ma te same gwiazdki, a „Do pokoju” prowadzi do jego salonu (albo kuchni)
+
+#### Acceptance Criteria
+- Dowodem jest test na zapisie sprzed zmiany, w teście logiki i w przeglądarce
+
+### US-07: Pomyłka przy wyborze
+
+- **Given** dziecko wybrało Dom i nie skończyło pierwszej rundy
+- **When** dotyka „Wróć”
+- **Then** wraca do wyboru tematu i może wybrać Bazę; po skończonej pierwszej rundzie „Wróć” już nie ma
 
 ## Functional Requirements
 
@@ -210,6 +241,30 @@ Dodane 2026-10-22 (decyzja autora po przeglądzie aplikacji matematycznych dla d
 
 - FR-037: W rogu zeszytu z zadaniami siedzi mały przewodnik (zwierzątko w stylu grafik gry) w trzech pozach: spokój, radość po dobrej odpowiedzi, zamyślenie po pomyłce. Nie mówi, nie ma dialogów ani historii, nie zasłania zadania i nigdy nie okazuje zawodu; przy systemowym „ogranicz ruch” zmienia pozę bez animacji. Priority: nice-to-have (po v1)
 
+### Po v1 — co urządzamy najpierw (dom albo baza kosmiczna)
+
+Dodane 2026-10-31 (decyzja autora): salon jako jedyny pierwszy temat może nie wciągnąć każdego dziecka, więc przy pierwszym uruchomieniu dziecko wybiera budowlę: dom (salon, potem kuchnia) albo bazę kosmiczną (moduły remontowane jak pokoje, przekrój z tymi samymi komórkami co dom). Ścieżki są osobne. Grafika: paczka `designs/bystrow-space-base-v1/` (Mostek, przekrój bazy, karty wyboru), zamówienie Hangaru `docs/designer-orders/2026-10-31-space-base-2-hangar.md`. Termin: 1 tydzień, bez twardej daty. Wymagania mają znacznik zmiany względem gry sprzed wersji 5.
+
+- FR-042: Nowe dziecko po wyborze wieku (albo po ustawieniu etapu przez rodzica przyciskiem „Rodzic”) widzi ekran „Co urządzamy najpierw?” z dwiema kartami z ilustracją (Dom, Baza kosmiczna) i wybiera jedną jednym dotknięciem; przycisk głośnika czyta pytanie i nazwy kart jak przy zadaniach (automatyczne czytanie domyślnie wyłączone). Priority: must-have (po v1). Change: new
+  > Socrates: Zarzut: dodatkowy ekran w pierwszej minucie, sześciolatek może wybrać losowo. Rozstrzygnięcie: zostaje; losowy wybór też jest dobry, oba tematy są pełnowartościowe, a FR-043 pozwala się cofnąć.
+- FR-043: Dziecko może wrócić do wyboru tematu do końca pierwszej rundy; potem temat zostaje, a inny temat daje tylko „Zacznij od nowa” w ustawieniach rodzica. Priority: must-have (po v1). Change: new
+  > Socrates: Zarzut: znudzone dziecko zmieni temat tylko kosztem postępu. Rozstrzygnięcie: zostaje; temat to decyzja, gwiazdki i pokoje nie znikają bez wyraźnej decyzji rodzica.
+- FR-044: Dziecko z bazą remontuje moduł „Mostek” jak pokój: najpierw ściany i podłoga (przed → po), potem 6 elementów × 3 warianty opłacane gwiazdkami w kolejności z danych modułu; ceny są wyższe niż w salonie, tak że suma gwiazdek Mostka jest podobna do salonu (ok. 100), więc baza zajmuje tyle samo rund. Priority: must-have (po v1). Change: new
+  > Socrates: Zarzut: 7 zadań remontowych wobec 12 w salonie, baza kończy się szybciej i wygląda na „gorszą”. Rozstrzygnięcie: zmienione; wyższe koszty elementów, suma ok. 100 gwiazdek jak salon.
+- FR-045: Dziecko z bazą widzi przekrój bazy (te same komórki co przekrój domu; zamknięte moduły jako śluza z „Wkrótce”) i wraca z niego do modułu jednym dotknięciem. Priority: must-have (po v1). Change: new
+  > Socrates: Zarzut: przekrój z jednym modułem i trzema śluzami może rozczarowywać. Rozstrzygnięcie: zostaje bez zmian.
+- FR-046: Po ukończeniu Mostka dziecko dostaje celebrację (FR-040) i zostaje w bazie: ogląda i zmienia warianty za darmo, gwiazdki się zbierają, a kolejny moduł otwiera się, gdy zostanie dodany do gry. Priority: must-have (po v1). Change: new
+  > Socrates: Zarzut: gwiazdki bez celu przed Hangarem mogą obniżyć motywację. Rozstrzygnięcie: zostaje bez zmian (Hangar zamówiony od razu, FR-047).
+- FR-047: Hangar z rakietą jest drugim modułem bazy, dodanym osobnym etapem zaraz po pierwszym. Priority: should-have (po v1). Change: new
+  > Socrates: Zarzut: bez Hangara baza to ślepa uliczka, więc może must-have. Rozstrzygnięcie: zostaje should-have, osobny etap.
+- FR-048: „Do pokoju” (FR-039) prowadzi do pokoju w remoncie wybranej budowli: domu albo bazy; oddalenie pokazuje przekrój tej budowli, a przycisk oddalenia nosi nazwę budowli („Dom” albo „Baza”). Priority: must-have (po v1). Change: modified
+  > Socrates: Zarzut: przycisk „Dom” w bazie mówiłby nieprawdę. Rozstrzygnięcie: zmienione; napis przycisku zależy od budowli.
+- FR-049: Dziecko z zapisem sprzed zmiany gra dalej w domu, bez ekranu wyboru, z tymi samymi gwiazdkami, pokojami i etapem; dowodem jest test na zapisie sprzed zmiany. Priority: must-have (po v1). Change: preserved
+  > Socrates: Zarzut: „zachowane” bywa tylko deklaracją. Rozstrzygnięcie: zmienione; wymagany dowód w teście.
+- FR-050: Rundy, etapy, adaptacja i gwiazdki jako jedyna waluta (FR-035) działają tak samo w obu tematach; dowodem jest test, że przy tym samym ziarnie losowania rundy w obu tematach dają te same zadania. Priority: must-have (po v1). Change: preserved
+  > Socrates: Zarzut jak przy FR-049. Rozstrzygnięcie: zmienione; dowód w teście.
+
+## Non-Functional Requirements
 
 - Gra uruchamia się offline z ikony na ekranie początkowym do ekranu gry w < 3 s na tablecie sprzed 3–4 lat.
 - Reakcja na dotyk (podświetlenie kafelka, wpisanie cyfry) jest widoczna w < 100 ms; animacja lotu gwiazdki nie blokuje przejścia do następnego zadania.
@@ -218,6 +273,7 @@ Dodane 2026-10-22 (decyzja autora po przeglądzie aplikacji matematycznych dla d
 - Lektor działa tam, gdzie urządzenie ma polski głos; brak głosu nie blokuje żadnego przepływu.
 - Prywatność: gra nie wysyła niczego automatycznie. Wyjątki: pobranie i aktualizacja gry oraz wysyłki uruchomione świadomie przez rodzica za bramką dla dorosłych (opinia, raport o błędzie), zawsze bez danych dziecka. Brak telemetrii, analityki w grze i czcionek z sieci; statystyki odwiedzin (FR-030) nie wymagają kodu w grze. Dane dziecka nigdy nie opuszczają urządzenia poza świadomym eksportem przez rodzica.
 - Dostępność: gra szanuje systemowe ustawienie „ogranicz ruch” (animacja lotu gwiazdki wyłączona) i jest w pełni grywalna bez dźwięku; żadna informacja nie jest przekazywana wyłącznie dźwiękiem lub wyłącznie kolorem.
+- Wybór budowli (po v1): start ładuje grafiki tylko wybranej budowli i mieści się w dotychczasowym czasie ładowania (z co najmniej 2 s zapasu pod limitem); obie ścieżki działają offline od pierwszej instalacji, a sprawdzenie po wdrożeniu potwierdza, że grafiki bazy są dostępne offline; ekran wyboru działa tylko dotykiem, ma duże karty i przy „ogranicz ruch” jest bez animacji.
 
 ## Business Logic
 
@@ -229,6 +285,8 @@ Dziecko spotyka regułę pośrednio: zadania „same” stają się trochę trud
 
 Reguły wspierające (opisane w FR): (1) generowanie: każde zadanie jest oryginalne, w zakresie liczb etapu, z poprawną odpowiedzią, rozpraszaczami i podpowiedzią krok po kroku (FR-004, FR-023); (2) wymiana: każda poprawna odpowiedź daje gwiazdkę, a gwiazdki opłacają kolejne zadania remontowe pokoju w kolejności z danych pokoju (FR-007, FR-016, FR-017); po v1 pokoje składają się w domy, a domy w ulicę, bez innego źródła gwiazdek (FR-032–FR-035).
 
+**Zmiana w wersji 5 (2026-10-31): dziecko raz wybiera budowlę (dom albo bazę), a gra prowadzi je tylko przez pokoje tej budowli, w kolejności z jej danych.** Dotąd gra otwierała kolejny pokój domu w stałej kolejności z danych domu (salon, kuchnia), z jednym pokojem w remoncie naraz (FR-033). Wejściem jest wybór dziecka na ekranie „Co urządzamy najpierw?” (do końca pierwszej rundy można go cofnąć), wynikiem jest budowla, której pokoje (moduły) dziecko remontuje do końca gry na tym urządzeniu. Dziecko spotyka regułę przy „Do pokoju” i w przekroju budowli. Dziecko z zapisem sprzed zmiany ma budowlę „dom” bez pytania; kopia zapisu ze starszej wersji wczytana przez rodzica też daje dom. Ceny modułów bazy są dobrane tak, by Mostek kosztował razem ok. 100 gwiazdek, jak salon. Gwiazdki z rund pozostają jedyną walutą, a zadania nie zależą od budowli.
+
 ## Access Control
 
 Brak logowania i kont. Jeden profil dziecka na urządzeniu; dane (gwiazdki, pokoje, postęp nauki) żyją wyłącznie lokalnie. Nie ma przełączania profili w v1; rodzeństwo to temat „Później” (plan, sekcja 11), więc format zapisu ma zostawić miejsce na profile, ale UI ich nie pokazuje.
@@ -238,12 +296,17 @@ Dwie role na tym samym urządzeniu, rozdzielone wyłącznie bramką UI:
 - **Dziecko**: rozwiązuje zadania, wydaje gwiazdki, urządza pokoje, zmienia warianty. Nie widzi ustawień.
 - **Rodzic**: wchodzi do ukrytych ustawień przez długie przytrzymanie ikony **plus bramkę dla dorosłego** (np. proste działanie do rozwiązania); tam zmienia etap, ogląda postępy, eksportuje/importuje zapis, resetuje grę z potwierdzeniem, a po v1 wysyła opinię lub raport o błędzie (FR-028–FR-029). Dziecko nie może niczego wysłać. Bramka chroni reset i zmianę etapu przed celowym wejściem dziecka, nie tylko przed przypadkowym.
 
+Wersja 5 (2026-10-31): bez nowych ról i bramek. Temat (dom albo baza) wybiera dziecko na pierwszym starcie i może go zmienić tylko do końca pierwszej rundy (jak „Wróć” do wyboru wieku); potem temat zostaje, a jedyną drogą do innego tematu jest „Zacznij od nowa” rodzica.
+
 ## Non-Goals
 
 Funkcjonalne:
 - Brak fabuły, dialogów, postaci i wydarzeń czasowych: Martynka to nazwa gry, nie bohaterka; pętla nagrody nie potrzebuje narracji (plan, sekcja 12). Wyjątki po v1: mieszkańcy gotowego domu (obrazek i jedno zdanie podziękowania, FR-034) oraz niemy przewodnik w rogu zeszytu (FR-037), bez dialogów, wyborów i historii. Brak scenek fabularnych przy celebracjach (FR-040): w podobnych grach to najdroższa i najczęściej pomijana treść, a dziecko 6–8 lat czyta wolno.
 - Brak równoległych remontów i obowiązkowych przystanków w nawigacji: jeden pokój w remoncie naraz (FR-033), „Do pokoju” zawsze trafia do niego (FR-039).
 - Brak kupna, sprzedaży i wynajmu domów oraz dochodu pasywnego: dom urządzony przez dziecko nie znika, a jedynym źródłem gwiazdek są rozwiązane zadania (FR-035).
+- Brak etykiet płci (wersja 5): na ekranie wyboru nie ma „dla chłopców” ani „dla dziewczynek” ani kolorów przypisanych płci; oba tematy są dla każdego dziecka.
+- Brak dwóch budowli naraz (wersja 5): dziecko nie remontuje domu i bazy równolegle i nie przełącza się między nimi (FR-033); ścieżki domu i bazy są osobne.
+- Brak nowych tematów w wersji 5: warsztat samochodowy i inne tematy to osobne zmiany; wersja 5 wprowadza tylko wybór między domem a bazą.
 - Brak swobodnego ustawiania i obracania mebli: elementy stoją na stałych miejscach pokoju, co jest prostsze dotykiem dla 6–8-latka (FR-033).
 - Brak energii, timerów, reklam, zakupów, sklepu i rankingu: gra ma zero presji i zero monetyzacji; nie da się przegrać ani niczego stracić.
 - Brak wielu profili, kont, chmury i synchronizacji: jeden profil lokalny; rodzeństwo to temat po v1, format zapisu ma tylko zostawić na to miejsce.
@@ -273,3 +336,6 @@ Niefunkcjonalne:
 12. **Pamiątka od mieszkańców** (FR-034): rozstrzygnięte 2026-10-30: naklejka do albumu (FR-041). Otwarte: czy album jest osobnym ekranem, czy kartą nad widokiem domu. Właściciel: autor. Rozstrzygnąć w planie slice'a mieszkańców.
 13. **Grafika ulicy i nowych pokoi** (FR-032–FR-033, FR-038): inwentaryzacja z 2026-10-30: kuchnia i pracownia (`martynka-locations-v2`) oraz pokój dziecięcy, biblioteka, taras i ogród zimowy (`martynka-evolution-v1`) są gotowe (tło przed/po, 6 grup × 3 warianty, manifest); brakuje skorupy domu z piętrami, mieszkańców i naklejek, ulicy z działkami i elewacji; brief `docs/designer-brief-m03.md` (P1 przekrój domu 1 i mieszkańcy, P2 ulica i dom 2, P3 etapy kuchni i salon na kremowym tle). Układ domów: dom 1 = salon, kuchnia (parter), pokój dziecięcy (piętro); dom 2 = pracownia, ogród zimowy jako przybudówka, biblioteka na poddaszu; dom 3 później (taras). Miniatury pokoi w przekroju rysuje gra z żywych warstw. Otwarte: terminy dostaw; każdy pokój to paczka rzędu paczki salonu (ok. 1,5 MB), co obciąża limit ładowania startu. Właściciel: autor. Rozstrzygnąć przed każdym slice'em z grafiką.
 14. **Założenia „salonowe” w kodzie** (FR-033): cienie kontaktowe, postarzenie wariantu 0, manifest slotów i tabele migracji są dziś napisane pod salon; pierwszy slice M-03 ma sprawdzić, co z tego musi stać się danymi pokoju, żeby drugi pokój był tylko danymi i grafiką. Właściciel: agent (badanie w slice'u). Rozstrzygnąć w badaniu pierwszego slice'a.
+15. **Baza a mieszkańcy, album i ulica** (FR-032, FR-034, FR-041, FR-042–FR-046): czy baza ma swoich „mieszkańców” (np. załogę) i miejsce na ulicy, czy stoi osobno. Właściciel: autor. Rozstrzygnąć przed slice'em mieszkańców.
+16. **Grafika Hangara** (FR-047): zamówienie `docs/designer-orders/2026-10-31-space-base-2-hangar.md`; pierwsza próba 2026-10-31 przerwana limitem użycia narzędzia grafika, wznawiana. Właściciel: agent. Rozstrzygnąć przed etapem FR-047.
+17. **Zapis wyboru budowli** (FR-042, FR-049): czy wybór mieści się w obecnym formacie zapisu, czy wymaga nowej wersji formatu. Autor akceptuje nową wersję z tą samą polityką co dotąd: kopia poprzedniego zapisu, a powrót wdrożenia do starszej wersji gry pokazuje kartę „nowszy zapis” i niczego nie nadpisuje. Właściciel: agent. Rozstrzygnąć w badaniu pierwszego etapu.
