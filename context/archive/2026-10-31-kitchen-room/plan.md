@@ -872,7 +872,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [ ] 7.7 [human] Accept the interim "Salon"/"Kuchnia" visit button in the room view as the way to a done room's "poprawki" until S-23's house cross-section (decision K-6, DESIGN-GAP row)
 - [ ] 7.8 [human] Accept the salon green board next to the kitchen cream margin until the designer's salon re-export on cream (brief P3.2)
 - [ ] 7.9 [human] On a real tablet, installed and offline after one online launch: finish the salon, "Dalej", the kitchen draws its pictures (runtime load from the precache)
-- [x] 7.10 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41142145249 of PR #117: `Tests  4011 passed | 3 skipped (4014)`, `e2e hook: absent (2 chunks checked)`)
+- [x] 7.10 [reviewer] (CI at ship) PR job `check` of workflow `CI` green: its log matches `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in the `check` log of run 41142145249 of PR #117: `Tests  4011 passed | 3 skipped (4014)`, `e2e hook: absent (2 chunks checked)`) — CI run 41161078554 (PR #118, job `check` 124418548545: `Tests  4054 passed | 3 skipped (4057)`, `e2e hook: absent (2 chunks checked)`)
 
 ### Phase 8: From the finished salon into the kitchen — e2e (#2, #16)
 
