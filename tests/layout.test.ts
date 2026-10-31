@@ -185,6 +185,15 @@ describe('task screen layout constants', () => {
         expect(r.bottom).toBeLessThanOrEqual(tray.top);
     });
 
+    it('draws the house shell under the cells: the pack shell has opaque cream cells (pack README order shell, cells, frame)', () => {
+        const { depth } = HOUSE_LAYOUT;
+        expect(depth.background).toBeLessThan(depth.shell);
+        expect(depth.shell).toBeLessThan(depth.cells);
+        expect(depth.cells).toBeLessThan(depth.frame);
+        expect(depth.frame).toBeLessThan(depth.teaser);
+        expect(depth.teaser).toBeLessThan(depth.controls);
+    });
+
     it('keeps "Wróć do pokoju" of the house a child-sized target in the top-left corner, clear of the roof, the cells, the star counter and the HUD', () => {
         type Rect = { left: number; top: number; right: number; bottom: number };
         const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });

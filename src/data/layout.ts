@@ -645,7 +645,8 @@ export const HOUSE_LAYOUT = {
     shellTop: 148,
     teaser: { color: '#FFF5DF', shadow: '#245C59', size: 32, weight: 650, shadowOffset: 2 },
     standIn: { outline: PLACEHOLDER_COLORS.deepTeal, outlineWidth: 6, roof: PLACEHOLDER_COLORS.terracotta, closed: PLACEHOLDER_COLORS.turquoise, frame: PLACEHOLDER_COLORS.butter, frameWidth: 10 },
-    depth: { background: 0, cells: 1, shell: 2, frame: 3, teaser: 4, controls: 5 },
+    /** Pack README order: the shell (its four cells are opaque #FFF5DF), then the miniatures and closed cells over it, then the frame. */
+    depth: { background: 0, shell: 1, cells: 2, frame: 3, teaser: 4, controls: 5 },
 } as const;
 
 /** Interactive rectangles of the house scene, checked against MIN_TOUCH_TARGET (the cells are the geometry's own). */
