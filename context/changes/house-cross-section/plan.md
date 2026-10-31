@@ -690,7 +690,7 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 - [x] 3.2 Deliberate break: move `HOUSE_LAYOUT.back` to `left: 240` → the roof-clear case red; drop the `RESTORE_WEBGL` listener → the wiring guard red; each restored; meta-check: the guards prove wiring, the browser proof is phase 6 — 518f581
 - [x] 3.3 `npm run build` prints `e2e hook: absent (`; `grep -c "e2eArt" dist/_app/*.js` unchanged from the branch baseline (0) — 518f581
 - [x] 3.4 `git diff --stat 112f158 -- src/ui/roomArtLoader.ts src/ui/widgets/SalonBackdrop.ts src/ui/widgets/RoomView.ts src/core/save.ts src/data/balance.ts` empty — 518f581
-- [ ] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator: 174 + 0 (full run at bc7aa49 `--workers=2` under load ~30: 167 passed, 7 load timeouts in stale-tab/save-transfer/fox-guide, all 7 green with `--last-failed --workers=1`; total = `--list` 174)
 
 ### Phase 4: Room ↔ house navigation, the hook and the moved tests
 
@@ -699,9 +699,9 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 - [x] 4.1 `npx vitest run tests/roomVisitWiring.test.ts tests/layout.test.ts tests/houseCells.test.ts` green; unit `<phase-3 count> − (deleted roomVisit cases) + N` — b46f63f
 - [x] 4.2 `grep -rn "visitTarget\|visitButton\|roomVisit'" src tests` empty (except `RoomSnapshot.visiting`) — b46f63f
 - [x] 4.3 Deliberate break: set `visiting` from any truthy `data.visit` without `houseWakeVisit` → the wiring guard red; drop `visiting = null` from `onSleep` → the guard red; each restored; meta-check: the guards are source-level, the kitchen spec and phase 6 prove the browser — b46f63f
-- [ ] 4.4 `npx playwright test tests/e2e/kitchen-room.spec.ts` green (orchestrator; sandbox disabled)
+- [x] 4.4 `npx playwright test tests/e2e/kitchen-room.spec.ts` green (orchestrator; sandbox disabled) — orchestrator: green inside the full run at bc7aa49 (not among the 7 failures)
 - [x] 4.5 `git diff --stat 112f158 -- src/core/save.ts src/data/balance.ts src/data/rooms.ts src/ui/roomArtLoader.ts` empty — b46f63f
-- [ ] 4.6 Full local gate green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; total equals `npx playwright test --list | tail -1`
+- [x] 4.6 Full local gate green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`; total equals `npx playwright test --list | tail -1` — orchestrator: 174 + 0 (full run at bc7aa49 `--workers=2` under load ~30: 167 passed, 7 load timeouts in stale-tab/save-transfer/fox-guide, all 7 green with `--last-failed --workers=1`; total = `--list` 174)
 
 ### Phase 5: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
@@ -711,7 +711,7 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 - [x] 5.2 `grep -c "Trigger:" context/changes/house-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(8[3-9]|9[0-9]) " docs/design-gaps.md` ≥ 7 — 5d59882
 - [x] 5.3 Seam sweep: `grep -rn "visitTarget\|visitButton" src tests CLAUDE.md` empty; `grep -rnE "252, *636|1060, *236" src --include=*.ts | grep -v src/data/houses.ts` empty — 5d59882
 - [x] 5.4 `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms` empty — 5d59882
-- [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — orchestrator: 174 + 0 (full run at bc7aa49 `--workers=2` under load ~30: 167 passed, 7 load timeouts in stale-tab/save-transfer/fox-guide, all 7 green with `--last-failed --workers=1`; total = `--list` 174) — p5 changed docs and comments only (5d59882), so the bc7aa49 run stands
 
 #### Manual
 
