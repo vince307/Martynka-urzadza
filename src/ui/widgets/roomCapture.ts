@@ -4,12 +4,11 @@ import { GAME_WIDTH } from '../../data/layout';
 import { drawRoomMiniature } from './RoomView';
 
 /**
- * Draws a room at `width` into the dynamic texture `key` (created once, cleared and redrawn on every capture). The pieces and the
- * stand-in boxes go into one off-list holder, so nothing flashes on screen; no blur, no tint. `recreate` drops the texture first (a
- * restored WebGL context empties every texture, so the old one cannot be trusted). Returns whether a texture holds the picture.
+ * Draws a room at `width` into the dynamic texture `key` (created when missing, cleared and redrawn on every capture). The pieces and
+ * the stand-in boxes go into one off-list holder, so nothing flashes on screen; no blur, no tint. `HouseView` removes its cell textures
+ * before every render (which also covers a restored WebGL context). Returns whether a texture holds the picture.
  */
-export function captureRoomMiniature(scene: Scene, key: string, room: RoomDef, state: RoomState, width: number, height: number, recreate = false): boolean {
-    if (recreate && scene.textures.exists(key)) scene.textures.remove(key);
+export function captureRoomMiniature(scene: Scene, key: string, room: RoomDef, state: RoomState, width: number, height: number): boolean {
     const dt = scene.textures.exists(key) ? (scene.textures.get(key) as Textures.DynamicTexture) : scene.textures.addDynamicTexture(key, width, height);
     if (!dt) return false;
     // Never on the display list; the stand-in Graphics is the first child, so the wall, the floor and the boxes sit under the pictures.

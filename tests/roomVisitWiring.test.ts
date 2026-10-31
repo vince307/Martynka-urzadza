@@ -35,6 +35,9 @@ describe('RoomScene visit wiring', () => {
     it('the house button is hidden while blocked and leads to the house', () => {
         const redraw = body('private redraw()', 'if (this.cardDrawn)');
         expect(redraw).toMatch(/if \(blocked\) \{\s*this\.houseButton\.hide\(\)/);
+        // Blocked covers the celebration card (follow-up 11): the card is set before the redraw of the last purchase.
+        expect(redraw).toMatch(/const blocked = open \|\| this\.card;/);
+        expect(body('if (roomDone(room, step.state)) {', 'this.redraw();')).toContain('this.card = true;');
         expect(source).toContain('this.scene.switch(SCENE_KEYS.house)');
     });
     it('RoomScene imports nothing from roomVisit and has no visit button', () => {

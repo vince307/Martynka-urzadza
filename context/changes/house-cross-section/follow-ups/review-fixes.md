@@ -28,7 +28,7 @@ changed the file their trigger names, closed as stale with the evidence, or re-r
    Trigger: the next change to `drawRoomMiniature`.
 10. Kitchen 12: house and street celebration copy and the keepsake (FR-040).
     Trigger: S-24.
-11. Kitchen 16: `RoomScene` `onSleep` / wake drops a drawn celebration card without `moveAfterDone`. Guarded now: the "Dom" button is hidden while the card is up (hook test in phase 6), so the way out stays hidden.
+11. Kitchen 16: `RoomScene` `onSleep` / wake drops a drawn celebration card without `moveAfterDone`. Guarded now: the "Dom" button is hidden while the card is up (`blocked = open || this.card`, `this.card = true` set before the redraw of the last purchase; source guard in `tests/roomVisitWiring.test.ts` since the impl review). No browser test covers the card case (the phase-6 spec checks the variant panel only).
     Trigger: a way out of the room view that stays visible while the card is up, or a settings dialog over the card.
 12. Kitchen 19 (gap 182): the task-screen backdrop is invisible while the kitchen is current.
     Trigger: the designer's salon re-export on cream (brief P3.2), or a playtest note.
@@ -61,3 +61,12 @@ changed the file their trigger names, closed as stale with the evidence, or re-r
   Trigger: none (closed).
 - Narrator-round-summary 39: not found as an open item in the archive; nothing in the files this slice changed. Closed as stale.
   Trigger: none (closed).
+
+## From the implementation review
+
+19. A house picture that downloads but does not decode leaves no console line: Phaser 4.2.1 emits `loaderror` only for a failed request, not for `onProcessError`. The stand-in shell and `artFallbacks.house = 'drawn'` still follow (`HouseScene.settle`), and nothing is fetched again (`artQueued`).
+    Trigger: a change to `HouseScene.loadArt`, or the house getting an "Obrazki" line (item 5).
+20. Stand-in shell geometry (`margin = 24`, roof apex `shellTop + 40`) is inline in `HouseView.standInShell`, not in `HOUSE_LAYOUT`.
+    Trigger: the next change to `HouseView` or `HOUSE_LAYOUT`.
+21. Follow-up 11's card case has a source guard only; a browser test that finishes a room and asserts `houseButton` null while the card is up would close it.
+    Trigger: the next change to `RoomScene.redraw` or the celebration card.
