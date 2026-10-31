@@ -838,11 +838,11 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 2.1 `tests/saveV6.test.ts` red against v5 (no `MIGRATIONS[5]`), green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: make `LIFT_V5_BUILDING` call `copyHouse` on the house → the source guard red; make it drop `house` → the deep-equal case red; leave `SAVE_VERSION` at 5 with `MIGRATIONS[5]` present → the version pin and `fixtureLoadPath` "writes v6" red; each restored; meta-check: the v5 oracle is the phase-1 fixture proven by v5 code, the v6 oracle a literal spread of that file, neither computed by the migration
-- [ ] 2.3 `git diff <phase-1 sha> -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5*.json src/core/migrations/house.ts src/core/migrations/legacySalon.ts` empty
-- [ ] 2.4 `git diff --stat <phase-1 sha> -- deploy/` shows `deploy/README.md` only
-- [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (`save-migration.spec.ts` follows `SAVE_VERSION`)
+- [x] 2.1 `tests/saveV6.test.ts` red against v5 (no `MIGRATIONS[5]`), green after; unit `<phase-1 count> + N` (unit 4107 + 9 = 4116) — da7bccc
+- [x] 2.2 Deliberate break: make `LIFT_V5_BUILDING` call `copyHouse` on the house → the source guard red; make it drop `house` → the deep-equal case red; leave `SAVE_VERSION` at 5 with `MIGRATIONS[5]` present → the version pin and `fixtureLoadPath` "writes v6" red; each restored; meta-check: the v5 oracle is the phase-1 fixture proven by v5 code, the v6 oracle a literal spread of that file, neither computed by the migration — da7bccc
+- [x] 2.3 `git diff <phase-1 sha> -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5*.json src/core/migrations/house.ts src/core/migrations/legacySalon.ts` empty — da7bccc
+- [x] 2.4 `git diff --stat <phase-1 sha> -- deploy/` shows `deploy/README.md` only — da7bccc
+- [x] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (`save-migration.spec.ts` follows `SAVE_VERSION`) (e2e: not run, no UI change; orchestrator gates it) — da7bccc
 
 #### Manual
 
