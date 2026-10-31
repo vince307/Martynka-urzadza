@@ -163,28 +163,6 @@ describe('task screen layout constants', () => {
         }
     });
 
-    it('keeps the visit button a child-sized touch target, in the scene and clear of every other room control, the panel and the HUD', () => {
-        type Rect = { left: number; top: number; right: number; bottom: number };
-        const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
-        const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-        const { visitButton, resume, taskButton, modeButton, choose, close, thumbs, tray } = ROOM_LAYOUT;
-        expect(ROOM_TOUCH_TARGETS.visitButton).toEqual({ width: visitButton.width, height: visitButton.height });
-        expect(ROOM_TOUCH_TARGETS.visitButton.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
-        expect(ROOM_TOUCH_TARGETS.visitButton.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
-        const r = rect(visitButton);
-        expect(r.left).toBeGreaterThanOrEqual(0);
-        expect(r.top).toBeGreaterThanOrEqual(0);
-        expect(r.right).toBeLessThanOrEqual(GAME_WIDTH);
-        expect(r.bottom).toBeLessThanOrEqual(GAME_HEIGHT);
-        const thumbRects = [0, 1, 2].map((i) => rect({ left: thumbs.left + i * (thumbs.size + thumbs.gap), top: thumbs.top - thumbs.lift, width: thumbs.size, height: thumbs.size + thumbs.lift }));
-        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
-        const hud = [settings, speaker, roomSwitch, TASK_LAYOUT.starCounter].map(rect);
-        for (const other of [rect(resume), rect(taskButton), rect(modeButton), rect(choose), rect(close), ...thumbRects, ...hud]) {
-            expect(overlap(r, other)).toBe(false);
-        }
-        expect(r.bottom).toBeLessThanOrEqual(tray.top);
-    });
-
     it('keeps the "Dom" button a child-sized touch target, in the scene and clear of every other room control, the panel and the HUD', () => {
         type Rect = { left: number; top: number; right: number; bottom: number };
         const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });

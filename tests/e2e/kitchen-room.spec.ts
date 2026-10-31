@@ -4,7 +4,7 @@
 // the finished salon visited from the kitchen. Runs in the chromium-hook project (read-only window.__martynkaE2E); a test is a
 // new browser context, so a fresh device. State is read through the hook only (profile § 9: a test never opens IndexedDB).
 import { test, expect, type Page } from '@playwright/test';
-import { answerRight, screenIs, snapshot, tapScene, tapTarget, targets, phaseIs } from './support/hook';
+import { answerRight, openHouse, screenIs, snapshot, tapScene, tapTarget, targets, phaseIs } from './support/hook';
 import { finishSalon, room } from './support/salon';
 import { KITCHEN, SALON } from '../../src/data/rooms';
 
@@ -141,8 +141,11 @@ test('#16 S-22 FR-019 from the kitchen the finished salon opens for free changes
     await intoKitchen(page);
     const start = await snapshot(page);
     expect(start.stars).toBe(kitchenTotal);
-    await expect.poll(async () => (await targets(page)).visitButton ?? null).not.toBeNull();
-    await tapTarget(page, 'visitButton');
+    await expect.poll(async () => (await targets(page)).houseButton ?? null).not.toBeNull();
+    await openHouse(page);
+    await expect.poll(async () => (await targets(page)).houseCells?.['ground-left'] ?? null).not.toBeNull();
+    await tapScene(page, (await targets(page)).houseCells!['ground-left']);
+    await screenIs(page, 'room');
     await expect.poll(async () => (await room(page)).roomId, { timeout: 15_000 }).toBe('salon');
     const visit = await room(page);
     expect(visit.visiting).toBe('salon');
