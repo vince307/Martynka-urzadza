@@ -106,3 +106,35 @@ describe('save format v5', () => {
         expect(decodeSave({ ...fixture('save-v5.json'), version: 6 })).toEqual({ kind: 'unreadable', reason: 'future' });
     });
 });
+
+describe('frozen v5 salon fixture (first-building-choice phase 1)', () => {
+    // Written by the unchanged v5 code (decode + re-encode); the store stamps generation and writer.
+    const raw = () => fixture('save-v5-salon.json');
+    it('is a v5 save with a salon in progress that decodes unmigrated', () => {
+        const r = decodeSave(raw());
+        expect(r.kind).toBe('ok');
+        if (r.kind !== 'ok') return;
+        expect(r.migratedFrom).toBeNull();
+        expect(saveProblem(raw())).toBeNull();
+        expect(r.session.currentRoom).toBe('salon');
+        expect(r.session.house.id).toBe('house-1');
+        expect(r.session.rooms.salon).toEqual({ tasksDone: 4, chosen: { sofa: 2, rug: 1, 'coffee-table': 0 } });
+        expect(r.session.learner?.stage).toBe('E2');
+    });
+    it('re-encodes to itself apart from the store-stamped generation and writer', () => {
+        const r = decodeSave(raw());
+        if (r.kind !== 'ok') throw new Error('unreadable');
+        const { generation: g, writer: w, ...rest } = raw();
+        expect(typeof g).toBe('number');
+        expect(typeof w).toBe('string');
+        const again = { ...(encodeSave(r.session) as unknown as Record<string, unknown>) };
+        delete again.generation;
+        delete again.writer;
+        expect(again).toEqual(rest);
+    });
+    it('is the v5 shape: without house it is not a v5 save', () => {
+        const noHouse = raw();
+        delete noHouse.house;
+        expect(saveProblem(noHouse)).not.toBeNull();
+    });
+});

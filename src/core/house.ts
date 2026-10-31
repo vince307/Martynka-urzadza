@@ -69,3 +69,8 @@ export function houseEqual(a: HouseState, b: HouseState): boolean {
         && a.rooms.length === b.rooms.length
         && a.rooms.every((c, i) => c.room === b.rooms[i].room && c.floor === b.rooms[i].floor && c.place === b.rooms[i].place);
 }
+
+/** The rooms of a house present in `known`, in house order (a fresh array). */
+export function houseRoomIds(house: HouseState, known: Known): string[] {
+    return house.rooms.filter((c) => known1(known, c.room) !== undefined).map((c) => c.room);
+}

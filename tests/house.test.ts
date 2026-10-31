@@ -1,7 +1,7 @@
 // House rules (F-04 rooms-as-data phase 1). Oracle: two synthetic rooms and literal lists written out here, never data read
 // from src/data. A room is "in renovation" while it is the first known room of the house that is not done.
 import { describe, expect, it } from 'vitest';
-import { houseEqual, houseLayout, houseRoomList, mergeHouse, nextRoom, roomInRenovation } from '../src/core/house';
+import { houseEqual, houseLayout, houseRoomIds, houseRoomList, mergeHouse, nextRoom, roomInRenovation } from '../src/core/house';
 import { emptyRoomState } from '../src/core/rooms';
 import type { HouseState, RoomDef, RoomState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
@@ -119,5 +119,24 @@ describe('houseEqual', () => {
         up.rooms[1].floor = 1;
         expect(houseEqual(house('a', 'b'), up)).toBe(false);
         expect(houseEqual(house('a', 'b'), house('a'))).toBe(false);
+    });
+});
+
+describe('houseRoomIds', () => {
+    const cell = (room: string, place: number) => ({ room, floor: 0, place });
+    it('lists the known rooms in house order, skipping unknown ones', () => {
+        const house: HouseState = { id: 'h', rooms: [cell('a', 0), cell('unknown', 1), cell('b', 2)] };
+        expect(houseRoomIds(house, known)).toEqual(['a', 'b']);
+    });
+    it('is empty for an all-unknown house', () => {
+        expect(houseRoomIds({ id: 'h', rooms: [cell('x', 0), cell('y', 1)] }, known)).toEqual([]);
+    });
+    it('does not mutate its input and returns a fresh array', () => {
+        const house: HouseState = { id: 'h', rooms: [cell('a', 0), cell('b', 1)] };
+        const before = structuredClone(house);
+        const a = houseRoomIds(house, known);
+        expect(house).toEqual(before);
+        a.push('z');
+        expect(houseRoomIds(house, known)).toEqual(['a', 'b']);
     });
 });

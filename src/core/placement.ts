@@ -1,6 +1,6 @@
 // Placement of a new learner: age x month -> proposed stage (docs/ZADANIA.md section 1).
 // Pure: the month is always an argument, there is no Date here.
-import type { Adaptation, LearnerState, Settings, StageId, VariantState } from './types';
+import type { Adaptation, LearnerState, RoomState, Settings, StageId, VariantState } from './types';
 
 /** What placement decides: age and stage (S-06). */
 export type PlacedLearner = Pick<LearnerState, 'age' | 'stage' | 'stageOverriddenByParent'> & { warmupPending: boolean };
@@ -89,4 +89,19 @@ export function firstRoundDone(learner: Pick<SessionLearner, 'history'>, variant
 /** "Wróć" to the age choice shows only to a child-placed learner who has not finished her first round (F-02 b). */
 export function ageBackOffered(learner: Pick<SessionLearner, 'history' | 'stageOverriddenByParent'>, variants: VariantState, warmupLength: number): boolean {
     return !learner.stageOverriddenByParent && !firstRoundDone(learner, variants, warmupLength);
+}
+
+/** Some room of the building has a renovation task done: the child has already spent stars there. */
+export function hasPurchase(rooms: Readonly<Record<string, RoomState>>): boolean {
+    return Object.values(rooms).some((r) => r.tasksDone > 0);
+}
+
+/** "Wróć" to the building choice: before the first round ends and before anything is bought, on both paths (FR-043). */
+export function themeBackOffered(
+    learner: Pick<SessionLearner, 'history'>,
+    variants: VariantState,
+    warmupLength: number,
+    rooms: Readonly<Record<string, RoomState>>,
+): boolean {
+    return !firstRoundDone(learner, variants, warmupLength) && !hasPurchase(rooms);
 }
