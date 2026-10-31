@@ -66,7 +66,7 @@ changed the file their trigger names, closed as stale with the evidence, or re-r
 
 19. A house picture that downloads but does not decode leaves no console line: Phaser 4.2.1 emits `loaderror` only for a failed request, not for `onProcessError`. The stand-in shell and `artFallbacks.house = 'drawn'` still follow (`HouseScene.settle`), and nothing is fetched again (`artQueued`).
     Trigger: a change to `HouseScene.loadArt`, or the house getting an "Obrazki" line (item 5).
-20. Stand-in shell geometry (`margin = 24`, roof apex `shellTop + 40`) is inline in `HouseView.standInShell`, not in `HOUSE_LAYOUT`.
+20. Stand-in shell geometry (`margin = 24`, roof apex `shellTop + 40`) is inline in `HouseView.standInShell`, not in `HOUSE_LAYOUT`. The visual gate (frames `*-06-house-stand-in-shell`) shows the result: the apex (y 188) is only about 24 scene px above the roof base (top cell y minus the margin), so the stand-in roof reads as a thin sliver, not a gable. Acceptable for a fallback; the move into `HOUSE_LAYOUT` is the moment to give the apex real height.
     Trigger: the next change to `HouseView` or `HOUSE_LAYOUT`.
 21. Follow-up 11's card case has a source guard only; a browser test that finishes a room and asserts `houseButton` null while the card is up would close it.
     Trigger: the next change to `RoomScene.redraw` or the celebration card.
