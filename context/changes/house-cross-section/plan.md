@@ -707,10 +707,10 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [ ] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "HouseScene|houseWakeVisit|HOUSE_ART" CLAUDE.md` present
-- [ ] 5.2 `grep -c "Trigger:" context/changes/house-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(8[3-9]|9[0-9]) " docs/design-gaps.md` ≥ 7
-- [ ] 5.3 Seam sweep: `grep -rn "visitTarget\|visitButton" src tests CLAUDE.md` empty; `grep -rnE "252, *636|1060, *236" src --include=*.ts | grep -v src/data/houses.ts` empty
-- [ ] 5.4 `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms` empty
+- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "HouseScene|houseWakeVisit|HOUSE_ART" CLAUDE.md` present — 5d59882
+- [x] 5.2 `grep -c "Trigger:" context/changes/house-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(8[3-9]|9[0-9]) " docs/design-gaps.md` ≥ 7 — 5d59882
+- [x] 5.3 Seam sweep: `grep -rn "visitTarget\|visitButton" src tests CLAUDE.md` empty; `grep -rnE "252, *636|1060, *236" src --include=*.ts | grep -v src/data/houses.ts` empty — 5d59882
+- [x] 5.4 `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms` empty — 5d59882
 - [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 #### Manual
