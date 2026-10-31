@@ -907,17 +907,17 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 - [x] 7.2 `grep -rn "ageBack" src tests` empty — bc41f65
 - [x] 7.3 Deliberate break: start the welcome without `{ placed }` → the wiring guard red; call `themeBackOffered` without the rooms → the guard red; each restored; meta-check: source guards prove wiring; first-launch and phase 9 prove the browser — bc41f65
 - [x] 7.4 `npx playwright test tests/e2e/first-launch.spec.ts` green (orchestrator; sandbox disabled) — bc41f65
-- [ ] 7.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0`; total equals `npx playwright test --list | tail -1`
+- [x] 7.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0`; total equals `npx playwright test --list | tail -1` (orchestrator, f3f1040: 179/179)
 
 ### Phase 8: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
 #### Automated
 
-- [ ] 8.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "buildingStart|CHOICE_ART|themeBackOffered|SAVE_VERSION. 6|v5-salon" CLAUDE.md` present
-- [ ] 8.2 `grep -c "Trigger:" context/changes/first-building-choice/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| (19[1-9]|20[0-9]) " docs/design-gaps.md` ≥ 7
-- [ ] 8.3 Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rn "'space'" src` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/core/types.ts` and the hook (`'house'` is not grepped: `HouseScene`, `artHealth`, `artPick`, `celebration` and `save.ts` already use it for other meanings)
-- [ ] 8.4 `git diff --stat <phase-7 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
-- [ ] 8.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0`
+- [x] 8.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "buildingStart|CHOICE_ART|themeBackOffered|SAVE_VERSION. 6|v5-salon" CLAUDE.md` present
+- [x] 8.2 `grep -c "Trigger:" context/changes/first-building-choice/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| (19[1-9]|20[0-9]) " docs/design-gaps.md` ≥ 7 (14 Trigger lines, 8 gap rows 191-198)
+- [x] 8.3 Seam sweep: `grep -rn "ageBack\|backToAge" src tests CLAUDE.md` empty; `grep -rn "'space'" src` only in `src/data/houses.ts`, `src/data/choiceArt.ts`, `src/core/types.ts` and the hook (`'house'` is not grepped: `HouseScene`, `artHealth`, `artPick`, `celebration` and `save.ts` already use it for other meanings) (narrowed to `ageBack`: only the "gone" guard in tests/themeBackWiring.test.ts; `backToAge` of WelcomeScene stays by design, sweep also found CLAUDE.md wording, fixed)
+- [x] 8.4 `git diff --stat <phase-7 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty (empty vs bc41f65)
+- [x] 8.5 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (unit 4168 + 0; e2e: no scene or spec change in this phase, comments and docs only, orchestrator gates it)
 
 #### Manual
 

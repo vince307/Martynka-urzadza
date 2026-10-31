@@ -5,7 +5,7 @@ import { textStyle } from './textStyle';
 
 /**
  * One building card of the first-building choice (S-28): the picture over a label band, on a chunky face. Like AgeButton it
- * fires on pointerup and only when the press began on it. A missing texture draws a stand-in box with the label, and
+ * fires on pointerup and only when the press began on it. A missing texture draws a stand-in box with the label (DESIGN-GAP, docs/design-gaps.md row 197), and
  * `drawn` tells the scene so it can record the fallback. The only motion is the ChunkyFace press (it obeys reduced motion).
  */
 export class ChoiceCard {

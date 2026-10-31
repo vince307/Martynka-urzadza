@@ -11,7 +11,7 @@ export const pl = {
     title: 'Bystrow',
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
-        // DESIGN-GAP (docs/design-gaps.md, phase 8): the kit has no first-building choice; the texts are ours.
+        // DESIGN-GAP (docs/design-gaps.md row 192): the kit has no first-building choice; the texts are ours.
         choice: { question: 'Co urządzamy najpierw?', house: 'Dom', space: 'Baza kosmiczna', spoken: 'Co urządzamy najpierw: dom czy bazę kosmiczną?', back: 'Wróć' },
     },
     // DESIGN-GAP (docs/design-gaps.md rows 15-17): the kit has no parent entry, adult gate or stage panel; the texts are ours.
@@ -368,7 +368,7 @@ export const pl = {
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',
-        themeBack: 'Wróć',   // back to the building choice (until the first round ends or something is bought); not `resume` ("Wróć do notesu")
+        themeBack: 'Wróć',   // DESIGN-GAP 193; back to the building choice (until the first round ends or something is bought); not `resume` ("Wróć do notesu")
         tryAgain: 'Spróbuj jeszcze raz',
         nextStep: 'Następny krok',
         gotIt: 'Już wiem',
@@ -439,7 +439,7 @@ export const pl = {
             setUpCoffee: 'Urządź kącik kawowy',
             placeBench: 'Postaw ławkę',
             setOutDishes: 'Ustaw naczynia',
-            // DESIGN-GAP (docs/design-gaps.md): the kit has no Mostek copy; these task labels are ours (imperative + accusative).
+            // DESIGN-GAP (docs/design-gaps.md row 194): the kit has no Mostek copy; these task labels are ours (imperative + accusative).
             placeConsole: 'Postaw pulpit',
             placePilotChair: 'Postaw fotel pilota',
             setUpTelescope: 'Ustaw teleskop',
