@@ -2,7 +2,7 @@
   "name": "martynka-urzadza",
   "version": "0.1.0",
   "private": true,
-  "description": "Martynka urządza: gra matematyczna z urządzaniem pokoi dla klas 1–3 (Phaser 4 + TypeScript + Vite, PWA offline).",
+  "description": "Bystrow (dawniej Martynka urządza): gra matematyczna z urządzaniem pokoi dla klas 1–3 (Phaser 4 + TypeScript + Vite, PWA offline).",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "sample": "node --import tsx scripts/sample.ts",
     "check:deploy": "node --import tsx scripts/check-deploy.ts",
     "check:build": "node --import tsx scripts/check-build.ts",
-    "icons": "node scripts/make-icons.mjs",
+    "icons": "python3 scripts/make-icons.py",
     "art": "node scripts/make-task-art.mjs",
     "font": "python3 scripts/make-font.py",
     "sounds": "node scripts/copy-sounds.mjs"

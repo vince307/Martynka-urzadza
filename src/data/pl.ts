@@ -8,7 +8,7 @@ import { nouns } from './nouns';
 const ART_FOLDER_NAMES: Readonly<Record<string, string>> = { money: 'pieniądze', measuring: 'miary', icons: 'obrazki do liczenia' };
 
 export const pl = {
-    title: 'Martynka urządza',
+    title: 'Bystrow',
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
     },
@@ -209,7 +209,7 @@ export const pl = {
         continue: 'Graj dalej',
         note: 'Tym razem gra nie zapisze postępów.',
         // S12-14: the raw copy carries the date like the current save's file, with "surowy" so the two are never mixed up.
-        fileName: (date: string) => `martynka-zapis-surowy-${date}.txt`,
+        fileName: (date: string) => `bystrow-zapis-surowy-${date}.txt`,
         // DESIGN-GAP 51: the kit has no line for the reason of a failed read; a code and the build, for the parent to quote.
         detail: (reason: string, build: string) => `Kod: ${reason} · Wersja ${build}`,
     },
@@ -250,7 +250,7 @@ export const pl = {
         },
         // DESIGN-GAP 133 (docs/design-gaps.md): the kit has no line for a state that cannot be exported; the text is ours.
         exportInvalid: 'Tej kopii nie da się zapisać: stan gry jest uszkodzony.',
-        fileName: (date: string) => `martynka-zapis-${date}.txt`,
+        fileName: (date: string) => `bystrow-zapis-${date}.txt`,
         // DESIGN-GAP 48 (docs/design-gaps.md): the kit has no import flow; texts are ours. Every refusal says the current save is untouched.
         importButton: 'Wczytaj z pliku',
         importTitle: 'Wczytaj zapis z pliku',
@@ -386,7 +386,7 @@ export const pl = {
     // Kit unlock.png: the card shown after "Kolejna runda" when a new step was unlocked. The spoken line is ours (DESIGN-GAP, docs/design-gaps.md row 23: the kit has no narration of the card).
     // Loading screen of BootScene: the game's name (S-16a).
     // DESIGN-GAP 112: `slow` is ours (the kit has no line for a slow start); shown after balance.loader.slowAfterMs.
-    loading: { title: 'Martynka urządza', slow: 'Jeszcze chwilka, wczytuję obrazki.' },
+    loading: { title: 'Bystrow', slow: 'Jeszcze chwilka, wczytuję obrazki.' },
     unlock: {
         title: 'Nowa umiejętność!',
         next: 'Dalej',
