@@ -879,5 +879,5 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 #### Automated
 
 - [x] 8.1 Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; drop `visiting = null` from the wake `refresh` → the visit test red on the room after "Do pokoju"; each restored), green after — 779a306
-- [ ] 8.2 `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
+- [x] 8.2 `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1` — full e2e 174 = 170 + 4 (orchestrator: worktree at 7e1441f under load 152 pass, --last-failed --workers=1 at 303a662 22/22; kitchen-room.spec 4/4 at 8ab15e2 and after the 82b690c fix by impl-review; break moveAfterDone early return → red Expected "kitchen" Received "salon", restored)
 - [x] 8.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — 779a306
