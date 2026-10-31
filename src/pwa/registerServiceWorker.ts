@@ -46,6 +46,9 @@ export const registerServiceWorker = (onStatus: (status: SwStatus) => void): voi
             if (worker.state === 'installed' || worker.state === 'activating' || worker.state === 'activated' || worker.state === 'redundant') {
                 emit({ type: 'state', id, state: worker.state });
             }
+            if (worker.state === 'redundant') {
+                console.warn(`Service worker ${id} ended redundant (the install did not finish)`);
+            }
         });
     };
     container.addEventListener('controllerchange', () => emit({ type: 'controllerChange' }));

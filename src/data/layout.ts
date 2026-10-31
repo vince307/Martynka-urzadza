@@ -176,7 +176,7 @@ export const FONT_KEY = 'MartynkaNext';
 export const FONT_URL = 'fonts/MartynkaNext.ttf';
 
 /** Scene keys. */
-export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', ui: 'UI' } as const;
+export const SCENE_KEYS = { boot: 'Boot', welcome: 'Welcome', task: 'Task', room: 'Room', house: 'House', ui: 'UI' } as const;
 
 /** Game-level events the scenes send each other (this.game.events). */
 export const GAME_EVENTS = {
@@ -566,9 +566,9 @@ export const ROOM_LAYOUT = {
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
-    // Visit button (FR-019, plan review F2): opens the other done room in place ("Salon"/"Kuchnia"), top right under the star counter,
-    // clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md, kitchen-room visit button): the kit has no way to a done room; S-23's house cross-section replaces it.
-    visitButton: { left: 1622, top: 172, width: 256, height: 104, radius: 32, border: 5 },
+    // "Dom" button (S-23, FR-038): top right under the star counter, clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md row 183; row 180 closed):
+    // the kit has no way between the rooms; it replaced the kitchen-room visit button.
+    houseButton: { left: 1622, top: 172, width: 256, height: 104, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
     slot: { radius: 24, holdOutline: 10 },
     // The worn (neglected) salon before the renovation stage: a colour grade over the real furniture, the extra grade for upholstery,
@@ -628,8 +628,30 @@ export const ROOM_TOUCH_TARGETS = {
     choose: { width: ROOM_LAYOUT.choose.width, height: ROOM_LAYOUT.choose.height },
     close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
     modeButton: { width: ROOM_LAYOUT.modeButton.width, height: ROOM_LAYOUT.modeButton.height },
-    visitButton: { width: ROOM_LAYOUT.visitButton.width, height: ROOM_LAYOUT.visitButton.height },
+    houseButton: { width: ROOM_LAYOUT.houseButton.width, height: ROOM_LAYOUT.houseButton.height },
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
+} as const;
+
+/**
+ * The house cross-section (S-23). DESIGN-GAP (docs/design-gaps.md rows 184, 185): the pack's sky is a CSS gradient, so the background is a flat fill of its top colour
+ * (the same on Canvas and WebGL); the manifest's 70 px button band is below MIN_TOUCH_TARGET, so "Wróć do pokoju" sits in the free top-left corner,
+ * above the shell's roof (the shell starts at x 456) and in the place of the HUD "Do pokoju" pill, which is hidden here.
+ */
+export const HOUSE_LAYOUT = {
+    background: 0xe7f4f4,
+    back: { left: 24, top: 24, width: 420, height: 112, radius: 32, border: 5 },
+    /** The shell's left edge: nothing of the back button may reach it. */
+    shellLeft: 456,
+    shellTop: 148,
+    teaser: { color: '#FFF5DF', shadow: '#245C59', size: 32, weight: 650, shadowOffset: 2 },
+    standIn: { outline: PLACEHOLDER_COLORS.deepTeal, outlineWidth: 6, roof: PLACEHOLDER_COLORS.terracotta, closed: PLACEHOLDER_COLORS.turquoise, frame: PLACEHOLDER_COLORS.butter, frameWidth: 10 },
+    /** Pack README order: the shell (its four cells are opaque #FFF5DF), then the miniatures and closed cells over it, then the frame. */
+    depth: { background: 0, shell: 1, cells: 2, frame: 3, teaser: 4, controls: 5 },
+} as const;
+
+/** Interactive rectangles of the house scene, checked against MIN_TOUCH_TARGET (the cells are the geometry's own). */
+export const HOUSE_TOUCH_TARGETS = {
+    back: { width: HOUSE_LAYOUT.back.width, height: HOUSE_LAYOUT.back.height },
 } as const;
 
 /** The blurred, dimmed salon behind the notebook. */

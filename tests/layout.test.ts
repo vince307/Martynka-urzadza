@@ -3,7 +3,8 @@ import { isExpression } from '../src/core/round/prompt';
 import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+import { HOUSE_GEOMETRY } from '../src/data/houses';
+import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HOUSE_LAYOUT, HOUSE_TOUCH_TARGETS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -162,15 +163,15 @@ describe('task screen layout constants', () => {
         }
     });
 
-    it('keeps the visit button a child-sized touch target, in the scene and clear of every other room control, the panel and the HUD', () => {
+    it('keeps the "Dom" button a child-sized touch target, in the scene and clear of every other room control, the panel and the HUD', () => {
         type Rect = { left: number; top: number; right: number; bottom: number };
         const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
         const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-        const { visitButton, resume, taskButton, modeButton, choose, close, thumbs, tray } = ROOM_LAYOUT;
-        expect(ROOM_TOUCH_TARGETS.visitButton).toEqual({ width: visitButton.width, height: visitButton.height });
-        expect(ROOM_TOUCH_TARGETS.visitButton.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
-        expect(ROOM_TOUCH_TARGETS.visitButton.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
-        const r = rect(visitButton);
+        const { houseButton, resume, taskButton, modeButton, choose, close, thumbs, tray } = ROOM_LAYOUT;
+        expect(ROOM_TOUCH_TARGETS.houseButton).toEqual({ width: houseButton.width, height: houseButton.height });
+        expect(ROOM_TOUCH_TARGETS.houseButton.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(ROOM_TOUCH_TARGETS.houseButton.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        const r = rect(houseButton);
         expect(r.left).toBeGreaterThanOrEqual(0);
         expect(r.top).toBeGreaterThanOrEqual(0);
         expect(r.right).toBeLessThanOrEqual(GAME_WIDTH);
@@ -182,6 +183,40 @@ describe('task screen layout constants', () => {
             expect(overlap(r, other)).toBe(false);
         }
         expect(r.bottom).toBeLessThanOrEqual(tray.top);
+    });
+
+    it('draws the house shell under the cells: the pack shell has opaque cream cells (pack README order shell, cells, frame)', () => {
+        const { depth } = HOUSE_LAYOUT;
+        expect(depth.background).toBeLessThan(depth.shell);
+        expect(depth.shell).toBeLessThan(depth.cells);
+        expect(depth.cells).toBeLessThan(depth.frame);
+        expect(depth.frame).toBeLessThan(depth.teaser);
+        expect(depth.teaser).toBeLessThan(depth.controls);
+    });
+
+    it('keeps "Wróć do pokoju" of the house a child-sized target in the top-left corner, clear of the roof, the cells, the star counter and the HUD', () => {
+        type Rect = { left: number; top: number; right: number; bottom: number };
+        const rect = (r: { left: number; top: number; width: number; height: number }): Rect => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height });
+        const overlap = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const { back, shellLeft, shellTop } = HOUSE_LAYOUT;
+        expect(HOUSE_TOUCH_TARGETS.back).toEqual({ width: back.width, height: back.height });
+        expect(HOUSE_TOUCH_TARGETS.back.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        expect(HOUSE_TOUCH_TARGETS.back.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        const r = rect(back);
+        expect(r.left).toBeGreaterThanOrEqual(0);
+        expect(r.top).toBeGreaterThanOrEqual(0);
+        // The roof: the shell starts at x 456 and under y 148 at that edge, so the corner above-left of it is free.
+        expect(r.right).toBeLessThanOrEqual(shellLeft);
+        expect(r.bottom).toBeLessThanOrEqual(shellTop);
+        const { settings, speaker } = HUD_LAYOUT;
+        for (const other of [settings, speaker, TASK_LAYOUT.starCounter].map(rect)) expect(overlap(r, other)).toBe(false);
+        for (const geometry of Object.values(HOUSE_GEOMETRY)) {
+            for (const cell of geometry.cells) {
+                expect(overlap(r, rect({ left: cell.x, top: cell.y, width: cell.width, height: cell.height }))).toBe(false);
+                expect(cell.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+                expect(cell.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            }
+        }
     });
 
     it('keeps "Wybieram" clear of the task button and "Wróć do notesu", so the second tap of a double tap after a purchase lands on nothing', () => {

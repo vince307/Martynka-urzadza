@@ -15,6 +15,8 @@ export interface ArtHealth {
 }
 
 export type ArtTable = 'task' | 'room' | 'ui' | 'sound';
+/** Tables that log load errors: the house art (S-23) has a log name but no "Obrazki" table. */
+export type LoadTable = ArtTable | 'house';
 /** `fetch` = HTTP status >= 400; `network` = status 0 (timeout or no connection), never told as "not on the server". */
 export type ArtCause = 'fetch' | 'network' | 'decode' | 'cut' | 'never';
 export interface LoadSeen {
@@ -23,7 +25,7 @@ export interface LoadSeen {
     readonly cut: ReadonlySet<string>;
 }
 
-const TABLE_NAMES: Readonly<Record<ArtTable, string>> = { task: 'Task', room: 'Room', ui: 'Ui', sound: 'Sound' };
+const TABLE_NAMES: Readonly<Record<LoadTable, string>> = { task: 'Task', room: 'Room', ui: 'Ui', sound: 'Sound', house: 'House' };
 
 /** Which table a loader key belongs to; null for a key in none (the font). */
 export const tableOf = (key: string, tables: Readonly<Record<ArtTable, ReadonlySet<string>>>): ArtTable | null => {
@@ -34,7 +36,7 @@ export const tableOf = (key: string, tables: Readonly<Record<ArtTable, ReadonlyS
 };
 
 /** The one console line of a failed file: the table, the key, the URL asked for and the HTTP status (0 = timeout or network). */
-export const loadErrorLine = (table: ArtTable, key: string, src: string, status: number): string =>
+export const loadErrorLine = (table: LoadTable, key: string, src: string, status: number): string =>
     `${TABLE_NAMES[table]} file failed to load: ${key} ${src} (${status === 0 ? 'timeout or network' : `HTTP ${status}`})`;
 
 /** Why each missing key is missing, from the recorded loader events. A cut wins: the file never finished, whatever it did before. */
@@ -210,7 +212,7 @@ export const artHealthLines = ({ task, room, ui, cut, build, font, labels, label
     if (font === 'fallback') lines.push({ kind: 'font' });
     if (fallbacks?.guide !== undefined) lines.push({ kind: 'guide' });
     if (fallbacks?.worn !== undefined) lines.push({ kind: 'worn' });
-    const shown = FALLBACK_ORDER.filter((where): where is DrawnFallbackWhere => where !== 'guide' && where !== 'worn' && fallbacks?.[where] !== undefined);
+    const shown = FALLBACK_ORDER.filter((where): where is DrawnFallbackWhere => where !== 'guide' && where !== 'worn' && where !== 'house' && fallbacks?.[where] !== undefined);
     if (shown.length > 0) lines.push({ kind: 'fallback', where: shown });
     if (cause) lines.push({ kind: 'code', code: cause, build });
     return lines;

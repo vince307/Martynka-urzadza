@@ -5,7 +5,7 @@
 // in salon-style.spec.ts. Runs in the chromium-hook project (read-only window.__martynkaE2E).
 import { test, expect, type Page } from '@playwright/test';
 import { openSettings, openWelcome, passWelcome } from './support/welcome';
-import { answerRight, answerWrong, phaseIs, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
+import { answerRight, answerWrong, housePixel, openHouse, phaseIs, screenIs, silenceSpeech, snapshot, tapTarget } from './support/hook';
 
 test.setTimeout(120_000);
 test.use({ launchOptions: { args: ['--disable-webgl', '--disable-webgl2', '--disable-3d-apis'] } });
@@ -77,5 +77,32 @@ test('#14 canvas-renderer the pictures section names the plain look', async ({ p
     const panel = await openSettings(page);
     await expect(panel.getByText(WORN_PLAIN, { exact: true })).toBeVisible();
     await expect(panel.getByText(/^Zamiast obrazka gra rysuje/)).toHaveCount(0);
+    expect(errors).toEqual([]);
+});
+
+test('S-23 canvas-renderer house miniatures are captured under Canvas', async ({ page }) => {
+    const errors = watchErrors(page);
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eVariant: 'off', e2eStars: '40' });
+    await phaseIs(page, 'first');
+    await answerWrong(page);
+    await phaseIs(page, 'second');
+    await answerWrong(page);
+    await phaseIs(page, 'solution');
+    for (let guard = 0; guard < 10 && (await snapshot(page)).phase === 'solution'; guard++) {
+        const before = await snapshot(page);
+        await tapTarget(page, 'step');
+        await expect.poll(async () => {
+            const now = await snapshot(page);
+            return now.phase !== 'solution' || now.solutionStep > before.solutionStep;
+        }).toBe(true);
+    }
+    await phaseIs(page, 'retype');
+    await answerRight(page);
+    await phaseIs(page, 'done');
+    await tapTarget(page, 'roomSwitch');
+    await screenIs(page, 'room');
+    await openHouse(page);
+    await expect.poll(async () => (await housePixel(page, 'ground-left'))?.[3] ?? null, { timeout: 15_000 }).toBe(255);
     expect(errors).toEqual([]);
 });

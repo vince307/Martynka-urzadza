@@ -11,13 +11,13 @@ import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskB
 import { celebrationView } from '../core/celebration';
 import { houseLayout, houseRoomList, nextRoom } from '../core/house';
 import { cardRooms } from '../core/roomLoad';
-import { visitTarget } from '../core/roomVisit';
+import { houseCells, houseWakeVisit } from '../core/houseCells';
 import type { RoomArtLoader } from '../ui/roomArtLoader';
 import type { HouseState, RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl, roomText } from '../data/pl';
-import { FIRST_HOUSE, HOUSES } from '../data/houses';
+import { FIRST_HOUSE, HOUSES, HOUSE_GEOMETRY } from '../data/houses';
 import { FIRST_ROOM, ROOMS } from '../data/rooms';
 import type { Narrator } from '../ui/narrator';
 import { prefersReducedMotion } from '../ui/motion';
@@ -77,7 +77,7 @@ export class RoomScene extends Scene {
     private gesture: RoomGestureState = ROOM_GESTURE_IDLE;
     private holdZone!: GameObjects.Zone;
     private modeButton!: PageButton;
-    private visitButton!: PageButton;
+    private houseButton!: PageButton;
     /** The done room the child looks at instead of the room in renovation (runtime only, never saved). */
     private visiting: string | null = null;
     private doneCard!: RoomDoneCard;
@@ -126,7 +126,7 @@ export class RoomScene extends Scene {
             this.resetGesture();
             this.redraw();
         }).setDepth(ROOM_LAYOUT.depth.controls);
-        this.visitButton = new PageButton(this, () => this.visit()).setDepth(ROOM_LAYOUT.depth.controls);
+        this.houseButton = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.house); }).setDepth(ROOM_LAYOUT.depth.controls);
         this.doneCard = new RoomDoneCard(this, () => {
             this.tap();
             this.card = false;
@@ -136,13 +136,17 @@ export class RoomScene extends Scene {
         });
         const button = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.task); }).setDepth(ROOM_LAYOUT.depth.controls);
         this.resume = button;
-        const refresh = (): void => {
-            this.visiting = null;
+        const refresh = (_sys?: unknown, data?: unknown): void => {
             this.panel = { kind: 'closed' };
             this.mode = 'normal';
             this.card = false;
             this.cardDrawn = false;
             this.resetGesture();
+            // The house's wake data is the only way to a visit; a wake without data (notebook, house back) ends it.
+            this.visiting = houseWakeVisit(data, this.currentRoomId(), this.houseCellList());
+            if (this.visiting !== null) {
+                this.roomArtLoader()?.ensure([this.visiting]);
+            }
             this.redraw();
         };
         const onStars = (): void => {
@@ -350,20 +354,10 @@ export class RoomScene extends Scene {
         return (this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? FIRST_ROOM;
     }
 
-    /** The visit button: opens the other done room in place, or leads back; the room in renovation and the balance are never touched. */
-    private visit(): void {
-        this.tap();
-        const current = this.currentRoomId();
-        const target = visitTarget(this.listItems(), current, this.visiting);
-        if (target === null) {
-            return;
-        }
-        this.panel = { kind: 'closed' };
-        this.mode = 'normal';
-        this.resetGesture();
-        this.visiting = target === current ? null : target;
-        this.roomArtLoader()?.ensure([target]);
-        this.redraw();
+    private houseCellList() {
+        const saved = (this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE;
+        const rooms = this.savedRooms();
+        return houseCells(HOUSE_GEOMETRY[saved.id] ?? HOUSE_GEOMETRY[FIRST_HOUSE.id], saved, this.currentRoomId(), (id) => (ROOMS[id] ? roomDone(ROOMS[id], rooms[id] ?? emptyRoomState()) : null));
     }
 
     private redraw(): void {
@@ -385,13 +379,11 @@ export class RoomScene extends Scene {
         } else {
             this.modeButton.hide();
         }
-        const target = blocked ? null : visitTarget(this.listItems(), this.currentRoomId(), this.visiting);
-        if (target !== null) {
-            const { visitButton } = ROOM_LAYOUT;
-            this.roomArtLoader()?.ensure([target]);
-            this.visitButton.show(roomText.name(target) ?? target, visitButton.left, visitButton.top, 'primary', false, visitButton);
+        if (blocked) {
+            this.houseButton.hide();
         } else {
-            this.visitButton.hide();
+            const { houseButton } = ROOM_LAYOUT;
+            this.houseButton.show(pl.house.open, houseButton.left, houseButton.top, 'primary', false, houseButton);
         }
         if (this.cardDrawn) {
             const view = celebrationView('room', prefersReducedMotion(), ANIMATION.celebration);
@@ -519,8 +511,8 @@ export class RoomScene extends Scene {
         return this.modeButton.target();
     }
 
-    visitTarget(): { x: number; y: number } | null {
-        return this.visitButton.target();
+    houseButtonTarget(): { x: number; y: number } | null {
+        return this.houseButton.target();
     }
 
     cardNextTarget(): { x: number; y: number } | null {

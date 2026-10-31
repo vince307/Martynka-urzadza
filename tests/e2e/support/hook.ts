@@ -59,7 +59,7 @@ export interface Snapshot {
     /** The fox guide in the notebook corner (fox-guide). */
     guide?: { pose: 'idle' | 'cheer' | 'think' | null; requested: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number; y: number; width: number; height: number }; interactive: boolean; pops: number };
     settingsHint: boolean;
-    screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room';
+    screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room' | 'house';
     /** The boot loading screen (BootScene still loading): its phase. */
     loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
     /** Files the total boot limit ended and how many times BootScene.create ran; null before the first create. */
@@ -89,6 +89,8 @@ export interface Snapshot {
     roomLoad?: { pending: string[]; settled: string[] };
     /** The house in the registry (read-only copy) and the room the game is in. */
     house?: HouseShape | null;
+    /** The open house cross-section (house screen only): one cell per geometry cell, the shell state and the pictures still loading. */
+    houseView?: { cells: { id: string; floor: number; place: number; room: string | null; state: 'current' | 'done' | 'closed'; mode: string }[]; shellReady: boolean; pending: string[] } | null;
     currentRoom?: string | null;
     /** The renovation state of every room in the registry (read-only copy): what the load path made of the save. */
     rooms?: Record<string, { tasksDone: number; chosen: Record<string, number> }> | null;
@@ -138,7 +140,9 @@ export interface Targets {
     choose?: Point | null;
     close?: Point | null;
     modeButton?: Point | null;
-    visitButton?: Point | null;
+    houseButton?: Point | null;
+    houseBack?: Point | null;
+    houseCells?: Record<string, Point>;
     cardNext?: Point | null;
     slots?: Record<string, Point>;
     roomSwitch: Point | null;
@@ -388,7 +392,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'coins' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'coins' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots' | 'houseCells'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };
@@ -575,3 +579,16 @@ export const fakePolishVoice = async (page: Page): Promise<void> => {
         Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: FakeUtterance, configurable: true });
     });
 };
+
+/** From the room: taps "Dom" and waits for the house cross-section. */
+export const openHouse = async (page: Page): Promise<void> => {
+    await tapTarget(page, 'houseButton');
+    await screenIs(page, 'house');
+};
+
+/** One RGBA pixel of a house cell's captured miniature (the house screen only); null while nothing is captured. */
+export const housePixel = (page: Page, cellId: string): Promise<[number, number, number, number] | null> =>
+    page.evaluate((id) => {
+        const hook = (window as unknown as { __martynkaE2E?: { housePixel?: (cell: string) => [number, number, number, number] | null } }).__martynkaE2E;
+        return hook?.housePixel?.(id) ?? null;
+    }, cellId);

@@ -181,7 +181,7 @@ describe('artHealthLines: fox and stand-in (audit G-1, G-2)', () => {
         const lines = artHealthLines({ ...base, ui: okHealth(5), fallbacks: { wallet: 'drawn' } });
         expect(lines.some((l) => l.kind === 'worn')).toBe(false);
     });
-    it('ends the fallback order with worn', () => {
-        expect(FALLBACK_ORDER).toEqual(['wallet', 'notebook', 'miniature', 'loading', 'guide', 'worn']);
+    it('ends the fallback order with house', () => {
+        expect(FALLBACK_ORDER).toEqual(['wallet', 'notebook', 'miniature', 'loading', 'guide', 'worn', 'house']);
     });
 });

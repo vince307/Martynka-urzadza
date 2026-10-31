@@ -14,6 +14,7 @@ import { stages } from '../data/curriculum';
 import { REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { FIRST_HOUSE } from '../data/houses';
 import type { BootScene } from '../scenes/BootScene';
+import type { HouseScene } from '../scenes/HouseScene';
 import type { RoomScene } from '../scenes/RoomScene';
 import type { TaskScene } from '../scenes/TaskScene';
 import type { UIScene } from '../scenes/UIScene';
@@ -103,7 +104,7 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui' | 'house';
 
 /**
  * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no room picture, at boot or at runtime; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
@@ -111,7 +112,7 @@ export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' |
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' || value === 'house' ? value : null;
 };
 
 /** The address `?e2eArt=ui` gives the screen pictures: no such file is served, so each fails with a 404. */
@@ -245,6 +246,7 @@ export const installE2EHook = (game: Game): void => {
     const welcome = (): WelcomeScene => game.scene.getScene(SCENE_KEYS.welcome) as WelcomeScene;
     const onWelcome = (): boolean => game.scene.isActive(SCENE_KEYS.welcome);
     const inRoom = (): boolean => game.scene.isActive(SCENE_KEYS.room);
+    const inHouse = (): boolean => game.scene.isActive(SCENE_KEYS.house);
     const learner = (): Readonly<SessionLearner> | null => {
         const value = game.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined;
         return value ? deepFreeze(structuredClone(value)) : null;
@@ -295,6 +297,7 @@ export const installE2EHook = (game: Game): void => {
     const task = (): TaskScene => game.scene.getScene(SCENE_KEYS.task) as TaskScene;
     const ui = (): UIScene => game.scene.getScene(SCENE_KEYS.ui) as UIScene;
     const room = (): RoomScene => game.scene.getScene(SCENE_KEYS.room) as RoomScene;
+    const house = (): HouseScene => game.scene.getScene(SCENE_KEYS.house) as HouseScene;
     Object.defineProperty(window, '__martynkaE2E', {
         value: Object.freeze({
             get snapshot() {
@@ -308,9 +311,12 @@ export const installE2EHook = (game: Game): void => {
                     return Object.freeze({ screen: 'welcome' as const, backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), artFallbacks: artFallbacksSnapshot(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
-                const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
+                const screen = inHouse() ? 'house' : inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, rooms: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? null)), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), roomLoad: structuredClone((game.registry.get(REGISTRY_KEYS.roomLoad) as { pending: string[]; settled: string[] } | undefined) ?? { pending: [], settled: [] }), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, houseView: inHouse() ? house().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, rooms: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? null)), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), roomLoad: structuredClone((game.registry.get(REGISTRY_KEYS.roomLoad) as { pending: string[]; settled: string[] } | undefined) ?? { pending: [], settled: [] }), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
+            },
+            housePixel(cellId: string) {
+                return inHouse() ? house().pixel(cellId) : null;
             },
             get backdropPixel() {
                 if (boot()?.isLoading()) return null;
@@ -325,17 +331,19 @@ export const installE2EHook = (game: Game): void => {
                 return Object.freeze({
                     ...round,
                     // The sleeping task scene keeps its summary buttons: not tappable while the room is open.
-                    nextRound: inRoom() ? null : round.nextRound,
-                    toRoom: inRoom() ? null : round.toRoom,
-                    unlockNext: inRoom() ? null : round.unlockNext,
-                    ageBack: inRoom() ? null : round.ageBack,
+                    nextRound: inRoom() || inHouse() ? null : round.nextRound,
+                    toRoom: inRoom() || inHouse() ? null : round.toRoom,
+                    unlockNext: inRoom() || inHouse() ? null : round.unlockNext,
+                    ageBack: inRoom() || inHouse() ? null : round.ageBack,
                     resume: inRoom() ? room().resumeTarget() : null,
                     taskButton: inRoom() ? room().taskButtonTarget() : null,
                     thumbs: inRoom() ? room().thumbTargets() : [],
                     choose: inRoom() ? room().chooseTarget() : null,
                     close: inRoom() ? room().closeTarget() : null,
                     modeButton: inRoom() ? room().modeButtonTarget() : null,
-                    visitButton: inRoom() ? room().visitTarget() : null,
+                    houseButton: inRoom() ? room().houseButtonTarget() : null,
+                    houseBack: inHouse() ? house().targets().back : null,
+                    houseCells: inHouse() ? house().targets().cells : {},
                     cardNext: inRoom() ? room().cardNextTarget() : null,
                     slots: inRoom() ? room().slotTargets() : {},
                     speaker: ui().speakerTarget(),
