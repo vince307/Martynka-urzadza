@@ -671,12 +671,12 @@ Starting decisions D1-D11 (scope.md, change.md) are kept; none is overturned. De
 
 #### Automated
 
-- [ ] 2.1 `npm run art` (needs cwebp + python3 Pillow/numpy) regenerates the 3 files; `git status --short public/assets` shows only `public/assets/house/`
-- [ ] 2.2 `npx vitest run tests/houseArt.test.ts tests/roomArt.test.ts tests/uiArt.test.ts tests/bootBudget.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.3 Deliberate break: rename `cell-frame.webp` → the orphan/missing-file case red; add `HOUSE_ART` to an import in `BootScene` → the boot guard red; each restored; meta-check: the size oracle is the pack's manifest/README sizes, not the table
-- [ ] 2.4 `npm run build` then `grep -c "assets/house/" dist/sw.js` ≥ 3 (precached by the existing glob)
-- [ ] 2.5 `git diff --stat 112f158 -- deploy/ public/assets/rooms public/assets/ui public/assets/tasks src/data/balance.ts src/core/save.ts` empty
-- [ ] 2.6 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 2.1 `npm run art` (needs cwebp + python3 Pillow/numpy) regenerates the 3 files; `git status --short public/assets` shows only `public/assets/house/` — c470f94
+- [x] 2.2 `npx vitest run tests/houseArt.test.ts tests/roomArt.test.ts tests/uiArt.test.ts tests/bootBudget.test.ts` green; unit `<phase-1 count> + N` — c470f94
+- [x] 2.3 Deliberate break: rename `cell-frame.webp` → the orphan/missing-file case red; add `HOUSE_ART` to an import in `BootScene` → the boot guard red; each restored; meta-check: the size oracle is the pack's manifest/README sizes, not the table — c470f94
+- [x] 2.4 `npm run build` then `grep -c "assets/house/" dist/sw.js` ≥ 3 (precached by the existing glob) — c470f94
+- [x] 2.5 `git diff --stat 112f158 -- deploy/ public/assets/rooms public/assets/ui public/assets/tasks src/data/balance.ts src/core/save.ts` empty — c470f94
+- [x] 2.6 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — c470f94
 
 #### Manual
 

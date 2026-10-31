@@ -1,7 +1,6 @@
 # Handoff — `house-cross-section` (slice S-23)
 
-Written by the `/10x-tdd` step, phase 1 of run 2026-10-31-house-cross-section. Phase 1 (pure house cells and wake rule) is
-committed `158004b`. The next agent must not get wrong: in `RoomScene` `refresh(data)` REPLACES its own `this.visiting = null`
+Written by the `/10x-implement` step, phase 2 of run 2026-10-31-house-cross-section. Phases 1 (`158004b`) and 2 (`c470f94`, house art) are committed. The next agent must not get wrong: in `RoomScene` `refresh(data)` REPLACES its own `this.visiting = null`
 with `houseWakeVisit(...)` (setting it before the resets would be wiped), and the hook's house snapshot is `houseView`, never
 `house` (that field is the saved `HouseState`).
 
@@ -13,13 +12,17 @@ with `houseWakeVisit(...)` (setting it before the resets would be wiped), and th
 | commits | change identity, research, plan, plan review, `158004b` `test(house-cross-section): house cells and the wake rule (p1)`, this handoff |
 | pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 32 (`grep -c '^- \[ \]' plan.md`); phase 1 rows 1.1-1.4 ticked |
+| `## Progress` rows remaining | 26; rows 1.1-1.4 and 2.1-2.6 ticked |
 | working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
+| `src/data/houseArt.ts` | `HOUSE_ART` (3 entries, keys `house/house-1-shell`, `house/cell-closed`, `house/cell-frame`), not imported by BootScene |
+| `public/assets/house/*.webp` | 44964 + 5554 + 8600 = 59118 B, made by `npm run art` (`HOUSE_FILES` in `scripts/make-task-art.mjs`) |
+| `tests/houseArt.test.ts` | 6 cases (sizes, orphans, disjoint keys, geometry keys, <= 80000 B, BootScene guard) |
+| `scripts/check-deploy.ts`, `src/pwa/registerServiceWorker.ts` | `house pictures` precache check; `console.warn` on a `redundant` worker |
 | `src/core/houseCells.ts` | `houseCells`, `cellTap`, `houseWakeVisit`, types `HouseCellState`, `HouseCellView`, `CellTap` |
 | `src/core/types.ts` | `SceneRect`, `HouseCellDef`, `HouseGeometry` |
 | `src/data/houses.ts` | `HOUSE_GEOMETRY['house-1']` from the pack manifest (keys `house/house-1-shell`, `house/cell-closed`, `house/cell-frame`) |
@@ -31,24 +34,25 @@ with `houseWakeVisit(...)` (setting it before the resets would be wiped), and th
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/house-cross-section` |
-| RED (stub returning wrong values) | `AssertionError: expected [ 'done', 'done', 'done', 'done' ] to deeply equal [ 'current', 'closed', 'closed', …(1) ]`; `expected 'x' to be null`; `expected { kind: 'none' } to deeply equal { kind: 'room', visit: 'salon' }` (15 failed, 6 passed) |
-| GREEN | `npx vitest run tests/houseCells.test.ts` 21 passed |
-| break 1: `houseCells` marks a not-reached room `done` | red: `expected [ 'current', 'done', 'closed', …(1) ] to deeply equal [ 'current', 'closed', 'closed', …(1) ]` (+1 more); restored |
-| break 2: `houseWakeVisit` accepts the current room (drop the `visit === current` guard AND the `done`-only filter) | red: `expected 'kitchen' to be null`; restored. Meta-check: dropping only the `=== current` guard stays green, because the `current` cell state already excludes the current room (the guard is redundant defence); the `{ visit: 'kitchen' }` case therefore proves the state filter, which is the real protection |
-| `npm run lint`, `typecheck`, `npm test` (+ deploy/ops tests, sample E1-E6), `npm run build` | all green; `Tests 4078 passed`; `e2e hook: absent (2 chunks checked)` |
-| unit count | baseline 4057 + 21 = 4078 |
-| `git diff --stat 112f158 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures src/data/rooms.ts` | empty |
-| e2e | not run (phase 1 names none; orchestrator `+ 0`) |
+| `npm run art` | only `public/assets/house/` changed (3 new files, 59118 B) |
+| `npx vitest run tests/houseArt.test.ts tests/roomArt.test.ts tests/uiArt.test.ts tests/bootBudget.test.ts` | 4 files, 20 passed |
+| break 1: `cell-frame.webp` moved away | red: `ENOENT ... cell-frame.webp` and the orphan case `expected [ 'cell-closed.webp', ...(1) ] to deeply equal [ ...(2) ]`; restored |
+| break 2: `HOUSE_ART` imported in `BootScene.ts` | red: `is not loaded by BootScene`; restored. Meta-check: sizes are literals from the pack manifest in the test, not read from the table |
+| lint, typecheck, `npm test`, deploy/ops tests, sample E1-E6, `npm run build` | all green; `Tests 4084 passed`; `e2e hook: absent (2 chunks checked)` |
+| unit count | phase 1 4078 + 6 = 4084 |
+| `grep -o "assets/house/..." dist/sw.js` | 3 distinct files precached (the minified sw.js is one line, so `grep -c` says 1) |
+| `git diff --stat 112f158 -- deploy/ public/assets/rooms ui tasks balance.ts save.ts` | empty |
+| e2e | not run (orchestrator `+ 0`) |
 
 ## 4. Next command
 
-`/10x-implement house-cross-section phase 2`
+`/10x-implement house-cross-section phase 3`
 
 ## 5. Open
 
-- Manual rows (human checklist): 2.7 and 5.11 `[reviewer] (CI at ship)`; 5.6 `[visual]`; 5.7, 5.8, 5.9, 5.10 `[human]`.
+- Manual rows (human checklist): 2.7 (deploy smoke line `house pictures`) and 5.11 `[reviewer] (CI at ship)`; 5.6 `[visual]`; 5.7, 5.8, 5.9, 5.10 `[human]`.
+- Row 2.4 wording `grep -c` is 1 on the minified one-line sw.js; the check was `grep -o` (3 files).
 - Phase 6 must add `house-cross-section` to `ROUND_SPEC` in `playwright.config.ts`.
-- `HOUSE_GEOMETRY` references art keys of phase 2 (`HOUSE_ART` table must use the same three keys).
 - DESIGN-GAP rows planned from 183 in phase 5; row 180 closes.
 
 ## 6. Autonomous decisions
@@ -59,3 +63,4 @@ with `houseWakeVisit(...)` (setting it before the resets would be wiped), and th
 - Wake-rule break: the plan's single break (accept the current room) is green alone because `current` cells are never `done`;
   recorded as the meta-check above, break done with both conditions. Would change: nothing.
 - Driver stays `tdd`; no redirect.
+- Phase 2 is `impl`: the SW `redundant` warning (kitchen follow-up 6) has no unit test (browser-only path); the lint rule accepted `console.warn` there. Would change: a test seam for `trackStates`.
