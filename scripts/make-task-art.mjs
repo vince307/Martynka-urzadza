@@ -21,6 +21,8 @@ const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
+const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
+const HOUSE_OUT = join(ROOT, 'public/assets/house');
 
 // Output sizes are at most twice the displayed size (half of the kit's resolution), see the plan, "Ladowanie".
 const SQUARE = [256, 256];
@@ -105,7 +107,14 @@ const V2_ICONS = ['plate', 'box', 'sticker'];
 const FOX_POSES = ['idle', 'cheer', 'think'];
 const FOX_SIZE = [384, 384];
 
-for (const dir of [KIT, SALON_V2, FOX, ...ROOM_PACKS.map((row) => row.pack)]) {
+/** The house pack (S-23): the shell and the two cell pictures at native size; the shell is not a room, so no board recolour. */
+const HOUSE_FILES = [
+    { from: 'assets/house/house-1-shell.png', to: 'house-1-shell.webp' },
+    { from: 'assets/house/cell-closed.png', to: 'cell-closed.webp' },
+    { from: 'assets/house/cell-frame.png', to: 'cell-frame.webp' },
+];
+
+for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack)]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -166,4 +175,9 @@ for (const pose of FOX_POSES) {
     total += bytes;
     console.log(`ui/fox-${pose}.webp  ${FOX_SIZE[0]}x${FOX_SIZE[1]}  ${bytes} B`);
 }
-console.log(`${JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);
+for (const file of HOUSE_FILES) {
+    const bytes = convert(join(HOUSE, file.from), join(HOUSE_OUT, file.to), []);
+    total += bytes;
+    console.log(`house/${file.to}  ${bytes} B`);
+}
+console.log(`${HOUSE_FILES.length + JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);
