@@ -11,7 +11,7 @@ export const room = async (page: Page) => {
 };
 
 /** Solves the open task by the long way (two misses, the solution, the retype): the retype pays no star. */
-const solveByRetype = async (page: Page): Promise<void> => {
+export const solveByRetype = async (page: Page): Promise<void> => {
     await phaseIs(page, 'first');
     await answerWrong(page);
     await phaseIs(page, 'second');

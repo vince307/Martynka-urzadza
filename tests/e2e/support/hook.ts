@@ -89,6 +89,8 @@ export interface Snapshot {
     roomLoad?: { pending: string[]; settled: string[] };
     /** The house in the registry (read-only copy) and the room the game is in. */
     house?: HouseShape | null;
+    /** The open house cross-section (house screen only): one cell per geometry cell, the shell state and the pictures still loading. */
+    houseView?: { cells: { id: string; floor: number; place: number; room: string | null; state: 'current' | 'done' | 'closed'; mode: string }[]; shellReady: boolean; pending: string[] } | null;
     currentRoom?: string | null;
     /** The renovation state of every room in the registry (read-only copy): what the load path made of the save. */
     rooms?: Record<string, { tasksDone: number; chosen: Record<string, number> }> | null;
@@ -583,3 +585,10 @@ export const openHouse = async (page: Page): Promise<void> => {
     await tapTarget(page, 'houseButton');
     await screenIs(page, 'house');
 };
+
+/** One RGBA pixel of a house cell's captured miniature (the house screen only); null while nothing is captured. */
+export const housePixel = (page: Page, cellId: string): Promise<[number, number, number, number] | null> =>
+    page.evaluate((id) => {
+        const hook = (window as unknown as { __martynkaE2E?: { housePixel?: (cell: string) => [number, number, number, number] | null } }).__martynkaE2E;
+        return hook?.housePixel?.(id) ?? null;
+    }, cellId);
