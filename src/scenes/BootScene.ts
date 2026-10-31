@@ -1,5 +1,5 @@
 import { Loader, Scene, WEBGL } from 'phaser';
-import { artCauses, artHealth, roomHealthOf, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
+import { artCauses, artHealth, roomHealthOf, bootGroups, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
 import { bootLimitDue, bootLimitReached, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
@@ -8,6 +8,7 @@ import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE, UI_MISSING_URL } from '../testing/
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { cutLoad, pendingKeys } from './loaderCut';
 import { balance } from '../data/balance';
+import { CHOICE_ART } from '../data/choiceArt';
 import { bootRoomArt, ROOM_ART } from '../data/roomArt';
 import { recordFallback } from '../ui/artFallbacks';
 import { UI_ART, UI_ART_KEYS } from '../data/uiArt';
@@ -249,6 +250,15 @@ export class BootScene extends Scene {
                     this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
                 }
             },
+            // The two first-building choice cards, only while no learner exists (a fresh install); a missing one is a stand-in frame (e2e build: ?e2eArt=choice queues none).
+            choice: () => {
+                for (const art of CHOICE_ART) {
+                    if (seam === 'choice') {
+                        continue;
+                    }
+                    this.load.image(art.key, art.url);
+                }
+            },
             // The current room's pictures load the same way (other rooms load at runtime); a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
             room: () => {
                 for (const art of bootRoomArt(this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined)) {
@@ -266,7 +276,7 @@ export class BootScene extends Scene {
             },
             sound: () => this.queueSounds(),
         };
-        for (const group of bootQueue(['loadingArt', 'font', 'task', 'room', 'ui', 'sound'])) {
+        for (const group of bootQueue(bootGroups(this.placementNeeded()))) {
             queuers[group]();
         }
     }
@@ -284,11 +294,16 @@ export class BootScene extends Scene {
         }
     }
 
+    /** A fresh install (no learner in the session) boots the choice cards and no room. */
+    private placementNeeded(): boolean {
+        return needsPlacement((this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | undefined) ?? null);
+    }
+
     private tables(): Record<ArtTable, ReadonlySet<string>> {
         return {
             task: new Set(TASK_ART.map((art) => art.key)),
             room: new Set(ROOM_ART.map((art) => art.key)),
-            ui: new Set(UI_ART.map((art) => art.key)),
+            ui: new Set([...UI_ART.map((art) => art.key), ...CHOICE_ART.map((art) => art.key)]),   // the choice cards are logged under the ui table
             sound: new Set(SOUNDS.map((def) => def.key)),
         };
     }
@@ -351,7 +366,8 @@ export class BootScene extends Scene {
         if (health.missing.length > 0) {
             console.warn(`Task art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);
         }
-        const bootRoom = bootRoomArt(this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
+        // A fresh install booted no room (the chosen one loads through UIScene), so there is nothing to judge.
+        const bootRoom = this.placementNeeded() ? [] : bootRoomArt(this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
         const roomHealth = this.withCauses('Room', bootRoom, roomHealthOf(bootRoom, (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.roomArtHealth, roomHealth);
         if (roomHealth.missing.length > 0) {

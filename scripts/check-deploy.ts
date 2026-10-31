@@ -6,6 +6,7 @@
 // --redirect-from also checks that the old domain redirects there and serves the kill-switch /sw.js.
 // Exit codes: 0 all checks ok, 1 some check failed, 2 usage.
 import { FONT_URL } from '../src/data/layout';
+import { CHOICE_ART } from '../src/data/choiceArt';
 import { HOUSE_ART } from '../src/data/houseArt';
 import { ROOM_ART } from '../src/data/roomArt';
 import { SOUNDS } from '../src/data/sounds';
@@ -143,6 +144,7 @@ const main = async (): Promise<number> => {
         record(precacheCovers('task font', precache, [FONT_URL]));
         record(precacheCovers('room pictures', precache, ROOM_ART.map((a) => a.url)));
         record(precacheCovers('house pictures', precache, HOUSE_ART.map((a) => a.url)));
+        record(precacheCovers('choice pictures', precache, CHOICE_ART.map((a) => a.url)));
         record(precacheCovers('boot sounds', precache, SOUNDS.filter((s) => s.boot).flatMap((s) => [...s.urls])));
     }
 
