@@ -529,3 +529,23 @@ Rozmowa autora z agentem o rozwoju po salonie (nowe pokoje, piętra, budynek, mi
 - [ ] P2 — Paczki `martynka-salon-worn-v1/v2` dotarły 2026-10-25; podmiana postarzenia z kodu na grafikę czeka jako osobna zmiana (Parked w roadmapie).
 - [x] M-02 (wysyłki rodzica, S-18–S-21) odłożony 2026-10-30 na wybór autora w `/10x-roadmap` (jeden otwarty kamień naraz); S-17 przeniesiony do M-03; M-02 wraca jako kolejny kamień, dekompozycja w historii gita `roadmap.md` (1f6869d).
 - [ ] P1 — Zaakceptować albo odwrócić fundament F-04 `rooms-as-data` (zapis v5 z domem i siatką pięter, salon przeniesiony bez straty) przed kuchnią; wybór celu `jakość` w wywiadzie roadmapy.
+
+## Bieg 2026-10-30-rooms-kitchen (F-04 + S-22)
+
+Wynik: oba slice'y wdrożone bez parkowania. PR #116 (PRD v4, M-03) scalony jako 9d28753. F-04 `rooms-as-data`: PR #117, scalenie 942e237, wdrożenie 41142788887 (smoke OK). S-22 `kitchen-room`: PR #118, scalenie 6c4f414, wdrożenie 41161789323 (smoke 22/22, 58/58 obrazków pokoi w precache). Zapis gry v5 (dom i siatka pięter, salon przeniesiony bez straty, kopia `backup-v4`). Testy: jednostkowe 3962 → 4057, e2e 167 → 174. Przeglądy: oba MERGE: CLEAR (S-22 miał jeden CRITICAL naprawiony przed scaleniem: pętla ponownego pobierania obrazka, którego przeglądarka nie zdekodowała). Audyt zamykający: PR #119 otwarty, 0 CRITICAL/HIGH/MEDIUM, 3 LOW.
+
+- [ ] P0 — Przejrzeć i scalić audyt PR #119 (L-1: „Obrazki” pokazuje zapis ładowania salonu, gdy po „Dalej” ładuje się kuchnia; L-2: nieznany dom lub pokoje w zapisie dają tylko `console.warn`; L-3: `ensure` bez loadera milczy). Bieg go nie scala.
+- [ ] P1 — Koszty kuchni 5, 7, 9, 10, 12, 13, 15 (suma 71, jak salon) są tymczasowe; strojenie w S-17. Źródło: archiwum S-22, plan wiersz 5.8 [human].
+- [ ] P1 — Przycisk odwiedzin („Salon” / „Kuchnia”) jest tymczasowy: otwiera skończony pokój w trybie zmiany wyglądu, nie zmienia `currentRoom` ani gwiazdek; S-23 zastępuje go przekrojem domu. Zaakceptować na teraz. Źródło: plan S-22 wiersz 7.7 [human], DESIGN-GAP 178–180.
+- [ ] P1 — Obejrzeć na tablecie: zielona plansza salonu obok kremowego marginesu kuchni (różne paczki grafik). Źródło: plan S-22 wiersz 7.8 [human]; paczka P3 „salon na kremowym tle” w `docs/designer-brief-m03.md`.
+- [ ] P1 — Test na prawdziwym tablecie bez internetu: kuchnia ładuje się w trakcie gry z precache po „Dalej” (boot ładuje tylko pokój w remoncie). Źródło: plan S-22 wiersz 7.9 [human].
+- [ ] P2 — Tło notesu z kuchnią wygląda płasko (rozmyta kuchnia ma mało kontrastu). Źródło: DESIGN-GAP 182.
+- [ ] P2 — Bramka wizualna nie uchwyciła ograniczonego ruchu ani wybuchu gwiazdek celebracji (nie da się ich zrzucić). Źródło: plan S-22 wiersz 4.5 [visual].
+- [ ] P2 — Powrót wdrożenia poniżej buildu v5 pokaże kartę „zapis z nowszej wersji” (jak przy v3/v4). Źródło: plan F-04 wiersz 6.7 [human], `deploy/README.md`.
+- [ ] P2 — Migracja v4 → v5 jest udowodniona testami jednostkowymi i e2e w pamięci (`?e2eSave=v4-salon`), nie dwoma prawdziwymi buildami na jednym urządzeniu. Źródło: plan F-04 wiersz 6.8 [human].
+- [ ] P2 — Follow-upy z wyzwalaczami: `context/archive/2026-10-30-rooms-as-data/follow-ups/review-fixes.md` i `context/archive/2026-10-31-kitchen-room/follow-ups/review-fixes.md` (około 20 wpisów).
+- [ ] P2 — Zaakceptować albo odwrócić (F-04): zamrożona tabela domu v5 (`HOUSE_V5`) zawiera tylko salon; kuchnię dokłada `mergeHouse` przy wczytaniu.
+- [ ] P2 — Zaakceptować albo odwrócić (F-04/S-22): reguła „następny pokój” działa przy wczytaniu (skończony salon otwiera się w kuchni) i po „Dalej” na karcie celebracji.
+- [ ] P2 — Zaakceptować albo odwrócić (S-22): pokoje poza remontem ładują się w trakcie gry (`roomArtLoader`) zamiast podnosić limit `balance.loader.totalMs` (zostaje 50 s; najgorszy przypadek salon 41,8 s, kuchnia 33,7 s).
+- [ ] P2 — Zaakceptować albo odwrócić (S-22): przycisk odwiedzin zachowuje FR-019 („Do pokoju” zawsze do pokoju w remoncie).
+- [ ] P1 — Paczka grafika `designs/martynka-house-street-v1/` (skorupa domu 1) gotowa: QA 10/10, komórki 608×342 w 100 % `#FFF5DF`. Decyzje przed S-23: zamknięta komórka to turkusowa roleta (czy z napisem „Wkrótce” w grze); dioramy wyglądają małe w komórkach przez marginesy w grafikach pokoi (przyciąć czy skalować); podgląd pokoju dziecięcego Codex złożył sam; opcjonalny `house-1-front.png` pominięty. Integracja to S-23.
