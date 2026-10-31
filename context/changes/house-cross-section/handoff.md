@@ -1,17 +1,17 @@
 # Handoff — `house-cross-section` (slice S-23)
 
-Written by the visual-gate step of run 2026-10-31-house-cross-section. The gate found that the house shell covered every cell (empty house in the real game) and fixed it in `15a086f`; after the fix all eight row-5.6 items pass (`VISUAL: PASS`). The next agent must not tick the `(CI at ship)` rows 2.7 and 5.11 before the ship step reads the named CI/Deploy log lines, and must re-run e2e at the gate: the fix changed a depth token after the last full e2e run.
+Final pre-merge state, written by the ship step of run 2026-10-31-house-cross-section before the archive and push. Earlier: the visual gate found that the house shell covered every cell and fixed it in `15a086f` (`VISUAL: PASS`); the orchestrator re-ran the full e2e at `12281fc` (179/179). Row 5.11 is ticked from the PR's CI `check` log on the branch; row 2.7 is proven only by the Deploy smoke on the merge sha and stays open here (the orchestrator records the log line).
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/house-cross-section`, cut from `main` at `112f158` |
-| commits | docs, p1 `158004b`, p2 `c470f94`, p3 `518f581`, p4 `b46f63f`, p5 `5d59882`, p6 `4112bd0`, epilogue `e18e4f5`, review fix `6431dde`, review docs `2bbf72f`, visual fix `15a086f`, + this `docs(house-cross-section): bramka wizualna` commit |
-| pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
-| `## Progress` rows remaining | 6 (`grep -c '^- \[ \]' plan.md`): 2.7 and 5.11 `[reviewer] (CI at ship)`, 5.7-5.10 `[human]` |
-| working tree | clean after the docs commit |
+| commits | docs, p1 `158004b`, p2 `c470f94`, p3 `518f581`, p4 `b46f63f`, p5 `5d59882`, p6 `4112bd0`, epilogue `e18e4f5`, review fix `6431dde`, review docs `2bbf72f`, visual fix `15a086f`, visual docs `12281fc`, + the ship step's `docs` and `chore(archive)` commits |
+| pushed / PR / merged | PR/CI/merge/deploy recorded in `context/runs/2026-10-31-house-cross-section/run-log.md` |
+| `change.md` status | `archived` |
+| `## Progress` rows remaining | 2.7 `[reviewer] (CI at ship)` (Deploy smoke on the merge sha), 5.7-5.10 `[human]` (post-run checklist); 5.11 is ticked by the ship step's `docs(house-cross-section): dowody z CI` commit from the PR's CI `check` log |
+| working tree | clean |
 
 ## 2. Artifacts
 
@@ -43,7 +43,7 @@ Written by the visual-gate step of run 2026-10-31-house-cross-section. The gate 
 
 ## 4. Next command
 
-`/10x-archive house-cross-section then ship`
+none — shipped
 
 ## 5. Open
 

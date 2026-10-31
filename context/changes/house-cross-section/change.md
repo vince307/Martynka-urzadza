@@ -123,3 +123,10 @@ fixture like F-04; the default answer is no (FR-039: "Do pokoju" always goes to 
 - **D11 — this step: next step is `/10x-research`, not `/10x-plan`** (the skill's default). The slice adds a scene/view,
   touches navigation across `TaskScene`/`RoomScene`/`UIScene`, the runtime loader and the e2e hook; grounding is needed
   before the plan. Would change: nothing at this point; the orchestrator prompt fixes it.
+- **D12 — ship step: archive with open Progress rows** (`/10x-archive` warning prompt answered `Continue archiving`,
+  the run's step prompt fixes it). Open: 2.7 `[reviewer] (CI at ship)`, proven only by the Deploy smoke on the merge sha
+  (recorded in the run log after the merge); 5.7-5.10 `[human]`, a post-run checklist for the maintainer (copy, roller
+  blind as "sylwetki", green salon board in a cream cell, real tablet offline), listed in the PR body. Rejected: holding the
+  archive until the human rows are ticked (they need the maintainer's eye on the deployed build, which only the merge
+  gives). Would change: a red Deploy smoke or a maintainer rejecting one of rows 5.7-5.9 (then a follow-up change, not a
+  revert).
