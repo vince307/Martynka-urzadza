@@ -1,13 +1,13 @@
 # Handoff — `first-building-choice` (slice S-28)
 
-Written by the `/10x-implement` phase-6 step of run 2026-10-31-space-base: phase 6 (the choice view) is committed and ticked. The next agent must not get this wrong: `SAVE_VERSION` is 6; phases 7+ must not touch `src/core/save.ts` or `src/core/migrations`; the welcome scene now RESTARTS itself between views (`scene.restart({ placed, fromAge })`), so phase 7 reopens the choice by starting `SCENE_KEYS.welcome` with `{ placed }` (no `fromAge`: the welcome's own "Wróć" is then hidden, the task screen's "Wróć" is phase 7's).
+Written by the `/10x-implement` phase-7 step of run 2026-10-31-space-base: phase 7 ("Wróć" from the task screen to the choice) is committed (`bc41f65`) and ticked except 7.5 (the orchestrator's full e2e). `SAVE_VERSION` stays 6; phase 8 must not touch `src/core/save.ts` or `src/core/migrations`. WelcomeScene's own `backToAge` (the choice view's "Wróć" to the age view, child path) is a different, legitimate name: phase 8's seam-sweep grep `ageBack\|backToAge` must be narrowed to `ageBack` or it hits that method.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
-| commits | 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + `930363a` p4 + `f427d42` p5 + `d485d3a` p6 + docs |
+| commits | 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + `930363a` p4 + `f427d42` p5 + `d485d3a` p6 + `bc41f65` p7 + docs |
 | pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` |
@@ -17,31 +17,25 @@ Written by the `/10x-implement` phase-6 step of run 2026-10-31-space-base: phase
 
 | path | what it is |
 |---|---|
-| `src/scenes/WelcomeScene.ts` | `create(data?: WelcomeData)`: `{ placed, fromAge }` opens the `choice` view, else the `age` view; `place()` (hasPurchase guard, then `scene.restart`), `pick()` (`buildingStart` -> `REGISTRY_KEYS.house/rooms/currentRoom`, then `start`), `backToAge()`, `viewState()`, `targets()` with `choices`/`choiceBack` |
-| `src/ui/widgets/ChoiceCard.ts` | new card widget (ChunkyFace `LIPS.age`, `CHOICE_ART` texture or a stand-in box, `drawn`, `target()`) |
-| `src/ui/widgets/SpeakerButton.ts` | optional `SpeakerRect` third argument (default the HUD rect) |
-| `src/data/layout.ts`, `src/data/pl.ts`, `src/core/artPick.ts` | `WELCOME_LAYOUT.choice`, `WELCOME_TOUCH_TARGETS.choice*`, `pl.welcome.choice`, `FallbackWhere` + `'choice'` (no "Obrazki" line: the cards are counted in the UI table) |
-| `src/testing/e2eHook.ts`, `tests/e2e/support/{hook,welcome}.ts` | welcome snapshot `welcomeView`/`choiceSpeaker`; targets `choices`/`choiceBack`; `passChoice(page, building)`; `passWelcome*` take `building`; five specs that tap an age by hand call `passChoice` |
-| `src/scenes/TaskScene.ts`, `src/scenes/UIScene.ts` | TaskScene redraws its backdrop on `changedata-roomLoad` (a fresh install's first round shows the salon as soon as it has loaded) and starts the welcome with `{}`; UIScene calls `refreshHealth(chosenRoom)` when boot judged no room (`roomArtHealth.total === 0`), so "Obrazki" judges the chosen room in the first session (closes the F8 risk) |
-| tests | new `tests/welcomeChoiceWiring.test.ts`; `tests/layout.test.ts` choice-view case; e2e specs adapted to the fresh-install boot (welcome backdrop is plain, no salon at boot): `notebook-polish`, `backdrop-restore`, `canvas-renderer`, `salon-style`, `salon-load-health`, `final-art-loading`, `load-and-tab-guard` (held `assets/choice/*` instead of the salon), plus `passChoice` after hand-made age/stage taps |
+| `src/core/placement.ts` | `ageBackOffered` removed; `themeBackOffered(learner, variants, warmupLength, rooms)` is the one rule |
+| `src/scenes/TaskScene.ts` | `themeBack` button, `renderThemeBack` (reads `REGISTRY_KEYS.rooms`), `backToChoice` (console.info with stage and who placed it, same cleanup order, learner null, flush, `scene.start(welcome, { placed })`); hook task target `themeBack` |
+| `src/data/layout.ts`, `src/data/pl.ts`, `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | renames `ageBack` -> `themeBack` (layout, touch target, `pl.round.themeBack`, hook target) |
+| tests | `tests/themeBack.test.ts` (ageBack cases folded in, v1 lift and learner-less save kept), new `tests/themeBackWiring.test.ts`, `tests/layout.test.ts` renames, `tests/welcomeChoiceWiring.test.ts` guard now expects `{ placed }`; `tests/ageBack.test.ts` deleted; `first-launch.spec.ts` #12 "Wróć" case rewritten (back -> choice view -> `passChoice(page, 'space')` -> reload -> gone after round 1), parent-path case asserts `themeBack` present |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npm test` | 4170 passed (baseline 4092; after p5 4162; p6 delta +8) |
+| `npm test` | 4168 passed (baseline 4092; after p6 4170; p7 delta -2: ageBack cases folded, +wiring guards) |
 | lint / typecheck / deploy + ops shell tests / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
-| `git diff --stat f427d42 -- src/core/save.ts src/data/balance.ts src/scenes/BootScene.ts src/scenes/RoomScene.ts` | empty |
-| deliberate break 1 | `this.start(placed)` before the building in `pick()` -> order guard red; restored |
-| deliberate break 2 | choice speaker moved onto a card (`left 400, top 420`) -> layout case red; restored |
-| deliberate break 3 | first try `if (false && hasPurchase(rooms))` stayed GREEN (wrong break: the regex still matched); removing the guard block -> `hasPurchase` case red; restored. Meta-check: the guards prove source wiring only; the browser path is the e2e helpers and phase 9 |
-| e2e | see the commit message / report line below |
-
-E2E result: `npx playwright test --list` = 179 tests in 47 files (179 + 0). Full `--workers=4` run: 154 passed, 15 failed, every one a load timeout of a long spec (adaptive, first-launch #12, fox-guide, health-lines, money-pay x2, parent-settings, room-purchase, save-backup-health, save-transfer, stale-tab x5); `--last-failed --workers=1` passed 24 of 25 and the one real failure (first-launch "Wróć": Phaser keeps the previous start's scene data, so the welcome reopened the choice view) was fixed (explicit `{}` data) and `first-launch.spec.ts` passed 7/7. An earlier full run (before the spec fixes) had 25 failures: 9 real fresh-install expectations fixed below, the rest load timeouts.
+| `grep -rn ageBack src tests` | only the "gone" guard in `tests/themeBackWiring.test.ts` |
+| deliberate break 1 | `scene.start(welcome, {})` without `{ placed }` -> wiring guard red; restored |
+| deliberate break 2 | `themeBackOffered(..., {})` without the rooms -> wiring guard red; restored. Meta-check: source guards prove wiring only; the browser path is first-launch (below) and phase 9 |
+| e2e | `npx playwright test --list` = 179 tests (179 + 0). `first-launch.spec.ts --workers=1`: 7 passed. Full suite not run (orchestrator) |
 
 ## 4. Next command
 
-`/10x-implement first-building-choice phase 7`
+`/10x-implement first-building-choice phase 8`
 
 ## 5. Open
 
@@ -53,6 +47,8 @@ E2E result: `npx playwright test --list` = 179 tests in 47 files (179 + 0). Full
 - **Known risks (plan.md):** fresh-install first-session room art is not judged by "Obrazki" (F8, now narrowed: UIScene judges the chosen room once it has loaded); a learner-less save with a purchase skips the choice and keeps its building (F4, `hasPurchase`, guard in `WelcomeScene.place`).
 
 ## 6. Autonomous decisions
+
+- **Phase 7 (impl):** prompts decided in place (stopped after the phase). The first-launch "Wróć" case can no longer re-pick an age (the choice view of a placed learner has no age row), so it now re-picks the building (`space`) and keeps the stage E3; the "older age" assertions were dropped. Row 7.5 left unticked (full e2e is the orchestrator's). During the commit I mistakenly ran `git reset --soft HEAD~1` once after a failed `git add`; it undid the p6 docs commit in the index only, and `git reset --soft 43c4500` restored HEAD at once (no content lost, history unchanged). Would change: the maintainer wanting the age row reachable from the task screen.
 
 - **Phase 6 (impl):** prompts decided in place (stopped after the phase). The two views are the same scene restarted (`scene.restart({ placed, fromAge })`) rather than hiding the age widgets (`AgeButton` has no hide); `fromAge` is true only on the child age path so "Wróć" (welcome) shows for a child-placed learner only; a parent-confirmed placement never shows it. `FallbackWhere` gained `'choice'` but `FALLBACK_ORDER` was left alone so "Obrazki" gets no new line (the cards are already counted in the `ui` table). `passChoice` also accepts a straight jump to `task` (the purchase guard). The speaker keeps the HUD button look at its own rect inside the notebook (`SpeakerButton` gained an optional rect). Beyond the plan: TaskScene redraws the backdrop on `roomLoad` and UIScene refreshes the room health on a fresh install (needed by the specs and by the plan's own "plain until the room has loaded" intent); welcome backdrop specs now assert `plain`. Would change: the maintainer wanting a separate "Obrazki" line for the cards; a reviewer wanting hide/show instead of a restart.
 - **Phase 5 (impl):** prompts decided in place. The choice keys are counted in the `ui` table of `BootScene.tables()` rather than a new `ArtTable`. `E2EArtSeam` gained `choice` inside the existing `e2eArt` marker.

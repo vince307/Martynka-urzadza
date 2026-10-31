@@ -903,10 +903,10 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 7.1 `npx vitest run tests/themeBack.test.ts tests/themeBackWiring.test.ts tests/layout.test.ts` green; unit `<phase-6 count> − (folded ageBack cases) + N`
-- [ ] 7.2 `grep -rn "ageBack" src tests` empty
-- [ ] 7.3 Deliberate break: start the welcome without `{ placed }` → the wiring guard red; call `themeBackOffered` without the rooms → the guard red; each restored; meta-check: source guards prove wiring; first-launch and phase 9 prove the browser
-- [ ] 7.4 `npx playwright test tests/e2e/first-launch.spec.ts` green (orchestrator; sandbox disabled)
+- [x] 7.1 `npx vitest run tests/themeBack.test.ts tests/themeBackWiring.test.ts tests/layout.test.ts` green; unit `<phase-6 count> − (folded ageBack cases) + N` — bc41f65
+- [x] 7.2 `grep -rn "ageBack" src tests` empty — bc41f65
+- [x] 7.3 Deliberate break: start the welcome without `{ placed }` → the wiring guard red; call `themeBackOffered` without the rooms → the guard red; each restored; meta-check: source guards prove wiring; first-launch and phase 9 prove the browser — bc41f65
+- [x] 7.4 `npx playwright test tests/e2e/first-launch.spec.ts` green (orchestrator; sandbox disabled) — bc41f65
 - [ ] 7.5 Full local gate green; full e2e (orchestrator, `--workers=4`) `179 + 0`; total equals `npx playwright test --list | tail -1`
 
 ### Phase 8: Docs, gap rows, follow-ups, seam sweep and the visual pass
