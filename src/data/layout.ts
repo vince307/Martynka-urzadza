@@ -1,3 +1,4 @@
+import type { CelebrationIntensity, CelebrationSpec } from '../core/celebration';
 import type { CoinId } from './measures';
 // Scene geometry and placeholder colours. Scenes import these instead of
 // hard-coding numbers (plan section 14: no balance numbers in scenes).
@@ -200,7 +201,9 @@ export const REGISTRY_KEYS = {
     saver: 'saver',           // the game's autosave (the Autosaver of core/autosave: flush, status, current, replace), set in main.ts before the scenes run
     forcedSkills: 'forcedSkills',       // e2e build only: skill ids that fill every round (main.ts, from the page address); the name is not an e2e marker on purpose
     artHealth: 'artHealth',             // ArtHealth of the task drawings (core/artHealth), set by BootScene after loading; runtime only, not in SAVE_KEYS
-    roomArtHealth: 'roomArtHealth',     // ArtHealth of the salon pictures (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS
+    roomArtHealth: 'roomArtHealth',     // ArtHealth of the current room's pictures (core/artHealth), set by BootScene and roomArtLoader; runtime only, not in SAVE_KEYS
+    roomArtLoader: 'roomArtLoader',     // the runtime RoomArtLoader (src/ui/roomArtLoader.ts), set in main.ts; runtime only, not in SAVE_KEYS
+    roomLoad: 'roomLoad',               // { pending: string[]; settled: string[] }: rooms the runtime loader is fetching / has settled, set by the loader; runtime only, not in SAVE_KEYS
     uiArtHealth: 'uiArtHealth',         // ArtHealth of the screen pictures UI_ART (core/artHealth), set by BootScene; runtime only, not in SAVE_KEYS, never read by artFilter
     bootLoad: 'bootLoad',               // { cut: string[]; cutByTable; creates: number; elapsedMs: number; hiddenMs: number }: files the total boot limit ended (also by table), how often BootScene.create ran, the wall-clock load time and the part of it the tab was hidden (the limits count visible time), set by BootScene; runtime only, not in SAVE_KEYS
     fontHealth: 'fontHealth',           // 'loaded' | 'fallback' (core/artHealth fontHealth): whether the task font arrived, set by BootScene.create; runtime only, not in SAVE_KEYS
@@ -563,6 +566,9 @@ export const ROOM_LAYOUT = {
     // Mode button "Zmień wygląd"/"Gotowe" (S-10): the place of the task button once the room is done, but starting right of the third thumbnail (x 1000)
     // so the panel's controls and the button never overlap. DESIGN-GAP (docs/design-gaps.md row 38): the kit has no change mode.
     modeButton: { left: 1010, top: 892, width: 570, height: 128, radius: 32, border: 5 },
+    // Visit button (FR-019, plan review F2): opens the other done room in place ("Salon"/"Kuchnia"), top right under the star counter,
+    // clear of the bottom bar, the panel and the HUD pills. DESIGN-GAP (docs/design-gaps.md, kitchen-room visit button): the kit has no way to a done room; S-23's house cross-section replaces it.
+    visitButton: { left: 1622, top: 172, width: 256, height: 104, radius: 32, border: 5 },
     // Corner radius of the stand-in boxes and the thick outline of the slot under a holding finger (DESIGN-GAP, docs/design-gaps.md row 37: the kit has no hold view).
     slot: { radius: 24, holdOutline: 10 },
     // The worn (neglected) salon before the renovation stage: a colour grade over the real furniture, the extra grade for upholstery,
@@ -622,6 +628,7 @@ export const ROOM_TOUCH_TARGETS = {
     choose: { width: ROOM_LAYOUT.choose.width, height: ROOM_LAYOUT.choose.height },
     close: { width: ROOM_LAYOUT.close.width, height: ROOM_LAYOUT.close.height },
     modeButton: { width: ROOM_LAYOUT.modeButton.width, height: ROOM_LAYOUT.modeButton.height },
+    visitButton: { width: ROOM_LAYOUT.visitButton.width, height: ROOM_LAYOUT.visitButton.height },
     cardNext: { width: ROOM_DONE_LAYOUT.button.width, height: ROOM_DONE_LAYOUT.button.height },
 } as const;
 
@@ -704,6 +711,13 @@ export const ANIMATION = {
     summaryStarStepMs: 180,
     summaryStarPopMs: 220,
     summaryBurstParticles: 22,
+    celebration: {
+        // The reveal hold = the longest pop (stageFadeMs 600) plus a short look at the finished room (600); the burst matches the summary's.
+        room: { holdMs: 1200, burstCount: 22, keepsake: false },
+        // Not reachable before S-23/S-24, tuned there; the room numbers stand in.
+        house: { holdMs: 1200, burstCount: 22, keepsake: true },
+        street: { holdMs: 1200, burstCount: 22, keepsake: true },
+    } satisfies Record<CelebrationIntensity, CelebrationSpec>,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 

@@ -203,6 +203,7 @@ export class TaskScene extends Scene {
     private narrator: Narrator | undefined;
     private guide!: GuideFox;   // the fox guide (decorative, never takes input)
     private backdrop: SalonBackdrop | undefined;   // the blurred salon behind the notebook
+    private backdropRoomLoad: unknown = undefined;   // the `roomLoad` record seen at the last capture (a room that arrived since is drawn again)
     private backdropRooms: unknown = null;   // the `rooms` object the backdrop was captured from
     private readonly overflowWarned = new Set<string>();   // skills whose solution lines overflowed already (one warning each)
     private drawnHeading: string | null = null;   // the heading text drawn above the current prompt (the hook reads it)
@@ -325,7 +326,7 @@ export class TaskScene extends Scene {
         // A stage change made from the room (the parent panel) waits here: the round is replaced when the scene wakes.
         const onWake = (): void => {
             // A purchase in the room replaced the `rooms` object: capture the salon again (before the parent-stage branch below).
-            if (this.registry.get(REGISTRY_KEYS.rooms) !== this.backdropRooms) this.refreshBackdrop();
+            if (this.registry.get(REGISTRY_KEYS.rooms) !== this.backdropRooms || this.registry.get(REGISTRY_KEYS.roomLoad) !== this.backdropRoomLoad) this.refreshBackdrop();
             const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner;
             if (learner.stage !== this.stage.id) {
                 this.applyParentStage(false);
@@ -1213,6 +1214,7 @@ export class TaskScene extends Scene {
     private refreshBackdrop(cause: BackdropCause = 'capture'): void {
         const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
         this.backdropRooms = rooms ?? null;
+        this.backdropRoomLoad = this.registry.get(REGISTRY_KEYS.roomLoad);
         this.backdrop?.render(rooms, this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined, cause);
     }
 

@@ -18,6 +18,7 @@ const KIT = join(ROOT, 'designs/martynka-maths-A-v1');
 const OUT = join(ROOT, 'public/assets/tasks');
 const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
+const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 
@@ -34,7 +35,7 @@ const jugs = ['container-1l', 'container-half-l', 'container-quarter-l'];
 const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 'lamp', 'pear', 'pencil', 'teapot', 'yarn'];
 
 /**
- * One row per room (the place S-22 adds the kitchen). `pack` is the kit folder, `scene` lists the scene files of the pack's
+ * One row per room (the salon from salon-v2, the kitchen from locations-v2). `pack` is the kit folder, `scene` lists the scene files of the pack's
  * assets/room/, `decor` and `furniture` the PNGs of assets/furniture/; every output goes to public/assets/rooms/<room>/<id>.webp.
  * `recolourBoard` recolours the green board of the two background files (before/after) before the conversion.
  */
@@ -53,6 +54,21 @@ const ROOM_PACKS = [
             'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
         ],
         recolourBoard: true,
+    },
+    {
+        room: 'kitchen',
+        pack: LOCATIONS_V2,
+        scene: ['kitchen-before', 'kitchen-after', 'kitchen-shadows'],
+        decor: [],
+        furniture: [
+            'kitchen-counter-natural', 'kitchen-counter-sunny', 'kitchen-counter-mint',
+            'kitchen-fridge-natural', 'kitchen-fridge-sunny', 'kitchen-fridge-mint',
+            'kitchen-table-natural', 'kitchen-table-sunny', 'kitchen-table-mint',
+            'kitchen-coffee-natural', 'kitchen-coffee-sunny', 'kitchen-coffee-mint',
+            'kitchen-bench-natural', 'kitchen-bench-sunny', 'kitchen-bench-mint',
+            'kitchen-rack-natural', 'kitchen-rack-sunny', 'kitchen-rack-mint',
+        ],
+        recolourBoard: false,
     },
 ];
 
@@ -124,7 +140,7 @@ for (const job of ROOM_JOBS) {
     if (job.recolour) {
         const tmpPng = join(tmpdir(), `${id}-board.png`);
         try {
-            execFileSync('python3', [join(ROOT, 'scripts/recolour-board.py'), source, tmpPng, BOARD_COLOUR], { stdio: ['ignore', 'inherit', 'inherit'] });
+            execFileSync('python3', ['-I', join(ROOT, 'scripts/recolour-board.py'), source, tmpPng, BOARD_COLOUR], { stdio: ['ignore', 'inherit', 'inherit'] });
         } catch (error) {
             console.error(`recolour-board failed for ${source}: ${error instanceof Error ? error.message : error}`);
             process.exit(1);

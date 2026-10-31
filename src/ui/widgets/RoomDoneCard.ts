@@ -2,17 +2,25 @@ import type { GameObjects, Scene } from 'phaser';
 import { miniatureMode, neededMiniatureKeys, type MiniatureMode } from '../../core/artPick';
 import { emptyRoomState, type RoomListItem } from '../../core/rooms';
 import type { RoomDef, RoomState } from '../../core/types';
+import { tileLoading } from '../../core/roomLoad';
 import { PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT } from '../../data/layout';
 import { pl, roomText } from '../../data/pl';
 import { recordFallback } from '../artFallbacks';
+import { starBurst } from './starBurst';
 import { PageButton } from './PageButton';
 import { drawRoomMiniature, miniaturePieces } from './RoomView';
 import { textStyle } from './textStyle';
 
+/** What the scene knows about the moment: rooms whose art is still in flight (their tile is not a missing picture) and the burst size (0 under reduced motion). */
+export interface CardExtras {
+    pending: ReadonlySet<string>;
+    burst: number;
+}
+
 /**
  * The "Pokój gotowy!" card over the finished room: the title, the list of rooms (a tile with a miniature and a check mark for a room,
  * a faded dashed tile "Wkrótce" for the next one, with a padlock while it is locked) and "Dalej". The tiles are not buttons.
- * It draws what it is given and decides nothing.
+ * It draws what it is given and decides nothing; the room celebration (S-22) adds one star burst from its centre.
  * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no room-done card nor room list; the look follows the unlock card. The miniature is the room's own pictures in scale; when a piece texture is missing it is the room's pack thumbnail (`RoomDef.thumbnail`), and drawn stand-ins only when that is missing too (docs/design-gaps.md row 108).
  */
 export class RoomDoneCard {
@@ -21,6 +29,9 @@ export class RoomDoneCard {
     private captions: GameObjects.Text[] = [];
     private pictures: GameObjects.Image[] = [];
     private mode: MiniatureMode | null = null;
+    private burst: GameObjects.Particles.ParticleEmitter | null = null;
+    /** The celebration burst plays once per visit of the card: set by the first `show`, cleared by `hide`. */
+    private burstPlayed = false;
     private readonly next: PageButton;
 
     constructor(private readonly scene: Scene, onNext: () => void) {
@@ -30,7 +41,7 @@ export class RoomDoneCard {
         this.hide();
     }
 
-    show(items: readonly RoomListItem[], catalogue: Readonly<Record<string, RoomDef>>, states: Readonly<Record<string, RoomState>>, current: string): void {
+    show(items: readonly RoomListItem[], catalogue: Readonly<Record<string, RoomDef>>, states: Readonly<Record<string, RoomState>>, current: string, extras: CardExtras = { pending: new Set<string>(), burst: 0 }): void {
         const { card, tiles, button } = ROOM_DONE_LAYOUT;
         const g = this.graphics.setVisible(true);
         g.clear();
@@ -47,12 +58,16 @@ export class RoomDoneCard {
             const room = item.kind === 'room' && item.id !== null && Object.prototype.hasOwnProperty.call(catalogue, item.id) ? catalogue[item.id] : null;
             if (item.kind === 'room' && room !== null) {
                 const state = Object.prototype.hasOwnProperty.call(states, room.id) ? states[room.id] : emptyRoomState();
-                this.drawRoomTile(left, room, state, item.done, room.id === current);
+                this.drawRoomTile(left, room, state, item.done, room.id === current, tileLoading(room.id, extras.pending));
             } else {
                 this.drawTeaserTile(left, !item.unlocked);
             }
         });
         this.next.show(pl.unlock.next, button.left, button.top, 'primary', false, button);
+        if (extras.burst > 0 && !this.burstPlayed) {
+            this.burstPlayed = true;
+            this.burst = starBurst(this.scene, card.left + card.width / 2, card.top + card.height / 2, { count: extras.burst, depth: ROOM_LAYOUT.depth.card + 1 });
+        }
     }
 
     hide(): void {
@@ -60,6 +75,9 @@ export class RoomDoneCard {
         this.title.setVisible(false);
         this.clearCaptions();
         this.mode = null;
+        this.burst?.destroy();
+        this.burst = null;
+        this.burstPlayed = false;
         this.next.hide();
     }
 
@@ -84,7 +102,7 @@ export class RoomDoneCard {
         this.captions.push(this.scene.add.text(x, y, text, textStyle('bar')).setOrigin(0.5).setDepth(ROOM_LAYOUT.depth.card + 1).setAlpha(alpha));
     }
 
-    private drawRoomTile(left: number, room: RoomDef, state: RoomState, done: boolean, isCurrent: boolean): void {
+    private drawRoomTile(left: number, room: RoomDef, state: RoomState, done: boolean, isCurrent: boolean, loading: boolean): void {
         const { tiles } = ROOM_DONE_LAYOUT;
         const g = this.graphics;
         const top = tiles.top;
@@ -96,7 +114,7 @@ export class RoomDoneCard {
         const exists = (key: string): boolean => this.scene.textures.exists(key);
         const mode = miniatureMode(neededMiniatureKeys(miniaturePieces(room, state)), exists, room.thumbnail);
         if (isCurrent) this.mode = mode;
-        if (mode !== 'live') recordFallback(this.scene, 'miniature', mode);
+        if (mode !== 'live' && !loading) recordFallback(this.scene, 'miniature', mode);
         const thumbLeft = left + (tiles.width - thumbWidth) / 2;
         if (mode === 'thumbnail' && room.thumbnail !== undefined) {
             this.pictures.push(

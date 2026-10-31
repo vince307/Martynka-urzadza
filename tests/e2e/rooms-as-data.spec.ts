@@ -55,22 +55,23 @@ test('#2 rooms-as-data after a round the save is written as v5 with the house an
     expect(store.ops.filter((op) => op === 'backup')).toHaveLength(1);
 });
 
-test('#10 rooms-as-data a finished salon reopens in the salon, never in the kitchen cell', async ({ page }) => {
+test('#10 rooms-as-data a finished salon reloads into the kitchen (S-22), the salon state kept and the kitchen empty', async ({ page }) => {
     await finishSalon(page, {});
     const done = await room(page);
-    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'teaser:false:true']);
+    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true']);
     expect(done.doneMiniature).toBe('live');
     // The purchases are flushed at once; wait for the real IndexedDB write before the reload.
     await expect.poll(async () => (await snapshot(page)).save?.dirty, { timeout: 15_000 }).toBe(false);
     await page.reload();
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'task');
-    await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('salon');
+    await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('kitchen');
     // Read back through the hook only (profile § 9: a test never opens IndexedDB): the reloaded page loaded the stored save, and
     // its registry is what the load path made of it.
     const after = await snapshot(page);
     expect(after.save).toMatchObject({ load: 'loaded', migratedFrom: null });
     expect(after.house).toEqual(HOUSE);
     expect(after.rooms?.salon?.tasksDone).toBe(SALON.tasks.length);
-    expect(Object.keys(after.rooms ?? {})).toEqual(['salon']);
+    expect(Object.keys(after.rooms ?? {})).toEqual(['salon', 'kitchen']);
+    expect(after.rooms?.kitchen?.tasksDone).toBe(0);
 });

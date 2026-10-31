@@ -1,0 +1,149 @@
+[
+  {
+    "key": "kitchen/before",
+    "url": "assets/rooms/kitchen/kitchen-before.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "kitchen/after",
+    "url": "assets/rooms/kitchen/kitchen-after.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "kitchen/shadows",
+    "url": "assets/rooms/kitchen/kitchen-shadows.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "kitchen/kitchen-counter-natural",
+    "url": "assets/rooms/kitchen/kitchen-counter-natural.webp",
+    "width": 653,
+    "height": 434,
+    "label": "szafki Naturalne"
+  },
+  {
+    "key": "kitchen/kitchen-counter-sunny",
+    "url": "assets/rooms/kitchen/kitchen-counter-sunny.webp",
+    "width": 653,
+    "height": 434,
+    "label": "szafki Słoneczne"
+  },
+  {
+    "key": "kitchen/kitchen-counter-mint",
+    "url": "assets/rooms/kitchen/kitchen-counter-mint.webp",
+    "width": 653,
+    "height": 434,
+    "label": "szafki Miętowe"
+  },
+  {
+    "key": "kitchen/kitchen-fridge-natural",
+    "url": "assets/rooms/kitchen/kitchen-fridge-natural.webp",
+    "width": 166,
+    "height": 347,
+    "label": "lodówka Naturalna"
+  },
+  {
+    "key": "kitchen/kitchen-fridge-sunny",
+    "url": "assets/rooms/kitchen/kitchen-fridge-sunny.webp",
+    "width": 166,
+    "height": 347,
+    "label": "lodówka Słoneczna"
+  },
+  {
+    "key": "kitchen/kitchen-fridge-mint",
+    "url": "assets/rooms/kitchen/kitchen-fridge-mint.webp",
+    "width": 166,
+    "height": 347,
+    "label": "lodówka Miętowa"
+  },
+  {
+    "key": "kitchen/kitchen-table-natural",
+    "url": "assets/rooms/kitchen/kitchen-table-natural.webp",
+    "width": 446,
+    "height": 377,
+    "label": "stół i krzesła Naturalne"
+  },
+  {
+    "key": "kitchen/kitchen-table-sunny",
+    "url": "assets/rooms/kitchen/kitchen-table-sunny.webp",
+    "width": 446,
+    "height": 377,
+    "label": "stół i krzesła Słoneczne"
+  },
+  {
+    "key": "kitchen/kitchen-table-mint",
+    "url": "assets/rooms/kitchen/kitchen-table-mint.webp",
+    "width": 446,
+    "height": 377,
+    "label": "stół i krzesła Miętowe"
+  },
+  {
+    "key": "kitchen/kitchen-coffee-natural",
+    "url": "assets/rooms/kitchen/kitchen-coffee-natural.webp",
+    "width": 375,
+    "height": 344,
+    "label": "kącik kawowy Naturalny"
+  },
+  {
+    "key": "kitchen/kitchen-coffee-sunny",
+    "url": "assets/rooms/kitchen/kitchen-coffee-sunny.webp",
+    "width": 375,
+    "height": 344,
+    "label": "kącik kawowy Słoneczny"
+  },
+  {
+    "key": "kitchen/kitchen-coffee-mint",
+    "url": "assets/rooms/kitchen/kitchen-coffee-mint.webp",
+    "width": 375,
+    "height": 344,
+    "label": "kącik kawowy Miętowy"
+  },
+  {
+    "key": "kitchen/kitchen-bench-natural",
+    "url": "assets/rooms/kitchen/kitchen-bench-natural.webp",
+    "width": 300,
+    "height": 223,
+    "label": "ławka Naturalna"
+  },
+  {
+    "key": "kitchen/kitchen-bench-sunny",
+    "url": "assets/rooms/kitchen/kitchen-bench-sunny.webp",
+    "width": 300,
+    "height": 223,
+    "label": "ławka Słoneczna"
+  },
+  {
+    "key": "kitchen/kitchen-bench-mint",
+    "url": "assets/rooms/kitchen/kitchen-bench-mint.webp",
+    "width": 300,
+    "height": 223,
+    "label": "ławka Miętowa"
+  },
+  {
+    "key": "kitchen/kitchen-rack-natural",
+    "url": "assets/rooms/kitchen/kitchen-rack-natural.webp",
+    "width": 200,
+    "height": 354,
+    "label": "naczynia Naturalne"
+  },
+  {
+    "key": "kitchen/kitchen-rack-sunny",
+    "url": "assets/rooms/kitchen/kitchen-rack-sunny.webp",
+    "width": 200,
+    "height": 354,
+    "label": "naczynia Słoneczne"
+  },
+  {
+    "key": "kitchen/kitchen-rack-mint",
+    "url": "assets/rooms/kitchen/kitchen-rack-mint.webp",
+    "width": 200,
+    "height": 354,
+    "label": "naczynia Miętowe"
+  }
+]

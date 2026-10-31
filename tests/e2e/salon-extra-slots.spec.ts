@@ -153,11 +153,13 @@ test('#2 FR-019 S-16d a salon finished with seven tasks gets the five new ones a
     const done = await room(page);
     expect(done.done).toBe(true);
     expect(done.card?.items[0]).toMatchObject({ kind: 'room', id: 'salon', done: true });
-    expect(done.card?.items[1]).toMatchObject({ kind: 'teaser', unlocked: true });
+    expect(done.card?.items[1]).toMatchObject({ kind: 'room', id: 'kitchen', done: false, unlocked: true });
 
+    // "Dalej" moves the child into the kitchen (S-22): the card closes and the kitchen, not yet furnished, has no change mode.
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).toBeNull();
-    await expect.poll(async () => (await room(page)).modeText, { timeout: 15_000 }).toBe(pl.room.change.enter);
+    await expect.poll(async () => (await snapshot(page)).currentRoom, { timeout: 15_000 }).toBe('kitchen');
+    expect((await room(page)).modeText).toBeNull();
 });
 
 test('#16 S-16d the curtains reaching above the scene are held for a free change', async ({ page }) => {

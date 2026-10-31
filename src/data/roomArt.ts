@@ -1,9 +1,9 @@
 // Textures of every room (S-16a for the salon; ROOM_SCENE_FILES has a row per room): the art pack's scene pictures, decoration and furniture variants converted to WebP by
 // `npm run art` (public/assets/rooms/<room>/). Entries are derived from the room data, so a texture key in the room data and in this
 // table cannot drift apart; tests/roomArt.test.ts checks the table against the files and their headers. Loaded at start by
-// BootScene so the service worker precaches them.
+// BootScene so the service worker precaches them (the boot loads only the current room, see bootRoomArt; other rooms load at runtime).
 import { roomText } from './pl';
-import { ROOMS } from './rooms';
+import { FIRST_ROOM, ROOMS } from './rooms';
 import type { RoomDef } from '../core/types';
 
 export interface RoomArtEntry {
@@ -23,6 +23,7 @@ type SceneRole = 'before' | 'after' | 'shadows';
 /** File name (without folder and extension) of each scene picture, by room id and role in RoomDef.scene. A room in ROOMS needs a row (tests/roomArt.test.ts). */
 export const ROOM_SCENE_FILES: Readonly<Record<string, Readonly<Record<SceneRole, string>>>> = {
     salon: { before: 'architecture-before', after: 'architecture-after', shadows: 'shadows' },
+    kitchen: { before: 'kitchen-before', after: 'kitchen-after', shadows: 'kitchen-shadows' },
 };
 
 const urlOf = (key: string): string => `assets/rooms/${key}.webp`;
@@ -54,3 +55,6 @@ export const roomArt = (room: RoomDef): RoomArtEntry[] => {
 };
 
 export const ROOM_ART: readonly RoomArtEntry[] = Object.values(ROOMS).flatMap(roomArt);
+
+/** The art the boot queue loads: the current room's entries (the first room when the id is unknown or missing). ROOM_ART stays the full table for the precache, deploy coverage and the table keys. */
+export const bootRoomArt = (currentRoom: string | undefined): RoomArtEntry[] => roomArt((currentRoom !== undefined ? ROOMS[currentRoom] : undefined) ?? ROOMS[FIRST_ROOM]);

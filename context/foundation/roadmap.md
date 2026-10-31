@@ -3,7 +3,7 @@ project: "Martynka urządza"
 version: 3
 status: draft
 created: 2026-10-11
-updated: 2026-10-30
+updated: 2026-10-31
 prd_version: 4
 main_goal: quality
 top_blocker: external
@@ -43,7 +43,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | ----- | -------------------- | ------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------ | -------- |
 | F-04  | rooms-as-data        | (foundation) dom i pokoje są danymi gry, a zapis niesie dom bez straty salonu        | —                  | FR-032, FR-033, FR-038, PRD Open Question 14 | done |
 | S-17  | playtest-balance     | autor dostraja balans w danych gry po obserwacji córki                               | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
-| S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | proposed |
+| S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | done |
 | S-23  | house-cross-section  | dziecko wybiera pokój w przekroju domu z piętrami; „Do pokoju” zawsze trafia do remontu | S-22            | FR-038, FR-039, FR-033                     | proposed |
 | S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | proposed |
 | S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25         | FR-034, FR-040, FR-041, FR-035             | proposed |
@@ -115,7 +115,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Które elementy kuchni są slotami z wariantami, a które stałą dekoracją, i jakie koszty (suma kuchni względem salonu, by tempo z S-17 miało sens)? — Owner: autor z grafikiem. Block: no (rozstrzygnąć w `/10x-plan` z inwentarzem paczki).
   - Jak karta „Pokój gotowy!” zmienia się w celebrację o trzech natężeniach bez trzech scenek (FR-040)? — Owner: zespół. Block: no.
 - **Risk:** pierwszy pokój po salonie i pierwszy pomiar motywacji po nim; ryzyko: nowa paczka przekracza limit ładowania startu (dziś blisko granicy), więc wycinek musi zmierzyć budżet, a nie tylko dodać pliki.
-- **Status:** proposed
+- **Status:** done
 
 ### S-23: Przekrój domu z piętrami
 
@@ -191,9 +191,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | ---------- | ------------------- | ------------------------------------------------------------------ | --------------------- | ----- |
 | F-04       | rooms-as-data       | Dom i pokoje jako dane, zapis v5 z domem bez straty salonu         | done                  | Zarchiwizowane 2026-10-30 → `context/archive/2026-10-30-rooms-as-data/`; zapis v5 z domem. |
 | S-17       | playtest-balance    | Balans po testach z córką (czas na pokój rozstrzyga OQ 11)         | no                    | Czeka na obserwacje autora (przeniesione z M-02). |
-| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | yes                   | F-04 gotowe; run `/10x-new kitchen-room`, potem `/10x-research`, `/10x-plan kitchen-room`. Follow-upy F-04 z `Trigger: S-22` w `context/archive/2026-10-30-rooms-as-data/follow-ups/review-fixes.md`. |
-| S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | no                    | Po S-22; paczka skorupy domu. |
-| S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | no                    | Po S-22; równolegle z S-23. |
+| S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | done                  | Zarchiwizowane 2026-10-31 → `context/archive/2026-10-31-kitchen-room/`; kuchnia, celebracja pokoju, ładowanie grafiki pokoju w trakcie gry, zapis bez zmian (v5). |
+| S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | yes                   | S-22 gotowe; run `/10x-new house-cross-section`, potem `/10x-research`, `/10x-plan house-cross-section`. Paczka skorupy domu jeszcze nie w grze (do jej czasu skorupa w kodzie). Follow-upy z `Trigger: S-23` (przycisk odwiedzin, luka 182 tła, natężenia celebracji) w `context/archive/2026-10-31-kitchen-room/follow-ups/review-fixes.md`. |
+| S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | yes                   | S-22 gotowe; równolegle z S-23; run `/10x-new kids-room`. Trzeci pokój: follow-up budżetu startu (`Trigger: … a third room`) w `context/archive/2026-10-31-kitchen-room/follow-ups/review-fixes.md`. |
 | S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Po S-23 i S-25; gwiazda przewodnia. |
 | S-26       | street-plots        | Ulica z działkami i drugi dom                                      | no                    | Blokuje PRD Open Question 11 (po S-17). |
 | S-27       | district            | Dzielnica w innym otoczeniu                                        | no                    | Po S-26; nice-to-have. |
@@ -229,3 +229,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Pełne listy M-01 i M-02 są w historii gita tego pliku.)
 
 - **F-04: (foundation) pokój da się dodać wyłącznie danymi i grafiką: wszystko, co dziś jest napisane pod salon (cienie, postarzenie, manifest slotów, tabele migracji, karta „Pokój gotowy!”), staje się danymi pokoju; zapis niesie dom z listą pokoi i miejscem każdego pokoju w siatce piętro × miejsce, a salon dziecka przechodzi do pierwszego domu bez straty, z zamrożoną próbką starego zapisu w testach.** — Archived 2026-10-30 → `context/archive/2026-10-30-rooms-as-data/`. Lesson: —.
+- **S-22: dziecko po skończeniu salonu widzi celebrację pokoju (pełne odsłonięcie, wybuch gwiazdek, jedno zdanie lektora, jedno „Dalej”) i przechodzi do kuchni, którą urządza jak salon: ściany i podłoga, potem elementy z 3 wariantami za gwiazdki w kolejności z danych pokoju; w remoncie jest zawsze jeden pokój; dopóki paczka kuchni nie dotrze, kuchnia stoi na rysowanych zastępnikach i nie trafia do dziecka, a z paczką jej dodanie to dane i pliki.** — Archived 2026-10-31 → `context/archive/2026-10-31-kitchen-room/`. Lesson: —.

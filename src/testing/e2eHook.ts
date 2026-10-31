@@ -106,7 +106,7 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
 export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui';
 
 /**
- * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no salon picture; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
+ * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no room picture, at boot or at runtime; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
  * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang); `?e2eArt=stallall` switches the per-file limit off and shortens the total boot limit (E2E_BOOT_LIMITS). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
@@ -310,7 +310,7 @@ export const installE2EHook = (game: Game): void => {
                 const round = task().snapshot();
                 const screen = inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
                 const speaker = ui().speakerTarget();
-                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, rooms: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? null)), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
+                return Object.freeze({ ...round, screen, room: inRoom() ? room().snapshot() : null, house: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? null)), currentRoom: (game.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined) ?? null, rooms: deepFreeze(structuredClone((game.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? null)), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), roomArtHealth: roomArtHealthSnapshot(), roomLoad: structuredClone((game.registry.get(REGISTRY_KEYS.roomLoad) as { pending: string[]; settled: string[] } | undefined) ?? { pending: [], settled: [] }), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot(), artFallbacks: artFallbacksSnapshot(), counterText: ui().counterText(), hudTitle: ui().titleText(), settingsHint: ui().settingsHintVisible(), speakerVisible: speaker !== null });
             },
             get backdropPixel() {
                 if (boot()?.isLoading()) return null;
@@ -335,6 +335,7 @@ export const installE2EHook = (game: Game): void => {
                     choose: inRoom() ? room().chooseTarget() : null,
                     close: inRoom() ? room().closeTarget() : null,
                     modeButton: inRoom() ? room().modeButtonTarget() : null,
+                    visitButton: inRoom() ? room().visitTarget() : null,
                     cardNext: inRoom() ? room().cardNextTarget() : null,
                     slots: inRoom() ? room().slotTargets() : {},
                     speaker: ui().speakerTarget(),

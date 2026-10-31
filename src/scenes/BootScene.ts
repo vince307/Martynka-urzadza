@@ -1,5 +1,5 @@
 import { Loader, Scene, WEBGL } from 'phaser';
-import { artCauses, artHealth, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
+import { artCauses, artHealth, roomHealthOf, bootQueue, cutByTable, fontHealth, loadErrorLine, tableOf, wrongSizes, type ArtTable, type BootGroup, type LoadSeen } from '../core/artHealth';
 import { bootLimitDue, bootLimitReached, bootLimitSchedule, bootLimitWait, endHidden, hiddenMsAt, noHidden, startHidden, type BootLimitSchedule, type HiddenSpan } from '../core/bootLimits';
 import { checkBootLimits, type BootLimits, type BootLoadPhase } from '../core/bootLoad';
 import { fileKeyCompleteEvent } from '../core/loaderEvent';
@@ -8,7 +8,7 @@ import { E2E_BOOT_LIMITS, E2E_FORCED_FAILURE, UI_MISSING_URL } from '../testing/
 import { LoadingScreen } from '../ui/widgets/LoadingScreen';
 import { cutLoad, pendingKeys } from './loaderCut';
 import { balance } from '../data/balance';
-import { ROOM_ART } from '../data/roomArt';
+import { bootRoomArt, ROOM_ART } from '../data/roomArt';
 import { recordFallback } from '../ui/artFallbacks';
 import { UI_ART, UI_ART_KEYS } from '../data/uiArt';
 import { SOUNDS } from '../data/sounds';
@@ -234,7 +234,7 @@ export class BootScene extends Scene {
         });
         // e2e build only (?e2eArt): 'missing' queues no drawing, 'corrupt' points the coins at a file that is no image ('room' and 'stall' do not touch this queue).
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
-        // Queue order (audit B-6, bootQueue): the pictures a child sees first, then the salon and the screens, the sounds last, so a slow
+        // Queue order (audit B-6, bootQueue): the pictures a child sees first, then the current room and the screens, the sounds last, so a slow
         // link cuts the quiet effects before a picture. The two loading pictures were queued above, before the limits.
         const queuers: Record<BootGroup, () => void> = {
             loadingArt: () => undefined,
@@ -249,9 +249,9 @@ export class BootScene extends Scene {
                     this.load.image(art.key, seam === 'corrupt' && art.key.startsWith('tasks/money/') ? FONT_URL : art.url);
                 }
             },
-            // The salon pictures load the same way; a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
+            // The current room's pictures load the same way (other rooms load at runtime); a missing one is a stand-in box in the room (e2e build: ?e2eArt=room queues none).
             room: () => {
-                for (const art of ROOM_ART) {
+                for (const art of bootRoomArt(this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined)) {
                     if (seam === 'room') {
                         continue;
                     }
@@ -351,7 +351,8 @@ export class BootScene extends Scene {
         if (health.missing.length > 0) {
             console.warn(`Task art missing: ${health.missing.length} of ${health.total}: ${health.missing.join(', ')}`);
         }
-        const roomHealth = this.withCauses('Room', ROOM_ART, artHealth(ROOM_ART.map((art) => ({ key: art.key, id: art.key })), (key) => this.textures.exists(key)));
+        const bootRoom = bootRoomArt(this.registry.get(REGISTRY_KEYS.currentRoom) as string | undefined);
+        const roomHealth = this.withCauses('Room', bootRoom, roomHealthOf(bootRoom, (key) => this.textures.exists(key)));
         this.registry.set(REGISTRY_KEYS.roomArtHealth, roomHealth);
         if (roomHealth.missing.length > 0) {
             console.warn(`Room art missing: ${roomHealth.missing.length} of ${roomHealth.total}: ${roomHealth.missing.join(', ')}`);

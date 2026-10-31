@@ -71,7 +71,7 @@ export interface Snapshot {
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; worn: { keys: string[]; graded: boolean }; contactShadows: string[]; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[] } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; unreachable: string[] } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; worn: { keys: string[]; graded: boolean }; contactShadows: string[]; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[]; celebration: { intensity: string; revealMs: number; burst: number } } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; visiting: string | null; unreachable: string[] } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -85,6 +85,8 @@ export interface Snapshot {
     inputEnabled: boolean;
     /** Autosave status (read-only): how the save was loaded, whether writes are blocked, counters. */
     save: { load: 'fresh' | 'loaded' | 'unreadable' | 'unavailable'; blocked: boolean; blockedBy: 'unreadable' | 'unavailable' | 'newer' | 'otherTab' | 'fatal' | null; dirty: boolean; writes: number; failures: number; consecutiveFailures: number; skipped: number; lastReason: 'change' | 'now' | 'hidden' | 'migration' | null; lastError: string | null; lastWriteAt: number | null; lastFailure: { stage: 'encode' | 'backup' | 'write' | 'replace'; error: string } | null; migratedFrom: number | null; migrationWrittenAt: number | null; loadReason: 'corrupt' | 'future' | 'unknown-version' | 'migration-failed' | null; loadError: string | null; backup: 'none' | 'pending' | 'failed' | 'done' | 'skipped'; backupError: string | null; replace: 'idle' | 'writing' | 'done'; persistence: 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'; store: { ops: ('backup' | 'write')[]; writtenVersion: number | null; writtenHouse: HouseShape | null } | null } | null;
+    /** Room pictures the runtime loader has queued and finished (keys of the rooms; kitchen-room). */
+    roomLoad?: { pending: string[]; settled: string[] };
     /** The house in the registry (read-only copy) and the room the game is in. */
     house?: HouseShape | null;
     currentRoom?: string | null;
@@ -136,6 +138,7 @@ export interface Targets {
     choose?: Point | null;
     close?: Point | null;
     modeButton?: Point | null;
+    visitButton?: Point | null;
     cardNext?: Point | null;
     slots?: Record<string, Point>;
     roomSwitch: Point | null;

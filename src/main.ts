@@ -40,6 +40,7 @@ import { mountSaveFailedCard } from './ui/dom/saveFailedCard';
 import { mountSaveRefusedCard } from './ui/dom/saveRefusedCard';
 import { mountRotateOverlay } from './ui/dom/rotateOverlay';
 import { createSoundService } from './ui/sound';
+import { createRoomArtLoader } from './ui/roomArtLoader';
 import { createStartCounter } from './storage/startCounter';
 import { createSoundPrefStore, deviceStorage } from './storage/soundPrefs';
 import type { SoundPrefs } from './core/sound';
@@ -72,6 +73,8 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
                 booting.registry.set(REGISTRY_KEYS.soundPrefs, soundPrefs);
                 booting.registry.set(REGISTRY_KEYS.soundPrefsKept, soundPrefsKept);   // audit M-2: probed at start, not only after a refused write
                 booting.registry.set(REGISTRY_KEYS.sound, createSoundService(booting, soundPrefs));
+                // The runtime room-art loader (rooms the boot did not load); `?e2eArt=room` (e2e build only) switches it off with the boot's room queue.
+                booting.registry.set(REGISTRY_KEYS.roomArtLoader, createRoomArtLoader(booting, { disabled: __E2E_HOOK__ && forcedArt === 'room' }));
                 // Session state: the saved one, or the fresh one (start is built in start() from the load outcome).
                 booting.registry.set(REGISTRY_KEYS.settings, start.settings);
                 booting.registry.set(REGISTRY_KEYS.stars, start.stars);
