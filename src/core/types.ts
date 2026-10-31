@@ -94,6 +94,23 @@ export type RoomListEntry =
 /** A room's cell in a house: floor 0 is the ground floor, place 0 the leftmost. */
 export interface HouseRoomPlace { room: string; floor: number; place: number }
 
+/** A rectangle in the 1920x1080 scene space. */
+export interface SceneRect { x: number; y: number; width: number; height: number }
+
+/** One cell of a house view: where a room is drawn (art cell size, scene space). */
+export interface HouseCellDef extends SceneRect { id: string; floor: number; place: number }
+
+/** The view of a house as data: art keys (not URLs), cell rectangles from the art pack manifest. */
+export interface HouseGeometry {
+    shell: string;
+    cellClosed: string;
+    cellFrame: string;
+    cellFill: number;
+    frameInset: number;
+    cells: readonly HouseCellDef[];
+    stairwell: SceneRect;
+}
+
 /** A house: its rooms in opening order, each with its cell in the floor x place grid (FR-038). */
 export interface HouseState { id: string; rooms: HouseRoomPlace[] }
 
