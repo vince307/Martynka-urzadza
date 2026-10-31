@@ -851,9 +851,9 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [x] 6.1 `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` and `tests/layout.test.ts` green; unit `<phase-5 count> + N`
-- [x] 6.2 Deliberate break: drop `visiting = null` from the wake `refresh` → the wiring guard red; make `visitTarget` ignore `done` → the not-done unit case red; each restored; meta-check: the oracles are literal lists; the guards prove wiring only, phase 8 proves the browser
-- [x] 6.3 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty
+- [x] 6.1 `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` and `tests/layout.test.ts` green; unit `<phase-5 count> + N` — 0695012
+- [x] 6.2 Deliberate break: drop `visiting = null` from the wake `refresh` → the wiring guard red; make `visitTarget` ignore `done` → the not-done unit case red; each restored; meta-check: the oracles are literal lists; the guards prove wiring only, phase 8 proves the browser — 0695012
+- [x] 6.3 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty (balance.ts differs only by the phase-2 comment) — 0695012
 - [ ] 6.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
 
 ### Phase 7: Docs, gap rows, follow-ups, seam sweep and the visual pass
