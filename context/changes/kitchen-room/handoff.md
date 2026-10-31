@@ -37,7 +37,7 @@ Written by the `/10x-implement kitchen-room phase 7` step of run 2026-10-30-room
 
 ## 4. Next command
 
-`/10x-implement kitchen-room phase 6`
+`/10x-implement kitchen-room phase 7`
 
 ## 5. Open
 
