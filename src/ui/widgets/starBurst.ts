@@ -1,4 +1,4 @@
-import type { Scene } from 'phaser';
+import type { GameObjects, Scene } from 'phaser';
 import { ANIMATION, PLACEHOLDER_COLORS } from '../../data/layout';
 import { drawStar } from './StarCounter';
 
@@ -7,9 +7,9 @@ export const BURST_STAR_TEXTURE = 'purchase-star';
 
 /**
  * A burst of small stars from one point: the purchase in the room and the end of a round.
- * The texture is drawn in code the first time; the emitter removes itself after the particles die.
+ * The texture is drawn in code the first time; the emitter removes itself after the particles die (a caller may stop it earlier: destroy is safe twice).
  */
-export const starBurst = (scene: Scene, x: number, y: number, opts: { count: number; depth: number; speed?: { min: number; max: number }; scale?: number }): void => {
+export const starBurst = (scene: Scene, x: number, y: number, opts: { count: number; depth: number; speed?: { min: number; max: number }; scale?: number }): GameObjects.Particles.ParticleEmitter => {
     if (!scene.textures.exists(BURST_STAR_TEXTURE)) {
         const g = scene.make.graphics({}, false);
         drawStar(g, 24, 24, 22, PLACEHOLDER_COLORS.butter, { color: PLACEHOLDER_COLORS.nextBorder, width: 3 });
@@ -25,4 +25,5 @@ export const starBurst = (scene: Scene, x: number, y: number, opts: { count: num
     }).setDepth(opts.depth);
     emitter.explode(opts.count);
     scene.time.delayedCall(ANIMATION.purchaseParticleMs + 100, () => emitter.destroy());
+    return emitter;
 };

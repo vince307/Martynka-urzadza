@@ -48,4 +48,12 @@ describe('reduced motion wiring', () => {
         expect(room).toMatch(/starBurst\(/);
         expect(room).not.toMatch(/generateTexture/);
     });
+
+    it('the room card gets its burst count and its delay from the reduced-motion view', () => {
+        const room = readFileSync('src/scenes/RoomScene.ts', 'utf8');
+        const card = readFileSync('src/ui/widgets/RoomDoneCard.ts', 'utf8');
+        expect(room).toMatch(/celebrationView\('room', prefersReducedMotion\(\)/g);
+        expect(card).toMatch(/if \(extras\.burst > 0[^)]*\) \{[\s\S]*starBurst\(/);
+        expect(card).not.toContain('prefersReducedMotion');   // the card never decides: the scene passes 0
+    });
 });

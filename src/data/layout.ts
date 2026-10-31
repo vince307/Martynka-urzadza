@@ -1,3 +1,4 @@
+import type { CelebrationIntensity, CelebrationSpec } from '../core/celebration';
 import type { CoinId } from './measures';
 // Scene geometry and placeholder colours. Scenes import these instead of
 // hard-coding numbers (plan section 14: no balance numbers in scenes).
@@ -706,6 +707,13 @@ export const ANIMATION = {
     summaryStarStepMs: 180,
     summaryStarPopMs: 220,
     summaryBurstParticles: 22,
+    celebration: {
+        // The reveal hold = the longest pop (stageFadeMs 600) plus a short look at the finished room (600); the burst matches the summary's.
+        room: { holdMs: 1200, burstCount: 22, keepsake: false },
+        // Not reachable before S-23/S-24, tuned there; the room numbers stand in.
+        house: { holdMs: 1200, burstCount: 22, keepsake: true },
+        street: { holdMs: 1200, burstCount: 22, keepsake: true },
+    } satisfies Record<CelebrationIntensity, CelebrationSpec>,
     starStartLift: 116,    // the star starts above the tapped tile (half a tile + popped star) so the answer stays readable
 } as const;
 

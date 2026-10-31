@@ -8,7 +8,10 @@ import { effectiveAutoRead } from '../core/narration/voice';
 import { panelCue } from '../core/sound';
 import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
 import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
-import { houseLayout, houseRoomList } from '../core/house';
+import { celebrationView } from '../core/celebration';
+import { houseLayout, houseRoomList, nextRoom } from '../core/house';
+import { cardRooms } from '../core/roomLoad';
+import type { RoomArtLoader } from '../ui/roomArtLoader';
 import type { HouseState, RoomDef, RoomState, Settings } from '../core/types';
 import { stepPanel, type PanelEvent, type PanelState } from '../core/variantPanel';
 import { ANIMATION, ROOM_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
@@ -48,7 +51,7 @@ export interface RoomSnapshot {
     done: boolean;
     stageDone: boolean;
     mode: 'normal' | 'change';
-    card: { title: string; items: RoomListItem[] } | null;
+    card: { title: string; items: RoomListItem[]; celebration: { intensity: string; revealMs: number; burst: number } } | null;
     doneMiniature: 'live' | 'thumbnail' | 'drawn' | null;
     modeText: string | null;
 }
@@ -77,6 +80,8 @@ export class RoomScene extends Scene {
     /** The last purchase finished the room: the child's controls stay off until "Dalej" (set at once, drawn after the pop). */
     private card = false;
     private cardDrawn = false;
+    /** What the last drawn card used (the e2e hook reads it). */
+    private celebrationUsed: { intensity: string; revealMs: number; burst: number } = { intensity: 'room', revealMs: 0, burst: 0 };
 
     constructor() {
         super(SCENE_KEYS.room);
@@ -119,6 +124,7 @@ export class RoomScene extends Scene {
             this.tap();
             this.card = false;
             this.cardDrawn = false;
+            this.moveAfterDone();
             this.redraw();
         });
         const button = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.task); }).setDepth(ROOM_LAYOUT.depth.controls);
@@ -150,11 +156,19 @@ export class RoomScene extends Scene {
         this.events.on('wake', refresh);
         this.events.on('sleep', onSleep);
         this.registry.events.on(`changedata-${REGISTRY_KEYS.stars}`, onStars);
+        // A room's pictures arrived (or were cut): the card tile or the room after "Dalej" is drawn again from what is loaded.
+        const onRoomLoad = (): void => {
+            if (this.scene.isActive()) {
+                this.redraw();
+            }
+        };
+        this.registry.events.on(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         this.events.once('shutdown', () => {
             this.events.off('wake', refresh);
             this.events.off('sleep', onSleep);
             this.clearGhosts();
             this.registry.events.off(`changedata-${REGISTRY_KEYS.stars}`, onStars);
+            this.registry.events.off(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         });
     }
 
@@ -242,11 +256,13 @@ export class RoomScene extends Scene {
                 this.card = true;
                 this.cardDrawn = false;
                 this.resetGesture();
+                // The card lists the other rooms: their pictures load now, behind the reveal hold.
+                this.roomArtLoader()?.ensure(cardRooms(this.listItems()));
             }
         }
         this.redraw();
         if (this.card && !this.cardDrawn) {
-            const delay = prefersReducedMotion() ? 0 : Math.max(ANIMATION.purchasePopMs, ANIMATION.stageFadeMs);
+            const delay = celebrationView('room', prefersReducedMotion(), ANIMATION.celebration).revealMs;
             if (delay === 0) {
                 this.showCard();
             } else {
@@ -289,6 +305,28 @@ export class RoomScene extends Scene {
         }
     }
 
+    private roomArtLoader(): RoomArtLoader | undefined {
+        return this.registry.get(REGISTRY_KEYS.roomArtLoader) as RoomArtLoader | undefined;
+    }
+
+    /** "Dalej": the game moves to the room in renovation (nothing with one room). The save is written after both registry writes. */
+    private moveAfterDone(): void {
+        const moved = nextRoom(
+            { rooms: this.savedRooms(), currentRoom: this.resolve().room.id },
+            houseLayout((this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE, HOUSES, FIRST_HOUSE),
+            ROOMS,
+        );
+        if (moved.movedFrom === null) {
+            return;
+        }
+        this.registry.set(REGISTRY_KEYS.rooms, moved.rooms);
+        this.registry.set(REGISTRY_KEYS.currentRoom, moved.currentRoom);
+        void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
+        const loader = this.roomArtLoader();
+        loader?.ensure([moved.currentRoom]);
+        loader?.refreshHealth(moved.currentRoom);
+    }
+
     private savedRooms(): Record<string, RoomState> {
         return (this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined) ?? {};
     }
@@ -319,7 +357,12 @@ export class RoomScene extends Scene {
             this.modeButton.hide();
         }
         if (this.cardDrawn) {
-            this.doneCard.show(this.listItems(), ROOMS, { ...this.savedRooms(), [room.id]: state }, room.id);
+            const view = celebrationView('room', prefersReducedMotion(), ANIMATION.celebration);
+            this.celebrationUsed = { intensity: view.intensity, revealMs: view.revealMs, burst: view.burstCount };
+            this.doneCard.show(this.listItems(), ROOMS, { ...this.savedRooms(), [room.id]: state }, room.id, {
+                pending: this.roomArtLoader()?.pending() ?? new Set<string>(),
+                burst: view.burstCount,
+            });
         } else {
             this.doneCard.hide();
         }
@@ -488,7 +531,7 @@ export class RoomScene extends Scene {
             done: roomDone(room, state),
             stageDone: stagesDone(room, state) > 0,
             mode: this.mode,
-            card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems() } : null,
+            card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems(), celebration: { ...this.celebrationUsed } } : null,
             doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
