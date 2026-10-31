@@ -798,7 +798,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 1.1 `tests/celebration.test.ts` and `tests/roomLoad.test.ts` red before the modules exist, green after; unit `<branch baseline> + N` — 3412b6e
 - [x] 1.2 Deliberate break: ignore `reducedMotion` in `celebrationView` → the reduced-motion case red; drop the `pending` filter in `roomsToLoad` → the pending case red; each restored; meta-check: oracles are literal tables and literal id lists, not values computed by the code under test — 3412b6e
 - [x] 1.3 `npm run lint` passes (the boundary rules keep `src/core/celebration.ts` and `src/core/roomLoad.ts` free of Phaser and data imports) — 3412b6e
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy scripts + `sample` E1–E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 ### Phase 2: Boot loads only the room in renovation; the budget test per room
 
@@ -807,7 +807,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 2.1 `tests/bootBudget.test.ts` and `tests/bootRoomArt.test.ts` green; unit `<phase-1 count> + N` — 9deb86d
 - [x] 2.2 Deliberate break: make `bootRoomArt` return `ROOM_ART` → the source/behaviour case red (and once the kitchen exists, the budget red); make `BootScene` iterate `ROOM_ART` again → the source guard red; each restored; meta-check: the budget figure is file sizes on disk (`statSync`), not a value of the code under test; the guard proves wiring only, phase 8 proves the browser — 9deb86d
 - [x] 2.3 `git diff --stat 942e237 -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty; `grep -n "totalMs:" src/data/balance.ts` still shows 50 000 (`50_000`) — 9deb86d
-- [ ] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-art`, `salon-load-health`, `health-lines` stay green)
+- [x] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`salon-art`, `salon-load-health`, `health-lines` stay green) — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 ### Phase 3: The runtime room-art loader on the HUD loader
 
@@ -816,7 +816,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 3.1 `tests/roomArtLoader.test.ts` red before the service exists, green after; unit `<phase-2 count> + N` — f5f8904
 - [x] 3.2 Deliberate break: drop the per-file timeout → the timeout case red; settle on any `complete` without the texture check → the "music complete" case red; skip `off('loaderror')` → the listener case red; drop the pending check in `refreshHealth` → the pending-health case red; each restored; meta-check: the fake loader is the test's own, the oracle is the literal key list of a synthetic room — f5f8904
 - [x] 3.3 `npm run build` prints `e2e hook: absent (` (the seam stays out of `dist/`) — f5f8904
-- [ ] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`sound`/music specs stay green on the shared loader)
+- [x] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (`sound`/music specs stay green on the shared loader) — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 ### Phase 4: The room celebration card and the move after "Dalej"
 
@@ -825,7 +825,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 4.1 New and extended wiring tests green; unit `<phase-3 count> + N` — 74d5aea
 - [x] 4.2 Deliberate break: call `flush('now')` before `registry.set(currentRoom)` → the order guard red; record the fallback for a pending tile → the card guard red; pass a fixed delay instead of `revealMs` → the celebration guard red; each restored; meta-check: guards prove wiring only; the browser behaviour (move, save, reduced motion) is proven in phase 8 — 74d5aea
 - [x] 4.3 `git diff --stat <phase-3 sha> -- src/data/rooms.ts src/data/pl.ts public src/core/save.ts` empty — 74d5aea
-- [ ] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (with one room "Dalej" still stays in the salon: `room-change` FR-019 and every `cardNext` spec stay green)
+- [x] 4.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` (with one room "Dalej" still stays in the salon: `room-change` FR-019 and every `cardNext` spec stay green) — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 #### Manual
 
@@ -839,7 +839,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 5.2 `npm run art` then `git status --porcelain public/` lists only new files under `public/assets/rooms/kitchen/`; a second `npm run art` changes nothing — 18c0118
 - [x] 5.3 Deliberate break: put the kitchen into the boot queue next to the salon (all of `ROOM_ART`) → `tests/bootBudget.test.ts` red (57.8 s); swap two kitchen variant keys → the kitchen snapshot red; each restored; meta-check: the snapshot is the manifest-derived table reviewed once in this phase (checked by eye against `designs/martynka-locations-v2/manifest.json`), sizes come from disk — 18c0118
 - [x] 5.4 (against HEAD empty; against 942e237 only the phase-2 comment of `balance.loader`, `totalMs` 50 000) `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty — 18c0118
-- [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` with the three updated specs; total equals `npx playwright test --list | tail -1`
+- [x] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` with the three updated specs; total equals `npx playwright test --list | tail -1` — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 #### Manual
 
@@ -854,7 +854,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 6.1 `tests/roomVisit.test.ts`, `tests/roomVisitWiring.test.ts` and `tests/layout.test.ts` green; unit `<phase-5 count> + N` — 0695012
 - [x] 6.2 Deliberate break: drop `visiting = null` from the wake `refresh` → the wiring guard red; make `visitTarget` ignore `done` → the not-done unit case red; each restored; meta-check: the oracles are literal lists; the guards prove wiring only, phase 8 proves the browser — 0695012
 - [x] 6.3 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty (balance.ts differs only by the phase-2 comment) — 0695012
-- [ ] 6.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 6.4 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 ### Phase 7: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
@@ -864,7 +864,7 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 - [x] 7.2 `grep -c "Trigger:" context/changes/kitchen-room/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| 1(7[5-9]|8[0-9]) " docs/design-gaps.md` ≥ 6 — 16e5d3b
 - [x] 7.3 `grep -rn "teaser:false:true\|ROOM_ART.length" tests/e2e` empty; `grep -n "every asset must be loaded at start" CLAUDE.md` empty — 16e5d3b
 - [x] 7.4 `git diff --stat 942e237 -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures/save-*.json public/assets/rooms/salon` empty — 16e5d3b
-- [ ] 7.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0`
+- [x] 7.5 Full local gate green; e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 0` — e2e — orchestrator: 170/170 at 50c2984 (worktree; full run under load 153 + serial re-runs; changed specs 27/27; stale-tab 5/5 alone)
 
 #### Manual
 
@@ -878,6 +878,6 @@ load-time `nextRoom`. Frozen fixtures v1–v5 are untouched.
 
 #### Automated
 
-- [ ] 8.1 Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; drop `visiting = null` from the wake `refresh` → the visit test red on the room after "Do pokoju"; each restored), green after
+- [x] 8.1 Spec red before (deliberate breaks, each run alone with `-g`: drop the `nextRoom` call from "Dalej" → the move test red on `currentRoom`; drop the `registry.set(currentRoom)` write in "Dalej" → the move and reload cases red on the room; ignore `reducedMotion` in `celebrationView` → the reduced-motion test red; make `roomArtLoader.ensure` a no-op → `roomLoad.settled` red; drop `visiting = null` from the wake `refresh` → the visit test red on the room after "Do pokoju"; each restored), green after — 779a306
 - [ ] 8.2 `npx playwright test tests/e2e/kitchen-room.spec.ts` green; full e2e (orchestrator, `--workers=4`) `<branch e2e baseline> + 4`; total equals `npx playwright test --list | tail -1`
-- [ ] 8.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 8.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — 779a306
