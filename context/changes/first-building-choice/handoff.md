@@ -1,24 +1,27 @@
 # Handoff — `first-building-choice` (slice S-28)
 
-Written by the `/10x-research` step of run 2026-10-31-space-base: `research.md` answers the open questions and the slice is ready for planning. The next agent must not get these wrong. Save v6 is a **version bump only**: `house.id` already names the building and `MIGRATIONS[5]` is a frozen identity step. The bump exists only as the rollback guard. A save with a learner never reaches the choice screen (FR-049). Mostek's prices **cannot fit the 5–15 cap** in `tests/roomsData.test.ts`, so the plan must widen that test.
+Written by the `/10x-plan` step of run 2026-10-31-space-base: `plan.md` (9 phases, 54 Progress rows) and `plan-brief.md` are committed and the slice waits for plan review. The next agent must not get this wrong: the frozen `save-v5-salon.json` is produced in **phase 1 by the unchanged v5 code** (decode + re-encode round-trip, `git diff` guard on `src/core/save.ts`), and the v6 bump comes only in phase 2. Never write that fixture from v6 code.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
-| commits | 2: `docs(first-building-choice): change identity (autonomous run)` (4e6b8d9) and this step's `docs(first-building-choice): research` |
+| commits | 3: `docs(first-building-choice): change identity (autonomous run)` (4e6b8d9), `docs(first-building-choice): research` (c5c2a21), and this step's `docs(first-building-choice): plan` |
 | pushed / PR / merged | no / no / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (via `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 54 (`grep -c '^- \[ \]' plan.md`) |
+| roadmap | S-28 row and body `Status:` set to `planning` (committed with the plan) |
 | working tree | clean after the commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/first-building-choice/research.md` | source-backed answers: v6 shape, welcome flow and theme back, base as data, boot, art pipeline, smoke, FR-049/FR-050 proofs, Mostek prices, follow-up verdicts, 6 open questions for the plan |
-| `context/changes/first-building-choice/change.md` | frontmatter only: status `new` → `preparing`, `updated` |
+| `context/changes/first-building-choice/plan.md` | the implementation plan: 9 phases with drivers, Intent/Contract per file, deliberate breaks and meta-checks, `## Autonomous decisions` P1-P12, canonical `## Progress` |
+| `context/changes/first-building-choice/plan-brief.md` | two-page brief: key decisions, phases at a glance, risks |
+| `context/changes/first-building-choice/change.md` | frontmatter `status: planned` |
+| `context/foundation/roadmap.md` | S-28 status `ready` → `planning` (at-a-glance row and item body) |
 | `context/changes/first-building-choice/handoff.md` | this file |
 
 ## 3. Verification
@@ -26,48 +29,39 @@ Written by the `/10x-research` step of run 2026-10-31-space-base: `research.md` 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/first-building-choice` |
-| four read-only research workers (save format, welcome flow, buildings/boot, art/smoke/FR-050) | all completed; decisive anchors re-read locally: `src/main.ts` load path and `freshSession(FIRST_HOUSE)`, `src/core/save.ts` `freshSession`, `UIScene.openReset`, `tests/roomsData.test.ts` cost cap, `src/core/placement.ts` `ageBackOffered`/`firstRoundDone`, `MINIGAME_WORDS` |
-| on-disk byte sizes (worker) | task+UI WebP 635 640 B, salon 1 203 384 B, kitchen 797 758 B, font 114 640 B; Mostek 699 124 B and cards 107 074 B inherited from `/10x-new` (scratchpad measurement, unverified here) |
+| success criteria ↔ Progress mapping (awk extract + `diff`) | 54 criteria = 54 Progress rows, texts identical |
+| `grep -n "^Driver" plan.md` | every phase has `Driver:` and `Driver why:` as its first lines (2 tdd, 6 impl, 1 e2e) |
+| `npx playwright test --list \| tail -1` | `Total: 179 tests in 47 files` (e2e baseline 179 used in the plan) |
+| `gh run view 41232755289 --log --job 124630959484` (Deploy `deploy`, main fc13e8c) | seen: `ok   precache covers room pictures — 58 of 58 room pictures precached`, `ok   precache covers house pictures — 3 of 3 house pictures precached` |
+| `gh run view 41232755289 --log --job 124630170144` (Deploy `build`) | seen (ANSI stripped): `Tests  4089 passed \| 3 skipped (4092)`, `e2e hook: absent (2 chunks checked)` |
+| `metadata-guard.mjs inspect` / `mark-planned` | change.md hash 1373ba4e… → 630b993c…, `changed: true` |
 | local gate (lint, typecheck, tests, build, e2e) | not run: docs-only step, no code touched |
 
 ## 4. Next command
 
-`/10x-plan first-building-choice`
+`/10x-plan-review first-building-choice`
 
 ## 5. Open
 
-- **Save:** v6 bump over the v5 shape: `SaveV6` in `src/core/types.ts`, `SAVE_VERSION`, frozen `MIGRATIONS[5]` with no `copyHouse`. Freeze `tests/fixtures/save-v5-salon.json` **while the code is still v5** (phase-1 pattern from rooms-as-data). Add `save-v6.json`. Move the version pins listed in research §1. Add the 4th rollback note in `deploy/README.md` § 6, with a `[human]` row.
-- **Load path:** a `currentRoom` outside the current house's cells is repaired to that house's first cell, not to `FIRST_ROOM` (`repairCurrentRoom` caller in `src/main.ts`).
-- **Flow:** the choice is a second view of `WelcomeScene` in front of `start`. The card tap sets `house`/`rooms`/`currentRoom` from `freshSession(<house>, stars)`, then the learner. The task-screen "Wróć" goes back to the choice on both paths while `!firstRoundDone`, through scene data. N-2 fires. Open question: hide that back after a purchase made during the first round.
-- **Speaker:** `WelcomeScene` gets its own `SpeakerButton`, using the narrator from `REGISTRY_KEYS.narrator`. `UIScene` does not run there.
-- **Boot:** skip the `room` group while `needsPlacement` holds, and load the choice cards from a new table only then. After the tap, `roomArtLoader.ensure`. Keep "Obrazki" honest. Add a fresh-install case to `tests/bootBudget.test.ts`.
-- **Data:** add `base-1` to `HOUSES` with no `HOUSE_GEOMETRY`. Hide the `RoomScene` "Dom" button when the building has no geometry. Change the test "placed in the first house" to "exactly one house". Mostek costs: 6/10/13/14/17/19/21 = 100.
-- **FR-050:** keep `MINIGAME_WORDS` shared between themes. Add a deepEqual seed test and a `freshRound` wiring guard.
-- **Art:** add the `ROOM_PACKS` row `bridge` with `recolourBoard: false`, plus `room-art-bridge.json` and the `tests/roomArt.test.ts` count. Add one `precacheCovers` line for the card table.
-- **DESIGN-GAPs expected (rows after 190):**
-  - choice-screen layout
-  - speaker on the welcome screen
-  - Mostek task wording
-  - no zoom-out button for the base
-  - Mostek celebration with no next module
-  - choice-card stand-in
-  - plain welcome backdrop on a fresh install
-- **Follow-ups:**
-  - texture atlas: re-record.
-  - SW install warning: already closed, so change.md's take "fires" is stale.
-  - rooms-as-data 8, 9, 10: re-record.
-  - rooms-as-data 15: applies as a rule.
-  - audit-backdrop-fox F4: verify and close.
-  - notebook-polish #16: in scope (cheap).
-- **Nit for S-29:** `bases.base-1.label` in the pack manifest says "Baza księżycowa"; the game uses the PRD's "Baza kosmiczna".
+- **Human checklist (manual Progress rows):** 2.6 v6 rollback note wording in `deploy/README.md` § 6; 8.7 the task-screen "Wróć" hidden after a purchase narrows FR-043 (decision P3); 8.8 Mostek costs 6/10/13/14/17/19/21 = 100 and the test cap widened to 21 (P4); 8.9 choice-screen layout, labels, speaker place, plain backdrop on a fresh install (P5, P6); 8.10 real tablet offline, both paths.
+- **Reviewer rows:** 3.7 teacher read of Mostek copy; (CI at ship) 3.8 `room pictures — 79 of 79`, 5.7 `choice pictures — 2 of 2`, 8.11 Deploy `build` `Tests … passed` + `e2e hook: absent (`.
+- **Visual row 8.6:** 9 states at 1440 and 1024 (choice child/parent, card stand-ins under `?e2eArt=choice`, Mostek before/after, a family, Mostek done card, task "Wróć", `?e2eSave=v5-salon` resume).
+- **DESIGN-GAP rows planned (phase 8, from 191):** choice layout, welcome speaker, Mostek task wording, no zoom-out for the base, Mostek celebration with no next module, card stand-in, plain backdrop on a fresh install, Hasło words from the house in the base.
+- **Follow-ups (phase 8, `follow-ups/review-fixes.md`):** rooms-as-data 8/9/10 re-recorded, 15 applied; texture atlas re-recorded; kitchen 6 closed as stale; post-run-polish N-2 closed by phase 7 (`backToChoice` `console.info`); audit-backdrop-fox F4 and notebook-polish #16 closed in phase 6 (`WelcomeScene`); manifest `bases.base-1.label` nit → S-29.
+- **Risk:** phase 6 changes `tests/e2e/support/welcome.ts`, used by 43 e2e files; the helpers default to "Dom" so no spec should change, but any spec tapping an age by hand needs `passChoice`.
 
 ## 6. Autonomous decisions
 
-- `AskUserQuestion` never called. The skill's clarification points were decided from `change.md` and the step prompt.
-- **R1: v6 as a version bump, no `building` field.** Rejected: an explicit field, which would duplicate `house.id`, add a new corrupt code and need a consistency rule. Would change: a building that holds several houses, or a need to store a building before its house.
-- **R2: the claim in the previous handoff is partly corrected.** `mergeHouse` is not applied to an unknown house id. The salon takeover comes from `repairCurrentRoom` + `nextRoom`/`houseLayout`. D5 (v6 needed) stands. Would change: nothing.
-- **R3: the choice is a view of `WelcomeScene`, written together with the learner (D3 confirmed).** Rejected: a new scene, or a pending flag in the save. Would change: a need to resume on the choice screen after closing the app.
-- **R4: one task-screen "Wróć" back to the choice on both paths (D4 refined).** It works through scene data and is runtime only. Rejected: two back buttons. Would change: the visual gate finding the choice view without an age back confusing on the child path.
-- **R5: no room art at boot for a fresh install. The cards come from a new table loaded only under `needsPlacement`.** Rejected: putting the cards in `UI_ART` (every boot +106 KB), and booting the salon for fresh installs (against the one-building NFR). Would change: the plan finding that the "Obrazki" health cannot be kept honest cheaply. The fallback then is to boot the salon for fresh installs.
-- **R6: Mostek prices 6/10/13/14/17/19/21 = 100, with the test cap widened.** Rejected: 94 within the cap (flat, and the 7th task is not above the salon's). Would change: S-17 tuning, or the maintainer preferring the cap.
-- **R7: `MINIGAME_WORDS` stays shared.** Rejected: base words such as PULPIT, which would break FR-050. Would change: an FR-050 rewording that excludes the minigames.
+- `AskUserQuestion` never called. The skill's complexity check (HIGH), question rounds (0 open product questions after research) and structure approval were decided from `research.md`, `change.md`, `scope.md`; recorded in plan § Autonomous decisions.
+- **P1: freeze `save-v5-salon.json` in phase 1 from v5 code, proven by a decode + re-encode round-trip.** Rejected: freezing it in the bump phase. Would change: nothing.
+- **P3: hide the task-screen "Wróć" after any purchase (narrows FR-043's literal text, `[human]` row 8.7).** Rejected: a refund, which would be a second star source; and keeping a purchase across buildings. Would change: the maintainer choosing the literal rule with a refund.
+- **P4: Mostek 6/10/13/14/17/19/21 = 100, cap 21 as a test constant, not `balance.ts`.** Rejected: 94 within the cap. Would change: S-17 tuning, or the maintainer keeping the cap.
+- **P5: a fresh install boots no room; `UIScene` calls `ensure` on the current room; the backdrop stays plain until then (gap row).** Rejected: booting the salon for every fresh install. Would change: the visual gate finding the plain backdrop jarring.
+- **P6: the choice is a view of `WelcomeScene` with a new `ChoiceCard`, the reused `SpeakerButton`, "Rodzic" hidden, and "Wróć" to the age only on the child path.** Would change: the visual gate finding the parent path without a back confusing.
+- **P7: the theme back restarts the welcome with the placement as scene data and re-runs `startLearning`.** Rejected: keeping the abandoned building's warm-up answers. Would change: a playtest.
+- **P8: `ageBack*` is renamed to `themeBack*` / `backToChoice` everywhere.** The meaning changed.
+- **P9: no "Obrazki" line for the cards; a stand-in is recorded as `artFallbacks.choice`; `?e2eArt=choice` seam.** Would change: the maintainer wanting runtime art in "Obrazki".
+- **P10: the load path repairs inside the current building (`houseRoomIds`).**
+- **P11: FR-049 is proven in the browser through the in-memory seam `v5-salon`; two real builds stay re-recorded.**
+- **P12: nine phases (2 tdd, 6 impl, 1 e2e).** At most 2 new UI components per phase. The e2e helpers move with the choice view so the suite stays at 179 until phase 9 (+5).
+- **Plan change vs research:** `base-1` joins `HOUSES` in phase 3 together with `bridge`, not in phase 4. That way the "exactly one house" data test never needs a temporary exception.

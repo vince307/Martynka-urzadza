@@ -45,7 +45,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-17  | playtest-balance     | autor dostraja balans w danych gry po obserwacji córki                               | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
 | S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | done |
 | S-23  | house-cross-section  | dziecko wybiera pokój w przekroju domu z piętrami; „Do pokoju” zawsze trafia do remontu | S-22            | FR-038, FR-039, FR-033                     | done |
-| S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | ready |
+| S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | planning |
 | S-29  | base-cross-section   | dziecko po Mostku zostaje w bazie i ogląda ją w przekroju; „Do pokoju” i przycisk „Baza” prowadzą po bazie | S-28, S-23 | FR-045, FR-046, FR-048                     | proposed |
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | proposed |
 | S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | proposed |
@@ -147,7 +147,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Czy wybór budowli mieści się w formacie zapisu v5, czy wymaga v6 z migracją, kopią `backup-v5` i kartą „nowszy zapis” przy powrocie wdrożenia (PRD Open Question 17; autor akceptuje v6)? — Owner: agent. Block: no (rozstrzyga `/10x-research`).
   - Jak start ładuje tylko jedną budowlę, żeby karty wyboru i Mostek nie przekroczyły limitu ładowania startu (NFR wersji 5)? — Owner: zespół. Block: no.
 - **Risk:** pierwszy ekran każdego nowego dziecka i jedyne miejsce w tym kamieniu, które może zmienić zapis; ryzyko: zapis sprzed zmiany trafia na ekran wyboru albo traci salon, dlatego FR-049 i FR-050 mają dowód w testach na zamrożonym zapisie v5, a S-28 stoi przed przekrojem bazy.
-- **Status:** ready
+- **Status:** planning
 
 ### S-29: Przekrój bazy i dziecko zostaje w bazie po Mostku
 
