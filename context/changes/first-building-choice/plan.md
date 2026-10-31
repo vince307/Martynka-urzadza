@@ -852,12 +852,12 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [x] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only `public/assets/rooms/bridge/`
-- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N` (4116 + 4 = 4120)
-- [x] 3.3 Deliberate break: rename one bridge WebP → the room-art fixture/file case red; set the console cost to 9 → the "above the salon" case red; each restored; meta-check: the cost oracle is the literal list written from FR-044, the art oracle the pack manifest sizes
-- [x] 3.4 `npm run build` then `grep -o "assets/rooms/bridge/" dist/sw.js | wc -l` = 21 (sw.js is one line, so `grep -c` would print 1)
-- [x] 3.5 `git diff --stat <phase-2 sha> -- public/assets/rooms/salon public/assets/rooms/kitchen src/data/balance.ts src/data/curriculum src/core src/scenes src/main.ts` empty
-- [x] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (e2e: not run, no UI change; orchestrator gates it)
+- [x] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only `public/assets/rooms/bridge/` — 5628349
+- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N` (4116 + 4 = 4120) — 5628349
+- [x] 3.3 Deliberate break: rename one bridge WebP → the room-art fixture/file case red; set the console cost to 9 → the "above the salon" case red; each restored; meta-check: the cost oracle is the literal list written from FR-044, the art oracle the pack manifest sizes — 5628349
+- [x] 3.4 `npm run build` then `grep -o "assets/rooms/bridge/" dist/sw.js | wc -l` = 21 (sw.js is one line, so `grep -c` would print 1) — 5628349
+- [x] 3.5 `git diff --stat <phase-2 sha> -- public/assets/rooms/salon public/assets/rooms/kitchen src/data/balance.ts src/data/curriculum src/core src/scenes src/main.ts` empty — 5628349
+- [x] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `179 + 0` (e2e: not run, no UI change; orchestrator gates it) — 5628349
 
 #### Manual
 
