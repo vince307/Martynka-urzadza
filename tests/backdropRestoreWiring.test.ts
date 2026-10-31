@@ -24,9 +24,9 @@ describe('backdrop redraw on a WebGL context restore', () => {
             expect(m![1]).not.toMatch(/delayedCall|requestAnimationFrame|wake/);
         });
     }
-    it('only SalonBackdrop reads a pixel and only the two scenes own a backdrop', () => {
+    it('only SalonBackdrop and HouseView (the house hook pixel) read a pixel and only the two scenes own a backdrop', () => {
         const files = sources('src');
-        expect(files.filter((f) => readFileSync(f, 'utf8').includes('snapshotPixel('))).toEqual(['src/ui/widgets/SalonBackdrop.ts']);
+        expect(files.filter((f) => readFileSync(f, 'utf8').includes('snapshotPixel('))).toEqual(['src/ui/widgets/HouseView.ts', 'src/ui/widgets/SalonBackdrop.ts']);
         expect(files.filter((f) => readFileSync(f, 'utf8').includes('new SalonBackdrop(')).sort()).toEqual([...OWNERS].sort());
     });
     it('never spells the event as a string in src', () => {

@@ -103,7 +103,7 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui' | 'house';
 
 /**
  * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no room picture, at boot or at runtime; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
@@ -111,7 +111,7 @@ export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' |
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' || value === 'house' ? value : null;
 };
 
 /** The address `?e2eArt=ui` gives the screen pictures: no such file is served, so each fails with a 404. */

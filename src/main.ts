@@ -24,6 +24,7 @@ import type { SwStatus } from './core/swStatus';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
 import { BootScene } from './scenes/BootScene';
 import { RoomScene } from './scenes/RoomScene';
+import { HouseScene } from './scenes/HouseScene';
 import { TaskScene } from './scenes/TaskScene';
 import { WelcomeScene } from './scenes/WelcomeScene';
 import { UIScene } from './scenes/UIScene';
@@ -64,7 +65,7 @@ const createGame = (parent: string, narrator: Narrator, month: number, forcedFai
             : __E2E_HOOK__ && forcedArt === 'stallall'
                 ? { timeout: 0, maxRetries: 0 }   // e2e build only (?e2eArt=stallall): no limit per file, only the total limit can end the load
             : { timeout: balance.loader.timeoutMs, maxRetries: balance.loader.maxRetries },
-        scene: [BootScene, WelcomeScene, TaskScene, RoomScene, UIScene],
+        scene: [BootScene, WelcomeScene, TaskScene, RoomScene, HouseScene, UIScene],
         callbacks: {
             preBoot: (booting) => {
                 booting.registry.set(REGISTRY_KEYS.narrator, narrator);
