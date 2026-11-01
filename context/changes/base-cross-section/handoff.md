@@ -10,8 +10,8 @@ shot frames (1)-(8) of plan row 4.6 on the hook build of `1e0fcc3` at 1440 and 1
 |---|---|
 | branch | `feat/base-cross-section`, cut from `main` at `9a44799` |
 | commits | p1 `55c8c16`, p2 `7db029e`, p3 `0dbfcf9`, p4 `2bcc350`, p5 `f89cf1d`, review fix `c52c53c`, plus docs commits (this handoff included) |
-| pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| pushed / PR / merged | ship step: PR/CI/merge/deploy recorded in context/runs/2026-10-31-space-base/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-11-01-base-cross-section/` by the ship step) |
 | `## Progress` rows remaining | 5: 2.7 [reviewer CI at ship], 4.7-4.9 [human], 4.10 [reviewer CI at ship] (4.6 ticked by the visual gate) |
 | working tree | clean after the handoff commit |
 
@@ -51,7 +51,7 @@ shot frames (1)-(8) of plan row 4.6 on the hook build of `1e0fcc3` at 1440 and 1
 
 ## 4. Next command
 
-`/10x-archive base-cross-section`
+none — shipped
 
 ## 5. Open
 
@@ -69,3 +69,4 @@ shot frames (1)-(8) of plan row 4.6 on the hook build of `1e0fcc3` at 1440 and 1
 - Roadmap row S-29 left at `planning` (ship/archive updates it).
 - Visual gate: Playwright fallback after a Chrome attempt (the maintainer's Chrome already holds a save for `localhost:4399`, hook `screen: 'task'`; a fresh device would mean wiping site data). Would change: a defect visible only in that profile.
 - Visual gate: item (2) "still framed" read as the `current` cell (no next module in the base). Would change: S-30 adding a next module.
+- Ship step: archived despite the 5 open Progress rows (0 automated pending in the skill's count is not true: 2.7 and 4.10 are [reviewer] CI-at-ship rows proven from the Deploy run log after the merge, and 4.7-4.9 are [human] post-run checklist rows); the skill's "Continue archiving" chosen. Why: the run's ship authorisation (profile § 5) and the S-28 precedent (#127). Would change: a red CI or Deploy line disproving 2.7/4.10.
