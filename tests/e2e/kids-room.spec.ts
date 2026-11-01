@@ -22,6 +22,13 @@ const WALL_POINT = { x: 1200, y: 410 };
 const WALL_BY_STAGE: readonly Rgb[] = [[207, 138, 90], [236, 199, 154], [248, 230, 200], [244, 207, 155]];
 const near = (px: readonly number[], ref: Rgb, tol: number): boolean => ref.every((v, i) => Math.abs(px[i] - v) <= tol);
 const apart = (a: readonly number[], b: readonly number[], by: number): boolean => a.some((v, i) => Math.abs(v - b[i]) >= by);
+// Stage 1 and the after look lie within 12 of each other at WALL_POINT, so "near" alone cannot tell them apart: the rendered pixel
+// must also be closer to its own stage than to any other row of the table (impl-review F1).
+const nearestStage = (px: readonly number[]): number => {
+    const dist = WALL_BY_STAGE.map((ref) => ref.reduce((sum, v, i) => sum + (px[i] - v) ** 2, 0));
+    return dist.indexOf(Math.min(...dist));
+};
+const showsStage = (px: readonly number[], stage: number): boolean => near(px, WALL_BY_STAGE[stage], 12) && nearestStage(px) === stage;
 
 const salonTotal = SALON.tasks.reduce((sum, task) => sum + task.cost, 0);
 const kitchenTotal = KITCHEN.tasks.reduce((sum, task) => sum + task.cost, 0);
@@ -47,7 +54,8 @@ test('#16 S-25 FR-033 the children\'s room renovates in three stages, each a new
     let stars = (await snapshot(page)).stars;
     expect(stars).toBe(CHILDREN_TOTAL);
 
-    await expect.poll(async () => near(await renderedPixel(page, WALL_POINT), WALL_BY_STAGE[0], 12), { timeout: 15_000 }).toBe(true);
+    await expect.poll(async () => showsStage(await renderedPixel(page, WALL_POINT), 0), { timeout: 15_000 }).toBe(true);
+    let previous = await renderedPixel(page, WALL_POINT);
     for (let i = 0; i < CHILDREN.tasks.length; i++) {
         const task = CHILDREN.tasks[i];
         await buyAllTasksOne(page, task.kind);
@@ -57,8 +65,10 @@ test('#16 S-25 FR-033 the children\'s room renovates in three stages, each a new
             const staged = i + 1;
             await expect.poll(async () => (await room(page)).stagesDone).toBe(staged);
             // The rendered pixel moved to this stage's picture (after the cross-fade), a visible step from the previous one.
-            await expect.poll(async () => near(await renderedPixel(page, WALL_POINT), WALL_BY_STAGE[staged], 12), { timeout: 15_000 }).toBe(true);
-            expect(apart(WALL_BY_STAGE[staged], WALL_BY_STAGE[staged - 1], 30)).toBe(true);
+            await expect.poll(async () => showsStage(await renderedPixel(page, WALL_POINT), staged), { timeout: 15_000 }).toBe(true);
+            const current = await renderedPixel(page, WALL_POINT);
+            expect(apart(current, previous, 30), `stage ${staged}: ${current.join(',')} vs ${previous.join(',')}`).toBe(true);
+            previous = current;
         }
     }
     expect(stars).toBe(0);
