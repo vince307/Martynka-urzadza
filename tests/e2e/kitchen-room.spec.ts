@@ -58,7 +58,7 @@ const changeTo = async (page: Page, current: number): Promise<number> => {
 test('#2 S-22 after the salon the card celebrates and "Dalej" moves into the kitchen, kept after a reload', async ({ page }) => {
     await finishSalon(page, { e2eStars: String(salonTotal + kitchenTotal) });
     const done = await room(page);
-    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true']);
+    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true', 'room:false:false']);
     expect(done.card?.celebration.intensity).toBe('room');
     expect(done.card?.celebration.burst).toBeGreaterThan(0);
     const before = await snapshot(page);
@@ -91,7 +91,7 @@ test('#2 S-22 after the salon the card celebrates and "Dalej" moves into the kit
     await expect.poll(async () => (await room(page)).roomId).toBe('kitchen');
 });
 
-test('#16 S-22 the kitchen furnishes like the salon and ends with its own card', async ({ page }) => {
+test('#16 S-22 S-25 the kitchen furnishes like the salon and ends with its own card', async ({ page }) => {
     await intoKitchen(page);
     let stars = (await snapshot(page)).stars;
     expect(stars).toBe(kitchenTotal);
@@ -107,11 +107,21 @@ test('#16 S-22 the kitchen furnishes like the salon and ends with its own card',
     expect(done.roomId).toBe('kitchen');
     expect(done.done).toBe(true);
     expect(done.card?.items.slice(0, 2).map((item) => `${item.kind}:${item.done}`)).toEqual(['room:true', 'room:true']);
+    expect(done.card?.items[2]).toMatchObject({ kind: 'room', id: 'children', done: false, unlocked: true });
 
-    // "Dalej" has no further room: the child stays in the kitchen, and the change mode of the done room is free.
+    // "Dalej" moves the child into the children's room (S-25), the kitchen state untouched; the free change of the done kitchen
+    // is proved through a visit from the house cross-section.
+    const kitchenBefore = (await snapshot(page)).rooms?.kitchen;
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).card).toBeNull();
-    expect((await snapshot(page)).currentRoom).toBe('kitchen');
+    await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('children');
+    expect((await snapshot(page)).rooms?.kitchen).toEqual(kitchenBefore);
+    await openHouse(page);
+    await expect.poll(async () => (await targets(page)).houseCells?.['ground-right'] ?? null).not.toBeNull();
+    await tapScene(page, (await targets(page)).houseCells!['ground-right']);
+    await screenIs(page, 'room');
+    await expect.poll(async () => (await room(page)).roomId, { timeout: 15_000 }).toBe('kitchen');
+    expect((await room(page)).visiting).toBe('kitchen');
     await tapTarget(page, 'modeButton');
     await expect.poll(async () => (await room(page)).mode).toBe('change');
     const slot = KITCHEN.slots[0].id;

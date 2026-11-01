@@ -64,6 +64,15 @@ describe('houseWakeVisit', () => {
     });
 });
 
+describe('house-1 with the children\'s room (S-25)', () => {
+    it('places it in upper-left: salon and kitchen done, children current, the last cell closed', () => {
+        const h = HOUSES.find((x) => x.id === 'house-1')!;
+        const v = houseCells(HOUSE_GEOMETRY['house-1'], h, 'children', (r) => (r === 'children' ? false : r === 'salon' || r === 'kitchen' ? true : null));
+        expect(states(v)).toEqual(['done', 'done', 'current', 'closed']);
+        expect(v.find((c) => c.id === 'upper-left')?.room).toBe('children');
+    });
+});
+
 describe('HOUSE_GEOMETRY data', () => {
     const g = HOUSE_GEOMETRY['house-1'];
     const overlap = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>

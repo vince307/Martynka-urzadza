@@ -101,6 +101,38 @@ export const KITCHEN: RoomDef = {
     ],
 };
 
+// The children's room (S-25, FR-033): the room `children` of the art pack martynka-evolution-v1, geometry copied slot by slot.
+// Texture keys are `children/<file id>`. Renovated in three stages (D1): each stage task names the pack background it reveals (`scene`), the last one
+// shows `after`. No fixed decoration, no worn look and no contact shadows: the pack has none. Costs 5/6/7 + 7..15 = 84 stars (S-17 tunes them).
+const childrenSlots: SlotDef[] = [
+    { id: 'children-bed', x: 405, y: 239, width: 410, height: 407, z: 20, anchor: [205, 391], visibleRect: [25, 16, 360, 375], variants: ['children/children-bed-natural', 'children/children-bed-house', 'children/children-bed-drawers'] },
+    { id: 'children-desk', x: 1258, y: 397, width: 290, height: 262, z: 25, anchor: [145, 246], visibleRect: [16, 37, 258, 209], variants: ['children/children-desk-natural', 'children/children-desk-sunny', 'children/children-desk-mint'] },
+    { id: 'children-books', x: 810, y: 286, width: 220, height: 324, z: 15, anchor: [110, 308], visibleRect: [16, 27, 188, 281], variants: ['children/children-books-natural', 'children/children-books-sunny', 'children/children-books-mint'] },
+    { id: 'children-toys', x: 411, y: 578, width: 371, height: 251, z: 40, anchor: [186, 235], visibleRect: [16, 19, 339, 216], variants: ['children/children-toys-natural', 'children/children-toys-sunny', 'children/children-toys-mint'] },
+    { id: 'children-reading', x: 1211, y: 558, width: 367, height: 301, z: 45, anchor: [184, 285], visibleRect: [21, 16, 325, 269], variants: ['children/children-reading-natural', 'children/children-reading-sunny', 'children/children-reading-mint'] },
+    { id: 'children-wardrobe', x: 1028, y: 308, width: 216, height: 346, z: 18, anchor: [108, 330], visibleRect: [16, 38, 184, 292], variants: ['children/children-wardrobe-natural', 'children/children-wardrobe-sunny', 'children/children-wardrobe-mint'] },
+];
+
+export const CHILDREN: RoomDef = {
+    id: 'children',
+    scene: { before: 'children/before', after: 'children/after', shadows: 'children/shadows' },
+    decor: [],
+    slots: childrenSlots,
+    worn: [],
+    contactShadows: [],
+    tasks: [
+        { kind: 'stage', id: 'clean-room', label: 'cleanRoom', cost: 5, scene: 'children/children-stage-1' },
+        { kind: 'stage', id: 'paint-walls', label: 'paintWalls', cost: 6, scene: 'children/children-stage-2' },
+        { kind: 'stage', id: 'renew-floor', label: 'renewFloor', cost: 7 },
+        { kind: 'slot', id: 'place-bed', slot: 'children-bed', label: 'placeBed', cost: 7 },
+        { kind: 'slot', id: 'place-desk', slot: 'children-desk', label: 'placeDesk', cost: 9 },
+        { kind: 'slot', id: 'place-bookcase', slot: 'children-books', label: 'placeBookcase', cost: 10 },
+        { kind: 'slot', id: 'place-toy-chest', slot: 'children-toys', label: 'placeToyChest', cost: 12 },
+        { kind: 'slot', id: 'set-up-reading-nook', slot: 'children-reading', label: 'setUpReadingNook', cost: 13 },
+        { kind: 'slot', id: 'place-wardrobe', slot: 'children-wardrobe', label: 'placeWardrobe', cost: 15 },
+    ],
+};
+
 // The Mostek (S-28): the bridge of the space base from the art pack bystrow-space-base-v1 (manifest room `bridge`), geometry copied slot by slot.
 // Texture keys are `bridge/<file id>`. No fixed decoration, no worn look and no contact shadows: the pack has none.
 const bridgeSlots: SlotDef[] = [
@@ -161,5 +193,5 @@ export const HANGAR: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [CHILDREN.id]: CHILDREN, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;

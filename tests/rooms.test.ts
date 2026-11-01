@@ -3,7 +3,7 @@
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
+import { sceneKey, stageFade, currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
@@ -305,5 +305,44 @@ describe('roomGrowth (R-2): a room whose task list grew past the saved tasksDone
         const rooms = deepFreeze({ salon: { tasksDone: 7, chosen: {} } });
         expect(roomStateProblems(rooms, ROOMS)).toEqual([]);
         expect(() => roomGrowth(rooms, ROOMS)).not.toThrow();
+    });
+});
+
+describe('sceneKey and stageFade (kids-room phase 1)', () => {
+    const staged: RoomDef = {
+        id: 'staged',
+        ...TEST_ROOM_PARTS,
+        scene: { before: 'b0', after: 'aft', shadows: 'sh' },
+        slots: [testSlot('bed', 1)],
+        tasks: [
+            { kind: 'stage', id: 's1', label: 'one', cost: 5, scene: 'st1' },
+            { kind: 'stage', id: 's2', label: 'two', cost: 5, scene: 'st2' },
+            { kind: 'stage', id: 's3', label: 'three', cost: 5 },
+            { kind: 'slot', id: 't4', slot: 'bed', label: 'bed', cost: 5 },
+        ],
+    };
+    const at = (n: number): RoomState => ({ tasksDone: n, chosen: {} });
+
+    it('sceneKey follows the last done stage', () => {
+        expect([0, 1, 2, 3, 4].map((n) => sceneKey(staged, at(n)))).toEqual(['b0', 'st1', 'st2', 'aft', 'aft']);
+    });
+
+    it('stageFade starts from the previous picture and marks only the first as neglected', () => {
+        expect(stageFade(staged, at(0))).toBeNull();
+        expect(stageFade(staged, at(1))).toEqual({ from: 'b0', neglected: true });
+        expect(stageFade(staged, at(2))).toEqual({ from: 'st1', neglected: false });
+        expect(stageFade(staged, at(3))).toEqual({ from: 'st2', neglected: false });
+        expect(stageFade(staged, at(4))).toBeNull();
+    });
+
+    it('salon, kitchen, Mostek and Hangar keep the old before/after ternary at every tasksDone', () => {
+        for (const id of ['salon', 'kitchen', 'bridge', 'hangar']) {
+            const r = ROOMS[id];
+            for (let n = 0; n <= r.tasks.length; n++) {
+                const st = at(n);
+                const side = stagesDone(r, st) > 0 ? 'after' : 'before';
+                expect(sceneKey(r, st)).toBe(r.scene[side]);
+            }
+        }
     });
 });

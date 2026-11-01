@@ -3,7 +3,8 @@ import { isExpression } from '../src/core/round/prompt';
 import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { BUILDING_CHOICES, HOUSE_GEOMETRY } from '../src/data/houses';
+import { BUILDING_CHOICES, HOUSE_GEOMETRY, HOUSES } from '../src/data/houses';
+import { houseRoomList } from '../src/core/house';
 import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HOUSE_LAYOUT, HOUSE_TOUCH_TARGETS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
@@ -279,7 +280,9 @@ describe('task screen layout constants', () => {
 
     it('lays the room list tiles of the "Pokój gotowy!" card inside it and above "Dalej"', () => {
         const { card, tiles, button, title } = ROOM_DONE_LAYOUT;
-        const total = 2 * tiles.width + tiles.gap;
+        const n = Math.max(...HOUSES.map((h) => houseRoomList(h, ROOMS).length));
+        expect(n).toBe(3);
+        const total = n * tiles.width + (n - 1) * tiles.gap;
         const first = card.left + card.width / 2 - total / 2;
         expect(first).toBeGreaterThanOrEqual(card.left);
         expect(first + total).toBeLessThanOrEqual(card.left + card.width);
@@ -288,6 +291,22 @@ describe('task screen layout constants', () => {
         expect(ROOM_LAYOUT.scene.width * tiles.thumbScale).toBeLessThanOrEqual(tiles.width);
         // The miniature of the 1920x1080 scene ends above the caption line of the tile.
         expect(tiles.thumbTop + ROOM_LAYOUT.scene.height * tiles.thumbScale).toBeLessThan(tiles.captionY - 14);
+    });
+
+    // Plan-review F3: the done mark sits on the card graphics under the opaque miniature, so it must not touch the thumb rect.
+    it('keeps the done mark of a room tile inside the tile and clear of the miniature', () => {
+        const { tiles } = ROOM_DONE_LAYOUT;
+        const cx = tiles.width - tiles.markInset;
+        const cy = tiles.markInset;
+        const r = tiles.markRadius;
+        expect(cx - r).toBeGreaterThanOrEqual(0);
+        expect(cx + r).toBeLessThanOrEqual(tiles.width);
+        expect(cy - r).toBeGreaterThanOrEqual(0);
+        const thumbW = ROOM_LAYOUT.scene.width * tiles.thumbScale;
+        const thumb = { left: (tiles.width - thumbW) / 2, right: (tiles.width + thumbW) / 2, top: tiles.thumbTop, bottom: tiles.thumbTop + ROOM_LAYOUT.scene.height * tiles.thumbScale };
+        const nearX = Math.min(Math.max(cx, thumb.left), thumb.right);
+        const nearY = Math.min(Math.max(cy, thumb.top), thumb.bottom);
+        expect(Math.hypot(cx - nearX, cy - nearY)).toBeGreaterThan(r);
     });
 
     // Plan-review F3: the pictures use the manifest z (0-99); everything the child touches or reads is drawn above that band.

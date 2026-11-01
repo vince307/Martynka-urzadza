@@ -8,6 +8,7 @@ export const HOUSES: readonly HouseState[] = [
         rooms: [
             { room: 'salon', floor: 0, place: 0 },
             { room: 'kitchen', floor: 0, place: 1 },
+            { room: 'children', floor: 1, place: 0 },
         ],
     },
     // The space base (S-28): the Mostek, then the Hangar in the ground-right cell (S-30); its cross-section is HOUSE_GEOMETRY['base-1'] (S-29).

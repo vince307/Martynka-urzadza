@@ -21,6 +21,7 @@ const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
+const EVOLUTION_V1 = join(ROOT, 'designs/martynka-evolution-v1');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
@@ -72,6 +73,17 @@ const ROOM_PACKS = [
             'kitchen-coffee-natural', 'kitchen-coffee-sunny', 'kitchen-coffee-mint',
             'kitchen-bench-natural', 'kitchen-bench-sunny', 'kitchen-bench-mint',
             'kitchen-rack-natural', 'kitchen-rack-sunny', 'kitchen-rack-mint',
+        ],
+        recolourBoard: false,
+    },
+    {
+        room: 'children',
+        pack: EVOLUTION_V1,
+        scene: ['children-stage-0', 'children-stage-1', 'children-stage-2', 'children-after', 'children-shadows'],
+        decor: [],
+        furniture: [
+            'children-bed-natural', 'children-bed-house', 'children-bed-drawers',
+            ...['desk', 'books', 'toys', 'reading', 'wardrobe'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `children-${slot}-${v}`)),
         ],
         recolourBoard: false,
     },

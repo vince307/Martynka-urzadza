@@ -24,6 +24,7 @@ type SceneRole = 'before' | 'after' | 'shadows';
 export const ROOM_SCENE_FILES: Readonly<Record<string, Readonly<Record<SceneRole, string>>>> = {
     salon: { before: 'architecture-before', after: 'architecture-after', shadows: 'shadows' },
     kitchen: { before: 'kitchen-before', after: 'kitchen-after', shadows: 'kitchen-shadows' },
+    children: { before: 'children-stage-0', after: 'children-after', shadows: 'children-shadows' },
     bridge: { before: 'bridge-before', after: 'bridge-after', shadows: 'bridge-shadows' },
     hangar: { before: 'hangar-before', after: 'hangar-after', shadows: 'hangar-shadows' },
 };
@@ -43,6 +44,10 @@ export const roomArt = (room: RoomDef): RoomArtEntry[] => {
             ...SCENE_SIZE,
             label: '',
         })),
+        // Stage backgrounds named on the stage tasks (rooms renovated in several steps), once each and never a key the three roles already hold.
+        ...[...new Set(room.tasks.flatMap((t) => (t.kind === 'stage' && t.scene !== undefined ? [t.scene] : [])))]
+            .filter((key) => !Object.values(room.scene).includes(key))
+            .map((key) => ({ key, url: urlOf(key), ...SCENE_SIZE, label: '' })),
         ...room.decor.map((layer) => ({ key: layer.key, url: urlOf(layer.key), width: layer.width, height: layer.height, label: roomText.decor(layer.id) ?? '' })),
         ...room.slots.flatMap((slot) =>
             slot.variants.map((key, index) => ({

@@ -71,6 +71,24 @@ export function stagesDone(room: RoomDef, state: RoomState): number {
     return room.tasks.slice(0, state.tasksDone).filter((t) => t.kind === 'stage').length;
 }
 
+/** The full-scene texture key the room shows: `scene.before` until the first stage is done, then the `scene` of the LAST done stage task (or `scene.after` when it names none). */
+export function sceneKey(room: RoomDef, state: RoomState): string {
+    const done = room.tasks.slice(0, state.tasksDone);
+    let last: RoomTaskDef | undefined;
+    for (const t of done) if (t.kind === 'stage') last = t;
+    if (!last) return room.scene.before;
+    return last.kind === 'stage' && last.scene !== undefined ? last.scene : room.scene.after;
+}
+
+/** For the state right after a purchase: the picture the stage cross-fade starts from, and whether the room was still neglected; null when the last done task is not a stage. */
+export function stageFade(room: RoomDef, state: RoomState): { from: string; neglected: boolean } | null {
+    if (state.tasksDone <= 0) return null;
+    const task = room.tasks[state.tasksDone - 1];
+    if (!task || task.kind !== 'stage') return null;
+    const previous: RoomState = { ...state, tasksDone: state.tasksDone - 1 };
+    return { from: sceneKey(room, previous), neglected: stagesDone(room, previous) === 0 };
+}
+
 export function roomDone(room: RoomDef, state: RoomState): boolean {
     return state.tasksDone >= room.tasks.length;
 }
