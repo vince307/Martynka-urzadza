@@ -32,6 +32,7 @@ describe('RoomScene visit wiring', () => {
     it('onSleep sets visiting to null', () => {
         expect(body('const onSleep = (): void => {', "this.events.on('wake'")).toContain('this.visiting = null');
     });
+    // Both buildings have a geometry since S-29, so the hasOwnProperty hide rule hides the button only while blocked.
     it('the house button is hidden while blocked and leads to the house', () => {
         const redraw = body('private redraw()', 'if (this.cardDrawn)');
         expect(redraw).toMatch(/if \(blocked \|\| !Object\.prototype\.hasOwnProperty\.call\(HOUSE_GEOMETRY, savedHouse\.id\)\) \{\s*this\.houseButton\.hide\(\)/);

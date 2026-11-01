@@ -41,6 +41,11 @@ export class HouseScene extends Scene {
     }
 
     create(): void {
+        // A scene object is reused by scene.start: forget the art flags and drawn cells of the building seen before (S-29).
+        this.artQueued = false;
+        this.artSettled = false;
+        this.cells = [];
+        this.modes = {};
         this.view = new HouseView(this);
         this.back = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.room); }).setDepth(HOUSE_LAYOUT.depth.controls);
         const geometry = this.geometry();

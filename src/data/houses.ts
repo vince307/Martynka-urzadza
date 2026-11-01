@@ -10,7 +10,7 @@ export const HOUSES: readonly HouseState[] = [
             { room: 'kitchen', floor: 0, place: 1 },
         ],
     },
-    // The space base (S-28). No HOUSE_GEOMETRY entry yet: S-29 adds the cross-section. Nobody can choose it until the choice view (phase 6).
+    // The space base (S-28); its cross-section is HOUSE_GEOMETRY['base-1'] (S-29).
     { id: 'base-1', rooms: [{ room: 'bridge', floor: 0, place: 0 }] },
 ];
 
@@ -33,6 +33,26 @@ export const HOUSE_GEOMETRY: Readonly<Record<string, HouseGeometry>> = {
         background: 0xe7f4f4,
         teaser: { color: '#FFF5DF', shadow: '#245C59', weight: 650 },
         standInRoof: true,
+        cells: [
+            { id: 'ground-left', floor: 0, place: 0, x: 252, y: 636, width: 608, height: 342 },
+            { id: 'ground-right', floor: 0, place: 1, x: 1060, y: 636, width: 608, height: 342 },
+            { id: 'upper-left', floor: 1, place: 0, x: 252, y: 236, width: 608, height: 342 },
+            { id: 'upper-right', floor: 1, place: 1, x: 1060, y: 236, width: 608, height: 342 },
+        ],
+        stairwell: { x: 860, y: 236, width: 200, height: 742 },
+    },
+    // The space base (S-29): cells and lift shaft from the pack bystrow-space-base-v1 manifest (houses.base-1, liftShaft), the sky and the
+    // teaser style from its preview (the "Wkrótce" glyphs centre on the cell, fillText baseline at y+182 of 32 px text).
+    // DESIGN-GAP: the pack has no base cell frame; the house `cell-frame` is shared (docs/design-gaps.md).
+    'base-1': {
+        shell: 'house/base-1-shell',
+        cellClosed: 'house/base-1-cell-closed',
+        cellFrame: 'house/cell-frame',
+        cellFill: 0xfff5df,
+        frameInset: 16,
+        background: 0xe8efeb,
+        teaser: { color: '#245C59', shadow: null, weight: 600 },
+        standInRoof: false,
         cells: [
             { id: 'ground-left', floor: 0, place: 0, x: 252, y: 636, width: 608, height: 342 },
             { id: 'ground-right', floor: 0, place: 1, x: 1060, y: 636, width: 608, height: 342 },

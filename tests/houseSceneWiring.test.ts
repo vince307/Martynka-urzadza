@@ -14,6 +14,13 @@ describe('HouseScene wiring', () => {
         expect(scene).not.toContain('HOUSE_ART.every(');
         expect(scene).not.toContain('HOUSE_ART.filter((e) => !this.textures');
     });
+    it('create resets the art flags and cells before anything else (stale scene, S-29)', () => {
+        const create = /create\(\): void \{([\s\S]*?)this\.show\(\)/.exec(scene);
+        expect(create).not.toBeNull();
+        const body = create![1];
+        for (const reset of ['this.artQueued = false', 'this.artSettled = false', 'this.cells = []', 'this.modes = {}']) expect(body).toContain(reset);
+        expect(body.indexOf('this.artQueued = false')).toBeLessThan(body.indexOf('new HouseView'));
+    });
     it('redraws on wake and on a WebGL context restore, and removes both listeners on shutdown', () => {
         expect(scene).toMatch(/events\.on\('wake', onWake\)/);
         expect(scene).toMatch(/renderer\.on\(Renderer\.Events\.RESTORE_WEBGL, onRestore\)/);

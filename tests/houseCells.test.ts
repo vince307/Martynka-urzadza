@@ -68,13 +68,12 @@ describe('HOUSE_GEOMETRY data', () => {
     const g = HOUSE_GEOMETRY['house-1'];
     const overlap = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
         a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-    // S-29 adds the base geometry and drops this pin.
-    const drawn = HOUSES.filter((h) => HOUSE_GEOMETRY[h.id] !== undefined);
-    it('has a geometry for every house but the base, whose cross-section comes in S-29', () => {
-        expect(HOUSES.filter((h) => HOUSE_GEOMETRY[h.id] === undefined).map((h) => h.id)).toEqual(['base-1']);
+    // S-29 gave the base its cross-section: the pin "every house but the base" is gone.
+    it('has a geometry for every house of HOUSES', () => {
+        expect(HOUSES.filter((h) => HOUSE_GEOMETRY[h.id] === undefined).map((h) => h.id)).toEqual([]);
     });
-    it('has a cell for every place of every house with a geometry', () => {
-        for (const h of drawn) for (const p of h.rooms) expect(HOUSE_GEOMETRY[h.id].cells.some((c) => c.floor === p.floor && c.place === p.place)).toBe(true);
+    it('has a cell for every place of every house', () => {
+        for (const h of HOUSES) for (const p of h.rooms) expect(HOUSE_GEOMETRY[h.id].cells.some((c) => c.floor === p.floor && c.place === p.place)).toBe(true);
     });
     it('cells lie inside the scene, clear of each other and of the stairwell, 608x342', () => {
         for (const c of g.cells) {
@@ -102,6 +101,34 @@ describe('HOUSE_GEOMETRY look (S-29 phase 1)', () => {
         expect(g.background).toBe(0xe7f4f4);
         expect(g.teaser).toEqual({ color: '#FFF5DF', shadow: '#245C59', weight: 650 });
         expect(g.standInRoof).toBe(true);
+    });
+});
+
+describe('HOUSE_GEOMETRY base (S-29 phase 3)', () => {
+    // Oracle: the pack bystrow-space-base-v1 manifest (houses.base-1) and its preview, written here as literals.
+    const b = () => HOUSE_GEOMETRY['base-1'];
+    it('matches the pack manifest literally', () => {
+        expect(b().cells.map((c) => [c.id, c.floor, c.place, c.x, c.y, c.width, c.height])).toEqual([
+            ['ground-left', 0, 0, 252, 636, 608, 342], ['ground-right', 0, 1, 1060, 636, 608, 342],
+            ['upper-left', 1, 0, 252, 236, 608, 342], ['upper-right', 1, 1, 1060, 236, 608, 342],
+        ]);
+        expect(b().stairwell).toEqual({ x: 860, y: 236, width: 200, height: 742 });
+    });
+    it('names its own pictures, shares the frame, and has its own look', () => {
+        expect([b().shell, b().cellClosed, b().cellFrame]).toEqual(['house/base-1-shell', 'house/base-1-cell-closed', 'house/cell-frame']);
+        expect(b().cellFill).toBe(0xfff5df);
+        expect(b().frameInset).toBe(16);
+        expect(b().background).toBe(0xe8efeb);
+        expect(b().teaser).toEqual({ color: '#245C59', shadow: null, weight: 600 });
+        expect(b().standInRoof).toBe(false);
+    });
+    it('has the same cells as the house', () => {
+        expect(b().cells).toEqual(HOUSE_GEOMETRY['house-1'].cells);
+    });
+    it('shows the bridge as current and the rest closed, also with the Mostek done', () => {
+        const base = HOUSES.find((h) => h.id === 'base-1')!;
+        expect(states(houseCells(b(), base, 'bridge', () => false))).toEqual(['current', 'closed', 'closed', 'closed']);
+        expect(states(houseCells(b(), base, 'bridge', () => true))).toEqual(['current', 'closed', 'closed', 'closed']);
     });
 });
 

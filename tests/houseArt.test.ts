@@ -78,8 +78,7 @@ describe('house art table', () => {
             expect(CAPS[id], `${id} has a cap`).toBeDefined();
             expect(weigh(houseArtKeys(geometry)), id).toBeLessThanOrEqual(CAPS[id]);
         }
-        // The base has no geometry until S-29 phase 3: its two rows plus the shared frame.
-        expect(weigh(['house/base-1-shell', 'house/base-1-cell-closed', 'house/cell-frame'])).toBeLessThanOrEqual(CAPS['base-1']);
+        expect(Object.keys(HOUSE_GEOMETRY).sort()).toEqual(Object.keys(CAPS).sort());
     });
 
     it('is not loaded by BootScene (the boot budget stays as it was)', () => {

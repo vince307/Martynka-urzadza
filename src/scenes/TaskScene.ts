@@ -432,6 +432,7 @@ export class TaskScene extends Scene {
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
         this.scene.stop(SCENE_KEYS.ui);
         this.scene.stop(SCENE_KEYS.room);
+        this.scene.stop(SCENE_KEYS.house);
         // The welcome opens the choice view with this placement. A child-placed learner keeps the choice view's own "Wróć" to the
         // age, so a child who tapped the wrong age can still correct it (playtest F-02 b); a parent-placed one does not.
         this.scene.start(SCENE_KEYS.welcome, { placed, fromAge: placed !== undefined && !placed.stageOverriddenByParent });
