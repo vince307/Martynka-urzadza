@@ -1,13 +1,13 @@
 # Handoff — `first-building-choice` (slice S-28)
 
-Written by the `/10x-implement` phase-8 step of run 2026-10-31-space-base: phase 8 (docs, gap rows 191-198, follow-ups, seam sweep) is committed (`ad8e93b`); ticked 7.5 (orchestrator) and 8.1-8.5; 8.6 [visual], 8.7-8.10 [human], 8.11 [reviewer] are not mine. Phase 7 text follows: written by the `/10x-implement` phase-7 step of run 2026-10-31-space-base: phase 7 ("Wróć" from the task screen to the choice) is committed (`bc41f65`) and ticked except 7.5 (the orchestrator's full e2e). `SAVE_VERSION` stays 6; phase 8 must not touch `src/core/save.ts` or `src/core/migrations`. WelcomeScene's own `backToAge` (the choice view's "Wróć" to the age view, child path) is a different, legitimate name: phase 8's seam-sweep grep `ageBack\|backToAge` must be narrowed to `ageBack` or it hits that method.
+Written by the `/10x-e2e` phase-9 step of run 2026-10-31-space-base: the spec `tests/e2e/first-building-choice.spec.ts` (5 tests) is committed (`aa9dda6`) and rows 9.1-9.3 are ticked. Rows 8.6-8.10 and 3.7/8.11 stay for the visual gate, the human and the reviewer; do not tick them. `SAVE_VERSION` stays 6.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
-| commits | 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + `930363a` p4 + `f427d42` p5 + `d485d3a` p6 + `bc41f65` p7 + docs |
+| commits | `aa9dda6` p9 on top of: 5 docs + `9b537e7` p1 + `da7bccc` p2 + `5628349` p3 + `930363a` p4 + `f427d42` p5 + `d485d3a` p6 + `bc41f65` p7 + docs |
 | pushed / PR / merged | no / no / no |
 | `change.md` status | `plan_reviewed` |
 | `## Progress` rows remaining | `grep -c '^- \[ \]' plan.md` |
@@ -17,6 +17,7 @@ Written by the `/10x-implement` phase-8 step of run 2026-10-31-space-base: phase
 
 | path | what it is |
 |---|---|
+| `tests/e2e/first-building-choice.spec.ts`, `playwright.config.ts` | p9: the 5-test spec; `ROUND_SPEC` gained the spec name |
 | `src/core/placement.ts` | `ageBackOffered` removed; `themeBackOffered(learner, variants, warmupLength, rooms)` is the one rule |
 | `src/scenes/TaskScene.ts` | `themeBack` button, `renderThemeBack` (reads `REGISTRY_KEYS.rooms`), `backToChoice` (console.info with stage and who placed it, same cleanup order, learner null, flush, `scene.start(welcome, { placed })`); hook task target `themeBack` |
 | `src/data/layout.ts`, `src/data/pl.ts`, `src/testing/e2eHook.ts`, `tests/e2e/support/hook.ts` | renames `ageBack` -> `themeBack` (layout, touch target, `pl.round.themeBack`, hook target) |
@@ -26,17 +27,18 @@ Written by the `/10x-implement` phase-8 step of run 2026-10-31-space-base: phase
 
 | command | result |
 |---|---|
-| `npm test` (p8) | 4168 passed (delta 0) |
-| `npm test` (p7) | 4168 passed (baseline 4092; after p6 4170; p7 delta -2: ageBack cases folded, +wiring guards) |
-| lint / typecheck / deploy + ops shell tests / sample E1-E6 / build | OK; `e2e hook: absent (2 chunks checked)` |
-| `grep -rn ageBack src tests` | only the "gone" guard in `tests/themeBackWiring.test.ts` |
-| deliberate break 1 | `scene.start(welcome, {})` without `{ placed }` -> wiring guard red; restored |
-| deliberate break 2 | `themeBackOffered(..., {})` without the rooms -> wiring guard red; restored. Meta-check: source guards prove wiring only; the browser path is first-launch (below) and phase 9 |
-| e2e | `npx playwright test --list` = 179 tests (179 + 0). `first-launch.spec.ts --workers=1`: 7 passed. Full suite not run (orchestrator) |
+| `playwright test first-building-choice.spec.ts --workers=1` | 5 passed |
+| deliberate break A (`place()` always skips the choice, `if (true || hasPurchase)`) | FR-042 child test red; restored |
+| break B (`BootScene` starts the welcome for a stored learner) | FR-049 test red; restored |
+| break C (`TaskScene.renderThemeBack` without `themeBackOffered`) | FR-043 test red (themeBack still there after the first round); restored |
+| break D (`space` -> `house-1` in `BUILDING_CHOICES`) | FR-042 child and FR-044 Mostek red; restored. Meta-check: each break flips a rule (routing, guard, mapping), not a label; git status afterwards showed only my two files |
+| full e2e `--workers=3` (loaded machine) | 176 passed, 8 timeout failures in unrelated specs; `--last-failed --workers=1`: 8 passed. Total 184 = 179 + 5, equals `playwright test --list` |
+| `npm test` | 4168 passed (p8 4168, delta 0) |
+| lint / typecheck / build | OK; `e2e hook: absent (2 chunks checked)` |
 
 ## 4. Next command
 
-`/10x-e2e first-building-choice phase 9`
+`/10x-impl-review first-building-choice`
 
 ## 5. Open
 
@@ -48,6 +50,8 @@ Written by the `/10x-implement` phase-8 step of run 2026-10-31-space-base: phase
 - **Known risks (plan.md):** fresh-install first-session room art is not judged by "Obrazki" (F8, now narrowed: UIScene judges the chosen room once it has loaded); a learner-less save with a purchase skips the choice and keeps its building (F4, `hasPurchase`, guard in `WelcomeScene.place`).
 
 ## 6. Autonomous decisions
+
+- **Phase 9 (e2e):** prompts decided in place. Parent-path test does not assert `choiceBack` absence (it is null on the task screen anyway, no signal); it asserts house-1/salon after choosing Dom. FR-043 test runs the warm-up (6) via `playRoundRight`, then the 5-task round. Config change: only `first-building-choice` added to `ROUND_SPEC`. Would change: a reviewer wanting a hook-level assert on the parent welcome view.
 
 - **Phase 8 (impl):** prompts decided in place. Gap rows 191-198 (layout, copy, themeBack, Mostek wording, no base zoom-out, Mostek celebration, card stand-in, plain backdrop + Hasło words) with the code comments now citing row numbers. CLAUDE.md: the S-06 sentence's `ageBackOffered`/`backToAge` wording was the only leftover of the sweep; save version wording updated. Follow-ups file has 13 entries with Trigger lines (older follow-ups re-recorded or closed from what I know of the code; not re-read in full). Deliberate break: docs-only phase, the only checkable guard is the 8.2 count (8 rows, 6 without the first two, below the 7 limit). Visual row 8.6 left to the visual gate. Would change: the maintainer wanting a separate row for the Hasło words.
 - **Phase 7 (impl):** prompts decided in place (stopped after the phase). The first-launch "Wróć" case can no longer re-pick an age (the choice view of a placed learner has no age row), so it now re-picks the building (`space`) and keeps the stage E3; the "older age" assertions were dropped. Row 7.5 left unticked (full e2e is the orchestrator's). During the commit I mistakenly ran `git reset --soft HEAD~1` once after a failed `git add`; it undid the p6 docs commit in the index only, and `git reset --soft 43c4500` restored HEAD at once (no content lost, history unchanged). Would change: the maintainer wanting the age row reachable from the task screen.

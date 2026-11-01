@@ -932,6 +932,6 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Automated
 
-- [ ] 9.1 Spec red before (deliberate breaks, each run alone with `-g`): make `WelcomeScene.start` skip the choice view → the FR-042 tests red; route a stored learner to the welcome in `BootScene` → the FR-049 test red; make `TaskScene` show "Wróć" without asking `themeBackOffered` → the FR-043 "gone after the first round" assert red; map `space` to `house-1` → the base asserts red; each restored; green after
-- [ ] 9.2 `npx playwright test tests/e2e/first-building-choice.spec.ts --list` lists 5 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `179 + 5`; total equals `npx playwright test --list | tail -1`
-- [ ] 9.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 9.1 Spec red before (deliberate breaks, each run alone with `-g`): make `WelcomeScene.start` skip the choice view → the FR-042 tests red; route a stored learner to the welcome in `BootScene` → the FR-049 test red; make `TaskScene` show "Wróć" without asking `themeBackOffered` → the FR-043 "gone after the first round" assert red; map `space` to `house-1` → the base asserts red; each restored; green after — aa9dda6
+- [x] 9.2 `npx playwright test tests/e2e/first-building-choice.spec.ts --list` lists 5 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `179 + 5`; total equals `npx playwright test --list | tail -1` — aa9dda6
+- [x] 9.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — aa9dda6
