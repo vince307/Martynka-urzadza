@@ -15,7 +15,7 @@ is a room" contract. The plan touches only `src/data/`, the art script, generate
 `HOUSES['base-1']` lists only Mostek; its `ground-right` cell exists and is drawn as a closed airlock. A room is a
 `RoomDef` + `ROOMS` entry + `ROOM_SCENE_FILES` row + Polish copy + a `ROOM_PACKS` row in `scripts/make-task-art.mjs`;
 precache, deploy smoke, "Obrazki" and the boot budget derive from `ROOMS`. "Dalej" and the load path pick the next room
-from the data house (`nextRoom`). Three tests pin the base as one room.
+from the data house (`nextRoom`). Four tests pin the base as one room (`roomsData` ×2, `roomArt`, `houseCells` "also with the Mostek done") plus e2e #16.
 
 ## Desired End State
 

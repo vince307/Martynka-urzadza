@@ -44,7 +44,10 @@ Grounded in `research.md`, spot-checked on this branch at `4a420c2`:
 - **Tests that pin a one-room base** (expected edits, not regressions): `tests/roomsData.test.ts` "is the stage first,
   then six furniture tasks, and the only room of the base", "keeps the child in Mostek after the last task: Dalej stays";
   `tests/roomArt.test.ts` (`ROOM_ART` snapshot equality, "has 37 salon, 21 kitchen and 21 bridge entries");
-  `tests/e2e/base-cross-section.spec.ts` "#16 #2 S-29 FR-046 … 'Dalej' stays in Mostek …".
+  `tests/e2e/base-cross-section.spec.ts` "#16 #2 S-29 FR-046 … 'Dalej' stays in Mostek …"; and (found at plan review)
+  `tests/houseCells.test.ts` "shows the bridge as current and the rest closed, also with the Mostek done", whose second
+  expectation calls `houseCells(b(), base, 'bridge', () => true)`: with the Hangar row the all-done callback makes
+  `ground-right` `done`, so that line flips to `['current', 'done', 'closed', 'closed']`.
 - **Counts.** Contract baseline on `main` a4a0aee: unit 4185, e2e 187. CI lines seen at this step (gh, plain command) in
   Deploy run 41278603357: job `deploy` 124766298916 step `Smoke check (deploy)` prints
   `ok   precache covers room pictures — 79 of 79 room pictures precached`; job `build` 124765733845 prints
@@ -154,7 +157,9 @@ A comment cites design gap 201 (the pack gives only masculine family labels; the
 **Files**: `tests/roomArt.test.ts`, `tests/fixtures/room-art-hangar.json` (new snapshot), `tests/roomsData.test.ts`,
 `tests/roomHit.test.ts`
 
-**Contract**: snapshot equality adds `roomArt(ROOMS.hangar)` = the new fixture and `ROOM_ART` = salon + kitchen + bridge +
+**Contract**: snapshot equality adds `roomArt(ROOMS.hangar)` = the new fixture (written from the pack, not dumped from
+`roomArt()`: keys and urls from the manifest file names, width/height from the source PNG sizes, labels from the caption
+table below) and `ROOM_ART` = salon + kitchen + bridge +
 hangar; the count case names "21 hangar entries"; a `describe('hangar data (FR-047)')` with a manifest literal
 (`[id, x, y, width, height, z]` per slot, written from the manifest, not from `hangarSlots`), stage first then six slot
 tasks, costs `[6, 10, 13, 14, 17, 19, 21]` summing to 100, every slot bought once; `unreachableSlots` (`src/core/roomHit.ts`)
@@ -213,11 +218,13 @@ the shape of `tests/fixtures/save-v6.json`). Never edited after this phase.
 `tests/e2e/base-cross-section.spec.ts`
 
 **Contract**:
-- `roomsData`: "the only room of the base" → `houseRoomList(base-1)` = `[{ room: 'bridge' }, { room: 'hangar' }]`
-  (shape as the helper returns it); "Dalej stays in Mostek" → after the last Mostek task `nextRoom` moves to `hangar`
+- `roomsData`: "the only room of the base" → `houseRoomList(base-1)` = `[{ room: 'bridge' }, { room: 'hangar',
+  unlockAfter: 'bridge' }]` (the shape `houseRoomList` in `src/core/house.ts` returns for a second room); "Dalej stays in Mostek" → after the last Mostek task `nextRoom` moves to `hangar`
   (`movedFrom: 'bridge'`); new "keeps the child in the Hangar after its last task: Dalej stays" (gap 196 moved, D3).
-- `houseCells`: base with Mostek current → `['current', 'closed', 'closed', 'closed']` (unchanged); with `currentRoom
-  'hangar'` and Mostek done → `['done', 'current', 'closed', 'closed']`, `ground-right` room `hangar`.
+- `houseCells`: base with Mostek current and nothing done → `['current', 'closed', 'closed', 'closed']` (unchanged); the
+  existing "also with the Mostek done" line (today `() => true`) becomes `doneSet('bridge')` (Mostek done, Hangar not) →
+  `['current', 'closed', 'closed', 'closed']`, and the test title stays honest (a known room not reached is closed); with
+  `currentRoom 'hangar'` and Mostek done → `['done', 'current', 'closed', 'closed']`, `ground-right` room `hangar`.
 - `fixtureLoadPath`: `save-v6-bridge-done` joins `FIXTURES` (round-trip, nothing dropped); a case in the FR-049 block
   mirrors `main.ts`'s load order (`repairCurrentRoom` → `mergeHouse` → `nextRoom`) and expects house `base-1` with both
   cells, `currentRoom 'hangar'`, `rooms.bridge` equal to the fixture's, stars kept.
@@ -264,8 +271,10 @@ atlas (kitchen-room 5 / first-building-choice 5: not fired, Hangar boot 29.9 s v
 (thumbnails, not fired, carried); `FIRST_ROOM` (first-building-choice 18 / base-cross-section 8, not fired, carried);
 the unused `roomArtCheck` (new, trigger "the next change to `scripts/check-deploy.ts`"); every other open follow-up whose
 `Trigger:` names a file or set this slice changed (`src/data/rooms.ts`, `src/data/houses.ts`, `src/data/roomArt.ts`,
-`src/data/pl.ts`, `scripts/make-task-art.mjs`, "the precache set" of kitchen-room 6) — included, closed with evidence, or
-re-recorded.
+`src/data/pl.ts`, `scripts/make-task-art.mjs`) — included, closed with evidence, or re-recorded. Kitchen-room 6 ("the
+precache set") is already closed (first-building-choice follow-up 6, house-cross-section added the install warning) and
+audit-art-renderer 2 (`make-task-art.mjs` without `-I`) is already closed (house-cross-section follow-ups): cite, do not
+reopen.
 
 #### 2. Seam sweep
 

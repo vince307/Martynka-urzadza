@@ -1,7 +1,7 @@
 ---
 change_id: hangar-module
 title: Hangar z rakietą, drugi moduł bazy
-status: planned
+status: plan_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
