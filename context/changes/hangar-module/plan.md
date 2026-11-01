@@ -465,7 +465,7 @@ complexity, 0 open product questions after research, 4 phases):
 - [x] 3.2 `grep -c "Trigger:" context/changes/hangar-module/follow-ups/review-fixes.md` ≥ 5; `grep -cE "^\| 201 " docs/design-gaps.md` = 1 — 862dca7
 - [x] 3.3 Seam sweep: `grep -rnE "until S-30|S-30 adds|only room of the base" src tests scripts` empty; `grep -c "bystrow-space-base-v1'" scripts/make-task-art.mjs` = 1; `npm run art` then `git status --short public/assets` empty (byte-identical after the merge of the constants) — 862dca7
 - [x] 3.4 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — 862dca7
-- [x] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `187 + 0` — local gate green (unit 4194 + 0), e2e left to the orchestrator — 862dca7
+- [x] 3.5 Full local gate green; e2e (orchestrator, `--workers=4`) `187 + 0` — local gate green (unit 4194 + 0), e2e left to the orchestrator — 862dca7 · orchestrator e2e at 702b130: `--workers=3` 181 passed + 8 load timeouts (Codex running), `--last-failed --workers=1` 8 passed → 189 = 187 + 2
 
 #### Manual
 
@@ -480,5 +480,5 @@ complexity, 0 open product questions after research, 4 phases):
 #### Automated
 
 - [x] 4.1 Spec red before (deliberate breaks, each run alone with `-g`): move the Hangar row to `place: 2` → test 1 red; add a third unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); set a Hangar cost to 22 → test 2's balance red; point `ROOM_SCENE_FILES.hangar.after` at the before file → test 1's pixel red (or record why the miniature point does not see it and pick a point that does); each restored; green after — baa785b
-- [x] 4.2 `npx playwright test tests/e2e/hangar-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; `base-cross-section.spec.ts` green with the shared helper; full e2e (orchestrator, `--workers=4`) `187 + 2`; total equals `npx playwright test --list | tail -1` — baa785b
+- [x] 4.2 `npx playwright test tests/e2e/hangar-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; `base-cross-section.spec.ts` green with the shared helper; full e2e (orchestrator, `--workers=4`) `187 + 2`; total equals `npx playwright test --list | tail -1` — baa785b · orchestrator e2e at 702b130: `--workers=3` 181 passed + 8 load timeouts (Codex running), `--last-failed --workers=1` 8 passed → 189 = 187 + 2
 - [x] 4.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — baa785b
