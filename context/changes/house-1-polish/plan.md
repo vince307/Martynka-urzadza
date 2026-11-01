@@ -623,13 +623,13 @@ added or edited):
 
 #### Automated
 
-- [ ] 2.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the two new `public/assets/rooms/kitchen/kitchen-stage-{1,2}.webp`
-- [ ] 2.2 `npx vitest run tests/roomArt.test.ts tests/rooms.test.ts tests/roomsData.test.ts tests/fixtureLoadPath.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.3 Deliberate break: swap the two stage `scene` keys → the `sceneKey` literal red; delete `kitchen-stage-2.webp` → the size/orphan cases red; put `renovate` back as the first task → the order pin and the fixture `[]` cases red; each restored; meta-check: the order pin and the art fixture are literals from the pack and the plan, not from `KITCHEN`; whether each stage looks right is the visual pass (phase 5)
-- [ ] 2.4 `npm run build` then `grep -o "assets/rooms/kitchen/" dist/sw.js | wc -l` = 23
-- [ ] 2.5 `git diff --stat <phase-1 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar tests/fixtures/save-*.json` empty
-- [ ] 2.6 Every spec the phase-2 e2e grep names, run singly (sandbox disabled), green; full e2e left to the orchestrator after phase 6
-- [ ] 2.7 Full local gate green
+- [x] 2.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the two new `public/assets/rooms/kitchen/kitchen-stage-{1,2}.webp` — d2b8c24
+- [x] 2.2 `npx vitest run tests/roomArt.test.ts tests/rooms.test.ts tests/roomsData.test.ts tests/fixtureLoadPath.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-1 count> + N` — d2b8c24
+- [x] 2.3 Deliberate break: swap the two stage `scene` keys → the `sceneKey` literal red; delete `kitchen-stage-2.webp` → the size/orphan cases red; put `renovate` back as the first task → the order pin and the fixture `[]` cases red; each restored; meta-check: the order pin and the art fixture are literals from the pack and the plan, not from `KITCHEN`; whether each stage looks right is the visual pass (phase 5) — d2b8c24
+- [x] 2.4 `npm run build` then `grep -o "assets/rooms/kitchen/" dist/sw.js | wc -l` = 23 — d2b8c24
+- [x] 2.5 `git diff --stat <phase-1 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar tests/fixtures/save-*.json` empty — d2b8c24
+- [x] 2.6 Every spec the phase-2 e2e grep names, run singly (sandbox disabled), green; full e2e left to the orchestrator after phase 6 — d2b8c24
+- [x] 2.7 Full local gate green — d2b8c24
 
 #### Manual
 
