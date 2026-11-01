@@ -50,7 +50,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | done |
 | S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | done     |
 | S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | done     |
-| S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | ready    |
+| S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | planning |
 | S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25, S-31   | FR-034, FR-040, FR-041, FR-035             | proposed |
 | S-33  | lab-module           | dziecko z bazą po Hangarze remontuje Laboratorium; moduł w remoncie ma ramkę bazy    | S-30               | FR-046, FR-045, FR-035                     | ready    |
 | S-34  | cabins-module        | dziecko z bazą po Laboratorium remontuje Kajuty, czwarty moduł bazy                  | S-33               | FR-046, FR-035                             | proposed |
@@ -220,7 +220,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Salon na kremie zachowuje ciasny kadr narożnika i w przekroju wypełnia komórkę bardziej niż inne pokoje: zostawić, czy zamówić nowy kadr (wtedy zmienią się sloty)? — Owner: autor. Block: no.
   - Czy kremowy salon zastępuje postarzenie zielonej planszy (`salon-style`, worn grade) i co z paczkami `martynka-salon-worn-v1/v2` w Odłożonych? — Owner: autor. Block: no.
 - **Risk:** zmienia dwa pokoje, w które dzieci już grają; najłatwiej tu złamać guardrail „nic urządzonego nie znika”, więc zapis i migracja są w centrum planu.
-- **Status:** ready
+- **Status:** planning
 
 ### S-24: Mieszkańcy wprowadzają się, naklejka do albumu
 
