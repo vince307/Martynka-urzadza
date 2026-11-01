@@ -648,11 +648,11 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Automated
 
-- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "BATHROOM|roomDoneCardRect|save-v6-children-done|assets/rooms/bathroom" CLAUDE.md` present
-- [x] 5.2 `grep -c "Trigger:" context/changes/bathroom-room/follow-ups/review-fixes.md` ≥ 6; `grep -cE "^\| 20[45] " docs/design-gaps.md` = 2
-- [x] 5.3 Seam sweep: `grep -rnE "tiles\.left|do not fit at this width|come with later slices" src tests scripts` empty; `npm run art` then `git status --short public/assets` empty
-- [x] 5.4 `git diff --stat <phase-4 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
-- [x] 5.5 Full local gate green; full e2e left to the orchestrator after phase 6
+- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "BATHROOM|roomDoneCardRect|save-v6-children-done|assets/rooms/bathroom" CLAUDE.md` present — a9a4ee5
+- [x] 5.2 `grep -c "Trigger:" context/changes/bathroom-room/follow-ups/review-fixes.md` ≥ 6; `grep -cE "^\| 20[45] " docs/design-gaps.md` = 2 — a9a4ee5
+- [x] 5.3 Seam sweep: `grep -rnE "tiles\.left|do not fit at this width|come with later slices" src tests scripts` empty; `npm run art` then `git status --short public/assets` empty — a9a4ee5
+- [x] 5.4 `git diff --stat <phase-4 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — a9a4ee5
+- [x] 5.5 Full local gate green; full e2e left to the orchestrator after phase 6 — a9a4ee5
 
 #### Manual
 
