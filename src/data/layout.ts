@@ -560,6 +560,7 @@ export const ROOM_LAYOUT = {
         variantFills: [PLACEHOLDER_COLORS.turquoise, PLACEHOLDER_COLORS.terracotta, PLACEHOLDER_COLORS.butter],
         decorFill: PLACEHOLDER_COLORS.paleLeaf, decorAlpha: 0.9,
         border: PLACEHOLDER_COLORS.deepTeal, borderWidth: 3, radius: 24,
+        textInset: 16,   // the caption keeps this much free on each side inside the box; a longer one shrinks (labelScale)
     },
     tray: { left: 300, top: 780, width: 1320, height: 260 },   // variant panel; furniture ends above tray.top so the preview stays visible
     // Variant panel contents (S-09 phase 6): three thumbnails, "Wybieram" and "Zamknij" inside `tray`. The chosen thumbnail

@@ -1,4 +1,5 @@
 import type { GameObjects, Scene } from 'phaser';
+import { labelScale } from '../../core/fitLabel';
 import type { Box } from '../../core/roomHit';
 import { ROOM_LAYOUT } from '../../data/layout';
 import { textStyle } from './textStyle';
@@ -57,11 +58,13 @@ export class RoomLayer {
             return;
         }
         const { box } = standIn;
-        const { border, borderWidth, radius } = ROOM_LAYOUT.standIn;
+        const { border, borderWidth, radius, textInset } = ROOM_LAYOUT.standIn;
         const [w, h] = [box.right - box.left, box.bottom - box.top];
         this.box.setDepth(depth).setVisible(true).fillStyle(standIn.fill, standIn.alpha).fillRoundedRect(box.left, box.top, w, h, radius);
         this.box.lineStyle(borderWidth, border, 1).strokeRoundedRect(box.left, box.top, w, h, radius);
         this.text.setText(standIn.caption).setPosition(box.left + w / 2, box.top + h / 2).setDepth(depth + 0.5).setVisible(true);
+        // A narrow box (the children's bookcase) shrinks its caption to fit inside the border, never cuts it (visual gate S-25).
+        this.text.setScale(labelScale(this.text.width, { left: box.left, width: w, inset: textInset, reserved: 0, gap: 0 }));
     }
 
     hide(): void {
