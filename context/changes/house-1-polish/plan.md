@@ -365,7 +365,8 @@ The hook build can start on the frozen v6 mid-kitchen save, so phase 6 can prove
 
 **Contract**: `E2ESaveSeam` and `E2E_SAVE_SEAMS` gain `'v6-kitchen'`; `e2eSaveStore` serves `structuredClone(
 save-v6-kitchen-mid.json)` for it (comment: frozen v6 bytes, a kitchen with walls renewed and two pieces, so the current
-build meets a real v6 save and lifts it to v7); the doc comment listing seams gains it; `E2E_HOOK_MARKERS` gains
+build meets a real v6 save and lifts it to v7); the doc comment listing seams gains it and its `v5-salon` entry says
+"lifts it to v6 and on to v7" (plan review F2); `E2E_HOOK_MARKERS` gains
 `'v6-kitchen'`; `e2eSave.test.ts` accepts `?e2eSave=v6-kitchen` and the store returns the fixture.
 
 ### Success Criteria:
@@ -417,7 +418,9 @@ pictures; service-worker install warning unchanged) re-recorded with the new cou
 re-checked against the changed script; kitchen-room 4 / kids-room 12 / hangar 4 (pack thumbnails) carried with the note
 that `UI_ART` `salonAfter` still shows the green board; NEW: retire `scripts/recolour-board.py`, `BOARD_*`,
 `recolourBoard`, `tests/recolourBoard.test.ts` (`Trigger:` the next art-script change or an audit); NEW: cream salon
-thumbnail (`Trigger:` the designer delivers thumbnails); NEW: an exported v6 file imported after v7 is migrated (proven by
+thumbnail (`Trigger:` the designer delivers thumbnails); kitchen-room 13 / hangar 8 (kitchen task wording owes the designer's
+copy; `Trigger:` the next change to `src/data/rooms.ts` kitchen rows — FIRES in phase 2): re-recorded with the three new stage
+labels named and the reviewer read of row 2.8 cited, the designer's wording still owed (plan review F3); NEW: an exported v6 file imported after v7 is migrated (proven by
 unit), a v7 file on a v6 build is `future` (`Trigger:` a rollback); every other open follow-up whose `Trigger:` names a
 file this slice changed — included, closed with evidence, or re-recorded.
 
@@ -438,7 +441,7 @@ expectation left (`grep -n "S-32 phase 1" tests` empty).
 - `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "SAVE_VERSION. 7|kitchenStages|save-v7|kitchen-stage|salon-before-cream" CLAUDE.md` present
 - `grep -c "Trigger:" context/changes/house-1-polish/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 20[67] " docs/design-gaps.md` = 2
 - Seam sweep: `grep -rn "S-32 phase 1" tests` empty; `grep -rnE "SAVE_VERSION\)\.toBe\(6\)" tests` empty; `npm run art` then `git status --short public/assets` empty
-- `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty
+- `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty, except comment-only lines the seam sweep fixed, each listed in the handoff (file / line / old → new wording); `git diff <phase-4 sha> -- src scripts | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(//|/?\*)'` empty (plan review F2)
 - Full local gate green; full e2e left to the orchestrator after phase 6
 
 #### Manual Verification:
@@ -480,8 +483,11 @@ alternation, project `chromium-hook`; no other field); helpers reused from `test
   point); stars after each purchase = previous − cost (5, 6, 7, then the slots); the card appears at the end.
 - `#2 S-32 FR-021 a v6 kitchen with renewed walls and two pieces opens on v7 unchanged to the eye` — `?e2eSave=v6-kitchen`;
   room `kitchen`, `tasksDone 5`, `chosen` = the fixture's, current task `place-kitchen-table`, `shown` counter/fridge
-  variants = fixture; the wall point reads the AFTER colour (not before, not a stage); the hook store log
-  `writtenVersion 7` and a `backup-v6` copy equal to the fixture; reload → still `tasksDone 5`, after colour.
+  variants = fixture; the wall point reads the AFTER colour (not before, not a stage); `save` reports `migratedFrom: 6`,
+  the hook store log reaches `writtenVersion 7` with `ops` starting `['write', 'backup']` and exactly one `backup`, and
+  `save.backup` is `'done'`. (Plan review F1: the `e2eSaveStore` log carries neither the backup's bytes nor its `from`, and a
+  reload re-seeds the in-memory store with the v6 fixture, so byte equality of `backup-v6` and persistence across a reload
+  are proven by the unit `fixtureLoadPath` cases, not by this spec; do not extend the hook to claim them.)
 - `#2 S-32 FR-038 the salon stands on cream in the room and in the house cross-section` — a fresh house child in the salon:
   a board point outside the room box (measured on `architecture-before.webp`, e.g. a corner region, recorded) reads cream
   `(255, 245, 223)` ±12 in the room before and after the stage purchase; "Dom" → the same relative point inside the salon's
@@ -539,6 +545,21 @@ nothing (`deploy/README.md` § 6 note). Import of a v6 file migrates through `de
 - The worn-v2 before under the code grade may look doubly worn (D5) — judged by the visual frames (7), (9).
 - `npm run art` depends on local tools and the local-only `designs/` packs; a missing tool ends phase 2 or 3 as BLOCKED, never
   a hand-made WebP.
+- Plan review F4 (migration audit, recorded): every kitchen state a v6 build can store was checked against the code —
+  absent kitchen (salon in renovation, a base save `base-1`, a child who went back from the house to the base): untouched;
+  `tasksDone 0` (moved in, nothing bought; `chosen` is `{}`): untouched; `1` (old stage only) → `3` (all three stages, after
+  look, which the old stage showed); `2..6` with `chosen` slot keys (slot ids unchanged, `roomStateProblems`
+  `chosen-not-bought` index check stays consistent because every slot index moves by the same +2); `7` done → `9` done
+  (`currentRoom` `kitchen` or a later room unchanged; `nextRoom` at load as today); a kitchen visited in change mode is
+  `visiting`, runtime only, never saved. The step runs only from v6 (`decodeSave` loops `from..SAVE_VERSION-1`), so it is
+  applied once per save; a v5 save with a kitchen passes `MIGRATIONS[5]` then `[6]` (the kitchen list has not changed since
+  S-22, `git log -S place-counter -- src/data/rooms.ts` = one commit). Import (`parseImport` → `decodeSave`) and the backup
+  key (`backup-v${from}`, `readBackups` loops to `SAVE_VERSION - 1`) need no code. A pre-v7 build meets v7 as `future` and
+  its `guardedPut` refuses with `NewerSave`. Residual: an older tab that writes v6 after this page wrote v7 is refused; an
+  older tab that wrote v6 before this page's first write is overwritten by this page's own migrated memory (generic
+  `olderWriter`, unchanged).
+- Plan review F5: the phase-3 break "salon row `recolourBoard: true`" names two acceptable outcomes; the implementer records
+  which one happened (exit code or the changed bytes) in the handoff.
 - A child who finished the kitchen on v6 already moved on; the +2 keeps the kitchen done — proven by `fixtureLoadPath`
   (`save-v6-kitchen-done`, `save-v6-children-done`).
 
@@ -643,7 +664,7 @@ added or edited):
 - [ ] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "SAVE_VERSION. 7|kitchenStages|save-v7|kitchen-stage|salon-before-cream" CLAUDE.md` present
 - [ ] 5.2 `grep -c "Trigger:" context/changes/house-1-polish/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 20[67] " docs/design-gaps.md` = 2
 - [ ] 5.3 Seam sweep: `grep -rn "S-32 phase 1" tests` empty; `grep -rnE "SAVE_VERSION\)\.toBe\(6\)" tests` empty; `npm run art` then `git status --short public/assets` empty
-- [ ] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty
+- [ ] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty, except comment-only lines the seam sweep fixed, each listed in the handoff (file / line / old → new wording); `git diff <phase-4 sha> -- src scripts | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(//|/?\*)'` empty (plan review F2)
 - [ ] 5.5 Full local gate green; full e2e left to the orchestrator after phase 6
 
 #### Manual
