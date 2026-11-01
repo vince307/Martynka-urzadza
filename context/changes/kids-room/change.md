@@ -1,7 +1,7 @@
 ---
 change_id: kids-room
 title: Pokój dziecięcy, trzeci pokój domu 1 z danych i grafiki
-status: new
+status: preparing
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
