@@ -609,10 +609,10 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Automated
 
-- [ ] 2.1 `npx vitest run tests/layout.test.ts tests/roomDoneCardWiring.test.ts tests/roomDoneLayout.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: set `ROOM_DONE_LAYOUT.card.minWidth` to 1100 → the accepted-look case (n = 2, 3 give 388/1144) red; set `padding` to 60 → the n = 5 inside-`GAME_WIDTH` case red; put `card.left + card.width / 2` back in `show` → the wiring case red; each restored; meta-check: the wiring test proves the call site, the layout test proves the numbers, the visual pass (phase 5) proves the pixels
-- [ ] 2.3 `git diff --stat <phase-1 sha> -- src/data/rooms.ts src/data/houses.ts src/data/pl.ts src/data/roomArt.ts src/scenes src/core public tests/fixtures tests/e2e` empty (only `roomDoneLayout.ts` exists in core from phase 1; the diff names no core file)
-- [ ] 2.4 Full local gate green; no e2e in this phase (no spec touched; card items unchanged, the orchestrator runs the full suite after phase 6)
+- [x] 2.1 `npx vitest run tests/layout.test.ts tests/roomDoneCardWiring.test.ts tests/roomDoneLayout.test.ts` green; unit `<phase-1 count> + N`
+- [x] 2.2 Deliberate break: set `ROOM_DONE_LAYOUT.card.minWidth` to 1100 → the accepted-look case (n = 2, 3 give 388/1144) red; set `padding` to 60 → the n = 5 inside-`GAME_WIDTH` case red; put `card.left + card.width / 2` back in `show` → the wiring case red; each restored; meta-check: the wiring test proves the call site, the layout test proves the numbers, the visual pass (phase 5) proves the pixels
+- [x] 2.3 `git diff --stat <phase-1 sha> -- src/data/rooms.ts src/data/houses.ts src/data/pl.ts src/data/roomArt.ts src/scenes src/core public tests/fixtures tests/e2e` empty (only `roomDoneLayout.ts` exists in core from phase 1; the diff names no core file)
+- [x] 2.4 Full local gate green; no e2e in this phase (no spec touched; card items unchanged, the orchestrator runs the full suite after phase 6)
 
 #### Manual
 

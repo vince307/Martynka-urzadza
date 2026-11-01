@@ -599,10 +599,11 @@ export const ROOM_LAYOUT = {
  * DESIGN-GAP (docs/design-gaps.md rows 39 and 40): the kit has no such card nor room list; the look follows the unlock card.
  */
 export const ROOM_DONE_LAYOUT = {
-    card: { left: 388, top: 220, width: 1144, height: 560, border: 7, radius: 46 },
+    // The card is wider than minWidth when the tiles need it: `roomDoneCardRect` (src/core/roomDoneLayout.ts) is the one rule for left, width and tile lefts.
+    card: { centerX: 960, minWidth: 1144, padding: 30, top: 220, height: 560, border: 7, radius: 46 },
     title: { x: 960, y: 262 },
-    // DESIGN-GAP 204: three tiles of 340 + 2 gaps of 32 fill the 1144 card; four tiles (S-31) do not fit at this width. The done mark sits clear of the 230x130 miniature.
-    tiles: { left: 490, top: 372, width: 340, height: 200, gap: 32, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.12, captionY: 172, markRadius: 22, markInset: 28,
+    // DESIGN-GAP 204: the card width follows the tile count (1144 up to three tiles, 1516 for four, 1888 for five; six do not fit in 1920). The done mark sits clear of the 230x130 miniature.
+    tiles: { top: 372, width: 340, height: 200, gap: 32, radius: 28, border: 5, dash: 18, dashGap: 12, thumbTop: 16, thumbScale: 0.12, captionY: 172, markRadius: 22, markInset: 28,
         // Check mark (points as fractions of the circle's radius from its centre) and padlock (offsets from the tile's top and centre).
         mark: { stroke: 7, startX: -0.5, bendX: -0.1, bendY: 0.4, endX: 0.5, endY: -0.35 },
         lock: { centerY: 70, bodyHalfWidth: 28, bodyTop: 4, bodyWidth: 56, bodyHeight: 44, bodyRadius: 8, shackleRadius: 18, stroke: 8, alpha: 0.9 } },

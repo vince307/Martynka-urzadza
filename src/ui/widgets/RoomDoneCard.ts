@@ -2,6 +2,7 @@ import type { GameObjects, Scene } from 'phaser';
 import { miniatureMode, neededMiniatureKeys, type MiniatureMode } from '../../core/artPick';
 import { emptyRoomState, type RoomListItem } from '../../core/rooms';
 import type { RoomDef, RoomState } from '../../core/types';
+import { roomDoneCardRect } from '../../core/roomDoneLayout';
 import { tileLoading } from '../../core/roomLoad';
 import { PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT } from '../../data/layout';
 import { pl, roomText } from '../../data/pl';
@@ -47,14 +48,13 @@ export class RoomDoneCard {
         g.clear();
         this.clearCaptions();
         g.fillStyle(PLACEHOLDER_COLORS.unlockCard, 1);
-        g.fillRoundedRect(card.left, card.top, card.width, card.height, card.radius);
+        const rect = roomDoneCardRect(items.length, { centerX: card.centerX, minWidth: card.minWidth, padding: card.padding, tileWidth: tiles.width, gap: tiles.gap });
+        g.fillRoundedRect(rect.left, card.top, rect.width, card.height, card.radius);
         g.lineStyle(card.border, PLACEHOLDER_COLORS.unlockBorder, 1);
-        g.strokeRoundedRect(card.left, card.top, card.width, card.height, card.radius);
+        g.strokeRoundedRect(rect.left, card.top, rect.width, card.height, card.radius);
         this.title.setVisible(true);
-        const total = items.length * tiles.width + (items.length - 1) * tiles.gap;
-        const first = card.left + card.width / 2 - total / 2;
         items.forEach((item, index) => {
-            const left = first + index * (tiles.width + tiles.gap);
+            const left = rect.tileLefts[index];
             const room = item.kind === 'room' && item.id !== null && Object.prototype.hasOwnProperty.call(catalogue, item.id) ? catalogue[item.id] : null;
             if (item.kind === 'room' && room !== null) {
                 const state = Object.prototype.hasOwnProperty.call(states, room.id) ? states[room.id] : emptyRoomState();
@@ -66,7 +66,7 @@ export class RoomDoneCard {
         this.next.show(pl.unlock.next, button.left, button.top, 'primary', false, button);
         if (extras.burst > 0 && !this.burstPlayed) {
             this.burstPlayed = true;
-            this.burst = starBurst(this.scene, card.left + card.width / 2, card.top + card.height / 2, { count: extras.burst, depth: ROOM_LAYOUT.depth.card + 1 });
+            this.burst = starBurst(this.scene, rect.left + rect.width / 2, card.top + card.height / 2, { count: extras.burst, depth: ROOM_LAYOUT.depth.card + 1 });
         }
     }
 

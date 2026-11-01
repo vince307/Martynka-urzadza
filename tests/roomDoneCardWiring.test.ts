@@ -21,4 +21,11 @@ describe('RoomDoneCard wiring', () => {
         expect(source).toMatch(/extras\.burst > 0 && !this\.burstPlayed/);
         expect(source).toMatch(/hide\(\)[\s\S]*this\.burst\?\.destroy\(\)/);
     });
+
+    it('reads the card rectangle from the one rule, not from fixed coordinates', () => {
+        expect(source).toContain('roomDoneCardRect(');
+        expect(source).not.toMatch(/card\.left|card\.width/);
+        expect(source).toContain('starBurst(this.scene, rect.left + rect.width / 2');
+        expect(source).toContain('rect.tileLefts[index]');
+    });
 });
