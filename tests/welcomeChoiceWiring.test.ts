@@ -36,6 +36,11 @@ describe('WelcomeScene choice view wiring', () => {
         expect(place).toMatch(/hasPurchase\([^)]*\)\) \{\s*this\.start\(placed\);\s*return;/);
     });
 
+    it('draws the sunflower on the age view only (the choice cards and "Wróć" lie over its place)', () => {
+        expect(text).toMatch(/if \(!choice && this\.textures\.exists\(flower\.key\)\)/);
+        expect(text).toMatch(/const choice = this\.view === 'choice' && this\.placed !== undefined;/);
+    });
+
     it('uses no tween, and the card only the ChunkyFace press', () => {
         expect(text).not.toMatch(/tweens/);
         expect(card).not.toMatch(/tweens/);

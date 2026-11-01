@@ -88,12 +88,13 @@ export class WelcomeScene extends Scene {
         });
         drawNotebook(this);
         const flower = WELCOME_LAYOUT.flower;
-        // No stand-in on the welcome: a missing texture draws nothing.
-        if (this.textures.exists(flower.key)) {
+        const choice = this.view === 'choice' && this.placed !== undefined;
+        // No stand-in on the welcome: a missing texture draws nothing. The age view only: on the choice view the cards and "Wróć" cover its place (visual gate S-28).
+        if (!choice && this.textures.exists(flower.key)) {
             this.add.image(flower.left + flower.size / 2, flower.top + flower.size / 2, flower.key).setDisplaySize(flower.size, flower.size).setAngle(flower.angle);
         }
         this.add.text(WELCOME_LAYOUT.brand.x, WELCOME_LAYOUT.brand.y, pl.title, textStyle('brand')).setOrigin(0.5, 0);
-        if (this.view === 'choice' && this.placed) {
+        if (choice && this.placed) {
             this.createChoice(this.placed);
         } else {
             this.createAges();

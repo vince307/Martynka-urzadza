@@ -531,6 +531,7 @@ export const WELCOME_LAYOUT = {
     // bottom-right corner (where the kit draws the cushion), 44 px from the inner border on the right, 32 px at the bottom.
     parent: { left: 1420, top: 834, width: 260, height: 110, radius: 32, border: 5 },
     // The kit's .welcome-flower: the `flower` task icon, bottom left of the notebook, clear of the age buttons (the cushion stays out, it overlaps `parent`).
+    // Age view only: the choice cards and the choice "Wróć" (S-28) lie over this place, so the choice view draws no flower.
     flower: { left: 360, top: 790, size: 152, angle: -14, key: 'tasks/icons/flower' },
     // The first-building choice (S-28), inside the notebook right of the margin line: the title over two cards (picture 3:2 over a label band),
     // the speaker beside the title, the child's "Wróć" bottom left. DESIGN-GAP (docs/design-gaps.md rows 191, 197, 198): the kit has no choice screen;
