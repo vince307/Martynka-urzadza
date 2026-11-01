@@ -622,12 +622,12 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Automated
 
-- [ ] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 21 new files under `public/assets/rooms/bathroom/`
-- [ ] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N`
-- [ ] 3.3 Deliberate break: change the sink's `x` in `bathroomSlots` → the manifest literal red; delete `bathroom-rug-mint.webp` → the size/orphan cases red; drop `'bathroom-ducks'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `bathroomSlots`; whether the picture looks right is the visual pass (phase 5)
-- [ ] 3.4 `npm run build` then `grep -o "assets/rooms/bathroom/" dist/sw.js | wc -l` = 21
-- [ ] 3.5 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bridge public/assets/rooms/hangar` empty
-- [ ] 3.6 Full local gate green; no e2e in this phase (no spec touched; the bathroom is unreachable)
+- [x] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 21 new files under `public/assets/rooms/bathroom/` — 69694ce
+- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N` — 69694ce
+- [x] 3.3 Deliberate break: change the sink's `x` in `bathroomSlots` → the manifest literal red; delete `bathroom-rug-mint.webp` → the size/orphan cases red; drop `'bathroom-ducks'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `bathroomSlots`; whether the picture looks right is the visual pass (phase 5) — 69694ce
+- [x] 3.4 `npm run build` then `grep -o "assets/rooms/bathroom/" dist/sw.js | wc -l` = 21 — 69694ce
+- [x] 3.5 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bridge public/assets/rooms/hangar` empty — 69694ce
+- [x] 3.6 Full local gate green; no e2e in this phase (no spec touched; the bathroom is unreachable) — 69694ce
 
 #### Manual
 
