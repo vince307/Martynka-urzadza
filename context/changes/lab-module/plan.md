@@ -256,7 +256,7 @@ each slot, a stars value, a learner, variants. Hand-written (R2), never edited a
 #### Automated Verification:
 
 - The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N`
-- Deliberate break: give the lab row `place: 1` (collides with the Hangar) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path
+- Deliberate break: give the lab row `place: 1` (floor 1, place 1 = the `upper-right` cell instead of `upper-left`) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path
 - `npx playwright test tests/e2e/hangar-module.spec.ts` (sandbox disabled, single spec) green, 2 tests; the full e2e suite is NOT run here
 - `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-1 sha>.. -- tests/fixtures/save-v7.json tests/fixtures/save-v6-bridge-done.json` empty
 - Full local gate green; full e2e left to the orchestrator after phase 5
@@ -351,7 +351,10 @@ fired, carried), hangar-module 4 / bathroom 9 / house-1-polish 11 (a room finish
 without the card; applies to Hangar → Laboratorium; carried), atlas (bathroom 7 / house-1-polish 13: lab ≈ 30.9 s, not
 fired, re-recorded with the measured lab number), SW-install warning (bathroom 10 / house-1-polish 9: fired by 22 new
 precache entries, re-recorded), house-1-polish 2 recolour retirement (fired, out of scope, carried), hangar-module 3
-`roomArtCheck` (not fired, carried); every other open follow-up whose `Trigger:` names a file this slice changed
+`roomArtCheck` (not fired, carried), base-cross-section 13 (`HouseScene`/`HouseView` items; its trigger "the next change to
+`HouseScene`" fires on the phase-3 doc-comment edit of `HouseScene.art` — re-recorded unchanged, no behaviour touched; plan
+review F2), audit-art-renderer 2 (Python without `-I`; fires on the art-script change, already done: `execFileSync('python3',
+['-I', …])` in `scripts/make-task-art.mjs` — closed with that evidence); every other open follow-up whose `Trigger:` names a file this slice changed
 (`src/data/rooms.ts`, `src/data/houses.ts`, `src/data/houseArt.ts`, `src/data/roomArt.ts`, `src/data/pl.ts`,
 `scripts/make-task-art.mjs`) — closed with evidence or re-recorded.
 
@@ -403,8 +406,9 @@ One spec against the hook build modelled on `tests/e2e/hangar-module.spec.ts`, r
 **Files**: `tests/e2e/lab-module.spec.ts` (new); `playwright.config.ts` (add `lab-module` to the `ROUND_SPEC`
 alternation, project `chromium-hook`; no other field)
 
-**Contract**: tests (risk ids in titles), each in a fresh context, reusing `tests/e2e/support/*` (the purchase loop helper
-the Hangar spec uses):
+**Contract**: file-level `test.setTimeout(300_000)` (plan review F1: the Hangar spec's 240 s covers 14 purchases, test 2 here
+makes 21; `bathroom-room.spec.ts` precedent 300 s). Tests (risk ids in titles), each in a fresh context, reusing
+`tests/e2e/support/*` (the purchase loop helper the Hangar spec uses):
 - `#2 S-33 FR-046 FR-045 the base shows Mostek and Hangar done and the Laboratorium in its upper-left cell in the base
   frame; a reload keeps it` — `passWelcome(…, 'space')` with `e2eStars` = Mostek + Hangar totals (200), buy both, "Dalej"
   → room `lab`, `tasksDone 0`; "Baza" → `houseView` cells by id: `ground-left` and `ground-right` `done`, `upper-left`
@@ -420,7 +424,7 @@ the Hangar spec uses):
 
 #### Automated Verification:
 
-- Spec red before (deliberate breaks, each run alone with `-g`): set `HOUSE_GEOMETRY['base-1'].cellFrame` back to `'house/cell-frame'` → test 1's pixel red; move the lab row to `place: 1` → test 1 red; set a lab cost to 22 → test 2's balance red; add an unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered canvas, so a frame drawn under the shell or a stand-in rect would also turn it red
+- Spec red before (deliberate breaks, each run alone with `-g`): set `HOUSE_GEOMETRY['base-1'].cellFrame` back to `'house/cell-frame'` → test 1's pixel red; move the lab row to `place: 1` (the `upper-right` cell) → test 1 red; set a lab cost to 22 → test 2's balance red; add an unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered canvas, so a frame drawn under the shell or a stand-in rect would also turn it red
 - `npx playwright test tests/e2e/lab-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green with the single-spec command (sandbox disabled); the full e2e suite is NOT run by this phase — the orchestrator runs it once afterwards from a pinned worktree, expected `196 + 2`, total equal to `npx playwright test --list | tail -1`
 - Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
 
@@ -533,7 +537,7 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 #### Automated
 
 - [ ] 2.1 The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: give the lab row `place: 1` (collides with the Hangar) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path
+- [ ] 2.2 Deliberate break: give the lab row `place: 1` (floor 1, place 1 = the `upper-right` cell instead of `upper-left`) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path
 - [ ] 2.3 `npx playwright test tests/e2e/hangar-module.spec.ts` (sandbox disabled, single spec) green, 2 tests; the full e2e suite is NOT run here
 - [ ] 2.4 `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-1 sha>.. -- tests/fixtures/save-v7.json tests/fixtures/save-v6-bridge-done.json` empty
 - [ ] 2.5 Full local gate green; full e2e left to the orchestrator after phase 5
@@ -577,6 +581,6 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`): set `HOUSE_GEOMETRY['base-1'].cellFrame` back to `'house/cell-frame'` → test 1's pixel red; move the lab row to `place: 1` → test 1 red; set a lab cost to 22 → test 2's balance red; add an unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered canvas, so a frame drawn under the shell or a stand-in rect would also turn it red
+- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`): set `HOUSE_GEOMETRY['base-1'].cellFrame` back to `'house/cell-frame'` → test 1's pixel red; move the lab row to `place: 1` (the `upper-right` cell) → test 1 red; set a lab cost to 22 → test 2's balance red; add an unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered canvas, so a frame drawn under the shell or a stand-in rect would also turn it red
 - [ ] 5.2 `npx playwright test tests/e2e/lab-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green with the single-spec command (sandbox disabled); the full e2e suite is NOT run by this phase — the orchestrator runs it once afterwards from a pinned worktree, expected `196 + 2`, total equal to `npx playwright test --list | tail -1`
 - [ ] 5.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)

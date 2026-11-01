@@ -1,7 +1,7 @@
 ---
 change_id: lab-module
 title: Laboratorium, trzeci moduł bazy, z ramką bazy w przekroju
-status: planned
+status: plan_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
@@ -80,7 +80,7 @@ in the save (it is not).
 | bathroom 10 / house-1-polish 9 (service-worker install warning) | Trigger: the next change to the precache set | **fires** (22 new pictures); expected unchanged warning — re-record, no work |
 | house-1-polish 2 (retire `recolour-board.py` and friends) | Trigger: the next change to `scripts/make-task-art.mjs` | **fires** (new `ROOM_PACKS` row, new pack constants). Take: **out of scope** — retiring the recolour path is an art-pipeline cleanup unrelated to the module and touches a tested script; carry with the trigger kept (the plan may revisit if trivial) |
 | hangar-module 3 (`roomArtCheck` unused) | Trigger: the next change to `scripts/check-deploy.ts` | not fired (no change planned there). Carry |
-| base-cross-section 13 (`HouseScene`/`HouseView` items) | Trigger: the next change to `HouseScene`, `HouseView` or `RoomScene.redraw` | not fired: the frame is data read by unchanged `HouseView`. Carry |
+| base-cross-section 13 (`HouseScene`/`HouseView` items) | Trigger: the next change to `HouseScene`, `HouseView` or `RoomScene.redraw` | fires only through the comment-only edit of `HouseScene.art` (plan review F2); no behaviour change, the frame is data read by unchanged `HouseView`. Re-record unchanged |
 | base-cross-section 7 (back label) | designer / playtest | not fired. Carry |
 
 ## Autonomous decisions
