@@ -9,6 +9,11 @@ const view = readFileSync('src/ui/widgets/HouseView.ts', 'utf8');
 const capture = readFileSync('src/ui/widgets/roomCapture.ts', 'utf8');
 
 describe('HouseScene wiring', () => {
+    it('loads and judges only the pictures its building names', () => {
+        expect(scene).toContain('houseArtKeys(');
+        expect(scene).not.toContain('HOUSE_ART.every(');
+        expect(scene).not.toContain('HOUSE_ART.filter((e) => !this.textures');
+    });
     it('redraws on wake and on a WebGL context restore, and removes both listeners on shutdown', () => {
         expect(scene).toMatch(/events\.on\('wake', onWake\)/);
         expect(scene).toMatch(/renderer\.on\(Renderer\.Events\.RESTORE_WEBGL, onRestore\)/);
