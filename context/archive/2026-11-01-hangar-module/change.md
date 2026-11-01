@@ -1,10 +1,10 @@
 ---
 change_id: hangar-module
 title: Hangar z rakietą, drugi moduł bazy
-status: impl_reviewed
+status: archived
 created: 2026-11-01
 updated: 2026-11-01
-archived_at: null
+archived_at: 2026-11-01T09:31:39Z
 ---
 
 ## Notes
