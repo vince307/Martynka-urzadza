@@ -1,24 +1,26 @@
 # Handoff — `base-cross-section` (slice S-29)
 
-Written by the `/10x-research` step of run `2026-10-31-space-base`. `research.md` is committed and `change.md` is `preparing`; no product code was touched. The next agent must not get this wrong: stopping `HouseScene` in `TaskScene.backToChoice` is NOT enough, because the scene instance survives stop/start (Phaser 4.2.1) and `HouseScene.loadArt`'s `artQueued` flag is never reset in `create`, so the second building's pictures would never load; and the base airlock must get its own file name (`base-1-cell-closed`), not reuse `cell-closed`.
+Written by the `/10x-plan` step of run `2026-10-31-space-base`. `plan.md` and `plan-brief.md` are committed, `change.md` is `planned`, the roadmap row S-29 is `planning`; no product code was touched. The next agent must not get this wrong: the `HOUSE_ART` base rows and the per-geometry filter (`houseArtKeys`) belong in the SAME phase (2), and the stale-scene fix needs both the house-scene stop in `TaskScene.backToChoice` and the art-flag reset at the top of `HouseScene.create` (phase 3).
 
 ## 1. State
 
 | item | value |
 |---|---|
 | branch | `feat/base-cross-section`, cut from `main` at `9a44799` |
-| commits | 4 on top of `9a44799`: `25761bd` change identity, `2f8ccb0` handoff after identity, `3fd2d02` research, plus this handoff commit |
+| commits | 5 on top of `9a44799`: `25761bd` identity, `2f8ccb0` handoff, `3fd2d02` research, `68d1488` handoff, `84f8a9a` plan, plus this handoff commit |
 | pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 28 of 28 (`grep -c '^- \[ \]' plan.md`) |
 | working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/base-cross-section/research.md` | source-backed research: base cross-section as data, per-building style/art/label, frame verdict, stale scene, fallbacks, WebP sizes, e2e path, save verdict, FR-046 celebration |
-| `context/changes/base-cross-section/change.md` | frontmatter only: `status: preparing`, `updated: 2026-11-01` |
+| `context/changes/base-cross-section/plan.md` | 5 phases with drivers, success criteria, autonomous decisions P1-P9, Progress (28 rows) |
+| `context/changes/base-cross-section/plan-brief.md` | two-page brief: key decisions, phases at a glance, risks |
+| `context/changes/base-cross-section/change.md` | `status: planned` |
+| `context/foundation/roadmap.md` | S-29 status `planning` (At a glance row and slice body) |
 | `context/changes/base-cross-section/handoff.md` | this file |
 
 ## 3. Verification
@@ -26,38 +28,26 @@ Written by the `/10x-research` step of run `2026-10-31-space-base`. `research.md
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/base-cross-section` (observed) |
-| `cwebp -quiet -q 85 -alpha_q 100 -m 6` on `designs/bystrow-space-base-v1/assets/base/{base-1-shell,cell-closed}.png` (scratchpad output) | 81 970 B and 12 308 B (observed); house art today 44 964 + 5 554 + 8 600 = 59 118 B |
-| Pillow composite: `#e8efeb` + base shell + 3 airlocks + house `cell-frame.png` at (236, 620) (scratchpad) | frame clearly visible, matches the shell's gold trims (observed, image viewed) |
-| `grep` of `node_modules/phaser/src/scene/SceneManager.js` `switch`/`start` | `switch` wakes a sleeping target else `start`s it; `start` reuses `getScene(key)` (observed) |
-| `grep -rn 'księżyc' src` | no hit (observed): the manifest label is not game copy |
-| lint / typecheck / tests / build / e2e | not run: docs-only step, no code changed |
+| python check: each phase's Success Criteria bullets equal its Progress rows | phases 1-5: 4/7/4/10/3 items, all equal (observed); 28 rows total |
+| `metadata-guard.mjs inspect` then `mark-planned --expected-sha256 6df2b18…` | `{"changed":true}`; `change.md` reads `status: planned` (observed) |
+| source spot-checks at `68d1488` | `HouseScene.shellReady` uses `HOUSE_ART.every`; `artQueued` not reset in `create`; `backToChoice` stops ui and room only; `HOUSE_LAYOUT.background`/`teaser` read only by `HouseView.render`; `pl.house.open` read only by `RoomScene.redraw`; `houseCells` keeps a done current room `current`; `playwright.config.ts` `ROUND_SPEC` alternation exists (observed) |
+| lint / typecheck / tests / build / e2e | not run: docs-only step, no code changed. Baseline per contract: unit 4171, e2e 184 on main `9a44799` (inherited, unverified here) |
 
 ## 4. Next command
 
-`/10x-plan base-cross-section`
+`/10x-plan-review base-cross-section`
 
 ## 5. Open
 
-- Plan inputs (details in `research.md` § Summary):
-  - Style per building: extend `HouseGeometry` (`src/core/types.ts`) with `background` and `teaser` (colour, shadow or null, weight); base values from the pack preview `#e8efeb`, `#245c59`, 600, no shadow; `HouseView.render` reads them instead of `HOUSE_LAYOUT.background`/`HOUSE_LAYOUT.teaser`.
-  - Art: add `base-1-shell` and `base-1-cell-closed` rows to `HOUSE_ART` (`src/data/houseArt.ts`) and to `scripts/make-task-art.mjs` (from `SPACE`, into `HOUSE_OUT`, no recolour); `HouseScene.shellReady`/`loadArt` filter `HOUSE_ART` by the geometry's keys; `HOUSE_GEOMETRY['base-1']` with `cellFrame: 'house/cell-frame'`.
-  - `tests/houseArt.test.ts` "weighs at most 80 000 B in all" fails once the base rows exist: make it a per-building sum (base about 102 900 B with the shared frame).
-  - `tests/houseCells.test.ts` "HOUSE_GEOMETRY data" expects `['base-1']` without geometry: flips by design.
-  - Label: `pl.house.open` becomes a record keyed by house id ('Dom', 'Baza', FR-048), read in `RoomScene.redraw`; the e2e hook needs a field exposing the label.
-  - `TaskScene.backToChoice`: stop `SCENE_KEYS.house`; `HouseScene.create`: reset `artQueued`/`artSettled` (follow-up 17, extended).
-  - FR-046 Mostek celebration: D4 default holds (one tile, "Dalej" stays in Mostek, "Baza" button after the card); house-cross-section follow-up 21 (`houseButton` null while the card is up) belongs in the Mostek e2e.
-  - E2E: `passWelcome(page, { ...QUIET, e2eStars: '100' }, 'space')` (`tests/e2e/support/welcome.ts`).
-- Risks: stand-in shell in `HouseView.standInShell` draws a house roof for the base (gap row or a per-geometry flag; house-cross-section follow-up 20 fires if `HouseView` changes); house-cross-section follow-up 19 (`onProcessError` line) fires with the `loadArt` change.
-- DESIGN-GAP rows to write in `/10x-implement` (after 198 in `docs/design-gaps.md`): base frame reuses the house `cell-frame`; base stand-in shell; zoom-out "Baza" (closes 195); last-module celebration without a teaser (narrows 196).
-- Follow-ups carried unchanged: first-building-choice 11, 16, 18 (fallbacks unreachable for the base on the inspected paths), 19, gap 198 (D7); house-cross-section 2, 4, 5, 9, 11.
+- Phases and drivers: 1 tdd (look, label, art keys as data; follow-up 20), 2 impl (base WebP + filter + per-building caps), 3 tdd (base geometry + stale scene, follow-up 17), 4 impl (docs, gaps, follow-ups, seam sweep, visual pass), 5 e2e (`tests/e2e/base-cross-section.spec.ts`, 3 tests, `184 + 3`, rendered-frame pixel helper).
+- Manual rows (human checklist): 4.6 `[visual]` 8 states × 1440/1024; 4.7 `[human]` Mostek celebration default (D4/P6, author-owned unknown); 4.8 `[human]` shared house frame in the base + "Wróć do pokoju"; 4.9 `[human]` tablet offline base pictures; 2.7 and 4.10 `[reviewer] (CI at ship)` Deploy smoke `5 of 5 house pictures precached` and build job `e2e hook: absent (`.
+- Risks: phase 2 `npm run art` needs `cwebp` and pinned Pillow 12.1.0 + numpy 2.4.3; `tests/houseCells.test.ts` "HOUSE_GEOMETRY data" pin flips by design in phase 3; `tests/houseArt.test.ts` 80 000 B total becomes per building in phase 2; the base airlock file is `base-1-cell-closed` (pack name collides); phase-5 purchase run (7 buys) is load-sensitive.
+- DESIGN-GAPs for phase 4: base frame reuses house `cell-frame`; base stand-in outline without roof; 195 closed; 196 narrowed.
+- Follow-ups for phase 4 (`context/changes/base-cross-section/follow-ups/review-fixes.md`): first-building-choice 9 closed, 17 closed, 18/11/16/19 and gap 198 carried; house-cross-section 19 re-recorded, 20 closed (phase 1), 21 closed (phase 5), 2/4/5/9/11 carried.
 
 ## 6. Autonomous decisions
 
-- R1 — research done locally without sub-agents. Chosen: local reads (one subsystem, already mapped by `change.md`). Rejected: 2–4 parallel workers (the skill default) as duplicate reading of the same six files. Would change: a scope spanning several subsystems.
-- R2 — recommend style fields on `HouseGeometry`, not a sibling `HOUSE_STYLE`. Why: one record per building view, `cellFill` already a pack colour there, `HouseView` stays branch-free. Rejected: `if base` in the view (roadmap risk). Would change: the plan finding `HouseGeometry` should stay pure geometry for the street (S-26); then a sibling record keyed by house id.
-- R3 — keep one flat `HOUSE_ART` and filter by geometry keys. Why: deploy smoke and orphan test keep working unchanged. Rejected: a per-building table (two smoke lines, two orphan checks). Would change: a building whose art lives in another folder.
-- R4 — reuse the house frame on the base (confirms change.md default). Why: the composite reads well. Would change: the in-game visual gate showing a clash.
-- R5 — follow-up 17 fix extended to an instance-flag reset. Why: Phaser reuses the scene instance on `start`. Would change: none foreseen (source-verified).
-- R6 — save format stays v6 (confirms D6). Would change: a saved per-building view field, none found.
-- R7 — D4 kept as the plan's default for FR-046. Would change: the author's answer to the roadmap unknown.
-- The skill's AskUserQuestion clarifications were not used (contract rule 1); the question set came from `change.md` and the step prompt.
+- Complexity MEDIUM and 0 product questions: research left none open; the skill's complexity/structure/phase confirmations were decided from the artifacts (contract rule 1). Would change: a plan review finding an undecided product choice.
+- P1 style on `HouseGeometry` (R2), P2 flat `HOUSE_ART` filtered by `houseArtKeys` (R3), P3 per-building size caps 80 000 / 110 000 B, P4 follow-up 20 taken with `standInRoof`, P5 follow-up 19 re-recorded, P6 D4 celebration kept with a `[human]` row, P7 `houseLabel` added in phase 1 so the e2e phase writes no product code, P8 rendered-frame pixels via a test-only screenshot helper, P9 five phases. Each with rejected option and reversal condition in `plan.md` § Autonomous decisions.
+- No PRD deviation; save format v6 unchanged.
+- Roadmap status edit committed with the plan (step prompt overrides the skill's "leave uncommitted").
