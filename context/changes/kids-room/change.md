@@ -1,7 +1,7 @@
 ---
 change_id: kids-room
 title: Pokój dziecięcy, trzeci pokój domu 1 z danych i grafiki
-status: preparing
+status: planned
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
@@ -20,6 +20,15 @@ No lessons file exists in `context/foundation/` (checked at this step), so no le
 The roadmap Risk is the point of this slice: if adding the room needs code outside data and art, F-04 and S-22 broke
 the "a room is data" contract. Every non-data file the plan touches is named here and in the PR body "for the product
 owner". The one expected candidate is the staged renovation (decision D1).
+
+**For the product owner (set by the plan, `plan.md`):** code outside room data and art that this slice changes:
+- D1 staged renovation: `src/core/types.ts` (`scene?` on a stage task), `src/core/rooms.ts` (`sceneKey`, `stageFade`),
+  `src/core/backdrop.ts`, `src/ui/widgets/RoomView.ts` (`render`, `miniaturePieces`), `src/scenes/RoomScene.ts`
+  (`fadeStage`, snapshot `stagesDone`), `src/testing/e2eHook.ts` (snapshot type), the logic of `src/data/roomArt.ts`
+  (stage keys in the art table);
+- the "Pokój gotowy!" card: `ROOM_DONE_LAYOUT.tiles` in `src/data/layout.ts` (320 wide, gap 40, every card) so three
+  tiles fit (research NEW finding).
+Both have `[human]` rows (plan 5.7, 5.8).
 
 ## Roadmap claims re-verified against the repo (branch `feat/kids-room` at `bfdf193`)
 

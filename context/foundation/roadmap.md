@@ -48,7 +48,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | done |
 | S-29  | base-cross-section   | dziecko po Mostku zostaje w bazie i ogląda ją w przekroju; „Do pokoju” i przycisk „Baza” prowadzą po bazie | S-28, S-23 | FR-045, FR-046, FR-048                     | done |
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | done |
-| S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | ready    |
+| S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | planning |
 | S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | proposed |
 | S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | ready    |
 | S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25, S-31   | FR-034, FR-040, FR-041, FR-035             | proposed |
@@ -191,7 +191,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Jakie elementy i koszty ma pokój dziecięcy (jak w S-22)? — Owner: autor z grafikiem. Block: no.
 - **Risk:** jeśli ten wycinek wymaga zmian w kodzie poza danymi, F-04 i S-22 nie dotrzymały kontraktu i to tu się to ujawnia.
-- **Status:** ready
+- **Status:** planning
 
 ### S-31: Łazienka, czwarty pokój domu 1
 
