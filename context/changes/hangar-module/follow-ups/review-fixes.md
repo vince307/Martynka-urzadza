@@ -26,6 +26,12 @@ changed the file their trigger names (`src/data/rooms.ts`, `src/data/houses.ts`,
    shown only at a purchase; kitchen precedent of S-22). The load path itself is proven by `tests/fixtureLoadPath.test.ts` with the
    frozen `tests/fixtures/save-v6-bridge-done.json`.
    Trigger: a playtest note, or the next change to the celebration rules in `src/core/celebration.ts`.
+5. (impl review) The e2e spec `tests/e2e/hangar-module.spec.ts` cannot tell the Hangar after picture from the before one (at
+   `tasksDone 0` the miniature is the before look, and at `WINDOW_POINT` both pictures are the same dark window). The data path is held
+   by the unit snapshot instead: pointing `ROOM_SCENE_FILES.hangar.after` at the before file turns `tests/roomArt.test.ts` red (snapshot
+   `tests/fixtures/room-art-hangar.json` and the orphan check), re-executed at review. No e2e check added.
+   Trigger: a change that draws the room background from something other than `ROOM_SCENE_FILES` (then the snapshot no longer guards
+   what is drawn), or a regression report of a renovated room showing its before look.
 
 ## Carried unchanged (re-recorded)
 

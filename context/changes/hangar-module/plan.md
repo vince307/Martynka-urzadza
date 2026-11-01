@@ -444,7 +444,7 @@ complexity, 0 open product questions after research, 4 phases):
 
 #### Manual
 
-- [ ] 1.7 [reviewer] Teacher read of the Hangar copy in `src/data/pl.ts` against the table above: caption nominatives, variant forms agreeing with the noun's gender/number (skrzynie plural → Naturalne), task labels in imperative + accusative (rakietę, matę startową), each task label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` is not affected (no task content changed), stated in the handoff
+- [x] 1.7 [reviewer] Teacher read of the Hangar copy in `src/data/pl.ts` against the table above: caption nominatives, variant forms agreeing with the noun's gender/number (skrzynie plural → Naturalne), task labels in imperative + accusative (rakietę, matę startową), each task label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` is not affected (no task content changed), stated in the handoff — impl review: six captions nominative, variant forms agree (rakieta/lampa/mata -a, łazik/stół -y, skrzynie -e), labels imperative + accusative, the longest ("Ustaw skrzynie z częściami", 26 chars) is shrunk by `labelScale`, never cut; `sample` E1-E6 0 violations
 - [ ] 1.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 100 of 100 room pictures precached` (line seen verbatim at plan time in Deploy run 41278603357, job `deploy` 124766298916: `ok   precache covers room pictures — 79 of 79 room pictures precached`; expected after this slice: 100 of 100)
 
 ### Phase 2: The Hangar joins the base
