@@ -861,7 +861,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Manual
 
-- [ ] 3.7 [reviewer] Polish copy read as a primary-school teacher would (profile § 2 content rule): Mostek task labels, slot and variant names (gender agreement, accusative after the verb); `npm run sample -- E1 --count 6` output unchanged (no task data touched)
+- [x] 3.7 [reviewer] Polish copy read as a primary-school teacher would (profile § 2 content rule): Mostek task labels, slot and variant names (gender agreement, accusative after the verb); `npm run sample -- E1 --count 6` output unchanged (no task data touched) — impl-review 2026-11-01: pass (reviews/impl-review.md)
 - [ ] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 79 of 79 room pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers room pictures — 58 of 58 room pictures precached`)
 
 ### Phase 4: The base building as data, the load path and the FR-049/FR-050 proofs
