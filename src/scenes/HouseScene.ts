@@ -1,10 +1,10 @@
 import { Renderer, Scene, type Loader } from 'phaser';
-import { cellTap, houseCells, type HouseCellView } from '../core/houseCells';
+import { cellTap, houseArtKeys, houseCells, type HouseCellView } from '../core/houseCells';
 import { roomDone } from '../core/rooms';
 import type { HouseState, RoomState } from '../core/types';
 import { balance } from '../data/balance';
 import { loadErrorLine } from '../core/artHealth';
-import { HOUSE_ART } from '../data/houseArt';
+import { HOUSE_ART, type HouseArtEntry } from '../data/houseArt';
 import { FIRST_HOUSE, HOUSE_GEOMETRY } from '../data/houses';
 import { HOUSE_LAYOUT, REGISTRY_KEYS, SCENE_KEYS } from '../data/layout';
 import { pl } from '../data/pl';
@@ -41,6 +41,11 @@ export class HouseScene extends Scene {
     }
 
     create(): void {
+        // A scene object is reused by scene.start: forget the art flags and drawn cells of the building seen before (S-29).
+        this.artQueued = false;
+        this.artSettled = false;
+        this.cells = [];
+        this.modes = {};
         this.view = new HouseView(this);
         this.back = new PageButton(this, () => { this.tap(); this.scene.switch(SCENE_KEYS.room); }).setDepth(HOUSE_LAYOUT.depth.controls);
         const geometry = this.geometry();
@@ -105,14 +110,20 @@ export class HouseScene extends Scene {
     }
 
     private shellReady(): boolean {
-        return HOUSE_ART.every((e) => this.textures.exists(e.key));
+        return this.art().every((e) => this.textures.exists(e.key));
     }
 
-    /** The first open queues the three pictures on this scene's loader; a failed file is told once and leaves the stand-in. */
+    /** Only the pictures the current building names (house 1: three, the base: its own two plus the shared frame). */
+    private art(): HouseArtEntry[] {
+        const keys = houseArtKeys(this.geometry());
+        return HOUSE_ART.filter((e) => keys.includes(e.key));
+    }
+
+    /** The first open queues the pictures of the current building on this scene's loader; a failed file is told once and leaves the stand-in. */
     private loadArt(): void {
         if (this.artQueued) return;
         this.artQueued = true;
-        const missing = HOUSE_ART.filter((e) => !this.textures.exists(e.key));
+        const missing = this.art().filter((e) => !this.textures.exists(e.key));
         const seam = __E2E_HOOK__ ? (this.registry.get(REGISTRY_KEYS.forcedArt) as string | null | undefined) : null;
         if (missing.length === 0) {
             this.artSettled = true;
@@ -123,10 +134,10 @@ export class HouseScene extends Scene {
             return;
         }
         const onFail = (file: Loader.File): void => {
-            if (HOUSE_ART.some((e) => e.key === file.key)) console.warn(loadErrorLine('house', file.key, file.src, file.xhrLoader?.status ?? 0));
+            if (this.art().some((e) => e.key === file.key)) console.warn(loadErrorLine('house', file.key, file.src, file.xhrLoader?.status ?? 0));
         };
         const onAdd = (_key: string, _type: string, _loader: unknown, file: Loader.File): void => {
-            if (HOUSE_ART.some((e) => e.key === file.key)) file.xhrSettings.timeout = balance.loader.timeoutMs;
+            if (this.art().some((e) => e.key === file.key)) file.xhrSettings.timeout = balance.loader.timeoutMs;
         };
         this.load.on('addfile', onAdd);
         this.load.on('loaderror', onFail);

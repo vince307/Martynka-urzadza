@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { HOUSE_GEOMETRY } from '../src/data/houses';
+import { HOUSE_LAYOUT } from '../src/data/layout';
 
 // Source guards for the house scene (S-23): the browser proof is the e2e spec of phase 6.
 const scene = readFileSync('src/scenes/HouseScene.ts', 'utf8');
@@ -7,6 +9,18 @@ const view = readFileSync('src/ui/widgets/HouseView.ts', 'utf8');
 const capture = readFileSync('src/ui/widgets/roomCapture.ts', 'utf8');
 
 describe('HouseScene wiring', () => {
+    it('loads and judges only the pictures its building names', () => {
+        expect(scene).toContain('houseArtKeys(');
+        expect(scene).not.toContain('HOUSE_ART.every(');
+        expect(scene).not.toContain('HOUSE_ART.filter((e) => !this.textures');
+    });
+    it('create resets the art flags and cells before anything else (stale scene, S-29)', () => {
+        const create = /create\(\): void \{([\s\S]*?)this\.show\(\)/.exec(scene);
+        expect(create).not.toBeNull();
+        const body = create![1];
+        for (const reset of ['this.artQueued = false', 'this.artSettled = false', 'this.cells = []', 'this.modes = {}']) expect(body).toContain(reset);
+        expect(body.indexOf('this.artQueued = false')).toBeLessThan(body.indexOf('new HouseView'));
+    });
     it('redraws on wake and on a WebGL context restore, and removes both listeners on shutdown', () => {
         expect(scene).toMatch(/events\.on\('wake', onWake\)/);
         expect(scene).toMatch(/renderer\.on\(Renderer\.Events\.RESTORE_WEBGL, onRestore\)/);
@@ -45,5 +59,21 @@ describe('HouseScene wiring', () => {
         expect(main.indexOf('HouseScene,')).toBeGreaterThan(-1);
         expect(main.indexOf('HouseScene,')).toBeLessThan(main.indexOf('UIScene]'));
         expect(readFileSync('src/scenes/BootScene.ts', 'utf8')).not.toMatch(/HOUSE_ART|HouseScene/);
+    });
+    it('HouseView takes the look from the geometry, not from the layout or a house id (S-29)', () => {
+        expect(view).not.toContain('HOUSE_LAYOUT.background');
+        expect(view).not.toMatch(/HOUSE_LAYOUT\.teaser\.(color|shadow|weight)/);
+        expect(view).not.toMatch(/teaserStyle\.(color|shadow\b|weight)/);
+        expect(view).toContain('geometry.background');
+        expect(view).toMatch(/\{ teaser \} = geometry/);
+        expect(view).toContain('geometry.standInRoof');
+        expect(view).not.toMatch(/'house-1'|'base-1'/);
+    });
+    it('the stand-in roof rises at least 48 px above its base, numbers from HOUSE_LAYOUT.standIn', () => {
+        const g = HOUSE_GEOMETRY['house-1'];
+        const roofBase = Math.min(...g.cells.map((c) => c.y)) - HOUSE_LAYOUT.standIn.margin;
+        expect(roofBase - HOUSE_LAYOUT.standIn.apexY).toBeGreaterThanOrEqual(48);
+        expect(view).toContain('standIn.apexY');
+        expect(view).toContain('standIn.margin');
     });
 });

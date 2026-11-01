@@ -2,6 +2,7 @@
 // Every tap is a page.touchscreen.tap at a scene point from the hook's targets (1920x1080 space).
 // Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
 // (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
+import { inflateSync } from 'node:zlib';
 import { expect, type CDPSession, type Page } from '@playwright/test';
 import type { AnswerMode } from '../../../src/core/tasks/visual';
 
@@ -74,7 +75,7 @@ export interface Snapshot {
     /** The sound service (read-only): preferences, the audio lock, the last plays, effects that did not load, the music state. */
     sound?: { prefs: { effects: boolean; music: boolean }; locked: boolean; log: { id: string; outcome: 'played' | 'off' | 'locked' | 'missing' }[]; missing: string[]; music: 'off' | 'loading' | 'waiting-unlock' | 'playing' | 'missing' } | null;
     /** What the open room shows (room screen only). */
-    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; worn: { keys: string[]; graded: boolean }; contactShadows: string[]; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[]; celebration: { intensity: string; revealMs: number; burst: number } } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; visiting: string | null; unreachable: string[] } | null;
+    room?: { roomId: string; tasksDone: number; chosen: Record<string, number>; shown: Record<string, number>; worn: { keys: string[]; graded: boolean }; contactShadows: string[]; currentTask: { id: string; label: string; cost: number } | null; taskKind: 'stage' | 'slot' | null; affordable: boolean; buttonText: string; panel: { kind: 'closed' } | { kind: 'open'; mode: 'buy'; taskId: string; preview: 0 | 1 | 2 | null } | { kind: 'open'; mode: 'change'; slot: string; preview: 0 | 1 | 2 | null }; hold: 'idle' | 'holding'; heldSlot: string | null; done: boolean; stageDone: boolean; mode: 'normal' | 'change'; card: { title: string; items: { kind: 'room' | 'teaser'; id: string | null; nameKey: string | null; done: boolean; unlocked: boolean }[]; celebration: { intensity: string; revealMs: number; burst: number } } | null; doneMiniature: 'live' | 'thumbnail' | 'drawn' | null; modeText: string | null; visiting: string | null; houseLabel: string | null; unreachable: string[] } | null;
     summary: { earned: number; bonus: number; stars: boolean[]; roomHighlighted: boolean } | null;
     finished: boolean;
     warmup: boolean;
@@ -598,3 +599,27 @@ export const housePixel = (page: Page, cellId: string): Promise<[number, number,
         const hook = (window as unknown as { __martynkaE2E?: { housePixel?: (cell: string) => [number, number, number, number] | null } }).__martynkaE2E;
         return hook?.housePixel?.(id) ?? null;
     }, cellId);
+
+/**
+ * One pixel of the RENDERED frame at a scene point (the canvas as the browser drew it, not a texture): maps the point like `tapScene`,
+ * screenshots a 1x1 clip and decodes the PNG (8-bit RGB/RGBA, one row: every PNG filter reduces to the raw bytes for one pixel).
+ */
+export const renderedPixel = async (page: Page, point: Point): Promise<[number, number, number]> => {
+    const at = await toPage(page, point);
+    const png = await page.screenshot({ clip: { x: Math.round(at.x), y: Math.round(at.y), width: 1, height: 1 }, type: 'png' });
+    let offset = 8;
+    const idat: Buffer[] = [];
+    while (offset < png.length) {
+        const length = png.readUInt32BE(offset);
+        const type = png.toString('ascii', offset + 4, offset + 8);
+        if (type === 'IHDR') {
+            expect(png[offset + 8 + 8]).toBe(8);
+            expect([2, 6]).toContain(png[offset + 8 + 9]);
+        } else if (type === 'IDAT') {
+            idat.push(png.subarray(offset + 8, offset + 8 + length));
+        }
+        offset += 12 + length;
+    }
+    const raw = inflateSync(Buffer.concat(idat));
+    return [raw[1], raw[2], raw[3]];
+};

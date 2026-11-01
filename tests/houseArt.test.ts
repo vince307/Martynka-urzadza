@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { HOUSE_GEOMETRY } from '../src/data/houses';
+import { houseArtKeys } from '../src/core/houseCells';
 import { HOUSE_ART } from '../src/data/houseArt';
 import { ROOM_ART } from '../src/data/roomArt';
 import { TASK_ART } from '../src/data/taskArt';
@@ -35,6 +36,8 @@ describe('house art table', () => {
             'house/house-1-shell': [1920, 1080],
             'house/cell-closed': [608, 342],
             'house/cell-frame': [640, 374],
+            'house/base-1-shell': [1920, 1080],
+            'house/base-1-cell-closed': [608, 342],
         };
         expect(HOUSE_ART.map((a) => a.key).sort()).toEqual(Object.keys(expected).sort());
         for (const art of HOUSE_ART) {
@@ -65,9 +68,17 @@ describe('house art table', () => {
         }
     });
 
-    it('weighs at most 80 000 B in all', () => {
-        const total = HOUSE_ART.reduce((sum, a) => sum + statSync(join(PUBLIC, a.url)).size, 0);
-        expect(total).toBeLessThanOrEqual(80_000);
+    // Runtime load of one building's pictures, not boot; the base measured about 102 900 B.
+    const CAPS: Record<string, number> = { 'house-1': 80_000, 'base-1': 110_000 };
+    const weigh = (keys: string[]): number =>
+        keys.reduce((sum, key) => sum + statSync(join(PUBLIC, HOUSE_ART.find((a) => a.key === key)!.url)).size, 0);
+
+    it('weighs at most its cap per building', () => {
+        for (const [id, geometry] of Object.entries(HOUSE_GEOMETRY)) {
+            expect(CAPS[id], `${id} has a cap`).toBeDefined();
+            expect(weigh(houseArtKeys(geometry)), id).toBeLessThanOrEqual(CAPS[id]);
+        }
+        expect(Object.keys(HOUSE_GEOMETRY).sort()).toEqual(Object.keys(CAPS).sort());
     });
 
     it('is not loaded by BootScene (the boot budget stays as it was)', () => {

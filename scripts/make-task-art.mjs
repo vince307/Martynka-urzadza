@@ -125,6 +125,12 @@ const HOUSE_FILES = [
     { from: 'assets/house/cell-frame.png', to: 'cell-frame.webp' },
 ];
 
+/** The base pack (S-29): the base shell and the airlock (its closed cell), native size, from SPACE into the house folder; not rooms, no recolour. */
+const BASE_FILES = [
+    { from: 'assets/base/base-1-shell.png', to: 'base-1-shell.webp' },
+    { from: 'assets/base/cell-closed.png', to: 'base-1-cell-closed.webp' },
+];
+
 /** The first-building choice cards (S-28): native 720x480, no recolour. */
 const CHOICE_FILES = [
     { from: 'assets/choice/choice-house.png', to: 'choice-house.webp' },
@@ -197,9 +203,14 @@ for (const file of HOUSE_FILES) {
     total += bytes;
     console.log(`house/${file.to}  ${bytes} B`);
 }
+for (const file of BASE_FILES) {
+    const bytes = convert(join(SPACE, file.from), join(HOUSE_OUT, file.to), []);
+    total += bytes;
+    console.log(`house/${file.to}  ${bytes} B`);
+}
 for (const file of CHOICE_FILES) {
     const bytes = convert(join(SPACE, file.from), join(CHOICE_OUT, file.to), []);
     total += bytes;
     console.log(`choice/${file.to}  ${bytes} B`);
 }
-console.log(`${CHOICE_FILES.length + HOUSE_FILES.length + JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);
+console.log(`${CHOICE_FILES.length + HOUSE_FILES.length + BASE_FILES.length + JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);

@@ -110,4 +110,9 @@ export class PageButton {
         const { width, height } = this.size;
         return this.shown ? { x: this.rect.x + width / 2, y: this.rect.y + height / 2 } : null;
     }
+
+    /** The label as drawn, for the e2e hook; null while hidden. */
+    text(): string | null {
+        return this.shown ? this.label.text : null;
+    }
 }

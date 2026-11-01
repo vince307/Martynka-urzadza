@@ -38,3 +38,14 @@ describe('TaskScene "Wróć" to the building choice', () => {
         }
     });
 });
+
+describe('backToChoice stops the house scene (S-29)', () => {
+    it('stops SCENE_KEYS.house before starting the welcome', () => {
+        const task = readFileSync('src/scenes/TaskScene.ts', 'utf8');
+        const fn = /private backToChoice\(\): void \{([\s\S]*?)\n {4}\}/.exec(task);
+        expect(fn).not.toBeNull();
+        const stop = fn![1].indexOf('this.scene.stop(SCENE_KEYS.house)');
+        expect(stop).toBeGreaterThan(-1);
+        expect(stop).toBeLessThan(fn![1].indexOf('this.scene.start(SCENE_KEYS.welcome'));
+    });
+});

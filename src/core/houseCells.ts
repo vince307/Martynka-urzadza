@@ -35,3 +35,8 @@ export function houseWakeVisit(data: unknown, current: string, cells: readonly H
     if (typeof visit !== 'string' || visit === current) return null;
     return cells.some((c) => c.state === 'done' && c.room === visit) ? visit : null;
 }
+
+/** The art keys a geometry draws (shell, closed cell, frame), without repeats, in a fresh array; the house scene loads and judges these only. */
+export function houseArtKeys(g: HouseGeometry): string[] {
+    return [...new Set([g.shell, g.cellClosed, g.cellFrame])];
+}

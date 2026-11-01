@@ -37,9 +37,10 @@ export class HouseView {
         const { depth, standIn } = HOUSE_LAYOUT;
         const modes: Record<string, HouseCellMode> = {};
         const add = <T extends GameObjects.GameObject>(o: T): T => { this.objects.push(o); return o; };
-        add(this.scene.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, HOUSE_LAYOUT.background).setOrigin(0, 0).setDepth(depth.background));
+        add(this.scene.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, geometry.background).setOrigin(0, 0).setDepth(depth.background));
         const exists = (key: string): boolean => this.scene.textures.exists(key);
         const teaserStyle = HOUSE_LAYOUT.teaser;
+        const { teaser } = geometry;
 
         for (const cell of cells) {
             const rect = geometry.cells.find((c) => c.id === cell.id) ?? cell;
@@ -52,8 +53,8 @@ export class HouseView {
                     add(this.scene.add.rectangle(rect.x, rect.y, rect.width, rect.height, standIn.closed).setOrigin(0, 0).setDepth(depth.cells));
                 }
                 add(this.scene.add.text(rect.x + rect.width / 2, rect.y + rect.height / 2, pl.room.done.teaser, {
-                    fontFamily: FONT_FAMILY, fontSize: `${teaserStyle.size}px`, fontStyle: String(teaserStyle.weight), color: teaserStyle.color,
-                    shadow: { offsetX: teaserStyle.shadowOffset, offsetY: teaserStyle.shadowOffset, color: teaserStyle.shadow, blur: 0, fill: true },
+                    fontFamily: FONT_FAMILY, fontSize: `${teaserStyle.size}px`, fontStyle: String(teaser.weight), color: teaser.color,
+                    ...(teaser.shadow === null ? {} : { shadow: { offsetX: teaserStyle.shadowOffset, offsetY: teaserStyle.shadowOffset, color: teaser.shadow, blur: 0, fill: true } }),
                 }).setOrigin(0.5).setDepth(depth.teaser));
                 continue;
             }
@@ -122,16 +123,18 @@ export class HouseView {
         const right = Math.max(...geometry.cells.map((c) => c.x + c.width));
         const top = Math.min(...geometry.cells.map((c) => c.y));
         const bottom = Math.max(...geometry.cells.map((c) => c.y + c.height));
-        const margin = 24;
+        const margin = standIn.margin;
         const { stairwell } = geometry;
         g.fillStyle(geometry.cellFill, 1);
         g.fillRect(stairwell.x, stairwell.y, stairwell.width, stairwell.height);
         g.lineStyle(standIn.outlineWidth, standIn.outline, 1);
         g.strokeRect(left - margin, top - margin, right - left + margin * 2, bottom - top + margin * 2);
         g.strokeRect(stairwell.x, stairwell.y, stairwell.width, stairwell.height);
-        g.fillStyle(standIn.roof, 1);
-        g.fillTriangle(left - margin * 2, top - margin, (left + right) / 2, HOUSE_LAYOUT.shellTop + 40, right + margin * 2, top - margin);
-        g.strokeTriangle(left - margin * 2, top - margin, (left + right) / 2, HOUSE_LAYOUT.shellTop + 40, right + margin * 2, top - margin);
+        if (geometry.standInRoof) {
+            g.fillStyle(standIn.roof, 1);
+            g.fillTriangle(left - margin * 2, top - margin, (left + right) / 2, standIn.apexY, right + margin * 2, top - margin);
+            g.strokeTriangle(left - margin * 2, top - margin, (left + right) / 2, standIn.apexY, right + margin * 2, top - margin);
+        }
     }
 
     private clear(): void {
