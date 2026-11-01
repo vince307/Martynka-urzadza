@@ -1,54 +1,57 @@
 # Handoff — `kids-room` (slice S-25)
 
-Written by the `/10x-implement kids-room phase 3` step of run 2026-11-01-kids-room. Phases 1 (5fe9dd2) and 2 (f2b304a) are done: the background rule `sceneKey`/`stageFade` is used by `RoomView.render`, `miniaturePieces`, `RoomScene.fadeStage`, `backdropMode` and `roomArt`. Nothing visible changed for existing rooms. Phase 3 adds the children's room data and art. Keep two things in mind from the plan review: the children's costs
-are 5/6/7 + 7/9/10/12/13/15 = 84, and phase 3 adds a temporary placement exemption in `tests/roomsData.test.ts` that phase 4 removes.
+Written by the `/10x-implement kids-room phase 3` step of run 2026-11-01-kids-room. Phases 1 (5fe9dd2), 2 (f2b304a) and 3 (a7cee7f) are done: the children's room exists as data, Polish copy and 23 WebP files, in `ROOMS` but in no house yet. Keep in mind from the plan review: phase 3 added a temporary placement exemption in `tests/roomsData.test.ts` (`id === 'children' ? 0 : 1`) that phase 4 removes when it adds the `HOUSES` row.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/kids-room`, cut from `main` at `bfdf193` |
-| Commits on the branch | 9: ..., phase 1 (5fe9dd2), handoff, phase 2 (f2b304a), handoff |
+| Commits on the branch | 11: ..., phase 2 (f2b304a), handoff, phase 3 (a7cee7f), handoff |
 | Pushed / PR / merged | no / no / no |
-| `## Progress` rows remaining | 29 (1.1-1.4, 2.1-2.3 ticked; 2.4 left to the orchestrator e2e) |
+| `## Progress` rows remaining | 24 (3.6 e2e, 3.7, 3.8, 4.x, 5.x, 6.x; 2.4 also left to the orchestrator e2e) |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `src/ui/widgets/RoomView.ts` | `render` and `miniaturePieces` pick the background with `sceneKey` |
-| `src/scenes/RoomScene.ts` | `fadeStage` ghosts `stageFade(...).from`, shadows/worn ghosts only when `neglected`; tween drops itself from `ghostTweens`; snapshot field `stagesDone: number` |
-| `src/data/roomArt.ts` | `roomArt` emits one entry per stage-task `scene` key (`urlOf(key)`), deduped, after the role entries |
-| `tests/roomArt.test.ts` | `stageScenes` helper in the two key cases; synthetic-room case |
-| `tests/stageSceneWiring.test.ts` | new source test: call sites use `sceneKey`/`stageFade`, no `scene.after :` ternary |
+| `scripts/make-task-art.mjs` | `EVOLUTION_V1` pack root and a `ROOM_PACKS` row `children` (5 scene files, 18 furniture, no board recolour) |
+| `public/assets/rooms/children/*.webp` | 23 files, 862 160 bytes, made by `npm run art` (no other file under `public/` changed) |
+| `src/data/rooms.ts` | `childrenSlots`, `CHILDREN` (3 stages with `scene` keys on the first two, 6 slot tasks), `ROOMS` gains it after `KITCHEN` |
+| `src/data/roomArt.ts` | `ROOM_SCENE_FILES.children` |
+| `src/data/pl.ts` | `room.names.children`, 9 task labels, 6 slot captions, 6 variant triples (design gap 202 comment) |
+| `tests/fixtures/room-art-children.json` | 23 entries written from the pack manifest and PNG sizes, labels from the copy table |
+| `tests/roomArt.test.ts`, `tests/roomsData.test.ts`, `tests/roomHit.test.ts` | snapshot + count 23, `children data (FR-033)` block, `unreachableSlots` case, placement exemption |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| Break 1: restore the ternary in `miniaturePieces` | `stageSceneWiring` 2 red, restored |
-| Break 2: stage-key filter always false in `roomArt` | synthetic-room case red, restored |
-| Meta-check | wiring test proves call sites only; pixels are phase 6 |
-| lint, typecheck, `npm test` (4203 passed = 4198 + 5), deploy/ops tests, `sample` E1-E6, `npm run build` (`e2e hook: absent`) | green |
-| `git diff --stat 5fe9dd2 -- tests/fixtures src/data/rooms.ts src/data/houses.ts src/data/pl.ts public` | empty |
-| e2e | Chromium launches but the full suite is very slow (15 tests in ~10 min at --workers=3, one load timeout in `adaptive.spec.ts`), so it was stopped; run instead: room-purchase, salon-style, salon-art, canvas-renderer = 14 passed. Full suite (row 2.4) left to the orchestrator |
+| `npm run art` | 23 new files; `git status --short public` shows only `public/assets/rooms/children/` (the run takes over 2 minutes: run it in the background) |
+| `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` | 93 passed |
+| Break 1: desk `x` 1258 -> 1259 | manifest literal case red, restored |
+| Break 2: `children-stage-1.webp` moved away | 3 roomArt cases red (size, orphan, weight), restored |
+| Break 3: `children-toys` variants key renamed in `pl.ts` | snapshot label case + copy case red, restored |
+| Meta-check | the manifest literal and the fixture come from the pack manifest, not from `childrenSlots`; picture quality is phase 5 (visual) |
+| lint, typecheck, `npm test` (4209 passed = 4203 + 6), deploy/ops tests, `sample` E1-E6, `npm run build` (`e2e hook: absent`) | green |
+| `grep -o "assets/rooms/children/" dist/sw.js \| wc -l` | 23 |
+| `git diff --stat f2b304a -- src/scenes src/core src/ui src/main.ts src/testing src/data/{houses,layout,balance}.ts public/assets/rooms/{salon,kitchen,bridge,hangar}` | empty |
+| e2e | not run (the orchestrator runs it); row 3.6 left open |
 
 ## 4. Next command
 
-`/10x-implement kids-room phase 3`
+`/10x-tdd kids-room phase 4`
 
 ## 5. Open
 
-- Phases 3-6 as in the plan (3 impl, 4 tdd, 5 impl, 6 e2e). Phase 3 needs `npm run art` (cwebp, Pillow, numpy); missing = BLOCKED.
-- `roomArt` stage-key url is `assets/rooms/<key>.webp` as the plan says; phase 3 must pick stage keys so this matches the files under `public/assets/rooms/children/` (e.g. key `children/stage-1`).
-- Manual rows 3.7, 3.8, 5.6-5.12 stay as the human/reviewer/visual checklist.
-- Risks unchanged: smaller miniature on every card, `npm run art` needs local tools (missing = BLOCKED), purchase-heavy e2e is load-sensitive.
+- Phase 4 (tdd): add the `HOUSES['house-1']` row `{ room: 'children', floor: 1, place: 0 }` (upper-left cell, check `HOUSE_GEOMETRY`), remove the placement exemption in `tests/roomsData.test.ts`, widen `ROOM_DONE_LAYOUT.tiles` for three tiles, flip the two-room tests, add `tests/fixtures/save-v6-kitchen-done.json`. Phases 5 (impl) and 6 (e2e) follow.
+- Manual rows 3.7, 3.8, 5.6-5.12 stay as the human/reviewer/visual checklist. Teacher read for 3.7 left to the reviewer; no task content changed so `npm run sample` is unaffected.
+- Risks unchanged: smaller miniature on every card, purchase-heavy e2e is load-sensitive.
 
 ## 6. Autonomous decisions
 
-- **Skill gates decided in place**: commit message taken as proposed; stopped after phase 1. Driver stays `tdd`; no part was done inline.
-- **Stubs before RED**: `sceneKey`/`stageFade` stubs and the `scene?` field were added first so the RED is an assertion failure, not a missing export.
-- **`stageFade` uses `{...state, tasksDone - 1}`** for the previous state, so `chosen` is carried unchanged (irrelevant to the rule).
-- **Phase 2**: commit message as proposed; stopped after the phase; full e2e not run (too slow here), see §3.
-- **`fadeStage` guard**: returns early when `stageFade` is null (cannot happen on its trigger).
+- **Skill gates decided in place**: execution mode in this context (the step prompt names it), commit message taken as proposed, stopped after phase 3.
+- **Fixture generated by a one-off script from the manifest and PNG sizes** (not dumped from `roomArt()`), asserted sizes against the manifest slot sizes.
+- **Test title** "23 children room" (no apostrophe) to keep the single-quoted string simple.
+- **Progress SHA** written in a separate handoff commit because the phase commit cannot hold its own sha.

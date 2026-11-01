@@ -682,11 +682,11 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 #### Automated
 
-- [x] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 23 new files under `public/assets/rooms/children/`
-- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N`
-- [x] 3.3 Deliberate break: change the desk's `x` in `childrenSlots` → the manifest literal red; delete `children-stage-1.webp` → the size/orphan cases red; drop `'children-toys'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `childrenSlots`; whether the picture looks right is the visual pass (phase 5)
-- [x] 3.4 `npm run build` then `grep -o "assets/rooms/children/" dist/sw.js | wc -l` = 23
-- [x] 3.5 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/bridge public/assets/rooms/hangar` empty
+- [x] 3.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 23 new files under `public/assets/rooms/children/` — a7cee7f
+- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N` — a7cee7f
+- [x] 3.3 Deliberate break: change the desk's `x` in `childrenSlots` → the manifest literal red; delete `children-stage-1.webp` → the size/orphan cases red; drop `'children-toys'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `childrenSlots`; whether the picture looks right is the visual pass (phase 5) — a7cee7f
+- [x] 3.4 `npm run build` then `grep -o "assets/rooms/children/" dist/sw.js | wc -l` = 23 — a7cee7f
+- [x] 3.5 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/bridge public/assets/rooms/hangar` empty — a7cee7f
 - [ ] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
 
 #### Manual
