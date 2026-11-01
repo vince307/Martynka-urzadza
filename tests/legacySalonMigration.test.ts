@@ -66,7 +66,7 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         expect(raw).toEqual(snapshot);
     });
 
-    it('C-2r: a frozen v1 save with the old salon goes v1 -> v6 and keeps what was bought', () => {
+    it('C-2r: a frozen v1 save with the old salon goes v1 -> v7 and keeps what was bought', () => {
         const r = decodeSave(fixture('save-v1-legacy-salon.json'));
         expect(r).toMatchObject({ kind: 'ok', migratedFrom: 1 });
         if (r.kind !== 'ok') return;

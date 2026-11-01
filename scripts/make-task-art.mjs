@@ -50,6 +50,7 @@ const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 
  */
 const ROOM_PACKS = [
     {
+        // DESIGN-GAP 206 / 207 (docs/design-gaps.md): cream backgrounds from the polish pack; the before look keeps the code worn grade; the tight crop fills its house cell.
         room: 'salon',
         pack: SALON_V2,
         scene: [

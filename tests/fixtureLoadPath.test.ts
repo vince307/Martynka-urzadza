@@ -135,7 +135,7 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.currentRoom).toBe('children');
         expect(moved.movedFrom).toBe('kitchen');
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
-        // S-32 phase 1: the kitchen moved by 2 (7 -> 9) onto the three-stage list.
+        // S-32: the kitchen moved by 2 (7 -> 9) onto the three-stage list.
         expect(moved.rooms.kitchen).toEqual({ ...raw.rooms.kitchen, tasksDone: raw.rooms.kitchen.tasksDone + 2 });
         expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);

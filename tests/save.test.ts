@@ -135,7 +135,7 @@ describe('round trip of a session built with the real core functions', () => {
         expect(result).toEqual({ kind: 'ok', migratedFrom: null, salonCarried: null, session });
     });
 
-    it('a list-answer example (PIC-04) is a plain string and round-trips in the same v6 shape', () => {
+    it('a list-answer example (PIC-04) is a plain string and round-trips in the same shape', () => {
         const withExample: SessionSave = {
             ...session,
             learner: {
@@ -306,7 +306,7 @@ describe('the decoder does not mutate its input', () => {
 });
 
 describe('the v3 format (salon-load-health): frozen fixtures decode and encode as v3', () => {
-    it('save-v3.json decodes to v6 (migratedFrom 3) without any health status keys', () => {
+    it('save-v3.json decodes to the current version (migratedFrom 3) without any health status keys', () => {
         const raw = fixture('save-v3.json');
         const r = decodeSave(raw);
         if (r.kind !== 'ok') throw new Error('fixture');
