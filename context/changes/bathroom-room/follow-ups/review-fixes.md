@@ -19,8 +19,8 @@ changed the file their trigger names or fired their trigger; each is closed with
 5. Kids-room 3 (`ROOM_DONE_LAYOUT.tiles.left` unused): closed, the field is gone from `ROOM_DONE_LAYOUT`.
    Trigger: none (closed).
 6. House-cross-section 21 / kids-room 11 (a browser test for `houseButton` while the card is up): closed by the phase 6 spec
-   `tests/e2e/bathroom-room.spec.ts` (verified at phase 6).
-   Trigger: none once phase 6 is committed.
+   `tests/e2e/bathroom-room.spec.ts` (verified at phase 6, committed 883a68b; impl review re-ran the fixed-1144-card break red).
+   Trigger: none (closed).
 
 ## Fired and re-recorded (still open, with the reason)
 

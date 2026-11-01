@@ -1,7 +1,7 @@
 ---
 change_id: bathroom-room
 title: Łazienka, czwarty pokój domu 1, i karta „Pokój gotowy!” z czterema kafelkami
-status: implemented
+status: impl_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null

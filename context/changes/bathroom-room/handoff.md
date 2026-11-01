@@ -1,52 +1,59 @@
 # Handoff — `bathroom-room` (slice S-31)
 
-Phase 6 (`e2e`) is committed as 883a68b: `tests/e2e/bathroom-room.spec.ts` (2 tests) and the `bathroom-room` entry in `ROUND_SPEC`. All plan phases are done; `change.md` status is `implemented`.
+The impl-review step wrote this: the full plan (phases 1-6) is reviewed, verdict APPROVED, `MERGE: CLEAR`; one WARNING fixed in b1989b9. The next step is the visual gate (plan row 5.6, 14 frames at 1440 and 1024 into `reviews/visual-review.md`); do not tick the `[human]` or `(CI at ship)` rows there.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/bathroom-room`, cut from `main` at `e451fa8` |
-| Commits | identity, research, plan, plan review, `7c742b8` p1, `32c2a5b` p2, `69694ce` p3, 8eab432 p4, a9a4ee5 p5, 883a68b p6, then this handoff |
+| Commits | identity … p1 `7c742b8`, p2 `32c2a5b`, p3 `69694ce`, p4 `8eab432`, p5 `a9a4ee5`, p6 `883a68b`, review fix `b1989b9`, then this handoff commit |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| `## Progress` rows remaining | open: 5.6 visual, 5.7-5.11 human, 5.12 reviewer, earlier reviewer rows 2.5, 3.7, 3.8 |
+| `change.md` status | `impl_reviewed` |
+| `## Progress` rows remaining | 8: 3.8 and 5.12 `[reviewer] (CI at ship)`, 5.6 `[visual]`, 5.7-5.11 `[human]` |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/bathroom-room.spec.ts` | `#16 S-31 FR-033 ...` (finish salon, kitchen, children, bathroom; exact balance 71; card with four done rooms; rendered border pixels at x 203 and 1717 prove the 1516 card; `houseButton` null under the card; "Dalej" then change mode and "Dom") and `#2 S-31 FR-038 ...` (house cells done/done/done/current, `upper-right` = bathroom, rendered pixel not the closed cream, tap returns, reload keeps `currentRoom` and `tasksDone 1`) |
-| `playwright.config.ts` | `bathroom-room` added to the `ROUND_SPEC` alternation (project `chromium-hook`), nothing else |
+| `context/changes/bathroom-room/reviews/impl-review.md` | review report: plan-adherence table, F1 (fixed) + F2-F5 observations, Polish read, observed gate, `MERGE: CLEAR` |
+| `tests/fixtureLoadPath.test.ts` | F1: the `save-v6-kitchen-done meets the children's room` title now says four cells (b1989b9) |
+| `context/changes/bathroom-room/plan.md` | rows 2.5 and 3.7 `[reviewer]` ticked with evidence |
+| `context/changes/bathroom-room/change.md` | status `impl_reviewed` |
+| `context/changes/bathroom-room/follow-ups/review-fixes.md` | item 6 marked closed (spec committed 883a68b, break re-run red) |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| single spec, `--workers=1`, sandbox off | 2 passed (59 s and 56 s), green first time |
-| `--list` | 2 tests under `chromium-hook`; whole suite `Total: 193 tests` = 191 + 2 |
-| lint (spec, config) / typecheck | OK / OK |
-| Break `{ room: 'bathroom', floor: 1, place: 1 }` -> `place: 0` | test 2 red: `expect(received).toEqual(expected)` on the cell states; restored |
-| Break last bathroom cost 15 -> 14 | test 1 red: `expect((await snapshot(page)).stars).toBe(stars)`, Expected 0, Received 1; restored. (Cost 16 broke the boot with `state.room` null, a data validation, not the balance rule, so 14 was used) |
-| Break `RoomDoneCard.show` fixed 388/1144 card | first spec version stayed GREEN: the room behind the card is cream (255,245,223), 2 per channel from the card face (255,247,222), so the face pixel proved nothing. The spec now reads the card's border (216,188,111) at x 203 and 1717 of the rendered frame; the same break turns it red on `CARD_LEFT_EDGE`/right-edge `expect.poll`; restored, green after |
-| Break `const blocked = open || this.card` -> `open` | test 1 red: `expect(...houseButton).toBeNull()` Received `{x:1750,y:224}`; restored |
-| After all breaks | `git status` shows only the new spec and config; ports 4397/4398 killed |
+| `npm run lint` / `npm run typecheck` | OK / OK (also after the fix) |
+| `npm test` | 4233 passed = baseline 4215 + 18 (roomDoneLayout 7, `RoomDoneCard` wiring 1, roomsData 4, houseCells 2, fixtureLoadPath 2, roomHit 1, bootBudget per-room 1) |
+| `bash deploy/test-martynka-deploy.sh` / `bash deploy/ops/test-martynka-ops.sh` | OK / OK |
+| `npm run sample -- E1` … `E6` | all OK |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| full e2e | not run here (scope.md); orchestrator at b5a2a1e: 193 = 191 + 2, 180 passed + 13 load timeouts, 13/13 green on `--last-failed --workers=1` — inherited, unverified by this step |
+| `npx playwright test tests/e2e/bathroom-room.spec.ts --workers=1` (sandbox off) | 2 passed (2.2 m) after restoring the break |
+| Break `roomDoneCardRect` without `2 * spec.padding` | `tests/roomDoneLayout.test.ts` n=4, n=5 red; `tests/layout.test.ts` stayed green (F2: the pure test is the guard); restored |
+| Break: `HOUSES['house-1']` bathroom row removed (phase-4 tdd RED) | 7 red in roomsData, houseCells, fixtureLoadPath; restored |
+| Break: `RoomDoneCard.show` draws a fixed 1144 card (handoff break) | e2e #16 red on the `CARD_RIGHT_EDGE` border poll; restored; meta-check: the border, not the card face (within 2 of the cream), proves the width |
+| Ports 4397/4398 after the run | none listening |
 
 ## 4. Next command
 
-`/10x-impl-review bathroom-room`
+`visual gate (bathroom-room)`
 
 ## 5. Open
 
-- `[reviewer]` rows: 2.5, 3.7, 3.8, 5.12. `[visual]` row 5.6. `[human]` rows 5.7-5.11.
-- Follow-up 6 (houseButton while the card is up) is closed by test 1 of this spec.
-- The orchestrator runs the full e2e suite once from a pinned worktree; expected total 193.
+- `[visual]` 5.6: 14 frames (plan Phase 5 Manual) into `context/changes/bathroom-room/reviews/visual-review.md`.
+- `[human]` checklist: 5.7 accept `roomDoneCardRect` / `RoomDoneCard.show` (card 1516 for four tiles); 5.8 costs 5 + 7/9/10/12/13/15 = 71; 5.9 wording (gap 205); 5.10 room (not house) celebration at the end of house 1; 5.11 real tablet offline.
+- `[reviewer] (CI at ship)`: 3.8 Deploy job `deploy` step `Smoke check (deploy)` prints `144 of 144 room pictures precached`; 5.12 Deploy job `build` steps `Run npm test` (expected `Tests  4230 passed | 3 skipped (4233)` = 4212 + 18 with the same 3 CI skips) and `Run npm run build` (`e2e hook: absent (`).
+- Observations F2-F5 in `reviews/impl-review.md` (no action). Follow-ups: `follow-ups/review-fixes.md` (items 1-3, 7-12 open with `Trigger:`).
 - Archive: rewrite the CLAUDE.md follow-ups path to the archive folder.
 
 ## 6. Autonomous decisions
 
-- Phase 6: manual gate, next-phase and commit-message prompts decided in place (proposed message, only the planned set staged, stopped after phase 6). Would change: none.
-- The four-tile width is proved by the card's rendered border at both outer edges, not by the card-face colour (see §3: the face is within 2 of the room's cream, the break stayed green). Card face and tile ivory are still asserted. Would change: a card border colour change (the constant `BORDER` follows `unlockBorder`).
-- Floor point (1230, 810) measured on the WebP: before (200,139,80), after (254,234,189), flat in both; outside every slot rect. Would change: new bathroom art.
-- The bathroom has no stage backgrounds, so the stage assertion is one before -> after step. Would change: none.
+- Plan drift and quality read by the reviewer directly, not by two sub-agents as the skill suggests: the code diff is ~6 small files; sub-agents would add handoff loss for no coverage gain. Would change: a diff touching scenes or core beyond one helper.
+- F1 fixed in place (cheap WARNING, test title only); F2-F5 recorded, not fixed (no behaviour risk). Would change: a later slice relying on the layout test to guard the padding.
+- Triage prompt ("Triage now / later / Done") decided as triage now, in place; no `AskUserQuestion`. Would change: none.
+- 5.12 expected CI count written as 4215 + 18 with the 3 CI skips; the ship step reads the actual line. Would change: a different skip set in CI.

@@ -308,7 +308,7 @@ bathroom yet; phase 4 adds its HOUSES row and removes this exemption".
 
 #### Manual Verification:
 
-- [reviewer] Polish-language read of the bathroom copy in `src/data/pl.ts` against the table above (profile § 2: room captions, not task content): caption nominatives, variant forms agreeing with the noun (wanna/roślina/półka → -a, umywalka i lustro → -e, regał/dywanik → -y), task labels imperative + accusative (wannę, umywalkę, roślinę, półkę), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
+- [reviewer] Polish-language read of the bathroom copy in `src/data/pl.ts` against the table above (profile § 2: room captions, not task content): caption nominatives, variant forms agreeing with the noun (wanna/roślina/półka → -a, umywalka i lustro → -e, regał/dywanik → -y), task labels imperative + accusative (wannę, umywalkę, roślinę, półkę), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff — impl review (all forms pass; sample E1-E6 OK)
 - [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 144 of 144 room pictures precached` (SEEN at plan time in Deploy run 41313671518, job `deploy`: `ok   precache covers room pictures — 123 of 123 room pictures precached`; expected after this slice: 123 + 21 = 144)
 
 ---
@@ -616,7 +616,7 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Manual
 
-- [ ] 2.5 [reviewer] `RoomDoneCard.show` reads every horizontal card coordinate from the rect (card fill and border, tile lefts, burst centre); the title and "Dalej" stay at x 960 by data
+- [x] 2.5 [reviewer] `RoomDoneCard.show` reads every horizontal card coordinate from the rect (card fill and border, tile lefts, burst centre); the title and "Dalej" stay at x 960 by data — impl review (fill, stroke, `rect.tileLefts[index]`, burst at `rect.left + rect.width / 2`; title/button from `ROOM_DONE_LAYOUT`)
 
 ### Phase 3: The bathroom as data, copy and art (unreachable)
 
@@ -631,7 +631,7 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Manual
 
-- [ ] 3.7 [reviewer] Polish-language read of the bathroom copy in `src/data/pl.ts` against the table above (profile § 2: room captions, not task content): caption nominatives, variant forms agreeing with the noun (wanna/roślina/półka → -a, umywalka i lustro → -e, regał/dywanik → -y), task labels imperative + accusative (wannę, umywalkę, roślinę, półkę), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
+- [x] 3.7 [reviewer] Polish-language read of the bathroom copy in `src/data/pl.ts` against the table above (profile § 2: room captions, not task content): caption nominatives, variant forms agreeing with the noun (wanna/roślina/półka → -a, umywalka i lustro → -e, regał/dywanik → -y), task labels imperative + accusative (wannę, umywalkę, roślinę, półkę), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
 - [ ] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 144 of 144 room pictures precached` (SEEN at plan time in Deploy run 41313671518, job `deploy`: `ok   precache covers room pictures — 123 of 123 room pictures precached`; expected after this slice: 123 + 21 = 144)
 
 ### Phase 4: The bathroom joins house 1
