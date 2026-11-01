@@ -451,10 +451,10 @@ complexity, 0 open product questions after research, 4 phases):
 
 #### Automated
 
-- [ ] 2.1 The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: give the Hangar row `place: 2` → the `houseCells` case red; drop the row → the roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the e2e reload in #16 is the browser proof of the same path
-- [ ] 2.3 `npx playwright test tests/e2e/base-cross-section.spec.ts` (sandbox disabled) green, 3 tests
-- [ ] 2.4 `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h -- tests/fixtures/save-v6.json` unchanged by this slice
+- [x] 2.1 The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N` — de5ab57
+- [x] 2.2 Deliberate break: give the Hangar row `place: 2` → the `houseCells` case red; drop the row → the roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the e2e reload in #16 is the browser proof of the same path — de5ab57
+- [x] 2.3 `npx playwright test tests/e2e/base-cross-section.spec.ts` (sandbox disabled) green, 3 tests — de5ab57
+- [x] 2.4 `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h -- tests/fixtures/save-v6.json` unchanged by this slice — de5ab57
 - [ ] 2.5 Full local gate green; e2e (orchestrator, `--workers=4`) `187 + 0`
 
 ### Phase 3: Docs, gap rows, follow-ups, seam sweep and the visual pass
