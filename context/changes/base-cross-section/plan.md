@@ -535,10 +535,10 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "houseArtKeys|base-1-cell-closed|houseLabel" CLAUDE.md` present — PHASE4SHA
-- [x] 4.2 `grep -c "Trigger:" context/changes/base-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| (199|20[0-9]) " docs/design-gaps.md` ≥ 2 — PHASE4SHA
-- [x] 4.3 Seam sweep: `grep -rn "until S-29\|No HOUSE_GEOMETRY entry yet\|S-29 adds" src tests` empty; `grep -rn "'base-1'" src` only in `src/data/houses.ts`, `src/data/pl.ts` and `src/core/types.ts`/the hook if they name it — PHASE4SHA
-- [x] 4.4 `git diff --stat <phase-3 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — PHASE4SHA
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "houseArtKeys|base-1-cell-closed|houseLabel" CLAUDE.md` present — 2bcc350
+- [x] 4.2 `grep -c "Trigger:" context/changes/base-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| (199|20[0-9]) " docs/design-gaps.md` ≥ 2 — 2bcc350
+- [x] 4.3 Seam sweep: `grep -rn "until S-29\|No HOUSE_GEOMETRY entry yet\|S-29 adds" src tests` empty; `grep -rn "'base-1'" src` only in `src/data/houses.ts`, `src/data/pl.ts` and `src/core/types.ts`/the hook if they name it — 2bcc350
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — 2bcc350
 - [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (local gate green at p4: lint, typecheck, 4185 unit, deploy/ops, sample E1-E6, build; the e2e count is the orchestrator's)
 
 #### Manual
