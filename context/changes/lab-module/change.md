@@ -1,7 +1,7 @@
 ---
 change_id: lab-module
 title: Laboratorium, trzeci moduł bazy, z ramką bazy w przekroju
-status: implemented
+status: impl_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
