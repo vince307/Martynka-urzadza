@@ -8,8 +8,8 @@ Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all seven
 |---|---|
 | branch | `feat/house-1-polish`, from `main` at `964285b` |
 | commits | `8a667f5`..`1b6d4ed` (17) + this commit `docs(house-1-polish): bramka wizualna` |
-| pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (unchanged) |
+| pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-11-01-bathroom-polish-lab/run-log.md |
+| `change.md` status | `archived` (2026-11-01T20:07:16Z, folder moved to `context/archive/2026-11-01-house-1-polish/`, roadmap S-32 done, CLAUDE.md path rewritten, `validate-rule-files.sh` PASS) |
 | Progress rows remaining | 7 (`grep -c '^- \[ \]' plan.md`): 2.9, 5.12 `[reviewer] (CI at ship)`; 5.7-5.11 `[human]` |
 | working tree | clean after this commit (throwaway spec and `dist-visual.local/` moved to the session scratchpad `s32/`) |
 
@@ -40,7 +40,7 @@ Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all seven
 
 ## 4. Next command
 
-`/10x-archive house-1-polish` then ship (no hosted db push)
+`none — shipped`
 
 ## 5. Open
 
@@ -51,6 +51,8 @@ Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all seven
 - Follow-ups 1-14 in `follow-ups/review-fixes.md` (none added by this step).
 
 ## 6. Autonomous decisions
+
+- A1 (archive step). `/10x-archive` warned 7 pending Progress rows (2.9, 5.12 `[reviewer] (CI at ship)`, 5.7-5.11 `[human]`); chose Continue archiving: the CI-at-ship rows are proved only by the post-merge Deploy log (ticked in the run docs PR), the `[human]` rows are the post-run checklist, not a blocker. Impl-review covers phases 1-6. No SHA repoint. Would change: an automated row that is not CI-at-ship still open.
 
 - V1. Playwright fallback without a Chrome attempt: fresh device per state, 21 purchases per width, reduced-motion emulation, Chromium without WebGL and a hook seam are needed; profile § 8 says Claude in Chrome cannot drive Phaser gestures. Rejected: wiping Chrome site data, mixing capture routes. Would change: a defect visible only in the maintainer's Chrome profile.
 - V2. Items 5 and 8 captured on house visits, item 14 "after" on the salon with all but the last task bought (the salon stops being current at "Dalej"). Would change: nothing.

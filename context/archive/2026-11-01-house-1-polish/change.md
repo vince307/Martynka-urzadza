@@ -1,10 +1,10 @@
 ---
 change_id: house-1-polish
 title: Kuchnia w etapach i salon na kremowym tle (dopracowanie domu 1)
-status: impl_reviewed
+status: archived
 created: 2026-11-01
 updated: 2026-11-01
-archived_at: null
+archived_at: 2026-11-01T20:07:16Z
 ---
 
 ## Notes
