@@ -26,8 +26,6 @@ type Raw = {
 const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done', 'save-v6-kitchen-mid', 'save-v7'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
-const TASKS_OVERFLOW_KITCHEN = { room: 'kitchen', kind: 'tasks-overflow' };
-
 let n = 0;
 describe('frozen fixtures through the real load path', () => {
     it.each(FIXTURES)('%s loads, keeps every earned value, writes v7 and keeps the old copy', async (name) => {
@@ -139,8 +137,7 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
         // S-32 phase 1: the kitchen moved by 2 (7 -> 9) onto the three-stage list.
         expect(moved.rooms.kitchen).toEqual({ ...raw.rooms.kitchen, tasksDone: raw.rooms.kitchen.tasksDone + 2 });
-        // TEMPORARY, S-32 phase 1: the 9-task kitchen list lands in phase 2, which restores [].
-        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([TASKS_OVERFLOW_KITCHEN]);
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });
 
@@ -158,8 +155,7 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
         expect(moved.rooms.kitchen).toEqual({ ...raw.rooms.kitchen, tasksDone: raw.rooms.kitchen.tasksDone + 2 });
         expect(moved.rooms.children).toEqual(raw.rooms.children);
-        // TEMPORARY, S-32 phase 1: the 9-task kitchen list lands in phase 2, which restores [].
-        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([TASKS_OVERFLOW_KITCHEN]);
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });
 

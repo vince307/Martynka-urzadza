@@ -21,6 +21,20 @@
     "label": ""
   },
   {
+    "key": "kitchen/kitchen-stage-1",
+    "url": "assets/rooms/kitchen/kitchen-stage-1.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "kitchen/kitchen-stage-2",
+    "url": "assets/rooms/kitchen/kitchen-stage-2.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
     "key": "kitchen/kitchen-counter-natural",
     "url": "assets/rooms/kitchen/kitchen-counter-natural.webp",
     "width": 653,

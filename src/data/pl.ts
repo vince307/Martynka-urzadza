@@ -433,6 +433,9 @@ export const pl = {
             swapLamp: 'Wymień lampę',
             swapPlant: 'Wymień roślinę',
             swapPouf: 'Wymień pufę',
+            // DESIGN-GAP (docs/design-gaps.md row 202): the pack gives stage nouns (S-32 pack labels); the imperatives with the accusative are ours.
+            cleanKitchen: 'Posprzątaj kuchnię',
+            renewWalls: 'Odnów ściany',
             placeCounter: 'Postaw szafki',
             placeFridge: 'Postaw lodówkę',
             placeKitchenTable: 'Postaw stół i krzesła',

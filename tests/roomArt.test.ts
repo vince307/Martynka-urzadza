@@ -57,9 +57,9 @@ describe('room art table', () => {
         }
     });
 
-    it('has 37 salon, 21 kitchen, 23 children room, 21 bathroom, 21 bridge and 21 hangar entries, each a WebP file of the tabled size', () => {
+    it('has 37 salon, 23 kitchen, 23 children room, 21 bathroom, 21 bridge and 21 hangar entries, each a WebP file of the tabled size', () => {
         expect(roomArt(ROOMS.salon)).toHaveLength(37);
-        expect(roomArt(ROOMS.kitchen)).toHaveLength(21);
+        expect(roomArt(ROOMS.kitchen)).toHaveLength(23);
         expect(roomArt(ROOMS.children)).toHaveLength(23);
         expect(roomArt(ROOMS.bathroom)).toHaveLength(21);
         expect(roomArt(ROOMS.bridge)).toHaveLength(21);

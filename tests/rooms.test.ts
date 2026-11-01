@@ -3,7 +3,7 @@
 // changes nothing. The test room is written out here, not read from data.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { sceneKey, stageFade, currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView } from '../src/core/rooms';
+import { sceneKey, stageFade, currentTask, emptyRoomState, roomGrowth, nextTaskCost, parentVisible, purchase, roomStateProblems, repairCurrentRoom, roomDone, roomsListView, stagesDone, taskButtonView, wornPieces, contactShadowPieces } from '../src/core/rooms';
 import { decodeSave, encodeSave, validateSave, type SessionSave } from '../src/core/save';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
 import type { RoomDef, RoomState } from '../src/core/types';
@@ -335,14 +335,30 @@ describe('sceneKey and stageFade (kids-room phase 1)', () => {
         expect(stageFade(staged, at(4))).toBeNull();
     });
 
-    it('salon, kitchen, Mostek and Hangar keep the old before/after ternary at every tasksDone', () => {
-        for (const id of ['salon', 'kitchen', 'bridge', 'hangar']) {
+    it('salon, Mostek and Hangar keep the old before/after ternary at every tasksDone', () => {
+        for (const id of ['salon', 'bridge', 'hangar']) {
             const r = ROOMS[id];
             for (let n = 0; n <= r.tasks.length; n++) {
                 const st = at(n);
                 const side = stagesDone(r, st) > 0 ? 'after' : 'before';
                 expect(sceneKey(r, st)).toBe(r.scene[side]);
             }
+        }
+    });
+
+    // S-32: the kitchen is renovated in three stages (literal keys from the pack, not read back from KITCHEN).
+    it('the kitchen shows before, two stage pictures, then after at tasksDone 0..9', () => {
+        const k = ROOMS.kitchen;
+        const keys = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => sceneKey(k, at(n)));
+        expect(keys).toEqual(['kitchen/before', 'kitchen/kitchen-stage-1', 'kitchen/kitchen-stage-2', ...Array<string>(7).fill('kitchen/after')]);
+        expect(stageFade(k, at(1))).toMatchObject({ from: 'kitchen/before' });
+        expect(stageFade(k, at(2))).toMatchObject({ from: 'kitchen/kitchen-stage-1' });
+    });
+
+    it('the kitchen has no worn pieces and no contact shadows at any tasksDone', () => {
+        for (let n = 0; n <= 9; n++) {
+            expect(wornPieces(ROOMS.kitchen, at(n)), String(n)).toEqual([]);
+            expect(contactShadowPieces(ROOMS.kitchen, at(n), 1), String(n)).toEqual([]);
         }
     });
 });
