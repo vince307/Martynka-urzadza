@@ -1,10 +1,10 @@
 ---
 change_id: base-cross-section
 title: Przekrój bazy; dziecko zostaje w bazie po Mostku; przycisk „Baza”
-status: impl_reviewed
+status: archived
 created: 2026-11-01
 updated: 2026-11-01
-archived_at: null
+archived_at: 2026-11-01T05:47:23Z
 ---
 
 ## Notes
