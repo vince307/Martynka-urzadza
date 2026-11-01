@@ -1,60 +1,57 @@
 # Handoff — `lab-module` (slice S-33)
 
-Written by the `/10x-impl-review` step of run 2026-11-01-bathroom-polish-lab: full-plan review APPROVED, `MERGE: CLEAR`, two warnings fixed in `7c8b9a5`. The one thing not to get wrong: rows 1.7 and 4.7 are ticked on the source strings; the visual gate (row 4.6) still owes every frame (1)-(11) in `reviews/visual-review.md`.
+Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all eleven row-4.6 states captured at 1440 and 1024 on the hook build, `VISUAL: PASS`, no fix, no new gap. The one thing not to get wrong: the remaining open rows are [reviewer] (CI at ship) and [human] only; nothing in `src/` changed in this step.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/lab-module`, cut from `main` at `60472aa` |
-| commits | `b255848`..this handoff commit; phases `947e665` (p1), `e9e6ae2` (p2), `48e67df` (p3), `88004b6` (p4), `be81f83` (p5), epilogue `0f4d052`, review fix `7c8b9a5`, then `docs(lab-module): impl review` |
+| commits | `b255848`..this handoff commit; phases `947e665` (p1), `e9e6ae2` (p2), `48e67df` (p3), `88004b6` (p4), `be81f83` (p5), epilogue `0f4d052`, review fix `7c8b9a5`, impl review `b35554b`, then `docs(lab-module): bramka wizualna` |
 | pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` |
-| Progress rows remaining | 8 of 35: 4.6 [visual]; 1.8, 3.7, 4.12 [reviewer] (CI at ship); 4.8-4.11 [human] |
+| Progress rows remaining | 7 of 35: 1.8, 3.7, 4.12 [reviewer] (CI at ship); 4.8-4.11 [human] |
 | working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/lab-module/reviews/impl-review.md` | full-plan review (phases 1-5), APPROVED, F1-F5, ends `MERGE: CLEAR — …` |
-| `tests/houseArt.test.ts` | comment above `CAPS`: measured base weight 97 776 B (F2, `7c8b9a5`) |
-| `context/changes/lab-module/follow-ups/review-fixes.md` | item 8 trigger restored to the original house-1-polish 2 wording (F1, `7c8b9a5`) |
-| `context/changes/lab-module/plan.md` | rows 1.7 and 4.7 ticked (`7c8b9a5 (impl-review)`) |
-| `context/changes/lab-module/change.md` | `status: impl_reviewed` |
+| `context/changes/lab-module/reviews/visual-review.md` | visual gate, items (1)-(11), hand-checked stars, ends `VISUAL: PASS — …` |
+| `context/changes/lab-module/screenshots/README.md` | route, hook facts, frame table |
+| `context/changes/lab-module/screenshots/{desktop,tablet}-*.png` | 24 game frames (12 shots × 2 widths) |
+| `context/changes/lab-module/screenshots/kit-*.png` | 4 pack frames copied read-only from `designs/bystrow-space-base-v3/screenshots/` and `designs/bystrow-space-base-v5/screenshots/` |
+| `context/changes/lab-module/plan.md` | row 4.6 ticked |
 | `context/changes/lab-module/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npm run lint` / `npm run typecheck` | OK / OK (on `0f4d052` and again after `7c8b9a5`) |
-| `npm test` | `Tests  4263 passed (4263)` = baseline 4254 + 9 (p1 +5, p2 +4); same after the fix |
-| deploy + ops shell tests, `npm run sample -- E1`…`E6` | OK, exit 0 each |
-| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` (both runs) |
-| e2e full (orchestrator, not this step) | 198 = 196 + 2; 174 passed + 15 timeouts + 9 not run at `--workers=4`, `--last-failed --workers=1` 24/24 — inherited from the orchestrator, not re-run (scope.md) |
-| `npx playwright test tests/e2e/lab-module.spec.ts --workers=1` (sandbox disabled) | 2 passed (1.6 m) |
-| break: lab row removed from `HOUSES['base-1']`, vitest roomsData + houseCells + fixtureLoadPath | 6 failed, the same 6 assertions as the phase-2 RED evidence; restored, green |
-| break: `HOUSE_GEOMETRY['base-1'].cellFrame` = `'house/cell-frame'`, `lab-module.spec.ts -g "#2"` | RED at the rendered mint-pixel poll (`Expected: true Received: false`); restored, both tests green |
-| `git diff 60472aa -- tests/fixtures src/core/save.ts src/core/migrations` | only two added fixtures (`room-art-lab.json`, `save-v7-hangar-done.json`); save format v7 |
-| servers | none left (`lsof` 4397/4398 empty, no `playwright`/`vite` in `ps -U $(id -u)`) |
+| `E2E_HOOK=1 npm run build -- --outDir dist-visual.local` | OK, `e2e hook: present (2 chunks checked)` (hook build, as intended) |
+| throwaway `npx playwright test --config=<abs>/visual.local/playwright.visual.config.ts` (sandbox disabled, port 4399) | 6 passed (4.0 m); route C re-run `-g "C lab stand-ins"` 2 passed (1.4 m) |
+| `npm run lint` (after moving `visual.local/` and `dist-visual.local/` to the scratchpad) | OK |
+| typecheck / unit / build / single spec | not run: no source change in this step (last observed green in the impl-review handoff, `Tests 4263 passed`) |
+| hand check | `LAB.tasks` 6 + 10 + 13 + 14 + 17 + 19 + 21 = 100; drawn counter 300 → 200 → 100 → 94 → 0 and 216 → 16 → 10 → 0, as expected |
+| servers | none left (`lsof -ti tcp:4399 -sTCP:LISTEN` empty; no `vite`/`playwright` in `ps -U $(id -u)`) |
 
-Meta-check: the e2e break proves the rendered frame differs between base and house art at (244,407); the unit break proves the `HOUSES` row drives cell state, card list, flow and the fixture load.
+No deliberate break in this step (no code or spec changed).
 
 ## 4. Next command
 
-`visual gate (lab-module)`
+`/10x-archive lab-module` then ship (no hosted db push)
 
 ## 5. Open
 
-- [visual] 4.6: frames (1)-(11) at 1440 and 1024 in `context/changes/lab-module/reviews/visual-review.md` (hook build on 4399).
 - [reviewer] (CI at ship) 1.8 (`deploy` / `Smoke check (deploy)`: `167 of 167 room pictures`), 3.7 (`6 of 6 house pictures`, `precache served: 261/261`), 4.12 (`build` / `Run npm test`: `Tests  4260 passed | 3 skipped`; `Run npm run build`: `e2e hook: absent (`).
-- [human] 4.8 costs 6-21 = 100 (`LAB.tasks`), 4.9 wording (gap 208, `pl.room.tasks`), 4.10 no teaser on the last module (`houseRoomList`), 4.11 real tablet offline.
-- Follow-ups: `context/changes/lab-module/follow-ups/review-fixes.md` (12 `Trigger:` lines). No `ARTIFACT GAP`.
+- [human] 4.8 costs 6-21 = 100 (`LAB.tasks`), 4.9 wording (gap 208, `pl.room.tasks`), 4.10 no teaser on the last module (`houseRoomList`), 4.11 real tablet offline (also: does the mint frame read on a real screen).
+- No new `DESIGN-GAP`. Existing gap 174 kind seen on the stand-in path (microscope box touching the task button, `RoomLayer` stand-in) — no new row.
+- Follow-ups: `context/changes/lab-module/follow-ups/review-fixes.md` (12 `Trigger:` lines), unchanged. No `ARTIFACT GAP`.
 
 ## 6. Autonomous decisions
 
-- Both review passes done inline instead of two sub-agents: the diff is 6 data/scene-comment files, one script and 9 test files, each read against its contract. Would change: a diff touching `src/core`/`src/ui`.
-- F1 and F2 (warnings) fixed in place (cheap, one line each); F3-F5 recorded as observations. Would change: nothing.
-- Row 4.7 ticked on the source strings the frames draw (all correct); rendering and fit stay with 4.6. Would change: the visual gate finding a caption cut or wrong on screen — then 4.7 is reopened.
-- Commits with English subjects (F3) are not rewritten (contract forbids rewriting). Would change: nothing.
+- Playwright fallback instead of Claude in Chrome: fresh device per route, 21 purchases per width, `?e2eArt=room` seam, and profile § 8 says Chrome cannot drive Phaser gestures. Rejected: wiping Chrome site data. Would change: a defect visible only in the maintainer's Chrome profile.
+- Items (5) and (7) captured as one frame (`*-05-07`): the furnished look is reached only through the card and "Dalej" keeps the same room. Would change: nothing.
+- Route C extended by one slot purchase to show a labelled stand-in box. Would change: nothing.
+- The first run's relative output path wrote the frames to `/Users/kamilp/Dev/context/…` outside the repo; I moved them into the change dir (sandbox disabled for that move only) and removed the stray folder; the re-run used an absolute path. Would change: nothing.
+- No fix, no gap row: every finding matches the pack or an existing gap. Would change: the maintainer rejecting 4.8 or 4.9.
