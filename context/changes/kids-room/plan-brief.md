@@ -29,8 +29,8 @@ stays. The house shows it in `upper-left`. A saved finished kitchen loads into i
 | Staged renovation | Three stage tasks with pack backgrounds (D1, option A: `scene` on a stage task) | Pack and roadmap S-32 define the kids room as the staged precedent; code bound held | Change / Research |
 | Background rule | `sceneKey` = last done stage's `scene`, else `after` once staged, else `before`; `stageFade` pure | One rule instead of four copies; unit-tested | Plan |
 | Room id, cell | `children`, `upper-left` (floor 1, place 0) | Pack ids; maintainer house layout | Change |
-| Costs | 3/4/5 + 7/9/10/12/13/15 = 78 | Kitchen curve, cheap stages; S-17 tunes | Change / Plan |
-| Card overflow | Tiles 320 wide, gap 40, every card | Layout data only, no scene code | Research / Plan |
+| Costs | 5/6/7 + 7/9/10/12/13/15 = 84 | Kitchen curve; every task 5-21 (test invariant, FR-016); S-17 tunes | Change / Plan review |
+| Card overflow | Tiles 340 wide, gap 32, thumb 0.12, mark 28/22, every card | Layout data only; the done mark stays clear of the miniature | Research / Plan review |
 | Landing proof | Frozen `save-v6-kitchen-done.json` + load-order mirror test | S-30 precedent, no e2e seam | Research / Plan |
 | Wording | Imperatives and agreed variant forms ours (gap 202) | Pack gives nouns and masculine labels | Research / Plan |
 | `children-before` | Not converted; `before` = `children-stage-0` | Pack `renovation.stages[0]` | Research |
@@ -56,7 +56,7 @@ one house row. `HouseView`, the card and the backdrop follow automatically throu
 | 1. Background rule (tdd) | `sceneKey`, `stageFade`, `scene?` on stage task, `backdropMode` | salon/kitchen behaviour must not move |
 | 2. Wire the sites (impl) | RoomView, miniature, fadeStage, snapshot `stagesDone`, `roomArt` stage keys, wiring test | existing room-art snapshots byte-identical |
 | 3. Room data and art (impl) | `CHILDREN`, 23 WebP, copy, snapshot (unreachable) | copy agreement; files/table drift |
-| 4. Join house 1 (tdd) | `HOUSES` row, tiles 320/40, fixture, flipped unit + e2e | other specs pinning a two-room house |
+| 4. Join house 1 (tdd) | `HOUSES` row, tiles 340/32, fixture, flipped unit + e2e | other specs pinning a two-room house |
 | 5. Docs and sweep (impl) | CLAUDE.md, gaps, follow-ups, seam sweep, 13-frame visual pass, `[human]` rows | visual: subtle stage differences in miniatures |
 | 6. Browser proof (e2e) | `kids-room.spec.ts`: staged backgrounds in the rendered frame, purchases, cell, reload | long purchase run under load |
 

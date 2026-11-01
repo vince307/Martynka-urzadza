@@ -75,12 +75,14 @@ Grounded in `research.md`, spot-checked on this branch at `7e14b7b`:
   Mostek and Hangar look and fade exactly as before.
 - `CHILDREN: RoomDef` (`id: 'children'`) in `src/data/rooms.ts`: three stage tasks (`children/children-stage-1`,
   `children/children-stage-2`, then the after picture), six slots from `designs/martynka-evolution-v1/manifest.json`
-  `rooms.children`, costs 3/4/5 + 7/9/10/12/13/15 = 78; 23 WebP in `public/assets/rooms/children/`; Polish copy.
+  `rooms.children`, costs 5/6/7 + 7/9/10/12/13/15 = 84 (plan review F1: every task costs 5-21, `tests/roomsData.test.ts`
+  and PRD FR-016); 23 WebP in `public/assets/rooms/children/`; Polish copy.
 - `HOUSES['house-1']` gains `{ room: 'children', floor: 1, place: 0 }`. After the kitchen the card shows three tiles and
   "Dalej" opens the children's room; after its last purchase the card shows three done tiles, no teaser, and "Dalej"
   keeps the child there in change mode with "Dom". The cross-section shows the children's room in `upper-left`.
 - A v6 save with the kitchen finished (frozen fixture) loads into the children's room with nothing lost.
-- The room-done card fits three tiles (`tiles.width` 320, `gap` 40); its layout test checks the longest house list.
+- The room-done card fits three tiles (`tiles.width` 340, `gap` 32, `thumbScale` 0.12, mark 28/22); its layout test checks
+  the longest house list and that the done mark stays clear of the miniature.
 - Deploy smoke: `123 of 123 room pictures precached` with no script change.
 - Gap rows 202-204 added, the fade gap row narrowed; CLAUDE.md "Current state" has one S-25 sentence; follow-ups recorded.
 - `tests/e2e/kids-room.spec.ts` proves the staged backgrounds in the rendered frame, the purchase flow to the end and the
@@ -210,7 +212,12 @@ DESIGN-GAP comment narrows: rooms whose pack has in-between backgrounds name the
 gains `stagesDone: number` next to `stageDone` (e2e tells stage 1 from stage 2).
 
 **Contract**: `fadeStage` keeps its trigger (`step.bought?.kind === 'stage'`), duration, ease, reduced-motion return and
-`clearGhosts`; `RoomScene.redraw` is not touched (house-cross-section follow-up 21 stays unfired).
+`clearGhosts`; `RoomScene.redraw` is not touched (house-cross-section follow-up 21 stays unfired). **Fired follow-up
+(plan review F5):** salon-style impl-review F4 ("`ghostTweens` keeps finished tweens until sleep", Trigger: "a second
+stage task in a room or the next change to `fadeStage`") fires twice here; the tween's `onComplete` also drops that tween
+from `ghostTweens` (next to `dropGhost`), so three back-to-back stage purchases leave no finished tween behind; a stage
+bought while the previous fade still runs simply adds its ghost on top (both at `depth.scene + 0.1`, both fade to 0).
+final-art-salon F1 (fade paused while the scene sleeps) stays closed (salon-style folded it); `clearGhosts` is unchanged.
 
 #### 3. Art table
 
@@ -263,7 +270,12 @@ The children's room exists with its pictures and Polish text, precached and budg
 'children', scene: ['children-stage-0', 'children-stage-1', 'children-stage-2', 'children-after', 'children-shadows'],
 decor: [], furniture: children-bed-<natural|house|drawers> + children-<desk|books|toys|reading|wardrobe>-<natural|sunny|mint>,
 recolourBoard: false }` (cream board like the kitchen). `convert()` settings unchanged; every other output byte-identical.
-Needs `cwebp` and Python with Pillow 12.1.0 + numpy 2.4.3.
+Needs `cwebp` and Python with Pillow 12.1.0 + numpy 2.4.3 (present on the maintainer's machine at plan review:
+`/usr/local/bin/cwebp`, `python3` Pillow 12.1.0, numpy 2.4.3; the script reads `designs/` only and writes
+`public/assets/`). If either is missing or `npm run art` fails for a tool or sandbox reason (plan review F6), the phase
+stops `STATUS: BLOCKED` with the error line: never hand-convert or resize a WebP outside the script, never pin other
+versions, never write into `designs/`. If the sandbox blocks the tools, re-run the one command with the sandbox disabled
+(profile § 8) before calling it BLOCKED.
 
 #### 2. Room data
 
@@ -274,8 +286,8 @@ width, height, z, anchor, visibleRect; variants `children/<file id>`): bed 405,2
 drawers); desk 1258,397 290×262 z25; books 810,286 220×324 z15; toys 411,578 371×251 z40; reading 1211,558 367×301 z45;
 wardrobe 1028,308 216×346 z18. `CHILDREN` = `id: 'children'`, `scene: { before: 'children/before', after:
 'children/after', shadows: 'children/shadows' }`, `decor: []`, `worn: []`, `contactShadows: []` (`shadowEllipses: []`),
-tasks in this order: stage `clean-room` (label `cleanRoom`, 3, `scene: 'children/children-stage-1'`), stage
-`paint-walls` (`paintWalls`, 4, `scene: 'children/children-stage-2'`), stage `renew-floor` (`renewFloor`, 5, no
+tasks in this order: stage `clean-room` (label `cleanRoom`, 5, `scene: 'children/children-stage-1'`), stage
+`paint-walls` (`paintWalls`, 6, `scene: 'children/children-stage-2'`), stage `renew-floor` (`renewFloor`, 7, no
 `scene`), slots `place-bed` (`placeBed`, 7), `place-desk` (`placeDesk`, 9), `place-bookcase` (`placeBookcase`, 10),
 `place-toy-chest` (`placeToyChest`, 12), `set-up-reading-nook` (`setUpReadingNook`, 13), `place-wardrobe`
 (`placeWardrobe`, 15); a header comment naming the pack, FR-033 and D1. `ROOMS` gains `[CHILDREN.id]: CHILDREN` after
@@ -306,8 +318,12 @@ from the manifest file names, sizes from the PNGs, labels from the copy table �
 (3 roles + 2 stage keys + 18 furniture); `ROOM_ART` = salon + kitchen + children + bridge + hangar in `ROOMS` order; a
 `describe('children data (FR-033)')` with a manifest literal (`[id, x, y, width, height, z]` per slot, from the manifest),
 three stage tasks first then six slot tasks in the pack's `renovation.furnishings` order, costs
-`[3, 4, 5, 7, 9, 10, 12, 13, 15]` summing to 78, the two stage `scene` keys and none on the third; `unreachableSlots`
-over the room with all six bought = `[]`. The `it.each(ROOMS)` invariants cover the rest (inside the scene, distinct z,
+`[5, 6, 7, 7, 9, 10, 12, 13, 15]` summing to 84, the two stage `scene` keys and none on the third; `unreachableSlots`
+over the room with all six bought = `[]`. **Placement exemption (plan review F2, S-30 precedent `041e279`):** the
+invariant "is keyed by its own id and placed in exactly one house of HOUSES" (`tests/roomsData.test.ts`, `describe('every
+room in ROOMS')`) is red while `CHILDREN` is in `ROOMS` but in no house; this phase changes ONLY its expected count to
+`id === 'children' ? 0 : 1` with a comment "S-25 phase 3: no house lists the children's room yet; phase 4 adds its
+HOUSES row and removes this exemption". The `it.each(ROOMS)` invariants cover the rest (inside the scene, distinct z,
 copy for every slot/variant/task, stand-in labels, weight, boot budget).
 
 ### Success Criteria:
@@ -352,9 +368,13 @@ there; the card fits three tiles.
 
 **Intent**: three tiles fit the 1144 card (research NEW finding).
 
-**Contract**: `ROOM_DONE_LAYOUT.tiles.width` 320, `gap` 40 (3·320 + 2·40 = 1040); `left` updated or removed if unused;
-thumb (≈250) and caption (≈258) fit; `markInset`/`markRadius` unchanged unless the mark leaves the tile. A comment names
-gap 204 and the S-31 limit (4 tiles = 1400 > 1144).
+**Contract** (revised by plan review F3): the done mark (`markInset`, `markRadius`) is drawn on the card `Graphics` at
+`depth.card`, BELOW the miniature images (`depth.card + 1`, opaque background), so it must not overlap the thumb rect, or
+the "done" shape sign is half hidden (at width 320 with today's thumb 0.13 and mark 34/26 the circle x 260-312 overlaps
+the thumb x 35-285). Numbers: `tiles.width` 340, `gap` 32 (3·340 + 2·32 = 1084 ≤ 1144), `thumbScale` 0.12 (230×130,
+right edge at 285.2 of the tile), `markInset` 28, `markRadius` 22 (circle x 290-334, y 6-50: clear of the thumb, inside
+the tile); caption (≈258) fits; `left` updated or removed if unused. Other numbers satisfying the test below are fine. A
+comment names gap 204 and the S-31 limit (4 tiles do not fit the 1144 card at this width).
 
 #### 3. Frozen fixture
 
@@ -371,9 +391,12 @@ full `tasksDone` with a chosen variant for each of their own slots (so `roomStat
 
 **Contract**:
 - `layout`: "lays the room list tiles …" uses `n` = the longest `houseRoomList(h, ROOMS).length` over `HOUSES` (3) instead
-  of 2; the rest of the case unchanged.
-- `roomsData`: the house-1 list = `[{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }, { room: 'children',
-  unlockAfter: 'kitchen' }]`; new "moves a finished kitchen into the children's room" (`nextRoom`, `movedFrom
+  of 2; the rest of the case unchanged; plus the done-mark circle (`width - markInset ± markRadius`, `markInset ±
+  markRadius`) lies inside the tile and does not intersect the thumb rect (`(width - scene.width·thumbScale) / 2` …,
+  `thumbTop` … `thumbTop + scene.height·thumbScale`) — red with the 320/40 numbers and today's mark.
+- `roomsData`: the phase-3 placement exemption is removed (the invariant is back to `toHaveLength(1)` for every room,
+  and turns red first if the row is missing); the house-1 list = `[{ room: 'salon' }, { room: 'kitchen', unlockAfter:
+  'salon' }, { room: 'children', unlockAfter: 'kitchen' }]`; new "moves a finished kitchen into the children's room" (`nextRoom`, `movedFrom
   'kitchen'`, empty state, salon and kitchen untouched); new "keeps the child in the children's room after its last task:
   Dalej stays".
 - `houseCells`: house-1 with `children` current and salon + kitchen done → `['done', 'done', 'current', 'closed']`,
@@ -381,13 +404,23 @@ full `tasksDone` with a chosen variant for each of their own slots (so `roomStat
 - `fixtureLoadPath`: `save-v6-kitchen-done` joins `FIXTURES` (round-trip); a case mirroring `main.ts` (`repairCurrentRoom`
   → `mergeHouse` → `nextRoom`) expects rooms `['salon', 'kitchen', 'children']` in the house, `currentRoom 'children'`,
   `movedFrom 'kitchen'`, salon and kitchen equal to the fixture's, stars kept.
-- e2e `kitchen-room.spec.ts` "#16 S-22 …": title gains S-25; the card items are three (`room:true`, `room:true`,
-  `room:false`), "Dalej" moves to `children` (`currentRoom`), the change-mode check moves to the salon or kitchen via the
-  house (or is dropped with a note that `house-cross-section.spec.ts` #2 #16 covers done-room changes).
-- e2e `rooms-as-data.spec.ts`: `HOUSE` constant gains the children cell where the loaded/written house is the data house;
-  card items after the salon become three.
-- `grep -rn "house-1\|FIRST_HOUSE\|'kitchen'" tests` — each hit that pins two rooms is edited in this phase and listed in
-  the handoff; hits that stay true are left.
+- **The e2e assertions that change, each with why** (plan review F4; grep at review time; the ONLY reason any of them
+  changes is that house 1 now lists a third, known room after the kitchen, so the card gains one tile and "Dalej" after
+  the kitchen has a next room; every other line of these tests stays as it is):
+
+  | spec / test | assertion today | after this phase | why |
+  |---|---|---|---|
+  | `kitchen-room.spec.ts` "#2 S-22 after the salon …" | card items `['room:true:true', 'room:false:true']` | `[…, 'room:false:false']` | children listed, locked until the kitchen is done |
+  | `kitchen-room.spec.ts` "#16 S-22 the kitchen furnishes …" (title gains S-25) | `slice(0, 2)` `['room:true', 'room:true']`; comment "Dalej has no further room"; after "Dalej" `currentRoom` `'kitchen'`, then `modeButton` | the `slice(0, 2)` line stays and a third item `room:false:true` is asserted; after "Dalej" `currentRoom` is `'children'` and `rooms.kitchen` equals the state before "Dalej"; the change-mode proof of the kitchen is KEPT through a visit: `openHouse`, tap the `ground-right` cell (`targets.houseCells`), `visiting` `'kitchen'`, then the existing `modeButton` / `changeTo` / stars lines unchanged | "Dalej" now has a next room; the free change of a done kitchen is still proved, by the visit path that `house-cross-section.spec.ts` uses for the salon |
+  | `rooms-as-data.spec.ts` `HOUSE` constant (used by both #10 tests and #2) | two cells | three cells (`children` floor 1 place 0) | the loaded and written house is the data house (`mergeHouse` puts the data rows first) |
+  | `rooms-as-data.spec.ts` "#10 … a finished salon reloads into the kitchen" | card items two | `[…, 'room:false:false']` | as kitchen-room #2; `Object.keys(after.rooms)` stays `['salon', 'kitchen']` (no state before the move) |
+  | `room-change.spec.ts` salon-to-the-end test | `card?.items` `toHaveLength(2)` | `toHaveLength(3)` and `items[2]` `{ kind: 'room', id: 'children', done: false, unlocked: false }` | third tile |
+
+  Unchanged on purpose (they stay true): `salon-extra-slots.spec.ts` `items[0]`/`items[1]` (index-based);
+  `house-cross-section.spec.ts` cell states (`upper-left` holds a known room not reached: `closed`, as before);
+  `first-building-choice.spec.ts`, `base-cross-section.spec.ts`, `hangar-module.spec.ts` (the base). The phase also runs
+  `grep -rn "house-1\|FIRST_HOUSE\|'kitchen'\|items).toHaveLength" tests` and lists every hit in the handoff with "edited
+  (row above)" or "stays true (why)"; a test flipped for any reason not in this table is a finding, not an edit.
 
 ### Success Criteria:
 
@@ -417,9 +450,9 @@ Close the slice in the repo's records, sweep leftovers, and look at every state 
 **Files**: `CLAUDE.md`, `docs/design-gaps.md`, `context/changes/kids-room/follow-ups/review-fixes.md` (new)
 
 **Contract**: CLAUDE.md "Current state": ONE compact S-25 sentence (the room `children` "Pokój dziecięcy" as the third
-room of house 1 in `upper-left`: `CHILDREN` in `src/data/rooms.ts`, three stage tasks then six slots costing 3-15 = 78,
+room of house 1 in `upper-left`: `CHILDREN` in `src/data/rooms.ts`, three stage tasks then six slots costing 5-15 = 84,
 art from `martynka-evolution-v1` in `public/assets/rooms/children/`, `sceneKey`/`stageFade` in `src/core/rooms.ts` as the
-one background rule with `scene` on a stage task, card tiles 320/40, save v6 unchanged, frozen
+one background rule with `scene` on a stage task, card tiles 340/32 with a smaller miniature, save v6 unchanged, frozen
 `save-v6-kitchen-done.json`), and the S-22/S-23 wording that the kitchen is house 1's last room updated. Gap rows: 202
 (kids-room wording ours: stage imperatives, slot tasks, agreed variant forms), 203 (the staged miniature/cell rule:
 latest stage background reached), 204 (room-done card with 3 tiles: narrower tiles for every card; 4 tiles need more);
@@ -427,7 +460,12 @@ the existing fade gap row (brief P3.6) narrowed. Follow-ups with `Trigger:` line
 not needed, carried with trigger "boot budget under 2 s headroom or a room heavier than the salon"); house-cross-section
 13 / rooms-as-data 11 closed (`children` at `upper-left`); hangar 5 satisfied (stage keys in `roomArt`), carried;
 four-tile card (new, Trigger: S-31); `wornPieces`/`contactShadowPieces` meaning "until the first stage" (new, Trigger:
-S-32); kitchen-room 4 (thumbnails) and house-cross-section 21 not fired, carried; every other open follow-up whose
+S-32); kitchen-room 4 (thumbnails) and house-cross-section 21 not fired, carried; salon-style F4 (`ghostTweens`) closed by
+phase 2 with its evidence; fired by this slice's `RoomView.render` / `RoomScene` / room-art-set edits and re-recorded
+with the reason they stay open: final-art-salon VO2/F5/F7 and salon-extra-slots VO2 (one stand-in drawer, overlapping
+stand-in labels; frame 12 checks the children stand-ins), rooms-as-data 12 / kitchen-room 8 (`RoomView.render` stand-in
+drawer), salon-extra-slots L-R8/L-R11 (`RoomScene` refusals, `celebrate`), salon-load-health M-6 second half (service-worker
+install warn, room art set); every other open follow-up whose
 `Trigger:` names a file this slice changed — included, closed with evidence, or re-recorded.
 
 #### 2. Seam sweep
@@ -437,7 +475,8 @@ S-32); kitchen-room 4 (thumbnails) and house-cross-section 21 not fired, carried
 **Contract**: `grep` for leftovers — any remaining `scene.after : ` / `? room.scene.after` outside `sceneKey`; stale
 comments "no in-between backgrounds", "kitchen is the last room", "until S-25", "S-25 adds", "two rooms" in `src/`,
 `tests/`, `scripts/`; the `tests/roomArt.test.ts` scene-key helper not duplicated elsewhere in tests; gap numbers cited in
-comments match the rows; `pl.ts` comment cites row 202; the `stageDone` boolean kept only where e2e still reads it.
+comments match the rows; `pl.ts` comment cites row 202; the `stageDone` boolean kept only where e2e still reads it; no
+placement exemption left in `tests/roomsData.test.ts` (`grep -n "id === 'children' ? 0" tests` empty, plan review F2).
 
 ### Success Criteria:
 
@@ -453,8 +492,8 @@ comments match the rows; `pl.ts` comment cites row 202; the `stageDone` boolean 
 
 - [visual] Hook build on 4399, desktop 1440 and tablet 1024 (landscape 1024×768), each frame named in `reviews/visual-review.md`: (1) the kitchen room-done card with three tiles (salon done, kitchen done, children next); (2) the children's room at the start after "Dalej" (stage-0 look, task "Posprzątaj pokój"); (3) after "Posprzątaj pokój" (stage-1 look, task "Pomaluj ściany"); (4) after "Pomaluj ściany" (stage-2 look, task "Odnów podłogę"); (5) after "Odnów podłogę" (after look, task "Postaw łóżko"); (6) the variant panel open on the bed (three forms Baldachim, Domek, Z szufladami); (7) the room fully furnished in the natural family; (8) the children's room-done card (three done tiles, no teaser); (9) after "Dalej" (change mode and "Dom"); (10) the house cross-section with the children's room framed in `upper-left`, salon and kitchen done; (11) the house cross-section mid-renovation (after stage 2: the cell miniature shows stage-2); (12) the room under `?e2eArt=room` (stand-in boxes with Polish labels); (13) the salon room-done card with three tiles (two-tile cards no longer exist in house 1; base cards with two narrower tiles: Mostek card); compare (5)/(7) against `designs/martynka-evolution-v1/screenshots/children-form-0.png`, (6) against `children-form-0-chooser.png`, (10) against `designs/martynka-house-1-polish-v1` preview `house-four-rooms.png`
 - [human] Accept D1 against the roadmap promise "dodany wyłącznie jako dane i grafika": the staged renovation needed `sceneKey`/`stageFade` in `src/core/rooms.ts`, `scene` on a stage task, and edits in `RoomView`, `RoomScene.fadeStage`, `backdrop.ts`, `roomArt.ts` logic and one e2e snapshot field (FR-033 allows walls and floor as separate steps; S-32 reuses it as data)
-- [human] Accept the room-done card change: tiles 320 wide with 40 gap on every card (two-tile base cards look narrower); four tiles (S-31) need a further change (gap 204)
-- [human] Accept the children's room costs 3/4/5 (stages) + 7/9/10/12/13/15 = 78 stars (D3; S-17 tunes)
+- [human] Accept the room-done card change: tiles 340 wide with 32 gap and a miniature at 0.12 on every card (two-tile base cards look narrower); four tiles (S-31) need a further change (gap 204)
+- [human] Accept the children's room costs 5/6/7 (stages) + 7/9/10/12/13/15 = 84 stars (D3 as revised by plan review F1; S-17 tunes)
 - [human] Accept the children's wording (gap 202): "Posprzątaj pokój", "Pomaluj ściany", "Odnów podłogę", the slot task labels, the agreed variant forms (Naturalne for "biurko i krzesło", Naturalna for skrzynia/szafa), and the bed forms from the pack
 - [human] On a real tablet, installed and then offline: a child who finished the kitchen opens the children's room and its pictures draw at each stage (precache)
 - [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4191 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41293904884, job `build` 124810627941: `Tests  4191 passed | 3 skipped (4194)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
@@ -487,7 +526,10 @@ the support file, test code only, if a helper to reach the kitchen's end is miss
   candidate: room (1200, 410), RGB stage-0 ≈ (205,139,88), stage-1 ≈ (232,202,158), stage-2 ≈ (247,232,201), after ≈
   (246,206,157), measured on the pack PNGs; the implementer re-measures on the WebP and records the point(s) in a
   comment; a second point is fine) and expect the pixel to move to the new picture (tolerance per channel, after the
-  `ANIMATION.stageFadeMs` fade — or reduced motion on), `stagesDone` 1, 2, 3; then buy the six slots; stars after each
+  `ANIMATION.stageFadeMs` fade — or reduced motion on). Plan review F7: at stage 0 the view also draws the `shadows`
+  layer over the background, and the room UI may sit over a point, so the expected value per stage is the WebP value
+  composed with what the view draws there (checked against a first rendered read and a frame), and every transition
+  also asserts the rendered pixel differs from the previous read by ≥ 30 in one channel — never a texture read; `stagesDone` 1, 2, 3; then buy the six slots; stars after each
   purchase = the previous minus the cost (the save's stars, not the label); card `items` = three `room` items `salon`,
   `kitchen`, `children`, all `done`, no `teaser`; "Dalej" → room `children`, mode button present, `houseLabel 'Dom'`.
 - `#2 S-25 FR-033 the house shows the children's room in its upper-left cell; a reload keeps the child there` — reach
@@ -513,7 +555,7 @@ the support file, test code only, if a helper to reach the kitchen's end is miss
 - `tests/rooms.test.ts`, `tests/backdrop.test.ts`: `sceneKey`, `stageFade` on a synthetic three-stage room; salon/kitchen guard (phase 1).
 - `tests/stageSceneWiring.test.ts`: the four sites call the rule (phase 2).
 - `tests/roomArt.test.ts`: stage keys in the table; children snapshot, 23 entries, sizes, orphans, labels, weight (phases 2, 3).
-- `tests/roomsData.test.ts`: children manifest literal, costs 78, house-1 list, "Dalej" into and inside the room (phases 3, 4).
+- `tests/roomsData.test.ts`: children manifest literal, costs 84, house-1 list, "Dalej" into and inside the room (phases 3, 4).
 - `tests/layout.test.ts`: the card fits the longest house list (phase 4).
 - `tests/houseCells.test.ts`, `tests/fixtureLoadPath.test.ts`: `upper-left` cell; `save-v6-kitchen-done` round-trip and landing (phase 4).
 - `tests/bootBudget.test.ts`, `tests/roomHit.test.ts`: children covered by `ROOMS` iteration / one explicit case.
@@ -551,11 +593,16 @@ only. Rollback to the S-30 build: `repairCurrentRoom` sends `children` to `salon
 - Narrower tiles may make base cards look sparse; `[human]` row and visual frame (13).
 - A child who finished the kitchen before S-25 meets the room at the next start without the card that announces it
   (card only at purchase; S-22/S-30 precedent).
+- (plan review) The smaller miniature (0.12) on every card is a look change for the salon/kitchen/base cards; visual
+  frames (1), (8), (13) and `[human]` row 5.8 judge it. If the tile reads cramped, the alternative is moving the mark
+  (code in `RoomDoneCard`, out of this slice's bound), recorded as a follow-up, not done here.
+- (plan review) `npm run art` depends on local tools and the local-only `designs/` packs; a missing tool ends phase 3 as
+  BLOCKED, never a hand-made WebP.
 
 ## Autonomous decisions
 
 Maintainer decisions (scope.md), D1-D7 (change.md) and the research decisions (handoff §6) are kept; none is
-overturned. Decided at this step (no `AskUserQuestion`; complexity MEDIUM, 0 open product questions after research,
+overturned (plan review revised D3's numbers, R1 below). Decided at this step (no `AskUserQuestion`; complexity MEDIUM, 0 open product questions after research,
 structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 - **P1 — `sceneKey` semantics: the `scene` of the LAST done stage task, else `scene.after` once staged, else
@@ -564,13 +611,16 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
   Would change: S-32 needing a stage that returns to an earlier picture.
 - **P2 — `stageFade` as a pure helper** (from-key + `neglected`) instead of computing the previous state in the scene,
   so the fade rule is unit-tested. Would change: nothing.
-- **P3 — costs 3/4/5 + 7/9/10/12/13/15 = 78** (D3 kept; the kitchen curve for slots, three cheap stages). `[human]` row
+- **P3 — costs 5/6/7 + 7/9/10/12/13/15 = 84** (revised by plan review F1 from 3/4/5 = 78: the invariant "whole costs
+  of 5-21 stars" in `tests/roomsData.test.ts` and PRD FR-016's start of 5 stars rule out 3 and 4; the kitchen curve for
+  slots, the three stages the cheapest allowed and rising). `[human]` row
   5.4. Would change: S-17 measurements or the maintainer naming a price.
 - **P4 — wording**: "Posprzątaj pokój", "Pomaluj ściany", "Odnów podłogę" (the pack's "Sprzątanie", "Malujemy ściany",
   "Odnawiamy podłogę" are nouns / 1st person plural); slot tasks "Postaw …" except "Urządź kącik czytelniczy" (kitchen
   "Urządź kącik kawowy" precedent); variant forms agree with the caption. Gap 202, `[human]` row 5.5. Would change: the
   phase-3 teacher read or a designer list.
-- **P5 — card tiles 320/40 on every card** (research recommendation), not count-dependent widths in `RoomDoneCard`
+- **P5 — card tiles narrower on every card** (research recommendation 320/40, revised by plan review F3 to 340/32 with
+  thumb 0.12 and mark 28/22 so the done mark is not hidden under the miniature), not count-dependent widths in `RoomDoneCard`
   (scene code, against the data promise). `[human]` row 5.3. Would change: the visual gate showing a clipped caption
   (then fit captions with `labelScale`).
 - **P6 — D1 vs the roadmap's "wyłącznie dane i grafika"**: kept (research: the bound held); `[human]` row 5.2 names it.
@@ -585,6 +635,17 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - **P10 — rendered-pixel candidate (1200, 410)** measured on the pack PNGs (11×11 mean, ≥ 41 per transition in one
   channel); the e2e implementer re-measures on the WebP. Would change: a weaker difference after conversion (pick a
   second point per transition).
+
+### Plan review (`reviews/plan-review.md`)
+
+- **R1 (F1) — costs 5/6/7 + 7/9/10/12/13/15 = 84**, not 3/4/5 = 78. Rejected: lowering the test's floor (PRD FR-016
+  starts at 5 stars and the invariant guards every room); rejected: one stage of 5 with two of 0 (a free task is not a
+  purchase). `[human]` row 5.9 now names 84. Would change: S-17 or the maintainer naming prices.
+- **R2 (F3) — tiles 340/32, thumb 0.12, mark 28/22**, with a layout test that the done mark is clear of the miniature.
+  Rejected: drawing the mark above the pictures (a `RoomDoneCard` code change, against the bound); rejected: 360/22 at
+  0.13 (10 px from the card edge). Would change: the visual gate showing the 0.12 miniature too small to read.
+- **R3 (F2) — a temporary placement exemption in phase 3, removed in phase 4**, as S-30 did (`041e279`). Rejected:
+  merging phases 3 and 4 (one agent would carry art, data, copy, the house row, the card and six spec edits).
 
 ## References
 
@@ -657,8 +718,8 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 - [ ] 5.6 [visual] Hook build on 4399, desktop 1440 and tablet 1024 (landscape 1024×768), each frame named in `reviews/visual-review.md`: (1) the kitchen room-done card with three tiles (salon done, kitchen done, children next); (2) the children's room at the start after "Dalej" (stage-0 look, task "Posprzątaj pokój"); (3) after "Posprzątaj pokój" (stage-1 look, task "Pomaluj ściany"); (4) after "Pomaluj ściany" (stage-2 look, task "Odnów podłogę"); (5) after "Odnów podłogę" (after look, task "Postaw łóżko"); (6) the variant panel open on the bed (three forms Baldachim, Domek, Z szufladami); (7) the room fully furnished in the natural family; (8) the children's room-done card (three done tiles, no teaser); (9) after "Dalej" (change mode and "Dom"); (10) the house cross-section with the children's room framed in `upper-left`, salon and kitchen done; (11) the house cross-section mid-renovation (after stage 2: the cell miniature shows stage-2); (12) the room under `?e2eArt=room` (stand-in boxes with Polish labels); (13) the salon room-done card with three tiles (two-tile cards no longer exist in house 1; base cards with two narrower tiles: Mostek card); compare (5)/(7) against `designs/martynka-evolution-v1/screenshots/children-form-0.png`, (6) against `children-form-0-chooser.png`, (10) against `designs/martynka-house-1-polish-v1` preview `house-four-rooms.png`
 - [ ] 5.7 [human] Accept D1 against the roadmap promise "dodany wyłącznie jako dane i grafika": the staged renovation needed `sceneKey`/`stageFade` in `src/core/rooms.ts`, `scene` on a stage task, and edits in `RoomView`, `RoomScene.fadeStage`, `backdrop.ts`, `roomArt.ts` logic and one e2e snapshot field (FR-033 allows walls and floor as separate steps; S-32 reuses it as data)
-- [ ] 5.8 [human] Accept the room-done card change: tiles 320 wide with 40 gap on every card (two-tile base cards look narrower); four tiles (S-31) need a further change (gap 204)
-- [ ] 5.9 [human] Accept the children's room costs 3/4/5 (stages) + 7/9/10/12/13/15 = 78 stars (D3; S-17 tunes)
+- [ ] 5.8 [human] Accept the room-done card change: tiles 340 wide with 32 gap and a miniature at 0.12 on every card (two-tile base cards look narrower); four tiles (S-31) need a further change (gap 204)
+- [ ] 5.9 [human] Accept the children's room costs 5/6/7 (stages) + 7/9/10/12/13/15 = 84 stars (D3 as revised by plan review F1; S-17 tunes)
 - [ ] 5.10 [human] Accept the children's wording (gap 202): "Posprzątaj pokój", "Pomaluj ściany", "Odnów podłogę", the slot task labels, the agreed variant forms (Naturalne for "biurko i krzesło", Naturalna for skrzynia/szafa), and the bed forms from the pack
 - [ ] 5.11 [human] On a real tablet, installed and then offline: a child who finished the kitchen opens the children's room and its pictures draw at each stage (precache)
 - [ ] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4191 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41293904884, job `build` 124810627941: `Tests  4191 passed | 3 skipped (4194)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)

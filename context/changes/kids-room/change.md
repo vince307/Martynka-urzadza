@@ -1,7 +1,7 @@
 ---
 change_id: kids-room
 title: Pokój dziecięcy, trzeci pokój domu 1 z danych i grafiki
-status: planned
+status: plan_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
@@ -26,9 +26,10 @@ owner". The one expected candidate is the staged renovation (decision D1).
   `src/core/backdrop.ts`, `src/ui/widgets/RoomView.ts` (`render`, `miniaturePieces`), `src/scenes/RoomScene.ts`
   (`fadeStage`, snapshot `stagesDone`), `src/testing/e2eHook.ts` (snapshot type), the logic of `src/data/roomArt.ts`
   (stage keys in the art table);
-- the "Pokój gotowy!" card: `ROOM_DONE_LAYOUT.tiles` in `src/data/layout.ts` (320 wide, gap 40, every card) so three
-  tiles fit (research NEW finding).
-Both have `[human]` rows (plan 5.7, 5.8).
+- the "Pokój gotowy!" card: `ROOM_DONE_LAYOUT.tiles` in `src/data/layout.ts` (340 wide, gap 32, miniature 0.12, mark
+  28/22, every card; plan review F3) so three tiles fit (research NEW finding).
+Both have `[human]` rows (plan 5.7, 5.8). Plan review (2026-11-01) revised D3 to 5/6/7 + 7/9/10/12/13/15 = 84 (every
+task costs 5-21: `tests/roomsData.test.ts`, PRD FR-016); see `reviews/plan-review.md`.
 
 ## Roadmap claims re-verified against the repo (branch `feat/kids-room` at `bfdf193`)
 
