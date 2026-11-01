@@ -502,10 +502,10 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 1.1 The new cases red before the code exists, green after; `npx vitest run tests/houseCells.test.ts tests/houseSceneWiring.test.ts tests/roomVisitWiring.test.ts tests/layout.test.ts` green; unit `4171 + N`
-- [x] 1.2 Deliberate break: make `houseArtKeys` drop `cellFrame` → its literal case red; delete the `'base-1'` label → the label case red; read `HOUSE_LAYOUT.background` again in `HouseView` → the guard red; each restored; meta-check: the guards prove wiring only, the house still drawing as before is the visual pass (phase 4) and the base look is the rendered-pixel e2e (phase 5)
-- [x] 1.3 `git diff --stat 68d1488 -- src/core/save.ts src/data/rooms.ts src/data/balance.ts src/data/houseArt.ts public scripts` empty
-- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `184 + 0`
+- [x] 1.1 The new cases red before the code exists, green after; `npx vitest run tests/houseCells.test.ts tests/houseSceneWiring.test.ts tests/roomVisitWiring.test.ts tests/layout.test.ts` green; unit `4171 + N` — 55c8c16
+- [x] 1.2 Deliberate break: make `houseArtKeys` drop `cellFrame` → its literal case red; delete the `'base-1'` label → the label case red; read `HOUSE_LAYOUT.background` again in `HouseView` → the guard red; each restored; meta-check: the guards prove wiring only, the house still drawing as before is the visual pass (phase 4) and the base look is the rendered-pixel e2e (phase 5) — 55c8c16
+- [x] 1.3 `git diff --stat 68d1488 -- src/core/save.ts src/data/rooms.ts src/data/balance.ts src/data/houseArt.ts public scripts` empty — 55c8c16
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `184 + 0` — 55c8c16
 
 ### Phase 2: Base pictures and the per-building art filter
 
