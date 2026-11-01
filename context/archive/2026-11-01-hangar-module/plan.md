@@ -445,7 +445,7 @@ complexity, 0 open product questions after research, 4 phases):
 #### Manual
 
 - [x] 1.7 [reviewer] Teacher read of the Hangar copy in `src/data/pl.ts` against the table above: caption nominatives, variant forms agreeing with the noun's gender/number (skrzynie plural → Naturalne), task labels in imperative + accusative (rakietę, matę startową), each task label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` is not affected (no task content changed), stated in the handoff — impl review: six captions nominative, variant forms agree (rakieta/lampa/mata -a, łazik/stół -y, skrzynie -e), labels imperative + accusative, the longest ("Ustaw skrzynie z częściami", 26 chars) is shrunk by `labelScale`, never cut; `sample` E1-E6 0 violations
-- [ ] 1.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 100 of 100 room pictures precached` (line seen verbatim at plan time in Deploy run 41278603357, job `deploy` 124766298916: `ok   precache covers room pictures — 79 of 79 room pictures precached`; expected after this slice: 100 of 100)
+- [x] 1.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 100 of 100 room pictures precached` (line seen verbatim at plan time in Deploy run 41278603357, job `deploy` 124766298916: `ok   precache covers room pictures — 79 of 79 room pictures precached`; expected after this slice: 100 of 100) — CI run 41293904884 (Deploy), job 124811306663: `ok   precache covers room pictures — 100 of 100 room pictures precached`
 
 ### Phase 2: The Hangar joins the base
 
@@ -473,7 +473,7 @@ complexity, 0 open product questions after research, 4 phases):
 - [ ] 3.7 [human] Accept the Hangar costs 6/10/13/14/17/19/21 = 100 stars (roadmap unknown "Ceny Hangara", owner: author; decision D1, S-17 tunes)
 - [ ] 3.8 [human] Accept the Hangar wording (gap 201): "stół warsztatowy" (pack label) instead of the roadmap's "stół z narzędziami", "Postaw lampę", the agreed variant forms; and the Hangar as the base's last module (card with two tiles, no teaser, "Dalej" stays, gap 196, D3)
 - [ ] 3.9 [human] On a real tablet, installed and then offline: a base child who finished Mostek opens the Hangar and its pictures draw (precache)
-- [ ] 3.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4182 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen at plan time in Deploy run 41278603357, job `build` 124765733845: `Tests  4182 passed | 3 skipped (4185)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
+- [x] 3.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4182 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen at plan time in Deploy run 41278603357, job `build` 124765733845: `Tests  4182 passed | 3 skipped (4185)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds) — CI run 41293904884 (Deploy), job 124810627941: `Tests  4191 passed | 3 skipped (4194)`, `e2e hook: absent (2 chunks checked)`
 
 ### Phase 4: The Hangar in the browser — e2e (FR-047; #16, #2)
 
