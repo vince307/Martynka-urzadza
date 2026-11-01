@@ -12,7 +12,7 @@ import { SALON } from '../../src/data/rooms';
 test.setTimeout(180_000);
 
 const OPEN = './?e2eSave=v4-salon&e2eMonth=10&e2eVariant=off';
-const HOUSE = { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }, { room: 'kitchen', floor: 0, place: 1 }] };
+const HOUSE = { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }, { room: 'kitchen', floor: 0, place: 1 }, { room: 'children', floor: 1, place: 0 }] };
 
 const open = async (page: Page): Promise<void> => {
     await silenceSpeech(page);
@@ -58,7 +58,7 @@ test('#2 rooms-as-data after a round the save is written as v6 with the house an
 test('#10 rooms-as-data a finished salon reloads into the kitchen (S-22), the salon state kept and the kitchen empty', async ({ page }) => {
     await finishSalon(page, {});
     const done = await room(page);
-    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true']);
+    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true', 'room:false:false']);
     expect(done.doneMiniature).toBe('live');
     // The purchases are flushed at once; wait for the real IndexedDB write before the reload.
     await expect.poll(async () => (await snapshot(page)).save?.dirty, { timeout: 15_000 }).toBe(false);

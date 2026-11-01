@@ -25,8 +25,7 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        // S-25 phase 3: no house lists the children's room yet; phase 4 adds its HOUSES row and removes this exemption.
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'children' ? 0 : 1);
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -264,8 +263,8 @@ describe('salon data', () => {
         expect(pl.room.short(0, 15)).toBe('masz 0/15');
     });
 
-    it('lists the salon first, then the kitchen that unlocks after it (S-22; the teaser is gone while every cell is a room)', () => {
-        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }]);
+    it('lists the salon first, then the kitchen and the children\'s room, each unlocking after the one before (S-22, S-25)', () => {
+        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }, { room: 'children', unlockAfter: 'kitchen' }]);
         for (const id of Object.keys(ROOMS)) expect(typeof roomText.name(id), id).toBe('string');
     });
 
@@ -282,6 +281,24 @@ describe('salon data', () => {
         expect(moved.movedFrom).toBe('salon');
         expect(moved.rooms.kitchen).toEqual({ tasksDone: 0, chosen: {} });
         expect(moved.rooms.salon).toEqual(states.salon);
+    });
+
+    it('moves a finished kitchen into the children\'s room with an empty state and the others untouched (S-25)', () => {
+        const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} }, kitchen: { tasksDone: ROOMS.kitchen.tasks.length, chosen: {} } };
+        expect(roomInRenovation(FIRST_HOUSE, ROOMS, states)).toBe('children');
+        const moved = nextRoom({ rooms: states, currentRoom: 'kitchen' }, FIRST_HOUSE, ROOMS);
+        expect(moved.currentRoom).toBe('children');
+        expect(moved.movedFrom).toBe('kitchen');
+        expect(moved.rooms.children).toEqual({ tasksDone: 0, chosen: {} });
+        expect(moved.rooms.salon).toEqual(states.salon);
+        expect(moved.rooms.kitchen).toEqual(states.kitchen);
+    });
+
+    it('keeps the child in the children\'s room after its last task: Dalej stays (S-25)', () => {
+        const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} }, kitchen: { tasksDone: ROOMS.kitchen.tasks.length, chosen: {} }, children: { tasksDone: CHILDREN.tasks.length, chosen: {} } };
+        const moved = nextRoom({ rooms: states, currentRoom: 'children' }, FIRST_HOUSE, ROOMS);
+        expect(moved.currentRoom).toBe('children');
+        expect(moved.movedFrom).toBeNull();
     });
 
     it('holds a child briefly (FR-018): shorter than the parent hold, above platform press thresholds, drift under half a target', () => {
