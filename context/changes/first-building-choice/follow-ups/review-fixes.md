@@ -41,3 +41,8 @@ Each entry carries a `Trigger:` line; later slices grep for it.
     Trigger: S-29 (base cross-section).
 18. Small seams: `ChoiceCard` sinks its `ChunkyFace` but has no pressed fill like `AgeButton`; `tests/welcomeChoiceWiring.test.ts` "offers Wróć only on the child age path" matches the condition anywhere in the file, not before `choiceBack.show`; `FIRST_ROOM` fallbacks remain in `SalonBackdrop`, `HouseScene`, `RoomScene`, `TaskScene` (reached only with no `currentRoom`); `fixtureLoadPath.test.ts` re-implements the `main.ts` repair call (the order is guarded by `houseWiring.test.ts`).
     Trigger: the next change to `ChoiceCard`, `WelcomeScene.createChoice`, or a second building without a salon reaching a `FIRST_ROOM` fallback.
+
+## From the visual gate (2026-11-01)
+
+19. The HUD star counter (`StarCounter`, `TASK_LAYOUT.starCounter`, width 196) draws a three-digit balance with the "1" touching the star's tip (frames `*-04-mostek-before-stage`: 100 stars). Mostek's tasks total 100 and the salon's 129, so three digits are now an ordinary balance. Widen the pill or shrink the number above 99, with a layout test for the widest balance.
+    Trigger: the next change to `src/ui/widgets/StarCounter.ts` or `TASK_LAYOUT.starCounter`, or a playtest note about the counter.
