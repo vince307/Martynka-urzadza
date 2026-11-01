@@ -1,54 +1,52 @@
 # Handoff — `bathroom-room` (slice S-31)
 
-Phase 5 (`impl`) is committed as a9a4ee5: CLAUDE.md S-31 sentence, gap rows 204 (closed) and 205, follow-ups, seam sweep. The [visual] row 5.6 is the visual gate's; phase 6 is the e2e spec.
+Phase 6 (`e2e`) is committed as 883a68b: `tests/e2e/bathroom-room.spec.ts` (2 tests) and the `bathroom-room` entry in `ROUND_SPEC`. All plan phases are done; `change.md` status is `implemented`.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/bathroom-room`, cut from `main` at `e451fa8` |
-| Commits | identity, research, plan, plan review, `7c742b8` p1, `32c2a5b` p2, `69694ce` p3, 8eab432 p4, a9a4ee5 p5, then this handoff |
+| Commits | identity, research, plan, plan review, `7c742b8` p1, `32c2a5b` p2, `69694ce` p3, 8eab432 p4, a9a4ee5 p5, 883a68b p6, then this handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | unchanged (`plan_reviewed`) |
-| `## Progress` rows remaining | 13 (5.1-5.5 ticked; open: 5.6 visual, 5.7-5.11 human, 5.12 reviewer, 6.x, plus earlier reviewer rows 2.5, 3.7, 3.8) |
+| `change.md` status | `implemented` |
+| `## Progress` rows remaining | open: 5.6 visual, 5.7-5.11 human, 5.12 reviewer, earlier reviewer rows 2.5, 3.7, 3.8 |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `CLAUDE.md` | S-31 sentence after the S-25 one; S-25 "three tiles on every card" and "kitchen was house 1's last room" reworded |
-| `docs/design-gaps.md` | row 204 edited (card width by tile count, closed), row 205 new (bathroom wording) |
-| `context/changes/bathroom-room/follow-ups/review-fixes.md` | 12 items, 13 `Trigger:` lines (new, closed, re-recorded) |
+| `tests/e2e/bathroom-room.spec.ts` | `#16 S-31 FR-033 ...` (finish salon, kitchen, children, bathroom; exact balance 71; card with four done rooms; rendered border pixels at x 203 and 1717 prove the 1516 card; `houseButton` null under the card; "Dalej" then change mode and "Dom") and `#2 S-31 FR-038 ...` (house cells done/done/done/current, `upper-right` = bathroom, rendered pixel not the closed cream, tap returns, reload keeps `currentRoom` and `tasksDone 1`) |
+| `playwright.config.ts` | `bathroom-room` added to the `ROUND_SPEC` alternation (project `chromium-hook`), nothing else |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| 5.1 validate-rule-files | PASS (first run found the CLAUDE.md path to `context/archive/.../follow-ups` missing, so CLAUDE.md cites `context/changes/bathroom-room/follow-ups/review-fixes.md`; the archive step must rewrite that path to `context/archive/2026-11-01-bathroom-room/...`) |
-| 5.2 | Trigger lines 13, rows 204/205 = 2 |
-| 5.3 | the literal grep `tiles.left` hits only unrelated `TASK_LAYOUT.tiles.left` and `compareQty` code (no `ROOM_DONE_LAYOUT` use; the stale field is already gone); `do not fit at this width` and `come with later slices` empty; `npm run art` leaves `public/assets` clean |
-| 5.4 | diff against 8eab432 empty |
-| lint / typecheck / unit + deploy + ops tests + sample E1-E6 / build | OK / OK / `Tests 4233 passed (4233)` = phase-4 4233 + 0 (docs only), 0 violations / OK, `e2e hook: absent (2 chunks checked)` |
-| Deliberate break | none: docs-only phase, no testable criterion |
-| Seam sweep | stale comments none found; gap numbers in `pl.ts` (205) and `layout.ts` (204) match; no placement exemption left; layout test builds the rect through `doneSpec` |
+| single spec, `--workers=1`, sandbox off | 2 passed (59 s and 56 s), green first time |
+| `--list` | 2 tests under `chromium-hook`; whole suite `Total: 193 tests` = 191 + 2 |
+| lint (spec, config) / typecheck | OK / OK |
+| Break `{ room: 'bathroom', floor: 1, place: 1 }` -> `place: 0` | test 2 red: `expect(received).toEqual(expected)` on the cell states; restored |
+| Break last bathroom cost 15 -> 14 | test 1 red: `expect((await snapshot(page)).stars).toBe(stars)`, Expected 0, Received 1; restored. (Cost 16 broke the boot with `state.room` null, a data validation, not the balance rule, so 14 was used) |
+| Break `RoomDoneCard.show` fixed 388/1144 card | first spec version stayed GREEN: the room behind the card is cream (255,245,223), 2 per channel from the card face (255,247,222), so the face pixel proved nothing. The spec now reads the card's border (216,188,111) at x 203 and 1717 of the rendered frame; the same break turns it red on `CARD_LEFT_EDGE`/right-edge `expect.poll`; restored, green after |
+| Break `const blocked = open || this.card` -> `open` | test 1 red: `expect(...houseButton).toBeNull()` Received `{x:1750,y:224}`; restored |
+| After all breaks | `git status` shows only the new spec and config; ports 4397/4398 killed |
 
 ## 4. Next command
 
-`/10x-e2e bathroom-room phase 6`
+`/10x-impl-review bathroom-room`
 
 ## 5. Open
 
-- `[reviewer]` rows: 2.5, 3.7, 3.8, 5.12. `[visual]` row 5.6 (visual gate). `[human]` rows 5.7-5.11.
-- Follow-up 6 (houseButton while the card is up) closes only when phase 6 is committed.
+- `[reviewer]` rows: 2.5, 3.7, 3.8, 5.12. `[visual]` row 5.6. `[human]` rows 5.7-5.11.
+- Follow-up 6 (houseButton while the card is up) is closed by test 1 of this spec.
+- The orchestrator runs the full e2e suite once from a pinned worktree; expected total 193.
 - Archive: rewrite the CLAUDE.md follow-ups path to the archive folder.
-- The `kids-room` spec's second test relies on the bathroom cell staying closed; it passed.
-- E2E: single specs only per phase; the orchestrator runs the full suite after phase 6.
 
 ## 6. Autonomous decisions
 
-- Manual gate, "how to proceed", unrelated-dirty-paths and commit-message prompts: decided in place (only the planned set committed, proposed message used, stopped after phase 4). Would change: none.
-- Driver stays `tdd` (the `HOUSES` row was absent; unit cases were observed red before it). Would change: none.
-- The "no closed cell once all four are done" case asserts `not.toContain('closed')` and four cells, because the current room's own cell reports `current`. Would change: none.
-- The fixture's stars (17) and chosen variants are invented but valid (`roomStateProblems` = []). Would change: none.
-- Phase 5: all prompts decided in place (proposed message, only planned set staged, stopped after phase 5); CLAUDE.md cites the changes/ follow-ups path so the rule-file check passes before archive. Would change: none.
+- Phase 6: manual gate, next-phase and commit-message prompts decided in place (proposed message, only the planned set staged, stopped after phase 6). Would change: none.
+- The four-tile width is proved by the card's rendered border at both outer edges, not by the card-face colour (see §3: the face is within 2 of the room's cream, the break stayed green). Card face and tile ivory are still asserted. Would change: a card border colour change (the constant `BORDER` follows `unlockBorder`).
+- Floor point (1230, 810) measured on the WebP: before (200,139,80), after (254,234,189), flat in both; outside every slot rect. Would change: new bathroom art.
+- The bathroom has no stage backgrounds, so the stage assertion is one before -> after step. Would change: none.
