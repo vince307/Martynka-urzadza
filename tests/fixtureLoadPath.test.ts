@@ -120,7 +120,7 @@ describe('the building of a loaded save (FR-049)', () => {
     });
 
     // S-25 FR-033: a kitchen finished in the S-30 build (no children's room yet) opens in the children's room; the calls mirror main.ts's load order.
-    it('save-v6-kitchen-done meets the children\'s room: house with three cells, current room children, salon, kitchen and stars kept', async () => {
+    it('save-v6-kitchen-done meets the children\'s room: house with four cells (the bathroom listed since S-31), current room children, salon, kitchen and stars kept', async () => {
         const raw = read('save-v6-kitchen-done');
         const s = await load('save-v6-kitchen-done');
         const repaired = repair(s).session;
