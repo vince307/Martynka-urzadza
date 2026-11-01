@@ -1,6 +1,6 @@
 # Handoff — `bathroom-room` (slice S-31)
 
-The visual-gate step wrote this: all fourteen items of plan row 5.6 were captured at 1440 and 1024 on the hook build, `VISUAL: PASS`, no fix needed. The next step is the archive and then ship; do not tick the `[human]` or `(CI at ship)` rows, and rewrite the CLAUDE.md follow-ups path to the archive folder.
+Final pre-merge state, written by the archive + ship step: the change is archived to `context/archive/2026-11-01-bathroom-room/` (commit `chore(archive): close bathroom-room`), the CLAUDE.md follow-ups path points at the archive folder, and the branch is pushed for the PR. The earlier visual-gate step captured all fourteen items of plan row 5.6 (`VISUAL: PASS`).
 
 ## 1. State
 
@@ -8,8 +8,8 @@ The visual-gate step wrote this: all fourteen items of plan row 5.6 were capture
 |---|---|
 | Branch | `feat/bathroom-room`, cut from `main` at `e451fa8` |
 | Commits | identity … p1 `7c742b8`, p2 `32c2a5b`, p3 `69694ce`, p4 `8eab432`, p5 `a9a4ee5`, p6 `883a68b`, review fix `b1989b9`, impl review `beed03f`, then this commit `docs(bathroom-room): bramka wizualna` |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` (the archive step stamps it) |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-11-01-bathroom-polish-lab/run-log.md |
+| `change.md` status | `archived` (2026-11-01) |
 | `## Progress` rows remaining | 7: 3.8 and 5.12 `[reviewer] (CI at ship)`, 5.7-5.11 `[human]` |
 | Working tree | clean after this commit |
 
@@ -40,7 +40,7 @@ No deliberate break in this step (no code or spec changed).
 
 ## 4. Next command
 
-`/10x-archive bathroom-room` then ship (no hosted db push)
+none — shipped
 
 ## 5. Open
 
@@ -49,7 +49,7 @@ No deliberate break in this step (no code or spec changed).
 - Visual observation: the three-digit balance in the HUD pill (`StarCounter`) touches the star; already follow-up 12 in `follow-ups/review-fixes.md`, not changed here.
 - Visual observation: the salon miniature fills its house cell and card tile more than the other rooms; S-32's scope (`[human]` P2 row on `martynka-house-1-polish-v1` in `docs/human-checklist.md`).
 - No new `DESIGN-GAP`. Follow-ups: `follow-ups/review-fixes.md` (items 1-3, 7-12 open with `Trigger:`).
-- Archive: rewrite the CLAUDE.md follow-ups path to the archive folder.
+- Archive: done; CLAUDE.md follow-ups path rewritten to `context/archive/2026-11-01-bathroom-room/`. Open `[human]` rows 5.7-5.11 are a post-run checklist (the PR body lists them), not an archive blocker.
 
 ## 6. Autonomous decisions
 
