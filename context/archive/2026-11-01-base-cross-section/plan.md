@@ -520,7 +520,7 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Manual
 
-- [ ] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (line seen verbatim in the S-28 Deploy run 41261590741, job `deploy` 124716473458: `ok   precache covers house pictures — 3 of 3 house pictures precached`; expected after this slice: 5 of 5)
+- [x] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (line seen verbatim in the S-28 Deploy run 41261590741, job `deploy` 124716473458: `ok   precache covers house pictures — 3 of 3 house pictures precached`; expected after this slice: 5 of 5) — CI run 41278603357 (Deploy), job 124766298916: `ok   precache covers house pictures — 5 of 5 house pictures precached`
 
 ### Phase 3: The base geometry and the stale house scene
 
@@ -547,7 +547,7 @@ complexity, 0 open product questions after research, 5 phases):
 - [ ] 4.7 [human] Accept the Mostek celebration while no next module exists: the room card with one tile and no teaser, "Dalej" stays in Mostek with change mode and the "Baza" button (roadmap unknown owned by the author, decision D4; FR-046 met, no new card or copy)
 - [ ] 4.8 [human] Accept the house `cell-frame` reused around the module in renovation in the base (the base pack has no frame; DESIGN-GAP row, R4) and "Wróć do pokoju" as the base's back label (D8)
 - [ ] 4.9 [human] On a real tablet, installed and then offline: a base child opens "Baza" and the base pictures draw (precache)
-- [ ] 4.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes (`gh run view --log` keeps them between `Tests` and the number), `Tests  <4168 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen in the S-28 Deploy run 41261590741, job `build` 124715797789: `Tests  4168 passed | 3 skipped (4171)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
+- [x] 4.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes (`gh run view --log` keeps them between `Tests` and the number), `Tests  <4168 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen in the S-28 Deploy run 41261590741, job `build` 124715797789: `Tests  4168 passed | 3 skipped (4171)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds) — CI run 41278603357 (Deploy), job 124765733845: `Tests  4182 passed | 3 skipped (4185)`, `e2e hook: absent (2 chunks checked)`
 
 ### Phase 5: The base cross-section in the browser — e2e (FR-045, FR-046, FR-048; #16, #2, #12)
 

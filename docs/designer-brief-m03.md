@@ -12,7 +12,7 @@ w następnych (ulica, drugi dom), **P3** dopracowanie.
 
 | Dom | Parter | Piętro | Dodatek przy domu |
 |---|---|---|---|
-| Dom 1 | salon (lewa komórka), kuchnia (prawa) | pokój dziecięcy (lewa), komórka zamknięta „Wkrótce” (prawa) | — |
+| Dom 1 | salon (lewa komórka), kuchnia (prawa) | pokój dziecięcy (lewa), łazienka (prawa; zmiana autora 2026-10-31, paczka `martynka-bathroom-v1`) | — |
 | Dom 2 | pracownia (lewa), ogród zimowy jako oszklona przybudówka (prawa) | biblioteka na poddaszu (pod skosem dachu) | ogród zimowy |
 | Dom 3 (później) | taras i ogródek + pokoje z przyszłych paczek | | taras |
 

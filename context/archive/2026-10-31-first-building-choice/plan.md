@@ -862,7 +862,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 #### Manual
 
 - [x] 3.7 [reviewer] Polish copy read as a primary-school teacher would (profile § 2 content rule): Mostek task labels, slot and variant names (gender agreement, accusative after the verb); `npm run sample -- E1 --count 6` output unchanged (no task data touched) — impl-review 2026-11-01: pass (reviews/impl-review.md)
-- [ ] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 79 of 79 room pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers room pictures — 58 of 58 room pictures precached`)
+- [x] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 79 of 79 room pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers room pictures — 58 of 58 room pictures precached`) — CI run 41261590741 (Deploy), job 124716473458: `ok   precache covers room pictures — 79 of 79 room pictures precached`
 
 ### Phase 4: The base building as data, the load path and the FR-049/FR-050 proofs
 
@@ -887,7 +887,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 
 #### Manual
 
-- [ ] 5.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers choice pictures — 2 of 2 choice pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers house pictures — 3 of 3 house pictures precached`)
+- [x] 5.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers choice pictures — 2 of 2 choice pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers house pictures — 3 of 3 house pictures precached`) — CI run 41261590741 (Deploy), job 124716473458: `ok   precache covers choice pictures — 2 of 2 choice pictures precached`
 
 ### Phase 6: The choice view
 
@@ -926,7 +926,7 @@ from the artifacts: HIGH complexity, 0 open product questions left after researc
 - [ ] 8.8 [human] Accept the Mostek costs 6/10/13/14/17/19/21 = 100 and the widened per-task cap (21, was 15) in `tests/roomsData.test.ts` (decision P4; S-17 tunes)
 - [ ] 8.9 [human] Accept the choice-screen layout, card labels under the pictures, the speaker place and the plain backdrop on a fresh install until the chosen room has loaded (DESIGN-GAP rows; decisions P5, P6)
 - [ ] 8.10 [human] On a real tablet, freshly installed and then offline: both cards draw on the choice screen, and after choosing Baza the Mostek pictures draw (precache)
-- [ ] 8.11 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in Deploy run 41232755289, job 124630170144: `Tests  4089 passed | 3 skipped (4092)`, `e2e hook: absent (2 chunks checked)`)
+- [x] 8.11 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in Deploy run 41232755289, job 124630170144: `Tests  4089 passed | 3 skipped (4092)`, `e2e hook: absent (2 chunks checked)`) — CI run 41261590741 (Deploy), job 124715797789: `Tests  4168 passed | 3 skipped (4171)`, `e2e hook: absent (2 chunks checked)`
 
 ### Phase 9: The first-building choice in the browser — e2e (FR-042, FR-043, FR-044, FR-049; #12, #2, #16)
 
