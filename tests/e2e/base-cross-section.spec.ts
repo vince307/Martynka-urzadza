@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 import { BRIDGE } from '../../src/data/rooms';
 import { answerRight, openHouse, phaseIs, renderedPixel, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 import { passChoice, passWelcome, passWelcomeAsChild } from './support/welcome';
-import { room, solveByRetype } from './support/salon';
+import { buyAllTasks, room, solveByRetype } from './support/salon';
 
 test.setTimeout(180_000);
 
@@ -69,22 +69,7 @@ test('#16 #2 S-29 S-30 FR-046 FR-047 after the last Mostek purchase the card hid
     await passWelcome(page, { ...QUIET, e2eStars: String(total) }, 'space');
     await intoRoom(page);
     await expect.poll(async () => (await targets(page)).houseButton ?? null).not.toBeNull();
-    for (const task of BRIDGE.tasks) {
-        const before = (await room(page)).tasksDone;
-        await tapTarget(page, 'taskButton');
-        if (task.kind !== 'stage') {
-            await expect.poll(async () => (await room(page)).panel.kind, { timeout: 15_000 }).toBe('open');
-            const thumbs = (await targets(page)).thumbs ?? [];
-            expect(thumbs.length).toBe(3);
-            await tapScene(page, thumbs[0]);
-            await expect.poll(async () => {
-                const panel = (await room(page)).panel;
-                return panel.kind === 'open' ? panel.preview : null;
-            }, { timeout: 15_000 }).toBe(0);
-            await tapTarget(page, 'choose');
-        }
-        await expect.poll(async () => (await room(page)).tasksDone, { timeout: 15_000 }).toBe(before + 1);
-    }
+    await buyAllTasks(page, BRIDGE);
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
     // The card hides the way into the house.
     expect((await targets(page)).houseButton ?? null).toBeNull();
