@@ -700,7 +700,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 - [x] 4.1 The new and flipped unit cases red before the `HOUSES` row and the tile change, green after; unit `<phase-3 count> + N` — fd5dd63
 - [x] 4.2 Deliberate break: give the children row `place: 1` → the `houseCells` case red; set `tiles.width` back to 440 → the layout case red; drop the row → roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts` — the e2e reload (phase 6) is the browser proof of the same path — fd5dd63
-- [ ] 4.3 `npx playwright test tests/e2e/kitchen-room.spec.ts tests/e2e/rooms-as-data.spec.ts tests/e2e/house-cross-section.spec.ts` (sandbox disabled) green
+- [x] 4.3 `npx playwright test tests/e2e/kitchen-room.spec.ts tests/e2e/rooms-as-data.spec.ts tests/e2e/house-cross-section.spec.ts` (sandbox disabled) green — 9ca69f1
 - [x] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-3 sha>.. -- tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json` empty — fd5dd63
 - [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
 
@@ -728,6 +728,6 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 #### Automated
 
-- [ ] 6.1 Spec red before (deliberate breaks, each test run alone with `-g`): make `sceneKey` ignore the stage `scene` (always `after` once staged) → test 1's stage pixel red; give the children row `place: 1` → test 2 red; set a children cost to 16 → test 1's balance red; add an unknown room to `HOUSES['house-1']` → test 1 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered frame, so a background covered by another layer would also fail
+- [x] 6.1 Spec red before (deliberate breaks, each test run alone with `-g`): make `sceneKey` ignore the stage `scene` (always `after` once staged) → test 1's stage pixel red; give the children row `place: 1` → test 2 red; set a children cost to 16 → test 1's balance red; add an unknown room to `HOUSES['house-1']` → test 1 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered frame, so a background covered by another layer would also fail — 9ca69f1
 - [ ] 6.2 `npx playwright test tests/e2e/kids-room.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `189 + 2`; total equals `npx playwright test --list | tail -1`
-- [ ] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — 9ca69f1
