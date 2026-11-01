@@ -415,7 +415,7 @@ export const pl = {
         choose: 'Wybieram',
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
-        names: { salon: 'Salon', kitchen: 'Kuchnia', bridge: 'Mostek' },
+        names: { salon: 'Salon', kitchen: 'Kuchnia', bridge: 'Mostek', hangar: 'Hangar' },
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
@@ -446,6 +446,13 @@ export const pl = {
             placePlanetShelf: 'Postaw regał z planetami',
             layOrbitMat: 'Połóż matę orbitalną',
             setUpPlantPod: 'Ustaw kapsułę roślinną',
+            // DESIGN-GAP (docs/design-gaps.md row 201): the pack gives only masculine family labels; these task labels and the variant forms are ours (imperative + accusative).
+            placeRocket: 'Postaw rakietę',
+            placeRover: 'Postaw łazik',
+            placeWorkbench: 'Postaw stół warsztatowy',
+            stackCrates: 'Ustaw skrzynie z częściami',
+            placeWorkLamp: 'Postaw lampę',
+            layLaunchMat: 'Połóż matę startową',
         },
         // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
@@ -472,6 +479,12 @@ export const pl = {
             'bridge-shelf': 'regał z planetami',
             'bridge-rug': 'mata orbitalna',
             'bridge-plants': 'kapsuła roślinna',
+            'hangar-rocket': 'rakieta',
+            'hangar-rover': 'łazik księżycowy',
+            'hangar-workbench': 'stół warsztatowy',
+            'hangar-crates': 'skrzynie z częściami',
+            'hangar-lamp': 'lampa warsztatowa',
+            'hangar-mat': 'mata startowa',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -498,6 +511,12 @@ export const pl = {
             'bridge-shelf': ['Naturalny', 'Słoneczny', 'Miętowy'],
             'bridge-rug': ['Naturalna', 'Słoneczna', 'Miętowa'],
             'bridge-plants': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'hangar-rocket': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'hangar-rover': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'hangar-workbench': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'hangar-crates': ['Naturalne', 'Słoneczne', 'Miętowe'],
+            'hangar-lamp': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'hangar-mat': ['Naturalna', 'Słoneczna', 'Miętowa'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {

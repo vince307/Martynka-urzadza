@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BRIDGE, FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
+import { BRIDGE, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -25,7 +25,8 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
+        // S-30 phase 1: the Hangar is data and art only, no house lists it yet; phase 2 adds its HOUSES row and removes this exemption.
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'hangar' ? 0 : 1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -111,6 +112,34 @@ describe('bridge data (FR-044)', () => {
         const moved = nextRoom({ rooms: states, currentRoom: 'bridge' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
         expect(moved.currentRoom).toBe('bridge');
         expect(moved.movedFrom).toBeNull();
+    });
+});
+
+describe('hangar data (FR-047)', () => {
+    // Written from designs/bystrow-space-base-v2/manifest.json rooms.hangar, not from hangarSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['hangar-rocket', 754, 254, 321, 532, 25],
+        ['hangar-rover', 1114, 624, 418, 292, 40],
+        ['hangar-workbench', 404, 434, 384, 292, 20],
+        ['hangar-crates', 264, 544, 183, 242, 35],
+        ['hangar-lamp', 1384, 404, 212, 276, 18],
+        ['hangar-mat', 664, 644, 552, 270, 5],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(HANGAR.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('costs 6, 10, 13, 14, 17, 19, 21 = 100 stars', () => {
+        expect(HANGAR.tasks.map((t) => t.cost)).toEqual([6, 10, 13, 14, 17, 19, 21]);
+        expect(HANGAR.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(100);
+    });
+
+    it('is the stage first, then one task per slot, each slot bought once', () => {
+        expect(HANGAR.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        const slotTasks = HANGAR.tasks.slice(1);
+        expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
     });
 });
 

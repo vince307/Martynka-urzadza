@@ -1,0 +1,149 @@
+[
+    {
+        "key": "hangar/before",
+        "url": "assets/rooms/hangar/hangar-before.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "hangar/after",
+        "url": "assets/rooms/hangar/hangar-after.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "hangar/shadows",
+        "url": "assets/rooms/hangar/hangar-shadows.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "hangar/hangar-rocket-natural",
+        "url": "assets/rooms/hangar/hangar-rocket-natural.webp",
+        "width": 321,
+        "height": 532,
+        "label": "rakieta Naturalna"
+    },
+    {
+        "key": "hangar/hangar-rocket-sunny",
+        "url": "assets/rooms/hangar/hangar-rocket-sunny.webp",
+        "width": 321,
+        "height": 532,
+        "label": "rakieta Słoneczna"
+    },
+    {
+        "key": "hangar/hangar-rocket-mint",
+        "url": "assets/rooms/hangar/hangar-rocket-mint.webp",
+        "width": 321,
+        "height": 532,
+        "label": "rakieta Miętowa"
+    },
+    {
+        "key": "hangar/hangar-rover-natural",
+        "url": "assets/rooms/hangar/hangar-rover-natural.webp",
+        "width": 418,
+        "height": 292,
+        "label": "łazik księżycowy Naturalny"
+    },
+    {
+        "key": "hangar/hangar-rover-sunny",
+        "url": "assets/rooms/hangar/hangar-rover-sunny.webp",
+        "width": 418,
+        "height": 292,
+        "label": "łazik księżycowy Słoneczny"
+    },
+    {
+        "key": "hangar/hangar-rover-mint",
+        "url": "assets/rooms/hangar/hangar-rover-mint.webp",
+        "width": 418,
+        "height": 292,
+        "label": "łazik księżycowy Miętowy"
+    },
+    {
+        "key": "hangar/hangar-workbench-natural",
+        "url": "assets/rooms/hangar/hangar-workbench-natural.webp",
+        "width": 384,
+        "height": 292,
+        "label": "stół warsztatowy Naturalny"
+    },
+    {
+        "key": "hangar/hangar-workbench-sunny",
+        "url": "assets/rooms/hangar/hangar-workbench-sunny.webp",
+        "width": 384,
+        "height": 292,
+        "label": "stół warsztatowy Słoneczny"
+    },
+    {
+        "key": "hangar/hangar-workbench-mint",
+        "url": "assets/rooms/hangar/hangar-workbench-mint.webp",
+        "width": 384,
+        "height": 292,
+        "label": "stół warsztatowy Miętowy"
+    },
+    {
+        "key": "hangar/hangar-crates-natural",
+        "url": "assets/rooms/hangar/hangar-crates-natural.webp",
+        "width": 183,
+        "height": 242,
+        "label": "skrzynie z częściami Naturalne"
+    },
+    {
+        "key": "hangar/hangar-crates-sunny",
+        "url": "assets/rooms/hangar/hangar-crates-sunny.webp",
+        "width": 183,
+        "height": 242,
+        "label": "skrzynie z częściami Słoneczne"
+    },
+    {
+        "key": "hangar/hangar-crates-mint",
+        "url": "assets/rooms/hangar/hangar-crates-mint.webp",
+        "width": 183,
+        "height": 242,
+        "label": "skrzynie z częściami Miętowe"
+    },
+    {
+        "key": "hangar/hangar-lamp-natural",
+        "url": "assets/rooms/hangar/hangar-lamp-natural.webp",
+        "width": 212,
+        "height": 276,
+        "label": "lampa warsztatowa Naturalna"
+    },
+    {
+        "key": "hangar/hangar-lamp-sunny",
+        "url": "assets/rooms/hangar/hangar-lamp-sunny.webp",
+        "width": 212,
+        "height": 276,
+        "label": "lampa warsztatowa Słoneczna"
+    },
+    {
+        "key": "hangar/hangar-lamp-mint",
+        "url": "assets/rooms/hangar/hangar-lamp-mint.webp",
+        "width": 212,
+        "height": 276,
+        "label": "lampa warsztatowa Miętowa"
+    },
+    {
+        "key": "hangar/hangar-mat-natural",
+        "url": "assets/rooms/hangar/hangar-mat-natural.webp",
+        "width": 552,
+        "height": 270,
+        "label": "mata startowa Naturalna"
+    },
+    {
+        "key": "hangar/hangar-mat-sunny",
+        "url": "assets/rooms/hangar/hangar-mat-sunny.webp",
+        "width": 552,
+        "height": 270,
+        "label": "mata startowa Słoneczna"
+    },
+    {
+        "key": "hangar/hangar-mat-mint",
+        "url": "assets/rooms/hangar/hangar-mat-mint.webp",
+        "width": 552,
+        "height": 270,
+        "label": "mata startowa Miętowa"
+    }
+]

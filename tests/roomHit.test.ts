@@ -8,7 +8,7 @@ import { holdPoint, slotAt, slotBox, unreachableSlots } from '../src/core/roomHi
 import type { AlphaAt } from '../src/core/roomHit';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { SALON } from '../src/data/rooms';
+import { HANGAR, SALON } from '../src/data/rooms';
 import type { RoomDef } from '../src/core/types';
 
 const all: Record<string, number> = Object.fromEntries(SALON.slots.map((s) => [s.id, 0]));
@@ -173,5 +173,10 @@ describe('unreachableSlots', () => {
         const nothing = (): number => 0;
         expect(unreachableSlots(SALON, all, nothing).sort()).toEqual(Object.keys(all).sort());
         expect(unreachableSlots(SALON, {}, nothing)).toEqual([]);
+    });
+
+    it('is empty for the Hangar with all six slots bought (FR-047)', () => {
+        const bought = Object.fromEntries(HANGAR.slots.map((s) => [s.id, 0]));
+        expect(unreachableSlots(HANGAR, bought)).toEqual([]);
     });
 });

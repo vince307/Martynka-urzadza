@@ -20,6 +20,7 @@ const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
+const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
@@ -81,6 +82,14 @@ const ROOM_PACKS = [
         scene: ['bridge-before', 'bridge-after', 'bridge-shadows'],
         decor: [],
         furniture: ['console', 'chair', 'telescope', 'shelf', 'rug', 'plants'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `bridge-${slot}-${v}`)),
+        recolourBoard: false,
+    },
+    {
+        room: 'hangar',
+        pack: SPACE_BASE_V2,
+        scene: ['hangar-before', 'hangar-after', 'hangar-shadows'],
+        decor: [],
+        furniture: ['rocket', 'rover', 'workbench', 'crates', 'lamp', 'mat'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `hangar-${slot}-${v}`)),
         recolourBoard: false,
     },
 ];
