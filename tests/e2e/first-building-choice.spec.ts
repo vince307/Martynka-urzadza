@@ -86,7 +86,7 @@ test('#2 S-28 FR-049 a v5 salon save resumes in the house with no choice screen'
     // The first round's end writes the current format.
     await playRoundRight(page, 5);
     await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
-    expect(SAVE_VERSION).toBe(6);
+    expect(SAVE_VERSION).toBe(7);
 });
 
 test('#16 #2 S-28 FR-044 Mostek: the stage then a slot are bought once each; a reload resumes in Mostek without the choice', async ({ page }) => {

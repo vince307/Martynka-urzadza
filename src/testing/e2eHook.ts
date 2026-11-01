@@ -2,6 +2,7 @@ import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import saveV4SalonFixture from '../../tests/fixtures/save-v4-salon.json';
 import saveV5SalonFixture from '../../tests/fixtures/save-v5-salon.json';
+import saveV6KitchenFixture from '../../tests/fixtures/save-v6-kitchen-mid.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, BackupRecord, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
@@ -125,8 +126,8 @@ export const E2E_LOADER_TIMEOUT_MS = 2000;
 /** The boot limits under `?e2eArt=stallall`: the slow line after 0.5 s, the total cut after 3 s. */
 export const E2E_BOOT_LIMITS = { slowAfterMs: 500, totalMs: 3000 } as const;
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon' | 'v5-salon';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon', 'v5-salon'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon' | 'v5-salon' | 'v6-kitchen';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon', 'v5-salon', 'v6-kitchen'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -174,7 +175,9 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                     ? structuredClone(saveV4SalonFixture) // frozen v4 bytes: a salon in progress, no house yet
                     : seam === 'v5-salon'
                       ? structuredClone(saveV5SalonFixture) // frozen v5 bytes: a salon in progress in house-1, no building choice yet
-                      : undefined;
+                      : seam === 'v6-kitchen'
+                        ? structuredClone(saveV6KitchenFixture) // frozen v6 bytes: a kitchen with walls renewed and two pieces
+                        : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null, writtenHouse: null };
     const copies = new Map<number, unknown>();
     let record: BackupRecord | null = null;

@@ -23,12 +23,12 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done', 'save-v6-kitchen-mid', 'save-v7'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
 describe('frozen fixtures through the real load path', () => {
-    it.each(FIXTURES)('%s loads, keeps every earned value, writes v6 and keeps the old copy', async (name) => {
+    it.each(FIXTURES)('%s loads, keeps every earned value, writes v7 and keeps the old copy', async (name) => {
         const raw = read(name);
         const dbName = `fixture-load-${++n}`;
         await set('profile:default', raw, createStore(dbName, 'saves'));
@@ -50,6 +50,8 @@ describe('frozen fixtures through the real load path', () => {
             // A legacy salon is carried to the new task list (rule B: the shortest prefix covering the old cost), never shorter.
             expect(now.tasksDone).toBeGreaterThanOrEqual(room.tasksDone);
             if (!name.includes('legacy-salon')) expect(now.chosen).toEqual(room.chosen);
+            // S-32: a kitchen saved by v6 (tasksDone >= 1) moves by 2 onto the three-stage list; the others stay.
+            if (raw.version === 6 && id === 'kitchen') expect(now.tasksDone).toBe(room.tasksDone >= 1 ? room.tasksDone + 2 : 0);
         }
 
         // The first write after the load: the copy of a migrated save is taken from the raw value in memory and kept write-once.
@@ -60,6 +62,7 @@ describe('frozen fixtures through the real load path', () => {
         if (back.kind === 'loaded') expect(back.session).toEqual(s);
         if (outcome.migratedFrom !== null) {
             expect(await get(`profile:default:backup-v${outcome.migratedFrom}`, createStore(dbName, 'saves'))).toEqual(raw);
+            expect(raw.version).toBe(outcome.migratedFrom);
             expect(await store.backup({ other: true }, outcome.migratedFrom)).toBe('kept');
             expect((await store.readBackups()).find((b) => b.from === outcome.migratedFrom)?.raw).toEqual(raw);
         }
@@ -132,7 +135,8 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.currentRoom).toBe('children');
         expect(moved.movedFrom).toBe('kitchen');
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
-        expect(moved.rooms.kitchen).toEqual(raw.rooms.kitchen);
+        // S-32: the kitchen moved by 2 (7 -> 9) onto the three-stage list.
+        expect(moved.rooms.kitchen).toEqual({ ...raw.rooms.kitchen, tasksDone: raw.rooms.kitchen.tasksDone + 2 });
         expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });
@@ -149,9 +153,24 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.currentRoom).toBe('bathroom');
         expect(moved.movedFrom).toBe('children');
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
-        expect(moved.rooms.kitchen).toEqual(raw.rooms.kitchen);
+        expect(moved.rooms.kitchen).toEqual({ ...raw.rooms.kitchen, tasksDone: raw.rooms.kitchen.tasksDone + 2 });
         expect(moved.rooms.children).toEqual(raw.rooms.children);
         expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
+        expect(s.stars).toBe(raw.stars);
+    });
+
+    // S-32 FR-033: a kitchen in progress in the S-31 build keeps its meaning on the three-stage list and stays the current room.
+    it('save-v6-kitchen-mid stays in the kitchen with tasksDone 5 and its two pieces', async () => {
+        const raw = read('save-v6-kitchen-mid');
+        const s = await load('save-v6-kitchen-mid');
+        const repaired = repair(s).session;
+        const merged = mergeHouse(repaired.house, houseLayout(repaired.house, HOUSES, FIRST_HOUSE));
+        const withHouse = { ...repaired, house: merged.house };
+        const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
+        expect(moved.currentRoom).toBe('kitchen');
+        expect(moved.movedFrom).toBeNull();
+        expect(moved.rooms.kitchen).toEqual({ tasksDone: 5, chosen: { 'kitchen-counter': 1, 'kitchen-fridge': 2 } });
+        expect(moved.rooms.salon).toEqual(raw.rooms.salon);
         expect(s.stars).toBe(raw.stars);
     });
 });

@@ -361,3 +361,13 @@ describe('BUILDING_CHOICES (FR-042)', () => {
         for (const c of BUILDING_CHOICES) expect(HOUSES.some((h) => h.id === c.house), c.id).toBe(true);
     });
 });
+
+describe('the kitchen (S-32)', () => {
+    // Changing anything but the end of this list needs a save-format step (MIGRATIONS[6] moved the kitchen onto it).
+    it('is three stages first, then the six slot tasks, with the pack stage pictures on the first two', () => {
+        expect(ROOMS.kitchen.tasks.map((t) => t.id)).toEqual(['clean-kitchen', 'renew-walls', 'renew-floor', 'place-counter', 'place-fridge', 'place-kitchen-table', 'set-up-coffee', 'place-bench', 'set-out-dishes']);
+        expect(ROOMS.kitchen.tasks.map((t) => t.cost)).toEqual([5, 6, 7, 7, 9, 10, 12, 13, 15]);
+        expect(ROOMS.kitchen.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(84);
+        expect(ROOMS.kitchen.tasks.slice(0, 3).map((t) => (t.kind === 'stage' ? t.scene : 'not a stage'))).toEqual(['kitchen/kitchen-stage-1', 'kitchen/kitchen-stage-2', undefined]);
+    });
+});

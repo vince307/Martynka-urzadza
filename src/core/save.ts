@@ -6,11 +6,12 @@ import { STAGE_ORDER, initialSettings, type SessionLearner } from './placement';
 import { LIFT_V2_SALON, carryV2Salon } from './migrations/legacySalon';
 import { LIFT_V4_HOUSE } from './migrations/house';
 import { LIFT_V5_BUILDING } from './migrations/building';
+import { LIFT_V6_KITCHEN_STAGES } from './migrations/kitchenStages';
 import { copyHouse } from './house';
 import { emptyRoomState } from './rooms';
 import type { HouseState, RoomState, SaveState, SavedLearner, Settings, StageId, VariantState } from './types';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 /** Error name a store write throws when the stored save is of a newer format than the page writing (P-5). */
 export const NEWER_SAVE = 'NewerSave';
@@ -103,6 +104,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     4: LIFT_V4_HOUSE,
     // v5 -> v6 (first-building-choice): the version moves, the shape stays; a pre-v6 build meets the save as `future`.
     5: LIFT_V5_BUILDING,
+    // v6 -> v7 (house-1-polish): the kitchen renovates in three stages first, so a saved kitchen keeps its meaning on the longer list.
+    6: LIFT_V6_KITCHEN_STAGES,
 };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -156,7 +159,7 @@ const validHouse = (v: unknown): v is HouseState =>
     Array.isArray(v.rooms) &&
     v.rooms.every((p) => isRecord(p) && typeof p.room === 'string' && isCount(p.floor) && isCount(p.place));
 
-/** The first top-level key of a v6 save that fails the strict check, or null when the value is a valid save. */
+/** The first top-level key of a v7 save that fails the strict check, or null when the value is a valid save. */
 export function saveProblem(value: unknown): string | null {
     if (!isRecord(value)) return 'version';
     if (value.version !== SAVE_VERSION) return 'version';
@@ -191,7 +194,7 @@ export function importProblem(raw: unknown, migrations: Readonly<Record<number, 
     return saveProblem(current);
 }
 
-/** Strict check of a v6 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
+/** Strict check of a v7 save: types of every field, counts are whole numbers >= 0, the current room is one of the rooms. */
 export function validateSave(value: unknown): value is SaveState {
     return saveProblem(value) === null;
 }

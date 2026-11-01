@@ -23,6 +23,7 @@ const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
 const BATHROOM_V1 = join(ROOT, 'designs/martynka-bathroom-v1');
 const EVOLUTION_V1 = join(ROOT, 'designs/martynka-evolution-v1');
+const HOUSE_1_POLISH = join(ROOT, 'designs/martynka-house-1-polish-v1');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
@@ -44,13 +45,19 @@ const icons = ['apple', 'book', 'croissant', 'cup', 'cushion', 'flower', 'key', 
 /**
  * One row per room (the salon from salon-v2, the kitchen from locations-v2). `pack` is the kit folder, `scene` lists the scene files of the pack's
  * assets/room/, `decor` and `furniture` the PNGs of assets/furniture/; every output goes to public/assets/rooms/<room>/<id>.webp.
+ * A `scene` entry is a string (a file of the row's `pack`) or `{ pack, id, as? }` (a file of another pack, output name `as ?? id`; S-32).
  * `recolourBoard` recolours the green board of the two background files (before/after) before the conversion.
  */
 const ROOM_PACKS = [
     {
+        // DESIGN-GAP 206 / 207 (docs/design-gaps.md): cream backgrounds from the polish pack; the before look keeps the code worn grade; the tight crop fills its house cell.
         room: 'salon',
         pack: SALON_V2,
-        scene: ['architecture-before', 'architecture-after', 'shadows'],
+        scene: [
+            { pack: HOUSE_1_POLISH, id: 'salon-before-cream', as: 'architecture-before' },
+            { pack: HOUSE_1_POLISH, id: 'salon-after-cream', as: 'architecture-after' },
+            { pack: HOUSE_1_POLISH, id: 'salon-shadows-cream', as: 'shadows' },
+        ],
         decor: ['plant-right'],
         furniture: [
             'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
@@ -60,12 +67,12 @@ const ROOM_PACKS = [
             'curtains-leaf', 'curtains-cream', 'curtains-botanical', 'shelf-oak', 'shelf-mint', 'shelf-arch',
             'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
         ],
-        recolourBoard: true,
+        recolourBoard: false,
     },
     {
         room: 'kitchen',
         pack: LOCATIONS_V2,
-        scene: ['kitchen-before', 'kitchen-after', 'kitchen-shadows'],
+        scene: ['kitchen-before', 'kitchen-after', 'kitchen-shadows', { pack: HOUSE_1_POLISH, id: 'kitchen-stage-1' }, { pack: HOUSE_1_POLISH, id: 'kitchen-stage-2' }],
         decor: [],
         furniture: [
             'kitchen-counter-natural', 'kitchen-counter-sunny', 'kitchen-counter-mint',
@@ -117,7 +124,10 @@ const ROOM_PACKS = [
 /** Room files keep the size of the source (the manifest's pixel geometry); no -resize. */
 /** @type {Array<{ pack: string, from: string, to: string, recolour: boolean }>} */
 const ROOM_JOBS = ROOM_PACKS.flatMap((row) => [
-    ...row.scene.map((id) => ({ pack: row.pack, from: `assets/room/${id}.png`, to: `${row.room}/${id}.webp`, recolour: row.recolourBoard && BOARD_FILES.includes(id) })),
+    ...row.scene.map((entry) => {
+        const file = typeof entry === 'string' ? { pack: row.pack, id: entry, as: entry } : { pack: entry.pack, id: entry.id, as: entry.as ?? entry.id };
+        return { pack: file.pack, from: `assets/room/${file.id}.png`, to: `${row.room}/${file.as}.webp`, recolour: row.recolourBoard && BOARD_FILES.includes(file.as) };
+    }),
     ...[...row.decor, ...row.furniture].map((id) => ({ pack: row.pack, from: `assets/furniture/${id}.png`, to: `${row.room}/${id}.webp`, recolour: false })),
 ]);
 
@@ -166,7 +176,7 @@ const CHOICE_FILES = [
     { from: 'assets/choice/choice-space.png', to: 'choice-space.webp' },
 ];
 
-for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack)]) {
+for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack), ...ROOM_PACKS.flatMap((row) => row.scene.flatMap((entry) => (typeof entry === 'string' ? [] : [entry.pack])))]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);

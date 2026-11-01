@@ -89,9 +89,12 @@ export const KITCHEN: RoomDef = {
     slots: kitchenSlots,
     worn: [],
     contactShadows: [],
-    // New tasks go at the END of this list only (RoomState.tasksDone counts positions in it). Costs in the salon's style (S-17 tunes them).
+    // New tasks go at the END of this list only (RoomState.tasksDone counts positions in it), except through a save-format step: S-32 inserted
+    // the three stages at the front with v7 (MIGRATIONS[6]). Costs follow the children's stages (S-17 tunes them).
     tasks: [
-        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
+        { kind: 'stage', id: 'clean-kitchen', label: 'cleanKitchen', cost: 5, scene: 'kitchen/kitchen-stage-1' },
+        { kind: 'stage', id: 'renew-walls', label: 'renewWalls', cost: 6, scene: 'kitchen/kitchen-stage-2' },
+        { kind: 'stage', id: 'renew-floor', label: 'renewFloor', cost: 7 },
         { kind: 'slot', id: 'place-counter', slot: 'kitchen-counter', label: 'placeCounter', cost: 7 },
         { kind: 'slot', id: 'place-fridge', slot: 'kitchen-fridge', label: 'placeFridge', cost: 9 },
         { kind: 'slot', id: 'place-kitchen-table', slot: 'kitchen-table', label: 'placeKitchenTable', cost: 10 },
