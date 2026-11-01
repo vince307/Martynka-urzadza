@@ -52,7 +52,11 @@ const ROOM_PACKS = [
     {
         room: 'salon',
         pack: SALON_V2,
-        scene: ['architecture-before', 'architecture-after', 'shadows'],
+        scene: [
+            { pack: HOUSE_1_POLISH, id: 'salon-before-cream', as: 'architecture-before' },
+            { pack: HOUSE_1_POLISH, id: 'salon-after-cream', as: 'architecture-after' },
+            { pack: HOUSE_1_POLISH, id: 'salon-shadows-cream', as: 'shadows' },
+        ],
         decor: ['plant-right'],
         furniture: [
             'sofa-morska', 'sofa-sloneczna', 'sofa-listkowa', 'rug', 'rug-arcs', 'rug-flowers',
@@ -62,7 +66,7 @@ const ROOM_PACKS = [
             'curtains-leaf', 'curtains-cream', 'curtains-botanical', 'shelf-oak', 'shelf-mint', 'shelf-arch',
             'lamp-wicker', 'lamp-flower', 'plant-fern', 'plant-ficus', 'pouf-knit', 'pouf-oak',
         ],
-        recolourBoard: true,
+        recolourBoard: false,
     },
     {
         room: 'kitchen',
