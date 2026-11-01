@@ -10,7 +10,7 @@ Written by the `/10x-implement hangar-module phase 1` step of run 2026-10-31-spa
 | Commits | 7 on top of `a4a0aee`: identity, research, plan, plan review, phase 1 `041e279`, docs `phase 1 shas` + handoff |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `plan_reviewed` (unchanged by this step) |
-| `## Progress` rows remaining | 20 (`grep -c '^- \[ \]' plan.md`): 1.6 (e2e by orchestrator), 1.7, 1.8, phases 2-4 |
+| `## Progress` rows remaining | 21 (`grep -c '^- \[ \]' plan.md`): 1.6 (e2e by orchestrator), 1.7, 1.8, phases 2-4 |
 | Working tree | clean after the docs commit |
 
 ## 2. Artifacts
