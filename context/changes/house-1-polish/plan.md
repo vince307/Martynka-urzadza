@@ -661,11 +661,11 @@ added or edited):
 
 #### Automated
 
-- [ ] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "SAVE_VERSION. 7|kitchenStages|save-v7|kitchen-stage|salon-before-cream" CLAUDE.md` present
-- [ ] 5.2 `grep -c "Trigger:" context/changes/house-1-polish/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 20[67] " docs/design-gaps.md` = 2
-- [ ] 5.3 Seam sweep: `grep -rn "S-32 phase 1" tests` empty; `grep -rnE "SAVE_VERSION\)\.toBe\(6\)" tests` empty; `npm run art` then `git status --short public/assets` empty
-- [ ] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty, except comment-only lines the seam sweep fixed, each listed in the handoff (file / line / old → new wording); `git diff <phase-4 sha> -- src scripts | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(//|/?\*)'` empty (plan review F2)
-- [ ] 5.5 Full local gate green; full e2e left to the orchestrator after phase 6
+- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "SAVE_VERSION. 7|kitchenStages|save-v7|kitchen-stage|salon-before-cream" CLAUDE.md` present — e46d7f2
+- [x] 5.2 `grep -c "Trigger:" context/changes/house-1-polish/follow-ups/review-fixes.md` ≥ 8; `grep -cE "^\| 20[67] " docs/design-gaps.md` = 2 — e46d7f2
+- [x] 5.3 Seam sweep: `grep -rn "S-32 phase 1" tests` empty; `grep -rnE "SAVE_VERSION\)\.toBe\(6\)" tests` empty; `npm run art` then `git status --short public/assets` empty — e46d7f2
+- [x] 5.4 `git diff --stat <phase-4 sha> -- src/core src/scenes src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/curriculum tests/fixtures public scripts` empty, except comment-only lines the seam sweep fixed, each listed in the handoff (file / line / old → new wording); `git diff <phase-4 sha> -- src scripts | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(//|/?\*)'` empty (plan review F2) — e46d7f2
+- [x] 5.5 Full local gate green; full e2e left to the orchestrator after phase 6 — e46d7f2
 
 #### Manual
 
