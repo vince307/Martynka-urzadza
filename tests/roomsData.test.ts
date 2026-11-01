@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BRIDGE, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
+import { BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -25,7 +25,8 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
+        // S-25 phase 3: no house lists the children's room yet; phase 4 adds its HOUSES row and removes this exemption.
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'children' ? 0 : 1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -139,6 +140,38 @@ describe('hangar data (FR-047)', () => {
         const slotTasks = HANGAR.tasks.slice(1);
         expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
         expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+});
+
+describe('children data (FR-033)', () => {
+    // Written from designs/martynka-evolution-v1/manifest.json rooms.children, not from childrenSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['children-bed', 405, 239, 410, 407, 20],
+        ['children-desk', 1258, 397, 290, 262, 25],
+        ['children-books', 810, 286, 220, 324, 15],
+        ['children-toys', 411, 578, 371, 251, 40],
+        ['children-reading', 1211, 558, 367, 301, 45],
+        ['children-wardrobe', 1028, 308, 216, 346, 18],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(CHILDREN.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('is three stages first, then one task per slot in the pack order, each slot bought once', () => {
+        expect(CHILDREN.tasks.slice(0, 3).map((t) => t.kind)).toEqual(['stage', 'stage', 'stage']);
+        const slotTasks = CHILDREN.tasks.slice(3);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+
+    it('costs 5, 6, 7, 7, 9, 10, 12, 13, 15 = 84 stars', () => {
+        expect(CHILDREN.tasks.map((t) => t.cost)).toEqual([5, 6, 7, 7, 9, 10, 12, 13, 15]);
+        expect(CHILDREN.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(84);
+    });
+
+    it('names the background of the first two stages and none on the third (it shows the after look)', () => {
+        const scenes = CHILDREN.tasks.slice(0, 3).map((t) => (t.kind === 'stage' ? t.scene : 'not a stage'));
+        expect(scenes).toEqual(['children/children-stage-1', 'children/children-stage-2', undefined]);
     });
 });
 

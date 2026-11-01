@@ -24,6 +24,7 @@ type SceneRole = 'before' | 'after' | 'shadows';
 export const ROOM_SCENE_FILES: Readonly<Record<string, Readonly<Record<SceneRole, string>>>> = {
     salon: { before: 'architecture-before', after: 'architecture-after', shadows: 'shadows' },
     kitchen: { before: 'kitchen-before', after: 'kitchen-after', shadows: 'kitchen-shadows' },
+    children: { before: 'children-stage-0', after: 'children-after', shadows: 'children-shadows' },
     bridge: { before: 'bridge-before', after: 'bridge-after', shadows: 'bridge-shadows' },
     hangar: { before: 'hangar-before', after: 'hangar-after', shadows: 'hangar-shadows' },
 };

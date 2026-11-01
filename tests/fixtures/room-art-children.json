@@ -1,0 +1,163 @@
+[
+    {
+        "key": "children/before",
+        "url": "assets/rooms/children/children-stage-0.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "children/after",
+        "url": "assets/rooms/children/children-after.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "children/shadows",
+        "url": "assets/rooms/children/children-shadows.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "children/children-stage-1",
+        "url": "assets/rooms/children/children-stage-1.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "children/children-stage-2",
+        "url": "assets/rooms/children/children-stage-2.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "children/children-bed-natural",
+        "url": "assets/rooms/children/children-bed-natural.webp",
+        "width": 410,
+        "height": 407,
+        "label": "łóżko Baldachim"
+    },
+    {
+        "key": "children/children-bed-house",
+        "url": "assets/rooms/children/children-bed-house.webp",
+        "width": 410,
+        "height": 407,
+        "label": "łóżko Domek"
+    },
+    {
+        "key": "children/children-bed-drawers",
+        "url": "assets/rooms/children/children-bed-drawers.webp",
+        "width": 410,
+        "height": 407,
+        "label": "łóżko Z szufladami"
+    },
+    {
+        "key": "children/children-desk-natural",
+        "url": "assets/rooms/children/children-desk-natural.webp",
+        "width": 290,
+        "height": 262,
+        "label": "biurko i krzesło Naturalne"
+    },
+    {
+        "key": "children/children-desk-sunny",
+        "url": "assets/rooms/children/children-desk-sunny.webp",
+        "width": 290,
+        "height": 262,
+        "label": "biurko i krzesło Słoneczne"
+    },
+    {
+        "key": "children/children-desk-mint",
+        "url": "assets/rooms/children/children-desk-mint.webp",
+        "width": 290,
+        "height": 262,
+        "label": "biurko i krzesło Miętowe"
+    },
+    {
+        "key": "children/children-books-natural",
+        "url": "assets/rooms/children/children-books-natural.webp",
+        "width": 220,
+        "height": 324,
+        "label": "regał na książki Naturalny"
+    },
+    {
+        "key": "children/children-books-sunny",
+        "url": "assets/rooms/children/children-books-sunny.webp",
+        "width": 220,
+        "height": 324,
+        "label": "regał na książki Słoneczny"
+    },
+    {
+        "key": "children/children-books-mint",
+        "url": "assets/rooms/children/children-books-mint.webp",
+        "width": 220,
+        "height": 324,
+        "label": "regał na książki Miętowy"
+    },
+    {
+        "key": "children/children-toys-natural",
+        "url": "assets/rooms/children/children-toys-natural.webp",
+        "width": 371,
+        "height": 251,
+        "label": "skrzynia na zabawki Naturalna"
+    },
+    {
+        "key": "children/children-toys-sunny",
+        "url": "assets/rooms/children/children-toys-sunny.webp",
+        "width": 371,
+        "height": 251,
+        "label": "skrzynia na zabawki Słoneczna"
+    },
+    {
+        "key": "children/children-toys-mint",
+        "url": "assets/rooms/children/children-toys-mint.webp",
+        "width": 371,
+        "height": 251,
+        "label": "skrzynia na zabawki Miętowa"
+    },
+    {
+        "key": "children/children-reading-natural",
+        "url": "assets/rooms/children/children-reading-natural.webp",
+        "width": 367,
+        "height": 301,
+        "label": "kącik czytelniczy Naturalny"
+    },
+    {
+        "key": "children/children-reading-sunny",
+        "url": "assets/rooms/children/children-reading-sunny.webp",
+        "width": 367,
+        "height": 301,
+        "label": "kącik czytelniczy Słoneczny"
+    },
+    {
+        "key": "children/children-reading-mint",
+        "url": "assets/rooms/children/children-reading-mint.webp",
+        "width": 367,
+        "height": 301,
+        "label": "kącik czytelniczy Miętowy"
+    },
+    {
+        "key": "children/children-wardrobe-natural",
+        "url": "assets/rooms/children/children-wardrobe-natural.webp",
+        "width": 216,
+        "height": 346,
+        "label": "szafa Naturalna"
+    },
+    {
+        "key": "children/children-wardrobe-sunny",
+        "url": "assets/rooms/children/children-wardrobe-sunny.webp",
+        "width": 216,
+        "height": 346,
+        "label": "szafa Słoneczna"
+    },
+    {
+        "key": "children/children-wardrobe-mint",
+        "url": "assets/rooms/children/children-wardrobe-mint.webp",
+        "width": 216,
+        "height": 346,
+        "label": "szafa Miętowa"
+    }
+]
