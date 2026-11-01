@@ -36,7 +36,7 @@ are 5/6/7 + 7/9/10/12/13/15 = 84, and phase 3 adds a temporary placement exempti
 
 ## 4. Next command
 
-`/10x-implement kids-room phase 2`
+`/10x-implement kids-room phase 3`
 
 ## 5. Open
 
