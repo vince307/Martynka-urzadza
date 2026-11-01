@@ -110,6 +110,12 @@ export interface HouseGeometry {
     cellFrame: string;
     cellFill: number;
     frameInset: number;
+    /** The flat sky colour behind the shell. */
+    background: number;
+    /** The "Wkrótce" text over a closed cell. `shadow` null draws no shadow. */
+    teaser: { color: string; shadow: string | null; weight: number };
+    /** Whether the code-drawn stand-in shell has a gable roof (a house) or none (a base). */
+    standInRoof: boolean;
     cells: readonly HouseCellDef[];
     stairwell: SceneRect;
 }

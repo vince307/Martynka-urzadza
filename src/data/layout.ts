@@ -651,13 +651,12 @@ export const ROOM_TOUCH_TARGETS = {
  * above the shell's roof (the shell starts at x 456) and in the place of the HUD "Do pokoju" pill, which is hidden here.
  */
 export const HOUSE_LAYOUT = {
-    background: 0xe7f4f4,
     back: { left: 24, top: 24, width: 420, height: 112, radius: 32, border: 5 },
     /** The shell's left edge: nothing of the back button may reach it. */
     shellLeft: 456,
     shellTop: 148,
-    teaser: { color: '#FFF5DF', shadow: '#245C59', size: 32, weight: 650, shadowOffset: 2 },
-    standIn: { outline: PLACEHOLDER_COLORS.deepTeal, outlineWidth: 6, roof: PLACEHOLDER_COLORS.terracotta, closed: PLACEHOLDER_COLORS.turquoise, frame: PLACEHOLDER_COLORS.butter, frameWidth: 10 },
+    teaser: { size: 32, shadowOffset: 2 },
+    standIn: { outline: PLACEHOLDER_COLORS.deepTeal, outlineWidth: 6, roof: PLACEHOLDER_COLORS.terracotta, closed: PLACEHOLDER_COLORS.turquoise, frame: PLACEHOLDER_COLORS.butter, frameWidth: 10, margin: 24, apexY: 148 /* = shellTop: the roof rises 64 px above its base */ },
     /** Pack README order: the shell (its four cells are opaque #FFF5DF), then the miniatures and closed cells over it, then the frame. */
     depth: { background: 0, shell: 1, cells: 2, frame: 3, teaser: 4, controls: 5 },
 } as const;

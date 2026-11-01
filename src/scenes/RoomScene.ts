@@ -56,6 +56,8 @@ export interface RoomSnapshot {
     doneMiniature: 'live' | 'thumbnail' | 'drawn' | null;
     modeText: string | null;
     visiting: string | null;
+    /** The shown zoom-out button label ("Dom" / "Baza"), null while the button is hidden. */
+    houseLabel: string | null;
 }
 
 /**
@@ -385,7 +387,7 @@ export class RoomScene extends Scene {
             this.houseButton.hide();
         } else {
             const { houseButton } = ROOM_LAYOUT;
-            this.houseButton.show(pl.house.open, houseButton.left, houseButton.top, 'primary', false, houseButton);
+            this.houseButton.show(pl.house.open[savedHouse.id], houseButton.left, houseButton.top, 'primary', false, houseButton);
         }
         if (this.cardDrawn) {
             const view = celebrationView('room', prefersReducedMotion(), ANIMATION.celebration);
@@ -569,6 +571,7 @@ export class RoomScene extends Scene {
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems(), celebration: { ...this.celebrationUsed } } : null,
             doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,
             visiting: this.visiting,
+            houseLabel: this.houseButton.target() ? (pl.house.open[((this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE).id] ?? null) : null,
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
     }

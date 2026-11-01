@@ -407,8 +407,8 @@ export const pl = {
         diceSubStepHint: (a: number, b: number) => `Zacznij od ${a} i odejmij ${b}.`,
         hiddenLetter: '·',   // a letter not uncovered yet (kit)
     },
-    // DESIGN-GAP (docs/design-gaps.md rows 183, 184): the kit has no house view; "Dom" and "Wróć do pokoju" are ours. The teaser reuses room.done.teaser.
-    house: { open: 'Dom', back: 'Wróć do pokoju' },
+    // FR-048: `open` names the building ("Dom" / "Baza" are the PRD's words). DESIGN-GAP (docs/design-gaps.md rows 183, 184, 195): the kit has no house view; "Wróć do pokoju" is ours. The teaser reuses room.done.teaser.
+    house: { open: { 'house-1': 'Dom', 'base-1': 'Baza' } as Readonly<Record<string, string>>, back: 'Wróć do pokoju' },
     // DESIGN-GAP (docs/design-gaps.md row 12): the kit has the return button only; the rest of the room copy is ours.
     room: {
         resume: 'Wróć do notesu',   // kit room-return view

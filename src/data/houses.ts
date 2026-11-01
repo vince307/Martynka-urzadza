@@ -30,6 +30,9 @@ export const HOUSE_GEOMETRY: Readonly<Record<string, HouseGeometry>> = {
         cellFrame: 'house/cell-frame',
         cellFill: 0xfff5df,
         frameInset: 16,
+        background: 0xe7f4f4,
+        teaser: { color: '#FFF5DF', shadow: '#245C59', weight: 650 },
+        standInRoof: true,
         cells: [
             { id: 'ground-left', floor: 0, place: 0, x: 252, y: 636, width: 608, height: 342 },
             { id: 'ground-right', floor: 0, place: 1, x: 1060, y: 636, width: 608, height: 342 },

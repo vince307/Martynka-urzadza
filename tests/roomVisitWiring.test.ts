@@ -52,4 +52,8 @@ describe('RoomScene visit wiring', () => {
         expect(writes.length).toBeGreaterThan(1);
         expect(body('private moveAfterDone()', 'private savedRooms()')).toContain('registry.set(REGISTRY_KEYS.currentRoom');
     });
+    it('the zoom-out label is chosen by the saved building and the snapshot reports it (FR-048)', () => {
+        expect(source).toContain('pl.house.open[savedHouse.id]');
+        expect(source).toMatch(/houseLabel:/);
+    });
 });

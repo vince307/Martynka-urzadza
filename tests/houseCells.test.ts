@@ -1,13 +1,15 @@
 // House view rules (S-23 phase 1). Oracle: literal synthetic houses written here (FR-033 one room at a time, FR-038 cells,
 // FR-039 the notebook path never visits), never data read from src/data except the geometry data test.
 import { describe, expect, it } from 'vitest';
-import { cellTap, houseCells, houseWakeVisit, type HouseCellView } from '../src/core/houseCells';
+import { cellTap, houseArtKeys, houseCells, houseWakeVisit, type HouseCellView } from '../src/core/houseCells';
 import { HOUSES, HOUSE_GEOMETRY } from '../src/data/houses';
 import type { HouseGeometry, HouseState } from '../src/core/types';
+import { pl } from '../src/data/pl';
 
 const cell = (id: string, floor: number, place: number) => ({ id, floor, place, x: place * 10, y: floor * 10, width: 608, height: 342 });
 const geo: HouseGeometry = {
     shell: 's', cellClosed: 'c', cellFrame: 'f', cellFill: 0, frameInset: 16,
+    background: 0, teaser: { color: '#000000', shadow: null, weight: 400 }, standInRoof: true,
     cells: [cell('gl', 0, 0), cell('gr', 0, 1), cell('ul', 1, 0), cell('ur', 1, 1)],
     stairwell: { x: 0, y: 0, width: 1, height: 1 },
 };
@@ -91,5 +93,37 @@ describe('HOUSE_GEOMETRY data', () => {
         ]);
         expect(g.stairwell).toEqual({ x: 860, y: 236, width: 200, height: 742 });
         expect(g.cellFill).toBe(0xFFF5DF);
+    });
+});
+
+describe('HOUSE_GEOMETRY look (S-29 phase 1)', () => {
+    it('keeps the house look literally: sky, teaser style, stand-in roof', () => {
+        const g = HOUSE_GEOMETRY['house-1'];
+        expect(g.background).toBe(0xe7f4f4);
+        expect(g.teaser).toEqual({ color: '#FFF5DF', shadow: '#245C59', weight: 650 });
+        expect(g.standInRoof).toBe(true);
+    });
+});
+
+describe('houseArtKeys', () => {
+    it('lists the shell, the closed cell and the frame of the house', () => {
+        expect(houseArtKeys(HOUSE_GEOMETRY['house-1'])).toEqual(['house/house-1-shell', 'house/cell-closed', 'house/cell-frame']);
+    });
+    it('drops a repeated key and returns a fresh array each time', () => {
+        const g: HouseGeometry = { ...geo, shell: 'a', cellClosed: 'b', cellFrame: 'a' };
+        const keys = houseArtKeys(g);
+        expect(keys).toEqual(['a', 'b']);
+        keys.push('x');
+        expect(houseArtKeys(g)).toEqual(['a', 'b']);
+    });
+});
+
+describe('pl.house.open (FR-048)', () => {
+    it('names every building with a geometry and every house id, the base "Baza"', () => {
+        for (const id of [...Object.keys(HOUSE_GEOMETRY), ...HOUSES.map((h) => h.id)]) {
+            expect(pl.house.open[id], id).toBeTruthy();
+        }
+        expect(pl.house.open['house-1']).toBe('Dom');
+        expect(pl.house.open['base-1']).toBe('Baza');
     });
 });
