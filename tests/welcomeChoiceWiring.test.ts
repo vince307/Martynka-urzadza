@@ -49,7 +49,7 @@ describe('WelcomeScene choice view wiring', () => {
 
     it('starts the welcome again with explicit data (Phaser keeps the last start\'s data otherwise)', () => {
         expect(text).toContain('this.scene.restart({} satisfies WelcomeData)');
-        expect(readFileSync('src/scenes/TaskScene.ts', 'utf8')).toContain('this.scene.start(SCENE_KEYS.welcome, { placed })');
+        expect(readFileSync('src/scenes/TaskScene.ts', 'utf8')).toContain('this.scene.start(SCENE_KEYS.welcome, { placed, fromAge: placed !== undefined && !placed.stageOverriddenByParent })');
     });
 
     it('offers "Wróć" only on the child age path', () => {

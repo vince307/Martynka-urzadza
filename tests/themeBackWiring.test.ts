@@ -23,7 +23,7 @@ describe('TaskScene "Wróć" to the building choice', () => {
         const back = body('backToChoice');
         const nulled = back.indexOf('REGISTRY_KEYS.learner, null');
         const flushed = back.indexOf('flush(');
-        const started = back.indexOf('scene.start(SCENE_KEYS.welcome, { placed })');
+        const started = back.indexOf('scene.start(SCENE_KEYS.welcome, { placed, fromAge: placed !== undefined && !placed.stageOverriddenByParent })');
         expect(nulled).toBeGreaterThan(0);
         expect(flushed).toBeGreaterThan(nulled);
         expect(started).toBeGreaterThan(flushed);

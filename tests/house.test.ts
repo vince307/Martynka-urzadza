@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildingStart, houseEqual, houseLayout, houseRoomIds, houseRoomList, mergeHouse, nextRoom, roomInRenovation } from '../src/core/house';
 import { emptyRoomState } from '../src/core/rooms';
+import { freshSession } from '../src/core/save';
 import type { HouseState, RoomDef, RoomState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
 
@@ -159,6 +160,13 @@ describe('buildingStart (S-28)', () => {
         expect(start.currentRoom).toBe('salon');
         expect(start.rooms).toEqual({ salon: { tasksDone: 0, chosen: {} } });
         expect(start.house).not.toBe(houses[0]);
+    });
+    it('gives the house, rooms and current room freshSession gives for that house (impl-review: the two must not drift)', () => {
+        for (const id of ['house', 'space'] as const) {
+            const house = houses.find((h) => h.id === choices.find((c) => c.id === id)!.house)!;
+            const fresh = freshSession(house, 7);
+            expect(buildingStart(id, choices, houses)).toEqual({ house: fresh.house, rooms: fresh.rooms, currentRoom: fresh.currentRoom });
+        }
     });
     it('throws a named error on an unknown choice or house', () => {
         expect(() => buildingStart('moon' as 'house', choices, houses)).toThrow(/unknown building choice/);

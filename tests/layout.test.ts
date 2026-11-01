@@ -484,7 +484,7 @@ describe('isExpression', () => {
     });
 });
 
-describe('"Wróć" to the age choice (F-02 b)', () => {
+describe('"Wróć" to the building choice (F-02 b, FR-043)', () => {
     it('is a touch target inside the left margin, clear of the notebook, above the build id caption', () => {
         const { themeBack, notebook } = TASK_LAYOUT;
         expect(TASK_TOUCH_TARGETS.themeBack).toEqual({ width: themeBack.width, height: themeBack.height });

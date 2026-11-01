@@ -217,22 +217,29 @@ test('#12 "Wróć" returns to the building choice keeping the stars and the plac
         const save = (await snapshot(page)).save;
         return (save?.writes ?? 0) > beforeBack ? save?.lastReason : null;
     }, { intervals: [50] }).toBe('now');
-    // The choice view of a placed learner has no "Wróć" of its own.
-    expect((await targets(page)).choiceBack ?? null).toBeNull();
+    // A child-placed learner keeps the choice view's own "Wróć" to the age (playtest F-02 b): an older age gives the E5 warm-up.
+    const choiceBack = (await targets(page)).choiceBack ?? null;
+    expect(choiceBack).not.toBeNull();
+    await tapScene(page, choiceBack!);
+    await expect.poll(async () => (await snapshot(page)).welcomeView).toBe('age');
+    const age9 = (await targets(page)).ages?.find((a) => a.age === 9);
+    expect(age9).toBeDefined();
+    await tapScene(page, age9!);
+    await expect.poll(async () => (await snapshot(page)).welcomeView).toBe('choice');
 
     const afterBack = await writesDone(page);
     await passChoice(page, 'space');
     const again = await snapshot(page);
-    expect(again.learner?.stage).toBe('E3');
+    expect(again.learner?.stage).toBe('E5');
     expect(again.warmup).toBe(true);
     expect(again.stars).toBe(1);
 
-    // The choice is saved: a reload resumes the E3 warm-up and still offers "Wróć".
+    // The choice is saved: a reload resumes the E5 warm-up and still offers "Wróć".
     await savedSince(page, afterBack);
     await page.reload();
     await screenIs(page, 'task');
     const reloaded = await snapshot(page);
-    expect(reloaded.learner?.stage).toBe('E3');
+    expect(reloaded.learner?.stage).toBe('E5');
     expect(reloaded.stars).toBe(1);
     await expect.poll(async () => (await targets(page)).themeBack ?? null).not.toBeNull();
 

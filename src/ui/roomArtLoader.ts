@@ -73,7 +73,18 @@ export const createRoomArtLoader = (game: Game, opts: RoomArtLoaderOptions): Roo
     };
 
     return {
-        attachLoader: (load) => { loader = load; },
+        attachLoader: (load) => {
+            loader = load;
+            // The previous loader belonged to a scene that shut down (TaskScene "Wróć" stops UIScene): Phaser's LoaderPlugin.shutdown
+            // reset its queue and removed every listener, so a room still pending there would never settle. It goes back to "not
+            // attempted" and the next ensure queues its missing keys on this loader (keys already in the cache are skipped).
+            if (pending.size > 0) {
+                detach?.();
+                detach = undefined;
+                pending.clear();
+                publish();
+            }
+        },
         pending: () => pending,
         refreshHealth: (room) => {
             current = room;
