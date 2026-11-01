@@ -48,7 +48,7 @@ const EXPECTED: [number, number, Record<string, number>][] = [
 
 describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
     it('is registered next to the v1 step', () => {
-        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2', '3', '4', '5']);
+        expect(Object.keys(MIGRATIONS).sort()).toEqual(['1', '2', '3', '4', '5', '6']);
     });
 
     it.each(EXPECTED)('old tasksDone %i becomes %i with the carried variants', (n, done, chosen) => {
@@ -73,7 +73,7 @@ describe('MIGRATIONS[2] lifts the old salon (v2 -> v3)', () => {
         expect(r.session.stars).toBe(7);
         expect(r.session.rooms.salon).toEqual({ tasksDone: 6, chosen: { sofa: 1, rug: 2, 'coffee-table': 0, cabinet: 0, armchair: 0 } });
         const encoded = encodeSave(r.session);
-        expect(encoded).toMatchObject({ version: 6, generation: 0, writer: '' });
+        expect(encoded).toMatchObject({ version: 7, generation: 0, writer: '' });
     });
 
     it('a salon already in the new shape only gets the new version', () => {

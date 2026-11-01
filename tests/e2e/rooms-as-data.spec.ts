@@ -44,12 +44,12 @@ test('#10 rooms-as-data a v4 salon save opens in the v5 build with the same room
     expect(salon.shown).toMatchObject(saveV4.rooms.salon.chosen);
 });
 
-test('#2 rooms-as-data after a round the save is written as v6 with the house and the v4 copy right after it', async ({ page }) => {
+test('#2 rooms-as-data after a round the save is written as v7 with the house and the v4 copy right after it', async ({ page }) => {
     await open(page);
     await playRoundRight(page, 5);
     await expect.poll(async () => (await snapshot(page)).save?.store?.writtenVersion ?? null).toBe(SAVE_VERSION);
     const store = (await snapshot(page)).save!.store!;
-    expect(SAVE_VERSION).toBe(6);
+    expect(SAVE_VERSION).toBe(7);
     expect(store.writtenHouse).toEqual(HOUSE);
     expect(store.ops.slice(0, 2)).toEqual(['write', 'backup']);
     expect(store.ops.filter((op) => op === 'backup')).toHaveLength(1);

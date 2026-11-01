@@ -14,11 +14,11 @@ import { TEST_ROOM_PARTS } from './roomFixtures';
 const fixture = (name: string): Record<string, unknown> =>
     JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
 // The current version's shape for tests that corrupt or re-read a save: the frozen v5 fixture with only the version moved (a literal spread).
-const v6of = (name: string): Record<string, unknown> => ({ ...(fixture(name)), version: 6 });
+const v7of = (name: string): Record<string, unknown> => ({ ...(fixture(name)), version: 7 });
 const clone = <T>(v: T): T => structuredClone(v);
 const MAX = 1_000_000;
 const v1 = (): SaveState => fixture('save-v1.json') as unknown as SaveState;
-const v3 = (): SaveState => v6of('save-v5.json') as unknown as SaveState;
+const v3 = (): SaveState => v7of('save-v5.json') as unknown as SaveState;
 const decoded = (): SessionSave => {
     const d = decodeSave(v1());
     if (d.kind !== 'ok') throw new Error('fixture must decode');
@@ -118,18 +118,18 @@ describe('saveProblem agrees with validateSave', () => {
         ['learner', (r) => { (r.learner as Record<string, unknown>).stage = 'E9'; }, 'learner'],
     ];
     it.each(broken)('names %s', (_n, mutate, key) => {
-        const r = clone(v6of('save-v5.json'));
+        const r = clone(v7of('save-v5.json'));
         mutate(r);
         expect(saveProblem(r)).toBe(key);
         expect(validateSave(r)).toBe(false);
     });
 
-    it.each([null, 'x', 7, [], {}, v6of('save-v5.json'), fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
+    it.each([null, 'x', 7, [], {}, v7of('save-v5.json'), fixture('save-v3.json'), fixture('save-v2.json'), fixture('save-v2-fresh.json'), fixture('save-v1.json')])('same verdict: %j', (value) => {
         expect(validateSave(value)).toBe(saveProblem(value) === null);
     });
 
     it('a valid save has no problem', () => {
-        expect(saveProblem(v6of('save-v5.json'))).toBeNull();
+        expect(saveProblem(v7of('save-v5.json'))).toBeNull();
         expect(saveProblem(fixture('save-v2.json'))).toBe('version');
     });
 });

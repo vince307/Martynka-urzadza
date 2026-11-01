@@ -8,8 +8,8 @@ import { MIGRATIONS, SAVE_VERSION, decodeSave, importProblem, saveProblem } from
 const fixture = (name: string): Record<string, unknown> => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
 
 describe('save format v6', () => {
-    it('is the current version', () => {
-        expect(SAVE_VERSION).toBe(6);
+    it('is one version behind the current one (the current version is pinned in saveV7)', () => {
+        expect(SAVE_VERSION).toBe(7);
     });
 
     it('lifts the v5 salon fixture by changing the version only, without mutating the input', () => {
@@ -18,7 +18,7 @@ describe('save format v6', () => {
         const lifted = MIGRATIONS[5](v5);
         expect(v5).toEqual(before);
         expect(lifted).toEqual({ ...before, version: 6 });
-        expect(saveProblem(lifted)).toBeNull();
+        expect(saveProblem(MIGRATIONS[6](lifted))).toBeNull();
     });
 
     it('decodes the v5 salon fixture as migrated from 5 and keeps the house as saved', () => {
@@ -33,16 +33,17 @@ describe('save format v6', () => {
         expect(r.session.learner).toEqual(raw.learner);
     });
 
-    it('decodes the v6 base fixture without a migration', () => {
+    it('decodes the v6 base fixture as migrated from 6 (the v7 step leaves the bridge alone)', () => {
         const r = decodeSave(fixture('save-v6.json'));
         if (r.kind !== 'ok') throw new Error('unreadable');
-        expect(r.migratedFrom).toBeNull();
+        expect(r.migratedFrom).toBe(6);
+        expect(r.session.rooms).toEqual(fixture('save-v6.json').rooms);
         expect(r.session.house.id).toBe('base-1');
         expect(r.session.currentRoom).toBe('bridge');
     });
 
-    it('meets a v7 save as future', () => {
-        expect(decodeSave({ ...fixture('save-v6.json'), version: 7 })).toEqual({ kind: 'unreadable', reason: 'future' });
+    it('meets a v8 save as future', () => {
+        expect(decodeSave({ ...fixture('save-v6.json'), version: 8 })).toEqual({ kind: 'unreadable', reason: 'future' });
     });
 
     it('lets the import preview accept a v5 save', () => {

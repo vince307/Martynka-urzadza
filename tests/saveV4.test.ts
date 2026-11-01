@@ -6,7 +6,7 @@ import { MIGRATIONS, channelVerdict, NEWER_SAVE, OTHER_WRITER_SAVE, PREVIOUS_PAG
 
 const fixture = (name: string): Record<string, unknown> => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
 // The current version's shape for tests that corrupt or re-read a save: the frozen v5 fixture with only the version moved (a literal spread).
-const v6of = (name: string): Record<string, unknown> => ({ ...(fixture(name)), version: 6 });
+const v7of = (name: string): Record<string, unknown> => ({ ...(fixture(name)), version: 7 });
 const clone = <T>(v: T): T => structuredClone(v);
 
 describe('save format v4', () => {
@@ -21,7 +21,7 @@ describe('save format v4', () => {
         const lifted = MIGRATIONS[3](v3) as Record<string, unknown>;
         expect(v3).toEqual(before);
         expect(lifted).toEqual({ ...before, version: 4, generation: 0, writer: '' });
-        expect(saveProblem(MIGRATIONS[5](MIGRATIONS[4](lifted)))).toBeNull();
+        expect(saveProblem(MIGRATIONS[6](MIGRATIONS[5](MIGRATIONS[4](lifted))))).toBeNull();
     });
 
     it.each(['save-v1.json', 'save-v2.json', 'save-v2-legacy-salon.json', 'save-v3.json'])('%s decodes with migratedFrom = its version', (name) => {
@@ -45,7 +45,7 @@ describe('save format v4', () => {
         const r = decodeSave(raw);
         if (r.kind !== 'ok') throw new Error('unreadable');
         expect(r.migratedFrom).toBe(4);
-        expect(encodeSave(r.session)).toEqual({ ...raw, version: 6, house: { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }] }, generation: 0, writer: '' });
+        expect(encodeSave(r.session)).toEqual({ ...raw, version: 7, house: { id: 'house-1', rooms: [{ room: 'salon', floor: 0, place: 0 }] }, generation: 0, writer: '' });
     });
 
     it('the v4 salon fixture (F-04 phase 1) decodes (migrated from 4) with its salon intact', () => {
@@ -60,11 +60,11 @@ describe('save format v4', () => {
     });
 
     it.each([[-1], [1.5], ['3'], [null]])('rejects generation %j', (generation) => {
-        expect(saveProblem({ ...v6of('save-v5.json'), generation })).toBe('generation');
+        expect(saveProblem({ ...v7of('save-v5.json'), generation })).toBe('generation');
     });
 
     it('rejects a writer that is not a string', () => {
-        expect(saveProblem({ ...v6of('save-v5.json'), writer: 7 })).toBe('writer');
+        expect(saveProblem({ ...v7of('save-v5.json'), writer: 7 })).toBe('writer');
     });
 
     it('an import of the v3 fixture is valid after the lift', () => {

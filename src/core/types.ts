@@ -219,5 +219,10 @@ export interface SaveV6 extends Omit<SaveV5, 'version'> {
     version: 6;
 }
 
+/** Save format, version 7: the v6 shape; the kitchen's `tasksDone` counts the three-stage task list (house-1-polish). */
+export interface SaveV7 extends Omit<SaveV6, 'version'> {
+    version: 7;
+}
+
 /** The current save version's shape. */
-export type SaveState = SaveV6;
+export type SaveState = SaveV7;
