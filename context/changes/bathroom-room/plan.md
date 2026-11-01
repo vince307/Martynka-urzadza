@@ -638,11 +638,11 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Automated
 
-- [ ] 4.1 The new and flipped unit cases red before the `HOUSES` row, green after; unit `<phase-3 count> + N`
-- [ ] 4.2 Deliberate break: give the bathroom row `place: 0` → the `houseCells` case red; drop the row → roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts` — the e2e reload (phase 6) is the browser proof of the same path
-- [ ] 4.3 Single specs, each with `npx playwright test tests/e2e/<name>.spec.ts` (sandbox disabled), never the full suite: `kids-room`, `kitchen-room`, `rooms-as-data`, `room-change` green; `house-cross-section` green (unchanged, run because its cells changed meaning)
-- [ ] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/layout.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-3 sha>.. -- tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json tests/fixtures/save-v6-kitchen-done.json` empty
-- [ ] 4.5 Full local gate green; full e2e left to the orchestrator after phase 6
+- [x] 4.1 The new and flipped unit cases red before the `HOUSES` row, green after; unit `<phase-3 count> + N` — 8eab432
+- [x] 4.2 Deliberate break: give the bathroom row `place: 0` → the `houseCells` case red; drop the row → roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts` — the e2e reload (phase 6) is the browser proof of the same path — 8eab432
+- [x] 4.3 Single specs, each with `npx playwright test tests/e2e/<name>.spec.ts` (sandbox disabled), never the full suite: `kids-room`, `kitchen-room`, `rooms-as-data`, `room-change` green; `house-cross-section` green (unchanged, run because its cells changed meaning) — 8eab432
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/layout.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-3 sha>.. -- tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json tests/fixtures/save-v6-kitchen-done.json` empty — 8eab432
+- [x] 4.5 Full local gate green; full e2e left to the orchestrator after phase 6 — 8eab432
 
 ### Phase 5: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
