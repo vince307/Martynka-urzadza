@@ -51,13 +51,13 @@ Grounded in `research.md`, spot-checked on this branch at `68d1488`:
   nothing → stays in Mostek with change mode (pinned in `tests/roomsData.test.ts` by S-28). Only the zoom-out is missing.
 - **Hook.** `snapshot().room` (`RoomScene.snapshot`) carries no button label; `houseView`, `housePixel` (a cell
   TEXTURE, not the rendered frame) and `targets().houseButton` exist (`src/testing/e2eHook.ts`).
-- **Counts.** Contract baseline on `main` 9a44799: unit 4171, e2e 184. Deploy smoke line format seen in Deploy run
-  41232755289, job 124630959484: `ok   precache covers house pictures — 3 of 3 house pictures precached`.
+- **Counts.** Contract baseline on `main` 9a44799: unit 4171, e2e 184. Deploy smoke line seen in the S-28 Deploy run
+  41261590741, job `deploy` 124716473458 (checked at plan review): `ok   precache covers house pictures — 3 of 3 house pictures precached`.
 
 ## Desired End State
 
 - `HouseGeometry` (`src/core/types.ts`) carries the per-building look: `background`, `teaser` (colour, shadow or null,
-  weight, offsetY) and `standInRoof`. `HOUSE_GEOMETRY['base-1']` holds the manifest cells and lift shaft, the base shell
+  weight) and `standInRoof`. `HOUSE_GEOMETRY['base-1']` holds the manifest cells and lift shaft, the base shell
   and airlock keys, the shared house frame, `#e8efeb`, a dark teaser without shadow, no stand-in roof. `HouseView` has no
   `if base` and reads no building colour from `HOUSE_LAYOUT`.
 - `HOUSE_ART` lists five pictures (house shell, house airlock-blind, shared frame, base shell, base airlock); the house
@@ -128,9 +128,9 @@ and take house-cross-section follow-up 20 (stand-in numbers into `HOUSE_LAYOUT`)
 
 **Intent**: the cross-section's look belongs to the building, so the base can differ by data only (D1, R2).
 
-**Contract**: `HouseGeometry` gains `background: number`, `teaser: { color: string; shadow: string | null; weight: number;
-offsetY: number }`, `standInRoof: boolean`. `HOUSE_GEOMETRY['house-1']` gets `background: 0xe7f4f4`,
-`teaser: { color: '#FFF5DF', shadow: '#245C59', weight: 650, offsetY: 0 }`, `standInRoof: true`. `HOUSE_LAYOUT`
+**Contract**: `HouseGeometry` gains `background: number`, `teaser: { color: string; shadow: string | null; weight: number }`,
+`standInRoof: boolean`. `HOUSE_GEOMETRY['house-1']` gets `background: 0xe7f4f4`,
+`teaser: { color: '#FFF5DF', shadow: '#245C59', weight: 650 }`, `standInRoof: true`. `HOUSE_LAYOUT`
 drops `background` and the teaser's colour/shadow/weight (keeps `teaser.size`, `teaser.shadowOffset`); `standIn` gains
 `margin: 24` and `apexY` (the roof apex in scene px, `shellTop` = 148, so the roof rises 64 px above its base instead of
 24 — follow-up 20).
@@ -147,7 +147,7 @@ array. Phase 2 filters `HOUSE_ART` with it.
 **File**: `src/ui/widgets/HouseView.ts`
 
 **Contract**: `render` fills `geometry.background`; the teaser text uses `geometry.teaser` (no `shadow` option when
-`shadow === null`) at `rect.y + rect.height / 2 + teaser.offsetY`; `standInShell` draws the roof only when
+`shadow === null`) centred in the cell as today (`rect.y + rect.height / 2`, origin 0.5; plan review F1: no offset); `standInShell` draws the roof only when
 `geometry.standInRoof`, with `HOUSE_LAYOUT.standIn.margin`/`apexY`. No house id appears in the file.
 
 #### 4. Label by building
@@ -247,7 +247,7 @@ the shared frame directly. Wiring guard: `HouseScene` filters through `houseArtK
 
 #### Manual Verification:
 
-- [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers house pictures — 3 of 3 house pictures precached`)
+- [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (line seen verbatim in the S-28 Deploy run 41261590741, job `deploy` 124716473458: `ok   precache covers house pictures — 3 of 3 house pictures precached`; expected after this slice: 5 of 5)
 
 ---
 
@@ -270,8 +270,8 @@ house scene is fresh for whichever building the child picks after "Wróć".
 **Contract**: `HOUSE_GEOMETRY['base-1']` = `shell: 'house/base-1-shell'`, `cellClosed: 'house/base-1-cell-closed'`,
 `cellFrame: 'house/cell-frame'` (shared, DESIGN-GAP comment, R4), `cellFill: 0xfff5df`, `frameInset: 16`, the four cells of
 `bases.base-1` (same ids, floors, places, rects as `house-1`), `stairwell` = the manifest `liftShaft` (860, 236, 200×742),
-`background: 0xe8efeb`, `teaser: { color: '#245C59', shadow: null, weight: 600, offsetY: 11 }` (preview: y+182 vs centre
-y+171), `standInRoof: false`. The S-28 comment on `HOUSES` "No HOUSE_GEOMETRY entry yet" goes.
+`background: 0xe8efeb`, `teaser: { color: '#245C59', shadow: null, weight: 600 }` (preview: `fillText` at y+182 is the alphabetic baseline of
+32 px text, so the glyphs centre at about y+171, the cell centre, as in the house; plan review F1), `standInRoof: false`. The S-28 comment on `HOUSES` "No HOUSE_GEOMETRY entry yet" goes.
 
 #### 2. Stale scene (first-building-choice follow-up 17, extended per R5)
 
@@ -357,7 +357,7 @@ comments, "No HOUSE_GEOMETRY entry yet"/"until S-29" wording in `src/` and `test
 - [human] Accept the Mostek celebration while no next module exists: the room card with one tile and no teaser, "Dalej" stays in Mostek with change mode and the "Baza" button (roadmap unknown owned by the author, decision D4; FR-046 met, no new card or copy)
 - [human] Accept the house `cell-frame` reused around the module in renovation in the base (the base pack has no frame; DESIGN-GAP row, R4) and "Wróć do pokoju" as the base's back label (D8)
 - [human] On a real tablet, installed and then offline: a base child opens "Baza" and the base pictures draw (precache)
-- [reviewer] (CI at ship) Deploy job `build` of the merge sha prints `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in Deploy run 41232755289, job 124630170144: `Tests  4089 passed | 3 skipped (4092)`, `e2e hook: absent (2 chunks checked)`)
+- [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes (`gh run view --log` keeps them between `Tests` and the number), `Tests  <4168 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen in the S-28 Deploy run 41261590741, job `build` 124715797789: `Tests  4168 passed | 3 skipped (4171)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
 
 ---
 
@@ -450,6 +450,9 @@ None. The saved `house.id` selects the geometry, art, style and label; `visiting
 - The shared house frame may clash with the base shell in the game (composite in research looked right); the visual pass
   row (1) and the `[human]` frame row decide; would change: a clash, then a code-drawn frame in a token colour.
 - A base picture that downloads but does not decode leaves no console line (house-cross-section follow-up 19, P5).
+- The code-drawn stand-in colours (`HOUSE_LAYOUT.standIn.closed`, `.frame`, `.outline`) stay shared by both buildings: only
+  reached when a picture is missing, judged in visual frames (3) and (8) (plan review F4); would change: the base stand-in
+  reading as a house in those frames, then move them onto the geometry like `background`.
 
 ## Autonomous decisions
 
@@ -457,7 +460,7 @@ Maintainer decisions (scope.md), D1-D8 (change.md) and R1-R7 (research) are kept
 step (no `AskUserQuestion`; the skill's complexity and structure confirmations were decided from the artifacts: MEDIUM
 complexity, 0 open product questions after research, 5 phases):
 
-- **P1 — style on `HouseGeometry`** (`background`, `teaser` incl. `offsetY`, `standInRoof`), per R2. Rejected: a sibling
+- **P1 — style on `HouseGeometry`** (`background`, `teaser`, `standInRoof`; no `offsetY`, plan review F1), per R2. Rejected: a sibling
   `HOUSE_STYLE` in `layout.ts`. Would change: S-26 (street) needing `HouseGeometry` as pure geometry.
 - **P2 — `houseArtKeys` filters the one flat `HOUSE_ART`** (R3), game file `base-1-cell-closed`. Rejected: a per-building
   table (two smoke lines). Would change: a building whose art lives elsewhere.
@@ -517,7 +520,7 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Manual
 
-- [ ] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (format seen in Deploy run 41232755289, job 124630959484: `ok   precache covers house pictures — 3 of 3 house pictures precached`)
+- [ ] 2.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 5 of 5 house pictures precached` (line seen verbatim in the S-28 Deploy run 41261590741, job `deploy` 124716473458: `ok   precache covers house pictures — 3 of 3 house pictures precached`; expected after this slice: 5 of 5)
 
 ### Phase 3: The base geometry and the stale house scene
 
@@ -544,7 +547,7 @@ complexity, 0 open product questions after research, 5 phases):
 - [ ] 4.7 [human] Accept the Mostek celebration while no next module exists: the room card with one tile and no teaser, "Dalej" stays in Mostek with change mode and the "Baza" button (roadmap unknown owned by the author, decision D4; FR-046 met, no new card or copy)
 - [ ] 4.8 [human] Accept the house `cell-frame` reused around the module in renovation in the base (the base pack has no frame; DESIGN-GAP row, R4) and "Wróć do pokoju" as the base's back label (D8)
 - [ ] 4.9 [human] On a real tablet, installed and then offline: a base child opens "Baza" and the base pictures draw (precache)
-- [ ] 4.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints `Tests +[0-9]+ passed` and `e2e hook: absent \(` (as seen in Deploy run 41232755289, job 124630170144: `Tests  4089 passed | 3 skipped (4092)`, `e2e hook: absent (2 chunks checked)`)
+- [ ] 4.10 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes (`gh run view --log` keeps them between `Tests` and the number), `Tests  <4168 + N> passed | 3 skipped` and `e2e hook: absent (` (as seen in the S-28 Deploy run 41261590741, job `build` 124715797789: `Tests  4168 passed | 3 skipped (4171)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
 
 ### Phase 5: The base cross-section in the browser — e2e (FR-045, FR-046, FR-048; #16, #2, #12)
 
