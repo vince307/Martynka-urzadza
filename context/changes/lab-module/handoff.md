@@ -1,26 +1,28 @@
 # Handoff — `lab-module` (slice S-33)
 
-Written by the `/10x-new` step of autonomous run `2026-11-01-bathroom-polish-lab`. The change folder exists with its
-identity, roadmap re-verification, bound kit views and copy keys, migration verdict and triggered follow-ups. The one thing
-the next agent must not get wrong: **no „Wkrótce” teaser returns** — the Hangar card gains a real Laboratorium tile and the
-Laboratorium card has three done tiles and no teaser (`houseRoomList` makes a teaser only for an unknown room; D3).
+Written by the `/10x-research` step of autonomous run `2026-11-01-bathroom-polish-lab`. Research is complete
+(`research.md`): the module and the base frame are data + art with a short, named list of non-data touches (art script,
+tests, one comment). The one thing the next agent must not get wrong: **only `HOUSE_GEOMETRY['base-1'].cellFrame` changes
+— house 1 keeps `house/cell-frame`**, and the art script's `BASE_FILES` needs a per-row pack (the frame comes from v5, the
+shell/airlock stay on v1).
 
 ## 1. State
 
 | item | value |
 |---|---|
 | branch | `feat/lab-module`, cut from `main` at `60472aa` (S-32 merge) |
-| commits | 1 on top of `60472aa`: `docs(lab-module): change identity (autonomous run)` |
+| commits | 2 on top of `60472aa`: `docs(lab-module): change identity (autonomous run)`, `docs(lab-module): research` |
 | pushed / PR / merged | no / none / no |
-| `change.md` status | `new` |
+| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
 | `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| working tree | clean after the commit (only the two files below were staged) |
+| working tree | clean after the commit (three files staged by path) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/lab-module/change.md` | change identity: roadmap claim vs repo table, kit views + copy keys bound, DESIGN-GAPs expected, migration verdict (none, v7 stays, fixture `save-v7-hangar-done.json` to add), triggered follow-ups, decisions D1–D8 |
+| `context/changes/lab-module/research.md` | findings: v3 slot literals, frame geometry/alpha/colour oracle, boot budget measurement, smoke counts, full pin list (unit + e2e), v7 fixture path |
+| `context/changes/lab-module/change.md` | frontmatter only: `status: preparing`, `updated` |
 | `context/changes/lab-module/handoff.md` | this file |
 
 ## 3. Verification
@@ -28,37 +30,42 @@ Laboratorium card has three done tiles and no teaser (`houseRoomList` makes a te
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/lab-module` (observed) |
-| `ls context/changes context/archive \| grep lab-module` | no collision (observed) |
-| `python3` read of `designs/bystrow-space-base-v3/{manifest,qa-report}.json` | room `lab`, 6 slots × 3 variants, QA `passed: true`, 21 PNG (observed) |
-| `file designs/bystrow-space-base-v5/assets/base/base-1-cell-frame.png`, v5 `qa-report.json` | 640×374 RGBA, QA `passed: true` (observed) |
-| `grep SAVE_VERSION src/core/save.ts` | 7 (observed) |
-| lint / typecheck / tests / build / e2e | not run: docs-only step, no code changed (baseline in the agent contract is inherited, unverified) |
+| python read of v3 `manifest.json` `rooms.lab` | 6 slots, x/y/size/z/anchor/visibleRect as in research §1; z distinct (observed) |
+| Pillow on v5 `base-1-cell-frame.png` | 640×374 RGBA, interior alpha max 0, border mint (85,204,181) vs house frame butter (248,210,106) (observed) |
+| cwebp (`-q 85 -alpha_q 100 -m 6`, the script's flags) of 21 lab PNGs + frame into the scratchpad | lab 656 332 B vs hangar 606 452 B (≈ +1.0 s → ~30.9 s of 48 s); frame 3 498 B; base house-art weight 97 776 B ≤ cap 110 000 (observed) |
+| `node --import tsx` scratch: `unreachableSlots` on a manifest-built lab with all slots bought | `[]` (observed) |
+| lint / typecheck / unit / build / e2e | not run: research only, no product code changed; baseline in the agent contract inherited, unverified |
 
 ## 4. Next command
 
-`/10x-research lab-module`
+`/10x-plan lab-module`
 
 ## 5. Open
 
-- Research must sweep every pin of „the Hangar is the base's last module” / „base-1 has two rooms”: known ones
-  `tests/roomsData.test.ts` (`houseRoomList` of base-1, describe „hangar flow (FR-047)”), `tests/houseCells.test.ts`
-  (expects `'house/cell-frame'` for base-1), `tests/e2e/hangar-module.spec.ts` test #16 (no teaser, „Dalej” stays),
-  possibly `tests/e2e/base-cross-section.spec.ts`; list each non-data touch with its reason (roadmap Risk).
-- Art script: `BASE_FILES` in `scripts/make-task-art.mjs` reads only `SPACE_BASE` (v1); the v5 frame needs a per-row pack;
-  `ROOM_PACKS` needs a v3 pack root constant. Firing house-1-polish follow-up 2 (retire recolour) is taken as out of scope.
-- Measure the Laboratorium WebP total and boot time after `npm run art` against `tests/bootBudget.test.ts`.
-- DESIGN-GAPs to write: new Laboratorium wording row; edit 196; close 199 (gap 200 stays).
-- Follow-ups and takes: table „Open follow-ups triggered by this slice” in `change.md` (hangar-module 1 and
-  base-cross-section 6 fire and are in scope).
+- Pins the plan must change (research §5): `tests/roomsData.test.ts` (base `houseRoomList`, describe "hangar flow (FR-047)",
+  new "lab data"), `tests/houseCells.test.ts` ("names its own pictures, shares the frame"), `tests/houseArt.test.ts`
+  (`expected` map), `tests/roomArt.test.ts` (snapshot `room-art-lab.json`, counts), `tests/fixtureLoadPath.test.ts`
+  (bridge-done merged rooms → three, `FIXTURES` + `save-v7-hangar-done`), `tests/e2e/hangar-module.spec.ts` #16 (card gains
+  the lab tile, "Dalej" opens `lab`). `base-cross-section.spec.ts` and hangar #2 stay green (lab cell `closed`).
+- Non-data touches to name in change.md / PR body: `scripts/make-task-art.mjs` (`SPACE_BASE_V3`, `SPACE_BASE_V5`, per-row
+  `pack` in `BASE_FILES`, existence-loop dir list), comment in `HouseScene.art`.
+- Fixture `tests/fixtures/save-v7-hangar-done.json`: hand-written in the shape of `save-v7.json` + base content of
+  `save-v6-bridge-done.json` (no generator script exists; `encodeSave` + `guardedPut` is the real writer, the FIXTURES
+  round-trip proves it).
+- DESIGN-GAPs (from change.md): new Laboratorium wording row; edit 196; close 199 (200 stays).
+- Follow-ups firing: hangar-module 1 (in scope), base-cross-section 6 frame half (in scope), SW-install warning (re-record),
+  house-1-polish 2 recolour retirement (carry, out of scope). Atlas trigger does NOT fire (lab ≈ 30.9 s, salon 41.4 s stays worst).
 - `[human]` none raised at this step.
 
 ## 6. Autonomous decisions
 
-See `change.md` § Autonomous decisions D1–D8 (each with chosen, rejected, why, reversal condition). Summary:
-D1 costs 6/10/13/14/17/19/21 = 100 in manifest slot order (reverses on S-17 data or a maintainer price);
-D2 cell `upper-left` (reverses on a designer reorder); D3 no teaser, Laboratorium is a next-room tile on the Hangar card
-(reverses on S-34 data or a designer last-module answer); D4 base frame as data + art (`HOUSE_ART` row, `cellFrame` key,
-per-row pack in `BASE_FILES`) (reverses if `HouseView` turns out to assume the house frame elsewhere); D5 room id `lab`;
-D6 no migration, v7 stays, proven by `save-v7-hangar-done.json` (reverses on a per-room saved field v7 lacks);
-D7 pack captions with agreed variant names (reverses on the teacher read); D8 next step research (fixed by the run chain).
-Also decided here: the `/10x-new` skill's default next step `/10x-plan` is replaced by `/10x-research` per the step prompt.
+- **R1. No AskUserQuestion; scope taken from change.md + step prompt.** Rejected: widening into S-35 v5 crew/life layers.
+  Would change: a maintainer instruction to integrate v5 beyond the frame.
+- **R2. Recommend a hand-written v7 fixture** over adding a fixture-generator script. Why: every done-room fixture so far is
+  hand-written and frozen (bathroom-room plan, house-1-polish `save-v7.json`), and the FIXTURES round-trip runs the real
+  `loadSave`/`encodeSave`. Would change: a reviewer requiring byte-identity with a `guardedPut` record (then generate it
+  once in a test with fake IndexedDB and freeze the output).
+- **R3. Measured art sizes in the scratchpad, not with `npm run art`** (which writes into `public/` — product files, a
+  plan-phase job). Would change: nothing; the plan's art phase re-measures on the committed files.
+- Inherited D1–D8 from change.md stand; research confirmed D3 (no teaser: `houseRoomList` source), D4 (frame geometry
+  identical, per-geometry draw), D6 (no per-room field missing in v7).
