@@ -651,11 +651,11 @@ added or edited):
 
 #### Automated
 
-- [ ] 4.1 `npx vitest run tests/e2eSave.test.ts` green (new case red before the seam); unit `<phase-3 count> + N`
-- [ ] 4.2 Deliberate break: drop `'v6-kitchen'` from `E2E_SAVE_SEAMS` → the new `e2eSave` case red; reference the string `'v6-kitchen'` from `src/main.ts` → `npm run build` fails on the `e2e hook:` guard; each restored; meta-check: the guard proves the seam is absent from `dist/` only because the marker is listed, phase 6 proves the seam works
-- [ ] 4.3 `npm run build` prints `e2e hook: absent (`; `grep -rl "v6-kitchen" dist/` empty
-- [ ] 4.4 `git diff --stat <phase-3 sha> -- src/core src/data src/scenes src/ui public scripts tests/fixtures` empty
-- [ ] 4.5 Full local gate green; no e2e in this phase (no spec touched; phase 6 uses the seam)
+- [x] 4.1 `npx vitest run tests/e2eSave.test.ts` green (new case red before the seam); unit `<phase-3 count> + N` — 7a76b76
+- [x] 4.2 Deliberate break: drop `'v6-kitchen'` from `E2E_SAVE_SEAMS` → the new `e2eSave` case red; reference the string `'v6-kitchen'` from `src/main.ts` → `npm run build` fails on the `e2e hook:` guard; each restored; meta-check: the guard proves the seam is absent from `dist/` only because the marker is listed, phase 6 proves the seam works — 7a76b76
+- [x] 4.3 `npm run build` prints `e2e hook: absent (`; `grep -rl "v6-kitchen" dist/` empty — 7a76b76
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/core src/data src/scenes src/ui public scripts tests/fixtures` empty — 7a76b76
+- [x] 4.5 Full local gate green; no e2e in this phase (no spec touched; phase 6 uses the seam) — 7a76b76
 
 ### Phase 5: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
