@@ -19,10 +19,13 @@ const OUT = join(ROOT, 'public/assets/tasks');
 const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
+const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
 const HOUSE_OUT = join(ROOT, 'public/assets/house');
+const SPACE = join(ROOT, 'designs/bystrow-space-base-v1');
+const CHOICE_OUT = join(ROOT, 'public/assets/choice');
 
 // Output sizes are at most twice the displayed size (half of the kit's resolution), see the plan, "Ladowanie".
 const SQUARE = [256, 256];
@@ -72,6 +75,14 @@ const ROOM_PACKS = [
         ],
         recolourBoard: false,
     },
+    {
+        room: 'bridge',
+        pack: SPACE_BASE,
+        scene: ['bridge-before', 'bridge-after', 'bridge-shadows'],
+        decor: [],
+        furniture: ['console', 'chair', 'telescope', 'shelf', 'rug', 'plants'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `bridge-${slot}-${v}`)),
+        recolourBoard: false,
+    },
 ];
 
 /** Room files keep the size of the source (the manifest's pixel geometry); no -resize. */
@@ -114,7 +125,13 @@ const HOUSE_FILES = [
     { from: 'assets/house/cell-frame.png', to: 'cell-frame.webp' },
 ];
 
-for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack)]) {
+/** The first-building choice cards (S-28): native 720x480, no recolour. */
+const CHOICE_FILES = [
+    { from: 'assets/choice/choice-house.png', to: 'choice-house.webp' },
+    { from: 'assets/choice/choice-space.png', to: 'choice-space.webp' },
+];
+
+for (const dir of [KIT, SALON_V2, FOX, HOUSE, SPACE, ...ROOM_PACKS.map((row) => row.pack)]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -180,4 +197,9 @@ for (const file of HOUSE_FILES) {
     total += bytes;
     console.log(`house/${file.to}  ${bytes} B`);
 }
-console.log(`${HOUSE_FILES.length + JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);
+for (const file of CHOICE_FILES) {
+    const bytes = convert(join(SPACE, file.from), join(CHOICE_OUT, file.to), []);
+    total += bytes;
+    console.log(`choice/${file.to}  ${bytes} B`);
+}
+console.log(`${CHOICE_FILES.length + HOUSE_FILES.length + JOBS.length + ROOM_JOBS.length + UI_JOBS.length + V2_ICONS.length + FOX_POSES.length} files, ${total} B`);

@@ -44,7 +44,7 @@ const rig = (options: { disabled?: boolean } = {}) => {
     const service = createRoomArtLoader(game, { disabled: options.disabled ?? false, entriesOf });
     service.attachLoader(load);
     return {
-        service, queued, files, handlers, cached, store,
+        service, queued, files, handlers, cached, store, loader: load,
         health: () => store.get(REGISTRY_KEYS.roomArtHealth) as ArtHealth | undefined,
         load: () => store.get(REGISTRY_KEYS.roomLoad) as { pending: string[]; settled: string[] } | undefined,
         fail: (key: string) => emit('loaderror', files.find((f) => f.key === key)),
@@ -61,6 +61,20 @@ describe('runtime room-art loader', () => {
         expect(r.queued).toEqual(['b/two', 'b/three']);
         expect(r.files.map((f) => f.xhrSettings.timeout)).toEqual([balance.loader.timeoutMs, balance.loader.timeoutMs]);
         expect([...r.service.pending()]).toEqual(['b']);
+    });
+
+    it('a room still pending when its loader shut down is queued again on the next loader (impl-review F1: "Wróć" mid-load)', () => {
+        const r = rig();
+        r.service.ensure(['a']);
+        r.cached.add('a/one');
+        // UIScene stops: Phaser's LoaderPlugin.shutdown resets the queue and removes every listener, so `complete` never comes.
+        r.handlers.length = 0;
+        r.queued.length = 0;
+        r.service.attachLoader(r.loader);   // the relaunched UIScene
+        expect(r.service.pending().size).toBe(0);
+        r.service.ensure(['a']);
+        expect(r.queued).toEqual(['a/two']);
+        expect([...r.service.pending()]).toEqual(['a']);
     });
 
     it('a second ensure while the room is pending queues nothing', () => {

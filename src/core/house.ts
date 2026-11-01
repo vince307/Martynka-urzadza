@@ -1,7 +1,7 @@
 // House rules (F-04): which rooms a house lists, which one is in renovation, how a saved house meets the data house.
 // Pure: no Phaser, no data import, every returned house or array is a fresh copy and no input is mutated.
 import { emptyRoomState, roomDone } from './rooms';
-import type { HouseRoomPlace, HouseState, RoomDef, RoomListEntry, RoomState } from './types';
+import type { BuildingChoice, HouseRoomPlace, HouseState, RoomDef, RoomListEntry, RoomState } from './types';
 
 type Known = Readonly<Record<string, RoomDef>>;
 
@@ -68,4 +68,26 @@ export function houseEqual(a: HouseState, b: HouseState): boolean {
     return a.id === b.id
         && a.rooms.length === b.rooms.length
         && a.rooms.every((c, i) => c.room === b.rooms[i].room && c.floor === b.rooms[i].floor && c.place === b.rooms[i].place);
+}
+
+/** The rooms of a house present in `known`, in house order (a fresh array). */
+export function houseRoomIds(house: HouseState, known: Known): string[] {
+    return house.rooms.filter((c) => known1(known, c.room) !== undefined).map((c) => c.room);
+}
+
+/**
+ * The house, rooms and current room of a fresh game in the building a card names (the same as `freshSession` makes for that
+ * house; kept here so core/house does not import the save module). Throws a named error on an unknown choice or house.
+ */
+export function buildingStart(
+    choice: BuildingChoice['id'],
+    choices: readonly BuildingChoice[],
+    houses: readonly HouseState[],
+): { house: HouseState; rooms: Record<string, RoomState>; currentRoom: string } {
+    const card = choices.find((c) => c.id === choice);
+    if (card === undefined) throw new RangeError(`buildingStart: unknown building choice "${choice}"`);
+    const house = houses.find((h) => h.id === card.house);
+    if (house === undefined || house.rooms.length === 0) throw new RangeError(`buildingStart: choice "${choice}" names an unknown or empty house "${card.house}"`);
+    const first = house.rooms[0].room;
+    return { house: copyHouse(house), rooms: { [first]: emptyRoomState() }, currentRoom: first };
 }

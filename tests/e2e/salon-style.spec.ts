@@ -4,7 +4,7 @@
 // contact shadows. Runs in the chromium-hook project (read-only window.__martynkaE2E: `room.worn`, `room.contactShadows`,
 // `backdrop.graded`). The worn set is not furniture: `chosen` and `shown` stay empty until a purchase.
 import { test, expect, type Page } from '@playwright/test';
-import { openWelcome, passWelcome } from './support/welcome';
+import { passWelcome } from './support/welcome';
 import { answerWrong, answerRight, phaseIs, screenIs, silenceSpeech, snapshot, tapScene, tapTarget, targets } from './support/hook';
 
 test.setTimeout(120_000);
@@ -43,10 +43,12 @@ const toRoom = async (page: Page, query: Record<string, string>): Promise<void> 
     await screenIs(page, 'room');
 };
 
-test('#12 salon-style the welcome backdrop of a fresh device is the graded worn salon', async ({ page }) => {
+test('#12 salon-style the task backdrop of a fresh device is the graded worn salon', async ({ page }) => {
     const requested: string[] = [];
     page.on('request', (request) => requested.push(request.url()));
-    await openWelcome(page, 9);
+    // S-28: a fresh install boots no room, so the welcome is plain; the salon backdrop appears on the task screen once the room has loaded.
+    await silenceSpeech(page);
+    await passWelcome(page, { e2eVariant: 'off' });
     await expect.poll(async () => (await snapshot(page)).backdrop?.drawn).toBe(true);
     const backdrop = (await snapshot(page)).backdrop!;
     expect(backdrop.mode).toBe('salon');

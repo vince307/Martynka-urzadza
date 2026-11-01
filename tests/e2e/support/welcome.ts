@@ -16,6 +16,8 @@ const PARENT_AGE = '10+';
 const STAGE_LABEL = 'Klasa 2, I półrocze';
 const STAGE = 'E3';
 
+export type Building = 'house' | 'space';
+
 /** Loads the game (the month may be pinned by ?e2eMonth, other e2e-build switches such as e2eFail go in `query`) and waits for the welcome screen. */
 export const openWelcome = async (page: Page, month?: number, query: Record<string, string> = {}): Promise<void> => {
     const params = new URLSearchParams(query);
@@ -26,6 +28,25 @@ export const openWelcome = async (page: Page, month?: number, query: Record<stri
     // A stale server without the hook would fail every test with an unreadable error.
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('welcome');
+};
+
+/** Taps a building card of the choice view (default the house) and waits for the task screen: every placement path ends on the choice. */
+export const passChoice = async (page: Page, building: Building = 'house'): Promise<void> => {
+    // A learner-less save that already bought something skips the choice and goes straight to the round.
+    await expect.poll(async () => {
+        const snap = await readHook(page, 'snapshot');
+        return snap?.welcomeView === 'choice' || snap?.screen === 'task';
+    }).toBe(true);
+    if ((await readHook(page, 'snapshot'))?.screen === 'task') return;
+    let card: { x: number; y: number } | undefined;
+    await expect
+        .poll(async () => {
+            card = (await readHook(page, 'targets'))?.choices?.[building];
+            return card !== undefined;
+        })
+        .toBe(true);
+    await tapScene(page, card!);
+    await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('task');
 };
 
 /** Reads the adult gate's problem from the dialog text like an adult would; the hook never exposes the answer. */
@@ -66,6 +87,8 @@ export interface ParentChoice {
     month?: number;
     /** Extra e2e-build query switches (e2eFail). */
     query?: Record<string, string>;
+    /** The building card to tap (default the house). */
+    building?: Building;
 }
 
 /** Parent path: gate, then the chosen age and stage; lands on the first task of a normal (no warm-up) round. The stage must differ from the proposal, or the warm-up would follow. */
@@ -80,6 +103,7 @@ export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Pro
     await panel.getByRole('button', { name: choice.age, exact: true }).tap();
     await panel.getByRole('button', { name: choice.stageLabel, exact: true }).tap();
     await panel.getByRole('button', { name: 'Zatwierdź', exact: true }).tap();
+    await passChoice(page, choice.building);
 
     await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('task');
     const learner = (await readHook(page, 'snapshot'))?.learner;
@@ -88,11 +112,11 @@ export const passWelcomeAsParent = async (page: Page, choice: ParentChoice): Pro
 };
 
 /** Parent path, age 10 and stage E3 in every month (the proposal is E6, so E3 is an override). */
-export const passWelcome = (page: Page, query?: Record<string, string>): Promise<void> =>
-    passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE, query });
+export const passWelcome = (page: Page, query?: Record<string, string>, building?: Building): Promise<void> =>
+    passWelcomeAsParent(page, { age: PARENT_AGE, stageLabel: STAGE_LABEL, stage: STAGE, query, building });
 
 /** Child path: taps `age` with the month pinned by ?e2eMonth (the e2e build only); the warm-up follows when the stage has a previous one. */
-export const passWelcomeAsChild = async (page: Page, age: number, month: number, query: Record<string, string> = {}): Promise<void> => {
+export const passWelcomeAsChild = async (page: Page, age: number, month: number, query: Record<string, string> = {}, building: Building = 'house'): Promise<void> => {
     await openWelcome(page, month, query);
     let button: { x: number; y: number } | undefined;
     await expect
@@ -102,7 +126,7 @@ export const passWelcomeAsChild = async (page: Page, age: number, month: number,
         })
         .toBe(true);
     await tapScene(page, button!);
-    await expect.poll(async () => (await readHook(page, 'snapshot'))?.screen).toBe('task');
+    await passChoice(page, building);
 };
 
 const HOLD_MS = 2000; // balance.parentSettings.holdMs: the hold is the gesture, not a wait

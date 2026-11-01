@@ -59,6 +59,9 @@ export interface Snapshot {
     /** The fox guide in the notebook corner (fox-guide). */
     guide?: { pose: 'idle' | 'cheer' | 'think' | null; requested: 'idle' | 'cheer' | 'think' | null; visible: boolean; rect: { x: number; y: number; width: number; height: number }; interactive: boolean; pops: number };
     settingsHint: boolean;
+    /** The welcome screen's open view and whether its speaker shows (welcome screen only). */
+    welcomeView?: 'age' | 'choice';
+    choiceSpeaker?: boolean;
     screen: 'loading' | 'welcome' | 'task' | 'summary' | 'unlock' | 'room' | 'house';
     /** The boot loading screen (BootScene still loading): its phase. */
     loading?: { phase: 'loading' | 'slow' | 'over'; art: { background: boolean; emblem: boolean } };
@@ -133,7 +136,7 @@ export interface Targets {
     doneNext?: Point | null;
     doneRoom?: Point | null;
     unlockNext: Point | null;
-    ageBack?: Point | null;
+    themeBack?: Point | null;
     resume: Point | null;
     taskButton?: Point | null;
     thumbs?: Point[];
@@ -148,7 +151,10 @@ export interface Targets {
     roomSwitch: Point | null;
     speaker: Point | null;
     ages?: (Point & { age: number })[];
-    parent?: Point;
+    parent?: Point | null;
+    /** The two building cards of the welcome's choice view (null on the age view) and its "Wróć". */
+    choices?: Record<'house' | 'space', Point> | null;
+    choiceBack?: Point | null;
     settingsIcon?: Point;
 }
 interface Hook { snapshot: Snapshot; targets: Targets; backdropPixel: [number, number, number, number] }
@@ -392,7 +398,7 @@ export const tapNext = async (page: Page): Promise<void> => {
 };
 
 /** Taps `point` once the hook has published it (targets are null while the thing is not on screen). */
-export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'coins' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots' | 'houseCells'>): Promise<void> => {
+export const tapTarget = async (page: Page, key: Exclude<keyof Targets, 'tiles' | 'keys' | 'selectTiles' | 'drag' | 'clock' | 'coins' | 'ages' | 'parent' | 'settingsIcon' | 'thumbs' | 'slots' | 'houseCells' | 'choices'>): Promise<void> => {
     await expect.poll(async () => (await targets(page))[key]).not.toBeNull();
     await tapScene(page, (await targets(page))[key]!);
 };

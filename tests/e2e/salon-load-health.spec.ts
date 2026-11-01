@@ -51,7 +51,8 @@ test.describe('picture that never answers', () => {
         // The request is held open: the file hangs instead of failing.
         await page.route('**/assets/rooms/salon/shadows.webp', () => {});
         await passWelcome(page, { e2eArt: 'stall', e2eVariant: 'off' });
-        await expect.poll(async () => (await snapshot(page)).roomArtHealth?.missing ?? 0).toBeGreaterThanOrEqual(1);
+        // The chosen room loads at runtime after the choice (S-28), with the 12 s file limit: wait past it.
+        await expect.poll(async () => (await snapshot(page)).roomArtHealth?.missing ?? 0, { timeout: 40_000 }).toBeGreaterThanOrEqual(1);
         const health = (await snapshot(page)).roomArtHealth!;
         expect(health.total).toBeGreaterThan(health.missing);
         await screenIs(page, 'task');

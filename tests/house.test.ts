@@ -1,8 +1,9 @@
 // House rules (F-04 rooms-as-data phase 1). Oracle: two synthetic rooms and literal lists written out here, never data read
 // from src/data. A room is "in renovation" while it is the first known room of the house that is not done.
 import { describe, expect, it } from 'vitest';
-import { houseEqual, houseLayout, houseRoomList, mergeHouse, nextRoom, roomInRenovation } from '../src/core/house';
+import { buildingStart, houseEqual, houseLayout, houseRoomIds, houseRoomList, mergeHouse, nextRoom, roomInRenovation } from '../src/core/house';
 import { emptyRoomState } from '../src/core/rooms';
+import { freshSession } from '../src/core/save';
 import type { HouseState, RoomDef, RoomState } from '../src/core/types';
 import { TEST_ROOM_PARTS } from './roomFixtures';
 
@@ -119,5 +120,56 @@ describe('houseEqual', () => {
         up.rooms[1].floor = 1;
         expect(houseEqual(house('a', 'b'), up)).toBe(false);
         expect(houseEqual(house('a', 'b'), house('a'))).toBe(false);
+    });
+});
+
+describe('houseRoomIds', () => {
+    const cell = (room: string, place: number) => ({ room, floor: 0, place });
+    it('lists the known rooms in house order, skipping unknown ones', () => {
+        const house: HouseState = { id: 'h', rooms: [cell('a', 0), cell('unknown', 1), cell('b', 2)] };
+        expect(houseRoomIds(house, known)).toEqual(['a', 'b']);
+    });
+    it('is empty for an all-unknown house', () => {
+        expect(houseRoomIds({ id: 'h', rooms: [cell('x', 0), cell('y', 1)] }, known)).toEqual([]);
+    });
+    it('does not mutate its input and returns a fresh array', () => {
+        const house: HouseState = { id: 'h', rooms: [cell('a', 0), cell('b', 1)] };
+        const before = structuredClone(house);
+        const a = houseRoomIds(house, known);
+        expect(house).toEqual(before);
+        a.push('z');
+        expect(houseRoomIds(house, known)).toEqual(['a', 'b']);
+    });
+});
+
+describe('buildingStart (S-28)', () => {
+    const choices = [{ id: 'house' as const, house: 'h1', art: 'a' }, { id: 'space' as const, house: 'b1', art: 'b' }];
+    const houses: HouseState[] = [
+        { id: 'h1', rooms: [{ room: 'salon', floor: 0, place: 0 }] },
+        { id: 'b1', rooms: [{ room: 'bridge', floor: 0, place: 0 }] },
+    ];
+    it('space starts in the first room of its house, with that room empty (literal)', () => {
+        expect(buildingStart('space', choices, houses)).toEqual({
+            house: { id: 'b1', rooms: [{ room: 'bridge', floor: 0, place: 0 }] },
+            rooms: { bridge: { tasksDone: 0, chosen: {} } },
+            currentRoom: 'bridge',
+        });
+    });
+    it('house starts in the salon and returns a copy of the house', () => {
+        const start = buildingStart('house', choices, houses);
+        expect(start.currentRoom).toBe('salon');
+        expect(start.rooms).toEqual({ salon: { tasksDone: 0, chosen: {} } });
+        expect(start.house).not.toBe(houses[0]);
+    });
+    it('gives the house, rooms and current room freshSession gives for that house (impl-review: the two must not drift)', () => {
+        for (const id of ['house', 'space'] as const) {
+            const house = houses.find((h) => h.id === choices.find((c) => c.id === id)!.house)!;
+            const fresh = freshSession(house, 7);
+            expect(buildingStart(id, choices, houses)).toEqual({ house: fresh.house, rooms: fresh.rooms, currentRoom: fresh.currentRoom });
+        }
+    });
+    it('throws a named error on an unknown choice or house', () => {
+        expect(() => buildingStart('moon' as 'house', choices, houses)).toThrow(/unknown building choice/);
+        expect(() => buildingStart('space', choices, [houses[0]])).toThrow(/unknown or empty house/);
     });
 });

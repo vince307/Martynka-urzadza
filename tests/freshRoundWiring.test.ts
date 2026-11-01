@@ -54,4 +54,9 @@ describe('freshRound art wiring (ASL-01)', () => {
         expect(text.indexOf('console.warn')).toBeGreaterThan(text.indexOf('buildWordRound'));
         expect(text.indexOf('console.warn')).toBeLessThan(text.indexOf("kind === 'dice'"));
     });
+
+    it('reads no building state: not the house, the rooms nor the current room (FR-050)', () => {
+        const text = freshRound.getText(source);
+        for (const key of ['REGISTRY_KEYS.house', 'REGISTRY_KEYS.currentRoom', 'REGISTRY_KEYS.rooms']) expect(text, key).not.toContain(key);
+    });
 });

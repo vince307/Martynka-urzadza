@@ -13,19 +13,20 @@ test.use({ serviceWorkers: 'block' });
 test('#15 S-16c the loading screen shows the background and the emblem while the rest still loads', async ({ page }) => {
     await silenceSpeech(page);
     const held: Route[] = [];
-    await page.route('**/assets/rooms/salon/*.webp', (route) => {
+    // A fresh install boots the two choice cards instead of a room (S-28); holding them keeps the loading screen up.
+    await page.route('**/assets/choice/*.webp', (route) => {
         held.push(route);
     });
     await page.goto('./?e2eVariant=off');
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
-    // The room pictures are held, so the screen is still the loading screen, and both pictures of it are already drawn.
+    // The choice pictures are held, so the screen is still the loading screen, and both pictures of it are already drawn.
     await expect.poll(async () => (await snapshot(page)).loading?.art, { timeout: 15_000 }).toEqual({ background: true, emblem: true });
     expect((await snapshot(page)).screen).toBe('loading');
     expect(held.length).toBeGreaterThan(0);
     for (const route of held) {
         await route.continue();
     }
-    // The released room pictures still have to arrive and decode: wait past the default 5 s.
+    // The released pictures still have to arrive and decode: wait past the default 5 s.
     await expect.poll(async () => (await snapshot(page)).screen, { timeout: 30_000 }).toBe('welcome');
     await expect(page.getByRole('alertdialog')).toHaveCount(0);
 });

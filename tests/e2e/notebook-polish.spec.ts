@@ -36,10 +36,10 @@ const playRound = async (page: Page): Promise<void> => {
     await screenIs(page, 'summary');
 };
 
-test('#12 the welcome screen stands over the salon backdrop and an age tap starts the game', async ({ page }) => {
+test('#12 the welcome screen stands over the plain page backdrop (a fresh install boots no room) and an age tap starts the game', async ({ page }) => {
     await openWelcome(page, 9);
-    await expect.poll(async () => (await snapshot(page)).backdrop?.mode).toBe('salon');
-    expect((await snapshot(page)).backdrop!.captures).toBeGreaterThan(0);
+    // S-28 (plan decision P5): the room of the chosen building loads during the first round, so the welcome has no salon to blur.
+    expect((await snapshot(page)).backdrop).toMatchObject({ mode: 'plain', captures: 0 });
     await passWelcomeAsChild(page, 6, 9);
     expect((await snapshot(page)).screen).toBe('task');
 });
@@ -70,8 +70,9 @@ test('#11 the summary buttons answer the first tap, while the stars pop', async 
 test('#11 the backdrop is captured again after a purchase in the room', async ({ page }) => {
     await passWelcome(page, { e2eStars: SALON_PURCHASE_STARS, e2eVariant: 'off' });
     await phaseIs(page, 'first');
+    // The chosen room loads during the first round (S-28): the backdrop turns to the salon when it has arrived.
+    await expect.poll(async () => (await snapshot(page)).backdrop?.mode).toBe('salon');
     const before = (await snapshot(page)).backdrop;
-    expect(before?.mode).toBe('salon');
     await answerRight(page);
     await phaseIs(page, 'done');
     await tapTarget(page, 'roomSwitch');

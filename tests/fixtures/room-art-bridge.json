@@ -1,0 +1,149 @@
+[
+    {
+        "key": "bridge/before",
+        "url": "assets/rooms/bridge/bridge-before.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "bridge/after",
+        "url": "assets/rooms/bridge/bridge-after.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "bridge/shadows",
+        "url": "assets/rooms/bridge/bridge-shadows.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "bridge/bridge-console-natural",
+        "url": "assets/rooms/bridge/bridge-console-natural.webp",
+        "width": 588,
+        "height": 382,
+        "label": "pulpit sterowniczy Naturalny"
+    },
+    {
+        "key": "bridge/bridge-console-sunny",
+        "url": "assets/rooms/bridge/bridge-console-sunny.webp",
+        "width": 588,
+        "height": 382,
+        "label": "pulpit sterowniczy Słoneczny"
+    },
+    {
+        "key": "bridge/bridge-console-mint",
+        "url": "assets/rooms/bridge/bridge-console-mint.webp",
+        "width": 588,
+        "height": 382,
+        "label": "pulpit sterowniczy Miętowy"
+    },
+    {
+        "key": "bridge/bridge-chair-natural",
+        "url": "assets/rooms/bridge/bridge-chair-natural.webp",
+        "width": 212,
+        "height": 232,
+        "label": "fotel pilota Naturalny"
+    },
+    {
+        "key": "bridge/bridge-chair-sunny",
+        "url": "assets/rooms/bridge/bridge-chair-sunny.webp",
+        "width": 212,
+        "height": 232,
+        "label": "fotel pilota Słoneczny"
+    },
+    {
+        "key": "bridge/bridge-chair-mint",
+        "url": "assets/rooms/bridge/bridge-chair-mint.webp",
+        "width": 212,
+        "height": 232,
+        "label": "fotel pilota Miętowy"
+    },
+    {
+        "key": "bridge/bridge-telescope-natural",
+        "url": "assets/rooms/bridge/bridge-telescope-natural.webp",
+        "width": 232,
+        "height": 319,
+        "label": "teleskop Naturalny"
+    },
+    {
+        "key": "bridge/bridge-telescope-sunny",
+        "url": "assets/rooms/bridge/bridge-telescope-sunny.webp",
+        "width": 232,
+        "height": 319,
+        "label": "teleskop Słoneczny"
+    },
+    {
+        "key": "bridge/bridge-telescope-mint",
+        "url": "assets/rooms/bridge/bridge-telescope-mint.webp",
+        "width": 232,
+        "height": 319,
+        "label": "teleskop Miętowy"
+    },
+    {
+        "key": "bridge/bridge-shelf-natural",
+        "url": "assets/rooms/bridge/bridge-shelf-natural.webp",
+        "width": 253,
+        "height": 482,
+        "label": "regał z planetami Naturalny"
+    },
+    {
+        "key": "bridge/bridge-shelf-sunny",
+        "url": "assets/rooms/bridge/bridge-shelf-sunny.webp",
+        "width": 253,
+        "height": 482,
+        "label": "regał z planetami Słoneczny"
+    },
+    {
+        "key": "bridge/bridge-shelf-mint",
+        "url": "assets/rooms/bridge/bridge-shelf-mint.webp",
+        "width": 253,
+        "height": 482,
+        "label": "regał z planetami Miętowy"
+    },
+    {
+        "key": "bridge/bridge-rug-natural",
+        "url": "assets/rooms/bridge/bridge-rug-natural.webp",
+        "width": 562,
+        "height": 312,
+        "label": "mata orbitalna Naturalna"
+    },
+    {
+        "key": "bridge/bridge-rug-sunny",
+        "url": "assets/rooms/bridge/bridge-rug-sunny.webp",
+        "width": 562,
+        "height": 312,
+        "label": "mata orbitalna Słoneczna"
+    },
+    {
+        "key": "bridge/bridge-rug-mint",
+        "url": "assets/rooms/bridge/bridge-rug-mint.webp",
+        "width": 562,
+        "height": 312,
+        "label": "mata orbitalna Miętowa"
+    },
+    {
+        "key": "bridge/bridge-plants-natural",
+        "url": "assets/rooms/bridge/bridge-plants-natural.webp",
+        "width": 290,
+        "height": 322,
+        "label": "kapsuła roślinna Naturalna"
+    },
+    {
+        "key": "bridge/bridge-plants-sunny",
+        "url": "assets/rooms/bridge/bridge-plants-sunny.webp",
+        "width": 290,
+        "height": 322,
+        "label": "kapsuła roślinna Słoneczna"
+    },
+    {
+        "key": "bridge/bridge-plants-mint",
+        "url": "assets/rooms/bridge/bridge-plants-mint.webp",
+        "width": 290,
+        "height": 322,
+        "label": "kapsuła roślinna Miętowa"
+    }
+]

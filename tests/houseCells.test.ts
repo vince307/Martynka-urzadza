@@ -66,11 +66,13 @@ describe('HOUSE_GEOMETRY data', () => {
     const g = HOUSE_GEOMETRY['house-1'];
     const overlap = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
         a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-    it('has a geometry for every house', () => {
-        for (const h of HOUSES) expect(HOUSE_GEOMETRY[h.id]).toBeDefined();
+    // S-29 adds the base geometry and drops this pin.
+    const drawn = HOUSES.filter((h) => HOUSE_GEOMETRY[h.id] !== undefined);
+    it('has a geometry for every house but the base, whose cross-section comes in S-29', () => {
+        expect(HOUSES.filter((h) => HOUSE_GEOMETRY[h.id] === undefined).map((h) => h.id)).toEqual(['base-1']);
     });
-    it('has a cell for every place of every house', () => {
-        for (const h of HOUSES) for (const p of h.rooms) expect(HOUSE_GEOMETRY[h.id].cells.some((c) => c.floor === p.floor && c.place === p.place)).toBe(true);
+    it('has a cell for every place of every house with a geometry', () => {
+        for (const h of drawn) for (const p of h.rooms) expect(HOUSE_GEOMETRY[h.id].cells.some((c) => c.floor === p.floor && c.place === p.place)).toBe(true);
     });
     it('cells lie inside the scene, clear of each other and of the stairwell, 608x342', () => {
         for (const c of g.cells) {

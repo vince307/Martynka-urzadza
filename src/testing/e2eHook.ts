@@ -1,6 +1,7 @@
 import saveV1Fixture from '../../tests/fixtures/save-v1.json';
 import saveV2LegacySalonFixture from '../../tests/fixtures/save-v2-legacy-salon.json';
 import saveV4SalonFixture from '../../tests/fixtures/save-v4-salon.json';
+import saveV5SalonFixture from '../../tests/fixtures/save-v5-salon.json';
 import type { Game } from 'phaser';
 import type { Autosaver, AutosaveStatus, BackupRecord, SaveStore } from '../core/autosave';
 import type { ArtHealth } from '../core/artHealth';
@@ -104,15 +105,15 @@ export const e2eVariant = (search: string): E2EVariantSeam | null => {
     return value !== null && E2E_VARIANT_SEAMS.includes(value) ? (value as E2EVariantSeam) : null;
 };
 
-export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui' | 'house';
+export type E2EArtSeam = 'missing' | 'corrupt' | 'room' | 'stall' | 'stallall' | 'ui' | 'house' | 'choice';
 
 /**
- * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no room picture, at boot or at runtime; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
+ * `?e2eArt=missing` queues no task drawing at all; `?e2eArt=room` queues no room picture, at boot or at runtime; `?e2eArt=choice` queues no first-building choice card; `?e2eArt=ui` points the wallet, notebook and salon thumbnail at a file that is not on the server (the two loading pictures load); `?e2eArt=corrupt` points the coins at a file that is no image
  * (200 and a decode failure, no load error); `?e2eArt=stall` only shortens the loader limit (the spec itself makes a file hang); `?e2eArt=stallall` switches the per-file limit off and shortens the total boot limit (E2E_BOOT_LIMITS). Anything else is null.
  */
 export const e2eArt = (search: string): E2EArtSeam | null => {
     const value = new URLSearchParams(search).get('e2eArt');
-    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' || value === 'house' ? value : null;
+    return value === 'missing' || value === 'corrupt' || value === 'room' || value === 'stall' || value === 'stallall' || value === 'ui' || value === 'house' || value === 'choice' ? value : null;
 };
 
 /** The address `?e2eArt=ui` gives the screen pictures: no such file is served, so each fails with a 404. */
@@ -124,8 +125,8 @@ export const E2E_LOADER_TIMEOUT_MS = 2000;
 /** The boot limits under `?e2eArt=stallall`: the slow line after 0.5 s, the total cut after 3 s. */
 export const E2E_BOOT_LIMITS = { slowAfterMs: 500, totalMs: 3000 } as const;
 
-export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon';
-const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon'];
+export type E2ESaveSeam = 'unreadable' | 'corrupt' | 'unavailable' | 'hang' | 'writefail' | 'writehang' | 'v1' | 'backupfail' | 'backuphang' | 'slow' | 'slowfail' | 'legacy-salon' | 'newer' | 'v4-salon' | 'v5-salon';
+const E2E_SAVE_SEAMS: readonly string[] = ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v4-salon', 'v5-salon'];
 
 /** The read limit under `?e2eSave=hang`, so the e2e run does not wait the real 5 s. */
 export const E2E_LOAD_TIMEOUT_MS = 300;
@@ -142,7 +143,7 @@ export const E2E_WRITE_TIMEOUT_MS = 300;
 /**
  * `?e2eSave=` makes the e2e build start with an in-memory store instead of IndexedDB: `unreadable` (a save from a
  * future version), `corrupt` (a save of the current version whose stars field is bad; the migrated-corrupt path is covered by unit tests), `unavailable` (the read rejects), `hang` (the read never answers), `writefail` (a fresh start whose
- * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `slowfail` (the read rejects with UnknownError after `E2E_SLOW_READ_MS`, past the first limit: the late read error behind the slow card), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done), `v4-salon` (the frozen v4 save with a salon in progress, so the current build meets a real v4 save and lifts it to v5). Anything else is null.
+ * writes reject), `writehang` (a fresh start whose writes never answer), `v1` (the frozen v1 fixture, so the current build meets a real v1 save and migrates it), `backupfail` and `backuphang` (the same v1 fixture, but the copy of it rejects with QuotaExceededError or never answers; writes work), `newer` (a fresh start whose first write succeeds and then leaves a newer version stored, as another tab would: every later write rejects with NewerSave), `slowfail` (the read rejects with UnknownError after `E2E_SLOW_READ_MS`, past the first limit: the late read error behind the slow card), `legacy-salon` (a v2 save from before S-16a: the old salon list with 4 tasks done), `v4-salon` (the frozen v4 save with a salon in progress, so the current build meets a real v4 save and lifts it to v5), `v5-salon` (the frozen v5 save with a salon in progress, so the current build meets a real v5 save and lifts it to v6). Anything else is null.
  */
 export const e2eSave = (search: string): E2ESaveSeam | null => {
     const value = new URLSearchParams(search).get('e2eSave');
@@ -171,7 +172,9 @@ export const e2eSaveStore = (seam: E2ESaveSeam): SaveStore => {
                   ? structuredClone(saveV2LegacySalonFixture) // frozen v2 bytes from before S-16a: 4 of the old 10 salon tasks done
                   : seam === 'v4-salon'
                     ? structuredClone(saveV4SalonFixture) // frozen v4 bytes: a salon in progress, no house yet
-                    : undefined;
+                    : seam === 'v5-salon'
+                      ? structuredClone(saveV5SalonFixture) // frozen v5 bytes: a salon in progress in house-1, no building choice yet
+                      : undefined;
     const log: E2ESaveStoreLog = { ops: [], writtenVersion: null, writtenHouse: null };
     const copies = new Map<number, unknown>();
     let record: BackupRecord | null = null;
@@ -308,7 +311,7 @@ export const installE2EHook = (game: Game): void => {
                 }
                 // On the welcome there is no round and no HUD yet: task() and ui() must not be called.
                 if (onWelcome()) {
-                    return Object.freeze({ screen: 'welcome' as const, backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), artFallbacks: artFallbacksSnapshot(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
+                    return Object.freeze({ screen: 'welcome' as const, ...welcome().viewState(), backdrop: Object.freeze(welcome().backdropState()), learner: learner(), settings: settings(), inputEnabled: inputEnabled(), artFallbacks: artFallbacksSnapshot(), save: save(), artHealth: artHealthSnapshot(), sw: swSnapshot(), bootLoad: bootLoadSnapshot(), fontHealth: fontHealthSnapshot(), sound: soundSnapshot() });
                 }
                 const round = task().snapshot();
                 const screen = inHouse() ? 'house' : inRoom() ? 'room' : round.unlock ? 'unlock' : round.summary ? 'summary' : 'task';
@@ -324,8 +327,8 @@ export const installE2EHook = (game: Game): void => {
             },
             get targets() {
                 if (onWelcome()) {
-                    const { ages, parent } = welcome().targets();
-                    return Object.freeze({ ages, parent });
+                    const { ages, parent, choices, choiceBack } = welcome().targets();
+                    return Object.freeze({ ages, parent, choices, choiceBack });
                 }
                 const round = task().targets();
                 return Object.freeze({
@@ -334,7 +337,7 @@ export const installE2EHook = (game: Game): void => {
                     nextRound: inRoom() || inHouse() ? null : round.nextRound,
                     toRoom: inRoom() || inHouse() ? null : round.toRoom,
                     unlockNext: inRoom() || inHouse() ? null : round.unlockNext,
-                    ageBack: inRoom() || inHouse() ? null : round.ageBack,
+                    themeBack: inRoom() || inHouse() ? null : round.themeBack,
                     resume: inRoom() ? room().resumeTarget() : null,
                     taskButton: inRoom() ? room().taskButtonTarget() : null,
                     thumbs: inRoom() ? room().thumbTargets() : [],

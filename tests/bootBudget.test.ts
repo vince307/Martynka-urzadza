@@ -1,6 +1,7 @@
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { CHOICE_ART } from '../src/data/choiceArt';
 import { balance } from '../src/data/balance';
 import { FONT_URL } from '../src/data/layout';
 import { bootRoomArt } from '../src/data/roomArt';
@@ -30,5 +31,15 @@ describe('boot payload budget', () => {
         const seconds = bytes / COLD_START_BYTES_PER_S;
         const limit = (balance.loader.totalMs - HEADROOM_MS) / 1000;
         expect(seconds, `room ${room}: boot payload ${bytes} B = ${seconds.toFixed(1)} s at 50 KB/s, limit ${limit} s (totalMs - headroom)`).toBeLessThanOrEqual(limit);
+    });
+});
+
+describe('fresh install boot payload', () => {
+    it('loads the task and screen pictures, the choice cards, the font and the boot sounds (no room) within the same limit', () => {
+        const pictures = [...TASK_ART, ...CHOICE_ART, ...UI_ART].reduce((sum, art) => sum + size(art.url), 0);
+        const sounds = SOUNDS.filter((sound) => sound.boot).reduce((sum, sound) => sum + Math.max(size(sound.urls[0]), size(sound.urls[1])), 0);
+        const seconds = (pictures + size(FONT_URL) + sounds) / COLD_START_BYTES_PER_S;
+        const limit = (balance.loader.totalMs - HEADROOM_MS) / 1000;
+        expect(seconds, `fresh install: ${seconds.toFixed(1)} s, limit ${limit} s`).toBeLessThanOrEqual(limit);
     });
 });

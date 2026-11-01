@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROOM_ART, ROOM_SCENE_FILES, roomArt } from '../src/data/roomArt';
 import { ROOMS } from '../src/data/rooms';
+import bridgeSnapshot from './fixtures/room-art-bridge.json';
 import kitchenSnapshot from './fixtures/room-art-kitchen.json';
 import salonSnapshot from './fixtures/room-art-salon.json';
 
@@ -37,7 +38,8 @@ describe('room art table', () => {
     it('equals the snapshot of each room (the salon one taken before the per-room refactor, the kitchen one from the pack manifest)', () => {
         expect(roomArt(ROOMS.salon)).toEqual(salonSnapshot);
         expect(roomArt(ROOMS.kitchen)).toEqual(kitchenSnapshot);
-        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot]);
+        expect(roomArt(ROOMS.bridge)).toEqual(bridgeSnapshot);
+        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot, ...bridgeSnapshot]);
     });
 
     it('has a scene-file row for every room of the data', () => {
@@ -46,9 +48,10 @@ describe('room art table', () => {
         }
     });
 
-    it('has 37 salon and 21 kitchen entries, each a WebP file of the tabled size', () => {
+    it('has 37 salon, 21 kitchen and 21 bridge entries, each a WebP file of the tabled size', () => {
         expect(roomArt(ROOMS.salon)).toHaveLength(37);
         expect(roomArt(ROOMS.kitchen)).toHaveLength(21);
+        expect(roomArt(ROOMS.bridge)).toHaveLength(21);
         for (const art of ROOM_ART) {
             expect(webpSize(readFileSync(join(PUBLIC, art.url))), art.url).toEqual({ width: art.width, height: art.height });
         }

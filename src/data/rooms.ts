@@ -101,5 +101,35 @@ export const KITCHEN: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN };
+// The Mostek (S-28): the bridge of the space base from the art pack bystrow-space-base-v1 (manifest room `bridge`), geometry copied slot by slot.
+// Texture keys are `bridge/<file id>`. No fixed decoration, no worn look and no contact shadows: the pack has none.
+const bridgeSlots: SlotDef[] = [
+    { id: 'bridge-console', x: 764, y: 294, width: 588, height: 382, z: 20, anchor: [294, 366], visibleRect: [16, 16, 556, 350], variants: ['bridge/bridge-console-natural', 'bridge/bridge-console-sunny', 'bridge/bridge-console-mint'] },
+    { id: 'bridge-chair', x: 889, y: 434, width: 212, height: 232, z: 30, anchor: [106, 216], visibleRect: [16, 16, 180, 200], variants: ['bridge/bridge-chair-natural', 'bridge/bridge-chair-sunny', 'bridge/bridge-chair-mint'] },
+    { id: 'bridge-telescope', x: 369, y: 359, width: 232, height: 319, z: 18, anchor: [116, 303], visibleRect: [16, 16, 200, 287], variants: ['bridge/bridge-telescope-natural', 'bridge/bridge-telescope-sunny', 'bridge/bridge-telescope-mint'] },
+    { id: 'bridge-shelf', x: 1359, y: 234, width: 253, height: 482, z: 15, anchor: [126, 466], visibleRect: [16, 16, 221, 450], variants: ['bridge/bridge-shelf-natural', 'bridge/bridge-shelf-sunny', 'bridge/bridge-shelf-mint'] },
+    { id: 'bridge-rug', x: 569, y: 609, width: 562, height: 312, z: 5, anchor: [281, 296], visibleRect: [16, 16, 530, 280], variants: ['bridge/bridge-rug-natural', 'bridge/bridge-rug-sunny', 'bridge/bridge-rug-mint'] },
+    { id: 'bridge-plants', x: 1234, y: 644, width: 290, height: 322, z: 40, anchor: [145, 306], visibleRect: [16, 16, 258, 290], variants: ['bridge/bridge-plants-natural', 'bridge/bridge-plants-sunny', 'bridge/bridge-plants-mint'] },
+];
+
+export const BRIDGE: RoomDef = {
+    id: 'bridge',
+    scene: { before: 'bridge/before', after: 'bridge/after', shadows: 'bridge/shadows' },
+    decor: [],
+    slots: bridgeSlots,
+    worn: [],
+    contactShadows: [],
+    // Costs 6-21 = 100 stars (FR-044): each above the salon's task at the same index, the first within one clean round.
+    tasks: [
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 6 },
+        { kind: 'slot', id: 'place-console', slot: 'bridge-console', label: 'placeConsole', cost: 10 },
+        { kind: 'slot', id: 'place-pilot-chair', slot: 'bridge-chair', label: 'placePilotChair', cost: 13 },
+        { kind: 'slot', id: 'set-up-telescope', slot: 'bridge-telescope', label: 'setUpTelescope', cost: 14 },
+        { kind: 'slot', id: 'place-planet-shelf', slot: 'bridge-shelf', label: 'placePlanetShelf', cost: 17 },
+        { kind: 'slot', id: 'lay-orbit-mat', slot: 'bridge-rug', label: 'layOrbitMat', cost: 19 },
+        { kind: 'slot', id: 'set-up-plant-pod', slot: 'bridge-plants', label: 'setUpPlantPod', cost: 21 },
+    ],
+};
+
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [BRIDGE.id]: BRIDGE };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;

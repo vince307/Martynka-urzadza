@@ -87,9 +87,13 @@ export const sectionState = (views: readonly (ArtHealthView | undefined)[]): 'ok
 };
 
 /** The boot queue groups, in the order the scene queues them (audit B-6): sounds last, so a slow link cuts the quiet effects first. */
-export type BootGroup = 'loadingArt' | 'font' | 'task' | 'room' | 'ui' | 'sound';
+export type BootGroup = 'loadingArt' | 'font' | 'task' | 'choice' | 'room' | 'ui' | 'sound';
 
-const QUEUE_ORDER: readonly BootGroup[] = ['loadingArt', 'font', 'task', 'room', 'ui', 'sound'];
+const QUEUE_ORDER: readonly BootGroup[] = ['loadingArt', 'font', 'task', 'choice', 'room', 'ui', 'sound'];
+
+/** The groups a start queues: a fresh install (no learner) boots the two choice cards and no room, a returning player boots as before. */
+export const bootGroups = (placementNeeded: boolean): BootGroup[] =>
+    placementNeeded ? ['loadingArt', 'font', 'task', 'choice', 'ui', 'sound'] : ['loadingArt', 'font', 'task', 'room', 'ui', 'sound'];
 
 export const bootQueue = (groups: readonly BootGroup[]): BootGroup[] => QUEUE_ORDER.filter((group) => groups.includes(group));
 

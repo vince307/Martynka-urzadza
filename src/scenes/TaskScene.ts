@@ -3,7 +3,7 @@ import { initialClockSet, stepClockSet, type ClockSetEvent, type ClockSetGeo, ty
 import { clockSetLayout } from '../core/round/pictureLayout';
 import { initialBlockDrag, stepBlockDrag, type BlockDragEvent, type BlockDragState, type Mat } from '../core/blockDrag';
 import type { InputSuspender } from '../core/inputSuspend';
-import { ageBackOffered, previousStage, type SessionLearner } from '../core/placement';
+import { previousStage, themeBackOffered, type SessionLearner } from '../core/placement';
 import { createRng, type Rng } from '../core/rng';
 import { nextTaskCost } from '../core/rooms';
 import { earn } from '../core/stars';
@@ -149,7 +149,7 @@ export interface TaskTargets {
     readonly doneNext: Point | null;   // "Kolejna runda" of a minigame's done card
     readonly doneRoom: Point | null;
     readonly unlockNext: Point | null;
-    readonly ageBack: Point | null;   // "Wróć" to the age choice (null while hidden)
+    readonly themeBack: Point | null;   // "Wróć" to the building choice (null while hidden)
 }
 
 /**
@@ -192,7 +192,7 @@ export class TaskScene extends Scene {
     private board!: CoverBoard;
     private doneCard!: MinigameDoneCard;
     private unlockCard!: UnlockCard;
-    private ageBack!: PageButton;   // "Wróć" to the age choice: warm-up and first round of a child-placed learner (F-02 b)
+    private themeBack!: PageButton;   // "Wróć" to the building choice: until the first round ends or something is bought (FR-043)
     private unlockShown = false;   // the "Nowa umiejętność!" card is open: render() draws it instead of the summary
     private promptTexts: GameObjects.Text[] = [];
     private promptBoxes: GameObjects.Graphics[] = [];
@@ -264,8 +264,14 @@ export class TaskScene extends Scene {
         // A lost and restored WebGL context empties every texture; the backdrop is drawn again at once, awake or asleep (audit B-1).
         const onRestore = (): void => this.refreshBackdrop('restore');
         this.game.renderer.on(Renderer.Events.RESTORE_WEBGL, onRestore);
+        // A fresh install boots no room (S-28): the chosen room arrives during the first round and the backdrop shows it as soon as it has loaded.
+        const onRoomLoad = (): void => {
+            if (this.registry.get(REGISTRY_KEYS.roomLoad) !== this.backdropRoomLoad) this.refreshBackdrop();
+        };
+        this.registry.events.on(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         this.events.once('shutdown', () => {
             this.game.renderer.off(Renderer.Events.RESTORE_WEBGL, onRestore);
+            this.registry.events.off(`changedata-${REGISTRY_KEYS.roomLoad}`, onRoomLoad);
         });
         drawNotebook(this);
         this.guide = new GuideFox(this);
@@ -303,7 +309,7 @@ export class TaskScene extends Scene {
         this.diceView = new Dice(this);
         this.board = new CoverBoard(this, balance.variants.dice.max + 1, (value) => this.submit(value));
         this.unlockCard = new UnlockCard(this, () => { this.tap(); this.closeUnlock(); });
-        this.ageBack = new PageButton(this, () => { this.tap(); this.backToAge(); });
+        this.themeBack = new PageButton(this, () => { this.tap(); this.backToChoice(); });
         this.render();
         // The child's tap on an age (welcome) was the gesture that unlocks speech: the first task may be read.
         this.autoReadFirst();
@@ -391,24 +397,30 @@ export class TaskScene extends Scene {
         }
     }
 
-    /** "Wróć" shows while the pure rule (core/placement ageBackOffered) holds for the saved learner and variants. */
-    private renderAgeBack(): void {
+    /** "Wróć" shows while the pure rule (core/placement themeBackOffered) holds for the saved learner, variants and rooms. */
+    private renderThemeBack(): void {
         const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | null | undefined;
         const variants = this.registry.get(REGISTRY_KEYS.variants) as VariantState | undefined;
-        if (learner && variants && ageBackOffered(learner, variants, balance.warmup.length)) {
-            const { left, top, ...size } = TASK_LAYOUT.ageBack;
-            this.ageBack.show(pl.round.ageBack, left, top, 'secondary', false, size);
+        const rooms = this.registry.get(REGISTRY_KEYS.rooms) as Record<string, RoomState> | undefined;
+        if (learner && variants && rooms && themeBackOffered(learner, variants, balance.warmup.length, rooms)) {
+            const { left, top, ...size } = TASK_LAYOUT.themeBack;
+            this.themeBack.show(pl.round.themeBack, left, top, 'secondary', false, size);
         } else {
-            this.ageBack.hide();
+            this.themeBack.hide();
         }
     }
 
     /**
-     * "Wróć": the child leaves for the age choice. The open round is dropped as it is (no advance, finishRound, countRound
+     * "Wróć": the child leaves for the building choice (the placement is kept). The open round is dropped as it is (no advance, finishRound, countRound
      * or applyRound: nothing of it reaches mastery, history or the variant count), the stars stay. Order: cleanup,
      * learner null (set, not remove: the autosaver listens to changedata), flush, stop UI and Room, start the welcome.
      */
-    private backToAge(): void {
+    private backToChoice(): void {
+        const learner = this.registry.get(REGISTRY_KEYS.learner) as SessionLearner | null | undefined;
+        const placed = learner
+            ? { age: learner.age, stage: learner.stage, stageOverriddenByParent: learner.stageOverriddenByParent, warmupPending: learner.warmupPending }
+            : undefined;
+        console.info(`Back to the building choice (stage ${placed?.stage ?? 'unknown'}, placed by ${placed?.stageOverriddenByParent ? 'a parent' : 'the child'})`);
         this.narrator?.cancel();
         this.feedDrag({ type: 'reset' });
         this.endFlyingStars();
@@ -420,7 +432,9 @@ export class TaskScene extends Scene {
         void (this.registry.get(REGISTRY_KEYS.saver) as Pick<Autosaver, 'flush'> | undefined)?.flush('now');
         this.scene.stop(SCENE_KEYS.ui);
         this.scene.stop(SCENE_KEYS.room);
-        this.scene.start(SCENE_KEYS.welcome);
+        // The welcome opens the choice view with this placement. A child-placed learner keeps the choice view's own "Wróć" to the
+        // age, so a child who tapped the wrong age can still correct it (playtest F-02 b); a parent-placed one does not.
+        this.scene.start(SCENE_KEYS.welcome, { placed, fromAge: placed !== undefined && !placed.stageOverriddenByParent });
     }
 
     /** What the speaker reads in the current phase (core/narration decides; the words come from pl). */
@@ -434,7 +448,7 @@ export class TaskScene extends Scene {
     }
 
     private render(): void {
-        this.renderAgeBack();
+        this.renderThemeBack();
         const view = roundView(this.state, pl.round.resultLine);
         this.registry.set(REGISTRY_KEYS.hudTitle, variantTitle(this.kind, pl.minigames));
         this.registry.set(REGISTRY_KEYS.roomSwitch, view.switchVisible);
@@ -1297,7 +1311,7 @@ export class TaskScene extends Scene {
             doneNext: this.doneCard.targets().nextRound,
             doneRoom: this.doneCard.targets().toRoom,
             unlockNext: this.unlockCard.target(),
-            ageBack: this.ageBack.target(),
+            themeBack: this.themeBack.target(),
         });
     }
 

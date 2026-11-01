@@ -3,7 +3,7 @@ import { isExpression } from '../src/core/round/prompt';
 import { keypadGrid, tileRow } from '../src/ui/widgets/geometry';
 import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
-import { HOUSE_GEOMETRY } from '../src/data/houses';
+import { BUILDING_CHOICES, HOUSE_GEOMETRY } from '../src/data/houses';
 import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HOUSE_LAYOUT, HOUSE_TOUCH_TARGETS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
 
 describe('task screen layout constants', () => {
@@ -376,6 +376,39 @@ describe('task screen layout constants', () => {
         expect(top).toBeGreaterThanOrEqual(ages.top + ages.height + LIPS.age.offset);
     });
 
+    it('lays the welcome choice view out: cards, speaker and back are touch targets inside the notebook, clear of each other and of the title', () => {
+        const { title, cards, speaker, back } = WELCOME_LAYOUT.choice;
+        const cardH = cards.pictureHeight + cards.labelHeight;
+        expect(WELCOME_TOUCH_TARGETS.choiceCard).toEqual({ width: cards.pictureWidth, height: cardH });
+        expect(WELCOME_TOUCH_TARGETS.choiceSpeaker).toEqual({ width: speaker.width, height: speaker.height });
+        expect(WELCOME_TOUCH_TARGETS.choiceBack).toEqual({ width: back.width, height: back.height });
+        for (const t of [WELCOME_TOUCH_TARGETS.choiceCard, WELCOME_TOUCH_TARGETS.choiceSpeaker, WELCOME_TOUCH_TARGETS.choiceBack]) {
+            expect(t.width).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+            expect(t.height).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+        }
+        type R = { left: number; top: number; right: number; bottom: number };
+        const box = (left: number, top: number, width: number, height: number): R => ({ left, top, right: left + width, bottom: top + height });
+        const overlap = (a: R, b: R): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const nb = TASK_LAYOUT.notebook;
+        const face: R = { left: Math.max(CONTENT_LEFT, nb.left + nb.border), top: nb.top + nb.border, right: nb.left + nb.width - nb.border, bottom: nb.top + nb.height - nb.border };
+        const cardRects = BUILDING_CHOICES.map((_, i) => box(cards.left + i * (cards.pictureWidth + cards.gap), cards.top, cards.pictureWidth, cardH + LIPS.age.offset));
+        const titleRect = box(title.x - 560, title.y, 1120, FONT_SIZES.summaryTitle);   // generous width for "Co urządzamy najpierw?"
+        const rects = [...cardRects, box(speaker.left, speaker.top, speaker.width, speaker.height), box(back.left, back.top, back.width, back.height + 8)];
+        for (const r of rects) {
+            expect(r.left).toBeGreaterThanOrEqual(face.left);
+            expect(r.right).toBeLessThanOrEqual(face.right);
+            expect(r.top).toBeGreaterThanOrEqual(face.top);
+            expect(r.bottom).toBeLessThanOrEqual(face.bottom);
+            expect(overlap(r, titleRect)).toBe(false);
+        }
+        for (let i = 0; i < rects.length; i++) {
+            for (let j = i + 1; j < rects.length; j++) {
+                expect(overlap(rects[i], rects[j])).toBe(false);
+            }
+        }
+        expect(cards.gap).toBeGreaterThan(0);
+    });
+
     it('uses the kit tile height of 136 px, not smaller', () => {
         expect(TASK_LAYOUT.tiles.height).toBeGreaterThanOrEqual(136);
     });
@@ -451,13 +484,13 @@ describe('isExpression', () => {
     });
 });
 
-describe('"Wróć" to the age choice (F-02 b)', () => {
+describe('"Wróć" to the building choice (F-02 b, FR-043)', () => {
     it('is a touch target inside the left margin, clear of the notebook, above the build id caption', () => {
-        const { ageBack, notebook } = TASK_LAYOUT;
-        expect(TASK_TOUCH_TARGETS.ageBack).toEqual({ width: ageBack.width, height: ageBack.height });
-        expect(ageBack.left).toBeGreaterThanOrEqual(0);
-        expect(ageBack.left + ageBack.width).toBeLessThanOrEqual(notebook.left);
-        expect(ageBack.top + ageBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+        const { themeBack, notebook } = TASK_LAYOUT;
+        expect(TASK_TOUCH_TARGETS.themeBack).toEqual({ width: themeBack.width, height: themeBack.height });
+        expect(themeBack.left).toBeGreaterThanOrEqual(0);
+        expect(themeBack.left + themeBack.width).toBeLessThanOrEqual(notebook.left);
+        expect(themeBack.top + themeBack.height).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });
 
@@ -510,7 +543,7 @@ describe('page and age button lips (phase 5)', () => {
     });
 
     it('keeps the lip of "Wróć" above the build id caption', () => {
-        const { ageBack } = TASK_LAYOUT;
-        expect(ageBack.top + ageBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
+        const { themeBack } = TASK_LAYOUT;
+        expect(themeBack.top + themeBack.height + LIPS.page.offset).toBeLessThanOrEqual(GAME_HEIGHT - 24 - FONT_SIZES.caption);
     });
 });

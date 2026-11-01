@@ -379,7 +379,9 @@ export class RoomScene extends Scene {
         } else {
             this.modeButton.hide();
         }
-        if (blocked) {
+        const savedHouse = (this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE;
+        // The cross-section exists only for a building with geometry (data-driven: S-29 gives the space base one).
+        if (blocked || !Object.prototype.hasOwnProperty.call(HOUSE_GEOMETRY, savedHouse.id)) {
             this.houseButton.hide();
         } else {
             const { houseButton } = ROOM_LAYOUT;

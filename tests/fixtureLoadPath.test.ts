@@ -4,6 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { createStore, get, set } from 'idb-keyval';
 import { loadSave } from '../src/core/autosave';
 import { encodeSave, SAVE_VERSION } from '../src/core/save';
+import { houseLayout, houseRoomIds } from '../src/core/house';
+import { repairCurrentRoom } from '../src/core/rooms';
+import { needsPlacement } from '../src/core/placement';
+import { FIRST_HOUSE, HOUSES } from '../src/data/houses';
+import { ROOMS } from '../src/data/rooms';
 import { createIdbSaveStore } from '../src/storage/idb';
 
 // save-truth impl review: every frozen fixture, stored as an older build left it on a device, goes through the real load path
@@ -18,12 +23,12 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
 describe('frozen fixtures through the real load path', () => {
-    it.each(FIXTURES)('%s loads, keeps every earned value, writes v5 and keeps the old copy', async (name) => {
+    it.each(FIXTURES)('%s loads, keeps every earned value, writes v6 and keeps the old copy', async (name) => {
         const raw = read(name);
         const dbName = `fixture-load-${++n}`;
         await set('profile:default', raw, createStore(dbName, 'saves'));
@@ -58,5 +63,41 @@ describe('frozen fixtures through the real load path', () => {
             expect(await store.backup({ other: true }, outcome.migratedFrom)).toBe('kept');
             expect((await store.readBackups()).find((b) => b.from === outcome.migratedFrom)?.raw).toEqual(raw);
         }
+    });
+});
+
+// S-28 FR-049: a save from before the choice stays in its building, and the repair stays inside the building (as main.ts does it).
+describe('the building of a loaded save (FR-049)', () => {
+    const load = async (name: string) => {
+        const dbName = `fixture-building-${++n}`;
+        await set('profile:default', read(name), createStore(dbName, 'saves'));
+        const outcome = await loadSave(createIdbSaveStore({ dbName, storeName: 'saves', writer: 'tab:1' }));
+        if (outcome.kind !== 'loaded') throw new Error(`fixture ${name} did not load`);
+        return outcome.session;
+    };
+    const repair = (s: Awaited<ReturnType<typeof load>>) => {
+        const layout = houseLayout(s.house, HOUSES, FIRST_HOUSE);
+        return repairCurrentRoom(s, houseRoomIds(layout, ROOMS), layout.rooms[0].room);
+    };
+
+    it('save-v5-salon stays in house-1 and the salon, keeps its stars and needs no placement', async () => {
+        const raw = read('save-v5-salon');
+        const s = await load('save-v5-salon');
+        const r = repair(s);
+        expect(r.session.house.id).toBe('house-1');
+        expect(r.session.currentRoom).toBe('salon');
+        expect(r.repairedFrom).toBeNull();
+        expect(s.stars).toBe(raw.stars);
+        expect(needsPlacement(s.learner)).toBe(false);
+    });
+
+    it('save-v6 keeps its bridge, and a salon inside base-1 repairs to the bridge', async () => {
+        const s = await load('save-v6');
+        expect(s.house.id).toBe('base-1');
+        expect(repair(s).repairedFrom).toBeNull();
+        expect(repair(s).session.currentRoom).toBe('bridge');
+        const odd = repair({ ...s, currentRoom: 'salon' });
+        expect(odd.session.currentRoom).toBe('bridge');
+        expect(odd.repairedFrom).toBe('salon');
     });
 });

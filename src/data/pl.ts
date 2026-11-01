@@ -11,6 +11,8 @@ export const pl = {
     title: 'Bystrow',
     welcome: {
         question: 'Ile masz lat?',   // kit welcome.png
+        // DESIGN-GAP (docs/design-gaps.md row 192): the kit has no first-building choice; the texts are ours.
+        choice: { question: 'Co urządzamy najpierw?', house: 'Dom', space: 'Baza kosmiczna', spoken: 'Co urządzamy najpierw: dom czy bazę kosmiczną?', back: 'Wróć' },
     },
     // DESIGN-GAP (docs/design-gaps.md rows 15-17): the kit has no parent entry, adult gate or stage panel; the texts are ours.
     parent: {
@@ -366,7 +368,7 @@ export const pl = {
         correct: 'Brawo!',
         correctStar: (n: number) => `Brawo! +${n} ★`,
         next: 'Dalej',
-        ageBack: 'Wróć',   // back to the age choice (warm-up and first round); not `resume` ("Wróć do notesu")
+        themeBack: 'Wróć',   // DESIGN-GAP 193; back to the building choice (until the first round ends or something is bought); not `resume` ("Wróć do notesu")
         tryAgain: 'Spróbuj jeszcze raz',
         nextStep: 'Następny krok',
         gotIt: 'Już wiem',
@@ -413,7 +415,7 @@ export const pl = {
         choose: 'Wybieram',
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
-        names: { salon: 'Salon', kitchen: 'Kuchnia' },
+        names: { salon: 'Salon', kitchen: 'Kuchnia', bridge: 'Mostek' },
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
@@ -437,6 +439,13 @@ export const pl = {
             setUpCoffee: 'Urządź kącik kawowy',
             placeBench: 'Postaw ławkę',
             setOutDishes: 'Ustaw naczynia',
+            // DESIGN-GAP (docs/design-gaps.md row 194): the kit has no Mostek copy; these task labels are ours (imperative + accusative).
+            placeConsole: 'Postaw pulpit',
+            placePilotChair: 'Postaw fotel pilota',
+            setUpTelescope: 'Ustaw teleskop',
+            placePlanetShelf: 'Postaw regał z planetami',
+            layOrbitMat: 'Połóż matę orbitalną',
+            setUpPlantPod: 'Ustaw kapsułę roślinną',
         },
         // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
@@ -457,6 +466,12 @@ export const pl = {
             'kitchen-coffee': 'kącik kawowy',
             'kitchen-bench': 'ławka',
             'kitchen-rack': 'naczynia',
+            'bridge-console': 'pulpit sterowniczy',
+            'bridge-chair': 'fotel pilota',
+            'bridge-telescope': 'teleskop',
+            'bridge-shelf': 'regał z planetami',
+            'bridge-rug': 'mata orbitalna',
+            'bridge-plants': 'kapsuła roślinna',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -477,6 +492,12 @@ export const pl = {
             'kitchen-coffee': ['Naturalny', 'Słoneczny', 'Miętowy'],
             'kitchen-bench': ['Naturalna', 'Słoneczna', 'Miętowa'],
             'kitchen-rack': ['Naturalne', 'Słoneczne', 'Miętowe'],
+            'bridge-console': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-chair': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-telescope': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-shelf': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'bridge-rug': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'bridge-plants': ['Naturalna', 'Słoneczna', 'Miętowa'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {

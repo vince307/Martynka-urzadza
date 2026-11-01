@@ -5,10 +5,10 @@ import { GAME_HEIGHT, GAME_WIDTH, PAGE_BACKGROUND, REGISTRY_KEYS, SAVE_KEYS } fr
 import { createAutosaver, errorName, isTimeoutError, lateReadVerdict, loadSave, withTimeLimit, type Autosaver, type LoadOutcome } from './core/autosave';
 import { floorToCalendar } from './core/curriculum';
 import { localDay } from './core/day';
-import { houseEqual, houseLayout, mergeHouse, nextRoom } from './core/house';
+import { houseEqual, houseLayout, houseRoomIds, mergeHouse, nextRoom } from './core/house';
 import { parentVisible, repairCurrentRoom, roomGrowth, roomStateProblems, type RoomProblem } from './core/rooms';
 import { FIRST_HOUSE, HOUSES } from './data/houses';
-import { FIRST_ROOM, ROOMS } from './data/rooms';
+import { ROOMS } from './data/rooms';
 import { channelVerdict, errorCode, freshSession, type SessionSave } from './core/save';
 import type { SessionLearner } from './core/placement';
 import type { HouseState, Settings, VariantState } from './core/types';
@@ -265,7 +265,9 @@ const start = async (): Promise<void> => {
         const learner = outcome.session.learner
             ? floorToCalendar(outcome.session.learner, stages, month, placementData, balance.curriculum)
             : null;
-        const repaired = repairCurrentRoom({ ...outcome.session, learner }, Object.keys(ROOMS), FIRST_ROOM);
+        // The current room must belong to the saved building: an unknown one goes to that building's first room (S-28).
+        const savedLayout = houseLayout(outcome.session.house, HOUSES, FIRST_HOUSE);
+        const repaired = repairCurrentRoom({ ...outcome.session, learner }, houseRoomIds(savedLayout, ROOMS), savedLayout.rooms[0].room);
         // The old salon was carried over by MIGRATIONS[2] inside decodeSave: the session here is already at the current save version.
         session = repaired.session;
         // F-04: data is the authority for a known house; an unknown house id is kept as saved (report, never repair).
@@ -301,7 +303,7 @@ const start = async (): Promise<void> => {
         }
         if (repaired.repairedFrom !== null) {
             roomRepaired = true;
-            console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${FIRST_ROOM}`);
+            console.warn(`Save names an unknown room (${repaired.repairedFrom}); starting in ${repaired.session.currentRoom}`);
         }
     } else {
         // ?e2eStars seeds the balance of a fresh start only (a seam, not a save); a loaded save keeps its own.

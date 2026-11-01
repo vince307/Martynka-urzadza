@@ -8,7 +8,7 @@
 // installs only after "Graj dalej", so these tests start with page.goto, not openWelcome. Modelled on save-restart.spec.ts.
 // Runs in the chromium-hook project.
 import { test, expect, type Page } from '@playwright/test';
-import { openSettings, passWelcome } from './support/welcome';
+import { openSettings, passChoice, passWelcome } from './support/welcome';
 import { screenIs, silenceSpeech, snapshot, tapScene, targets } from './support/hook';
 import { pl } from '../../src/data/pl';
 import { SAVE_VERSION } from '../../src/core/save';
@@ -33,7 +33,7 @@ async function playOnWithBlockedSave(page: Page, mode: 'unavailable' | 'unreadab
         })
         .toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
 }
 
 test('#2 an unavailable save is not overwritten by import or reset without a second confirmation', async ({ page }) => {
@@ -173,7 +173,7 @@ test('#2 SIR-02 a read that timed out offers no overwrite', async ({ page }) => 
         })
         .toBe(true);
     await tapScene(page, age!);
-    await screenIs(page, 'task');
+    await passChoice(page);
 
     let panel = await openSettings(page);
     await expect(panel.locator('section.parent-save').getByText(pl.settings.saveOff.timeout)).toBeVisible();

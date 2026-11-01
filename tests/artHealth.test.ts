@@ -1,6 +1,6 @@
 // Origin: change art-stand-in-and-load-signal, phase 1. The record of which task pictures did not load.
 import { describe, expect, it } from 'vitest';
-import { artCauses, artHealth, artHealthLines, artHealthView, bootQueue, cutByTable, fontHealth, pictureCutCount, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
+import { artCauses, artHealth, artHealthLines, artHealthView, bootGroups, bootQueue, cutByTable, fontHealth, pictureCutCount, loadErrorLine, sectionState, tableOf, wrongSizes } from '../src/core/artHealth';
 
 const entries = Array.from({ length: 38 }, (_, i) => ({ key: `art-key-${i}`, id: `id-${i}` }));
 
@@ -112,6 +112,18 @@ describe('bootQueue', () => {
 
     it('keeps only the groups asked for', () => {
         expect(bootQueue(['sound', 'task'])).toEqual(['task', 'sound']);
+    });
+});
+
+describe('bootGroups', () => {
+    it('boots the choice cards and no room on a fresh install', () => {
+        expect(bootGroups(true)).toEqual(['loadingArt', 'font', 'task', 'choice', 'ui', 'sound']);
+    });
+    it('boots the room and no choice cards for a returning player', () => {
+        expect(bootGroups(false)).toEqual(['loadingArt', 'font', 'task', 'room', 'ui', 'sound']);
+    });
+    it('keeps the queue order with the choice group between the task pictures and the screens', () => {
+        expect(bootQueue(['sound', 'ui', 'choice', 'task', 'font', 'loadingArt'])).toEqual(['loadingArt', 'font', 'task', 'choice', 'ui', 'sound']);
     });
 });
 

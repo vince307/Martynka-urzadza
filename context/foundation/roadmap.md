@@ -3,7 +3,7 @@ project: "Bystrow"
 version: 4
 status: draft
 created: 2026-10-11
-updated: 2026-10-31
+updated: 2026-11-01
 prd_version: 5
 main_goal: quality
 top_blocker: external
@@ -45,7 +45,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-17  | playtest-balance     | autor dostraja balans w danych gry po obserwacji córki                               | S-16a (M-01, done) | FR-027, Success Criteria (Primary), PRD Open Question 5 | proposed |
 | S-22  | kitchen-room         | dziecko po „Pokój gotowy!” urządza kuchnię jak salon, z celebracją pokoju            | F-04               | FR-033, FR-035, FR-040, US-02              | done |
 | S-23  | house-cross-section  | dziecko wybiera pokój w przekroju domu z piętrami; „Do pokoju” zawsze trafia do remontu | S-22            | FR-038, FR-039, FR-033                     | done |
-| S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | ready |
+| S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | done |
 | S-29  | base-cross-section   | dziecko po Mostku zostaje w bazie i ogląda ją w przekroju; „Do pokoju” i przycisk „Baza” prowadzą po bazie | S-28, S-23 | FR-045, FR-046, FR-048                     | proposed |
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | proposed |
 | S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | proposed |
@@ -147,7 +147,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Czy wybór budowli mieści się w formacie zapisu v5, czy wymaga v6 z migracją, kopią `backup-v5` i kartą „nowszy zapis” przy powrocie wdrożenia (PRD Open Question 17; autor akceptuje v6)? — Owner: agent. Block: no (rozstrzyga `/10x-research`).
   - Jak start ładuje tylko jedną budowlę, żeby karty wyboru i Mostek nie przekroczyły limitu ładowania startu (NFR wersji 5)? — Owner: zespół. Block: no.
 - **Risk:** pierwszy ekran każdego nowego dziecka i jedyne miejsce w tym kamieniu, które może zmienić zapis; ryzyko: zapis sprzed zmiany trafia na ekran wyboru albo traci salon, dlatego FR-049 i FR-050 mają dowód w testach na zamrożonym zapisie v5, a S-28 stoi przed przekrojem bazy.
-- **Status:** ready
+- **Status:** done
 
 ### S-29: Przekrój bazy i dziecko zostaje w bazie po Mostku
 
@@ -238,8 +238,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-17       | playtest-balance    | Balans po testach z córką (czas na pokój rozstrzyga OQ 11)         | no                    | Czeka na obserwacje autora (przeniesione z M-02). |
 | S-22       | kitchen-room        | Kuchnia jako drugi pokój z danych, celebracja pokoju               | done                  | Zarchiwizowane 2026-10-31 → `context/archive/2026-10-31-kitchen-room/`; kuchnia, celebracja pokoju, ładowanie grafiki pokoju w trakcie gry, zapis bez zmian (v5). |
 | S-23       | house-cross-section | Przekrój domu z piętrami, „Do pokoju” zawsze do remontu            | done                  | Zarchiwizowane 2026-10-31 → `context/archive/2026-10-31-house-cross-section/`; scena domu z paczki `martynka-house-street-v1` (skorupa, rolety „Wkrótce”, ramka pokoju w remoncie), miniatury z żywych warstw, przycisk „Dom” zamiast tymczasowego przycisku odwiedzin, „Do pokoju” zawsze do remontu, zapis bez zmian (v5). |
-| S-28       | first-building-choice | Wybór „Co urządzamy najpierw?” i Mostek bazy kosmicznej          | yes                   | Gwiazda przewodnia od 2026-10-31; run `/10x-new first-building-choice`. Paczka `bystrow-space-base-v1` gotowa; format zapisu rozstrzyga research (OQ 17). |
-| S-29       | base-cross-section  | Przekrój bazy, zostaje w bazie po Mostku, przycisk „Baza”          | no                    | Po S-28. |
+| S-28       | first-building-choice | Wybór „Co urządzamy najpierw?” i Mostek bazy kosmicznej          | done                  | Zarchiwizowane 2026-11-01 → `context/archive/2026-10-31-first-building-choice/`; ekran wyboru Dom / Baza kosmiczna, Mostek (7 zadań, 100 gwiazdek), zapis v6 (tylko podbicie wersji, `backup-v5`, karta „nowszy zapis” po cofnięciu wdrożenia). |
+| S-29       | base-cross-section  | Przekrój bazy, zostaje w bazie po Mostku, przycisk „Baza”          | yes                   | S-28 i S-23 gotowe; run `/10x-new base-cross-section`. Follow-upy `Trigger: S-29` w `context/archive/2026-10-31-first-building-choice/follow-ups/review-fixes.md`: 9 (etykieta `bases.base-1.label` „Baza księżycowa” vs karta „Baza kosmiczna”), 17 (`TaskScene.backToChoice` nie zatrzymuje uśpionej `HouseScene`, zanim druga budowla dostanie przekrój); dziś baza nie ma przycisku „Dom” (brak `HOUSE_GEOMETRY` dla `base-1`), a „Dalej” po Mostku zostaje na Mostku; słowa Hasła z domu w bazie: luka projektowa 198. |
 | S-30       | hangar-module       | Hangar z rakietą, drugi moduł bazy                                 | no                    | Po S-29; paczka `bystrow-space-base-v2` gotowa (QA 175/175). |
 | S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | yes                   | S-22 i S-23 gotowe; run `/10x-new kids-room`. Komórka pokoju dziecięcego (górna lewa) czeka w przekroju jako zamknięta; follow-up `Trigger: S-25` (id pokoju i komórka w domu) w `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md`, follow-up budżetu startu (`Trigger: … a third room`) w `context/archive/2026-10-31-kitchen-room/follow-ups/review-fixes.md`. |
 | S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Czeka na S-25 (S-23 gotowe); gwiazda przewodnia ścieżki domu. Follow-up `Trigger: S-24` (celebracja domu i ulicy, pamiątka) w `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md`. |
@@ -255,7 +255,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 5. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; odpowiedzią tego kamienia jest S-24. — Owner: autor. Block: —.
 6. **Powrót wysyłek rodzica** (M-02, odłożony): kiedy S-18–S-21 wracają jako kolejny kamień; PRD Open Questions 8–10 są już rozstrzygnięte (2026-10-25). — Owner: autor. Block: — (następny kamień).
 7. **Baza a mieszkańcy, album i ulica** (PRD Open Question 15): czy baza ma swoich „mieszkańców” (np. załogę) i miejsce na ulicy, czy stoi osobno. — Owner: autor. Block: — (rozstrzygnąć przed kolejnym wycinkiem bazy po S-30; S-24 dotyczy domu).
-8. **Zapis wyboru budowli** (PRD Open Question 17): obecny format v5 czy nowy v6; autor akceptuje v6 z tą samą polityką kopii i karty „nowszy zapis”. — Owner: agent. Block: — (rozstrzyga badanie S-28).
+8. **Zapis wyboru budowli** (PRD Open Question 17): obecny format v5 czy nowy v6; autor akceptuje v6 z tą samą polityką kopii i karty „nowszy zapis”. — Owner: agent. Block: — (rozstrzygnięte w S-28: v6, samo podbicie wersji nad kształtem v5, `MIGRATIONS[5]`, `backup-v5`).
 9. **Grafika Hangara** (PRD Open Question 16): rozstrzygnięte 2026-10-31, paczka `bystrow-space-base-v2` gotowa (QA 175/175, przeglądarka 32/32). — Owner: agent. Block: —.
 
 ## Parked
@@ -285,3 +285,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-04: (foundation) pokój da się dodać wyłącznie danymi i grafiką: wszystko, co dziś jest napisane pod salon (cienie, postarzenie, manifest slotów, tabele migracji, karta „Pokój gotowy!”), staje się danymi pokoju; zapis niesie dom z listą pokoi i miejscem każdego pokoju w siatce piętro × miejsce, a salon dziecka przechodzi do pierwszego domu bez straty, z zamrożoną próbką starego zapisu w testach.** — Archived 2026-10-30 → `context/archive/2026-10-30-rooms-as-data/`. Lesson: —.
 - **S-22: dziecko po skończeniu salonu widzi celebrację pokoju (pełne odsłonięcie, wybuch gwiazdek, jedno zdanie lektora, jedno „Dalej”) i przechodzi do kuchni, którą urządza jak salon: ściany i podłoga, potem elementy z 3 wariantami za gwiazdki w kolejności z danych pokoju; w remoncie jest zawsze jeden pokój; dopóki paczka kuchni nie dotrze, kuchnia stoi na rysowanych zastępnikach i nie trafia do dziecka, a z paczką jej dodanie to dane i pliki.** — Archived 2026-10-31 → `context/archive/2026-10-31-kitchen-room/`. Lesson: —.
 - **S-23: dziecko ogląda dom z boku jak domek dla lalek: piętra z danych, każdy pokój jako miniatura rysowana z żywych warstw tak, jak go zostawiło, zamknięte pokoje jako sylwetki „Wkrótce”; dotknięcie pokoju otwiera go w pełnym widoku; „Do pokoju” z zeszytu zawsze trafia do pokoju w remoncie, a przekrój to osobny przycisk, nigdy obowiązkowy przystanek; z każdego poziomu da się wrócić jednym dotknięciem.** — Archived 2026-10-31 → `context/archive/2026-10-31-house-cross-section/`. Lesson: —.
+- **S-28: nowe dziecko po wyborze wieku (albo po ustawieniu etapu przez rodzica) widzi „Co urządzamy najpierw?” z dwiema kartami (Dom, Baza kosmiczna), czytane przez głośnik, i wybiera jedną; do końca pierwszej rundy może wrócić do wyboru; z bazą remontuje Mostek jak pokój (ściany i podłoga, potem 6 elementów × 3 warianty, łącznie ok. 100 gwiazdek); dziecko z zapisem sprzed zmiany gra dalej w domu bez ekranu wyboru, a rundy przy tym samym ziarnie dają te same zadania w obu tematach.** — Archived 2026-11-01 → `context/archive/2026-10-31-first-building-choice/`. Lesson: —.
