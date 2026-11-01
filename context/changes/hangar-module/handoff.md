@@ -8,8 +8,8 @@ Written by the `/10x-impl-review hangar-module` step of run 2026-10-31-space-bas
 |---|---|
 | Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` |
 | Commits | 18 on the branch (`a4a0aee..HEAD`) after this step's docs commit: phases `041e279`, `de5ab57`, `862dca7`, `baa785b`; review fixes `c5df38d`, `78d7f1d`; the rest docs |
-| Pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| Pushed / PR / merged | ship step: PR/CI/merge/deploy recorded in context/runs/2026-10-31-space-base/run-log.md |
+| `change.md` status | `archived` (folder moved to `context/archive/2026-11-01-hangar-module/` by the ship step) |
 | `## Progress` rows remaining | 5: 1.8, 3.10 [reviewer] (CI at ship); 3.7, 3.8, 3.9 [human] |
 | Working tree | clean after the handoff commit |
 
@@ -42,7 +42,7 @@ Written by the `/10x-impl-review hangar-module` step of run 2026-10-31-space-bas
 
 ## 4. Next command
 
-`/10x-archive hangar-module`
+none — shipped
 
 ## 5. Open
 
@@ -58,3 +58,4 @@ Written by the `/10x-impl-review hangar-module` step of run 2026-10-31-space-bas
 - F2 fixed now rather than recorded: the fixture becomes frozen at the merge, a later fix would be an edit of a frozen fixture. Would change: nothing.
 - `room-art-hangar.json` accepted as the second added fixture: it is a `ROOM_ART` snapshot like the three existing ones, not a save fixture.
 - §4 stays `/10x-archive`: the fixes change no drawn pixel (test and fixture only), so the phase-3 visual gate stands.
+- Ship step (archive): `/10x-archive` warned 5 pending Progress rows (0 automated, 5 manual: 1.8, 3.10 [reviewer] CI at ship; 3.7-3.9 [human]); chose `Continue archiving (Recommended)`. Why: the [reviewer] rows are proven from the merge-sha Deploy log after the merge and ticked by the orchestrator in a later docs PR; the [human] rows are the maintainer's post-run checklist, not a ship blocker (profile § 5). Would change: an automated row left open, or a [human] row marked as blocking.
