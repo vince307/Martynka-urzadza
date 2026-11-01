@@ -692,7 +692,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 #### Manual
 
 - [x] 3.7 [reviewer] Teacher read of the children copy in `src/data/pl.ts` against the table above: caption nominatives, variant forms agreeing with the noun (biurko i krzesło → -e plural/neuter, regał/kącik → -y, skrzynia/szafa → -a), task labels imperative + accusative (skrzynię, szafę, łóżko), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff — impl-review (reviews/impl-review.md, no error; sample E1-E6 green)
-- [ ] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 123 of 123 room pictures precached` (line SEEN at plan time in Deploy run 41293904884, job `deploy` 124811306663: `ok   precache covers room pictures — 100 of 100 room pictures precached`; expected after this slice: 123 of 123)
+- [x] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 123 of 123 room pictures precached` (line SEEN at plan time in Deploy run 41293904884, job `deploy` 124811306663: `ok   precache covers room pictures — 100 of 100 room pictures precached`; expected after this slice: 123 of 123) — CI run 41313671518 (Deploy, job `deploy` 124869647532: `ok   precache covers room pictures — 123 of 123 room pictures precached`)
 
 ### Phase 4: The children's room joins house 1
 
