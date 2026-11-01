@@ -539,7 +539,7 @@ complexity, 0 open product questions after research, 5 phases):
 - [x] 4.2 `grep -c "Trigger:" context/changes/base-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| (199|20[0-9]) " docs/design-gaps.md` ≥ 2 — 2bcc350
 - [x] 4.3 Seam sweep: `grep -rn "until S-29\|No HOUSE_GEOMETRY entry yet\|S-29 adds" src tests` empty; `grep -rn "'base-1'" src` only in `src/data/houses.ts`, `src/data/pl.ts` and `src/core/types.ts`/the hook if they name it — 2bcc350
 - [x] 4.4 `git diff --stat <phase-3 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — 2bcc350
-- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (local gate green at p4: lint, typecheck, 4185 unit, deploy/ops, sample E1-E6, build; the e2e count is the orchestrator's)
+- [x] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (local gate green at p4: lint, typecheck, 4185 unit, deploy/ops, sample E1-E6, build; the e2e count is the orchestrator's) — orchestrator, f51eedc (p4 docs only)
 
 #### Manual
 
@@ -553,6 +553,6 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [ ] 5.1 Spec red before (deliberate breaks, each run alone with `-g`): show `pl.house.open['house-1']` for every building → test 1 red; drop the `artQueued` reset in `HouseScene.create` → test 3 red (`shellReady` false); show the house button while the card is up (drop `blocked` from the hide rule) → test 2 red; set the base `background` to the house colour → test 1's pixel assert red; each restored; green after
-- [ ] 5.2 `npx playwright test tests/e2e/base-cross-section.spec.ts --list` lists 3 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `184 + 3`; total equals `npx playwright test --list | tail -1`
-- [ ] 5.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 5.1 Spec red before (deliberate breaks, each run alone with `-g`): show `pl.house.open['house-1']` for every building → test 1 red; drop the `artQueued` reset in `HouseScene.create` → test 3 red (`shellReady` false); show the house button while the card is up (drop `blocked` from the hide rule) → test 2 red; set the base `background` to the house colour → test 1's pixel assert red; each restored; green after — f89cf1d (breaks run: label for every building -> test 1 red; artQueued reset dropped -> test 3 red; houses blocked rule -> test 2 red; base sky colour oracle -> test 1 red; cellClosed key -> test 1 red; oracles are literal hex, not HOUSE_GEOMETRY)
+- [x] 5.2 `npx playwright test tests/e2e/base-cross-section.spec.ts --list` lists 3 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `184 + 3`; total equals `npx playwright test --list | tail -1` — f89cf1d (3 tests chromium-hook; list total 187 = 184+3; full run --workers=3: 166 passed, 12 load timeouts + 9 not run, all 21 green on --last-failed --workers=1)
+- [x] 5.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — f89cf1d (lint, tsc, 4185 unit, build e2e hook: absent)
