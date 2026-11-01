@@ -546,12 +546,12 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 3.1 `npm run art` then `git status --short public/assets` shows only `public/assets/house/base-1-cell-frame.webp`
-- [x] 3.2 `npx vitest run tests/houseCells.test.ts tests/houseArt.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N`
-- [x] 3.3 Deliberate break: set `HOUSE_GEOMETRY['house-1'].cellFrame` to the base frame → the house-1 `houseArtKeys` case red; delete `base-1-cell-frame.webp` → the size/orphan case red; each restored; meta-check: the unit cases prove keys and files; that the mint frame is what the child SEES around the module is the phase-5 rendered pixel and the phase-4 visual frame
-- [x] 3.4 `npm run build` then `grep -o "assets/house/base-1-cell-frame.webp" dist/sw.js | wc -l` = 1
-- [x] 3.5 `git diff --stat <phase-2 sha> -- src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/balance.ts public/assets/rooms` empty; `git diff <phase-2 sha> -- src/scenes` touches comment lines only
-- [x] 3.6 Full local gate green; no e2e in this phase (no spec touched; the orchestrator runs the full suite after phase 5)
+- [x] 3.1 `npm run art` then `git status --short public/assets` shows only `public/assets/house/base-1-cell-frame.webp` — 48e67df
+- [x] 3.2 `npx vitest run tests/houseCells.test.ts tests/houseArt.test.ts tests/deployCheck.test.ts` green; unit `<phase-2 count> + N` — 48e67df
+- [x] 3.3 Deliberate break: set `HOUSE_GEOMETRY['house-1'].cellFrame` to the base frame → the house-1 `houseArtKeys` case red; delete `base-1-cell-frame.webp` → the size/orphan case red; each restored; meta-check: the unit cases prove keys and files; that the mint frame is what the child SEES around the module is the phase-5 rendered pixel and the phase-4 visual frame — 48e67df
+- [x] 3.4 `npm run build` then `grep -o "assets/house/base-1-cell-frame.webp" dist/sw.js | wc -l` = 1 — 48e67df
+- [x] 3.5 `git diff --stat <phase-2 sha> -- src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/pl.ts src/data/balance.ts public/assets/rooms` empty; `git diff <phase-2 sha> -- src/scenes` touches comment lines only — 48e67df
+- [x] 3.6 Full local gate green; no e2e in this phase (no spec touched; the orchestrator runs the full suite after phase 5) — 48e67df
 
 #### Manual
 
