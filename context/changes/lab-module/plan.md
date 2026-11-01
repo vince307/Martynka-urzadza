@@ -561,11 +561,11 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "save-v7-hangar-done|assets/rooms/lab|base-1-cell-frame" CLAUDE.md` present
-- [x] 4.2 `grep -c "Trigger:" context/changes/lab-module/follow-ups/review-fixes.md` ≥ 6; `grep -cE "^\| 208 " docs/design-gaps.md` = 1
-- [x] 4.3 Seam sweep: `grep -rnE "shares the frame|shared frame|cell-frame is shared|until S-33|S-33 adds|id === 'lab' \? 0" src tests scripts` empty; `npm run art` then `git status --short public/assets` empty (byte-identical)
-- [x] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
-- [x] 4.5 Full local gate green; full e2e left to the orchestrator after phase 5
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "save-v7-hangar-done|assets/rooms/lab|base-1-cell-frame" CLAUDE.md` present — 88004b6
+- [x] 4.2 `grep -c "Trigger:" context/changes/lab-module/follow-ups/review-fixes.md` ≥ 6; `grep -cE "^\| 208 " docs/design-gaps.md` = 1 — 88004b6
+- [x] 4.3 Seam sweep: `grep -rnE "shares the frame|shared frame|cell-frame is shared|until S-33|S-33 adds|id === 'lab' \? 0" src tests scripts` empty; `npm run art` then `git status --short public/assets` empty (byte-identical) — 88004b6
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — 88004b6
+- [x] 4.5 Full local gate green; full e2e left to the orchestrator after phase 5 — 88004b6
 
 #### Manual
 
