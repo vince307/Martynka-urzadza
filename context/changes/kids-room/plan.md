@@ -664,10 +664,10 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 #### Automated
 
-- [ ] 1.1 New cases red before the helpers exist, green after; unit `4194 + N`
-- [ ] 1.2 Deliberate break: make `sceneKey` return the FIRST done stage's `scene` → the `tasksDone` 2 case red; make `stageFade` report `neglected: true` always → case 2 red; each restored; meta-check: the expectations are literals from the synthetic room, not computed by `sceneKey`
-- [ ] 1.3 `git diff --stat bfdf193 -- src/ui src/scenes src/data src/testing` empty
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `189 + 0`
+- [x] 1.1 New cases red before the helpers exist, green after; unit `4194 + N` — 5fe9dd2 (unit 4198 = 4194 + 4)
+- [x] 1.2 Deliberate break: make `sceneKey` return the FIRST done stage's `scene` → the `tasksDone` 2 case red; make `stageFade` report `neglected: true` always → case 2 red; each restored; meta-check: the expectations are literals from the synthetic room, not computed by `sceneKey` — 5fe9dd2
+- [x] 1.3 `git diff --stat bfdf193 -- src/ui src/scenes src/data src/testing` empty — 5fe9dd2
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); e2e (orchestrator, `--workers=4`) `189 + 0` — 5fe9dd2 (e2e left to the orchestrator)
 
 ### Phase 2: The four background sites and the art table use the rule
 
