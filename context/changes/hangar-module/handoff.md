@@ -1,59 +1,60 @@
 # Handoff — `hangar-module` (slice S-30)
 
-Written by the `/10x-plan-review hangar-module` step of run 2026-10-31-space-base. The plan is reviewed (PROCEED, SOUND
-after four small in-place fixes); next is phase 1 (`Driver: impl`). The next agent must not miss that any phase touching
-`src/scenes`, `src/core`, `src/ui`, `src/main.ts` or `src/testing` stops BLOCKED (the roadmap Risk), and that FOUR
-unit tests flip with the `HOUSES` row in phase 2 (including `tests/houseCells.test.ts` "also with the Mostek done").
+Written by the `/10x-implement hangar-module phase 1` step of run 2026-10-31-space-base. Phase 1 (Hangar as data, copy and art, unreachable) is committed at 041e279; next is phase 2 (`Driver: tdd`). The next agent must not miss that phase 2 has to REMOVE the temporary Hangar exemption in `tests/roomsData.test.ts` (test "is keyed by its own id and placed in exactly one house of HOUSES"), and that e2e for phase 1 (row 1.6, `187 + 0`) was not run by this step.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` (S-29 merge) |
-| Commits | 4 on top of `a4a0aee`: change identity, research, plan, `docs(hangar-module): plan review` (this step) |
+| Commits | 7 on top of `a4a0aee`: identity, research, plan, plan review, phase 1 `041e279`, docs `phase 1 shas` + handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 26 (`grep -c '^- \[ \]' plan.md`) |
-| Working tree | clean after the commit (only the files below staged) |
+| `change.md` status | `plan_reviewed` (unchanged by this step) |
+| `## Progress` rows remaining | 20 (`grep -c '^- \[ \]' plan.md`): 1.6 (e2e by orchestrator), 1.7, 1.8, phases 2-4 |
+| Working tree | clean after the docs commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/hangar-module/reviews/plan-review.md` | the review: 0 critical, 1 warning, 3 observations, all FIXED; `VERDICT: PROCEED` |
-| `context/changes/hangar-module/plan.md` | edited: Current State lists the `houseCells` flip; phase 2 `houseCells` and `roomsData` contracts exact (`doneSet('bridge')`, `unlockAfter: 'bridge'`); phase 3 cites kitchen-room 6 and audit-art-renderer 2 as already closed; phase 1 hangar snapshot written from the pack, not dumped |
-| `context/changes/hangar-module/plan-brief.md` | test count "Three" → "Four tests … plus e2e #16" |
-| `context/changes/hangar-module/change.md` | `status: planned → plan_reviewed` |
+| `scripts/make-task-art.mjs` | `SPACE_BASE_V2` constant + `ROOM_PACKS` row `hangar` |
+| `public/assets/rooms/hangar/*.webp` | 21 new files made by `npm run art` (nothing else in `public/assets` changed) |
+| `src/data/rooms.ts` | `hangarSlots`, `HANGAR`, `ROOMS` gains it |
+| `src/data/roomArt.ts` | `ROOM_SCENE_FILES.hangar` |
+| `src/data/pl.ts` | `room.names.hangar`, task labels, slot captions, variant forms (DESIGN-GAP row 201 cited; row itself comes in phase 3) |
+| `tests/fixtures/room-art-hangar.json` | snapshot written from the pack manifest and PNG sizes |
+| `tests/roomArt.test.ts`, `tests/roomsData.test.ts`, `tests/roomHit.test.ts` | hangar snapshot, manifest literal, costs, `unreachableSlots` over the Hangar; the exemption below |
+| `context/changes/hangar-module/plan.md` | rows 1.1-1.5 ticked with sha |
 | `context/changes/hangar-module/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/hangar-module` |
-| `grep -rnE "'bridge'\|BRIDGE\|Mostek\|base-1\|hangar" src/scenes src/core src/ui src/main.ts src/testing` | empty: no code names the base or Mostek |
-| `gh run view --log --job 124766298916 --repo vince307/Martynka-urzadza` (sandbox disabled) | `ok   precache covers room pictures — 79 of 79 room pictures precached` seen |
-| `gh run view --log --job 124765733845 --repo vince307/Martynka-urzadza` (sandbox disabled, ANSI stripped) | `Tests  4182 passed \| 3 skipped (4185)` and `e2e hook: absent (2 chunks checked)` seen |
-| `python3` read of `designs/bystrow-space-base-v2/manifest.json` `rooms.hangar` | six slots match the phase-1 literal; 21 PNGs present |
-| read of `src/core/houseCells.ts` `houseCells` vs `tests/houseCells.test.ts` | the `() => true` line flips with the Hangar row (F1) |
-| `grep -rnE "Object\.(values\|keys)\(ROOMS\)\|ROOM_ART" src` | only generic uses (`BootScene`, `UIScene`): phase 1 keeps the room unreachable |
-| lint / typecheck / unit / build / e2e | not run: review step, no product code changed (baseline in the contract: unit 4185, e2e 187, inherited, unverified) |
+| `npm run art` + `git status --short` | only the 21 new files under `public/assets/rooms/hangar/` (no other WebP changed) |
+| the five phase-1 vitest files | green, 85 tests |
+| `npm run lint`, `npm run typecheck` | OK |
+| `npm test` + deploy/ops tests + `sample` E1-E6 | unit `Tests 4190 passed` (baseline 4185, +5) |
+| `npm run build` | `e2e hook: absent (2 chunks checked)`; `grep -o "assets/rooms/hangar/" dist/sw.js \| wc -l` = 21 |
+| `git diff --stat a4a0aee -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/balance.ts public/assets/rooms/{salon,kitchen,bridge}` | empty |
+| e2e | not run (phase says orchestrator, `--workers=4`, expected `187 + 0`; phase 1 leaves the Hangar unreachable) |
+| Deliberate breaks | rover `x` 1114 → 1115: manifest literal case red; `hangar-crates` variants dropped from `pl.room.variants`: copy case red; `hangar-mat-mint.webp` moved away: size, orphan and weight cases red; each restored, suites green again. Meta-check: the literal is written from the manifest, not from `hangarSlots`; the art cases prove files and tables agree, not that the picture looks right (visual pass, phase 3) |
 
 ## 4. Next command
 
-`/10x-implement hangar-module phase 1`
+`/10x-tdd hangar-module phase 2`
 
 ## 5. Open
 
-- Manual rows (human checklist): 1.7 [reviewer] teacher read of the Hangar copy in `src/data/pl.ts` (`room.slots/variants/tasks`); 1.8 [reviewer] (CI at ship) smoke `room pictures — 100 of 100`; 3.6 [visual] 8 frames × desktop 1440 + tablet 1024×768 on hook build 4399; 3.7 [human] accept Hangar costs 6-21 = 100; 3.8 [human] accept the wording (gap 201) and the Hangar as last module (gap 196); 3.9 [human] real tablet offline; 3.10 [reviewer] (CI at ship) `Tests  <4182 + N> passed | 3 skipped`, `e2e hook: absent (`.
-- DESIGN-GAPs planned for phase 3 in `docs/design-gaps.md`: new row 201, row 196 edited.
-- Follow-ups planned for phase 3 in `context/changes/hangar-module/follow-ups/review-fixes.md`: base-cross-section 5 narrowed; atlas, thumbnails, `FIRST_ROOM` carried; new `roomArtCheck` unused in `scripts/check-deploy.ts`; kitchen-room 6 and audit-art-renderer 2 cited as already closed.
-- Seam-sweep target: duplicate `SPACE_BASE` / `SPACE` in `scripts/make-task-art.mjs`.
-- Risk: phase-4 e2e has 7 + 14 purchases, load-sensitive (plan `## Known risks`).
+- Plan gap found: the existing invariant "placed in exactly one house of HOUSES" (`tests/roomsData.test.ts`, `describe('every room in ROOMS')`) fails for an unreachable room; phase 1 exempts `hangar` with a comment (expects 0 placements). Phase 2 must restore `toHaveLength(1)` for every room when the `HOUSES` row lands.
+- Manual rows: 1.6 e2e (orchestrator), 1.7 [reviewer] teacher read of the Hangar copy, 1.8 [reviewer] CI at ship `100 of 100 room pictures precached`, 3.6-3.10 as in the plan.
+- DESIGN-GAP row 201 and edit of row 196 are planned for phase 3 in `docs/design-gaps.md` (pl.ts already cites 201).
+- Follow-ups and seam sweep (`SPACE_BASE`/`SPACE` duplicate in `scripts/make-task-art.mjs`) are phase 3.
+- Risk: phase-4 e2e is load-sensitive (plan `## Known risks`).
 
 ## 6. Autonomous decisions
 
-- Review run without a subagent: the risky claims (no code names the base, tests that flip, manifest geometry, CI lines, phase-1 gates) were few and checkable with direct greps. Would change: a claim needing a broad sweep.
-- Triage decided in place (skill asks; contract rule 1): F1 WARNING fixed (obvious edit), F2-F4 OBSERVATION fixed (obvious one-line edits). Rejected: leaving F1 for the tdd phase to discover (it would read "unchanged" and think a regression). Would change: nothing.
-- Product decisions (costs, wording, last-module behaviour) kept; each already has a `[human]` row (3.7, 3.8); none clearly wrong against FR-046/FR-047.
-- Drivers kept as written (impl, tdd, impl, e2e); all match the contract rules.
+- Invoked the phase directly from the plan body instead of through the Skill tool wrapper; no user prompts arose. Would change: a skill-only step that cannot be reproduced by hand.
+- Temporary exemption for `hangar` in the "placed in exactly one house" test, rather than adding the `HOUSES` row early (that is phase 2 and would flip e2e and four tests). Rejected: deleting the invariant. Would change: a plan that moves the row into phase 1.
+- Row 1.6 left unticked: the e2e part was not observed by this step. Rows 1.7/1.8 are [reviewer], not mine.
+- Fixture labels follow the `roomArt()` label format of the Mostek fixture ("caption Variant").
