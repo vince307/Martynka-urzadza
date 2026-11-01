@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROOM_ART, ROOM_SCENE_FILES, roomArt } from '../src/data/roomArt';
 import { ROOMS } from '../src/data/rooms';
+import type { RoomDef } from '../src/core/types';
 import bridgeSnapshot from './fixtures/room-art-bridge.json';
 import hangarSnapshot from './fixtures/room-art-hangar.json';
 import kitchenSnapshot from './fixtures/room-art-kitchen.json';
@@ -34,6 +35,8 @@ const filesUnder = (dir: string, base = ''): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
         entry.isDirectory() ? filesUnder(join(dir, entry.name), `${base}${entry.name}/`) : [`${base}${entry.name}`],
     );
+
+const stageScenes = (room: RoomDef): string[] => room.tasks.flatMap((t) => (t.kind === 'stage' && t.scene !== undefined ? [t.scene] : []));
 
 describe('room art table', () => {
     it('equals the snapshot of each room (the salon one taken before the per-room refactor, the kitchen one from the pack manifest)', () => {
@@ -68,6 +71,7 @@ describe('room art table', () => {
     it('has exactly the texture keys the salon data names, each once', () => {
         const wanted = Object.values(ROOMS).flatMap((room) => [
             ...Object.values(room.scene),
+            ...stageScenes(room),
             ...room.decor.map((layer) => layer.key),
             ...room.slots.flatMap((slot) => slot.variants),
         ]);
@@ -77,7 +81,7 @@ describe('room art table', () => {
 
     it('labels every stand-in in Polish except the full-scene pictures', () => {
         for (const art of ROOM_ART) {
-            const scene = Object.values(ROOMS).some((room) => Object.values(room.scene).includes(art.key));
+            const scene = Object.values(ROOMS).some((room) => Object.values(room.scene).includes(art.key) || stageScenes(room).includes(art.key));
             expect(art.label === '', art.key).toBe(scene);
             expect(art.label, art.key).not.toMatch(/[-/]/);
         }
@@ -87,6 +91,20 @@ describe('room art table', () => {
         for (const room of Object.values(ROOMS)) {
             const total = roomArt(room).reduce((sum, art) => sum + statSync(join(PUBLIC, art.url)).size, 0);
             expect(total, room.id).toBeLessThanOrEqual(1_550_000);
+        }
+    });
+
+    it('adds one full-scene entry per stage background named on a stage task, once each', () => {
+        const salon = ROOMS.salon;
+        const stage = salon.tasks[0];
+        if (stage.kind !== 'stage') throw new Error('the salon opens with a stage task');
+        const staged = { ...salon, tasks: [{ ...stage, scene: 'salon/synthetic-1' }, { ...stage, scene: 'salon/synthetic-1' }, { ...stage, scene: 'salon/synthetic-2' }, ...salon.tasks.slice(1)] };
+        const plain = roomArt(salon);
+        const entries = roomArt(staged);
+        expect(entries).toHaveLength(plain.length + 2);
+        for (const key of ['salon/synthetic-1', 'salon/synthetic-2']) {
+            const hit = entries.filter((e) => e.key === key);
+            expect(hit).toEqual([{ key, url: `assets/rooms/${key}.webp`, width: 1920, height: 1080, label: '' }]);
         }
     });
 });

@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { LayerDef, RoomDef, RoomState, SlotDef } from '../../core/types';
-import { contactShadowPieces, roomDone, shownVariants, stagesDone, wornPieces } from '../../core/rooms';
+import { contactShadowPieces, roomDone, sceneKey, shownVariants, stagesDone, wornPieces } from '../../core/rooms';
 import { slotBox, type Box } from '../../core/roomHit';
 import { PLACEHOLDER_COLORS, ROOM_LAYOUT } from '../../data/layout';
 import { roomText } from '../../data/pl';
@@ -111,7 +111,7 @@ export class RoomView {
             return l;
         };
         const whole = { x: 0, y: 0, width: SCENE_SIZE.width, height: SCENE_SIZE.height, anchor: [0, 0] } as const;
-        const backgroundKey = renovated ? room.scene.after : room.scene.before;
+        const backgroundKey = sceneKey(room, state);
         layer('scene').show(backgroundKey, whole, depth.scene, null);
         this.drawBackdrop(renovated, !this.scene.textures.exists(backgroundKey));
         // The neglected room is the after furniture under a worn grade on the floor shadows; the renovated room is grounded by
@@ -254,7 +254,7 @@ export function miniaturePieces(room: RoomDef, state: RoomState): MiniaturePiece
     const renovated = stagesDone(room, state) > 0;
     const whole = { x: 0, y: 0, width: SCENE_SIZE.width, height: SCENE_SIZE.height };
     const wholeBox: Box = { left: 0, top: 0, right: SCENE_SIZE.width, bottom: SCENE_SIZE.height };
-    const pieces: MiniaturePiece[] = [{ key: renovated ? room.scene.after : room.scene.before, placement: whole, box: wholeBox, fill: renovated ? standIn.wallAfter : standIn.wallBefore, alpha: 1 }];
+    const pieces: MiniaturePiece[] = [{ key: sceneKey(room, state), placement: whole, box: wholeBox, fill: renovated ? standIn.wallAfter : standIn.wallBefore, alpha: 1 }];
     if (!renovated) {
         pieces.push({ key: room.scene.shadows, placement: whole, box: wholeBox, fill: standIn.decorFill, alpha: 0 });
         wornPieces(room, state).forEach((w) => pieces.push({

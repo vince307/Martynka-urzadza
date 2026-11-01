@@ -7,7 +7,7 @@ import { holdPoint, slotAt, unreachableSlots, type AlphaAt } from '../core/roomH
 import { effectiveAutoRead } from '../core/narration/voice';
 import { panelCue } from '../core/sound';
 import { playBeforeSpeech, playCues, soundOf } from '../ui/sound';
-import { currentTask, emptyRoomState, roomDone, roomsListView, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
+import { currentTask, emptyRoomState, roomDone, roomsListView, stageFade, stagesDone, taskButtonView, type RoomListItem } from '../core/rooms';
 import { celebrationView } from '../core/celebration';
 import { houseLayout, houseRoomList, nextRoom } from '../core/house';
 import { cardRooms } from '../core/roomLoad';
@@ -51,6 +51,8 @@ export interface RoomSnapshot {
     heldSlot: string | null;
     done: boolean;
     stageDone: boolean;
+    /** How many stage tasks are done (stage 1 and stage 2 of a staged room differ in the picture). */
+    stagesDone: number;
     mode: 'normal' | 'change';
     card: { title: string; items: RoomListItem[]; celebration: { intensity: string; revealMs: number; burst: number } } | null;
     doneMiniature: 'live' | 'thumbnail' | 'drawn' | null;
@@ -429,24 +431,34 @@ export class RoomScene extends Scene {
         if (prefersReducedMotion()) {
             return;
         }
-        const { room } = this.resolve();
+        const { room, state } = this.resolve();
+        const fade = stageFade(room, state);
+        if (!fade) {
+            return;
+        }
         const { depth } = ROOM_LAYOUT;
-        // DESIGN-GAP (docs/design-gaps.md): the pack has no in-between backgrounds (brief P3.6), so this is a plain cross-fade.
-        // The whole neglected state fades: its background, its floor shadows and the graded pieces (built from the empty state).
+        // DESIGN-GAP (docs/design-gaps.md): a plain cross-fade; rooms whose pack has in-between backgrounds name them on the stage tasks (`scene`).
+        // From the neglected state the whole look fades: background, floor shadows and the graded pieces (built from the empty state);
+        // from a later stage only the previous background fades.
         const ghosts: GameObjects.Image[] = [];
-        const plain = [
-            { key: room.scene.before, depth: depth.scene + 0.1 },
-            { key: room.scene.shadows, depth: depth.shadows + 0.1 },
-        ];
+        const plain = [{ key: fade.from, depth: depth.scene + 0.1 }];
+        if (fade.neglected) {
+            plain.push({ key: room.scene.shadows, depth: depth.shadows + 0.1 });
+        }
         plain.forEach(({ key, depth: at }) => {
             if (this.textures.exists(key)) {
                 ghosts.push(this.add.image(0, 0, key).setOrigin(0, 0).setDisplaySize(SCENE_SIZE.width, SCENE_SIZE.height).setDepth(at));
             }
         });
-        ghosts.push(...buildWorn(this, room, emptyRoomState(), depth.wornGhost).images);
+        if (fade.neglected) {
+            ghosts.push(...buildWorn(this, room, emptyRoomState(), depth.wornGhost).images);
+        }
         ghosts.forEach((ghost) => {
             this.ghosts.push(ghost);
-            const tween = this.tweens.add({ targets: ghost, alpha: 0, duration: ANIMATION.stageFadeMs, ease: 'Sine.easeInOut', onComplete: () => this.dropGhost(ghost) });
+            const tween = this.tweens.add({ targets: ghost, alpha: 0, duration: ANIMATION.stageFadeMs, ease: 'Sine.easeInOut', onComplete: () => {
+                this.dropGhost(ghost);
+                this.ghostTweens = this.ghostTweens.filter((t) => t !== tween);
+            } });
             this.ghostTweens.push(tween);
         });
     }
@@ -567,6 +579,7 @@ export class RoomScene extends Scene {
             heldSlot: this.gesture.slot,
             done: roomDone(room, state),
             stageDone: stagesDone(room, state) > 0,
+            stagesDone: stagesDone(room, state),
             mode: this.mode,
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems(), celebration: { ...this.celebrationUsed } } : null,
             doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,

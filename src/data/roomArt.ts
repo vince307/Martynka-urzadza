@@ -43,6 +43,10 @@ export const roomArt = (room: RoomDef): RoomArtEntry[] => {
             ...SCENE_SIZE,
             label: '',
         })),
+        // Stage backgrounds named on the stage tasks (rooms renovated in several steps), once each and never a key the three roles already hold.
+        ...[...new Set(room.tasks.flatMap((t) => (t.kind === 'stage' && t.scene !== undefined ? [t.scene] : [])))]
+            .filter((key) => !Object.values(room.scene).includes(key))
+            .map((key) => ({ key, url: urlOf(key), ...SCENE_SIZE, label: '' })),
         ...room.decor.map((layer) => ({ key: layer.key, url: urlOf(layer.key), width: layer.width, height: layer.height, label: roomText.decor(layer.id) ?? '' })),
         ...room.slots.flatMap((slot) =>
             slot.variants.map((key, index) => ({
