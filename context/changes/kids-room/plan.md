@@ -708,10 +708,10 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 #### Automated
 
-- [ ] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "CHILDREN|sceneKey|save-v6-kitchen-done|assets/rooms/children" CLAUDE.md` present
-- [ ] 5.2 `grep -c "Trigger:" context/changes/kids-room/follow-ups/review-fixes.md` ≥ 5; `grep -cE "^\| 20[234] " docs/design-gaps.md` = 3
-- [ ] 5.3 Seam sweep: `grep -rnE "scene\.after :|until S-25|S-25 adds" src tests scripts --exclude=rooms.ts` empty (`sceneKey` itself lives in `src/core/rooms.ts`); `npm run art` then `git status --short public/assets` empty
-- [ ] 5.4 `git diff --stat <phase-4 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
+- [x] 5.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "CHILDREN|sceneKey|save-v6-kitchen-done|assets/rooms/children" CLAUDE.md` present
+- [x] 5.2 `grep -c "Trigger:" context/changes/kids-room/follow-ups/review-fixes.md` ≥ 5; `grep -cE "^\| 20[234] " docs/design-gaps.md` = 3
+- [x] 5.3 Seam sweep: `grep -rnE "scene\.after :|until S-25|S-25 adds" src tests scripts --exclude=rooms.ts` empty (`sceneKey` itself lives in `src/core/rooms.ts`); `npm run art` then `git status --short public/assets` empty
+- [x] 5.4 `git diff --stat <phase-4 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
 - [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
 
 #### Manual

@@ -340,7 +340,8 @@ describe('sceneKey and stageFade (kids-room phase 1)', () => {
             const r = ROOMS[id];
             for (let n = 0; n <= r.tasks.length; n++) {
                 const st = at(n);
-                expect(sceneKey(r, st)).toBe(stagesDone(r, st) > 0 ? r.scene.after : r.scene.before);
+                const side = stagesDone(r, st) > 0 ? 'after' : 'before';
+                expect(sceneKey(r, st)).toBe(r.scene[side]);
             }
         }
     });
