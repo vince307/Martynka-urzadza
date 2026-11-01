@@ -4,7 +4,7 @@ import { e2eArt, e2eSave, e2eSaveStore } from '../src/testing/e2eHook';
 
 describe('e2eSave', () => {
     it('reads each seam from the query string', () => {
-        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer']) {
+        for (const seam of ['unreadable', 'corrupt', 'unavailable', 'hang', 'writefail', 'writehang', 'v1', 'backupfail', 'backuphang', 'slow', 'slowfail', 'legacy-salon', 'newer', 'v6-kitchen']) {
             expect(e2eSave(`?e2eSave=${seam}`), seam).toBe(seam);
             expect(e2eSave(`?a=1&e2eSave=${seam}`), seam).toBe(seam);
         }
@@ -24,6 +24,12 @@ describe('e2eSaveStore', () => {
         await expect(store.write({ version: SAVE_VERSION } as never)).resolves.toBeUndefined();
         await expect(store.write({ version: SAVE_VERSION } as never)).rejects.toMatchObject({ name: NEWER_SAVE });
         expect(((await store.read()) as { version: number }).version).toBe(SAVE_VERSION + 1);
+    });
+
+    it('v6-kitchen holds the frozen v6 mid-kitchen bytes, which decode and lift to the current version', async () => {
+        const raw = (await e2eSaveStore('v6-kitchen').read()) as { version: number };
+        expect(raw.version).toBe(6);
+        expect(decodeSave(raw).kind).toBe('ok');
     });
 
     it('unreadable holds a save from a future version', async () => {
