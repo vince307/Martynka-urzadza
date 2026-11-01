@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
+import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, LAB, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -103,7 +103,7 @@ describe('bridge data (FR-044)', () => {
     it('is the stage first, then six furniture tasks, and the first room of the base', () => {
         expect(BRIDGE.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         expect(BRIDGE.slots).toHaveLength(6);
-        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }, { room: 'hangar', unlockAfter: 'bridge' }]);
+        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }, { room: 'hangar', unlockAfter: 'bridge' }, { room: 'lab', unlockAfter: 'hangar' }]);
     });
 
     it('moves the child to the Hangar after the last Mostek task', () => {
@@ -137,6 +137,34 @@ describe('hangar data (FR-047)', () => {
     it('is the stage first, then one task per slot, each slot bought once', () => {
         expect(HANGAR.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         const slotTasks = HANGAR.tasks.slice(1);
+        expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+});
+
+describe('lab data (FR-046)', () => {
+    // Written from designs/bystrow-space-base-v3/manifest.json rooms.lab, not from labSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['lab-microscope', 684, 444, 488, 472, 30],
+        ['lab-rocks', 634, 194, 203, 412, 15],
+        ['lab-flasks', 1094, 464, 340, 322, 25],
+        ['lab-globe', 1414, 434, 242, 329, 28],
+        ['lab-stool', 724, 704, 204, 242, 40],
+        ['lab-board', 344, 264, 292, 247, 10],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(LAB.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('costs 6, 10, 13, 14, 17, 19, 21 = 100 stars', () => {
+        expect(LAB.tasks.map((t) => t.cost)).toEqual([6, 10, 13, 14, 17, 19, 21]);
+        expect(LAB.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(100);
+    });
+
+    it('is the stage first, then one task per slot, each slot bought once', () => {
+        expect(LAB.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        const slotTasks = LAB.tasks.slice(1);
         expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
         expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
     });
@@ -203,13 +231,26 @@ describe('bathroom data (FR-033)', () => {
 });
 
 describe('hangar flow (FR-047)', () => {
-    it('keeps the child in the Hangar after its last task: Dalej stays', () => {
+    it('moves a finished Hangar into the Laboratorium: Dalej opens the third module', () => {
         const states = {
             bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} },
             hangar: { tasksDone: HANGAR.tasks.length, chosen: {} },
         };
         const moved = nextRoom({ rooms: states, currentRoom: 'hangar' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
-        expect(moved.currentRoom).toBe('hangar');
+        expect(moved.currentRoom).toBe('lab');
+        expect(moved.movedFrom).toBe('hangar');
+    });
+});
+
+describe('lab flow (FR-046)', () => {
+    it('keeps the child in the Laboratorium after its last task: Dalej stays (the last module, gap 196)', () => {
+        const states = {
+            bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} },
+            hangar: { tasksDone: HANGAR.tasks.length, chosen: {} },
+            lab: { tasksDone: LAB.tasks.length, chosen: {} },
+        };
+        const moved = nextRoom({ rooms: states, currentRoom: 'lab' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
+        expect(moved.currentRoom).toBe('lab');
         expect(moved.movedFrom).toBeNull();
     });
 });

@@ -1,0 +1,149 @@
+[
+    {
+        "key": "lab/before",
+        "url": "assets/rooms/lab/lab-before.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "lab/after",
+        "url": "assets/rooms/lab/lab-after.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "lab/shadows",
+        "url": "assets/rooms/lab/lab-shadows.webp",
+        "width": 1920,
+        "height": 1080,
+        "label": ""
+    },
+    {
+        "key": "lab/lab-microscope-natural",
+        "url": "assets/rooms/lab/lab-microscope-natural.webp",
+        "width": 488,
+        "height": 472,
+        "label": "mikroskop Naturalny"
+    },
+    {
+        "key": "lab/lab-microscope-sunny",
+        "url": "assets/rooms/lab/lab-microscope-sunny.webp",
+        "width": 488,
+        "height": 472,
+        "label": "mikroskop Słoneczny"
+    },
+    {
+        "key": "lab/lab-microscope-mint",
+        "url": "assets/rooms/lab/lab-microscope-mint.webp",
+        "width": 488,
+        "height": 472,
+        "label": "mikroskop Miętowy"
+    },
+    {
+        "key": "lab/lab-rocks-natural",
+        "url": "assets/rooms/lab/lab-rocks-natural.webp",
+        "width": 203,
+        "height": 412,
+        "label": "gablota z kamieniami Naturalna"
+    },
+    {
+        "key": "lab/lab-rocks-sunny",
+        "url": "assets/rooms/lab/lab-rocks-sunny.webp",
+        "width": 203,
+        "height": 412,
+        "label": "gablota z kamieniami Słoneczna"
+    },
+    {
+        "key": "lab/lab-rocks-mint",
+        "url": "assets/rooms/lab/lab-rocks-mint.webp",
+        "width": 203,
+        "height": 412,
+        "label": "gablota z kamieniami Miętowa"
+    },
+    {
+        "key": "lab/lab-flasks-natural",
+        "url": "assets/rooms/lab/lab-flasks-natural.webp",
+        "width": 340,
+        "height": 322,
+        "label": "stół z kolbami Naturalny"
+    },
+    {
+        "key": "lab/lab-flasks-sunny",
+        "url": "assets/rooms/lab/lab-flasks-sunny.webp",
+        "width": 340,
+        "height": 322,
+        "label": "stół z kolbami Słoneczny"
+    },
+    {
+        "key": "lab/lab-flasks-mint",
+        "url": "assets/rooms/lab/lab-flasks-mint.webp",
+        "width": 340,
+        "height": 322,
+        "label": "stół z kolbami Miętowy"
+    },
+    {
+        "key": "lab/lab-globe-natural",
+        "url": "assets/rooms/lab/lab-globe-natural.webp",
+        "width": 242,
+        "height": 329,
+        "label": "model Księżyca Naturalny"
+    },
+    {
+        "key": "lab/lab-globe-sunny",
+        "url": "assets/rooms/lab/lab-globe-sunny.webp",
+        "width": 242,
+        "height": 329,
+        "label": "model Księżyca Słoneczny"
+    },
+    {
+        "key": "lab/lab-globe-mint",
+        "url": "assets/rooms/lab/lab-globe-mint.webp",
+        "width": 242,
+        "height": 329,
+        "label": "model Księżyca Miętowy"
+    },
+    {
+        "key": "lab/lab-stool-natural",
+        "url": "assets/rooms/lab/lab-stool-natural.webp",
+        "width": 204,
+        "height": 242,
+        "label": "stołek Naturalny"
+    },
+    {
+        "key": "lab/lab-stool-sunny",
+        "url": "assets/rooms/lab/lab-stool-sunny.webp",
+        "width": 204,
+        "height": 242,
+        "label": "stołek Słoneczny"
+    },
+    {
+        "key": "lab/lab-stool-mint",
+        "url": "assets/rooms/lab/lab-stool-mint.webp",
+        "width": 204,
+        "height": 242,
+        "label": "stołek Miętowy"
+    },
+    {
+        "key": "lab/lab-board-natural",
+        "url": "assets/rooms/lab/lab-board-natural.webp",
+        "width": 292,
+        "height": 247,
+        "label": "tablica magnetyczna Naturalna"
+    },
+    {
+        "key": "lab/lab-board-sunny",
+        "url": "assets/rooms/lab/lab-board-sunny.webp",
+        "width": 292,
+        "height": 247,
+        "label": "tablica magnetyczna Słoneczna"
+    },
+    {
+        "key": "lab/lab-board-mint",
+        "url": "assets/rooms/lab/lab-board-mint.webp",
+        "width": 292,
+        "height": 247,
+        "label": "tablica magnetyczna Miętowa"
+    }
+]

@@ -113,7 +113,7 @@ export class HouseScene extends Scene {
         return this.art().every((e) => this.textures.exists(e.key));
     }
 
-    /** Only the pictures the current building names (house 1: three, the base: its own two plus the shared frame). */
+    /** Only the pictures the current building names (house 1: three, the base: its own three). */
     private art(): HouseArtEntry[] {
         const keys = houseArtKeys(this.geometry());
         return HOUSE_ART.filter((e) => keys.includes(e.key));

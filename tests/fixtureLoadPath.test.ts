@@ -23,7 +23,7 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done', 'save-v6-kitchen-mid', 'save-v7'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done', 'save-v6-kitchen-mid', 'save-v7', 'save-v7-hangar-done'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
@@ -113,11 +113,29 @@ describe('the building of a loaded save (FR-049)', () => {
         const withHouse = { ...repaired, house: merged.house };
         const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
         expect(merged.house.id).toBe('base-1');
-        expect(merged.house.rooms.map((c) => c.room)).toEqual(['bridge', 'hangar']);
+        expect(merged.house.rooms.map((c) => c.room)).toEqual(['bridge', 'hangar', 'lab']);
         expect(moved.currentRoom).toBe('hangar');
         expect(moved.movedFrom).toBe('bridge');
         expect(moved.rooms.bridge).toEqual(raw.rooms.bridge);
         // The fixture is what the S-29 build writes: its chosen slots are the Mostek's own, so the load reports no room problem.
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
+        expect(s.stars).toBe(raw.stars);
+    });
+
+    // S-33 FR-046: a Hangar finished in the S-32 build (v7, no Laboratorium yet) opens in the Laboratorium; the calls mirror main.ts's load order.
+    it('save-v7-hangar-done meets the Laboratorium: house with three cells, current room lab, Mostek, Hangar and stars kept', async () => {
+        const raw = read('save-v7-hangar-done');
+        const s = await load('save-v7-hangar-done');
+        const repaired = repair(s).session;
+        const merged = mergeHouse(repaired.house, houseLayout(repaired.house, HOUSES, FIRST_HOUSE));
+        const withHouse = { ...repaired, house: merged.house };
+        const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
+        expect(merged.house.id).toBe('base-1');
+        expect(merged.house.rooms.map((c) => c.room)).toEqual(['bridge', 'hangar', 'lab']);
+        expect(moved.currentRoom).toBe('lab');
+        expect(moved.movedFrom).toBe('hangar');
+        expect(moved.rooms.bridge).toEqual(raw.rooms.bridge);
+        expect(moved.rooms.hangar).toEqual(raw.rooms.hangar);
         expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });

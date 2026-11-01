@@ -8,7 +8,7 @@ import { holdPoint, slotAt, slotBox, unreachableSlots } from '../src/core/roomHi
 import type { AlphaAt } from '../src/core/roomHit';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BATHROOM, CHILDREN, HANGAR, SALON } from '../src/data/rooms';
+import { BATHROOM, CHILDREN, HANGAR, LAB, SALON } from '../src/data/rooms';
 import type { RoomDef } from '../src/core/types';
 
 const all: Record<string, number> = Object.fromEntries(SALON.slots.map((s) => [s.id, 0]));
@@ -178,6 +178,11 @@ describe('unreachableSlots', () => {
     it('is empty for the Hangar with all six slots bought (FR-047)', () => {
         const bought = Object.fromEntries(HANGAR.slots.map((s) => [s.id, 0]));
         expect(unreachableSlots(HANGAR, bought)).toEqual([]);
+    });
+
+    it('is empty for the Laboratorium with all six slots bought (FR-046)', () => {
+        const bought = Object.fromEntries(LAB.slots.map((s) => [s.id, 0]));
+        expect(unreachableSlots(LAB, bought)).toEqual([]);
     });
 
     it('is empty for the bathroom with all six slots bought (FR-033)', () => {
