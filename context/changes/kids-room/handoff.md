@@ -8,9 +8,9 @@ Written by the visual-gate step of run 2026-11-01-kids-room. The gate passed (`V
 |---|---|
 | Branch | `feat/kids-room`, cut from `main` at `bfdf193` |
 | Commits on the branch | `697ece5`..HEAD: docs, phases 1-6, `4c594c0` closeout, `d544695` impl-review fix, `bd9b024` impl review, `8a23e38` visual-gate fix, then this `docs(kids-room): bramka wizualna` |
-| Pushed / PR / merged | no / no / no |
+| Pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-11-01-kids-room/run-log.md |
 | `change.md` status | impl_reviewed |
-| `## Progress` rows remaining | 12 (`grep -c '^- \[ \]' plan.md`): 2.4, 3.6, 4.5, 5.5, 6.2 (orchestrator e2e), 5.7-5.11 [human], 3.8 and 5.12 [reviewer] (CI at ship) |
+| `## Progress` rows remaining | 7 (`grep -c '^- \[ \]' plan.md`): 5.7-5.11 [human] (post-run checklist), 3.8 and 5.12 [reviewer] (CI at ship; evidence in the ship report). Rows 2.4, 3.6, 4.5, 5.5, 6.2 ticked at ship from the orchestrator e2e (4c594c0 + 1ee3847) |
 | Working tree | clean after this commit |
 
 ## 2. Artifacts
@@ -38,7 +38,7 @@ Written by the visual-gate step of run 2026-11-01-kids-room. The gate passed (`V
 
 ## 4. Next command
 
-`/10x-archive kids-room then ship`
+none — shipped
 
 ## 5. Open
 
@@ -54,3 +54,4 @@ Written by the visual-gate step of run 2026-11-01-kids-room. The gate passed (`V
 - **Stand-in caption overflow fixed, not recorded**: two lines through the existing `labelScale` rule plus one token; newly visible because the children's bookcase is the narrowest slot. Would change: a fix needing a new rule.
 - **Three-digit counter tightness recorded as follow-up 7, not fixed**: `StarCounter` is outside this slice and the case predates it (salon 129). Would change: the maintainer calling it a defect for this slice.
 - **Item (7) judged on frame 09** (the room after "Dalej"), as in the hangar gate: the card covers the room at the last purchase.
+- **Ship step: archived with open rows** — 5.7-5.11 are [human] product acceptances (post-run checklist, not a blocker); 3.8 and 5.12 are (CI at ship) rows proven only by the PR CI / post-merge Deploy logs, never ticked on main; the ship report carries their evidence. Would change: a log disproving either row.

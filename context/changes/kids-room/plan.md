@@ -676,7 +676,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - [x] 2.1 `npx vitest run tests/roomArt.test.ts tests/stageSceneWiring.test.ts tests/rooms.test.ts tests/backdrop.test.ts tests/bootBudget.test.ts` green; unit `<phase-1 count> + N` — f2b304a — f2b304a
 - [x] 2.2 Deliberate break: restore the ternary in `miniaturePieces` → the wiring test red; drop the stage-key entries from `roomArt` → the synthetic-room case red; each restored; meta-check: the wiring test proves the call sites, not the pixels — the rendered proof is phase 6 — f2b304a
 - [x] 2.3 `git diff --stat <phase-1 sha> -- tests/fixtures src/data/rooms.ts src/data/houses.ts src/data/pl.ts public` empty (existing rooms unchanged) — f2b304a — f2b304a
-- [ ] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` (salon stage specs `room-purchase`, `salon-style`, `salon-art`, `canvas-renderer` unchanged)
+- [x] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` (salon stage specs `room-purchase`, `salon-style`, `salon-art`, `canvas-renderer` unchanged) — orchestrator e2e 4c594c0 + 1ee3847 (run-log 2026-11-01)
 
 ### Phase 3: The children's room as data, copy and art (unreachable)
 
@@ -687,7 +687,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - [x] 3.3 Deliberate break: change the desk's `x` in `childrenSlots` → the manifest literal red; delete `children-stage-1.webp` → the size/orphan cases red; drop `'children-toys'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `childrenSlots`; whether the picture looks right is the visual pass (phase 5) — a7cee7f
 - [x] 3.4 `npm run build` then `grep -o "assets/rooms/children/" dist/sw.js | wc -l` = 23 — a7cee7f
 - [x] 3.5 `git diff --stat <phase-2 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/layout.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/bridge public/assets/rooms/hangar` empty — a7cee7f
-- [ ] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
+- [x] 3.6 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` — orchestrator e2e 4c594c0 + 1ee3847 (run-log 2026-11-01)
 
 #### Manual
 
@@ -702,7 +702,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - [x] 4.2 Deliberate break: give the children row `place: 1` → the `houseCells` case red; set `tiles.width` back to 440 → the layout case red; drop the row → roomsData and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts` — the e2e reload (phase 6) is the browser proof of the same path — fd5dd63
 - [x] 4.3 `npx playwright test tests/e2e/kitchen-room.spec.ts tests/e2e/rooms-as-data.spec.ts tests/e2e/house-cross-section.spec.ts` (sandbox disabled) green — 9ca69f1
 - [x] 4.4 `git diff --stat <phase-3 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-3 sha>.. -- tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json` empty — fd5dd63
-- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
+- [x] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` — orchestrator e2e 4c594c0 + 1ee3847 (run-log 2026-11-01)
 
 ### Phase 5: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
@@ -712,7 +712,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - [x] 5.2 `grep -c "Trigger:" context/changes/kids-room/follow-ups/review-fixes.md` ≥ 5; `grep -cE "^\| 20[234] " docs/design-gaps.md` = 3 — b10bd31
 - [x] 5.3 Seam sweep: `grep -rnE "scene\.after :|until S-25|S-25 adds" src tests scripts --exclude=rooms.ts` empty (`sceneKey` itself lives in `src/core/rooms.ts`); `npm run art` then `git status --short public/assets` empty — b10bd31
 - [x] 5.4 `git diff --stat <phase-4 sha> -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — b10bd31
-- [ ] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0`
+- [x] 5.5 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` — orchestrator e2e 4c594c0 + 1ee3847 (run-log 2026-11-01)
 
 #### Manual
 
@@ -729,5 +729,5 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 #### Automated
 
 - [x] 6.1 Spec red before (deliberate breaks, each test run alone with `-g`): make `sceneKey` ignore the stage `scene` (always `after` once staged) → test 1's stage pixel red; give the children row `place: 1` → test 2 red; set a children cost to 16 → test 1's balance red; add an unknown room to `HOUSES['house-1']` → test 1 red (teaser appears); each restored; green after; meta-check: the pixel is read from the rendered frame, so a background covered by another layer would also fail — 9ca69f1
-- [ ] 6.2 `npx playwright test tests/e2e/kids-room.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `189 + 2`; total equals `npx playwright test --list | tail -1`
+- [x] 6.2 `npx playwright test tests/e2e/kids-room.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; full e2e (orchestrator, `--workers=4`) `189 + 2`; total equals `npx playwright test --list | tail -1` — orchestrator e2e 4c594c0 + 1ee3847 (run-log 2026-11-01); --list 2 tests chromium-hook, suite total 191 (checked at ship)
 - [x] 6.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — 9ca69f1
