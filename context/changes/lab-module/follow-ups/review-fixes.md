@@ -35,7 +35,7 @@ changed the file their trigger names (`src/data/rooms.ts`, `src/data/houses.ts`,
    Trigger: the next change to `src/pwa/registerServiceWorker.ts` or to the precache set.
 8. House-1-polish 2 (retire the recolour path, `scripts/recolour-board.py`): its trigger fired on the art-script change; out of scope
    here, carried.
-   Trigger: the next change to `scripts/make-task-art.mjs` that is not a pack row, or an audit.
+   Trigger: the next change to `scripts/make-task-art.mjs` or `scripts/recolour-board.py`, or an audit (original wording of house-1-polish 2, kept).
 9. Hangar-module 3 (`roomArtCheck` exported and tested but never called by `scripts/check-deploy.ts`): not fired.
    Trigger: the next change to `scripts/check-deploy.ts`.
 10. Base-cross-section 13 (`HouseScene`/`HouseView` items): trigger "the next change to `HouseScene`" fired by the phase 3 doc-comment

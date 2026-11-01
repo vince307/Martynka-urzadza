@@ -69,7 +69,7 @@ describe('house art table', () => {
         }
     });
 
-    // Runtime load of one building's pictures, not boot; the base measured about 106 400 B with its own frame.
+    // Runtime load of one building's pictures, not boot; the base measured 97 776 B with its own frame (shell 81 970, closed cell 12 308, frame 3 498).
     const CAPS: Record<string, number> = { 'house-1': 80_000, 'base-1': 110_000 };
     const weigh = (keys: string[]): number =>
         keys.reduce((sum, key) => sum + statSync(join(PUBLIC, HOUSE_ART.find((a) => a.key === key)!.url)).size, 0);
