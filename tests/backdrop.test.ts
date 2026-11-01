@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { backdropMode } from '../src/core/backdrop';
 import { emptyRoomState } from '../src/core/rooms';
 import { miniaturePieces } from '../src/ui/widgets/RoomView';
+import { TEST_ROOM_PARTS, testSlot } from './roomFixtures';
 import { FIRST_ROOM, ROOMS } from '../src/data/rooms';
-import type { RoomState } from '../src/core/types';
+import type { RoomDef, RoomState } from '../src/core/types';
 
 const room = ROOMS[FIRST_ROOM];
 const fresh: RoomState = emptyRoomState();
@@ -33,5 +34,23 @@ describe('backdropMode', () => {
     it('stays salon when only a slot picture is missing', () => {
         const slotKeys = new Set(room.slots.flatMap((s) => s.variants as readonly string[]));
         expect(backdropMode(room, renovated, (k) => !slotKeys.has(k))).toBe('salon');
+    });
+});
+
+describe('backdropMode on a room with staged scenes (kids-room phase 1)', () => {
+    const staged: RoomDef = {
+        id: 'staged',
+        ...TEST_ROOM_PARTS,
+        scene: { before: 'b0', after: 'aft', shadows: 'sh' },
+        slots: [testSlot('bed', 1)],
+        tasks: [
+            { kind: 'stage', id: 's1', label: 'one', cost: 5, scene: 'st1' },
+            { kind: 'slot', id: 't2', slot: 'bed', label: 'bed', cost: 5 },
+        ],
+    };
+    it('asks for the stage-1 key', () => {
+        const state: RoomState = { tasksDone: 1, chosen: {} };
+        expect(backdropMode(staged, state, (k) => k === 'st1')).toBe('salon');
+        expect(backdropMode(staged, state, (k) => k === 'aft')).toBe('plain');
     });
 });

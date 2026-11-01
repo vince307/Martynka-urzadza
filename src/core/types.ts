@@ -57,7 +57,8 @@ export interface SlotDef extends PlacedArt {
 
 /** A renovation task: a background stage (changes the room backdrop, no variant) or a furniture slot (3 variants). */
 export type RoomTaskDef =
-    | { kind: 'stage'; id: string; label: string; cost: number }
+    /** `scene`: the room-art texture key of the full-scene picture this stage reveals; absent = the room's `scene.after`. */
+    | { kind: 'stage'; id: string; label: string; cost: number; scene?: string }
     | { kind: 'slot'; id: string; slot: string; label: string; cost: number };
 
 export interface RoomDef {
