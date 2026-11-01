@@ -1,0 +1,122 @@
+{
+  "version": 6,
+  "profileId": "default",
+  "stars": 14,
+  "rooms": {
+    "bridge": {
+      "tasksDone": 7,
+      "chosen": {
+        "bridge-console": 0,
+        "bridge-chair": 1,
+        "bridge-screen": 2,
+        "bridge-lamp": 0,
+        "bridge-map": 1,
+        "bridge-plant": 2
+      }
+    }
+  },
+  "currentRoom": "bridge",
+  "settings": {
+    "autoRead": true
+  },
+  "learner": {
+    "age": 8,
+    "stage": "E2",
+    "stageOverriddenByParent": false,
+    "warmupPending": false,
+    "unlockedStep": {
+      "E1": 11,
+      "E2": 3,
+      "E3": 1,
+      "E4": 1,
+      "E5": 1,
+      "E6": 1
+    },
+    "mastery": {
+      "E2.1.add_sub_20_units": 3,
+      "E2.1.place_read_20": 2
+    },
+    "streak": {
+      "E2.1.add_sub_20_units": 2,
+      "E2.1.place_read_20": 0
+    },
+    "history": [
+      {
+        "skillId": "E2.1.add_sub_20_units",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000000000
+      },
+      {
+        "skillId": "E2.1.place_read_20",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000001000
+      },
+      {
+        "skillId": "E2.1.add_sub_20_units",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000002000
+      },
+      {
+        "skillId": "E2.1.place_read_20",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000003000
+      },
+      {
+        "skillId": "E2.1.add_sub_20_units",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000004000
+      },
+      {
+        "skillId": "E2.1.place_read_20",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000005000
+      },
+      {
+        "skillId": "E2.1.add_sub_20_units",
+        "ok": true,
+        "firstTry": true,
+        "at": 1761000006000
+      },
+      {
+        "skillId": "E2.1.place_read_20",
+        "ok": true,
+        "firstTry": false,
+        "at": 1761000007000,
+        "example": {
+          "prompt": "15 − 7 = ?",
+          "given": 9,
+          "answer": 8
+        }
+      }
+    ],
+    "weakStreak": 0,
+    "easedRounds": 0,
+    "pendingUnlock": null
+  },
+  "variants": {
+    "roundsSince": 2,
+    "lastMinigame": "dice",
+    "puzzleDay": "2026-10-28",
+    "puzzlesDone": [
+      "logic.e3.a"
+    ]
+  },
+  "generation": 4,
+  "writer": "tab2:n3",
+  "house": {
+    "id": "base-1",
+    "rooms": [
+      {
+        "room": "bridge",
+        "floor": 0,
+        "place": 0
+      }
+    ]
+  }
+}

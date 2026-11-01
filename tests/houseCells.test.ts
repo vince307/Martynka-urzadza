@@ -125,10 +125,18 @@ describe('HOUSE_GEOMETRY base (S-29 phase 3)', () => {
     it('has the same cells as the house', () => {
         expect(b().cells).toEqual(HOUSE_GEOMETRY['house-1'].cells);
     });
-    it('shows the bridge as current and the rest closed, also with the Mostek done', () => {
+    it('shows the bridge as current and the rest closed; a known room not reached (Hangar) stays closed, also with the Mostek done', () => {
         const base = HOUSES.find((h) => h.id === 'base-1')!;
         expect(states(houseCells(b(), base, 'bridge', () => false))).toEqual(['current', 'closed', 'closed', 'closed']);
-        expect(states(houseCells(b(), base, 'bridge', () => true))).toEqual(['current', 'closed', 'closed', 'closed']);
+        const bridgeDone = (r: string): boolean | null => (r === 'bridge' ? true : r === 'hangar' ? false : null);
+        expect(states(houseCells(b(), base, 'bridge', bridgeDone))).toEqual(['current', 'closed', 'closed', 'closed']);
+    });
+    it('with the Mostek done and the Hangar current: done, current, closed, closed', () => {
+        const base = HOUSES.find((h) => h.id === 'base-1')!;
+        const bridgeDone = (r: string): boolean | null => (r === 'bridge' ? true : r === 'hangar' ? false : null);
+        const cells = houseCells(b(), base, 'hangar', bridgeDone);
+        expect(states(cells)).toEqual(['done', 'current', 'closed', 'closed']);
+        expect(cells.find((c) => c.id === 'ground-right')?.room).toBe('hangar');
     });
 });
 
