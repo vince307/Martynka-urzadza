@@ -1,5 +1,5 @@
 // Houses as data (FR-038): each house lists its rooms in opening order, with the cell of each in the floor x place grid.
-// The layout is from docs/designer-brief-m03.md ("Układ domów"); the children's room and the closed cell come with later slices.
+// The layout is from docs/designer-brief-m03.md ("Układ domów"); house 1 is complete with the bathroom (S-31), a closed cell is drawn only for a room not yet reached.
 import type { BuildingChoice, HouseGeometry, HouseState } from '../core/types';
 
 export const HOUSES: readonly HouseState[] = [
@@ -9,6 +9,7 @@ export const HOUSES: readonly HouseState[] = [
             { room: 'salon', floor: 0, place: 0 },
             { room: 'kitchen', floor: 0, place: 1 },
             { room: 'children', floor: 1, place: 0 },
+            { room: 'bathroom', floor: 1, place: 1 },
         ],
     },
     // The space base (S-28): the Mostek, then the Hangar in the ground-right cell (S-30); its cross-section is HOUSE_GEOMETRY['base-1'] (S-29).

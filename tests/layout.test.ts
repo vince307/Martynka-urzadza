@@ -5,7 +5,10 @@ import { placementData } from '../src/data/placement';
 import { ROOMS } from '../src/data/rooms';
 import { BUILDING_CHOICES, HOUSE_GEOMETRY, HOUSES } from '../src/data/houses';
 import { houseRoomList } from '../src/core/house';
+import { roomDoneCardRect } from '../src/core/roomDoneLayout';
 import { CONTENT_LEFT, NOTEBOOK, FONT_SIZES, FONT_WEIGHT_RANGE, FONT_WEIGHTS, GAME_HEIGHT, LIPS, GAME_WIDTH, BEADS, HOUSE_LAYOUT, HOUSE_TOUCH_TARGETS, HUD_LAYOUT, HUD_PILL, HUD_TOUCH_TARGETS, MIN_TOUCH_TARGET, PLACEHOLDER_COLORS, ROOM_DONE_LAYOUT, ROOM_LAYOUT, ROOM_TOUCH_TARGETS, SUMMARY_LAYOUT, TASK_LAYOUT, TASK_TOUCH_TARGETS, UNLOCK_LAYOUT, WELCOME_LAYOUT, WELCOME_TOUCH_TARGETS } from '../src/data/layout';
+
+const doneSpec = () => ({ centerX: ROOM_DONE_LAYOUT.card.centerX, minWidth: ROOM_DONE_LAYOUT.card.minWidth, padding: ROOM_DONE_LAYOUT.card.padding, tileWidth: ROOM_DONE_LAYOUT.tiles.width, gap: ROOM_DONE_LAYOUT.tiles.gap });
 
 describe('task screen layout constants', () => {
     it('keeps every touch target at least the minimum size', () => {
@@ -264,28 +267,44 @@ describe('task screen layout constants', () => {
         // "Wróć do notesu" and the mode button are on screen together; the card hides the way back.
         expect(overlap(rect(modeButton), rect(resume))).toBe(false);
         // The card sits above the tray, inside the room area's width and clear of the gear and the HUD; "Dalej" is inside it.
-        const cardRect = rect(card);
-        expect(cardRect.bottom).toBeLessThanOrEqual(tray.top);
-        expect(cardRect.left).toBeGreaterThanOrEqual(0);
-        expect(cardRect.right).toBeLessThanOrEqual(GAME_WIDTH);
-        for (const h of hud) {
-            expect(overlap(cardRect, h)).toBe(false);
+        for (const n of [2, 3, 4, 5]) {
+            const placed = roomDoneCardRect(n, doneSpec());
+            const cardRect = rect({ left: placed.left, top: card.top, width: placed.width, height: card.height });
+            expect(cardRect.bottom).toBeLessThanOrEqual(tray.top);
+            expect(cardRect.left).toBeGreaterThanOrEqual(0);
+            expect(cardRect.right).toBeLessThanOrEqual(GAME_WIDTH);
+            for (const h of hud) {
+                expect(overlap(cardRect, h)).toBe(false);
+            }
+            const buttonRect = rect(button);
+            expect(buttonRect.left).toBeGreaterThanOrEqual(cardRect.left);
+            expect(buttonRect.right).toBeLessThanOrEqual(cardRect.right);
+            expect(buttonRect.top).toBeGreaterThanOrEqual(cardRect.top);
+            expect(buttonRect.bottom).toBeLessThanOrEqual(cardRect.bottom);
         }
-        const buttonRect = rect(button);
-        expect(buttonRect.left).toBeGreaterThanOrEqual(cardRect.left);
-        expect(buttonRect.right).toBeLessThanOrEqual(cardRect.right);
-        expect(buttonRect.top).toBeGreaterThanOrEqual(cardRect.top);
-        expect(buttonRect.bottom).toBeLessThanOrEqual(cardRect.bottom);
     });
 
-    it('lays the room list tiles of the "Pokój gotowy!" card inside it and above "Dalej"', () => {
+    it('lays the room list tiles of the "Pokój gotowy!" card inside it, inside the screen and above "Dalej", for two to five tiles', () => {
         const { card, tiles, button, title } = ROOM_DONE_LAYOUT;
         const n = Math.max(...HOUSES.map((h) => houseRoomList(h, ROOMS).length));
-        expect(n).toBe(3);
-        const total = n * tiles.width + (n - 1) * tiles.gap;
-        const first = card.left + card.width / 2 - total / 2;
-        expect(first).toBeGreaterThanOrEqual(card.left);
-        expect(first + total).toBeLessThanOrEqual(card.left + card.width);
+        expect(n).toBeLessThanOrEqual(5);
+        const { settings, speaker, roomSwitch } = HUD_LAYOUT;
+        const hud = [settings, speaker, roomSwitch, TASK_LAYOUT.starCounter];
+        for (const count of [...new Set([2, 3, 4, 5, n])]) {
+            const placed = roomDoneCardRect(count, doneSpec());
+            expect(placed.left).toBeGreaterThanOrEqual(0);
+            expect(placed.left + placed.width).toBeLessThanOrEqual(GAME_WIDTH);
+            if (count <= 3) expect({ left: placed.left, width: placed.width }).toEqual({ left: 388, width: 1144 });
+            expect(placed.tileLefts).toHaveLength(count);
+            for (const left of placed.tileLefts) {
+                expect(left).toBeGreaterThanOrEqual(placed.left);
+                expect(left + tiles.width).toBeLessThanOrEqual(placed.left + placed.width);
+            }
+            for (const h of hud) {
+                const apart = placed.left >= h.left + h.width || placed.left + placed.width <= h.left || card.top >= h.top + h.height || card.top + card.height <= h.top;
+                expect(apart).toBe(true);
+            }
+        }
         expect(tiles.top).toBeGreaterThan(title.y);
         expect(tiles.top + tiles.height).toBeLessThanOrEqual(button.top);
         expect(ROOM_LAYOUT.scene.width * tiles.thumbScale).toBeLessThanOrEqual(tiles.width);

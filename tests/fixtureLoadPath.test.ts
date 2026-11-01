@@ -23,7 +23,7 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done', 'save-v6-kitchen-done', 'save-v6-children-done'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
@@ -120,7 +120,7 @@ describe('the building of a loaded save (FR-049)', () => {
     });
 
     // S-25 FR-033: a kitchen finished in the S-30 build (no children's room yet) opens in the children's room; the calls mirror main.ts's load order.
-    it('save-v6-kitchen-done meets the children\'s room: house with three cells, current room children, salon, kitchen and stars kept', async () => {
+    it('save-v6-kitchen-done meets the children\'s room: house with four cells (the bathroom listed since S-31), current room children, salon, kitchen and stars kept', async () => {
         const raw = read('save-v6-kitchen-done');
         const s = await load('save-v6-kitchen-done');
         const repaired = repair(s).session;
@@ -128,11 +128,29 @@ describe('the building of a loaded save (FR-049)', () => {
         const withHouse = { ...repaired, house: merged.house };
         const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
         expect(merged.house.id).toBe('house-1');
-        expect(merged.house.rooms.map((c) => c.room)).toEqual(['salon', 'kitchen', 'children']);
+        expect(merged.house.rooms.map((c) => c.room)).toEqual(['salon', 'kitchen', 'children', 'bathroom']);
         expect(moved.currentRoom).toBe('children');
         expect(moved.movedFrom).toBe('kitchen');
         expect(moved.rooms.salon).toEqual(raw.rooms.salon);
         expect(moved.rooms.kitchen).toEqual(raw.rooms.kitchen);
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
+        expect(s.stars).toBe(raw.stars);
+    });
+
+    // S-31 FR-033: a children's room finished in the S-25 build (no bathroom yet) opens in the bathroom; the calls mirror main.ts's load order.
+    it('save-v6-children-done meets the bathroom: house with four cells, current room bathroom, the three rooms and stars kept', async () => {
+        const raw = read('save-v6-children-done');
+        const s = await load('save-v6-children-done');
+        const repaired = repair(s).session;
+        const merged = mergeHouse(repaired.house, houseLayout(repaired.house, HOUSES, FIRST_HOUSE));
+        const withHouse = { ...repaired, house: merged.house };
+        const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
+        expect(merged.house.rooms.map((c) => c.room)).toEqual(['salon', 'kitchen', 'children', 'bathroom']);
+        expect(moved.currentRoom).toBe('bathroom');
+        expect(moved.movedFrom).toBe('children');
+        expect(moved.rooms.salon).toEqual(raw.rooms.salon);
+        expect(moved.rooms.kitchen).toEqual(raw.rooms.kitchen);
+        expect(moved.rooms.children).toEqual(raw.rooms.children);
         expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });

@@ -71,6 +71,18 @@ describe('house-1 with the children\'s room (S-25)', () => {
         expect(states(v)).toEqual(['done', 'done', 'current', 'closed']);
         expect(v.find((c) => c.id === 'upper-left')?.room).toBe('children');
     });
+    it('places the bathroom in upper-right: three done, bathroom current', () => {
+        const h = HOUSES.find((x) => x.id === 'house-1')!;
+        const v = houseCells(HOUSE_GEOMETRY['house-1'], h, 'bathroom', (r) => (r === 'bathroom' ? false : true));
+        expect(states(v)).toEqual(['done', 'done', 'done', 'current']);
+        expect(v.find((c) => c.id === 'upper-right')?.room).toBe('bathroom');
+    });
+    it('draws no closed cell once all four rooms are done', () => {
+        const h = HOUSES.find((x) => x.id === 'house-1')!;
+        const v = houseCells(HOUSE_GEOMETRY['house-1'], h, 'bathroom', () => true);
+        expect(states(v)).not.toContain('closed');
+        expect(v).toHaveLength(4);
+    });
 });
 
 describe('HOUSE_GEOMETRY data', () => {

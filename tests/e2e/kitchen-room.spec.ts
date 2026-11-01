@@ -58,7 +58,7 @@ const changeTo = async (page: Page, current: number): Promise<number> => {
 test('#2 S-22 after the salon the card celebrates and "Dalej" moves into the kitchen, kept after a reload', async ({ page }) => {
     await finishSalon(page, { e2eStars: String(salonTotal + kitchenTotal) });
     const done = await room(page);
-    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true', 'room:false:false']);
+    expect(done.card?.items.map((item) => `${item.kind}:${item.done}:${item.unlocked}`)).toEqual(['room:true:true', 'room:false:true', 'room:false:false', 'room:false:false']);
     expect(done.card?.celebration.intensity).toBe('room');
     expect(done.card?.celebration.burst).toBeGreaterThan(0);
     const before = await snapshot(page);
@@ -108,6 +108,7 @@ test('#16 S-22 S-25 the kitchen furnishes like the salon and ends with its own c
     expect(done.done).toBe(true);
     expect(done.card?.items.slice(0, 2).map((item) => `${item.kind}:${item.done}`)).toEqual(['room:true', 'room:true']);
     expect(done.card?.items[2]).toMatchObject({ kind: 'room', id: 'children', done: false, unlocked: true });
+    expect(done.card?.items[3]).toMatchObject({ kind: 'room', id: 'bathroom', done: false, unlocked: false });
 
     // "Dalej" moves the child into the children's room (S-25), the kitchen state untouched; the free change of the done kitchen
     // is proved through a visit from the house cross-section.

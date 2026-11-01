@@ -186,10 +186,11 @@ test('FR-019 the last purchase shows »Pokój gotowy!« and »Dalej« moves the 
     // #16 R-6: every slot the child chose has a hold point on a visible pixel (a hold opens its change panel).
     expect(Object.keys(done.room.chosen).length).toBeGreaterThan(5);
     expect(done.room.unreachable).toEqual([]);
-    expect(done.room.card?.items).toHaveLength(3);
+    expect(done.room.card?.items).toHaveLength(4);
     expect(done.room.card?.items[0]).toMatchObject({ kind: 'room', id: 'salon', done: true });
     expect(done.room.card?.items[1]).toMatchObject({ kind: 'room', id: 'kitchen', done: false, unlocked: true });
     expect(done.room.card?.items[2]).toMatchObject({ kind: 'room', id: 'children', done: false, unlocked: false });
+    expect(done.room.card?.items[3]).toMatchObject({ kind: 'room', id: 'bathroom', done: false, unlocked: false });
     expect((await targets(page)).resume).toBeNull(); // the way out is hidden behind the card
 
     // "Dalej" closes the card and moves the child into the kitchen (S-22): the stars are untouched, the new room has no change mode.

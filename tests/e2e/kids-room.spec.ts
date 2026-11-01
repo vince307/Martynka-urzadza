@@ -47,7 +47,7 @@ const intoChildren = async (page: Page): Promise<void> => {
     await expect.poll(async () => (await room(page)).currentTask?.id, { timeout: 30_000 }).toBe(CHILDREN.tasks[0].id);
 };
 
-test('#16 S-25 FR-033 the children\'s room renovates in three stages, each a new background in the rendered frame, then is furnished to the end; the balance is exact; the card shows three done rooms and "Dalej" stays', async ({ page }) => {
+test('#16 S-25 FR-033 the children\'s room renovates in three stages, each a new background in the rendered frame, then is furnished to the end; the balance is exact; the card shows four rooms and "Dalej" moves to the bathroom', async ({ page }) => {
     await intoChildren(page);
     expect((await room(page)).tasksDone).toBe(0);
     expect((await room(page)).stagesDone).toBe(0);
@@ -74,15 +74,25 @@ test('#16 S-25 FR-033 the children\'s room renovates in three stages, each a new
     expect(stars).toBe(0);
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
     const card = (await room(page)).card!;
-    expect(card.items.map((item) => [item.kind, item.id, item.done])).toEqual([['room', 'salon', true], ['room', 'kitchen', true], ['room', 'children', true]]);
+    expect(card.items.map((item) => [item.kind, item.id, item.done])).toEqual([['room', 'salon', true], ['room', 'kitchen', true], ['room', 'children', true], ['room', 'bathroom', false]]);
+    expect(card.items[3]).toMatchObject({ unlocked: true });
     expect(card.items.some((item) => item.kind === 'teaser')).toBe(false);
 
+    // "Dalej" moves the child into the bathroom (S-31), the children's room state untouched; its change mode is proved through a visit.
+    const childrenBefore = (await snapshot(page)).rooms?.children;
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).card).toBeNull();
-    const after = await room(page);
-    expect(after.roomId).toBe('children');
-    expect(after.done).toBe(true);
-    expect(after.houseLabel).toBe('Dom');
+    await expect.poll(async () => (await snapshot(page)).currentRoom).toBe('bathroom');
+    expect((await snapshot(page)).rooms?.children).toEqual(childrenBefore);
+    await openHouse(page);
+    await expect.poll(async () => (await targets(page)).houseCells?.['upper-left'] ?? null).not.toBeNull();
+    await tapScene(page, (await targets(page)).houseCells!['upper-left']);
+    await screenIs(page, 'room');
+    await expect.poll(async () => (await room(page)).roomId, { timeout: 15_000 }).toBe('children');
+    const visit = await room(page);
+    expect(visit.visiting).toBe('children');
+    expect(visit.done).toBe(true);
+    expect(visit.houseLabel).toBe('Dom');
     expect((await targets(page)).modeButton ?? null).not.toBeNull();
 });
 

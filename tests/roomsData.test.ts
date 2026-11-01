@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
+import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -174,6 +174,34 @@ describe('children data (FR-033)', () => {
     });
 });
 
+describe('bathroom data (FR-033)', () => {
+    // Written from designs/martynka-bathroom-v1/manifest.json rooms.bathroom, not from bathroomSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['bathroom-tub', 468, 284, 441, 492, 20],
+        ['bathroom-sink', 943, 291, 313, 478, 25],
+        ['bathroom-cabinet', 1310, 408, 210, 398, 30],
+        ['bathroom-rug', 800, 712, 346, 188, 10],
+        ['bathroom-plant', 363, 583, 205, 225, 40],
+        ['bathroom-ducks', 1300, 316, 193, 129, 15],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(BATHROOM.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('is one stage first, then one task per slot in the pack order, each slot bought once', () => {
+        expect(BATHROOM.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        expect(BATHROOM.tasks[0].kind === 'stage' && BATHROOM.tasks[0].scene).toBeFalsy();
+        const slotTasks = BATHROOM.tasks.slice(1);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+
+    it('costs 5, 7, 9, 10, 12, 13, 15 = 71 stars', () => {
+        expect(BATHROOM.tasks.map((t) => t.cost)).toEqual([5, 7, 9, 10, 12, 13, 15]);
+        expect(BATHROOM.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(71);
+    });
+});
+
 describe('hangar flow (FR-047)', () => {
     it('keeps the child in the Hangar after its last task: Dalej stays', () => {
         const states = {
@@ -263,8 +291,8 @@ describe('salon data', () => {
         expect(pl.room.short(0, 15)).toBe('masz 0/15');
     });
 
-    it('lists the salon first, then the kitchen and the children\'s room, each unlocking after the one before (S-22, S-25)', () => {
-        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }, { room: 'children', unlockAfter: 'kitchen' }]);
+    it('lists the salon first, then the kitchen, the children\'s room and the bathroom, each unlocking after the one before (S-22, S-25, S-31)', () => {
+        expect(houseRoomList(FIRST_HOUSE, ROOMS)).toEqual([{ room: 'salon' }, { room: 'kitchen', unlockAfter: 'salon' }, { room: 'children', unlockAfter: 'kitchen' }, { room: 'bathroom', unlockAfter: 'children' }]);
         for (const id of Object.keys(ROOMS)) expect(typeof roomText.name(id), id).toBe('string');
     });
 
@@ -294,10 +322,21 @@ describe('salon data', () => {
         expect(moved.rooms.kitchen).toEqual(states.kitchen);
     });
 
-    it('keeps the child in the children\'s room after its last task: Dalej stays (S-25)', () => {
+    it('moves a finished children\'s room into the bathroom with an empty state and the others untouched (S-31)', () => {
         const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} }, kitchen: { tasksDone: ROOMS.kitchen.tasks.length, chosen: {} }, children: { tasksDone: CHILDREN.tasks.length, chosen: {} } };
         const moved = nextRoom({ rooms: states, currentRoom: 'children' }, FIRST_HOUSE, ROOMS);
-        expect(moved.currentRoom).toBe('children');
+        expect(moved.currentRoom).toBe('bathroom');
+        expect(moved.movedFrom).toBe('children');
+        expect(moved.rooms.bathroom).toEqual({ tasksDone: 0, chosen: {} });
+        expect(moved.rooms.salon).toEqual(states.salon);
+        expect(moved.rooms.kitchen).toEqual(states.kitchen);
+        expect(moved.rooms.children).toEqual(states.children);
+    });
+
+    it('keeps the child in the bathroom after its last task: Dalej stays, house 1 has no next room (S-31)', () => {
+        const states = { salon: { tasksDone: SALON.tasks.length, chosen: {} }, kitchen: { tasksDone: ROOMS.kitchen.tasks.length, chosen: {} }, children: { tasksDone: CHILDREN.tasks.length, chosen: {} }, bathroom: { tasksDone: ROOMS.bathroom.tasks.length, chosen: {} } };
+        const moved = nextRoom({ rooms: states, currentRoom: 'bathroom' }, FIRST_HOUSE, ROOMS);
+        expect(moved.currentRoom).toBe('bathroom');
         expect(moved.movedFrom).toBeNull();
     });
 
