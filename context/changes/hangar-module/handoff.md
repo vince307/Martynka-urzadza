@@ -1,27 +1,29 @@
 # Handoff — `hangar-module` (slice S-30)
 
-Written by the `/10x-research hangar-module` step of run 2026-10-31-space-base. Research is complete: the Hangar is data
-(`src/data/{rooms,houses,roomArt,pl}.ts`) plus art (`scripts/make-task-art.mjs` pack root + `ROOM_PACKS` row, 21 WebP in
-`public/assets/rooms/hangar/`); no scene, core or UI code changes. The next agent must not miss the three tests that pin
-`base-1` as a one-room base (they are expected edits, not regressions) and must add a v6 "Mostek done" fixture proof.
+Written by the `/10x-plan hangar-module` step of run 2026-10-31-space-base. The plan is written: four phases (impl, tdd,
+impl, e2e), data + art only, save v6 unchanged with one new frozen fixture. The next agent must not miss that the plan's
+whole point is the roadmap Risk: any phase touching `src/scenes`, `src/core`, `src/ui`, `src/main.ts` or `src/testing`
+stops BLOCKED; the S-29 e2e #16 is edited (not a regression) in phase 2.
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` (S-29 merge) |
-| Commits | 2 on top of `a4a0aee`: `docs(hangar-module): change identity (autonomous run)`, `docs(hangar-module): research` |
+| Commits | 3 on top of `a4a0aee`: change identity, research, `docs(hangar-module): plan` (this step) |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| Working tree | clean after the commit (only the three files below were staged) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 26 (`grep -c '^- \[ \]' plan.md`) |
+| Working tree | clean after the commit (only the five files below staged) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/hangar-module/research.md` | answers (a)–(f) with symbols: touch list, measured WebP sizes and boot payloads, cell/miniature path, "Dalej" + v6 back-compat + rollback path, smoke/"Obrazki" derivation, Polish copy table |
-| `context/changes/hangar-module/change.md` | frontmatter only: `status: new → preparing`, `updated` 2026-11-01 |
+| `context/changes/hangar-module/plan.md` | the plan: 4 phases with `Driver:` lines, success criteria, `## Autonomous decisions` P1-P7, `## Progress` |
+| `context/changes/hangar-module/plan-brief.md` | two-page brief |
+| `context/changes/hangar-module/change.md` | frontmatter `status: preparing → planned` |
+| `context/foundation/roadmap.md` | S-30 row and body `Status: proposed → planning` |
 | `context/changes/hangar-module/handoff.md` | this file |
 
 ## 3. Verification
@@ -29,29 +31,27 @@ Written by the `/10x-research hangar-module` step of run 2026-10-31-space-base. 
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/hangar-module` |
-| cwebp `-q 85 -alpha_q 100 -m 6` (the flags of `convert` in `scripts/make-task-art.mjs`) on the 21 PNGs of `designs/bystrow-space-base-v2/assets/{room,furniture}` into the session scratchpad | 606 452 B total (before 136 412, after 96 556, shadows 4 056; furniture 10 670–31 550 each); nothing written to `public/` |
-| `cat public/assets/rooms/<room>/*.webp \| wc -c` | salon 1 203 384, kitchen 797 758, bridge 699 124 B |
-| throwaway vitest summing `bootPayloadBytes` parts (file created and deleted in the same command, `git status` clean after) | non-room boot 889 112 B; salon 41.8 s, kitchen 33.7 s, bridge 31.8 s; Hangar computed 1 495 564 B = 29.9 s vs limit 48 s |
-| `npx vitest run tests/bootBudget.test.ts` | 4 passed (current tree, without the Hangar) |
-| throwaway vitest `unreachableSlots` on the manifest Hangar slots, all bought (created and deleted) | `[]` |
-| lint / typecheck / full unit / build / e2e | not run: research step, no product code changed (baseline in the agent contract: unit 4185, e2e 187, inherited, unverified) |
+| `gh run view --log --job 124766298916` (sandbox disabled) | line seen: `ok   precache covers room pictures — 79 of 79 room pictures precached` (cited in plan row 1.8; expected after S-30: 100 of 100) |
+| `gh run view --log --job 124765733845` (sandbox disabled) | lines seen: `Tests  4182 passed \| 3 skipped (4185)` (ANSI codes between) and `e2e hook: absent (2 chunks checked)` (cited in row 3.10) |
+| `python3` read of `designs/bystrow-space-base-v2/manifest.json` `rooms.hangar.slots` | six slots x/y/w/h/z as written in phase 1 contract |
+| grep of tests naming `bridge`/`base-1` | only `roomsData`, `roomArt`, `houseCells`, `fixtureLoadPath`, `house`, `saveV6`, e2e `base-cross-section` #16 and `first-building-choice` (the latter asserts only the start in Mostek: unaffected) |
+| lint / typecheck / unit / build / e2e | not run: plan step, no product code changed (baseline in the contract: unit 4185, e2e 187, inherited, unverified) |
 
 ## 4. Next command
 
-`/10x-plan hangar-module`
+`/10x-plan-review hangar-module`
 
 ## 5. Open
 
-- Plan must touch (from `research.md` § (a)): `src/data/rooms.ts` (`HANGAR`, `ROOMS`), `src/data/houses.ts` (`HOUSES['base-1']` + `{ room: 'hangar', floor: 0, place: 1 }`), `src/data/roomArt.ts` (`ROOM_SCENE_FILES.hangar`), `src/data/pl.ts` (`pl.room.names/tasks/slots/variants`), `scripts/make-task-art.mjs` (`SPACE_BASE_V2`-style root, `ROOM_PACKS` row `hangar`, `recolourBoard: false`), 21 WebP under `public/assets/rooms/hangar/`.
-- Tests to edit: `tests/roomsData.test.ts` ("… and the only room of the base", "keeps the child in Mostek after the last task: Dalej stays"), `tests/roomArt.test.ts` (snapshot equality of `ROOM_ART`, the per-room entry counts), `tests/e2e/base-cross-section.spec.ts` "#16 #2 S-29 FR-046" ("Dalej" now moves to the Hangar). New: Hangar data test (costs 100, manifest geometry), a frozen `tests/fixtures/save-v6-bridge-done.json` through the load path (`repairCurrentRoom` → `mergeHouse` → `nextRoom` lands in `hangar`), optional Hangar case in `tests/roomHit.test.ts` `unreachableSlots`.
-- DESIGN-GAPs for the plan: new row 201 (the kit has no Hangar wording; task labels and agreed variant forms are ours); row 196 edited (last module is now the Hangar, D3).
-- Follow-ups: base-cross-section 5 (gap 196) fires → narrowed, re-record in `follow-ups/review-fixes.md` at archive with trigger "a third base module or a designer answer". Atlas follow-up (kitchen-room 5 / first-building-choice 5) NOT fired (29.9 s vs 48 s). `FIRST_ROOM` follow-up not fired; `roomArtCheck` (`scripts/deploy-check/parse.ts`) is unused by `scripts/check-deploy.ts` — noted, out of scope.
-- Docs to update in the plan: CLAUDE.md "Current state" sentence for S-30; optionally a Hangar clause in the `balance.loader` comment (`src/data/balance.ts`).
+- Manual rows (human checklist): 1.7 [reviewer] teacher read of the Hangar copy in `src/data/pl.ts` (`room.slots/variants/tasks`); 1.8 [reviewer] (CI at ship) smoke `room pictures — 100 of 100`; 3.6 [visual] 8 frames × desktop 1440 + tablet 1024×768 on hook build 4399; 3.7 [human] accept Hangar costs 6-21 = 100 (roadmap unknown, owner author); 3.8 [human] accept the wording (gap 201) and the Hangar as last module (gap 196); 3.9 [human] real tablet offline; 3.10 [reviewer] (CI at ship) `Tests  <4182 + N> passed | 3 skipped`, `e2e hook: absent (`.
+- DESIGN-GAPs planned for phase 3: new row 201 (`docs/design-gaps.md`, Hangar wording ours), row 196 edited.
+- Follow-ups planned for phase 3 in `context/changes/hangar-module/follow-ups/review-fixes.md`: base-cross-section 5 narrowed; atlas, thumbnails, `FIRST_ROOM` carried; new `roomArtCheck` unused in `scripts/check-deploy.ts`; kitchen-room 6 ("the precache set") fires and must be handled.
+- Seam-sweep target named in the plan: duplicate `SPACE_BASE` / `SPACE` constants in `scripts/make-task-art.mjs`.
+- Risk: phase-4 e2e has 7 + 14 purchases, load-sensitive.
 
 ## 6. Autonomous decisions
 
-- R1 Scope derived from `change.md` and the step prompt (no question asked). Rejected: re-opening D1–D6 of `/10x-new`; none was contradicted by evidence. Changes if the plan finds a contradiction.
-- R2 No workers spawned: one data path already mapped by `change.md` and S-22/S-29 precedents; the skill's delegation default overridden for cost. Changes if a gap needed a broad sweep (none remained).
-- R3 Task labels recommended "Postaw rakietę / Postaw łazik / Postaw stół warsztatowy / Ustaw skrzynie z częściami / Postaw lampę / Połóż matę startową"; "Postaw lampę" over "Powieś lampę" because the sprite `hangar-lamp-natural.png` is a standing desk lamp. Changes after the plan's teacher read or a designer's wording.
-- R4 No e2e save seam for a finished-Mostek v6 save (it would add code in `src/testing/e2eHook.ts` and a marker in `vite/e2eHookGuard.mjs`); a frozen fixture unit test plus the in-session e2e path is the proof. Changes if the plan wants a browser-level FR-049-style proof for the base.
-- R5 Measured with cwebp into the scratchpad instead of `npm run art` (the script writes `public/`). Changes never for research.
+- Complexity and question budget decided from the artifacts (LOW-MEDIUM, 0 open product questions after research); phase structure approved in place. Would change: a reviewer finding an unresolved decision.
+- P1-P7 in `plan.md` `## Autonomous decisions` (copy as research recommended; frozen fixture + mirror test instead of an e2e seam; room unreachable first then the `HOUSES` row; S-29 e2e #16 edited not deleted; no `balance.loader` comment edit; `buyAllTasks` test helper; `[human]` rows for the author-owned prices and wording). No PRD deviation, so no PRD `[human]` row.
+- Roadmap status edit committed with the plan (step prompt), overriding the skill's "leave uncommitted" default.
+- No subagents spawned: research already mapped every file; local reads closed the gaps. Would change: a gap needing a broad sweep.
