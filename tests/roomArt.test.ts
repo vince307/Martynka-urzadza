@@ -8,6 +8,7 @@ import bathroomSnapshot from './fixtures/room-art-bathroom.json';
 import bridgeSnapshot from './fixtures/room-art-bridge.json';
 import childrenSnapshot from './fixtures/room-art-children.json';
 import hangarSnapshot from './fixtures/room-art-hangar.json';
+import labSnapshot from './fixtures/room-art-lab.json';
 import kitchenSnapshot from './fixtures/room-art-kitchen.json';
 import salonSnapshot from './fixtures/room-art-salon.json';
 
@@ -46,9 +47,10 @@ describe('room art table', () => {
         expect(roomArt(ROOMS.kitchen)).toEqual(kitchenSnapshot);
         expect(roomArt(ROOMS.bridge)).toEqual(bridgeSnapshot);
         expect(roomArt(ROOMS.hangar)).toEqual(hangarSnapshot);
+        expect(roomArt(ROOMS.lab)).toEqual(labSnapshot);
         expect(roomArt(ROOMS.children)).toEqual(childrenSnapshot);
         expect(roomArt(ROOMS.bathroom)).toEqual(bathroomSnapshot);
-        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot, ...childrenSnapshot, ...bathroomSnapshot, ...bridgeSnapshot, ...hangarSnapshot]);
+        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot, ...childrenSnapshot, ...bathroomSnapshot, ...bridgeSnapshot, ...hangarSnapshot, ...labSnapshot]);
     });
 
     it('has a scene-file row for every room of the data', () => {
@@ -57,13 +59,14 @@ describe('room art table', () => {
         }
     });
 
-    it('has 37 salon, 23 kitchen, 23 children room, 21 bathroom, 21 bridge and 21 hangar entries, each a WebP file of the tabled size', () => {
+    it('has 37 salon, 23 kitchen, 23 children room, 21 bathroom, 21 bridge, 21 hangar and 21 lab entries, each a WebP file of the tabled size', () => {
         expect(roomArt(ROOMS.salon)).toHaveLength(37);
         expect(roomArt(ROOMS.kitchen)).toHaveLength(23);
         expect(roomArt(ROOMS.children)).toHaveLength(23);
         expect(roomArt(ROOMS.bathroom)).toHaveLength(21);
         expect(roomArt(ROOMS.bridge)).toHaveLength(21);
         expect(roomArt(ROOMS.hangar)).toHaveLength(21);
+        expect(roomArt(ROOMS.lab)).toHaveLength(21);
         for (const art of ROOM_ART) {
             expect(webpSize(readFileSync(join(PUBLIC, art.url))), art.url).toEqual({ width: art.width, height: art.height });
         }

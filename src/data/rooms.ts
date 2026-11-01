@@ -196,6 +196,36 @@ export const HANGAR: RoomDef = {
     ],
 };
 
+// The Laboratorium (S-33, FR-046): the third module of the space base from the art pack bystrow-space-base-v3 (manifest room `lab`), geometry copied slot by slot.
+// Texture keys are `lab/<file id>`. No fixed decoration, no worn look and no contact shadows: the pack has none (README).
+const labSlots: SlotDef[] = [
+    { id: 'lab-microscope', x: 684, y: 444, width: 488, height: 472, z: 30, anchor: [244, 456], visibleRect: [16, 16, 456, 440], variants: ['lab/lab-microscope-natural', 'lab/lab-microscope-sunny', 'lab/lab-microscope-mint'] },
+    { id: 'lab-rocks', x: 634, y: 194, width: 203, height: 412, z: 15, anchor: [102, 396], visibleRect: [16, 16, 171, 380], variants: ['lab/lab-rocks-natural', 'lab/lab-rocks-sunny', 'lab/lab-rocks-mint'] },
+    { id: 'lab-flasks', x: 1094, y: 464, width: 340, height: 322, z: 25, anchor: [170, 306], visibleRect: [16, 16, 308, 290], variants: ['lab/lab-flasks-natural', 'lab/lab-flasks-sunny', 'lab/lab-flasks-mint'] },
+    { id: 'lab-globe', x: 1414, y: 434, width: 242, height: 329, z: 28, anchor: [121, 313], visibleRect: [16, 16, 210, 297], variants: ['lab/lab-globe-natural', 'lab/lab-globe-sunny', 'lab/lab-globe-mint'] },
+    { id: 'lab-stool', x: 724, y: 704, width: 204, height: 242, z: 40, anchor: [102, 226], visibleRect: [16, 16, 172, 210], variants: ['lab/lab-stool-natural', 'lab/lab-stool-sunny', 'lab/lab-stool-mint'] },
+    { id: 'lab-board', x: 344, y: 264, width: 292, height: 247, z: 10, anchor: [146, 231], visibleRect: [16, 16, 260, 215], variants: ['lab/lab-board-natural', 'lab/lab-board-sunny', 'lab/lab-board-mint'] },
+];
+
+export const LAB: RoomDef = {
+    id: 'lab',
+    scene: { before: 'lab/before', after: 'lab/after', shadows: 'lab/shadows' },
+    decor: [],
+    slots: labSlots,
+    worn: [],
+    contactShadows: [],
+    // Costs 6-21 = 100 stars (FR-046), the same ladder as the Mostek and the Hangar (S-17 tunes them).
+    tasks: [
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 6 },
+        { kind: 'slot', id: 'place-microscope', slot: 'lab-microscope', label: 'placeMicroscope', cost: 10 },
+        { kind: 'slot', id: 'place-rock-case', slot: 'lab-rocks', label: 'placeRockCase', cost: 13 },
+        { kind: 'slot', id: 'place-flask-table', slot: 'lab-flasks', label: 'placeFlaskTable', cost: 14 },
+        { kind: 'slot', id: 'place-moon-model', slot: 'lab-globe', label: 'placeMoonModel', cost: 17 },
+        { kind: 'slot', id: 'place-stool', slot: 'lab-stool', label: 'placeStool', cost: 19 },
+        { kind: 'slot', id: 'hang-board', slot: 'lab-board', label: 'hangBoard', cost: 21 },
+    ],
+};
+
 // The bathroom (S-31, FR-033, D1): the room `bathroom` of the art pack martynka-bathroom-v1, geometry copied slot by slot from its manifest.
 // Texture keys are `bathroom/<file id>`. One stage task (before -> after, no stage backgrounds), six slots with three variants each, no fixed decoration,
 // no worn look and no contact shadows: the pack has none. Costs 5 + 7/9/10/12/13/15 = 71 stars, the kitchen curve (S-17 tunes them).
@@ -226,5 +256,5 @@ export const BATHROOM: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [CHILDREN.id]: CHILDREN, [BATHROOM.id]: BATHROOM, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [CHILDREN.id]: CHILDREN, [BATHROOM.id]: BATHROOM, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR, [LAB.id]: LAB };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;

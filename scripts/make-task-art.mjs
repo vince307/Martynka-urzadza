@@ -21,6 +21,7 @@ const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
+const SPACE_BASE_V3 = join(ROOT, 'designs/bystrow-space-base-v3');
 const BATHROOM_V1 = join(ROOT, 'designs/martynka-bathroom-v1');
 const EVOLUTION_V1 = join(ROOT, 'designs/martynka-evolution-v1');
 const HOUSE_1_POLISH = join(ROOT, 'designs/martynka-house-1-polish-v1');
@@ -117,6 +118,14 @@ const ROOM_PACKS = [
         scene: ['hangar-before', 'hangar-after', 'hangar-shadows'],
         decor: [],
         furniture: ['rocket', 'rover', 'workbench', 'crates', 'lamp', 'mat'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `hangar-${slot}-${v}`)),
+        recolourBoard: false,
+    },
+    {
+        room: 'lab',
+        pack: SPACE_BASE_V3,
+        scene: ['lab-before', 'lab-after', 'lab-shadows'],
+        decor: [],
+        furniture: ['microscope', 'rocks', 'flasks', 'globe', 'stool', 'board'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `lab-${slot}-${v}`)),
         recolourBoard: false,
     },
 ];

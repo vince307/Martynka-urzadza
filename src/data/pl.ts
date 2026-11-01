@@ -415,7 +415,7 @@ export const pl = {
         choose: 'Wybieram',
         close: 'Zamknij',
         // DESIGN-GAP (docs/design-gaps.md rows 31-36): the kit has no slots, task button or variant panel copy; these strings are ours.
-        names: { salon: 'Salon', kitchen: 'Kuchnia', children: 'Pokój dziecięcy', bridge: 'Mostek', hangar: 'Hangar', bathroom: 'Łazienka' },
+        names: { salon: 'Salon', kitchen: 'Kuchnia', children: 'Pokój dziecięcy', bridge: 'Mostek', hangar: 'Hangar', lab: 'Laboratorium', bathroom: 'Łazienka' },
         // DESIGN-GAP (docs/design-gaps.md rows 37-41): the kit has no room-done card, room list or change mode; these strings are ours. No numerals.
         done: { title: 'Pokój gotowy!', spoken: 'Pokój gotowy!', teaser: 'Wkrótce' },
         change: { enter: 'Zmień wygląd', exit: 'Gotowe', hint: 'Stuknij mebel, który chcesz zmienić.' },
@@ -473,6 +473,13 @@ export const pl = {
             stackCrates: 'Ustaw skrzynie z częściami',
             placeWorkLamp: 'Postaw lampę',
             layLaunchMat: 'Połóż matę startową',
+            // DESIGN-GAP (docs/design-gaps.md row 208): the pack gives only slot labels and masculine family names; these task labels and the variant forms are ours (imperative + accusative).
+            placeMicroscope: 'Postaw mikroskop',
+            placeRockCase: 'Postaw gablotę z kamieniami',
+            placeFlaskTable: 'Postaw stół z kolbami',
+            placeMoonModel: 'Postaw model Księżyca',
+            placeStool: 'Postaw stołek',
+            hangBoard: 'Powieś tablicę magnetyczną',
         },
         // Nominative captions of the furniture, keyed by SlotDef.id (the minigame words are a fixed list in src/data/minigames.ts).
         slots: {
@@ -518,6 +525,12 @@ export const pl = {
             'hangar-crates': 'skrzynie z częściami',
             'hangar-lamp': 'lampa warsztatowa',
             'hangar-mat': 'mata startowa',
+            'lab-microscope': 'mikroskop',
+            'lab-rocks': 'gablota z kamieniami',
+            'lab-flasks': 'stół z kolbami',
+            'lab-globe': 'model Księżyca',
+            'lab-stool': 'stołek',
+            'lab-board': 'tablica magnetyczna',
         },
         // Names of the three variants of a slot (the art pack's manifest labels), keyed by SlotDef.id; index = variant.
         variants: {
@@ -562,6 +575,12 @@ export const pl = {
             'hangar-crates': ['Naturalne', 'Słoneczne', 'Miętowe'],
             'hangar-lamp': ['Naturalna', 'Słoneczna', 'Miętowa'],
             'hangar-mat': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'lab-microscope': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'lab-rocks': ['Naturalna', 'Słoneczna', 'Miętowa'],
+            'lab-flasks': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'lab-globe': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'lab-stool': ['Naturalny', 'Słoneczny', 'Miętowy'],
+            'lab-board': ['Naturalna', 'Słoneczna', 'Miętowa'],
         } as Record<string, readonly [string, string, string]>,
         // Fixed decoration of the renovated room (stand-in captions only), keyed by LayerDef.id.
         decor: {

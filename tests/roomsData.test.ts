@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
+import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, LAB, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -25,7 +25,8 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
+        // S-33 phase 1: no house lists the Laboratorium yet; phase 2 adds its HOUSES row and removes this exemption.
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'lab' ? 0 : 1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -137,6 +138,34 @@ describe('hangar data (FR-047)', () => {
     it('is the stage first, then one task per slot, each slot bought once', () => {
         expect(HANGAR.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         const slotTasks = HANGAR.tasks.slice(1);
+        expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+});
+
+describe('lab data (FR-046)', () => {
+    // Written from designs/bystrow-space-base-v3/manifest.json rooms.lab, not from labSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['lab-microscope', 684, 444, 488, 472, 30],
+        ['lab-rocks', 634, 194, 203, 412, 15],
+        ['lab-flasks', 1094, 464, 340, 322, 25],
+        ['lab-globe', 1414, 434, 242, 329, 28],
+        ['lab-stool', 724, 704, 204, 242, 40],
+        ['lab-board', 344, 264, 292, 247, 10],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(LAB.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('costs 6, 10, 13, 14, 17, 19, 21 = 100 stars', () => {
+        expect(LAB.tasks.map((t) => t.cost)).toEqual([6, 10, 13, 14, 17, 19, 21]);
+        expect(LAB.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(100);
+    });
+
+    it('is the stage first, then one task per slot, each slot bought once', () => {
+        expect(LAB.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        const slotTasks = LAB.tasks.slice(1);
         expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
         expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
     });

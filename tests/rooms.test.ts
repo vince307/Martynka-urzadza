@@ -335,8 +335,8 @@ describe('sceneKey and stageFade (kids-room phase 1)', () => {
         expect(stageFade(staged, at(4))).toBeNull();
     });
 
-    it('salon, Mostek and Hangar keep the old before/after ternary at every tasksDone', () => {
-        for (const id of ['salon', 'bridge', 'hangar']) {
+    it('salon, Mostek, Hangar and Laboratorium keep the old before/after ternary at every tasksDone', () => {
+        for (const id of ['salon', 'bridge', 'hangar', 'lab']) {
             const r = ROOMS[id];
             for (let n = 0; n <= r.tasks.length; n++) {
                 const st = at(n);

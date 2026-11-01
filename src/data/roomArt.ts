@@ -28,6 +28,7 @@ export const ROOM_SCENE_FILES: Readonly<Record<string, Readonly<Record<SceneRole
     bathroom: { before: 'bathroom-before', after: 'bathroom-after', shadows: 'bathroom-shadows' },
     bridge: { before: 'bridge-before', after: 'bridge-after', shadows: 'bridge-shadows' },
     hangar: { before: 'hangar-before', after: 'hangar-after', shadows: 'hangar-shadows' },
+    lab: { before: 'lab-before', after: 'lab-after', shadows: 'lab-shadows' },
 };
 
 const urlOf = (key: string): string => `assets/rooms/${key}.webp`;
