@@ -511,12 +511,12 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [ ] 2.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the two new files in `public/assets/house/`
-- [ ] 2.2 `npx vitest run tests/houseArt.test.ts tests/houseSceneWiring.test.ts tests/choiceArt.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-1 count> + N`
-- [ ] 2.3 Deliberate break: delete `base-1-cell-closed.webp` → the size and orphan cases red; put back `HOUSE_ART.every(` in `shellReady` → the wiring guard red; set the base cap to 90 000 → the cap case red (the base sum is above it); each restored; meta-check: the size oracle is the pack manifest, the filter guard proves wiring, the browser load of only one building is phase 5
-- [ ] 2.4 `npm run build` then `grep -o "assets/house/" dist/sw.js | wc -l` = 5 (sw.js is one line)
-- [ ] 2.5 `git diff --stat <phase-1 sha> -- public/assets/rooms public/assets/ui public/assets/tasks public/assets/choice src/scenes/BootScene.ts src/core/save.ts` empty
-- [ ] 2.6 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0`
+- [x] 2.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the two new files in `public/assets/house/` — 7db029e
+- [x] 2.2 `npx vitest run tests/houseArt.test.ts tests/houseSceneWiring.test.ts tests/choiceArt.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `<phase-1 count> + N` — 7db029e
+- [x] 2.3 Deliberate break: delete `base-1-cell-closed.webp` → the size and orphan cases red; put back `HOUSE_ART.every(` in `shellReady` → the wiring guard red; set the base cap to 90 000 → the cap case red (the base sum is above it); each restored; meta-check: the size oracle is the pack manifest, the filter guard proves wiring, the browser load of only one building is phase 5 — 7db029e
+- [x] 2.4 `npm run build` then `grep -o "assets/house/" dist/sw.js | wc -l` = 5 (sw.js is one line) — 7db029e
+- [x] 2.5 `git diff --stat <phase-1 sha> -- public/assets/rooms public/assets/ui public/assets/tasks public/assets/choice src/scenes/BootScene.ts src/core/save.ts` empty — 7db029e
+- [x] 2.6 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` — 7db029e
 
 #### Manual
 
