@@ -640,12 +640,12 @@ added or edited):
 
 #### Automated
 
-- [x] 3.1 `npm run art` then `git status --short public/assets` shows exactly the three modified salon files — SHA
-- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/bootBudget.test.ts tests/recolourBoard.test.ts` green; unit `<phase-2 count> + 0` (no test added; the swap is proven by the art fixtures and the phase-6 cream pixel) — SHA
-- [x] 3.3 Deliberate break: give the after entry `as: 'salon-after-cream'` → `npm run art` writes an orphan and `roomArt` "no file without a table entry" red; set the salon row `recolourBoard: true` → `npm run art` exits non-zero on the board-mask guard (or recolours the cream — either way the file differs from research's measured bytes); each restored and the art re-run; meta-check: what proves the cream is visible is the rendered pixel of phase 6, not these file checks — SHA
-- [x] 3.4 `git diff --stat <phase-2 sha> -- src tests/fixtures/save-*.json public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar` empty (no source change; only the script and three salon files) — SHA
-- [x] 3.5 Every spec the phase-3 e2e grep names, run singly (sandbox disabled), green, including `salon-load-health` (its `shadows.webp` route still matches) and `salon-style`; full e2e left to the orchestrator after phase 6 — SHA
-- [x] 3.6 Full local gate green — SHA
+- [x] 3.1 `npm run art` then `git status --short public/assets` shows exactly the three modified salon files — b1d6f31
+- [x] 3.2 `npx vitest run tests/roomArt.test.ts tests/bootBudget.test.ts tests/recolourBoard.test.ts` green; unit `<phase-2 count> + 0` (no test added; the swap is proven by the art fixtures and the phase-6 cream pixel) — b1d6f31
+- [x] 3.3 Deliberate break: give the after entry `as: 'salon-after-cream'` → `npm run art` writes an orphan and `roomArt` "no file without a table entry" red; set the salon row `recolourBoard: true` → `npm run art` exits non-zero on the board-mask guard (or recolours the cream — either way the file differs from research's measured bytes); each restored and the art re-run; meta-check: what proves the cream is visible is the rendered pixel of phase 6, not these file checks — b1d6f31
+- [x] 3.4 `git diff --stat <phase-2 sha> -- src tests/fixtures/save-*.json public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar` empty (no source change; only the script and three salon files) — b1d6f31
+- [x] 3.5 Every spec the phase-3 e2e grep names, run singly (sandbox disabled), green, including `salon-load-health` (its `shadows.webp` route still matches) and `salon-style`; full e2e left to the orchestrator after phase 6 — b1d6f31
+- [x] 3.6 Full local gate green — b1d6f31
 
 ### Phase 4: An e2e seam for a saved v6 kitchen
 
