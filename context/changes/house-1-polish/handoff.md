@@ -1,54 +1,61 @@
 # Handoff — `house-1-polish` (slice S-32)
 
-Written by the `/10x-e2e` step, phase 6, of run 2026-11-01-bathroom-polish-lab: the e2e spec is committed as `89e442b` `test(house-1-polish): kitchen stages, v6 kitchen and cream salon e2e (p6)`, all three breaks went red; all implementation phases are done and the slice is ready for review. The full e2e suite is the orchestrator's, not run here.
+Written by the `/10x-impl-review` step of run 2026-11-01-bathroom-polish-lab: full-plan review APPROVED, `MERGE: CLEAR`, no code fix needed; one WARNING went to follow-ups. The next agent must not tick 2.9 or 5.12 before the post-merge Deploy log shows them.
 
 ## 1. State
 
 | | |
 |---|---|
 | branch | `feat/house-1-polish`, from `main` at `964285b` |
-| commits | p1 `13cb528`, p2 `d2b8c24`, p3 `b1d6f31`, p4 `7a76b76`, p5 `e46d7f2`, p6 `89e442b` (+ the closing commit holding this handoff) |
+| commits | `8a667f5`..`d10e0d6` (16) + this review commit `docs(house-1-polish): impl review` |
 | pushed / PR / merged | no / none / no |
-| `change.md` status | `implemented` |
-| Progress rows remaining | 9 (`grep -c '^- \[ \]' plan.md`): 2.8, 2.9, 5.12 `[reviewer]`; 5.6 `[visual]`; 5.7-5.11 `[human]`; rows 6.1-6.3 ticked |
-| working tree | clean after the closing commit |
+| `change.md` status | `impl_reviewed` |
+| Progress rows remaining | 8 (`grep -c '^- \[ \]' plan.md`): 2.9, 5.12 `[reviewer] (CI at ship)`; 5.6 `[visual]`; 5.7-5.11 `[human]` |
+| working tree | clean after the review commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `tests/e2e/house-1-polish.spec.ts` | 3 tests, project `chromium-hook`: `#16 S-32 FR-033` kitchen three stages in the rendered frame with the exact balance, then furnished to 0 stars and the card; `#2 S-32 FR-021` the v6 kitchen (`?e2eSave=v6-kitchen`) on v7: `tasksDone 5`, `chosen`/`shown` = fixture, current task `place-kitchen-table`, wall reads the renovated look, `migratedFrom 6`, store ops start `write`,`backup` with one backup, `backup: 'done'`; `#2 S-32 FR-038` the salon board corner reads cream (255,245,223) in the room before and after the stage purchase and in the ground-left cell of the house, with the cell interior not cream |
-| `playwright.config.ts` | `house-1-polish` added to the `ROUND_SPEC` alternation, nothing else |
-| `context/changes/house-1-polish/plan.md`, `change.md` | rows 6.1-6.3 ticked with `89e442b`; status implemented |
-
-Pixel values (rendered 1920x1080 frame, measured by a probe in this phase): kitchen `(1200,300)` before/stage 1/stage 2/renovated = (127,67,23)/(153,107,63)/(218,173,135)/(237,194,153); `(480,580)` = (75,83,70)/(98,112,98)/(42,123,116)/(67,126,115) (separates stage 2 from renovated, 25 apart; the plan's "30 apart for every pair" holds for before-stage 1-stage 2, the last pair is 21-25 apart because the renovated look is close to stage 2 in the pack). Salon `(100,100)` cream now, (197,226,159) green before S-32.
+| `context/changes/house-1-polish/reviews/impl-review.md` | review report, verdict APPROVED, 0 critical / 1 warning / 3 observations, ends with `MERGE: CLEAR` |
+| `context/changes/house-1-polish/plan.md` | row 2.8 ticked with the Polish read |
+| `context/changes/house-1-polish/change.md` | status `impl_reviewed` |
+| `context/changes/house-1-polish/follow-ups/review-fixes.md` | item 14 (`isRecord` fourth copy, save-truth follow-up 20 fired) |
+| `context/changes/house-1-polish/handoff.md` | this file |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `npx playwright test tests/e2e/house-1-polish.spec.ts --list` | 3 tests, `chromium-hook` only |
-| single-spec run, `--workers=1`, sandbox off | 3 passed (before and after the breaks) |
-| break 1: swap the kitchen stage-1/stage-2 `scene` keys in `src/data/rooms.ts` | `#16` red: "Expected: true, Received: false" on the stage poll (`showsKitchenStage`); restored |
-| break 2: `done + 2` -> `done + 1` in `LIFT_V6_KITCHEN_STAGES` | `#2 FR-021` red: current task "Expected: place-kitchen-table, Received: place-fridge"; restored |
-| break 3: salon row back to `SALON_V2` scene files with `recolourBoard: true`, `npm run art` | `#2 FR-038` red: "Expected: true, Received: false" on the cream-corner check; script restored, `npm run art` re-run, `git status --short public/assets` empty |
-| meta-check | all colours come from `renderedPixel` (screenshot of the canvas), so a layer covering the background would also fail; break 3 is a different picture, not a label |
-| gate | lint clean, typecheck clean, unit 4254 passed (+0), build prints `e2e hook: absent (2 chunks checked)` |
-| servers | none left (ports 4397/4398 free) |
+| `npm run lint`, `npm run typecheck` | clean |
+| `npm test` | 4254 passed (baseline 4233 incl. 3 CI-skipped, +21) |
+| deploy + ops shell tests, `npm run sample -- E1..E6` | pass, all exit 0 |
+| `npm run build` | `e2e hook: absent (2 chunks checked)` |
+| break A `done + 1` in `LIFT_V6_KITCHEN_STAGES` | 13 unit failures (`saveV7`, `fixtureLoadPath`); restored |
+| break B `done < 0` | `0 becomes 0` red; restored |
+| break C `MIGRATIONS[6]` removed | 31 failures, saves `unreadable`, no loop; restored |
+| e2e break A on `house-1-polish.spec.ts -g FR-021`, `--workers=1`, sandbox off | red "Expected: place-kitchen-table, Received: place-fridge"; restored; spec 3 passed |
+| meta-check | the oracles are the frozen v6 file, the hand-written `save-v7.json` and literals, never the step's own output; e2e reads the rendered/store state |
+| `git diff --name-status 964285b -- tests/fixtures` | only added save fixtures (+ planned `room-art-kitchen.json` table) |
+| `git diff --stat 964285b -- deploy` | `deploy/README.md` only |
+| full e2e | not run here (orchestrator: 196 = 193 + 3, load timeouts pass alone) |
+| servers | none left (4397/4398/4399 free) |
 
 ## 4. Next command
 
-`/10x-impl-review house-1-polish`
+`visual gate (house-1-polish)`
 
 ## 5. Open
 
-- Full e2e suite: the orchestrator, once, from a pinned worktree; expected `193 + 3`, total equal to `npx playwright test --list | tail -1`.
-- `[visual]` 5.6; `[human]` 5.7-5.11; `[reviewer]` 2.8, 2.9, 5.12 (CI/ship).
-- Code outside data for the product owner (PR body): `src/core/save.ts`, `src/core/types.ts`, `src/core/migrations/kitchenStages.ts`, `scripts/make-task-art.mjs`, `src/testing/e2eHook.ts` + `vite/e2eHookGuard.mjs`, `deploy/README.md`.
+- `[visual]` 5.6: the 17-frame matrix in `plan.md` (kitchen stages, cross-fade, cream salon incl. Canvas, house cells, done cards, backdrops, `?e2eSave=v6-kitchen`, `?e2eArt=room`) into `reviews/visual-review.md`.
+- `[human]` 5.7 save v7, 5.8 kitchen costs 84, 5.9 salon cell fill (gap 207), 5.10 salon before look (gap 206), 5.11 tablet offline update.
+- `[reviewer] (CI at ship)` 2.9: Deploy job `deploy`, step `Smoke check (deploy)`, `146 of 146 room pictures precached`; 5.12: Deploy job `build`, `Run npm test` `Tests  4251 passed | 3 skipped (4254)`, `Run npm run build` `e2e hook: absent (`.
+- PR body „dla właściciela produktu”: `src/core/save.ts` (`SAVE_VERSION`, `MIGRATIONS`), `src/core/types.ts` (`SaveV7`), `src/core/migrations/kitchenStages.ts`, `scripts/make-task-art.mjs` (`ROOM_PACKS`), `src/testing/e2eHook.ts` + `vite/e2eHookGuard.mjs`, `deploy/README.md`.
+- Follow-ups 1-14 in `follow-ups/review-fixes.md`; new item 14 (`isRecord` in `kitchenStages.ts`).
 
 ## 6. Autonomous decisions
 
-- No `AskUserQuestion`; the manual gate and the next-phase question were decided in place (stop after phase 6).
-- Test 1 asserts the 30-apart step only for the first two stages; stage 3 -> renovated is judged by nearest-colour at a second point (25 apart), because the pack's stage 2 and renovated looks are that close. What would change this: a pack with a stronger stage 3.
-- Test 2 does not claim byte equality of `backup-v6` or persistence across a reload (plan review F1); the unit `fixtureLoadPath` cases own that.
-- Test 3 does not finish the salon: the "Dom" button is hidden under the room-done card, so it checks the cell after one stage purchase.
+- R1. Drift and quality checked inline rather than by the skill's two subagents: the non-test diff is about 80 lines I read in full. Would change: a larger code diff.
+- R2. F1 (`isRecord` fourth copy) recorded as follow-up, not fixed: extracting would edit two frozen migration steps. Would change: a non-frozen module needing it (the narrowed trigger).
+- R3. F2-F4 accepted as observations (unit literal for the 0 boundary, double version pin, fixture derived on the v6 code). Would change: a bug at `tasksDone 0` seen in a real write.
+- R4. Triage done in place, no `AskUserQuestion`; continuation "Done" (stop after this step).

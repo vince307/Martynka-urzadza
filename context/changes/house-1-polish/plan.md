@@ -299,7 +299,7 @@ stays (salon, bathroom, bridge, hangar). `ROOM_SCENE_FILES.kitchen` unchanged (s
 
 #### Manual Verification:
 
-- [reviewer] Polish-language read of the two new kitchen labels in `src/data/pl.ts` (imperative + accusative: "Posprzątaj kuchnię", "Odnów ściany", "Odnów podłogę"), each fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
+- [reviewer] Polish-language read of the two new kitchen labels in `src/data/pl.ts` (imperative + accusative: "Posprzątaj kuchnię", "Odnów ściany", "Odnów podłogę"), each fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff — impl-review: "Posprzątaj kuchnię" (acc. sg.), "Odnów ściany" (acc. pl.), "Odnów podłogę" (acc. sg.) correct imperatives; each shorter than the kitchen's existing "Postaw stół i krzesła" on the same button; sample E1-E6 exit 0
 - [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 146 of 146 room pictures precached` (SEEN at plan time in Deploy run 41330660160, job `deploy` 124920757998: `ok   precache covers room pictures — 144 of 144 room pictures precached`; expected 144 + 2; a row only the post-merge Deploy log proves is ticked by the orchestrator's docs PR, not on main)
 
 ---
@@ -633,7 +633,7 @@ added or edited):
 
 #### Manual
 
-- [ ] 2.8 [reviewer] Polish-language read of the two new kitchen labels in `src/data/pl.ts` (imperative + accusative: "Posprzątaj kuchnię", "Odnów ściany", "Odnów podłogę"), each fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
+- [x] 2.8 [reviewer] Polish-language read of the two new kitchen labels in `src/data/pl.ts` (imperative + accusative: "Posprzątaj kuchnię", "Odnów ściany", "Odnów podłogę"), each fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
 - [ ] 2.9 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 146 of 146 room pictures precached` (SEEN at plan time in Deploy run 41330660160, job `deploy` 124920757998: `ok   precache covers room pictures — 144 of 144 room pictures precached`; expected 144 + 2; a row only the post-merge Deploy log proves is ticked by the orchestrator's docs PR, not on main)
 
 ### Phase 3: The salon on the cream surround (art)

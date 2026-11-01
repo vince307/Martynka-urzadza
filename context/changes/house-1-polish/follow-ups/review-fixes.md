@@ -44,3 +44,12 @@ changed the file their trigger names or fired their trigger; each is closed with
 13. Kids-room 7 (texture atlas): the salon is now 1 182 246 B and stays the heaviest boot room (41.4 s at 50 KB/s, headroom kept by
     `tests/bootBudget.test.ts`).
     Trigger: `tests/bootBudget.test.ts` headroom under `balance.loader.totalMs` drops below 2 s, or a room heavier than the salon.
+
+## From the impl review
+
+14. Save-truth follow-up 20 (`isRecord` watch, "Trigger: a fourth copy in `src/core`") FIRED: `src/core/migrations/kitchenStages.ts`
+    carries a fourth local `isRecord` (beside `save.ts`, `saveFile.ts`, `migrations/legacySalon.ts`). Kept on purpose for now: the
+    migration steps are frozen and carry their own constants so a later edit of a shared module cannot change their meaning; an
+    extraction would edit two frozen steps. Impl-review F1 (WARNING).
+    Trigger: the next change that adds a `src/core` module needing `isRecord` outside `src/core/migrations/`, or an audit: extract
+    `src/core/isRecord.ts` for the non-frozen copies (`save.ts`, `saveFile.ts`) and leave the frozen steps local.
