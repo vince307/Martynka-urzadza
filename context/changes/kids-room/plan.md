@@ -673,9 +673,9 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 
 #### Automated
 
-- [x] 2.1 `npx vitest run tests/roomArt.test.ts tests/stageSceneWiring.test.ts tests/rooms.test.ts tests/backdrop.test.ts tests/bootBudget.test.ts` green; unit `<phase-1 count> + N`
-- [x] 2.2 Deliberate break: restore the ternary in `miniaturePieces` → the wiring test red; drop the stage-key entries from `roomArt` → the synthetic-room case red; each restored; meta-check: the wiring test proves the call sites, not the pixels — the rendered proof is phase 6
-- [x] 2.3 `git diff --stat <phase-1 sha> -- tests/fixtures src/data/rooms.ts src/data/houses.ts src/data/pl.ts public` empty (existing rooms unchanged)
+- [x] 2.1 `npx vitest run tests/roomArt.test.ts tests/stageSceneWiring.test.ts tests/rooms.test.ts tests/backdrop.test.ts tests/bootBudget.test.ts` green; unit `<phase-1 count> + N` — f2b304a — f2b304a
+- [x] 2.2 Deliberate break: restore the ternary in `miniaturePieces` → the wiring test red; drop the stage-key entries from `roomArt` → the synthetic-room case red; each restored; meta-check: the wiring test proves the call sites, not the pixels — the rendered proof is phase 6 — f2b304a
+- [x] 2.3 `git diff --stat <phase-1 sha> -- tests/fixtures src/data/rooms.ts src/data/houses.ts src/data/pl.ts public` empty (existing rooms unchanged) — f2b304a — f2b304a
 - [ ] 2.4 Full local gate green; e2e (orchestrator, `--workers=4`) `189 + 0` (salon stage specs `room-purchase`, `salon-style`, `salon-art`, `canvas-renderer` unchanged)
 
 ### Phase 3: The children's room as data, copy and art (unreachable)
