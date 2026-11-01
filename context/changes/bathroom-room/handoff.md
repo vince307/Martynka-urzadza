@@ -34,7 +34,7 @@ Phase 4 (`tdd`) is done and committed as 8eab432: one `HOUSES` row puts the bath
 | lint / typecheck | OK |
 | unit incl. deploy and ops tests, `sample` E1-E6 | `Tests 4233 passed (4233)` = phase-3 4228 + 5; samples 0 violations |
 | `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
-| e2e, one spec at a time, `--workers=1`, sandbox off | `kids-room` 2 passed, `kitchen-room` 4 passed, `rooms-as-data` 3 passed, `room-change` 2 passed,  4 passed |
+| e2e, one spec at a time, `--workers=1`, sandbox off | `kids-room` 2 passed, `kitchen-room` 4 passed, `rooms-as-data` 3 passed, `room-change` 2 passed, `house-cross-section` 4 passed |
 | 4.4 diffs | `git diff --stat 0af14dd -- src/scenes src/core src/ui src/main.ts src/testing src/data/rooms.ts src/data/layout.ts src/data/balance.ts public scripts` empty; the three older save fixtures untouched since `69694ce` |
 
 Grep `house-1|FIRST_HOUSE|'children'|toHaveLength(3)|upper-right|room:false:false` in `tests/e2e`: edited (table rows): `room-change` 189-192 (four items, bathroom locked), `kitchen-room` 61 and 110 (fourth tile), `rooms-as-data` 15 and 61 (`HOUSE` four cells, four items), `kids-room` 77-83 (four items, bathroom unlocked, "Dalej" -> bathroom, children's change mode via a visit). Stay true: `kids-room` #2 (upper-right still closed), `house-cross-section` (closed cells for unreached rooms), `first-building-choice`, `base-cross-section` (house id only), `salon-art` (thumb count 3), `save-backup-health`.
