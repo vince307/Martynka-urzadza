@@ -10,17 +10,17 @@ every house-1 card three tiles, so the tile resize lands in that same phase.
 | | |
 |---|---|
 | Branch | `feat/kids-room`, cut from `main` at `bfdf193` |
-| Commits on the branch | 3 after this step's commit (`docs(kids-room): change identity (autonomous run)`, `docs(kids-room): research`, `docs(kids-room): plan`) |
+| Commits on the branch | 4: change identity, research, `docs(kids-room): plan` (be56408) and `docs(kids-room): handoff row count` (this fix) |
 | Pushed / PR / merged | no / no / no |
 | `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
-| `## Progress` rows remaining | 42 (`grep -c '^- \[ \]' plan.md`), all pending |
+| `## Progress` rows remaining | 36 (`grep -c '^- \[ \]' plan.md`), all pending |
 | Working tree | clean after the commit (only the five files below were staged) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/kids-room/plan.md` | the plan: 6 phases, each with `Driver:` / `Driver why:`, deliberate breaks, baseline + delta, `## Autonomous decisions` P1-P10, `## Progress` with 42 rows |
+| `context/changes/kids-room/plan.md` | the plan: 6 phases, each with `Driver:` / `Driver why:`, deliberate breaks, baseline + delta, `## Autonomous decisions` P1-P10, `## Progress` with 36 rows |
 | `context/changes/kids-room/plan-brief.md` | two-page brief |
 | `context/changes/kids-room/change.md` | status `preparing` → `planned`; a Notes paragraph "For the product owner" listing every non-data file the plan touches |
 | `context/changes/kids-room/handoff.md` | this file |
