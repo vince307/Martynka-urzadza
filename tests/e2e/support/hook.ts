@@ -2,6 +2,7 @@
 // Every tap is a page.touchscreen.tap at a scene point from the hook's targets (1920x1080 space).
 // Shared by every spec that drives the game: Snapshot and Targets are the union of what the specs read
 // (the hook publishes the fields of the screen it is on; a spec reads only what its screen has).
+import { inflateSync } from 'node:zlib';
 import { expect, type CDPSession, type Page } from '@playwright/test';
 import type { AnswerMode } from '../../../src/core/tasks/visual';
 
@@ -598,3 +599,27 @@ export const housePixel = (page: Page, cellId: string): Promise<[number, number,
         const hook = (window as unknown as { __martynkaE2E?: { housePixel?: (cell: string) => [number, number, number, number] | null } }).__martynkaE2E;
         return hook?.housePixel?.(id) ?? null;
     }, cellId);
+
+/**
+ * One pixel of the RENDERED frame at a scene point (the canvas as the browser drew it, not a texture): maps the point like `tapScene`,
+ * screenshots a 1x1 clip and decodes the PNG (8-bit RGB/RGBA, one row: every PNG filter reduces to the raw bytes for one pixel).
+ */
+export const renderedPixel = async (page: Page, point: Point): Promise<[number, number, number]> => {
+    const at = await toPage(page, point);
+    const png = await page.screenshot({ clip: { x: Math.round(at.x), y: Math.round(at.y), width: 1, height: 1 }, type: 'png' });
+    let offset = 8;
+    const idat: Buffer[] = [];
+    while (offset < png.length) {
+        const length = png.readUInt32BE(offset);
+        const type = png.toString('ascii', offset + 4, offset + 8);
+        if (type === 'IHDR') {
+            expect(png[offset + 8 + 8]).toBe(8);
+            expect([2, 6]).toContain(png[offset + 8 + 9]);
+        } else if (type === 'IDAT') {
+            idat.push(png.subarray(offset + 8, offset + 8 + length));
+        }
+        offset += 12 + length;
+    }
+    const raw = inflateSync(Buffer.concat(idat));
+    return [raw[1], raw[2], raw[3]];
+};
