@@ -1,12 +1,12 @@
 ---
 project: "Bystrow"
-version: 4
+version: 5
 status: draft
 created: 2026-10-11
 updated: 2026-11-01
 prd_version: 5
 main_goal: quality
-top_blocker: external
+top_blocker: decisions
 milestone_id: ulica-i-domy
 milestone_seq: 3
 milestone_status: open
@@ -22,10 +22,10 @@ milestone_status: open
 
 **M-03: Ulica i domy** — Status: open
 
-- **Intent:** Po salonie dziecko urządza kolejne pokoje pierwszego domu wybierane w przekroju z piętrami, a gdy dom jest gotowy, wprowadzają się mieszkańcy i zostawiają naklejkę do albumu; potem otwiera się ulica z działkami i drugi dom. Nic z salonu nie przepada, gwiazdki z rund pozostają jedyną walutą, nowy pokój lub dom to dane i grafika. Kamień niesie też przeniesiony z M-02 balans po testach z córką (S-17), bo od zmierzonego tempa zależy wielkość ulicy. Od wersji 5 PRD (2026-10-31, decyzja autora: dopisać do M-03, baza najpierw) kamień obejmuje drugą budowlę: nowe dziecko wybiera na starcie dom albo bazę kosmiczną, a baza remontuje się moduł po module tak jak dom pokój po pokoju (Mostek, potem Hangar).
+- **Intent:** Po salonie dziecko urządza kolejne pokoje pierwszego domu wybierane w przekroju z piętrami, a gdy dom jest gotowy, wprowadzają się mieszkańcy i zostawiają naklejkę do albumu; potem otwiera się ulica z działkami i drugi dom. Nic z salonu nie przepada, gwiazdki z rund pozostają jedyną walutą, nowy pokój lub dom to dane i grafika. Kamień niesie też przeniesiony z M-02 balans po testach z córką (S-17), bo od zmierzonego tempa zależy wielkość ulicy. Od wersji 5 PRD (2026-10-31, decyzja autora: dopisać do M-03, baza najpierw) kamień obejmuje drugą budowlę: nowe dziecko wybiera na starcie dom albo bazę kosmiczną, a baza remontuje się moduł po module tak jak dom pokój po pokoju (Mostek, potem Hangar). Od wersji 5 roadmapy (2026-11-01, decyzje autora): dom 1 ma cztery pokoje (salon, kuchnia, pokój dziecięcy, łazienka) i mieszkańcy wchodzą po wszystkich czterech; baza ma cztery moduły (Mostek, Hangar, Laboratorium, Kajuty) i po nich wprowadza się załoga z naklejką do tego samego albumu (PRD Open Question 15 rozstrzygnięte); najpierw ścieżka domu.
 - **Source materials:** `context/foundation/prd.md` (v4): FR-032–FR-036 i FR-038–FR-041 z sekcji „Po v1 — ulica i domy”, Open Questions 5 i 11–14; FR-027 dla przeniesionego S-17; `docs/human-checklist.md`, decyzje z 2026-10-30; `context/foundation/prd.md` (v5): FR-042–FR-050 z sekcji „Po v1 — co urządzamy najpierw (dom albo baza kosmiczna)”, US-05–US-07, Open Questions 15–17.
 - **Done when:** every F-NN and S-NN below is `done`.
-- **Scope anchors:** FR-027 (przeniesione z M-02), FR-032, FR-033, FR-034, FR-035, FR-036, FR-038, FR-039, FR-040, FR-041; US-02 (dziecko urządza za gwiazdki); Guardrails „nic urządzonego nie znika”, „bez fabuły i dialogów”; PRD Open Questions 5, 11, 12, 13, 14; od v5 także FR-042, FR-043, FR-044, FR-045, FR-046, FR-047, FR-048, FR-049, FR-050, US-05, US-06, US-07, Guardrails wersji 5 (stare zapisy grają dalej w domu, te same zadania w obu tematach) i PRD Open Questions 15, 16, 17.
+- **Scope anchors:** FR-027 (przeniesione z M-02), FR-032, FR-033, FR-034, FR-035, FR-036, FR-038, FR-039, FR-040, FR-041; US-02 (dziecko urządza za gwiazdki); Guardrails „nic urządzonego nie znika”, „bez fabuły i dialogów”; PRD Open Questions 5, 11, 12, 13, 14; od v5 także FR-042, FR-043, FR-044, FR-045, FR-046, FR-047, FR-048, FR-049, FR-050, US-05, US-06, US-07, Guardrails wersji 5 (stare zapisy grają dalej w domu, te same zadania w obu tematach) i PRD Open Questions 15, 16, 17; od wersji 5 roadmapy decyzje autora z 2026-11-01 (łazienka jako czwarty pokój domu 1, załoga bazy jak mieszkańcy domu, dom najpierw) i gotowe paczki grafik `martynka-bathroom-v1`, `martynka-house-1-polish-v1`, `bystrow-space-base-v3`, `bystrow-space-base-v4`, `bystrow-space-base-v5`.
 
 ## Vision recap
 
@@ -33,9 +33,9 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 
 ## North star
 
-**S-28: Nowe dziecko wybiera bazę kosmiczną i remontuje Mostek** — pierwszy przepływ, który dowodzi, że drugi temat angażuje dziecko tak jak salon (PRD v5, Primary: nowe dziecko przechodzi ścieżkę wiek → Baza kosmiczna → rozgrzewka → rundy → remont Mostka; przekrój bazy domyka ją w S-29), a stare zapisy grają dalej w domu bez straty; decyzją autora z 2026-10-31 baza idzie przed pokojem dziecięcym i mieszkańcami.
+**S-24: Mieszkańcy wprowadzają się do domu 1 i zostawiają naklejkę** — gwiazda przewodnia od 2026-11-01 (decyzja autora: dom najpierw): pierwszy przepływ, który dowodzi, że ukończenie całego domu (cztery pokoje) daje dziecku nagrodę większą niż pojedynczy pokój (PRD Open Question 5, ryzyko motywacji po salonie); ten sam mechanizm niesie potem załogę bazy (S-35).
 
-> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu dziecka do zapisu, którego dostarczenie dowodzi, że ta część produktu działa. Do 2026-10-31 była nią S-24 (mieszkańcy); zostaje gwiazdą przewodnią ścieżki domu i wraca po bazie. Cel `quality` ustawia przed nią kontrakt „pokój to dane” i bezstratny zapis domów (F-04), żeby nic z salonu nie przepadło.
+> Gwiazda przewodnia (north star) to tutaj: najmniejszy wycinek od ekranu dziecka do zapisu, którego dostarczenie dowodzi, że ta część produktu działa. Do 2026-11-01 była nią S-28 (wybór bazy i Mostek, wdrożone #127); wcześniej S-24, do której teraz wraca. Cel `quality` stawia przed nią komplet pokoi domu 1 (S-25, S-31), żeby mieszkańcy wprowadzali się do skończonego domu.
 
 ## At a glance
 
@@ -48,8 +48,13 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-28  | first-building-choice | nowe dziecko wybiera dom albo bazę kosmiczną i z bazą remontuje Mostek; stare zapisy grają dalej w domu | F-04, S-22 | FR-042, FR-043, FR-044, FR-049, FR-050, US-05, US-06, US-07 | done |
 | S-29  | base-cross-section   | dziecko po Mostku zostaje w bazie i ogląda ją w przekroju; „Do pokoju” i przycisk „Baza” prowadzą po bazie | S-28, S-23 | FR-045, FR-046, FR-048                     | done |
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | done |
-| S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | proposed |
-| S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25         | FR-034, FR-040, FR-041, FR-035             | proposed |
+| S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | ready    |
+| S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | proposed |
+| S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | ready    |
+| S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25, S-31   | FR-034, FR-040, FR-041, FR-035             | proposed |
+| S-33  | lab-module           | dziecko z bazą po Hangarze remontuje Laboratorium; moduł w remoncie ma ramkę bazy    | S-30               | FR-046, FR-045, FR-035                     | ready    |
+| S-34  | cabins-module        | dziecko z bazą po Laboratorium remontuje Kajuty, czwarty moduł bazy                  | S-33               | FR-046, FR-035                             | proposed |
+| S-35  | base-crew-move-in    | gotową bazę zamieszkuje załoga, baza ożywa, dziecko dostaje naklejkę do albumu       | S-34, S-24         | FR-034, FR-040, FR-041, FR-035             | proposed |
 | S-26  | street-plots         | dziecko widzi ulicę z działkami i urządza drugi dom z innymi pokojami                | S-24, S-17         | FR-032, FR-036, FR-039, FR-040             | blocked  |
 | S-27  | district             | po kilku domach otwiera się dzielnica w innym otoczeniu                              | S-26               | FR-036                                     | proposed |
 
@@ -60,13 +65,13 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | Stream | Theme                    | Chain                                                    | Note                                                                                              |
 | ------ | ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | A      | Dom od środka            | `F-04` → `S-22` → `S-23` → `S-24` → `S-26` → `S-27`      | Cel `quality`: kontrakt danych i bezstratny zapis przed drugim pokojem; ulica dopiero po mieszkańcach. |
-| B      | Trzeci pokój             | `S-25`                                                   | Joins Stream A at `S-24`; równolegle z `S-23`; dowód, że pokój to tylko dane i grafika.             |
+| B      | Dom 1 do końca           | `S-25` → `S-31` → `S-32`                                 | Joins Stream A at `S-24` (mieszkańcy po czterech pokojach); `S-32` zależy tylko od `S-23` i może iść równolegle. |
 | C      | Balans po testach        | `S-17`                                                   | Przeniesione z M-02; zależy od obserwacji córki, nie od kodu; jego pomiar odblokowuje `S-26`.       |
-| D      | Baza kosmiczna           | `S-28` → `S-29` → `S-30`                                 | Wersja 5, najpierw (decyzja 2026-10-31); stoi na `F-04`/`S-22`/`S-23` ze Stream A, już gotowych; równolegle z `S-25`. |
+| D      | Baza kosmiczna           | `S-28` → `S-29` → `S-30` → `S-33` → `S-34` → `S-35`      | `S-28`–`S-30` wdrożone; dalej po ścieżce domu (decyzja 2026-11-01); `S-35` dołącza do Stream A przy `S-24` (ten sam mechanizm i album). |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-10-31` (auto-researched 2026-10-25 + user-confirmed 2026-10-30; po F-04, S-22, S-23 i przemianowaniu na „Bystrow” uzupełnione 2026-10-31 z kodu na `main` f7abccf).
+What's already in place in the codebase as of `2026-11-01` (po S-28–S-30: wybór budowli, przekrój bazy, Mostek i Hangar jako dane, zapis v6; reszta bez zmian) (auto-researched 2026-10-25 + user-confirmed 2026-10-30; po F-04, S-22, S-23 i przemianowaniu na „Bystrow” uzupełnione 2026-10-31 z kodu na `main` f7abccf).
 Foundations below assume these are present and do NOT re-scaffold them.
 
 - **Frontend:** present — gra Phaser 4.2.1; silnik pokoju: salon z danych (`src/data/rooms.ts`: zadania remontowe, sloty, 3 warianty), scena pokoju z panelem wariantów, karta „Pokój gotowy!” z kafelkiem „Wkrótce”, miniatura pokoju i tło zeszytu rysowane z żywych warstw; panel rodzica za bramką; wszystkie teksty w `src/data/pl.ts`. Od 2026-10-31: dom i pokoje są danymi (`src/data/houses.ts`, `src/data/rooms.ts`: salon i kuchnia), celebracja pokoju i „Dalej” do następnego pokoju, scena przekroju domu z miniaturami i przyciskiem „Dom”, grafika pokoju doładowywana w trakcie gry; ekran powitalny ma wiek i „Rodzic”, ale nie ma wyboru tematu.
@@ -177,30 +182,99 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### S-25: Pokój dziecięcy, trzeci pokój wyłącznie z danych
 
-- **Outcome:** dziecko po kuchni urządza pokój dziecięcy; jego dodanie dotyka wyłącznie danych pokoju i plików grafiki (dowód FR-033), celebracja i przekrój działają dla niego bez zmian w kodzie; pierwszy dom ma wtedy trzy pokoje (decyzja 2026-10-30).
+- **Outcome:** dziecko po kuchni urządza pokój dziecięcy; jego dodanie dotyka wyłącznie danych pokoju i plików grafiki (dowód FR-033), celebracja i przekrój działają dla niego bez zmian w kodzie; pierwszy dom ma wtedy trzy z czterech pokoi (decyzje 2026-10-30 i 2026-11-01).
 - **Change ID:** kids-room
 - **PRD refs:** FR-033, FR-035
 - **Prerequisites:** S-22
-- **Parallel with:** S-23, S-17, S-28, S-29, S-30
+- **Parallel with:** S-17, S-32, S-33, S-34
 - **Blockers:** — (pokój dziecięcy jest w `designs/martynka-evolution-v1`, z trzema etapami tła i łóżkiem w 3 formach).
 - **Unknowns:**
   - Jakie elementy i koszty ma pokój dziecięcy (jak w S-22)? — Owner: autor z grafikiem. Block: no.
 - **Risk:** jeśli ten wycinek wymaga zmian w kodzie poza danymi, F-04 i S-22 nie dotrzymały kontraktu i to tu się to ujawnia.
+- **Status:** ready
+
+### S-31: Łazienka, czwarty pokój domu 1
+
+- **Outcome:** dziecko po pokoju dziecięcym urządza łazienkę (ściany i podłoga, potem wanna, umywalka, szafka, dywanik, roślina i półka z kaczuszkami w 3 wariantach); łazienka zajmuje prawą górną komórkę przekroju domu zamiast zamkniętej „Wkrótce”, a jej dodanie to dane pokoju i pliki grafiki.
+- **Change ID:** bathroom-room
+- **PRD refs:** FR-033, FR-035, FR-038
+- **Prerequisites:** S-25
+- **Parallel with:** S-17, S-32, S-33, S-34
+- **Blockers:** — (paczka `martynka-bathroom-v1` gotowa 2026-10-31, QA 76/76).
+- **Unknowns:**
+  - Ceny łazienki (jak kuchnia, suma ok. 71, czy jak salon ok. 100)? — Owner: autor. Block: no (S-17 stroi).
+  - Czy po łazience przekrój domu 1 nie ma już żadnej komórki „Wkrótce” i co wtedy pokazuje karta celebracji pokoju (kafelek zapowiedzi)? — Owner: agent w `/10x-plan`. Block: no.
+- **Risk:** drugi dowód kontraktu „pokój to dane”; łazienka zamyka dom 1, więc tu po raz pierwszy dom nie ma następnego pokoju (to samo co ostatni moduł bazy w S-30).
 - **Status:** proposed
+
+### S-32: Kuchnia w etapach i salon na kremowym tle
+
+- **Outcome:** dziecko remontuje kuchnię w etapach jak pokój dziecięcy (posprzątaj, odnów ściany, potem podłoga i meble), a salon w przekroju domu i w zeszycie stoi na kremowym tle jak pozostałe pokoje; wszystko, co dziecko już urządziło w kuchni i salonie, zostaje.
+- **Change ID:** house-1-polish
+- **PRD refs:** FR-033, FR-038
+- **Prerequisites:** S-23
+- **Parallel with:** S-25, S-31, S-17, S-33, S-34
+- **Blockers:** — (paczka `martynka-house-1-polish-v1` gotowa 2026-11-01; QA 42/44, dwie niezaliczone kontrole to zbyt ostry próg zlecenia, nie grafika).
+- **Unknowns:**
+  - Kuchnia zyskuje dwa zadania na początku listy: jak zapis z kuchnią w trakcie lub skończoną zachowuje to, co kupione (wzór: S-16d, nowe zadania na końcu listy)? — Owner: agent w `/10x-plan`. Block: no.
+  - Salon na kremie zachowuje ciasny kadr narożnika i w przekroju wypełnia komórkę bardziej niż inne pokoje: zostawić, czy zamówić nowy kadr (wtedy zmienią się sloty)? — Owner: autor. Block: no.
+  - Czy kremowy salon zastępuje postarzenie zielonej planszy (`salon-style`, worn grade) i co z paczkami `martynka-salon-worn-v1/v2` w Odłożonych? — Owner: autor. Block: no.
+- **Risk:** zmienia dwa pokoje, w które dzieci już grają; najłatwiej tu złamać guardrail „nic urządzonego nie znika”, więc zapis i migracja są w centrum planu.
+- **Status:** ready
 
 ### S-24: Mieszkańcy wprowadzają się, naklejka do albumu
 
 - **Outcome:** gdy wszystkie pokoje domu są gotowe, dziecko widzi celebrację domu (mocniejsze natężenie tego samego mechanizmu co pokój): obrazek mieszkańców, jedno zdanie podziękowania czytane przez lektora, bez dialogów i wyborów, i dostaje naklejkę do albumu; dom zostaje zamieszkany (ożywa: np. kot w oknie, światło), dziecko może do niego wracać i zmieniać warianty za darmo; album jest dostępny z widoku domu, bez waluty, wymiany i pustych miejsc, które naciskają.
 - **Change ID:** residents-move-in
 - **PRD refs:** FR-034, FR-040 (celebracja domu), FR-041, FR-035
-- **Prerequisites:** S-23, S-25
-- **Parallel with:** S-17
-- **Blockers:** paczka mieszkańców domu 1 i naklejki od grafika (brief, P1).
+- **Prerequisites:** S-23, S-25, S-31
+- **Parallel with:** S-17, S-32, S-33, S-34
+- **Blockers:** — (paczki gotowe: mieszkańcy, naklejka, album, ikony i warstwy „życia” domu 1 w `martynka-house-street-v2`).
 - **Unknowns:**
   - Czy album jest osobnym ekranem, czy kartą nad widokiem domu (PRD Open Question 12, reszta)? — Owner: autor. Block: no (rozstrzygnąć w `/10x-plan`).
   - Treść zdania podziękowania i nazwy mieszkańców: czytane przez nauczyciela jak treść zadań, bez imion dziecka. — Owner: autor. Block: no.
-  - Czy baza też ma swoich mieszkańców (np. załogę), album i miejsce na ulicy (PRD Open Question 15)? Ten wycinek dotyczy domu, więc nie czeka. — Owner: autor. Block: no.
+  - Mechanizm celebracji budowli i album mają od początku obsłużyć też bazę (S-35), bez przepisywania. — Owner: agent w `/10x-plan`. Block: no.
 - **Risk:** gwiazda przewodnia ścieżki domu (po bazie, decyzja 2026-10-31); pierwsza „postać” w grze, więc guardrail „bez fabuły” jest tu najłatwiej złamać; ryzyko: scenka rośnie w dialog albo w wybory.
+- **Status:** proposed
+
+### S-33: Laboratorium, trzeci moduł bazy
+
+- **Outcome:** dziecko z bazą po Hangarze remontuje Laboratorium (ściany i podłoga, potem 6 elementów w 3 wariantach) w lewej górnej komórce przekroju bazy; moduł w remoncie ma w przekroju własną ramkę bazy zamiast ramki domu; dodanie modułu to dane i grafika.
+- **Change ID:** lab-module
+- **PRD refs:** FR-046, FR-045, FR-035
+- **Prerequisites:** S-30
+- **Parallel with:** S-25, S-31, S-32, S-17
+- **Blockers:** — (paczki `bystrow-space-base-v3`, QA 175/175, i ramka bazy `base-1-cell-frame.png` w `bystrow-space-base-v5`).
+- **Unknowns:**
+  - Ceny Laboratorium (jak Mostek i Hangar, 100)? — Owner: autor. Block: no.
+- **Risk:** trzeci dowód „moduł jak pokój”; Hangar przestaje być ostatnim modułem (follow-up 1 z S-30), więc wraca kafelek zapowiedzi na karcie celebracji.
+- **Status:** ready
+
+### S-34: Kajuty, czwarty moduł bazy
+
+- **Outcome:** dziecko z bazą po Laboratorium remontuje Kajuty w prawej górnej komórce przekroju; baza ma wtedy cztery moduły i żadnej śluzy „Wkrótce”.
+- **Change ID:** cabins-module
+- **PRD refs:** FR-046, FR-035
+- **Prerequisites:** S-33
+- **Parallel with:** S-25, S-31, S-32, S-17
+- **Blockers:** — (paczka `bystrow-space-base-v4`, QA 175/175).
+- **Unknowns:**
+  - Ceny Kajut. — Owner: autor. Block: no.
+- **Risk:** zamyka bazę; po nim „Dalej” nie ma dokąd prowadzić, dopóki S-35 nie da celebracji całej bazy.
+- **Status:** proposed
+
+### S-35: Załoga wprowadza się do bazy, naklejka do albumu
+
+- **Outcome:** gdy wszystkie cztery moduły bazy są gotowe, dziecko widzi celebrację budowli tym samym mechanizmem co dom (S-24): obrazek załogi, jedno zdanie podziękowania czytane przez lektora, naklejka do tego samego albumu; baza ożywa (światła, antena, łazik, ogródek), dziecko może do niej wracać i zmieniać warianty za darmo.
+- **Change ID:** base-crew-move-in
+- **PRD refs:** FR-034, FR-040, FR-041, FR-035
+- **Prerequisites:** S-34, S-24
+- **Parallel with:** S-17
+- **Blockers:** — (paczka `bystrow-space-base-v5`: załoga, naklejka, warstwy „życia” bazy, QA passed).
+- **Unknowns:**
+  - FR-034 mówi o domu; decyzja autora z 2026-11-01 rozszerza ją na bazę (PRD Open Question 15). Dopisać do PRD przez `/10x-prd` przed planem. — Owner: autor. Block: no.
+  - Treść zdania podziękowania załogi (czytane przez nauczyciela). — Owner: autor. Block: no.
+- **Risk:** jeśli S-24 zbuduje celebrację domu na sztywno, ten wycinek ją przepisze; dlatego zależy od S-24 i nie wyprzedza go.
 - **Status:** proposed
 
 ### S-26: Ulica z działkami i drugi dom
@@ -210,7 +284,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-032, FR-036 (ulica jako dane), FR-039, FR-040 (celebracja ulicy)
 - **Prerequisites:** S-24, S-17
 - **Parallel with:** —
-- **Blockers:** paczka ulicy, elewacji i skorupy domu 2 od grafika (brief, P2); pokoje domu 2 (pracownia, ogród zimowy, biblioteka) już są w `designs/`.
+- **Blockers:** paczka ulicy, działek i elewacji domu 1 zamówiona 2026-11-01 (`martynka-street-v1`, w kolejce grafika); skorupa domu 2 i jego mieszkańcy jeszcze niezamówione (brief, P2); pokoje domu 2 (pracownia, ogród zimowy, biblioteka) już są w `designs/`.
 - **Unknowns:**
   - Ile domów ma ulica i jak duże są kolejne domy; zależy od czasu na pokój zmierzonego w S-17 (PRD Open Question 11). — Owner: autor. Block: yes.
   - Które pokoje i jaki dodatek ma drugi dom, żeby wnosił coś nowego (decyzja 2026-10-30)? — Owner: autor. Block: no.
@@ -242,7 +316,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-29       | base-cross-section  | Przekrój bazy, zostaje w bazie po Mostku, przycisk „Baza”          | done                  | Zarchiwizowane 2026-11-01 → `context/archive/2026-11-01-base-cross-section/`; przekrój bazy jako dane (`HOUSE_GEOMETRY['base-1']`, `houseArtKeys`, skorupa i śluza z paczki), przycisk „Baza”/„Dom” z danych budowli, po Mostku celebracja pokoju i zostaje w bazie, zapis bez zmian (v6). |
 | S-30       | hangar-module       | Hangar z rakietą, drugi moduł bazy                                 | done                  | Zarchiwizowane 2026-11-01 → `context/archive/2026-11-01-hangar-module/`; Hangar jako same dane i grafika (`HANGAR` w `src/data/rooms.ts`, 7 zadań, ceny 6-21 = 100, paczka `bystrow-space-base-v2`, komórka parter-prawa), ostatni moduł bazy (luka 196 zawężona, 201 nowa), zapis bez zmian (v6, nowa zamrożona fikstura `save-v6-bridge-done.json`). Follow-upy z `Trigger:` w `context/archive/2026-11-01-hangar-module/follow-ups/review-fixes.md`: 1 (trzeci moduł bazy albo odpowiedź projektanta o celebracji ostatniego modułu), 2 (teksty Hangara od projektanta, ceny od autora albo S-17). |
 | S-25       | kids-room           | Pokój dziecięcy wyłącznie z danych i grafiki                       | yes                   | S-22 i S-23 gotowe; run `/10x-new kids-room`. Komórka pokoju dziecięcego (górna lewa) czeka w przekroju jako zamknięta; follow-up `Trigger: S-25` (id pokoju i komórka w domu) w `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md`, follow-up budżetu startu (`Trigger: … a third room`) w `context/archive/2026-10-31-kitchen-room/follow-ups/review-fixes.md`. |
-| S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Czeka na S-25 (S-23 gotowe); gwiazda przewodnia ścieżki domu. Follow-up `Trigger: S-24` (celebracja domu i ulicy, pamiątka) w `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md`. |
+| S-31       | bathroom-room       | Łazienka jako czwarty pokój domu 1                                 | no                    | Po S-25; paczka `martynka-bathroom-v1`. |
+| S-32       | house-1-polish      | Kuchnia w etapach i salon na kremowym tle                          | yes                   | S-23 gotowe; paczka `martynka-house-1-polish-v1`; run `/10x-new house-1-polish`. |
+| S-24       | residents-move-in   | Mieszkańcy wprowadzają się, naklejka do albumu                     | no                    | Czeka na S-25 i S-31 (S-23 gotowe); gwiazda przewodnia od 2026-11-01. Follow-up `Trigger: S-24` (celebracja domu i ulicy, pamiątka) w `context/archive/2026-10-31-house-cross-section/follow-ups/review-fixes.md`. |
+| S-33       | lab-module          | Laboratorium jako trzeci moduł bazy, ramka bazy                    | yes                   | S-30 gotowe; paczki `bystrow-space-base-v3` i ramka z v5; follow-up 1 z S-30 (`context/archive/2026-11-01-hangar-module/follow-ups/review-fixes.md`). |
+| S-34       | cabins-module       | Kajuty jako czwarty moduł bazy                                     | no                    | Po S-33; paczka `bystrow-space-base-v4`. |
+| S-35       | base-crew-move-in   | Załoga wprowadza się do bazy, naklejka do albumu                   | no                    | Po S-34 i S-24; najpierw dopisać decyzję o załodze do PRD (`/10x-prd`). |
 | S-26       | street-plots        | Ulica z działkami i drugi dom                                      | no                    | Blokuje PRD Open Question 11 (po S-17). |
 | S-27       | district            | Dzielnica w innym otoczeniu                                        | no                    | Po S-26; nice-to-have. |
 
@@ -254,7 +333,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 4. **Założenia „salonowe” w kodzie** (PRD Open Question 14): co z cieni, postarzenia, manifestu slotów i tabel migracji musi stać się danymi pokoju. — Owner: agent. Block: — (rozstrzyga badanie F-04).
 5. **Ryzyko: motywacja po salonie** (PRD Open Question 5): mierzy S-17; odpowiedzią tego kamienia jest S-24. — Owner: autor. Block: —.
 6. **Powrót wysyłek rodzica** (M-02, odłożony): kiedy S-18–S-21 wracają jako kolejny kamień; PRD Open Questions 8–10 są już rozstrzygnięte (2026-10-25). — Owner: autor. Block: — (następny kamień).
-7. **Baza a mieszkańcy, album i ulica** (PRD Open Question 15): czy baza ma swoich „mieszkańców” (np. załogę) i miejsce na ulicy, czy stoi osobno. — Owner: autor. Block: — (rozstrzygnąć przed kolejnym wycinkiem bazy po S-30; S-24 dotyczy domu).
+7. **Baza a mieszkańcy, album i ulica** (PRD Open Question 15): rozstrzygnięte 2026-11-01 (autor): baza ma załogę, która wprowadza się po czterech modułach i zostawia naklejkę w tym samym albumie (S-35). Otwarte: czy baza ma miejsce na ulicy, czy stoi osobno; decyzję o załodze dopisać do PRD (`/10x-prd`). — Owner: autor. Block: — (miejsce na ulicy rozstrzygnąć przed S-26).
+10. **Kolejność ścieżek** (decyzja autora 2026-11-01): najpierw dom (S-25 → S-31 → S-24, S-32 równolegle), potem baza (S-33 → S-34 → S-35). — Owner: autor. Block: —.
 8. **Zapis wyboru budowli** (PRD Open Question 17): obecny format v5 czy nowy v6; autor akceptuje v6 z tą samą polityką kopii i karty „nowszy zapis”. — Owner: agent. Block: — (rozstrzygnięte w S-28: v6, samo podbicie wersji nad kształtem v5, `MIGRATIONS[5]`, `backup-v5`).
 9. **Grafika Hangara** (PRD Open Question 16): rozstrzygnięte 2026-10-31, paczka `bystrow-space-base-v2` gotowa (QA 175/175, przeglądarka 32/32). — Owner: agent. Block: —.
 
