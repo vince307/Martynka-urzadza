@@ -529,17 +529,17 @@ complexity, 0 open product questions after research, 5 phases):
 - [x] 3.1 The new and flipped cases red before the code exists, green after; unit `<phase-2 count> + N` — fc493af — 0dbfcf9
 - [x] 3.2 Deliberate break: change a base cell's `x` → the manifest literal red; drop the `artQueued` reset → the guard red; drop `scene.stop(SCENE_KEYS.house)` → the guard red; each restored; meta-check: the literals come from the pack manifest and preview, not from the house entry; the guards prove wiring, the browser proof of the fresh scene is phase 5 test 3 — fc493af — 0dbfcf9
 - [x] 3.3 `git diff --stat <phase-2 sha> -- src/core/save.ts src/data/rooms.ts src/data/balance.ts src/main.ts public scripts` empty — fc493af — 0dbfcf9
-- [ ] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (no existing spec asserts the base has no zoom-out)
+- [x] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (no existing spec asserts the base has no zoom-out) — orchestrator, f51eedc (159 passed + 16 load failures re-judged `--last-failed --workers=1`: 25 passed, 184/184)
 
 ### Phase 4: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
 #### Automated
 
-- [ ] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "houseArtKeys|base-1-cell-closed|houseLabel" CLAUDE.md` present
-- [ ] 4.2 `grep -c "Trigger:" context/changes/base-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| (199|20[0-9]) " docs/design-gaps.md` ≥ 2
-- [ ] 4.3 Seam sweep: `grep -rn "until S-29\|No HOUSE_GEOMETRY entry yet\|S-29 adds" src tests` empty; `grep -rn "'base-1'" src` only in `src/data/houses.ts`, `src/data/pl.ts` and `src/core/types.ts`/the hook if they name it
-- [ ] 4.4 `git diff --stat <phase-3 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty
-- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0`
+- [x] 4.1 `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` PASS; `grep -nE "houseArtKeys|base-1-cell-closed|houseLabel" CLAUDE.md` present — PHASE4SHA
+- [x] 4.2 `grep -c "Trigger:" context/changes/base-cross-section/follow-ups/review-fixes.md` ≥ 10; `grep -cE "^\| (199|20[0-9]) " docs/design-gaps.md` ≥ 2 — PHASE4SHA
+- [x] 4.3 Seam sweep: `grep -rn "until S-29\|No HOUSE_GEOMETRY entry yet\|S-29 adds" src tests` empty; `grep -rn "'base-1'" src` only in `src/data/houses.ts`, `src/data/pl.ts` and `src/core/types.ts`/the hook if they name it — PHASE4SHA
+- [x] 4.4 `git diff --stat <phase-3 sha> -- src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` empty — PHASE4SHA
+- [ ] 4.5 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (local gate green at p4: lint, typecheck, 4185 unit, deploy/ops, sample E1-E6, build; the e2e count is the orchestrator's)
 
 #### Manual
 
