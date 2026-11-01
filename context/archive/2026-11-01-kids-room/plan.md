@@ -722,7 +722,7 @@ structure decided from the artifacts: 6 phases, ≤ 0 new UI components each):
 - [ ] 5.9 [human] Accept the children's room costs 5/6/7 (stages) + 7/9/10/12/13/15 = 84 stars (D3 as revised by plan review F1; S-17 tunes)
 - [ ] 5.10 [human] Accept the children's wording (gap 202): "Posprzątaj pokój", "Pomaluj ściany", "Odnów podłogę", the slot task labels, the agreed variant forms (Naturalne for "biurko i krzesło", Naturalna for skrzynia/szafa), and the bed forms from the pack
 - [ ] 5.11 [human] On a real tablet, installed and then offline: a child who finished the kitchen opens the children's room and its pictures draw at each stage (precache)
-- [ ] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4191 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41293904884, job `build` 124810627941: `Tests  4191 passed | 3 skipped (4194)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
+- [x] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4191 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41293904884, job `build` 124810627941: `Tests  4191 passed | 3 skipped (4194)` and `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds) — CI run 41313223064 (PR #133, job check 124867774192: `Tests  4212 passed | 3 skipped (4215)` = 4191 + 21, `e2e hook: absent (2 chunks checked)`)
 
 ### Phase 6: The children's room in the browser — e2e (FR-033; #16, #2)
 
