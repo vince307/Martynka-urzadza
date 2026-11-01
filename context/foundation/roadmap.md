@@ -49,7 +49,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-29  | base-cross-section   | dziecko po Mostku zostaje w bazie i ogląda ją w przekroju; „Do pokoju” i przycisk „Baza” prowadzą po bazie | S-28, S-23 | FR-045, FR-046, FR-048                     | done |
 | S-30  | hangar-module        | dziecko z bazą po Mostku remontuje Hangar z rakietą                                  | S-29               | FR-047                                     | done |
 | S-25  | kids-room            | dziecko urządza pokój dziecięcy dodany wyłącznie jako dane i grafika                 | S-22               | FR-033, FR-035                             | done     |
-| S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | proposed |
+| S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | planning |
 | S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | ready    |
 | S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25, S-31   | FR-034, FR-040, FR-041, FR-035             | proposed |
 | S-33  | lab-module           | dziecko z bazą po Hangarze remontuje Laboratorium; moduł w remoncie ma ramkę bazy    | S-30               | FR-046, FR-045, FR-035                     | ready    |
@@ -205,7 +205,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Ceny łazienki (jak kuchnia, suma ok. 71, czy jak salon ok. 100)? — Owner: autor. Block: no (S-17 stroi).
   - Czy po łazience przekrój domu 1 nie ma już żadnej komórki „Wkrótce” i co wtedy pokazuje karta celebracji pokoju (kafelek zapowiedzi)? — Owner: agent w `/10x-plan`. Block: no.
 - **Risk:** drugi dowód kontraktu „pokój to dane”; łazienka zamyka dom 1, więc tu po raz pierwszy dom nie ma następnego pokoju (to samo co ostatni moduł bazy w S-30).
-- **Status:** proposed
+- **Status:** planning
 
 ### S-32: Kuchnia w etapach i salon na kremowym tle
 

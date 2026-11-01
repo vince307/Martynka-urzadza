@@ -1,7 +1,7 @@
 ---
 change_id: bathroom-room
 title: Łazienka, czwarty pokój domu 1, i karta „Pokój gotowy!” z czterema kafelkami
-status: preparing
+status: planned
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null
@@ -22,10 +22,11 @@ The roadmap Risk is the point of this slice: the room itself must be data and ar
 maintainer's scope (`context/runs/2026-11-01-bathroom-polish-lab/scope.md`) puts the four-tile room-done card IN scope
 (kids-room follow-up 1, design gap 204), and that is the one expected change outside data.
 
-**For the product owner (to be finalised by the plan):** code outside room data and art that this slice is expected to
-change: the room-done card layout so four tiles fit (`src/ui/widgets/RoomDoneCard.ts` `show`, tile geometry
-`ROOM_DONE_LAYOUT` in `src/data/layout.ts`). Nothing else is expected; any further file the plan touches is named here
-and in the PR body „dla właściciela produktu”, with a `[human]` row.
+**For the product owner (finalised by the plan, P1/P2):** code outside room data and art that this slice changes: the
+room-done card width follows the tile count — new pure helper `roomDoneCardRect` in `src/core/roomDoneLayout.ts`, read by
+`src/ui/widgets/RoomDoneCard.ts` `show`; `ROOM_DONE_LAYOUT.card` in `src/data/layout.ts` holds `centerX`/`minWidth`/
+`padding` instead of `left`/`width`, `tiles.left` removed. Two- and three-tile cards are unchanged; four tiles give a card
+1516 px wide. Nothing else outside data; named in the PR body „dla właściciela produktu”, `[human]` row 5.7 of the plan.
 
 ## Roadmap claims re-verified against the repo (branch `feat/bathroom-room` at `e451fa8`)
 
