@@ -161,6 +161,16 @@ describe('HOUSE_GEOMETRY base (S-29 phase 3)', () => {
     });
 });
 
+describe('the Laboratorium cell (FR-046)', () => {
+    it('with the Mostek and Hangar done and the Laboratorium current: done, done, current in upper-left, closed', () => {
+        const base = HOUSES.find((h) => h.id === 'base-1')!;
+        const done = (r: string): boolean | null => (r === 'bridge' || r === 'hangar' ? true : r === 'lab' ? false : null);
+        const cells = houseCells(HOUSE_GEOMETRY['base-1'], base, 'lab', done);
+        expect(states(cells)).toEqual(['done', 'done', 'current', 'closed']);
+        expect(cells.find((c) => c.id === 'upper-left')?.room).toBe('lab');
+    });
+});
+
 describe('houseArtKeys', () => {
     it('lists the shell, the closed cell and the frame of the house', () => {
         expect(houseArtKeys(HOUSE_GEOMETRY['house-1'])).toEqual(['house/house-1-shell', 'house/cell-closed', 'house/cell-frame']);

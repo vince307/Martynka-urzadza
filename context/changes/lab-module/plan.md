@@ -536,11 +536,11 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [ ] 2.1 The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N`
-- [ ] 2.2 Deliberate break: give the lab row `place: 1` (floor 1, place 1 = the `upper-right` cell instead of `upper-left`) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path
-- [ ] 2.3 `npx playwright test tests/e2e/hangar-module.spec.ts` (sandbox disabled, single spec) green, 2 tests; the full e2e suite is NOT run here
-- [ ] 2.4 `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-1 sha>.. -- tests/fixtures/save-v7.json tests/fixtures/save-v6-bridge-done.json` empty
-- [ ] 2.5 Full local gate green; full e2e left to the orchestrator after phase 5
+- [x] 2.1 The flipped and new unit cases red before the `HOUSES` row exists, green after; unit `<phase-1 count> + N` — SHA
+- [x] 2.2 Deliberate break: give the lab row `place: 1` (floor 1, place 1 = the `upper-right` cell instead of `upper-left`) → the `houseCells` case red; drop the row → the roomsData, placement and fixture cases red; each restored; meta-check: the fixture case mirrors `main.ts`'s calls rather than running `main.ts`, so a reorder in `main.ts` would not be caught here — the phase-5 e2e reload is the browser proof of the same path — SHA
+- [x] 2.3 `npx playwright test tests/e2e/hangar-module.spec.ts` (sandbox disabled, single spec) green, 2 tests; the full e2e suite is NOT run here — SHA
+- [x] 2.4 `git diff --stat <phase-1 sha> -- src/scenes src/core src/ui src/main.ts src/testing src/core/save.ts src/data/rooms.ts src/data/balance.ts public scripts` empty; `git log --format=%h <phase-1 sha>.. -- tests/fixtures/save-v7.json tests/fixtures/save-v6-bridge-done.json` empty — SHA
+- [x] 2.5 Full local gate green; full e2e left to the orchestrator after phase 5 — SHA
 
 ### Phase 3: The base wears its own cell frame
 

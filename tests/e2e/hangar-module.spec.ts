@@ -78,7 +78,7 @@ test('#2 S-30 FR-047 the base shows Mostek done and the Hangar framed in its sec
     await expect.poll(async () => (await room(page)).roomId).toBe('hangar');
 });
 
-test('#16 S-30 FR-047 the Hangar is bought to the end: the card shows Mostek and Hangar with no teaser; "Dalej" stays in the Hangar; the balance is exact', async ({ page }) => {
+test('#16 S-30 S-33 FR-047 FR-046 the Hangar is bought to the end: the card shows Mostek, Hangar and the Laboratorium; "Dalej" opens the Laboratorium; the balance is exact', async ({ page }) => {
     await passWelcome(page, { ...QUIET, e2eStars: String(MOSTEK_TOTAL + HANGAR_TOTAL) }, 'space');
     await intoRoom(page);
     await buyAllTasks(page, BRIDGE);
@@ -90,15 +90,14 @@ test('#16 S-30 FR-047 the Hangar is bought to the end: the card shows Mostek and
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
 
     const card = (await room(page)).card!;
-    expect(card.items.map((item) => [item.kind, item.id, item.done])).toEqual([['room', 'bridge', true], ['room', 'hangar', true]]);
+    expect(card.items.map((item) => [item.kind, item.id, item.done])).toEqual([['room', 'bridge', true], ['room', 'hangar', true], ['room', 'lab', false]]);
     // The balance is the save's star count: every star spent, none below zero.
     expect((await snapshot(page)).stars).toBe(0);
 
     await tapTarget(page, 'cardNext');
     await expect.poll(async () => (await room(page)).card).toBeNull();
     const after = await room(page);
-    expect(after.roomId).toBe('hangar');
-    expect(after.done).toBe(true);
+    expect(after.roomId).toBe('lab');
+    expect(after.tasksDone).toBe(0);
     expect(after.houseLabel).toBe('Baza');
-    expect((await targets(page)).modeButton ?? null).not.toBeNull();
 });

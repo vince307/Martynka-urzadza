@@ -12,8 +12,8 @@ export const HOUSES: readonly HouseState[] = [
             { room: 'bathroom', floor: 1, place: 1 },
         ],
     },
-    // The space base (S-28): the Mostek, then the Hangar in the ground-right cell (S-30); its cross-section is HOUSE_GEOMETRY['base-1'] (S-29).
-    { id: 'base-1', rooms: [{ room: 'bridge', floor: 0, place: 0 }, { room: 'hangar', floor: 0, place: 1 }] },
+    // The space base (S-28): the Mostek, then the Hangar in the ground-right cell (S-30), then the Laboratorium, the third module, in upper-left (S-33); its cross-section is HOUSE_GEOMETRY['base-1'] (S-29).
+    { id: 'base-1', rooms: [{ room: 'bridge', floor: 0, place: 0 }, { room: 'hangar', floor: 0, place: 1 }, { room: 'lab', floor: 1, place: 0 }] },
 ];
 
 export const FIRST_HOUSE: HouseState = HOUSES[0];

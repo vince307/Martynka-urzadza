@@ -25,8 +25,7 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        // S-33 phase 1: no house lists the Laboratorium yet; phase 2 adds its HOUSES row and removes this exemption.
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'lab' ? 0 : 1);
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -104,7 +103,7 @@ describe('bridge data (FR-044)', () => {
     it('is the stage first, then six furniture tasks, and the first room of the base', () => {
         expect(BRIDGE.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         expect(BRIDGE.slots).toHaveLength(6);
-        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }, { room: 'hangar', unlockAfter: 'bridge' }]);
+        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }, { room: 'hangar', unlockAfter: 'bridge' }, { room: 'lab', unlockAfter: 'hangar' }]);
     });
 
     it('moves the child to the Hangar after the last Mostek task', () => {
@@ -232,13 +231,26 @@ describe('bathroom data (FR-033)', () => {
 });
 
 describe('hangar flow (FR-047)', () => {
-    it('keeps the child in the Hangar after its last task: Dalej stays', () => {
+    it('moves a finished Hangar into the Laboratorium: Dalej opens the third module', () => {
         const states = {
             bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} },
             hangar: { tasksDone: HANGAR.tasks.length, chosen: {} },
         };
         const moved = nextRoom({ rooms: states, currentRoom: 'hangar' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
-        expect(moved.currentRoom).toBe('hangar');
+        expect(moved.currentRoom).toBe('lab');
+        expect(moved.movedFrom).toBe('hangar');
+    });
+});
+
+describe('lab flow (FR-046)', () => {
+    it('keeps the child in the Laboratorium after its last task: Dalej stays (the last module, gap 196)', () => {
+        const states = {
+            bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} },
+            hangar: { tasksDone: HANGAR.tasks.length, chosen: {} },
+            lab: { tasksDone: LAB.tasks.length, chosen: {} },
+        };
+        const moved = nextRoom({ rooms: states, currentRoom: 'lab' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
+        expect(moved.currentRoom).toBe('lab');
         expect(moved.movedFrom).toBeNull();
     });
 });
