@@ -25,8 +25,8 @@ changed the file their trigger names, closed with evidence, or re-recorded with 
 
 ## Carried unchanged (re-recorded)
 
-8. First-building-choice 18 (small seams: `ChoiceCard` pressed fill, a guard matching a condition anywhere in the file).
-   Trigger: the next change to `ChoiceCard` or `WelcomeScene.createChoice`.
+8. First-building-choice 18 (small seams: `ChoiceCard` pressed fill, a guard matching a condition anywhere in the file, and the `FIRST_ROOM` fallbacks in `SalonBackdrop`, `HouseScene`, `RoomScene`, `TaskScene`; the base never reaches them, research § 5).
+   Trigger: the next change to `ChoiceCard` or `WelcomeScene.createChoice`, or a second building without a salon reaching a `FIRST_ROOM` fallback.
 9. First-building-choice 11 (v6 is a version bump; save-format dependent items from S-13 wait).
    Trigger: v7, or the next change to `src/core/migrations/`.
 10. First-building-choice 16 (`UIScene.create` asks `refreshHealth(chosenRoom)` only when the room record has `total === 0`; "Obrazki" can keep the other building's record until the next launch).

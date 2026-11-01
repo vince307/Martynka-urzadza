@@ -571,7 +571,7 @@ export class RoomScene extends Scene {
             card: this.cardDrawn ? { title: pl.room.done.title, items: this.listItems(), celebration: { ...this.celebrationUsed } } : null,
             doneMiniature: this.cardDrawn ? this.doneCard.miniature() : null,
             visiting: this.visiting,
-            houseLabel: this.houseButton.target() ? (pl.house.open[((this.registry.get(REGISTRY_KEYS.house) as HouseState | undefined) ?? FIRST_HOUSE).id] ?? null) : null,
+            houseLabel: this.houseButton.text(),
             modeText: this.modeButton.target() ? (this.mode === 'change' ? pl.room.change.exit : pl.room.change.enter) : null,
         };
     }

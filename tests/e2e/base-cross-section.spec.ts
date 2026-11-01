@@ -109,8 +109,11 @@ test('#16 #2 S-29 FR-046 after the last Mostek purchase the card hides "Baza"; "
     await page.waitForFunction(() => '__martynkaE2E' in window, undefined, { timeout: 15_000 });
     await screenIs(page, 'task');
     await phaseIs(page, 'first');
+    // FR-046: stars keep accumulating in the base after the Mostek is done.
+    const starsBefore = Number((await snapshot(page)).counterText);
     await answerRight(page);
     await phaseIs(page, 'done');
+    await expect.poll(async () => Number((await snapshot(page)).counterText)).toBeGreaterThan(starsBefore);
     await tapTarget(page, 'roomSwitch');
     await screenIs(page, 'room');
     await expect.poll(async () => (await room(page)).roomId).toBe('bridge');

@@ -55,6 +55,7 @@ describe('RoomScene visit wiring', () => {
     });
     it('the zoom-out label is chosen by the saved building and the snapshot reports it (FR-048)', () => {
         expect(source).toContain('pl.house.open[savedHouse.id]');
-        expect(source).toMatch(/houseLabel:/);
+        // The snapshot reads the label the button draws, not a second lookup by house id (impl review F1: a label bug must show in the hook).
+        expect(source).toContain('houseLabel: this.houseButton.text()');
     });
 });
