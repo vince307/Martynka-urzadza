@@ -7,7 +7,7 @@ Written by the `/10x-impl-review hangar-module` step of run 2026-10-31-space-bas
 | | |
 |---|---|
 | Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` |
-| Commits | 19 on the branch after this step's docs commit: phases `041e279`, `de5ab57`, `862dca7`, `baa785b`; review fixes `c5df38d`, `78d7f1d`; the rest docs |
+| Commits | 18 on the branch (`a4a0aee..HEAD`) after this step's docs commit: phases `041e279`, `de5ab57`, `862dca7`, `baa785b`; review fixes `c5df38d`, `78d7f1d`; the rest docs |
 | Pushed / PR / merged | no / none / no |
 | `change.md` status | `impl_reviewed` |
 | `## Progress` rows remaining | 5: 1.8, 3.10 [reviewer] (CI at ship); 3.7, 3.8, 3.9 [human] |
