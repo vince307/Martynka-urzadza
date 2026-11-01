@@ -1,6 +1,6 @@
 # Handoff — `lab-module` (slice S-33)
 
-Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all eleven row-4.6 states captured at 1440 and 1024 on the hook build, `VISUAL: PASS`, no fix, no new gap. The one thing not to get wrong: the remaining open rows are [reviewer] (CI at ship) and [human] only; nothing in `src/` changed in this step.
+Written by the ship step of run 2026-11-01-bathroom-polish-lab (final pre-merge state): the change is archived to `context/archive/2026-11-01-lab-module/`, roadmap S-33 is `done` and S-34 is ready for `/10x-plan`. The one thing not to get wrong: the remaining open rows are [reviewer] (CI at ship), proved by the post-merge Deploy log, and [human] only (post-run checklist, not a blocker).
 
 ## 1. State
 
@@ -8,8 +8,8 @@ Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all eleve
 |---|---|
 | branch | `feat/lab-module`, cut from `main` at `60472aa` |
 | commits | `b255848`..this handoff commit; phases `947e665` (p1), `e9e6ae2` (p2), `48e67df` (p3), `88004b6` (p4), `be81f83` (p5), epilogue `0f4d052`, review fix `7c8b9a5`, impl review `b35554b`, then `docs(lab-module): bramka wizualna` |
-| pushed / PR / merged | no / none / no |
-| `change.md` status | `impl_reviewed` |
+| pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-11-01-bathroom-polish-lab/run-log.md |
+| `change.md` status | `archived` (commit `chore(archive): close lab-module`) |
 | Progress rows remaining | 7 of 35: 1.8, 3.7, 4.12 [reviewer] (CI at ship); 4.8-4.11 [human] |
 | working tree | clean after the handoff commit |
 
@@ -17,12 +17,12 @@ Written by the visual-gate step of run 2026-11-01-bathroom-polish-lab: all eleve
 
 | path | what it is |
 |---|---|
-| `context/changes/lab-module/reviews/visual-review.md` | visual gate, items (1)-(11), hand-checked stars, ends `VISUAL: PASS — …` |
-| `context/changes/lab-module/screenshots/README.md` | route, hook facts, frame table |
-| `context/changes/lab-module/screenshots/{desktop,tablet}-*.png` | 24 game frames (12 shots × 2 widths) |
-| `context/changes/lab-module/screenshots/kit-*.png` | 4 pack frames copied read-only from `designs/bystrow-space-base-v3/screenshots/` and `designs/bystrow-space-base-v5/screenshots/` |
-| `context/changes/lab-module/plan.md` | row 4.6 ticked |
-| `context/changes/lab-module/handoff.md` | this file |
+| `context/archive/2026-11-01-lab-module/reviews/visual-review.md` | visual gate, items (1)-(11), hand-checked stars, ends `VISUAL: PASS — …` |
+| `context/archive/2026-11-01-lab-module/screenshots/README.md` | route, hook facts, frame table |
+| `context/archive/2026-11-01-lab-module/screenshots/{desktop,tablet}-*.png` | 24 game frames (12 shots × 2 widths) |
+| `context/archive/2026-11-01-lab-module/screenshots/kit-*.png` | 4 pack frames copied read-only from `designs/bystrow-space-base-v3/screenshots/` and `designs/bystrow-space-base-v5/screenshots/` |
+| `context/archive/2026-11-01-lab-module/plan.md` | row 4.6 ticked |
+| `context/archive/2026-11-01-lab-module/handoff.md` | this file |
 
 ## 3. Verification
 
@@ -39,14 +39,14 @@ No deliberate break in this step (no code or spec changed).
 
 ## 4. Next command
 
-`/10x-archive lab-module` then ship (no hosted db push)
+`none — shipped`
 
 ## 5. Open
 
 - [reviewer] (CI at ship) 1.8 (`deploy` / `Smoke check (deploy)`: `167 of 167 room pictures`), 3.7 (`6 of 6 house pictures`, `precache served: 261/261`), 4.12 (`build` / `Run npm test`: `Tests  4260 passed | 3 skipped`; `Run npm run build`: `e2e hook: absent (`).
 - [human] 4.8 costs 6-21 = 100 (`LAB.tasks`), 4.9 wording (gap 208, `pl.room.tasks`), 4.10 no teaser on the last module (`houseRoomList`), 4.11 real tablet offline (also: does the mint frame read on a real screen).
 - No new `DESIGN-GAP`. Existing gap 174 kind seen on the stand-in path (microscope box touching the task button, `RoomLayer` stand-in) — no new row.
-- Follow-ups: `context/changes/lab-module/follow-ups/review-fixes.md` (12 `Trigger:` lines), unchanged. No `ARTIFACT GAP`.
+- Follow-ups: `context/archive/2026-11-01-lab-module/follow-ups/review-fixes.md` (12 `Trigger:` lines), unchanged. No `ARTIFACT GAP`.
 
 ## 6. Autonomous decisions
 
@@ -55,3 +55,4 @@ No deliberate break in this step (no code or spec changed).
 - Route C extended by one slot purchase to show a labelled stand-in box. Would change: nothing.
 - The first run's relative output path wrote the frames to `/Users/kamilp/Dev/context/…` outside the repo; I moved them into the change dir (sandbox disabled for that move only) and removed the stray folder; the re-run used an absolute path. Would change: nothing.
 - No fix, no gap row: every finding matches the pack or an existing gap. Would change: the maintainer rejecting 4.8 or 4.9.
+- Ship step: archived with 7 open Progress rows (1.8, 3.7, 4.12 [reviewer] (CI at ship); 4.8-4.11 [human]). Chosen: archive (skill's "Continue archiving"). Rejected: "Resume implementation". Why: the [reviewer] rows can only be proved by the post-merge Deploy log and the [human] rows are the post-run checklist; no automated row is open. Would change: an open automated row without the (CI at ship) tag.
