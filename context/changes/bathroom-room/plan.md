@@ -600,10 +600,10 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 
 #### Automated
 
-- [ ] 1.1 New cases red before the helper exists, green after; unit `baseline + N`
-- [ ] 1.2 Deliberate break: drop `2·padding` from the width → the n=4 case red; centre tiles on `left + minWidth/2` instead of `centerX` → the n=4 tile case red; each restored; meta-check: the expectations are literals computed by hand from today's 388/1144 card, not by the helper
-- [ ] 1.3 `git diff --stat 6b96a9f -- src/ui src/scenes src/data src/testing tests/e2e` empty
-- [ ] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); no e2e in this phase (no spec touched; the orchestrator runs the full suite after phase 6)
+- [x] 1.1 New cases red before the helper exists, green after; unit `baseline + N` — 7c742b8
+- [x] 1.2 Deliberate break: drop `2·padding` from the width → the n=4 case red; centre tiles on `left + minWidth/2` instead of `centerX` → the n=4 tile case red; each restored; meta-check: the expectations are literals computed by hand from today's 388/1144 card, not by the helper — 7c742b8
+- [x] 1.3 `git diff --stat 6b96a9f -- src/ui src/scenes src/data src/testing tests/e2e` empty — 7c742b8
+- [x] 1.4 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); no e2e in this phase (no spec touched; the orchestrator runs the full suite after phase 6) — 7c742b8
 
 ### Phase 2: The card reads the rule; two- and three-tile cards unchanged
 

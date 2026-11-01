@@ -1,77 +1,55 @@
 # Handoff — `bathroom-room` (slice S-31)
 
-Written by the `/10x-plan-review` step of run 2026-11-01-bathroom-polish-lab: the plan is reviewed (VERDICT: PROCEED,
-0 critical, 2 warnings fixed in `plan.md`, 3 observations), nothing is implemented. The next agent must not let the
-`HOUSES` row (phase 4) land before the card rule (phases 1-2), and in phase 2 must rewrite the layout test that builds
-`rect(card)` (plan review F1) — removing `card.left`/`card.width` breaks it at typecheck.
+Phase 1 (`tdd`) is done and committed as `7c742b8`: the pure rule `roomDoneCardRect` exists with tests. Nothing visible changed. Phase 2 switches `RoomDoneCard.show` and `ROOM_DONE_LAYOUT.card` to it and must rewrite the layout test that builds `rect(card)` (plan review F1).
 
 ## 1. State
 
 | | |
 |---|---|
 | Branch | `feat/bathroom-room`, cut from `main` at `e451fa8` |
-| Commits | 4 on the branch after this step: `c208e25` identity, `6b96a9f` research, `78c59e5` plan, then `docs(bathroom-room): plan review` |
+| Commits | identity, research, plan, plan review, then `7c742b8` phase 1, then this handoff |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `plan_reviewed` |
-| `## Progress` rows remaining | 37 (`grep -c '^- \[ \]' plan.md`; the review added no row) |
-| Working tree | clean after the commit |
+| `change.md` status | `plan_reviewed` (unchanged) |
+| `## Progress` rows remaining | 33 (rows 1.1-1.4 ticked with ` — 7c742b8`) |
+| Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/bathroom-room/reviews/plan-review.md` | plan review report: grounding, F1-F5 with decisions, `VERDICT: PROCEED` |
-| `context/changes/bathroom-room/plan.md` | edited: phase 2 Tests (F1, rewrite the "keeps the mode button…" layout test on `roomDoneCardRect` for n 2..5, every assertion kept); phase 5 follow-ups (F2, kids-room 10 / kitchen-room 6 re-recorded for the precache set); phase 6 tile pixel candidate (F3, (1370, 560) instead of the caption line) |
-| `context/changes/bathroom-room/change.md` | status `planned` → `plan_reviewed` |
-| `context/changes/bathroom-room/handoff.md` | this handoff |
+| `src/core/roomDoneLayout.ts` | new: `roomDoneCardRect(count, spec)` returning `{ left, width, tileLefts }`, plus `CardSpec`, `CardRect` |
+| `tests/roomDoneLayout.test.ts` | new: 7 cases (n 0..5 literals from today's 388/1144 card, tiles inside the card for 1..5) |
+| `context/changes/bathroom-room/plan.md` | rows 1.1-1.4 ticked |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `git branch --show-current` | `feat/bathroom-room` |
-| `ls src/core/roomDoneLayout.ts tests/roomDoneLayout.test.ts` | both absent — phase 1 `tdd` driver right |
-| `sed -n` on `RoomDoneCard.show`, `grep ROOM_DONE_LAYOUT` | card at fixed `card.left`/`card.width`; readers: the widget, `ROOM_TOUCH_TARGETS.cardNext`, `tests/layout.test.ts` (two tests, one via `rect(card)` → F1) |
-| `src/core/houseCells.ts` `houseCells` | a known room not reached is `closed` → kids-room #2 / house-cross-section unchanged, as the plan says |
-| `grep blocked src/scenes/RoomScene.ts` | `blocked = open \|\| this.card` hides the house button under the wider card |
-| manifest `designs/martynka-bathroom-v1/manifest.json` `rooms.bathroom.slots` | six slots equal the plan's literals; 3 room + 18 furniture PNGs = 21 |
-| `grep -rn "Trigger:" context/archive/*/follow-ups` | slice-triggered items covered except kids-room 10 / kitchen-room 6 (precache set) → F2, fixed |
-| local gate (lint, typecheck, tests, build, e2e) | not run: docs-only step, no product code changed |
-
-No deliberate break: nothing testable was written. Baseline still to be measured on the branch by phase 1.
+| RED (stub returned `{ left: 0, width: 0, tileLefts: [] }`) | `AssertionError: expected { left: +0, width: +0, tileLefts: [] } to deeply equal { left: 388, width: 1144, …(1) }` on 6 cases; the module existed as a stub, so the failure is an assertion |
+| GREEN | `npx vitest run tests/roomDoneLayout.test.ts` 7 passed |
+| Break 1: drop `2·padding` from the width | red: count 4 (202/1516) and count 5 (16/1888); restored |
+| Break 2: shift tile start by +1 from the centre formula | red: counts 1-5; restored (the plan's "centre on `left + minWidth/2`" is arithmetically identical to `centerX` for n ≤ 3, so a shifted start was used instead) |
+| Meta-check | expectations are hand-computed literals, the spec is a literal in the test, not imported from `src/data` |
+| lint / typecheck | OK |
+| unit incl. deploy and ops tests, `sample` E1-E6 | `Tests 4222 passed (4222)` locally; baseline 4215 (4212 passed in CI) + 7 new |
+| `npm run build` | OK, `e2e hook: absent (2 chunks checked)` |
+| `git diff --stat 6b96a9f -- src/ui src/scenes src/data src/testing tests/e2e` | empty |
+| e2e | not run (no spec touched) |
 
 ## 4. Next command
 
-`/10x-tdd bathroom-room phase 1`
+`/10x-implement bathroom-room phase 2`
 
 ## 5. Open
 
-- Product-owner `[human]` rows (plan Progress): 5.7 card code outside data (`roomDoneCardRect` in
-  `src/core/roomDoneLayout.ts`, `RoomDoneCard.show`, `ROOM_DONE_LAYOUT.card`); 5.8 costs 5 + 7..15 = 71; 5.9 wording
-  (gap 205, pack captions over the roadmap's "szafka"/"półka z kaczuszkami"); 5.10 'room' celebration against PRD
-  FR-040's literal 'house' intensity (S-24 owns it; review F4 kept it); 5.11 real tablet offline.
-- `[reviewer]` rows: 2.5 card coordinates from the rect; 3.7 Polish-language read of the bathroom copy; 3.8 and 5.12
-  (CI at ship, Deploy smoke `144 of 144` and build `Tests <4212 + N> passed`).
-- `[visual]` row 5.6: 14 frames × desktop 1440 and tablet 1024.
-- E2E: phases run only the specs they add or edit (single-spec command); the orchestrator runs the full suite once after
-  phase 6 from a pinned worktree, expected `191 + 2`.
-- Phase 3 depends on local `cwebp` + Pillow 12.1.0 + numpy 2.4.3 and the local `designs/martynka-bathroom-v1`; a tool
-  failure is BLOCKED, never a hand-made WebP.
-- Follow-ups fired (handled in phase 5): kids-room 1, 3 (closed), 7 (re-measure), 10 / kitchen-room 6 (precache set,
-  re-record), 11 / house-cross-section 21 (closed by phase 6), final-art-salon F2 (re-record), hangar 4 (carry); new:
-  finished-house celebration (Trigger: S-24), six rooms in one house (Trigger: a house with six rooms).
-- Phase 6 test 1 is long (35 purchases) — `## Known risks` in `plan.md` (review F5).
+- Phase 2 must rewrite the `tests/layout.test.ts` case that builds `rect(card)` on `roomDoneCardRect` for n 2..5 (every assertion kept) before removing `card.left`/`card.width`; the `HOUSES` row (phase 4) must not land before phases 1-2.
+- Product-owner `[human]` rows (plan Progress): 5.7 card code outside data; 5.8 costs 5 + 7..15 = 71; 5.9 wording (gap 205); 5.10 'room' celebration vs FR-040 'house'; 5.11 real tablet offline.
+- `[reviewer]` rows: 2.5, 3.7, 3.8, 5.12. `[visual]` row 5.6. Phase 3 needs local `cwebp`, Pillow 12.1.0, numpy 2.4.3 and `designs/martynka-bathroom-v1`.
+- E2E: single specs only per phase; the orchestrator runs the full suite after phase 6 (expected `191 + 2`).
+- Follow-ups fired are listed in the previous handoff text and plan (handled in phase 5).
 
 ## 6. Autonomous decisions
 
-- Skill's triage questions (AskUserQuestion "how to proceed", per-finding triage) decided in place: saved the report and
-  triaged myself — CRITICAL none; WARNINGs F1, F2 fixed in the plan (obvious, narrow); OBSERVATION F3 fixed (cheap), F4,
-  F5 recorded. Would change: none.
-- Step 3's verification sub-agent not spawned: the risky claims (card maths, readers of `ROOM_DONE_LAYOUT.card`, house
-  cell states, hidden house button, manifest literals, follow-up triggers) were each a grep away and were checked inline.
-  Would change: a claim needing a multi-file trace.
-- F4: P5 (room celebration for the house-completing bathroom) NOT overturned — FR-040's 'house' intensity is tied to
-  residents/sticker (FR-034, roadmap S-24) with no art in this slice; `[human]` row 5.10 names it. Would change: the
-  maintainer wanting the 'house' intensity in S-31.
-- Plan verdict SOUND after fixes (REVISE before), so `VERDICT: PROCEED`; phase-1 driver stays `tdd`. Would change: the
-  phase-1 agent finding `roomDoneCardRect` already present (then `tdd → impl` per contract rule 6).
+- Skill's manual confirmation gate, "how to proceed", and commit-message prompts: decided in place, committed the planned set only (`src/core/roomDoneLayout.ts`, `tests/roomDoneLayout.test.ts`) with the proposed message, stopped after phase 1. Would change: none.
+- TDD gate: the implementation was absent, so the driver stays `tdd` (no redirect). A stub was added to get an assertion RED rather than a missing-module error, as the step prompt required.
+- Break 2 replaced the plan's wording with an equivalent-effect shift because the plan's variant does not change the output for n ≤ 3 and is only observable by n=4/5 (still red there). Would change: none.
