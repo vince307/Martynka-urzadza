@@ -526,9 +526,9 @@ complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 3.1 The new and flipped cases red before the code exists, green after; unit `<phase-2 count> + N` — fc493af
-- [x] 3.2 Deliberate break: change a base cell's `x` → the manifest literal red; drop the `artQueued` reset → the guard red; drop `scene.stop(SCENE_KEYS.house)` → the guard red; each restored; meta-check: the literals come from the pack manifest and preview, not from the house entry; the guards prove wiring, the browser proof of the fresh scene is phase 5 test 3 — fc493af
-- [x] 3.3 `git diff --stat <phase-2 sha> -- src/core/save.ts src/data/rooms.ts src/data/balance.ts src/main.ts public scripts` empty — fc493af
+- [x] 3.1 The new and flipped cases red before the code exists, green after; unit `<phase-2 count> + N` — fc493af — 0dbfcf9
+- [x] 3.2 Deliberate break: change a base cell's `x` → the manifest literal red; drop the `artQueued` reset → the guard red; drop `scene.stop(SCENE_KEYS.house)` → the guard red; each restored; meta-check: the literals come from the pack manifest and preview, not from the house entry; the guards prove wiring, the browser proof of the fresh scene is phase 5 test 3 — fc493af — 0dbfcf9
+- [x] 3.3 `git diff --stat <phase-2 sha> -- src/core/save.ts src/data/rooms.ts src/data/balance.ts src/main.ts public scripts` empty — fc493af — 0dbfcf9
 - [ ] 3.4 Full local gate green; e2e (orchestrator, `--workers=4`) `184 + 0` (no existing spec asserts the base has no zoom-out)
 
 ### Phase 4: Docs, gap rows, follow-ups, seam sweep and the visual pass

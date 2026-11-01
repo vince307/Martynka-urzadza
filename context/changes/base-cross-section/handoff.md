@@ -7,7 +7,7 @@ Written by the `/10x-tdd` phase 3 step of run `2026-10-31-space-base`. Phases 1-
 | item | value |
 |---|---|
 | branch | `feat/base-cross-section`, cut from `main` at `9a44799` |
-| commits | p1 `55c8c16`, p2 `7db029e`, p3 see `git log` (`test(base-cross-section): ... (p3)`) |
+| commits | p1 `55c8c16`, p2 `7db029e`, p3 `0dbfcf9` |
 | pushed / PR / merged | no / none / no |
 | `## Progress` rows remaining | 15 (`grep -c '^- \[ \]' plan.md`); 3.4 is the orchestrator's e2e row |
 | working tree | clean after the handoff commit |
@@ -32,7 +32,7 @@ Written by the `/10x-tdd` phase 3 step of run `2026-10-31-space-base`. Phases 1-
 | lint / typecheck / deploy+ops / sample E1-E6 / build | OK (observed; `e2e hook: absent`) |
 | `npm test` | 227 files, 4185 passed (baseline 4171, p2 4179, +6) |
 | `git diff --stat HEAD -- save.ts rooms.ts balance.ts main.ts public scripts` | empty |
-| e2e | RESULT_E2E |
+| e2e | 4 specs (house-cross-section, first-building-choice, first-launch, kitchen-room), 20 passed, workers=1, sandbox off |
 
 ## 4. Next command
 
