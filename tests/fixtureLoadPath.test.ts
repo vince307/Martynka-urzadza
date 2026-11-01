@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { createStore, get, set } from 'idb-keyval';
 import { loadSave } from '../src/core/autosave';
 import { encodeSave, SAVE_VERSION } from '../src/core/save';
-import { houseLayout, houseRoomIds } from '../src/core/house';
-import { repairCurrentRoom } from '../src/core/rooms';
+import { houseLayout, houseRoomIds, mergeHouse, nextRoom } from '../src/core/house';
+import { repairCurrentRoom, roomStateProblems } from '../src/core/rooms';
 import { needsPlacement } from '../src/core/placement';
 import { FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { ROOMS } from '../src/data/rooms';
@@ -23,7 +23,7 @@ type Raw = {
     learner: { stage: string; history: unknown[] } | null;
     variants?: { puzzlesDone: string[] };
 };
-const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6'];
+const FIXTURES = ['save-v1', 'save-v1-fresh', 'save-v1-legacy-salon', 'save-v2', 'save-v2-fresh', 'save-v2-legacy-salon', 'save-v3', 'save-v4', 'save-v4-salon', 'save-v5', 'save-v5-salon', 'save-v6', 'save-v6-bridge-done'];
 const read = (name: string) => JSON.parse(readFileSync(new URL(`./fixtures/${name}.json`, import.meta.url), 'utf8')) as Raw;
 
 let n = 0;
@@ -99,5 +99,23 @@ describe('the building of a loaded save (FR-049)', () => {
         const odd = repair({ ...s, currentRoom: 'salon' });
         expect(odd.session.currentRoom).toBe('bridge');
         expect(odd.repairedFrom).toBe('salon');
+    });
+
+    // S-30 FR-047: a Mostek finished in the S-29 build (no Hangar yet) opens in the Hangar; the calls mirror main.ts's load order.
+    it('save-v6-bridge-done meets the Hangar: house with both cells, current room hangar, the Mostek and stars kept', async () => {
+        const raw = read('save-v6-bridge-done');
+        const s = await load('save-v6-bridge-done');
+        const repaired = repair(s).session;
+        const merged = mergeHouse(repaired.house, houseLayout(repaired.house, HOUSES, FIRST_HOUSE));
+        const withHouse = { ...repaired, house: merged.house };
+        const moved = nextRoom(withHouse, houseLayout(withHouse.house, HOUSES, FIRST_HOUSE), ROOMS);
+        expect(merged.house.id).toBe('base-1');
+        expect(merged.house.rooms.map((c) => c.room)).toEqual(['bridge', 'hangar']);
+        expect(moved.currentRoom).toBe('hangar');
+        expect(moved.movedFrom).toBe('bridge');
+        expect(moved.rooms.bridge).toEqual(raw.rooms.bridge);
+        // The fixture is what the S-29 build writes: its chosen slots are the Mostek's own, so the load reports no room problem.
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
+        expect(s.stars).toBe(raw.stars);
     });
 });

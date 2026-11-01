@@ -59,3 +59,23 @@ export const finishSalon = async (page: Page, query: Record<string, string>): Pr
     await expect.poll(async () => (await room(page)).card, { timeout: 15_000 }).not.toBeNull();
 };
 
+
+/** Buys every renovation task of `def` (first look each, "Wybieram") in the open room; polls `tasksDone` after each. The card is the caller's to read. */
+export const buyAllTasks = async (page: Page, def: { tasks: readonly { kind: string }[] }): Promise<void> => {
+    for (const task of def.tasks) {
+        const before = (await room(page)).tasksDone;
+        await tapTarget(page, 'taskButton');
+        if (task.kind !== 'stage') {
+            await expect.poll(async () => (await room(page)).panel.kind, { timeout: 15_000 }).toBe('open');
+            const thumbs = (await targets(page)).thumbs ?? [];
+            expect(thumbs.length).toBe(3);
+            await tapScene(page, thumbs[0]);
+            await expect.poll(async () => {
+                const panel = (await room(page)).panel;
+                return panel.kind === 'open' ? panel.preview : null;
+            }, { timeout: 15_000 }).toBe(0);
+            await tapTarget(page, 'choose');
+        }
+        await expect.poll(async () => (await room(page)).tasksDone, { timeout: 15_000 }).toBe(before + 1);
+    }
+};

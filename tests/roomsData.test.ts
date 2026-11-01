@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BRIDGE, FIRST_ROOM, ROOMS, SALON } from '../src/data/rooms';
+import { BRIDGE, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -100,16 +100,56 @@ describe('bridge data (FR-044)', () => {
         BRIDGE.tasks.forEach((t, i) => expect(t.cost, `task ${i}`).toBeGreaterThan(SALON.tasks[i].cost));
     });
 
-    it('is the stage first, then six furniture tasks, and the only room of the base', () => {
+    it('is the stage first, then six furniture tasks, and the first room of the base', () => {
         expect(BRIDGE.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
         expect(BRIDGE.slots).toHaveLength(6);
-        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }]);
+        expect(houseRoomList(HOUSES.find((h) => h.id === 'base-1')!, ROOMS)).toEqual([{ room: 'bridge' }, { room: 'hangar', unlockAfter: 'bridge' }]);
     });
 
-    it('keeps the child in Mostek after the last task: Dalej stays', () => {
+    it('moves the child to the Hangar after the last Mostek task', () => {
         const states = { bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} } };
         const moved = nextRoom({ rooms: states, currentRoom: 'bridge' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
-        expect(moved.currentRoom).toBe('bridge');
+        expect(moved.currentRoom).toBe('hangar');
+        expect(moved.movedFrom).toBe('bridge');
+    });
+});
+
+describe('hangar data (FR-047)', () => {
+    // Written from designs/bystrow-space-base-v2/manifest.json rooms.hangar, not from hangarSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['hangar-rocket', 754, 254, 321, 532, 25],
+        ['hangar-rover', 1114, 624, 418, 292, 40],
+        ['hangar-workbench', 404, 434, 384, 292, 20],
+        ['hangar-crates', 264, 544, 183, 242, 35],
+        ['hangar-lamp', 1384, 404, 212, 276, 18],
+        ['hangar-mat', 664, 644, 552, 270, 5],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(HANGAR.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('costs 6, 10, 13, 14, 17, 19, 21 = 100 stars', () => {
+        expect(HANGAR.tasks.map((t) => t.cost)).toEqual([6, 10, 13, 14, 17, 19, 21]);
+        expect(HANGAR.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(100);
+    });
+
+    it('is the stage first, then one task per slot, each slot bought once', () => {
+        expect(HANGAR.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        const slotTasks = HANGAR.tasks.slice(1);
+        expect(slotTasks.every((t) => t.kind === 'slot')).toBe(true);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+});
+
+describe('hangar flow (FR-047)', () => {
+    it('keeps the child in the Hangar after its last task: Dalej stays', () => {
+        const states = {
+            bridge: { tasksDone: BRIDGE.tasks.length, chosen: {} },
+            hangar: { tasksDone: HANGAR.tasks.length, chosen: {} },
+        };
+        const moved = nextRoom({ rooms: states, currentRoom: 'hangar' }, HOUSES.find((h) => h.id === 'base-1')!, ROOMS);
+        expect(moved.currentRoom).toBe('hangar');
         expect(moved.movedFrom).toBeNull();
     });
 });

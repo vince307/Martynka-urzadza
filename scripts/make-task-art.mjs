@@ -20,11 +20,11 @@ const ROOM_OUT = join(ROOT, 'public/assets/rooms');
 const SALON_V2 = join(ROOT, 'designs/martynka-salon-v2');
 const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
+const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
 const FOX = join(ROOT, 'designs/martynka-fox-guide-v1');
 const UI_OUT = join(ROOT, 'public/assets/ui');
 const HOUSE = join(ROOT, 'designs/martynka-house-street-v1');
 const HOUSE_OUT = join(ROOT, 'public/assets/house');
-const SPACE = join(ROOT, 'designs/bystrow-space-base-v1');
 const CHOICE_OUT = join(ROOT, 'public/assets/choice');
 
 // Output sizes are at most twice the displayed size (half of the kit's resolution), see the plan, "Ladowanie".
@@ -83,6 +83,14 @@ const ROOM_PACKS = [
         furniture: ['console', 'chair', 'telescope', 'shelf', 'rug', 'plants'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `bridge-${slot}-${v}`)),
         recolourBoard: false,
     },
+    {
+        room: 'hangar',
+        pack: SPACE_BASE_V2,
+        scene: ['hangar-before', 'hangar-after', 'hangar-shadows'],
+        decor: [],
+        furniture: ['rocket', 'rover', 'workbench', 'crates', 'lamp', 'mat'].flatMap((slot) => ['natural', 'sunny', 'mint'].map((v) => `hangar-${slot}-${v}`)),
+        recolourBoard: false,
+    },
 ];
 
 /** Room files keep the size of the source (the manifest's pixel geometry); no -resize. */
@@ -125,7 +133,7 @@ const HOUSE_FILES = [
     { from: 'assets/house/cell-frame.png', to: 'cell-frame.webp' },
 ];
 
-/** The base pack (S-29): the base shell and the airlock (its closed cell), native size, from SPACE into the house folder; not rooms, no recolour. */
+/** The base pack (S-29): the base shell and the airlock (its closed cell), native size, from SPACE_BASE into the house folder; not rooms, no recolour. */
 const BASE_FILES = [
     { from: 'assets/base/base-1-shell.png', to: 'base-1-shell.webp' },
     { from: 'assets/base/cell-closed.png', to: 'base-1-cell-closed.webp' },
@@ -137,7 +145,7 @@ const CHOICE_FILES = [
     { from: 'assets/choice/choice-space.png', to: 'choice-space.webp' },
 ];
 
-for (const dir of [KIT, SALON_V2, FOX, HOUSE, SPACE, ...ROOM_PACKS.map((row) => row.pack)]) {
+for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack)]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -204,12 +212,12 @@ for (const file of HOUSE_FILES) {
     console.log(`house/${file.to}  ${bytes} B`);
 }
 for (const file of BASE_FILES) {
-    const bytes = convert(join(SPACE, file.from), join(HOUSE_OUT, file.to), []);
+    const bytes = convert(join(SPACE_BASE, file.from), join(HOUSE_OUT, file.to), []);
     total += bytes;
     console.log(`house/${file.to}  ${bytes} B`);
 }
 for (const file of CHOICE_FILES) {
-    const bytes = convert(join(SPACE, file.from), join(CHOICE_OUT, file.to), []);
+    const bytes = convert(join(SPACE_BASE, file.from), join(CHOICE_OUT, file.to), []);
     total += bytes;
     console.log(`choice/${file.to}  ${bytes} B`);
 }

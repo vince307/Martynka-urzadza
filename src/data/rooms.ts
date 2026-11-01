@@ -131,5 +131,35 @@ export const BRIDGE: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [BRIDGE.id]: BRIDGE };
+// The Hangar (S-30): the second module of the space base from the art pack bystrow-space-base-v2 (manifest room `hangar`), geometry copied slot by slot.
+// Texture keys are `hangar/<file id>`. No fixed decoration, no worn look and no contact shadows: the pack has none (README).
+const hangarSlots: SlotDef[] = [
+    { id: 'hangar-rocket', x: 754, y: 254, width: 321, height: 532, z: 25, anchor: [160, 516], visibleRect: [16, 16, 289, 500], variants: ['hangar/hangar-rocket-natural', 'hangar/hangar-rocket-sunny', 'hangar/hangar-rocket-mint'] },
+    { id: 'hangar-rover', x: 1114, y: 624, width: 418, height: 292, z: 40, anchor: [209, 276], visibleRect: [16, 16, 386, 260], variants: ['hangar/hangar-rover-natural', 'hangar/hangar-rover-sunny', 'hangar/hangar-rover-mint'] },
+    { id: 'hangar-workbench', x: 404, y: 434, width: 384, height: 292, z: 20, anchor: [192, 276], visibleRect: [16, 16, 352, 260], variants: ['hangar/hangar-workbench-natural', 'hangar/hangar-workbench-sunny', 'hangar/hangar-workbench-mint'] },
+    { id: 'hangar-crates', x: 264, y: 544, width: 183, height: 242, z: 35, anchor: [92, 226], visibleRect: [16, 16, 151, 210], variants: ['hangar/hangar-crates-natural', 'hangar/hangar-crates-sunny', 'hangar/hangar-crates-mint'] },
+    { id: 'hangar-lamp', x: 1384, y: 404, width: 212, height: 276, z: 18, anchor: [106, 260], visibleRect: [16, 16, 180, 244], variants: ['hangar/hangar-lamp-natural', 'hangar/hangar-lamp-sunny', 'hangar/hangar-lamp-mint'] },
+    { id: 'hangar-mat', x: 664, y: 644, width: 552, height: 270, z: 5, anchor: [276, 254], visibleRect: [16, 16, 520, 238], variants: ['hangar/hangar-mat-natural', 'hangar/hangar-mat-sunny', 'hangar/hangar-mat-mint'] },
+];
+
+export const HANGAR: RoomDef = {
+    id: 'hangar',
+    scene: { before: 'hangar/before', after: 'hangar/after', shadows: 'hangar/shadows' },
+    decor: [],
+    slots: hangarSlots,
+    worn: [],
+    contactShadows: [],
+    // Costs 6-21 = 100 stars (FR-047), the same ladder as the Mostek.
+    tasks: [
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 6 },
+        { kind: 'slot', id: 'place-rocket', slot: 'hangar-rocket', label: 'placeRocket', cost: 10 },
+        { kind: 'slot', id: 'place-rover', slot: 'hangar-rover', label: 'placeRover', cost: 13 },
+        { kind: 'slot', id: 'place-workbench', slot: 'hangar-workbench', label: 'placeWorkbench', cost: 14 },
+        { kind: 'slot', id: 'stack-crates', slot: 'hangar-crates', label: 'stackCrates', cost: 17 },
+        { kind: 'slot', id: 'place-work-lamp', slot: 'hangar-lamp', label: 'placeWorkLamp', cost: 19 },
+        { kind: 'slot', id: 'lay-launch-mat', slot: 'hangar-mat', label: 'layLaunchMat', cost: 21 },
+    ],
+};
+
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;
