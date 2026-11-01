@@ -207,8 +207,11 @@ untouched); the source guards of `tests/roomDoneCardWiring.test.ts` stay true.
 **Contract**: `layout` "lays the room list tiles…" becomes: for every n from 2 to `max(houseRoomList(h, ROOMS).length)`
 over `HOUSES` and also n = 4 and 5, `roomDoneCardRect(n, …)` lies inside `0..GAME_WIDTH`, every tile lies inside the
 card, the card does not overlap the HUD rects (`HUD_LAYOUT` speaker, room switch, settings; `TASK_LAYOUT.starCounter`);
-`max(houseRoomList…)` ≤ 5; for n = 2 and 3 the rect is exactly `{ left: 388, width: 1144 }` (the accepted look stays); the existing tile/title/button/miniature lines stay; the test that destructures `{ button,
-card }` keeps passing. The wiring test gains: the source calls `roomDoneCardRect(` and no longer reads `card.left` or
+`max(houseRoomList…)` ≤ 5; for n = 2 and 3 the rect is exactly `{ left: 388, width: 1144 }` (the accepted look stays); the existing tile/title/button/miniature lines stay. The test "keeps the mode button and the \"Pokój gotowy!\" button touch
+targets…" builds `rect(card)` from `card.left`/`card.width`, which phase 2 removes (typecheck fails): it is rewritten to
+build the card rect from `roomDoneCardRect(n, …)` for every n from 2 to 5 (plus `card.top`/`card.height`) and keeps
+every assertion it has today — card above `tray.top`, inside `0..GAME_WIDTH`, clear of the HUD rects, "Dalej" inside the
+card (plan review F1). The wiring test gains: the source calls `roomDoneCardRect(` and no longer reads `card.left` or
 `card.width`.
 
 ### Success Criteria:
@@ -414,7 +417,9 @@ kaczuszkami", "Regał z ręcznikami" instead of "szafka"). Follow-ups with `Trig
 (`tiles.left`) closed with evidence; house-cross-section 21 / kids-room 11 closed by the phase-6 assertion; kids-room 7
 (atlas) re-recorded with the measured bathroom bytes; final-art-salon F2 (`drawRoomMiniature` stand-ins on one
 `Graphics`) re-recorded: the card changed but not the miniature drawing; hangar 4 (a room finished on an older build
-meets the next without the card) carried for the children's room → bathroom; the finished-house celebration (FR-040
+meets the next without the card) carried for the children's room → bathroom; kids-room 10 / kitchen-room 6 (service-worker install
+warning; `Trigger:` the precache set) fire because the precache set grows by 21 room pictures: re-recorded with the new
+count, warning unchanged (plan review F2); the finished-house celebration (FR-040
 'house' intensity) recorded with `Trigger: S-24`; a sixth room in one house (card limit n = 5) with `Trigger: a house
 with six rooms`; every other open follow-up whose `Trigger:` names a file this slice changed — included, closed with
 evidence, or re-recorded.
@@ -479,7 +484,8 @@ alternation, project `chromium-hook`; no other field); reuse the helpers of `tes
   `targets.houseButton` is null (house-cross-section follow-up 21); `renderedPixel` at a point inside the four-tile card
   but outside the old 388-1532 card (candidate (1620, 300): card face, below the hidden house button) shows the card
   colour (`PLACEHOLDER_COLORS.unlockCard`, tolerance per channel) and a point inside the fourth tile (candidate
-  (1518, 560), the tile face below the caption) shows the tile ivory — candidates re-measured and recorded in a comment;
+  (1370, 560), the tile face left of the caption text — the tile centre x 1518 sits on the caption line at y 544, plan
+  review F3) shows the tile ivory — candidates re-measured and recorded in a comment;
   "Dalej" → room `bathroom`, mode button present, `houseLabel 'Dom'`.
 - `#2 S-31 FR-038 the house shows the bathroom in its upper-right cell; a reload keeps the child there` — reach the
   bathroom, buy the stage; "Dom" → `houseView` cells `['done', 'done', 'done', 'current']` with `upper-right` room
