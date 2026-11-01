@@ -520,12 +520,12 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Automated
 
-- [x] 1.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 21 new files under `public/assets/rooms/lab/`
-- [x] 1.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/rooms.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `4254 + N`
-- [x] 1.3 Deliberate break: change the stool's `x` in `labSlots` → the manifest literal red; delete `lab-board-mint.webp` → the size/orphan cases red; drop `'lab-rocks'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `labSlots`; the art cases prove files and tables agree, the picture looking right is the visual pass (phase 4)
-- [x] 1.4 `npm run build` then `grep -o "assets/rooms/lab/" dist/sw.js | wc -l` = 21 (sw.js is one line)
-- [x] 1.5 `git diff --stat 60472aa -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/houseArt.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar public/assets/house` empty
-- [x] 1.6 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); no e2e in this phase (no spec touched; the room is unreachable; the orchestrator runs the full suite after phase 5)
+- [x] 1.1 `npm run art` regenerates the files; `git status --short public/assets` shows only the 21 new files under `public/assets/rooms/lab/` — 947e665
+- [x] 1.2 `npx vitest run tests/roomArt.test.ts tests/roomsData.test.ts tests/roomHit.test.ts tests/rooms.test.ts tests/bootBudget.test.ts tests/deployCheck.test.ts` green; unit `4254 + N` — 947e665
+- [x] 1.3 Deliberate break: change the stool's `x` in `labSlots` → the manifest literal red; delete `lab-board-mint.webp` → the size/orphan cases red; drop `'lab-rocks'` from `pl.room.variants` → the copy case red; each restored; meta-check: the literal comes from the pack manifest, not from `labSlots`; the art cases prove files and tables agree, the picture looking right is the visual pass (phase 4) — 947e665
+- [x] 1.4 `npm run build` then `grep -o "assets/rooms/lab/" dist/sw.js | wc -l` = 21 (sw.js is one line) — 947e665
+- [x] 1.5 `git diff --stat 60472aa -- src/scenes src/core src/ui src/main.ts src/testing src/data/houses.ts src/data/houseArt.ts src/data/balance.ts public/assets/rooms/salon public/assets/rooms/kitchen public/assets/rooms/children public/assets/rooms/bathroom public/assets/rooms/bridge public/assets/rooms/hangar public/assets/house` empty — 947e665
+- [x] 1.6 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); no e2e in this phase (no spec touched; the room is unreachable; the orchestrator runs the full suite after phase 5) — 947e665
 
 #### Manual
 
