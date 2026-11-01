@@ -21,4 +21,5 @@ export const HOUSE_ART: readonly HouseArtEntry[] = [
     entry('cell-frame', 640, 374),
     entry('base-1-shell', 1920, 1080),
     entry('base-1-cell-closed', 608, 342),
+    entry('base-1-cell-frame', 640, 374),
 ];

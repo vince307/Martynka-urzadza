@@ -22,6 +22,7 @@ const LOCATIONS_V2 = join(ROOT, 'designs/martynka-locations-v2');
 const SPACE_BASE = join(ROOT, 'designs/bystrow-space-base-v1');
 const SPACE_BASE_V2 = join(ROOT, 'designs/bystrow-space-base-v2');
 const SPACE_BASE_V3 = join(ROOT, 'designs/bystrow-space-base-v3');
+const SPACE_BASE_V5 = join(ROOT, 'designs/bystrow-space-base-v5');
 const BATHROOM_V1 = join(ROOT, 'designs/martynka-bathroom-v1');
 const EVOLUTION_V1 = join(ROOT, 'designs/martynka-evolution-v1');
 const HOUSE_1_POLISH = join(ROOT, 'designs/martynka-house-1-polish-v1');
@@ -177,6 +178,8 @@ const HOUSE_FILES = [
 const BASE_FILES = [
     { from: 'assets/base/base-1-shell.png', to: 'base-1-shell.webp' },
     { from: 'assets/base/cell-closed.png', to: 'base-1-cell-closed.webp' },
+    // S-33: the mint cell frame of the base, from the v5 pack, native 640x374.
+    { pack: SPACE_BASE_V5, from: 'assets/base/base-1-cell-frame.png', to: 'base-1-cell-frame.webp' },
 ];
 
 /** The first-building choice cards (S-28): native 720x480, no recolour. */
@@ -185,7 +188,7 @@ const CHOICE_FILES = [
     { from: 'assets/choice/choice-space.png', to: 'choice-space.webp' },
 ];
 
-for (const dir of [KIT, SALON_V2, FOX, HOUSE, ...ROOM_PACKS.map((row) => row.pack), ...ROOM_PACKS.flatMap((row) => row.scene.flatMap((entry) => (typeof entry === 'string' ? [] : [entry.pack])))]) {
+for (const dir of [KIT, SALON_V2, FOX, HOUSE, SPACE_BASE, ...BASE_FILES.map((file) => file.pack ?? SPACE_BASE), ...ROOM_PACKS.map((row) => row.pack), ...ROOM_PACKS.flatMap((row) => row.scene.flatMap((entry) => (typeof entry === 'string' ? [] : [entry.pack])))]) {
     if (!existsSync(dir)) {
         console.error(`Art kit not found: ${dir} (designs/ is local only)`);
         process.exit(1);
@@ -252,7 +255,7 @@ for (const file of HOUSE_FILES) {
     console.log(`house/${file.to}  ${bytes} B`);
 }
 for (const file of BASE_FILES) {
-    const bytes = convert(join(SPACE_BASE, file.from), join(HOUSE_OUT, file.to), []);
+    const bytes = convert(join(file.pack ?? SPACE_BASE, file.from), join(HOUSE_OUT, file.to), []);
     total += bytes;
     console.log(`house/${file.to}  ${bytes} B`);
 }

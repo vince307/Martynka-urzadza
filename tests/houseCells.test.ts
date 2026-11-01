@@ -135,8 +135,8 @@ describe('HOUSE_GEOMETRY base (S-29 phase 3)', () => {
         ]);
         expect(b().stairwell).toEqual({ x: 860, y: 236, width: 200, height: 742 });
     });
-    it('names its own pictures, shares the frame, and has its own look', () => {
-        expect([b().shell, b().cellClosed, b().cellFrame]).toEqual(['house/base-1-shell', 'house/base-1-cell-closed', 'house/cell-frame']);
+    it('names its own pictures and its own frame, and has its own look', () => {
+        expect([b().shell, b().cellClosed, b().cellFrame]).toEqual(['house/base-1-shell', 'house/base-1-cell-closed', 'house/base-1-cell-frame']);
         expect(b().cellFill).toBe(0xfff5df);
         expect(b().frameInset).toBe(16);
         expect(b().background).toBe(0xe8efeb);

@@ -45,11 +45,11 @@ export const HOUSE_GEOMETRY: Readonly<Record<string, HouseGeometry>> = {
     },
     // The space base (S-29): cells and lift shaft from the pack bystrow-space-base-v1 manifest (houses.base-1, liftShaft), the sky and the
     // teaser style from its preview (the "Wkrótce" glyphs centre on the cell, fillText baseline at y+182 of 32 px text).
-    // DESIGN-GAP: the pack has no base cell frame; the house `cell-frame` is shared (docs/design-gaps.md).
+    // The base's own mint cell frame comes from the pack bystrow-space-base-v5 (S-33); house 1 keeps its butter frame.
     'base-1': {
         shell: 'house/base-1-shell',
         cellClosed: 'house/base-1-cell-closed',
-        cellFrame: 'house/cell-frame',
+        cellFrame: 'house/base-1-cell-frame',
         cellFill: 0xfff5df,
         frameInset: 16,
         background: 0xe8efeb,

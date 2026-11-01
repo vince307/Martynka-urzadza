@@ -38,6 +38,7 @@ describe('house art table', () => {
             'house/cell-frame': [640, 374],
             'house/base-1-shell': [1920, 1080],
             'house/base-1-cell-closed': [608, 342],
+            'house/base-1-cell-frame': [640, 374],
         };
         expect(HOUSE_ART.map((a) => a.key).sort()).toEqual(Object.keys(expected).sort());
         for (const art of HOUSE_ART) {
@@ -68,7 +69,7 @@ describe('house art table', () => {
         }
     });
 
-    // Runtime load of one building's pictures, not boot; the base measured about 102 900 B.
+    // Runtime load of one building's pictures, not boot; the base measured about 106 400 B with its own frame.
     const CAPS: Record<string, number> = { 'house-1': 80_000, 'base-1': 110_000 };
     const weigh = (keys: string[]): number =>
         keys.reduce((sum, key) => sum + statSync(join(PUBLIC, HOUSE_ART.find((a) => a.key === key)!.url)).size, 0);
