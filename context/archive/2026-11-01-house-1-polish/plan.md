@@ -634,7 +634,7 @@ added or edited):
 #### Manual
 
 - [x] 2.8 [reviewer] Polish-language read of the two new kitchen labels in `src/data/pl.ts` (imperative + accusative: "Posprzątaj kuchnię", "Odnów ściany", "Odnów podłogę"), each fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
-- [ ] 2.9 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 146 of 146 room pictures precached` (SEEN at plan time in Deploy run 41330660160, job `deploy` 124920757998: `ok   precache covers room pictures — 144 of 144 room pictures precached`; expected 144 + 2; a row only the post-merge Deploy log proves is ticked by the orchestrator's docs PR, not on main)
+- [x] 2.9 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 146 of 146 room pictures precached` (SEEN at plan time in Deploy run 41330660160, job `deploy` 124920757998: `ok   precache covers room pictures — 144 of 144 room pictures precached`; expected 144 + 2; a row only the post-merge Deploy log proves is ticked by the orchestrator's docs PR, not on main) — CI run 41345696658 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 3: The salon on the cream surround (art)
 
@@ -675,7 +675,7 @@ added or edited):
 - [ ] 5.9 [human] Accept the salon cell fill (D4, gap 207, checklist P2 on `martynka-house-1-polish-v1`): the salon keeps the pack's tight corner crop and fills its house cell more than the other rooms
 - [ ] 5.10 [human] Accept the salon before look (D5, gap 206): the pack's worn-v2 interior on cream under the code worn grade on the furniture, not the salon-worn-v2 furniture layers the pack README names — decided against the pack README, not the PRD
 - [ ] 5.11 [human] On a real tablet, installed and then offline: a child mid-kitchen on the old build updates and finds her walls and pieces still there; the kitchen stages and the cream salon draw
-- [ ] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4230 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41330660160, job `build` 124919859656, steps `Run npm test`: `Tests  4230 passed | 3 skipped (4233)` and `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds; ticked by the orchestrator's docs PR, not on main)
+- [x] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4230 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41330660160, job `build` 124919859656, steps `Run npm test`: `Tests  4230 passed | 3 skipped (4233)` and `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds; ticked by the orchestrator's docs PR, not on main) — CI run 41345696658 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 6: Kitchen stages, the moved v6 kitchen and the cream salon in the browser — e2e (FR-033, FR-021, FR-038; #16, #2)
 

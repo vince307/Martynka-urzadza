@@ -632,7 +632,7 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 #### Manual
 
 - [x] 3.7 [reviewer] Polish-language read of the bathroom copy in `src/data/pl.ts` against the table above (profile § 2: room captions, not task content): caption nominatives, variant forms agreeing with the noun (wanna/roślina/półka → -a, umywalka i lustro → -e, regał/dywanik → -y), task labels imperative + accusative (wannę, umywalkę, roślinę, półkę), each label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff
-- [ ] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 144 of 144 room pictures precached` (SEEN at plan time in Deploy run 41313671518, job `deploy`: `ok   precache covers room pictures — 123 of 123 room pictures precached`; expected after this slice: 123 + 21 = 144)
+- [x] 3.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 144 of 144 room pictures precached` (SEEN at plan time in Deploy run 41313671518, job `deploy`: `ok   precache covers room pictures — 123 of 123 room pictures precached`; expected after this slice: 123 + 21 = 144) — CI run 41330660160 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 4: The bathroom joins house 1
 
@@ -662,7 +662,7 @@ structure decided from the artifacts: 6 phases, ≤ 1 UI component edited per ph
 - [ ] 5.9 [human] Accept the bathroom wording (gap 205): "Postaw wannę z zasłonką", "Ustaw umywalkę i lustro", "Postaw regał z ręcznikami", "Połóż dywanik", "Postaw roślinę", "Powieś półkę z zabawkami", the agreed variant forms (Naturalne for "umywalka i lustro"), and the pack's "regał z ręcznikami" / "półka z zabawkami" instead of the roadmap's "szafka" / "półka z kaczuszkami"
 - [ ] 5.10 [human] Accept that finishing the bathroom (house 1 complete) still shows the ROOM celebration, not the PRD FR-040 'house' intensity — decided against the PRD's literal text because roadmap S-24 owns the finished-house moment (residents, sticker)
 - [ ] 5.11 [human] On a real tablet, installed and then offline: a child who finished the children's room opens the bathroom, its pictures draw, and the four-tile card is readable
-- [ ] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4212 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41313671518, job `build`, steps `Run npm test`: `Tests  4212 passed | 3 skipped (4215)` and `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
+- [x] 5.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4212 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41313671518, job `build`, steps `Run npm test`: `Tests  4212 passed | 3 skipped (4215)` and `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds) — CI run 41330660160 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 6: The bathroom in the browser — e2e (FR-033, FR-038; #16, #2)
 

@@ -530,7 +530,7 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 #### Manual
 
 - [x] 1.7 [reviewer] Teacher read of the Laboratorium copy in `src/data/pl.ts` against the table above: caption nominatives, variant forms agreeing with the noun's gender (gablota, tablica → -a), task labels in imperative + accusative (gablotę, tablicę magnetyczną), "Księżyca" capitalised as the celestial body, each task label fits its button (`RoomTaskButton` `labelScale`); `npm run sample` unaffected (no task content changed), stated in the handoff — 7c8b9a5 (impl-review)
-- [ ] 1.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 167 of 167 room pictures precached` (SEEN at plan time in Deploy run 41345696658, job `deploy` 124965472637: `ok   precache covers room pictures — 146 of 146 room pictures precached`; expected 146 + 21 = 167)
+- [x] 1.8 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers room pictures — 167 of 167 room pictures precached` (SEEN at plan time in Deploy run 41345696658, job `deploy` 124965472637: `ok   precache covers room pictures — 146 of 146 room pictures precached`; expected 146 + 21 = 167) — CI run 41356815072 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 2: The Laboratorium joins the base
 
@@ -555,7 +555,7 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 
 #### Manual
 
-- [ ] 3.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 6 of 6 house pictures precached` and `ok   precache served: 261/261 — every entry answered with its media type` (SEEN at plan time in Deploy run 41345696658, job `deploy` 124965472637: `ok   precache covers house pictures — 5 of 5 house pictures precached` and `ok   precache served: 239/239 — every entry answered with its media type`; expected 5 + 1 and 239 + 22)
+- [x] 3.7 [reviewer] (CI at ship) Deploy job `deploy`, step `Smoke check (deploy)` of the merge sha prints `ok   precache covers house pictures — 6 of 6 house pictures precached` and `ok   precache served: 261/261 — every entry answered with its media type` (SEEN at plan time in Deploy run 41345696658, job `deploy` 124965472637: `ok   precache covers house pictures — 5 of 5 house pictures precached` and `ok   precache served: 239/239 — every entry answered with its media type`; expected 5 + 1 and 239 + 22) — CI run 41356815072 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 4: Docs, gap rows, follow-ups, seam sweep and the visual pass
 
@@ -575,7 +575,7 @@ LOW-MEDIUM complexity, 0 open product questions after research, 5 phases):
 - [ ] 4.9 [human] Accept the Laboratorium wording (gap 208): "Postaw gablotę z kamieniami", "Postaw model Księżyca", "Powieś tablicę magnetyczną", the agreed variant forms
 - [ ] 4.10 [human] Accept the Laboratorium as the base's last module with NO "Wkrótce" teaser tile — decided against the roadmap S-33 Risk text ("wraca kafelek zapowiedzi"), not against the PRD: `houseRoomList` makes a teaser only for an unknown room, and adding a `cabins` row before S-34 would put an unknown room into saves (D3, gap 196)
 - [ ] 4.11 [human] On a real tablet, installed and then offline: a base child who finished the Hangar opens the Laboratorium, its pictures and the mint frame draw (precache)
-- [ ] 4.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4251 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41345696658, job `build` 124964905937, step `Run npm test`: `Tests  4251 passed | 3 skipped (4254)`, step `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds)
+- [x] 4.12 [reviewer] (CI at ship) Deploy job `build` of the merge sha prints, after stripping ANSI colour codes, `Tests  <4251 + N> passed | 3 skipped` and `e2e hook: absent (` (SEEN at plan time in Deploy run 41345696658, job `build` 124964905937, step `Run npm test`: `Tests  4251 passed | 3 skipped (4254)`, step `Run npm run build`: `e2e hook: absent (2 chunks checked)`; N = the unit tests this slice adds) — CI run 41356815072 (Deploy after merge, ticked by the run docs PR)
 
 ### Phase 5: The Laboratorium in the browser — e2e (FR-046, FR-045; #16, #2)
 
