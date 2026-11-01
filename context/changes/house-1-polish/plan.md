@@ -612,12 +612,12 @@ added or edited):
 
 #### Automated
 
-- [ ] 1.1 `tests/saveV7.test.ts` and the new `fixtureLoadPath` case red against v6 (no `MIGRATIONS[6]`), green after; unit `baseline + N`
-- [ ] 1.2 Deliberate break: shift by 1 instead of 2 → the `1 → 3` literal and the `save-v7.json` deep-equal red; shift `tasksDone 0` too → the `0 → 0` case red; import `KITCHEN` into the step → the source guard red; leave `SAVE_VERSION` at 6 with `MIGRATIONS[6]` present → the version pin and "writes v7" red; each restored; meta-check: the v6 input is proven by the v6 code, the v7 oracle is a hand-written file, neither is computed by the step under test
-- [ ] 1.3 `git diff 98775f8 -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5*.json tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json tests/fixtures/save-v6-kitchen-done.json tests/fixtures/save-v6-children-done.json src/core/migrations/building.ts src/core/migrations/house.ts src/core/migrations/legacySalon.ts` empty
-- [ ] 1.4 `git diff --stat 98775f8 -- src/data public scripts src/ui src/scenes` empty; `git diff --stat 98775f8 -- deploy/` shows `deploy/README.md` only
-- [ ] 1.5 Single specs (sandbox disabled), never the full suite: `rooms-as-data`, `first-building-choice`, `save-migration` green
-- [ ] 1.6 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); full e2e left to the orchestrator after phase 6
+- [x] 1.1 `tests/saveV7.test.ts` and the new `fixtureLoadPath` case red against v6 (no `MIGRATIONS[6]`), green after; unit `baseline + N` — 13cb528
+- [x] 1.2 Deliberate break: shift by 1 instead of 2 → the `1 → 3` literal and the `save-v7.json` deep-equal red; shift `tasksDone 0` too → the `0 → 0` case red; import `KITCHEN` into the step → the source guard red; leave `SAVE_VERSION` at 6 with `MIGRATIONS[6]` present → the version pin and "writes v7" red; each restored; meta-check: the v6 input is proven by the v6 code, the v7 oracle is a hand-written file, neither is computed by the step under test — 13cb528
+- [x] 1.3 `git diff 98775f8 -- tests/fixtures/save-v1*.json tests/fixtures/save-v2*.json tests/fixtures/save-v3.json tests/fixtures/save-v4*.json tests/fixtures/save-v5*.json tests/fixtures/save-v6.json tests/fixtures/save-v6-bridge-done.json tests/fixtures/save-v6-kitchen-done.json tests/fixtures/save-v6-children-done.json src/core/migrations/building.ts src/core/migrations/house.ts src/core/migrations/legacySalon.ts` empty — 13cb528
+- [x] 1.4 `git diff --stat 98775f8 -- src/data public scripts src/ui src/scenes` empty; `git diff --stat 98775f8 -- deploy/` shows `deploy/README.md` only — 13cb528
+- [x] 1.5 Single specs (sandbox disabled), never the full suite: `rooms-as-data`, `first-building-choice`, `save-migration` green — 13cb528
+- [x] 1.6 Full local gate green (lint, typecheck, unit + deploy/ops tests + `sample` E1-E6, build prints `e2e hook: absent (`); full e2e left to the orchestrator after phase 6 — 13cb528
 
 ### Phase 2: The kitchen renovates in three stages (data, copy, art)
 
