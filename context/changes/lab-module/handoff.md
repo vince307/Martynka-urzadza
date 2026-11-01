@@ -1,28 +1,29 @@
 # Handoff — `lab-module` (slice S-33)
 
-Written by the `/10x-research` step of autonomous run `2026-11-01-bathroom-polish-lab`. Research is complete
-(`research.md`): the module and the base frame are data + art with a short, named list of non-data touches (art script,
-tests, one comment). The one thing the next agent must not get wrong: **only `HOUSE_GEOMETRY['base-1'].cellFrame` changes
-— house 1 keeps `house/cell-frame`**, and the art script's `BASE_FILES` needs a per-row pack (the frame comes from v5, the
-shell/airlock stay on v1).
+Written by the `/10x-plan` step of autonomous run `2026-11-01-bathroom-polish-lab`. `plan.md` (5 phases: impl, tdd, impl,
+impl, e2e) and `plan-brief.md` are written; change.md is `planned`, roadmap S-33 `planning`. The one thing the next agent
+must not get wrong: **only `HOUSE_GEOMETRY['base-1'].cellFrame` changes (phase 3) — house 1 keeps `house/cell-frame`**, and
+no phase runs the full e2e suite (the orchestrator does, once after phase 5).
 
 ## 1. State
 
 | item | value |
 |---|---|
 | branch | `feat/lab-module`, cut from `main` at `60472aa` (S-32 merge) |
-| commits | 2 on top of `60472aa`: `docs(lab-module): change identity (autonomous run)`, `docs(lab-module): research` |
+| commits | 3 on top of `60472aa`: change identity, research, `docs(lab-module): plan` |
 | pushed / PR / merged | no / none / no |
-| `change.md` status | `preparing` (set by `metadata-guard.mjs mark-researched`) |
-| `## Progress` rows remaining | n/a (no `plan.md` yet) |
-| working tree | clean after the commit (three files staged by path) |
+| `change.md` status | `planned` (set by `metadata-guard.mjs mark-planned`) |
+| `## Progress` rows remaining | 35 of 35 (none started) |
+| working tree | clean after the commit (five files staged by path) |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `context/changes/lab-module/research.md` | findings: v3 slot literals, frame geometry/alpha/colour oracle, boot budget measurement, smoke counts, full pin list (unit + e2e), v7 fixture path |
-| `context/changes/lab-module/change.md` | frontmatter only: `status: preparing`, `updated` |
+| `context/changes/lab-module/plan.md` | the plan: 5 phases with `Driver:` lines, success criteria, `## Autonomous decisions` P1-P8, `## Progress` (35 rows) |
+| `context/changes/lab-module/plan-brief.md` | two-page brief: key decisions, phases at a glance |
+| `context/changes/lab-module/change.md` | frontmatter `status: planned` |
+| `context/foundation/roadmap.md` | S-33 status `ready` → `planning` (at-a-glance row and body) |
 | `context/changes/lab-module/handoff.md` | this file |
 
 ## 3. Verification
@@ -30,42 +31,41 @@ shell/airlock stay on v1).
 | command | result |
 |---|---|
 | `git branch --show-current` | `feat/lab-module` (observed) |
-| python read of v3 `manifest.json` `rooms.lab` | 6 slots, x/y/size/z/anchor/visibleRect as in research §1; z distinct (observed) |
-| Pillow on v5 `base-1-cell-frame.png` | 640×374 RGBA, interior alpha max 0, border mint (85,204,181) vs house frame butter (248,210,106) (observed) |
-| cwebp (`-q 85 -alpha_q 100 -m 6`, the script's flags) of 21 lab PNGs + frame into the scratchpad | lab 656 332 B vs hangar 606 452 B (≈ +1.0 s → ~30.9 s of 48 s); frame 3 498 B; base house-art weight 97 776 B ≤ cap 110 000 (observed) |
-| `node --import tsx` scratch: `unreachableSlots` on a manifest-built lab with all slots bought | `[]` (observed) |
-| lint / typecheck / unit / build / e2e | not run: research only, no product code changed; baseline in the agent contract inherited, unverified |
+| `gh run view 41345696658 --json jobs` + `--log --job` (sandbox disabled) | job `build` 124964905937: `Tests  4251 passed \| 3 skipped (4254)`, `e2e hook: absent (2 chunks checked)`; job `deploy` 124965472637 `Smoke check (deploy)`: `precache served: 239/239`, `room pictures — 146 of 146`, `house pictures — 5 of 5` (observed; quoted in the plan's CI-at-ship rows) |
+| `ls designs/bystrow-space-base-v3/screenshots designs/bystrow-space-base-v5/screenshots` | `lab-before.png`, `lab-after-natural.png`, `base-with-three-modules.png`, `base-cell-frame.png` present (observed) |
+| grep `pl.ts` for the new task keys (`placeMicroscope` … `hangBoard`) | 0 hits — no collision (observed) |
+| `tests/roomsData.test.ts` placement invariant | exists (`toHaveLength(1)` over `Object.keys(ROOMS)`) → phase-1 exemption planned (observed) |
+| e2e card-item pins for the base | only `hangar-module.spec.ts` #16 (observed by grep) |
+| Progress rows = success-criteria bullets | 35 = 8 + 5 + 7 + 12 + 3 (observed) |
+| lint / typecheck / unit / build / e2e | not run: plan step, no product code changed; baseline in the agent contract inherited, unverified |
 
 ## 4. Next command
 
-`/10x-plan lab-module`
+`/10x-plan-review lab-module`
 
 ## 5. Open
 
-- Pins the plan must change (research §5): `tests/roomsData.test.ts` (base `houseRoomList`, describe "hangar flow (FR-047)",
-  new "lab data"), `tests/houseCells.test.ts` ("names its own pictures, shares the frame"), `tests/houseArt.test.ts`
-  (`expected` map), `tests/roomArt.test.ts` (snapshot `room-art-lab.json`, counts), `tests/fixtureLoadPath.test.ts`
-  (bridge-done merged rooms → three, `FIXTURES` + `save-v7-hangar-done`), `tests/e2e/hangar-module.spec.ts` #16 (card gains
-  the lab tile, "Dalej" opens `lab`). `base-cross-section.spec.ts` and hangar #2 stay green (lab cell `closed`).
-- Non-data touches to name in change.md / PR body: `scripts/make-task-art.mjs` (`SPACE_BASE_V3`, `SPACE_BASE_V5`, per-row
-  `pack` in `BASE_FILES`, existence-loop dir list), comment in `HouseScene.art`.
-- Fixture `tests/fixtures/save-v7-hangar-done.json`: hand-written in the shape of `save-v7.json` + base content of
-  `save-v6-bridge-done.json` (no generator script exists; `encodeSave` + `guardedPut` is the real writer, the FIXTURES
-  round-trip proves it).
-- DESIGN-GAPs (from change.md): new Laboratorium wording row; edit 196; close 199 (200 stays).
-- Follow-ups firing: hangar-module 1 (in scope), base-cross-section 6 frame half (in scope), SW-install warning (re-record),
-  house-1-polish 2 recolour retirement (carry, out of scope). Atlas trigger does NOT fire (lab ≈ 30.9 s, salon 41.4 s stays worst).
-- `[human]` none raised at this step.
+- Manual Progress rows (human checklist): 4.8 costs 100, 4.9 Laboratorium wording (gap 208), 4.10 no teaser on the last
+  module (against the roadmap S-33 Risk text, not the PRD), 4.11 tablet offline — all `[human]`. `[reviewer]` (CI at ship):
+  1.8 (room pictures 167), 3.7 (house pictures 6, precache 261), 4.12 (Tests 4251 + N) — only the post-merge Deploy log
+  proves them; the orchestrator ticks them in its docs PR. `[visual]` 4.6 (11 frames × 1440/1024), `[reviewer]` 1.7, 4.7.
+- DESIGN-GAPs planned: new 208 (Laboratorium wording), edit 196, close 199 (phase 4).
+- Follow-ups to record in phase 4 (`context/changes/lab-module/follow-ups/review-fixes.md`): see plan phase 4 § Docs.
+- Risks: mint frame legibility on the base shell; purchase-heavy e2e under load; a Hangar finished on an older build meets
+  the Laboratorium without its card.
+- No `ARTIFACT GAP`.
 
 ## 6. Autonomous decisions
 
-- **R1. No AskUserQuestion; scope taken from change.md + step prompt.** Rejected: widening into S-35 v5 crew/life layers.
-  Would change: a maintainer instruction to integrate v5 beyond the frame.
-- **R2. Recommend a hand-written v7 fixture** over adding a fixture-generator script. Why: every done-room fixture so far is
-  hand-written and frozen (bathroom-room plan, house-1-polish `save-v7.json`), and the FIXTURES round-trip runs the real
-  `loadSave`/`encodeSave`. Would change: a reviewer requiring byte-identity with a `guardedPut` record (then generate it
-  once in a test with fake IndexedDB and freeze the output).
-- **R3. Measured art sizes in the scratchpad, not with `npm run art`** (which writes into `public/` — product files, a
-  plan-phase job). Would change: nothing; the plan's art phase re-measures on the committed files.
-- Inherited D1–D8 from change.md stand; research confirmed D3 (no teaser: `houseRoomList` source), D4 (frame geometry
-  identical, per-geometry draw), D6 (no per-room field missing in v7).
+- **No AskUserQuestion.** The skill's complexity (LOW-MEDIUM) and phase-structure confirmations were decided from the
+  artifacts: research left 0 open product questions. Would change: a reviewer finding an unresolved product choice.
+- **P1-P8 in `plan.md` § Autonomous decisions** — task labels ("Powieś tablicę magnetyczną" for the wall board), the frame
+  as its own phase 3, the phase-1 placement exemption removed in phase 2 (S-31 precedent), Hangar #16 edited not deleted,
+  the rendered-pixel frame oracle at (244,407), no e2e for house 1's frame (unit key + visual frame 10), no loader comment /
+  `roomArtCheck` / recolour retirement, `[human]` rows. Each lists rejected options and what would change it.
+- **Phase 3 driver `impl`, not `tdd`.** Why: the work is art conversion plus one data key; the flipped unit cases are
+  existing size/orphan/key checks (hangar phase-1 precedent). Rejected: `tdd` (a failing key test would lead only the one
+  string). Would change: the plan-review judging the key flip the main risk.
+- **Visual matrix adds frame (9), the Hangar in renovation in the mint frame**, beyond the step prompt's list, because the
+  frame change also affects the Hangar's state for every child who is mid-Hangar. Would change: nothing.
+- **Roadmap status edit committed with the plan** (step prompt), though the skill says leave it uncommitted.

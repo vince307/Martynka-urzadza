@@ -52,7 +52,7 @@ Dziecko rozwiązuje rundy zadań matematycznych, zbiera gwiazdki i wydaje je na 
 | S-31  | bathroom-room        | dziecko po pokoju dziecięcym urządza łazienkę, czwarty pokój domu 1                  | S-25               | FR-033, FR-035, FR-038                     | done     |
 | S-32  | house-1-polish       | dziecko remontuje kuchnię w etapach jak pokój dziecięcy, a salon w przekroju stoi na kremowym tle jak inne pokoje | S-23 | FR-033, FR-038                  | done     |
 | S-24  | residents-move-in    | gotowy dom zamieszkują mieszkańcy, dziecko dostaje naklejkę do albumu                | S-23, S-25, S-31   | FR-034, FR-040, FR-041, FR-035             | proposed |
-| S-33  | lab-module           | dziecko z bazą po Hangarze remontuje Laboratorium; moduł w remoncie ma ramkę bazy    | S-30               | FR-046, FR-045, FR-035                     | ready    |
+| S-33  | lab-module           | dziecko z bazą po Hangarze remontuje Laboratorium; moduł w remoncie ma ramkę bazy    | S-30               | FR-046, FR-045, FR-035                     | planning |
 | S-34  | cabins-module        | dziecko z bazą po Laboratorium remontuje Kajuty, czwarty moduł bazy                  | S-33               | FR-046, FR-035                             | proposed |
 | S-35  | base-crew-move-in    | gotową bazę zamieszkuje załoga, baza ożywa, dziecko dostaje naklejkę do albumu       | S-34, S-24         | FR-034, FR-040, FR-041, FR-035             | proposed |
 | S-26  | street-plots         | dziecko widzi ulicę z działkami i urządza drugi dom z innymi pokojami                | S-24, S-17         | FR-032, FR-036, FR-039, FR-040             | blocked  |
@@ -248,7 +248,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Ceny Laboratorium (jak Mostek i Hangar, 100)? — Owner: autor. Block: no.
 - **Risk:** trzeci dowód „moduł jak pokój”; Hangar przestaje być ostatnim modułem (follow-up 1 z S-30), więc wraca kafelek zapowiedzi na karcie celebracji.
-- **Status:** ready
+- **Status:** planning
 
 ### S-34: Kajuty, czwarty moduł bazy
 
