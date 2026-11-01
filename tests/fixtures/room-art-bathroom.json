@@ -1,0 +1,149 @@
+[
+  {
+    "key": "bathroom/before",
+    "url": "assets/rooms/bathroom/bathroom-before.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "bathroom/after",
+    "url": "assets/rooms/bathroom/bathroom-after.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "bathroom/shadows",
+    "url": "assets/rooms/bathroom/bathroom-shadows.webp",
+    "width": 1920,
+    "height": 1080,
+    "label": ""
+  },
+  {
+    "key": "bathroom/bathroom-tub-natural",
+    "url": "assets/rooms/bathroom/bathroom-tub-natural.webp",
+    "width": 441,
+    "height": 492,
+    "label": "wanna z zasłonką Naturalna"
+  },
+  {
+    "key": "bathroom/bathroom-tub-sunny",
+    "url": "assets/rooms/bathroom/bathroom-tub-sunny.webp",
+    "width": 441,
+    "height": 492,
+    "label": "wanna z zasłonką Słoneczna"
+  },
+  {
+    "key": "bathroom/bathroom-tub-mint",
+    "url": "assets/rooms/bathroom/bathroom-tub-mint.webp",
+    "width": 441,
+    "height": 492,
+    "label": "wanna z zasłonką Miętowa"
+  },
+  {
+    "key": "bathroom/bathroom-sink-natural",
+    "url": "assets/rooms/bathroom/bathroom-sink-natural.webp",
+    "width": 313,
+    "height": 478,
+    "label": "umywalka i lustro Naturalne"
+  },
+  {
+    "key": "bathroom/bathroom-sink-sunny",
+    "url": "assets/rooms/bathroom/bathroom-sink-sunny.webp",
+    "width": 313,
+    "height": 478,
+    "label": "umywalka i lustro Słoneczne"
+  },
+  {
+    "key": "bathroom/bathroom-sink-mint",
+    "url": "assets/rooms/bathroom/bathroom-sink-mint.webp",
+    "width": 313,
+    "height": 478,
+    "label": "umywalka i lustro Miętowe"
+  },
+  {
+    "key": "bathroom/bathroom-cabinet-natural",
+    "url": "assets/rooms/bathroom/bathroom-cabinet-natural.webp",
+    "width": 210,
+    "height": 398,
+    "label": "regał z ręcznikami Naturalny"
+  },
+  {
+    "key": "bathroom/bathroom-cabinet-sunny",
+    "url": "assets/rooms/bathroom/bathroom-cabinet-sunny.webp",
+    "width": 210,
+    "height": 398,
+    "label": "regał z ręcznikami Słoneczny"
+  },
+  {
+    "key": "bathroom/bathroom-cabinet-mint",
+    "url": "assets/rooms/bathroom/bathroom-cabinet-mint.webp",
+    "width": 210,
+    "height": 398,
+    "label": "regał z ręcznikami Miętowy"
+  },
+  {
+    "key": "bathroom/bathroom-rug-natural",
+    "url": "assets/rooms/bathroom/bathroom-rug-natural.webp",
+    "width": 346,
+    "height": 188,
+    "label": "dywanik Naturalny"
+  },
+  {
+    "key": "bathroom/bathroom-rug-sunny",
+    "url": "assets/rooms/bathroom/bathroom-rug-sunny.webp",
+    "width": 346,
+    "height": 188,
+    "label": "dywanik Słoneczny"
+  },
+  {
+    "key": "bathroom/bathroom-rug-mint",
+    "url": "assets/rooms/bathroom/bathroom-rug-mint.webp",
+    "width": 346,
+    "height": 188,
+    "label": "dywanik Miętowy"
+  },
+  {
+    "key": "bathroom/bathroom-plant-natural",
+    "url": "assets/rooms/bathroom/bathroom-plant-natural.webp",
+    "width": 205,
+    "height": 225,
+    "label": "roślina Naturalna"
+  },
+  {
+    "key": "bathroom/bathroom-plant-sunny",
+    "url": "assets/rooms/bathroom/bathroom-plant-sunny.webp",
+    "width": 205,
+    "height": 225,
+    "label": "roślina Słoneczna"
+  },
+  {
+    "key": "bathroom/bathroom-plant-mint",
+    "url": "assets/rooms/bathroom/bathroom-plant-mint.webp",
+    "width": 205,
+    "height": 225,
+    "label": "roślina Miętowa"
+  },
+  {
+    "key": "bathroom/bathroom-ducks-natural",
+    "url": "assets/rooms/bathroom/bathroom-ducks-natural.webp",
+    "width": 193,
+    "height": 129,
+    "label": "półka z zabawkami Naturalna"
+  },
+  {
+    "key": "bathroom/bathroom-ducks-sunny",
+    "url": "assets/rooms/bathroom/bathroom-ducks-sunny.webp",
+    "width": 193,
+    "height": 129,
+    "label": "półka z zabawkami Słoneczna"
+  },
+  {
+    "key": "bathroom/bathroom-ducks-mint",
+    "url": "assets/rooms/bathroom/bathroom-ducks-mint.webp",
+    "width": 193,
+    "height": 129,
+    "label": "półka z zabawkami Miętowa"
+  }
+]

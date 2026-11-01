@@ -193,5 +193,35 @@ export const HANGAR: RoomDef = {
     ],
 };
 
-export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [CHILDREN.id]: CHILDREN, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
+// The bathroom (S-31, FR-033, D1): the room `bathroom` of the art pack martynka-bathroom-v1, geometry copied slot by slot from its manifest.
+// Texture keys are `bathroom/<file id>`. One stage task (before -> after, no stage backgrounds), six slots with three variants each, no fixed decoration,
+// no worn look and no contact shadows: the pack has none. Costs 5 + 7/9/10/12/13/15 = 71 stars, the kitchen curve (S-17 tunes them).
+const bathroomSlots: SlotDef[] = [
+    { id: 'bathroom-tub', x: 468, y: 284, width: 441, height: 492, z: 20, anchor: [220, 476], visibleRect: [16, 16, 409, 460], variants: ['bathroom/bathroom-tub-natural', 'bathroom/bathroom-tub-sunny', 'bathroom/bathroom-tub-mint'] },
+    { id: 'bathroom-sink', x: 943, y: 291, width: 313, height: 478, z: 25, anchor: [156, 462], visibleRect: [16, 16, 281, 446], variants: ['bathroom/bathroom-sink-natural', 'bathroom/bathroom-sink-sunny', 'bathroom/bathroom-sink-mint'] },
+    { id: 'bathroom-cabinet', x: 1310, y: 408, width: 210, height: 398, z: 30, anchor: [105, 382], visibleRect: [16, 16, 178, 366], variants: ['bathroom/bathroom-cabinet-natural', 'bathroom/bathroom-cabinet-sunny', 'bathroom/bathroom-cabinet-mint'] },
+    { id: 'bathroom-rug', x: 800, y: 712, width: 346, height: 188, z: 10, anchor: [173, 172], visibleRect: [16, 16, 314, 156], variants: ['bathroom/bathroom-rug-natural', 'bathroom/bathroom-rug-sunny', 'bathroom/bathroom-rug-mint'] },
+    { id: 'bathroom-plant', x: 363, y: 583, width: 205, height: 225, z: 40, anchor: [102, 209], visibleRect: [16, 16, 173, 193], variants: ['bathroom/bathroom-plant-natural', 'bathroom/bathroom-plant-sunny', 'bathroom/bathroom-plant-mint'] },
+    { id: 'bathroom-ducks', x: 1300, y: 316, width: 193, height: 129, z: 15, anchor: [96, 113], visibleRect: [16, 16, 161, 97], variants: ['bathroom/bathroom-ducks-natural', 'bathroom/bathroom-ducks-sunny', 'bathroom/bathroom-ducks-mint'] },
+];
+
+export const BATHROOM: RoomDef = {
+    id: 'bathroom',
+    scene: { before: 'bathroom/before', after: 'bathroom/after', shadows: 'bathroom/shadows' },
+    decor: [],
+    slots: bathroomSlots,
+    worn: [],
+    contactShadows: [],
+    tasks: [
+        { kind: 'stage', id: 'renovate', label: 'renovate', cost: 5 },
+        { kind: 'slot', id: 'place-tub', slot: 'bathroom-tub', label: 'placeTub', cost: 7 },
+        { kind: 'slot', id: 'set-up-sink', slot: 'bathroom-sink', label: 'setUpSink', cost: 9 },
+        { kind: 'slot', id: 'place-towel-shelf', slot: 'bathroom-cabinet', label: 'placeTowelShelf', cost: 10 },
+        { kind: 'slot', id: 'lay-bath-rug', slot: 'bathroom-rug', label: 'layBathRug', cost: 12 },
+        { kind: 'slot', id: 'place-bath-plant', slot: 'bathroom-plant', label: 'placeBathPlant', cost: 13 },
+        { kind: 'slot', id: 'hang-toy-shelf', slot: 'bathroom-ducks', label: 'hangToyShelf', cost: 15 },
+    ],
+};
+
+export const ROOMS: Record<string, RoomDef> = { [SALON.id]: SALON, [KITCHEN.id]: KITCHEN, [CHILDREN.id]: CHILDREN, [BATHROOM.id]: BATHROOM, [BRIDGE.id]: BRIDGE, [HANGAR.id]: HANGAR };
 export const FIRST_ROOM = FIRST_HOUSE.rooms[0].room;

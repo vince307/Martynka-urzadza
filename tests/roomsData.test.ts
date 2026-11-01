@@ -7,7 +7,7 @@ import { LEGACY_SALON_V2 } from '../src/core/migrations/legacySalon';
 import { pl, roomText } from '../src/data/pl';
 import { balance } from '../src/data/balance';
 import { ROOM_LAYOUT } from '../src/data/layout';
-import { BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
+import { BATHROOM, BRIDGE, CHILDREN, FIRST_ROOM, HANGAR, ROOMS, SALON } from '../src/data/rooms';
 import { BUILDING_CHOICES, FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { houseRoomList, nextRoom, roomInRenovation } from '../src/core/house';
 import { HOUSE_V5 } from '../src/core/migrations/house';
@@ -25,7 +25,8 @@ describe('every room in ROOMS', () => {
         expect(rooms.length).toBeGreaterThan(0);
         for (const [key, room] of Object.entries(ROOMS)) expect(room.id).toBe(key);
         const placed = HOUSES.flatMap((h) => h.rooms.map((c) => c.room));
-        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(1);
+        // S-31 phase 3: no house lists the bathroom yet; phase 4 adds its HOUSES row and removes this exemption.
+        for (const id of Object.keys(ROOMS)) expect(placed.filter((r) => r === id), id).toHaveLength(id === 'bathroom' ? 0 : 1);
     });
 
     it('has one furniture task per slot, whole costs of 5-21 stars, the first within one clean round', () => {
@@ -171,6 +172,34 @@ describe('children data (FR-033)', () => {
     it('names the background of the first two stages and none on the third (it shows the after look)', () => {
         const scenes = CHILDREN.tasks.slice(0, 3).map((t) => (t.kind === 'stage' ? t.scene : 'not a stage'));
         expect(scenes).toEqual(['children/children-stage-1', 'children/children-stage-2', undefined]);
+    });
+});
+
+describe('bathroom data (FR-033)', () => {
+    // Written from designs/martynka-bathroom-v1/manifest.json rooms.bathroom, not from bathroomSlots: [id, x, y, width, height, z].
+    const manifest: Array<[string, number, number, number, number, number]> = [
+        ['bathroom-tub', 468, 284, 441, 492, 20],
+        ['bathroom-sink', 943, 291, 313, 478, 25],
+        ['bathroom-cabinet', 1310, 408, 210, 398, 30],
+        ['bathroom-rug', 800, 712, 346, 188, 10],
+        ['bathroom-plant', 363, 583, 205, 225, 40],
+        ['bathroom-ducks', 1300, 316, 193, 129, 15],
+    ];
+
+    it('copies the six slots of the pack manifest', () => {
+        expect(BATHROOM.slots.map((s) => [s.id, s.x, s.y, s.width, s.height, s.z])).toEqual(manifest);
+    });
+
+    it('is one stage first, then one task per slot in the pack order, each slot bought once', () => {
+        expect(BATHROOM.tasks[0]).toMatchObject({ kind: 'stage', label: 'renovate' });
+        expect(BATHROOM.tasks[0].kind === 'stage' && BATHROOM.tasks[0].scene).toBeFalsy();
+        const slotTasks = BATHROOM.tasks.slice(1);
+        expect(slotTasks.map((t) => (t.kind === 'slot' ? t.slot : ''))).toEqual(manifest.map((m) => m[0]));
+    });
+
+    it('costs 5, 7, 9, 10, 12, 13, 15 = 71 stars', () => {
+        expect(BATHROOM.tasks.map((t) => t.cost)).toEqual([5, 7, 9, 10, 12, 13, 15]);
+        expect(BATHROOM.tasks.reduce((sum, t) => sum + t.cost, 0)).toBe(71);
     });
 });
 

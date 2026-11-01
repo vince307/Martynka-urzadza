@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ROOM_ART, ROOM_SCENE_FILES, roomArt } from '../src/data/roomArt';
 import { ROOMS } from '../src/data/rooms';
 import type { RoomDef } from '../src/core/types';
+import bathroomSnapshot from './fixtures/room-art-bathroom.json';
 import bridgeSnapshot from './fixtures/room-art-bridge.json';
 import childrenSnapshot from './fixtures/room-art-children.json';
 import hangarSnapshot from './fixtures/room-art-hangar.json';
@@ -46,7 +47,8 @@ describe('room art table', () => {
         expect(roomArt(ROOMS.bridge)).toEqual(bridgeSnapshot);
         expect(roomArt(ROOMS.hangar)).toEqual(hangarSnapshot);
         expect(roomArt(ROOMS.children)).toEqual(childrenSnapshot);
-        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot, ...childrenSnapshot, ...bridgeSnapshot, ...hangarSnapshot]);
+        expect(roomArt(ROOMS.bathroom)).toEqual(bathroomSnapshot);
+        expect(ROOM_ART).toEqual([...salonSnapshot, ...kitchenSnapshot, ...childrenSnapshot, ...bathroomSnapshot, ...bridgeSnapshot, ...hangarSnapshot]);
     });
 
     it('has a scene-file row for every room of the data', () => {
@@ -55,10 +57,11 @@ describe('room art table', () => {
         }
     });
 
-    it('has 37 salon, 21 kitchen, 23 children room, 21 bridge and 21 hangar entries, each a WebP file of the tabled size', () => {
+    it('has 37 salon, 21 kitchen, 23 children room, 21 bathroom, 21 bridge and 21 hangar entries, each a WebP file of the tabled size', () => {
         expect(roomArt(ROOMS.salon)).toHaveLength(37);
         expect(roomArt(ROOMS.kitchen)).toHaveLength(21);
         expect(roomArt(ROOMS.children)).toHaveLength(23);
+        expect(roomArt(ROOMS.bathroom)).toHaveLength(21);
         expect(roomArt(ROOMS.bridge)).toHaveLength(21);
         expect(roomArt(ROOMS.hangar)).toHaveLength(21);
         for (const art of ROOM_ART) {
