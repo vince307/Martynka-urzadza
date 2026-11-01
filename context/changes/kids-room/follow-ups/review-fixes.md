@@ -13,6 +13,9 @@ their trigger; each is closed with evidence, narrowed, or re-recorded with the t
    Trigger: S-32 (the kitchen renovated in stages like the children's room).
 3. `ROOM_DONE_LAYOUT.tiles.left` is no longer read by the card layout; kept so the diff stayed in data.
    Trigger: the next change to `ROOM_DONE_LAYOUT` or `RoomDoneCard`.
+7. Visual gate: with a three-digit balance (155 on `screenshots/*-13-salon-room-done-card.png`) the star in the HUD counter pill nearly
+   touches the first digit; `StarCounter` is unchanged by this slice.
+   Trigger: the next change to `StarCounter` or the HUD pill (`hudPill.ts`), or S-17 (balance tuning that raises typical balances).
 
 ## Fired by this change and closed
 
