@@ -479,6 +479,6 @@ complexity, 0 open product questions after research, 4 phases):
 
 #### Automated
 
-- [ ] 4.1 Spec red before (deliberate breaks, each run alone with `-g`): move the Hangar row to `place: 2` → test 1 red; add a third unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); set a Hangar cost to 22 → test 2's balance red; point `ROOM_SCENE_FILES.hangar.after` at the before file → test 1's pixel red (or record why the miniature point does not see it and pick a point that does); each restored; green after
-- [ ] 4.2 `npx playwright test tests/e2e/hangar-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; `base-cross-section.spec.ts` green with the shared helper; full e2e (orchestrator, `--workers=4`) `187 + 2`; total equals `npx playwright test --list | tail -1`
-- [ ] 4.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`)
+- [x] 4.1 Spec red before (deliberate breaks, each run alone with `-g`): move the Hangar row to `place: 2` → test 1 red; add a third unknown room to `HOUSES['base-1']` → test 2 red (teaser appears); set a Hangar cost to 22 → test 2's balance red; point `ROOM_SCENE_FILES.hangar.after` at the before file → test 1's pixel red (or record why the miniature point does not see it and pick a point that does); each restored; green after — baa785b
+- [x] 4.2 `npx playwright test tests/e2e/hangar-module.spec.ts --list` lists 2 tests under `chromium-hook` only; spec green; `base-cross-section.spec.ts` green with the shared helper; full e2e (orchestrator, `--workers=4`) `187 + 2`; total equals `npx playwright test --list | tail -1` — baa785b
+- [x] 4.3 Full local gate green (lint, typecheck, unit, build `e2e hook: absent (`) — baa785b

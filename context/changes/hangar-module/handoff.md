@@ -1,69 +1,53 @@
 # Handoff — `hangar-module` (slice S-30)
 
-Written by the `/10x-implement hangar-module phase 3` step of run 2026-10-31-space-base. Phase 3 (docs, gap rows, follow-ups, seam sweep, visual pass) is committed at 862dca7 with `VISUAL: PASS`; next is the phase-4 e2e spec. The next agent must not miss that row 3.5's full e2e (`187 + 0`, `--workers=4`) is still the orchestrator's, and that the plan's phase 4 extracts `buyAllTasks` into `tests/e2e/support/` (test code only).
+Written by the `/10x-e2e hangar-module phase 4` step of run 2026-10-31-space-base. All four phases are committed (phase 4 at baa785b); change.md is `implemented`. The next agent must not miss that the full e2e (`187 + 2` = 189, `--workers=4`) is the orchestrator's gate and that [reviewer]/[human] rows stay open.
 
 ## 1. State
 
 | | |
 |---|---|
-| Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` (S-29 merge) |
-| Commits | phase 1 `041e279`, phase 2 `de5ab57`, phase 3 `862dca7`, plus docs commits (plan, review, handoffs) |
+| Branch | `feat/hangar-module`, cut from `main` at `a4a0aee` |
+| Commits | phase 1 `041e279`, phase 2 `de5ab57`, phase 3 `862dca7`, phase 4 `baa785b`, plus docs commits |
 | Pushed / PR / merged | no / none / no |
-| `change.md` status | `implementing` (set by this step; it had stayed `plan_reviewed` through phases 1-2) |
-| Roadmap | S-30 `in-progress` (table and item body), committed in 862dca7 |
-| `## Progress` rows remaining | 9 (`grep -c '^- \[ \]' plan.md`): 1.7, 1.8 [reviewer]; 3.7, 3.8, 3.9 [human]; 3.10 [reviewer]; 4.1-4.3 |
+| `change.md` status | `implemented` (epilogue run; [reviewer]/[human] rows still open) |
+| `## Progress` rows remaining | 6: 1.7, 1.8, 3.10 [reviewer]; 3.7, 3.8, 3.9 [human] |
 | Working tree | clean after the handoff commit |
 
 ## 2. Artifacts
 
 | path | what it is |
 |---|---|
-| `CLAUDE.md` | one S-30 "Current state" sentence after the S-29 one (HANGAR, art, `HOUSES['base-1']` row, frozen fixture, gaps 196/201, follow-ups path); no S-28/S-29 wording called Mostek the only/last module, so nothing else changed |
-| `docs/design-gaps.md` | row 196 narrowed again (last module is the Hangar, Mostek's card shows the Hangar tile); new row 201 (Hangar wording ours) |
-| `context/changes/hangar-module/follow-ups/review-fixes.md` | 10 items, 11 `Trigger:` lines (base-cross-section 5 narrowed; gap 201 wording/costs; unused `roomArtCheck`; Mostek finished on S-29 meets Hangar without a card; atlas, thumbnails, `FIRST_ROOM`, kitchen-room 13 carried; kitchen-room 6 and audit-art-renderer 2 cited closed) |
-| `scripts/make-task-art.mjs` | duplicate constant `SPACE` (v1 pack) removed; `BASE_FILES`/`CHOICE_FILES` loops and the kit-exists loop use `SPACE_BASE` |
-| `context/changes/hangar-module/reviews/visual-review.md` | visual gate, ends `VISUAL: PASS — …` |
-| `context/changes/hangar-module/screenshots/` | 16 game frames (8 shots × 1440/1024), 3 `kit-*` pack copies, `README.md` |
-| `context/changes/hangar-module/change.md`, `context/foundation/roadmap.md` | status flips (implementing / in-progress) |
-| `context/changes/hangar-module/plan.md` | rows 3.1-3.6 ticked with ` — 862dca7` |
+| `tests/e2e/hangar-module.spec.ts` | 2 tests (hook build): `#2 S-30 FR-047 the base shows Mostek done and the Hangar framed ...; a reload keeps it`, `#16 S-30 FR-047 the Hangar is bought to the end ...; the balance is exact` |
+| `tests/e2e/support/salon.ts` | new `buyAllTasks(page, def)`, reused by `base-cross-section.spec.ts` #16 |
+| `playwright.config.ts` | `hangar-module` added to `ROUND_SPEC` only |
 
 ## 3. Verification
 
 | command | result |
 |---|---|
-| `bash .claude/skills/10x-autonomous-run/scripts/validate-rule-files.sh` | PASS (631 paths, 0 missing); `grep -cE "HANGAR\|save-v6-bridge-done\|assets/rooms/hangar" CLAUDE.md` = 1 line |
-| `grep -c "Trigger:" follow-ups/review-fixes.md` / `grep -cE "^\| 201 " docs/design-gaps.md` | 11 / 1 |
-| `grep -rnE "until S-30\|S-30 adds\|only room of the base" src tests scripts` | empty; `grep -c "bystrow-space-base-v1'" scripts/make-task-art.mjs` = 1 |
-| `npm run art` then `git status --short public/assets` | empty (byte-identical after the merge of the constants) |
-| `git diff --stat de5ab57 -- src/scenes src/core src/ui src/main.ts src/data/balance.ts src/data/curriculum src/core/save.ts tests/fixtures public` | empty |
-| `npm run lint`, `npm run typecheck` | OK |
-| `npm test` + deploy/ops tests + `sample` E1-E6 | unit `Tests 4194 passed` (baseline 4194 after p2, +0); deploy/ops/sample no failure |
-| `npm run build` | `e2e hook: absent (2 chunks checked)` |
-| e2e full suite | not run (orchestrator, expected `187 + 0`); the throwaway visual spec ran 6 + 2 tests green on 4399 and was deleted |
-| Deliberate break 1 | CLAUDE.md fixture path renamed to `save-v6-bridge-gone.json` → `validate-rule-files.sh` FAIL (missing: 1); restored with `git checkout -- CLAUDE.md`, PASS again. Meta-check: proves the S-30 sentence's paths are asserted, not that the sentence is true; truth was checked by reading the files it names |
-| Deliberate break 2 | `BASE_FILES` loop pointed at `SPACE_BASE_V2` → `npm run art` exits "Missing kit file: …bystrow-space-base-v2/assets/base/base-1-shell.png"; restored, `npm run art` again, `public/assets` clean. Meta-check: proves the merged constant feeds the base and choice files from the v1 pack; byte identity itself is proven by the empty `git status` after the run |
-| Visual hand-check | stars 200 → 100 at Hangar start → 94 → 84 → 71 → 57 → 40 → 21 → 0 (`counterText` after each purchase, both widths) = 6+10+13+14+17+19+21 = 100 |
-| Ports | 4399 free after the runs (`lsof -ti tcp:4399 -sTCP:LISTEN` empty) |
+| `npx playwright test tests/e2e/hangar-module.spec.ts --list` | 2 tests, `chromium-hook` only; `npx playwright test --list` total 189 (187 + 2) |
+| hangar-module + base-cross-section specs, `--workers=1` | 5 passed |
+| `npm run lint`, `npm run typecheck` | OK; `npm test` Tests 4194 passed; `npm run build` `e2e hook: absent (2 chunks checked)` |
+| Break 1: Hangar row `place: 2` in `HOUSES['base-1']` | #2 RED (cell states toEqual); restored |
+| Break 2: third room `kitchen` added to the base row | #16 RED (card items toEqual, +1 item); restored |
+| Break 3: last Hangar cost 21 to 22 | first run stayed GREEN (seed was summed from the data, so it followed the change); seed changed to literal 100 + 100, re-run RED (purchase flow stalls: unaffordable last task); restored. Meta-check: the cost rule is now caught through the literal budget |
+| Break 4: `ROOM_SCENE_FILES.hangar.after` pointed at the before file | GREEN, expected: at `tasksDone 0` the Hangar miniature already shows the before picture, so the window pixel cannot see it. Not a defect of the spec; the pixel oracle's break is proven by break 1 context (the cell shows no Hangar) is NOT claimed. Recorded, not fixed |
+| Pixel oracle | scene (1417,720), the starry window of the Hangar miniature, differs from the cream cell background by more than 40; the first chosen point (1123,816) was cream in the Hangar too and was dropped |
+| Ports | 4397/4398 free after the runs |
 
 ## 4. Next command
 
-`/10x-e2e hangar-module phase 4`
+`/10x-impl-review hangar-module`
 
 ## 5. Open
 
-- Row 3.5 e2e part and phase-4 full e2e (`187 + 2`) are the orchestrator's.
-- [human] 3.7 accept Hangar costs 6/10/13/14/17/19/21 = 100; 3.8 accept wording (gap 201) and the Hangar as last module (gap 196); 3.9 real tablet, installed, offline.
-- [reviewer] 1.7 teacher read of the Hangar copy in `src/data/pl.ts` (`room.tasks`, `room.slots`, `room.variants`); 1.8 and 3.10 CI lines at ship.
-- DESIGN-GAP rows: 196 (narrowed), 201 (new) in `docs/design-gaps.md`; `src/data/pl.ts` Hangar task comment already cites row 201.
-- Follow-ups: `context/changes/hangar-module/follow-ups/review-fixes.md` (item 3 `roomArtCheck` in `scripts/deploy-check/parse.ts`, trigger the next change to `scripts/check-deploy.ts`).
-- Risk: phase-4 purchase runs (7 and 14 buys) are load-sensitive (plan `## Known risks`); the visual runs took 30-46 s per test unloaded.
+- Full e2e (`--workers=4`, `187 + 2`) at the orchestrator's gate; a load timeout is re-judged with `--last-failed --workers=1`.
+- [human] 3.7, 3.8, 3.9; [reviewer] 1.7, 1.8, 3.10.
+- Follow-ups: `context/changes/hangar-module/follow-ups/review-fixes.md`. New: the e2e pixel point cannot tell the Hangar after picture from the before one (a renovated-Hangar miniature check would need the Hangar bought and the house reopened).
 
 ## 6. Autonomous decisions
 
-- Implemented in this context (no subagent) instead of the skill's "Delegate (Recommended)": the phase is docs and one script line, and the visual gate has to be judged here. Would change: a code-heavy phase.
-- Playwright fallback without a Chrome attempt, per the step prompt (Chrome holds the maintainer's save on 4399). Throwaway config/spec lived in `tests/e2e-visual-tmp/` during the run and were deleted; facts log written to the OS temp dir. Would change: a defect only Chrome shows.
-- Item (4) judged on frame 06 (change mode) because the card covers the room at the last purchase; extra frame 08b (three tasks bought under `?e2eArt=room`) because at the start there are no pieces to stand in. Would change: nothing.
-- Follow-up "a Mostek finished on S-29 meets the Hangar without a card" recorded from the plan's Known risks with a trigger, not fixed (would need core code, against the roadmap Risk). Would change: a playtest note.
-- Kitchen-room 5 (atlas) kept "not fired" as the plan says, although its old trigger said "a third room": first-building-choice 5 already re-recorded it with the budget trigger, which holds (Hangar boot 29.9 s vs 48 s).
-- Commit type `docs(...)` (no product code changed: one art-script line with byte-identical output, docs, screenshots); commit message taken as drafted.
-- The skill's manual-verification gate and next-phase question decided in place: [visual] done here, [human]/[reviewer] rows left open; stop after this phase.
+- Break 4 left green and recorded as the plan allows (the miniature at `tasksDone 0` is the before picture), instead of deleting the test: the pixel assertion is proven red by break 1 only in the sense of the cell state; the test stays because break 1 and 3 turn the spec red. Would change: a requirement to prove the Hangar picture itself.
+- `buyAllTasks` lives in `support/salon.ts` (not `hook.ts`) to avoid an import cycle (it needs `room`); typed with a structural parameter because `RoomDef` is not exported. Would change: exporting `RoomDef`.
+- Seeds and balance use literal totals (100 + 100) rather than sums from the data. Would change: a cost ladder change by the maintainer.
+- Plan said balance check "the save's stars": read from the hook snapshot `stars` (registry, the one source), not the label.
