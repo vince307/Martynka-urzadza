@@ -8,8 +8,8 @@ Written by the visual-gate step of run 2026-10-31-space-base: row 8.6 is capture
 |---|---|
 | branch | `feat/first-building-choice`, cut from `main` at `fc13e8c` |
 | commits | 27 in `fc13e8c..HEAD`: phases p1-p9, review fix `f6e9b17`, visual fix `1fef8ed`, visual docs `86d4831`, this handoff on top |
-| pushed / PR / merged | no / no / no |
-| `change.md` status | `impl_reviewed` (unchanged by this step) |
+| pushed / PR / merged | PR/CI/merge/deploy recorded in context/runs/2026-10-31-space-base/run-log.md (archived and shipped by the ship step of run 2026-10-31-space-base) |
+| `change.md` status | `archived` (ship step) |
 | `## Progress` rows remaining | 8 (`grep -c '^- \[ \]' plan.md`): 2.6, 3.8, 5.7, 8.7, 8.8, 8.9, 8.10, 8.11 (8.6 ticked by this step) |
 | working tree | clean after the handoff commit |
 
@@ -42,7 +42,7 @@ Written by the visual-gate step of run 2026-10-31-space-base: row 8.6 is capture
 
 ## 4. Next command
 
-`/10x-archive first-building-choice` then ship
+none — shipped
 
 ## 5. Open
 
