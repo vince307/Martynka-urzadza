@@ -5,7 +5,7 @@ import { createStore, get, set } from 'idb-keyval';
 import { loadSave } from '../src/core/autosave';
 import { encodeSave, SAVE_VERSION } from '../src/core/save';
 import { houseLayout, houseRoomIds, mergeHouse, nextRoom } from '../src/core/house';
-import { repairCurrentRoom } from '../src/core/rooms';
+import { repairCurrentRoom, roomStateProblems } from '../src/core/rooms';
 import { needsPlacement } from '../src/core/placement';
 import { FIRST_HOUSE, HOUSES } from '../src/data/houses';
 import { ROOMS } from '../src/data/rooms';
@@ -114,6 +114,8 @@ describe('the building of a loaded save (FR-049)', () => {
         expect(moved.currentRoom).toBe('hangar');
         expect(moved.movedFrom).toBe('bridge');
         expect(moved.rooms.bridge).toEqual(raw.rooms.bridge);
+        // The fixture is what the S-29 build writes: its chosen slots are the Mostek's own, so the load reports no room problem.
+        expect(roomStateProblems(moved.rooms, ROOMS)).toEqual([]);
         expect(s.stars).toBe(raw.stars);
     });
 });

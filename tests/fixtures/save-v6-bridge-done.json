@@ -8,10 +8,10 @@
       "chosen": {
         "bridge-console": 0,
         "bridge-chair": 1,
-        "bridge-screen": 2,
-        "bridge-lamp": 0,
-        "bridge-map": 1,
-        "bridge-plant": 2
+        "bridge-telescope": 2,
+        "bridge-shelf": 0,
+        "bridge-rug": 1,
+        "bridge-plants": 2
       }
     }
   },
